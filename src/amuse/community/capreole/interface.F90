@@ -202,7 +202,7 @@ end function
 
 
 
-function get_momentum_density(i,j,k,rhvx_out,rhvy_out,rhvz_out) result(ret)
+function get_grid_momentum_density(i,j,k,rhvx_out,rhvy_out,rhvz_out) result(ret)
   use amuse_helpers
   integer :: ret,i,j,k
   real*8 :: rhvx_out,rhvy_out,rhvz_out
@@ -232,7 +232,7 @@ function get_momentum_density(i,j,k,rhvx_out,rhvy_out,rhvz_out) result(ret)
 end function
 
 
-function get_energy_density(i,j,k,en_out) result(ret)
+function get_grid_energy_density(i,j,k,en_out) result(ret)
   use amuse_helpers
   integer :: ret,i,j,k
   real*8 :: en_out
@@ -260,7 +260,7 @@ function get_energy_density(i,j,k,en_out) result(ret)
 end function
 
 
-function get_density(i,j,k,rho_out) result(ret)
+function get_grid_density(i,j,k,rho_out) result(ret)
   use amuse_helpers
   integer :: ret,i,j,k
   real*8 :: rho_out

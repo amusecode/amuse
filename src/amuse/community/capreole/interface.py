@@ -1,9 +1,11 @@
 from amuse.community import *
 
 from amuse.support.units.generic_unit_system import *
-from amuse.community.interface.common import CommonCodeInterface
 
-class CapreoleInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
+from amuse.community.interface.hydro import HydrodynamicsInterface
+
+
+class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferencesMixIn):
     """
     Capreole is a grid-based astrophysical hydrodynamics code developed by Garrelt Mellema. 
     It works in one, two dimensions, and three spatial dimensions and is programmed in 
@@ -196,24 +198,13 @@ class CapreoleInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         function.addParameter('nmeshz', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function
-    
-    
-    
-
-    
-
+        
     def get_index_range_inclusive(self):
         ni,nj,nk,error = self.get_mesh_size()
         return (1, ni, 1, nj, 1, nk)
     
-    
-
-    
-
-    
-
     @legacy_function
-    def get_momentum_density():
+    def get_grid_momentum_density():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         for x in ['i','j','k']:
@@ -223,12 +214,8 @@ class CapreoleInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         function.result_type = 'i'
         return function
     
-    
-
-    
-
     @legacy_function
-    def get_density():
+    def get_grid_density():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         for x in ['i','j','k']:
@@ -241,7 +228,7 @@ class CapreoleInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
     
 
     @legacy_function
-    def get_energy_density():
+    def get_grid_energy_density():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         for x in ['i','j','k']:
@@ -250,6 +237,15 @@ class CapreoleInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
+        
+    
+    def get_number_of_grids():
+        return (0,1)
+    
+    
+    set_grid_energy_density = None
+    set_grid_density = None
+    set_grid_momentum_density = None
     
     
 class GLCapreoleInterface(CapreoleInterface):
@@ -304,21 +300,21 @@ class Capreole(InCodeComponentImplementation):
         )
         
         object.add_method(
-            'get_density',
+            'get_grid_density',
             (object.INDEX, object.INDEX, object.INDEX),
             (density,
             object.ERROR_CODE,)
         )
         
         object.add_method(
-            'get_momentum_density',
+            'get_grid_momentum_density',
             (object.INDEX, object.INDEX, object.INDEX),
             (momentum_density, momentum_density, momentum_density,
             object.ERROR_CODE,)
         )
         
         object.add_method(
-            'get_energy_density',
+            'get_grid_energy_density',
             (object.INDEX, object.INDEX, object.INDEX),
             (energy_density,
             object.ERROR_CODE,)
@@ -366,9 +362,9 @@ class Capreole(InCodeComponentImplementation):
         object.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
         object.add_setter('grid', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
         
-        object.add_getter('grid', 'get_density', names=('rho',))
-        object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
-        object.add_getter('grid', 'get_energy_density', names=('energy',))
+        object.add_getter('grid', 'get_grid_density', names=('rho',))
+        object.add_getter('grid', 'get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
+        object.add_getter('grid', 'get_grid_energy_density', names=('energy',))
         
         object.define_grid('acceleration_grid')
         object.set_grid_range('acceleration_grid', 'get_index_range_inclusive')
