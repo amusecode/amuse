@@ -299,9 +299,11 @@ class InstallPrerequisites(object):
         for x in commands:
             self.run_application(x, path)
 
-    def download_apps(self, names):
+    def download_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
+                continue
+            if skip and name in skip:
                 continue
             app_file = prefix + version + suffix
             app_dir = prefix + version 
@@ -313,13 +315,17 @@ class InstallPrerequisites(object):
                 print "...Finished"
                 
     
-    def list_apps(self, names):
+    def list_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
+            if skip and name in skip:
+                continue
             print name, " - dowloaded from", url_prefix
                 
-    def unpack_apps(self, names):
+    def unpack_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
+                continue
+            if skip and name in skip:
                 continue
             app_file = prefix + version + suffix
             app_dir = prefix + version 
@@ -355,9 +361,11 @@ class InstallPrerequisites(object):
                 sys.exit(1)
             print "...Finished"
             
-    def build_apps(self, names):
+    def build_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
+                continue
+            if skip and name in skip:
                 continue
             app_file = prefix + version + suffix
             app_dir = prefix + version 
@@ -415,16 +423,16 @@ if IS_ON_OSX:
 else:
     INSTALL = InstallPrerequisites()
            
-def download(names):
-    INSTALL.download_apps(names)
+def download(names, skip):
+    INSTALL.download_apps(names, skip)
 
-def install(names):
-    INSTALL.download_apps(names)
-    INSTALL.unpack_apps(names)
-    INSTALL.build_apps(names)
+def install(names, skip):
+    INSTALL.download_apps(names, skip)
+    INSTALL.unpack_apps(names, skip)
+    INSTALL.build_apps(names, skip)
     
-def list(names):
-    INSTALL.list_apps(names)
+def list(names, skip):
+    INSTALL.list_apps(names, skip)
 
 _commands = {
     'download' : download,
@@ -462,6 +470,7 @@ setenv F77 gfortran
     do = []
     names = []
     flag = False
+    skip = []
     
     for x in sys.argv:
         if x in _commands.keys():
@@ -469,9 +478,12 @@ setenv F77 gfortran
             flag = True
         else:
             if flag:
-                names.append(x)
+                if x.startswith('no-'):
+                    skip.append(x[3:])
+                else:
+                    names.append(x)
     for x in do:
-    	_commands[x](names)
+        _commands[x](names, skip)
     
     if len(do) == 0:
         print "Usage: install.py download|install|list [package names]"
