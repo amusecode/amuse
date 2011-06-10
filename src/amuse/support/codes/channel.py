@@ -521,9 +521,12 @@ def is_mpd_running():
     """
     name_of_the_vendor, version = MPI.get_vendor()
     if name_of_the_vendor == 'MPICH2':
-        process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)
-        (output_string, error_string) = process.communicate()
-        return not (process.returncode == 255)
+        try:
+            process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)
+            (output_string, error_string) = process.communicate()
+            return not (process.returncode == 255)
+        except OSError as ex:
+            return True
     else:
         return True
 
