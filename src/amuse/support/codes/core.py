@@ -4,7 +4,6 @@ import os.path
 
 import logging
 
-from mpi4py import MPI
 from subprocess import Popen, PIPE
 
 from amuse.support import exceptions
@@ -24,6 +23,7 @@ class for all community codes.
 """
 
 def ensure_mpd_is_running():
+    from mpi4py import MPI
     if not is_mpd_running():
         name_of_the_vendor, version = MPI.get_vendor()
         if name_of_the_vendor == 'MPICH2':

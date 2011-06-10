@@ -705,7 +705,7 @@ int get_grid_gravitational_potential(
             if (is_on_grid(grid, i0, j0, k0))
             {
                 
-    fprintf(stderr, "GRID i,j,k %d,%d,%d\n", i0, j0, k0);
+    //fprintf(stderr, "GRID i,j,k %d,%d,%d\n", i0, j0, k0);
                 ijk_on_grid(grid, &i0, &j0, &k0);
                 phi[l] = grid->Phi[k0][j0][i0];
             }
@@ -1764,7 +1764,7 @@ int evolve_model(double tlim) {
  
     }
     while (mesh.time < tlim) {
-        fprintf(stderr, "mesh.time %g, %g, %g\n", mesh.time, mesh.dt, tlim);
+        //fprintf(stderr, "mesh.time %g, %g, %g\n", mesh.time, mesh.dt, tlim);
         if(mesh.dt == 0.0)
         {
             break;

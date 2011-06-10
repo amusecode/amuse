@@ -44,8 +44,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         )
         outputstring, errorstring = call.communicate()
         
-        print errorstring
-    
+        
         self.assertEquals(call.returncode, 0)
         
         self.assertTrue(os.path.exists(os.path.join(working_dir,'testcode_worker')))
@@ -60,7 +59,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         module = sys.modules['testcode.interface']
         instance = module.TestCode()
         result, error = instance.echo_int(12)
-        
+        print result, error
         self.assertEquals(error, 0)
         self.assertEquals(result, 12)
         

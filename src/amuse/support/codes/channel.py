@@ -10,12 +10,15 @@ import struct
 import threading
 import select
 import tempfile
+import atexit
 
 import socket
 import array
 
 import logging
 
+from mpi4py import rc
+rc.initialize = False
 from mpi4py import MPI
 from subprocess import Popen, PIPE
 
@@ -520,7 +523,6 @@ def is_mpd_running():
         
     """
     name_of_the_vendor, version = MPI.get_vendor()
-    print version
     if name_of_the_vendor == 'MPICH2':
         if version == (1,3,2):
             return True
@@ -549,7 +551,9 @@ class MpiChannel(MessageChannel):
     
     def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
         MessageChannel.__init__(self, **options)
-               
+        
+        self.ensure_mpi_initialized()
+        
         self.name_of_the_worker = name_of_the_worker
                 
         if not legacy_interface_type is None:
@@ -575,6 +579,22 @@ class MpiChannel(MessageChannel):
         self._is_inuse = False
         self._communicated_splitted_message = False
     
+    
+    def ensure_mpi_initialized(self):
+        if not MPI.Is_initialized():
+            MPI.Init()
+            atexit.register(self.finialize_mpi_atexit)
+            
+    def finialize_mpi_atexit(self):
+        if not MPI.Is_initialized():
+            return
+        if MPI.Is_finalized():
+            return
+        try:
+            MPI.Finalize()
+        except MPI.Exception as ex:
+            return
+        
     @option(type="boolean")
     def check_mpi(self):
         return True
@@ -639,6 +659,11 @@ class MpiChannel(MessageChannel):
         fd_stdin = None
         fd_stdout = None
         fd_stderr = None
+        
+        self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
+    
+    
+    def spawn_old(self):
         if must_close_std_streams:
             fd_stdin = os.dup(0)
             zero = open('/dev/null','r')
@@ -653,6 +678,7 @@ class MpiChannel(MessageChannel):
                 os.dup2(zero.fileno(), 2)
         try:
             self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
+            
         finally: 
             if must_close_std_streams:
                 os.dup2(fd_stdin, 0)
