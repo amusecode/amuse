@@ -777,6 +777,15 @@ class Hop(InCodeComponentImplementation):
         )
 
         object.add_method_parameter(
+            "get_density_method", 
+            "set_density_method",
+            "density_method", 
+            "method used for density computation (0,1,2 = gather-scatter spline, gather spline, tophat)", 
+            default_value = 0 | units.none
+        )
+
+
+        object.add_method_parameter(
             "get_nDens", 
             "set_nDens",
             "number_of_neighbors_for_local_density", 

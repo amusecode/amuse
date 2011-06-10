@@ -397,6 +397,42 @@ def get_binaries(particles,hardness=10,G = constants.G):
 
     return binaries
 
+def densitycentre_coreradius_coredens(parts):
+    """
+    calculate position of the density centre, coreradius and coredensity
+
+    >>> import numpy
+    >>> from amuse.ext.plummer import MakePlummerModel
+    >>> numpy.random.seed(1234)
+    >>> parts=MakePlummerModel(100).result
+    >>> pos,coreradius,coredens=parts.densitycentre_coreradius_coredens()
+    >>> print coreradius
+    0.286582946447 length
+    """
+
+    from amuse.community.hop.interface import Hop
+    hop=Hop()
+    hop.particles.add_particles(parts)
+    hop.parameters.density_method=2
+    hop.parameters.number_of_neighbors_for_local_density=7
+    hop.calculate_densities()
+
+    dens=hop.particles.density
+    x=hop.particles.x
+    y=hop.particles.y
+    z=hop.particles.z
+    rho=dens.amax()
+
+    tdens=numpy.sum(dens)
+    x_core=numpy.sum(dens*x)/tdens
+    y_core=numpy.sum(dens*y)/tdens
+    z_core=numpy.sum(dens*z)/tdens
+
+    rc=numpy.sqrt(
+        numpy.sum(dens**2*((x-x_core)**2+(y-y_core)**2+(z-z_core)**2))/numpy.sum(dens**2))
+    return [x_core,y_core,z_core],rc,rho
+
+
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
@@ -419,3 +455,4 @@ AbstractParticleSet.add_global_function_attribute("scale_to_standard", scale_to_
 
 AbstractParticleSet.add_global_function_attribute("binaries", get_binaries)
 
+AbstractParticleSet.add_global_function_attribute("densitycentre_coreradius_coredens", densitycentre_coreradius_coredens)
