@@ -18,7 +18,7 @@ all:    sse_worker
 
 clean:
 	rm -f *~ *.so *.o src/*.o src/sse worker_code worker_code.f90
-	rm -f sse_worker sse_worker_sockets
+	rm -f sse_worker sse_worker_sockets worker_code-sockets.f90
 
 sse_worker:	worker_code.f90  SSE_muse_interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN)
@@ -31,6 +31,9 @@ sse_worker_sockets: worker_code-sockets.f90  SSE_muse_interface.o  $(OBJ)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py SSEInterface -o $@
+	
+worker_code-sockets.f90: interface.py
+	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py SSEInterface -o $@
 
 .f.o: $<                                                                 
 	$(FORTRAN) -c $(FFLAGS) -o $@ $< 
