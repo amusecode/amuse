@@ -591,9 +591,14 @@ class CodeInterface(OptionalAttributes):
         
         self.channel.start()
         self.instances.append(weakref.ref(self))
-        if not 'debugger' in options:
-            self._redirect_outputs(*self.redirection_filenames)
-        
+        #
+        #ave: no more redirection in the code
+        #1) does not seem to work in fortran correctly
+        #2) seems to break on hydra
+        #
+        #if not 'debugger' in options:
+        #    self._redirect_outputs(*self.redirection_filenames)
+        #
     def __del__(self):
         self._stop()
     
