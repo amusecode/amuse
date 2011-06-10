@@ -187,6 +187,7 @@ def make_file(settings):
         ('c','stub'): create_c.GenerateACStubStringFromASpecificationClass,    
         ('f90','stub'): create_fortran.GenerateAFortranStubStringFromASpecificationClass,
         ('c','sockets'): create_c_sockets.GenerateACSourcecodeStringFromASpecificationClass,    
+        ('f90','sockets'): create_fortran_sockets.GenerateAFortranSourcecodeStringFromASpecificationClass,   
     }
     
     try:
@@ -232,6 +233,7 @@ if __name__ == '__main__':
     from amuse.support.codes import create_fortran
     from amuse.support.codes import create_dir
     from amuse.support.codes import create_c_sockets
+    from amuse.support.codes import create_fortran_sockets
     
     uc = ParseCommandLine()
     uc.start()
