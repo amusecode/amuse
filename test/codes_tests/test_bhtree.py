@@ -144,7 +144,7 @@ class TestBHTreeInterface(TestWithMPI):
 
 
     def test7(self):
-        interface = BHTreeInterface(channel_type="remote") #, debugger="xterm")
+        interface = BHTreeInterface()#channel_type="remote") #, debugger="xterm")
         interface.initialize_code()
         
         interface.commit_parameters()

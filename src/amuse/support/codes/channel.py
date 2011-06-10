@@ -520,7 +520,10 @@ def is_mpd_running():
         
     """
     name_of_the_vendor, version = MPI.get_vendor()
+    print version
     if name_of_the_vendor == 'MPICH2':
+        if version == (1,3,2):
+            return True
         try:
             process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)
             (output_string, error_string) = process.communicate()

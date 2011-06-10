@@ -625,7 +625,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(int_out, 3935559000370003845)
         self.assertEquals(error, 0)
         
-    def test20(self):
+    def xtest20(self):
         
         #
         # TURNED OFF support for redirection,

@@ -81,9 +81,9 @@ class InstallPrerequisites(object):
           (
             'mpich2', 
             [], 
-            '1.3.1', 
+            '1.3.2p1', 
             'mpich2-', '.tar.gz', 
-            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.1/', 
+            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.2p1/', 
             self.mpich2_build
           ) ,
           (
@@ -233,7 +233,7 @@ class InstallPrerequisites(object):
           #'--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
-            command.append('--with-pm=hydra')
+            command.append('--with-pm=hydra:mpd:gforker')
         else:
             command.append('--with-pm=mpd')
         if not self.fortran90_compiler is None:
@@ -482,7 +482,7 @@ setenv F77 gfortran
             do.append(x)
             flag = True
         else:
-            if x = '--hydra':
+            if x == '--hydra':
                 INSTALL.use_hydra_process_manager = True
             if flag:
                 if x.startswith('no-'):
