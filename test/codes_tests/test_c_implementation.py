@@ -626,6 +626,12 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error, 0)
         
     def test20(self):
+        
+        #
+        # TURNED OFF support for redirection,
+        # by default output is redirected to /dev/null
+        # if you need file, use the support from your mpi implementation
+        #
         if os.path.exists("pout.000"):
             os.remove("pout.000")
         if os.path.exists("perr.000"):

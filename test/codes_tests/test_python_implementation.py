@@ -450,7 +450,12 @@ class TestInterface(TestWithMPI):
         self.assertTrue(list(strings2) == ['desserts' for i in range(N)])
         x.stop()
         
-    def test20(self):
+    def xtest20(self):
+        #
+        # TURNED OFF support for redirection,
+        # by default output is redirected to /dev/null
+        # if you need file, use the support from your mpi implementation
+        #
         if os.path.exists("pout.000"):
             os.remove("pout.000")
         if os.path.exists("perr.000"):
