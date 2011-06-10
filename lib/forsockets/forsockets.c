@@ -51,19 +51,19 @@ void forsockets_receive(void *buffer, int32_t length, int32_t file_descriptor) {
 
 //public functions
 
-int32_t forsockets_receive_ints(int32_t *ints, int32_t length) {
-	forsockets_receive((void *) ints, length * sizeof(int32_t), socketfd);
+void forsockets_receive_integers(int32_t *integers, int32_t length) {
+	forsockets_receive((void *) integers, length * sizeof(int32_t), socketfd);
 }
 
-int32_t forsockets_receive_longs(int64_t *longs, int32_t length) {
+void forsockets_receive_longs(int64_t *longs, int32_t length) {
 	forsockets_receive((void *) longs, length * sizeof(int64_t), socketfd);
 }
 
-int32_t forsockets_receive_floats(float *floats, int32_t length) {
+void forsockets_receive_floats(float *floats, int32_t length) {
 	forsockets_receive((void *) floats, length * sizeof(float), socketfd);
 }
 
-int32_t forsockets_receive_doubles(double *doubles, int32_t length) {
+void forsockets_receive_doubles(double *doubles, int32_t length) {
 //	int i;
 //	double array[100];
 //	forsockets_receive((void *) array, length * sizeof(double), socketfd);
@@ -77,47 +77,46 @@ int32_t forsockets_receive_doubles(double *doubles, int32_t length) {
 	forsockets_receive((void *) doubles, length * sizeof(double), socketfd);
 }
 
-int32_t forsockets_receive_booleans(bool *booleans, int32_t length) {
+void forsockets_receive_booleans(bool *booleans, int32_t length) {
 	forsockets_receive((void *) booleans, length * sizeof(bool), socketfd);
 }
 
-int32_t forsockets_receive_string(char *string, int32_t length) {
+void forsockets_receive_string(char *string, int32_t length) {
 	forsockets_receive((void *) string, length * sizeof(char), socketfd);
 }
 
-int32_t forsockets_send_ints(int32_t *ints, int32_t length) {
-	forsockets_send((void *) ints, length * sizeof(int32_t), socketfd);
+void forsockets_send_integers(int32_t *integers, int32_t length) {
+	forsockets_send((void *) integers, length * sizeof(int32_t), socketfd);
 }
 
-int32_t forsockets_send_longs(int64_t *longs, int32_t length) {
+void forsockets_send_longs(int64_t *longs, int32_t length) {
 	forsockets_send((void *) longs, length * sizeof(int64_t), socketfd);
 }
 
-int32_t forsockets_send_floats(float *floats, int32_t length) {
+void forsockets_send_floats(float *floats, int32_t length) {
 	forsockets_send((void *) floats, length * sizeof(float), socketfd);
 }
 
-int32_t forsockets_send_doubles(double *doubles, int32_t length) {
+void forsockets_send_doubles(double *doubles, int32_t length) {
 	forsockets_send((void *) doubles, length * sizeof(double), socketfd);
 }
 
-int32_t forsockets_send_booleans(bool *booleans, int32_t length) {
+void forsockets_send_booleans(bool *booleans, int32_t length) {
 	forsockets_send((void *) booleans, length * sizeof(bool), socketfd);
 }
 
-int32_t forsockets_send_string(char *string, int32_t length) {
+void forsockets_send_string(char *string, int32_t length) {
 	forsockets_send((void *) string, length * sizeof(char), socketfd);
 }
 
-
-int32_t forsockets_init(int32_t port) {
+void forsockets_init(int32_t port) {
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
 
-	fprintf(stderr, "initializing forsockets\n");
-
-	fprintf(stderr, "sizeof float = %u\n", sizeof(float));
-	fprintf(stderr, "sizeof double = %u\n", sizeof(double));
+//	fprintf(stderr, "initializing forsockets\n");
+//
+//	fprintf(stderr, "sizeof float = %u\n", sizeof(float));
+//	fprintf(stderr, "sizeof double = %u\n", sizeof(double));
 
 	socketfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -128,7 +127,7 @@ int32_t forsockets_init(int32_t port) {
 
 	server = gethostbyname("localhost");
 
-	fprintf(stderr, "connecting...\n");
+//	fprintf(stderr, "connecting...\n");
 
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
@@ -145,6 +144,6 @@ int32_t forsockets_init(int32_t port) {
 	fprintf(stderr, "finished initializing forsockets\n");
 }
 
-int32_t forsockets_close() {
+void forsockets_close() {
 	close(socketfd);
 }
