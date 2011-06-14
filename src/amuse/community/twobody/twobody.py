@@ -75,11 +75,35 @@ def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
         if(dfv==0):
             return x0,-2
         delta=-fv/dfv
+        if(abs(delta)<tol):
+            return x+delta,0
+        x=x+delta
+        i=i+1
+    return x,-1    
+
+def laguerre(f,x0,fprime=None,fprimeprime=None,args=(),order=4,tol=1.e-14,maxiter=50):
+    if fprime is None:
+        print "provide fprime"
+        return x0
+    if fprimeprime is None:
+        print "provide fprimeprime"
+        return x0
+    i=0
+    x=x0
+    while (i<maxiter):
+        fv=f(x,*args)
+        dfv=fprime(x,*args)
+        ddfv=fprimeprime(x,*args)
+        if(dfv==0 or ddfv==0):
+            return x0,-2            
+        delta=-order*fv/(dfv+math.sign(dfv)*
+          math.abs((order-1)**2*dfv**2-order*(order-1)*fv*ddfv)**0.5)
         if(abs(delta)<tol): 
             return x+delta,0
         x=x+delta
         i=i+1
     return x,-1    
+
 
 def universal_time_radius_solver(radius,mu,pos0,vel0,dt):
     r02=reduce(lambda x,y: x+ y**2,pos0,0)
@@ -120,7 +144,7 @@ def universal_time_radius_solver(radius,mu,pos0,vel0,dt):
 def collision(radius,mu,pos0,vel0,dt):
     return universal_time_radius_solver(radius,mu,pos0,vel0,dt)
 
-def universal_solver(mu,pos0,vel0,dt):
+def universal_solver_newton(mu,pos0,vel0,dt):
     smu=math.sqrt(mu)
     
     r0=math.sqrt(reduce(lambda x,y: x+ y**2,pos0,0))
@@ -146,7 +170,43 @@ def universal_solver(mu,pos0,vel0,dt):
         return universal_kepler_dxi(xi,r0,vr0,smu,alpha)
     
     xi,err=newton(f,xi0,fprime=df,tol=1.e-10)    
-#  print dt,xi,xi0,alpha*dxi0**2,dxi0
+#    print dt,xi,xi0
+    
+    pos=pos0*lagrange_f(xi,r0,vr0,smu,alpha)+vel0*lagrange_g(xi,r0,vr0,smu,alpha)
+    r=math.sqrt(reduce(lambda x,y: x+ y**2,pos,0))
+    vel=pos0*smu/r*lagrange_dfdxi(xi,r0,vr0,smu,alpha)+ \
+        vel0*smu/r*lagrange_dgdxi(xi,r0,vr0,smu,alpha)
+    return pos,vel
+
+
+def universal_solver(mu,pos0,vel0,dt):
+    smu=math.sqrt(mu)
+    
+    r0=math.sqrt(reduce(lambda x,y: x+ y**2,pos0,0))
+    v0=math.sqrt(reduce(lambda x,y: x+ y**2,vel0,0))
+    vr0=(reduce(lambda x,y: x+y, pos0*vel0,0))/r0
+    alpha=2./r0-v0**2/mu
+      
+    if(alpha >= 0):
+        xi0=smu*alpha*dt
+    else:
+        xi0=math.sign(dt)/math.sqrt(-alpha)*math.log(1-2*mu*dt*alpha/((vr0*r0)+  
+         math.sign(dt)*smu/math.sqrt(-alpha)*(1-r0*alpha)) )
+# this last formula is 4.5.11 in bate et al., fundamentals of astrodynamics 
+# with +1 in the logarithm
+        dxi0=smu/r0*dt
+        if(abs(alpha*dxi0**2)<1):
+            xi0=dxi0
+
+    def f(xi):
+        return universal_kepler(xi,r0,vr0,smu,alpha)-smu*dt
+    def df(xi):
+        return universal_kepler_dxi(xi,r0,vr0,smu,alpha)
+    def ddf(xi):
+        return universal_kepler_dxidxi(xi,r0,vr0,smu,alpha)
+    
+    xi,err=laguerre(f,xi0,fprime=df,fprimeprime=ddf)    
+#    print dt,xi,xi0
     
     pos=pos0*lagrange_f(xi,r0,vr0,smu,alpha)+vel0*lagrange_g(xi,r0,vr0,smu,alpha)
     r=math.sqrt(reduce(lambda x,y: x+ y**2,pos,0))
