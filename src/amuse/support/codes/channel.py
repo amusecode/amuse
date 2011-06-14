@@ -25,6 +25,7 @@ from subprocess import Popen, PIPE
 from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
+from amuse.support.codes import run_command_redirected
 
 class ASyncRequest(object):
         
@@ -421,30 +422,11 @@ class MessageChannel(OptionalAttributes):
         
 
     @classmethod
-    def SAVE(cls, full_name_of_the_worker):
-        code = """from mpi4py import rc
-rc.initialize = False
-from mpi4py import MPI
-from subprocess import call
-import sys
-import time
-import signal
-
-def sighandler(s, frame):
-    print "SIGNAL",s
-
-signal.signal(signal.SIGINT, sighandler)
-returncode = call(sys.argv[1:])
-p = MPI.Comm.Get_parent()
-p.Disconnect()"""
-        fd, name = tempfile.mkstemp()
-        with os.fdopen(fd, 'w') as f:
-            f.write(code)
+    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname):
         
-        arguments = [name , full_name_of_the_worker]
-        #arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', sys.executable, '-c', code, full_name_of_the_worker]
+        fname = run_command_redirected.__file__                
+        arguments = [fname , stdoutname, stderrname, full_name_of_the_worker]
         command = sys.executable
-        #command = 'xterm'
         
         return command, arguments
         
@@ -493,7 +475,6 @@ MessageChannel.DEBUGGERS = {
     "ddd":MessageChannel.DDD, 
     "xterm":MessageChannel.XTERM,
     "valgrind":MessageChannel.VALGRIND,
-    "save": MessageChannel.SAVE,
 }
 
 #import time
@@ -582,7 +563,10 @@ class MpiChannel(MessageChannel):
     
     def ensure_mpi_initialized(self):
         if not MPI.Is_initialized():
-            MPI.Init()
+            if rc.threaded:
+                MPI.Init_thread()
+            else:
+                MPI.Init()
             atexit.register(self.finialize_mpi_atexit)
             
     def finialize_mpi_atexit(self):
@@ -641,29 +625,24 @@ class MpiChannel(MessageChannel):
     def start(self):
         
         must_close_std_streams = True
-        if self.debug_with_gdb or (not self.debugger_method is None):
-            if not 'DISPLAY' in os.environ:
+        if not self.debugger_method is None:
+            command, arguments = self.debugger_method(self.full_name_of_the_worker)
+        else:
+            if self.redirect_stdout_file is 'none' and self.redirect_stderr_file is 'none':
                 arguments = None
                 command = self.full_name_of_the_worker
             else:
-                must_close_std_streams = False
-                if self.debugger is None:
-                    command, arguments = self.GDB(self.full_name_of_the_worker)
-                else:
-                    command, arguments = self.debugger_method(self.full_name_of_the_worker)
-        else:
-            arguments = None
-            command = self.full_name_of_the_worker
-        
+                command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file)
+                
 
-        fd_stdin = None
-        fd_stdout = None
-        fd_stderr = None
-        
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
     
     
     def spawn_old(self):
+        fd_stdin = None
+        fd_stdout = None
+        fd_stderr = None
+        
         if must_close_std_streams:
             fd_stdin = os.dup(0)
             zero = open('/dev/null','r')
