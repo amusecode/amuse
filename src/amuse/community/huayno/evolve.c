@@ -9,10 +9,10 @@
 
 #define RVTIMESTEP
 #define RATIMESTEP
-#define RARVRATIO   1.
+#define RARVRATIO   0.25
 
 #define MPWORKLIMIT 100
-#define CLWORKLIMIT 100
+#define CLWORKLIMIT 10000
 
 #define MAXLEVEL  64
 
@@ -143,6 +143,28 @@ void evolve_split_bridge(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, in
   if(fast.n>0) evolve_split_bridge(fast, stime, stime+dt/2, dt/2,0); /* note calc_timestep? */
   if(slow.n>0) kdk(slow,zerosys, stime, etime, dt);
   if(fast.n>0) evolve_split_bridge(fast, stime+dt/2, etime, dt/2,1);
+  if(slow.n>0 && fast.n>0) kick(slow, fast, dt/2);
+  if(slow.n>0 && fast.n>0) kick(fast, slow, dt/2);
+  clevel--;
+}
+
+void evolve_split_bridge_dkd(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
+{
+  struct sys slow=zerosys,fast=zerosys;
+  clevel++;
+  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) endrun((char *)"timestep too small");
+  if(calc_timestep) timestep(s,s);
+  split((FLOAT) dt, s, &slow, &fast);
+  if(fast.n==0) 
+  {
+    deepsteps++;
+    simtime+=dt;
+  }  
+  if(slow.n>0 && fast.n>0) kick(slow, fast, dt/2);
+  if(slow.n>0 && fast.n>0) kick(fast, slow, dt/2);
+  if(fast.n>0) evolve_split_bridge_dkd(fast, stime, stime+dt/2, dt/2,0); /* note calc_timestep? */
+  if(slow.n>0) dkd(slow,zerosys, stime, etime, dt);
+  if(fast.n>0) evolve_split_bridge_dkd(fast, stime+dt/2, etime, dt/2,1);
   if(slow.n>0 && fast.n>0) kick(slow, fast, dt/2);
   if(slow.n>0 && fast.n>0) kick(fast, slow, dt/2);
   clevel--;
@@ -317,6 +339,9 @@ void do_evolve(struct sys s, double dt, int inttype)
       break;
     case PPASS_DKD:
       evolve_split_ppass_dkd(s, zerosys, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      break;
+    case BRIDGE_DKD:
+      evolve_split_bridge_dkd(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     default:  
       endrun((char*)" unknown integrator\n");

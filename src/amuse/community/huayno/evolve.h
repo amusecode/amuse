@@ -1,4 +1,4 @@
-#define FLOAT  double
+#define FLOAT double
 #define CLFLOAT cl_double
 #define CLFLOAT4 cl_double4
 #define DOUBLE long double
@@ -38,16 +38,17 @@ struct sys
 
 enum intopt
 {
-  CONSTANT,
-  UNSPLIT,
-  PASS,
-  HOLD,
-  BRIDGE,
-  NAIVE,
-  VARIABLE,
-  PASS_DKD,
-  HOLD_DKD,
-  PPASS_DKD
+  CONSTANT,  // 0
+  UNSPLIT,   // 1
+  PASS,      // 2
+  HOLD,      // 3
+  BRIDGE,    // 4
+  NAIVE,     // 5
+  VARIABLE,  // 6
+  PASS_DKD,  // 7
+  HOLD_DKD,  // 8
+  PPASS_DKD, // 9
+  BRIDGE_DKD // 10
 };
 
 extern FLOAT eps2;

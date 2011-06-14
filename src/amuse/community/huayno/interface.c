@@ -79,6 +79,7 @@ int delete_particle(int id)
   if(p < 0 || p>mainsys.n) return -1;
   pindex[id]=-1;
   mainsys.n--;
+  mainsys.last--;
   if(mainsys.n==0) return 0;
   mainsys.part[p]=mainsys.part[mainsys.n];
   pindex[mainsys.part[p].id]=p;

@@ -1,6 +1,6 @@
-#define CLCONTEXT   stdcpu
-#define NTHREAD  4
-#define BLOCKSIZE 64
+#define CLCONTEXT   stdgpu
+#define NTHREAD  128
+#define BLOCKSIZE 128
 
 void init_cl();
 void close_cl();
