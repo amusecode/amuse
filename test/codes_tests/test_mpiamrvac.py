@@ -473,7 +473,7 @@ class TestMpiAmrVac(TestWithMPI):
         self.assertEquals(instance.parameters.predictor_step_discretization_method , 'hancock' | units.string)
         
     def test7(self):
-        instance=self.new_instance(MpiAmrVac, debugger="none")
+        instance=self.new_instance(MpiAmrVac)
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.initialize_code()
         instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
@@ -591,7 +591,7 @@ class TestMpiAmrVac(TestWithMPI):
         
     
     def test9(self):
-        instance=self.new_instance(MpiAmrVac, mode="2d", debugger="none")
+        instance=self.new_instance(MpiAmrVac, mode="2d")
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.initialize_code()
         instance.parameters.mesh_length = (10.0,10.0, 1) | generic_unit_system.length

@@ -29,6 +29,7 @@ class TestBHTreeInterface(TestWithMPI):
     def test0(self):
         instance = BHTreeInterface()
         self.assertTrue("Barnes" in instance.all_literature_references_string())
+        instance.stop()
         
     def test1(self):
         instance = BHTreeInterface()
