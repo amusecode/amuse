@@ -431,7 +431,7 @@ class MessageChannel(OptionalAttributes):
         return command, arguments
     
     @classmethod
-    def NODEBUGGER(cls, full_name_of_the_worker, stdoutname, stderrname):
+    def NODEBUGGER(cls, full_name_of_the_worker):
         return full_name_of_the_worker, []
     
         
@@ -473,7 +473,7 @@ class MessageChannel(OptionalAttributes):
         return True
  
 MessageChannel.DEBUGGERS = {
-    "none":MessageChannel.NODEBUGGER,
+    "none":None,
     "gdb":MessageChannel.GDB, 
     "ddd":MessageChannel.DDD, 
     "xterm":MessageChannel.XTERM,
