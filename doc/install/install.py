@@ -49,7 +49,7 @@ class InstallPrerequisites(object):
           (
             'nose', 
             [], 
-            '0.11.2', 
+            '1.0.0', 
             'nose-' , '.tar.gz', 
             'http://somethingaboutorange.com/mrl/projects/nose/', 
             self.python_build
@@ -235,7 +235,7 @@ class InstallPrerequisites(object):
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
         else:
-            command.append('--with-pm=mpd')
+            command.append('--with-pm=mpd:hydra')
         if not self.fortran90_compiler is None:
             command.append('FC=' + self.fortran90_compiler)
         
