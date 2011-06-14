@@ -11,6 +11,7 @@ class GlobalOptions(object):
     
     def __init__(self):
         self.config=ConfigParser.RawConfigParser()
+        self.overriden_options = {}
     
     def load(self):
         if not self.rcfilepath is None:
@@ -73,6 +74,9 @@ class GlobalOptions(object):
         return cls.INSTANCE
         
     def get_value_for_option(self, option, instance):
+        if option.name in self.overriden_options:
+            return self.overriden_options[option.name]
+            
         for x in option.get_sections(instance):
             if self.config.has_option(x, option.name):
                 return option.get_value(instance, x, self.config)
@@ -85,6 +89,9 @@ class GlobalOptions(object):
         return file.getvalue()
     
     
+    def override_value_for_option(self, name, value):
+        self.overriden_options[name] = value
+        
 
     def read_from_ini_string(self, string):
         file = StringIO(string)
@@ -258,9 +265,6 @@ class OptionalAttributes(object):
     @late
     def _local_options(self):
         return {}
-    
-
-    
 
     def iter_options(self):
         cls = type(self)
