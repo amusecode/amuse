@@ -1051,7 +1051,7 @@ class IbisMessage(AbstractMessage):
         else:
             self.error = False
         
-        header = numpy.frombuffer(header_bytes, dtype="i", offset=4)
+        header = numpy.copy(numpy.frombuffer(header_bytes, dtype="i", offset=4))
         
         logging.getLogger("ibis").debug("receiving message with flags %s and header %s", flags, header)
 
@@ -1087,7 +1087,7 @@ class IbisMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype='i')
+            result = numpy.copy(numpy.frombuffer(bytes, dtype='i'))
             
             return result
         else:
@@ -1099,7 +1099,7 @@ class IbisMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype='l')
+            result = numpy.copy(numpy.frombuffer(bytes, dtype='l'))
             
             return result
         else:
@@ -1112,7 +1112,7 @@ class IbisMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype='f4')
+            result = numpy.copy(numpy.frombuffer(bytes, dtype='f4'))
             
             return result
         else:
@@ -1125,7 +1125,7 @@ class IbisMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype='f8')
+            result = numpy.copy(numpy.frombuffer(bytes, dtype='f8'))
             
             return result
         else:
@@ -1138,7 +1138,7 @@ class IbisMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype='b')
+            result = numpy.copy(numpy.frombuffer(bytes, dtype='b'))
             
             return result
         else:

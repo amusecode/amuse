@@ -180,6 +180,15 @@ integer (c_int32_t) function internal__redirect_outputs(stdoutfile, stderrfile)
 end function
 """
 
+redirect_outputs_interface_code = """
+  interface
+    integer (c_int32_t) function internal__redirect_outputs(stdoutfile, stderrfile)
+        use iso_c_binding
+        character(kind=c_char, len = *) , intent(in) :: stdoutfile, stderrfile
+    end function
+  end interface
+"""
+
 main_program_code = """
   program amuse_worker
     use iso_c_binding
@@ -238,9 +247,19 @@ string_receive_code = """
 """
 
 string_send_code = """
- print*, 'error! cannot send strings'
- call flush()
+      !figure out length of all strings
+      do i = 1, header_out(HEADER_STRING_COUNT), 1
+          strings_out(i) = len_trim(characters_out(i))
+      end do
 
+      !send string header
+      call send_integers(c_loc(strings_out), header_out(HEADER_STRING_COUNT))
+
+      do i = 1, header_out(HEADER_STRING_COUNT), 1
+          print*, 'sending string', characters_out(i)
+          call flush()
+          call send_string(c_loc(characters_out(i)), strings_out(i))
+      end do     
 """                
 
         
@@ -278,15 +297,18 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
          
         self.output_casestmt_start()
         self.out.indent()
+
+        self.output_lines_with_number_of_outputs()
         
-#        self.output_lines_before_with_clear_out_variables()
+        self.output_lines_before_with_clear_out_variables()
 #        self.output_lines_before_with_clear_input_variables()
-        
+
         if self.specification.must_handle_array:
             pass
         elif self.specification.can_handle_array:
             self.out.lf() + 'do i = 1, length, 1'
             self.out.indent()
+            
         
 #        self.output_lines_before_with_inout_variables()
         self.output_function_start()
@@ -307,7 +329,7 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
             self.out.dedent()
             self.out.lf() + 'end do'
             
-        self.output_lines_with_number_of_outputs()
+
         self.output_casestmt_end()
         self.out.dedent()
         self._result = self.out.string
@@ -335,15 +357,15 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
                     self.out + '(' + self.index_string(parameter.input_index) + ')'
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if parameter.datatype == 'string':
-                    self.out.n() + 'characters_in'
-                    self.out + '(' + self.index_string(parameter.input_index) + ', :)'      
+                    self.out.n() + 'trim(characters_in'
+                    self.out + '(' + self.index_string(parameter.input_index) + '))'      
                 else:
                     self.out.n() + spec.input_var_name 
                     self.out + '(' + self.index_string(parameter.input_index) + ')'
             elif parameter.direction == LegacyFunctionSpecification.OUT:
                 if parameter.datatype == 'string':
                     self.out.n() + 'characters_out'
-                    self.out + '(' + self.index_string(parameter.input_index) + ', :)'      
+                    self.out + '(' + self.index_string(parameter.output_index) + ')'      
                 else:
                     self.out.n() + spec.output_var_name
                     self.out + '(' + self.index_string(parameter.output_index) + ')'
@@ -376,8 +398,10 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
             spec = self.dtype_to_spec[parameter.datatype]
             
             if parameter.is_output():
-                if parameter.datatype == 'string': 
-                    self.out.lf() + 'output_characters = "x"'  
+                if parameter.datatype == 'string':
+                    self.out.lf() + 'allocate(characters_out(header_out(HEADER_STRING_COUNT)))'
+                    self.out.lf() + "characters_out = ' '"  
+  
                     return
      
     def output_lines_before_with_clear_input_variables(self):
@@ -527,12 +551,12 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
    
     def start(self):
         self.output_forsockets_module()
+        self.output_redirect_output()
         self.output_runloop_function_def_start()
         self.output_switch_start()
         self.output_sourcecode_for_functions()
         self.output_switch_end()
         self.output_runloop_function_def_end()
-        self.output_redirect_output()
         self.output_main()
         self._result = self.out.string
 
@@ -590,6 +614,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf() + "implicit none"
         self.out.lf()
         self.output_mpi_include()
+        self.out.lf().lf()
+        self.out.lf().lf() + redirect_outputs_interface_code
         self.out.lf().lf()
         self.out.n() + 'integer (c_int32_t) :: max_length = 255, MAX_STRING_LENGTH = ' + self.MAX_STRING_LEN
         self.out.n() + 'logical :: must_run_loop, error'
@@ -708,6 +734,12 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
 #        self.out.indent().lf() + 'parent, ioerror);'
 #        self.out.dedent().lf()
         
+        self.out.lf().lf() + 'if (header_in(HEADER_STRING_COUNT) .gt. 0) then'
+        self.out.indent()
+        self.out.lf().lf() + 'deallocate(characters_in)'
+        self.out.dedent()
+        self.out.lf().lf() + 'end if'
+   
         self.out.lf().lf() + "!print*, 'sending header', header_out"
         self.out.lf().lf() + '!call flush()'
         self.out.lf().lf() + 'call send_integers(c_loc(header_out), HEADER_SIZE)'
@@ -718,22 +750,20 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
             
             self.out.lf() + 'if (header_out(' + spec.counter_name + ')'
             self.out + ' .gt. 0) then'
-    
-            self.out.indent().lf() + 'call send_'
-            self.out + spec.mpi_type + 's(c_loc('
-            self.out + spec.output_var_name + '), header_out('
-            self.out + spec.counter_name + '))'
+            
+            self.out.indent()
             
             if dtype == 'string':
                 self.out.lf() + string_send_code
-                self.out.lf().lf() + 'deallocate(characters_in)'
+                self.out.lf().lf() + 'deallocate(characters_out)'
+            else:
+                self.out.lf() + 'call send_'
+                self.out + spec.mpi_type + 's(c_loc('
+                self.out + spec.output_var_name + '), header_out('
+                self.out + spec.counter_name + '))'
                 
             self.out.dedent().lf() +'end if'
             self.out.lf()
-            
-
-            self.out.lf().lf() + '!deallocate(characters_out)'
-
         
         self.out.dedent()
         self.out.lf() + 'end do'
