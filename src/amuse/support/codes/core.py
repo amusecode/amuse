@@ -536,6 +536,7 @@ class LegacyFunctionSpecification(object):
     result_type = property(_get_result_type, _set_result_type);
 
 
+
 def stop_interfaces():
     """
     Stop the workers of all instantiated interfaces.
@@ -551,8 +552,6 @@ def stop_interfaces():
             except:
                 pass
 
-atexit.register(stop_interfaces)
-
 class CodeInterface(OptionalAttributes):
     """
     Abstract base class for all interfaces to legacy codes.
@@ -563,6 +562,7 @@ class CodeInterface(OptionalAttributes):
     of the instantiated object.
     """
     instances = []
+    is_stop_interfaces_registered = False
     
     def __init__(self, name_of_the_worker = 'worker_code', **options):
         """
@@ -599,9 +599,22 @@ class CodeInterface(OptionalAttributes):
         #if not 'debugger' in options:
         #    self._redirect_outputs(*self.redirection_filenames)
         #
+        
+        # must register stop interfaces after channel start
+        # if done before, the mpi atexit will be registered 
+        # incorrectly
+        self.ensure_stop_interface_at_exit()
+        
     def __del__(self):
         self._stop()
     
+    
+    @classmethod
+    def ensure_stop_interface_at_exit(cls):
+        if not cls.is_stop_interfaces_registered:
+            atexit.register(stop_interfaces)
+            cls.is_stop_interfaces_registered = True
+        
     def _stop(self):
         if hasattr(self, 'channel'):
             if not self.channel is None and self.channel.is_active():
