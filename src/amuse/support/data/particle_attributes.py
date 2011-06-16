@@ -430,8 +430,41 @@ def densitycentre_coreradius_coredens(parts):
 
     rc=numpy.sqrt(
         numpy.sum(dens**2*((x-x_core)**2+(y-y_core)**2+(z-z_core)**2))/numpy.sum(dens**2))
+    hop.stop()
     return [x_core,y_core,z_core],rc,rho
 
+def LagrangianRadii(stars,
+                       cm=None,
+                       mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1]
+                       ):
+    """
+    Calculate lagrangian radii. Output is radii, mass fraction 
+
+    >>> import numpy
+    >>> from amuse.ext.plummer import MakePlummerModel
+    >>> numpy.random.seed(1234)
+    >>> parts=MakePlummerModel(100).result
+    >>> lr,mf=parts.LagrangianRadii()
+    >>> print lr[5]
+    0.856966667972 length
+    """
+    import bisect
+    if cm is None:
+        cm,rcore,rhocore=stars.densitycentre_coreradius_coredens()
+    cmx,cmy,cmz=cm
+    r2=(stars.x-cmx)**2+(stars.y-cmy)**2+(stars.z-cmz)**2
+    a=numpy.argsort(r2.number)
+    rsorted=r2[a]**0.5
+    msorted=stars.mass[a].number
+    mcum=msorted.cumsum()
+    lr=cmx.unit([])
+    for f in mf:
+        i=bisect.bisect(mcum,mcum[-1]*f)
+        if i<=0:
+            lr.append(rsorted[0]/2.)
+        else:
+            lr.append(rsorted[i-1])
+    return lr,mf
 
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
@@ -456,3 +489,5 @@ AbstractParticleSet.add_global_function_attribute("scale_to_standard", scale_to_
 AbstractParticleSet.add_global_function_attribute("binaries", get_binaries)
 
 AbstractParticleSet.add_global_function_attribute("densitycentre_coreradius_coredens", densitycentre_coreradius_coredens)
+
+AbstractParticleSet.add_global_function_attribute("LagrangianRadii", LagrangianRadii)
