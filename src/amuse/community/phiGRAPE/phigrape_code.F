@@ -22,15 +22,21 @@
       IMPLICIT NONE
 #include "src/general.inc"
       INTEGER new_particle
-      INTEGER id
+      INTEGER id, newid, i
       DOUBLE PRECISION mm, rad, xx, yy, zz, vx, vy, vz
-
+    
+      newid = 1
+      DO i=1,NMAX
+         if(myind(i).LT.0) THEN
+            newid = i
+            exit
+         end if
+      ENDDO
       N = N + 1
-
-      id = N
-      ind(N)   = id
-      myid(N)  = N
-      myind(id)= N
+      id = newid
+      ind(N)   = newid
+      myid(N)  = newid
+      myind(newid)= N
       m(N)     = mm
       x(1,N)   = xx
       x(2,N)   = yy
@@ -334,26 +340,33 @@ C---  setting particle
       IMPLICIT NONE 
 #include "src/general.inc"
 C---  local vars
-      INTEGER          add_particle,id
+      INTEGER          add_particle,id, newid, i
       DOUBLE PRECISION mm,xx,yy,zz,vx,vy,vz,rad
       
-      IF (id.GT.NMAX) THEN
-         PRINT*, 'id is larger than NMAX which is not allowd!'
-         add_particle = -1
-         RETURN 
-      ENDIF
-      IF (myind(id).GE.0) THEN
-         PRINT*, 'a particle with this id exists already!'
-         add_particle = -1
-         RETURN 
-      ENDIF
-
+      !IF (id.GT.NMAX) THEN
+      !   PRINT*, 'id is larger than NMAX which is not allowd!'
+      !   add_particle = -1
+      !   RETURN 
+      !ENDIF
+      !IF (myind(id).GE.0) THEN
+      !   PRINT*, 'a particle with this id exists already!'
+      !   add_particle = -1
+      !   RETURN 
+      !ENDIF
+      newid = 1
+      DO i=1,NMAX
+         if(myind(i).LT.0) THEN
+            newid = i
+            exit
+         end if
+      ENDDO
+      
 C---  add a particle
       N = N + 1
 
-      ind(N)   = N
-      myid(N)  = id
-      myind(id)= N
+      ind(N)   = newid
+      myid(N)  = newid
+      myind(newid)= N
       m(N)     = mm
       x(1,N)   = xx
       x(2,N)   = yy
@@ -371,7 +384,7 @@ c      PRINT*, 'xyz  =',xx,yy,zz
 c      PRINT*, 'vxyz =',vx,vy,vz
 
 C---  done
-      add_particle = N
+      add_particle = newid
 
       RETURN
       END
@@ -948,6 +961,7 @@ C---  local vars
 
 C---  get array address
       ip = myind(id)
+      
       IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
          PRINT*, 'get_mass: No such particle exists!'
          get_mass = -1

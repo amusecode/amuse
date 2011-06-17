@@ -849,6 +849,8 @@ int cleanup_code()
     return 0;
 }
 
+static int max_identifier = 0;
+
 int new_particle(int *id, double _mass, double _radius,
                  double x, double y, double z,
                  double vx, double vy, double vz)
@@ -866,7 +868,7 @@ int new_particle(int *id, double _mass, double _radius,
   // Always add to the end of the list.
   // Allways at the end anyway
 
-  new_element = ident.size();
+  new_element = max_identifier++;
 
   ident.push_back(new_element);                // generally want to specify id
   mass.push_back(_mass);
