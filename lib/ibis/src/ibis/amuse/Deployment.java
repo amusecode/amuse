@@ -119,7 +119,7 @@ public class Deployment {
                 "--code-dir", codeDir);
 
         Job result = deploy.submitJob(jobDescription, application, cluster,
-                null, null, true);
+                null, null);
 
         result.waitUntilDeployed();
 
