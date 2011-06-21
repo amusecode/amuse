@@ -128,6 +128,7 @@ class SmallNInterface(CodeInterface):
             verbose_int = 100
         end_time = self.integrate_multiple(self.time, verbose_int, self.eps2)
         self.time = end_time
+        return 0
 
     def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
         return self.add_to_interaction(mass, x, y, z, vx, vy, vz)
@@ -171,6 +172,9 @@ class SmallNInterface(CodeInterface):
         pass
         
     def commit_particles(self):
+        pass
+       
+    def synchronize_model(self):
         pass
        
         
