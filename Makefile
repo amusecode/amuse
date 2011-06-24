@@ -1,6 +1,7 @@
 -include config.mk
 
 PYTHON ?= python2.6
+VERSION ?= undefined
 
 export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
@@ -51,6 +52,12 @@ ctags:
 release: distclean
 	make -C doc release
 	python setup.py sdist
+
+nightly:
+	make -C doc release
+	sed 's/version = .*/version = "$(VERSION)",/' < setup.py > nightlysetup.py
+	python nightlysetup.py sdist
+	rm -f nightlysetup.py
 
 debian:
 	$(PYTHON) ./support/debian.py
