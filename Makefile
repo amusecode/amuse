@@ -56,9 +56,11 @@ release: distclean
 nightly:
 	make -C doc release
 	sed 's/version = .*/version = "$(VERSION)",/' < setup.py > nightlysetup.py
-	python nightlysetup.py sdist
-	rm -f nightlysetup.py
-
+	cp setup.py setup.py.bck
+	mv nightlysetup.py setup.py 
+	python setup.py sdist
+	cp setup.py.bck setup.py
+	
 debian:
 	$(PYTHON) ./support/debian.py
 
