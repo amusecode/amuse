@@ -10,6 +10,9 @@ recursive-include test *
 recursive-include lib *
 recursive-include data *
 recursive-include support *.py
+recursive-include examples *.py
+recursive-include examples *.txt
+
 
 recursive-include doc/install *.* 
 recursive-include doc/tutorial *.*
