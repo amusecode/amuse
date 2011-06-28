@@ -416,6 +416,26 @@ static inline int is_on_grid(GridS * grid, int i0, int j0, int k0)
         return 1;
     }
 }
+
+static inline int is_on_magnetic_grid(GridS * grid, int i0, int j0, int k0)
+{
+    if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0] + 1)))
+    {
+        return 0;
+    }
+    else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1] + 1)))
+    {
+        return 0;
+    }
+    else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2] + 1)))
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
 static inline int ijk_on_grid(GridS * grid, int * i0, int * j0, int * k0)
 {
     *i0 -= grid->Disp[0] - grid->is;
@@ -1934,7 +1954,7 @@ int get_grid_magnetic_field(
         {
             GridS * grid = dom->Grid;
            
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_magnetic_grid(grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
 
@@ -2009,7 +2029,7 @@ int set_grid_magnetic_field(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_magnetic_grid(grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
 

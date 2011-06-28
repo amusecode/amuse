@@ -12,6 +12,7 @@ LDFLAGS  += -ldl -lm
 
 AMUSE_OBJS = interface_$(VERSION).o
 AMUSE_OBJS_SELFGRAV = interface_$(VERSION).selfgrav_o
+AMUSE_OBJS_MHD = interface_$(VERSION).mhd_o
 
 CODELIB = $(ATHENA_DIR)/bin/libathena.a
 
@@ -70,7 +71,7 @@ distclean: clean
 	$(RM) -Rf src
 
 $(CODELIB): $(ATHENA_DIR) 
-	cd $(ATHENA_DIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld
+	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr 
 	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
 	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
 	rm -f $(CODELIB)
@@ -105,6 +106,27 @@ athena_worker_selfgrav: worker_code.cc worker_code.h interface_$(VERSION).c
 	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr
 	cd $(ATHENA_DIR); make clean
 	$(RM) -f $(CODELIB)
+	
+
+athena_worker_mhd: worker_code.cc worker_code.h interface_$(VERSION).c
+	cd $(ATHENA_DIR); make clean
+	$(RM) -f $(CODELIB)
+	cd $(ATHENA_DIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld
+	
+	$(CC) $(CXXFLAGS) $(SCINC) -c -o $(AMUSE_OBJS_MHD) interface_$(VERSION).c
+	
+	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
+	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	$(RM) -f $(CODELIB)
+	
+	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(CODELIB) $(AMUSE_OBJS_MHD) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS) $(FFTWLIB)
+	$(RM) -f $(CODELIB)
+	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr
+	cd $(ATHENA_DIR); make clean
+	$(RM) -f $(CODELIB)
+	
+
 	
 .c.o: $<
 	$(CC) $(CXXFLAGS) $(SCINC) -c -o $@ $< 

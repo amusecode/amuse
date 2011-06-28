@@ -45,6 +45,7 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
     
     MODE_NORMAL = 'normal'
     MODE_SELF_GRAVITY   = 'self-gravity'
+    MODE_MHD   = 'mhd'
     
     def __init__(self, mode = MODE_NORMAL, **options):
         
@@ -58,6 +59,8 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
             return 'athena_worker'
         elif mode == self.MODE_SELF_GRAVITY:
             return 'athena_worker_selfgrav'
+        elif mode == self.MODE_MHD:
+            return 'athena_worker_mhd'
         else:
             return 'athena_worker'
         
@@ -165,6 +168,13 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         #print index_of_grid, "  ===  > ", (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
         
         return (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
+
+    def get_index_range_magnetic_field_inclusive(self, index_of_grid = 1):
+        original = list(self.get_index_range_inclusive(index_of_grid))
+        original[1] += 1
+        original[3] += 1
+        original[5] += 1
+        return original
         
     def get_mesh_indices(self):
         """
@@ -637,12 +647,21 @@ class Athena(InCodeComponentImplementation):
         definition.add_getter('get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
         definition.add_getter('get_grid_energy_density', names=('energy',))
         
-        definition.add_getter('get_grid_magnetic_field', names=('B1i','B2i','B3i'))   
-        definition.add_setter('set_grid_magnetic_field', names=('B1i','B2i','B3i'))
         
         definition.add_getter('get_grid_gravitational_potential', names=('gravitational_potential',))
         definition.add_getter('get_grid_gravitational_acceleration', names=('gravitational_acceleration_x','gravitational_acceleration_y','gravitational_acceleration_z',))
         
+        definition.define_extra_keywords({'index_of_grid':index_of_grid})
+        
+
+    def specify_mangnetic_filed_grid(self, definition, index_of_grid = 1):
+        definition.set_grid_range('get_index_range_magnetic_field_inclusive')
+        
+        definition.add_getter('get_position_of_index', names=('x','y','z'))
+    
+        definition.add_getter('get_grid_magnetic_field', names=('B1i','B2i','B3i'))   
+        definition.add_setter('set_grid_magnetic_field', names=('B1i','B2i','B3i'))
+         
         definition.define_extra_keywords({'index_of_grid':index_of_grid})
         
 
@@ -656,7 +675,22 @@ class Athena(InCodeComponentImplementation):
         for x in range(1,n+1):
             yield self._create_new_grid(self.specify_grid, index_of_grid = x)
 
+    def iter_magnetic_field_grids(self):
+        n, error = self.get_number_of_grids()
+        
+        for x in range(1,n+1):
+            yield self._create_new_grid(self.specify_mangnetic_filed_grid, index_of_grid = x)
+
     
+    def iter_hydro_and_mhd_grids(self):
+        n, error = self.get_number_of_grids()
+        
+        for x in range(1,n+1):
+            yield (
+                self._create_new_grid(self.specify_grid, index_of_grid = x),
+                self._create_new_grid(self.specify_mangnetic_filed_grid, index_of_grid = x),
+            )
+
     def define_particle_sets(self, object):
         object.define_grid('potential_grid')
         object.set_grid_range('potential_grid', 'get_index_range_for_potential')

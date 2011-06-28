@@ -19,14 +19,14 @@ PI = numpy.pi
 
 GAMMA = 5.0/3.0
 DIMENSIONS_OF_MESH = (64,64,1)
-DIMENSIONS_OF_A_MESH = (65,65,1)
+DIMENSIONS_OF_A_MESH = (66,66,1)
 B0 = 1.0/numpy.sqrt(4.0*PI) | magnetic_field
 D0 = 25.0/(36.0*PI)   | density
 V0 = 1.0              | speed
 P0 = 5.0/(12.0*PI)    | energy
 
 def new_instance_of_hydro_code(number_of_workers=1):
-    result=Athena(number_of_workers = number_of_workers)
+    result=Athena(number_of_workers = number_of_workers, mode='mhd')
     result.initialize_code()
     result.parameters.gamma = GAMMA
     result.parameters.courant_number=0.8
@@ -56,17 +56,19 @@ def clear_grid(grid):
     grid.rhovy = 0.0 | momentum
     grid.rhovz = 0.0 | momentum
     grid.energy = 0.0 | energy
+
+def clear_magnetic_field_grid(grid):
     grid.B1i    = 0.0 | magnetic_field
     grid.B2i    = 0.0 | magnetic_field
     grid.B3i    = 0.0 | magnetic_field
 
     return grid
 
-def initialize_grid(grid):        
+def initialize_grid(grid, magentic_field_grid):        
 
     temp = [1,1,1] | length
     l    = 1.0 | length;
-    A_grid = Grid.create(DIMENSIONS_OF_A_MESH, temp + grid.cellsize()*[1,1,0])
+    A_grid = Grid.create(DIMENSIONS_OF_A_MESH, temp + grid.cellsize()*[2,2,0])
     A_grid.position -= A_grid.cellsize()*[0.5,0.5,0.0]
     A_grid.Az = (
         B0*l/(4.0*PI)*(4.0*PI/l*A_grid.x).cos() + 
@@ -76,33 +78,36 @@ def initialize_grid(grid):
     assert grid.cellsize().y == A_grid.cellsize().y
 #    assert grid.dim[0]      == A_grid.dim[0]
 
-    grid.B1i =  (A_grid.Az[:-1,1:,...] - A_grid.Az[:-1,:-1,...])/A_grid.cellsize().y;
-    grid.B2i = -(A_grid.Az[1:,:-1,...] - A_grid.Az[:-1,:-1,...])/A_grid.cellsize().x;
-    grid.B3i =  0.0 | magnetic_field;
+    magentic_field_grid.B1i =  (A_grid.Az[:-1,1:,...] - A_grid.Az[:-1,:-1,...])/A_grid.cellsize().y;
+    magentic_field_grid.B2i = -(A_grid.Az[1:,:-1,...] - A_grid.Az[:-1,:-1,...])/A_grid.cellsize().x;
+    magentic_field_grid.B3i =  0.0 | magnetic_field;
+    
+    #magentic_field_grid.B1i[-1,...,...] = magentic_field_grid.B1i[0,...,...]
+    #magentic_field_grid.B2i[...,-1,...] = magentic_field_grid.B2i[...,0,...]
+    
+    magentic_field_grid.B1c = 0.0 | magnetic_field;
+    magentic_field_grid.B2c = 0.0 | magnetic_field;
+    magentic_field_grid.B3c = 0.0 | magnetic_field;
+    magentic_field_grid.divB = 0.0 | (magnetic_field / length)
 
-    grid.B1c = 0.0 | magnetic_field;
-    grid.B2c = 0.0 | magnetic_field;
-    grid.B3c = 0.0 | magnetic_field;
-    grid.divB = 0.0 | (magnetic_field / length)
+    magentic_field_grid.B1c[:-1,...,...] = (magentic_field_grid.B1i[:-1,...,...] + magentic_field_grid.B1i[1:,...,...])*0.5
+    magentic_field_grid.B2c[...,:-1,...] = (magentic_field_grid.B2i[...,:-1,...] + magentic_field_grid.B2i[...,1:,...])*0.5
+    magentic_field_grid.B3c = magentic_field_grid.B3i
 
-    grid.B1c[0:-1,...,...] = (grid.B1i[:-1,...,...] + grid.B1i[1:,...,...])*0.5
-    grid.B2c[...,0:-1,...] = (grid.B2i[...,:-1,...] + grid.B2i[...,1:,...])*0.5
-    grid.B3c = grid.B3i
-
-    grid.B1c[-1,...,...] = grid.B1c[0,...,...]
-    grid.B2c[...,-1,...] = grid.B2c[...,0,...]
+   # magentic_field_grid.B1c[-1,...,...] = magentic_field_grid.B1c[0,...,...]
+   # magentic_field_grid.B2c[...,-1,...] = magentic_field_grid.B2c[...,0,...]
 
 
     mu0 = 1.0 | (mass*length/time**2/current**2)
 
-    grid.divB[0:-1,0:-1,...] = (
-        (grid.B1i[:-1,0:-1,...] - grid.B1i[1:,0:-1,...])/grid.cellsize().x +
-        (grid.B2i[0:-1,:-1,...] - grid.B2i[0:-1,1:,...])/grid.cellsize().y
+    magentic_field_grid.divB[0:-1,0:-1,...] = (
+        (magentic_field_grid.B1i[:-1,:-1,...] - magentic_field_grid.B1i[1:,:-1,...])/grid.cellsize().x +
+        (magentic_field_grid.B2i[:-1,:-1,...] - magentic_field_grid.B2i[:-1,1:,...])/grid.cellsize().y
         )
 
-    assert (abs(grid.divB) < 1.0e-10 | grid.divB.unit).all()
+    assert (abs(magentic_field_grid.divB[:-1,:-1,:-1]) < 1.0e-10 | magentic_field_grid.divB.unit).all()
 
-    assert grid.B1i.unit == magnetic_field
+    assert magentic_field_grid.B1i.unit == magnetic_field
 
     grid.rho   =  D0 
     grid.rhovx = -D0*V0*(2.0*PI/l*grid.y).sin()
@@ -118,7 +123,7 @@ def initialize_grid(grid):
     grid.energy = (
       P0 / (GAMMA - 1) + 
       0.5 * (grid.rhovx**2 + grid.rhovy**2 + grid.rhovz**2)/grid.rho +
-      0.5 * (grid.B1c**2   + grid.B2c**2   + grid.B3c**2)/mu0
+      0.5 * (magentic_field_grid.B1c[:-1,:-1,:-1]**2   + magentic_field_grid.B2c[:-1,:-1,:-1]**2   + magentic_field_grid.B3c[:-1,:-1,:-1]**2)/mu0
       )
 
 
@@ -128,14 +133,20 @@ def simulate_orszag_tang_problem(end_time):
     set_parameters(instance)
 
     print "setup grid"
-    for x in instance.itergrids():
-        inmem = x.copy_to_memory()
+    for hydro_grid, mhd_grid in instance.iter_hydro_and_mhd_grids():
+        inmem = hydro_grid.copy_to_memory()
+        inmem_mhd = mhd_grid.copy_to_memory()
 
         clear_grid(inmem)
-        initialize_grid(inmem)
+        clear_magnetic_field_grid(inmem_mhd)
+        
+        initialize_grid(inmem, inmem_mhd)
 
-        from_model_to_code = inmem.new_channel_to(x)
+        from_model_to_code = inmem.new_channel_to(hydro_grid)
         from_model_to_code.copy()
+        from_model_to_code = inmem_mhd.new_channel_to(mhd_grid)
+        from_model_to_code.copy()
+        
     instance.initialize_grid()
 
     print "start evolve"

@@ -221,7 +221,7 @@ class TestAthenaInterface(TestWithMPI):
         instance.stop()
     
     def test5a(self):
-        instance=self.new_instance(AthenaInterface)
+        instance=self.new_instance(AthenaInterface, mode="mhd")
         instance.initialize_code()
         instance.setup_mesh(5, 5, 5, 1.0, 1.0, 1.0)
         instance.set_gamma(1.6666666666666667)
