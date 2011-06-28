@@ -220,6 +220,32 @@ class TestAthenaInterface(TestWithMPI):
         
         instance.stop()
     
+    def test5a(self):
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(5, 5, 5, 1.0, 1.0, 1.0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.4)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        result = instance.commit_parameters()
+        self.assertEquals(result, 0)
+        
+        time, error = instance.get_time()
+        self.assertEquals(error,0)
+        self.assertEquals(time, 0.0)
+        
+        error = instance.set_grid_magnetic_field(1,1,1,0.1, 0.2, 0.3)
+        self.assertEquals(error, 0)
+        
+        B1i, B2i, B3i, error = instance.get_grid_magnetic_field(1,1,1)
+        
+        self.assertEquals(error, 0)
+        self.assertEquals(B1i, 0.1)
+        self.assertEquals(B2i, 0.2)
+        self.assertEquals(B3i, 0.3)
+        
+        instance.stop()
+    
     
 
     def test7(self):

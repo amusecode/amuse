@@ -1891,3 +1891,138 @@ int evolve_model(double tlim) {
     
     return 0;
 }
+
+int get_grid_magnetic_field(
+    int * i, int * j, int * k,
+    int * index_of_grid,
+    double * B1i, double * B2i, double * B3i,
+    int number_of_points)
+{
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    DomainS * dom = 0;
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        
+        B1i[l] = B2i[l]= B3i[l] = 0.0;
+        
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+           
+            if (is_on_grid(grid, i0, j0, k0))
+            {
+                ijk_on_grid(grid, &i0, &j0, &k0);
+
+#ifdef MHD
+                B1i[l] = grid->B1i[k0][j0][i0];
+                B2i[l] = grid->B2i[k0][j0][i0];
+                B3i[l] = grid->B3i[k0][j0][i0];
+#endif
+            }
+
+        }
+    }
+
+
+
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(B1i, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(B2i, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(B3i, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, B1i, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, B2i, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, B3i, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+    return 0;
+}
+
+int set_grid_magnetic_field(
+    int * i,
+    int * j,
+    int * k,
+    double * B1i,
+    double * B2i,
+    double * B3i,
+    int * index_of_grid,
+    int number_of_points)
+{
+
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    DomainS * dom = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            
+            if (is_on_grid(grid, i0, j0, k0))
+            {
+                ijk_on_grid(grid, &i0, &j0, &k0);
+
+#ifdef MHD								
+                grid->B1i[k0][j0][i0] = B1i[l];
+                grid->B2i[k0][j0][i0] = B2i[l];
+                grid->B3i[k0][j0][i0] = B3i[l];
+#endif
+            }
+
+        }
+    }
+
+    return 0;
+}
+

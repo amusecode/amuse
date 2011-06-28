@@ -2,11 +2,11 @@ from amuse.community import *
 
 from amuse.support.units.generic_unit_system import *
 
-from amuse.community.interface.hydro import HydrodynamicsInterface
+from amuse.community.interface.mhd import MagnetohydrodynamicsInterface
 
 import numpy
 
-class AthenaInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
+class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     """
     Athena is a grid-based code for astrophysical hydrodynamics. Athena can solve 
     magnetohydrodynamics (MHD) as well, but this is currently not supported from 
@@ -481,6 +481,7 @@ class Athena(InCodeComponentImplementation):
         momentum =  mass / (time * (length**2))
         energy =  mass / ((time**2) * length)
         potential_energy =  length ** 2 / time ** 2
+        magnetic_field = mass / current / time ** 2
         
         object.add_method(
             'set_grid_state',
@@ -489,6 +490,15 @@ class Athena(InCodeComponentImplementation):
             object.INDEX),
             (object.ERROR_CODE,)
         )
+        
+        object.add_method(
+            'set_grid_magnetic_field',
+            (object.INDEX, object.INDEX, object.INDEX,
+             magnetic_field, magnetic_field, magnetic_field,
+            object.INDEX),
+            (object.ERROR_CODE,)
+        )
+
         object.add_method(
             'get_grid_state',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
@@ -514,6 +524,13 @@ class Athena(InCodeComponentImplementation):
             object.ERROR_CODE,)
         )
     
+        object.add_method(
+            'get_grid_magnetic_field',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            ( magnetic_field, magnetic_field, magnetic_field,
+            object.ERROR_CODE,)
+        )
+
         object.add_method(
             'set_potential',
             (object.INDEX, object.INDEX, object.INDEX,
@@ -619,6 +636,9 @@ class Athena(InCodeComponentImplementation):
         definition.add_getter('get_grid_density', names=('rho',))
         definition.add_getter('get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
         definition.add_getter('get_grid_energy_density', names=('energy',))
+        
+        definition.add_getter('get_grid_magnetic_field', names=('B1i','B2i','B3i'))   
+        definition.add_setter('set_grid_magnetic_field', names=('B1i','B2i','B3i'))
         
         definition.add_getter('get_grid_gravitational_potential', names=('gravitational_potential',))
         definition.add_getter('get_grid_gravitational_acceleration', names=('gravitational_acceleration_x','gravitational_acceleration_y','gravitational_acceleration_z',))

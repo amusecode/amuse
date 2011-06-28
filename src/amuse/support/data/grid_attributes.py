@@ -7,6 +7,8 @@ import numpy
 
 grids.AbstractGrid.add_global_vector_attribute("position", ["x","y","z"])
 grids.AbstractGrid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
+grids.AbstractGrid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B3i"])
+
 
 
         

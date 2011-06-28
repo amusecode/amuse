@@ -70,7 +70,7 @@ distclean: clean
 	$(RM) -Rf src
 
 $(CODELIB): $(ATHENA_DIR) 
-	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr
+	cd $(ATHENA_DIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld
 	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
 	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
 	rm -f $(CODELIB)
