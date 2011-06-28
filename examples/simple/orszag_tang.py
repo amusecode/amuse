@@ -18,8 +18,8 @@ vector_potential = magnetic_field * length
 PI = numpy.pi
 
 GAMMA = 5.0/3.0
-DIMENSIONS_OF_MESH = (64,64,1)
-DIMENSIONS_OF_A_MESH = (66,66,1)
+DIMENSIONS_OF_MESH = (256,256,1)
+DIMENSIONS_OF_A_MESH = (258,258,1)
 B0 = 1.0/numpy.sqrt(4.0*PI) | magnetic_field
 D0 = 25.0/(36.0*PI)   | density
 V0 = 1.0              | speed
