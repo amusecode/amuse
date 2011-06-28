@@ -135,6 +135,9 @@ class Quantity(object):
         """
         return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_simple_form())
 
+
+
+
     def as_quantity_in(self, another_unit):
         """
         Reproduce quantity in another unit.
@@ -670,6 +673,34 @@ class VectorQuantity(Quantity):
         if not self.unit.is_none():
             raise Exception("only none unit support for tanh")
         return numpy.tanh(self.number) | self.unit
+        
+    def sin(self):
+        """Calculate the sine of each component
+
+        >>> from amuse.support.units import units
+        >>> import numpy
+        >>>
+        >>> v = [0.5 * numpy.pi] | units.none
+        >>> v.sin()
+        quantity<[1.0] none>
+        """
+        if not self.unit.is_none():
+            raise Exception("only none unit support for sin")
+        return new_quantity(numpy.sin(self.number), self.unit)
+        
+    def cos(self):
+        """Calculate the cosine of each component
+
+        >>> from amuse.support.units import units
+        >>> import numpy
+        >>>
+        >>> v = [numpy.pi] | units.none
+        >>> v.cos()
+        quantity<[-1.0] none>
+        """
+        if not self.unit.is_none():
+            raise Exception("only none unit support for sin")
+        return new_quantity(numpy.cos(self.number), self.unit)
 
     def __getstate__(self):
         return (self.unit, self.number)
