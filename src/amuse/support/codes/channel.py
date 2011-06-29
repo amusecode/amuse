@@ -1014,8 +1014,8 @@ m.run_mpi_channel('{2}')"""
     @option(type="boolean")
     def check_mpi(self):
         return True
-   
-class IbisMessage(AbstractMessage):
+
+class SocketMessage(AbstractMessage):
     
     def __init__(self, tag= -1, length=1, dtype_to_arguments={}, id=0):
         AbstractMessage.__init__(self, tag, length, dtype_to_arguments)
@@ -1028,16 +1028,23 @@ class IbisMessage(AbstractMessage):
             self.big_endian = False
       
     def _receive_all(self, nbytes, thesocket):
-        bytes = thesocket.recv(nbytes)
 
-        while len(bytes) < nbytes:
-            bytes = bytes + thesocket.recv(nbytes - len(bytes), socket.MSG_WAITALL)
+        logging.getLogger("channel").debug("receiving %d bytes", nbytes)
+        
+        result = ''
+        
+        while nbytes > 0:
+            bytes = thesocket.recv(nbytes, socket.MSG_WAITALL)
+            result += bytes
+            nbytes -= len(bytes)
+            logging.getLogger("channel").debug("got %d bytes, result length = %d", len(bytes), len(result))
 
-        return bytes
+
+        return result
      
     def receive(self, socket):
         
-        logging.getLogger("ibis").debug("receiving message")
+        #logging.getLogger("channel").debug("receiving message")
         
         header_bytes = self._receive_all(40, socket)
         
@@ -1053,7 +1060,7 @@ class IbisMessage(AbstractMessage):
         
         header = numpy.copy(numpy.frombuffer(header_bytes, dtype="i", offset=4))
         
-        logging.getLogger("ibis").debug("receiving message with flags %s and header %s", flags, header)
+        #logging.getLogger("channel").debug("receiving message with flags %s and header %s", flags, header)
 
         #id of this call
         self.id = header[0]
@@ -1079,7 +1086,7 @@ class IbisMessage(AbstractMessage):
         self.booleans = self.receive_booleans(socket, number_of_booleans)
         self.strings = self.receive_strings(socket, number_of_strings)
         
-        logging.getLogger("ibis").debug("message received")
+        #logging.getLogger("channel").debug("message received")
         
     def receive_ints(self, socket, count):
         if count > 0:
@@ -1175,7 +1182,7 @@ class IbisMessage(AbstractMessage):
             len(self.strings),
         ], dtype='i')
         
-        logging.getLogger("ibis").debug("sending message with flags %s and header %s", flags, header)
+        #logging.getLogger("channel").debug("sending message with flags %s and header %s", flags, header)
         
         socket.sendall(flags.tostring())
         
@@ -1188,7 +1195,7 @@ class IbisMessage(AbstractMessage):
         self.send_booleans(socket, self.booleans)
         self.send_strings(socket, self.strings)
         
-        logging.getLogger("ibis").debug("message send")
+        #logging.getLogger("channel").debug("message send")
     
     def send_doubles(self, socket, array):
         if len(array) > 0:
@@ -1229,70 +1236,67 @@ class IbisMessage(AbstractMessage):
             buffer = numpy.array(array, dtype='int64')
             socket.sendall(buffer.tostring())
         
-class IbisChannel(MessageChannel):
+class SocketChannel(MessageChannel):
     
-    def __init__(self, name_of_the_worker, legacy_interface_type=None, number_of_workers=1, **options):
+    def __init__(self, name_of_the_worker, legacy_interface_type=None, **options):
         MessageChannel.__init__(self, **options)
         
-        logging.getLogger("ibis").debug("initializing IbisChannel with options %s", options)
+        #logging.basicConfig(level=logging.DEBUG)
+        
+        logging.getLogger("channel").debug("initializing SocketChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker
         
-        if self.hostname == None:
-            self.hostname = 'local'
-        
-        self.number_of_workers = number_of_workers
-        
-        self.daemon_host = 'localhost'    # Ibis deamon always running on the local machine
-        self.daemon_port = 61575          # A random-but-fixed port number for the Ibis daemon
-        
+        if self.hostname != None and self.hostname != 'localhost':
+            raise exceptions.CodeException("can only run codes on local machine using SocketChannel, not on %s", self.hostname)
+            
+        if self.number_of_workers != 0 and self.number_of_workers != 1:
+            raise exceptions.CodeException("can only a single worker for each code using Socket Channel, not " + str(self.number_of_workers))
+            
         self.id = 0
         
         if not legacy_interface_type is None:
-            self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
+            self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type) + "_sockets"
         else:
-            self.full_name_of_the_worker = self.name_of_the_worker
+            self.full_name_of_the_worker = self.name_of_the_worker + "_sockets"
             
-        logging.getLogger("ibis").debug("full name of worker is %s", self.full_name_of_the_worker)
+        #logging.getLogger("channel").debug("full name of worker is %s", self.full_name_of_the_worker)
         
-        global_options = GlobalOptions()
-        
-        logging.getLogger("ibis").debug("amuse root dir is %s", global_options.amuse_rootdirectory)
-            
-        worker_path = os.path.relpath(self.full_name_of_the_worker, global_options.amuse_rootdirectory)
-            
-        self.worker_dir = os.path.dirname(worker_path)
-            
-        logging.getLogger("ibis").debug("worker dir is %s", self.worker_dir)
-            
         self._is_inuse = False
         self.socket = None
     
 
     def start(self):
-        logging.getLogger("ibis").debug("connecting to daemon")
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.bind(('', 0))
+        server_socket.listen(1)
         
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((self.daemon_host, self.daemon_port))
-        
-        self.socket.sendall('magic_string'.encode('utf-8'))
-        
-        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers]}
-        
-        message = IbisMessage(10101010, 1, arguments);
+        logging.getLogger("channel").debug("starting socket worker process")
+    
+        if self.redirect_stdout_file is None  or self.redirect_stdout_file == "none":
+            self.stdout = None
+        else:
+            self.stdout = open(self.redirect_stdout_file, "w")
 
-        message.send(self.socket)
+        if self.redirect_stderr_file is None or self.redirect_stderr_file == "none":
+            self.stderr = None
+        else:
+            self.stderr = open(self.redirect_stderr_file, "w")
+       
+        #set arguments to name of the worker, and port number we listen on 
+        arguments = [self.name_of_the_worker, str(server_socket.getsockname()[1])]
+    
+        self.process = Popen(arguments, -1, self.full_name_of_the_worker, None, self.stdout, self.stderr)
         
-        logging.getLogger("ibis").info("waiting for worker %s to be initialized", self.name_of_the_worker)
-
-        result = IbisMessage()
-        result.receive(self.socket)
+        #logging.getLogger("channel").debug("waiting for connection from worker")
+     
+        self.socket, address = server_socket.accept()
         
-        if result.error:
-            logging.getLogger("ibis").error("Could not start worker: %s", result.strings[0])
-            raise exceptions.CodeException("Could not start worker: " + result.strings[0])
+        server_socket.close()
         
-        logging.getLogger("ibis").info("worker %s initialized", self.name_of_the_worker)
+        #logging.getLogger("channel").debug("got connection from %s", address)
+        
+        #logging.getLogger("channel").info("worker %s initialized", self.name_of_the_worker)
         
     @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
@@ -1308,7 +1312,151 @@ class IbisChannel(MessageChannel):
         return 1
        
     def stop(self):
-        logging.getLogger("ibis").info("stopping worker %s", self.name_of_the_worker)
+        logging.getLogger("channel").info("stopping socket worker %s", self.name_of_the_worker)
+        self.socket.close()
+        self.process.kill()
+        
+        if not self.stdout is None:
+            self.stdout.close()
+            
+        if not self.stderr is None:
+            self.stderr.close()
+
+    def is_active(self):
+        return True    
+    
+    def is_inuse(self):
+        return self._is_inuse
+    
+    def determine_length_from_data(self, dtype_to_arguments):
+        def get_length(x):
+            if x:
+                try:
+                    if not isinstance(x[0], str):
+                        return len(x[0])
+                except:
+                    return 1
+               
+               
+        
+        lengths = map(get_length, dtype_to_arguments.values())
+        if len(lengths) == 0:
+            return 1
+            
+        return max(1, max(lengths))
+    
+    def send_message(self, tag, id=0, dtype_to_arguments={}, length=1):
+        
+        length = self.determine_length_from_data(dtype_to_arguments)
+        
+        #logging.getLogger("channel").info("sending message for call id %d, function %d, length %d", id, tag, length)
+        
+        if self.is_inuse():
+            raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
+        if self.socket is None:
+            raise exceptions.CodeException("You've tried to send a message to a code that is not running")
+        
+        message = SocketMessage(tag, length, dtype_to_arguments, id)
+        message.send(self.socket)
+        
+        self._is_inuse = True
+        
+    def recv_message(self, tag, handle_as_array=False):
+           
+        self._is_inuse = False
+        
+        message = SocketMessage()
+        
+        message.receive(self.socket)
+        
+        if message.error:
+            raise exceptions.CodeException("Error in worker: " + message.strings[0])
+        
+        return message.to_result(handle_as_array)
+
+class IbisChannel(MessageChannel):
+    
+    def __init__(self, name_of_the_worker, legacy_interface_type=None, **options):
+        MessageChannel.__init__(self, **options)
+        
+        logging.getLogger("channel").debug("initializing IbisChannel with options %s", options)
+       
+        self.name_of_the_worker = name_of_the_worker
+        
+        if self.hostname == None:
+            self.hostname = 'local'
+            
+        if self.number_of_workers == 0:
+            self.number_of_workers = 1
+            
+        logging.getLogger("channel").debug("number of workers is %d", self.number_of_workers)
+        
+        self.daemon_host = 'localhost'    # Ibis deamon always running on the local machine
+        self.daemon_port = 61575          # A random-but-fixed port number for the Ibis daemon
+        
+        self.id = 0
+        
+        if not legacy_interface_type is None:
+            self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
+        else:
+            self.full_name_of_the_worker = self.name_of_the_worker
+            
+        logging.getLogger("channel").debug("full name of worker is %s", self.full_name_of_the_worker)
+        
+        global_options = GlobalOptions()
+        
+        logging.getLogger("channel").debug("amuse root dir is %s", global_options.amuse_rootdirectory)
+            
+        worker_path = os.path.relpath(self.full_name_of_the_worker, global_options.amuse_rootdirectory)
+            
+        self.worker_dir = os.path.dirname(worker_path)
+            
+        logging.getLogger("channel").debug("worker dir is %s", self.worker_dir)
+            
+        self._is_inuse = False
+        self.socket = None
+    
+
+    def start(self):
+        logging.getLogger("channel").debug("connecting to daemon")
+        
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect((self.daemon_host, self.daemon_port))
+        
+        self.socket.sendall('magic_string'.encode('utf-8'))
+        
+        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers]}
+        
+        message = SocketMessage(10101010, 1, arguments);
+
+        message.send(self.socket)
+        
+        logging.getLogger("channel").info("waiting for worker %s to be initialized", self.name_of_the_worker)
+
+        result = SocketMessage()
+        result.receive(self.socket)
+        
+        if result.error:
+            logging.getLogger("channel").error("Could not start worker: %s", result.strings[0])
+            raise exceptions.CodeException("Could not start worker: %s", result.strings[0])
+        
+        logging.getLogger("channel").info("worker %s initialized", self.name_of_the_worker)
+        
+    @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    def debugger(self):
+        """Name of the debugger to use when starting the code"""
+        return "none"
+        
+    @option(sections=("channel",))
+    def hostname(self):
+        return None
+    
+    @option(type="int", sections=("channel",))
+    def number_of_workers(self):
+        return 1
+       
+    def stop(self):
+        logging.getLogger("channel").info("stopping worker %s", self.name_of_the_worker)
         self.socket.close()
 
     def is_active(self):
@@ -1338,14 +1486,14 @@ class IbisChannel(MessageChannel):
         
         length = self.determine_length_from_data(dtype_to_arguments)
         
-        logging.getLogger("ibis").info("sending message for call id %d, function %d, length %d", id, tag, length)
+        logging.getLogger("channel").info("sending message for call id %d, function %d, length %d", id, tag, length)
         
         if self.is_inuse():
             raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
         if self.socket is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
-        message = IbisMessage(tag, length, dtype_to_arguments, id)
+        message = SocketMessage(tag, length, dtype_to_arguments, id)
         message.send(self.socket)
         
         self._is_inuse = True
@@ -1354,7 +1502,7 @@ class IbisChannel(MessageChannel):
            
         self._is_inuse = False
         
-        message = IbisMessage()
+        message = SocketMessage()
         
         message.receive(self.socket)
         
@@ -1362,4 +1510,5 @@ class IbisChannel(MessageChannel):
             raise exceptions.CodeException("Error in worker: " + message.strings[0])
         
         return message.to_result(handle_as_array)
+
 

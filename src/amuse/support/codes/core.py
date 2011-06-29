@@ -13,7 +13,7 @@ from amuse.support.core import OrderedDictionary
 from amuse.support.options import OptionalAttributes, option
 from amuse.support.codes.create_definition import CodeDocStringProperty
 from amuse.support.codes.channel import MpiChannel, MultiprocessingMPIChannel,\
-    IbisChannel
+    IbisChannel, SocketChannel
 from amuse.support.codes.channel import is_mpd_running
 
 """
@@ -672,7 +672,7 @@ Please do a 'make clean; make' in the root directory.
         
 
 
-    @option(choices=['mpi','remote','ibis'], sections=("channel",))
+    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
     def channel_type(self):
         return 'mpi'
         
@@ -710,6 +710,8 @@ Please do a 'make clean; make' in the root directory.
             return MultiprocessingMPIChannel
         elif self.channel_type == 'ibis':
             return IbisChannel
+        elif self.channel_type == 'sockets':
+            return SocketChannel
         else:
             raise exceptions.AmuseException("Cannot create a channel with type {0!r}, type is not supported".format(self.channel_type))
     

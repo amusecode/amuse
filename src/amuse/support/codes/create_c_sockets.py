@@ -7,52 +7,66 @@ from amuse.support.codes.create_code import DTypeSpec, DTypeToSpecDictionary
 
 dtype_to_spec = DTypeToSpecDictionary({
     'int32' : DTypeSpec('ints_in', 'ints_out',
-                    'number_of_ints', 'int', 'MPI_INT'),
+                    'HEADER_INTEGER_COUNT', 'int', 'MPI_INT'),
     'int64' : DTypeSpec('longs_in', 'longs_out',
-                    'number_of_longs', 'long long int', 'MPI_LONG_LONG_INT'),
+                    'HEADER_LONG_COUNT', 'long long int', 'MPI_LONG_LONG_INT'),
     'float32' : DTypeSpec('floats_in', 'floats_out',
-                    'number_of_floats', 'float', 'MPI_FLOAT'),
+                    'HEADER_FLOAT_COUNT', 'float', 'MPI_FLOAT'),
     'float64' : DTypeSpec('doubles_in', 'doubles_out',
-                    'number_of_doubles', 'double', 'MPI_DOUBLE'),
+                    'HEADER_DOUBLE_COUNT', 'double', 'MPI_DOUBLE'),
     'bool' : DTypeSpec('booleans_in', 'booleans_out',
-                    'number_of_booleans', 'int', 'MPI_INTEGER'),
+                    'HEADER_BOOLEAN_COUNT', 'int', 'MPI_INTEGER'),
     'string' : DTypeSpec('strings_in', 'strings_out',
-                    'number_of_strings', 'int', 'MPI_INTEGER'),
+                    'HEADER_STRING_COUNT', 'int', 'MPI_INTEGER'),
 })
 
 dtypes = ['int32', 'int64', 'float32', 'float64', 'bool', 'string']
 
+GLOBAL_VARIABLES_STRING = """
+static int ERROR_FLAG = 256;
+static int HEADER_SIZE = 10; //integers
+
+static int HEADER_FLAGS = 0;
+static int HEADER_CALL_ID = 1;
+static int HEADER_FUNCTION_ID = 2;
+static int HEADER_CALL_COUNT = 3;
+static int HEADER_INTEGER_COUNT = 4;
+static int HEADER_LONG_COUNT = 5;
+static int HEADER_FLOAT_COUNT = 6;
+static int HEADER_DOUBLE_COUNT = 7;
+static int HEADER_BOOLEAN_COUNT = 8;
+static int HEADER_STRING_COUNT = 9;
+
+int socketfd = 0;
+"""    
+
 REDIRECT_OUTPUTS_FUNCTION_STRING = """
-int internal__redirect_outputs(const char * stdoutfile, const char * stderrfile)
-{
-        
+int internal__redirect_outputs(const char * stdoutfile, const char * stderrfile) {
     return 0;
 }
 """
 
 EXIT_HANDLER_FUNCTION_STRING = """\
 void onexit(void) {
-
     close(socketfd);
-        
 }
 """
 
 SEND_FUNCTION_STRING = """\
 void send(void *buffer, int length, int file_descriptor) {
     int total_written = 0;
-    int written;
+    int bytes_written;
 
     while (total_written < length) {
-        written = write(file_descriptor, ((char *) buffer) + total_written,
+        bytes_written = write(file_descriptor, ((char *) buffer) + total_written,
                         length - total_written);
 
-        if (written == -1) {
+        if (bytes_written == -1) {
             fprintf(stderr, "could not write data\\n");
             exit(1);
         }
 
-        total_written = total_written + written;
+        total_written = total_written + bytes_written;
     }
 }
 """
@@ -84,19 +98,15 @@ int main(int argc, char *argv[]) {
     
     MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);
 
-    fprintf(stderr, "main!\\n");
-
     portno = atoi(argv[1]);
     socketfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (socketfd < 0) {
             fprintf(stderr, "cannot open socket\\n");
-            exit(0);
+            exit(1);
     }
 
     server = gethostbyname("localhost");
-
-    fprintf(stderr, "connecting...\\n");
 
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -106,14 +116,14 @@ int main(int argc, char *argv[]) {
     if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
                     < 0) {
             fprintf(stderr, "cannot connect socket\\n");
-            exit(0);
+            exit(1);
 
     }
 
-    fprintf(stderr, "running...\\n");
+    fprintf(stderr, "sockets: finished initializing code\\n");
 
     run_loop(socketfd);
-
+    
     close(socketfd);
 
     MPI_Finalize();
@@ -144,7 +154,7 @@ class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
         if self.specification.must_handle_array:
             pass
         elif self.specification.can_handle_array:
-            self.out.lf() + 'for (int i = 0 ; i < request_header.length; i++){'
+            self.out.lf() + 'for (int i = 0 ; i < call_count; i++){'
             self.out.indent()
  
         
@@ -157,7 +167,7 @@ class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
         if self.specification.must_handle_array:
             if not self.specification.result_type is None:
                 spec = self.dtype_to_spec[self.specification.result_type]
-                self.out.lf() + 'for (int i = 1 ; i < request_header.length; i++){'
+                self.out.lf() + 'for (int i = 1 ; i < call_count; i++){'
                 self.out.indent()
                 self.out.lf() + spec.output_var_name + '[i]' + ' = ' + spec.output_var_name + '[0]' + ';'
                 self.out.dedent()
@@ -176,12 +186,12 @@ class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
             if index == 0:
                 return '0'
             else:
-                return '( %d * request_header.length)' % index
+                return '( %d * call_count)' % index
         elif self.specification.can_handle_array or (self.specification.must_handle_array and must_copy_in_to_out):
             if index == 0:
                 return 'i'
             else:
-                return '( %d * request_header.length) + i' % index
+                return '( %d * call_count) + i' % index
         else:
             return index
     
@@ -226,7 +236,7 @@ class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
                 else:
                     self.output_var(spec.output_var_name, parameter.output_index)
             elif parameter.direction == LegacyFunctionSpecification.LENGTH:
-                self.out.n() + 'request_header.length'
+                self.out.n() + 'call_count'
     
         self.out.dedent()
     
@@ -248,7 +258,7 @@ class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
             
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if self.specification.must_handle_array:
-                    self.out.lf() + 'for (int i = 0 ; i < request_header.length; i++){'
+                    self.out.lf() + 'for (int i = 0 ; i < call_count; i++){'
                     self.out.indent()
 
                 self.out.n() + spec.output_var_name
@@ -275,8 +285,8 @@ class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
             spec = self.dtype_to_spec[dtype]
             count = dtype_to_count[dtype]
             self.out.n() 
-            self.out + 'reply_header.' + spec.counter_name 
-            self.out + ' = ' + count + ' * request_header.length;'
+            self.out + 'header_out[' + spec.counter_name 
+            self.out + '] = ' + count + ' * call_count;'
             pass
             
     def output_function_end(self):
@@ -312,16 +322,16 @@ class MakeACStringOfALegacyGlobalSpecification(MakeCCodeString):
         self.out.indent()
         
         spec = self.dtype_to_spec[self.legacy_global.datatype]
-        self.out.n() + 'if(request_header.' + spec.counter_name
-        self.out + ' == ' + 1 + '){'
+        self.out.n() + 'if(header_in[' + spec.counter_name
+        self.out + '] == ' + 1 + '){'
         self.out.indent()
         self.out.n() + self.legacy_global.name + ' = ' 
         self.out + spec.input_var_name + '[0]' + ';'
         self.out.dedent()
         self.out.n() + '} else {'
         self.out.indent()
-        self.out.n() + 'reply_header.' + spec.counter_name
-        self.out + ' = ' + 1 + ';'
+        self.out.n() + 'header_out[' + spec.counter_name
+        self.out + '] = ' + 1 + ';'
         self.out.n() + spec.output_var_name + '[0]' 
         self.out + ' = ' + self.legacy_global.name + ';'
         self.out.dedent()
@@ -338,150 +348,6 @@ class MakeACStringOfALegacyGlobalSpecification(MakeCCodeString):
     def output_casestmt_end(self):
         self.out.n() + 'break;'
         
-        
-        
-class GenerateCMessageHeaderClassDefinition(MakeCCodeString):
-    @late
-    def number_of_types(self):
-        return len(self.dtype_to_spec)
-        
-    @late
-    def length_of_the_header(self):
-        return 4 + self.number_of_types
-        
-    def start(self):
-        self.out + 'static int HEADER_SIZE = ' + self.length_of_the_header + ' * sizeof(int);'
-        self.out.lf() 
-        
-        self.out.lf() + "class message_header {"
-        self.out.lf()
-        self.out.indent()
-        self.out.lf() + "public:"
-        self.out.lf() + 'int flags;'
-        self.out.lf() + 'int id;'
-        self.out.lf() + 'int function_id;'
-        self.out.lf() + 'int length;'
-        
-        for i, dtype in enumerate(dtypes):
-            spec = self.dtype_to_spec[dtype]
-            self.out.lf() + 'int ' + spec.counter_name;
-            self.out + ';'
-
-        self.out.lf()
-        
-        self.make_constructor()
-        self.out.lf()
-
-        self.make_send_function()
-        self.out.lf()
-
-        self.make_recv_function()
-        self.out.lf()
-
-        self.out.dedent()
-        self.out.lf() + '};'
-        self.out.lf()
-        
-    def make_constructor(self):
-        self.out.lf() + 'message_header(): flags(0), id(0), function_id(0), length(1)'
-        for i, dtype in enumerate(dtypes):
-            spec = self.dtype_to_spec[dtype]
-            self.out + ', ' + spec.counter_name;
-            self.out + '(0)'
-        self.out + ' {'
-        self.out.lf() + '}'
-
-        
-    def make_destructor(self):
-        self.out.lf() + '~message_header()'
-        #for i, dtype in enumerate(dtypes):
-        #    spec = self.dtype_to_spec[dtype]
-        #    self.out + ', ' + spec.counter_name;
-        #    self.out + '(0)'
-        self.out + '{}'
-        
-    def make_send_function(self):
-        self.out.lf() + 'void send(int file_descriptor) {'
-        self.out.indent()
-        self.out.lf() + 'int header[' + self.length_of_the_header + '];'
-        self.out.lf() + 'int total_written;'
-        self.out.lf() + 'int bytes_written;'
-        self.out.lf()
-        
-        self.out.lf() + 'header[0] = flags;'
-        self.out.lf() + 'header[1] = id;'
-        self.out.lf() + 'header[2] = function_id;'
-        self.out.lf() + 'header[3] = length;'
-        for i, dtype in enumerate(dtypes):
-            spec = self.dtype_to_spec[dtype] 
-            self.out.lf() + 'header[' + (i + 4) + '] = '
-            self.out + spec.counter_name + ';'
-
-
-        self.out.lf()
-        self.out.lf() + 'total_written = 0;'
-
-        self.out.lf() + 'while (total_written < HEADER_SIZE) {'
-        self.out.indent();
-
-        self.out.lf() + 'bytes_written = write(file_descriptor, &header + total_written,'
-        self.out.lf() + '                      HEADER_SIZE - total_written);'
-        
-        self.out.lf() + 'if (bytes_written == -1) {'
-        self.out.indent()
-        self.out.lf() + 'fprintf(stderr, "could not write header\\n");'
-        self.out.lf() + 'exit(1);'
-        self.out.dedent()
-        self.out.lf() + '}'
-
-        self.out.lf() + 'total_written = total_written + bytes_written;'
-                        
-        self.out.dedent()
-        self.out.lf() + '}'
-        self.out.dedent()
-        self.out.lf() + '}'            
-            
-    def make_recv_function(self):
-        self.out.lf() + 'void recv(int file_descriptor) {'
-        self.out.indent()
-        self.out.lf() + 'int header[' + self.length_of_the_header + '];'
-        self.out.lf() + 'int total_read;'
-        self.out.lf() + 'int bytes_read;'
-        
-        self.out.lf()
-        self.out.lf() + 'total_read = 0;'
-
-        self.out.lf() + 'while (total_read < HEADER_SIZE) {'
-        self.out.indent();
-
-        self.out.lf() + 'bytes_read = read(file_descriptor, &header + total_read,'
-        self.out.lf() + '                  HEADER_SIZE - total_read);'
-        
-        self.out.lf() + 'if (bytes_read == -1) {'
-        self.out.indent()
-        self.out.lf() + 'fprintf(stderr, "could not read header\\n");'
-        self.out.lf() + 'exit(1);'
-        self.out.dedent()
-        self.out.lf() + '}'
-
-        self.out.lf() + 'total_read = total_read + bytes_read;'
-                        
-        self.out.dedent()
-        self.out.lf() + '}'            
-
-        self.out.lf()
-        self.out.lf() + 'flags = header[0];'
-        self.out.lf() + 'id = header[1];'
-        self.out.lf() + 'function_id = header[2];'
-        self.out.lf() + 'length = header[3];'
-        for i, dtype in enumerate(dtypes):
-            spec = self.dtype_to_spec[dtype] 
-            self.out.lf() + spec.counter_name + ' = '
-            self.out + 'header[' + (i + 4) + '];'
-        self.out.dedent()
-        self.out.lf() + '}'
-        
-
 
 class GenerateACSourcecodeStringFromASpecificationClass\
     (GenerateASourcecodeStringFromASpecificationClass):
@@ -506,7 +372,6 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.output_global_variables()
         self.output_extra_content()
         
-        self.output_header_class_definition()
         self.output_redirect_outputs_function()
         self.output_onexit_function()
         self.output_send_function()
@@ -530,9 +395,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self._result = self.out.string
         
     def output_global_variables(self):
-        self.out.lf()
-        self.out.lf() + 'static int ERROR_FLAG = 256;'
-        self.out.lf() + 'int socketfd = 0;' 
+        self.out.lf() + GLOBAL_VARIABLES_STRING;
         
     def output_includes(self):
         self.out.n() + '#include <mpi.h>'
@@ -555,12 +418,6 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.lf()
         if hasattr(self.specification_class, 'extra_content'):
             self.out.n() + self.specification_class.extra_content
-    
-            
-    def output_header_class_definition(self):
-        uc = GenerateCMessageHeaderClassDefinition()
-        uc.out = self.out
-        uc.start()
         
     def output_redirect_outputs_function(self):
         self.out.lf() + REDIRECT_OUTPUTS_FUNCTION_STRING
@@ -579,23 +436,27 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.indent()
         self.out.lf().lf() + 'bool must_run_loop = true;'
         
-        self.out.lf().lf() + 'int max_len = 10;'
+        self.out.lf().lf() + 'int max_call_count = 10;'
+        self.out.lf().lf() + 'int call_count;'
+
         self.out.lf();
         self.output_new_statements(True)
         
+        self.out.lf()
+        self.out.lf() + 'int header_in[HEADER_SIZE];'
+        self.out.lf() + 'int header_out[HEADER_SIZE];'
+        
         self.out.lf().lf() + 'while(must_run_loop) {'
         self.out.indent()
+
+        self.out.lf() + 'receive(header_in, HEADER_SIZE * sizeof(int), socketfd);'
+        self.out.lf() + 'fprintf(stderr, "got header %d %d %d %d %d %d %d %d %d %d\\n", header_in[0], header_in[1], header_in[2], header_in[3], header_in[4], header_in[5], header_in[6], header_in[7], header_in[8], header_in[9]);'
         
-        self.out.lf()
-        self.out.lf() + 'message_header request_header;'
-        self.out.lf() + 'message_header reply_header;'
-        self.out.lf()
-        self.out.lf() + 'request_header.recv(socketfd);'
-        self.out.lf()
+        self.out.lf() + 'call_count = header_in[HEADER_CALL_COUNT];'
             
-        self.out.lf() + 'if (request_header.length > max_len) {'
+        self.out.lf() + 'if (call_count > max_call_count) {'
         self.out.indent()
-        self.out.lf() + 'max_len = request_header.length + 255;'
+        self.out.lf() + 'max_call_count = call_count + 255;'
         self.output_delete_statements()
         self.output_new_statements(False)
         self.out.dedent()
@@ -609,14 +470,14 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             if max == 0:
                 continue
             self.out.lf() 
-            self.out + 'if(request_header.' + spec.counter_name + ' > 0) {'
+            self.out + 'if(header_in[' + spec.counter_name + '] > 0) {'
             self.out.indent().lf() + 'receive(' 
             self.out + spec.input_var_name 
-            self.out + ', ' + 'request_header.' + spec.counter_name 
-            self.out + ' * sizeof(' + spec.type + '), socketfd);'
+            self.out + ', ' + 'header_in[' + spec.counter_name 
+            self.out + '] * sizeof(' + spec.type + '), socketfd);'
             
             if dtype == 'string':
-                self.out.lf() + 'for (int i = 0; i < request_header.number_of_strings; i++) {'
+                self.out.lf() + 'for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {'
                 self.out.indent()
                 self.out.lf() + 'characters_in[i] = new char[strings_in[i]];'
                 self.out.lf() + 'receive(characters_in[i], strings_in[i], socketfd);'
@@ -624,12 +485,18 @@ class GenerateACSourcecodeStringFromASpecificationClass\
                                       
             self.out.dedent().lf() + '}'
             self.out.lf() 
+
+        self.out.lf() + 'header_out[HEADER_FLAGS] = 0;'
+        self.out.lf() + 'header_out[HEADER_CALL_ID] = header_in[HEADER_CALL_ID];'
+        self.out.lf() + 'header_out[HEADER_FUNCTION_ID] = header_in[HEADER_FUNCTION_ID];'
+        self.out.lf() + 'header_out[HEADER_CALL_COUNT] = header_in[HEADER_CALL_COUNT];'
             
-        self.out.lf() + 'reply_header.function_id = request_header.function_id;'
-        self.out.lf() + 'reply_header.length = request_header.length;'
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype]
+            self.out.lf() + 'header_out[' + spec.counter_name + '] = 0;'         
         
     def output_switch_start(self):
-        self.out.lf().lf() + 'switch(request_header.function_id) {'
+        self.out.lf().lf() + 'switch(header_in[HEADER_FUNCTION_ID]) {'
         self.out.indent()
         self.out.lf() + 'case 0:'
         self.out.indent().lf() + 'must_run_loop = false;'
@@ -638,13 +505,12 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         
     def output_switch_end(self):
         self.out.lf() + 'default:'
-        self.out.indent().lf() + 'reply_header.flags = reply_header.flags & ERROR_FLAG;'
+        self.out.indent().lf() + 'header_out[HEADER_FLAGS] = header_out[HEADER_FLAGS] & ERROR_FLAG;'
         self.out.dedent()
         self.out.dedent().lf() + '}'
         
     def output_runloop_function_def_end(self):
-        self.out.lf()
-        self.out.lf().lf() + 'reply_header.send(socketfd);'
+        self.out.lf().lf() + 'send(header_out, HEADER_SIZE * sizeof(int), socketfd);'
         self.out.lf()
         
         for i, dtype in enumerate(dtypes):
@@ -654,20 +520,20 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             if max == 0:
                 continue
                   
-            self.out.lf() + 'if(reply_header.' 
-            self.out + spec.counter_name + ' > 0) {'
+            self.out.lf() + 'if(header_out[' 
+            self.out + spec.counter_name + '] > 0) {'
             self.out.indent().lf()
                 
-            self.out + 'send(' + spec.output_var_name + ', ' + 'reply_header.' + spec.counter_name + ' * sizeof(' + spec.type + '), socketfd);'
+            self.out + 'send(' + spec.output_var_name + ', ' + 'header_out[' + spec.counter_name + '] * sizeof(' + spec.type + '), socketfd);'
             
             self.out.dedent().lf() + '}'
             self.out.lf()
             
         max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get('string', 0)
         if max != 0:
-            self.out.lf() + 'for (int i = 0; i < reply_header.number_of_strings; i++) {'
+            self.out.lf() + 'for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {'
             self.out.indent()
-            self.out.lf() + 'send(characters_out[i], reply_header.strings_out[i] * sizeof(char), socketfd);'
+            self.out.lf() + 'send(characters_out[i], strings_out[i] * sizeof(char), socketfd);'
             self.out.dedent();
             self.out.lf() + '}'
             self.out.lf()
@@ -675,7 +541,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             
         max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get('string', 0)
         if max != 0:
-            self.out.lf() + 'for (int i = 0; i < request_header.number_of_strings; i++) {'
+            self.out.lf() + 'for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {'
             self.out.indent()
             self.out.lf() + 'delete[] characters_in[i];'
             self.out.dedent();
@@ -771,7 +637,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             
         self.out + var_name
         self.out + ' = new ' + type
-        self.out + '[' + ' max_len * ' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+        self.out + '[' + ' max_call_count * ' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
         self.out.lf() 
     
     def output_main(self):
