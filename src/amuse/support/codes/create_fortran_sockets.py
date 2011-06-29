@@ -615,7 +615,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf()
         self.output_mpi_include()
         self.out.lf().lf()
-        self.out.lf().lf() + redirect_outputs_interface_code
+        #self.out.lf().lf() + redirect_outputs_interface_code
         self.out.lf().lf()
         self.out.n() + 'integer (c_int32_t) :: max_length = 255, MAX_STRING_LENGTH = ' + self.MAX_STRING_LEN
         self.out.n() + 'logical :: must_run_loop, error'
