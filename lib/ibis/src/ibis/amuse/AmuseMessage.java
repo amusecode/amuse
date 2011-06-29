@@ -357,6 +357,10 @@ public class AmuseMessage implements Serializable {
         return rawByte == TRUE_BYTE;
         
     }
+    
+    public int getInteger(int index) {
+        return intBytes.getInt(index * SIZEOF_INT);
+    }
 
     /**
      * Get all buffers, possibly including the buffers containing the strings.

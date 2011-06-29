@@ -52,7 +52,7 @@ public class Deployment {
         return deploy.getServerAddress();
     }
 
-    public Job deploy(String codeName, String codeDir, String clusterName, String workerID)
+    public Job deploy(String codeName, String codeDir, String clusterName, String workerID, int nrOfWorkers)
             throws Exception {
         logger.info("Deploying worker \"" + workerID + "\" running \""
                 + codeName + "\" on host " + clusterName);
@@ -103,8 +103,8 @@ public class Deployment {
         experiment.addJob(jobDescription);
 
         jobDescription.getCluster().setName(clusterName);
-        jobDescription.setProcessCount(1);
-        jobDescription.setResourceCount(1);
+        jobDescription.setProcessCount(nrOfWorkers);
+        jobDescription.setResourceCount(nrOfWorkers);
         jobDescription.setRuntime(60);
         jobDescription.getApplication().setName(codeName);
         jobDescription.setPoolName("amuse");

@@ -39,6 +39,8 @@ public class CodeClient implements Runnable {
     private final String codeDir;
 
     private final String hostname;
+    
+    private final int nrOfWorkers;
 
     private final String id;
 
@@ -130,6 +132,8 @@ public class CodeClient implements Runnable {
             codeName = initRequest.getString(0);
             codeDir = initRequest.getString(1);
             hostname = initRequest.getString(2);
+            
+            nrOfWorkers = initRequest.getInteger(0);
 
             // initialize ibis ports
 
@@ -141,7 +145,7 @@ public class CodeClient implements Runnable {
 
             // start deployment of worker (possibly on remote machine)
 
-            job = deployment.deploy(codeName, codeDir, hostname, id);
+            job = deployment.deploy(codeName, codeDir, hostname, id, nrOfWorkers);
 
             // we expect a "hello" message from the worker. Will also check if
             // the job is still running
@@ -175,17 +179,18 @@ public class CodeClient implements Runnable {
     public void run() {
         AmuseMessage request = new AmuseMessage();
         AmuseMessage result = new AmuseMessage();
+        long start, finish;
         
         boolean running = true;
 
         while (running) {
-           
+           start = System.currentTimeMillis();
 
             try {
-                logger.debug("wating for request...");
+                //logger.debug("wating for request...");
                 request.readFrom(channel);
 
-                logger.debug("performing request " + request);
+                //logger.debug("performing request " + request);
 
                 if (request.getFunctionID() == AmuseMessage.FUNCTION_ID_STOP) {
                     // this will be the last call we perform
@@ -201,7 +206,7 @@ public class CodeClient implements Runnable {
                 request.writeTo(writeMessage);
                 writeMessage.finish();
 
-                logger.debug("waiting for result");
+                //logger.debug("waiting for result");
 
                 ReadMessage readMessage = receivePort.receive();
                 result.readFrom(readMessage);
@@ -212,12 +217,17 @@ public class CodeClient implements Runnable {
                             result.getError());
                 }
 
-                logger.debug("request " + request.getCallID()
-                        + " handled, result: " + result);
+                //logger.debug("request " + request.getCallID()
+                //        + " handled, result: " + result);
 
                 // forward result to the channel
                 result.writeTo(channel);
-
+                
+                finish = System.currentTimeMillis();
+                
+                if (logger.isInfoEnabled()) {
+                    logger.info("call took " + (finish - start) + " ms");
+                }
             } catch (IOException e) {
                 logger.error("Error on handling call", e);
                 // report error to amuse

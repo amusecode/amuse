@@ -106,9 +106,12 @@ public class SocketCode implements Runnable {
      */
     public void run() {
         boolean running = true;
+        long start, finish;
 
         while (running) {
+            
             try {
+                start = System.currentTimeMillis();
                 logger.debug("Receiving call message");
                 ReadMessage readMessage = receivePort.receive();
 
@@ -148,6 +151,11 @@ public class SocketCode implements Runnable {
                 writeMessage.finish();
 
                 logger.debug("Done performing call for function " + functionID);
+                finish = System.currentTimeMillis();
+                
+                if (logger.isInfoEnabled()) {
+                    logger.info("Call took " + (finish - start) + " ms");
+                }
             } catch (Throwable e) {
                 logger.error("Error while handling request", e);
                 try {
