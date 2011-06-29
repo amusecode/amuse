@@ -21,10 +21,10 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
     Relevant references:
         .. [#] Gaburov E., Lombardi J. C. & Portegies Zwart S., 2008, MNRAS, 383, L5
     """
-    include_headers = ['worker_mmams.h']
+    include_headers = ['worker_code.h']
     
     def __init__(self, **options):
-        CodeInterface.__init__(self, name_of_the_worker = "worker_mmams", **options)
+        CodeInterface.__init__(self, name_of_the_worker = "mmams_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
     
     @option(type="string")

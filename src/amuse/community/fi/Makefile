@@ -24,6 +24,9 @@ THREADLIB = -L. -lpthread src/libpt.a
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
+FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
+FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
+
 OMPFLAGS=# -openmp -openmp_report0 
 PIC=#-fPIC
 
@@ -77,6 +80,9 @@ $(SRC)/libfi.a: $(FILES) Makefile
 fi_worker: worker.f90 interface.o $(SRC)/libfi.a
 	$(FC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS)
 
+fi_worker_sockets: worker-sockets.f90 interface.o $(SRC)/libfi.a
+	$(FC) $(FFLAGS) $(SCINC) $(FSINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS) $(FCLIBS)
+
 fi_worker_gl: glworker.f90 interface.o $(SRC)/libfi.a
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)"
 	$(FC) $(FFLAGS) $(SCINC) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
@@ -93,6 +99,9 @@ fi_worker_periodic: worker.f90 interface.o $(SRC)/libfi.a
 
 worker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@
+
+worker-sockets.f90: interface.py $(AMUSE_INTERFACE_DEPS)
+	$(CODE_GENERATOR) --type=f90 --mode=sockets $< FiInterface -o $@
 
 glworker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< GlFiInterface -o $@

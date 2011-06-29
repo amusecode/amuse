@@ -32,7 +32,8 @@ $(CODELIB):
 	make -C $(BHTCDIR) all
 
 clean:
-	rm -f *.so *.o *.pyc muse_worker.cc worker_code.cc worker_code.h *.jnilib worker_code-ibis.cc worker_code-sockets.cc
+	rm -f *.so *.o *.pyc muse_worker.cc worker_code.cc worker_code.h *.jnilib worker_code-ibis.cc 
+	#worker_code-sockets.cc
 	$(RM) bhtree_worker *~ worker_code *~
 	make -C $(BHTCDIR) clean
 

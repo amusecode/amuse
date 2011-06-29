@@ -18,6 +18,9 @@ GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
+FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
+FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
+
 CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
 CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
 
@@ -66,6 +69,9 @@ $(CODELIB):
 phigrape_worker: worker_code.f90 phigrape_code.o $(CODELIB)
 	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
 
+phigrape_worker_sockets: worker_code-sockets.f90 phigrape_code.o $(CODELIB)
+	$(MPIF90) $(FFLAGS) $(SCINC) $(FSINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS) $(FSLIBS)
+
 phigrape_worker_gl: glworker_code.f90 phigrape_code.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
@@ -85,6 +91,9 @@ phigrape_worker_grape: worker_code.f90 phigrape_code.o $(CODELIB)
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterface -o $@
 
+worker_code-sockets.f90: interface.py
+	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py PhiGRAPEInterface -o $@
+
 glworker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterfaceGL -o $@
 
@@ -93,6 +102,7 @@ clean:
 	rm -f *.pyc *.o
 	rm -f worker_code_gpu worker_code_grape
 	rm -f worker_code worker_code.f90
+	rm -f worker_code-sockets.f90 phigrape_worker_sockets
 	rm -f glworker_code glworker_code.f90
 	rm -f glworker_code_gpu glworker_code_grape
 	rm -f phigrape_worker phigrape_worker_gl phigrape_worker_gl_gpu phigrape_worker_gpu

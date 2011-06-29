@@ -23,18 +23,24 @@ OBJECTS = interface.o
 SOURCES = interface.cc
 
 
-all: mmas2 worker_mmams
+all: mmas2 mmams_worker
 
 mmas2:
 	cd $(SRCMAKEDIR) && cmake . && make 
 
-worker_mmams.cc: interface.py
+worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c $^ MakeMeAMassiveStarInterface -o $@
 
-worker_mmams.h: interface.py
+worker_code-sockets.cc: interface.py
+	$(CODE_GENERATOR) --type=c --mode=sockets $^ MakeMeAMassiveStarInterface -o $@
+
+worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $^ MakeMeAMassiveStarInterface -o $@
 
-worker_mmams: worker_mmams.cc worker_mmams.h $(OBJECTS)
+mmams_worker: worker_code.cc worker_code.h $(OBJECTS)
+	$(MPICXX) $(CXXFLAGS) $< $(OBJECTS) -o $@  $(LIBS)
+
+mmams_worker_sockets: worker_code-sockets.cc worker_code.h $(OBJECTS)
 	$(MPICXX) $(CXXFLAGS) $< $(OBJECTS) -o $@  $(LIBS)
 
 interface.o: interface.cc
@@ -43,7 +49,8 @@ interface.o: interface.cc
 clean:
 	make -C $(SRCMAKEDIR) clean
 	rm -f *.pyc *.o
-	rm -f worker_mmams.cc worker_mmams.h worker_mmams
+	rm -f worker_code.cc worker_code.h mmams_worker
+	rm -f worker_code-sockets.cc mmams_worker_sockets
 
 distclean:       clean
 	rm -fr ccache

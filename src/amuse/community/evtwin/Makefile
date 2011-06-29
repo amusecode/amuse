@@ -18,7 +18,9 @@ SRC = $(SRCDIR)/library_v2.f90 $(SRCDIR)/export.f90 $(SRCDIR)/import.f90 \
       $(SRCDIR)/create_new_model.f90 $(SRCDIR)/prtoft.f90
 
 EVTWINLIB=$(LIBDIR)/libtwin.a
- 
+
+FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
+FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 
 FLIB= -L/software/local/intel64/compiler91/lib -lifcore -lifport
 LD = ld
@@ -34,7 +36,7 @@ create_Makefile: $(CMAKE_DEPS)
 clean:
 	-make -C $(MODDIR) clean
 	rm -f *.pyc make.log
-	rm -f mpi_code.f90 worker_code evtwin_worker twin_library_v2.mod mesh.mod
+	rm -f mpi_code.f90 worker_code evtwin_worker twin_library_v2.mod mesh.mod evtwin_worker_sockets worker_code-sockets.f90 forsockets.mod
 	rm -f $(MODDIR)/CMakeCache.txt
 	rm -rf $(MODDIR)/CMakeFiles
 	rm -rf $(MODDIR)/Makefile
@@ -51,6 +53,16 @@ evtwin_worker: mpi_code.f90 $(SRC)
 #	cp $(MODDIR)/mesh.mod .
 	$(MPIF90) -I$(MODDIR) $< -o $@ $(EVTWINLIB)
 
+evtwin_worker_sockets: worker_code-sockets.f90 $(SRC)
+	@-mkdir -p $(LIBDIR)
+#	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN)
+	make -s --no-print-directory -C $(MODDIR)
+#	cp $(MODDIR)/twin_library_v2.mod .
+#	cp $(MODDIR)/mesh.mod .
+	$(MPIF90) -I$(MODDIR) $(FSINC) $< -o $@ $(EVTWINLIB) $(FSLIBS)
+
 mpi_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
 	
+worker_code-sockets.f90: interface.py
+	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py EVtwinInterface -o $@
