@@ -14,6 +14,7 @@ developers work from the sphinx source repository (Mercurial based)
 because it is a rapidly evolving project:
 
 .. code-block:: bash
+
   > hg clone http://bitbucket.org/birkenfeld/sphinx/
   > cd sphinx
   > python setup.py install

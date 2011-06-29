@@ -301,7 +301,8 @@ The descendents of star 0 form a subset:
 
 
 Methods to retreive physical properties of the particles set
-------------------------------------------------------------
+============================================================
+
 Particle sets have a number of functions for calculating physical
 properties that apply to the sets. Although some of these might be implemented
 in the legacy codes as well, using them via particle sets guarantees

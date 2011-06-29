@@ -87,12 +87,19 @@ data of a particle is stored in the set.
     ------------------------------------------------------------
     
 .. automodule:: amuse.support.data.particle_attributes
+
     .. autofunction:: center_of_mass 
+        :noindex:
     .. autofunction:: center_of_mass_velocity
+        :noindex:
     .. autofunction:: kinetic_energy
+        :noindex:
     .. autofunction:: potential_energy 
+        :noindex:
     .. autofunction:: particle_specific_kinetic_energy
+        :noindex:
     .. autofunction:: particle_potential
+        :noindex:
 
     
 
