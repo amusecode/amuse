@@ -85,18 +85,14 @@ class AbstractGrid(AbstractSet):
             yield self[i]
         
 class Grid(AbstractGrid):
-    def __init__(self, number_of_points_in_x_direction = 1, number_of_points_in_y_direction = 1, number_of_points_in_z_direction = 1, storage = None):
+    def __init__(self, *args, **kwargs):
         AbstractGrid.__init__(self)
         
-        if storage is None:
-            self._private.attribute_storage = InMemoryGridAttributeStorage(
-                number_of_points_in_x_direction,
-                number_of_points_in_y_direction,
-                number_of_points_in_z_direction
-            )
+        if "storage" in kwargs:
+            self._private.attribute_storage = kwargs['storage']
         else:
-            self._private.attribute_storage = storage
-            
+            self._private.attribute_storage = InMemoryGridAttributeStorage(*args)
+    
     @classmethod
     def create(cls, shape, lengths):
         """Returns a grid with cells between 0 and lengths.

@@ -179,14 +179,12 @@ class InMemoryAttributeStorage(AttributeStorage):
     
 class InMemoryGridAttributeStorage(object):
     
-    def __init__(self, number_of_i, number_of_j, number_of_k):
+    def __init__(self, *number_of_points_in_each_direction):
         self.mapping_from_attribute_to_quantities = {}
-        self.number_of_i = number_of_i
-        self.number_of_j = number_of_j
-        self.number_of_k = number_of_k
+        self.number_of_points_in_each_direction = number_of_points_in_each_direction
         
     def storage_shape(self):
-        return (self.number_of_i, self.number_of_j, self.number_of_k)
+        return self.number_of_points_in_each_direction
         
     def add_particles_to_store(self, keys, attributes = [], quantities = []):
         raise exceptions.AmuseException("adding points to the grid is not implemented")
