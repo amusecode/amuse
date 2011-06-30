@@ -21,8 +21,8 @@ funcs =\
 ['tcrit','DOUBLE PRECISION','termination_time_units_crossing_time'],
 ['tcomp','DOUBLE PRECISION','max_comp_time_in_hours'],
 ['qe', 'DOUBLE PRECISION','energy_tolerance'],
-['alphal','','pwr_law_index_lt_breake_mass'],
-['alphah', '','pwr_law_index_ht_breake_mass'],
+['alphal','DOUBLE PRECISION','pwr_law_index_lt_breake_mass'],
+['alphah', 'DOUBLE PRECISION','pwr_law_index_ht_breake_mass'],
 ['brakem','DOUBLE PRECISION','mass_in_which_IMF_breaks'],
 ['body1','DOUBLE PRECISION','max_particle_mass_before_scaling'],
 ['bodyn','DOUBLE PRECISION','min_particle_mass_before_scaling'],
@@ -54,7 +54,6 @@ funcs =\
 ['nt00','','num'],
 ['bmin0','DOUBLE PRECISION','num'],
 ['iseed','','rnd_seed']]
-
 codestringfort = \
 """
 MODULE MMC
@@ -234,6 +233,35 @@ FUNCTION commit_parameters( )
   IMPLICIT NONE
   INTEGER commit_parameters
   commit_parameters=0
+END FUNCTION
+
+FUNCTION get_rc(rc_)
+  INTEGER get_rc
+  DOUBLE PRECISION rc_
+  get_rc = get_rc_src(rc_)
+END FUNCTION
+
+FUNCTION get_nc(nc_)
+  INTEGER get_nc
+  INTEGER nc_
+  get_nc = get_nc_src(nc_)
+END FUNCTION
+
+FUNCTION call_zone()
+  INTEGER call_zone
+  call zone()
+  call_zone = 0
+END FUNCTION
+
+FUNCTION call_relaxt()
+  INTEGER call_relaxt
+  call relaxt()
+  call_relaxt = 0
+END FUNCTION
+
+FUNCTION call_amuse_output()
+  INTEGER call_amuse_output
+  call_amuse_output = amuse_output()
 END FUNCTION
 
 """

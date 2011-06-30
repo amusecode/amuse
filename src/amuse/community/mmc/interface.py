@@ -461,28 +461,28 @@ class mmcInterface(CodeInterface, PolarSupport):
     @legacy_function
     def set_alphal():
         function = LegacyFunctionSpecification()
-        function.addParameter('pwr_law_index_lt_breake_mass', dtype='int32', direction=function.IN)
+        function.addParameter('pwr_law_index_lt_breake_mass', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_alphal():
         function = LegacyFunctionSpecification()
-        function.addParameter('pwr_law_index_lt_breake_mass', dtype='int32', direction=function.OUT)
+        function.addParameter('pwr_law_index_lt_breake_mass', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_alphah():
         function = LegacyFunctionSpecification()
-        function.addParameter('pwr_law_index_ht_breake_mass', dtype='int32', direction=function.IN)
+        function.addParameter('pwr_law_index_ht_breake_mass', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_alphah():
         function = LegacyFunctionSpecification()
-        function.addParameter('pwr_law_index_ht_breake_mass', dtype='int32', direction=function.OUT)
+        function.addParameter('pwr_law_index_ht_breake_mass', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
@@ -882,6 +882,38 @@ class mmcInterface(CodeInterface, PolarSupport):
     def get_nitesc():
         function = LegacyFunctionSpecification()
         function.addParameter('iteration_tidal_radius', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_rc():
+        function = LegacyFunctionSpecification()
+        function.addParameter('coreradius', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_nc():
+        function = LegacyFunctionSpecification()
+        function.addParameter('numberdensity', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def call_zone():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def call_relaxt():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def call_amuse_output():
+        function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         return function
 

@@ -23,7 +23,7 @@
      &          xxx4,w0,bmin0,bmax,tau0,gamma,xtid,rplum,dttp,dtte,
      &          dtte0,tcrevo,xtau,ytau,ybmin,zini,ikroupa,iflagns,
      &          iflagbh,nitesc
-*
+
       read(1,*) (flagr(i),i=1,nlagra)
 *
       close(1)

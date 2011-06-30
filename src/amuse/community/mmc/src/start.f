@@ -30,6 +30,7 @@
       print*,'calling data'
       call flush(6)
       call data
+      print*,'called data'
 *
 *       scale initial conditions to N-body units
 *

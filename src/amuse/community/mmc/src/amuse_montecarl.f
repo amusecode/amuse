@@ -16,9 +16,12 @@ c     call input
           call start
           iphase = 1
       else
+          write(6,*)   '  not calling start..'
+          call flush(6)
+
           call mydump(2)
 c         hmmmm...
-          call input
+c         call input
           iphase = 2
       endif
 
@@ -67,33 +70,21 @@ c     let python script decide when to stop...
       function evolve_src(time_end)
       include 'common.h'
       integer evolve_src
-      integer run_a_while
       integer iphase
       integer res, dumpres
       double precision tcrit_, time_end
 
       res = 0
 
- 10   if (time_end.gt.time) then 
-          write(6,*) time, time_end
-          call flush(6)
-
-   20     if (res.eq.0) then
-              iphase = 1  
-              write(6,*) "run"
-              call flush(6)
-
-              res = run_a_while(iphase)
-              write(6,*) "ran"
-              call flush(6)
-
-              goto 20
-          endif
-          if (res.eq.-2) then
-              evolve_src = 0
-          endif
-          goto 10          
+   10 if (time_end.gt.timet) then
+          write(6,*) 'call zone'
+          call zone
+          write(6,*) 'call relaxt', timet
+          call relaxt
+          goto 10
       endif
+      time_end = timet
+      evolve_src = 0
 
       end function
 

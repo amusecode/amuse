@@ -128,3 +128,23 @@
 
       test_sort = 0
       end function 
+
+      function get_rc_src(rc_)
+      include 'common.h'
+      integer get_rc_src
+      double precision rc_
+      
+      rc_ = rc
+      
+      get_rc_src = 0
+      end function
+
+      function get_nc_src(nc_)
+      include 'common.h'
+      integer get_rc_src
+      integer nc_
+      
+      nc_ = nc
+      
+      get_nc_src = 0
+      end function
