@@ -27,7 +27,7 @@ def density_estimators(n_points, r, mass, dims=3):
     mrho= 0.
     #this is equivalent to their J-1 factor for the case of equal masses,
     #and seems like a good generalization for unequal masses 
-    mrho= sum(mass[jmin+1:jmax])
+    mrho= N.sum(mass[jmin+1:jmax])
 
     if dims==3:
       Vrj = 4.0/3.0 * N.pi * (r[jmax]**3 - r[jmin]**3);
@@ -46,6 +46,6 @@ def core_radius(rhoj):
   rhoj - Density estimators (use density_estimator function)
   """
 
-  return sum(rhoj[:,0]*rhoj[:,1])/sum(rhoj[:,1])
+  return N.sum(rhoj[:,0]*rhoj[:,1])/sum(rhoj[:,1])
 
 
