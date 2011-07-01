@@ -165,13 +165,13 @@ end module forsockets
 """
 
 redirect_outputs_function_code = """
-integer (c_int32_t) function internal__redirect_outputs(stdoutfile, stderrfile)
-
+function internal__redirect_outputs(stdoutfile, stderrfile)
     use iso_c_binding
     
     implicit none
     
     character(kind=c_char, len = *) , intent(in) :: stdoutfile, stderrfile
+    integer(c_int32_t) :: internal__redirect_outputs
     
     print*, 'NOT redirecting output to', stdoutfile, ' and ', stderrfile
     call flush()
@@ -556,7 +556,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.output_switch_start()
         self.output_sourcecode_for_functions()
         self.output_switch_end()
-        self.output_runloop_function_def_end()
+        self.output_runloop_function_def_end() 
         self.output_main()
         self._result = self.out.string
 
@@ -578,6 +578,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 if specification.id == 0:
                     continue
                 if specification.result_type is None:
+                    continue
+                if specification.name == 'internal__redirect_outputs':
                     continue
                 if specification.result_type == 'string':
                     type = 'CHARACTER(len=255)'
@@ -615,7 +617,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf()
         self.output_mpi_include()
         self.out.lf().lf()
-        #self.out.lf().lf() + redirect_outputs_interface_code
+        self.out.lf().lf() + 'integer (c_int32_t) internal__redirect_outputs'
         self.out.lf().lf()
         self.out.n() + 'integer (c_int32_t) :: max_length = 255, MAX_STRING_LENGTH = ' + self.MAX_STRING_LEN
         self.out.n() + 'logical :: must_run_loop, error'
