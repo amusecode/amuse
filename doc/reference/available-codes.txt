@@ -1162,25 +1162,6 @@ Specifics
 * care must be taken that the particle sets fit in the box_size
 * the default hilbert_order should work for most particle distributions
 
-
-Parameters
-^^^^^^^^^^
-
-+------------------------------------+---------------+---------------+-------------------+
-|name                                |default value  |unit           |description        |
-|                                    |               |               |                   |
-+====================================+===============+===============+===================+
-|timestep                            | 0.05          |Myr            |timestep for       |
-|                                    |               |               |radiative transfer |
-|                                    |               |               |sweeps             |
-+------------------------------------+---------------+---------------+-------------------+
-|hilbert_order                       |1              |none           |hilbert_order for  |
-|                                    |               |               |domain split       |
-+------------------------------------+---------------+---------------+-------------------+
-|box_size                            |13200          |parsec         |box size of        |
-|                                    |               |               |domain             |
-+------------------------------------+---------------+---------------+-------------------+
-
 .. automodule:: amuse.community.simplex.interface
     
     .. autoclass:: SimpleX
