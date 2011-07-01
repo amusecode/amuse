@@ -46,6 +46,6 @@ def core_radius(rhoj):
   rhoj - Density estimators (use density_estimator function)
   """
 
-  return N.sum(rhoj[:,0]*rhoj[:,1])/sum(rhoj[:,1])
+  return N.sum(rhoj[:,0]*rhoj[:,1])/N.sum(rhoj[:,1])
 
 
