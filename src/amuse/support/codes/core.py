@@ -482,7 +482,7 @@ class LegacyFunctionSpecification(object):
                 
     
     def __str__(self):
-        typecode_to_name = {'int32':'int', 'float64':'double', 'float32':'float'}
+        typecode_to_name = {'int32':'int', 'float64':'double', 'float32':'float', 'string':'string', 'int64':'long', 'bool':'bool' }
         p = print_out()
         p + 'function: '
         if self.result_type is None:
