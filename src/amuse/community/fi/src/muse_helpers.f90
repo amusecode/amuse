@@ -954,7 +954,12 @@ function amuse_set_internal_energy(id,u) result(ret)
   if(uentropy) then
     entropy(p)=u*gamma1/rho(p)**gamma1
   else
-    ethermal(p)=u
+    if(.NOT.isotherm) then
+      csound(p)=sqrt(gamma*gamma1*u)
+    else
+      csound(p)=sqrt(u)   
+    endif
+    ethermal(p)=u ! ethold??
   endif
   ret=0 
 end function

@@ -82,7 +82,7 @@ subroutine brackethsm(ppos,hmin,hmax,success)
   integer p,success,ntry,j
   real hmin,hmax,ppos(3),fac,f1,f2,df,getlocalscale
   real dum1,dum2
-  parameter(fac=1.5,ntry=20)
+  parameter(fac=1.5,ntry=40)
   external getlocalscale
   success=1
   hmax=fac*getlocalscale(ppos)
@@ -347,8 +347,8 @@ subroutine densnhsmooth
     print*,'<densnhsmooth> max iter, fails:',imax,jtot
   endif
   
-  if(drhosum/npactive.GT.0.0001) &
-    print*,' *** drho warning *** ',drhosum/npactive
+  if(drhosum/npactive.GT.0.001) &
+    print*,' *** drho warning *** ',drhosum/npactive, npactive
 end subroutine
 
 subroutine gatterdens(n,spos,hsearch,dens,ddensdh)
