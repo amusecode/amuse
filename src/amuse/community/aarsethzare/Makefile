@@ -21,7 +21,7 @@ all: aarsethzare_worker
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ aarsethzare_worker worker_code.f90
+	$(RM) *~ aarsethzare_worker worker_code.f90 aarsethzare_worker_sockets worker_code-sockets.f90
 	make -C src clean
 
 $(CODELIB):
