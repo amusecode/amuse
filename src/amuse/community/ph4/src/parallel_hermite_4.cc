@@ -18,7 +18,7 @@
 //
 // version 0, September 2010:	Steve McMillan (steve@physics.drexel.edu)
 // version 1, December 2010:	added treatment of close encounters
-// version 2. April 2011:	exposed some extra functionality to AMUSE
+// version 2. April 2011:	exposed extra functionality to AMUSE
 //
 //----------------------------------------------------------------------
 
@@ -181,7 +181,7 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     jd.use_gpu = use_gpu;
     jd.eps2 = eps2;
     jd.eta = eta;
-    jd.manage_encounters = manage_encounters;
+    jd.set_manage_encounters(manage_encounters);
 
     initialize_particles(jd, ntotal, seed, vfac, file, system_time);
     jd.initialize_arrays();

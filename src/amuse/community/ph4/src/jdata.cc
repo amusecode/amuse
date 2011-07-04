@@ -7,6 +7,7 @@
 //
 //	void jdata::setup_mpi(MPI::Intracomm comm)
 //	void jdata::setup_gpu()
+//	void jdata::set_manage_encounters(int m)
 //	int  jdata::add_particle(real pmass, real pradius,
 //				 vec ppos, vec pvel, int pid)
 //	void jdata::remove_particle(int j)
@@ -35,6 +36,9 @@
 #include "grape.h"
 #endif
 
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
+
 void jdata::setup_mpi(MPI::Intracomm comm)
 {
     const char *in_function = "jdata::setup_mpi";
@@ -58,6 +62,26 @@ void jdata::setup_gpu()
 #else
     have_gpu = use_gpu = false;
 #endif
+}
+
+void jdata::set_manage_encounters(int m)
+{
+    // Setter for public data, but also checks the AMUSE stopping
+    // conditions.  Use this instead of jd.manage_emcounters = ...
+
+    // AMUSE STOPPING CONDITIONS SUPPORT
+    int is_collision_detection_enabled;
+    is_stopping_condition_enabled(COLLISION_DETECTION,
+				  &is_collision_detection_enabled);
+    if (is_collision_detection_enabled) manage_encounters = 4;	// unnecessary
+
+    if (manage_encounters == 4 && m != 4)
+	if (mpi_rank == 0)
+	    cout << "warning: setting manage_encounters = " << m
+		 << " overrides default stopping condition"
+		 << endl << flush;
+
+    manage_encounters = m;
 }
 
 static int init_id = 1, next_id = init_id;
@@ -615,9 +639,20 @@ bool jdata::advance_and_check_encounter()
     bool status = false;
     advance();
 
-    // Optionally manage close endounters.
+    // Optionally manage close encounters.  AMUSE stopping conditions
+    // are enabled with manage_encounters = 4.
 
     if (manage_encounters && eps2 == 0 && close1 >= 0) {
+
+	// AMUSE STOPPING CONDITIONS SUPPORT
+	if (manage_encounters == 4) {
+	    int stopping_index = next_index_for_stopping_condition();
+	    set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+	    set_stopping_condition_particle_index(stopping_index, 0, close1);
+	    set_stopping_condition_particle_index(stopping_index, 0, close2);
+	    return status;
+	}
+
 	status = resolve_encounter();
 	if (status) {
 	    if (0 && mpi_rank == 0) {

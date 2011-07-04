@@ -96,7 +96,7 @@ void jdata::update_gpu(int jlist[], int njlist)
 
     if (my_nj != nj) {
 
-	// (Re)define my j-range.  Oonly necessary if nj changes.
+	// (Re)define my j-range.  Only necessary if nj changes.
 
 	n = nj/mpi_size;
 	if (n*mpi_size < nj) n++;

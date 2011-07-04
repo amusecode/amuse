@@ -683,7 +683,8 @@ static void log_output(hdyn *b, int n_steps)
 }
 
 // Evolve the system to time t_end, using the input data and settings
-// without modification.  Stop and return if
+// without modification.  Assume that we start with a flat tree.  Stop
+// and return if
 //
 //	(1) t >= t_end (checked at start of each iteration),
 //	(2) any particle gets too far (break_r) from the origin
@@ -706,7 +707,14 @@ int smallN_evolve(hdyn *b,
 				// separations outside allowed limits
 
     int n_steps = 0;
-    for_all_daughters(hdyn, b, bi) bi->init_pred();
+    int cm_index = 0;
+    for_all_daughters(hdyn, b, bi) {
+	bi->init_pred();
+	int i = bi->get_index();
+	if (i > cm_index) cm_index = i;
+    }
+    cm_index = pow(10, (int)log10((real)cm_index+1) + 1.);
+    b->set_cm_index(cm_index);    
     real dt = calculate_top_level_acc_and_jerk(b);
 
     real tmp;

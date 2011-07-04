@@ -6,7 +6,7 @@
 ///    version 1:  Dec 1992   Piet Hut, Steve McMillan, Jun Makino
 ///    version 2:  Jun 2003   Steve McMillan: vector now vec to avoid
 ///                           conflict with upstart STL vector type
-///    version 3:  Aug 2010   Steve McMillan: imported into nbody1++
+///    version 3:  Aug 2010   Steve McMillan: imported into ph4++
 
 class vec
 {
@@ -158,52 +158,59 @@ class vec
 	friend istream & operator >> (istream & , vec & );
 };
 
-inline  ostream & operator << (ostream & s, const vec & v)
+inline ostream & operator << (ostream & s, const vec & v)
 	    {return s << v.element[0] << "  " << v.element[1]
 		      << "  " << v.element[2];}
 
-inline  istream & operator >> (istream & s, vec & v)
+inline istream & operator >> (istream & s, vec & v)
 	    {s >> v.element[0] >> v.element[1] >> v.element[2];
 	     return s;}
 
-inline  real square(vec v) {return v*v;}
-inline  real abs(vec v)    {return sqrt(v*v);}
+inline real square(vec v) {return v*v;}
+inline real abs(vec v)    {return sqrt(v*v);}
 
 // Another measure of vector magnitude; less work than abs():
 
-inline  real abs1(vec v)   {return abs(v[0]) + abs(v[1]) + abs(v[2]);}
+inline real abs1(vec v)   {return abs(v[0]) + abs(v[1]) + abs(v[2]);}
 
-inline  vec operator + (real b, const vec & v)
-	    {return vec(b+v.element[0],
-			b+v.element[1],
-			b+v.element[2]);}
+inline vec operator + (real b, const vec & v)
+	{return vec(b+v.element[0],
+		    b+v.element[1],
+		    b+v.element[2]);}
 
-inline  vec operator + (const vec & v, real b)
-	    {return vec(b+v.element[0],
-			b+v.element[1],
-			b+v.element[2]);}
+inline vec operator + (const vec & v, real b)
+	{return vec(b+v.element[0],
+		    b+v.element[1],
+		    b+v.element[2]);}
 
-inline  vec operator * (real b, const vec & v)
-	    {return vec(b*v.element[0],
-			b*v.element[1],
-			b*v.element[2]);}
+inline vec operator * (real b, const vec & v)
+	{return vec(b*v.element[0],
+		    b*v.element[1],
+		    b*v.element[2]);}
 
-inline  vec operator * (const vec & v, real b)
-	    {return vec(b*v.element[0],
-			b*v.element[1],
-			b*v.element[2]);}
+inline vec operator * (const vec & v, real b)
+	{return vec(b*v.element[0],
+		    b*v.element[1],
+		    b*v.element[2]);}
 
-inline  vec operator / (const vec & v, real b)
-	    {return vec(v.element[0]/b,
-			v.element[1]/b,
-			v.element[2]/b);}
+inline vec operator / (const vec & v, real b)
+	{return vec(v.element[0]/b,
+		    v.element[1]/b,
+		    v.element[2]/b);}
 
-inline  bool operator == (const vec& u, const vec& v)
-	    {return (u.element[0] == v.element[0]
-		     && u.element[1] == v.element[1]
-		     && u.element[2] == v.element[2]);}
+inline bool operator == (const vec& u, const vec& v)
+	{return (u.element[0] == v.element[0]
+		 && u.element[1] == v.element[1]
+		 && u.element[2] == v.element[2]);}
 
-inline  bool operator != (const vec& u, const vec& v)
-	    {return !(u==v);}
+inline bool operator != (const vec& u, const vec& v)
+	{return !(u==v);}
+
+/// Create a vector from arr[3].  Don't make this a constructor
+/// function, since we want vec(0) to be legal (0 could be a
+/// pointer...).
+
+inline vec newvec(real *a)
+	{return vec(a[0], a[1], a[2]);}
 
 #endif

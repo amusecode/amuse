@@ -6,6 +6,7 @@
 //	1	analytic pericenter reflection
 //	2	(1) and merge close binaries
 //	3	(2) and full integration of multiple (TODO)
+//	4	use AMUSE stopping condition and close encounter support
 //
 // Global function:
 //
@@ -166,16 +167,17 @@ bool jdata::resolve_encounter()
     // Prepare for two-body/multiple motion by synchronizing the
     // neighbors.  Make a list of all particles within 100 |dr|, and a
     // sub-list of particles that need to be synchronized.  Optimal
-    // factor TBD.  TODO.
+    // factor TBD.  TODO.  Use an array for synclist and a vector for
+    // nbrlist, for uniformity in two_body() and multiple().
 
-    int *nbrlist = new int[nj];
+    vector<int> nbrlist;
     int *synclist = new int[nj];
-    int nnbr = 0, nsync = 0;
+    int nsync = 0;
 
     for (int jl = 0; jl < nj; jl++) {
 	int j = rlist[jl].jindex;
 	if (rlist[jl].r_sq <= 1.e4*dr2) {
-	    if (j != j1 && j != j2) nbrlist[nnbr++] = j;
+	    if (j != j1 && j != j2) nbrlist.push_back(j);
 	    if (time[j] < system_time) synclist[nsync++] = j;
 	} else
 	    break;
@@ -190,14 +192,12 @@ bool jdata::resolve_encounter()
 
     //-----------------------------------------------------------------
     // Hand off the rest of the calculation to the two_body()
-    // function.  Later, we will add multiple() functionality, and
-    // reinstate duplicated code at the end of this function.
+    // or multiple() functions.  The latter is still in development.
 
-    if (0 && (is_multiple(id[j1]) || is_multiple(id[j2])))
-	multiple(j1, j2, nbrlist, nnbr);
+    if (is_multiple(id[j1]) || is_multiple(id[j2]))
+	multiple(j1, j2, nbrlist);
     else
-	two_body(j1, j2, nbrlist, nnbr);
+	two_body(j1, j2, nbrlist);
 
-    delete [] nbrlist;
     return status;
 }

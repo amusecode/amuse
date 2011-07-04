@@ -12,6 +12,7 @@ real hdyn::r2_crit = 1.e-2;
 bool hdyn::allow_full_unperturbed = true;
 real hdyn::gamma2_unpert = 1.e-12;
 real hdyn::gamma_inv3 = pow(fmax(gamma2_unpert, 1.e-120), -1./6);
+int hdyn::cm_index = 0;
 
 // Tree management:
 

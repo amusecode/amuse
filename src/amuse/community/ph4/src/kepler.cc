@@ -6,7 +6,7 @@
 //
 // Steve McMillan, Fall 1994, Spring 1999
 // SPZ and JM, Feb 1998
-// Steve McMillan, Feb 2011 - import into AMUSE
+// Steve McMillan, Feb 2011 - imported into AMUSE
 
 #include "hdyn.h"
 
@@ -384,7 +384,7 @@ kepler::kepler()
 }
 
 void hdyn_to_kepler(hdyn * com,    	    // com = center-of-mass
-		     real t)		    // default = 0
+		    real t)		    // default = 0
 {
     kepler * k = com->get_kepler();
     hdyn *d1, *d2;
@@ -402,7 +402,7 @@ void hdyn_to_kepler(hdyn * com,    	    // com = center-of-mass
 }
 
 void hdyn_to_child_kepler(hdyn * com,    // com = center-of-mass
-			   real t)	 // default = 0
+			  real t)	 // default = 0
 {
     kepler * k = com->get_oldest_daughter()->get_kepler();
     hdyn *d1, *d2;
@@ -420,7 +420,7 @@ void hdyn_to_child_kepler(hdyn * com,    // com = center-of-mass
 }
 
 void new_kepler(hdyn * com,	      	// com is the center-of-mass hdyn
-		 real t)		// default = 0
+		real t)			// default = 0
 {
     kepler * k;
     k = new kepler;
@@ -430,8 +430,8 @@ void new_kepler(hdyn * com,	      	// com is the center-of-mass hdyn
 }
 
 void new_child_kepler(hdyn * com,	// com is the center-of-mass hdyn
-		       real t,		// default = 0
-		       real circ_limit)	// default = 0
+		      real t,		// default = 0
+		      real circ_limit)	// default = 0
 {
     kepler * k;
     k = new kepler;

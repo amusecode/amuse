@@ -237,35 +237,35 @@ class ph4(GravitationalDynamics):
         #        ph4.parameters.timestep_parameter = xxx
 
         object.add_method_parameter(
-            "get_eta",                        # getter name in interface.cc
-            "set_eta",                        # setter name in interface.cc
+            "get_eta",                   # getter name in interface.cc
+            "set_eta",                   # setter name in interface.cc
             "timestep_parameter",        # python parameter name
             "timestep parameter",        # description
-            default_value = 0.14 | units.none                # default
+            default_value = 0.14 | units.none
         )
 
         object.add_method_parameter(
-            "get_eps2",                        # already defined in standard interface
-            "set_eps2",                        # already defined in standard interface
+            "get_eps2",                  # already defined in standard interface
+            "set_eps2",                  # already defined in standard interface
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             default_value = 0.01 | nbody_system.length * nbody_system.length
         )
 
         object.add_method_parameter(
-            "get_gpu",                        # getter name in interface.cc
-            "set_gpu",                        # setter name in interface.cc
-            "use_gpu",                        # python parameter name
-            "use GPU",                        # description
-            default_value = 1 | units.none                # default
+            "get_gpu",                   # getter name in interface.cc
+            "set_gpu",                   # setter name in interface.cc
+            "use_gpu",                   # python parameter name
+            "use GPU",                   # description
+            default_value = 1 | units.none
         )
         
         object.add_method_parameter(
-            "get_manage_encounters",        # getter name in interface.cc
-            "set_manage_encounters",        # setter name in interface.cc
-            "manage_encounters",        # python parameter name
-            "manage close encounters",        # description
-            default_value = 1 | units.none                # default
+            "get_manage_encounters",     # getter name in interface.cc
+            "set_manage_encounters",     # setter name in interface.cc
+            "manage_encounters",	 # python parameter name
+            "manage close encounters",   # description
+            default_value = 4 | units.none
         )
         
     def update_particle_set(self):

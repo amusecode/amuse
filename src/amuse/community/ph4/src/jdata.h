@@ -7,9 +7,19 @@
 #include "stdinc.h"
 #include <vector>
 #include <map>
+#include <algorithm>
 
 class scheduler;
 class idata;
+class hdyn;
+
+typedef struct {
+    int status;
+    vec cmpos;
+    vec cmvel;
+    real scale2;
+    hdyn *b;
+} nbody_descriptor;
 
 class binary {
 
@@ -34,11 +44,15 @@ class binary {
 };
 
 class UpdatedParticle {
+
+  // AMUSE bookkeeping.  A particle on the UpdatedParticle list has
+  // been added or removed internally.  Use this class to communicate
+  // this information back to the python level.
     
   public:
 
     int index_of_particle;
-    int status;
+    int status;		// 1 ==> deleted, 2 ==> added
     
     UpdatedParticle():index_of_particle(-1),status(0) {}
     UpdatedParticle(int i, int s):index_of_particle(i), status(s) {}
@@ -102,11 +116,12 @@ class jdata {
 
     real E0;
 
-    // Multiple structure management:
+    // Multiple structure management (see also stopping_conditions code):
 
     real Emerge;
     int manage_encounters;
     int binary_base;
+    int binary_count;
     vector<binary> binary_list;
 
     // Manage internal removal/creation of particles.
@@ -138,6 +153,7 @@ class jdata {
 	E0 = 0;
 	Emerge = 0;
 	manage_encounters = 1;
+	binary_count = 0;
 	binary_list.clear();
 	UpdatedParticles.clear();
     }
@@ -147,6 +163,7 @@ class jdata {
 
     // In jdata.cc:
 
+    void set_manage_encounters(int m);
     void setup_mpi(MPI::Intracomm comm);
     void setup_gpu();
     int get_particle_id(int offset = 0);
@@ -199,8 +216,19 @@ class jdata {
 
     // In two_body.cc:
 
-    void two_body(int j1, int j2, int nbrlist[], int nnbr);
-    void multiple(int j1, int j2, int nbrlist[], int nnbr);
+    void two_body(int j1, int j2, vector<int> nbrlist);
+
+    int find_binary(int id);
+    void expand_binary(hdyn *bb, real *time_scale = NULL,
+		       real *length_scale2 = NULL);
+    void remove_binary(int id);
+    void add_binary(hdyn *b);
+    nbody_descriptor integrate_multiple(vector<int> jcomp,
+					real dt_fac, real r2_fac);
+    bool check_add_neighbors(nbody_descriptor &s,
+			     vector<int>mult, vector<int> nbrlist);
+    real rescale(hdyn *b, real r2);
+    void multiple(int j1, int j2, vector<int> nbrlist);
 };
 
 #define PRRC(x) cout << "rank = " << mpi_rank << " " << #x << " = " << x << ",  " << flush

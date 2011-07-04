@@ -30,6 +30,7 @@ class hdyn
     static real r2_crit;
     static real gamma2_unpert;		// threshold for unperturbed motion
     static real gamma_inv3;
+    static int cm_index;
 
     // Particle properties:
 
@@ -76,6 +77,7 @@ class hdyn
     void set_gamma(const real g)        {gamma2_unpert = g*g;
 					 gamma_inv3 = pow(fmax(gamma2_unpert,
 							  1.e-120), -1./6);}
+    void set_cm_index(int i)		{cm_index = i;}
 
     void set_index(const int n)         {index = n;}
     void set_mass(const real m)         {mass = m;}
@@ -115,6 +117,7 @@ class hdyn
     inline real get_dt_crit()	  	const {return dt_crit;}
     inline real get_gamma2_unpert()  	const {return gamma2_unpert;}
     inline real get_gamma_inv3()  	const {return gamma_inv3;}
+    inline int  get_cm_index()		const {return cm_index;}
 
     inline int  get_index()	 	const {return index;}
     inline real get_mass()		const {return mass;}

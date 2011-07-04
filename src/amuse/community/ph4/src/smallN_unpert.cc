@@ -313,7 +313,19 @@ bool create_binary(hdyn *bi, hdyn *bj, bool verbose)
     // node is cm.
 
     create_binary_node(cm, bi, bj);
-    cm->set_index(100000+1000*bi->get_index()+10*bj->get_index());	// TBD
+
+    // Leaf indices are meainingful and retain their meaning
+    // throughout.  CM node indices are generated internally, and are
+    // discarded when the node is destroyed.  Desirable to have the CM
+    // index reflect the indices of the components, but this is in
+    // general not feasible if the leaf indices are large (e.g. if
+    // they come from a larger simulation).  Instead of a formula to
+    // compute the indices, just use a manager as in ph4.
+
+    // cm->set_index(100000+1000*bi->get_index()+10*bj->get_index());
+    int cm_index = bi->get_cm_index();
+    cm->set_index(cm_index);
+    bi->set_cm_index(cm_index+1);
 
     // The relevant kepler is attached to (only) the first component.
 

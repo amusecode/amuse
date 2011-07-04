@@ -9,6 +9,9 @@
 #include "src/idata.h"
 #include "src/scheduler.h"
 
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
+
 static jdata *jd = NULL;
 static idata *id = NULL;
 static scheduler *s = NULL;
@@ -27,6 +30,12 @@ int initialize_code()
 	PRC(jd->mpi_size); PRL(jd->have_gpu);
     }
     jd->system_time = 0;		// ? TBD
+
+    // AMUSE STOPPING CONDITIONS SUPPORT
+    set_support_for_condition(COLLISION_DETECTION);
+    mpi_setup_stopping_conditions();
+    jd->set_manage_encounters(4);	// 4 ==> enable AMUSE suport
+
     return 0;
 }
 
@@ -68,7 +77,7 @@ int get_gpu(int * gpu)
 
 int set_manage_encounters(int m)
 {
-    jd->manage_encounters = m;
+    jd->set_manage_encounters(m);
     return 0;
 }
 

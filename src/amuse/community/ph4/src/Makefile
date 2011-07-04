@@ -5,10 +5,10 @@
 # Optimization may cause failure on some systems.  Replace by -O0 in
 # that case.
 
-OPT	  = -O4
+OPT	  = -O4 -I$(AMUSE_DIR)/lib/stopcond
 
 GPU	  = -DGPU
-CXX	  = mpicxx	# openmpicxx
+CXX	  ?= mpicxx
 CFLAGS   += -g -Wall $(OPT)
 CXXFLAGS += $(CFLAGS) 
 
@@ -17,9 +17,13 @@ CODELIB = libph4.a
 CODELIB_GPU = libph4gpu.a
 
 CODEOBJS = debug.o diag.o gpu.o grape.o idata.o jdata.o scheduler.o \
-	close_encounter.o two_body.o util.o
-
+	   close_encounter.o two_body.o util.o
 CODEOBJS_GPU = $(subst .o,.gpuo, $(CODEOBJS))
+
+# Needed if we don't use AMUSE stopping conditions:
+
+EXTRAOBJS = kepler-lib.o hdyn.o smallN-lib.o smallN_unpert.o \
+	    analyze-lib.o nstab.co f2c.co
 
 GPUFLAGS = $(GPU)
 
@@ -31,15 +35,15 @@ all: $(CODELIB)
 
 gpulib: $(CODELIB_GPU)
 
-$(CODELIB): $(CODEOBJS)
+$(CODELIB): $(CODEOBJS) $(EXTRAOBJS)
 	$(RM) -f $@
-	$(AR) $@ $(CODEOBJS)
+	$(AR) $@ $(CODEOBJS) $(EXTRAOBJS)
 	$(RANLIB) $@
 
-$(CODELIB_GPU): $(CODEOBJS_GPU)
+$(CODELIB_GPU): $(CODEOBJS_GPU) $(EXTRAOBJS)
 	echo $(CODEOBJS_GPU)
 	$(RM) -f $@
-	$(AR) $@ $(CODEOBJS_GPU)
+	$(AR) $@ $(CODEOBJS_GPU) $(EXTRAOBJS)
 	$(RANLIB) $@
 
 .cc.o: $<
@@ -47,6 +51,30 @@ $(CODELIB_GPU): $(CODEOBJS_GPU)
 
 $(CODEOBJS_GPU): %.gpuo: %.cc
 	$(CXX) $(CXXFLAGS) $(GPUFLAGS) -c -o $@ $< 
+
+#-----------------------------------------------------------------------
+
+nstab.c:	nstab.f
+	f2c nstab.f
+
+nstab.co:    nstab.c
+	$(MPICC) $(CFLAGS) -c nstab.c -o nstab.co
+
+f2c.co:    f2c.c
+	$(MPICC) $(CFLAGS) -c f2c.c -o f2c.co
+
+#-----------------------------------------------------------------------
+
+smallN-lib.o:	smallN.cc
+	$(MPICXX) $(CFLAGS) -c smallN.cc -o smallN-lib.o
+
+kepler-lib.o:	kepler.cc
+	$(MPICXX) $(CFLAGS) -c kepler.cc -o kepler-lib.o
+
+analyze-lib.o:	analyze.cc
+	$(MPICXX) $(CFLAGS) -c analyze.cc -o analyze-lib.o
+
+#-----------------------------------------------------------------------
 
 tar:
 	tar czf ph4.tgz Makefile.ph4 *.h *.cc plummer*.in*

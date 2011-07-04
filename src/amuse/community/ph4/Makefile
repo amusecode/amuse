@@ -4,16 +4,19 @@
 # all compiles must use MPICXX, not CXX.
 
 ALL	 = ph4_worker ph4_worker_gpu
-OPT	  = -O4
+OPT	  = -O4 -I$(AMUSE_DIR)/lib/stopcond
 
 MPICXX   ?= mpicxx
 
 CFLAGS   += -Wall -g $(OPT)
 CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi -lm $(MUSE_LD_FLAGS)
 
 CUDA_TK  ?= /usr/local/cuda
 SAPPOROLIBS ?= -L/usr/local/sapporo_v1.6 -lsapporo
+
+# Boost is needed by sapporo.
+
 BOOSTLIBS ?= -L/opt/local/lib -lboost_thread-mt
 
 LDFLAGS_GPU =	$(LDFLAGS) \

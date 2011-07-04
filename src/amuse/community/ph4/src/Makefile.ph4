@@ -6,7 +6,7 @@
 # Optimization may cause problems on some systems.  Replace by -Ox by
 # -O0 in that case.
 
-OPT	= -O4
+OPT	= -O4 -I$(AMUSE_DIR)/lib/stopcond
 
 MPICXX	?= mpicxx	# openmpicxx	# mpicxx.openmpi
 MPICC	?= mpicc	# openmpicc	# mpicc.openmpi
@@ -14,11 +14,16 @@ CFLAGS += -g -Wall $(OPT)
 CXXFLAGS += $(CFLAGS) 
 
 OBJS    = jdata.o idata.o scheduler.o grape.o gpu.o util.o diag.o debug.o
-#OBJS	+= old_close_encounter.o
 OBJS	+= close_encounter.o two_body.o
 GPUOBJS	= $(subst .o,.gpuo, $(OBJS))
 
-LIBS 	= -L/usr/local/sapporo_v1.6 -lsapporo \
+EXTRAOBJS = kepler-lib.o hdyn.o smallN-lib.o smallN_unpert.o \
+	    analyze-lib.o nstab.co f2c.co
+OBJS += $(EXTRAOBJS)
+GPUOBJS += $(EXTRAOBJS)
+
+LIBS 	= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi \
+	  -L/usr/local/sapporo_v1.6 -lsapporo \
 	  -L/usr/local/cuda/lib -lcuda -lcudart \
 	  -L/opt/local/lib -lboost_thread-mt
 
@@ -91,9 +96,9 @@ random_nstab:	random_nstab.cc util.o
 #-----------------------------------------------------------------------
 
 smallN:	smallN.cc smallN-lib.o smallN_unpert.o kepler-lib.o \
-	    hdyn.o util.o analyze.o nstab.co f2c.co debug.o
+	    hdyn.o util.o analyze-lib.o nstab.co f2c.co debug.o
 	$(MPICXX) $(CFLAGS) -DTOOLBOX smallN.cc smallN-lib.o \
-	    smallN_unpert.o kepler-lib.o hdyn.o util.o analyze.o nstab.co \
+	    smallN_unpert.o kepler-lib.o hdyn.o util.o analyze-lib.o nstab.co \
 	    f2c.co debug.o \
 	    -o smallN
 

@@ -33,8 +33,8 @@
 // class.
 //
 // The code also uses labels in addition to indices to represent node
-// names.  Again, implement these in class hdyn2, which is local to
-// this file.
+// names.  Again, these are implemented in class hdyn2, which is local
+// to this file.
 
 #include "hdyn.h"
 #include <cstring>
