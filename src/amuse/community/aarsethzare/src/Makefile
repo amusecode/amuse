@@ -1,4 +1,4 @@
-FC = mpif90
+FC ?= mpif90
 
 FFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
