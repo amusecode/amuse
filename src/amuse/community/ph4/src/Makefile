@@ -5,6 +5,7 @@
 # Optimization may cause failure on some systems.  Replace by -O0 in
 # that case.
 
+AMUSE_DIR?=../../../../..
 OPT	  = -O4 -I$(AMUSE_DIR)/lib/stopcond
 
 GPU	  = -DGPU
