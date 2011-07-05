@@ -19,8 +19,6 @@ GPUOBJS	= $(subst .o,.gpuo, $(OBJS))
 
 EXTRAOBJS = kepler-lib.o hdyn.o smallN-lib.o smallN_unpert.o \
 	    analyze-lib.o nstab.co f2c.co
-OBJS += $(EXTRAOBJS)
-GPUOBJS += $(EXTRAOBJS)
 
 LIBS 	= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi \
 	  -L/usr/local/sapporo_v1.6 -lsapporo \
@@ -46,13 +44,13 @@ all:	$(EXE)
 
 #-----------------------------------------------------------------------
 
-parallel_hermite_4:	parallel_hermite_4.cc $(GPUOBJS)
+parallel_hermite_4:	parallel_hermite_4.cc $(GPUOBJS) $(EXTRAOBJS)
 	$(MPICXX) $(NOSYNC) $(CFLAGS) -DGPU parallel_hermite_4.cc \
-	    $(GPUOBJS) $(LIBS) -o $@
+	    $(GPUOBJS) $(EXTRAOBJS) $(LIBS) -o $@
 
-parallel_hermite_4_noGPU:	parallel_hermite_4.cc $(OBJS)
+parallel_hermite_4_noGPU:	parallel_hermite_4.cc $(OBJS) $(EXTRAOBJS)
 	$(MPICXX) $(CFLAGS) parallel_hermite_4.cc \
-	    $(OBJS) $(LIBS) -o $@
+	    $(OBJS) $(EXTRAOBJS) $(LIBS) -o $@
 
 # Input file choices for ph4 test options are plummer1.in,
 # plummer16.in, plummer4.in, plummer8.in, plummer_test.in.
