@@ -115,6 +115,7 @@ class hdyn
 				  	const {return allow_full_unperturbed;}
     inline real get_r2_crit()	  	const {return r2_crit;}
     inline real get_dt_crit()	  	const {return dt_crit;}
+    inline real get_gamma()		const {return sqrt(gamma2_unpert);}
     inline real get_gamma2_unpert()  	const {return gamma2_unpert;}
     inline real get_gamma_inv3()  	const {return gamma_inv3;}
     inline int  get_cm_index()		const {return cm_index;}
