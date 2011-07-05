@@ -55,7 +55,9 @@ $(CODEOBJS_GPU): %.gpuo: %.cc
 
 #-----------------------------------------------------------------------
 
-nstab.c:	nstab.f
+# Should only need to build nstab.c after a (rare) update of nstab.f
+# from R. Mardling.
+update_nstab:
 	f2c nstab.f
 
 nstab.co:    nstab.c
