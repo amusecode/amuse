@@ -83,4 +83,4 @@ tar:
 	tar czf ph4.tgz Makefile.ph4 *.h *.cc plummer*.in*
 
 clean:
-	$(RM) -r -f *.o *~ *.tgz *.a *.gpuo
+	$(RM) -r -f *.o *.co *~ *.tgz *.a *.gpuo
