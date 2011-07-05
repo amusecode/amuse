@@ -196,7 +196,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         
         self.assertAlmostEqual(se_stars.mass, stars.mass - mass_lost - mass_lost_2)
         
-        turn_tests_into_slowtests = True
+        turn_tests_into_slowtests = False
         if turn_tests_into_slowtests:
             stellar_evolution.evolve_model()
             self.assertAlmostEqual(se_stars.mass, stars.mass - mass_lost - mass_lost_2)
