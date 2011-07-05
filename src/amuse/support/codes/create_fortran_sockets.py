@@ -239,7 +239,7 @@ string_receive_code = """
           
           call receive_string(c_loc(characters_in(i)), strings_in(i))
 
-          print*, 'received string:', characters_in(i)
+          print*, 'received string: ', characters_in(i)
 
           call flush()
 
@@ -256,7 +256,7 @@ string_send_code = """
       call send_integers(c_loc(strings_out), header_out(HEADER_STRING_COUNT))
 
       do i = 1, header_out(HEADER_STRING_COUNT), 1
-          print*, 'sending string', characters_out(i)
+          print*, 'sending string ', characters_out(i)
           call flush()
           call send_string(c_loc(characters_out(i)), strings_out(i))
       end do     

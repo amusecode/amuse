@@ -154,20 +154,19 @@ class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
         if self.specification.must_handle_array:
             pass
         elif self.specification.can_handle_array:
-            self.out.lf() + 'for (int i = 0 ; i < call_count; i++){'
+            self.out.lf() + 'for (int i = 0 ; i < call_count; i++) {'
             self.out.indent()
  
-        
-        self.output_lines_before_with_inout_variables()
+        self.output_copy_inout_variables_before_function()
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
-        self.output_lines_with_inout_variables()
+        self.output_copy_inout_variables_after_function()
         
         if self.specification.must_handle_array:
             if not self.specification.result_type is None:
                 spec = self.dtype_to_spec[self.specification.result_type]
-                self.out.lf() + 'for (int i = 1 ; i < call_count; i++){'
+                self.out.lf() + 'for (int i = 1 ; i < call_count; i++) {'
                 self.out.indent()
                 self.out.lf() + spec.output_var_name + '[i]' + ' = ' + spec.output_var_name + '[0]' + ';'
                 self.out.dedent()
@@ -240,31 +239,33 @@ class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
     
         self.out.dedent()
     
-    def output_lines_before_with_inout_variables(self):
+    
+        
+    def output_copy_inout_variables_before_function(self):
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
         
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if parameter.datatype == 'string': 
-                    self.out.n() + 'output_strings[' + self.index_string(parameter.output_index) + '] = (characters + ' 
-                    self.out + '( ' + self.index_string(parameter.input_index) + '- 1 < 0 ? 0 :' 
-                    self.out + spec.input_var_name
-                    self.out + '[' + self.index_string(parameter.input_index) + ' - 1] + 1'
-                    self.out + '));'
-    
-    def output_lines_with_inout_variables(self):
+                    self.out.n() + 'characters_out[' + self.index_string(parameter.output_index, must_copy_in_to_out=True) + ']'
+                    self.out + ' = '
+                    self.out + 'characters_in[' + self.index_string(parameter.input_index, must_copy_in_to_out=True) + ']'
+                    self.out + ';'
+
+    def output_copy_inout_variables_after_function(self):
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
             
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if self.specification.must_handle_array:
-                    self.out.lf() + 'for (int i = 0 ; i < call_count; i++){'
+                    self.out.lf() + 'for (int i = 0 ; i < call_count; i++) {'
                     self.out.indent()
 
-                self.out.n() + spec.output_var_name
-                self.out + '[' + self.index_string(parameter.output_index, must_copy_in_to_out=True) + ']'
-                self.out + ' = '
-                self.out + spec.input_var_name + '[' + self.index_string(parameter.input_index, must_copy_in_to_out=True) + ']' + ';'
+                if parameter.datatype != 'string':
+                    self.out.n() + spec.output_var_name
+                    self.out + '[' + self.index_string(parameter.output_index, must_copy_in_to_out=True) + ']'
+                    self.out + ' = '
+                    self.out + spec.input_var_name + '[' + self.index_string(parameter.input_index, must_copy_in_to_out=True) + ']' + ';'
             
                 if self.specification.must_handle_array:
                     self.out.dedent()
@@ -438,6 +439,8 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         
         self.out.lf().lf() + 'int max_call_count = 10;'
         self.out.lf().lf() + 'int call_count;'
+        self.out.lf().lf() + 'int i;'
+        self.out.lf() + 'char * buffer = new char[50];'
 
         self.out.lf();
         self.output_new_statements(True)
@@ -450,14 +453,14 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.indent()
 
         self.out.lf() + 'receive(header_in, HEADER_SIZE * sizeof(int), socketfd);'
-        self.out.lf() + 'fprintf(stderr, "got header %d %d %d %d %d %d %d %d %d %d\\n", header_in[0], header_in[1], header_in[2], header_in[3], header_in[4], header_in[5], header_in[6], header_in[7], header_in[8], header_in[9]);'
+        self.out.lf() + '/*fprintf(stderr, "got header %d %d %d %d %d %d %d %d %d %d\\n", header_in[0], header_in[1], header_in[2], header_in[3], header_in[4], header_in[5], header_in[6], header_in[7], header_in[8], header_in[9]);*/'
         
         self.out.lf() + 'call_count = header_in[HEADER_CALL_COUNT];'
             
         self.out.lf() + 'if (call_count > max_call_count) {'
         self.out.indent()
-        self.out.lf() + 'max_call_count = call_count + 255;'
         self.output_delete_statements()
+        self.out.lf() + 'max_call_count = call_count + 255;'
         self.output_new_statements(False)
         self.out.dedent()
         
@@ -469,6 +472,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)
             if max == 0:
                 continue
+            
             self.out.lf() 
             self.out + 'if(header_in[' + spec.counter_name + '] > 0) {'
             self.out.indent().lf() + 'receive(' 
@@ -479,8 +483,9 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             if dtype == 'string':
                 self.out.lf() + 'for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {'
                 self.out.indent()
-                self.out.lf() + 'characters_in[i] = new char[strings_in[i]];'
+                self.out.lf() + 'characters_in[i] = new char[strings_in[i] + 1];'
                 self.out.lf() + 'receive(characters_in[i], strings_in[i], socketfd);'
+                self.out.lf() + "characters_in[i][strings_in[i]] = '\\0';"
                 self.out.dedent().lf() + '}'
                                       
             self.out.dedent().lf() + '}'
@@ -505,12 +510,25 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         
     def output_switch_end(self):
         self.out.lf() + 'default:'
-        self.out.indent().lf() + 'header_out[HEADER_FLAGS] = header_out[HEADER_FLAGS] & ERROR_FLAG;'
+        self.out.indent().lf() + 'header_out[HEADER_FLAGS] = header_out[HEADER_FLAGS] | ERROR_FLAG;'
+        self.out.lf() + 'characters_out[0] = buffer;'
+        self.out.lf() + 'sprintf(buffer, "unknown function id: %d\\n", header_in[HEADER_FUNCTION_ID]);'
+        self.out.lf() + 'fprintf(stderr, "unknown function id: %d\\n", header_in[HEADER_FUNCTION_ID]);'
+
+        self.out.lf() + 'header_out[HEADER_STRING_COUNT] = 1;'
+        
         self.out.dedent()
         self.out.dedent().lf() + '}'
         
     def output_runloop_function_def_end(self):
         self.out.lf().lf() + 'send(header_out, HEADER_SIZE * sizeof(int), socketfd);'
+        self.out.lf()
+        
+        self.out.lf() + 'for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {'
+        self.out.indent()
+        self.out.lf() + 'strings_out[i] = strlen(characters_out[i]);'
+        self.out.dedent();
+        self.out.lf() + '}'
         self.out.lf()
         
         for i, dtype in enumerate(dtypes):
@@ -537,7 +555,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             self.out.dedent();
             self.out.lf() + '}'
             self.out.lf()
-
+            
             
         max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get('string', 0)
         if max != 0:
@@ -550,6 +568,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             
         self.out.dedent()
         self.out.lf() + '}'
+        
         self.output_delete_statements()
         
         self.out.dedent()
@@ -562,7 +581,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             
             max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)
             if max > 0:
-                self.out.lf() + 'delete[] ' 
+                self.out.lf() + 'delete[] '
                 self.out + dtype_spec.input_var_name + ';'
             
             max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
@@ -574,16 +593,15 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         dtype = 'string'
         max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)
         if max > 0:
-            self.out.lf() + 'delete[] '
-            self.out + 'characters_in' + ';'
+            self.out.lf() + 'delete[] characters_in;'
+            self.out.lf()
             
         max = 0
         dtype = 'string'
         max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
         if max > 0:
-            self.out.lf() + 'delete[] '
-            self.out + 'characters_out' + ';'
-            
+            self.out.lf() + 'delete[] characters_out;'
+            self.out.lf()          
             
     def output_new_statements(self, must_add_type):
         maximum_number_of_inputvariables_of_a_type = 255
@@ -615,6 +633,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         dtype = 'string'
         max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)
         if max > 0:
+            self.out.lf()
             self.output_new_statement(
                 must_add_type,
                 'char *',
@@ -624,12 +643,16 @@ class GenerateACSourcecodeStringFromASpecificationClass\
                 
         max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
         if max > 0:
+            self.out.lf()
             self.output_new_statement(
                 must_add_type,
                 'char *',
                 'characters_out',
                 max
             )
+                        
+        self.out.lf()
+
             
     def output_new_statement(self, must_add_type, type, var_name, maximum_number_of_inputvariables_of_a_type):
         if must_add_type:
@@ -642,11 +665,3 @@ class GenerateACSourcecodeStringFromASpecificationClass\
     
     def output_main(self):
         self.out.lf() + MAIN_FUNCTION_STRING
-    
-        
-        
-        
-
-        
-        
-        
