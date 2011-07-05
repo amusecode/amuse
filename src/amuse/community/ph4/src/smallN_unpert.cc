@@ -14,7 +14,6 @@
 //	bool extend_or_end_binary(hdyn*& bi, bool verbose = false)
 
 #include "hdyn.h"
-#include "debug.h"
 
 real get_tidal_potential(hdyn *b, hdyn *bi, hdyn *bj, hdyn *cm,
 			 bool absolute)		// default = true

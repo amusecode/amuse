@@ -65,7 +65,6 @@
 //			  int  verbose = 0);
 
 #include "hdyn.h"
-#include "debug.h"
 
 #ifndef TOOLBOX
 
@@ -287,7 +286,7 @@ static inline real get_pairwise_acc_and_jerk(hdyn *bi, hdyn *bj,
 
 
 
-static inline real calculate_top_level_acc_and_jerk(hdyn *b)
+real calculate_top_level_acc_and_jerk(hdyn *b)
 {
     // Compute the acc and jerk on all top-level nodes.  All nodes are
     // resolved into components for purposes of computing the acc and
@@ -608,12 +607,12 @@ static real top_level_energy(hdyn *b)
     return kin/2 + pot;
 }
 
-real total_energy(hdyn *b)
+real get_energies(hdyn *b, real& kin, real& pot)
 {
     // Return the total energy of the system, resolving all binary
     // nodes.
 
-    real kin = 0, pot = 0;
+    kin = pot = 0;
     for_all_leaves(hdyn, b, bi) {
 	real mi = bi->get_mass();
 	vec xi = bi->get_pos();
@@ -642,7 +641,14 @@ real total_energy(hdyn *b)
 	    }
 	pot += mi*ppot;
     }
-    return kin/2 + pot;
+    kin /= 2;
+    return kin + pot;
+}
+
+real total_energy(hdyn *b)
+{
+    real kin, pot;
+    return get_energies(b, kin, pot);
 }
 
 static void log_output(hdyn *b, int n_steps)

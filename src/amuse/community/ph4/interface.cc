@@ -175,7 +175,7 @@ int new_particle(int * index_of_the_particle,
 		 int index_to_set)
 {
     // Add a particle to the system.  Let the module set the id, or
-    // force the index to index_to_set if...
+    // force the index to index_to_set if >= 0 and allowed.
 
     *index_of_the_particle = jd->add_particle(mass, radius,
 					      vec(x,y,z), vec(vx,vy,vz),

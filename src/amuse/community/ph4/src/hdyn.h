@@ -241,9 +241,11 @@ void rmtree(hdyn *b, bool delete_b = true);
 
 // In smallN.cc:
 
+real get_energies(hdyn *b, real& kin, real& pot);
 real total_energy(hdyn *b);
 void advance_components_to_time(hdyn *bi, real t);
 void update_components_from_pred(hdyn *bi);
+real calculate_top_level_acc_and_jerk(hdyn *b);
 int smallN_evolve(hdyn *b,
 		  real t_end = _INFINITY_,
 		  real dt_log = _INFINITY_,
