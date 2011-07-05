@@ -19,6 +19,7 @@ from amuse.support.units.units import *
 """
 ADDITIONAL_DERIVED_CONSTANTS = \
 """
+pi = numpy.pi | none
 hbar=h/(2.0*numpy.pi)
 four_pi_stefan_boltzmann = 4.0*numpy.pi*Stefan_hyphen_Boltzmann_constant
 mu0=4*numpy.pi*1.e-7 | N/A**2
@@ -34,7 +35,6 @@ class GetConstantsFromFiles(object):
         self.local_table = ""
         self.translator_table = []
         self.directory = os.path.dirname(__file__)
-        print self.directory
 
     def get_table_from_url(self):
         f = urllib2.urlopen(NIST_URL)
@@ -42,12 +42,12 @@ class GetConstantsFromFiles(object):
         f.close()
 
     def save_table_as(self, filename):
-        f =open(self.directory+'nist.txt','w')
+        f = open(os.path.join(self.directory, 'nist.txt'), 'w')
         f.write(self.nist_table)
         f.close()
      
     def get_table_from_file(self):
-        f = open(self.directory+'/nist.txt','r')     
+        f = open(os.path.join(self.directory, 'nist.txt'), 'r')     
         self.nist_table = f.read()                             
         f.close()                                    
 
@@ -68,7 +68,7 @@ class GetConstantsFromFiles(object):
             print i
             
     def get_translator(self):
-        f = open(self.directory+'/translator.txt','r')     
+        f = open(os.path.join(self.directory, 'translator.txt'), 'r')     
         lines = f.readlines()
 
         for i, s in enumerate(lines):
@@ -190,9 +190,14 @@ class Constants(object):
         self.nistfile += ADDITIONAL_DERIVED_CONSTANTS
         self.nistfile += '#DROPPED UNITS***********************************************\n"""'
         self.print_list_of_units(self.nisttabledependingunits)
-        self.nistfile +='"""'
+        self.nistfile +='"""\n'
 
 
-        f = open(self.I.directory+'/constants.py','w')
+        f = open(os.path.join(self.I.directory, 'constants.py'), 'w')
         f.write(self.nistfile)
         f.close()
+
+if __name__  == "__main__":
+    print "Generating constants.py...",
+    Constants().generate_constants()
+    print " done!"
