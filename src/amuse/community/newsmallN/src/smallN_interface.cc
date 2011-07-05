@@ -28,6 +28,7 @@ int add_particle(hdyn *b, real mass, real radius,
 		bnew->set_parent(b);
 		bnew->set_older_sister(bb);
 		bb->set_younger_sister(bnew);
+		break;
 	    }
 	}
     }

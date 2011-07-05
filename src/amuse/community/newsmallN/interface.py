@@ -181,6 +181,24 @@ class smallN(GravitationalDynamics):
         # Similarly, we can add module-specific methods, if desired.
         # See hermite0/interface.py for examples.
 
+        object.add_method("new_particle",
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                units.none,
+            ),
+            (
+                object.INDEX,
+                object.ERROR_CODE,
+            )
+        )
+
         object.add_method("get_eta", (),
             (units.none, object.ERROR_CODE,))
         object.add_method("set_eta", (units.none, ),

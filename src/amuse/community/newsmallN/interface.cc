@@ -135,6 +135,10 @@ int new_particle(int * index_of_the_particle,
     *index_of_the_particle = add_particle(b, mass, radius,
 					  vec(x,y,z), vec(vx,vy,vz),
 					  index_to_set);
+    cout << "new_particle: " << index_to_set
+	 << " " << *index_of_the_particle
+	 << endl << flush;
+
     return 0;
 }
 

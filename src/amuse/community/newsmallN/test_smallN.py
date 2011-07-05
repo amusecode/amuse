@@ -21,18 +21,16 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    Ebin = gravity.get_binary_energy()
-    Etop = T + U
-    E = Etop + Ebin
+    E = T + U
     if E0 == 0 | nbody_system.energy: E0 = E
     Rv = -0.5*M*M/U
     Q = -T/U
     print ""
     print "time =", time.number, " energy = ", E.number, \
 	" dE/E0 = ", (E/E0 - 1).number
-    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
+    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f' % \
 	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Ebin.number, Rv.number, Q.number)
+         E.number, Rv.number, Q.number)
     sys.stdout.flush()
     return E
 
@@ -124,6 +122,7 @@ def test_smallN(infile = None, number_of_stars = 10,
     # print stars
     sys.stdout.flush()
     gravity.particles.add_particles(stars)
+    print "committing particles"
     gravity.commit_particles()
 
     print ''
