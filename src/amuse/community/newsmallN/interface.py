@@ -4,9 +4,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 # *** This script, together with the defaults in
 # *** GravitationalDynamicsInterface, will be used to generate both
-# *** the header file interface.h and the stub interface.cc.  Since
-# *** interface.cc has been  hand-coded to implement the details,
-# *** MAKE SURE TO SAVE IT SOMEWHERE, as build.py can overwrite it!
+# *** the header file interface.h and the stub interface.cc.
 
 class smallNInterface(CodeInterface,
                       GravitationalDynamicsInterface):
@@ -26,6 +24,8 @@ class smallNInterface(CodeInterface,
             name_of_the_worker='smallN_worker',
             **options
         )
+
+    # Interface functions:
 
     @legacy_function
     def new_particle():
@@ -175,11 +175,26 @@ class smallN(GravitationalDynamics):
             default_value = 0.14 | units.none
         )
         
+        object.add_method_parameter(
+            "get_gamma",                 # getter name in interface.cc
+            "set_gamma",                 # setter name in interface.cc
+            "unperturbed_threshold",     # python parameter name
+            "unperturbed threshold",     # description
+            default_value = 1.e-6 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_allow_full_unperturbed",  # getter name in interface.cc
+            "set_allow_full_unperturbed",  # setter name in interface.cc
+            "allow_full_unperturbed",      # python parameter name
+            "full unperturbed motion",     # description
+            default_value = 1 | units.none
+        )
+        
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
 
-        # Similarly, we can add module-specific methods, if desired.
-        # See hermite0/interface.py for examples.
+        # Turn interface functions into methods.
 
         object.add_method("new_particle",
             (
@@ -191,15 +206,19 @@ class smallN(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                units.none,
+                units.none
             ),
             (
                 object.INDEX,
-                object.ERROR_CODE,
+                object.ERROR_CODE
             )
         )
 
-        object.add_method("get_eta", (),
-            (units.none, object.ERROR_CODE,))
-        object.add_method("set_eta", (units.none, ),
-            (object.ERROR_CODE,))
+        object.add_method("get_eta", (), (units.none, object.ERROR_CODE))
+        object.add_method("set_eta", (units.none), (object.ERROR_CODE))
+        object.add_method("get_gamma", (), (units.none, object.ERROR_CODE))
+        object.add_method("set_gamma", (units.none), (object.ERROR_CODE))
+        object.add_method("get_allow_full_unperturbed",
+                          (), (units.none, object.ERROR_CODE))
+        object.add_method("set_allow_full_unperturbed",
+                          (units.none), (object.ERROR_CODE))
