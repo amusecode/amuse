@@ -1,233 +1,128 @@
-#include "src/mmas2/src/mmas/mmas.h"
-#include "src/mmas2/src/eos/eos.h"
-#include "worker_mmams.h"
-#include <map>
+#include "src/stdinc.h"
+#include "src/kepler.h"
 
-using namespace std;
+static kepler *k;
 
-// Default parameters:
-int dump_mixed = 0;
-int target_n_shells_mixing = 200;
-int target_n_shells = 10000;
-
-
-int number_of_particles = 0;
-int particle_id_counter = 0;
-map<long long, mmas*> results;
-map<long long, usm*> usm_models;
-long long hashtable_up_to_date_for_particle_with_index = -1;
-
-
-int initialize_code(){
+int initialize_code()
+{
+    k = NULL;
     return 0;
 }
 
-int cleanup_code(){
+int commit_parameters()
+{
     return 0;
 }
 
-int commit_parameters(){
+int recommit_parameters()
+{
     return 0;
 }
 
-int recommit_parameters(){
-    return commit_parameters();
-}
-
-int new_particle(int *index_of_the_particle, double mass){
-    usm *new_model = new usm;
-    new_model->star_mass = mass;
-	usm_models.insert(usm_models.end(), std::pair<long long, usm*>(particle_id_counter, new_model));
-    *index_of_the_particle = particle_id_counter;
-    number_of_particles++;
-    particle_id_counter++;
+int cleanup_code()
+{
     return 0;
 }
 
-int delete_particle(int index_of_the_particle){
-    map<long long, mmas*>::iterator iter1 = results.find(index_of_the_particle);
-    map<long long, usm*>::iterator iter2 = usm_models.find(index_of_the_particle);
-    
-    if (iter2 == usm_models.end())
-        return -1;
-    if (iter1 != results.end()){
-        delete (*iter1).second;
-        results.erase(iter1);
-    } else {
-        delete (*iter2).second;
-    }
-    usm_models.erase(iter2);
-    number_of_particles--;
+int initialize_from_dyn(double mass,
+			double x, double y, double z,
+			double vx, double vy, double vz,
+			double time)
+{
+    if (k) delete k;
+    k = new kepler;
+    if (!k) return -1;
+    k->set_time(time);
+    k->set_total_mass(mass);
+    k->set_rel_pos(vec(x,y,z));
+    k->set_rel_vel(vec(vx,vy,vz));
+    k->initialize_from_pos_and_vel();
     return 0;
 }
 
-int get_number_of_particles(int *number_of_particles_out){
-    *number_of_particles_out = number_of_particles;
+int initialize_from_elements(double mass, double semi, double ecc,
+			     double time)
+{
+    if (k) delete k;
+    k = new kepler;
+    if (!k) return -1;
+
+    // Standard orbit will be in the x-y plane, with long axis along
+    // x.  Later, we will add the option of randomizing the
+    // orientation.  Code based on make_standard_kepler().  Mean
+    // anomaly is 0 (i.e. periapsis) at the specified time.  Note that
+    // ecc = 1 is a special case that isn't addressed here (more info
+    // is needed).
+
+    k->set_time(time);
+    k->set_total_mass(mass);
+    k->set_semi_major_axis(semi);
+    k->set_eccentricity(ecc);
+    k->set_mean_anomaly(0);
+    k->align_with_axes(1);
+    k->initialize_from_shape_and_phase();	// expects a, e [, q [, E]]
     return 0;
 }
 
-inline void is_file(char *fn) {
-    ifstream fin(fn, ifstream::in);
-    fin.close();
-    if (fin.fail() != 0) {
-        cerr << "File \"" << fn << "\" does not seem to exist ! " << endl;
-        exit(-1);
-    };
-}
-
-int read_usm(int *index_of_the_particle, char *usm_file){
-    FILE *fmodel = NULL;
-    usm *new_model = new usm;
-    
-    is_file(usm_file);
-    fmodel = fopen(usm_file, "r");
-    new_model->read(fmodel, 1);
-    fclose(fmodel);
-	usm_models.insert(usm_models.end(), std::pair<long long, usm*>(particle_id_counter, new_model));
-    *index_of_the_particle = particle_id_counter;
-    number_of_particles++;
-    particle_id_counter++;
+int transform_to_time(double time)
+{
+    k->transform_to_time(time);
     return 0;
 }
 
-int add_shell(int index_of_the_particle, double d_mass, double cumul_mass, 
-        double radius, double density, double pressure, 
-        double temperature, double luminosity, double molecular_weight, double H1, double He4, 
-        double C12, double N14, double O16, double Ne20, double Mg24, 
-        double Si28, double Fe56){
-    mass_shell shell;
-    map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
-    
-    if (it == usm_models.end())
-        return -1;
-    
-    if (hashtable_up_to_date_for_particle_with_index == index_of_the_particle)
-        hashtable_up_to_date_for_particle_with_index = -1;
-    
-    shell.dm = d_mass;
-    shell.mass = cumul_mass;
-    shell.radius = radius;
-    shell.density = density;
-    shell.pressure = pressure;
-    shell.temperature = temperature;
-    shell.luminosity = luminosity;
-    shell.mean_mu = molecular_weight;
-    shell.entropy = compute_entropy(density, temperature, molecular_weight);
-    shell.composition.H1 = H1;
-    shell.composition.He4 = He4;
-    shell.composition.C12 = C12;
-    shell.composition.N14 = N14;
-    shell.composition.O16 = O16;
-    shell.composition.Ne20 = Ne20;
-    shell.composition.Mg24 = Mg24;
-    shell.composition.Si28 = Si28;
-    shell.composition.Fe56 = Fe56;
-    it->second->add_shell(shell);
+// All advance/return functions should check the allowability of the
+// command and return the appropriate status.  The kepler functions
+// will produce warning messages and do something, but won't return an
+// error indicator.
+
+int advance_to_radius(double radius)
+{
+    k->advance_to_radius(radius);
     return 0;
 }
 
-int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle, 
-        double *d_mass, double *cumul_mass, double *radius, double *density, 
-        double *pressure, double *entropy, double *temperature, double *luminosity, 
-        double *molecular_weight, double *H1, double *He4, double *C12, double *N14, 
-        double *O16, double *Ne20, double *Mg24, double *Si28, double *Fe56){
-    mass_shell shell;
-    map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
-    if (it == usm_models.end())
-        return -1;
-    
-    if (index_of_the_shell >= it->second->get_num_shells())
-        return -2;
-    
-    if (hashtable_up_to_date_for_particle_with_index != index_of_the_particle){
-        it->second->build_hashtable();
-        hashtable_up_to_date_for_particle_with_index = index_of_the_particle;
-    }
-    
-    shell = it->second->get_shell(index_of_the_shell);
-    *d_mass = shell.dm;
-    *cumul_mass = shell.mass;
-    *radius = shell.radius;
-    *density = shell.density;
-    *pressure = shell.pressure;
-    *entropy = shell.entropy;
-    *temperature = shell.temperature;
-    *luminosity = shell.luminosity;
-    *molecular_weight = shell.mean_mu;
-    *H1 = shell.composition.H1;
-    *He4 = shell.composition.He4;
-    *C12 = shell.composition.C12;
-    *N14 = shell.composition.N14;
-    *O16 = shell.composition.O16;
-    *Ne20 = shell.composition.Ne20;
-    *Mg24 = shell.composition.Mg24;
-    *Si28 = shell.composition.Si28;
-    *Fe56 = shell.composition.Fe56;
+int return_to_radius(double radius)
+{
+    k->return_to_radius(radius);
     return 0;
 }
 
-int get_number_of_zones(int index_of_the_particle, int *number_of_shells){
-    map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
-    if (it == usm_models.end())
-        return -1;
-    *number_of_shells = it->second->get_num_shells();
+int advance_to_periastron()
+{
+    k->advance_to_periastron();
     return 0;
 }
 
-int merge_two_stars(int *id_product, int id_primary, int id_secondary) {
-    float r_p   = 0.0;
-    float v_inf = 0.0;
-    map<long long, usm*>::iterator it_primary = usm_models.find(id_primary);
-    map<long long, usm*>::iterator it_secondary = usm_models.find(id_secondary);
-    
-    if (it_primary == usm_models.end() || it_secondary == usm_models.end())
-        return -1;
-    
-    it_primary->second->build_hashtable();
-    it_secondary->second->build_hashtable();
-    mmas *mmams = new mmas(*it_primary->second, *it_secondary->second, r_p, v_inf);
-    results.insert(results.end(), std::pair<long long, mmas*>(particle_id_counter, mmams));
-    
-    mmams->merge_stars_consistently(target_n_shells);
-    mmams->mixing_product(target_n_shells_mixing);
-    if (!dump_mixed) {
-//        cerr << "Dumping unmixed product in stdout \n";
-        usm_models.insert(--usm_models.end(), std::pair<long long, usm*>(particle_id_counter, &(mmams->get_product())));
-//        mmams->get_product().write(stdout);
-    } else {
-//        cerr << "Dumping mixed product in stdout \n";
-        usm_models.insert(--usm_models.end(), std::pair<long long, usm*>(particle_id_counter, &(mmams->get_mixed_product())));
-//        mmams->get_mixed_product().write(stdout);
-    }
-    *id_product = particle_id_counter;
-    number_of_particles++;
-    particle_id_counter++;
+int advance_to_apastron()
+{
+    k->advance_to_apastron();
     return 0;
 }
 
-int set_dump_mixed_flag(int dump_mixed_flag){
-    dump_mixed = dump_mixed_flag;
-    return 0;
-}
-int get_dump_mixed_flag(int *dump_mixed_flag){
-    *dump_mixed_flag = dump_mixed;
+int return_to_periastron()
+{
+    k->return_to_periastron();
     return 0;
 }
 
-int set_target_n_shells_mixing(int target_n_shells_mixing_in){
-    target_n_shells_mixing = target_n_shells_mixing_in;
-    return 0;
-}
-int get_target_n_shells_mixing(int *target_n_shells_mixing_out){
-    *target_n_shells_mixing_out = target_n_shells_mixing;
+int return_to_apastron()
+{
+    k->return_to_apastron();
     return 0;
 }
 
-int set_target_n_shells(int target_n_shells_in){
-    target_n_shells = target_n_shells_in;
+int get_elements(double * semi, double * ecc)
+{
+    *semi = k->get_semi_major_axis();
+    *ecc = k->get_eccentricity();
     return 0;
 }
-int get_target_n_shells(int *target_n_shells_out){
-    *target_n_shells_out = target_n_shells;
+
+int get_separation(double * x, double * y, double * z)
+{
+    vec r = k->get_rel_pos();
+    *x = r[0];
+    *y = r[1];
+    *z = r[2];
     return 0;
 }

@@ -14,7 +14,7 @@ CXXFLAGS += $(CFLAGS)
 
 CODELIB = libkepler.a
 
-CODEOBJS = kepler-lib.o hdyn.o
+CODEOBJS = kepler-lib.o hdyn.o util.o
 
 AR = ar ruv
 RANLIB = ranlib
