@@ -3,7 +3,8 @@ MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 AMUSE_DIR ?=../../../..
 
-FSOPTS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets -I$(AMUSE_DIR)/lib/forsockets
+FSLIB ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
+FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -29,7 +30,7 @@ bse_worker:	worker_code.f90  BSE_code.o  $(BSEOBJ)
 	
 bse_worker_sockets:	worker_code-sockets.f90  BSE_code.o  $(BSEOBJ)
 	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS)"
-	$(MPIF90) $(FFLAGS) $(FSOPTS) $^ -o $@ 
+	$(MPIF90) $(FFLAGS) $(FSINC) $^ -o $@ $(FSLIB)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py BSEInterface -o $@
