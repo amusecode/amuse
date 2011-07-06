@@ -9,7 +9,9 @@ AMUSE_DIR?=../../../../..
 OPT	  = -O4 -I$(AMUSE_DIR)/lib/stopcond
 
 GPU	  = -DGPU
-CXX	  ?= mpicxx
+MPICXX    ?= mpicxx
+MPICC     ?= mpicc
+CXX       ?= mpicxx
 CFLAGS   += -g -Wall $(OPT)
 CXXFLAGS += $(CFLAGS) 
 

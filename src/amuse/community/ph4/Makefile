@@ -14,7 +14,7 @@ CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi -lm $(MUSE_LD_FLAGS)
 
 CUDA_TK  ?= /usr/local/cuda
-SAPPOROLIBS ?= -L/usr/local/sapporo_v1.6 -lsapporo
+SAPPOROLIBS ?= -L../../../../lib/sapporo_light/ -lsapporo
 
 # Boost is needed by sapporo.
 
@@ -58,7 +58,7 @@ interface.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py ph4Interface -o $@
 
 ph4_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)
 
 ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU) -DGPU
