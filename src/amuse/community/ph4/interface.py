@@ -29,7 +29,9 @@ class ph4Interface(CodeInterface,
             name_of_the_worker=self.name_of_the_muse_worker(mode),
             **options
         )
-        
+
+    # Interface functions:
+
     @legacy_function
     def new_particle():
         """
@@ -96,6 +98,17 @@ class ph4Interface(CodeInterface,
     # The following functions aren't defined in the default interface:
 
     @legacy_function
+    def set_time():
+        """
+        Set the current system time.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('system_time', dtype='float64',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
     def set_eta():
         """
         Set the current time step parameter.
@@ -161,17 +174,6 @@ class ph4Interface(CodeInterface,
         function.result_type = 'int32'
         return function
 
-    @legacy_function
-    def set_time():
-        """
-        Set the current system time.
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('system_time', dtype='float64',
-                              direction=function.IN)
-        function.result_type = 'int32'
-        return function
-        
     @legacy_function
     def get_number_of_particles_updated():
         """
@@ -309,10 +311,10 @@ class ph4(GravitationalDynamics):
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
 
-        # Similarly, we can add module-specific methods, if desired.
-        # See hermite0/interface.py for examples.
+        # Turn interface functions into methods.
 
-        object.add_method("new_particle",
+        object.add_method(
+            "new_particle",
             (
                 nbody_system.mass,
                 nbody_system.length,
@@ -322,29 +324,105 @@ class ph4(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                units.none,
+                units.none
             ),
             (
                 object.INDEX,
-                object.ERROR_CODE,
+                object.ERROR_CODE
             )
         )
 
-        object.add_method("get_binary_energy", (),
-            (nbody_system.energy, object.ERROR_CODE))
-        object.add_method("get_eta", (),
-            (units.none, object.ERROR_CODE,))
-        object.add_method("set_eta", (units.none, ),
-            (object.ERROR_CODE,))
-        object.add_method("get_eps2", (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,))
-        object.add_method("set_eps2", (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,))
-        object.add_method("get_gpu", (),
-            (units.none, object.ERROR_CODE,))
-        object.add_method("set_gpu", (units.none, ),
-            (object.ERROR_CODE,))
-        object.add_method("get_manage_encounters", (),
-            (units.none, object.ERROR_CODE,))
-        object.add_method("set_manage_encounters", (units.none, ),
-            (object.ERROR_CODE,))
+        object.add_method(
+            "set_time",
+            (
+                nbody_system.time
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "set_eta",
+            (
+                units.none
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "get_eta",
+            (),
+            (
+                units.none,
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "set_eps2",
+            (
+                nbody_system.length * nbody_system.length
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "get_eps2",
+            (),
+            (
+                nbody_system.length * nbody_system.length,
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "set_gpu",
+            (
+                units.none
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "get_gpu",
+            (),
+            (
+                units.none,
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "set_manage_encounters",
+            (
+                units.none
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "get_manage_encounters",
+            (),
+            (
+                units.none,
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "get_binary_energy",
+            (),
+            (
+                nbody_system.energy,
+                object.ERROR_CODE
+            )
+        )
