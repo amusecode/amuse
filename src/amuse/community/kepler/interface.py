@@ -4,12 +4,14 @@ from amuse.support.options import option
 from amuse.support.units import units
 import os.path
 
-class keplerInterface(CodeInterface, CommonCodeInterface):
+class keplerInterface(CodeInterface,
+                      CommonCodeInterface):
     """
-    Kepler structure functions, imported from Starlab.  Initialize an
-    orbit from mass, pos, and vel, or mass, semi-major axis and
-    eccentricity, and allow the user to manipulate the resulting
-    structure.
+    Kepler orbit manipulation functions, imported from Starlab.
+    Initialize an orbit from mass, pos, and vel, or mass, semi-major
+    axis and eccentricity, and allow the user to manipulate the
+    resulting structure.  Most Starlab functionality is currently
+    exposed.
     """
 
     # Interface specification.
@@ -20,7 +22,7 @@ class keplerInterface(CodeInterface, CommonCodeInterface):
         CodeInterface.__init__(self,
                                name_of_the_worker = "kepler_worker",
                                **options)
-
+    
     @legacy_function
     def initialize_from_dyn():
         """
@@ -55,6 +57,9 @@ class keplerInterface(CodeInterface, CommonCodeInterface):
         function.addParameter('mass', dtype='float64', direction=function.IN)
         function.addParameter('semi', dtype='float64', direction=function.IN)
         function.addParameter('ecc', dtype='float64', direction=function.IN)
+        function.addParameter('mean_anomaly',
+                              dtype='float64', direction=function.IN,
+                              default = 0)
         function.addParameter('time', dtype='float64', direction=function.IN,
                               default = 0)
         function.result_type = 'int32'
@@ -174,9 +179,57 @@ class keplerInterface(CodeInterface, CommonCodeInterface):
         return function
 
     @legacy_function
+    def get_total_mass():
+        """
+        Return the total mass (remind the user) of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('mass', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get mass OK
+        -1 - ERROR
+            could not get mass"""
+        return function
+
+    @legacy_function
+    def get_time():
+        """
+        Return the current time of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('time', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get time OK
+        -1 - ERROR
+            could not get time"""
+        return function
+
+    @legacy_function
+    def get_period():
+        """
+        Return the periodof the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('period', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get period OK
+        -1 - ERROR
+            could not get period"""
+        return function
+
+    @legacy_function
     def get_elements():
         """
-        Return the orbital elements (a,e,M) of the system.
+        Return the orbital elements (a,e) of the system.
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
@@ -191,7 +244,25 @@ class keplerInterface(CodeInterface, CommonCodeInterface):
         return function
 
     @legacy_function
-    def get_separation():
+    def get_integrals():
+        """
+        Return the total energy and angular momentum of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('energy', dtype='float64', direction=function.OUT)
+        function.addParameter('angular_momentum',
+                              dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get integrals OK
+        -1 - ERROR
+            could not get integrals"""
+        return function
+
+    @legacy_function
+    def get_separation_vector():
         """
         Return the current separation vector (x,y,z) of the system.
         """
@@ -203,9 +274,184 @@ class keplerInterface(CodeInterface, CommonCodeInterface):
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
+            get separation vector OK
+        -1 - ERROR
+            could not get separation vector"""
+        return function
+
+    @legacy_function
+    def get_separation():
+        """
+        Return the current separation r of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('r', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
             get separation OK
         -1 - ERROR
             could not get separation"""
+        return function
+
+    @legacy_function
+    def get_periastron():
+        """
+        Return the current periastron of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('peri', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get periastron OK
+        -1 - ERROR
+            could not get periastron"""
+        return function
+
+    @legacy_function
+    def get_apastron():
+        """
+        Return the current apastron of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('apo', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get apastron OK
+        -1 - ERROR
+            could not get apastron"""
+        return function
+
+    @legacy_function
+    def get_velocity_vector():
+        """
+        Return the current relative velocity vector (x,y,z) of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('vx', dtype='float64', direction=function.OUT)
+        function.addParameter('vy', dtype='float64', direction=function.OUT)
+        function.addParameter('vz', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get velocity vector OK
+        -1 - ERROR
+            could not get velocity vector"""
+        return function
+
+    @legacy_function
+    def get_angles():
+        """
+        Return the current mean and true anomalies of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('true_anomaly',
+                              dtype='float64', direction=function.OUT)
+        function.addParameter('mean_anomaly',
+                              dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get angles OK
+        -1 - ERROR
+            could not get angles"""
+        return function
+
+    @legacy_function
+    def set_longitudinal_unit_vector():
+        """
+        Set the longitudinal unit vector of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('vx', dtype='float64', direction=function.IN)
+        function.addParameter('vy', dtype='float64', direction=function.IN)
+        function.addParameter('vz', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            set vector OK
+        -1 - ERROR
+            could not set vector"""
+        return function
+
+    @legacy_function
+    def set_normal_unit_vector():
+        """
+        Set the normal unit vector of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('vx', dtype='float64', direction=function.IN)
+        function.addParameter('vy', dtype='float64', direction=function.IN)
+        function.addParameter('vz', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            set vector OK
+        -1 - ERROR
+            could not set vector"""
+        return function
+
+    @legacy_function
+    def get_longitudinal_unit_vector():
+        """
+        Return the longitudinal unit vector of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('vx', dtype='float64', direction=function.OUT)
+        function.addParameter('vy', dtype='float64', direction=function.OUT)
+        function.addParameter('vz', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get vector OK
+        -1 - ERROR
+            could not get vector"""
+        return function
+
+    @legacy_function
+    def get_transverse_unit_vector():
+        """
+        Return the transverse unit vector of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('vx', dtype='float64', direction=function.OUT)
+        function.addParameter('vy', dtype='float64', direction=function.OUT)
+        function.addParameter('vz', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get vector OK
+        -1 - ERROR
+            could not get vector"""
+        return function
+
+    @legacy_function
+    def get_normal_unit_vector():
+        """
+        Return the normal unit vector of the system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('vx', dtype='float64', direction=function.OUT)
+        function.addParameter('vy', dtype='float64', direction=function.OUT)
+        function.addParameter('vz', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            get vector OK
+        -1 - ERROR
+            could not get vector"""
         return function
 
 class kepler(CommonCode):
@@ -227,7 +473,6 @@ class kepler(CommonCode):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
-                nbody_system.length,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
@@ -243,6 +488,7 @@ class kepler(CommonCode):
             (
                 nbody_system.mass,
                 nbody_system.length,
+                units.none,
                 units.none,
                 nbody_system.time
             ),
@@ -274,6 +520,27 @@ class kepler(CommonCode):
                           (),
                           (object.ERROR_CODE))
 
+        object.add_method("get_total_mass",
+                          (),
+                          (
+                              nbody_system.mass,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_time",
+                          (),
+                          (
+                              nbody_system.time,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_period",
+                          (),
+                          (
+                              nbody_system.time,
+                              object.ERROR_CODE
+                          ))
+
         object.add_method("get_elements",
                           (),
                           (
@@ -282,11 +549,105 @@ class kepler(CommonCode):
                               object.ERROR_CODE
                           ))
 
-        object.add_method("get_separation",
+        object.add_method("get_integrals",
+                          (),
+                          (
+                              nbody_system.speed*nbody_system.speed,
+                              nbody_system.length*nbody_system.speed,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_separation_vector",
                           (),
                           (
                               nbody_system.length,
                               nbody_system.length,
                               nbody_system.length,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_separation",
+                          (),
+                          (
+                              nbody_system.length,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_periastron",
+                          (),
+                          (
+                              nbody_system.length,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_apastron",
+                          (),
+                          (
+                              nbody_system.length,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_velocity_vector",
+                          (),
+                          (
+                              nbody_system.speed,
+                              nbody_system.speed,
+                              nbody_system.speed,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_angles",
+                          (),
+                          (
+                              units.none,
+                              units.none,
+                              units.none,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("set_longitudinal_unit_vector",
+                          (
+                              units.none,
+                              units.none,
+                              units.none
+                          ),
+                          (
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("set_normal_unit_vector",
+                          (
+                              units.none,
+                              units.none,
+                              units.none
+                          ),
+                          (
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_longitudinal_unit_vector",
+                          (),
+                          (
+                              units.none,
+                              units.none,
+                              units.none,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_transverse_unit_vector",
+                          (),
+                          (
+                              units.none,
+                              units.none,
+                              units.none,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("get_normal_unit_vector",
+                          (),
+                          (
+                              units.none,
+                              units.none,
+                              units.none,
                               object.ERROR_CODE
                           ))

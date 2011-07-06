@@ -18,13 +18,30 @@ def test_kepler(mass, semi, ecc, time):
 
     kep = kepler(redirection = "none")
     kep.initialize_code()
+
     kep.initialize_from_elements(mass, semi, ecc)
     a,e = kep.get_elements()
-    print "elements:", a, e
+    p = kep.get_periastron()
+    print "elements:", a, e, p
     kep.transform_to_time(time)
-    x,y,z = kep.get_separation()
-    print "separation:", x, y, z
-    print ''
+    x,y,z = kep.get_separation_vector()
+    print "separation:", x,y,z
+    x,y,z = kep.get_longitudinal_unit_vector()
+    print "longitudinal:", x,y,z
+
+    pos = [1, 0, 0] | nbody_system.length
+    vel = [0, 0.5, 0] | nbody_system.speed
+    kep.initialize_from_dyn(mass, pos[0], pos[1], pos[2],
+                            vel[0], vel[1], vel[2])
+    a,e = kep.get_elements()
+    p = kep.get_periastron()
+    print "elements:", a, e, p
+    kep.transform_to_time(time)
+    x,y,z = kep.get_separation_vector()
+    print "separation:", x,y,z
+    x,y,z = kep.get_longitudinal_unit_vector()
+    print "longitudinal:", x,y,z
+
     kep.stop()
 
 if __name__ == '__main__':
