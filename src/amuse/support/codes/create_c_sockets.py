@@ -7,17 +7,17 @@ from amuse.support.codes.create_code import DTypeSpec, DTypeToSpecDictionary
 
 dtype_to_spec = DTypeToSpecDictionary({
     'int32' : DTypeSpec('ints_in', 'ints_out',
-                    'HEADER_INTEGER_COUNT', 'int32_t', ''),
+                    'HEADER_INTEGER_COUNT', 'int', ''),
     'int64' : DTypeSpec('longs_in', 'longs_out',
-                    'HEADER_LONG_COUNT', 'int64_t', ''),
+                    'HEADER_LONG_COUNT', 'long long int', ''),
     'float32' : DTypeSpec('floats_in', 'floats_out',
                     'HEADER_FLOAT_COUNT', 'float', ''),
     'float64' : DTypeSpec('doubles_in', 'doubles_out',
                     'HEADER_DOUBLE_COUNT', 'double', ''),
     'bool' : DTypeSpec('booleans_in', 'booleans_out',
-                    'HEADER_BOOLEAN_COUNT', 'int32_t', ''),
+                    'HEADER_BOOLEAN_COUNT', 'int', ''),
     'string' : DTypeSpec('strings_in', 'strings_out',
-                    'HEADER_STRING_COUNT', 'int32_t', ''),
+                    'HEADER_STRING_COUNT', 'int', ''),
 })
 
 dtypes = ['int32', 'int64', 'float32', 'float64', 'bool', 'string']
