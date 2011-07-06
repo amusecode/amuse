@@ -1245,7 +1245,7 @@ class SocketChannel(MessageChannel):
         
         logging.getLogger("channel").debug("initializing SocketChannel with options %s", options)
        
-        self.name_of_the_worker = name_of_the_worker
+        self.name_of_the_worker = name_of_the_worker + "_sockets"
         
         if self.hostname != None and self.hostname != 'localhost':
             raise exceptions.CodeException("can only run codes on local machine using SocketChannel, not on %s", self.hostname)
@@ -1256,9 +1256,9 @@ class SocketChannel(MessageChannel):
         self.id = 0
         
         if not legacy_interface_type is None:
-            self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type) + "_sockets"
+            self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
         else:
-            self.full_name_of_the_worker = self.name_of_the_worker + "_sockets"
+            self.full_name_of_the_worker = self.name_of_the_worker
             
         #logging.getLogger("channel").debug("full name of worker is %s", self.full_name_of_the_worker)
         
@@ -1381,7 +1381,7 @@ class IbisChannel(MessageChannel):
         
         logging.getLogger("channel").debug("initializing IbisChannel with options %s", options)
        
-        self.name_of_the_worker = name_of_the_worker
+        self.name_of_the_worker = name_of_the_worker + "_sockets"
         
         if self.hostname == None:
             self.hostname = 'local'

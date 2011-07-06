@@ -7,17 +7,17 @@ from amuse.support.codes.create_code import DTypeSpec, DTypeToSpecDictionary
 
 dtype_to_spec = DTypeToSpecDictionary({
     'int32' : DTypeSpec('ints_in', 'ints_out',
-                    'HEADER_INTEGER_COUNT', 'int', 'MPI_INT'),
+                    'HEADER_INTEGER_COUNT', 'int32_t', ''),
     'int64' : DTypeSpec('longs_in', 'longs_out',
-                    'HEADER_LONG_COUNT', 'long long int', 'MPI_LONG_LONG_INT'),
+                    'HEADER_LONG_COUNT', 'int64_t', ''),
     'float32' : DTypeSpec('floats_in', 'floats_out',
-                    'HEADER_FLOAT_COUNT', 'float', 'MPI_FLOAT'),
+                    'HEADER_FLOAT_COUNT', 'float', ''),
     'float64' : DTypeSpec('doubles_in', 'doubles_out',
-                    'HEADER_DOUBLE_COUNT', 'double', 'MPI_DOUBLE'),
+                    'HEADER_DOUBLE_COUNT', 'double', ''),
     'bool' : DTypeSpec('booleans_in', 'booleans_out',
-                    'HEADER_BOOLEAN_COUNT', 'int', 'MPI_INTEGER'),
+                    'HEADER_BOOLEAN_COUNT', 'int32_t', ''),
     'string' : DTypeSpec('strings_in', 'strings_out',
-                    'HEADER_STRING_COUNT', 'int', 'MPI_INTEGER'),
+                    'HEADER_STRING_COUNT', 'int32_t', ''),
 })
 
 dtypes = ['int32', 'int64', 'float32', 'float64', 'bool', 'string']
@@ -36,6 +36,9 @@ static int HEADER_FLOAT_COUNT = 6;
 static int HEADER_DOUBLE_COUNT = 7;
 static int HEADER_BOOLEAN_COUNT = 8;
 static int HEADER_STRING_COUNT = 9;
+
+static bool TRUE_BYTE = 1;
+static bool FALSE_BYTE = 0;
 
 int socketfd = 0;
 """    
@@ -439,7 +442,6 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         
         self.out.lf().lf() + 'int max_call_count = 10;'
         self.out.lf().lf() + 'int call_count;'
-        self.out.lf().lf() + 'int i;'
         self.out.lf() + 'char * buffer = new char[50];'
 
         self.out.lf();
@@ -475,18 +477,32 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             
             self.out.lf() 
             self.out + 'if(header_in[' + spec.counter_name + '] > 0) {'
-            self.out.indent().lf() + 'receive(' 
-            self.out + spec.input_var_name 
-            self.out + ', ' + 'header_in[' + spec.counter_name 
-            self.out + '] * sizeof(' + spec.type + '), socketfd);'
+            self.out.indent()
             
-            if dtype == 'string':
+            
+            if dtype == 'bool':
+                self.out.lf() + 'for (int i = 0; i < header_in[HEADER_BOOLEAN_COUNT]; i++) {'
+                self.out.indent()
+                self.out.lf() + 'booleans_in[i] = 0;'
+                self.out.lf() + 'receive(&booleans_in[i], 1, socketfd);'
+                self.out.dedent().lf() + '}'
+            elif dtype == 'string':
+                self.out.lf() + 'receive(' 
+                self.out + spec.input_var_name 
+                self.out + ', ' + 'header_in[' + spec.counter_name 
+                self.out + '] * sizeof(' + spec.type + '), socketfd);'
                 self.out.lf() + 'for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {'
                 self.out.indent()
                 self.out.lf() + 'characters_in[i] = new char[strings_in[i] + 1];'
                 self.out.lf() + 'receive(characters_in[i], strings_in[i], socketfd);'
                 self.out.lf() + "characters_in[i][strings_in[i]] = '\\0';"
                 self.out.dedent().lf() + '}'
+            else:
+                self.out.lf() + 'receive(' 
+                self.out + spec.input_var_name 
+                self.out + ', ' + 'header_in[' + spec.counter_name 
+                self.out + '] * sizeof(' + spec.type + '), socketfd);'
+
                                       
             self.out.dedent().lf() + '}'
             self.out.lf() 
@@ -542,20 +558,36 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             self.out + spec.counter_name + '] > 0) {'
             self.out.indent().lf()
                 
-            self.out + 'send(' + spec.output_var_name + ', ' + 'header_out[' + spec.counter_name + '] * sizeof(' + spec.type + '), socketfd);'
+            if dtype == 'string':
+                self.out + 'send(' + spec.output_var_name + ', ' + 'header_out[' + spec.counter_name + '] * sizeof(' + spec.type + '), socketfd);'
+                self.out.lf() + 'for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {'
+                self.out.indent()
+                self.out.lf() + 'send(characters_out[i], strings_out[i] * sizeof(char), socketfd);'
+                self.out.dedent();
+                self.out.lf() + '}'
+                self.out.lf()
+                
+            elif dtype == 'bool':
+                self.out.lf() + 'for (int i = 0; i < header_out[HEADER_BOOLEAN_COUNT]; i++) {'
+                self.out.indent()
+                self.out.lf() + 'if (booleans_out[i]) {'
+                self.out.indent()
+                self.out.lf() + 'send(&TRUE_BYTE, 1, socketfd);'
+                self.out.dedent()
+                self.out.lf() + '} else {'
+                self.out.indent()
+                self.out.lf() + 'send(&FALSE_BYTE, 1, socketfd);'
+                self.out.dedent()
+                self.out.lf() + "}"
+                self.out.dedent();
+                self.out.lf() + '}'
+                self.out.lf()
+                
+            else:
+                self.out + 'send(' + spec.output_var_name + ', ' + 'header_out[' + spec.counter_name + '] * sizeof(' + spec.type + '), socketfd);'
             
             self.out.dedent().lf() + '}'
             self.out.lf()
-            
-        max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get('string', 0)
-        if max != 0:
-            self.out.lf() + 'for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {'
-            self.out.indent()
-            self.out.lf() + 'send(characters_out[i], strings_out[i] * sizeof(char), socketfd);'
-            self.out.dedent();
-            self.out.lf() + '}'
-            self.out.lf()
-            
             
         max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get('string', 0)
         if max != 0:
@@ -620,6 +652,8 @@ class GenerateACSourcecodeStringFromASpecificationClass\
                 
             max = 0
             max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
+            if dtype == 'string' and max == 0:
+                max = 1
             if max > 0:
                 self.output_new_statement(
                     must_add_type,
@@ -632,6 +666,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         
         dtype = 'string'
         max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)
+
         if max > 0:
             self.out.lf()
             self.output_new_statement(
@@ -642,6 +677,9 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             )
                 
         max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
+        if max == 0:
+            max = 1
+            
         if max > 0:
             self.out.lf()
             self.output_new_statement(

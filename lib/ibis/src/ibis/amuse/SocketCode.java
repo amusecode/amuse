@@ -56,7 +56,7 @@ public class SocketCode implements Runnable {
         requestMessage = new AmuseMessage();
         resultMessage = new AmuseMessage();
 
-        executable = new File(amuseHome + File.separator + codeDir + File.separator + codeName + "_sockets");
+        executable = new File(amuseHome + File.separator + codeDir + File.separator + codeName);
 
         if (!executable.canExecute()) {
             throw new IOException("Cannot find executable for code " + codeName
