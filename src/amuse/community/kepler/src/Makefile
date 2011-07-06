@@ -9,6 +9,7 @@ OPT	  = -O4
 
 GPU	  = -DGPU
 CXX	  ?= mpicxx
+MPICXX ?= mpicxx
 CFLAGS   += -g -Wall $(OPT)
 CXXFLAGS += $(CFLAGS) 
 

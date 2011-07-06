@@ -211,12 +211,12 @@ class keplerInterface(CodeInterface, CommonCodeInterface):
 class kepler(CommonCode):
 
     def __init__(self, **options):
-        CodeInterface.__init__(self,
+        CommonCode.__init__(self,
                                keplerInterface(**options),
                                **options)
 
     def define_methods(self, object):
-        CodeInterface.define_methods(self, object)
+        CommonCode.define_methods(self, object)
 
         # Turn interface functions into methods.
 
