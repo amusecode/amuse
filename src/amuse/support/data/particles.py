@@ -713,9 +713,7 @@ class AbstractParticleSet(AbstractSet):
         return len(self) != len(set(self.get_all_keys_in_store()))
     
     
-    def as_subset_in(self, other):
-        selected_keys = filter(lambda x : other.has_key_in_store(x), self.get_all_keys_in_store())
-        return other._subset(selected_keys)
+
         
     def _subset(self, keys):
         return ParticlesSubset(self._original_set(), keys)
@@ -757,6 +755,10 @@ class AbstractParticleSet(AbstractSet):
     def is_empty(self):
         return self.__len__()==0
         
+    def get_intersecting_subset_in(self, other):
+        selected_keys = filter(lambda x : other.has_key_in_store(x), self.get_all_keys_in_store())
+        return other._subset(selected_keys)
+        
 class Particles(AbstractParticleSet):
     """
     A set of particles. Attributes and values are stored in
@@ -776,7 +778,7 @@ class Particles(AbstractParticleSet):
         else:
             self._private.attribute_storage = storage
     
-        if size > 0:
+        if size > 0 or not keys is None:
             if keys is None:
                 particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
             else:

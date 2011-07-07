@@ -34,7 +34,7 @@ def find_clumps(particles, unit_converter):
     hop.calculate_densities()
     hop.do_hop()
     
-    result = [x.as_subset_in(particles) for x in hop.groups()]
+    result = [x.get_intersecting_subset_in(particles) for x in hop.groups()]
     
     hop.stop()
     

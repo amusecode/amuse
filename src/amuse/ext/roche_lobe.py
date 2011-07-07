@@ -37,7 +37,7 @@ class RocheLobeOverflow(object):
         if None in self.companions:
             raise AmuseException("Specifying companion stars is required for automatic updating of the overflow radii. Otherwise use set_roche_radii.")
         for i, (part, comp) in enumerate(zip(self.particles, self.companions)):
-            dyn_particles = ParticlesSuperset([part.as_set(), comp.as_set()]).as_subset_in(self.dynamics_code.particles)
+            dyn_particles = ParticlesSuperset([part.as_set(), comp.as_set()]).get_intersecting_subset_in(self.dynamics_code.particles)
             separation = (dyn_particles.position[0] - dyn_particles.position[1]).length()
             cube_root_q = (part.mass / comp.mass).value_in(units.none)**(1/3.0)
             # Eggleton 1983:
@@ -72,7 +72,7 @@ class RocheLobeOverflow(object):
             if None in self.companions:
                 raise AmuseException("Specifying companion stars is required for automatic updating of the dynamics_code.particles masses. Otherwise use dynamics_code = None.")
             for particle, companion in zip(self.particles, self.companions):
-                dyn_particles = ParticlesSuperset([part.as_set(), comp.as_set()]).as_subset_in(self.dynamics_code.particles)
+                dyn_particles = ParticlesSuperset([part.as_set(), comp.as_set()]).get_intersecting_subset_in(self.dynamics_code.particles)
                 dyn_particles.mass = [part.mass, comp.mass]
         return result
     

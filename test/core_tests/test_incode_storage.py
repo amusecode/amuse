@@ -290,6 +290,164 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(mass[1],  4 | units.kg)
         self.assertEquals(mass[2],  6 | units.kg)
     
+    def test5(self):
+        class Code(object):
+            def __init__(self):
+                self.data = []
+                self.number_of_particles = 0
+                
+            def get_number_of_particles(self):
+                return  self.number_of_particles
+                
+            def get_mass(self,index):
+                data_to_return = [self.data[i][0] for i in index]
+                return units.kg(data_to_return)
+            
+            def get_children(self,index):
+                return [(self.data[i][1]) for i in index], [(self.data[i][2]) for i in index]
+            
+            def new_particle(self, mass):
+                mass = mass.value_in(units.kg)
+                self.data = [[x,-1,-1] for x in mass]
+                self.number_of_particles = len(self.data)
+                return [i for i in range(len(mass))]
+            
+        code = Code()
+    
+        children_getter = ParticleGetAttributesMethod(
+                    code.get_children,
+                    ('child1', 'child2',)
+        )
+        children_getter.index_output_attributes = set(['child1','child2'])
+     
+        storage = InCodeAttributeStorage(
+            code,
+            NewParticleMethod(code.new_particle,("mass",)),
+            None,
+            code.get_number_of_particles,
+            [],
+            [
+                ParticleGetAttributesMethod(code.get_mass,("mass",)),
+                children_getter
+            ],
+            name_of_the_index = "index"
+        )
+        
+        storage.add_particles_to_store(
+            numpy.asarray([100,200,300,400], dtype='uint64'),
+            ["mass"],
+            [
+                units.kg([1,2,3,4]),
+            ]
+        )
+        
+        self.assertEquals(len(storage), 4)
+    
+        mass = storage.get_values_in_store([100,400],["mass",])[0]
+        print mass
+        self.assertEquals(mass[0], 1.0 | units.kg)
+        self.assertEquals(mass[1], 4.0 | units.kg)
+    
+        code.data[0][1] = 1
+        code.data[0][2] = 2
+    
+        child1,child2 = storage.get_values_in_store([100],['child1', 'child2'])
+        print child1
+    
+        self.assertEquals(child1[0].number, 200)
+        self.assertEquals(child2[0].number, 300)
+    
+        x = Particles(storage  = storage)
+    
+        self.assertEquals(x[0].mass, 1.0 | units.kg)
+        self.assertEquals(x[0].child1.mass, 2.0 | units.kg)
+        self.assertEquals(x[0].child2.mass, 3.0 | units.kg)
+        self.assertEquals(x[1].child1, None)
+        self.assertEquals(x[1].child2, None)
+    
+    
+        code.data[1][1] = 3
+        code.data[1][2] = 2
+    
+        self.assertEquals(x[0].child1, x[1])
+        self.assertEquals(x[0].child1.child1.mass, 4.0 | units.kg)
+        self.assertEquals(x[0].child1.child2.mass, 3.0 | units.kg)
+
+    def test6(self):
+        class Code(object):
+            def __init__(self):
+                self.data = []
+                self.number_of_particles = 0
+                
+            def get_number_of_particles(self):
+                return  self.number_of_particles
+                
+            def get_mass(self,index):
+                data_to_return = [self.data[i][0] for i in index]
+                return units.kg(data_to_return)
+            
+            def get_children(self,index):
+                return [(self.data[i][1]) for i in index], [(self.data[i][2]) for i in index]
+            
+            def new_particle(self, mass):
+                mass = mass.value_in(units.kg)
+                self.data = [[x,-1,-1] for x in mass]
+                self.number_of_particles = len(self.data)
+                return [i for i in range(len(mass))]
+            
+        code = Code()
+    
+        children_getter = ParticleGetAttributesMethod(
+                    code.get_children,
+                    ('child1', 'child2',)
+        )
+        children_getter.index_output_attributes = set(['child1','child2'])
+     
+        storage = InCodeAttributeStorage(
+            code,
+            NewParticleMethod(code.new_particle,("mass",)),
+            None,
+            code.get_number_of_particles,
+            [],
+            [
+                ParticleGetAttributesMethod(code.get_mass,("mass",)),
+                children_getter
+            ],
+            name_of_the_index = "index"
+        )
+        
+        
+        code_particles = Particles(storage  = storage)
+    
+        memory_particles = Particles(keys = 100 * (1 + numpy.arange(10)) )
+        memory_particles.mass = range(10) | units.kg
+    
+        code_particles.add_particles(memory_particles)
+    
+        self.assertEquals(len(code_particles), 10)
+    
+        code.data[0][1] = 1
+        code.data[0][2] = 2
+        code.data[1][1] = 3
+        code.data[1][2] = 4
+    
+        self.assertEquals(code_particles[0].child1, code_particles[1])
+        self.assertEquals(code_particles[0].child1.mass, 1.0 | units.kg)
+        self.assertEquals(code_particles[0].child2.mass, 2.0 | units.kg)
+        self.assertEquals(code_particles[0].child1.key, 200)
+        self.assertEquals(code_particles[0].child2.key, 300)
+        self.assertEquals(code_particles[0].child1.child1.mass, 3.0 | units.kg)
+        self.assertEquals(code_particles[0].child1.child2.mass, 4.0 | units.kg)
+    
+        channel = code_particles.new_channel_to(memory_particles)
+        channel.copy()
+    
+        self.assertEquals(memory_particles[0].child1, memory_particles[1])
+        self.assertEquals(memory_particles[0].child1.mass, 1.0 | units.kg)
+        self.assertEquals(memory_particles[0].child2.mass, 2.0 | units.kg)
+        self.assertEquals(memory_particles[0].child1.child1.mass, 3.0 | units.kg)
+        self.assertEquals(memory_particles[0].child1.child2.mass, 4.0 | units.kg)
+
 class TestGrids(amusetest.TestCase):
     
     def test1(self):

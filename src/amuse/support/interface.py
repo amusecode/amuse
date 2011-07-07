@@ -312,6 +312,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
     ERROR_CODE =  object()
     NO_UNIT = object()
     INDEX = object()
+    LINK = object()
 
     def __init__(self, handler, function_name, units, return_units, name):
         self.function_name = function_name

@@ -841,9 +841,7 @@ class AbstractSet(object):
         return len(self) != len(set(self.get_all_keys_in_store()))
     
     
-    def as_subset_in(self, other):
-        selected_keys = filter(lambda x : other.has_key_in_store(x), self.get_all_keys_in_store())
-        return other._subset(selected_keys)
+
         
     def _subset(self, keys):
         raise NotImplementedError()
@@ -969,3 +967,7 @@ class AbstractSet(object):
         return result
     
     
+    def get_intersecting_subset_in(self, other):
+        selected_keys = filter(lambda x : other.has_key_in_store(x), self.get_all_keys_in_store())
+        return other._subset(selected_keys)
+        

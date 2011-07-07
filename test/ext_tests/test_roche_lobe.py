@@ -79,9 +79,9 @@ class TestRocheLobeOverflow(TestWithMPI):
         stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
-        first  = stars[0:1].as_subset_in(stellar_evolution.particles)[0]
-        second = stars[1:2].as_subset_in(stellar_evolution.particles)[0]
-        third  = stars[2:].as_subset_in(stellar_evolution.particles)[0]
+        first  = stars[0:1].get_intersecting_subset_in(stellar_evolution.particles)[0]
+        second = stars[1:2].get_intersecting_subset_in(stellar_evolution.particles)[0]
+        third  = stars[2:].get_intersecting_subset_in(stellar_evolution.particles)[0]
         
         rlof = RocheLobeOverflow()
         self.assertEqual(rlof.accretion_efficiency, 1.0)
@@ -140,8 +140,8 @@ class TestRocheLobeOverflow(TestWithMPI):
         stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
-        se_primaries = primaries.as_subset_in(stellar_evolution.particles)
-        se_companions = companions.as_subset_in(stellar_evolution.particles)
+        se_primaries = primaries.get_intersecting_subset_in(stellar_evolution.particles)
+        se_companions = companions.get_intersecting_subset_in(stellar_evolution.particles)
         
         accretion_efficiency = 0.1
         instance = RocheLobeOverflow(accretion_efficiency = accretion_efficiency)
@@ -170,7 +170,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars[::-1])
         stellar_evolution.commit_particles()
-        se_stars = stars.as_subset_in(stellar_evolution.particles)
+        se_stars = stars.get_intersecting_subset_in(stellar_evolution.particles)
         # we added the stars to MESA in reverse order, so the orders of stars and stellar_evolution.particles don't match:
         self.assertEqual(stellar_evolution.particles.mass, stars.mass[::-1])
         # 'se_stars' are MESA particles, stored in the same order as 'stars'
@@ -215,7 +215,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
-        se_stars = stars.as_subset_in(stellar_evolution.particles)
+        se_stars = stars.get_intersecting_subset_in(stellar_evolution.particles)
         
         # two binaries: 1 circular, 1 elliptical with periastron within roche radius
         apastron = 40.0 | units.RSun
