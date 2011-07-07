@@ -14,7 +14,14 @@ from amuse.support.codes.core import is_mpd_running
 
 from amuse.community.kepler.interface import Kepler
 
-def test_kepler(mass, semi, ecc, time):
+def test1():
+    mass = 1 | nbody_system.mass
+    semi = 1 | nbody_system.length
+    ecc = 0.5 | units.none
+    time = 5.0 | nbody_system.time
+    run_kepler(mass, semi, ecc, time)
+    
+def run_kepler(mass, semi, ecc, time):
 
     kep = Kepler(redirection = "none")
     kep.initialize_code()
@@ -70,4 +77,4 @@ if __name__ == '__main__':
             print "unexpected argument", o
 
     assert is_mpd_running()
-    test_kepler(mass, semi, ecc, time)
+    run_kepler(mass, semi, ecc, time)
