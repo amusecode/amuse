@@ -20,9 +20,12 @@ SAPPOROLIBS ?= -L../../../../lib/sapporo_light/ -lsapporo
 
 BOOSTLIBS ?= -L/opt/local/lib -lboost_thread-mt
 
+CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
+CUDA_LIBS ?= -lcudart
+
 LDFLAGS_GPU =	$(LDFLAGS) \
 		$(SAPPOROLIBS) \
-		-L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart \
+		$(CUDA_LIBDIRS) $(CUDA_LIBS) \
 		$(BOOSTLIBS)
 
 OBJS = interface.o
@@ -30,8 +33,6 @@ OBJS = interface.o
 CODELIB = src/libph4.a
 
 CODELIB_GPU = src/libph4gpu.a
-
-CUDA_LIBS ?= -lcudart
 
 SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
 
