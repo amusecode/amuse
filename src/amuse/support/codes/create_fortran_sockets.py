@@ -228,20 +228,17 @@ string_receive_code = """
       do i = 1, header_in(HEADER_STRING_COUNT), 1
         if (strings_in(i) .gt. MAX_STRING_LENGTH) then
             print*, 'error! cannot receive strings exeeding length ', MAX_STRING_LENGTH
+            
+            call exit(1)
         end if
-      end do
-
-      !space for all strings in this one call
-      allocate(characters_in(header_in(HEADER_STRING_COUNT)))
-
-      do i = 1, header_in(HEADER_STRING_COUNT), 1
-          characters_in(i) = ' '
+        
+        characters_in(i) = ' '
           
-          call receive_string(c_loc(characters_in(i)), strings_in(i))
+        call receive_string(c_loc(characters_in(i)), strings_in(i))
 
-          print*, 'received string: ', characters_in(i)
+        print*, 'received string: ', characters_in(i), ' of length ', len(characters_in(i))
 
-          call flush()
+        call flush()
 
       end do
 """
@@ -256,7 +253,7 @@ string_send_code = """
       call send_integers(c_loc(strings_out), header_out(HEADER_STRING_COUNT))
 
       do i = 1, header_out(HEADER_STRING_COUNT), 1
-          print*, 'sending string ', characters_out(i)
+          print*, 'sending string ', characters_out(i), ' of length ', len(characters_out(i))
           call flush()
           call send_string(c_loc(characters_out(i)), strings_out(i))
       end do     
@@ -300,7 +297,7 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
 
         self.output_lines_with_number_of_outputs()
         
-        self.output_lines_before_with_clear_out_variables()
+#        self.output_lines_before_with_clear_out_variables()
 #        self.output_lines_before_with_clear_input_variables()
 
         if self.specification.must_handle_array:
@@ -350,15 +347,15 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
                 
             if parameter.direction == LegacyFunctionSpecification.IN:
                 if parameter.datatype == 'string':
-                    self.out.n() + 'trim(characters_in'
-                    self.out + '(' + self.index_string(parameter.input_index) + '))'      
+                    self.out.n() + 'characters_in'
+                    self.out + '(' + self.index_string(parameter.input_index) + ')'      
                 else:
                     self.out.n() + spec.input_var_name 
                     self.out + '(' + self.index_string(parameter.input_index) + ')'
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if parameter.datatype == 'string':
-                    self.out.n() + 'trim(characters_in'
-                    self.out + '(' + self.index_string(parameter.input_index) + '))'      
+                    self.out.n() + 'characters_in'
+                    self.out + '(' + self.index_string(parameter.input_index) + ')'      
                 else:
                     self.out.n() + spec.input_var_name 
                     self.out + '(' + self.index_string(parameter.input_index) + ')'
@@ -383,26 +380,31 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
                 if self.specification.must_handle_array:
                     self.out.lf() + 'DO i = 1, length'
                     self.out.indent() 
-                    
-                self.out.n() + spec.output_var_name 
-                self.out + '(' + self.index_string(parameter.output_index, must_copy_in_to_out = True)  + ')' 
-                self.out + ' = ' 
-                self.out + spec.input_var_name + '(' + self.index_string(parameter.input_index, must_copy_in_to_out = True) + ')'
+                if parameter.datatype == 'string':
+                    self.out.n() + 'characters_out' 
+                    self.out + '(' + self.index_string(parameter.output_index, must_copy_in_to_out = True)  + ')' 
+                    self.out + ' = ' 
+                    self.out + 'characters_in' + '(' + self.index_string(parameter.input_index, must_copy_in_to_out = True) + ')'
+                else:
+                    self.out.n() + spec.output_var_name 
+                    self.out + '(' + self.index_string(parameter.output_index, must_copy_in_to_out = True)  + ')' 
+                    self.out + ' = ' 
+                    self.out + spec.input_var_name + '(' + self.index_string(parameter.input_index, must_copy_in_to_out = True) + ')'
         
                 if self.specification.must_handle_array:
                     self.out.dedent() 
                     self.out.lf() + 'END DO'
     
-    def output_lines_before_with_clear_out_variables(self):
-        for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.datatype]
-            
-            if parameter.is_output():
-                if parameter.datatype == 'string':
-                    self.out.lf() + 'allocate(characters_out(header_out(HEADER_STRING_COUNT)))'
-                    self.out.lf() + "characters_out = ' '"  
-  
-                    return
+#    def output_lines_before_with_clear_out_variables(self):
+#        for parameter in self.specification.parameters:
+#            spec = self.dtype_to_spec[parameter.datatype]
+#            
+#            if parameter.is_output():
+#                if parameter.datatype == 'string':
+#                    self.out.lf() + 'allocate(characters_out(header_out(HEADER_STRING_COUNT)))'
+#                    self.out.lf() + "characters_out = ' '"  
+#  
+#                    return
      
     def output_lines_before_with_clear_input_variables(self):
         for parameter in self.specification.parameters:
@@ -462,6 +464,7 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
             self.out.n() 
             self.out + 'header_out(' + spec.counter_name + ')'
             self.out + ' = ' + count + " * length" 
+            
             pass
             
     def output_function_end(self):
@@ -473,11 +476,8 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
             if self.specification.result_type == 'string':
-                self.out + 'output_characters('
-                self.out  + '( (' + self.index_string(0) + ')* ' + self.MAX_STRING_LEN + ')'
-                self.out  + ':' + '(((' + self.index_string(0) + ')+1)*' + self.MAX_STRING_LEN + '-1)'
-                self.out  + ') = &'
-                self.out.lf()
+                self.out + 'characters_out'
+                self.out + '(' + self.index_string(0) + ')' + ' = '
             else:
                 self.out + spec.output_var_name
                 self.out + '(' + self.index_string(0) + ')' + ' = '
@@ -599,6 +599,13 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 self.out + dtype_spec.input_var_name 
                 self.out + '( max_length *' + max + ')'
                 self.out + ')'
+                
+                if (dtype == 'string'):
+                    self.out.lf() + 'allocate(' 
+                    self.out + 'characters_in' 
+                    self.out + '( max_length * ' + max + ')'
+                    self.out + ')'
+
             
             max =self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype,0)
             if max > 0:
@@ -606,7 +613,13 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 self.out + dtype_spec.output_var_name 
                 self.out + '( max_length * ' + max + ')'
                 self.out + ')'
-        
+                
+                if (dtype == 'string'):
+                    self.out.lf() + 'allocate(' 
+                    self.out + 'characters_out' 
+                    self.out + '( max_length * ' + max + ')'
+                    self.out + ')'
+
     def output_runloop_function_def_start(self):
         self.out.lf() + 'subroutine run_loop'
         self.out.indent()
@@ -664,17 +677,20 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.indent()
 
         self.out.lf().lf() + 'call receive_integers(c_loc(header_in), HEADER_SIZE)'
+#        self.out.lf().lf() + "print*, 'received header:', header_in"
         self.out.lf().lf() + 'length = header_in(HEADER_CALL_COUNT)'
         
         self.out.lf().lf() + 'if (length .gt. max_length) then'
         self.out.indent()
-        self.out.lf() + 'max_length = length + 255;'
+        self.out.lf() + 'max_length = length + 255'
         self.output_deallocate_statements()
         self.output_allocate_arrays()
         self.out.dedent()
         self.out.lf() + 'end if'
         self.out.lf()
-    
+        
+        if self.mapping_from_dtype_to_maximum_number_of_outputvariables.get('string',0) > 0:
+            self.out.lf() + "characters_out = ' '"
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
@@ -703,7 +719,6 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         
         self.out.lf().lf() + 'error = .false.'
         
-         
     def output_switch_start(self):
         self.out.lf().lf() + 'select case (header_in(HEADER_FUNCTION_ID))'
         self.out.indent()
@@ -736,14 +751,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
 #        self.out.indent().lf() + 'parent, ioerror);'
 #        self.out.dedent().lf()
         
-        self.out.lf().lf() + 'if (header_in(HEADER_STRING_COUNT) .gt. 0) then'
-        self.out.indent()
-        self.out.lf().lf() + 'deallocate(characters_in)'
-        self.out.dedent()
-        self.out.lf().lf() + 'end if'
-   
-        self.out.lf().lf() + "!print*, 'sending header', header_out"
-        self.out.lf().lf() + '!call flush()'
+#        self.out.lf().lf() + "!print*, 'sending header', header_out"
+#        self.out.lf().lf() + '!call flush()'
         self.out.lf().lf() + 'call send_integers(c_loc(header_out), HEADER_SIZE)'
         self.out.lf()
         
@@ -757,7 +766,6 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
             
             if dtype == 'string':
                 self.out.lf() + string_send_code
-                self.out.lf().lf() + 'deallocate(characters_out)'
             else:
                 self.out.lf() + 'call send_'
                 self.out + spec.mpi_type + 's(c_loc('
@@ -785,11 +793,17 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
             max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype,0)
             if max > 0:
                 self.out.lf() + 'deallocate(' + dtype_spec.input_var_name  + ')'
-            
+                
+                if (dtype == 'string'):
+                    self.out.lf() + 'deallocate(characters_in)' 
             
             max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype,0)
             if max > 0:
                 self.out.lf() + 'deallocate(' + dtype_spec.output_var_name  + ')'
+                
+                if (dtype == 'string'):
+                    self.out.lf() + 'deallocate(characters_out)' 
+
     
     def output_forsockets_module(self):
         self.out + forsockets_module_code

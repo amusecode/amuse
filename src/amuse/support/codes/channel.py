@@ -1034,12 +1034,15 @@ class SocketMessage(AbstractMessage):
         result = ''
         
         while nbytes > 0:
-            bytes = thesocket.recv(nbytes, socket.MSG_WAITALL)
+            bytes = thesocket.recv(nbytes)
+            
+            if len(bytes) == 0:
+                raise exceptions.CodeException("lost connection to code")
+            
             result += bytes
             nbytes -= len(bytes)
-            logging.getLogger("channel").debug("got %d bytes, result length = %d", len(bytes), len(result))
-
-
+            #logging.getLogger("channel").debug("got %d bytes, result length = %d", len(bytes), len(result))
+            
         return result
      
     def receive(self, socket):
@@ -1291,6 +1294,8 @@ class SocketChannel(MessageChannel):
         #logging.getLogger("channel").debug("waiting for connection from worker")
      
         self.socket, address = server_socket.accept()
+        
+        self.socket.setblocking(1)
         
         server_socket.close()
         
