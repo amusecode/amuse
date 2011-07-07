@@ -1,5 +1,11 @@
 """
-In this script we simulate Kelvin-Helmholtz Instability in two dimentsions.
+This is the Orszag-Tang Vortex problem described in the Athena test-suite
+(http://www.astro.virginia.edu/VITA/ATHENA/ot.html):
+
+'The Orszag-Tang Vortex is a well-known test for MHD codes. The 
+intial conditions lead to a system of supersonic MHD turbulence,
+making this problem a good test of the algorithm's ability to 
+handle such turbulence and MHD shocks.' 
 """
 import numpy
 from matplotlib import pyplot
