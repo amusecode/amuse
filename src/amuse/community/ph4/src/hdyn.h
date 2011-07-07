@@ -249,9 +249,9 @@ void update_components_from_pred(hdyn *bi);
 real calculate_top_level_acc_and_jerk(hdyn *b);
 int smallN_evolve(hdyn *b,
 		  real t_end = _INFINITY_,
-		  real dt_log = _INFINITY_,
-		  real dt_check = _INFINITY_,
 		  real break_r2 = _INFINITY_,
+		  real dt_check = _INFINITY_,
+		  real dt_log = _INFINITY_,
 		  int  verbose = 0);
 
 // In smallN_unpert.cc:

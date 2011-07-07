@@ -59,9 +59,9 @@
 //	void update_components_from_pred(hdyn *bi);
 //	int smallN_evolve(hdyn *b,
 //			  real t_end = _INFINITY_,
-//			  real dt_log = _INFINITY_,
 //			  real dt_check = _INFINITY_,
 //			  real break_r2 = _INFINITY_,
+//			  real dt_log = _INFINITY_,
 //			  int  verbose = 0);
 
 #include "hdyn.h"
@@ -704,9 +704,9 @@ static void log_output(hdyn *b, int n_steps)
 
 int smallN_evolve(hdyn *b,
 		  real t_end,		// default = _INFINITY_
-		  real dt_log,		// default = _INFINITY_
-		  real dt_check,	// default = _INFINITY_
 		  real break_r2,	// default = _INFINITY_
+		  real dt_check,	// default = _INFINITY_
+		  real dt_log,		// default = _INFINITY_
 		  int verbose)		// default = 0
 {
     set_kepler_tolerance(2);	// energy corrections may force orbital
@@ -992,7 +992,7 @@ int main(int argc, char *argv[])
     b->set_eta(eta);
     b->set_gamma(gamma);
     b->set_allow_full_unperturbed(allow_full);
-    int ret = smallN_evolve(b, t_end, dt_log, dt_check, break_r2, verbose);
+    int ret = smallN_evolve(b, t_end, break_r2, dt_check, dt_log, verbose);
     cout << "end at time " << b->get_system_time()
 	 << "; return status = " << ret << endl;
 

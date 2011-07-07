@@ -286,7 +286,7 @@ class ph4(GravitationalDynamics):
             return
         
         indices_in_update_list = range(number_of_updated_particles)
-        particle_indices, updates, erros \
+        particle_indices, updates, errors \
                 = self.get_id_of_updated_particle(indices_in_update_list)
         
         incode_storage = self.particles._private.attribute_storage

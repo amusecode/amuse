@@ -781,9 +781,8 @@ nbody_descriptor jdata::integrate_multiple(vector<int> jcomp,
     b->set_allow_full_unperturbed(true);
     flatten(b);
 
-    s.status = smallN_evolve(b, t_end, dt_log,
-			     dt_fac*time_scale, r2_fac*length_scale2,
-			     verbose);
+    s.status = smallN_evolve(b, t_end, r2_fac*length_scale2,
+			     dt_fac*time_scale, dt_log, verbose);
 
     // The state of the input tree after smallN_evolve isn't quite
     // what we want.  Construct a tree reflecting the hierarchical
