@@ -33,7 +33,7 @@ $(CODELIB):
 
 clean:
 	rm -f *.so *.o *.pyc muse_worker.cc worker_code.cc worker_code.h *.jnilib worker_code-ibis.cc worker_code-sockets.cc
-	$(RM) bhtree_worker *~ worker_code *~
+	$(RM) bhtree_worker *~ worker_code *~ worker_code-sockets.cc bhtree_worker_sockets
 	make -C $(BHTCDIR) clean
 
 worker_code.cc: interface.py
