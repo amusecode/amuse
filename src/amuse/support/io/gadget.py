@@ -10,6 +10,10 @@ import struct
 import numpy
 
 class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
+    """
+    Process (read) a Gadget binary data file (saving to Gadget files not supported)
+    """
+    
     provided_formats = ['gadget']
     GAS = 0
     HALO = 1
