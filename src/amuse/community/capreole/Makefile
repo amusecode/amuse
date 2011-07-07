@@ -47,6 +47,9 @@ CLASSNAME=CapreoleInterface
 
 GLCLASSNAME=GLCapreoleInterface
 
+FSLIB = -L$(AMUSE_DIR)/lib/forsockets -lforsockets
+FSINC = -I$(AMUSE_DIR)/lib/forsockets
+
 all: capreole_worker
 
 %.o: %.f90 Makefile
@@ -65,6 +68,9 @@ $(NOMPILIBS):
 	
 capreole_worker: $(NOMPILIBS) worker.f90 interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS)
+	
+capreole_worker_sockets: $(NOMPILIBS) worker-sockets.f90 interface.o
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $(FSINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS) $(FSLIB)
 
 capreole_worker_mpi: FFLAGS2+=$(MPI_FLAGS)
 capreole_worker_mpi: $(MPILIBS) worker_mpi.f90 interface.o
@@ -78,6 +84,9 @@ capreole_worker_gl: $(NOMPILIBS) glworker.f90 interface.o
 
 worker.f90: interface.py 
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
+	
+worker-sockets.f90: interface.py 
+	$(CODE_GENERATOR) --type=f90 --mode=sockets $< $(CLASSNAME) -o $@
 
 worker_mpi.f90: interface.py 
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
@@ -88,5 +97,5 @@ glworker.f90: interface.py
 
 clean:
 	make -C src clean
-	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
-	rm -f capreole_worker capreole_worker_mpi capreole_worker_gl worker_mpi.f90
+	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90 worker-sockets.f90
+	rm -f capreole_worker capreole_worker_mpi capreole_worker_gl worker_mpi.f90 capreole_worker_sockets
