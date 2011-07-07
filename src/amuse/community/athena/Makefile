@@ -59,6 +59,7 @@ download:
 clean:
 	$(RM) -f *.so *.o *.selfgrav_o *.pyc worker_code.cc worker_code.h 
 	$(RM) -f *~ athena_worker  athena_worker_selfgrav
+	$(RM) -f worker_code-sockets.cc athena_worker_sockets
 	$(RM) -f $(CODELIB) $(AMUSE_OBJS_SELFGRAV)
 
 codeclean: clean
@@ -81,11 +82,17 @@ $(CODELIB): $(ATHENA_DIR)
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py AthenaInterface -o $@
 
+worker_code-sockets.cc: interface.py
+	$(CODE_GENERATOR) --type=c --mode=sockets interface.py AthenaInterface -o $@
+
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py -i amuse.support.codes.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
 
 athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
+
+athena_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code-sockets.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
 
 athena_worker_selfgrav: worker_code.cc worker_code.h interface_$(VERSION).c
 	cd $(ATHENA_DIR); make clean
