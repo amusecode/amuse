@@ -40,7 +40,7 @@ int add_particle(hdyn *b, real mass, real radius,
 
 hdyn *particle_with_index(hdyn *b, int index)
 {
-    for_all_daughters(hdyn, b, bb)
+    for_all_nodes(hdyn, b, bb)
 	if (bb->get_index() == index) return bb;
     return NULL;
 }

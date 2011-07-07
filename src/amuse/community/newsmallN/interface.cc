@@ -6,8 +6,29 @@
 #include "src/smallN_interface.h"
 
 static hdyn *b;		// root node for all smallN data
+static hdyn *b_copy;
 
-// AMUSE STOPPING CONDITIONS SUPPORT
+class UpdatedParticle {
+
+  // AMUSE bookkeeping.  A particle on the UpdatedParticle list has
+  // been added or removed internally.  Use this class to communicate
+  // this information back to the python level.
+    
+  public:
+
+    int index_of_particle;
+    int status;		// 1 ==> deleted, 2 ==> added
+    
+    UpdatedParticle():index_of_particle(-1),status(0) {}
+    UpdatedParticle(int i, int s):index_of_particle(i), status(s) {}
+    UpdatedParticle(const UpdatedParticle& src)
+	:index_of_particle(src.index_of_particle), status(src.status) {}
+};
+
+#include <vector>
+vector<UpdatedParticle> UpdatedParticles;
+
+// AMUSE STOPPING CONDITIONS SUPPORT (not currently used)
 #include <stopcond.h>
 
 // Setup and parameters.
@@ -17,6 +38,7 @@ int initialize_code()
     // Begin the initialization by creating a basic hdyn data structure.
 
     b = new hdyn;
+    b_copy = NULL;
 
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
@@ -117,7 +139,8 @@ int cleanup_code()
 {
     // Clean up at the end of the calculation.
 
-    rmtree(b);
+    if (b) rmtree(b);
+    if (b_copy) rmtree(b_copy);
     return 0;
 }
 
@@ -181,21 +204,23 @@ int get_state(int index_of_the_particle,
 	      double * x, double * y, double * z,
 	      double * vx, double * vy, double * vz)
 {
-    hdyn *bf = flat_copy(b);
-    hdyn *bb = particle_with_index(bf, index_of_the_particle);
-    if (!bb) {
-	rmtree(bf);
-	return -1;
-    }
+    hdyn *bb = particle_with_index(b, index_of_the_particle);
+    if (!bb) return -1;
     *mass = bb->get_mass();
     *radius = bb->get_radius();
-    *x = bb->get_pos()[0];
-    *y = bb->get_pos()[1];
-    *z = bb->get_pos()[2];
-    *vx = bb->get_vel()[0];
-    *vy = bb->get_vel()[1];
-    *vz = bb->get_vel()[2];
-    rmtree(bf);
+    vec pos = bb->get_pos(), vel = bb->get_vel();
+    hdyn *p = bb->get_parent();
+    while (p && p->get_parent()) {
+	pos += p->get_pos();		// return absolute values
+	vel += p->get_vel();
+	p = p->get_parent();
+    }
+    *x = pos[0];
+    *y = pos[1];
+    *z = pos[2];
+    *vx = vel[0];
+    *vy = vel[1];
+    *vz = vel[2];
     return 0;
 }
 
@@ -245,9 +270,15 @@ int get_position(int index_of_the_particle,
 {
     hdyn *bb = particle_with_index(b, index_of_the_particle);
     if (!bb) return -1;
-    *x = bb->get_pos()[0];
-    *y = bb->get_pos()[1];
-    *z = bb->get_pos()[2];
+    vec pos = bb->get_pos();
+    hdyn *p = bb->get_parent();
+    while (p && p->get_parent()) {
+	pos += p->get_pos();		// return absolute value
+	p = p->get_parent();
+    }
+    *x = pos[0];
+    *y = pos[1];
+    *z = pos[2];
     return 0;
 }
 
@@ -265,9 +296,15 @@ int get_velocity(int index_of_the_particle,
 {
     hdyn *bb = particle_with_index(b, index_of_the_particle);
     if (!bb) return -1;
-    *vx = bb->get_vel()[0];
-    *vy = bb->get_vel()[1];
-    *vz = bb->get_vel()[2];
+    vec vel = bb->get_vel();
+    hdyn *p = bb->get_parent();
+    while (p && p->get_parent()) {
+	vel += p->get_vel();		// return absolute value
+	p = p->get_parent();
+    }
+    *vx = vel[0];
+    *vy = vel[1];
+    *vz = vel[2];
     return 0;
 }
 
@@ -443,4 +480,63 @@ int get_gravity_at_point(double eps, double x, double y, double z,
 			 double * forcex, double * forcey, double * forcez)
 {
     return -1;
+}
+
+
+
+int update_particle_tree()
+{
+    b_copy = b;			// save the smallN tree until restored
+    b = get_tree(b_copy);	// b now is the structured tree
+    UpdatedParticles.clear();
+
+    int max_index = -1;
+    for_all_leaves(hdyn, b, bb)
+	if (bb->get_index() > max_index) max_index = bb->get_index();
+    int newindex = pow(10, (int)log10((real)max_index+1) + 1.);
+    for_all_nodes(hdyn, b, bb)
+	if (bb->get_parent() && bb->get_oldest_daughter()) {
+	    bb->set_index(++newindex);
+	    UpdatedParticles.push_back(UpdatedParticle(newindex, 1));
+	}
+
+    return 0;
+}
+
+int restore_particle_tree()
+{
+    if (!b_copy) return -1;
+    rmtree(b);			// possible problem with hdyn2 tree?
+    b = b_copy;			// b is now the smallN tree again
+    b_copy = NULL;
+    UpdatedParticles.clear();
+    return 0;
+}
+
+int get_number_of_particles_added(int * n_added)
+{
+    *n_added = (int)UpdatedParticles.size();
+    return 0;
+}
+
+int get_id_of_added_particle(int index, int * index_of_particle)
+{
+    if (index < 0 || index > (int) UpdatedParticles.size())
+        return -1;
+    *index_of_particle = UpdatedParticles[index].index_of_particle;
+    return 0;
+}
+
+int get_children_of_particle(int index_of_the_particle,
+			     int * child1, int * child2)
+{
+    hdyn *bb = particle_with_index(b, index_of_the_particle);
+    if (!bb) return -1;
+    hdyn *od = bb->get_oldest_daughter();
+    if (od && od->get_younger_sister()) {
+	*child1 = od->get_index();
+	*child1 = od->get_younger_sister()->get_index();
+    } else
+	*child1 = *child2 = 0;
+    return 0;
 }

@@ -178,30 +178,28 @@ class smallNInterface(CodeInterface,
                               direction=function.OUT)
         function.result_type = 'int32'
         return function
-        
-        
+
     @legacy_function
     def update_particle_tree():
         """
-        Update the internal particle tree to reflect the one created in evolve
+        Update the internal particle tree to reflect the binary
+        structure created in evolve
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('over', dtype='int32',
-                              direction=function.OUT)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_number_of_particles_added():
         """
         Return the number of particles added or deleted during the last evolve.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('index', dtype='int32',
+        function.addParameter('n_added', dtype='int32',
                               direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def get_id_of_added_particle():
         """
@@ -216,8 +214,7 @@ class smallNInterface(CodeInterface,
         function.can_handle_array = True
         function.result_type = 'int32'
         return function
-        
-        
+
     @legacy_function
     def get_children_of_particle():
         """
@@ -226,9 +223,9 @@ class smallNInterface(CodeInterface,
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32',
                               direction=function.IN, 
-                 description = 'index in the parent particle')
+                 description = 'index of the parent particle')
         function.addParameter('child1', dtype='int32', direction=function.OUT,
-                description = 'index in the first child particle, -1 if no child is set')
+                description = 'index of the first child particle, -1 if none')
         function.addParameter('child2', dtype='int32', direction=function.OUT)
         function.can_handle_array = True
         function.result_type = 'int32'
@@ -316,8 +313,9 @@ class smallN(GravitationalDynamics):
         object.add_method("set_structure_check_interval",
                           (nbody_system.time), (object.ERROR_CODE))
         object.add_method("is_over", (), (units.none, object.ERROR_CODE))
-        object.add_method("get_children_of_particle", (object.INDEX), (object.INDEX, object.INDEX, object.ERROR_CODE))
-    
+
+        object.add_method("get_children_of_particle", (object.INDEX),
+                          (object.INDEX, object.INDEX, object.ERROR_CODE))
     
     def update_particle_set(self):
         """

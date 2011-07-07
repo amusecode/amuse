@@ -150,6 +150,7 @@ def test_smallN(infile = None, number_of_stars = 10,
         try:
             gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)
+            print stars
         except:
             pass
 
@@ -186,6 +187,12 @@ def test_smallN(infile = None, number_of_stars = 10,
         sys.stdout.flush()
 
     print ''
+    #gravity.update_particle_tree()
+    gravity.update_particle_set()
+    gravity.particles.synchronize_to(stars)
+    for s in stars:
+        print s
+
     gravity.stop()
 
 if __name__ == '__main__':
