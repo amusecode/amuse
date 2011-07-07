@@ -181,8 +181,12 @@ int get_state(int index_of_the_particle,
 	      double * x, double * y, double * z,
 	      double * vx, double * vy, double * vz)
 {
-    hdyn *bb = particle_with_index(b, index_of_the_particle);
-    if (!bb) return -1;
+    hdyn *bf = flat_copy(b);
+    hdyn *bb = particle_with_index(bf, index_of_the_particle);
+    if (!bb) {
+	rmtree(bf);
+	return -1;
+    }
     *mass = bb->get_mass();
     *radius = bb->get_radius();
     *x = bb->get_pos()[0];
@@ -191,6 +195,7 @@ int get_state(int index_of_the_particle,
     *vx = bb->get_vel()[0];
     *vy = bb->get_vel()[1];
     *vz = bb->get_vel()[2];
+    rmtree(bf);
     return 0;
 }
 
@@ -286,19 +291,38 @@ int get_potential(int index_of_the_particle, double * pot)
 
 // System-wide operations.
 
+static real break_scale_sq = _INFINITY_;
+static real structure_check_interval = _INFINITY_;
+
+int set_break_scale(real r) {
+    break_scale_sq = r*r;
+    return 0;
+}
+
+int set_structure_check_interval(real dt) {
+    structure_check_interval = dt;
+    return 0;
+}
+
 int evolve_model(double time)
 {
     // On return, system_time will be greater than or equal to the
     // specified time.  All particles j will have time[j] <=
     // system_time < time[j] + timestep[j].
 
-    // May want to modify smallN_evolve to force it to integrate to
-    // the specified time, even if it thinks the interaction is over.
+    // Modified smallN_evolve to force it to integrate to the
+    // specified time, even if it thinks the interaction is over.
     // TODO.
 
     // int status = 
-    smallN_evolve(b, time);
+    smallN_evolve(b, time, break_scale_sq, structure_check_interval);
 
+    return 0;
+}
+
+int is_over(int * over)
+{
+    *over = (int)check_structure(b, 0);
     return 0;
 }
 

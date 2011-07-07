@@ -146,6 +146,39 @@ class smallNInterface(CodeInterface,
         function.result_type = 'int32'
         return function
 
+    @legacy_function
+    def set_break_scale():
+        """
+        Set the scale at which smallN should stop.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('break_scale', dtype='float64',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_structure_check_interval():
+        """
+        Set the time scale at which smallN should check structure.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('check_interval', dtype='float64',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def is_over():
+        """
+        Return 1 iff the run is over, according to analyze().
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('over', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
 class smallN(GravitationalDynamics):
 
     # The actual module.
@@ -222,3 +255,9 @@ class smallN(GravitationalDynamics):
                           (), (units.none, object.ERROR_CODE))
         object.add_method("set_allow_full_unperturbed",
                           (units.none), (object.ERROR_CODE))
+
+        object.add_method("set_break_scale",
+                          (nbody_system.length), (object.ERROR_CODE))
+        object.add_method("set_structure_check_interval",
+                          (nbody_system.time), (object.ERROR_CODE))
+        object.add_method("is_over", (), (units.none, object.ERROR_CODE))

@@ -152,7 +152,7 @@ def test_smallN(infile = None, number_of_stars = 10,
             gravity.particles.synchronize_to(stars)
         except:
             pass
-    
+
         # Copy values from the module to the set in memory.
 
         channel.copy()
@@ -175,6 +175,14 @@ def test_smallN(infile = None, number_of_stars = 10,
             sys.stdout.flush()
 
         print_log(time, gravity, E0)
+
+        over = gravity.is_over()
+        if over.number:
+            print 'interaction is over'
+            break
+        else:
+            print 'interaction is not over'
+    
         sys.stdout.flush()
 
     print ''
