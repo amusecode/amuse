@@ -1,5 +1,6 @@
 
 OPTS ?= -DNOMPI
+GL_PATH ?= /data/pelupes/libraries/f90gl-1.2.11
 
 CODELIB = libphigrape.a
 
@@ -42,11 +43,8 @@ LIBS     = -lm
 
 LIBRARIES= $(LLIBSDIR) $(LIBS) $(G6LIBS) $(SCLIBS)
 
-GLINCLUDE ?= -I/usr/include/GL \
--I/data/pelupes/libraries/f90gl-1.2.11/include/GL/
-
-GLLIB = -L/data/pelupes/libraries/f90gl-1.2.11/lib \
--lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut 
+GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
+GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
 
 X11LIB ?= -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
@@ -65,6 +63,11 @@ CFLAGS  += -O3 $(OPTS)
 
 FFLAGS  += -O2 $(OPTS) 
 #gfortran :-fno-second-underscore -fPIC -Wall
+ifeq ($(findstring gfortran, $(shell $(FC) --help)), gfortran)
+PP_FLAGS = -x f95-cpp-input
+else
+PP_FLAGS = -fpp
+endif
 
 OBJECTS = $(SOURCEF:.F=.o) $(SOURCE:.f=.o) $(SOURCEC:.c=.o)
 CODEOBJS = $(OBJECTS)
@@ -87,10 +90,10 @@ $(CODELIB): $(CODEOBJS)
 	$(RANLIB) $@
 
 stars3d.o: stars3d.f90
-	$(FC) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
+	$(FC) $(PP_FLAGS) $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
 
 viewer.o: viewer.f90
-	$(FC) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
+	$(FC) $(PP_FLAGS) $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
 
 libpt.a: pt.c ptf77.c pt.h
 	cc -c $(PIC) pt.c

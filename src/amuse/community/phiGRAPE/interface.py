@@ -17,16 +17,18 @@ class PhiGRAPEInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalD
     MODE_GRAPE = 'grape'
 
     def __init__(self, mode = MODE_G6LIB, **options):
-        CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_muse_worker(mode), **options)
+        CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureReferencesMixIn.__init__(self)
 
-    def name_of_the_muse_worker(self, mode):
+    def name_of_the_worker(self, mode):
         if mode == self.MODE_G6LIB:
             return 'phigrape_worker'
         elif mode == self.MODE_GPU:
             return 'phigrape_worker_gpu'
         elif mode == self.MODE_GRAPE:
             return 'phigrape_worker_grape'
+        else:
+            return 'phigrape_worker'
 
     def initialize_particles(self, time):
         return self.commit_particles()
@@ -176,13 +178,15 @@ class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
         function = LegacyFunctionSpecification()
         return function
 
-    def name_of_the_muse_worker(self, mode):
+    def name_of_the_worker(self, mode):
         if mode == self.MODE_G6LIB:
-            return 'glworker_code'
+            return 'phigrape_worker_gl'
         if mode == self.MODE_GPU:
-            return 'glworker_code_gpu'
+            return 'phigrape_worker_gl_gpu'
         if mode == self.MODE_GRAPE:
-            return 'glworker_code_grape'
+            return 'phigrape_worker_gl_grape'
+        else:
+            return 'phigrape_worker_gl'
 
 
 

@@ -4,6 +4,7 @@ MPIF90 ?= mpif90
 FC = $(MPIF90)
 CC = $(MPICC)
 OPTS+=-DNOMPI
+GL_PATH ?= /data/pelupes/libraries/f90gl-1.2.11
 
 AMUSE_DIR?=../../../..
 
@@ -38,11 +39,8 @@ LIBS     =  -lm -lpthread
 
 LIBRARIES= $(LLIBSDIR) $(LIBS)
 
-GLINCLUDE = -I/usr/include/GL \
--I/data/pelupes/libraries/f90gl-1.2.11/include/GL/
-
-GLLIB = -L/data/pelupes/libraries/f90gl-1.2.11/lib \
--lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  -lguide 
+GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
+GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
 
 X11LIB ?= -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
@@ -56,6 +54,10 @@ CFLAGS += -g  $(OPTS)
 FFLAGS += -g $(OPTS)
 FFLAGS += -I./src/
 
+ifeq ($(findstring gfortran, $(shell $(FC) --help)), gfortran)
+else
+GLLIB += -lguide
+endif
 
 all: debuginfo phigrape_worker 
 
