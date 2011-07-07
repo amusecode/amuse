@@ -12,11 +12,11 @@ from amuse.support.data import core
 from amuse.support.data import particle_attributes
 from amuse.support.codes.core import is_mpd_running
 
-from amuse.community.kepler.interface import kepler
+from amuse.community.kepler.interface import Kepler
 
 def test_kepler(mass, semi, ecc, time):
 
-    kep = kepler(redirection = "none")
+    kep = Kepler(redirection = "none")
     kep.initialize_code()
 
     kep.initialize_from_elements(mass, semi, ecc)

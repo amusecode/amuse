@@ -4,7 +4,7 @@ from amuse.support.options import option
 from amuse.support.units import units
 import os.path
 
-class keplerInterface(CodeInterface,
+class KeplerInterface(CodeInterface,
                       CommonCodeInterface):
     """
     Kepler orbit manipulation functions, imported from Starlab.
@@ -454,11 +454,11 @@ class keplerInterface(CodeInterface,
             could not get vector"""
         return function
 
-class kepler(CommonCode):
+class Kepler(CommonCode):
 
     def __init__(self, **options):
         CommonCode.__init__(self,
-                               keplerInterface(**options),
+                               KeplerInterface(**options),
                                **options)
 
     def define_methods(self, object):

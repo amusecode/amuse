@@ -26,10 +26,10 @@ $(CODELIB):
 	make -C src all CXX=$(MPICXX)
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py keplerInterface -o $@
+	$(CODE_GENERATOR) --type=c interface.py KeplerInterface -o $@
 
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py keplerInterface -o $@
+	$(CODE_GENERATOR) --type=H interface.py KeplerInterface -o $@
 
 kepler_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@
