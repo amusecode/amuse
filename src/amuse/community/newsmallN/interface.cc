@@ -44,6 +44,7 @@ int initialize_code()
     set_support_for_condition(COLLISION_DETECTION);
     mpi_setup_stopping_conditions();
 
+    UpdatedParticles.clear();
     return 0;
 }
 
@@ -347,13 +348,14 @@ int evolve_model(double time)
     // specified time.  All particles j will have time[j] <=
     // system_time < time[j] + timestep[j].
 
-    // Modified smallN_evolve to force it to integrate to the
-    // specified time, even if it thinks the interaction is over.
-    // TODO.
+    UpdatedParticles.clear();
+
+    // Default calling sequence to smallN_evolve forces it to
+    // integrate to the specified time, even if it thinks the
+    // interaction is over.
 
     // int status = 
     smallN_evolve(b, time, break_scale_sq, structure_check_interval);
-
     return 0;
 }
 
@@ -535,8 +537,8 @@ int get_children_of_particle(int index_of_the_particle,
     hdyn *od = bb->get_oldest_daughter();
     if (od && od->get_younger_sister()) {
 	*child1 = od->get_index();
-	*child1 = od->get_younger_sister()->get_index();
+	*child2 = od->get_younger_sister()->get_index();
     } else
-	*child1 = *child2 = 0;
+	*child1 = *child2 = -1;
     return 0;
 }

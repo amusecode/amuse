@@ -150,7 +150,6 @@ def test_smallN(infile = None, number_of_stars = 10,
         try:
             gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)
-            print stars
         except:
             pass
 
@@ -180,18 +179,16 @@ def test_smallN(infile = None, number_of_stars = 10,
         over = gravity.is_over()
         if over.number:
             print 'interaction is over'
+            gravity.update_particle_tree()
+            gravity.update_particle_set()
+            gravity.particles.synchronize_to(stars)
+            for s in stars:
+                print s
             break
         else:
             print 'interaction is not over'
     
         sys.stdout.flush()
-
-    print ''
-    #gravity.update_particle_tree()
-    gravity.update_particle_set()
-    gravity.particles.synchronize_to(stars)
-    for s in stars:
-        print s
 
     gravity.stop()
 
