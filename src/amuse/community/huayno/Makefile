@@ -20,19 +20,25 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 all:	huayno_worker
 
 clean:
-	rm -f *.o *.bck *.pyc *.clh worker_code.cc worker_code.h
+	rm -f *.o *.bck *.pyc *.clh worker_code.cc worker_code.h worker_code-sockets.cc
 
 distclean: clean
-	rm -f huayno_worker huayno_worker_cl huayno_worker_mp
+	rm -f huayno_worker huayno_worker_cl huayno_worker_mp huayno_worker_sockets
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py HuaynoInterface -o $@
+	
+worker_code-sockets.cc: interface.py
+	$(CODE_GENERATOR) --type=c --mode=sockets interface.py HuaynoInterface -o $@
 
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py HuaynoInterface -o $@
 
 huayno_worker: clean __init__.py worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OBJS) -o $@ $(LIBS)
+	
+huayno_worker_sockets: clean __init__.py worker_code-sockets.cc worker_code.h $(OBJS)
+	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code-sockets.cc $(OBJS) -o $@ $(LIBS)
 
 huayno_worker_mp: CXXFLAGS   += -fopenmp
 huayno_worker_mp: clean __init__.py worker_code.cc worker_code.h $(OBJS)
