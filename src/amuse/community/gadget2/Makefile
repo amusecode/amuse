@@ -38,16 +38,22 @@ $(CODELIB): $(LIBFILES) $(SRCDIR)/Makefile $(SRCDIR)/makefile_options
 
 clean:
 	rm -f *.o *.pyc worker_code.cc worker_code.h worker_code worker_code_periodic
-	rm -f gadget2_worker gadget2_worker_periodic
+	rm -f gadget2_worker gadget2_worker_periodic gadget2_worker_sockets worker_code-sockets.cc
 	make -C $(SRCDIR) clean
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c $^ Gadget2Interface -o $@
 
+worker_code-sockets.cc: interface.py
+	$(CODE_GENERATOR) --type=c --mode=sockets $^ Gadget2Interface -o $@
+
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $^ -i amuse.support.codes.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
 
 gadget2_worker: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	
+gadget2_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
 	
 gadget2_worker_periodic: worker_code.cc worker_code.h $(INTERFACE_SRC) $(SRCDIR)/makefile_options
