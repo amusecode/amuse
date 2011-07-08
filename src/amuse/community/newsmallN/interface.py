@@ -276,6 +276,10 @@ class smallN(GravitationalDynamics):
             default_value = 1 | units.none
         )
         
+    def define_particle_sets(self, object):
+        GravitationalDynamics.define_particle_sets(self, object)
+        object.add_getter("particles", 'get_children_of_particle')
+
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
 

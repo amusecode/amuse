@@ -14,6 +14,8 @@ from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 
+from amuse.support.data import trees
+
 from amuse.community.newsmallN.interface import smallN as grav
 #from amuse.community.hermite0.interface import Hermite as grav
 
@@ -182,8 +184,16 @@ def test_smallN(infile = None, number_of_stars = 10,
             gravity.update_particle_tree()
             gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)
+            channel.copy()
+            channel.copy_attribute("index_in_code", "id")
             for s in stars:
-                print s
+                print s.child1
+
+            x = trees.BinaryTreesOnAParticleSet(stars, "child1", "child2")
+            #roots = list(x.iter_roots())
+            #for r in roots:
+            #    print r.particle.id, r.particle.child1.id, r.particle.child2.id
+
             break
         else:
             print 'interaction is not over'
