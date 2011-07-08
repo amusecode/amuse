@@ -11,6 +11,9 @@ LIBS=$(SRC)/libmercury.a
 
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 
+FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
+FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
+
 PIC=#-fPIC
 
 FFLAGSOLD = -O -ip -u -g -traceback $(PIC)
@@ -31,6 +34,9 @@ all: mercury_worker
 
 mercury_worker: worker.f90 interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS) $(SCLIBS)
+	
+mercury_worker_sockets: worker-sockets.f90 interface.o
+	$(FC) $(FFLAGS) $(FFLAGS2) $(FSINC) $^ -o $@ $(LIBS) $(SCLIBS) $(FSLIBS)
 
 mercury_worker_gl: glworker.f90 interface.o
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
@@ -40,6 +46,10 @@ mercury_worker_gl: glworker.f90 interface.o
 worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
+	
+worker-sockets.f90: interface.py
+	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
+	$(CODE_GENERATOR) --type=f90 --mode=sockets $< $(CLASSNAME) -o $@
 
 glworker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
