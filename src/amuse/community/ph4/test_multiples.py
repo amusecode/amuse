@@ -62,13 +62,13 @@ def run_smallN(
     gravity.commit_particles()
 
     print ''
-    print "smallN: number_of_stars =", number_of_stars
+    print "smallN: number_of_stars =", len(particles)
     print "smallN: evolving to time =", end_time.number, 
     print " in steps of", delta_t.number
           
     sys.stdout.flush()
-
-    E0 = print_log(time, gravity)
+    time = 0 | nbody_system.time
+    # E0 = print_log(time, gravity)
     
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(particles)
@@ -125,9 +125,9 @@ def test_ph4(infile = None, number_of_stars = 40,
             gravity = grav(number_of_workers = n_workers,
                            redirection = "none", mode = "gpu")
         except Exception as ex:
-            gravity = grav(number_of_workers = n_workers, redirection = "none", debugger ="gdb")
+            gravity = grav(number_of_workers = n_workers, redirection = "none")
     else:
-	gravity = grav(number_of_workers = n_workers, redirection = "none", debugger ="gdb")
+	gravity = grav(number_of_workers = n_workers, redirection = "none")
 
     gravity.initialize_code()
     gravity.parameters.set_defaults()
@@ -235,8 +235,15 @@ def test_ph4(infile = None, number_of_stars = 40,
         gravity.evolve_model(time)
 
         if stopping_condition.is_set():
-            raise Exception("gravity stopped!")
-        
+            star1 = stopping_condition.particles(0)[0]
+            star2 = stopping_condition.particles(1)[0]
+            p = core.Particles(0)
+            p.add_particle(star1)
+            p.add_particle(star2)
+            print p
+            print run_smallN(p)
+            raise Exception("not done yet")
+            
         
         # Ensure that the stars list is consistent with the internal
         # data in the module.
