@@ -187,12 +187,14 @@ def test_smallN(infile = None, number_of_stars = 10,
             channel.copy()
             channel.copy_attribute("index_in_code", "id")
             for s in stars:
-                print s.child1
+                if not s.child1 is None:
+                    print s.child1
 
+            print "\nbinaries:"
             x = trees.BinaryTreesOnAParticleSet(stars, "child1", "child2")
-            #roots = list(x.iter_roots())
-            #for r in roots:
-            #    print r.particle.id, r.particle.child1.id, r.particle.child2.id
+            roots = list(x.iter_roots())
+            for r in roots:
+                print r.particle.id, r.particle.child1.id, r.particle.child2.id
 
             break
         else:

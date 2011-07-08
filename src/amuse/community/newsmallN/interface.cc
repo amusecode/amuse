@@ -159,9 +159,9 @@ int new_particle(int * index_of_the_particle,
     *index_of_the_particle = add_particle(b, mass, radius,
 					  vec(x,y,z), vec(vx,vy,vz),
 					  index_to_set);
-    cout << "new_particle: " << index_to_set
-	 << " " << *index_of_the_particle
-	 << endl << flush;
+    //cout << "new_particle: " << index_to_set
+    //	 << " " << *index_of_the_particle
+    //	 << endl << flush;
 
     return 0;
 }
@@ -538,7 +538,6 @@ int get_children_of_particle(int index_of_the_particle,
     if (od && od->get_younger_sister()) {
 	*child1 = od->get_index();
 	*child2 = od->get_younger_sister()->get_index();
-	PRC(index_of_the_particle); PRC(*child1); PRL(*child2);
     } else
 	*child1 = *child2 = 0;
     return 0;

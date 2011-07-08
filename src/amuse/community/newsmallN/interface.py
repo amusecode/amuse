@@ -329,7 +329,7 @@ class smallN(GravitationalDynamics):
         
         number_of_updated_particles, error \
                 = self.get_number_of_particles_added()
-        print "number_of_updated_particles =", number_of_updated_particles
+        #print "number_of_updated_particles =", number_of_updated_particles
         
         if number_of_updated_particles == 0:
             return
@@ -337,7 +337,7 @@ class smallN(GravitationalDynamics):
         indices_in_update_list = range(number_of_updated_particles)
         indices_to_add, errors \
                 = self.get_id_of_added_particle(indices_in_update_list)
-        print "indices_to_add:", indices_to_add
+        #print "indices_to_add:", indices_to_add
         
         incode_storage = self.particles._private.attribute_storage
         
