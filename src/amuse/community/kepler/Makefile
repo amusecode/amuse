@@ -28,16 +28,22 @@ $(CODELIB):
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py KeplerInterface -o $@
 
+worker_code-sockets.cc: interface.py
+	$(CODE_GENERATOR) --type=c --mode=sockets interface.py KeplerInterface -o $@
+
 interface.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py KeplerInterface -o $@
 
 kepler_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@
 
+kepler_worker_sockets: worker_code-sockets.cc interface.h $(CODELIB) $(OBJS)
+	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code-sockets.cc $(OBJS) $(CODELIB) -o $@
+
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
 
 clean:
 	$(RM) -r -f *.so *.dSYM *.o *.pyc worker_code.cc interface.h 
-	$(RM) -f *~ kepler_worker worker_code.cc
+	$(RM) -f *~ kepler_worker worker_code.cc kepler_worker_sockets worker_code-sockets.cc
 	make -C src clean
