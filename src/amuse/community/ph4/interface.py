@@ -9,7 +9,8 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 # *** MAKE SURE TO SAVE IT SOMEWHERE, as build.py can overwrite it!
 
 class ph4Interface(CodeInterface,
-                   GravitationalDynamicsInterface):
+                   GravitationalDynamicsInterface,
+                   StoppingConditionInterface):
     """
     Parallel, GPU-accelerated, N-body integration module with block
     time steps, using a 4th-order Hermite integration scheme.
@@ -17,7 +18,7 @@ class ph4Interface(CodeInterface,
 
     # Interface specification.
 
-    include_headers = ['interface.h']
+    include_headers = ['interface.h', 'stopcond.h']
 
     MODE_GPU = 'gpu'
     MODE_CPU = 'cpu'
@@ -224,6 +225,8 @@ class ph4(GravitationalDynamics):
     def __init__(self, convert_nbody = None, **keyword_arguments):
         legacy_interface = ph4Interface(**keyword_arguments)
 
+        self.stopping_conditions = StoppingConditions(self)
+        
         GravitationalDynamics.__init__(self,
                                        legacy_interface,
                                        convert_nbody,
@@ -269,6 +272,8 @@ class ph4(GravitationalDynamics):
             "manage close encounters",   # description
             default_value = 4 | units.none
         )
+        
+        self.stopping_conditions.define_parameters(object)
         
     def update_particle_set(self):
         """
@@ -425,4 +430,11 @@ class ph4(GravitationalDynamics):
                 nbody_system.energy,
                 object.ERROR_CODE
             )
-        )
+        )        
+        
+        self.stopping_conditions.define_methods(object)
+
+    def define_particle_sets(self, object):
+        GravitationalDynamics.define_particle_sets(self, object)
+        
+        self.stopping_conditions.define_particle_set(object, 'particles')

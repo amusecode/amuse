@@ -16,38 +16,119 @@ from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 
 from amuse.support.data import trees
 
-from amuse.community.newsmallN.interface import smallN as grav
+from amuse.community.ph4.interface import ph4 as grav
+from amuse.community.newsmallN.interface import smallN
+
+#from amuse.community.phiGRAPE.interface import PhiGRAPE as grav
 #from amuse.community.hermite0.interface import Hermite as grav
 
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    E = T + U
+    Ebin = gravity.get_binary_energy()
+    Etop = T + U
+    E = Etop + Ebin
     if E0 == 0 | nbody_system.energy: E0 = E
     Rv = -0.5*M*M/U
     Q = -T/U
     print ""
     print "time =", time.number, " energy = ", E.number, \
 	" dE/E0 = ", (E/E0 - 1).number
-    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f' % \
+    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
 	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Rv.number, Q.number)
+         E.number, Ebin.number, Rv.number, Q.number)
     sys.stdout.flush()
     return E
 
-def test_smallN(infile = None, number_of_stars = 10,
+def run_smallN(
+        particles,
+        end_time = 1000 | nbody_system.time,
+        delta_t = 10 | nbody_system.time,
+        accuracy_parameter = 0.1
+    ):
+
+
+    gravity = smallN(redirection = "none")
+    gravity.initialize_code()
+    gravity.parameters.set_defaults()
+    gravity.parameters.timestep_parameter = accuracy_parameter
+
+    print "adding particles to smallN"
+    # print stars
+    sys.stdout.flush()
+    gravity.particles.add_particles(particles)
+    print "committing particles"
+    gravity.commit_particles()
+
+    print ''
+    print "smallN: number_of_stars =", number_of_stars
+    print "smallN: evolving to time =", end_time.number, 
+    print " in steps of", delta_t.number
+          
+    sys.stdout.flush()
+
+    E0 = print_log(time, gravity)
+    
+    # Channel to copy values from the code to the set in memory.
+    channel = gravity.particles.new_channel_to(particles)
+
+    while time < end_time:
+        time += delta_t
+        gravity.evolve_model(time)
+        print_log(time, gravity, E0)
+
+        over = gravity.is_over()
+        if over.number:
+            print 'interaction is over'
+            gravity.update_particle_tree()
+            gravity.update_particle_set()
+            gravity.particles.synchronize_to(particles)
+            channel.copy()
+            
+            gravity.stop()
+            return particles
+        else:
+            print 'interaction is not over'
+    
+        sys.stdout.flush()
+    
+    gravity.stop()
+    raise Exception("Did not finish the small-N simulation before end time {0}".format(end_time))
+
+
+def test_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
-             accuracy_parameter = 0.1):
+             n_workers = 1, use_gpu = 1, gpu_worker = 1,
+             accuracy_parameter = 0.1,
+             softening_length = -1 | nbody_system.length,
+             manage_encounters = 1):
 
     if infile != None: print "input file =", infile
     print "end_time =", end_time.number
     print "delta_t =", delta_t.number
+    print "n_workers =", n_workers
+    print "use_gpu =", use_gpu
+    print "manage_encounters =", manage_encounters
     print "\ninitializing the gravity module"
     sys.stdout.flush()
 
-    gravity = grav(redirection = "none")
+    # Note that there are actually three GPU options to test:
+    #
+    #	1. use the GPU code and allow GPU use (default)
+    #	2. use the GPU code but disable GPU use (-g)
+    #	3. use the non-GPU code (-G)
+
+    if gpu_worker == 1:
+        try:
+            gravity = grav(number_of_workers = n_workers,
+                           redirection = "none", mode = "gpu")
+        except Exception as ex:
+            gravity = grav(number_of_workers = n_workers, redirection = "none", debugger ="gdb")
+    else:
+	gravity = grav(number_of_workers = n_workers, redirection = "none", debugger ="gdb")
+
     gravity.initialize_code()
     gravity.parameters.set_defaults()
 
@@ -70,8 +151,8 @@ def test_smallN(infile = None, number_of_stars = 10,
         print "centering stars"
         stars.move_to_center()
         print "scaling stars to virial equilibrium"
-        stars.scale_to_standard(smoothing_length_squared = 0 \
-				 | nbody_system.length*nbody_system.length)
+        stars.scale_to_standard(smoothing_length_squared
+                                    = gravity.parameters.epsilon_squared)
 
         time = 0.0 | nbody_system.time
         sys.stdout.flush()
@@ -118,13 +199,21 @@ def test_smallN(infile = None, number_of_stars = 10,
 
     #-----------------------------------------------------------------
 
+    if softening_length == -1 | nbody_system.length:
+        eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
+			| nbody_system.length**2
+    else:
+        eps2 = softening_length*softening_length
+
     gravity.parameters.timestep_parameter = accuracy_parameter
+    gravity.parameters.epsilon_squared = eps2
+    gravity.parameters.use_gpu = use_gpu
+    gravity.parameters.manage_encounters = manage_encounters
 
     print "adding particles"
     # print stars
     sys.stdout.flush()
     gravity.particles.add_particles(stars)
-    print "committing particles"
     gravity.commit_particles()
 
     print ''
@@ -137,11 +226,18 @@ def test_smallN(infile = None, number_of_stars = 10,
     
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
-
+    
+    stopping_condition = gravity.stopping_conditions.collision_detection
+    stopping_condition.enable()
+    
     while time < end_time:
         time += delta_t
         gravity.evolve_model(time)
 
+        if stopping_condition.is_set():
+            raise Exception("gravity stopped!")
+        
+        
         # Ensure that the stars list is consistent with the internal
         # data in the module.
 
@@ -154,7 +250,7 @@ def test_smallN(infile = None, number_of_stars = 10,
             gravity.particles.synchronize_to(stars)
         except:
             pass
-
+    
         # Copy values from the module to the set in memory.
 
         channel.copy()
@@ -177,42 +273,24 @@ def test_smallN(infile = None, number_of_stars = 10,
             sys.stdout.flush()
 
         print_log(time, gravity, E0)
-
-        over = gravity.is_over()
-        if over.number:
-            print 'interaction is over'
-            gravity.update_particle_tree()
-            gravity.update_particle_set()
-            gravity.particles.synchronize_to(stars)
-            channel.copy()
-            channel.copy_attribute("index_in_code", "id")
-            for s in stars:
-                if not s.child1 is None:
-                    print s.child1
-
-            print "\nbinaries:"
-            x = trees.BinaryTreesOnAParticleSet(stars, "child1", "child2")
-            roots = list(x.iter_roots())
-            for r in roots:
-                for level, particle in r.iter_levels():
-                    print '  '*level, particle.id
-
-            break
-        else:
-            print 'interaction is not over'
-    
         sys.stdout.flush()
 
+    print ''
     gravity.stop()
 
 if __name__ == '__main__':
 
     infile = None
-    N = 10
+    N = 100
     t_end = 5.0 | nbody_system.time
     delta_t = 1.0 | nbody_system.time
+    n_workers = 2
+    use_gpu = 1
+    gpu_worker = 1
     accuracy_parameter = 0.1
+    softening_length = -1  | nbody_system.length
     random_seed = -1
+    manage_encounters = 1
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")
@@ -223,16 +301,27 @@ if __name__ == '__main__':
     for o, a in opts:
         if o == "-a":
             accuracy_parameter = float(a)
+        elif o == "-c":
+            manage_encounters = int(a)
         elif o == "-d":
             delta_t = float(a) | nbody_system.time 
+        elif o == "-e":
+            softening_length = float(a) | nbody_system.length
         elif o == "-f":
             infile = a
+        elif o == "-g":
+            use_gpu = 0
+        elif o == "-G":
+            use_gpu = 0
+            gpu_worker = 0
         elif o == "-n":
             N = int(a)
         elif o == "-s":
             random_seed = int(a)
         elif o == "-t":
             t_end = float(a) | nbody_system.time
+        elif o == "-w":
+            n_workers = int(a)
         else:
             print "unexpected argument", o
 
@@ -243,4 +332,7 @@ if __name__ == '__main__':
     print "random seed =", random_seed
 
     assert is_mpd_running()
-    test_smallN(infile, N, t_end, delta_t, accuracy_parameter)
+    test_ph4(infile, N, t_end, delta_t, n_workers,
+             use_gpu, gpu_worker,
+             accuracy_parameter, softening_length,
+             manage_encounters)

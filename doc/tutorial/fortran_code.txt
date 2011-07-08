@@ -427,7 +427,7 @@ Defining methods with units
 We first want to add units and error handling to the 
 **find_nearest_neighbors**. We do this by creating a 
 **define_methods** function on the **NearestNeighbor** class. Open 
-an editor on *particles.py* and add this method to the class:
+an editor on *interface.py* and add this method to the class:
 
 .. code-block:: python
 
@@ -507,7 +507,7 @@ Partcle sets in AMUSE can be handled by python (we call these
 "inmemory") and by the legacy code (we call these "incode"). In our 
 case the code does not handle the particles and we need to 
 configure the particles handler to manage an inmemory particle set. 
-Open an editor on *particles.py* and add this method to the 
+Open an editor on *interface.py* and add this method to the 
 **NearestNeighbor** class:
 
 .. code-block:: python
@@ -522,7 +522,7 @@ neighbors. AMUSE provides no handler for this, instead, we
 will write a method to run the find_nearest_neighbors function and
 set the indices on the particles set.
 
-Open an editor on *particles.py* and add this method to the 
+Open an editor on *interface.py* and add this method to the 
 **NearestNeighbor** class:
 
 .. code-block:: python

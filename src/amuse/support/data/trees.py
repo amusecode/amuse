@@ -17,7 +17,21 @@ class BinaryTreesOnAParticleSet(object):
         for particle in roots:
             yield BinaryTreeOnParticle(particle, self.name_of_firstchild_attribute, self.name_of_secondchild_attribute)
             
-
+    def singles(self):
+        binaries = self._binaries()
+        binaries_children1 = self._get_descendant_nodes(self.particles_set, self.name_of_firstchild_attribute)
+        binaries_children2 = self._get_descendant_nodes(self.particles_set, self.name_of_secondchild_attribute)
+    
+        singles = (self.particles_set - (self.roots() + binaries_children1 + binaries_children2))
+        return singles
+    
+    def roots(self):
+        binaries = self._binaries()
+        binaries_children1 = self._get_inner_nodes(binaries, self.name_of_firstchild_attribute)
+        binaries_children2 = self._get_inner_nodes(binaries, self.name_of_secondchild_attribute)
+    
+        return (binaries - (binaries_children1 + binaries_children2))
+        
     def _binaries(self):
         return self.particles_set.select_array(lambda x : x.key > 0, [self.name_of_firstchild_attribute,])
 
@@ -26,6 +40,11 @@ class BinaryTreesOnAParticleSet(object):
         children = getattr(set, name_of_attribute)
         return children.select_array(lambda x : x > 0, ["key",]).select_array(lambda x : x.key > 0, [name_of_attribute,])
 
+    def _get_descendant_nodes(self, set, name_of_attribute):
+        children = getattr(set, name_of_attribute)
+        return children.select_array(lambda x : x > 0, ["key",])
+        
+        
 class BinaryTreeOnParticle(object):
 
     def __init__(self, particle, name_of_firstchild_attribute = "child1" , name_of_secondchild_attribute = "child2"):
@@ -105,4 +124,36 @@ class BinaryTreeOnParticle(object):
         return self.particle.particles_set._subset(keys)
 
 
+
+    def iter_events(self):
+        stack = [('start', self.particle)]
+        while len(stack) > 0:
+            event, current = stack.pop()
+            yield event,current
+            if event == 'end':
+                continue
+            stack.append( ('end', current, ) ) 
+        
+            children = []
+            child1 = getattr(current, self.name_of_firstchild_attribute)
+            if not child1 is None:
+                children.append( ('start', child1, ) )
+                
+            child2 = getattr(current, self.name_of_secondchild_attribute)
+            if not child2 is None:
+                children.append( ('start', child2, ) )
+            
+            stack.extend(reversed(children))
+            
+    def iter_levels(self):
+        level = -1
+        
+        for event, particle in self.iter_events():
+            if event == 'start':
+                level += 1
+                yield level, particle
+            else:
+                level -= 1
+        
+            
 

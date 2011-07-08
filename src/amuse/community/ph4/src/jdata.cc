@@ -637,6 +637,7 @@ void jdata::advance()
 bool jdata::advance_and_check_encounter()
 {
     bool status = false;
+    
     advance();
 
     // Optionally manage close encounters.  AMUSE stopping conditions
@@ -649,8 +650,8 @@ bool jdata::advance_and_check_encounter()
 	    int stopping_index = next_index_for_stopping_condition();
 	    set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
 	    set_stopping_condition_particle_index(stopping_index, 0, close1);
-	    set_stopping_condition_particle_index(stopping_index, 0, close2);
-	    return status;
+	    set_stopping_condition_particle_index(stopping_index, 1, close2);
+	    return true;
 	}
 
 	status = resolve_encounter();

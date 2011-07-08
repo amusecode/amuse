@@ -8,6 +8,8 @@
 AMUSE_DIR ?= ../../../../..
 OPT	 = -O4 -I$(AMUSE_DIR)/lib/stopcond
 
+MPICXX ?= mpicxx
+MPICC ?= mpicc
 CXX	 ?= mpicxx
 CFLAGS   += -g -Wall $(OPT)
 CXXFLAGS += $(CFLAGS) 

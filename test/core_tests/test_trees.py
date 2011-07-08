@@ -86,6 +86,7 @@ class TestBinaryTree(amusetest.TestCase):
         particles[0].child2 = particles[2]
         particles[1].child1 = particles[3]
         particles[1].child2 = particles[4]
+        
     
         x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
         roots = list(x.iter_roots())
@@ -95,3 +96,97 @@ class TestBinaryTree(amusetest.TestCase):
         self.assertEquals(x, [1,2,3,4])
         self.assertEquals(roots[0].get_descendants_subset().mass, [1,2,3,4] | units.kg)
 
+    def test5(self):
+        particles = Particles(10)
+        particles.mass = list(range(10)) | units.kg
+        particles[0].child1 = particles[1]
+        particles[0].child2 = particles[2]
+        particles[1].child1 = particles[3]
+        particles[1].child2 = particles[4]
+    
+        x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
+        roots = list(x.iter_roots())
+    
+        self.assertEquals(len(roots), 1)
+        y = [(event, x.mass.value_in(units.kg)) for event, x in roots[0].iter_events()]
+        self.assertEquals(y, 
+            [
+                ('start', 0.0), 
+                    ('start', 1.0), 
+                        ('start', 3.0), 
+                        ('end', 3.0),
+                        ('start', 4.0),
+                        ('end', 4.0),
+                    ('end', 1.0), 
+                    ('start', 2.0), 
+                    ('end', 2.0), 
+                ('end', 0.0)
+            ]
+        )
+
+    def test6(self):
+        
+        particles = Particles(10)
+        particles.mass = list(range(10)) | units.kg
+        particles[0].child1 = particles[1]
+        particles[0].child2 = particles[2]
+        particles[1].child1 = particles[3]
+        particles[1].child2 = particles[4]
+    
+        x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
+        roots = list(x.iter_roots())
+    
+        self.assertEquals(len(roots), 1)
+        y = [(event, x.mass.value_in(units.kg)) for event, x in roots[0].iter_levels()]
+        self.assertEquals(y, 
+            [
+                (0, 0.0), 
+                    (1, 1.0), 
+                        (2, 3.0), 
+                        (2, 4.0),
+                    (1, 2.0),
+            ]
+        )
+        
+    def test7(self):
+        
+        particles = Particles(10)
+        particles.mass = list(range(10)) | units.kg
+        particles[0].child1 = particles[1]
+        particles[0].child2 = particles[2]
+        particles[1].child1 = particles[3]
+        particles[1].child2 = particles[4]
+    
+        x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
+        roots = list(x.iter_roots())
+    
+        self.assertEquals(len(roots), 1)
+        binary = roots[0]
+        output = ''
+        for level, particle in binary.iter_levels():
+            output += '..' * level
+            output += str(particle.mass.value_in(units.kg))
+            output += '\n'
+        
+        print output
+        self.assertEquals(output, """0.0
+..1.0
+....3.0
+....4.0
+..2.0
+""")
+
+    
+    def test8(self):
+        particles = Particles(10)
+        particles.mass = list(range(10)) | units.kg
+        particles[0].child1 = particles[1]
+        particles[0].child2 = particles[2]
+        particles[1].child1 = particles[3]
+        particles[1].child2 = particles[4]
+        
+    
+        x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
+        self.assertEquals(len(list(x.iter_roots())), 1)
+        self.assertEquals(len(x.singles()), 5)
+            

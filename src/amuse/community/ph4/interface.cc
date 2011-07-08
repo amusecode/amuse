@@ -33,7 +33,8 @@ int initialize_code()
 
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
-    mpi_setup_stopping_conditions();
+    //mpi_setup_stopping_conditions();
+    
     jd->set_manage_encounters(4);	// 4 ==> enable AMUSE suport
 
     return 0;
@@ -355,11 +356,16 @@ int evolve_model(double time)
     // system_time < time[j] + timestep[j].  If synchronization is
     // needed, do it with synchronize_model().
 
+    reset_stopping_conditions();
+    int is_sc_set = 0;
+    
     bool status = false;
     jd->UpdatedParticles.clear();
     while (jd->system_time < time)
-	status = jd->advance_and_check_encounter();
-
+    {
+	    status = jd->advance_and_check_encounter();
+	    if(status) break;
+    }
 #if 0
     cout << "jdata:" << endl;
     for (int j = 0; j < jd->nj; j++) {
