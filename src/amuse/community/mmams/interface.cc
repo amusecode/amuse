@@ -1,6 +1,6 @@
 #include "src/mmas2/src/mmas/mmas.h"
 #include "src/mmas2/src/eos/eos.h"
-#include "worker_mmams.h"
+#include "worker_code.h"
 #include <map>
 
 using namespace std;
