@@ -1,5 +1,5 @@
 
-MPIF90 ?= mpif90
+MPIF90 ?= openmpif90
 FORTRAN ?= gfortran
 FC = $(MPIF90)
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
@@ -81,7 +81,7 @@ fi_worker: worker.f90 interface.o $(SRC)/libfi.a
 	$(FC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS)
 
 fi_worker_sockets: worker-sockets.f90 interface.o $(SRC)/libfi.a
-	$(FC) $(FFLAGS) $(SCINC) $(FSINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS) $(FCLIBS)
+	$(FC) $(FFLAGS) $(SCINC) $(FSINC) worker-sockets.f90 interface.o -o $@ $(LIBS) $(SCLIBS) $(FSLIBS)
 
 fi_worker_gl: glworker.f90 interface.o $(SRC)/libfi.a
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)"
