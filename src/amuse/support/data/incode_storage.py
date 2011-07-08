@@ -733,7 +733,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
     def _get_keys_for_indices_in_the_code(self, indices):
         result = []
         for i in indices:
-            result.append(self.mapping_from_index_in_the_code_to_particle_key.get(i, -1))
+            result.append(self.mapping_from_index_in_the_code_to_particle_key.get(i, 0))
         return result
         
     def _remove_indices(self, indices):
