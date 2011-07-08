@@ -227,7 +227,7 @@ string_receive_code = """
 
       do i = 1, header_in(HEADER_STRING_COUNT), 1
         if (strings_in(i) .gt. MAX_STRING_LENGTH) then
-            print*, 'error! cannot receive strings exeeding length ', MAX_STRING_LENGTH
+            print*, 'error! cannot receive strings exceeding length ', MAX_STRING_LENGTH
             
             call exit(1)
         end if
@@ -236,7 +236,7 @@ string_receive_code = """
           
         call receive_string(c_loc(characters_in(i)), strings_in(i))
 
-        print*, 'received string: ', characters_in(i), ' of length ', len(characters_in(i))
+        print*, 'received string: ', characters_in(i), ' of length ', strings_in(i)
 
         call flush()
 
@@ -247,13 +247,18 @@ string_send_code = """
       !figure out length of all strings
       do i = 1, header_out(HEADER_STRING_COUNT), 1
           strings_out(i) = len_trim(characters_out(i))
+          
+          if (strings_out(i) .gt. index(characters_out(i), char(0)) .and. index(characters_out(i), char(0)) .gt. 0) then
+              strings_out(i) = index(characters_out(i), char(0)) - 1
+          end if
+
       end do
 
       !send string header
       call send_integers(c_loc(strings_out), header_out(HEADER_STRING_COUNT))
 
       do i = 1, header_out(HEADER_STRING_COUNT), 1
-          print*, 'sending string ', characters_out(i), ' of length ', len(characters_out(i))
+          print*, 'sending string ', characters_out(i), ' of length ', strings_out(i)
           call flush()
           call send_string(c_loc(characters_out(i)), strings_out(i))
       end do     
@@ -307,12 +312,10 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
             self.out.indent()
             
         
-#        self.output_lines_before_with_inout_variables()
+        self.output_copy_inout_variables_before_function()
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
-        self.output_lines_with_inout_variables()
-        
         
         if self.specification.must_handle_array:
             if not self.specification.result_type is None:
@@ -347,18 +350,18 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
                 
             if parameter.direction == LegacyFunctionSpecification.IN:
                 if parameter.datatype == 'string':
-                    self.out.n() + 'characters_in'
-                    self.out + '(' + self.index_string(parameter.input_index) + ')'      
+                    self.out.n() + 'trim(characters_in'
+                    self.out + '(' + self.index_string(parameter.input_index) + '))'      
                 else:
                     self.out.n() + spec.input_var_name 
                     self.out + '(' + self.index_string(parameter.input_index) + ')'
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if parameter.datatype == 'string':
-                    self.out.n() + 'characters_in'
-                    self.out + '(' + self.index_string(parameter.input_index) + ')'      
+                    self.out.n() + 'characters_out'
+                    self.out + '(' + self.index_string(parameter.output_index) + ')'      
                 else:
-                    self.out.n() + spec.input_var_name 
-                    self.out + '(' + self.index_string(parameter.input_index) + ')'
+                    self.out.n() + spec.output_var_name 
+                    self.out + '(' + self.index_string(parameter.output_index) + ')'
             elif parameter.direction == LegacyFunctionSpecification.OUT:
                 if parameter.datatype == 'string':
                     self.out.n() + 'characters_out'
@@ -371,7 +374,7 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
                 
         self.out.dedent()
         
-    def output_lines_with_inout_variables(self):
+    def output_copy_inout_variables_after_function(self):
         
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
@@ -395,57 +398,34 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
                     self.out.dedent() 
                     self.out.lf() + 'END DO'
     
-#    def output_lines_before_with_clear_out_variables(self):
-#        for parameter in self.specification.parameters:
-#            spec = self.dtype_to_spec[parameter.datatype]
-#            
-#            if parameter.is_output():
-#                if parameter.datatype == 'string':
-#                    self.out.lf() + 'allocate(characters_out(header_out(HEADER_STRING_COUNT)))'
-#                    self.out.lf() + "characters_out = ' '"  
-#  
-#                    return
-     
-    def output_lines_before_with_clear_input_variables(self):
-        for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.datatype]
-            
-            if parameter.is_input():
-                if parameter.datatype == 'string': 
-                    self.out.lf() + 'input_characters = "x"'  
-                    return
-     
-                
-                    
-    def output_lines_before_with_inout_variables(self):
+    def output_copy_inout_variables_before_function(self):
         
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
             
-            
-            if parameter.direction == LegacyFunctionSpecification.IN:
-                if parameter.datatype == 'string':
-                    self.out.n() + 'input_characters('
-                    self.out  + '( (' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ')'
-                    self.out  + ':' + '(((' + self.index_string(parameter.input_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
-                    self.out  + ') = &'
-                    self.out.lf()
-                    self.out + 'characters('
-                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
-                    self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
-                    self.out  + ')' 
-            
             if parameter.direction == LegacyFunctionSpecification.INOUT:
+                if self.specification.must_handle_array:
+                    self.out.lf() + 'DO i = 1, length'
+                    self.out.indent() 
                 if parameter.datatype == 'string':
-                    self.out.n() + 'output_characters('
-                    self.out  + '( (' + self.index_string(parameter.output_index) + ')* ' + self.MAX_STRING_LEN + ')'
-                    self.out  + ':' + '(((' + self.index_string(parameter.output_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
-                    self.out  + ') = &'
-                    self.out.lf()
-                    self.out + 'characters('
-                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
-                    self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
-                    self.out  + ')' 
+                    self.out.n() + 'characters_out' 
+                    self.out + '(' + self.index_string(parameter.output_index, must_copy_in_to_out = True)  + ')' 
+                    self.out + ' = ' 
+                    self.out + "'x'"
+                    
+                    self.out.n() + 'characters_out' 
+                    self.out + '(' + self.index_string(parameter.output_index, must_copy_in_to_out = True)  + ')' 
+                    self.out + ' = ' 
+                    self.out + 'characters_in' + '(' + self.index_string(parameter.input_index, must_copy_in_to_out = True) + ')'
+                else:
+                    self.out.n() + spec.output_var_name 
+                    self.out + '(' + self.index_string(parameter.output_index, must_copy_in_to_out = True)  + ')' 
+                    self.out + ' = ' 
+                    self.out + spec.input_var_name + '(' + self.index_string(parameter.input_index, must_copy_in_to_out = True) + ')'
+        
+                if self.specification.must_handle_array:
+                    self.out.dedent() 
+                    self.out.lf() + 'END DO'
                     
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
