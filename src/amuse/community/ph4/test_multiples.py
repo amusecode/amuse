@@ -49,7 +49,7 @@ def run_smallN(
     ):
 
 
-    gravity = smallN(redirection = "none")
+    gravity = smallN(redirection = "none", debugger="gdb")
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     gravity.parameters.timestep_parameter = accuracy_parameter
