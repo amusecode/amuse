@@ -105,6 +105,10 @@ def run_smallN(
             gravity.stop()
             channel.copy_attribute("index_in_code", "id")
             print "binaries:"
+
+            # (Code below does nothing if there are only 2 particles
+            # in the smallN system.)
+
             x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
             roots = list(x.iter_roots())
             for r in roots:
