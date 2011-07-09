@@ -264,6 +264,7 @@ bool extend_or_end_binary(hdyn*& bi, bool verbose = false);
 
 // In analyze.cc:
 
+hdyn *flat_copy(hdyn *b);
 bool  check_structure(hdyn *bin, int verbose = 1);
 hdyn* get_tree(hdyn *bin);
 

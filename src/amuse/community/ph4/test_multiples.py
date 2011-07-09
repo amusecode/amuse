@@ -17,16 +17,18 @@ from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.support.data import trees
 
 from amuse.community.ph4.interface import ph4 as grav
-from amuse.community.newsmallN.interface import smallN
-
 #from amuse.community.phiGRAPE.interface import PhiGRAPE as grav
 #from amuse.community.hermite0.interface import Hermite as grav
+from amuse.community.newsmallN.interface import smallN
 
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    Ebin = gravity.get_binary_energy()
+    try:
+        Ebin = gravity.get_binary_energy()
+    except:
+        Ebin = 0 | nbody_system.energy
     Etop = T + U
     E = Etop + Ebin
     if E0 == 0 | nbody_system.energy: E0 = E
@@ -48,15 +50,16 @@ def run_smallN(
         accuracy_parameter = 0.1
     ):
 
-
-    gravity = smallN(redirection = "none", debugger="gdb")
+    gravity = smallN(redirection = "none") # , debugger="gdb")
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     gravity.parameters.timestep_parameter = accuracy_parameter
 
+    time = 0 | nbody_system.time
+
     print "adding particles to smallN"
-    # print stars
     sys.stdout.flush()
+    gravity.set_time(time);
     gravity.particles.add_particles(particles)
     print "committing particles"
     gravity.commit_particles()
@@ -65,10 +68,9 @@ def run_smallN(
     print "smallN: number_of_stars =", len(particles)
     print "smallN: evolving to time =", end_time.number, 
     print " in steps of", delta_t.number
-          
     sys.stdout.flush()
-    time = 0 | nbody_system.time
-    # E0 = print_log(time, gravity)
+    
+    E0 = print_log(time, gravity)
     
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(particles)
@@ -78,24 +80,22 @@ def run_smallN(
         gravity.evolve_model(time)
         print_log(time, gravity, E0)
 
+        print "smallN time =", gravity.get_time().number
         over = gravity.is_over()
         if over.number:
-            print 'interaction is over'
+            print 'interaction is over\n'
             gravity.update_particle_tree()
             gravity.update_particle_set()
             gravity.particles.synchronize_to(particles)
             channel.copy()
-            
             gravity.stop()
             return particles
-        else:
-            print 'interaction is not over'
     
         sys.stdout.flush()
     
     gravity.stop()
-    raise Exception("Did not finish the small-N simulation before end time {0}".format(end_time))
-
+    raise Exception("Did not finish the small-N simulation "
+		    +"before end time {0}".format(end_time))
 
 def test_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
@@ -237,14 +237,19 @@ def test_ph4(infile = None, number_of_stars = 40,
         if stopping_condition.is_set():
             star1 = stopping_condition.particles(0)[0]
             star2 = stopping_condition.particles(1)[0]
+            print '\nstopping condition set at time', \
+                gravity.get_time().number,'for:\n'
+            print star1
+            print ''
+            print star2
+            print ''
             p = core.Particles(0)
             p.add_particle(star1)
             p.add_particle(star2)
             print p
-            print run_smallN(p)
+            run_smallN(p)
             raise Exception("not done yet")
-            
-        
+
         # Ensure that the stars list is consistent with the internal
         # data in the module.
 
@@ -289,15 +294,15 @@ if __name__ == '__main__':
 
     infile = None
     N = 100
-    t_end = 5.0 | nbody_system.time
-    delta_t = 1.0 | nbody_system.time
-    n_workers = 2
-    use_gpu = 1
-    gpu_worker = 1
+    t_end = 1000.0 | nbody_system.time
+    delta_t = 10.0 | nbody_system.time
+    n_workers = 1
+    use_gpu = 0
+    gpu_worker = 0
     accuracy_parameter = 0.1
-    softening_length = -1  | nbody_system.length
+    softening_length = 0  | nbody_system.length
     random_seed = -1
-    manage_encounters = 1
+    manage_encounters = 4
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")

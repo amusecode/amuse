@@ -165,6 +165,8 @@ hdyn2 *flat_copy_tree(hdyn *bin)
     return b;
 }
 
+hdyn *flat_copy(hdyn *b) {return (hdyn*)flat_copy_tree(b);}
+
 local vec relative_pos(hdyn2 *b, hdyn2 *bb)
 {
     // Return the position of bb relative to its ancestor b.
@@ -934,8 +936,8 @@ local inline bool is_over(hdyn2 *b, bool verbose)
 			      << last_state << endl << flush;
 	} else {
 	    over = is_quasi_stable(b);
-	    if (over) cout << "quase-stable termination: "
-			   << last_state << endl << flush;
+	    if (over&& verbose) cout << "quasi-stable termination: "
+				     << last_state << endl << flush;
 	}
     }
 

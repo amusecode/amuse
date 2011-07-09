@@ -354,28 +354,15 @@ int evolve_model(double time)
     // On return, system_time will be greater than or equal to the
     // specified time.  All particles j will have time[j] <=
     // system_time < time[j] + timestep[j].  If synchronization is
-    // needed, do it with synchronize_model().
+    // needed, do it with synchronize_model().  The function breaks
+    // out of the jd->advance() loop if an encounter is detected.
 
-    reset_stopping_conditions();
-    int is_sc_set = 0;
-    
-    bool status = false;
+    reset_stopping_conditions();    
     jd->UpdatedParticles.clear();
     while (jd->system_time < time)
-    {
-	    status = jd->advance_and_check_encounter();
-	    if(status) break;
-    }
-#if 0
-    cout << "jdata:" << endl;
-    for (int j = 0; j < jd->nj; j++) {
-	cout << jd->id[j] << " " << jd->mass[j];
-	for (int k = 0; k < 3; k++) cout << " "  << jd->pos[j][k];
-	cout << endl << flush;
-    }
-#endif
+	if (jd->advance_and_check_encounter()) break;
 
-    return 0;	// status?
+    return 0;
 }
 
 int synchronize_model()

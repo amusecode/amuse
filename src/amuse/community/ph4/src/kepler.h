@@ -219,6 +219,9 @@ void make_standard_kepler(kepler &k, real t, real mass,
 			  real q, real mean_anomaly,
 			  int align_axis = 0);
 
+kepler* hdyn_to_kepler(hdyn * com, real t = 0);
+void new_kepler(hdyn * com, real t = 0);
+
 void set_random_orientation(kepler &k, int planar = 0);
 void print_orbital_elements(hdyn *bi, hdyn *bj, bool verbose = true);
 

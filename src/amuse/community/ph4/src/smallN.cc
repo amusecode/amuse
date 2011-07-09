@@ -702,6 +702,51 @@ static void log_output(hdyn *b, int n_steps)
 
 #define NCHECK 100
 
+static void two_body(hdyn *b, real time, real radius)
+{
+    // Follow the motion of two bodies using kepler.  Advance to time
+    // or radius, whichever is sooner.
+
+    hdyn *od = b->get_oldest_daughter();
+    if (!od) return;
+    hdyn *yd = od->get_younger_sister();
+    if (!yd) return;
+
+    kepler *k = hdyn_to_kepler(b);
+    k->transform_to_time(time);
+
+    if (k->get_energy() >= 0) {
+	if (k->get_separation() > radius
+	    && k->get_rel_pos()*k->get_rel_vel() > 0)
+	    k->return_to_radius(radius);
+    } else {
+	real peri = k->get_apastron();
+	real apo = k->get_apastron();
+	if (radius >= apo) radius = peri + 0.999*(apo-peri);
+	if (k->get_separation() > radius) {
+	    if (k->get_rel_pos()*k->get_rel_vel() < 0)
+		k->return_to_apastron();
+	    k->return_to_radius(radius);
+	}
+    }
+
+    // PRL(k->get_separation());
+
+    // Update the daughters with the new orbital data.
+
+    real total_mass = od->get_mass() + yd->get_mass();
+    vec cmpos = (od->get_mass()*od->get_pos()
+		 + yd->get_mass()*yd->get_pos()) / total_mass;
+    vec cmvel = (od->get_mass()*od->get_vel()
+		 + yd->get_mass()*yd->get_vel()) / total_mass;
+    real fac = yd->get_mass() / total_mass;
+
+    od->set_pos(cmpos-fac*k->get_rel_pos());
+    od->set_vel(cmvel-fac*k->get_rel_vel());
+    yd->set_pos(cmpos+(1-fac)*k->get_rel_pos());
+    yd->set_vel(cmvel+(1-fac)*k->get_rel_vel());
+}
+
 int smallN_evolve(hdyn *b,
 		  real t_end,		// default = _INFINITY_
 		  real break_r2,	// default = _INFINITY_
@@ -712,15 +757,29 @@ int smallN_evolve(hdyn *b,
     set_kepler_tolerance(2);	// energy corrections may force orbital
 				// separations outside allowed limits
 
-    int n_steps = 0;
-    int cm_index = 0;
-    for_all_daughters(hdyn, b, bi) {
-	bi->init_pred();
-	int i = bi->get_index();
-	if (i > cm_index) cm_index = i;
+    // Treat special cases (that may come from AMUSE).
+
+    int n_daughters = 0;
+    for_all_daughters(hdyn, b, bi) n_daughters++;
+
+    if (n_daughters == 1)
+	return 0;
+    else if (n_daughters == 2) {
+	two_body(b, t_end, sqrt(break_r2));
+	return 0;
     }
-    cm_index = pow(10, (int)log10((real)cm_index+1) + 1.);
-    b->set_cm_index(cm_index);    
+    
+    int n_steps = 0;
+    if (b->get_cm_index() <= 0) {
+	int cm_index = 0;
+	for_all_daughters(hdyn, b, bi) {
+	    bi->init_pred();
+	    int i = bi->get_index();
+	    if (i > cm_index) cm_index = i;
+	}
+	cm_index = pow(10, (int)log10((real)cm_index+1) + 1.);
+	b->set_cm_index(cm_index);
+    }
     real dt = calculate_top_level_acc_and_jerk(b);
 
     real tmp;
@@ -809,6 +868,7 @@ int smallN_evolve(hdyn *b,
 	    while (b->get_system_time() >= t_check) t_check += dt_check;
 	}
     }
+
     return 1;
 }
 

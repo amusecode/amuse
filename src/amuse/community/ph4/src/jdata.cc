@@ -641,7 +641,9 @@ bool jdata::advance_and_check_encounter()
     advance();
 
     // Optionally manage close encounters.  AMUSE stopping conditions
-    // are enabled with manage_encounters = 4.
+    // are enabled with manage_encounters = 4.  Return true iff an
+    // encounter has been detected (handled by the to plevel loop or
+    // by AMUSE).
 
     if (manage_encounters && eps2 == 0 && close1 >= 0) {
 

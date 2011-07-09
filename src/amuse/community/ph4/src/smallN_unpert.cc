@@ -55,7 +55,7 @@ bool is_unperturbed_and_approaching(hdyn *b, real dt, hdyn *bi, hdyn *bj)
 	return false;
 
     // Particles are within r_crit and approaching.  Check the
-    // perturbation due to the next nearest neignbor.  Work with
+    // perturbation due to the next nearest neighbor.  Work with
     // |potential| rather than simple distance to take mass into
     // account.
 
@@ -73,6 +73,10 @@ bool is_unperturbed_and_approaching(hdyn *b, real dt, hdyn *bi, hdyn *bj)
 		bk_nn = bk;
 	    }
 	}
+
+    // Conceivable we are dealing with an isolated 2-body system.
+
+    if (!bk_nn) return true;
 
     // Particle bk_nn has the largest potential relative to the CM.
     // Compute its perturbation, and return true if it is small.

@@ -4,7 +4,7 @@
 # all compiles must use MPICXX, not CXX.
 
 AMUSE_DIR?=../../../..
-ALL	 = ph4_worker ph4_worker_gpu
+ALL	 = ph4_worker # ph4_worker_gpu
 OPT	  = -O4 -I$(AMUSE_DIR)/lib/stopcond
 
 MPICXX   ?= mpicxx

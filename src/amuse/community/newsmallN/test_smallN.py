@@ -15,9 +15,8 @@ from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 
 from amuse.support.data import trees
-
 from amuse.community.newsmallN.interface import smallN as grav
-#from amuse.community.hermite0.interface import Hermite as grav
+from amuse.community.kepler.interface import Kepler
 
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
@@ -35,6 +34,22 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
          E.number, Rv.number, Q.number)
     sys.stdout.flush()
     return E
+
+def get_binary_elements(p):
+    comp1 = p.child1
+    comp2 = p.child2
+    kep = Kepler(redirection = "none")
+    kep.initialize_code()
+
+    mass = comp1.mass + comp2.mass
+    pos = [comp2.x-comp1.x, comp2.y-comp1.y, comp2.z-comp1.z]
+    vel = [comp2.vx-comp1.vx, comp2.vy-comp1.vy, comp2.vz-comp1.vz]
+    kep.initialize_from_dyn(mass, pos[0], pos[1], pos[2],
+                            vel[0], vel[1], vel[2])
+    a,e = kep.get_elements()
+    kep.stop()
+
+    return mass,a,e
 
 def test_smallN(infile = None, number_of_stars = 10,
              end_time = 10 | nbody_system.time,
@@ -123,6 +138,7 @@ def test_smallN(infile = None, number_of_stars = 10,
     print "adding particles"
     # print stars
     sys.stdout.flush()
+    gravity.set_time(time);
     gravity.particles.add_particles(stars)
     print "committing particles"
     gravity.commit_particles()
@@ -180,29 +196,29 @@ def test_smallN(infile = None, number_of_stars = 10,
 
         over = gravity.is_over()
         if over.number:
-            print 'interaction is over'
+            print '\ninteraction is over'
             gravity.update_particle_tree()
             gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)
             channel.copy()
             channel.copy_attribute("index_in_code", "id")
-            for s in stars:
-                if not s.child1 is None:
-                    print s.child1
-
-            print "\nbinaries:"
+            print "binaries:"
             x = trees.BinaryTreesOnAParticleSet(stars, "child1", "child2")
             roots = list(x.iter_roots())
             for r in roots:
                 for level, particle in r.iter_levels():
-                    print '  '*level, particle.id
-
+                    print '  '*level, int(particle.id.number),
+                    if not particle.child1 is None:
+                        m,a,e = get_binary_elements(particle)
+                        print ' (', m, a, e.number, ')'
+                    else:
+                        print ''
             break
-        else:
-            print 'interaction is not over'
     
         sys.stdout.flush()
 
+    if not over.number:
+        print '\ninteraction is not over'
     gravity.stop()
 
 if __name__ == '__main__':

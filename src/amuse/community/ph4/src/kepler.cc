@@ -383,10 +383,10 @@ kepler::kepler()
     delta_angular_momentum = 0;
 }
 
-void hdyn_to_kepler(hdyn * com,    	    // com = center-of-mass
-		    real t)		    // default = 0
+kepler* hdyn_to_kepler(hdyn * com,    	    // com = center of mass
+		       real t)		    // default = 0
 {
-    kepler * k = com->get_kepler();
+    kepler *k = new kepler;
     hdyn *d1, *d2;
 
     if (!(d1 = com->get_oldest_daughter()))
@@ -399,47 +399,15 @@ void hdyn_to_kepler(hdyn * com,    	    // com = center-of-mass
     k->set_rel_pos(d2->get_pos() - d1->get_pos());
     k->set_rel_vel(d2->get_vel() - d1->get_vel());
     k->initialize_from_pos_and_vel();
-}
 
-void hdyn_to_child_kepler(hdyn * com,    // com = center-of-mass
-			  real t)	 // default = 0
-{
-    kepler * k = com->get_oldest_daughter()->get_kepler();
-    hdyn *d1, *d2;
-
-    if (!(d1 = com->get_oldest_daughter()))
-	err_exit("hdyn_to_kepler: no oldest daughter present");
-    if (!(d2 = d1->get_younger_sister()))
-	err_exit("hdyn_to_kepler: no second daughter present");
-
-    k->set_time(t);
-    k->set_total_mass(d1->get_mass() + d2->get_mass());
-    k->set_rel_pos(d2->get_pos() - d1->get_pos());
-    k->set_rel_vel(d2->get_vel() - d1->get_vel());
-    k->initialize_from_pos_and_vel();
+    return k;
 }
 
 void new_kepler(hdyn * com,	      	// com is the center-of-mass hdyn
 		real t)			// default = 0
 {
-    kepler * k;
-    k = new kepler;
-
+    kepler * k = hdyn_to_kepler(com, t);
     com->set_kepler(k);
-    hdyn_to_kepler(com, t);
-}
-
-void new_child_kepler(hdyn * com,	// com is the center-of-mass hdyn
-		      real t,		// default = 0
-		      real circ_limit)	// default = 0
-{
-    kepler * k;
-    k = new kepler;
-
-    k->set_circular_binary_limit(circ_limit);
-
-    com->get_oldest_daughter()->set_kepler(k);
-    hdyn_to_child_kepler(com, t);
 }
 
 void kepler::print_all(ostream & s)

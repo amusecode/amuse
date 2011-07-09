@@ -167,6 +167,9 @@ def test_ph4(infile = None, number_of_stars = 40,
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
 
+    stopping_condition = gravity.stopping_conditions.collision_detection
+    stopping_condition.enable()
+    
     while time < end_time:
         time += delta_t
         gravity.evolve_model(time)
@@ -194,6 +197,17 @@ def test_ph4(infile = None, number_of_stars = 40,
         # we don't want to overwrite silently.
 
         channel.copy_attribute("index_in_code", "id")
+
+        if stopping_condition.is_set():
+            star1 = stopping_condition.particles(0)[0]
+            star2 = stopping_condition.particles(1)[0]
+            print '\nstopping condition set at time', \
+                gravity.get_time().number,'for:\n'
+            print star1
+            print ''
+            print star2
+            print ''
+            raise Exception("no encounter handling")
 
         if len(stars) != ls:
             if 0:

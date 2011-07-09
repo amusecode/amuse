@@ -81,6 +81,17 @@ class smallNInterface(CodeInterface,
     # smallN_worker to build.
 
     @legacy_function
+    def set_time():
+        """
+        Set the current system time.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('system_time', dtype='float64',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
     def set_eta():
         """
         Set the current time step parameter.
@@ -302,6 +313,8 @@ class smallN(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
+
+        object.add_method("set_time", (nbody_system.time), (object.ERROR_CODE))
 
         object.add_method("get_eta", (), (units.none, object.ERROR_CODE))
         object.add_method("set_eta", (units.none), (object.ERROR_CODE))
