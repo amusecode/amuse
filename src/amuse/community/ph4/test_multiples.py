@@ -16,7 +16,7 @@ from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 
 from amuse.support.data import trees
 from amuse.community.ph4.interface import ph4 as grav
-from amuse.community.newsmallN.interface import smallN
+from amuse.community.newsmallN.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
@@ -64,7 +64,7 @@ def run_smallN(
         accuracy_parameter = 0.1
     ):
 
-    gravity = smallN(redirection = "none") # , debugger="gdb")
+    gravity = SmallN(redirection = "none") # , debugger="gdb")
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     gravity.parameters.timestep_parameter = accuracy_parameter
@@ -106,19 +106,18 @@ def run_smallN(
             channel.copy_attribute("index_in_code", "id")
             print "binaries:"
 
-            # (Code below does nothing if there are only 2 particles
-            # in the smallN system.)
-
             x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
             roots = list(x.iter_roots())
             for r in roots:
                 for level, particle in r.iter_levels():
                     print '  '*level, int(particle.id.number),
                     if not particle.child1 is None:
-                        m,a,e = get_binary_elements(particle)
-                        print ' (', m, a, e.number, ')'
+                        M,a,e = get_binary_elements(particle)
+                        print ' ( M =', M.number, ' a =', a.number, \
+                              ' e =', e.number, ')'
                     else:
                         print ''
+                    sys.stdout.flush()
             return particles
     
         sys.stdout.flush()
