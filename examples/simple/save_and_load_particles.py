@@ -11,35 +11,37 @@ from amuse.support.units import nbody_system
 from amuse.ext.plummer import new_plummer_sphere
 from amuse.support.io import write_set_to_file
 
+if __name__ in ('__main__', '__plot__'):
+
 # generate a particle set
-plummer=new_plummer_sphere(128)
+  plummer=new_plummer_sphere(128)
 
 #write the set to file 'testfile'
 # the third argument is the file format, 'amuse' is an hdf5 based format
 # that saves all information. Other formats
-# available are: csv, txt, gadget, starlab
-write_set_to_file(plummer,'plummer128','amuse')
-del plummer
+# available are e.g. csv, txt, gadget, starlab
+  write_set_to_file(plummer,'plummer128','amuse')
+  del plummer
 
 # reading back the file
-from amuse.support.io import read_set_from_file
-particles=read_set_from_file('plummer128','amuse')
+  from amuse.support.io import read_set_from_file
+  particles=read_set_from_file('plummer128','amuse')
 
 #plotting
-from amuse.plot import *
-plot(particles.x,particles.y,'r.')
-native_plot.xlim(-5,5)
-native_plot.ylim(-5,5)
-native_plot.show()
+  from amuse.plot import *
+  plot(particles.x,particles.y,'r.')
+  native_plot.xlim(-5,5)
+  native_plot.ylim(-5,5)
+  native_plot.show()
 
 #running a simulation
-from amuse.community.phiGRAPE.interface import PhiGRAPE
-phi=PhiGRAPE()
-phi.particles.add_particles(particles)
+  from amuse.community.phiGRAPE.interface import PhiGRAPE
+  phi=PhiGRAPE()
+  phi.particles.add_particles(particles)
 
-phi.evolve_model( 1| nbody_system.time)
+  phi.evolve_model( 1| nbody_system.time)
 
 #saving the result
-write_set_to_file(phi.particles,'evolvedplummer','amuse')
+  write_set_to_file(phi.particles,'evolvedplummer','amuse')
 
-phi.stop()
+  phi.stop()
