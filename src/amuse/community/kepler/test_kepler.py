@@ -26,6 +26,8 @@ def run_kepler(mass, semi, ecc, time):
     kep = Kepler(redirection = "none")
     kep.initialize_code()
 
+    kep.set_longitudinal_unit_vector(1.0|units.none, 1.0|units.none,
+                                     0.0|units.none)
     kep.initialize_from_elements(mass, semi, ecc)
     a,e = kep.get_elements()
     p = kep.get_periastron()

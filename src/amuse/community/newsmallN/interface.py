@@ -6,7 +6,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 # *** GravitationalDynamicsInterface, will be used to generate both
 # *** the header file interface.h and the stub interface.cc.
 
-class smallNInterface(CodeInterface,
+class SmallNInterface(CodeInterface,
                       GravitationalDynamicsInterface):
     """
     Self-contained few-body integrator, using a fourth-order,
@@ -242,12 +242,12 @@ class smallNInterface(CodeInterface,
         function.result_type = 'int32'
         return function
 
-class smallN(GravitationalDynamics):
+class SmallN(GravitationalDynamics):
 
     # The actual module.
 
     def __init__(self, convert_nbody = None, **keyword_arguments):
-        legacy_interface = smallNInterface(**keyword_arguments)
+        legacy_interface = SmallNInterface(**keyword_arguments)
 
         GravitationalDynamics.__init__(self,
                                        legacy_interface,
@@ -261,7 +261,7 @@ class smallN(GravitationalDynamics):
         # above and reflected in interface.cc.  Python access is
         # (e.g.)
         #
-        #     smallN.parameters.timestep_parameter = xxx
+        #     SmallN.parameters.timestep_parameter = xxx
 
         object.add_method_parameter(
             "get_eta",                   # getter name in interface.cc

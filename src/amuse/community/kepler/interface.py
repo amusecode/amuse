@@ -62,6 +62,9 @@ class KeplerInterface(CodeInterface,
                               default = 0)
         function.addParameter('time', dtype='float64', direction=function.IN,
                               default = 0)
+        function.addParameter('periastron',
+                              dtype='float64', direction=function.IN,
+                              default = 0)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -296,6 +299,22 @@ class KeplerInterface(CodeInterface,
         return function
 
     @legacy_function
+    def set_periastron():
+        """
+        Set the current periastron of the system (initialization only).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('peri', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            set periastron OK
+        -1 - ERROR
+            could not set periastron"""
+        return function
+
+    @legacy_function
     def get_periastron():
         """
         Return the current periastron of the system.
@@ -490,7 +509,8 @@ class Kepler(CommonCode):
                 nbody_system.length,
                 units.none,
                 units.none,
-                nbody_system.time
+                nbody_system.time,
+                nbody_system.length
             ),
             (
                 object.ERROR_CODE
@@ -570,6 +590,12 @@ class Kepler(CommonCode):
                           (),
                           (
                               nbody_system.length,
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("set_periastron",
+                          (nbody_system.length,),
+                          (
                               object.ERROR_CODE
                           ))
 

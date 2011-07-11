@@ -122,6 +122,20 @@ class  kepler
 
 	void set_mean_anomaly(const real M)	  {mean_anomaly = M;}
 
+	// Not in the starlab version:
+
+        void set_longitudinal_unit_vector(vec& l) {
+	    longitudinal_unit_vector = l;
+	}
+
+        void set_transverse_unit_vector(vec& t) {
+	    transverse_unit_vector = t;
+	}
+
+        void set_normal_unit_vector(vec& n) {
+	    normal_unit_vector = n;
+	}
+
 	/// Set all vectors defining the orbit.
 
         void set_orientation(vec& l, vec& t, vec& n) {

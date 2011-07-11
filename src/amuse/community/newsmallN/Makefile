@@ -26,10 +26,10 @@ $(CODELIB):
 	make -C src all CXX=$(MPICXX)
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py smallNInterface -o $@
+	$(CODE_GENERATOR) --type=c interface.py SmallNInterface -o $@
 
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py smallNInterface -o $@
+	$(CODE_GENERATOR) --type=H interface.py SmallNInterface -o $@
 
 smallN_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)

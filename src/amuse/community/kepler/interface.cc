@@ -5,7 +5,9 @@ static kepler *k;
 
 int initialize_code()
 {
-    k = NULL;
+    if (k) delete k;
+    k = new kepler;
+    if (!k) return -1;
     return 0;
 }
 
@@ -29,9 +31,6 @@ int initialize_from_dyn(double mass,
 			double vx, double vy, double vz,
 			double time)
 {
-    if (k) delete k;
-    k = new kepler;
-    if (!k) return -1;
     k->set_time(time);
     k->set_total_mass(mass);
     k->set_rel_pos(vec(x,y,z));
@@ -41,25 +40,22 @@ int initialize_from_dyn(double mass,
 }
 
 int initialize_from_elements(double mass, double semi, double ecc,
-			     double mean_anomaly, double time)
+			     double mean_anomaly, double time,
+			     double periastron)
 {
-    if (k) delete k;
-    k = new kepler;
-    if (!k) return -1;
-
     // Standard orbit will be in the x-y plane, with long axis along
-    // x.  Later, we will add the option of randomizing the
-    // orientation.  Code based on make_standard_kepler().  Default
-    // mean anomaly is 0 (i.e. periapsis) at the specified time
-    // (default 0).  Note that ecc = 1 is a special case that isn't
-    // addressed here (more info is needed).
+    // x.  However, we can set the orientation separately, before or
+    // after calling this function.  The code here is based on that
+    // found in Starlab::make_standard_kepler().  Default mean anomaly
+    // is 0 (i.e. periapsis) at the specified time (default 0).  Note
+    // that ecc = 1 is a special case that requires periastron also to
+    // be set.
 
     k->set_time(time);
     k->set_total_mass(mass);
     k->set_semi_major_axis(semi);
     k->set_eccentricity(ecc);
     k->set_mean_anomaly(mean_anomaly);
-    k->align_with_axes(1);
     k->initialize_from_shape_and_phase();	// expects a, e [, q [, E]]
     return 0;
 }
@@ -158,6 +154,12 @@ int get_separation(double * r)
     return 0;
 }
 
+int set_periastron(double p)
+{
+    k->set_periastron(p);
+    return 0;
+}
+
 int get_periastron(double * p)
 {
     *p = k->get_periastron();
@@ -186,7 +188,7 @@ int get_angles(double * mean_anomaly, double * true_anomaly)
     return 0;
 }
 
-// Remains TBD if this is the best way to handle orbit orientation.
+// Remains TBD if this is actually the best way to handle orbit orientation.
 
 #define TOL 1.e-10
 
