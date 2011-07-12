@@ -185,6 +185,7 @@ class TestInMemoryVectorQuantityAttribute(amusetest.TestCase):
     
         attribute.increase_to_length(5)
         self.assertEquals(attribute.get_values(None), [1.0,2.0,3.0,0.0,0.0] | units.m)
+        
     def test2(self):
         quantity  = units.m.new_quantity(numpy.array([1.0,2.0,3.0]))
         attribute = InMemoryVectorQuantityAttribute('test', quantity.shape, quantity.unit)
