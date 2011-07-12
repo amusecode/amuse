@@ -24,6 +24,9 @@ class Initial_state():		# modeled on the scatter3 class
     impact_parameter = 0
     v_infinity = 0
 
+#-----------------------------------------------------------------------
+# Build functions could/should be offloaded to a separate module.
+
 def normalized(a):
     amagi = 1./math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2])
     b = [a[0]*amagi, a[1]*amagi, a[2]*amagi]
@@ -156,6 +159,8 @@ def make_triple(init):
     stars.velocity = vel
     stars.radius = 0. | nbody_system.length
     return time,stars
+
+#-----------------------------------------------------------------------
 
 def get_binary_elements(p):
     comp1 = p.child1
