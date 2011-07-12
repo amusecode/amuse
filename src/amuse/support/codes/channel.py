@@ -1029,7 +1029,7 @@ class SocketMessage(AbstractMessage):
       
     def _receive_all(self, nbytes, thesocket):
 
-        logging.getLogger("channel").debug("receiving %d bytes", nbytes)
+        #logging.getLogger("channel").debug("receiving %d bytes", nbytes)
         
         result = ''
         
