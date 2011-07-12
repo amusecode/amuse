@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys, unittest, numpy, random, collections, getopt, os, math
 
 from amuse.support.units import nbody_system, units
