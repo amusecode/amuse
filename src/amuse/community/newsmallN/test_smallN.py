@@ -15,7 +15,7 @@ from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 
 from amuse.support.data import trees
-from amuse.community.newsmallN.interface import smallN as grav
+from amuse.community.newsmallN.interface import SmallN as grav
 from amuse.community.kepler.interface import Kepler
 
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
