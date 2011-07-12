@@ -223,8 +223,35 @@ class AbstractParticleSet(AbstractSet):
         ====================  ===========  ===========
 
         """
+        return self.to_string()
+        
+        
+    def to_string(self, attributes_to_show = None):
+        """
+        Display string of a particle set.
+        
+        >>> p0 = Particle(10)
+        >>> p1 = Particle(11)
+        >>> particles = Particles()
+        >>> particles.add_particle(p0) # doctest:+ELLIPSIS
+        <amuse.support.data.particles.Particle object at ...>
+        >>> particles.add_particle(p1) # doctest:+ELLIPSIS
+        <amuse.support.data.particles.Particle object at ...>
+        >>> particles.x = [4.0 , 3.0] | units.m
+        >>> particles.y = [5.0 , 2.0] | units.km
+        >>> print particles 
+                         key            x            y
+                           -            m           km
+        ====================  ===========  ===========
+                          10    4.000e+00    5.000e+00
+                          11    3.000e+00    2.000e+00
+        ====================  ===========  ===========
+
+        """
         attributes = sorted(self.get_attribute_names_defined_in_store())
-                
+        if attributes_to_show:
+            attributes = [x for x in attributes if x in attributes_to_show]
+        
         format_float = '{0: >11.3e}'.format
         format_str20 = '{0: >20}'.format
         format_str11 = '{0: >11}'.format
@@ -289,9 +316,8 @@ class AbstractParticleSet(AbstractSet):
             rows.append(row)
             
         lines = map(lambda  x : '  '.join(x), rows)
-        return '\n'.join(lines)        
+        return '\n'.join(lines)    
         
-
     def _get_particle(self, key):
         if self.has_key_in_store(key):
             return Particle(key, self._original_set())

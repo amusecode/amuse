@@ -105,7 +105,6 @@ def run_smallN(
             gravity.stop()
             channel.copy_attribute("index_in_code", "id")
             print "binaries:"
-            print particles
             x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
             roots = list(x.iter_roots())
             for r in roots:
@@ -127,60 +126,123 @@ def run_smallN(
 		    +"before end time {0}".format(end_time))
             
 
+root_index = 1000
+def new_root_index():
+    global root_index
+    root_index += 1
+    return root_index
+    
+def openup_tree(star, stars, particles_in_encounter):
+    root = trees.BinaryTreeOnParticle(star, 'child1', 'child2')
+    
+    leafs = root.get_descendants_subset()
+    
+    #
+    # Compare with the position stored
+    # when replacing the particles with the root
+    # particle and move the particles accordingly
+    #
+    
+    dx = star.x - star.original_x
+    dy = star.y - star.original_y
+    dz = star.z - star.original_z
+    dvx = star.vx - star.original_vx
+    dvy = star.vy - star.original_vy
+    dvz = star.vz - star.original_vz
+    
+    leafs.x += dx
+    leafs.y += dy
+    leafs.z += dz
+    leafs.vx += dvx
+    leafs.vy += dvy
+    leafs.vz += dvz
+    
+    particles_in_encounter.add_particles(leafs)
+    
+    #
+    # remove the binary tree
+    # it will be recreated later 
+    #
+    stars.remove_particles(root.get_inner_nodes_subset())
+    
 def manage_encounter(star1, star2, stars, gravity_stars):
     
-    
+    # 1. find corresponding particles in memory set
     star1_in_memory = star1.as_particle_in_set(stars)
     star2_in_memory = star2.as_particle_in_set(stars)
     
+    # 2. create a set to perform the close encounter calculation
     particles_in_encounter = core.Particles(0)
     
+    # 3. add stars to the close encounter, put substars in when encountering a binary
     if not star1_in_memory.child1 is None:
-        root = trees.BinaryTreeOnParticle(star1_in_memory, 'child1', 'child2')
-        
-        print root.get_descendants_subset()
-        
-        particles_in_encounter.add_particles(root.get_descendants_subset())
-        stars.remove_particles(root.get_inner_nodes_subset())
-        
+        openup_tree(star1_in_memory, stars, particles_in_encounter)
     else:
         particles_in_encounter.add_particle(star1)
         
     if not star2_in_memory.child1 is None:
-        print star2_in_memory
-        root = trees.BinaryTreeOnParticle(star2_in_memory, 'child1', 'child2')
-        
-        print root.get_descendants_subset()
-        
-        particles_in_encounter.add_particles(root.get_descendants_subset())
-        stars.remove_particles(root.get_inner_nodes_subset())
+        openup_tree(star2_in_memory, stars, particles_in_encounter)
     else:
         particles_in_encounter.add_particle(star2)
     
-    gravity_stars.remove_particle(star1)
-    gravity_stars.remove_particle(star2)
-    particles_in_encounter.id = -1 | units.none
+    particles_in_encounter.id = -1 | units.none # need to make this -1, to ensure smallN will set the id's or else smallN seems to fail
+    print particles_in_encounter.to_string(['x','y','z','vx','vy','vz','mass'])
+    
+    # 4. run the small encounter
     run_smallN(particles_in_encounter)
     
-    x = trees.BinaryTreesOnAParticleSet(particles_in_encounter, "child1", "child2")
-    roots = list(x.iter_roots())
     
-    stars_not_in_a_multiple = x.particles_not_in_a_multiple()
-    stars_not_in_a_multiple.id = -1 | units.none
-    if len(stars_not_in_a_multiple) > 0:
-        x = gravity_stars.add_particles(stars_not_in_a_multiple)
-        print x.index_in_code
-        
-    tmp_channel = stars_not_in_a_multiple.new_channel_to(stars)
+    # 5. bookkeeping after encounter
+    
+    # 5.a  create object to handle the binary information
+    binaries = trees.BinaryTreesOnAParticleSet(particles_in_encounter, "child1", "child2")
+    
+    # 5.b. remove encountered stars from gravity code
+    gravity_stars.remove_particle(star1)
+    gravity_stars.remove_particle(star2)
+    
+    # 5.c. update the position and velocity of the stars in the encounter
+    tmp_channel = particles_in_encounter.new_channel_to(stars)
     tmp_channel.copy_attributes(['x','y','z', 'vx', 'vy', 'vz'])
-    
-    for root in roots:
+        
+    # 5.d add stars not in a binary to the gravity code
+    stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
+    stars_not_in_a_multiple_in_stars = stars_not_in_a_multiple.get_intersecting_subset_in(stars)
+    if len(stars_not_in_a_multiple_in_stars) > 0:
+        gravity_stars.add_particles(stars_not_in_a_multiple_in_stars)
+        
+    # 5.e. add the inner nodes (root plus subnodes) to the stars in memory
+    # (the descendant nodes are already part of the set)
+    for root in binaries.iter_roots():
         stars_in_a_multiple = root.get_descendants_subset()
-        
-        root.particle.id = -1 | units.none
-        particle_in_code = gravity_stars.add_particle(root.particle)
-        
         stars.add_particles(root.get_inner_nodes_subset())
+        
+    # 5.f. add roots of the binaries tree to the gravity code
+    for root in binaries.iter_roots():
+        root_in_stars = root.particle.as_particle_in_set(stars)
+        root_in_stars.id = new_root_index() | units.none
+        gravity_stars.add_particle(root_in_stars)
+        
+    # 5.g. store the original position and velovicty of the root so that the subparticle position can be updated later
+    for root in binaries.iter_roots():        
+        root_in_stars = root.particle.as_particle_in_set(stars)
+        
+        #
+        # save root position and velocity
+        # so we can update the position and velocity
+        # of the components when we open up the
+        # binary tree
+        #
+        root_in_stars.original_x = root_in_stars.x
+        root_in_stars.original_y = root_in_stars.y
+        root_in_stars.original_z = root_in_stars.z
+        root_in_stars.original_vx = root_in_stars.vx
+        root_in_stars.original_vy = root_in_stars.vy
+        root_in_stars.original_vz = root_in_stars.vz
+        
+        
+        
+        
 
 def test_multiples(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
@@ -224,13 +286,7 @@ def test_multiples(infile = None, number_of_stars = 40,
         print "making a Plummer model"
         stars = MakePlummerModel(number_of_stars).result
 
-        #
-        #
-        id = numpy.arange(number_of_stars) + 1000 
-        # ADD a large number to the ID as the the automatic
-        # numbering used in manage encounters will
-        # mess up the numbers (it seems to always start at 0 even if 0 is taken!)
-        #
+        id = numpy.arange(number_of_stars) 
         stars.id = id+1 | units.none
 
         print "setting particle masses and radii"
@@ -288,6 +344,8 @@ def test_multiples(infile = None, number_of_stars = 40,
     # print "IDs:", stars.id.number
     sys.stdout.flush()
 
+    global root_index
+    rooot_index = len(stars) + 1000
     #-----------------------------------------------------------------
 
     if softening_length == -1 | nbody_system.length:
@@ -334,8 +392,8 @@ def test_multiples(infile = None, number_of_stars = 40,
             star1 = stopping_condition.particles(0)[0]
             star2 = stopping_condition.particles(1)[0]
             
-            print star1.index_in_code
-            print star2.index_in_code
+            print "index of star 1", star1.index_in_code
+            print "index of star 1", star2.index_in_code
             
             manage_encounter(star1, star2, stars, gravity.particles)
             
