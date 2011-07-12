@@ -3,6 +3,7 @@ import numpy
 
 from amuse.support.data.memory_storage import InMemoryGridAttributeStorage
 from amuse.support.data.memory_storage import get_in_memory_attribute_storage_factory
+from amuse.support.data.memory_storage import InMemoryVectorQuantityAttribute
 
 from amuse.support.units  import units
 
@@ -171,3 +172,35 @@ class TestInMemoryGridAttributeStorage(amusetest.TestCase):
         
         
         
+class TestInMemoryVectorQuantityAttribute(amusetest.TestCase):
+    
+    def test1(self):
+        quantity  = units.m.new_quantity(numpy.array([1.0,2.0,3.0]))
+        attribute = InMemoryVectorQuantityAttribute('test', quantity.shape, quantity.unit)
+        attribute.set_values(None, quantity)
+        
+        self.assertEquals(attribute.get_length(), 3)
+        self.assertEquals(attribute.get_shape(), (3,) )
+        self.assertEquals(attribute.get_values([1,2]), [2.0,3.0] | units.m)
+    
+        attribute.increase_to_length(5)
+        self.assertEquals(attribute.get_values(None), [1.0,2.0,3.0,0.0,0.0] | units.m)
+    def test2(self):
+        quantity  = units.m.new_quantity(numpy.array([1.0,2.0,3.0]))
+        attribute = InMemoryVectorQuantityAttribute('test', quantity.shape, quantity.unit)
+        attribute.set_values(None, quantity)
+        attribute.set_values([1,2], [4.0,5.0] | units.m)
+    
+        attribute.increase_to_length(5)
+        self.assertEquals(attribute.get_values(None), [1.0,4.0,5.0,0.0,0.0] | units.m)
+
+    def test3(self):
+        quantity  = units.m.new_quantity(numpy.array([[1.0,2.0,3.0], [4.0,5.0,6.0]]))
+        attribute = InMemoryVectorQuantityAttribute('test', quantity.shape, quantity.unit)
+        attribute.set_values(None, quantity)
+        self.assertEquals( attribute.get_values([1]),  [4.0,5.0,6.0] | units.m)
+        self.assertEquals( attribute.get_shape(), (2,3))
+        attribute.increase_to_length(4)
+        self.assertEquals( attribute.get_shape(), (4,3))
+        self.assertEquals(attribute.get_values(None), [[1.0,2.0,3.0], [4.0,5.0,6.0], [0.0,0.0,0.0], [0.0,0.0,0.0]] | units.m)
+

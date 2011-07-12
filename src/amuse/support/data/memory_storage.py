@@ -408,3 +408,84 @@ def get_in_memory_attribute_storage_factory():
         return InMemoryAttributeStorageUseSortedKeys
 
 
+class InMemoryAttribute(object):
+    
+    def __init__(self, name):
+        self.name = name
+        
+    def get_values(self, indices):
+        pass
+    
+    def set_values(self, indices, valus):
+        pass
+    
+    def get_length(self):
+        return 0
+    
+    def get_shape(self):
+        return 0
+    
+    def increase_to_length(self, newlength):
+        pass
+class InMemoryVectorQuantityAttribute(InMemoryAttribute):
+    
+    def __init__(self, name, shape, unit):
+        InMemoryAttribute.__init__(self, name)
+    
+        self.quantity = VectorQuantity.zeros(
+            shape,
+            unit,
+        )
+        
+    def get_values(self, indices):
+        return self.quantity[indices]
+    
+    def set_values(self, indices, values):
+        self.quantity[indices] = values
+    
+    def get_shape(self):
+        return self.quantity.shape
+    
+
+    def increase_to_length(self, newlength):
+        delta = newlength - len(self.quantity)
+        deltashape = list(self.quantity.shape)
+        deltashape[0] = delta
+    
+        zeros_for_concatenation = VectorQuantity.zeros(deltashape, self.quantity.unit)
+        self.quantity.extend(zeros_for_concatenation)
+
+    def get_length(self):
+        return len(self.quantity)
+
+class InMemoryUnitlessAttribute(InMemoryAttribute):
+    
+    def __init__(self, name, shape, dtype = 'float64'):
+        InMemoryAttribute.__init__(self, name)
+        
+        self.values = numpy.zeros(
+            shape,
+            dtype = dtype
+        )
+        
+    def get_values(self, indices):
+        return self.values[indices]
+    
+    def set_values(self, indices, values):
+        self.values[indices] = values
+    
+    def get_length(self):
+        return self.values.shape
+    
+
+    def increase_to_length(self, newlength):
+        delta = newlength - len(self.values)
+        deltashape = list(self.values.shape)
+        deltashape[0] = delta
+
+        zeros_for_concatenation =  numpy.zeros(deltashape, dtype = self.values.dtype)
+        self.values = numpy.concatenate(self.values ,zeros_for_concatenation)
+
+    def get_shape(self):
+        return self.quantity.shape
+
