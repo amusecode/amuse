@@ -13,6 +13,9 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 SCLIBS ?= -L../../../../lib/stopcond -lstopcond
 SCINC ?= -I../../../../lib/stopcond
 
+GSL_INCL ?= $(shell gsl-config --cflags)
+GSL_LIBS ?= $(shell gsl-config --libs)
+
 CODELIB = $(SRCDIR)/libgadget.a
 
 ALLVARS = $(SRCDIR)/allvars.o
@@ -42,7 +45,7 @@ clean:
 	make -C $(SRCDIR) clean
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c $^ Gadget2Interface -o $@
+	$(CODE_GENERATOR) --type=c $^ Gadget2Interface -o $@ 
 
 worker_code-sockets.cc: interface.py
 	$(CODE_GENERATOR) --type=c --mode=sockets $^ Gadget2Interface -o $@
@@ -51,20 +54,29 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $^ -i amuse.support.codes.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
 
 gadget2_worker: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_INCL) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)
 	
 gadget2_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_INCL) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)
 	
 gadget2_worker_periodic: worker_code.cc worker_code.h $(INTERFACE_SRC) $(SRCDIR)/makefile_options
 	rm -f $(INTERFACE_OBJ)
 	make $(INTERFACE_OBJ) OPT=$(PERIODIC_OPT)
 	make -C $(SRCDIR) clean 
 	make -C $(SRCDIR) all OPT=$(PERIODIC_OPT)
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) $(GSL_INCL) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)
+	rm -f $(INTERFACE_OBJ)
+	make -C $(SRCDIR) clean 
+
+gadget2_worker_periodic_sockets: worker_code-sockets.cc worker_code.h $(INTERFACE_SRC) $(SRCDIR)/makefile_options
+	rm -f $(INTERFACE_OBJ)
+	make $(INTERFACE_OBJ) OPT=$(PERIODIC_OPT)
+	make -C $(SRCDIR) clean 
+	make -C $(SRCDIR) all OPT=$(PERIODIC_OPT)
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) $(GSL_INCL) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)
 	rm -f $(INTERFACE_OBJ)
 	make -C $(SRCDIR) clean 
 
 gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SCINC) -c -o $@ gadget_code.cc $(SCLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_INCL) -c -o $@ gadget_code.cc $(SCLIBS) $(GSL_LIBS)
 
