@@ -105,7 +105,7 @@ def run_smallN(
             gravity.stop()
             channel.copy_attribute("index_in_code", "id")
             print "binaries:"
-
+            print particles
             x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
             roots = list(x.iter_roots())
             for r in roots:
@@ -125,8 +125,64 @@ def run_smallN(
     gravity.stop()
     raise Exception("Did not finish the small-N simulation "
 		    +"before end time {0}".format(end_time))
+            
 
-def test_ph4(infile = None, number_of_stars = 40,
+def manage_encounter(star1, star2, stars, gravity_stars):
+    
+    
+    star1_in_memory = star1.as_particle_in_set(stars)
+    star2_in_memory = star2.as_particle_in_set(stars)
+    
+    particles_in_encounter = core.Particles(0)
+    
+    if not star1_in_memory.child1 is None:
+        root = trees.BinaryTreeOnParticle(star1_in_memory, 'child1', 'child2')
+        
+        print root.get_descendants_subset()
+        
+        particles_in_encounter.add_particles(root.get_descendants_subset())
+        stars.remove_particles(root.get_inner_nodes_subset())
+        
+    else:
+        particles_in_encounter.add_particle(star1)
+        
+    if not star2_in_memory.child1 is None:
+        print star2_in_memory
+        root = trees.BinaryTreeOnParticle(star2_in_memory, 'child1', 'child2')
+        
+        print root.get_descendants_subset()
+        
+        particles_in_encounter.add_particles(root.get_descendants_subset())
+        stars.remove_particles(root.get_inner_nodes_subset())
+    else:
+        particles_in_encounter.add_particle(star2)
+    
+    gravity_stars.remove_particle(star1)
+    gravity_stars.remove_particle(star2)
+    particles_in_encounter.id = -1 | units.none
+    run_smallN(particles_in_encounter)
+    
+    x = trees.BinaryTreesOnAParticleSet(particles_in_encounter, "child1", "child2")
+    roots = list(x.iter_roots())
+    
+    stars_not_in_a_multiple = x.particles_not_in_a_multiple()
+    stars_not_in_a_multiple.id = -1 | units.none
+    if len(stars_not_in_a_multiple) > 0:
+        x = gravity_stars.add_particles(stars_not_in_a_multiple)
+        print x.index_in_code
+        
+    tmp_channel = stars_not_in_a_multiple.new_channel_to(stars)
+    tmp_channel.copy_attributes(['x','y','z', 'vx', 'vy', 'vz'])
+    
+    for root in roots:
+        stars_in_a_multiple = root.get_descendants_subset()
+        
+        root.particle.id = -1 | units.none
+        particle_in_code = gravity_stars.add_particle(root.particle)
+        
+        stars.add_particles(root.get_inner_nodes_subset())
+
+def test_multiples(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
              n_workers = 1, use_gpu = 1, gpu_worker = 1,
@@ -168,7 +224,13 @@ def test_ph4(infile = None, number_of_stars = 40,
         print "making a Plummer model"
         stars = MakePlummerModel(number_of_stars).result
 
-        id = numpy.arange(number_of_stars)
+        #
+        #
+        id = numpy.arange(number_of_stars) + 1000 
+        # ADD a large number to the ID as the the automatic
+        # numbering used in manage encounters will
+        # mess up the numbers (it seems to always start at 0 even if 0 is taken!)
+        #
         stars.id = id+1 | units.none
 
         print "setting particle masses and radii"
@@ -259,41 +321,27 @@ def test_ph4(infile = None, number_of_stars = 40,
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
     
+    stars.child1 = 0 | units.object_key
+    stars.child2 = 0 | units.object_key
+    
     while time < end_time:
         time += delta_t
         gravity.evolve_model(time)
 
         if stopping_condition.is_set():
-            star1 = stopping_condition.particles(0)[0]
-            star2 = stopping_condition.particles(1)[0]
             print '\nstopping condition set at time', \
                 gravity.get_time().number,'for:\n'
-            print star1
-            print ''
-            print star2
-            print ''
-            p = core.Particles(0)
-            p.add_particle(star1)
-            p.add_particle(star2)
-            print p
-            run_smallN(p)
-            raise Exception("not done yet")
-
-        # Ensure that the stars list is consistent with the internal
-        # data in the module.
-
+            star1 = stopping_condition.particles(0)[0]
+            star2 = stopping_condition.particles(1)[0]
+            
+            print star1.index_in_code
+            print star2.index_in_code
+            
+            manage_encounter(star1, star2, stars, gravity.particles)
+            
         ls = len(stars)
-
-	# Update the bookkeeping: synchronize stars with the module data.
-
-        try:
-            gravity.update_particle_set()
-            gravity.particles.synchronize_to(stars)
-        except:
-            pass
     
         # Copy values from the module to the set in memory.
-
         channel.copy()
     
         # Copy the index (ID) as used in the module to the id field in
@@ -373,7 +421,7 @@ if __name__ == '__main__':
     print "random seed =", random_seed
 
     assert is_mpd_running()
-    test_ph4(infile, N, t_end, delta_t, n_workers,
+    test_multiples(infile, N, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
              accuracy_parameter, softening_length,
              manage_encounters)

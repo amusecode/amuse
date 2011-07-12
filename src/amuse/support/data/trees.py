@@ -17,7 +17,7 @@ class BinaryTreesOnAParticleSet(object):
         for particle in roots:
             yield BinaryTreeOnParticle(particle, self.name_of_firstchild_attribute, self.name_of_secondchild_attribute)
             
-    def singles(self):
+    def particles_not_in_a_multiple(self):
         binaries = self._binaries()
         binaries_children1 = self._get_descendant_nodes(self.particles_set, self.name_of_firstchild_attribute)
         binaries_children2 = self._get_descendant_nodes(self.particles_set, self.name_of_secondchild_attribute)

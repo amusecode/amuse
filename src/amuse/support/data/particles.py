@@ -1680,7 +1680,9 @@ class Particle(object):
         [2.0] m
         """
         return ParticlesSubset(self.particles_set, [self.key])
-        
+    
+    def as_particle_in_set(self, other):
+        return other._get_particle(self.key)
 
 def create_particle_set(**args):
     """

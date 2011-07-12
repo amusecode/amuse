@@ -188,5 +188,5 @@ class TestBinaryTree(amusetest.TestCase):
     
         x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
         self.assertEquals(len(list(x.iter_roots())), 1)
-        self.assertEquals(len(x.singles()), 5)
+        self.assertEquals(len(x.particles_not_in_a_multiple()), 5)
             
