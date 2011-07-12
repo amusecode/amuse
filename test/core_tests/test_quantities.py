@@ -192,3 +192,9 @@ class TestQuantities(amusetest.TestCase):
         self.assertRaises(AmuseException, lambda: quantity - number, 
             expected_message = "Cannot express none in m, the units do not have the same bases")
     
+    def test18(self):
+        quantity = 'string' | units.string
+        self.assertEquals(quantity ,  'string' | units.string)
+        quantity = u'string' | units.string
+        self.assertEquals(quantity , u'string' | units.string)
+
