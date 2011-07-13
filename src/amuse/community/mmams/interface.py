@@ -226,6 +226,22 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
         function.addParameter('target_n_shells', dtype='int32', direction=function.OUT)
         function.result_type = 'i'
         return function
+    
+    @legacy_function
+    def set_do_shock_heating_flag():
+        """Set the flag that specifies whether to solve for shock-heating."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('do_shock_heating_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_do_shock_heating_flag():
+        """Get the flag that specifies whether to solve for shock-heating."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('do_shock_heating_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'i'
+        return function
         
         
     
@@ -262,6 +278,14 @@ class MakeMeAMassiveStar(CommonCode):
             "dump_mixed_flag",
             "dump_mixed flag: specifies whether the returned products must be mixed first",
             False
+        )
+        
+        object.add_boolean_parameter(
+            "get_do_shock_heating_flag",
+            "set_do_shock_heating_flag",
+            "do_shock_heating_flag",
+            "do_shock_heating flag: specifies whether to solve for shock-heating",
+            True
         )
     
     def define_methods(self, object):

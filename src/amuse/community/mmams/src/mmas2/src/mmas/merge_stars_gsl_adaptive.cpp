@@ -17,6 +17,9 @@ enum {NEXCEED=10, FAILED, NEGATIVE_PRESSURE};
 
 #define NUMBER_OF_CHEMICAL_SPECIES     9
 
+#define randx (1.0)
+//#define randx (1.0+1.0e-4*drand48())
+
 /* This routine builds the merger product of the two parent stars */
 
 /* 
@@ -227,7 +230,7 @@ int solve_HSE(double p_centre, double m_product,
 struct merge_stars_params {
   mmas *mmas_ptr;
   vector<double> Morig, mass, radius, pressure;
-  double m_product, error_try;
+  double m_product, error_try, initial_error_try;
   double p_old;
   gslInterp *mmu_A, *entr_A;
   gslInterp *mmu_B, *entr_B;
@@ -238,11 +241,13 @@ struct merge_stars_params {
 };
 
 double merge_stars_eq(double p_centre, void *params) {
-  merge_stars_params *p = (struct merge_stars_params*)params;	
+  merge_stars_params *p = (struct merge_stars_params*)params;
+  p->error_try = p->initial_error_try;
   int do_loop = 1;
   int pc = 0;
   while (do_loop == 1) {
     if (pc > 12) {
+       PRC(p_centre);
        PRC(pc); PRC(p->n_shells); PRC(p->error_try); PRL(p->mass.size());
     }
     p->status = solve_HSE(p_centre*p_unit, p->m_product,
@@ -253,13 +258,17 @@ double merge_stars_eq(double p_centre, void *params) {
 			  p->Morig,
 			  p->mass, p->radius, p->pressure, p->error_try,
 			  p->n_shells);
-//     do_loop = 0;
     pc++;
-         if (p->status == NEXCEED)         p->error_try *= ERROR_SCALE_INC;
-    else if (p->mass.size() < p->n_shells) p->error_try *= 1.0/ERROR_SCALE_DEC;
-    else do_loop = 0;
+    if (p->status == NEXCEED)
+        p->error_try *= ERROR_SCALE_INC;
+    else 
+        if (p->mass.size() < p->n_shells)
+            p->error_try *= 1.0/ERROR_SCALE_DEC;
+        else
+            do_loop = 0;
   }
   double dp = p->pressure.back()/p_centre/p_unit;
+//  fprintf(stderr,  "merge_stars_eq: dp= %g \n", dp);
   return dp;
 }
 
@@ -270,8 +279,8 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   vector<double> Mass, entr, m_mu, id_sA;
   sort_model(*model_a, Mass, entr, m_mu, id_sA);
   for (size_t i = 0; i < entr.size(); i++) {
-    entr[i] *=  (1.0+1.0e-4*drand48());
-    m_mu[i] *=  (1.0+1.0e-4*drand48());
+    entr[i] *=  randx;
+    m_mu[i] *=  randx;
   }
   gslInterp mmu_A (Mass, m_mu);
   gslInterp entr_A(Mass, entr);
@@ -281,8 +290,8 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   vector<double> id_sB;
   sort_model(*model_b, Mass, entr, m_mu, id_sB); 
   for (size_t i = 0; i < entr.size(); i++) {
-    entr[i] *=  (1.0+1.0e-4*drand48());
-    m_mu[i] *=  (1.0+1.0e-4*drand48());
+    entr[i] *=  randx;
+    m_mu[i] *=  randx;
   }
   gslInterp mmu_B (Mass, m_mu);
   gslInterp entr_B(Mass, entr);
@@ -306,8 +315,8 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   p.mmu_B   = &mmu_B;
   p.entr_B  = &entr_B;
 
-  if (n_desired_shells > 1000)
-    p.n_shells = 1000;
+  if (n_desired_shells > 10000)
+    p.n_shells = 10000;
   else
     p.n_shells = n_desired_shells;
 
@@ -330,8 +339,9 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   cerr << "Bracketing central pressure: \n";
   double p_0 = (model_a->get_shell(0).pressure + model_b->get_shell(0).pressure)/p_unit;
 
-  p.error_try = ERROR_TRY0;
+  p.initial_error_try = ERROR_TRY0;
   merge_stars_eq(p_0, &p);
+  p.initial_error_try = p.error_try;
   
   double sgn = p.pressure.back();
 
@@ -339,20 +349,22 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   int iterb = 0;
   int factor = 2;
   int stop = 0;
+//  double p_last_last = p_0;
   double p_last = p_0;
   while(!stop) {
     if (iterb++ > iterb_max) {
       cerr << "Failed to bracket root. Quit\n";
       exit(-1);
     }
+//    p_last_last = p_last;
     p_last = p_0;
     if (sgn < 0) p_0 *= factor;
     else         p_0 *= 1.0/factor;
 
     merge_stars_eq(p_0, &p);
-    cerr << "try p_centre= " << p_0 << "  ";
-    cerr << ", p_last_shell= " << p.pressure.back()/p_unit << "  "; // << endl;
-    PRC(p.Morig.size()); PRL(p.mass.size());
+//    cerr << "try p_centre= " << p_0 << "  ";
+//    cerr << ", p_last_shell= " << p.pressure.back()/p_unit << "  "; // << endl;
+//    PRC(p.Morig.size()); PRL(p.mass.size());
 
     if (sgn*p.pressure.back() < 0) stop = 1;
     
@@ -361,8 +373,10 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
 //     if (p.mass.size() > 5*NTRY) p.error_try *= 10;
 //     PRL(p.error_try);
   }
-  
-  cerr << "p is in [" << min(p_last, p_0) << ", " << max(p_last, p_0) << "] \n";
+
+  const double p_min = min(p_last, p_0);
+  const double p_max = max(p_last, p_0);
+  cerr << "p is in [" << p_min << ", " << p_max << "] \n";
 
   p.n_shells = n_desired_shells;
     
@@ -370,7 +384,7 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   fprintf(stderr, "Computing p_centre using %s method:\n", 
 	  gsl_root_fsolver_name (s));
 
-  gsl_root_fsolver_set (s, &F, min(p_last,p_0), max(p_last, p_0));
+  gsl_root_fsolver_set (s, &F, p_min, p_max);
 
   fprintf (stderr, "%5s [%9s, %9s] %9s %9s\n",
 	   "iter", "lower", "upper", "root", "err(est)");
@@ -419,8 +433,6 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   */
   
   vector<double> mass, chemicals[NUMBER_OF_CHEMICAL_SPECIES];
-
-#define randx (1.0+1.0e-4*drand48())
 
   int n = model_a->get_num_shells();
   for (int i = 0; i < n; i++) {

@@ -39,8 +39,21 @@ public:
     }
   }
 
-  int get_num_shells() {return num_shells;}
-  mass_shell& get_shell(int i) {return *shells_ptr[i];}
+  usm& operator=(const usm &in_model) {
+      build_void_model();
+      for (int i = 0; i < in_model.get_num_shells(); i++)
+          add_shell(in_model.get_shell(i));
+      
+      if (num_shells > 0) build_hashtable();
+      star_mass = in_model.star_mass;
+      star_radius = in_model.star_radius;
+      star_age = in_model.star_age;
+      return *this;
+  }
+  
+  int get_num_shells() const {return num_shells;}
+  mass_shell& get_shell(int i) const {return *shells_ptr[i];}
+  mass_shell& get_last_shell() const {return shells->shell;}
 
   void add_shell(mass_shell &shell);
   void build_hashtable();

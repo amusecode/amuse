@@ -9,6 +9,7 @@ using namespace std;
 int dump_mixed = 0;
 int target_n_shells_mixing = 200;
 int target_n_shells = 10000;
+int flag_do_shock_heating = 1;
 
 
 int number_of_particles = 0;
@@ -122,7 +123,11 @@ int add_shell(int index_of_the_particle, double d_mass, double cumul_mass,
     shell.composition.Mg24 = Mg24;
     shell.composition.Si28 = Si28;
     shell.composition.Fe56 = Fe56;
-    it->second->add_shell(shell);
+    
+    if (it->second->get_num_shells() && shell.mass <= it->second->get_last_shell().mass)
+        cerr << "Warning: shell ignored, because cumulative mass does not increase" << endl;
+    else
+        it->second->add_shell(shell);
     return 0;
 }
 
@@ -185,10 +190,11 @@ int merge_two_stars(int *id_product, int id_primary, int id_secondary) {
     
     it_primary->second->build_hashtable();
     it_secondary->second->build_hashtable();
+    
     mmas *mmams = new mmas(*it_primary->second, *it_secondary->second, r_p, v_inf);
     results.insert(results.end(), std::pair<long long, mmas*>(particle_id_counter, mmams));
     
-    mmams->merge_stars_consistently(target_n_shells);
+    mmams->merge_stars_consistently(target_n_shells, flag_do_shock_heating);
     mmams->mixing_product(target_n_shells_mixing);
     if (!dump_mixed) {
 //        cerr << "Dumping unmixed product in stdout \n";
@@ -229,5 +235,14 @@ int set_target_n_shells(int target_n_shells_in){
 }
 int get_target_n_shells(int *target_n_shells_out){
     *target_n_shells_out = target_n_shells;
+    return 0;
+}
+
+int set_do_shock_heating_flag(int do_shock_heating_flag_in){
+    flag_do_shock_heating = do_shock_heating_flag_in;
+    return 0;
+}
+int get_do_shock_heating_flag(int *do_shock_heating_flag_out){
+    *do_shock_heating_flag_out = flag_do_shock_heating;
     return 0;
 }

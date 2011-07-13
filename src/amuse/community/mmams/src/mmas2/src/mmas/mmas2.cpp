@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
   model_b.read(fn_model_b, 1);
 
   mmas merger(model_a, model_b, r_p, v_inf);
-  merger.merge_stars_consistently(n_shells);
+  merger.merge_stars_consistently(n_shells, 1);
 
   
 //   real rh1 = merger.get_lagrad(model_a, 0.5);
