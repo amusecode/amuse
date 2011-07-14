@@ -66,7 +66,7 @@ class InstallPrerequisites(object):
           (
             'h5py', 
             ['hdf'], 
-            '1.3.1', 
+            '2.0.0', 
             'h5py-' , '.tar.gz', 
             'http://h5py.googlecode.com/files/', self.h5py_build
           ) ,
@@ -174,13 +174,9 @@ class InstallPrerequisites(object):
         print "finished " , ' '.join(args)
     
     def h5py_build(self, path):
-        self.run_application([
-            'python',
-            'setup.py',
-            'configure', 
-            '--hdf5='+self.prefix, 
-            '--api=18'],cwd=path)
-        self.python_build(path)
+        
+        self.run_application(['python','setup.py','build','--hdf5='+self.prefix], cwd=path)
+        self.run_application(['python','setup.py','install'], cwd=path)
         
     def setuptools_install(self, path):
         self.run_application(['sh',], cwd=path)

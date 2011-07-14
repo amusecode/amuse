@@ -56,9 +56,9 @@ class HDF5AttributeStorage(AttributeStorage):
         results = []
         for attribute in attributes:
             values_vector = self.attributesgroup[attribute]
-            selection = h5py.selections.PointSelection(values_vector.shape)
-            selection.set(numpy.transpose([indices,]))
-            selected_values = values_vector[selection]
+            bools = numpy.zeros(values_vector.shape, dtype='bool')
+            bools[indices] = True
+            selected_values = values_vector[bools]
             results.append(self.get_unit_of(attribute).new_quantity(selected_values))
         
         return results
@@ -70,15 +70,17 @@ class HDF5AttributeStorage(AttributeStorage):
         return self.particle_keys
         
     def set_values_in_store(self, particles, attributes, quantities):
-        indices = self.get_indices_of(particles)
-        
+        indices = self.get_indices_of(particles)        
         for attribute, quantity in zip(attributes, quantities):
             if attribute in self.attributesgroup:
                 dataset = self.attributesgroup[attribute]
             else:
                 dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.number.dtype)
                 dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
-            dataset[indices] = quantity.value_in(self.get_unit_of(attribute))
+             
+            bools = numpy.zeros(dataset.shape, dtype='bool')
+            bools[indices] = True
+            dataset[bools] = quantity.value_in(self.get_unit_of(attribute))
 
 
 class HDF5GridAttributeStorage(AttributeStorage):

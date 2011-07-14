@@ -140,5 +140,41 @@ class TestStoreHDF(amusetest.TestCase):
         self.assertEquals(loaded_grid[0][0][0].mass, 0 | units.kg)
         self.assertAlmostRelativeEquals(loaded_grid[...,1,1].mass, p[...,1,1].mass)
 
+    def test7(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+        instance = store.StoreHDF(output_file)
+
+        number_of_particles = 10
+        p = Particles(number_of_particles)
+        p.mass = [x * 2.0 for x in range(number_of_particles)] | units.kg
+        p.model_time = 2.0 | units.s
+
+        instance.store(p)
+        instance.close()
+    
+        instance = store.StoreHDF(output_file)
+        loaded_particles = instance.load().previous_state()
+
+        loaded_particles.mass = [x * 3.0 for x in range(number_of_particles)] | units.kg
+        previous_mass_in_kg = [x * 3.0 for x in range(number_of_particles)]
+        instance.close()
         
+        instance = store.StoreHDF(output_file)
+        loaded_particles = instance.load()
+        loaded_mass_in_kg = loaded_particles.mass.value_in(units.kg)
+        for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
+            self.assertEquals(expected, actual)
         
+        instance.close()
+        
+        instance = store.StoreHDF(output_file)
+        loaded_particles = instance.load().previous_state()
+        loaded_particles[2].mass = 44 | units.kg
+        instance.close()
+        instance = store.StoreHDF(output_file)
+        loaded_particles = instance.load().previous_state()
+        self.assertEquals( 44 | units.kg, loaded_particles[2].mass)
+        instance.close()
