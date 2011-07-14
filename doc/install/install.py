@@ -164,9 +164,9 @@ class InstallPrerequisites(object):
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)
     
-    def run_application(self, args, cwd):
+    def run_application(self, args, cwd, env = None):
         print "starting " , ' '.join(args)
-        process = subprocess.Popen(args, cwd=cwd)
+        process = subprocess.Popen(args, cwd=cwd, env = env)
         returncode = process.wait()
         if returncode != 0:
             commandline = ' '.join(args)
