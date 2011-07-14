@@ -1297,6 +1297,8 @@ class SocketChannel(MessageChannel):
         
         self.socket.setblocking(1)
         
+        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        
         server_socket.close()
         
         #logging.getLogger("channel").debug("got connection from %s", address)
@@ -1427,6 +1429,8 @@ class IbisChannel(MessageChannel):
         
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.daemon_host, self.daemon_port))
+        
+        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         
         self.socket.sendall('magic_string'.encode('utf-8'))
         
