@@ -2,6 +2,7 @@ LIBNAME = libforsockets.a
 OBJS = forsockets.o
 
 MPIF90 ?= openmpif90
+MPICC ?= openmpicc
 
 all:$(LIBNAME) forsockets-interface.o
 
@@ -11,8 +12,8 @@ $(LIBNAME): $(OBJS)
 	ar -r  $(LIBNAME) $(OBJS)
 	ranlib $(LIBNAME)
 
-%.mo: %.c
-	$(MPICC) $(CFLAGS) -c -o $@ $<
+%.o: %.c
+	$(MPICC) $(CFLAGS) -Wall -c -o $@ $<
 	
 %.o: %.f90
 	$(MPIF90) -c -o $@ $<

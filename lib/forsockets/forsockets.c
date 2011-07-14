@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <netinet/tcp.h>
 
 int32_t socketfd;
 
@@ -112,6 +114,8 @@ void forsockets_send_string(char *string, int32_t length) {
 void forsockets_init(int32_t port) {
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
+	int flag;
+	int result;
 
 //	fprintf(stderr, "initializing forsockets\n");
 //
@@ -125,7 +129,7 @@ void forsockets_init(int32_t port) {
 		exit(0);
 	}
 
-	server = gethostbyname("localhost");
+	server = gethostbyname("127.0.0.1");
 
 //	fprintf(stderr, "connecting...\n");
 
@@ -140,6 +144,13 @@ void forsockets_init(int32_t port) {
 		exit(0);
 
 	}
+	
+	flag = 1;
+    result = setsockopt(socketfd,            /* socket affected */
+                        IPPROTO_TCP,     /* set option at TCP level */
+                        TCP_NODELAY,     /* name of option */
+                        (char *) &flag,  /* the cast is historical cruft */
+                        sizeof(int));    /* length of option value */
 
 	fprintf(stderr, "finished initializing forsockets\n");
 }
