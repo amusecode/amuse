@@ -44,7 +44,7 @@ class InstallPrerequisites(object):
             '1.5.1' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
             'http://ignum.dl.sourceforge.net/sourceforge/numpy/', #download url, filename is appended
-            self.python_build          #method to use for building
+            self.numpy_build          #method to use for building
           ),
           (
             'nose', 
@@ -204,6 +204,14 @@ class InstallPrerequisites(object):
         self.run_application(['python','setup.py','build'], cwd=path)
         self.run_application(['python','setup.py','install'], cwd=path)
     
+    def numpy_build(self, path):
+        env = os.environ.copy()
+        env['BLAS'] = 'None'
+        env['LAPACK'] = 'None'
+        env['ATLAS'] = 'None'
+        self.run_application(['python','setup.py','build'], cwd=path, env=env)
+        self.run_application(['python','setup.py','install'], cwd=path, env=env)
+        
     def mercurial_build(self, path):
         self.run_application(['make','install','PREFIX='+self.prefix], cwd=path)
     
@@ -229,8 +237,8 @@ class InstallPrerequisites(object):
           '--enable-shared',
           '--enable-sharedlibs=gcc',
           '--enable-fc', 
-          '--with-python='+sys.executable,
-          #'--with-device=ch3:sock',
+          '--with-python=python2.6',
+          '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
