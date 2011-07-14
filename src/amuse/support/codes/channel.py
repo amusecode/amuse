@@ -1031,7 +1031,7 @@ class SocketMessage(AbstractMessage):
 
         #logging.getLogger("channel").debug("receiving %d bytes", nbytes)
         
-        result = ''
+        result = []
         
         while nbytes > 0:
             bytes = thesocket.recv(nbytes, socket.MSG_WAITALL)
@@ -1039,11 +1039,11 @@ class SocketMessage(AbstractMessage):
             if len(bytes) == 0:
                 raise exceptions.CodeException("lost connection to code")
             
-            result += bytes
+            result.append(bytes)
             nbytes -= len(bytes)
             #logging.getLogger("channel").debug("got %d bytes, result length = %d", len(bytes), len(result))
             
-        return result
+        return "".join(result)
      
     def receive(self, socket):
         
