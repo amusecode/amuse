@@ -1034,7 +1034,7 @@ class SocketMessage(AbstractMessage):
         result = ''
         
         while nbytes > 0:
-            bytes = thesocket.recv(nbytes)
+            bytes = thesocket.recv(nbytes, socket.MSG_WAITALL)
             
             if len(bytes) == 0:
                 raise exceptions.CodeException("lost connection to code")
