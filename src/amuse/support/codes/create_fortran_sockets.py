@@ -174,7 +174,6 @@ function internal__redirect_outputs(stdoutfile, stderrfile)
     integer(c_int32_t) :: internal__redirect_outputs
     
     print*, 'NOT redirecting output to', stdoutfile, ' and ', stderrfile
-    call flush()
     
     internal__redirect_outputs = 0
 end function
@@ -222,7 +221,7 @@ string_receive_code = """
       call receive_integers(c_loc(strings_in), header_in(HEADER_STRING_COUNT))
 
       !print*, 'received string header:', strings_in
-      !call flush()
+
 
 
       do i = 1, header_in(HEADER_STRING_COUNT), 1
@@ -237,8 +236,6 @@ string_receive_code = """
         call receive_string(c_loc(characters_in(i)), strings_in(i))
 
         print*, 'received string: ', characters_in(i), ' of length ', strings_in(i)
-
-        call flush()
 
       end do
 """
@@ -259,7 +256,6 @@ string_send_code = """
 
       do i = 1, header_out(HEADER_STRING_COUNT), 1
           print*, 'sending string ', characters_out(i), ' of length ', strings_out(i)
-          call flush()
           call send_string(c_loc(characters_out(i)), strings_out(i))
       end do     
 """                
@@ -732,7 +728,6 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
 #        self.out.dedent().lf()
         
 #        self.out.lf().lf() + "!print*, 'sending header', header_out"
-#        self.out.lf().lf() + '!call flush()'
         self.out.lf().lf() + 'call send_integers(c_loc(header_out), HEADER_SIZE)'
         self.out.lf()
         
