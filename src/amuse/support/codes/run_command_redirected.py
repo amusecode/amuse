@@ -5,7 +5,7 @@ import time
 import signal
 
 if __name__ == '__main__':
-    
+
     if sys.argv[1] == 'none':
         stdout = None
     else:
@@ -24,7 +24,7 @@ if __name__ == '__main__':
         stdout = stdout,
         stderr = stderr,    
         stdin = stdin,
-        close_fds = True
+    #   close_fds = True
     )
 
     stdin.close()

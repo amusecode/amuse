@@ -631,7 +631,7 @@ class MpiChannel(MessageChannel):
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker)
         else:
-            if self.redirect_stdout_file is 'none' and self.redirect_stderr_file is 'none':
+            if self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none':
                 arguments = None
                 command = self.full_name_of_the_worker
             else:
