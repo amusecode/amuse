@@ -36,8 +36,8 @@ public:
   }
 
   ~mmas() {
-    delete model_a;
-    delete model_b;
+//    delete model_a;
+//    delete model_b;
     delete product;
     delete mixed_product;
   };

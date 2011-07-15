@@ -5,7 +5,7 @@ from amuse.community.sse.interface import SSEInterface, SSE
 from amuse.support.data.core import Particles
 from amuse.support.units import units
 
-from amuse.test.amusetest import TestWithMPI
+from amuse.test.amusetest import get_path_to_results, TestWithMPI
 
 from amuse.support import io
 
@@ -455,11 +455,13 @@ class TestSSE(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.particles.add_particles(stars)
         self.assertEquals(stellar_evolution.particles._factory_for_new_collection(), Particles)
-        if os.path.exists('test.h5'):
-            os.remove('test.h5')
+        
+        filename = os.path.join(get_path_to_results(), "test.h5")
+        if os.path.exists(filename):
+            os.remove(filename)
             
-        io.write_set_to_file(stellar_evolution.particles, 'test.h5', 'hdf5')
-        stored_stars = io.read_set_from_file('test.h5', 'hdf5')
+        io.write_set_to_file(stellar_evolution.particles, filename, 'hdf5')
+        stored_stars = io.read_set_from_file(filename, 'hdf5')
         self.assertEquals(len(stars), len(stored_stars))
     
         self.assertAlmostRelativeEquals(stars.mass, stored_stars.mass)
