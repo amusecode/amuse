@@ -4898,7 +4898,7 @@ as_arg_v2=1.1.0
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in #(
   1) :
-    as_fn_error $? "numpy version $PYTHON_mpi4py_VERSION found, but at least 1.1.0 needed" "$LINENO" 5
+    as_fn_error $? "mpi4py version $PYTHON_mpi4py_VERSION found, but at least 1.1.0 needed" "$LINENO" 5
  ;; #(
   0) :
      ;; #(
@@ -5180,7 +5180,7 @@ as_arg_v2=1.0
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in #(
   1) :
-    as_fn_error $? "numpy version $PYTHON_zlib_VERSION found, but at least 1.0 needed" "$LINENO" 5
+    as_fn_error $? "zlib version $PYTHON_zlib_VERSION found, but at least 1.0 needed" "$LINENO" 5
  ;; #(
   0) :
      ;; #(
