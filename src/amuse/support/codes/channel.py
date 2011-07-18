@@ -395,19 +395,19 @@ class MessageChannel(OptionalAttributes):
         OptionalAttributes.__init__(self, **options)
     
     @classmethod
-    def GDB(cls, full_name_of_the_worker):
+    def GDB(cls, full_name_of_the_worker, channel):
         arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb',  full_name_of_the_worker]
         command = 'xterm'
         return command, arguments
         
     @classmethod
-    def DDD(cls, full_name_of_the_worker):
+    def DDD(cls, full_name_of_the_worker, channel):
         arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd',  full_name_of_the_worker]
         command = 'xterm'
         return command, arguments
         
     @classmethod
-    def VALGRIND(cls, full_name_of_the_worker):
+    def VALGRIND(cls, full_name_of_the_worker, channel):
         #arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'valgrind',  full_name_of_the_worker]
         arguments = [full_name_of_the_worker]
         command = 'valgrind'
@@ -415,14 +415,14 @@ class MessageChannel(OptionalAttributes):
         
         
     @classmethod
-    def XTERM(cls, full_name_of_the_worker):
+    def XTERM(cls, full_name_of_the_worker, channel):
         arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', full_name_of_the_worker]
         command = 'xterm'
         return command, arguments
         
 
     @classmethod
-    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname):
+    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname, **options):
         
         fname = run_command_redirected.__file__                
         arguments = [fname , stdoutname, stderrname, full_name_of_the_worker]
@@ -431,7 +431,15 @@ class MessageChannel(OptionalAttributes):
         return command, arguments
     
     @classmethod
-    def NODEBUGGER(cls, full_name_of_the_worker):
+    def GDBR(cls, full_name_of_the_worker, channel):
+        "remote gdb, can run without xterm"
+        
+        arguments = ['localhost:{0}'.format(channel.debugger_port), full_name_of_the_worker]
+        command = 'gdbserver'
+        return command, arguments
+        
+    @classmethod
+    def NODEBUGGER(cls, full_name_of_the_worker, channel):
         return full_name_of_the_worker, []
     
         
@@ -477,6 +485,7 @@ MessageChannel.DEBUGGERS = {
     "gdb":MessageChannel.GDB, 
     "ddd":MessageChannel.DDD, 
     "xterm":MessageChannel.XTERM,
+    "gdb-remote":MessageChannel.GDBR, 
     "valgrind":MessageChannel.VALGRIND,
 }
 
@@ -598,6 +607,10 @@ class MpiChannel(MessageChannel):
     def number_of_workers(self):
         return 1
         
+    @option(type="int", sections=("channel",))
+    def debugger_port(self):
+        return 4343
+        
     @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
@@ -629,7 +642,7 @@ class MpiChannel(MessageChannel):
         
         must_close_std_streams = True
         if not self.debugger_method is None:
-            command, arguments = self.debugger_method(self.full_name_of_the_worker)
+            command, arguments = self.debugger_method(self.full_name_of_the_worker, self)
         else:
             if self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none':
                 arguments = None
