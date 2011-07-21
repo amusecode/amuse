@@ -1,0 +1,101 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{a4wide}
+
+\newcommand{\rvir}{r_{\mathrm{vir}}}
+\newcommand{\rs}{r_{\mathrm{s}}}
+\newcommand{\rcut}{r_{\mathrm{cutoff}}}
+\newcommand{\rdec}{r_{\mathrm{decay}}}
+\newcommand{\Mtot}{M_{\mathrm{tot}}}
+\newcommand{\Ntot}{N_{\mathrm{tot}}}
+
+\author{Marcel Zemp}
+\title{HALOGEN4MUSE}
+\date{30. August 2007}
+
+\begin{document}
+
+\maketitle
+
+\abstract{HALOGEN4MUSE allows to generate spherical structures from the $\alpha\beta\gamma$-model family with an isotropic velocity tensor. Particles are sampled self-consistently form the distribution function of the models.}
+
+\section{General characteristics of the models}
+
+We restrict ourself to models of the form given by equation (\ref{eq:rhocut}) with $\gamma < 3$ for the mass not to diverge in the centre. Similarly, for $\beta \leq 3$ the total mass would diverge and we need to introduce a cut-off radius. We chose the form
+\begin{equation} \label{eq:rhocut}
+\rho(r) = \left\{
+\begin{array}{ll}
+\frac{\rho_0}{\left(\frac{r}{\rs}\right)^\gamma \left(1+\left(\frac{r}{\rs}\right)^\alpha
+\right)^{\left(\frac{\beta-\gamma}{\alpha}\right)}}	&
+r \leq \rcut \\
+\rho(\rcut) \left(\frac{r}{\rcut}\right)^\delta \mathrm{e}^{-\frac{r-\rcut}{\rdec}} &
+r > \rcut
+\end{array}
+\right.
+\end{equation}
+where $\delta$ and $\rdec$ are free parameters. By requiring the logarithmic slope to be continuous at $\rcut$, we get
+\begin{equation}
+\delta = \frac{\rcut}{\rdec} - \frac{\gamma + 
+\beta \left(\frac{\rcut}{\rs}\right)^{\alpha}}{1 + \left(\frac{\rcut}{\rs}\right)^{\alpha}}~.
+\end{equation}
+We set the truncation scale $\rdec = 0.3~\rcut$ in order not to make the truncation too sharp. A too sharp truncation can lead to an instability of the model around $\rcut$. For $\beta > 3$ we simply set $\rcut = \infty$ (i.e. no cut-off) while for $\beta \leq 3$ one has to specify a cut-off scale $\rcut$ (e.g. $\rcut = 10~\rs$). By further specifying $\rs$ and the total mass $\Mtot$, the normalisation $\rho_{0}$ is given by
+\begin{equation}
+\rho_0 = \frac{\Mtot}{4 \pi \rs^3 (I_{\mathrm{M}} + I_{\mathrm{M,cutoff}})}
+\end{equation}
+where
+\begin{eqnarray}
+I_{\mathrm{M}} &\equiv& \int_0^{q} \frac{x^{2-\gamma}}{\left(1+x^\alpha\right)^{\left(\frac{\beta-\gamma}{\alpha}\right)}} \mathrm{d}x
+\stackrel{q=\infty}{=} \frac{\Gamma\left(\frac{\beta-3}{\alpha}\right) \Gamma\left(\frac{3-\gamma}{\alpha}\right)}{\alpha \Gamma\left(\frac{\beta-\gamma}{\alpha}\right)} \\
+I_{\mathrm{M,cutoff}} &\equiv&
+\frac{1}
+{\rs^3 q^\gamma \left(1+q^\alpha\right)^{\left(\frac{\beta-\gamma}{\alpha}\right)}}
+\int_{\rcut}^{\infty} r^2 \left(\frac{r}{\rcut}\right)^{\delta} \mathrm{e}^{-\frac{r-\rcut}{\rdec}} \stackrel{q=\infty}{=} 0
+\end{eqnarray}
+with $q = \rcut / \rs$ and $\Gamma$ is the standard gamma function.
+
+\section{Distribution function as probability density function}
+
+For spherical systems with an isotropic velocity distribution one can calculate the distribution function, which in that case only depends on energy, by the Eddington inversion. Hence, by restricting to models with an isotropic velocity distribution, we can calculate the distribution function for our spherical structure models described by equation (\ref{eq:rhocut}) - at least numerically. Since the state of a system at a given time is completely described by the distribution function $f(\vec{r},\vec{v})$, we use it as a probability density function in order to sample the phase space with particles,
+\begin{equation}
+p_{\mathrm{6D}}(\vec{r},\vec{v}) \mathrm{d}\vec{r} \mathrm{d}\vec{v} = \frac{f(\vec{r},\vec{v})}{\Mtot} \mathrm{d}\vec{r} \mathrm{d}\vec{v}
+\end{equation}  
+is the probability that a particle is in the volume $\mathrm{d}\vec{r} \mathrm{d}\vec{v}$ around the phase space point $(\vec{r},\vec{v})$. By integrating out the velocities and using spherical symmetry, we get for the probability density $p(r)$ in coordinate space
+\begin{equation}
+p(r) \mathrm{d}r = \frac{4 \pi r^2 \rho(r)}{\Mtot} \mathrm{d}r
+\end{equation}
+and the positions can now be sampled by using the quantile function, which is the inverse of the cumulative probability distribution function $M(r)/\Mtot$ for the above probability density function $p(r)$. For a particle at location $\vec{r}_i$ we get now the following probability density for the velocities 
+\begin{equation}
+p(r_i,v) \mathrm{d}v = \frac{16 \pi^2}{\Mtot} f(r_i,v) r_i^2 v^2 \mathrm{d}v
+\end{equation}
+where $r_i = |\vec{r}_i|$. In general, the distribution function can only be calculated numerically for the large family of models described by the density profile (\ref{eq:rhocut}). Hence, numerical integration and inversion for $p(r_i,v)$ in order to calculate the quantile function is difficult and one generally uses the acceptance-rejection technique for the Monte Carlo sampling of the velocities.
+
+This Monte Carlo sampling procedure directly from the distribution function $f(\vec{r},\vec{v})$ leads to perfectly stable equilibrium models. These models do not show the flattening in the central part of the structure during evolution as it is obtained in the case of the assumption of a local Maxwellian velocity distribution with the velocity dispersion given by the Jeans equation.
+
+\section{Options and Usage}
+
+HALOGEN4MUSE accepts command line options in the following way: for example the command \\ 
+\\
+\texttt{halogen4muse -a 2 -b 5 -c 0 -M 1 -rs 1 -N 100000 -name plummer} \\ 
+\\
+generates a Plummer sphere with $\alpha = 2$, $\beta = 5$, $\gamma = 0$, $\Mtot = 1$, $\rs = 1$, $\Ntot = 100000$ and writes the output into a file \texttt{plummer.IC.ascii}. The built-in default values for the total mass and the scale radius are unity, i.e. $\Mtot = 1$ and $\rs = 1$. So, we could have left these options in the command line above.
+
+For models that need a cut-off (i.e. $\beta \leq 3$), one has to additionally specify a cut-off radius $\rcut$. For example the command \\
+\\
+\texttt{halogen4muse -a 1 -b 3 -c 1 -M 1 -rs 1 -rcutoff 10 -N 100000 -name nfw}\\ 
+\\
+generates an NFW profile with $\alpha = 1$, $\beta = 3$, $\gamma = 1$, $\Mtot = 1$, $\rs = 1$, $\rcut = 10$ and $\Ntot = 100000$.
+
+If one specifies the additional options \texttt{-ogr} or \texttt{-ogdf}, the grid in radius respectively the grid for the distribution function is written out into separate files.
+
+Normally, the Monte Carlo sampling is initiated by a random seed. The option \texttt{-randomseed} allows one to set this artificially.
+
+The virial radius is defined by
+\begin{equation}
+\rvir \equiv {\Mtot^2}/{\sum_{i, j \neq i} \frac{m_i m_j}{|\vec{r}_i - \vec{r}_j|}} = - \frac{1}{2} \frac{G \Mtot^2}{E_{\mathrm{pot}}}
+\end{equation}
+where the second equality is only valid in the $N \rightarrow \infty$ limit. The standard way to calculate $\rvir$ is via the potential energy since it is much faster than the exact way via the $N^2$ sum over all particles. If one sets the option \texttt{-dorvirexact}, one has the possibility to calculate the virial radius exactly via the $N^2$ sum.
+
+HALOGEN4MUSE also supports the inclusion of a central black hole. With \texttt{-MBH} one specifies the mass of the black hole which is then set with zero velocity at the geometric centre of the surrounding structure. The presence of the central point mass modifies the distribution function of the surrounding structure compared to the same model without central point mass. The self-consistent distribution function of the spherical structure with a central point mass is again calculated numerically so that the velocities are sampled correctly. Warning: choices of $\gamma < 1/2$ lead to unphysical models, i.e. the distribution function has negative values. But HALOGEN4MUSE warns you if you accidentally do so.
+
+Of course, you can always ask HALOGEN4MUSE for help with the \texttt{-h} or \texttt{-help} options.
+
+\end{document}
