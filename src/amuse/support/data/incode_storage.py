@@ -759,8 +759,11 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             self.mapping_from_particle_key_to_index_in_the_code[newkey] = i
             
             keys.append(newkey)
-        keys = numpy.asarray(list(keys), dtype=self.particle_keys.dtype)
-        self.particle_keys = numpy.concatenate((self.particle_keys, keys))
+        if len(self.particle_keys) > 0:
+            self.particle_keys = numpy.concatenate((self.particle_keys, 
+                numpy.asarray(list(keys), dtype=self.particle_keys.dtype)))
+        else:
+            self.particle_keys = numpy.array(keys)
                 
 
 class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
