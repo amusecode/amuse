@@ -257,6 +257,20 @@ class HalogenInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return function
     
     @legacy_function
+    def get_write_output_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_write_output_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def get_output_path():
         function = LegacyFunctionSpecification()
         function.addParameter('output_directory', dtype='string', direction=function.OUT,
@@ -396,6 +410,14 @@ class Halogen(CommonCode):
             "set_outputgriddf_flag",
             "outputgriddf_flag",
             "Flag specifying whether to write a file outputting grid for distribution function",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_write_output_flag",
+            "set_write_output_flag",
+            "write_output_flag",
+            "Flag specifying whether to write the model and a log to file",
             False
         )
         

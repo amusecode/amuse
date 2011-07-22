@@ -101,6 +101,7 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEquals(instance.set_model_gamma(0.0), 0)
         self.assertEquals(instance.set_target_number_of_particles(1000), 0)
         self.assertEquals(instance.set_random_seed(1.0), 0)
+        self.assertEquals(instance.set_write_output_flag(1.0), 0)
         
         self.assertEquals(instance.get_output_basename().values(), ["halogen", 0])
         self.assertEquals(instance.get_output_path().values(), ["./", 0])
@@ -158,7 +159,8 @@ class HalogenTests(TestWithMPI):
         instance.initialize_code()
         
         for par, value in [('do_exact_virial_radius_flag', False), 
-                ('outputgridr_flag', False), ('outputgriddf_flag', False)]:
+                ('outputgridr_flag', False), ('outputgriddf_flag', False), 
+                ('write_output_flag', False)]:
             self.assertTrue(value is getattr(instance.parameters, par))
             setattr(instance.parameters, par, not value)
             self.assertFalse(value is getattr(instance.parameters, par))
