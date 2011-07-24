@@ -7,33 +7,22 @@
 #include "evolve_cl.h"
 #endif
 
-#define RVTIMESTEP
-#define RATIMESTEP
-#define RARVRATIO   0.25
-
-#define MPWORKLIMIT 100
-#define CLWORKLIMIT 10000
-
-#define MAXLEVEL  64
-
 FLOAT eps2;
 FLOAT dt_param;
 struct sys zerosys ={ 0, NULL,NULL};
 
 /* diagnostics */
 DOUBLE simtime;
-static int clevel;
-static unsigned long tcount[MAXLEVEL],kcount[MAXLEVEL],dcount[MAXLEVEL],deepsteps;
-static unsigned long tstep[MAXLEVEL],kstep[MAXLEVEL],dstep[MAXLEVEL];
+/*static*/ int clevel;
+/*static*/ unsigned long tcount[MAXLEVEL],kcount[MAXLEVEL],dcount[MAXLEVEL],deepsteps;
+/*static*/ unsigned long tstep[MAXLEVEL],kstep[MAXLEVEL],dstep[MAXLEVEL];
 #ifdef EVOLVE_OPENCL
-static unsigned long cpu_step,cl_step,cpu_count,cl_count;
+/*static*/ unsigned long cpu_step,cl_step,cpu_count,cl_count;
 #endif
 
 static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast);
 static struct sys join(struct sys s1,struct sys s2);
-static void drift(struct sys s, DOUBLE etime, DOUBLE dt); /* drift sys */
 static void drift_naive(struct sys s, DOUBLE etime); /* drift/extrap sys to itime*/
-static void kick(struct sys s1, struct sys s2, DOUBLE dt); /* =kick sys1 for interactions with sys2  */
 static void potential(struct sys s1, struct sys s2);
 static void timestep(struct sys s1, struct sys s2);
 static void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
@@ -343,8 +332,16 @@ void do_evolve(struct sys s, double dt, int inttype)
     case BRIDGE_DKD:
       evolve_split_bridge_dkd(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
+    case CC:
+      evolve_cc2(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
+    case OK:
+      evolve_ok_init(s);
+      evolve_ok2(s, zeroforces, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_ok_stop();
+      break;
     default:  
-      endrun((char*)" unknown integrator\n");
+      ENDRUN(" unknown integrator\n");
       break;
   } 
   for(p=0;p<s.n;p++) s.part[p].pot=0;
@@ -373,7 +370,7 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
   right=s.last;
   while(1)
   {
-    if(i>=s.n) endrun((char*)"split error 1");
+    if(i>=s.n) ENDRUN("split error 1");
     i++;
     while(left->timestep<dt && left<right) left++;
     while(right->timestep>=dt && left<right) right--;
@@ -400,7 +397,7 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
     fast->part=s.part;
     fast->last=s.part+fast->n-1;
   }
-  if(fast->n+slow->n !=s.n) endrun((char*) "split error 2");
+  if(fast->n+slow->n !=s.n) ENDRUN( "split error 2");
   for(i=0;i<s.n;i++) s.part[i].level=clevel;
 }
 
@@ -421,9 +418,9 @@ static struct sys join(struct sys s1,struct sys s2)
       s.part=s2.part;
       s.last=s1.last;
     } else
-      endrun((char*)"join error 1");
+      ENDRUN("join error 1");
   }   
-  if(s.last-s.part + 1 != s.n) endrun((char*)"join error 2"); 
+  if(s.last-s.part + 1 != s.n) ENDRUN("join error 2");
   return s;
 }
 
@@ -444,7 +441,7 @@ static void dkd(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE 
   drift(s1,etime, dt/2);
 }
 
-static void drift(struct sys s, DOUBLE etime, DOUBLE dt)
+/*static*/ void drift(struct sys s, DOUBLE etime, DOUBLE dt)
 {
   UINT i;
   for(i=0;i<s.n;i++)
@@ -497,7 +494,7 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
   }
 }
 
-static void kick(struct sys s1, struct sys s2, DOUBLE dt)
+/*static*/ void kick(struct sys s1, struct sys s2, DOUBLE dt)
 {
 #ifdef EVOLVE_OPENCL
   if((ULONG) s1.n*s2.n>CLWORKLIMIT) 

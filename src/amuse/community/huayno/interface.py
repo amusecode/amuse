@@ -150,6 +150,19 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
     
 class Huayno(GravitationalDynamics):
 
+    class inttypes:
+        # http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python
+        SHARED=1
+        EXTRAPOLATE=5
+        PASS_KDK=2
+        PASS_DKD=7
+        HOLD_KDK=3
+        HOLD_DKD=8
+        BRIDGE_KDK=4
+        CC=11
+        CC_KEPLER=12
+        OK=13 
+
     EVOLVE_SHARED=1
     EVOLVE_EXTRAPOLATE=5
     EVOLVE_PASS_KDK=2

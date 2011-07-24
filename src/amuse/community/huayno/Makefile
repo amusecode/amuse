@@ -1,7 +1,14 @@
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 
-CXXFLAGS   += -O2 -Wall
+# (ugly) fix for MacPorts+OpenMPI compilers
+ifneq (,$(shell type -P openmpicxx))
+	MPICXX = openmpicxx
+	MPICC = openmpicc
+endif
+
+CCFLAGS += -O2 -Wall -std=c99
+CXXFLAGS += -O2 -Wall
 LIBS += -lm
 INCLUDE =
 
@@ -11,7 +18,8 @@ STDCL = /home/inti/libraries/coprthr
 
 #---------------------------------------------
 
-OBJS = interface.o evolve.o 
+#OBJS = interface.o evolve.o evolve_cc.o evolve_kepler.o evolve_ok.o #kepler solver does not compile at the moment
+OBJS = interface.o evolve.o evolve_cc.o evolve_ok.o
 
 AMUSE_DIR?=../../../..
 
@@ -54,7 +62,7 @@ huayno_worker_cl: clean __init__.py worker_code.cc worker_code.h evolve_kern.clh
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
 
 .c.o: $<
-	$(MPICC) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICC) $(CCFLAGS) $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
 	awk 'BEGIN{print "const char srcstr[]=" } {print "\""$$0"\\n\""} END{print ";"}' $< > $@
