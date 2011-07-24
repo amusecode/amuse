@@ -7,7 +7,7 @@ ifneq (,$(shell type -P openmpicxx))
 	MPICC = openmpicc
 endif
 
-CCFLAGS += -O2 -Wall -std=c99
+CCFLAGS += -O2 -Wall -std=gnu99
 CXXFLAGS += -O2 -Wall
 LIBS += -lm
 INCLUDE =
@@ -18,8 +18,8 @@ STDCL = /home/inti/libraries/coprthr
 
 #---------------------------------------------
 
-#OBJS = interface.o evolve.o evolve_cc.o evolve_kepler.o evolve_ok.o #kepler solver does not compile at the moment
-OBJS = interface.o evolve.o evolve_cc.o evolve_ok.o
+OBJS = interface.o evolve.o evolve_cc.o evolve_kepler.o evolve_ok.o #kepler solver does not compile at the moment
+#OBJS = interface.o evolve.o evolve_cc.o evolve_ok.o
 
 AMUSE_DIR?=../../../..
 
