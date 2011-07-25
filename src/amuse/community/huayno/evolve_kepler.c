@@ -13,7 +13,6 @@
 unsigned long cefail[MAXLEVEL],cecount[MAXLEVEL];
 
 void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
-
   clevel++;
   if (etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
   if (s.n != 2) ENDRUN("two-body solver was called with sys.n=%u\n", s.n);
@@ -47,9 +46,9 @@ void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
   int err = universal_variable_kepler_solver(dt,mtot,dpos0,dvel0,dpos,dvel);
   if (err != 0) {
     // failsafe kepler solver
-    ENDRUN("Kepler solver failed\n");
+    LOG("Kepler solver failed\n");
     cefail[clevel]++;
-    //evolve_unsplit4(s, stime, etime, dt, 1);
+    evolve_shared4(s, stime, etime, dt, 1);
   } else {
     // translate coordinates from 2-body frame to original frame
     s.part->pos[0] = pos_cm[0] + f1 * dpos[0];

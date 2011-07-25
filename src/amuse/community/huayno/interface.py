@@ -152,7 +152,7 @@ class Huayno(GravitationalDynamics):
 
     class inttypes:
         # http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python
-        SHARED=1
+        SHARED2=1
         EXTRAPOLATE=5
         PASS_KDK=2
         PASS_DKD=7
@@ -162,7 +162,8 @@ class Huayno(GravitationalDynamics):
         CC=11
         CC_KEPLER=12
         OK=13
-        KEPLER=14 
+        KEPLER=14
+        SHARED4=15
 
     EVOLVE_SHARED=1
     EVOLVE_EXTRAPOLATE=5

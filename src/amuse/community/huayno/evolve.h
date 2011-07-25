@@ -54,7 +54,7 @@ struct sys
 enum intopt
 {
   CONSTANT,   // 0
-  UNSPLIT,    // 1
+  SHARED2,    // 1
   PASS,       // 2
   HOLD,       // 3
   BRIDGE,     // 4
@@ -67,7 +67,8 @@ enum intopt
   CC,         // 11
   CC_KEPLER,  // 12
   OK,         // 13
-  KEPLER      // 14
+  KEPLER,     // 14
+  SHARED4     // 15
 };
 
 extern FLOAT eps2;
@@ -79,6 +80,8 @@ void init_evolve(struct sys s);
 void do_evolve(struct sys s, double dt, int inttype);
 FLOAT system_potential_energy(struct sys s);
 FLOAT system_kinetic_energy(struct sys s);
+void timestep(struct sys s1, struct sys s2);
+void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
 #define RVTIMESTEP
 #define RATIMESTEP
@@ -106,7 +109,10 @@ extern unsigned long cpu_step,cl_step,cpu_count,cl_count;
 /*static*/ void drift(struct sys s, DOUBLE etime, DOUBLE dt); /* drift sys */
 /*static*/ void kick(struct sys s1, struct sys s2, DOUBLE dt); /* =kick sys1 for interactions with sys2  */
 
+void evolve_shared2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep);
+void evolve_shared4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep);
 void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
 // declared in interface.c
 extern int inttype;

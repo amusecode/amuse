@@ -19,7 +19,7 @@ STDCL = /home/inti/libraries/coprthr
 
 #---------------------------------------------
 
-OBJS = interface.o evolve.o evolve_cc.o evolve_kepler.o evolve_ok.o
+OBJS = interface.o evolve.o evolve_shared.o evolve_cc.o evolve_kepler.o evolve_ok.o
 
 AMUSE_DIR?=../../../..
 
