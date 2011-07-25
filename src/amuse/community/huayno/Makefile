@@ -7,8 +7,9 @@ ifneq (,$(shell type -P openmpicxx))
 	MPICC = openmpicc
 endif
 
-CCFLAGS += -O2 -Wall -std=gnu99
-CXXFLAGS += -O2 -Wall
+# -D_GNU_SOURCE is needed to define M_SQRT2 when compiling on certain machines (e.g. gpu-1.strw); may not be necessary anymore
+CCFLAGS += -O2 -Wall -std=gnu99 -D_GNU_SOURCE
+CXXFLAGS += -O2 -Wall -D_GNU_SOURCE
 LIBS += -lm
 INCLUDE =
 
@@ -18,8 +19,7 @@ STDCL = /home/inti/libraries/coprthr
 
 #---------------------------------------------
 
-OBJS = interface.o evolve.o evolve_cc.o evolve_kepler.o evolve_ok.o #kepler solver does not compile at the moment
-#OBJS = interface.o evolve.o evolve_cc.o evolve_ok.o
+OBJS = interface.o evolve.o evolve_cc.o evolve_kepler.o evolve_ok.o
 
 AMUSE_DIR?=../../../..
 

@@ -374,13 +374,11 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 	free_sys(c.next_cc);
 }
 
-
-#ifdef SKIP
-void evolve_cc2_twobody(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
-  // TODO use kepler solver only if dt is larger than the orbital period
+void evolve_cc2_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
+  // TODO use kepler solver only if dt is larger than the orbital period?
   if (s.n == 2) {
     //LOG("evolve: called \n");
-    evolve_twobody(s, stime, etime, dt);
+    evolve_kepler(s, stime, etime, dt);
   } else {
     //LOG("evolve: regular!\n");
     struct sys c = zerosys, r = zerosys;
@@ -451,7 +449,7 @@ void evolve_cc2_twobody(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
     // evolve all fast components, 1st time
     for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-      evolve_split_cc2_twobody(*ci, stime, stime+dt/2, dt/2);
+      evolve_cc2_kepler(*ci, stime, stime+dt/2, dt/2);
     }
 
     drift(r, stime+dt/2, dt/2); // drift r, 1st time
@@ -478,11 +476,10 @@ void evolve_cc2_twobody(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
     // evolve all fast components, 2nd time
     for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-      evolve_split_cc2_twobody(*ci, stime+dt/2, etime, dt/2);
+      evolve_cc2_kepler(*ci, stime+dt/2, etime, dt/2);
     }
 
     clevel--;
     free_sys(c.next_cc);
   }
 }
-#endif

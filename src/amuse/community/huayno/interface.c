@@ -294,8 +294,6 @@ int set_time(double time)
  return 0;
 }
 
-
-
 int commit_particles()
 {
   init_evolve(mainsys);

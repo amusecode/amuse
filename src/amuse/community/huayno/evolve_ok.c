@@ -115,7 +115,7 @@ static void ok_split(FLOAT dt, struct forces f, struct forces *slow, struct forc
   //for (i = 0; i < f.n; i++) f.forc[i].level = clevel;
 }
 
-struct forces ok_main_forces;
+struct forces ok_main_forces = {0, NULL, NULL};
 
 void evolve_ok_init(struct sys s) {
   UINT n_forces = s.n * s.n - s.n;
@@ -137,7 +137,9 @@ void evolve_ok_init(struct sys s) {
 }
 
 void evolve_ok_stop() {
-  free(ok_main_forces.forc);
+  if (ok_main_forces.forc != NULL) {
+    free(ok_main_forces.forc);
+  }
 }
 
 static void ok_kick(struct forces f, DOUBLE dt) {

@@ -67,6 +67,7 @@ enum intopt
   CC,         // 11
   CC_KEPLER,  // 12
   OK,         // 13
+  KEPLER      // 14
 };
 
 extern FLOAT eps2;
@@ -107,6 +108,8 @@ extern unsigned long cpu_step,cl_step,cpu_count,cl_count;
 
 void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
+// declared in interface.c
+extern int inttype;
 
 // Optimal Kick header
 struct force {

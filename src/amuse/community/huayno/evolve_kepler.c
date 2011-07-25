@@ -1,5 +1,6 @@
 /*
  * The Kepler solver evolves the two-body problem, using standard Huayno sys structures.
+ * TODO add warning when using the kepler solver with softening?
  */
 
 #include <math.h>
@@ -12,6 +13,7 @@
 unsigned long cefail[MAXLEVEL],cecount[MAXLEVEL];
 
 void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
+
   clevel++;
   if (etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
   if (s.n != 2) ENDRUN("two-body solver was called with sys.n=%u\n", s.n);

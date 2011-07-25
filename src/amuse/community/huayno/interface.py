@@ -161,7 +161,8 @@ class Huayno(GravitationalDynamics):
         BRIDGE_KDK=4
         CC=11
         CC_KEPLER=12
-        OK=13 
+        OK=13
+        KEPLER=14 
 
     EVOLVE_SHARED=1
     EVOLVE_EXTRAPOLATE=5
