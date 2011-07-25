@@ -207,7 +207,7 @@ class HalogenTests(TestWithMPI):
     
     def test4(self):
         print "Testing Halogen generate_particles"
-        number_of_particles = 1000
+        number_of_particles = 100
         instance = Halogen(**default_options)
         instance.initialize_code()
         instance.parameters.alpha = 2.0
@@ -220,11 +220,14 @@ class HalogenTests(TestWithMPI):
         self.assertEquals(len(instance.particles), number_of_particles)
         self.assertAlmostEquals(instance.particles.total_mass(), 1.0 | nbody_system.mass)
         self.assertAlmostEquals(instance.particles.kinetic_energy(), 
-            0.146972646724 | nbody_system.energy)
+            #0.146972646724 | nbody_system.energy) # for number_of_particles = 1000
+            0.164458665999 | nbody_system.energy) # for number_of_particles = 100
         self.assertAlmostEquals(instance.particles.potential_energy(G = nbody_system.G), 
-            -0.302450766675 | nbody_system.energy)
+            #-0.302450766675 | nbody_system.energy) # for number_of_particles = 1000
+            -0.273350349603 | nbody_system.energy) # for number_of_particles = 100
         self.assertAlmostEquals(instance.particles.virial_radius(), 
-            1.65316162196 | nbody_system.length)
+            #1.65316162196 | nbody_system.length) # for number_of_particles = 1000
+            1.82915441932 | nbody_system.length) # for number_of_particles = 100
         
         instance.cleanup_code()
         instance.stop()
@@ -313,4 +316,35 @@ class HalogenTests(TestWithMPI):
         self.assertEquals(instance.get_number_of_particles_updated(), 0)
         instance.stop()
         self.assertEquals(instance.get_name_of_current_state(), 'END')
+    
+    def test7(self):
+        print "Testing Halogen error handling"
+        number_of_particles = 1000
+        instance = Halogen(**default_options)
+        instance.initialize_code()
+        self.assertRaises(exceptions.AmuseException, instance.commit_parameters, expected_message = 
+            "Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
+            "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
+        instance.parameters.alpha = 2.0
+        instance.parameters.beta  = 5.0
+        instance.parameters.gamma = 5.0
+        instance.parameters.number_of_particles = number_of_particles
+        instance.parameters.random_seed = 1.0
+        self.assertRaises(exceptions.AmuseException, instance.commit_parameters, expected_message = 
+            "Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
+            "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
+        instance.parameters.gamma = -0.5
+        self.assertRaises(exceptions.AmuseException, instance.commit_parameters, expected_message = 
+            "Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
+            "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
+        instance.parameters.gamma = 0.0
+        instance.parameters.beta  = 2.0
+        self.assertRaises(exceptions.AmuseException, instance.commit_parameters, expected_message = 
+            "Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
+            "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
+        instance.parameters.beta  = 5.0
+        instance.commit_parameters()
+        
+        instance.cleanup_code()
+        instance.stop()
     

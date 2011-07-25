@@ -13,6 +13,8 @@ GI *gi;
 CHAR FILENAME[STRINGSIZE + MAXLEN_PATH + 20], INPUTNAME[STRINGSIZE + MAXLEN_PATH];
 FILE *file;
 
+int commit_parameters_result;
+double input_cutoff_radius = -1;
 bool particles_generated = false;
 bool write_output = false;
 CHAR output_path[MAXLEN_PATH];      /*!< output directory of the code */
@@ -51,9 +53,11 @@ int cleanup_code(){
 }
 
 int commit_parameters(){
+    commit_parameters_result = 0;
     fprintf(stderr,"Checking parameters, calculating halo properties and initialising grid in r... \n");
     srand(randomseed);
-
+    halo->sp->rcutoff = input_cutoff_radius;
+    
     /*
     ** Check main input parameters
     */
@@ -67,14 +71,17 @@ int commit_parameters(){
         fprintf(stderr,"These numbers have to fulfill the condition (NGRIDR-1) mod (NGRIDDF-1) == 0.\n");
         usage();
 	}
-
+    
     check_main_parameters(halo);
+    if (commit_parameters_result) return commit_parameters_result;
     calculate_parameters(gi,halo);    
+    if (commit_parameters_result) return commit_parameters_result;
     initialise_all_grids(gi, bh, halo, outputgridr, outputgriddf, t0, &t1, FILENAME, INPUTNAME);
+    if (commit_parameters_result) return commit_parameters_result;
     initialise_structure(gi,halo);
     t2 = ((DOUBLE) clock())/((DOUBLE) CLOCKS_PER_SEC);
     fprintf(stderr,"Done in "OFD1" seconds.\n",t2-t1);
-    return 0;
+    return commit_parameters_result;
 }
 
 int recommit_parameters(){
@@ -324,11 +331,11 @@ int set_scale_radius(double scale_radius){
 }
 
 int get_cutoff_radius(double *cutoff_radius){
-    *cutoff_radius = halo->sp->rcutoff;
+    *cutoff_radius = input_cutoff_radius;
     return 0;
 }
 int set_cutoff_radius(double cutoff_radius){
-    halo->sp->rcutoff = cutoff_radius;
+    input_cutoff_radius = cutoff_radius;
     return 0;
 }
 

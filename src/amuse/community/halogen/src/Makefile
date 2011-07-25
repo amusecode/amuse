@@ -18,15 +18,15 @@ LIBS	= -lm
 
 # Object definition
 
-LIBOBJS = functions.o routines.o
-OBJ	= $(BASE).o $(LIBOBJS)
+LIBOBJS = functions.o amuse_routines.o
+EXEOBJS = $(BASE).o functions.o routines.o
 
 # Rules
 
 all: $(EXE) $(CODELIB)
 
-$(EXE):	$(OBJ) Makefile
-	$(CC) $(CFLAGS) $(OBJ) -o $(EXE) $(LIBS)
+$(EXE):	$(EXEOBJS) Makefile
+	$(CC) $(CFLAGS) $(EXEOBJS) -o $(EXE) $(LIBS)
 
 $(CODELIB): $(LIBOBJS) Makefile
 	ar crs $@ $(LIBOBJS)
@@ -43,3 +43,5 @@ halogen4muse.o: definitions.h functions.h routines.h
 functions.o: definitions.h functions.h routines.h
 routines.o: definitions.h functions.h routines.h
 
+amuse_routines.o: routines.c definitions.h functions.h routines.h
+	$(CC) $(CFLAGS) -DAMUSE_FLAG -c -o $@ $<

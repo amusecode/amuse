@@ -437,6 +437,10 @@ class Halogen(CommonCode):
             default_value = "halogen" | units.string
         )
     
+    def define_errorcodes(self, object):
+        object.add_errorcode(-1, 'Unspecified, other error.')
+        object.add_errorcode(-2, 'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).')
+    
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
         object.add_method("generate_particles", (), (object.ERROR_CODE,))
