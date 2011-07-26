@@ -261,9 +261,9 @@ void init_evolve(struct sys s)
     s.part[i].timestep=HUGE_VAL;
   }
   potential(s,s);
-  if (inttype == OK) {
-    evolve_ok_init(s);
-  }
+  
+  evolve_ok_stop();
+  if (inttype == OK) evolve_ok_init(s);
 }
 
 void do_evolve(struct sys s, double dt, int inttype)

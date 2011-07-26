@@ -78,7 +78,7 @@ void kick_cl(struct sys s1, struct sys s2, DOUBLE dt)
   clmsync(CLCONTEXT,0,jpos,CL_MEM_DEVICE|CL_EVENT_NOWAIT);
   clfork(CLCONTEXT,0,kick_krn,&ndr,CL_EVENT_NOWAIT);
   clmsync(CLCONTEXT,0,acc,CL_MEM_HOST|CL_EVENT_NOWAIT);
-  clwait(CLCONTEXT,0,CL_KERNEL_EVENT|CL_MEM_EVENT|CL_EVENT_RELEASE);
+  clwait(CLCONTEXT,0,CL_KERNEL_EVENT|CL_MEM_EVENT);
 
   for(i=0;i<s1.n;i++)
   {
@@ -150,7 +150,7 @@ void timestep_cl(struct sys s1, struct sys s2)
   clmsync(CLCONTEXT,0,jvel,CL_MEM_DEVICE|CL_EVENT_NOWAIT);
   clfork(CLCONTEXT,0,timestep_krn,&ndr,CL_EVENT_NOWAIT);
   clmsync(CLCONTEXT,0,timestep,CL_MEM_HOST|CL_EVENT_NOWAIT);
-  clwait(CLCONTEXT,0,CL_KERNEL_EVENT|CL_MEM_EVENT|CL_EVENT_RELEASE);
+  clwait(CLCONTEXT,0,CL_KERNEL_EVENT|CL_MEM_EVENT);
 
   for(i=0;i<s1.n;i++)
   {
@@ -213,7 +213,7 @@ void potential_cl(struct sys s1, struct sys s2)
   clmsync(CLCONTEXT,0,jpos,CL_MEM_DEVICE|CL_EVENT_NOWAIT);
   clfork(CLCONTEXT,0,potential_krn,&ndr,CL_EVENT_NOWAIT);
   clmsync(CLCONTEXT,0,pot,CL_MEM_HOST|CL_EVENT_NOWAIT);
-  clwait(CLCONTEXT,0,CL_KERNEL_EVENT|CL_MEM_EVENT|CL_EVENT_RELEASE);
+  clwait(CLCONTEXT,0,CL_KERNEL_EVENT|CL_MEM_EVENT);
 
   for(i=0;i<s1.n;i++)
   {

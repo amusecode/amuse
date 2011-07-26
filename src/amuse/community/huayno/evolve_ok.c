@@ -119,6 +119,7 @@ struct forces ok_main_forces = {0, NULL, NULL};
 
 void evolve_ok_init(struct sys s) {
   UINT n_forces = s.n * s.n - s.n;
+  if (ok_main_forces.forc != NULL) ENDRUN("OK (re)allocation error");  
   ok_main_forces.forc = (struct force *) malloc(n_forces * sizeof(struct force));
   ok_main_forces.last = &(ok_main_forces.forc[n_forces - 1]);
   ok_main_forces.n = n_forces;

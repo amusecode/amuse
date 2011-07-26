@@ -4,14 +4,6 @@ from amuse.community.interface.gd import GravitationalDynamics
 
 class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
     include_headers = ['worker_code.h']
-
-    EVOLVE_SHARED=1
-    EVOLVE_EXTRAPOLATE=5
-    EVOLVE_PASS_KDK=2
-    EVOLVE_PASS_DKD=7
-    EVOLVE_HOLD_KDK=3
-    EVOLVE_HOLD_DKD=8
-    EVOLVE_BRIDGE_KDK=4
     
     MODE_OPENCL='opencl'
     MODE_OPENMP='openmp'
@@ -158,20 +150,13 @@ class Huayno(GravitationalDynamics):
         PASS_DKD=7
         HOLD_KDK=3
         HOLD_DKD=8
+        PPASS_DKD=9
         BRIDGE_KDK=4
         CC=11
         CC_KEPLER=12
         OK=13
         KEPLER=14
         SHARED4=15
-
-    EVOLVE_SHARED=1
-    EVOLVE_EXTRAPOLATE=5
-    EVOLVE_PASS_KDK=2
-    EVOLVE_PASS_DKD=7
-    EVOLVE_HOLD_KDK=3
-    EVOLVE_HOLD_DKD=8
-    EVOLVE_BRIDGE_KDK=4
 
     def __init__(self, convert_nbody = None, **options):
         legacy_interface = HuaynoInterface(**options)

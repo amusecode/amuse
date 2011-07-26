@@ -3,7 +3,6 @@
  * TODO add warning when using the kepler solver with softening?
  */
 
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "evolve.h"
@@ -24,8 +23,8 @@ void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
   DOUBLE m1 = s.part->mass;
   DOUBLE m2 = s.last->mass;
   DOUBLE mtot = s.part->mass + s.last->mass;
-  DOUBLE f1 = m1 / mtot;
-  DOUBLE f2 = m2 / mtot;
+  DOUBLE f1 = m2 / mtot;
+  DOUBLE f2 = m1 / mtot;
   dpos0[0] = s.part->pos[0] - s.last->pos[0];
   dpos0[1] = s.part->pos[1] - s.last->pos[1];
   dpos0[2] = s.part->pos[2] - s.last->pos[2];

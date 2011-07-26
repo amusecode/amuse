@@ -15,7 +15,7 @@ INCLUDE =
 
 # set OpenCL and STDCL libraries
 OPENCL = /home/inti/libraries/cuda
-STDCL = /home/inti/libraries/coprthr
+STDCL = /home/inti/libraries/coprthr_old
 
 #---------------------------------------------
 

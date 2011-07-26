@@ -1,6 +1,6 @@
 #define RVTIMESTEP
 #define RATIMESTEP
-#define RVRARATIO   1.
+#define RVRARATIO   0.25
 
 #define FLOAT double
 #define FLOAT4 double4
