@@ -7,20 +7,7 @@ from amuse.support import exceptions
 
 import warnings
 
-class ParameterDocumentation(object):
-
-    def __get__(self, instance, owner):
-        output = "Parameters: \n"
-
-        for parameter_definition in instance._definitions:
-            output += parameter_definition.name + "\n\n"
-            output += "    " + parameter_definition.description
-            output += " (default value:" + str(instance.get_default_value_for(parameter_definition.name)) + ")\n\n"
-
-        return output
-
 class Parameters(object):
-    __doc__ = ParameterDocumentation()
     __name__ = 'Parameters'
     
     def __init__(self, definitions, instance):
@@ -38,6 +25,13 @@ class Parameters(object):
         if not name in self._mapping_from_name_to_definition:
             raise exceptions.CoreException("tried to get unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
             
+        if hasattr(self._instance(), "get_name_of_current_state"):
+            current_state = self._instance().get_name_of_current_state()
+        else:
+            current_state = None
+        if current_state == "UNINITIALIZED" and hasattr(self._instance(), "invoke_state_change"):
+            self._instance().invoke_state_change()
+        
         return self.get_parameter(name).get_value()
 
     def __setattr__(self, name, value):
@@ -136,10 +130,68 @@ class Parameters(object):
         for x in parameters:
             x.set_default_value()
     
-    
-class ParametersWithUnitsConverted(object):
 
-    __doc__ = ParameterDocumentation()
+def new_parameters_instance_with_docs(definitions, instance):
+    
+    class _ParametersMetaclass(type):
+        def _get_doc(self):
+            output = "Parameters: \n"
+            for parameter_definition in definitions:
+                output += parameter_definition.name + "\n\n"
+                output += "    " + parameter_definition.description
+                output += " (default value:" + str(parameter_definition.default_value) + ")\n\n"
+            return output
+        __doc__ = property(_get_doc)
+    
+    class ParametersWithDocs(Parameters):
+        __metaclass__ = _ParametersMetaclass
+        def _get_doc(self):
+            output = "Parameters: \n"
+            for parameter_definition in definitions:
+                output += parameter_definition.name + "\n\n"
+                output += "    " + parameter_definition.description
+                output += " (default value:" + str(self.get_default_value_for(parameter_definition.name)) + ")\n\n"
+            return output
+        __doc__ = property(_get_doc)
+    
+    return ParametersWithDocs(definitions, instance)
+
+
+def new_parameters_with_units_converted_instance_with_docs(original, converter):
+    
+    class _ParametersMetaclass(type):
+        def _convert_from_target_to_source_if_needed(value):
+            if isinstance(value, bool) or isinstance(value, values.NonNumericQuantity):
+                return value
+            else:
+                return converter.from_target_to_source(value)
+        def _get_doc(self):
+            output = "Parameters: \n"
+            for parameter_definition in original._definitions:
+                value = parameter_definition.default_value
+                if not isinstance(value, bool) and not isinstance(value, values.NonNumericQuantity):
+                    value = converter.from_target_to_source(value)
+                output += parameter_definition.name + "\n\n"
+                output += "    " + parameter_definition.description
+                output += " (default value:" + str(value) + ")\n\n"
+            return output
+        __doc__ = property(_get_doc)
+    
+    class ParametersWithDocs(ParametersWithUnitsConverted):
+        __metaclass__ = _ParametersMetaclass
+        def _get_doc(self):
+            output = "Parameters: \n"
+            for parameter_definition in original._definitions:
+                output += parameter_definition.name + "\n\n"
+                output += "    " + parameter_definition.description
+                output += " (default value:" + str(self.get_default_value_for(parameter_definition.name)) + ")\n\n"
+            return output
+        __doc__ = property(_get_doc)
+    
+    return ParametersWithDocs(original, converter)
+
+
+class ParametersWithUnitsConverted(object):
 
     def __init__(self, original, converter):
         object.__setattr__(self, '_original', original)
@@ -147,11 +199,7 @@ class ParametersWithUnitsConverted(object):
 
 
     def __getattr__(self, name):
-        original_value = getattr(self._original, name)
-        if isinstance(original_value,bool) or isinstance(original_value,values.NonNumericQuantity):
-            return original_value
-        else:
-            return self._converter.from_target_to_source(original_value)
+        return self.convert_from_target_to_source_if_needed(getattr(self._original, name))
 
     def __setattr__(self, name, value):
         if not name in self._original._mapping_from_name_to_definition:
@@ -172,8 +220,14 @@ class ParametersWithUnitsConverted(object):
     def __dir__(self):
         return dir(self._original)
 
+    def convert_from_target_to_source_if_needed(self, value):
+        if isinstance(value, bool) or isinstance(value, values.NonNumericQuantity):
+            return value
+        else:
+            return self._converter.from_target_to_source(value)
+        
     def get_default_value_for(self, name):
-        return self._converter.from_target_to_source(self._original.get_default_value_for(name))
+        return self.convert_from_target_to_source_if_needed(self._original.get_default_value_for(name))
 
     def __str__(self):
         output = ""

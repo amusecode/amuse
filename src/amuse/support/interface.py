@@ -92,7 +92,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
         elif isinstance(attribute, CodeMethodWrapper):
             result = CodeMethodWrapper(attribute, self)
         elif isinstance(attribute, parameters.Parameters):
-            result = parameters.ParametersWithUnitsConverted(attribute, self.converter)
+            result = parameters.new_parameters_with_units_converted_instance_with_docs(attribute, self.converter)
         elif hasattr(attribute, '__iter__'):
             result = list(self.convert_and_iterate(attribute))
         else:
@@ -632,7 +632,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
 
     def get_attribute(self, name, value):
         if not self.parameters:
-            self.parameters =  parameters.Parameters(self.definitions, self.interface)
+            self.parameters =  parameters.new_parameters_instance_with_docs(self.definitions, self.interface)
        
         return self.parameters
 

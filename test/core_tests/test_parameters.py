@@ -390,8 +390,7 @@ class TestParameters(amusetest.TestCase):
                 self.x = value
 
         o = TestModule()
-        x = parameters.Parameters([parameter_definition], o)
-
+        x = parameters.new_parameters_instance_with_docs([parameter_definition], o)
 
         self.assertTrue("test_name" in x.__doc__)
         self.assertTrue("a test parameter" in x.__doc__)
@@ -399,7 +398,7 @@ class TestParameters(amusetest.TestCase):
         self.assertTrue("11.0 length" in x.__doc__)
 
         convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
-        y = parameters.ParametersWithUnitsConverted(
+        y = parameters.new_parameters_with_units_converted_instance_with_docs(
                 x,
                 convert_nbody.as_converter_from_si_to_nbody()
             )
@@ -408,6 +407,44 @@ class TestParameters(amusetest.TestCase):
         self.assertTrue("a test parameter" in y.__doc__)
         self.assertTrue("default" in y.__doc__)
         self.assertTrue("22.0 m" in y.__doc__)
+
+    def test3b(self):
+        # Same test as test3, but testing on the class, not instance
+        # This makes sure the python 'help' functionality works on parameters
+        parameter_definition = parameters.ModuleMethodParameterDefinition(
+            "get_test",
+            None,
+            "test_name",
+            "a test parameter",
+            11.0 | nbody_system.length
+        )
+
+        class TestModule(object):
+            x = 123 | units.m
+
+            def get_test(self):
+                return self.x
+            def set_test(self, value):
+                self.x = value
+
+        o = TestModule()
+        x = parameters.new_parameters_instance_with_docs([parameter_definition], o)
+
+        self.assertTrue("test_name" in x.__class__.__doc__)
+        self.assertTrue("a test parameter" in x.__class__.__doc__)
+        self.assertTrue("default" in x.__class__.__doc__)
+        self.assertTrue("11.0 length" in x.__class__.__doc__)
+
+        convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
+        y = parameters.new_parameters_with_units_converted_instance_with_docs(
+                x,
+                convert_nbody.as_converter_from_si_to_nbody()
+            )
+
+        self.assertTrue("test_name" in y.__class__.__doc__)
+        self.assertTrue("a test parameter" in y.__class__.__doc__)
+        self.assertTrue("default" in y.__class__.__doc__)
+        self.assertTrue("22.0 m" in y.__class__.__doc__)
 
     def test4(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(

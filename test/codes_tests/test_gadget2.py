@@ -692,10 +692,10 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES, 
             **few_particles_default_options)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
-        self.assertEqual(instance.parameters.periodic_boundaries_flag, False)
-        # 'False' is default, will be changed for periodic runs in initialize_code():
-        instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length # implicitly calls initialize_code()...
+        # 'False' is default, but getting parameters implicitly calls initialize_code()...
         self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length
         self.assertAlmostEqual(instance.parameters.periodic_box_size, 2.0 | units.kpc, places=6)
         instance.parameters.min_size_timestep = 1.0 | generic_unit_system.time
         
@@ -718,9 +718,7 @@ class TestGadget2(TestWithMPI):
     def test16(self):
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES,
             **few_particles_default_options)
-        self.assertEqual(instance.parameters.periodic_boundaries_flag, False) # 'False' is default
-        instance.initialize_code() # initialize_code() will set periodic_boundaries_flag correctly:
-        self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, True) # Automatically set correctly by initialize_code()
         instance.parameters.periodic_boundaries_flag = False # but we are stubborn...
         self.assertEqual(instance.parameters.periodic_boundaries_flag, False)
         self.assertRaises(AmuseException, instance.commit_parameters, expected_message = "Error when "
