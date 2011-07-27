@@ -24,6 +24,7 @@ from amuse.support.io import write_set_to_file, read_set_from_file, get_options_
 from amuse.ext.plummer import new_plummer_sphere
 from amuse.ext.kingmodel import new_king_model
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution, new_spherical_particle_distribution
+from amuse.community.halogen.interface import Halogen, HalogenInterface, new_halogen_model
 from amuse.ext.salpeter import new_salpeter_mass_distribution, new_salpeter_mass_distribution_nbody
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
 

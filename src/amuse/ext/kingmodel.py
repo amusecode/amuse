@@ -471,23 +471,23 @@ class MakeKingModel(object):
         return result
     
 
-"""
-Create a King model with the given number of particles and King dimensionless 
-depth W0. Returns a set of particles with equal mass and positions and velocities 
-distributed to fit a King distribution model. The model is centered around the 
-origin. Positions and velocities are optionally scaled such that the kinetic and 
-potential energies are 0.25 and -0.5 in nbody-units, respectively.
-
-:argument number_of_particles: Number of particles to include in the King model
-:argument W0: King dimensionless depth, allowed range: < 0, 16 ]
-:argument convert_nbody:  When given will convert the resulting set to SI units
-:argument do_scale: scale the result to exact nbody units (M=1, K=0.25, U=-0.5)
-:argument beta:  Steve's rescaling parameter (< 1) [0]. Models with b > 0 are just 
-:argument seed:  Seed for the random number generator
-    rescaled King models; models with b < 0 approach isothermal spheres as 
-    b --> -infinity.
-:argument verbose: Be verbose (output is suppressed by default) [False]
-"""
 def new_king_model(number_of_particles, W0, *list_arguments, **keyword_arguments):
+    """
+    Create a King model with the given number of particles and King dimensionless 
+    depth W0. Returns a set of particles with equal mass and positions and velocities 
+    distributed to fit a King distribution model. The model is centered around the 
+    origin. Positions and velocities are optionally scaled such that the kinetic and 
+    potential energies are 0.25 and -0.5 in nbody-units, respectively.
+
+    :argument number_of_particles: Number of particles to include in the King model
+    :argument W0: King dimensionless depth, allowed range: < 0, 16 ]
+    :argument convert_nbody:  When given will convert the resulting set to SI units
+    :argument do_scale: scale the result to exact nbody units (M=1, K=0.25, U=-0.5)
+    :argument beta:  Steve's rescaling parameter (< 1) [0]. Models with b > 0 are just 
+    :argument seed:  Seed for the random number generator
+        rescaled King models; models with b < 0 approach isothermal spheres as 
+        b --> -infinity.
+    :argument verbose: Be verbose (output is suppressed by default) [False]
+    """
     uc = MakeKingModel(number_of_particles, W0, *list_arguments, **keyword_arguments)
     return uc.result
