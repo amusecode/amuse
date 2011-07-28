@@ -71,7 +71,8 @@ def new_solar_system_for_mercury():
     Create initial conditions for the symplectic integrator Mercury, describing 
     the solar system. Returns a tuple consisting of two particle sets. The first 
     set contains the central particle (sun) and the second contains the planets 
-    and Pluto (the 'orbiters').
+    and Pluto (the 'orbiters'). The positions and velocities are in heliocentric 
+    coordinates.
     
     Defined attributes sun: 
     name, mass, radius, j2, j4, j6, Lx, Ly, Lz
@@ -93,7 +94,8 @@ def new_solar_system_for_mercury():
 def new_solar_system():
     """
     Create initial conditions describing the solar system. Returns a single 
-    particle set containing the sun, planets and Pluto.
+    particle set containing the sun, planets and Pluto. The model is centered at 
+    the origin (center-of-mass(-velocity) coordinates).
     
     Defined attributes: 
     name, mass, radius, x, y, z, vx, vy, vz
@@ -107,4 +109,5 @@ def new_solar_system():
     particles = Particles()
     particles.add_particle(sun)
     particles.add_particles(planets)
+    particles.move_to_center()
     return particles
