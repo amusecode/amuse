@@ -24,6 +24,7 @@ class TestMPIInterface(TestWithMPI):
     def test0(self):
         instance = ph4Interface()
         instance.initialize_code()
+        instance.cleanup_code()
         instance.stop()
         
     def test1(self):
@@ -53,6 +54,7 @@ class TestMPIInterface(TestWithMPI):
             value, error = instance.get_eps2()
             self.assertEquals(error, 0)
             self.assertEquals(x, value)
+        instance.cleanup_code()
         instance.stop()
         
     
@@ -98,8 +100,9 @@ class TestMPIInterface(TestWithMPI):
         retrieved_state = instance.get_state(1)
         self.assertEquals(1.0,  retrieved_state['mass'])
         retrieved_state = instance.get_state(3999)
-        self.assertEquals(3999.0,  retrieved_state['mass'])
         instance.cleanup_code()
+        instance.stop()
+        self.assertEquals(3999.0,  retrieved_state['mass'])
         
     def test6(self):
         instance = ph4Interface()#(debugger="xterm")
@@ -128,12 +131,12 @@ class TestMPIInterface(TestWithMPI):
         Ep=instance.get_potential_energy()['potential_energy']
         Ek=instance.get_kinetic_energy()['kinetic_energy']
     
+        instance.cleanup_code()
+        instance.stop()
+    
         self.assertEqual( n, 2)
         self.assertEqual( Ek, 0.)
         self.assertEqual( Ep, -0.5)    
-    
-        instance.cleanup_code()
-        instance.stop()
 
     def test7(self):
         instance = ph4Interface()
@@ -149,6 +152,9 @@ class TestMPIInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
+    
+        instance.cleanup_code()
+        instance.stop()
         
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 10.0]) / 2.0)
         
@@ -172,6 +178,9 @@ class TestMPIInterface(TestWithMPI):
         
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
+    
+        instance.cleanup_code()
+        instance.stop()
         
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0)
         
@@ -216,6 +225,10 @@ class TestPH4(TestWithMPI):
         return stars
         
     
+    def test0(self):
+        instance = ph4()
+        instance.stop()
+        
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         instance = ph4(convert_nbody)#, redirection="none")#, debugger="xterm")
@@ -321,6 +334,7 @@ class TestPH4(TestWithMPI):
         self.assertEquals(instance.get_mass(1), 17.0| units.kg) 
         self.assertEquals(instance.get_mass(2), 33.0| units.kg)  
         
+        instance.cleanup_code()
         instance.stop()
     
     def test4(self):
@@ -337,9 +351,10 @@ class TestPH4(TestWithMPI):
         instance.commit_particles()
         copyof = instance.particles.copy()
         
-        self.assertEquals(2 | nbody_system.mass, copyof[1].mass)  
-        
+        instance.cleanup_code()
         instance.stop()
+        
+        self.assertEquals(2 | nbody_system.mass, copyof[1].mass)  
         
         
     def test5(self):
@@ -381,9 +396,10 @@ class TestPH4(TestWithMPI):
         
         binary_energy2 = instance.get_binary_energy()
         
-        self.assertEquals(binary_energy2.value_in(nbody_system.energy), binary_energy1)
-        
+        instance.cleanup_code()
         instance.stop()
+        
+        self.assertEquals(binary_energy2.value_in(nbody_system.energy), binary_energy1)
         
     def xtest5(self):
         instance = ph4()
@@ -511,11 +527,12 @@ class TestPH4(TestWithMPI):
         
         e1 = instance.kinetic_energy + instance.potential_energy
         
+        instance.cleanup_code()
+        instance.stop()
+        
         delta_e = e1 - e0
         
         self.assertTrue(e1 != e0)
-        
-        instance.stop()
 
     def xtest11(self):
         particles = core.Particles(2)
@@ -645,8 +662,11 @@ class TestPH4(TestWithMPI):
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
         
-        mass, error = instance.legacy_interface.get_mass(1)
-        self.assertEquals(error,0)
-        self.assertEquals(mass,1.0)
+        mass = instance.particles[0].mass
         
+        instance.cleanup_code()
+        instance.stop()
         
+        self.assertEquals(mass, 1.0 | nbody_system.mass)
+    
+

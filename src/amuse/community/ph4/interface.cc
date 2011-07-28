@@ -161,12 +161,15 @@ int cleanup_code()
 {
     // Clean up at the end of the calculation.
 
-    jd->cleanup();
-    id->cleanup();
-    s->cleanup();
+    if (jd != NULL)
+        jd->cleanup();
+    if (id != NULL)
+        id->cleanup();
+    if (s != NULL)
+        s->cleanup();
     return 0;
 }
-
+
 // Setters and getters for individual particles.
 
 int new_particle(int * index_of_the_particle,
