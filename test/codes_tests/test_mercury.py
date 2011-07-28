@@ -8,7 +8,7 @@ from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.ext import plummer
-from amuse.ext.solarsystem import Solarsystem
+from amuse.ext.solarsystem import new_solar_system_for_mercury
 
 DUMMYID=0
 
@@ -195,7 +195,7 @@ class TestMercury(TestWithMPI):
     def sun_and_earth(self):
         orbiter = core.Particles(1)
         orbiter.mass = 5.97e24 | units.kg
-        orbiter.radius = 1.0|units.g/units.cm**3
+        orbiter.density = 1.0|units.g/units.cm**3
         orbiter.position = [1.0,0.0,0.0] | units.AU
         orbiter.velocity = [0.0, 2.0*3.1415926535*1.0/365, 0.0] | units.AUd
         orbiter.angularmomentum = [1.0,0,0] | units.MSun * units.AU**2/units.day
@@ -225,7 +225,7 @@ class TestMercury(TestWithMPI):
         self.assertAlmostEqual(mercury.central_particle.mass, 1.0 |units.MSun, 3)
         self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
         self.assertEquals(mercury.orbiters.position, [[1,0,0]] | units.AU)
-        self.assertEquals(mercury.orbiters.radius, 1.0|units.g/units.cm**3 )
+        self.assertEquals(mercury.orbiters.density, 1.0|units.g/units.cm**3 )
         self.assertEquals(mercury.orbiters.angularmomentum, [[1.0, 0.0, 0.0]] | units.MSun*units.AU**2/units.day)
 
         mercury.evolve_model(365.24 | units.day)
@@ -236,7 +236,7 @@ class TestMercury(TestWithMPI):
         mercury.stop()
 
     def test1(self):
-        centre, orbiters = Solarsystem.new_solarsystem()
+        centre, orbiters = new_solar_system_for_mercury()
 
         mercury = MercuryWayWard(redirection='none')
         mercury.initialize_code()

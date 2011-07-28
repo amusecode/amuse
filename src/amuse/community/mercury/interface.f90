@@ -156,14 +156,14 @@ function delete_particle(id) result(ret)
   ret=remove_particle(id)
 end function  
 
-function set_radius(id, density) result(ret)
+function set_density(id, density) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: density
   ret=set_particle_state(id, dens=density)
 end function
 
-function get_radius(id, density) result(ret)
+function get_density(id, density) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: density

@@ -1,6 +1,6 @@
 import numpy
 from amuse.community.mercury.interface import MercuryWayWard
-from amuse.ext.solarsystem import Solarsystem
+from amuse.ext.solarsystem import new_solar_system_for_mercury
 from amuse.support.units import units
 from amuse.plot import *
 
@@ -11,7 +11,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 def planetplot():
-    sun, planets = Solarsystem.new_solarsystem()
+    sun, planets = new_solar_system_for_mercury()
     timerange = units.day(numpy.arange(0, 120 * 365.25, 12))
 
     instance = MercuryWayWard()

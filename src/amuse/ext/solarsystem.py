@@ -1,12 +1,8 @@
-from amuse.support.data import core
-from amuse.support.units import nbody_system
+import numpy
+from amuse.support.data.core import Particle, Particles
 from amuse.support.units import units
-import numpy as np
 
-#mercury orbiter:
-#mass, radius, x, y, z, vx, vy, vz, Lx, Ly, Lz, celimit
-
-solsysdat= \
+_solsysdat= \
  [['MERCURY',1.66013679527193009E-07,20.,5.43, \
  -3.83966017419175965E-01, -1.76865300855700736E-01, 2.07959213998758705E-02, \
   5.96286238644834141E-03, -2.43281292146216750E-02,-2.53463209848734695E-03, \
@@ -44,33 +40,71 @@ solsysdat= \
   2.97220056963797431E-03, -1.69820233395912967E-03, -6.76798264809371094E-04, \
   0., 0., 0.]]
 
-class Solarsystem(object):
-    def __init__(self):
-        pass
+def _planets_only(define_mercury_attributes = False):
+    data = numpy.array([tuple(entry) for entry in _solsysdat], dtype=[('name','S10'), 
+        ('mass','<f8'), ('celimit','<f8'), ('density','<f8'), 
+        ('x','<f8'), ('y','<f8'), ('z','<f8'), 
+        ('vx','<f8'), ('vy','<f8'), ('vz','<f8'), 
+        ('Lx','<f8'), ('Ly','<f8'), ('Lz','<f8')])
+    
+    planets = Particles(len(_solsysdat))
+    planets.name = units.string.new_quantity(data['name'])
+    planets.mass = units.MSun.new_quantity(data['mass'])
+    density = (units.g/units.cm**3).new_quantity(data['density'])
+    planets.radius = ((planets.mass/density) ** (1/3.0)).as_quantity_in(units.km)
+    for attribute in ['x', 'y', 'z']:
+        setattr(planets, attribute, units.AU.new_quantity(data[attribute]))
+    for attribute in ['vx', 'vy', 'vz']:
+        setattr(planets, attribute, units.AUd.new_quantity(data[attribute]).as_quantity_in(units.km / units.s))
+    
+    if define_mercury_attributes:
+        planets.density = density
+        angular_momentum_unit = units.MSun * units.AU**2/units.day
+        for attribute in ['Lx', 'Ly', 'Lz']:
+            setattr(planets, attribute, angular_momentum_unit.new_quantity(data[attribute]).as_quantity_in(units.J * units.s))
+        planets.celimit = units.none.new_quantity(data['celimit'])
+    
+    return planets
 
-    @classmethod
-    def new_solarsystem(self):
-        planets = core.Particles(9)
-        for i, d in enumerate(solsysdat):
-            planets[i].mass = d[1] | units.MSun
-            planets[i].radius = d[3] | units.g/units.cm**3#1e-12 | units.AU #dummy
-            planets[i].x = d[4] | units.AU
-            planets[i].y = d[5] | units.AU
-            planets[i].z = d[6] | units.AU
-            planets[i].vx = d[7] | units.AUd
-            planets[i].vy = d[8] | units.AUd
-            planets[i].vz = d[9] | units.AUd
-            planets[i].Lx = d[10] | units.MSun * units.AU**2/units.day
-            planets[i].Ly = d[11] | units.MSun * units.AU**2/units.day
-            planets[i].Lz = d[12] | units.MSun * units.AU**2/units.day
-            planets[i].celimit = d[2] | units.none
+def new_solar_system_for_mercury():
+    """
+    Create initial conditions for the symplectic integrator Mercury, describing 
+    the solar system. Returns a tuple consisting of two particle sets. The first 
+    set contains the central particle (sun) and the second contains the planets 
+    and Pluto (the 'orbiters').
+    
+    Defined attributes sun: 
+    name, mass, radius, j2, j4, j6, Lx, Ly, Lz
+    
+    Defined attributes orbiters: 
+    name, mass, radius, density, x, y, z, vx, vy, vz, Lx, Ly, Lz, celimit
+    """
+    planets = _planets_only(define_mercury_attributes = True)
+    centre = Particles(1)
+    centre.name = 'SUN' | units.string
+    centre.mass = 1.0 | units.MSun
+    centre.radius = 0.0000001 | units.AU
+    centre.j2 = .0001|units.AU**2
+    centre.j4 = .0|units.AU**4
+    centre.j6 = .0|units.AU**6
+    centre.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
+    return centre, planets
 
-        centre = core.Particles(1)
-        centre.mass = 1.0 | units.MSun
-        centre.radius = 0.0000001 | units.AU
-        centre.j2 = .0001|units.AU**2
-        centre.j4 = .0|units.AU**4
-        centre.j6 = .0|units.AU**6
-        centre.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
-
-        return centre, planets
+def new_solar_system():
+    """
+    Create initial conditions describing the solar system. Returns a single 
+    particle set containing the sun, planets and Pluto.
+    
+    Defined attributes: 
+    name, mass, radius, x, y, z, vx, vy, vz
+    """
+    sun = Particle()
+    sun.name = 'SUN' | units.string
+    sun.mass = 1.0 | units.MSun
+    sun.radius = 1.0 | units.RSun
+    planets = _planets_only()
+    
+    particles = Particles()
+    particles.add_particle(sun)
+    particles.add_particles(planets)
+    return particles

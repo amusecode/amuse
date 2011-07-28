@@ -92,7 +92,7 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.OUT)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
+        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
             function.addParameter(x, dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
@@ -112,7 +112,7 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
+        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -122,7 +122,7 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
+        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -220,20 +220,20 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         return function
 
     @legacy_function    
-    def get_radius():
+    def get_density():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        function.addParameter('radius', dtype='d', direction=function.OUT)
+        function.addParameter('density', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
 
     @legacy_function    
-    def set_radius():
+    def set_density():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        function.addParameter('radius', dtype='d', direction=function.IN)
+        function.addParameter('density', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
 
@@ -306,24 +306,6 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('celimit', dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function
-
-    @legacy_function    
-    def get_central_radius():
-        function = LegacyFunctionSpecification()   
-        function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.IN)
-        function.addParameter('radius', dtype='d', direction=function.OUT)
-        function.result_type = 'i'
-        return function
-
-    @legacy_function    
-    def set_central_radius():
-        function = LegacyFunctionSpecification()   
-        function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.IN)
-        function.addParameter('radius', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
 
@@ -505,8 +487,8 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_getter('orbiters', 'get_orbiter_state') 
         object.add_setter('orbiters', 'set_mass')
         object.add_getter('orbiters', 'get_mass')
-        object.add_setter('orbiters', 'set_radius')
-        object.add_getter('orbiters', 'get_radius')
+        object.add_setter('orbiters', 'set_density')
+        object.add_getter('orbiters', 'get_density')
         object.add_setter('orbiters', 'set_position')
         object.add_getter('orbiters', 'get_position')
         object.add_setter('orbiters', 'set_velocity')
@@ -814,7 +796,7 @@ class MercuryWayWard(GravitationalDynamics):
         )
 
         object.add_method(
-            'set_radius',
+            'set_density',
             (
                 object.INDEX,
                 units.g/units.cm**3
@@ -824,7 +806,7 @@ class MercuryWayWard(GravitationalDynamics):
             )
         )    
         object.add_method(
-            'get_radius',
+            'get_density',
             (
                 object.INDEX,
             ),

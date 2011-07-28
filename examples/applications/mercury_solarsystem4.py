@@ -1,7 +1,7 @@
 import numpy
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.community.sse.interface import SSE
-from amuse.ext.solarsystem import Solarsystem
+from amuse.ext.solarsystem import new_solar_system_for_mercury
 from amuse.support.units import units
 from amuse.support.data.values import VectorQuantity
 
@@ -52,7 +52,7 @@ def setup_codes(sun, planets):
 def testsse():
     sse = SSEWithMassEvolve()
     sse.commit_parameters()
-    sun, planets = Solarsystem.new_solarsystem()
+    sun, planets = new_solar_system_for_mercury()
     sse.particles.add_particles(sun)
     sse.commit_particles()
     channel = sse.particles.new_channel_to(sun)

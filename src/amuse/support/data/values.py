@@ -668,6 +668,16 @@ class VectorQuantity(Quantity):
     def std(self, axis=None, dtype=None, out=None, ddof=0):
         return new_quantity(self.number.std(axis, dtype, out, ddof), self.unit)
 
+    def cross(self, other, axisa=-1, axisb=-1, axisc=-1, axis=None):
+        """
+        Return the cross product of this vector quantity with the supplied vector (quantity).
+        """
+        other = to_quantity(other)
+        return new_quantity(
+            numpy.cross(self.number, other.number, axisa=axisa, axisb=axisb, axisc=axisc, axis=axis), 
+            (self.unit * other.unit).to_simple_form()
+        )
+
 
     def tanh(self, out = None):
         if not self.unit.is_none():

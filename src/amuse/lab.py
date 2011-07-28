@@ -21,6 +21,7 @@ from amuse.support.data.console import set_printing_strategy, get_current_printi
 
 from amuse.support.io import write_set_to_file, read_set_from_file, get_options_for_format
 
+from amuse.ext.solarsystem import new_solar_system_for_mercury, new_solar_system
 from amuse.ext.plummer import new_plummer_sphere
 from amuse.ext.kingmodel import new_king_model
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution, new_spherical_particle_distribution
