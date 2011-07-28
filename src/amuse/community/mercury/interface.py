@@ -4,8 +4,20 @@ from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
+    """
+    Mercury N-body integrator package, version 6.2.
+    Mercury is a general-purpose N-body integration package for problems in 
+    celestial mechanics. The standard symplectic (MVS) algorithm is described in 
+    Widsom & Holman (1991). The hybrid symplectic algorithm is described 
+    in Chambers (1999).
+    
+    Relevant references:
+        .. [#] Chambers J. E., 1999, MNRAS, 304, 793
+        .. [#] Widsom J. & Holman M., 1991, AJ, 102, 1528
+    """
     def __init__(self, **args):
         CodeInterface.__init__(self, name_of_the_worker = 'mercury_worker',**args)
+        LiteratureReferencesMixIn.__init__(self)
 
     @legacy_function
     def initialize_code():
