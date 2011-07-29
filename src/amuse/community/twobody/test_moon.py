@@ -28,7 +28,7 @@ if __name__=='__main__':
     pos_moon=pos_moon-cmpos
     vel_moon=vel_moon-cmvel
 
-    nb=twobody.twobody()
+    nb=twobody.TwoBody()
     
     earth,err=nb.new_particle(mass_earth.value_in(kg),radius_earth.value_in(m),  
       pos_earth[0].value_in(m),pos_earth[1].value_in(m),pos_earth[2].value_in(m), 
