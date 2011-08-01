@@ -508,10 +508,9 @@ class TestPH4(TestWithMPI):
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
-        instance.set_eta(0.01)
+        instance.parameters.timestep_parameter = 0.01
         
         stars = new_plummer_sphere(100)
-        stars.radius = 0 | nbody_system.length
         
         instance.particles.add_particles(stars)
         channel = stars.new_channel_to(instance.particles)
@@ -668,5 +667,63 @@ class TestPH4(TestWithMPI):
         instance.stop()
         
         self.assertEquals(mass, 1.0 | nbody_system.mass)
+    
+    def test16(self):
+        print "Testing ph4 states"
+        stars = new_plummer_sphere(100)
+        black_hole = core.Particle()
+        black_hole.mass = 1.0 | nbody_system.mass
+        black_hole.radius =  0.0 | nbody_system.length
+        black_hole.position = [0.0, 0.0, 0.0] | nbody_system.length
+        black_hole.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
+        
+        print "First do everything manually:"
+        instance = ph4()
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.parameters.timestep_parameter = 0.01
+        instance.commit_parameters()
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.particles.remove_particle(stars[0])
+        instance.particles.add_particle(black_hole)
+        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        instance.recommit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.evolve_model(0.001 | nbody_system.time)
+        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        instance.synchronize_model()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.cleanup_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        instance.stop()
+
+        print "initialize_code(), commit_parameters(), (re)commit_particles(), " \
+            "synchronize_model(), and cleanup_code() should be called " \
+            "automatically before editing parameters, new_particle(), get_xx(), and stop():"
+        instance = ph4()
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.parameters.timestep_parameter = 0.01
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.particles.add_particles(stars)
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.particles.remove_particle(stars[0])
+        instance.particles.add_particle(black_hole)
+        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.evolve_model(0.001 | nbody_system.time)
+        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.stop()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
     
 

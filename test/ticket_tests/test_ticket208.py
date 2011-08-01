@@ -63,6 +63,9 @@ class TestsForTicket208(amusetest.TestCase):
         self.assertAlmostRelativeEquals(instance.particles.mass.as_quantity_in(mass_unit), [1,2,4,5,7,8,9,10,20] | mass_unit)
         self.assertAlmostRelativeEquals(instance.particles.x.as_quantity_in(length_unit), [1,2,4,5,7,8,9,10,22] | length_unit)
         
+        instance.cleanup_code()
+        instance.stop()
+        
     def test1(self):
         
         instance = Hermite()
