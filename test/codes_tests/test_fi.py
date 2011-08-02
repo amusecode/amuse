@@ -966,4 +966,5 @@ class TestFi(TestWithMPI):
         instance.particles.add_particles(particles)
         self.assertEquals(len(instance.particles[0:2]), 2)
         self.assertTrue(str(instance.particles[0:2]).find('key') > 0)
+        instance.stop()
         
