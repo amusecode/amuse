@@ -77,6 +77,7 @@ if __name__ in ("__main__","__plot__"):
             
     L=50
     rho=make_map(sph,N=200,L=L)
+    sph.stop()
     pyplot.figure(figsize=(8,8))
     pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)),
         extent=[-L/2,L/2,-L/2,L/2],vmin=10,vmax=15)    

@@ -134,6 +134,7 @@ if __name__ in ('__main__', '__plot__'):
       subplot.set_title(t)
       if i==7:
         subplot.set_xlabel('parsec')
+    cluster.stop()
     pyplot.show()
 #    pyplot.savefig('test.eps')
     

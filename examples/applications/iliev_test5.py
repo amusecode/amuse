@@ -125,7 +125,7 @@ def glass(N, target_rms=0.05):
   y=sph.particles.y.value_in(nbody_system.length)
   z=sph.particles.z.value_in(nbody_system.length)
 
-  del sph  
+  sph.stop()
   return x,y,z
 
 
@@ -268,6 +268,8 @@ def radhydro_evolve(sph,rad,tend,dt):
     write_set_to_file(sph.gas_particles,"dump-%6.6i"%i,"amuse",
                         append_to_file=False)    
     
+  sph.stop()
+  rad.stop()
 
 def average(N,r,dat):
   n=len(r)

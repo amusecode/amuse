@@ -92,6 +92,7 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
       subplot.set_title(ttarget.in_(units.Myr))
       i=i+1
 
+    sph.stop()
     pyplot.show()
 #    pyplot.savefig('test.png')
   

@@ -70,7 +70,8 @@ def run_evrard(
             potential_energies[i].append( hydro_legacy_code.potential_energy)
             thermal_energies[i].append(   hydro_legacy_code.thermal_energy)
         times.append(time)
-    hydro_legacy_code.stop()
+    for hydro_legacy_code in hydro_legacy_codes:
+        hydro_legacy_code.stop()
     energy_plot(times, kinetic_energies, potential_energies, thermal_energies, name_of_the_figure)
     print "All done!\n"
 
