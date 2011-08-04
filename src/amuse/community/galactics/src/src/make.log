@@ -1,0 +1,107 @@
+ifort -O -132 -nofor-main -c dbh.f
+ifort -O -132 -nofor-main -c polardens.f
+ifort -O -132 -nofor-main -c bulgepotential.f
+ifort -O -132 -nofor-main -c totdens.f
+ifort -O -132 -nofor-main -c halopotential.f
+ifort -O -132 -nofor-main -c pot.f
+ifort -O -132 -nofor-main -c diskdens.f
+ifort -O -132 -nofor-main -c dens.f
+ifort -O -132 -nofor-main -c appdiskpot.f
+ifort -O -132 -nofor-main -c plgndr1.f
+ifort -O -132 -nofor-main -c bulgedenspsi.f
+ifort -O -132 -nofor-main -c halodenspsi.f
+pot.f(48): (col. 10) remark: PARTIAL LOOP WAS VECTORIZED.
+ifort -O -132 -nofor-main -c gendenspsihalo.f
+ifort -O -132 -nofor-main -c gendenspsibulge.f
+ifort -O -132 -nofor-main -c polarbulgedens.f
+ifort -O -132 -nofor-main -c polarhalodens.f
+ifort -O -132 -nofor-main -c appdiskdens.f
+ifort -O -132 -nofor-main -c halodens.f
+ifort -O -132 -nofor-main -c dfhalo.f
+ifort -O -132 -nofor-main -c dfbulge.f
+dbh.f(10): (col. 7) remark: LOOP WAS VECTORIZED.
+dbh.f(251): (col. 13) remark: LOOP WAS VECTORIZEDifort -O -132 -nofor-main -c erfcen.f
+ifort -O -132 -nofor-main -c modstamp.f
+ifort -O -132 -nofor-main -c force.f
+ifort -O -132 -nofor-main -c appdiskforce.f
+ifort -O -132 -nofor-main -c gendf.f
+ifort -O -132 -nofor-main -c getpsi.f
+.
+ifort -O -132 -nofor-main -c dpolardens.f
+ifort -O -132 -nofor-main -c diskpotentialestimate.f
+ifort -O -132 -nofor-main -c halopotentialestimate.f
+ifort -O -132 -nofor-main -c nfwprofiles.f
+ifort -O -132 -nofor-main -c sersicprofiles.f
+force.f(42): (col. 10) remark: LOOP WAS VECTORIZED.
+force.f(48): (col. 14) remark: LOOP WAS VECTORIZED.
+force.f(53): (col. 14) remark: LOOP WAS VECTORIZED.
+force.f(57): (col. 14) remark: LOOP WAS VECTORIZED.
+mpicc -O -c genhalo.c
+mpicc -O -c readmassrad.c
+halopotentialestimate.f(42): (col. 7) remark: LOOP WAS VECTORIZEDdiskpotentialestimate.f(55): (col. 7) remark: LOOP WAS VECTORIZED.
+ifort -O -132 -nofor-main -c dfcorrection.f
+mpicc -O -c query.c
+mpicc -O -c ran1.c
+ifort -O -132 -nofor-main -c readharmfile.f
+sersicprofiles.f(231): (col. 10) remark: LOOP WAS VECTORIZEDgendf.f(13): (col. 10) remark: LOOP WAS VECTORIZED.
+ifort -O -132 -nofor-main -c readdenspsi.f
+query.c(56): warning #181: argument is incompatible with corresponding format string conversion
+  		sscanf(line,"%E",d);
+  		                 ^
+
+mpicc -O -c genbulge.c
+ifort -O -132 -nofor-main -c getfreqs.f
+readharmfile.f(32): (col. 7) remark: LOOP WAS VECTORIZED.
+readharmfile.f(94): (col. 7) remark: LOOP WAS VECTORIZEDmpicc -O -c gendisk.c
+ifort -O -132 -nofor-main -c velocityfactors.f
+.
+ifort -O -132 -nofor-main -c readdiskdf.f
+mpicc -O -c golden.c
+mpicc -O -c simpson.c
+.
+sersicprofiles.f(17): (col. 44) remark: LOOP WAS VECTORIZED.
+ifort -O -132 -nofor-main -c diskdf5ez.f
+ifort -O -132 -nofor-main -c diskdensf.f
+getfreqs.f(14): (col. 7) remark: LOOP WAS VECTORIZED.
+getfreqs.f(231): (col. 10) remark: LOOP WAS VECTORIZEDreaddiskdf.f(10): (col. 7) remark: BLOCK WAS VECTORIZEDifort -O -132 -nofor-main -c sigr2.f
+ifort -O -132 -nofor-main -c sigz2.f
+.
+ifort -O -132 -nofor-main -c omekap.f
+ifort -O -132 -nofor-main -c splined.f
+ifort -O -132 -nofor-main -c splintd.f
+ifort -O -132 -nofor-main -c diskdf3ez.f
+.
+ifort -O -132 -nofor-main -c diskdenspsi.f
+ifort -O -132 -nofor-main -c fnamidden.f
+ifort -O -132 -nofor-main -c rcirc.f
+ifort -O -132 -nofor-main -c diskdf.f
+omekap.f(43): (col. 9) remark: LOOP WAS VECTORIZEDifort -O -132 -nofor-main -c diskdf5intez.f
+ifort -O -132 -nofor-main -c diskdf3intez.f
+.
+mpicc -O -c toascii.c
+mpicc -O -c pgendisk.c
+mpicc -O -c pgenbulge.c
+mpicc -O -c pgenhalo.c
+rcirc.f(29): (col. 10) remark: LOOP WAS VECTORIZED.
+ifort -O -132 -nofor-main  dbh.o polardens.o bulgepotential.o totdens.o halopotential.o pot.o diskdens.o dens.o appdiskpot.o plgndr1.o bulgedenspsi.o halodenspsi.o gendenspsihalo.o gendenspsibulge.o polarbulgedens.o polarhalodens.o appdiskdens.o halodens.o dfhalo.o dfbulge.o erfcen.o modstamp.o force.o appdiskforce.o gendf.o getpsi.o dpolardens.o diskpotentialestimate.o halopotentialestimate.o nfwprofiles.o sersicprofiles.o -o dbh
+diskdf.f(54): (col. 7) remark: LOOP WAS VECTORIZED.
+diskdf.f(99): (col. 10) remark: LOOP WAS VECTORIZED.
+ifort -O -132 -nofor-main genhalo.o readmassrad.o dfcorrection.o query.o ran1.o readharmfile.o appdiskpot.o plgndr1.o halodenspsi.o readdenspsi.o pot.o halodens.o dfhalo.o dfbulge.o  erfcen.o getpsi.o sersicprofiles.o force.o appdiskforce.o -o genhalo
+ifort -O -132 -nofor-main genbulge.o readmassrad.o query.o ran1.o readharmfile.o pot.o dfbulge.o dfhalo.o  appdiskpot.o plgndr1.o bulgedenspsi.o readdenspsi.o erfcen.o getpsi.o sersicprofiles.o force.o appdiskforce.o -o genbulge
+ifort -O -132 -nofor-main   getfreqs.o pot.o appdiskpot.o plgndr1.o erfcen.o -o getfreqs
+ifort -O -132 -nofor-main gendisk.o ran1.o query.o appdiskforce.o force.o velocityfactors.o diskdf5ez.o diskdensf.o readharmfile.o sigr2.o sigz2.o omekap.o diskdens.o splined.o splintd.o diskdf3ez.o diskdenspsi.o pot.o fnamidden.o appdiskpot.o plgndr1.o rcirc.o getpsi.o readdiskdf.o golden.o simpson.o sersicprofiles.o -o gendisk
+ifort -O -132 -nofor-main   diskdf.o diskdf5intez.o diskdf3intez.o appdiskpot.o plgndr1.o diskdensf.o splintd.o splined.o readharmfile.o sigr2.o sigz2.o fnamidden.o rcirc.o diskdens.o omekap.o pot.o modstamp.o  -o diskdf
+icc -O toascii.o -o toascii -lm
+mpif77 -O -132 -nofor-main pgenbulge.o readmassrad.o query.o ran1.o \
+readharmfile.o pot.o dfbulge.o dfhalo.o  appdiskpot.o plgndr1.o \
+bulgedenspsi.o readdenspsi.o erfcen.o getpsi.o sersicprofiles.o force.o \
+appdiskforce.o -o pgenbulge
+mpif77 -O -132 -nofor-main pgenhalo.o readmassrad.o dfcorrection.o query.o \
+ran1.o readharmfile.o appdiskpot.o plgndr1.o halodenspsi.o readdenspsi.o \
+pot.o halodens.o dfhalo.o dfbulge.o  erfcen.o getpsi.o sersicprofiles.o \
+force.o appdiskforce.o -o pgenhalo
+mpif77 -O -132 -nofor-main pgendisk.o ran1.o query.o appdiskforce.o force.o \
+velocityfactors.o diskdf5ez.o diskdensf.o readharmfile.o sigr2.o sigz2.o \
+omekap.o diskdens.o splined.o splintd.o diskdf3ez.o diskdenspsi.o pot.o \
+fnamidden.o appdiskpot.o plgndr1.o rcirc.o getpsi.o readdiskdf.o golden.o \
+simpson.o sersicprofiles.o -o pgendisk

@@ -1,0 +1,89 @@
+GalactICS
+
+References:
+
+Kuijken & Dubinski 1995 (original version)
+Widrow & Dubinski 2005 (2nd version)
+Widrow, Pym and Dubinski 2008 (current version)
+
+GalactICS is a package for building equilibrium, multi-component galaxy
+models.  The models typically contain 3 components: a disk, a bulge and
+halo although it is possible to generate pure dark halo models, bulge+halo
+models (as a model elliptical galaxy for example) and disk+halo models 
+(bulgeless disk galaxies).  Each component has a set of parameters which 
+describe the mass, scale-lengths, characteristic power laws and truncation or
+"tidal" radii.
+
+The construction of the model is divided into several stages: generation of
+the self-consistent potential, generation of the disk DF according to your
+preferences and finally the generation of N-body realization of each
+component.  The final galaxy model can then be assembled by combining these
+files in your preferred format.  We find it convenient to use Unix 'make'
+facility to organize these steps and the various interpendencies of the
+model files.  
+
+Parameter Files
+---------------
+
+There are a series of input files for specifying the model parameters 
+
+in.dbh - This first file contains the parameters describing each component 
+of the galaxy and looks like this typically.
+
+y
+300.  3.26331115  6.06699419  100.  1.  2.3 
+y
+25.  5.8097949  40.5  0.5  1.5
+y
+0.937324703 -1.  3.21182013  1.50395405
+n
+0.01 90000
+10 
+
+The code does not have a sophisticated parser of the parameter files so
+they must be in this simple format.  This is an annotated version:
+
+#
+# do you want a halo (y or n)
+#
+y
+# halo_outer_radius, scale_velocity, scale_radius, truncation_delta_r,
+# inner_cusp_slope, outer_slope
+#
+300.  3.26331115  6.06699419  100.  1.  2.3 
+#
+# do you want a disk (y or n)
+#
+y
+#
+# disk_mass, disk_scale_length, disk_outer_radius,
+# disk_scale_height_(sech^2), disk_truncation_dr
+25.  5.8097949  40.5  0.5  1.5
+#
+# do you want a Sersic bulge (y or n)
+#
+y
+#
+# Sersic_index_n ppp_(set to -1) bulge_velocity bulge_scale_radius
+#
+0.937324703 -1.  3.21182013  1.50395405
+#
+# do you want a blackhole (y or n) (NOT SUPPORTED IN THIS VERSION)
+n
+#
+# Radial_grid_delta_r  Number_of_grid_intervals
+0.01 90000
+#
+# order of multipole expansion - even number - should be l=10 for models
+# with disks - l=0 for purely spherical models without a disk
+10 
+
+Note on units: The code assumes G=1 so it is up to the user to assign
+physical dimensions to the units.  The above example generates a model that
+is similar to M31 with units of [L]=1 kpc  [V]=100 km/s and [M]=2.33e9
+solar masses.
+
+This self-consistent model potential is generated with the programme dbh
+through:
+
+dbh < in.dbh

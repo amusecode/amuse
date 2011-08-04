@@ -1,0 +1,4 @@
+1000000	#number of particles
+-1	#random integer seed
+1	#1=yes we want to center 0=no we don't
+dbh.dat	#multipole expansion data file

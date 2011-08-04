@@ -1,0 +1,13 @@
+You'll need to define your fortran compiler (g77 or gfortran) in the
+Makefile first then:
+
+1. type 'make'
+2. type 'make install' (puts programmes in ../bin)
+
+This creates a bunch of programmes
+
+vcirc - output the circular velocity curves for the disk, bulge, halo and
+        total - needs file dbh.dat b.dat h.dat
+
+testp, testforce, checkvirial - just some test programmes for sanity checks
+                                of the N-body models

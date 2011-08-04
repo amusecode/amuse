@@ -1,0 +1,23 @@
+#!/bin/csh
+#PBS -l nodes=12:ppn=8
+#PBS -l walltime=1:00:00
+#PBS -q workq
+#PBS -r n
+#PBS -j oe
+
+# change directory to the location of this batch job
+#
+cd $PBS_O_WORKDIR
+#
+# Boot the virtual parallel machine
+#
+lamboot
+#
+# run the parallel job
+#
+mpirun C ../../bin/pgenhalo in.halo halo >& halo.log
+mpirun C ../../bin/pgenbulge in.bulge bulge >& bulge.log
+mpirun C ../../bin/pgendisk in.disk disk >& disk.log
+#
+# halt the virtual parallel machine
+lamhalt

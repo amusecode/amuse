@@ -1,0 +1,6 @@
+(dp0
+S'y\n300.0 3.26331115 6.06699419 100.0 1.0 2.3\nn\nn\nn\n0.01 90000\n10\n0.73 5.8097949\n10\n50\n'
+p1
+S'/disks/gaasp1/vriesn/amuse/trunk/data/galactics/output/eljuvfzj'
+p2
+s.

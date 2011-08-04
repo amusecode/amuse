@@ -1,0 +1,13 @@
+To build the code:
+
+1. cd src
+2. make
+3. make install
+4. cd ../potsrc
+5. make
+6. make install
+
+This will install a set of programmes in the directory bin/
+
+Once the code has been built, go to the directory models/ to build your
+galaxies.
