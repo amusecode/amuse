@@ -174,16 +174,17 @@ class GalactICsImplementation(object):
     
     def _new_dbh_dir(self, in_dbh):
         lowercase = "abcdefghijklmnopqrstuvwxyz"
-        dbh_dir = os.path.join(self._output_directory, ''.join(random.choice(lowercase) for x in range(8)))
-        if os.path.exists(dbh_dir):
+        dbh_dir = ''.join(random.choice(lowercase) for x in range(8))
+        dbh_dir_full_path = os.path.join(self._output_directory, dbh_dir)
+        if os.path.exists(dbh_dir_full_path):
             return self._new_dbh_dir(in_dbh)
         else:
-            os.mkdir(dbh_dir)
-            gendenspsi_infile = open(os.path.join(dbh_dir, "in.gendenspsi"), "w")
+            os.mkdir(dbh_dir_full_path)
+            gendenspsi_infile = open(os.path.join(dbh_dir_full_path, "in.gendenspsi"), "w")
             gendenspsi_infile.write("2000 40\n")
             gendenspsi_infile.close()
             # for clarity, also store the used input parameters in this directory:
-            dbh_infile = open(os.path.join(dbh_dir, "in.dbh"), "w")
+            dbh_infile = open(os.path.join(dbh_dir_full_path, "in.dbh"), "w")
             dbh_infile.write(in_dbh)
             dbh_infile.close()
             is_new = True
@@ -195,7 +196,7 @@ class GalactICsImplementation(object):
             index_file = open(index_filename, "rb")
             dbh_index = pickle.load(index_file)
             index_file.close()
-            if in_dbh in dbh_index and os.path.exists(dbh_index[in_dbh]):
+            if in_dbh in dbh_index and os.path.exists(os.path.join(self._output_directory, dbh_index[in_dbh])):
                 dbh_dir, is_new = dbh_index[in_dbh], False
             else:
                 dbh_dir, is_new = self._new_dbh_dir(in_dbh)
@@ -210,7 +211,7 @@ class GalactICsImplementation(object):
             index_file = open(index_filename, "wb")
             pickle.dump(dbh_index, index_file)
             index_file.close()
-        return dbh_dir, is_new
+        return os.path.join(self._output_directory, dbh_dir), is_new
     
     def commit_parameters(self):
         try:
@@ -608,14 +609,14 @@ class GalactICs(CommonCode):
             "get_scale_velocity",
             "set_scale_velocity",
             "halo_scale_velocity",
-            "",
+            "The velocity scale of the halo",
             default_value = 3.26331115 | nbody_system.speed
         )
         object.add_method_parameter(
             "get_scale_radius",
             "set_scale_radius",
             "halo_scale_radius",
-            "",
+            "The length scale of the halo",
             default_value = 6.06699419 | nbody_system.length
         )
         object.add_method_parameter(
@@ -643,56 +644,56 @@ class GalactICs(CommonCode):
             "get_disk_mass",
             "set_disk_mass",
             "disk_mass",
-            "",
+            "The mass of the disk",
             default_value = 25.0 | nbody_system.mass
         )
         object.add_method_parameter(
             "get_disk_scale_length",
             "set_disk_scale_length",
             "disk_scale_length",
-            "",
+            "The length scale of the disk",
             default_value = 5.8097949 | nbody_system.length
         )
         object.add_method_parameter(
             "get_disk_outer_radius",
             "set_disk_outer_radius",
             "disk_outer_radius",
-            "",
+            "The disk is smoothly truncated at this radius",
             default_value = 40.5 | nbody_system.length
         )
         object.add_method_parameter(
             "get_disk_scale_height_sech2",
             "set_disk_scale_height_sech2",
             "disk_scale_height_sech2",
-            "",
+            "The vertical scale length of the disk. The disk falls off as sech^2 in the z-direction.",
             default_value = 0.5 | nbody_system.length
         )
         object.add_method_parameter(
             "get_disk_truncation_dr",
             "set_disk_truncation_dr",
             "disk_truncation_width",
-            "",
+            "The width of the smooth truncation at disk_outer_radius",
             default_value = 1.5 | nbody_system.length
         )
         object.add_method_parameter(
             "get_Sersic_index_n",
             "set_Sersic_index_n",
             "Sersic_index",
-            "",
+            "The Sersic index of the bulge (1.0 for a classical bulge)",
             default_value = 0.937324703 | units.none
         )
         object.add_method_parameter(
             "get_bulge_velocity",
             "set_bulge_velocity",
             "bulge_scale_velocity",
-            "",
+            "The velocity scale of the bulge",
             default_value = 3.21182013 | nbody_system.speed
         )
         object.add_method_parameter(
             "get_bulge_scale_radius",
             "set_bulge_scale_radius",
             "bulge_scale_radius",
-            "",
+            "The length scale of the bulge",
             default_value = 1.50395405 | nbody_system.length
         )
         object.add_method_parameter(

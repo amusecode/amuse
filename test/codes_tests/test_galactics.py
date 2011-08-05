@@ -15,9 +15,9 @@ class GalactICsInterfaceTests(TestWithMPI):
         print "Testing GalactICsInterface initialization"
         instance = GalactICsInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
-        self.assertEqual(instance.set_output_path(instance.get_output_directory()), 0)
-        self.assertEquals(instance.set_generate_bulge_flag(False), 0)
-        self.assertEquals(instance.set_generate_disk_flag(False), 0)
+        self.assertEqual(instance.set_output_path(os.path.join(instance.get_output_directory(), "test")), 0)
+        self.assertEqual(instance.set_generate_bulge_flag(False), 0)
+        self.assertEqual(instance.set_generate_disk_flag(False), 0)
         self.assertEqual(instance.commit_parameters(), 0)
         self.assertEqual(instance.cleanup_code(), 0)
         instance.stop()
@@ -26,7 +26,7 @@ class GalactICsInterfaceTests(TestWithMPI):
         print "Testing GalactICsInterface parameters"
         instance = GalactICsInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
-        self.assertEqual(instance.set_output_path(instance.get_output_directory()), 0)
+        self.assertEqual(instance.set_output_path(os.path.join(instance.get_output_directory(), "test")), 0)
         
         self.assertEquals(instance.set_generate_halo_flag(False), 0)
         self.assertEquals(instance.set_disk_do_center_flag(False), 0)
@@ -112,7 +112,7 @@ class GalactICsInterfaceTests(TestWithMPI):
         number_of_particles_halo = 1000
         instance = GalactICsInterface(**default_options)
         self.assertEquals(instance.initialize_code(), 0)
-        self.assertEquals(instance.set_output_path(instance.get_output_directory()), 0)
+        self.assertEquals(instance.set_output_path(os.path.join(instance.get_output_directory(), "test")), 0)
         self.assertEquals(instance.set_halo_number_of_particles(number_of_particles_halo), 0)
         self.assertEquals(instance.set_generate_bulge_flag(False), 0)
         self.assertEquals(instance.set_generate_disk_flag(False), 0)
@@ -154,6 +154,7 @@ class GalactICsTests(TestWithMPI):
         print "Testing GalactICs initialization"
         instance = GalactICs(**default_options)
         instance.initialize_code()
+        instance.parameters.output_directory = os.path.join(instance.get_output_directory(), "test") | units.string
         instance.parameters.generate_bulge_flag = False
         instance.parameters.generate_disk_flag = False
         instance.commit_parameters()
@@ -240,6 +241,7 @@ class GalactICsTests(TestWithMPI):
         print "Testing GalactICs generate_particles"
         instance = GalactICs(**default_options)
         instance.initialize_code()
+        instance.parameters.output_directory = os.path.join(instance.get_output_directory(), "test") | units.string
         instance.parameters.halo_number_of_particles = 1000
         instance.parameters.generate_bulge_flag = False
         instance.parameters.generate_disk_flag = False
