@@ -67,42 +67,42 @@ class GalactICsInterfaceTests(TestWithMPI):
         mass_disk, mass_bulge, mass_halo = 26.571852, 14.6317065, 1186.23991
         masses, errors = instance.get_mass(range(number_of_particles))
         self.assertEquals(errors, numpy.zeros(number_of_particles))
-        self.assertAlmostEquals(masses, numpy.concatenate((
+        self.assertAlmostRelativeEquals(masses, numpy.concatenate((
             numpy.ones(n_particles_disk)*mass_disk/n_particles_disk, 
             numpy.ones(n_particles_bulge)*mass_bulge/n_particles_bulge, 
             numpy.ones(n_particles_halo)*mass_halo/n_particles_halo
-        )))
+        )), 5)
         
         x_positions, y_positions, z_positions, errors = instance.get_position(range(number_of_particles))
         self.assertEquals(errors, numpy.zeros(number_of_particles))
         self.assertAlmostEquals(numpy.array([numpy.mean(x_positions), numpy.mean(y_positions), 
             numpy.mean(z_positions)]), numpy.array([0.0]*3), 5)
-        self.assertAlmostEquals(numpy.array([
+        self.assertAlmostRelativeEquals(numpy.array([
             numpy.mean(abs(x_positions[:n_particles_disk])), 
             numpy.mean(abs(y_positions[:n_particles_disk])), 
-            numpy.mean(abs(z_positions[:n_particles_disk]))]), numpy.array([7.61088372, 7.67542887, 0.38014104]))
-        self.assertAlmostEquals(numpy.array([
+            numpy.mean(abs(z_positions[:n_particles_disk]))]), numpy.array([7.61088372, 7.67542887, 0.38014104]), 5)
+        self.assertAlmostRelativeEquals(numpy.array([
             numpy.mean(abs(x_positions[n_particles_disk:n_particles_disk+n_particles_bulge])), 
             numpy.mean(abs(y_positions[n_particles_disk:n_particles_disk+n_particles_bulge])), 
-            numpy.mean(abs(z_positions[n_particles_disk:n_particles_disk+n_particles_bulge]))]), numpy.array([1.09453949, 1.08477648, 0.91855720]))
-        self.assertAlmostEquals(numpy.array([
+            numpy.mean(abs(z_positions[n_particles_disk:n_particles_disk+n_particles_bulge]))]), numpy.array([1.09453949, 1.08477648, 0.91855720]), 5)
+        self.assertAlmostRelativeEquals(numpy.array([
             numpy.mean(abs(x_positions[-n_particles_halo:])), 
             numpy.mean(abs(y_positions[-n_particles_halo:])), 
-            numpy.mean(abs(z_positions[-n_particles_halo:]))]), numpy.array([63.08369136, 82.63743181, 71.36220391]))
+            numpy.mean(abs(z_positions[-n_particles_halo:]))]), numpy.array([63.08369136, 82.63743181, 71.36220391]), 5)
 
         
         x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(range(number_of_particles))
         self.assertEquals(errors, numpy.zeros(number_of_particles))
         self.assertAlmostEquals(numpy.array([numpy.mean(x_velocities), numpy.mean(y_velocities), 
             numpy.mean(z_velocities)]), numpy.array([0.0]*3))
-        self.assertAlmostEquals(numpy.array([
+        self.assertAlmostRelativeEquals(numpy.array([
             numpy.mean(abs(x_velocities[:n_particles_disk])), 
             numpy.mean(abs(y_velocities[:n_particles_disk])), 
-            numpy.mean(abs(z_velocities[:n_particles_disk]))]), numpy.array([1.55797144, 1.55624395, 0.19477551]))
-        self.assertAlmostEquals(numpy.array([
+            numpy.mean(abs(z_velocities[:n_particles_disk]))]), numpy.array([1.55797144, 1.55624395, 0.19477551]), 5)
+        self.assertAlmostRelativeEquals(numpy.array([
             numpy.mean(abs(x_velocities[n_particles_disk:])), 
             numpy.mean(abs(y_velocities[n_particles_disk:])), 
-            numpy.mean(abs(z_velocities[n_particles_disk:]))]), numpy.array([1.03654369, 1.05683125, 0.97451790]))
+            numpy.mean(abs(z_velocities[n_particles_disk:]))]), numpy.array([1.03654369, 1.05683125, 0.97451790]), 5)
         
         self.assertEquals(instance.cleanup_code(), 0)
         instance.stop()
@@ -125,21 +125,21 @@ class GalactICsInterfaceTests(TestWithMPI):
         mass_halo = 1178.94764
         masses, errors = instance.get_mass(range(number_of_particles_halo))
         self.assertEquals(errors, numpy.zeros(number_of_particles_halo))
-        self.assertAlmostEquals(masses, numpy.ones(number_of_particles_halo)*mass_halo/number_of_particles_halo)
+        self.assertAlmostRelativeEquals(masses, numpy.ones(number_of_particles_halo)*mass_halo/number_of_particles_halo, 5)
         
         x_positions, y_positions, z_positions, errors = instance.get_position(range(number_of_particles_halo))
         self.assertEquals(errors, numpy.zeros(number_of_particles_halo))
         self.assertAlmostEquals(numpy.array([numpy.mean(x_positions), numpy.mean(y_positions), 
             numpy.mean(z_positions)]), numpy.array([0.0]*3), 5)
-        self.assertAlmostEquals(numpy.array([numpy.mean(abs(x_positions)), numpy.mean(abs(y_positions)), 
-            numpy.mean(abs(z_positions))]), numpy.array([73.75381483, 79.19661311, 76.51308928]))
+        self.assertAlmostRelativeEquals(numpy.array([numpy.mean(abs(x_positions)), numpy.mean(abs(y_positions)), 
+            numpy.mean(abs(z_positions))]), numpy.array([73.75381483, 79.19661311, 76.51308928]), 5)
         
         x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(range(number_of_particles_halo))
         self.assertEquals(errors, numpy.zeros(number_of_particles_halo))
         self.assertAlmostEquals(numpy.array([numpy.mean(x_velocities), numpy.mean(y_velocities), 
             numpy.mean(z_velocities)]), numpy.array([0.0]*3))
-        self.assertAlmostEquals(numpy.array([numpy.mean(abs(x_velocities)), numpy.mean(abs(y_velocities)), 
-            numpy.mean(abs(z_velocities))]), numpy.array([0.95447642, 0.90976841, 0.92262572]))
+        self.assertAlmostRelativeEquals(numpy.array([numpy.mean(abs(x_velocities)), numpy.mean(abs(y_velocities)), 
+            numpy.mean(abs(z_velocities))]), numpy.array([0.95447642, 0.90976841, 0.92262572]), 5)
         
         self.assertEquals(instance.cleanup_code(), 0)
         instance.stop()
@@ -229,10 +229,10 @@ class GalactICsTests(TestWithMPI):
         instance.commit_parameters()
         instance.generate_particles()
         self.assertEquals(len(instance.particles), number_of_particles)
-        self.assertAlmostEquals(instance.particles.total_mass(), 1227.4434685 | nbody_system.mass)
-        self.assertAlmostEquals(instance.particles.kinetic_energy(), 2912.27638811 | nbody_system.energy)
-        self.assertAlmostEquals(instance.particles.potential_energy(G = nbody_system.G), -6318.78987337 | nbody_system.energy)
-        self.assertAlmostEquals(instance.particles.virial_radius(), 119.217247175 | nbody_system.length)
+        self.assertAlmostRelativeEquals(instance.particles.total_mass(), 1227.4434685 | nbody_system.mass, 5)
+        self.assertAlmostRelativeEquals(instance.particles.kinetic_energy(), 2912.27638811 | nbody_system.energy, 5)
+        self.assertAlmostRelativeEquals(instance.particles.potential_energy(G = nbody_system.G), -6318.78987337 | nbody_system.energy, 5)
+        self.assertAlmostRelativeEquals(instance.particles.virial_radius(), 119.217247175 | nbody_system.length, 5)
         
         instance.cleanup_code()
         instance.stop()
@@ -248,8 +248,8 @@ class GalactICsTests(TestWithMPI):
         instance.commit_parameters()
         instance.generate_particles()
         self.assertEquals(len(instance.particles), 1000)
-        self.assertAlmostEquals(instance.particles.total_mass(), 1178.94769 | nbody_system.mass)
-        self.assertAlmostEquals(instance.particles.kinetic_energy(), 2505.86841138 | nbody_system.energy)
+        self.assertAlmostRelativeEquals(instance.particles.total_mass(), 1178.94769 | nbody_system.mass, 5)
+        self.assertAlmostRelativeEquals(instance.particles.kinetic_energy(), 2505.86841138 | nbody_system.energy, 5)
         instance.cleanup_code()
         instance.stop()
    
