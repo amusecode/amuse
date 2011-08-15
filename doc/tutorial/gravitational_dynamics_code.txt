@@ -15,19 +15,19 @@ a new gravitational dynamics code.
 Environment variables
 ~~~~~~~~~~~~~~~~~~~~~
 To simplify the work in the coming sections, we first define the 
-environment variable 'AMUSEDIR'. This environment variable must 
+environment variable 'AMUSE_DIR'. This environment variable must 
 point to the root directory of AMUSE (this is the directory 
 containing the build.py script).
 
 .. code-block:: bash
 
-    > export AMUSEDIR=<path to the amuse root directory>
+    > export AMUSE_DIR=<path to the amuse root directory>
     
 or in a c shell:
 
 .. code-block:: csh
 
-    > setenv AMUSEDIR <path to the amuse root directory>
+    > setenv AMUSE_DIR <path to the amuse root directory>
 
 After building the code, we want to run and test the code. Check if 
 amuse is available in your python path by running the following code 
@@ -42,18 +42,18 @@ on the command line.
     
 If this code ends in a "ImportError" as shown in the example, the 
 PYTHONPATH environment variable must be extended with the src directory
-in AMUSEDIR. 
+in AMUSE_DIR. 
 We can do so by using one of the following commands.
 
 .. code-block:: bash
 
-    > export PYTHONPATH=${PYTHONPATH}:${AMUSEDIR}/src
+    > export PYTHONPATH=${PYTHONPATH}:${AMUSE_DIR}/src
     
 or in a c shell:
 
 .. code-block:: csh
 
-    > setenv AMUSEDIR ${PYTHONPATH}:${AMUSEDIR}/src
+    > setenv PYTHONPATH ${PYTHONPATH}:${AMUSE_DIR}/src
 
 Creating an initial directory structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -64,9 +64,9 @@ directory is by using the build.py script.
 .. code-block:: bash
     
     > # for C/C++ codes:
-    > $AMUSEDIR/build.py --type=c --mode=dir CodeName
+    > $AMUSE_DIR/build.py --type=c --mode=dir CodeName
     > # for fortran codes:
-    > $AMUSEDIR/build.py --type=f90 --mode=dir CodeName
+    > $AMUSE_DIR/build.py --type=f90 --mode=dir CodeName
 
 .. note::
 
