@@ -6,8 +6,8 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.galactics.interface import GalactICsInterface, GalactICs
 
 # Change the default for some GalactICs(-Interface) keyword arguments:
-#default_options = dict()
-default_options = dict(redirection = "none")
+default_options = dict()
+#default_options = dict(redirection = "none")
 
 class GalactICsInterfaceTests(TestWithMPI):
     
@@ -15,9 +15,10 @@ class GalactICsInterfaceTests(TestWithMPI):
         print "Testing GalactICsInterface initialization"
         instance = GalactICsInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
-        self.assertEqual(instance.set_output_path(os.path.join(instance.get_output_directory(), "test")), 0)
+        self.assertEqual(instance.set_output_path(instance.get_output_directory()), 0)
         self.assertEqual(instance.set_generate_bulge_flag(False), 0)
         self.assertEqual(instance.set_generate_disk_flag(False), 0)
+        self.assertEqual(instance.set_order_of_multipole_expansion(0), 0)
         self.assertEqual(instance.commit_parameters(), 0)
         self.assertEqual(instance.cleanup_code(), 0)
         instance.stop()
@@ -112,17 +113,18 @@ class GalactICsInterfaceTests(TestWithMPI):
         number_of_particles_halo = 1000
         instance = GalactICsInterface(**default_options)
         self.assertEquals(instance.initialize_code(), 0)
-        self.assertEquals(instance.set_output_path(os.path.join(instance.get_output_directory(), "test")), 0)
+        self.assertEquals(instance.set_output_path(instance.get_output_directory()), 0)
         self.assertEquals(instance.set_halo_number_of_particles(number_of_particles_halo), 0)
         self.assertEquals(instance.set_generate_bulge_flag(False), 0)
         self.assertEquals(instance.set_generate_disk_flag(False), 0)
+        self.assertEquals(instance.set_order_of_multipole_expansion(0), 0)
         self.assertEquals(instance.commit_parameters(), 0)
         
         self.assertEquals(instance.get_number_of_particles_updated().values(), [0, 0])
         self.assertEquals(instance.generate_particles(), 0)
         self.assertEquals(instance.get_number_of_particles_updated().values(), [number_of_particles_halo, 0])
         
-        mass_halo = 1178.94764
+        mass_halo = 1179.03507
         masses, errors = instance.get_mass(range(number_of_particles_halo))
         self.assertEquals(errors, numpy.zeros(number_of_particles_halo))
         self.assertAlmostRelativeEquals(masses, numpy.ones(number_of_particles_halo)*mass_halo/number_of_particles_halo, 5)
@@ -132,14 +134,14 @@ class GalactICsInterfaceTests(TestWithMPI):
         self.assertAlmostEquals(numpy.array([numpy.mean(x_positions), numpy.mean(y_positions), 
             numpy.mean(z_positions)]), numpy.array([0.0]*3), 5)
         self.assertAlmostRelativeEquals(numpy.array([numpy.mean(abs(x_positions)), numpy.mean(abs(y_positions)), 
-            numpy.mean(abs(z_positions))]), numpy.array([73.75381483, 79.19661311, 76.51308928]), 5)
+            numpy.mean(abs(z_positions))]), numpy.array([73.71981114, 79.16010066, 76.47781355]), 5)
         
         x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(range(number_of_particles_halo))
         self.assertEquals(errors, numpy.zeros(number_of_particles_halo))
         self.assertAlmostEquals(numpy.array([numpy.mean(x_velocities), numpy.mean(y_velocities), 
             numpy.mean(z_velocities)]), numpy.array([0.0]*3))
         self.assertAlmostRelativeEquals(numpy.array([numpy.mean(abs(x_velocities)), numpy.mean(abs(y_velocities)), 
-            numpy.mean(abs(z_velocities))]), numpy.array([0.95447642, 0.90976841, 0.92262572]), 5)
+            numpy.mean(abs(z_velocities))]), numpy.array([0.95465595, 0.90994227, 0.92280032]), 5)
         
         self.assertEquals(instance.cleanup_code(), 0)
         instance.stop()
@@ -154,9 +156,9 @@ class GalactICsTests(TestWithMPI):
         print "Testing GalactICs initialization"
         instance = GalactICs(**default_options)
         instance.initialize_code()
-        instance.parameters.output_directory = os.path.join(instance.get_output_directory(), "test") | units.string
         instance.parameters.generate_bulge_flag = False
         instance.parameters.generate_disk_flag = False
+        instance.parameters.order_of_multipole_expansion = 0
         instance.commit_parameters()
         instance.cleanup_code()
         instance.stop()
@@ -241,15 +243,98 @@ class GalactICsTests(TestWithMPI):
         print "Testing GalactICs generate_particles"
         instance = GalactICs(**default_options)
         instance.initialize_code()
-        instance.parameters.output_directory = os.path.join(instance.get_output_directory(), "test") | units.string
         instance.parameters.halo_number_of_particles = 1000
         instance.parameters.generate_bulge_flag = False
         instance.parameters.generate_disk_flag = False
+        instance.parameters.order_of_multipole_expansion = 0
         instance.commit_parameters()
         instance.generate_particles()
         self.assertEquals(len(instance.particles), 1000)
-        self.assertAlmostRelativeEquals(instance.particles.total_mass(), 1178.94769 | nbody_system.mass, 5)
-        self.assertAlmostRelativeEquals(instance.particles.kinetic_energy(), 2505.86841138 | nbody_system.energy, 5)
+        self.assertAlmostRelativeEquals(instance.particles.total_mass(), 1179.03507 | nbody_system.mass, 5)
+        self.assertAlmostRelativeEquals(instance.particles.kinetic_energy(), 2506.90523413 | nbody_system.energy, 5)
         instance.cleanup_code()
         instance.stop()
-   
+    
+    def test6(self):
+        print "Testing GalactICs generate_particles: generate multiple sets"
+        number_of_particles = 1000
+        instance = GalactICs(**default_options)
+        instance.initialize_code()
+        instance.parameters.halo_number_of_particles = number_of_particles
+        instance.parameters.generate_bulge_flag = False
+        instance.parameters.generate_disk_flag = False
+        instance.parameters.order_of_multipole_expansion = 0
+        instance.parameters.halo_random_seed = -1.0
+        instance.commit_parameters()
+        
+        instance.generate_particles()
+        set1 = instance.particles.copy()
+        self.assertEquals(len(set1), number_of_particles)
+        
+        instance.generate_particles()
+        set2 = instance.particles.copy()
+        self.assertEquals(len(set2), number_of_particles)
+        # GalactICs' random-number generator is re-seeded with 'halo_random_seed'
+        # each time, and the result should be the same:
+        for attribute in ["mass", "x", "y", "z", "vx", "vy", "vz"]:
+            self.assertEquals(getattr(set1, attribute), getattr(set2, attribute))
+        
+        instance.parameters.halo_random_seed = -42.0
+        instance.generate_particles()
+        # halo_random_seed changed: draw a different random set of particles
+        set3 = instance.particles.copy()
+        self.assertEquals(len(set3), number_of_particles)
+        self.assertEquals(set1.mass, set3.mass)
+        self.assertRaises(self.failureException, self.assertEquals, set1.x, set3.x)
+        self.assertAlmostRelativeEquals(abs(set1.x).median(), abs(set3.x).median(), 1)
+        self.assertAlmostRelativeEquals(abs(set1.vy).median(), abs(set3.vy).median(), 1)
+        
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test7(self):
+        print "Testing GalactICs state"
+        number_of_particles = 1000
+
+        print "First do everything manually:"
+        instance = GalactICs(**default_options)
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.parameters.halo_number_of_particles = number_of_particles
+        instance.parameters.generate_bulge_flag = False
+        instance.parameters.generate_disk_flag = False
+        instance.parameters.order_of_multipole_expansion = 0
+        instance.commit_parameters()
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.overridden().generate_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        instance.invoke_state_change_updated()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEquals(len(instance.particles), number_of_particles)
+        instance.cleanup_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        instance.stop()
+
+        print "initialize_code(), (re)commit_parameters(), update_particle_set(), " \
+            "and cleanup_code() should be called automatically:"
+        instance = GalactICs(**default_options)
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.parameters.halo_number_of_particles = number_of_particles
+        instance.parameters.generate_bulge_flag = False
+        instance.parameters.generate_disk_flag = False
+        instance.parameters.order_of_multipole_expansion = 0
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEquals(instance.get_number_of_particles_updated(), 0)
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.parameters.halo_random_seed = -42.0
+        self.assertEquals(instance.get_name_of_current_state(), 'PARAMETER_CHANGE_B')
+        self.assertEquals(instance.get_number_of_particles_updated(), 0)
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.generate_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEquals(len(instance.particles), number_of_particles)
+        self.assertEquals(instance.get_number_of_particles_updated(), 0)
+        instance.stop()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
+    

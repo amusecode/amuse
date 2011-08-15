@@ -530,7 +530,7 @@ class GalactICs(CommonCode):
             "get_number_of_grid_intervals",
             "set_number_of_grid_intervals",
             "number_of_grid_intervals",
-            "Spacing of the grid in the radial direction",
+            "Number of gridpoints in the radial direction",
             default_value = 90000 | units.none
         )
         object.add_method_parameter(
@@ -700,35 +700,35 @@ class GalactICs(CommonCode):
             "get_radial_grid_delta_r",
             "set_radial_grid_delta_r",
             "radial_grid_delta_r",
-            "",
+            "Spacing of the grid in the radial direction",
             default_value = 0.01 | nbody_system.length
         )
         object.add_method_parameter(
             "get_central_radial_vel_dispersion",
             "set_central_radial_vel_dispersion",
             "disk_central_radial_velocity_dispersion",
-            "",
-            default_value = 0.73 | nbody_system.speed
+            "The velocity dispersion of the disk in the radial direction at the center (in units of vertical velocity dispersion)",
+            default_value = 0.73 | units.none
         )
         object.add_method_parameter(
             "get_scale_length_of_sigR2",
             "set_scale_length_of_sigR2",
             "disk_scale_length_of_sigR2",
-            "",
+            "The length scale of the exponential decline of the velocity dispersion of the disk in the radial direction.",
             default_value = 5.8097949 | nbody_system.length
         )
         object.add_method_parameter(
             "get_halo_streaming_fraction",
             "set_halo_streaming_fraction",
             "halo_streaming_fraction",
-            "",
+            "Control for rotating halo: distribution function is split in positive and negative angular momentum, and recombined with this parameter (F = aF+ + (1-a)F-); 0.5 means no rotation",
             default_value = 0.50 | units.none
         )
         object.add_method_parameter(
             "get_bulge_streaming_fraction",
             "set_bulge_streaming_fraction",
             "bulge_streaming_fraction",
-            "",
+            "Control for rotating bulge: distribution function is split in positive and negative angular momentum, and recombined with this parameter (F = aF+ + (1-a)F-); 0.5 means no rotation",
             default_value = 0.80 | units.none
         )
     
@@ -755,7 +755,7 @@ class GalactICs(CommonCode):
                 "_halo_number_of_particles", "_halo_random_seed", 
                 "_bulge_number_of_particles", "_bulge_random_seed", 
                 "_disk_number_of_particles", "_disk_random_seed",
-                "_inner_cusp_slope", "_outer_slope", "_Sersic_index_n", 
+                "_inner_cusp_slope", "_outer_slope", "_Sersic_index_n", "_central_radial_vel_dispersion", 
                 "_halo_streaming_fraction", "_bulge_streaming_fraction"]:
             object.add_method("get"+par, (), (units.none, object.ERROR_CODE,))
             object.add_method("set"+par, (units.none, ), (object.ERROR_CODE,))
@@ -767,7 +767,7 @@ class GalactICs(CommonCode):
             object.add_method("get"+par, (), (nbody_system.length, object.ERROR_CODE,))
             object.add_method("set"+par, (nbody_system.length, ), (object.ERROR_CODE,))
         
-        for par in ["_scale_velocity", "_bulge_velocity", "_central_radial_vel_dispersion"]:
+        for par in ["_scale_velocity", "_bulge_velocity"]:
             object.add_method("get"+par, (), (nbody_system.speed, object.ERROR_CODE,))
             object.add_method("set"+par, (nbody_system.speed, ), (object.ERROR_CODE,))
         
