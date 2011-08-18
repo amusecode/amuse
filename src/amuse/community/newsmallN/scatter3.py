@@ -185,7 +185,7 @@ def scatter3(init,
     gravity.parameters.set_defaults()
     gravity.parameters.timestep_parameter = accuracy_parameter
 
-    time,stars = make_triple(init)	# t = 0 at outer periastron
+    time,stars = make_triple(init)	# time = 0 at outer periastron
     number_of_stars = len(stars)
 
     #print stars

@@ -153,6 +153,7 @@ int recommit_particles()
     else
 	jd->initialize_gpu(true);		// reload the GPU
     id->setup();				// compute acc and jerk
+    jd->set_initial_timestep();			// set timesteps if not set
     s->initialize();				// reconstruct the scheduler
     return 0;
 }

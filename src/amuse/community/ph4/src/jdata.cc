@@ -211,8 +211,8 @@ int jdata::add_particle(real pmass, real pradius,
     // Set the timestep if required, and update the scheduler, if it
     // exists.
 
+    timestep[nj] = dt;
     if (dt > 0) {
-	timestep[nj] = dt;
 	if (sched) {
 	    // cout << "sched.add " << nj << " (" << pid << ")"
 	    //	 << endl << flush;
@@ -400,30 +400,31 @@ void jdata::set_initial_timestep()
 
     // Assume acc and jerk have already been set.
 
-    for (int j = 0; j < nj; j++) {
-	real a2 = 0, j2 = 0;
-	for (int k = 0; k < 3; k++) {
-	    a2 += pow(acc[j][k], 2);
-	    j2 += pow(jerk[j][k], 2);
-	}
+    for (int j = 0; j < nj; j++)
+	if (timestep[j] <= 0) {
+	    real a2 = 0, j2 = 0;
+	    for (int k = 0; k < 3; k++) {
+		a2 += pow(acc[j][k], 2);
+		j2 += pow(jerk[j][k], 2);
+	    }
 
-	real firststep;
-	if (eta == 0.0)
-	    firststep = 0.0625;
-	else if (a2 == 0.0 || j2 == 0.0)
-	    firststep = 0.0625 * eta;
-	else
-	    firststep = 0.0625 * eta * sqrt(a2/j2);	// conservative
+	    real firststep;
+	    if (eta == 0.0)
+		firststep = 0.0625;
+	    else if (a2 == 0.0 || j2 == 0.0)
+		firststep = 0.0625 * eta;
+	    else
+		firststep = 0.0625 * eta * sqrt(a2/j2);	// conservative
     
-	// Force the time step to a power of 2 commensurate with
-	// system_time.
+	    // Force the time step to a power of 2 commensurate with
+	    // system_time.
 
-	int exponent;
-	firststep /= 2*frexp(firststep, &exponent);
-	while (fmod(system_time, firststep) != 0) firststep /= 2;
+	    int exponent;
+	    firststep /= 2*frexp(firststep, &exponent);
+	    while (fmod(system_time, firststep) != 0) firststep /= 2;
 
-	timestep[j] = firststep;
-    }
+	    timestep[j] = firststep;
+	}
 }
 
 real jdata::get_pot(bool reeval)		// default = false
@@ -631,13 +632,11 @@ void jdata::advance()
 
     system_time = tnext;
     sched->update();
-    // sched->print(true);
 }
 
 bool jdata::advance_and_check_encounter()
 {
     bool status = false;
-    
     advance();
 
     // Optionally manage close encounters.  AMUSE stopping conditions
