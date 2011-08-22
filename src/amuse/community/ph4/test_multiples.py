@@ -211,6 +211,14 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     star1_in_memory = star1.as_particle_in_set(stars)	# pointer
     star2_in_memory = star2.as_particle_in_set(stars)
     
+    print 'star1.x           =', star1.x
+    print 'star1_in_memory.x =', star1_in_memory.x
+    print 'star2.x           =', star2.x
+    print 'star2_in_memory.x =', star2_in_memory.x
+    print 'star1.y           =', star1.y
+    print 'star1_in_memory.y =', star1_in_memory.y
+    print 'star2.y           =', star2.y
+    print 'star2_in_memory.y =', star2_in_memory.y
     if 0:
         print 'star1'
         print star1
@@ -247,6 +255,9 @@ def manage_encounter(star1, star2, stars, gravity_stars):
         openup_tree(star2_in_memory, stars, particles_in_encounter)
     else:
         particles_in_encounter.add_particle(star2)
+
+    print 'particles_in_encounter.x =', particles_in_encounter.x
+    print 'particles_in_encounter.y =', particles_in_encounter.y
     
     particles_in_encounter.id = -1 | units.none  # need to make this -1 to
                                                  # ensure smallN will set the
@@ -264,7 +275,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     print particles_in_encounter.to_string(['x','y','z','vx','vy','vz','mass'])
 
     # 5. Carry out bookkeeping after the encounter and update the
-    # gravity module with the new data.
+    #    gravity module with the new data.
     
     # 5a. Create object to handle the binary information.
 
