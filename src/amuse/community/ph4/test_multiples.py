@@ -211,6 +211,17 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     star1_in_memory = star1.as_particle_in_set(stars)	# pointer
     star2_in_memory = star2.as_particle_in_set(stars)
     
+    #
+    # copy the current position and velocity to mememory
+    # (need to create a better call for this, for example:
+    # star1.copy_to(star1_in_memory)
+    #
+    star1_in_memory.position = star1.position
+    star1_in_memory.velocity = star1.velocity
+    star2_in_memory.position = star2.position
+    star2_in_memory.velocity = star2.velocity
+    
+    
     print 'star1.x           =', star1.x
     print 'star1_in_memory.x =', star1_in_memory.x
     print 'star2.x           =', star2.x
