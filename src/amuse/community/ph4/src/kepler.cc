@@ -1706,7 +1706,8 @@ int main(int argc, char **argv)
 		case 'v':	for (int k = 0; k < 3; k++)
 		    		    v[k] = atof(argv[++i]);
 				break;
-		default:	cerr << "unknown option \"" << argv[i] << endl;
+		default:	cerr << "unknown option \"" << argv[i]
+				     << endl << flush;
 				exit(1);
 	    }
 

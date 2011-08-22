@@ -1,10 +1,4 @@
-import sys
-import unittest
-import numpy
-import random
-import collections
-import getopt
-import os
+import sys, unittest, numpy, random, collections, getopt, os, math
 
 from amuse.support.units import nbody_system
 from amuse.support.units import units
@@ -19,7 +13,7 @@ from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.newsmallN.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 
-def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
+def print_log(s, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
@@ -33,17 +27,18 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     Rv = -0.5*M*M/U
     Q = -T/U
     print ""
-    print "time =", time.number, " energy = ", E.number, \
-	" dE/E0 = ", (E/E0 - 1).number
-    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
-	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Ebin.number, Rv.number, Q.number)
+    print s+':', \
+	"time =", gravity.get_time().number, \
+        " mass = ", M.number, \
+        " energy = ", E.number, U.number, T.number, \
+        " dE/E0 = ", (E/E0 - 1).number
+    #print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
+    #	(s+"%%", time.number, M.number, T.number, U.number, \
+    #    E.number, Ebin.number, Rv.number, Q.number)
     sys.stdout.flush()
     return E
 
-def get_binary_elements(p):
-    comp1 = p.child1
-    comp2 = p.child2
+def get_component_binary_elements(comp1, comp2):
     kep = Kepler(redirection = "none")
     kep.initialize_code()
 
@@ -53,9 +48,13 @@ def get_binary_elements(p):
     kep.initialize_from_dyn(mass, pos[0], pos[1], pos[2],
                             vel[0], vel[1], vel[2])
     a,e = kep.get_elements()
+    r = kep.get_separation()
     kep.stop()
 
-    return mass,a,e
+    return mass,a,e,r
+
+def get_cm_binary_elements(p):
+    return get_component_binary_elements(p.child1, p.child2)
 
 def run_smallN(
         particles,
@@ -75,35 +74,49 @@ def run_smallN(
     sys.stdout.flush()
     gravity.set_time(time);
     gravity.particles.add_particles(particles)
-    print "committing particles"
+    print "committing particles to smallN"
     gravity.commit_particles()
 
-    print ''
     print "smallN: number_of_stars =", len(particles)
     print "smallN: evolving to time =", end_time.number, 
-    print " in steps of", delta_t.number
+    print "in steps of", delta_t.number
     sys.stdout.flush()
     
-    E0 = print_log(time, gravity)
+    E0 = print_log('smallN', gravity)
     
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(particles)
 
     while time < end_time:
         time += delta_t
+        print 'evolving smallN to time', time.number
+        sys.stdout.flush()
         gravity.evolve_model(time)
-        print_log(time, gravity, E0)
-
-        print "smallN time =", gravity.get_time().number
+        print_log('smallN', gravity, E0)
         over = gravity.is_over()
         if over.number:
-            print 'interaction is over\n'
+            print 'interaction is over\n'; sys.stdout.flush()
+
+            # Create a tree in the module representing the binary structure.
+
             gravity.update_particle_tree()
+
+            # Return the tree structure to AMUSE.  Children are
+            # identified by get_children_of_particle in interface.??,
+            # and the information is returned in the copy operation.
+
             gravity.update_particle_set()
             gravity.particles.synchronize_to(particles)
             channel.copy()
-            gravity.stop()
             channel.copy_attribute("index_in_code", "id")
+
+            gravity.stop()
+
+            # Basic diagnostics: BinaryTreesOnAParticleSet creates
+            # binary tree structure for all particles in the set; then
+            # we loop over roots (top-level nodes) and print data on
+            # all binaries below each.
+
             print "binaries:"
             x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
             roots = list(x.iter_roots())
@@ -111,12 +124,13 @@ def run_smallN(
                 for level, particle in r.iter_levels():
                     print '  '*level, int(particle.id.number),
                     if not particle.child1 is None:
-                        M,a,e = get_binary_elements(particle)
+                        M,a,e,r = get_cm_binary_elements(particle)
                         print ' ( M =', M.number, ' a =', a.number, \
-                              ' e =', e.number, ')'
+                              ' e =', e.number, ' r =', r.number, ')'
                     else:
                         print ''
                     sys.stdout.flush()
+
             return particles
     
         sys.stdout.flush()
@@ -132,12 +146,22 @@ def new_root_index():
     return root_index
     
 def openup_tree(star, stars, particles_in_encounter):
+
+    # Create a binary tree for star.
+
     root = trees.BinaryTreeOnParticle(star, 'child1', 'child2')
+
+    # List the leaves.
+
     leaves = root.get_descendants_subset()
-    
+
     # Compare with the position stored when replacing the particles
     # with the root particle, and move the particles accordingly.
-    
+    # Note that once the CM is in the gravity module, the components
+    # are frozen and the coordinates are absolute, so we need the
+    # original coordinates to offset them later.  Maybe better just to
+    # store relative coordinates?  TODO.
+
     dx = star.x - star.original_x
     dy = star.y - star.original_y
     dz = star.z - star.original_z
@@ -157,18 +181,63 @@ def openup_tree(star, stars, particles_in_encounter):
     # Remove the binary tree.  It will be recreated later.
 
     stars.remove_particles(root.get_inner_nodes_subset())
-    
+
+def find_nn(star, star_in_m, stars):
+    min_dr = 1.e10
+    for s in stars:
+        dx = (s.x-star.x).number
+        dy = (s.y-star.y).number
+        dz = (s.z-star.z).number
+        dr2 = dx*dx+dy*dy+dz*dz
+        print int(star_in_m.id.number), int(s.id.number), math.sqrt(dr2)
+        if dr2 > 0 and dr2 < min_dr:
+            min_dr = dr2
+            nn = s
+        min_dr = math.sqrt(min_dr)
+    print 'star =', int(star_in_m.id.number), ' min_dr =', min_dr, \
+          ' nn =', int(nn.id.number), nn.mass.number
+
 def manage_encounter(star1, star2, stars, gravity_stars):
-    
-    # 1. Find corresponding particles in memory set.
-    star1_in_memory = star1.as_particle_in_set(stars)
+
+    # star1 and star2 are the colliding particles
+    # stars is the local particle set
+    # gravity_stars points to the gravity module data
+
+    print 'in manage_encounter'
+
+    # 1. Star1 and star2 reflect the data in the gravity module.  Find
+    #    the corresponding particles in the local particle set.
+
+    star1_in_memory = star1.as_particle_in_set(stars)	# pointer
     star2_in_memory = star2.as_particle_in_set(stars)
     
-    # 2. Create a set to perform the close encounter calculation.
+    if 0:
+        print 'star1'
+        print star1
+        print 'star1_in_memory'
+        print star1_in_memory
+        print 'star2'
+        print star2
+        print 'star2_in_memory'
+        print star2_in_memory
+        print 'sep =', math.sqrt((star1.x-star2.x).number**2
+                                 +(star1.y-star2.y).number**2
+                                 +(star1.z-star2.z).number**2)
+        print 'sep_m =', \
+            math.sqrt((star1_in_memory.x-star2_in_memory.x).number**2
+                      +(star1_in_memory.y-star2_in_memory.y).number**2
+                      +(star1_in_memory.z-star2_in_memory.z).number**2)
+        find_nn(star1, star1_in_memory, stars)
+        find_nn(star2, star2_in_memory, stars)
+
+    # 2. Create a particle set to perform the close encounter
+    #    calculation.
+
     particles_in_encounter = core.Particles(0)
     
-    # 3. Add stars to the close encounter, put substars in when
-    #    encountering a binary.
+    # 3. Add stars to the encounter set, add in components when we
+    #    encounter a binary.
+
     if not star1_in_memory.child1 is None:
         openup_tree(star1_in_memory, stars, particles_in_encounter)
     else:
@@ -179,51 +248,66 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     else:
         particles_in_encounter.add_particle(star2)
     
-    particles_in_encounter.id = -1 | units.none # need to make this -1 to
-                                                # ensure smallN will set the
-                                                # IDs, or else smallN seems
-						# to fail
+    particles_in_encounter.id = -1 | units.none  # need to make this -1 to
+                                                 # ensure smallN will set the
+                                                 # IDs, or else smallN seems
+						 # to fail... TODO
+    print 'particles in encounter:'
     print particles_in_encounter.to_string(['x','y','z','vx','vy','vz','mass'])
     
     # 4. Run the small-N encounter.
-    run_smallN(particles_in_encounter)
+
+    run_smallN(particles_in_encounter)	# NB the return value is ignored;
+					# particles_... is changed in place
     
-    # 5. Bookkeeping after encounter.
+    print 'after smallN:'
+    print particles_in_encounter.to_string(['x','y','z','vx','vy','vz','mass'])
+
+    # 5. Carry out bookkeeping after the encounter and update the
+    # gravity module with the new data.
     
-    # 5.a Create object to handle the binary information.
+    # 5a. Create object to handle the binary information.
+
     binaries = trees.BinaryTreesOnAParticleSet(particles_in_encounter,
                                                "child1", "child2")
     
-    # 5.b. Remove encountered stars from gravity code.
+    # 5b. Remove star1 and star2 from the gravity module.
+
     gravity_stars.remove_particle(star1)
     gravity_stars.remove_particle(star2)
     
-    # 5.c. Update the position and velocity of the stars in the
-    #      encounter.
+    # 5c. Update the positions and velocities of the stars (leaves) in
+    #     the encounter; open a channel from the encounter list to the
+    #     star list.
+
     tmp_channel = particles_in_encounter.new_channel_to(stars)
     tmp_channel.copy_attributes(['x','y','z', 'vx', 'vy', 'vz'])
-        
-    # 5.d Add stars not in a binary to the gravity code.
+
+    # 5d. Add stars not in a binary to the gravity code.
+
     stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
     stars_not_in_a_multiple_in_stars = \
         stars_not_in_a_multiple.get_intersecting_subset_in(stars)
     if len(stars_not_in_a_multiple_in_stars) > 0:
         gravity_stars.add_particles(stars_not_in_a_multiple_in_stars)
         
-    # 5.e. Add the inner nodes (root plus subnodes) to the stars in
-    #      memory (the descendant nodes are already part of the set).
+    # 5e. Add the inner nodes (root plus subnodes) to the stars in
+    #     memory (the descendent nodes are already part of the set).
+
     for root in binaries.iter_roots():
-        stars_in_a_multiple = root.get_descendants_subset()
+        stars_in_a_multiple = root.get_descendants_subset() # not used?
         stars.add_particles(root.get_inner_nodes_subset())
         
-    # 5.f. Add roots of the binaries tree to the gravity code.
+    # 5f. Add roots of the binaries tree to the gravity code.
+
     for root in binaries.iter_roots():
         root_in_stars = root.particle.as_particle_in_set(stars)
         root_in_stars.id = new_root_index() | units.none
         gravity_stars.add_particle(root_in_stars)
         
-    # 5.g. Store the original position and velocity of the root so
-    #      that the subparticle position can be updated later.
+    # 5g. Store the original position and velocity of the root so that
+    #     the subparticle position can be updated later.
+
     for root in binaries.iter_roots():        
         root_in_stars = root.particle.as_particle_in_set(stars)
         
@@ -365,7 +449,7 @@ def test_multiples(infile = None, number_of_stars = 40,
           "in steps of", delta_t.number
     sys.stdout.flush()
 
-    E0 = print_log(time, gravity)
+    E0 = print_log('ph4', gravity)
     
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
@@ -373,23 +457,29 @@ def test_multiples(infile = None, number_of_stars = 40,
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
     
+    # Tree structure on the stars dataset:
+
     stars.child1 = 0 | units.object_key
     stars.child2 = 0 | units.object_key
     
     while time < end_time:
         time += delta_t
-        gravity.evolve_model(time)
 
-        if stopping_condition.is_set():
-            print '\nstopping condition set at time', \
-                gravity.get_time().number,'for:\n'
-            star1 = stopping_condition.particles(0)[0]
-            star2 = stopping_condition.particles(1)[0]
-            
-            print "index of star 1", star1.index_in_code.number
-            print "index of star 2", star2.index_in_code.number
-            
-            manage_encounter(star1, star2, stars, gravity.particles)
+        while gravity.get_time() < time:
+            gravity.evolve_model(time)
+            print_log('ph4', gravity, E0)
+            if stopping_condition.is_set():
+                star1 = stopping_condition.particles(0)[0]
+                star2 = stopping_condition.particles(1)[0]
+                print '\nstopping condition set at time', \
+                    gravity.get_time().number
+                print "index of star 1 =", star1.index_in_code.number
+                print "index of star 2 =", star2.index_in_code.number
+                M,a,e,r = get_component_binary_elements(star1, star2)
+                print 'binary elements  M =', M.number, ' a =', a.number, \
+                    ' e =', e.number, ' r =', r.number
+                manage_encounter(star1, star2, stars, gravity.particles)
+            print_log('ph4', gravity, E0)
             
         ls = len(stars)
     
@@ -413,8 +503,7 @@ def test_multiples(infile = None, number_of_stars = 40,
 		print "number of stars =", len(stars)
             sys.stdout.flush()
 
-        print_log(time, gravity, E0)
-        sys.stdout.flush()
+        print_log('ph4', gravity, E0)
 
     print ''
     gravity.stop()

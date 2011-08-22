@@ -492,6 +492,8 @@ int update_particle_tree()
     b = get_tree(b_copy);	// b now is the structured tree
     UpdatedParticles.clear();
 
+    // Create indices for the CM nodes and add them to the updated list.
+
     int max_index = -1;
     for_all_leaves(hdyn, b, bb)
 	if (bb->get_index() > max_index) max_index = bb->get_index();

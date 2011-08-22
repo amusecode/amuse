@@ -197,9 +197,12 @@ int jdata::add_particle(real pmass, real pradius,
 	vel[nj][k] = pvel[k];
     }
 
-    if (0 && mpi_rank == 0) {
+    if (1 && system_time > 0 && mpi_rank == 0) {
  	cout << "add_particle: "; PRC(system_time);
  	PRC(pmass); PRC(nj); PRL(pid);
+	cout << "pos:";
+	for (int k = 0; k < 3; k++) cout << " " << pos[nj][k];
+	cout << endl << flush;
     }
 
     // Update the inverse ID structure, such that inverse[id[j]] = j.
@@ -263,6 +266,14 @@ void jdata::remove_particle(int j)
 	}
     if (add_to_list)
 	UpdatedParticles.push_back(UpdatedParticle(id[j], 1));
+
+    if (1 && system_time > 0 && mpi_rank == 0) {
+ 	cout << "remove_particle: "; PRC(system_time);
+ 	PRC(mass[j]); PRC(nj); PRL(id[j]);
+	cout << "pos:";
+	for (int k = 0; k < 3; k++) cout << " " << pos[j][k];
+	cout << endl << flush;
+    }
 
     nj--;
     if (j < nj) {

@@ -675,7 +675,7 @@ static void log_output(hdyn *b, int n_steps)
     // }
 
     int p = cout.precision(10);
-    cout << "%% " << b->get_system_time() << " ";
+    cout << "smallN%% " << b->get_system_time() << " ";
     cout.precision(p);
 
     cout << E << " " << E-E0
@@ -705,7 +705,7 @@ static void log_output(hdyn *b, int n_steps)
 static void two_body(hdyn *b, real time, real radius)
 {
     // Follow the motion of two bodies using kepler.  Advance to time
-    // or radius, whichever is sooner.
+    // or (outgoing) radius, whichever is sooner.
 
     hdyn *od = b->get_oldest_daughter();
     if (!od) return;
@@ -713,24 +713,30 @@ static void two_body(hdyn *b, real time, real radius)
     if (!yd) return;
 
     kepler *k = hdyn_to_kepler(b);
-    k->transform_to_time(time);
 
     if (k->get_energy() >= 0) {
+	k->transform_to_time(time);
 	if (k->get_separation() > radius
 	    && k->get_rel_pos()*k->get_rel_vel() > 0)
 	    k->return_to_radius(radius);
     } else {
-	real peri = k->get_apastron();
 	real apo = k->get_apastron();
-	if (radius >= apo) radius = peri + 0.999*(apo-peri);
-	if (k->get_separation() > radius) {
-	    if (k->get_rel_pos()*k->get_rel_vel() < 0)
-		k->return_to_apastron();
-	    k->return_to_radius(radius);
+	if (apo <= radius)
+	    k->transform_to_time(time);
+	else {
+	    k->advance_to_radius(radius);
+	    if (k->get_time() > time)
+		k->transform_to_time(time);
+	    else if (k->get_rel_pos()*k->get_rel_vel() < 0) {
+		real peri = k->get_apastron();
+		k->advance_to_radius(peri + 0.999*(radius-peri));
+		k->advance_to_radius(radius);
+	    
+	    }
 	}
     }
 
-    // PRL(k->get_separation());
+    b->set_system_time(k->get_time());
 
     // Update the daughters with the new orbital data.
 
@@ -745,6 +751,8 @@ static void two_body(hdyn *b, real time, real radius)
     od->set_vel(cmvel-fac*k->get_rel_vel());
     yd->set_pos(cmpos+(1-fac)*k->get_rel_pos());
     yd->set_vel(cmvel+(1-fac)*k->get_rel_vel());
+
+    delete k;
 }
 
 int smallN_evolve(hdyn *b,
@@ -765,6 +773,7 @@ int smallN_evolve(hdyn *b,
     if (n_daughters == 1)
 	return 0;
     else if (n_daughters == 2) {
+	cout << "smallN: two-body encounter" << endl << flush;
 	two_body(b, t_end, sqrt(break_r2));
 	return 0;
     }

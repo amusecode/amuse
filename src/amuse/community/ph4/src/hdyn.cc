@@ -77,7 +77,7 @@ void detach_node(hdyn *n)
     const char *func = "detach_node";
 
     if (!n) {
-	cerr << func << ": n is NULL" << endl;
+	cerr << func << ": n is NULL" << endl << flush;
 	return;
     }
 
@@ -86,7 +86,7 @@ void detach_node(hdyn *n)
     // Check if n is head without parent or sisters.
 
     if (!parent) {
-	cerr << func << ": n has no parent" << endl;
+	cerr << func << ": n has no parent" << endl << flush;
 	return;
     }
 
