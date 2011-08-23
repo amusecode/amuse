@@ -20,6 +20,7 @@ class _TestGravityCodes(TestWithMPI):
     length_unit = nbody_system.length
     speed_unit = nbody_system.speed
     mass_unit = nbody_system.mass
+    time_unit = nbody_system.time
     
     @property
     def nbody_converter(self):
@@ -134,6 +135,44 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
     
     def gravity_code_factory(self):
         return PhiGRAPE
+        
+    def test7(self):
+        factory = self.gravity_code_factory()
+        instance = self.new_instance_of_an_optional_code(factory, mode='gpu')
+        try:
+            sc = instance.stopping_conditions.collision_detection
+            
+            n = 10000
+            instance.parameters.initialize_gpu_once=1
+            sc.enable()
+            
+            particles = new_plummer_sphere(n, convert_nbody = self.nbody_converter)
+            particles.radius = 1.0 / n | self.length_unit
+            particles.move_to_center()
+            
+            instance.particles.add_particles(particles)
+            instance.commit_particles()
+            self.assertEquals(len(instance.particles), n)
+            instance.synchronize_model()
+            for t in range(100):
+                instance.evolve_model((t + 1 * 0.01) | self.time_unit)
+                print sc.is_set()
+                if sc.is_set():
+                    particle1 = sc.particles(0)[0]
+                    particle2 = sc.particles(1)[0] 
+                    newparticle = core.Particles(1)
+                    newparticle.mass = particle1.mass + particle2.mass
+                    newparticle.radius = particle2.radius
+                    newparticle.position = (particle1.position + particle2.position) /2
+                    newparticle.velocity = (particle1.velocity + particle2.velocity) /2
+                    print newparticle
+                    instance.particles.remove_particle(particle1)
+                    instance.particles.remove_particle(particle2)
+                    merged = instance.particles.add_particles(newparticle)
+                    print 'Remnant:',merged
+            
+        finally:
+            instance.stop()
 
 class TestFiGravityCode(_TestGravityCodes):
     
