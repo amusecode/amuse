@@ -1,7 +1,7 @@
 from interface import NearestNeighbor
 from amuse.support.units import units, nbody_system
 from amuse.ext import plummer
-from amuse.support.io import text
+from amuse.io import text
 
 number_of_particles = 1000
 mass_per_particle = 1 | units.MSun

@@ -2,7 +2,7 @@
 Supported File Formats
 ==========================
 
-.. automodule:: amuse.support.io
+.. automodule:: amuse.io
 
     Introduction
     ------------
@@ -19,7 +19,7 @@ Supported File Formats
     
     To write a data set to a space separated text file do:: 
         
-        >>> from amuse.support.io import write_set_to_file
+        >>> from amuse.io import write_set_to_file
         >>> from amuse.support.data.core import Particles
         >>> from amuse.support.units import units
         >>> x = Particles(100)

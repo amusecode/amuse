@@ -1,6 +1,6 @@
 from interface import NearestNeighbor
 from amuse.lab import *
-from amuse.support.io import text
+from amuse.io import text
 
 if __name__ == '__main__':
     number_of_particles = 1000

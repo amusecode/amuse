@@ -12,10 +12,10 @@ of the :class:`FileFormatProcessor` class.
 Extending
 ---------
 
-.. autoclass:: amuse.support.io.FileFormatProcessor
+.. autoclass:: amuse.io.FileFormatProcessor
     :members:
     
-.. autoclass:: amuse.support.io.FullTextFileFormatProcessor
+.. autoclass:: amuse.io.FullTextFileFormatProcessor
     :members:
         
         

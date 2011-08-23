@@ -23,7 +23,7 @@ if __name__ in ('__main__', '__plot__'):
   del plummer
 
 # reading back the file
-  from amuse.support.io import read_set_from_file
+  from amuse.io import read_set_from_file
   particles=read_set_from_file('plummer128','amuse')
 
 #plotting
