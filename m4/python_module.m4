@@ -42,7 +42,7 @@ AC_DEFUN([AC_CHECK_PYTHON_MODULE],[
       fi
       AC_SUBST(PYTHON_$1)
     else
-      VERSION=`$PYTHON -c "import $MODULE_NAME; print $VERSION_VARIABLE" 2>/dev/null`
+      VERSION=`$PYTHON -c "import $MODULE_NAME; print ($VERSION_VARIABLE)" 2>/dev/null`
       if test $? -eq 0
       then
         eval PYTHON_${MODULE_NAME}_VERSION=$VERSION

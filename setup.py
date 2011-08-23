@@ -1,4 +1,8 @@
-from distutils.core import setup
+from distribute_setup import use_setuptools
+use_setuptools()
+
+#from distutils.core import setup
+from setuptools import setup, find_packages
 from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.cmd import Command
@@ -41,6 +45,8 @@ setup(
     version = '4.x',
     cmdclass = mapping_from_command_name_to_command_class,
     ext_modules = extensions,
+    package_dir = {'': 'src'},
+    packages =  find_packages('src'),
     classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -56,6 +62,7 @@ setup(
         'Programming Language :: Fortran',
         'Topic :: Scientific/Engineering :: Astronomy',
     ],
+    include_package_data = True,
     url = 'http://www.amusecode.org/',
     author_email = 'info@amusecode.org',
     author = 'The Amuse Team',

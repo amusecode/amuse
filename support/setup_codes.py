@@ -26,11 +26,26 @@ except ImportError:
     
 class CodeCommand(Command):
     user_options = [
+        ('build-lib=', 'b',
+         "directory for compiled extension modules"),
+        ('build-temp=', 't',
+         "directory for temporary files (build by-products)"),
+        ('inplace', 'i',
+         "ignore build-lib and put compiled extensions into the source " +
+         "directory alongside your pure Python modules"),
+        ('define=', 'D',
+         "C preprocessor macros to define"),
+        ('undef=', 'U',
+         "C preprocessor macros to undefine"),
+        ('debug', 'g',
+         "compile/link with debugging information"),
+        ('force', 'f',
+         "forcibly build everything (ignore file timestamps)"),
         ('code-dir=', 'd', "directory containing codes"),
         ('lib-dir=', 'l', "directory containing libraries to build"),
     ]
 
-    boolean_options = ['force']
+    boolean_options = ['force', 'inplace', 'debug']
 
     def initialize_options (self):
         self.codes_dir = None
@@ -40,11 +55,30 @@ class CodeCommand(Command):
         self.environment_notset = {}
         self.found_cuda = False
         self.found_sapporo = False
+        self.inplace = 1
+        
+        self.build_lib = None
+        self.build_temp = None
+        self.debug = None
+        self.force = None
+
+
         
     def finalize_options (self):
-        if self.codes_dir is None:
-            self.codes_dir = os.path.join(self.amuse_src_dir,'community')
+        self.set_undefined_options(
+            'build',
+           ('build_lib', 'build_lib'),
+           ('build_temp', 'build_temp'),
+           ('debug', 'debug'),
+           ('force', 'force'),
+        )
         
+        if self.codes_dir is None:
+            if self.inplace:
+                self.codes_dir = os.path.join(self.amuse_src_dir,'community')
+            else:
+                self.codes_dir = os.path.join(self.build_lib, 'amuse', 'community')
+                
         if self.lib_dir is None:
             self.lib_dir = 'lib'
         
@@ -158,10 +192,10 @@ class CodeCommand(Command):
             return
 
     def set_java_variables(self):
-	if is_configured:
+        if is_configured:
             self.environment['JNI_INCLUDES'] = config.java.jni_includes
             self.environment['JDK'] = config.java.jdk
-	    return
+        return
 
     def set_libdir_variables(self):
         for varname in ('SAPPORO_LIBDIRS', 'GRAPE6_LIBDIRS'):
