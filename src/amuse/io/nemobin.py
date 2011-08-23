@@ -1,16 +1,18 @@
+import struct
+import array
+import numpy
+
+from collections import namedtuple
+
 from amuse.support.data import core
 from amuse.support.core import late, OrderedMultiDictionary
 from amuse.support.units import units
 from amuse.support.units import nbody_system
-
-
-from collections import namedtuple
-
-
-import struct
-import array
-import numpy
 from amuse.io import base
+
+
+
+
 class NemoItemType(type):
     mapping = {}
     def __new__(metaclass, name, bases, dict):

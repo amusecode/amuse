@@ -1,10 +1,10 @@
 from amuse.support.data import core
 from amuse.support.core import late
 from amuse.support.units import units
-
+from amuse.io import base
 
 import numpy
-from amuse.io import base
+
 class VtkStructuredGrid(base.FileFormatProcessor):
     """
     Process a text file containing a table of values separated by a predefined character

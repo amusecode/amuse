@@ -1,10 +1,10 @@
 from amuse.support.data import core
 from amuse.support.core import late
 from amuse.support.units import units
-
+from amuse.io import base
 
 import re
-from amuse.io import base
+
 class LineBasedFileCursor(object):
     
     def __init__(self, file):

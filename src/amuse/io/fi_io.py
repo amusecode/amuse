@@ -1,14 +1,15 @@
+import struct
+import numpy
+
+from collections import namedtuple
+
 from amuse.support.data import core
 from amuse.support.core import late
 from amuse.support.units import units
 from amuse.support.units import nbody_system
-
-
-from collections import namedtuple
-
-import struct
-import numpy
 from amuse.io import base
+
+
 ioversion=2
 
 nheader=8

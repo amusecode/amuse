@@ -1,10 +1,11 @@
+import re
+import numpy
+
 from amuse.support.data import core
 from amuse.support.units import units
 from amuse.support.units import nbody_system
-
-import re
-import numpy as np
 from amuse.io import base
+
 TEMPLATE = \
 """set SnapShot
   set Parameters
@@ -101,7 +102,7 @@ class Tsf2Particles(object):
 
         self.number_of_particles = no_particles
         self.masses = self.return_numbers_from_paragraph(lines, start_masses, start_phasespace)
-        self.phases = np.reshape(self.return_numbers_from_paragraph(lines, start_phasespace, len(lines)),
+        self.phases = numpy.reshape(self.return_numbers_from_paragraph(lines, start_phasespace, len(lines)),
                                  [no_particles,no_phases,no_dimensions])
 
     def convert_to_particles(self, string, converter = None):

@@ -1,12 +1,10 @@
-from amuse.support.core import late
-from amuse.support import exceptions
-import os.path
-
 import textwrap
 import struct
 import numpy
+import os.path
 
-
+from amuse.support.core import late
+from amuse.support import exceptions
 
 registered_fileformat_processors = {}
 
