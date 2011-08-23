@@ -870,3 +870,42 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     def _get_writeable_attribute_names(self):
         return self.writable_attributes
 
+
+class ParticleSpecificSelectSubsetMethod(object):
+    """
+    Instances wrap a function that can take a particle index, plus a list
+    offset and returns one index. This method is most 
+    useful to return links between particles (subparticles or
+    nearest neighbors). Instances also need a function to get
+    the number of links.
+    
+    .. code-block:: python
+    
+        output_index = instance.get_nearest_neigbors(index_of_the_particle, input_index)
+    
+    The index or indices are converted to a particle subset.
+    """
+    def __init__(self, method,  get_number_of_particles_in_set_method = None, public_name = None):
+        self.method = method
+        self.public_name = public_name
+        self.get_number_of_particles_in_set_method = get_number_of_particles_in_set_method
+
+    def apply_on_all(self, particles):
+        raise Exception("Getting all links to other particles from all particles in a set is not implemented yet")
+    
+    def apply_on_one(self, set,  particle):
+        
+        from_indices = set._private.attribute_storage.get_indices_of([particle.key,])
+        
+        if not self.get_number_of_particles_in_set_method is None:
+            number_of_particles_in_set = self.get_number_of_particles_in_set_method(from_indices)[0]
+            print number_of_particles_in_set
+            indices = self.method(from_indices * number_of_particles_in_set, range(number_of_particles_in_set))
+        else:
+            index = self.method(*query_identifiers)
+            indices = [index]
+            
+        print "indices", indices    
+        keys = set._private.attribute_storage._get_keys_for_indices_in_the_code(indices)  
+     
+        return particle.as_set()._subset(keys)

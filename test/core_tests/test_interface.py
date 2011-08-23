@@ -620,6 +620,35 @@ class TestParticlesWithBinding(amusetest.TestCase):
             sorted_masses = sorted(list(self.masses.iteritems()), key = lambda x : x[1])
             return [sorted_masses[x][0] for x in offset]
             
+        def get_number_of_particles_with_same_mass(self, id):
+            result = []
+            for index in id:
+                mass = self.masses[index]
+                count = 0
+            
+                for otherindex, m in self.masses.iteritems():
+                    if otherindex == index:
+                        continue
+                    if abs(m - mass) < 1.0:
+                        count += 1
+                result.append(count)
+            return result
+            
+        def get_particle_with_same_mass(self, id, offset):
+            result = []
+            for index, index_in_list in zip(id, offset):
+                mass = self.masses[index]
+                count = 0
+                for otherindex, m in self.masses.iteritems():
+                    if otherindex == index:
+                        continue
+                    if abs(m - mass) < 1.0:
+                        count += 1
+                        if count == (index_in_list + 1):
+                            result.append(otherindex)
+                            break
+            return result
+            
             
     def test1(self):
         original = self.TestInterface()
@@ -809,7 +838,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         
         
-
+        
     def test6(self):
         original = self.TestInterface()
         
@@ -854,6 +883,45 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(subset[0], local_particles[0])
         self.assertEquals(subset[1], local_particles[1])
     
+
+    def test7(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_mass',(handler.NO_UNIT,), (nbody_system.mass, handler.ERROR_CODE))
+        handler.add_method('set_mass',(handler.NO_UNIT, nbody_system.mass,), (handler.ERROR_CODE,))
+        handler.add_method('new_particle',(nbody_system.mass,), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+        
+        handler = instance.get_handler('PARTICLES')
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
+        handler.add_subselect_from_particle('particles', 'get_particle_with_same_mass', get_number_of_particles_name = 'get_number_of_particles_with_same_mass', public_name = 'samemass')
+        
+        
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.kg, 5.0 | units.m )
+        
+        handler = instance.get_handler('UNIT')
+        handler.set_nbody_converter(convert_nbody)
+    
+        local_particles = core.Particles(4)
+        local_particles.mass = units.kg.new_quantity([3.5, 4.0, 6.0, 4.5])
+        
+        remote_particles = instance.particles
+        remote_particles.add_particles(local_particles)
+        
+        self.assertEquals(len(instance.particles), 4)
+        self.assertEquals(instance.particles[1].mass, 4.0 | units.kg)
+        subset = instance.particles[1].samemass()
+        self.assertEquals(len(subset), 2)
+        self.assertEquals(subset[0], local_particles[0])
+        self.assertEquals(subset[1], local_particles[3])
     
 class TestGridWithBinding(amusetest.TestCase):
     class TestInterface(object):
