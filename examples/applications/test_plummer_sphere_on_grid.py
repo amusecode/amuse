@@ -5,8 +5,8 @@ In this script we simulate a plummer sphere on a grid
 from amuse.support.core import late
 from amuse.support.data.values import VectorQuantity
 from amuse.support.data.core import Grid, Particles
-from amuse.support import io
-from amuse.support.io import text
+
+
 from amuse.support.units.generic_unit_system import *
 from amuse.support.units.generic_unit_converter import *
 from amuse.support.units import constants
@@ -31,11 +31,8 @@ except ImportError:
     
 from numpy import sqrt, arange, searchsorted, tanh, pi
 from optparse import OptionParser
-
-
-#Grid.add_global_vector_attribute("position", ["x","y","z"])
-
-
+from amuse import io
+from amuse.io import text
 class HydroGridAndNbody(object):
     
     def __init__(self, gridcode, nbodycode):

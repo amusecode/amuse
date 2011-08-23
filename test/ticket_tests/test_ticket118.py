@@ -1,9 +1,8 @@
-from amuse.support import io
 from amuse.test import amusetest
 
 from amuse.support.units import units
 import os.path
-
+from amuse import io
 class TestsForTicket118(amusetest.TestCase):
     
     def test1(self):

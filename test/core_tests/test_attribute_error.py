@@ -4,11 +4,11 @@ from amuse.support.data.core import *
 from amuse.support.units import units
 from amuse.community.hermite0.interface import Hermite
 from amuse.support.units import nbody_system
-from amuse.support.io import store
+
 import numpy
 import math
 import os
-
+from amuse.io import store
 class TestAttributeError(amusetest.TestCase):
     
     def test1(self):

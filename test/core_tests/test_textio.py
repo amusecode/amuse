@@ -1,5 +1,3 @@
-from amuse.support import io
-from amuse.support.io import text
 from amuse.support.units import units
 from amuse.support.units import generic_unit_system
 from amuse.support.data import core
@@ -7,7 +5,8 @@ from amuse.test import amusetest
 import StringIO
 import textwrap
 import os
-
+from amuse import io
+from amuse.io import text
 class CursorTests(amusetest.TestCase):
     
     def test1(self):

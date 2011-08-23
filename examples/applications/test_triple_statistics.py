@@ -12,7 +12,7 @@ import numpy
 import sys
 import time
 from amuse.lab import *
-from amuse.support.io import text
+
 
 from multiprocessing import Process,Queue
 
@@ -24,7 +24,7 @@ except ImportError:
 
 
 from mpi4py import MPI
-
+from amuse.io import text
 class SimulateTripleSystemUntilDecay(object):
     gravitational_constant = nbody_system.G
     distance_relative_to_inner_binary_axis = 50

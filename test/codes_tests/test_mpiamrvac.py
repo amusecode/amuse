@@ -5,10 +5,10 @@ from amuse.community.mpiamrvac.interface import MpiAmrVacInterface
 from amuse.community.mpiamrvac.interface import MpiAmrVac
 
 from amuse.support.units import generic_unit_system
-from amuse.support import io
+
 import os
 import numpy
-
+from amuse import io
 class TestMpiAmrVacInterface(TestWithMPI):
     
     def test1(self):

@@ -1,6 +1,6 @@
 from amuse.support.data import core
-from amuse.support.io import starlab
-from amuse.support import io
+
+
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 
@@ -8,7 +8,8 @@ from amuse.test import amusetest
 import os.path
 import StringIO
 import numpy
-
+from amuse import io
+from amuse.io import starlab
 plummer_scaled_content = """(Particle
   N = 5
 (Log

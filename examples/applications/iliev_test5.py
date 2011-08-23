@@ -26,7 +26,7 @@ from amuse.community.fi.interface import Fi
 from amuse.support.data import core
 
 from amuse.ext.evrard_test import uniform_random_unit_cube,uniform_unit_sphere
-
+from amuse.io import write_set_to_file
 try:
     from amuse import plot
     from matplotlib import pyplot
@@ -34,7 +34,7 @@ try:
 except ImportError:
     IS_PLOT_AVAILABLE = False
 
-from amuse.support.io import write_set_to_file
+
 
 
 """

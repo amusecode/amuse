@@ -34,8 +34,8 @@ http://cococubed.asu.edu/code_pages/exact_riemann.shtml
 from amuse.support.core import late
 from amuse.support.data.values import VectorQuantity
 from amuse.support.data.core import Grid, Particles
-from amuse.support import io
-from amuse.support.io import text
+
+
 from amuse.support.units.generic_unit_system import *
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.units.nbody_system import nbody_to_si
@@ -62,9 +62,8 @@ except ImportError:
     
 from numpy import sqrt, arange, searchsorted
 from optparse import OptionParser
-
-
-
+from amuse import io
+from amuse.io import text
 class CalculateExactSolutionIn1D(object):
     number_of_points = 1000
     

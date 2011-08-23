@@ -1,5 +1,5 @@
 from amuse.support.data import core
-from amuse.support.io import phigrape
+
 from amuse.support.units import units
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
@@ -10,7 +10,7 @@ from amuse.support.data import values
 from amuse.test import amusetest
 import os.path
 import numpy
-
+from amuse.io import phigrape
 class Test(amusetest.TestCase):
 
 

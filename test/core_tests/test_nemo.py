@@ -1,5 +1,5 @@
 from amuse.support.data import core
-from amuse.support.io import nemotsf
+
 from amuse.support.units import units
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
@@ -7,8 +7,8 @@ from amuse.support.data import values
 
 from amuse.test import amusetest
 import os.path
-import numpy 
-
+import numpy
+from amuse.io import nemotsf
 class Test(amusetest.TestCase):
     
     def setUp(self):

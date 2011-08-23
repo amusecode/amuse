@@ -9,8 +9,7 @@ available to read and write to a variety of formats.
 from amuse.support.units import nbody_system
 
 from amuse.ext.plummer import new_plummer_sphere
-from amuse.support.io import write_set_to_file
-
+from amuse.io import write_set_to_file
 if __name__ in ('__main__', '__plot__'):
 
 # generate a particle set
