@@ -627,7 +627,6 @@ class Kepler(CommonCode):
                           (
                               units.none,
                               units.none,
-                              units.none,
                               object.ERROR_CODE
                           ))
 
