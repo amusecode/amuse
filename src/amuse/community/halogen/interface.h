@@ -3,7 +3,6 @@ extern "C" {
     #include <math.h>
     #include <string.h>
     #include <stdlib.h>
-    #include <malloc.h>
     #include <assert.h>
     #include <time.h>
     #include "src/definitions.h"

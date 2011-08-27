@@ -8,7 +8,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include <malloc.h>
+#include <malloc/malloc.h>
 #include <assert.h>
 #include <time.h>
 #include "definitions.h"

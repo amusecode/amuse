@@ -2321,22 +2321,33 @@ CONTAINS
         
         get_local_index_of_grid = 0
         
-        number_of_grids_before = 0
-        do ipe = 0, mype-1
-            do iigrid = 1, ngridshi
-                if(igrid_inuse(iigrid, ipe)) then
-                   number_of_grids_before = number_of_grids_before + 1
-                 end if
-            end do
-        end do
+        if(global_index_of_grid < Morton_start(mype)) then
+            get_local_index_of_grid = 0
+            return
+        end if 
+        if(global_index_of_grid > Morton_stop(mype)) then
+            get_local_index_of_grid = 0
+            return
+        end if 
         
-        if ( global_index_of_grid .LE. number_of_grids_before ) then
-            get_local_index_of_grid = 0
-        else if ( global_index_of_grid .GT. number_of_grids_before + igridstail ) then
-            get_local_index_of_grid = 0
-        else
-            get_local_index_of_grid = igrids(global_index_of_grid - number_of_grids_before)
-        end if
+        get_local_index_of_grid = sfc_to_igrid(global_index_of_grid)
+        
+        !number_of_grids_before = 0
+        !do ipe = 0, mype-1
+        !    do iigrid = 1, ngridshi
+        !        if(igrid_inuse(iigrid, ipe)) then
+        !           number_of_grids_before = number_of_grids_before + 1
+        !         end if
+        !    end do
+        !end do
+        
+        !if ( global_index_of_grid .LE. number_of_grids_before ) then
+        !    get_local_index_of_grid = 0
+        !else if ( global_index_of_grid .GT. number_of_grids_before + igridstail ) then
+        !    get_local_index_of_grid = 0
+        !else
+        !    get_local_index_of_grid = igrids(global_index_of_grid - number_of_grids_before)
+        !end if
         
         !print *, "get_local_index_of_grid", global_index_of_grid, get_local_index_of_grid,&
         !&number_of_grids_before,number_of_grids_before+igridstail
