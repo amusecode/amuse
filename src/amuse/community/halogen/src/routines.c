@@ -8,7 +8,9 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include <malloc/malloc.h>
+#if !defined(__APPLE__)
+#include <malloc.h>
+#endif
 #include <assert.h>
 #include <time.h>
 #include "definitions.h"
