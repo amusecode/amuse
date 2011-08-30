@@ -142,7 +142,7 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
         try:
             sc = instance.stopping_conditions.collision_detection
             
-            n = 10000
+            n = 1000
             instance.parameters.initialize_gpu_once=1
             sc.enable()
             
@@ -154,8 +154,8 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
             instance.commit_particles()
             self.assertEquals(len(instance.particles), n)
             instance.synchronize_model()
-            for t in range(100):
-                instance.evolve_model((t + 1 * 0.01) | self.time_unit)
+            for t in range(1, 101):
+                instance.evolve_model((t * 0.01) | self.time_unit)
                 print sc.is_set()
                 if sc.is_set():
                     particle1 = sc.particles(0)[0]
@@ -165,11 +165,10 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
                     newparticle.radius = particle2.radius
                     newparticle.position = (particle1.position + particle2.position) /2
                     newparticle.velocity = (particle1.velocity + particle2.velocity) /2
-                    print newparticle
                     instance.particles.remove_particle(particle1)
                     instance.particles.remove_particle(particle2)
                     merged = instance.particles.add_particles(newparticle)
-                    print 'Remnant:',merged
+                    print 'Remnant:\n',merged
             
         finally:
             instance.stop()
