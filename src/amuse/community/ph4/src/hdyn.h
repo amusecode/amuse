@@ -30,7 +30,7 @@ class hdyn
     static real r2_crit;
     static real gamma2_unpert;		// threshold for unperturbed motion
     static real gamma_inv3;
-    static int cm_index;
+    static int cm_index;		// next index for a CM node
 
     // Particle properties:
 
@@ -77,7 +77,11 @@ class hdyn
     void set_gamma(const real g)        {gamma2_unpert = g*g;
 					 gamma_inv3 = pow(fmax(gamma2_unpert,
 							  1.e-120), -1./6);}
-    void set_cm_index(int i)		{cm_index = i;}
+    void set_cm_index(int i)
+    {
+	cm_index = i;
+	// cout << "hdyn set_cm_index " << cm_index << endl << flush;
+    }
 
     void set_index(const int n)         {index = n;}
     void set_mass(const real m)         {mass = m;}

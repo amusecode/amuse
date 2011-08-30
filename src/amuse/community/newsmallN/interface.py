@@ -116,7 +116,7 @@ class SmallNInterface(CodeInterface,
     @legacy_function
     def set_gamma():
         """
-        Set the current time step parameter.
+        Set the unperturbed threshold.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('gamma', dtype='float64',
@@ -127,7 +127,7 @@ class SmallNInterface(CodeInterface,
     @legacy_function
     def get_gamma():
         """
-        Set the current system time step parameter.
+        Get the unperturbed threshold.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('gamma', dtype='float64',
@@ -138,7 +138,7 @@ class SmallNInterface(CodeInterface,
     @legacy_function
     def set_allow_full_unperturbed():
         """
-        Set the current time step parameter.
+        Set flag to allow full unperturbed motion.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('allow_full_unpert', dtype='int32',
@@ -149,10 +149,32 @@ class SmallNInterface(CodeInterface,
     @legacy_function
     def get_allow_full_unperturbed():
         """
-        Set the current system time step parameter.
+        Get flag to allow full unperturbed motion.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('allow_full_unpert', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_cm_index():
+        """
+        Set the current time step parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('cm_index', dtype='int32',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_cm_index():
+        """
+        Set the current system time step parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('cm_index', dtype='int32',
                               direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -287,6 +309,14 @@ class SmallN(GravitationalDynamics):
             default_value = 1 | units.none
         )
         
+        object.add_method_parameter(
+            "get_cm_index",		   # getter name in interface.cc
+            "set_cm_index",		   # setter name in interface.cc
+            "cm_index",			   # python parameter name
+            "current CM index",	           # description
+            default_value = -1 | units.none
+        )
+        
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
         object.add_getter("particles", 'get_children_of_particle')
@@ -323,6 +353,10 @@ class SmallN(GravitationalDynamics):
         object.add_method("get_allow_full_unperturbed",
                           (), (units.none, object.ERROR_CODE))
         object.add_method("set_allow_full_unperturbed",
+                          (units.none), (object.ERROR_CODE))
+        object.add_method("get_cm_index",
+                          (), (units.none, object.ERROR_CODE))
+        object.add_method("set_cm_index",
                           (units.none), (object.ERROR_CODE))
 
         object.add_method("set_break_scale",

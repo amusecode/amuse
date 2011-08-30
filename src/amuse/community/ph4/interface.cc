@@ -148,6 +148,7 @@ int recommit_particles()
     // idata arrays.  To resize idata, just delete and create a new
     // one.  Resizing jdata is more complicated -- defer for now.
 
+    cout << "recommitting..." << endl << flush;
     if (!jd->use_gpu)
 	jd->predict_all(jd->system_time, true);	// set pred quantities
     else

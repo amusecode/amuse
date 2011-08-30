@@ -197,14 +197,6 @@ int jdata::add_particle(real pmass, real pradius,
 	vel[nj][k] = pvel[k];
     }
 
-    if (1 && system_time > 0 && mpi_rank == 0) {
- 	cout << "add_particle: "; PRC(system_time);
- 	PRC(pmass); PRC(nj); PRL(pid);
-	cout << "pos:";
-	for (int k = 0; k < 3; k++) cout << " " << pos[nj][k];
-	cout << endl << flush;
-    }
-
     // Update the inverse ID structure, such that inverse[id[j]] = j.
     // Use an STL map, so we don't have to worry about the range or
     // sparseness of the IDs in use.
@@ -224,6 +216,16 @@ int jdata::add_particle(real pmass, real pradius,
     }
 
     nj++;
+
+    if (1 && system_time > 0 && mpi_rank == 0) {
+ 	cout << "add_particle: "; PRC(system_time);
+ 	PRC(pmass); PRC(pid); PRL(nj);
+	cout << "    pos:";
+	for (int k = 0; k < 3; k++) cout << " " << pos[nj-1][k];
+	cout << endl << "    vel:";
+	for (int k = 0; k < 3; k++) cout << " " << vel[nj-1][k];
+	cout << endl << flush;
+    }
 
     // AMUSE bookkeeping:
 
@@ -267,15 +269,19 @@ void jdata::remove_particle(int j)
     if (add_to_list)
 	UpdatedParticles.push_back(UpdatedParticle(id[j], 1));
 
+    nj--;
+
     if (1 && system_time > 0 && mpi_rank == 0) {
  	cout << "remove_particle: "; PRC(system_time);
- 	PRC(mass[j]); PRC(nj); PRL(id[j]);
-	cout << "pos:";
+	cout << "id = " << id[j] << ",  mass = " << mass[j] << ",  ";
+ 	PRL(nj);
+	cout << "    pos:";
 	for (int k = 0; k < 3; k++) cout << " " << pos[j][k];
+	cout << endl << "    vel:";
+	for (int k = 0; k < 3; k++) cout << " " << vel[j][k];
 	cout << endl << flush;
     }
 
-    nj--;
     if (j < nj) {
 	sched->remove_particle(nj);
 	id[j] = id[nj];

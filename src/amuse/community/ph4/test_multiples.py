@@ -29,9 +29,9 @@ def print_log(s, gravity, E0 = 0.0 | nbody_system.energy):
     print ""
     print s+':', \
 	"time =", gravity.get_time().number, \
-        " mass = ", M.number, \
-        " energy = ", E.number, U.number, T.number, \
-        " dE/E0 = ", (E/E0 - 1).number
+        " mass = ", M.number, " dE/E0 = ", (E/E0 - 1).number
+    print ' '*(1+len(s)), "energies = ", E.number, U.number, T.number
+        
     #print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
     #	(s+"%%", time.number, M.number, T.number, U.number, \
     #    E.number, Ebin.number, Rv.number, Q.number)
@@ -43,15 +43,16 @@ def get_component_binary_elements(comp1, comp2):
     kep.initialize_code()
 
     mass = comp1.mass + comp2.mass
-    pos = [comp2.x-comp1.x, comp2.y-comp1.y, comp2.z-comp1.z]
-    vel = [comp2.vx-comp1.vx, comp2.vy-comp1.vy, comp2.vz-comp1.vz]
+    pos = comp2.position - comp1.position
+    vel = comp2.velocity - comp1.velocity
     kep.initialize_from_dyn(mass, pos[0], pos[1], pos[2],
                             vel[0], vel[1], vel[2])
     a,e = kep.get_elements()
     r = kep.get_separation()
+    E,J = kep.get_integrals()	# per unit reduced mass, note
     kep.stop()
 
-    return mass,a,e,r
+    return mass,a,e,r,E
 
 def get_cm_binary_elements(p):
     return get_component_binary_elements(p.child1, p.child2)
@@ -67,10 +68,12 @@ def run_smallN(
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     gravity.parameters.timestep_parameter = accuracy_parameter
+    gravity.parameters.cm_index = 2001
+    gravity.commit_parameters()
 
     time = 0 | nbody_system.time
 
-    print "adding particles to smallN"
+    print "\nadding particles to smallN"
     sys.stdout.flush()
     gravity.set_time(time);
     gravity.particles.add_particles(particles)
@@ -117,21 +120,23 @@ def run_smallN(
             # we loop over roots (top-level nodes) and print data on
             # all binaries below each.
 
-            print "binaries:"
+            print "smallN binaries:"; sys.stdout.flush()
             x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
             roots = list(x.iter_roots())
             for r in roots:
                 for level, particle in r.iter_levels():
                     print '  '*level, int(particle.id.number),
                     if not particle.child1 is None:
-                        M,a,e,r = get_cm_binary_elements(particle)
-                        print ' ( M =', M.number, ' a =', a.number, \
-                              ' e =', e.number, ' r =', r.number, ')'
+                        M,a,e,r,E = get_cm_binary_elements(particle)
+                        print " mass = %.5e" % (M.number)
+                        m1 = particle.child1.mass
+                        m2 = particle.child2.mass
+                        print_elements('      ', a, e, r, E*m1*m2/M)
                     else:
                         print ''
                     sys.stdout.flush()
 
-            return particles
+            return E0
     
         sys.stdout.flush()
     
@@ -147,7 +152,9 @@ def new_root_index():
     
 def openup_tree(star, stars, particles_in_encounter):
 
-    # Create a binary tree for star.
+    # Create a binary tree for star.  Note that star is in the memory
+    # set, and so star and leaves all have IDs reflecting the naming in
+    # the dynamics module.
 
     root = trees.BinaryTreeOnParticle(star, 'child1', 'child2')
 
@@ -159,8 +166,9 @@ def openup_tree(star, stars, particles_in_encounter):
     # with the root particle, and move the particles accordingly.
     # Note that once the CM is in the gravity module, the components
     # are frozen and the coordinates are absolute, so we need the
-    # original coordinates to offset them later.  Maybe better just to
-    # store relative coordinates?  TODO.
+    # original coordinates to offset them later.
+
+    # Better just to store relative coordinates.  TODO.
 
     dx = star.x - star.original_x
     dy = star.y - star.original_y
@@ -178,76 +186,298 @@ def openup_tree(star, stars, particles_in_encounter):
     
     particles_in_encounter.add_particles(leaves)
     
-    # Remove the binary tree.  It will be recreated later.
+    # Remove the inner (CM) binary tree nodes from the stars list.
+    # New ones will be added later as necessary.
 
     stars.remove_particles(root.get_inner_nodes_subset())
 
-def find_nn(star, star_in_m, stars):
+def sep2(star1, star2):			# squared separation of star1 and star2
+    return ((star1.position-star2.position).number**2).sum()
+
+def sep(star1, star2):			# separation of star1 and star2
+    return math.sqrt(sep2(star1, star2))
+
+def phi_tidal(star1, star2, star3):	# compute tidal potential of
+					# (star1,star2) relative to star3
+    phi13 = -star1.mass*star3.mass/sep(star1,star3)
+    phi23 = -star2.mass*star3.mass/sep(star2,star3)
+    m12 = star1.mass + star2.mass
+    f1 = star1.mass/m12
+    cmx = (f1*star1.x+(1-f1)*star2.x).number
+    cmy = (f1*star1.y+(1-f1)*star2.y).number
+    cmz = (f1*star1.z+(1-f1)*star2.z).number
+    phicm = -m12*star3.mass/math.sqrt((star3.x.number-cmx)**2
+                                       + (star3.y.number-cmy)**2
+                                       + (star3.z.number-cmz)**2)
+    return (phi13+phi23-phicm).number
+
+def find_nnn(star1, star2, stars):	# print next nearest neighbor
+				        # of (star1, star2)
     min_dr = 1.e10
-    for s in stars:
-        dx = (s.x-star.x).number
-        dy = (s.y-star.y).number
-        dz = (s.z-star.z).number
-        dr2 = dx*dx+dy*dy+dz*dz
-        print int(star_in_m.id.number), int(s.id.number), math.sqrt(dr2)
-        if dr2 > 0 and dr2 < min_dr:
-            min_dr = dr2
-            nn = s
-        min_dr = math.sqrt(min_dr)
-    print 'star =', int(star_in_m.id.number), ' min_dr =', min_dr, \
-          ' nn =', int(nn.id.number), nn.mass.number
+    id1 = star1.id.number
+    id2 = star2.id.number
+    for s in stars:			# wrong - should omit children TODO
+        sid = s.id.number
+        if sid != id1 and sid != id2:
+            dr2 = sep2(s, star1)
+            if dr2 > 0 and dr2 < min_dr:
+                min_dr = dr2
+                nnn = s
+    min_dr = math.sqrt(min_dr)
+    print 'star =', int(id1), ' min_dr =', min_dr, \
+          ' nnn =', int(nnn.id.number), '(', nnn.mass.number, ')'
+    print '    phi_tidal =', phi_tidal(star1, star2, nnn)
+    print '    nnn pos:', nnn.x.number, nnn.y.number, nnn.z.number
+    sys.stdout.flush()
+
+    return nnn
+
+def offset_particle_tree(particle, dpos, dvel):
+
+    # Recursively offset a particle and all of its descendants by
+    # the specified position and velocity.
+
+    if not particle.child1 is None:
+        offset_particle_tree(particle.child1, dpos, dvel)
+    if not particle.child2 is None:
+        offset_particle_tree(particle.child2, dpos, dvel)
+    particle.position += dpos
+    particle.velocity += dvel
+    # print 'offset', int(particle.id.number), 'by', dpos; sys.stdout.flush()
+
+def compress_binary_components(comp1, comp2, scale):
+
+    # Compress the two-body system consisting of comp1 and comp2 to
+    # lie within distance scale of one another.
+
+    pos1 = comp1.position
+    pos2 = comp2.position
+    sep12 = ((pos2-pos1)**2).sum()
+
+    if sep12 > scale*scale:
+        print '\ncompressing components', int(comp1.id.number), \
+              'and', int(comp2.id.number), 'to separation', scale.number
+        sys.stdout.flush()
+        mass1 = comp1.mass
+        mass2 = comp2.mass
+        total_mass = mass1 + mass2
+        vel1 = comp1.velocity
+        vel2 = comp2.velocity
+        cmpos = (mass1*pos1+mass2*pos2)/total_mass
+        cmvel = (mass1*vel1+mass2*vel2)/total_mass
+
+        # For now, create and delete a temporary kepler
+        # process to handle the transformation.  Obviously
+        # more efficient to define a single kepler at the
+        # start of the calculation and reuse it.
+
+        kep = Kepler(redirection = "none")
+        kep.initialize_code()
+        mass = comp1.mass + comp2.mass
+        rel_pos = pos2 - pos1
+        rel_vel = vel2 - vel1
+        kep.initialize_from_dyn(mass,
+                                rel_pos[0], rel_pos[1], rel_pos[2],
+                                rel_vel[0], rel_vel[1], rel_vel[2])
+        M,th = kep.get_angles()
+        if M < 0:
+            # print 'approaching'
+            kep.advance_to_periastron()
+            kep.advance_to_radius(scale)
+        else:
+            # print 'receding'
+            kep.return_to_radius(scale)
+
+        # a,e = kep.get_elements()
+        # r = kep.get_separation()
+        # E,J = kep.get_integrals()
+        # print 'kepler: a,e,r =', a.number, e.number, r.number
+        # print 'E, J =', E, J
+
+        # Note: if periastron > scale, we are now at periastron.
+
+        new_rel_pos = kep.get_separation_vector()
+        new_rel_vel = kep.get_velocity_vector()
+        kep.stop()
+
+        # Enew = 0
+        # r2 = 0
+        # for k in range(3):
+        #     Enew += 0.5*(new_rel_vel[k].number)**2
+        #     r2 += (new_rel_pos[k].number)**2
+        # rnew = math.sqrt(r2)
+        # Enew -= mass.number/r1
+        # print 'E, Enew, rnew =', E.number, E1, r1
+
+        # Problem: the vectors returned by kepler are lists,
+        # not numpy arrays, and it looks as though we can say
+        # comp1.position = pos, but not comp1.position[k] =
+        # xxx, as we'd like...  Also, we don't know how to
+        # copy a numpy array with units...  TODO
+
+        newpos1 = pos1 - pos1	# stupid trick to create zero vectors
+        newpos2 = pos2 - pos2	# with the proper form and units...
+        newvel1 = vel1 - vel1
+        newvel2 = vel2 - vel2
+
+        frac2 = mass2/total_mass
+        for k in range(3):
+            dxk = new_rel_pos[k]
+            dvk = new_rel_vel[k]
+            newpos1[k] = cmpos[k] - frac2*dxk
+            newpos2[k] = cmpos[k] + (1-frac2)*dxk
+            newvel1[k] = cmvel[k] - frac2*dvk
+            newvel2[k] = cmvel[k] + (1-frac2)*dvk
+
+        # Perform the changes to comp1 and comp2, and recursively
+        # transmit them to the (currently absolute) coordinates of
+        # all lower components.
+
+        offset_particle_tree(comp1, newpos1-pos1, newvel1-vel1)
+        offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
+
+def print_elements(s, a, e, r, E):
+    print '%s elements  a = %.4e  e = %.5f  r = %.4e  E = %.4e' \
+	  % (s, a.number, e.number, r.number, E.number)
+
+def print_multiple(m, level=0):
+
+    # Recursively print the structure of (multipe) node m.
+
+    print '    '*level, int(m.id.number), m.mass.number
+    print '    '*level, m.position.number
+    print '    '*level, m.velocity.number
+    if not m.child1 is None and not m.child2 is None:
+        M,a,e,r,E = get_component_binary_elements(m.child1, m.child2)
+        print_elements(' '+'    '*level+'binary', a, e, r,
+                       (E*m.child1.mass*m.child2.mass/M))
+    if not m.child1 is None:
+        print_multiple(m.child1, level+1)
+    if not m.child2 is None:
+        print_multiple(m.child2, level+1)
+
+def print_pair_of_stars(s, star1, star2):
+    m1 = star1.mass
+    m2 = star2.mass
+    M,a,e,r,E = get_component_binary_elements(star1, star2)
+    print_elements(s, a, e, r, E*m1*m2/(m1+m2))
+    print_multiple(star1)
+    print_multiple(star2)
+
+def scale_top_level_list(binaries, scale):
+
+    # The smallN particles were followed until their interaction could
+    # be unambiguously classified as over.  They may now be very far
+    # apart.  Input binaries is an object describing the final
+    # hierarchical structure of the interacting particles in smallN.
+    # It consists of a flat tree of binary trees.
+
+    # Scale the positions and velocities of the top-level nodes to
+    # bring them within a sphere of diameter scale, conserving energy
+    # and angular momentum (if possible).  Also offset all children to
+    # reflect changes at the top level -- TODO will change when
+    # offsets are implemented...
+
+    # We are currently ignoring any possibility of a physical
+    # collision during the smallN encounter.  TODO
+
+    # Logic: 1 node   - must be a binary, use kepler to reduce to scale
+    #        2 nodes  - use kepler, reduce binary children too? TODO
+    #        3+ nodes - shrink radii and rescale velocities to preserve
+    #                   energy, but this doesn't preserve angular
+    #                   momentum TODO - also reduce children? TODO
+
+    # TODO
+
+    # Figure out the tree structure.
+
+    singles = binaries.particles_not_in_a_multiple()
+    multiples = binaries.roots()
+    top_level_nodes = singles + multiples
+
+    ls = len(singles)
+    lm = len(multiples)
+    lt = ls + lm
+
+    if lt == 1:
+        if lm == 1:
+
+            # Special case.  We have a single bound binary node.  Its
+            # children are the components we want to transform.  Note
+            # that, if the components are binaries (or multiples),
+            # they must be stable, so it is always OK to move the
+            # components to periastron.
+
+            root = multiples[0]
+            print '\nunscaled binary node:'
+            print_multiple(root)
+            comp1 = root.child1
+            comp2 = root.child2
+            compress_binary_components(comp1, comp2, scale)
+            print '\nscaled binary node:'
+            print_multiple(root)
+
+    elif lt == 2:
+
+        # We have two unbound top-level nodes, and we will scale them
+        # using kepler to the desired separation, hence conserving
+        # both energy and angular momentum of the top-level motion.
+
+        # We might also want to scale the daughter nodes.  Note as
+        # above that, if the daughters are binaries (or multiples),
+        # they must be stable, so it is always OK to move them to
+        # periastron.
+
+        comp1 = top_level_nodes[0]
+        comp2 = top_level_nodes[1]
+        print '\nunscaled top-level pair:'
+        print_pair_of_stars('pair', comp1, comp2)
+        compress_binary_components(comp1, comp2, scale)
+        print '\nscaled top-level pair:'
+        print_pair_of_stars('pair', comp1, comp2)
+
+    else:
+
+        # Now we have three or more top-level nodes.  We don't know
+        # how to compress them in a conservative way.  For now, we
+        # will conserve energy and think later about how to preserve
+        # angular momentum.  TODO
+
+        print lt, 'top-level nodes'; sys.stdout.flush()
 
 def manage_encounter(star1, star2, stars, gravity_stars):
 
-    # star1 and star2 are the colliding particles
-    # stars is the local particle set
-    # gravity_stars points to the gravity module data
+    # Manage an encounter between star1 and star2.  stars is the
+    # python memory data set.  gravity_stars points to the gravity
+    # module data.
 
-    print 'in manage_encounter'
+    # Currently we don't include neighbors in the integration and the
+    # size limitation on any final multiple is poorly implemented.
+
+    print '\nin manage_encounter'; sys.stdout.flush()
 
     # 1. Star1 and star2 reflect the data in the gravity module.  Find
     #    the corresponding particles in the local particle set.
 
-    star1_in_memory = star1.as_particle_in_set(stars)	# pointer
+    star1_in_memory = star1.as_particle_in_set(stars)	# pointers
     star2_in_memory = star2.as_particle_in_set(stars)
     
-    #
-    # copy the current position and velocity to mememory
-    # (need to create a better call for this, for example:
-    # star1.copy_to(star1_in_memory)
-    #
+    # 1a. Copy the current position and velocity to mememory (need to
+    #     create a better call for this, for example:
+    #     star1.copy_to(star1_in_memory)
+
     star1_in_memory.position = star1.position
     star1_in_memory.velocity = star1.velocity
     star2_in_memory.position = star2.position
     star2_in_memory.velocity = star2.velocity
     
-    
-    print 'star1.x           =', star1.x
-    print 'star1_in_memory.x =', star1_in_memory.x
-    print 'star2.x           =', star2.x
-    print 'star2_in_memory.x =', star2_in_memory.x
-    print 'star1.y           =', star1.y
-    print 'star1_in_memory.y =', star1_in_memory.y
-    print 'star2.y           =', star2.y
-    print 'star2_in_memory.y =', star2_in_memory.y
-    if 0:
-        print 'star1'
-        print star1
-        print 'star1_in_memory'
-        print star1_in_memory
-        print 'star2'
-        print star2
-        print 'star2_in_memory'
-        print star2_in_memory
-        print 'sep =', math.sqrt((star1.x-star2.x).number**2
-                                 +(star1.y-star2.y).number**2
-                                 +(star1.z-star2.z).number**2)
-        print 'sep_m =', \
-            math.sqrt((star1_in_memory.x-star2_in_memory.x).number**2
-                      +(star1_in_memory.y-star2_in_memory.y).number**2
-                      +(star1_in_memory.z-star2_in_memory.z).number**2)
-        find_nn(star1, star1_in_memory, stars)
-        find_nn(star2, star2_in_memory, stars)
+    # Basic diagnostics:
+
+    print_pair_of_stars('encounter', star1_in_memory, star2_in_memory)
+
+    print ''
+    find_nnn(star1_in_memory, star2_in_memory, stars)
+    find_nnn(star2_in_memory, star1_in_memory, stars)
 
     # 2. Create a particle set to perform the close encounter
     #    calculation.
@@ -260,47 +490,81 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     if not star1_in_memory.child1 is None:
         openup_tree(star1_in_memory, stars, particles_in_encounter)
     else:
-        particles_in_encounter.add_particle(star1)
+        particles_in_encounter.add_particle(star1_in_memory)
         
     if not star2_in_memory.child1 is None:
         openup_tree(star2_in_memory, stars, particles_in_encounter)
     else:
-        particles_in_encounter.add_particle(star2)
+        particles_in_encounter.add_particle(star2_in_memory)
 
-    print 'particles_in_encounter.x =', particles_in_encounter.x
-    print 'particles_in_encounter.y =', particles_in_encounter.y
-    
-    particles_in_encounter.id = -1 | units.none  # need to make this -1 to
-                                                 # ensure smallN will set the
-                                                 # IDs, or else smallN seems
-						 # to fail... TODO
-    print 'particles in encounter:'
-    print particles_in_encounter.to_string(['x','y','z','vx','vy','vz','mass'])
-    
-    # 4. Run the small-N encounter.
+    # particles_in_encounter.id = -1 | units.none  # need to make this -1 to
+                                                   # ensure smallN will set the
+                                                   # IDs, or else smallN seems
+						   # to fail... TODO
 
-    run_smallN(particles_in_encounter)	# NB the return value is ignored;
-					# particles_... is changed in place
+    # *** Desirable to propagate the IDs into smallN, for internal
+    # *** diagnostic purposes...
+
+    # print 'particles in smallN encounter:'
+    # print particles_in_encounter.to_string(['x','y','z',
+    #                                         'vx','vy','vz','mass','id'])
+
+    print '\nparticles in encounter (flat tree):'
+    for p in particles_in_encounter:
+        print_multiple(p)
     
-    print 'after smallN:'
-    print particles_in_encounter.to_string(['x','y','z','vx','vy','vz','mass'])
+    initial_scale \
+        = math.sqrt(((star1.position
+                      -star2.position).number**2).sum())|nbody_system.length
+    print 'initial_scale =', initial_scale.number; sys.stdout.flush()
+
+    # 4. Run the small-N encounter in the center of mass frame.
+
+    # Probably desirable to make this a true scattering experiment by
+    # separating star1 and star2 to a larger distance before starting
+    # smallN.  TODO
+
+    total_mass = star1.mass+star2.mass
+    cmpos = (star1.mass*star1.position+star2.mass*star2.position)/total_mass
+    cmvel = (star1.mass*star1.velocity+star2.mass*star2.velocity)/total_mass
+    for p in particles_in_encounter:
+        p.position -= cmpos
+        p.velocity -= cmvel
+
+    run_smallN(particles_in_encounter)
+
+    for p in particles_in_encounter:
+        p.position += cmpos
+        p.velocity += cmvel
+    
+    # print 'after smallN:'
+    # print particles_in_encounter.to_string(['x','y','z',
+    #                                         'vx','vy','vz',
+    #                                         'mass', 'id'])
+    # sys.stdout.flush()
 
     # 5. Carry out bookkeeping after the encounter and update the
     #    gravity module with the new data.
     
-    # 5a. Create object to handle the binary information.
+    # 5a. Create an object to handle the binary information.
 
     binaries = trees.BinaryTreesOnAParticleSet(particles_in_encounter,
                                                "child1", "child2")
-    
+
+    # 5ab. Compress the top-level nodes before adding them to the
+    #      gravity code.
+
+    scale_top_level_list(binaries, initial_scale)
+
     # 5b. Remove star1 and star2 from the gravity module.
 
     gravity_stars.remove_particle(star1)
     gravity_stars.remove_particle(star2)
     
     # 5c. Update the positions and velocities of the stars (leaves) in
-    #     the encounter; open a channel from the encounter list to the
-    #     star list.
+    #     the encounter; copy the position and velocity attributes of
+    #     all stars updated during the encounter to the stars particle
+    #     set in memory.  Do not copy child or any other attributes.
 
     tmp_channel = particles_in_encounter.new_channel_to(stars)
     tmp_channel.copy_attributes(['x','y','z', 'vx', 'vy', 'vz'])
@@ -313,18 +577,25 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     if len(stars_not_in_a_multiple_in_stars) > 0:
         gravity_stars.add_particles(stars_not_in_a_multiple_in_stars)
         
-    # 5e. Add the inner nodes (root plus subnodes) to the stars in
-    #     memory (the descendent nodes are already part of the set).
+    # 5e. Add the inner (CM) nodes (root plus subnodes) to the stars
+    #     in memory (the descendant nodes are already part of the
+    #     set).
 
     for root in binaries.iter_roots():
-        stars_in_a_multiple = root.get_descendants_subset() # not used?
+        stars_in_a_multiple = root.get_descendants_subset()
+        # print 'root.get_inner_nodes_subset():'
+        # print root.get_inner_nodes_subset(); sys.stdout.flush()
         stars.add_particles(root.get_inner_nodes_subset())
         
     # 5f. Add roots of the binaries tree to the gravity code.
 
+    # Must set radii to reflect multiple structure.  TODO
+
     for root in binaries.iter_roots():
         root_in_stars = root.particle.as_particle_in_set(stars)
         root_in_stars.id = new_root_index() | units.none
+        # print 'root_in_stars:'
+        # print root_in_stars; sys.stdout.flush(); sys.stdout.flush()
         gravity_stars.add_particle(root_in_stars)
         
     # 5g. Store the original position and velocity of the root so that
@@ -343,6 +614,56 @@ def manage_encounter(star1, star2, stars, gravity_stars):
         root_in_stars.original_vx = root_in_stars.vx
         root_in_stars.original_vy = root_in_stars.vy
         root_in_stars.original_vz = root_in_stars.vz
+
+def is_a_parent(child1_key, child2_key):
+    return child1_key > 0 or child2_key > 0
+
+def is_not_a_child(is_a_child):
+    return is_a_child == 0
+
+def print_energies(stars):
+    stars.is_a_child = 0|units.none
+    parents = stars.select(is_a_parent, ["child1", "child2"])
+    for s in stars:
+        id = int(s.id.number)
+        for p in parents:
+            if p.child1 == s or p.child2 == s:
+                print id, 'is a child'; sys.stdout.flush()
+                s.is_a_child = 1|units.none
+    top_level = stars.select(is_not_a_child, ["is_a_child"])
+
+    # Brute force N^2, pure python...
+
+    mass = 0
+    kinetic = 0
+    potential = 0
+    for t in top_level:
+        m = t.mass.number
+        x = t.x.number
+        y = t.y.number
+        z = t.z.number
+        vx = t.vx.number
+        vy = t.vy.number
+        vz = t.vz.number
+        mass += m
+        kinetic += 0.5*m*(vx**2+vy**2+vz**2)
+        dpot = 0
+        for tt in top_level:
+            if tt != t:
+                mm = tt.mass.number
+                xx = tt.x.number-x
+                yy = tt.y.number-y
+                zz = tt.z.number-z
+                dpot -= mm/math.sqrt(xx**2+yy**2+zz**2)
+        potential += 0.5*m*dpot
+            
+    print 'len(stars) =', len(stars)
+    print 'len(top_level) =', len(top_level)
+    print 'mass =', mass
+    print 'kinetic =', kinetic
+    print 'potential =', potential
+    print 'energy =', kinetic+potential
+    sys.stdout.flush()
 
 def test_multiples(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
@@ -408,7 +729,7 @@ def test_multiples(infile = None, number_of_stars = 40,
 
         # Read the input data.  Units are dynamical.
 
-        print "reading file", infile
+        print "reading file", infile; sys.stdout.flush()
 
         id = []
         mass = []
@@ -489,20 +810,24 @@ def test_multiples(infile = None, number_of_stars = 40,
 
         while gravity.get_time() < time:
             gravity.evolve_model(time)
-            print_log('ph4', gravity, E0)
             if stopping_condition.is_set():
                 star1 = stopping_condition.particles(0)[0]
                 star2 = stopping_condition.particles(1)[0]
-                print '\nstopping condition set at time', \
+                print '\n--------------------------------------------------'
+                print 'stopping condition set at time', \
                     gravity.get_time().number
-                print "index of star 1 =", star1.index_in_code.number
-                print "index of star 2 =", star2.index_in_code.number
-                M,a,e,r = get_component_binary_elements(star1, star2)
-                print 'binary elements  M =', M.number, ' a =', a.number, \
-                    ' e =', e.number, ' r =', r.number
+
+                print_log('ph4', gravity, E0)
+                channel.copy()
+                # print_energies(stars)
+
                 manage_encounter(star1, star2, stars, gravity.particles)
-            print_log('ph4', gravity, E0)
-            
+
+                print_log('ph4', gravity, E0)
+                # channel.copy()
+                # print_energies(stars)
+                print '\n--------------------------------------------------'
+        
         ls = len(stars)
     
         # Copy values from the module to the set in memory.

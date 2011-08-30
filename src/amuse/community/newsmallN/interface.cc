@@ -95,6 +95,19 @@ int get_allow_full_unperturbed(int * allow_full_unperturbed)
     return 0;
 }
 
+int set_cm_index(int cm_index)
+{
+    b->set_cm_index(cm_index);
+    // cout << "interface set_cm_index " << cm_index << endl << flush;
+    return 0;
+}
+
+int get_cm_index(int * cm_index)
+{
+    *cm_index = b->get_cm_index();
+    return 0;
+}
+
 int set_time(double sys_time)
 {
     b->set_system_time(sys_time);
@@ -494,13 +507,18 @@ int update_particle_tree()
 
     // Create indices for the CM nodes and add them to the updated list.
 
-    int max_index = -1;
-    for_all_leaves(hdyn, b, bb)
-	if (bb->get_index() > max_index) max_index = bb->get_index();
-    int newindex = pow(10, (int)log10((real)max_index+1) + 1.);
+    if (b->get_cm_index() <= 0) {
+	int max_index = -1;
+	for_all_leaves(hdyn, b, bb)
+	    if (bb->get_index() > max_index) max_index = bb->get_index();
+	b->set_cm_index(pow(10, (int)log10((real)max_index+1) + 2.) + 1);
+    }
+
     for_all_nodes(hdyn, b, bb)
 	if (bb->get_parent() && bb->get_oldest_daughter()) {
-	    bb->set_index(++newindex);
+	    int newindex = b->get_cm_index();
+	    b->set_cm_index(newindex);
+	    bb->set_index(newindex);
 	    UpdatedParticles.push_back(UpdatedParticle(newindex, 1));
 	}
 

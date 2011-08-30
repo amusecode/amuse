@@ -325,7 +325,6 @@ bool create_binary(hdyn *bi, hdyn *bj, bool verbose)
     // they come from a larger simulation).  Instead of a formula to
     // compute the indices, just use a manager as in ph4.
 
-    // cm->set_index(100000+1000*bi->get_index()+10*bj->get_index());
     int cm_index = bi->get_cm_index();
     cm->set_index(cm_index);
     bi->set_cm_index(cm_index+1);

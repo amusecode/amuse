@@ -777,18 +777,26 @@ int smallN_evolve(hdyn *b,
 	two_body(b, t_end, sqrt(break_r2));
 	return 0;
     }
-    
+
     int n_steps = 0;
-    if (b->get_cm_index() <= 0) {
+    for_all_daughters(hdyn, b, bi)
+	bi->init_pred();
+
+    if (b->get_cm_index() <= 0) {	// default is -1
+
+	// Make up a value that is well removed from existing indices.
+
+	cout << "auto definition of cm_index: ";
 	int cm_index = 0;
 	for_all_daughters(hdyn, b, bi) {
-	    bi->init_pred();
 	    int i = bi->get_index();
 	    if (i > cm_index) cm_index = i;
 	}
-	cm_index = pow(10, (int)log10((real)cm_index+1) + 1.);
+	cm_index = pow(10, (int)log10((real)cm_index+1) + 2.) + 1;
+	PRL(cm_index);
 	b->set_cm_index(cm_index);
     }
+
     real dt = calculate_top_level_acc_and_jerk(b);
 
     real tmp;
