@@ -330,6 +330,20 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
     
     @legacy_function
+    def erase_memory():
+        """
+        Erase memory of the star, i.e. copy the current structure over the memory of 
+        the structure of the previous steps. Useful after setting the stucture of 
+        the star, to prevent backup steps to undo changes
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def get_max_age_stop_condition():
         """
         Retrieve the current maximum age stop condition of this instance (in years).
@@ -904,6 +918,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (units.amu, object.ERROR_CODE,)
         )
         object.add_method(
+            "erase_memory", 
+            (object.INDEX,), 
+            (object.ERROR_CODE,),
+            public_name = "_erase_memory"
+        )
+        object.add_method(
             "new_stellar_model", 
             (units.MSun, units.cm, units.g / units.cm**3, units.K, units.erg / units.s, 
                 units.none, units.none, units.none, units.none, units.none, 
@@ -1098,6 +1118,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        if hasattr(self, "_erase_memory"):
+            self._erase_memory(indices_of_the_stars)
     
     def get_luminosity_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying luminosity profiles")
@@ -1111,6 +1133,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        if hasattr(self, "_erase_memory"):
+            self._erase_memory(indices_of_the_stars)
     
     def get_pressure_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying pressure profiles")

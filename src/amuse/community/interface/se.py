@@ -877,6 +877,8 @@ class InternalStellarStructure(object):
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        if hasattr(self, "_erase_memory"):
+            self._erase_memory(indices_of_the_stars)
     
     def get_radius_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying radius profiles")
@@ -890,6 +892,8 @@ class InternalStellarStructure(object):
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        if hasattr(self, "_erase_memory"):
+            self._erase_memory(indices_of_the_stars)
     
     def get_temperature_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying temperature profiles")
@@ -903,6 +907,8 @@ class InternalStellarStructure(object):
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        if hasattr(self, "_erase_memory"):
+            self._erase_memory(indices_of_the_stars)
     
     def get_mu_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mean-molecular-weight profiles")
@@ -947,4 +953,6 @@ class InternalStellarStructure(object):
             units.none.new_quantity(grid[1].flatten()),
             values.reshape((number_of_species*number_of_zones, ))
         )
+        if hasattr(self, "_erase_memory"):
+            self._erase_memory(indices_of_the_stars)
 

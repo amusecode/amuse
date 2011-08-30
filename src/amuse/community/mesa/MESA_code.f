@@ -614,13 +614,6 @@
                set_mass_fraction_at_zone = -2
             else
                s% dq(s% nz - AMUSE_zone) = AMUSE_value
-               select case (s%generations)
-                  case (2)
-                     s% dq_old(s% nz - AMUSE_zone) = AMUSE_value
-                  case (3)
-                     s% dq_old(s% nz - AMUSE_zone) = AMUSE_value
-                     s% dq_older(s% nz - AMUSE_zone) = AMUSE_value
-               end select
                set_mass_fraction_at_zone = 0
             endif
          endif
@@ -670,13 +663,6 @@
                set_temperature_at_zone = -2
             else
                s% xs(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
-               select case (s%generations)
-                  case (2)
-                     s% xs_old(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
-                  case (3)
-                     s% xs_old(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
-                     s% xs_older(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
-               end select
                set_temperature_at_zone = 0
             endif
          endif
@@ -726,13 +712,6 @@
                set_density_at_zone = -2
             else
                s% xs(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
-               select case (s%generations)
-                  case (2)
-                     s% xs_old(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
-                  case (3)
-                     s% xs_old(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
-                     s% xs_older(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
-               end select
                set_density_at_zone = 0
             endif
          endif
@@ -782,13 +761,6 @@
                set_radius_at_zone = -2
             else
                s% xs(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
-               select case (s%generations)
-                  case (2)
-                     s% xs_old(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
-                  case (3)
-                     s% xs_old(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
-                     s% xs_older(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
-               end select
                set_radius_at_zone = 0
             endif
          endif
@@ -838,13 +810,6 @@
                set_luminosity_at_zone = -2
             else
                s% xs(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
-               select case (s%generations)
-                  case (2)
-                     s% xs_old(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
-                  case (3)
-                     s% xs_old(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
-                     s% xs_older(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
-               end select
                set_luminosity_at_zone = 0
             endif
          endif
@@ -1147,17 +1112,82 @@
          set_mass_fraction_of_species_at_zone = -3
       else
          s% xa(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
-         select case (s%generations)
-            case (2)
-               s% xa_old(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
-            case (3)
-               s% xa_old(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
-               s% xa_older(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
-         end select
          s% xa_pre_hydro(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
          set_mass_fraction_of_species_at_zone = 0
       endif
    end function
+
+! Erase memory of the star - xs_old(er), xa_old(er), q_old(er), etc.
+! Useful after setting the stucture of the star, to prevent backup steps to undo changes
+   integer function erase_memory(AMUSE_id)
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      integer :: ierr
+      double precision, pointer :: tmp2d(:,:), tmp1d(:)
+      type (star_info), pointer :: s
+      
+      erase_memory = -1
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) return
+      if (s%generations > 1) then
+         call realloc2d_if_necessary(s% xa_old, s% species, s% nz, ierr)
+         if (failed('realloc2d_if_necessary', ierr)) return
+         s% xa_old(:,:) = s% xa(:,:)
+         call realloc2d_if_necessary(s% xs_old, s% nvar, s% nz, ierr)
+         if (failed('realloc2d_if_necessary', ierr)) return
+         s% xs_old(:,:) = s% xs(:,:)
+         call realloc1d_if_necessary(s% q_old, s% nz, ierr)
+         if (failed('realloc1d_if_necessary', ierr)) return
+         s% q_old(:) = s% q(:)
+         call realloc1d_if_necessary(s% dq_old, s% nz, ierr)
+         if (failed('realloc1d_if_necessary', ierr)) return
+         s% dq_old(:) = s% dq(:)
+         if (s%generations == 3) then
+            call realloc2d_if_necessary(s% xa_older, s% species, s% nz, ierr)
+            if (failed('realloc2d_if_necessary', ierr)) return
+            s% xa_older(:,:) = s% xa(:,:)
+            call realloc2d_if_necessary(s% xs_older, s% nvar, s% nz, ierr)
+            if (failed('realloc2d_if_necessary', ierr)) return
+            s% xs_older(:,:) = s% xs(:,:)
+            call realloc1d_if_necessary(s% q_older, s% nz, ierr)
+            if (failed('realloc1d_if_necessary', ierr)) return
+            s% q_older(:) = s% q(:)
+            call realloc1d_if_necessary(s% dq_older, s% nz, ierr)
+            if (failed('realloc1d_if_necessary', ierr)) return
+            s% dq_older(:) = s% dq(:)
+         end if
+      end if
+      erase_memory = 0
+      
+      contains
+      
+      subroutine realloc1d_if_necessary(ptr,new_size,ierr)
+         double precision, pointer :: ptr(:)
+         integer, intent(in) :: new_size
+         integer, intent(out) :: ierr
+         ierr = 0
+         if (associated(ptr)) then
+            if (size(ptr,1) == new_size) return
+            deallocate(ptr)
+         end if
+         allocate(ptr(new_size),stat=ierr)
+      end subroutine realloc1d_if_necessary
+      
+      subroutine realloc2d_if_necessary(ptr,ld,new_size,ierr)
+         double precision, pointer :: ptr(:,:)
+         integer, intent(in) :: ld, new_size
+         integer, intent(out) :: ierr
+         ierr = 0
+         if (associated(ptr)) then
+            if (size(ptr,1) == ld .and. size(ptr,2) == new_size) return
+            deallocate(ptr)
+         end if
+         allocate(ptr(ld,new_size),stat=ierr)
+      end subroutine realloc2d_if_necessary
+  
+   end function erase_memory
 
 ! Evolve the star for one step
    function evolve_one_step(AMUSE_id)
