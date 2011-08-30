@@ -344,9 +344,9 @@ def print_multiple(m, level=0):
 
     # Recursively print the structure of (multipe) node m.
 
-    print '    '*level, int(m.id.number), m.mass.number
-    print '    '*level, m.position.number
-    print '    '*level, m.velocity.number
+    print '    '*level, int(m.id.number), 'mass =', m.mass.number
+    print '    '*level, 'pos =', m.position.number
+    print '    '*level, 'vel =', m.velocity.number
     if not m.child1 is None and not m.child2 is None:
         M,a,e,r,E = get_component_binary_elements(m.child1, m.child2)
         print_elements(' '+'    '*level+'binary', a, e, r,
