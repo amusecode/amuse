@@ -12,8 +12,9 @@ from distutils.dep_util import newer
 from distutils.util import convert_path
 from distutils import log
 from distutils import spawn
-from subprocess import call, Popen, PIPE
+from subprocess import call, Popen, PIPE, STDOUT
 from numpy.distutils import fcompiler
+import StringIO
 # check if Python is called on the first line with this expression
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 
@@ -256,7 +257,6 @@ class CodeCommand(Command):
                     break
                     
     def makefile_paths(self):
-                    
         for x in self.subdirs_in_codes_dir():
             for name in ('makefile', 'Makefile'):
                 makefile_path = os.path.join(x, name)
@@ -316,31 +316,73 @@ class CodeCommand(Command):
                     result.append((line[:index_of_the_colon], targetname,))
         return result
     
+    
+    
+class SplitOutput(object) :
+    def __init__(self, file1, file2) :
+        self.file1 = file1
+        self.file2 = file2
+
+    def __del__(self) :
+        self.close()
+
+    def close(self):
+        self.file1.close()
+        self.file2.close()
+
+    def write(self, text) :
+        self.file1.write(text)
+        self.file2.write(text)
+
+    def flush(self) :
+        self.file1.flush()
+        self.file2.flush()
+    
         
 class BuildCodes(CodeCommand):
 
     description = "build interfaces to codes"
     
     def run_make_on_directory(self, codename, directory, target, environment):
-        buildlog = "{0}-{1}-build.log".format(codename, target)
-        with open(buildlog, "w") as output:
-            process = Popen(['make','-C', directory, target], env = environment, stdout = output, stderr = output)
-            return process.wait(), buildlog
+        buildlog = os.path.abspath("build.log")
+        buffer = StringIO.StringIO()
+        output = SplitOutput( open(buildlog, "a") , buffer)
+        
+        teeprocess = Popen(['tee','-a', buildlog], env = environment, stdin = PIPE, stdout = PIPE, stderr = STDOUT)
+        
+        
+        with open(buildlog, "a") as output:
+            output.write('*'*100)
+            output.write('\n')
+            output.write('Building code: {0}, target: {1}, in directory: {2}\n'.format(codename, target, directory))
+            output.write('*'*100)
+            output.write('\n')
+            output.flush()
+            
+            process = Popen(['make','-C', directory, target], env = environment, stdout = teeprocess.stdin, stderr = STDOUT)
+            
+            resultcontent, _ = teeprocess.communicate()
+            
+            result = process.wait()
+        
+        with open(buildlog, "a") as output:
+            output.write('*'*100)
+            output.write('\n')
+            
+        return result, resultcontent
     
-    def is_download_needed(self, filename):
-        with open(filename, 'r') as f:
-            for line in f:
-                if 'DOWNLOAD_CODES' in line:
-                    return True
+    def is_download_needed(self, string):
+        for line in string.splitlines():
+            if 'DOWNLOAD_CODES' in line:
+                return True
         return False
         
-    def is_cuda_needed(self, filename):
-        with open(filename, 'r') as f:
-            for line in f:
-                if 'CUDA_TK variable is not set' in line:
-                    return True
-                if 'CUDA_SDK variable is not set' in line:
-                    return True
+    def is_cuda_needed(self, string):
+        for line in string.splitlines():
+            if 'CUDA_TK variable is not set' in line:
+                return True
+            if 'CUDA_SDK variable is not set' in line:
+                return True
         return False
         
     def run (self):
@@ -352,15 +394,26 @@ class BuildCodes(CodeCommand):
         environment = self.environment
         environment.update(os.environ)
         
+        buildlog = 'build.log'
         
+        self.announce("building libraries and community codes", level = log.INFO)
+        self.announce("build, for logging, see '{0}'".format(buildlog), level = log.INFO)
+        
+        with open(buildlog, "a") as output:
+            output.write('*'*100)
+            output.write('\n')
+            output.write('Building libraries and codes\n')
+            output.write('*'*100)
+            output.write('\n')
+            
         for x in self.makefile_libpaths():
             
             shortname = x[len(self.lib_dir) + 1:] + '-library'
-            self.announce("building {0}".format(shortname), level =  log.INFO)
+            self.announce("building {0}".format(shortname), level = log.INFO)
             returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
             
             if returncode == 2:
-                self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level =  log.INFO)
+                self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level = log.DEBUG)
                 
                 if self.is_download_needed(buildlog):
                     is_download_needed.append(shortname)
@@ -374,6 +427,7 @@ class BuildCodes(CodeCommand):
             
         #environment.update(self.environment)
         makefile_paths = list(self.makefile_paths())
+        build_to_special_targets = {}
         
         for x in makefile_paths:
             shortname = x[len(self.codes_dir) + 1:].lower()
@@ -382,7 +436,7 @@ class BuildCodes(CodeCommand):
             returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
             endtime = datetime.datetime.now()
             if returncode > 0:
-                self.announce("[{2:%H:%M:%S}] building {0}, failed, see {1!r} for error log".format(shortname, buildlog, endtime), level =  log.INFO)
+                self.announce("[{2:%H:%M:%S}] building {0}, failed, see {1!r} for error log".format(shortname, buildlog, endtime), level =  log.DEBUG)
                 if self.is_download_needed(buildlog):
                     is_download_needed.append(shortname)
                 elif self.is_cuda_needed(buildlog):
@@ -392,57 +446,68 @@ class BuildCodes(CodeCommand):
                 continue
             else:
                 build.append(shortname)
-                self.announce("[{1:%H:%M:%S}] building {0}, succeeded".format(shortname, endtime), level =  log.INFO)
+                is_built = True
+                self.announce("[{1:%H:%M:%S}] building {0}, succeeded".format(shortname, endtime), level =  log.DEBUG)
             
+                
             special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:
                 starttime = datetime.datetime.now()
-                self.announce("[{2:%H:%M:%S}] building {0} - {1}".format(shortname, target_name, starttime), level =  log.INFO)
+                self.announce("[{2:%H:%M:%S}] building {0} - {1}".format(shortname, target_name, starttime), level =  log.DEBUG)
                 returncode, buildlog = self.run_make_on_directory(shortname, x, target, environment)
                 endtime = datetime.datetime.now()
                 if returncode > 0:
                     not_build_special.append(shortname + " - " + target_name)
-                    self.announce("[{3:%H:%M:%S}] building {0} - {1}, failed, see {2!r} for error log".format(shortname, target_name, buildlog,endtime), level =  log.INFO)
+                    self.announce("[{3:%H:%M:%S}] building {0} - {1}, failed, see {2!r} for error log".format(shortname, target_name, buildlog,endtime), level =  log.DEBUG)
                 else:
-                    build.append(shortname + " - " + target_name)
-                    self.announce("[{2:%H:%M:%S}] building {0} - {1}, succeeded".format(shortname, target_name, endtime), level =  log.INFO)
+                    build_to_special_targets.setdefault(shortname, list()).append(target_name)
+                    self.announce("[{2:%H:%M:%S}] building {0} - {1}, succeeded".format(shortname, target_name, endtime), level =  log.DEBUG)
                 
         
+        with open(buildlog, "a") as output:
+            output.write('*'*100)
+            output.write('\n')
+            output.write('Building finished\n')
+            output.write('*'*100)
+            output.write('\n')
         print
-        #print "Environment variables"
-        #print "====================="
-        #sorted_keys = sorted(self.environment.keys())
-        #for x in sorted_keys:
-        #    print "%s\t%s" % (x , self.environment[x] )
-        #print
-        #print "Environment variables not set"
-        #print "============================="
-        #sorted_keys = sorted(self.environment_notset.keys())
-        #for x in sorted_keys:
-        #    print "%s\t%s" % (x, self.environment_notset[x] )
-        #print
-        #print
+        self.announce("Environment variables")
+        self.announce("="*100)
+        sorted_keys = sorted(self.environment.keys())
+        for x in sorted_keys:
+            self.announce("%s\t%s" % (x , self.environment[x] ))
+        
+        
         if not_build or not_build_special or is_download_needed or is_cuda_needed:
-            print
-            print
-            print "Community codes not built (because of errors):"
-            print "=============================================="
+            if not_build:
+                level = log.WARN
+            else:
+                level = log.INFO
+            
+            self.announce("Community codes not built (because of errors):",  level = level)
+            self.announce("="*100,  level = level)
             for x in not_build:
-                print '*', x 
+                self.announce(' * {0}'.format(x), level =  level)
             for x in not_build_special:
-                print '*', x, '    ** optional, needs special libraries or hardware to compile **'
+                self.announce(' * {0} ** optional, needs special libraries or hardware to compile **'.format(x), level = level)
             for x in is_cuda_needed:
-                print '*', x, '    ** needs CUDA library, please configure with --enable-cuda **' 
+                self.announce(' * {0} ** needs CUDA library, please configure with --enable-cuda **'.format(x), level = level)
             for x in is_download_needed:
-                print '*', x, '    ** needs to be download, use make {0}.code DOWNLOAD_CODES=1 to download and build **'.format(x)
+                self.announce(' * {0} ** needs to be download, use make {0}.code DOWNLOAD_CODES=1 to download and build **'.format(x), level = level)
+
+            self.announce("="*100,  level = level)
         
         if build:
-            print
-            print
-            print "Community codes built"
-            print "====================="
+            level = log.INFO
+            self.announce("Community codes built",  level = level)
+            self.announce("="*100,  level = level)
             for x in build:
-                print '*', x
+                if x in build_to_special_targets:
+                    y = build_to_special_targets[x]
+                    self.announce('* {0} ({1})'.format(x,','.join(y)),  level = level)
+                else:
+                    self.announce('* {0}'.format(x),  level = level)
+            self.announce("="*100,  level = level)
         
         
  
@@ -451,26 +516,35 @@ class CleanCodes(CodeCommand):
     description = "clean build products in codes"
 
     def run (self):
-        for x in self.makefile_libpaths():
-            self.announce("cleaning libary " + x)
-            call(['make','-C', x, 'clean'])
+        buildlog = "make-clean.log"
             
-        for x in self.makefile_paths():
-            self.announce("cleaning " + x)
-            call(['make','-C', x, 'clean'])
+        self.announce("Cleaning libraries and community codes", level = 2)
+        with open(buildlog, "aw") as output:
+            for x in self.makefile_libpaths():
+                self.announce("cleaning libary " + x)
+                call(['make','-C', x, 'clean'], stdout = output, stderr = output)
+               
+                
+            for x in self.makefile_paths():
+                self.announce("cleaning " + x)
+                call(['make','-C', x, 'clean'], stdout = output, stderr = output)
  
 class DistCleanCodes(CodeCommand):
 
     description = "clean for distribution"
 
     def run (self):
-        for x in self.makefile_libpaths():
-            self.announce("cleaning libary " + x)
-            call(['make','-C', x, 'distclean'])
+        buildlog = "make-clean.log"
             
-        for x in self.makefile_paths():
-            self.announce("cleaning " + x)
-            call(['make','-C', x, 'distclean'])
+        self.announce("Cleaning for distribution, libraries and community codes", level = 2)
+        with open(buildlog, "aw") as output:
+            for x in self.makefile_libpaths():
+                self.announce("cleaning libary:" + x)
+                call(['make','-C', x, 'distclean'], stdout = output, stderr = output)
+                
+            for x in self.makefile_paths():
+                self.announce("cleaning community code:" + x)
+                call(['make','-C', x, 'distclean'], stdout = output, stderr = output)
         
 class BuildOneCode(CodeCommand):  
     description = "build one code"

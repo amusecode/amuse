@@ -27,15 +27,15 @@ distclean:
 	rm -f test/core_tests/plummer_back_100.ini
 	rm -f test/test_python_implementation test/twobody
 	
-	$(PYTHON) setup.py clean
-	$(PYTHON) setup.py dist_clean
+	$(PYTHON) setup.py  clean
+	$(PYTHON) setup.py  dist_clean
 	make -C doc clean
 
 tests:
 	$(PYTHON) setup.py tests
 
 doc:
-	$(PYTHON) setup.py build_latex
+	$(PYTHON) setup.py -q build_latex
 
 html:
 	make -C doc html
@@ -51,7 +51,7 @@ ctags:
 
 release: distclean
 	make -C doc release
-	python setup.py sdist
+	python setup.py  -q sdist
 
 nightly:
 	make -C doc release
@@ -66,3 +66,6 @@ debian:
 
 %.code:
 	$(PYTHON) setup.py code --code-name=$*
+
+%:
+	$(PYTHON) setup.py code --code-name=$@
