@@ -755,6 +755,22 @@ static void two_body(hdyn *b, real time, real radius)
     delete k;
 }
 
+void spaces(int n) {for (int i = 0; i < n; i++) cout << " ";}
+
+void print(hdyn *b, int level = 0)
+{
+    spaces(4*level);
+    cout << b->get_index() << "  " << "mass = " << b->get_mass();
+    if (b->get_kepler()) cout << "  kepler";
+    cout << endl;
+    spaces(4*level);
+    cout << "    pos = " << b->get_pos() << endl;
+    spaces(4*level);
+    cout << "    vel = " << b->get_vel() << endl;
+    for_all_daughters(hdyn, b, bb)
+	print(bb, level+1);
+}
+
 int smallN_evolve(hdyn *b,
 		  real t_end,		// default = _INFINITY_
 		  real break_r2,	// default = _INFINITY_
@@ -765,14 +781,16 @@ int smallN_evolve(hdyn *b,
     set_kepler_tolerance(2);	// energy corrections may force orbital
 				// separations outside allowed limits
 
+    // print(b);
+
     // Treat special cases (that may come from AMUSE).
 
-    int n_daughters = 0;
-    for_all_daughters(hdyn, b, bi) n_daughters++;
+    int n_leaves = 0;
+    for_all_leaves(hdyn, b, bi) n_leaves++;
 
-    if (n_daughters == 1)
+    if (n_leaves == 1)
 	return 0;
-    else if (n_daughters == 2) {
+    else if (n_leaves == 2) {
 	cout << "smallN: two-body encounter" << endl << flush;
 	two_body(b, t_end, sqrt(break_r2));
 	return 0;

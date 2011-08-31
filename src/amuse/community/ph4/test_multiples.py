@@ -13,6 +13,12 @@ from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.newsmallN.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 
+def is_a_parent(child1_key, child2_key):
+    return child1_key > 0 or child2_key > 0
+
+def is_not_a_child(is_a_child):
+    return is_a_child == 0
+
 def print_log(s, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
@@ -27,10 +33,10 @@ def print_log(s, gravity, E0 = 0.0 | nbody_system.energy):
     Rv = -0.5*M*M/U
     Q = -T/U
     print ""
-    print s+':', \
-	"time =", gravity.get_time().number, \
-        " mass = ", M.number, " dE/E0 = ", (E/E0 - 1).number
-    print ' '*(1+len(s)), "energies = ", E.number, U.number, T.number
+    print "%s: time = %.10f, mass = %.10f, dE/E0 = %.5e" \
+          % (s, gravity.get_time().number, M.number, (E/E0 - 1).number)
+    print "%senergies = %.10f %.10f %.10f" \
+          % (' '*(2+len(s)), E.number, U.number, T.number)
         
     #print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
     #	(s+"%%", time.number, M.number, T.number, U.number, \
@@ -213,16 +219,19 @@ def phi_tidal(star1, star2, star3):	# compute tidal potential of
 
 def find_nnn(star1, star2, stars):	# print next nearest neighbor
 				        # of (star1, star2)
+
+    top_level = stars.select(is_not_a_child, ["is_a_child"])
+
     min_dr = 1.e10
     id1 = star1.id.number
     id2 = star2.id.number
-    for s in stars:			# wrong - should omit children TODO
-        sid = s.id.number
-        if sid != id1 and sid != id2:
-            dr2 = sep2(s, star1)
+    for t in top_level:
+        tid = t.id.number
+        if tid != id1 and tid != id2:
+            dr2 = sep2(t, star1)
             if dr2 > 0 and dr2 < min_dr:
                 min_dr = dr2
-                nnn = s
+                nnn = t
     min_dr = math.sqrt(min_dr)
     print 'star =', int(id1), ' min_dr =', min_dr, \
           ' nnn =', int(nnn.id.number), '(', nnn.mass.number, ')'
@@ -231,6 +240,55 @@ def find_nnn(star1, star2, stars):	# print next nearest neighbor
     sys.stdout.flush()
 
     return nnn
+
+def total_energy(slist):
+
+    # Return the total energy of the particles in slist, in the center
+    # of mass approximation.
+
+    kinetic = 0.0
+    potential = 0.0
+    for s in slist:
+        # print 'slist:', int(s.id.number)
+        smass = s.mass.number
+        spos = s.position.number
+        svel = s.velocity.number
+        kinetic  += smass*((svel**2).sum())
+        spot = 0.0
+        for ss in slist:
+            if not ss == s:
+                ssmass = ss.mass.number
+                sspos = ss.position.number
+                r = math.sqrt(((sspos-spos)**2).sum())
+                # print int(s.id.number), int(ss.id.number), r
+                spot -= ssmass/r
+        potential += smass*spot
+    kinetic /= 2
+    potential /= 2
+    # print 'kin, pot:', kinetic, potential
+    return kinetic+potential
+
+def relative_potential(slist, klist, stars):
+
+    # Return the total potential energy of slist relative to stars
+    # (excluding klist).
+
+    potential = 0.0
+    top_level = stars.select(is_not_a_child, ["is_a_child"])
+    for t in top_level:
+        tpot = 0.0
+        skip = 0
+        for s in klist:
+            if s == t:
+                skip = 1
+                break
+        if skip == 0:
+            tpos = t.position.number
+            for s in slist:
+                dpos = s.position.number - tpos
+                tpot -= s.mass.number/ math.sqrt((dpos*dpos).sum())
+        potential += t.mass.number*tpot
+    return potential
 
 def offset_particle_tree(particle, dpos, dvel):
 
@@ -280,13 +338,26 @@ def compress_binary_components(comp1, comp2, scale):
                                 rel_pos[0], rel_pos[1], rel_pos[2],
                                 rel_vel[0], rel_vel[1], rel_vel[2])
         M,th = kep.get_angles()
+        a,e = kep.get_elements()
+        if e < 1:
+            peri = a*(1-e)
+            apo = a*(1+e)
+        else:
+            peri = a*(e-1)
+            apo = 2*a		# OK - used ony to reset scale
+        limit = peri + 0.01*(apo-peri)
+        if scale < limit: scale = limit
+
         if M < 0:
             # print 'approaching'
             kep.advance_to_periastron()
-            kep.advance_to_radius(scale)
+            kep.advance_to_radius(limit)
         else:
             # print 'receding'
-            kep.return_to_radius(scale)
+            if kep.get_separation() < scale:
+                kep.advance_to_radius(limit)
+            else:
+                kep.return_to_radius(scale)
 
         # a,e = kep.get_elements()
         # r = kep.get_separation()
@@ -294,7 +365,7 @@ def compress_binary_components(comp1, comp2, scale):
         # print 'kepler: a,e,r =', a.number, e.number, r.number
         # print 'E, J =', E, J
 
-        # Note: if periastron > scale, we are now at periastron.
+        # Note: if periastron > scale, we are now just past periastron.
 
         new_rel_pos = kep.get_separation_vector()
         new_rel_vel = kep.get_velocity_vector()
@@ -344,7 +415,7 @@ def print_multiple(m, level=0):
 
     # Recursively print the structure of (multipe) node m.
 
-    print '    '*level, int(m.id.number), 'mass =', m.mass.number
+    print '    '*level, int(m.id.number), ' mass =', m.mass.number
     print '    '*level, 'pos =', m.position.number
     print '    '*level, 'vel =', m.velocity.number
     if not m.child1 is None and not m.child2 is None:
@@ -364,7 +435,8 @@ def print_pair_of_stars(s, star1, star2):
     print_multiple(star1)
     print_multiple(star2)
 
-def scale_top_level_list(binaries, scale):
+def scale_top_level_list(binaries, scale,
+                         stars, klist, phi_external_init):
 
     # The smallN particles were followed until their interaction could
     # be unambiguously classified as over.  They may now be very far
@@ -445,11 +517,70 @@ def scale_top_level_list(binaries, scale):
 
         print lt, 'top-level nodes'; sys.stdout.flush()
 
+    # Recompute the external field, compute the tidal error, and
+    # absorb it into the top-level energy.  Optional code.
+    # Alternatively, we can simply absorb the tidal error into the
+    # dEmult correction returned for bookkeeping purposes.
+
+    dEmult = 0.0
+
+    phi_external_final = relative_potential(top_level_nodes, klist, stars)
+    print 'phi_external_final =', phi_external_final
+    dphi = phi_external_final - phi_external_init
+    print 'dphi =', dphi
+
+    # Correction code parallels that above, but we must repeat it
+    # here, since we have to complete the rescaling before the
+    # tidal correction can be computed and applied.
+
+    if lt == 1:
+
+        # Only one top-level node.  Don't apply any correction.
+        # Instead, always include the tidal term in dEmult.
+
+        dEmult += dphi
+
+    elif lt == 2:
+
+        # Absorb dphi into the relative motion of the top-level nodes,
+        # using kepler.  Alternatively, add dphi to dEmult.
+
+        comp1 = top_level_nodes[0]
+        comp2 = top_level_nodes[1]
+        dEmult += dphi
+
+    else:
+
+        # Absorb dphi into the relative motion of the top-level nodes,
+        # simply by scaling their velocities.  Need to improve this.
+        # TODO  Alternatively, add dphi to dEmult.
+
+        print lt, 'top-level nodes'; sys.stdout.flush()
+        dEmult += dphi
+
+    # Finally, include the internal top-level energy in dEmult.
+
+    etot = total_energy(top_level_nodes)
+    print 'final etot =', etot
+    dEmult += etot
+
+    return dEmult
+
 def manage_encounter(star1, star2, stars, gravity_stars):
 
     # Manage an encounter between star1 and star2.  stars is the
     # python memory data set.  gravity_stars points to the gravity
-    # module data.
+    # module data.  Return value is the energy correction due to
+    # multiples.
+
+    # Establish child flags for use during the encounter calculation.
+
+    stars.is_a_child = 0|units.none
+    parents = stars.select(is_a_parent, ["child1", "child2"])
+    for s in stars:
+        for p in parents:
+            if p.child1 == s or p.child2 == s:
+                s.is_a_child = 1|units.none
 
     # Currently we don't include neighbors in the integration and the
     # size limitation on any final multiple is poorly implemented.
@@ -478,6 +609,21 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     print ''
     find_nnn(star1_in_memory, star2_in_memory, stars)
     find_nnn(star2_in_memory, star1_in_memory, stars)
+
+    # 1b. Calculate the potential of [star1, star2] relative to the
+    #     other top-level objects in the stars list (later: just use
+    #     neighbors TODO).  Start the correction of dEmult by removing
+    #     the initial top-level energy of the interacting particles
+    #     from it.  (Add in the final energy later, on return from
+    #     scale_top_level_list.)
+
+    slist = [star1_in_memory, star2_in_memory]
+    etot = total_energy(slist)
+    print 'initial etot =', etot
+    dEmult = -etot
+    klist = [star1_in_memory, star2_in_memory]
+    phi_external_init = relative_potential(slist, klist, stars)
+    print 'phi_external_init =', phi_external_init
 
     # 2. Create a particle set to perform the close encounter
     #    calculation.
@@ -527,6 +673,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     total_mass = star1.mass+star2.mass
     cmpos = (star1.mass*star1.position+star2.mass*star2.position)/total_mass
     cmvel = (star1.mass*star1.velocity+star2.mass*star2.velocity)/total_mass
+    print 'CM KE =', 0.5*total_mass.number*((cmvel.number)**2).sum()
     for p in particles_in_encounter:
         p.position -= cmpos
         p.velocity -= cmvel
@@ -546,21 +693,26 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     # 5. Carry out bookkeeping after the encounter and update the
     #    gravity module with the new data.
     
-    # 5a. Create an object to handle the binary information.
-
-    binaries = trees.BinaryTreesOnAParticleSet(particles_in_encounter,
-                                               "child1", "child2")
-
-    # 5ab. Compress the top-level nodes before adding them to the
-    #      gravity code.
-
-    scale_top_level_list(binaries, initial_scale)
-
-    # 5b. Remove star1 and star2 from the gravity module.
+    # 5a. Remove star1 and star2 from the gravity module.
 
     gravity_stars.remove_particle(star1)
     gravity_stars.remove_particle(star2)
     
+    # 5b. Create an object to handle the new binary information.
+
+    binaries = trees.BinaryTreesOnAParticleSet(particles_in_encounter,
+                                               "child1", "child2")
+
+    # 5bb. Compress the top-level nodes before adding them to the
+    #      gravity code.  Also recompute the external potential and
+    #      absorb the tidal error into the top-level nodes of the
+    #      encounter list.  Fially, add the change in top-level energy
+    #      of the interacting subset into dEmult, so E(ph4) + dEmult
+    #      should be conserved.
+
+    dEmult += scale_top_level_list(binaries, initial_scale,
+                         stars, klist, phi_external_init)
+
     # 5c. Update the positions and velocities of the stars (leaves) in
     #     the encounter; copy the position and velocity attributes of
     #     all stars updated during the encounter to the stars particle
@@ -615,24 +767,13 @@ def manage_encounter(star1, star2, stars, gravity_stars):
         root_in_stars.original_vy = root_in_stars.vy
         root_in_stars.original_vz = root_in_stars.vz
 
-def is_a_parent(child1_key, child2_key):
-    return child1_key > 0 or child2_key > 0
-
-def is_not_a_child(is_a_child):
-    return is_a_child == 0
+    return dEmult
 
 def print_energies(stars):
-    stars.is_a_child = 0|units.none
-    parents = stars.select(is_a_parent, ["child1", "child2"])
-    for s in stars:
-        id = int(s.id.number)
-        for p in parents:
-            if p.child1 == s or p.child2 == s:
-                print id, 'is a child'; sys.stdout.flush()
-                s.is_a_child = 1|units.none
-    top_level = stars.select(is_not_a_child, ["is_a_child"])
 
-    # Brute force N^2, pure python...
+    # Brute force N^2 over top level, pure python...
+
+    top_level = stars.select(is_not_a_child, ["is_a_child"])
 
     mass = 0
     kinetic = 0
@@ -793,6 +934,7 @@ def test_multiples(infile = None, number_of_stars = 40,
     sys.stdout.flush()
 
     E0 = print_log('ph4', gravity)
+    dEmult = 0.0
     
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
@@ -817,15 +959,26 @@ def test_multiples(infile = None, number_of_stars = 40,
                 print 'stopping condition set at time', \
                     gravity.get_time().number
 
-                print_log('ph4', gravity, E0)
-                channel.copy()
+                E = print_log('ph4', gravity, E0)
+                print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
+                channel.copy()	# need other stars to be current in memory
                 # print_energies(stars)
 
-                manage_encounter(star1, star2, stars, gravity.particles)
+                # Synchronize everything for now.  Later we will just
+                # synchronize neighbors if gravity supports that.  TODO
+                gravity.synchronize_model()
 
-                print_log('ph4', gravity, E0)
-                # channel.copy()
-                # print_energies(stars)
+                dEmult += manage_encounter(star1, star2, stars,
+                                           gravity.particles)
+
+                # Recommit reinitializes all particles (and redundant
+                # here, since done automatically).  Later we will just
+                # recommit and reinitialize a list if gravity supports
+                # it. TODO
+                gravity.recommit_particles()
+
+                E = print_log('ph4', gravity, E0)
+                print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
                 print '\n--------------------------------------------------'
         
         ls = len(stars)
@@ -850,7 +1003,8 @@ def test_multiples(infile = None, number_of_stars = 40,
 		print "number of stars =", len(stars)
             sys.stdout.flush()
 
-        print_log('ph4', gravity, E0)
+        E = print_log('ph4', gravity, E0)
+        print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
 
     print ''
     gravity.stop()
