@@ -3,9 +3,7 @@ from amuse.support.data import core
 from amuse.support.units import units
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
-from amuse.support.units import values
-
-
+from amuse.support.units import quantities
 
 #import unittest
 from amuse.test import amusetest

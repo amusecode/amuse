@@ -1,17 +1,13 @@
-
-from amuse.support.units.values import zero
-
+from amuse.support.units.quantities import zero
 from amuse.support.data import base
 from amuse.support.data import grids
 
 import numpy
+
 grids.AbstractGrid.add_global_vector_attribute("position", ["x","y","z"])
 grids.AbstractGrid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
 grids.AbstractGrid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B3i"])
 
-
-
-        
 
 @grids.AbstractGrid.function_for_set
 def cellsize(grid, dimensions = 3):

@@ -40,7 +40,8 @@ from amuse.support.units.generic_unit_system import *
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.units.nbody_system import nbody_to_si
 from amuse.support.units import constants
-from amuse.support.units.values import VectorQuantity
+from amuse.support.units.quantities import VectorQuantity
+
 from amuse.support.data.grids import SamplePointsOnMultipleGrids, SamplePointWithIntepolation, SamplePointOnCellCenter
 
 from amuse.community.athena.interface import Athena

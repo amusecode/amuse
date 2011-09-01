@@ -1,7 +1,10 @@
-from amuse.support.units.values import Quantity, new_quantity, zero, AdaptingVectorQuantity
 from amuse.support.units import constants
 from amuse.support.units import units
-from amuse.support.units import values
+from amuse.support.units import quantities
+from amuse.support.units.quantities import Quantity
+from amuse.support.units.quantities import new_quantity
+from amuse.support.units.quantities import zero
+from amuse.support.units.quantities import AdaptingVectorQuantity
 
 from amuse.support.core import CompositeDictionary
 from amuse.support import exceptions

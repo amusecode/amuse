@@ -85,7 +85,7 @@
 # - timestepping: adaptive dt?
 
 from amuse.support.units import units
-from amuse.support.units import values
+from amuse.support.units import quantities
 from amuse.support.data import core
 
 import threading
@@ -113,7 +113,7 @@ class bridge(object):
         self.systems=set()
         self.partners=dict()
         self.time_offsets=dict()
-        self.time=values.zero
+        self.time=quantities.zero
         self.do_sync=dict()
         self.verbose=verbose
         self.timestep=None
@@ -125,7 +125,7 @@ class bridge(object):
         if hasattr(interface,"model_time"):
             self.time_offsets[interface]=(self.time-interface.model_time)
         else:
-            self.time_offsets[interface]=values.zero     
+            self.time_offsets[interface]=quantities.zero     
         self.systems.add(interface)
         for p in partners:
             if not hasattr(interface,"get_gravity_at_point"):
@@ -208,7 +208,7 @@ class bridge(object):
       
     @property
     def potential_energy(self):
-        Ep=values.zero
+        Ep=quantities.zero
         for x in self.systems:
             Ep+=x.potential_energy
             if hasattr(x,"particles"):
@@ -218,7 +218,7 @@ class bridge(object):
     
     @property
     def kinetic_energy(self):  
-        Ek=values.zero
+        Ek=quantities.zero
         for x in self.systems:
             Ek+=x.kinetic_energy
         return Ek

@@ -15,9 +15,9 @@ from amuse.support.data import particle_attributes
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.support.units import values
-from amuse.ext import plummer
+from amuse.support.units import quantities
 
+from amuse.ext import plummer
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -593,7 +593,7 @@ class TestBHTree(TestWithMPI):
         copyof =  instance.particles.copy()
         
         com = instance.center_of_mass_position
-        self.assertAlmostEqual(com[0], values.new_quantity(0.0, units.m), constants.precision)
+        self.assertAlmostEqual(com[0], quantities.new_quantity(0.0, units.m), constants.precision)
     
     def test14(self):
         print "Test14: Testing BHTree parameters (I)"

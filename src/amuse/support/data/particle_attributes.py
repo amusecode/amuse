@@ -2,12 +2,13 @@ import numpy
 from amuse.support.units import nbody_system
 from amuse.support.data import base
 from amuse.support.data.particles import ParticlesWithUnitsConverted, AbstractParticleSet
-from amuse.support.units.values import zero
-from amuse.support.units import values
-from amuse.support.units.values import VectorQuantity
-from amuse.support.units.values import Quantity
-from amuse.support.units.values import new_quantity
-from amuse.support.units.values import zero
+
+from amuse.support.units import quantities
+from amuse.support.units.quantities import zero
+from amuse.support.units.quantities import VectorQuantity
+from amuse.support.units.quantities import Quantity
+from amuse.support.units.quantities import new_quantity
+from amuse.support.units.quantities import zero
 
 from amuse.support.units import constants
 from amuse.support.units import units
@@ -100,11 +101,9 @@ def center_of_mass(particles):
     massy = (masses * y_values).sum()
     massz = (masses * z_values).sum()
 
-    return values.VectorQuantity.new_from_scalar_quantities(
-        massx/total_mass,
+    return quantities.VectorQuantity.new_from_scalar_quantities(massx/total_mass,
         massy/total_mass,
-        massz/total_mass
-    )
+        massz/total_mass)
 
 def center_of_mass_velocity(particles):
     """
@@ -133,11 +132,9 @@ def center_of_mass_velocity(particles):
     massy = (masses * y_values).sum()
     massz = (masses * z_values).sum()
 
-    return values.VectorQuantity.new_from_scalar_quantities(
-        massx/total_mass,
+    return quantities.VectorQuantity.new_from_scalar_quantities(massx/total_mass,
         massy/total_mass,
-        massz/total_mass
-    )
+        massz/total_mass)
 
 def kinetic_energy(particles):
     """

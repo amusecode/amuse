@@ -6,7 +6,7 @@ import sys
 from amuse.support.units import si, units, nbody_system
 from amuse.support.data import core
 from amuse.support.exceptions import AmuseException
-from amuse.support.units.values import *
+from amuse.support.units.quantities import *
 
 class TestQuantities(amusetest.TestCase):
 

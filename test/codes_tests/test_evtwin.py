@@ -10,7 +10,8 @@ from amuse.support.data import core
 
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.support.units.values import new_quantity
+from amuse.support.units.quantities import new_quantity
+
 from amuse.support.codes import channel
 
 class TestInterface(TestWithMPI):

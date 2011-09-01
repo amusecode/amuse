@@ -2,7 +2,7 @@ import weakref
 
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_system
-from amuse.support.units import values
+from amuse.support.units import quantities
 
 from amuse.support import exceptions
 
@@ -162,7 +162,7 @@ def new_parameters_with_units_converted_instance_with_docs(original, converter):
     
     class _ParametersMetaclass(type):
         def _convert_from_target_to_source_if_needed(value):
-            if isinstance(value, bool) or isinstance(value, values.NonNumericQuantity):
+            if isinstance(value, bool) or isinstance(value, quantities.NonNumericQuantity):
                 return value
             else:
                 return converter.from_target_to_source(value)
@@ -170,7 +170,7 @@ def new_parameters_with_units_converted_instance_with_docs(original, converter):
             output = "Parameters: \n"
             for parameter_definition in original._definitions:
                 value = parameter_definition.default_value
-                if not isinstance(value, bool) and not isinstance(value, values.NonNumericQuantity):
+                if not isinstance(value, bool) and not isinstance(value, quantities.NonNumericQuantity):
                     value = converter.from_target_to_source(value)
                 output += parameter_definition.name + "\n\n"
                 output += "    " + parameter_definition.description
@@ -222,7 +222,7 @@ class ParametersWithUnitsConverted(object):
         return dir(self._original)
 
     def convert_from_target_to_source_if_needed(self, value):
-        if isinstance(value, bool) or isinstance(value, values.NonNumericQuantity):
+        if isinstance(value, bool) or isinstance(value, quantities.NonNumericQuantity):
             return value
         else:
             return self._converter.from_target_to_source(value)
@@ -326,7 +326,7 @@ class ModuleMethodParameterDefinition(ParameterDefinition):
 
     def set_value(self, parameter, object, quantity):
         #if self.unit.is_non_numeric() or len(self.unit.base) == 0:
-        #    if not isinstance(quantity, values.Quantity):
+        #    if not isinstance(quantity, quantities.Quantity):
         #        quantity = quantity | self.unit
         
         if self.set_method is None:
@@ -399,7 +399,7 @@ class ModuleCachingParameterDefinition(ParameterDefinition):
         
         unit = self.default_value.unit
         if unit.is_non_numeric() or len(unit.base) == 0:
-            if not isinstance(quantity, values.Quantity):
+            if not isinstance(quantity, quantities.Quantity):
                 quantity = quantity | unit
         
         parameter.cached_value = quantity

@@ -14,11 +14,11 @@ from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.units import nbody_system as nbody
 
-from amuse.support.units.values import zero
-from amuse.support.units.values import ScalarQuantity
-from amuse.support.units.values import VectorQuantity
-from amuse.support.units.values import AdaptingVectorQuantity
-from amuse.support.units.values import new_quantity
+
+
+
+
+
 
 from amuse.support.data import particle_attributes
 from amuse.support.data.core import Particle, Particles, ParticlesSuperset, Grid
@@ -61,6 +61,11 @@ from amuse.community.mmams.interface import MakeMeAMassiveStar, MakeMeAMassiveSt
 from amuse.io import write_set_to_file
 from amuse.io import read_set_from_file
 from amuse.io import get_options_for_format
+from amuse.support.units.quantities import zero
+from amuse.support.units.quantities import ScalarQuantity
+from amuse.support.units.quantities import VectorQuantity
+from amuse.support.units.quantities import AdaptingVectorQuantity
+from amuse.support.units.quantities import new_quantity
 
 def vector(value = [], unit = None):
     if unit is None:

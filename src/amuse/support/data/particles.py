@@ -1,16 +1,17 @@
 from amuse.support.units import constants
 from amuse.support.units import units
-from amuse.support.units import values
-from amuse.support.units.values import Quantity
-from amuse.support.units.values import new_quantity
-from amuse.support.units.values import zero
-from amuse.support.units.values import AdaptingVectorQuantity
-from amuse.support.units.values import AdaptingVectorQuantity
+
+from amuse.support.units import quantities
+from amuse.support.units.quantities import Quantity
+from amuse.support.units.quantities import new_quantity
+from amuse.support.units.quantities import zero
+from amuse.support.units.quantities import AdaptingVectorQuantity
+from amuse.support.units.quantities import AdaptingVectorQuantity
+
 from amuse.support.core import CompositeDictionary
 from amuse.support import exceptions
 from amuse.support.data.base import *
 from amuse.support.data.memory_storage import *
-
 
 import numpy
 
@@ -1569,7 +1570,7 @@ class Particle(object):
             
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
        
-        if isinstance(new_value_for_the_attribute, values.Quantity):
+        if isinstance(new_value_for_the_attribute, quantities.Quantity):
             self.particles_set._set_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)
         elif isinstance(new_value_for_the_attribute, Particle):
             self.particles_set._set_value_of_attribute(

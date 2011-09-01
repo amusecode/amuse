@@ -91,13 +91,14 @@ from amuse.support.methods import AbstractCodeMethodWrapper
 import numpy
 
 from amuse.support.units import nbody_system, units
-from amuse.support.units import values
+from amuse.support.units import quantities
 
 from amuse.support.data import base
 from amuse.support.core import late
 from amuse.support import exceptions
 
 import inspect
+
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):
         AbstractCodeMethodWrapper.__init__(self, method)
@@ -183,7 +184,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         for value, attribute, isindex in zip(return_value, self.attribute_names, index_output_attributes):
             if attribute in set_of_attributes_to_return:
                 if isindex:
-                    result[attribute] = values.new_quantity(storage._get_keys_for_indices_in_the_code(value), units.object_key)
+                    result[attribute] = quantities.new_quantity(storage._get_keys_for_indices_in_the_code(value), units.object_key)
                 else:
                     result[attribute] = value
                     

@@ -1,5 +1,6 @@
 from amuse.support.core import late
-from amuse.support.units import values
+
+from amuse.support.units import quantities
 from amuse.support import exceptions
 
 import numpy
@@ -136,13 +137,13 @@ class unit(object):
         
     def new_quantity(self, value):
         """Create a new Quantity object.
-    
+
         :argument value: numeric value of the quantity, can be 
             a number or a sequence (list or ndarray)
         :returns: new ScalarQuantity or VectorQuantity object 
             with this unit
         """
-        return values.new_quantity(value, self)
+        return quantities.new_quantity(value, self)
         
     def to_simple_form(self):
         """Convert unit to a form with only one factor and powers
@@ -191,7 +192,7 @@ class unit(object):
         return True
                         
     def conversion_factor_from(self, x):
-        if self.base == x.base or isinstance(x, values.ZeroQuantity):
+        if self.base == x.base or isinstance(x, quantities.ZeroQuantity):
             this_factor = self.factor * 1.0
             other_factor = x.factor
             return this_factor / other_factor
@@ -228,11 +229,11 @@ class unit(object):
         >>> ton.as_quantity_in(units.kg)
         quantity<1000.0 kg>
         """
-        if isinstance(unit, values.Quantity):
+        if isinstance(unit, quantities.Quantity):
             raise exceptions.AmuseException("Cannot expres a unit in a quantity")
         else:
             factor = self.conversion_factor_from(unit)
-            return values.new_quantity(factor, unit)
+            return quantities.new_quantity(factor, unit)
             
     def value_in(self, unit):
         """

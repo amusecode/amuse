@@ -5,7 +5,8 @@ from amuse.support.data import incode_storage
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_system
 from amuse.support.units.core import unit
-from amuse.support.units import values
+from amuse.support.units import quantities
+
 from amuse.support.options import OptionalAttributes
 
 from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition, IncorrectWrappedMethodException
@@ -88,7 +89,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
             result = attribute #UnitsConvertionMethod(attribute, self.converter)
         elif isinstance(attribute, core.AbstractParticleSet):
             result = attribute #core.ParticlesWithUnitsConverted(attribute, self.converter)
-        elif isinstance(attribute, values.Quantity):
+        elif isinstance(attribute, quantities.Quantity):
             result = self.converter.from_target_to_source(attribute)
         elif isinstance(attribute, CodeMethodWrapper):
             result = CodeMethodWrapper(attribute, self)
@@ -129,13 +130,13 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
         return self.from_target_to_source(result)
 
     def from_source_to_target(self, x):
-        if isinstance(x, values.Quantity):
+        if isinstance(x, quantities.Quantity):
             return self.converter.from_source_to_target(x)
         else:
             return x
 
     def from_target_to_source(self, x):
-        if isinstance(x, values.Quantity):
+        if isinstance(x, quantities.Quantity):
             if x.unit.is_non_numeric():
                 return x
             else:

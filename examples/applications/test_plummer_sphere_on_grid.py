@@ -12,7 +12,8 @@ from amuse.support.units.generic_unit_converter import *
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.units import nbody_system
-from amuse.support.units.values import VectorQuantity
+from amuse.support.units.quantities import VectorQuantity
+
 from amuse.ext import cloud
 from amuse.community.athena.interface import Athena, AthenaInterface
 from amuse.community.capreole.interface import Capreole
@@ -34,6 +35,7 @@ from numpy import sqrt, arange, searchsorted, tanh, pi
 from optparse import OptionParser
 from amuse import io
 from amuse.io import text
+
 class HydroGridAndNbody(object):
     
     def __init__(self, gridcode, nbodycode):

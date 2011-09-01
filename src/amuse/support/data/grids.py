@@ -1,10 +1,10 @@
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.units import generic_unit_system
-from amuse.support.units import values
-from amuse.support.units.values import Quantity
-from amuse.support.units.values import new_quantity
-from amuse.support.units.values import zero
+from amuse.support.units import quantities
+from amuse.support.units.quantities import Quantity
+from amuse.support.units.quantities import new_quantity
+from amuse.support.units.quantities import zero
 
 from amuse.support.core import CompositeDictionary, late
 
@@ -14,7 +14,6 @@ from amuse.support.data.memory_storage import *
 from amuse.support.data import indexing
 
 import numpy
-
 class AbstractGrid(AbstractSet):
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
@@ -205,7 +204,7 @@ class GridPoint(object):
         object.__setattr__(self,"grid",grid)    
     
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
-        if isinstance(new_value_for_the_attribute, values.Quantity):
+        if isinstance(new_value_for_the_attribute, quantities.Quantity):
             self.grid._set_value_of_attribute(self.index, name_of_the_attribute, new_value_for_the_attribute)
         else:
             raise AttributeError("Can only assign quantities or other particles to an attribute.")
@@ -341,7 +340,7 @@ class SamplePointWithIntepolation(object):
         dy0 = (y - y0) / (y1 - y0)
         dz0 = (z - z0) / (z1 - z0)
         
-        result = values.AdaptingVectorQuantity()
+        result = quantities.AdaptingVectorQuantity()
         result.extend([
             dx1 * dy1 * dz1,
             dx0 * dy1 * dz1,
@@ -366,7 +365,7 @@ class SamplePointWithIntepolation(object):
         )
         
     def get_values_of_attribute(self, name_of_the_attribute):
-        result = values.AdaptingVectorQuantity()
+        result = quantities.AdaptingVectorQuantity()
         for x in self.surrounding_cells:
             result.append(getattr(x, name_of_the_attribute))
         return result
@@ -396,7 +395,7 @@ class SamplePointsOnGrid(object):
             yield x.position
         
     def __getattr__(self, name_of_the_attribute):
-        result = values.AdaptingVectorQuantity()
+        result = quantities.AdaptingVectorQuantity()
         for x in self.samples:
             result.append(getattr(x, name_of_the_attribute))
         return result
@@ -482,7 +481,7 @@ class SamplePointsOnMultipleGrids(object):
         
     def __getattr__(self, name_of_the_attribute):
         self.get_samples()
-        result = values.AdaptingVectorQuantity()
+        result = quantities.AdaptingVectorQuantity()
         for x in self.samples:
             result.append(getattr(x, name_of_the_attribute))
         return result

@@ -1,5 +1,5 @@
 import warnings
 
-warnings.warn("amuse.support.data.values has moved to amuse.support.units.values, use amuse.support.units.values instead", DeprecationWarning)
+warnings.warn("amuse.support.data.values has moved to amuse.support.units.quantities, use amuse.support.units.quantities instead", DeprecationWarning)
 
-from amuse.support.units.values import *
+from amuse.support.units.qantities import *

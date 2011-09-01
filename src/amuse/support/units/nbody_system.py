@@ -47,12 +47,12 @@ from amuse.support.units import core
 from amuse.support.units import constants
 from amuse.support.units import generic_unit_converter
 from amuse.support.units import generic_unit_system
-from amuse.support.units.values import new_quantity
+from amuse.support.units.quantities import new_quantity
+
 from amuse.support import exceptions
 
-
-
 import numpy
+
 """
 """
 class nbody_unit(core.base_unit):

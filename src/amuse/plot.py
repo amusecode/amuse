@@ -16,7 +16,7 @@ except ImportError:
 import numpy    
 
 from amuse.support.units import units
-from amuse.support.units import values
+from amuse.support.units import quantities
 
 auto_label = "{0}"
 custom_label = "{0} {1}"
@@ -27,12 +27,12 @@ class UnitlessArgs(object):
     @classmethod
     def strip(cli, *args, **kwargs):
         if cli.current_plot is native_plot.gca():
-            args = [arg.as_quantity_in(unit) if isinstance(arg, values.Quantity) else arg 
+            args = [arg.as_quantity_in(unit) if isinstance(arg, quantities.Quantity) else arg 
                 for arg, unit in map(None, args, cli.arg_units)]
         cli.clear()
         cli.current_plot = native_plot.gca()
         for i, v in enumerate(args):
-            if isinstance(v, values.Quantity):
+            if isinstance(v, quantities.Quantity):
                 cli.stripped_args.append(v.value_in(v.unit))
                 cli.arg_units.append(v.unit)
                 cli.unitnames_of_args.append("["+str(v.unit)+"]")
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     native_plot.legend(loc=2)
     
     x = range(50) | units.Myr
-    y1 = values.new_quantity(np.sin(np.arange(0,1.5,0.03)), 1e50*units.erg)
+    y1 = quantities.new_quantity(np.sin(np.arange(0,1.5,0.03)), 1e50*units.erg)
     y2 = -(1e43 | units.J) - y1
     native_plot.subplot(2,2,2)
     plot(x, y1, label='$E_{kin}$')

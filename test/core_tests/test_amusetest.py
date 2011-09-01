@@ -2,6 +2,7 @@ from amuse.test.amusetest import TestCase
 from amuse.support.exceptions import AmuseException
 from amuse.support.units import units
 
+
 class TestAmusetestTestCase(TestCase):
     
     def test1(self):

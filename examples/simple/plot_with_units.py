@@ -17,7 +17,7 @@ if __name__ in ('__main__', '__plot__'):
     native_plot.legend(loc=2)
 
     x = range(50) | units.Myr
-    y1 = values.new_quantity(np.sin(np.arange(0,1.5,0.03)), 1e50*units.erg)
+    y1 = quantities.new_quantity(np.sin(np.arange(0,1.5,0.03)), 1e50*units.erg)
     y2 = -(1e43 | units.J) - y1
     native_plot.subplot(2,2,2)
     plot(x, y1, label='$E_\mathrm{kin}$')

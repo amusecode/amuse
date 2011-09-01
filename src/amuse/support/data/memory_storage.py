@@ -1,8 +1,7 @@
 import numpy
 
-
-from amuse.support.units.values import VectorQuantity
-from amuse.support.units import values
+from amuse.support.units import quantities
+from amuse.support.units.quantities import VectorQuantity
 from amuse.support.data.base import *
 from amuse.support import exceptions
 

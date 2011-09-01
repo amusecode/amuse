@@ -1,5 +1,5 @@
 from amuse.support.units import units
-from amuse.support.units import values
+from amuse.support.units import quantities
 from amuse.support.data import core
 
 from amuse.support import interface
@@ -135,10 +135,10 @@ class ExampleParticlesInterface(interface.InCodeComponentImplementation):
         """Returns arrays for the mass, x, y and z values
         """
         
-        massresult = values.AdaptingVectorQuantity()
-        xresult = values.AdaptingVectorQuantity()
-        yresult = values.AdaptingVectorQuantity()
-        zresult = values.AdaptingVectorQuantity()
+        massresult = quantities.AdaptingVectorQuantity()
+        xresult = quantities.AdaptingVectorQuantity()
+        yresult = quantities.AdaptingVectorQuantity()
+        zresult = quantities.AdaptingVectorQuantity()
         
         for index_element in index_of_the_particle:
             particle = self.mapping_from_id_to_particle[index_element]
@@ -156,7 +156,7 @@ class ExampleParticlesInterface(interface.InCodeComponentImplementation):
         """Returns an array for the masses of the indices int the index_of_the_particle array
         """
         
-        massresult = values.AdaptingVectorQuantity()
+        massresult = quantities.AdaptingVectorQuantity()
         
         for index_element in index_of_the_particle:
             particle = self.mapping_from_id_to_particle[index_element]
@@ -185,9 +185,9 @@ class ExampleParticlesInterface(interface.InCodeComponentImplementation):
         """Returns an array of the positions for the indices in index_of_the_particle
         """
         
-        xresult = values.AdaptingVectorQuantity()
-        yresult = values.AdaptingVectorQuantity()
-        zresult = values.AdaptingVectorQuantity()
+        xresult = quantities.AdaptingVectorQuantity()
+        yresult = quantities.AdaptingVectorQuantity()
+        zresult = quantities.AdaptingVectorQuantity()
         
         for index_element in index_of_the_particle:
             particle = self.mapping_from_id_to_particle[index_element]
@@ -227,8 +227,8 @@ class ExampleParticlesInterface(interface.InCodeComponentImplementation):
             index_in_the_list = [index_in_the_list,]
         if not hasattr(index_of_the_particle, '__iter__'):
             index_of_the_particle = [index_of_the_particle,]
-        value1 = values.AdaptingVectorQuantity()
-        value2 = values.AdaptingVectorQuantity()
+        value1 = quantities.AdaptingVectorQuantity()
+        value2 = quantities.AdaptingVectorQuantity()
         
         for index_of_one_particle, index_of_one_element in zip(index_of_the_particle, index_in_the_list):
             

@@ -1,6 +1,7 @@
 from amuse.support.data import core
 from amuse.support.core import late
 from amuse.support.units import units
+from amuse.support.units import quantities
 from amuse.io import base
 
 import numpy
@@ -97,7 +98,7 @@ class VtkStructuredGrid(base.FileFormatProcessor):
             ymax = self.set.y.max()
             zmin = self.set.z.min()
             zmax = self.set.z.max()
-            result = values.AdaptingVectorQuantity
+            result = quantities.AdaptingVectorQuantity()
             result.append(xmin)
             result.append(xmax)
             result.append(ymin)

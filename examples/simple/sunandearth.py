@@ -1,11 +1,12 @@
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.support.units import values
+from amuse.support.units import quantities
 
 from amuse.community.hermite0.interface import Hermite
 
 from matplotlib import pyplot
+
 def new_system_of_sun_and_earth():
     stars = core.Particles(2)
     
@@ -36,8 +37,8 @@ def simulate_system_until(particles, end_time):
     t = t0
     earth = instance.particles[1]
     
-    x_values = values.AdaptingVectorQuantity()
-    y_values = values.AdaptingVectorQuantity()
+    x_values = quantities.AdaptingVectorQuantity()
+    y_values = quantities.AdaptingVectorQuantity()
     
     while t < end_time:
         instance.evolve_model(t)
