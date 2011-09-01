@@ -1,10 +1,11 @@
 from amuse.support.data import parameters
 from amuse.support.data import core
-from amuse.support.data import values
+
 from amuse.support.data import incode_storage
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_system
 from amuse.support.units.core import unit
+from amuse.support.units import values
 from amuse.support.options import OptionalAttributes
 
 from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition, IncorrectWrappedMethodException

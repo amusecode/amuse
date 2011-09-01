@@ -36,9 +36,9 @@ generic_unit_converter and the derived nbody_system modules.
 Quantities
 ----------
 
-.. inheritance-diagram:: amuse.support.data.values
+.. inheritance-diagram:: amuse.support.units.values
 
-.. automodule:: amuse.support.data.values
+.. automodule:: amuse.support.units.values
     
     .. autoclass:: Quantity
         :members:

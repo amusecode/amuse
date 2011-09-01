@@ -3,7 +3,7 @@ In this script we simulate a plummer sphere on a grid
 """
 
 from amuse.support.core import late
-from amuse.support.data.values import VectorQuantity
+
 from amuse.support.data.core import Grid, Particles
 
 
@@ -12,6 +12,7 @@ from amuse.support.units.generic_unit_converter import *
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.units import nbody_system
+from amuse.support.units.values import VectorQuantity
 from amuse.ext import cloud
 from amuse.community.athena.interface import Athena, AthenaInterface
 from amuse.community.capreole.interface import Capreole

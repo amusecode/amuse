@@ -1,5 +1,5 @@
-from amuse.support.data import values
 from amuse.support.core import late
+from amuse.support.units import values
 from amuse.support import exceptions
 
 import numpy

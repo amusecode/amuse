@@ -91,14 +91,13 @@ from amuse.support.methods import AbstractCodeMethodWrapper
 import numpy
 
 from amuse.support.units import nbody_system, units
-from amuse.support.data import values
+from amuse.support.units import values
+
 from amuse.support.data import base
 from amuse.support.core import late
 from amuse.support import exceptions
 
 import inspect
-
-
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):
         AbstractCodeMethodWrapper.__init__(self, method)

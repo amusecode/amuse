@@ -9,7 +9,7 @@ from amuse.support.units import si
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_system
 from amuse.support.units.constants import *
-from amuse.support.data.values import zero
+from amuse.support.units.values import zero
 
 class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
 

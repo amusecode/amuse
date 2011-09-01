@@ -2,9 +2,13 @@ import numpy
 from amuse.support.units import nbody_system
 from amuse.support.data import base
 from amuse.support.data.particles import ParticlesWithUnitsConverted, AbstractParticleSet
-from amuse.support.data.values import zero
-from amuse.support.data import values
-from amuse.support.data.values import VectorQuantity,Quantity, new_quantity, zero
+from amuse.support.units.values import zero
+from amuse.support.units import values
+from amuse.support.units.values import VectorQuantity
+from amuse.support.units.values import Quantity
+from amuse.support.units.values import new_quantity
+from amuse.support.units.values import zero
+
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support import exceptions

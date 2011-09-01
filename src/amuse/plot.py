@@ -14,8 +14,9 @@ except ImportError:
     native_plot = FakePlotLibrary()
 
 import numpy    
+
 from amuse.support.units import units
-from amuse.support.data import values
+from amuse.support.units import values
 
 auto_label = "{0}"
 custom_label = "{0} {1}"

@@ -1,16 +1,14 @@
-from amuse.support.data import values
-from amuse.support.data.values import Quantity, new_quantity, zero, AdaptingVectorQuantity
+from amuse.support.units.values import Quantity, new_quantity, zero, AdaptingVectorQuantity
 from amuse.support.units import constants
 from amuse.support.units import units
+from amuse.support.units import values
+
 from amuse.support.core import CompositeDictionary
 from amuse.support import exceptions
 
 import numpy
 import random
 import inspect
-
-
-
 
 class KeyGenerator(object):
     

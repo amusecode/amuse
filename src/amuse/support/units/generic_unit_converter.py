@@ -1,8 +1,11 @@
 import numpy
 from amuse.support.units.generic_unit_system import *
-from amuse.support.data.values import new_quantity, is_unit, is_quantity
+
 from amuse.support import exceptions
 from amuse.support.core import late
+from amuse.support.units.values import new_quantity
+from amuse.support.units.values import is_unit
+from amuse.support.units.values import is_quantity
 
 class UnitsNotOrtogonalException(exceptions.AmuseException):
     formatstring = 'The number of orthoganal units is incorrect, expected {0} but found {1}. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)'

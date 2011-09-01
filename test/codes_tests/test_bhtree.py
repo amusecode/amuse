@@ -10,11 +10,12 @@ import math
 from amuse.community.bhtree.interface import BHTreeInterface, BHTree
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
-from amuse.support.data import values
+
 from amuse.support.data import particle_attributes
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from amuse.support.units import values
 from amuse.ext import plummer
 
 try:

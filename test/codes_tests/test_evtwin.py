@@ -7,9 +7,10 @@ from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
-from amuse.support.data.values import new_quantity
+
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from amuse.support.units.values import new_quantity
 from amuse.support.codes import channel
 
 class TestInterface(TestWithMPI):

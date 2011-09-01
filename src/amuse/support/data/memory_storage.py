@@ -1,11 +1,10 @@
 import numpy
 
-from amuse.support.data import values
-from amuse.support.data.values import VectorQuantity
+
+from amuse.support.units.values import VectorQuantity
+from amuse.support.units import values
 from amuse.support.data.base import *
 from amuse.support import exceptions
-
-
 
 class InMemoryAttributeStorage(AttributeStorage):
     

@@ -4,7 +4,7 @@ from amuse.community.sse.interface import SSE
 from amuse.ext.solarsystem import Solarsystem
 from amuse.support.units import units
 from amuse.support.units import nbody_system
-from amuse.support.data.values import VectorQuantity
+
 from amuse.support.data import core
 
 from amuse.plot import *

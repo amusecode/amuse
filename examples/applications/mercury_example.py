@@ -10,11 +10,12 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 from amuse.support.core import late
-from amuse.support.data.values import VectorQuantity
+
 from amuse.support.data.core import Grid
 
 
 from amuse.support.units.generic_unit_system import *
+from amuse.support.units.values import VectorQuantity
 from amuse.support.data.grids import SamplePointsOnMultipleGrids, SamplePointWithIntepolation, SamplePointOnCellCenter
 
 

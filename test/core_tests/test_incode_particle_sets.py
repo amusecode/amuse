@@ -1,6 +1,7 @@
 from amuse.support.units import units
+from amuse.support.units import values
 from amuse.support.data import core
-from amuse.support.data import values
+
 from amuse.support import interface
 from amuse.support import exceptions
 

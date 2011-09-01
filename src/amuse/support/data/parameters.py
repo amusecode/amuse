@@ -2,7 +2,8 @@ import weakref
 
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_system
-from amuse.support.data import values
+from amuse.support.units import values
+
 from amuse.support import exceptions
 
 import warnings

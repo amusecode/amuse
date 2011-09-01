@@ -11,13 +11,13 @@ from amuse.community.hermite0.interface import Hermite
 from amuse.community.huayno.interface import Huayno
 from amuse.community.bhtree.interface import BHTree
 
+from amuse.support.units.values import AdaptingVectorQuantity
 from amuse.support.data.core import Particles
-from amuse.support.data.values import AdaptingVectorQuantity
+
 
 from amuse.support.units import nbody_system
 
 from matplotlib import pyplot
-
 def new_particles():
     particles = Particles(3)
     

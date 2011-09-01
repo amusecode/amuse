@@ -6,8 +6,10 @@ import sys
 import inspect
 
 from amuse.support import exceptions
-from amuse.support.data.values import Quantity, to_quantity
+
 from amuse.support.units.si import no_unit
+from amuse.support.units.values import Quantity
+from amuse.support.units.values import to_quantity
 
 class SkipTest(exceptions.AmuseException):
     pass
