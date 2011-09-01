@@ -316,6 +316,33 @@ class CodeCommand(Command):
                     result.append((line[:index_of_the_colon], targetname,))
         return result
     
+    def call(self, arguments, buildlogfile = None, **keyword_arguments):
+        stringio = StringIO.StringIO()
+         
+        self.announce(' '.join(arguments), log.DEBUG)
+        
+        process = Popen(
+            arguments, 
+            stdout = PIPE,
+            stderr = STDOUT,
+            **keyword_arguments
+        )
+        
+        while True:
+            line = process.stdout.readline()
+            if len(line) == 0:
+                break
+            
+            if not buildlogfile is None:
+                buildlogfile.write(line)
+            self.announce(line[:-1], log.DEBUG)
+            stringio.write(line)
+            
+        result = process.wait()
+        content = stringio.getvalue()
+        
+        stringio.close()
+        return result, content
     
     
 class SplitOutput(object) :
@@ -343,13 +370,9 @@ class BuildCodes(CodeCommand):
 
     description = "build interfaces to codes"
     
+    
     def run_make_on_directory(self, codename, directory, target, environment):
         buildlog = os.path.abspath("build.log")
-        buffer = StringIO.StringIO()
-        output = SplitOutput( open(buildlog, "a") , buffer)
-        
-        teeprocess = Popen(['tee','-a', buildlog], env = environment, stdin = PIPE, stdout = PIPE, stderr = STDOUT)
-        
         
         with open(buildlog, "a") as output:
             output.write('*'*100)
@@ -358,12 +381,13 @@ class BuildCodes(CodeCommand):
             output.write('*'*100)
             output.write('\n')
             output.flush()
-            
-            process = Popen(['make','-C', directory, target], env = environment, stdout = teeprocess.stdin, stderr = STDOUT)
-            
-            resultcontent, _ = teeprocess.communicate()
-            
-            result = process.wait()
+        
+        with open(buildlog, "a") as output:
+            result, resultcontent = self.call(
+                ['make','-C', directory, target], 
+                output,
+                env = environment
+            )
         
         with open(buildlog, "a") as output:
             output.write('*'*100)
@@ -410,14 +434,14 @@ class BuildCodes(CodeCommand):
             
             shortname = x[len(self.lib_dir) + 1:] + '-library'
             self.announce("building {0}".format(shortname), level = log.INFO)
-            returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
+            returncode, outputlog = self.run_make_on_directory(shortname, x, 'all', environment)
             
             if returncode == 2:
                 self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level = log.DEBUG)
                 
-                if self.is_download_needed(buildlog):
+                if self.is_download_needed(outputlog):
                     is_download_needed.append(shortname)
-                elif self.is_cuda_needed(buildlog):
+                elif self.is_cuda_needed(outputlog):
                     is_cuda_needed.append(shortname)
                 else:
                     not_build.append(shortname)
@@ -433,13 +457,13 @@ class BuildCodes(CodeCommand):
             shortname = x[len(self.codes_dir) + 1:].lower()
             starttime = datetime.datetime.now()
             self.announce("[{1:%H:%M:%S}] building {0}".format(shortname, starttime), level =  log.INFO)
-            returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
+            returncode, outputlog = self.run_make_on_directory(shortname, x, 'all', environment)
             endtime = datetime.datetime.now()
             if returncode > 0:
                 self.announce("[{2:%H:%M:%S}] building {0}, failed, see {1!r} for error log".format(shortname, buildlog, endtime), level =  log.DEBUG)
-                if self.is_download_needed(buildlog):
+                if self.is_download_needed(outputlog):
                     is_download_needed.append(shortname)
-                elif self.is_cuda_needed(buildlog):
+                elif self.is_cuda_needed(outputlog):
                     is_cuda_needed.append(shortname)
                 else:
                     not_build.append(shortname)
@@ -454,7 +478,7 @@ class BuildCodes(CodeCommand):
             for target,target_name in special_targets:
                 starttime = datetime.datetime.now()
                 self.announce("[{2:%H:%M:%S}] building {0} - {1}".format(shortname, target_name, starttime), level =  log.DEBUG)
-                returncode, buildlog = self.run_make_on_directory(shortname, x, target, environment)
+                returncode, outputlog = self.run_make_on_directory(shortname, x, target, environment)
                 endtime = datetime.datetime.now()
                 if returncode > 0:
                     not_build_special.append(shortname + " - " + target_name)
@@ -470,7 +494,7 @@ class BuildCodes(CodeCommand):
             output.write('Building finished\n')
             output.write('*'*100)
             output.write('\n')
-        print
+            
         self.announce("Environment variables")
         self.announce("="*100)
         sorted_keys = sorted(self.environment.keys())
@@ -575,24 +599,7 @@ class BuildOneCode(CodeCommand):
                 yield path
                 
     
-    def call(self, arguments, **keyword_arguments):
-        
-        self.announce(' '.join(arguments), log.INFO)
-        
-        process = Popen(
-            arguments, 
-            stdout = PIPE,
-            stderr = STDOUT,
-            **keyword_arguments
-        )
-        
-        for line in process.stdout.readline():
-            self.announce(line, log.DEBUG)
-            
-        result = process.wait()
-        
     
-        return result
     
     def run (self):
         environment = self.environment
@@ -604,13 +611,13 @@ class BuildOneCode(CodeCommand):
             
             self.announce("cleaning " + x)
             self.call(['make','-C', x, 'clean'], env=environment)
-            returncode = self.call(['make','-C', x, 'all'], env = environment)
+            returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
             results.append(('default',returncode,))
             
             special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:
                 self.announce("building " + x + " version: " + target_name)
-                returncode = self.call(['make','-C', x, target], env = environment)
+                returncode, _ = self.call(['make','-C', x, target], env = environment)
                 results.append((target,returncode,))
         
         for name, returncode in results:
