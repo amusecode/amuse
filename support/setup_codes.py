@@ -574,7 +574,26 @@ class BuildOneCode(CodeCommand):
             if os.path.isdir(path):
                 yield path
                 
-                
+    
+    def call(self, arguments, **keyword_arguments):
+        
+        self.announce(' '.join(arguments), log.INFO)
+        
+        process = Popen(
+            arguments, 
+            stdout = PIPE,
+            stderr = STDOUT,
+            **keyword_arguments
+        )
+        
+        for line in process.stdout.readline():
+            self.announce(line, log.DEBUG)
+            
+        result = process.wait()
+        
+    
+        return result
+    
     def run (self):
         environment = self.environment
         environment.update(os.environ)
@@ -584,14 +603,14 @@ class BuildOneCode(CodeCommand):
             shortname = x[len(self.codes_dir) + 1:].lower()
             
             self.announce("cleaning " + x)
-            call(['make','-C', x, 'clean'])
-            returncode = call(['make','-C', x, 'all'], env = environment)
+            self.call(['make','-C', x, 'clean'], env=environment)
+            returncode = self.call(['make','-C', x, 'all'], env = environment)
             results.append(('default',returncode,))
             
             special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:
                 self.announce("building " + x + " version: " + target_name)
-                returncode = call(['make','-C', x, target], env = environment)
+                returncode = self.call(['make','-C', x, target], env = environment)
                 results.append((target,returncode,))
         
         for name, returncode in results:
