@@ -194,11 +194,12 @@ class RequestACodeReview(object):
         
         if len(self.review_identifier_argument) == 0:
             arguments += [self.summary_argument, description]
+        
         print run_command(arguments)
         
     @late
     def svn_repository_url(self):
-        return 'http://www.amusecode.org/svn/'
+        return 'http://www.amusecode.org/svn'
     
     @late
     def reviewboard_url(self):
