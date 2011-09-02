@@ -2,7 +2,7 @@ import numpy
 from amuse.community.sse.interface import SSE
 from amuse.support.data import core
 from amuse.support.units import units
-from amuse.ext.solarsystem import Solarsystem
+from amuse.ext import solarsystem
 from amuse.plot import *
 
 try:
@@ -14,7 +14,7 @@ except ImportError:
 def plottillagb():
     sse = SSE()
     sse.commit_parameters()
-    sun, planets = Solarsystem.new_solarsystem()
+    sun, planets = solarsystem.new_solar_system_for_mercury()
     sse.particles.add_particles(sun)
     sse.commit_particles()
     channel = sse.particles.new_channel_to(sun)
