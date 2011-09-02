@@ -95,7 +95,7 @@ public class Daemon implements RegistryEventHandler {
                 logger.debug("Waiting for connection");
                 socket = loopbackServer.accept();
 
-                new CodeClient(socket, ibis, deployment);
+                new RemoteCodeInterface(socket, ibis, deployment);
             } catch (Exception e) {
                 if (socket != null) {
                     try {

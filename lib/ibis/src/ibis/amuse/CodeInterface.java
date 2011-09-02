@@ -3,22 +3,25 @@ package ibis.amuse;
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.IbisProperties;
 import ibis.ipl.ReceivePort;
 import ibis.ipl.RegistryEventHandler;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
+import ibis.util.TypedProperties;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CodeServer implements RegistryEventHandler {
+public class CodeInterface implements RegistryEventHandler {
 
     private static class Shutdown extends Thread {
-        private final CodeServer worker;
+        private final CodeInterface worker;
 
-        Shutdown(CodeServer worker) {
+        Shutdown(CodeInterface worker) {
             this.worker = worker;
         }
 
@@ -27,7 +30,7 @@ public class CodeServer implements RegistryEventHandler {
         }
     }
 
-    private static Logger logger = LoggerFactory.getLogger(CodeServer.class);
+    private static Logger logger = LoggerFactory.getLogger(CodeInterface.class);
 
     private final Runnable communityCode;
 
@@ -39,8 +42,9 @@ public class CodeServer implements RegistryEventHandler {
 
     private volatile boolean ended = false;
 
-    public CodeServer(String id, String codeName, String codeDir,
-            String amuseHome, boolean jni) throws Exception {
+    public CodeInterface(String id, String codeName, String codeDir,
+            String amuseHome, boolean jni, String[] hostnames) throws Exception {
+
         ibis = IbisFactory.createIbis(Daemon.ibisCapabilities, this,
                 Daemon.portType);
 
@@ -50,10 +54,11 @@ public class CodeServer implements RegistryEventHandler {
         try {
 
             if (jni) {
-                communityCode = new JNICode(codeName, receivePort, sendPort);
-            } else {
-                communityCode = new SocketCode(codeName, codeDir, amuseHome, receivePort,
+                communityCode = new JNICodeInterface(codeName, receivePort,
                         sendPort);
+            } else {
+                communityCode = new SocketCodeInterface(codeName, codeDir,
+                        amuseHome, receivePort, sendPort);
             }
 
             receivePort.enableConnections();
@@ -103,7 +108,6 @@ public class CodeServer implements RegistryEventHandler {
         }
     }
 
-   
     @Override
     public void joined(IbisIdentifier joinedIbis) {
         // IGNORE
@@ -141,19 +145,19 @@ public class CodeServer implements RegistryEventHandler {
     public void poolTerminated(IbisIdentifier source) {
         end();
     }
-    
+
     public void run() {
         communityCode.run();
         end();
     }
 
     public static void main(String[] arguments) {
-
         String id = null;
         String codeName = null;
         boolean jni = false;
         String amuseHome = null;
         String codeDir = null;
+        int nrOfWorkers = 1;
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-i") || arguments[i].equals("--worker-id")) {
@@ -174,24 +178,43 @@ public class CodeServer implements RegistryEventHandler {
             } else if (arguments[i].equals("-j")
                     || arguments[i].equals("--jni")) {
                 jni = true;
+            } else if (arguments[i].equals("-n")
+                    || arguments[i].equals("--number-of-workers")) {
+                i++;
+                nrOfWorkers = Integer.parseInt(arguments[i]);
+            } else {
+                System.err.println("Unknown option: " + arguments[i]);
+                System.exit(1);
             }
         }
 
-        CodeServer server = null;
+        CodeInterface codeInterface = null;
+        PoolInfo poolInfo = null;
+
         try {
             logger.info("Starting worker " + id + " running " + codeName);
 
-            server = new CodeServer(id, codeName, codeDir, amuseHome, jni);
+            poolInfo = new PoolInfo(id, nrOfWorkers);
 
-            new Shutdown(server);
+            if (poolInfo.getRank() == 0) {
+                codeInterface = new CodeInterface(id, codeName, codeDir,
+                        amuseHome, jni, poolInfo.getHostnames());
 
-            server.run();
-            logger.info("Worker " + id + " running " + codeName + " DONE!");
+                new Shutdown(codeInterface);
+
+                codeInterface.run();
+                logger.info("Worker " + id + " running " + codeName + " DONE!");
+
+                poolInfo.terminate();
+            } else {
+                poolInfo.waitUntilTerminated();
+            }
+            poolInfo.end();
         } catch (Exception e) {
             logger.error("Error on running code server", e);
         } finally {
-            if (server != null) {
-                server.end();
+            if (codeInterface != null) {
+                codeInterface.end();
             }
         }
     }

@@ -45,7 +45,7 @@
         <javah classpath="tmp"
                destdir="include"
                force="yes"
-               class="ibis.amuse.JNICode"
+               class="ibis.amuse.JNICodeInterface"
         />
 
 	<jar destfile="lib/${jar}">

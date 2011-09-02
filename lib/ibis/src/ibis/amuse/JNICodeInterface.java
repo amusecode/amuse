@@ -16,10 +16,10 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class JNICode implements Runnable {
+public class JNICodeInterface implements Runnable {
 
     private static final Logger logger = LoggerFactory
-            .getLogger(JNICode.class);
+            .getLogger(JNICodeInterface.class);
 
     private final String codeName;
 
@@ -67,7 +67,7 @@ public class JNICode implements Runnable {
      */
     private native void init(String codeName) throws Exception;
     
-    JNICode(String codeName, ReceivePort receivePort, SendPort sendPort)
+    JNICodeInterface(String codeName, ReceivePort receivePort, SendPort sendPort)
             throws IOException {
         this.codeName = codeName;
         this.receivePort = receivePort;
@@ -163,7 +163,7 @@ public class JNICode implements Runnable {
     
     
     public static void main(String[] arguments) throws Exception {
-        JNICode code = new JNICode(arguments[0], null, null);
+        JNICodeInterface code = new JNICodeInterface(arguments[0], null, null);
         
         code.requestMessage.clear();
         code.requestMessage.setFunctionID(0);

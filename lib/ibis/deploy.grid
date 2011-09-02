@@ -27,6 +27,8 @@
 
 # default.user.name=ndrost
 
+local.job.wrapper.script=multicore.script
+
 # Details of cluster "VU"
 VU.server.adaptor = SshTrilead
 VU.server.uri = any://fs0.das4.cs.vu.nl

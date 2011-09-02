@@ -37,7 +37,7 @@ public class Deployment {
         applications = new ApplicationSet();
 
         Workspace workspace = new Workspace(grid, applications, experiment);
-        
+
         deploy = new Deploy(new File("deploy"), verbose, false, 0, null, null,
                 true);
 
@@ -52,8 +52,8 @@ public class Deployment {
         return deploy.getServerAddress();
     }
 
-    public Job deploy(String codeName, String codeDir, String clusterName, String workerID, int nrOfWorkers)
-            throws Exception {
+    public Job deploy(String codeName, String codeDir, String clusterName,
+            String workerID, int nrOfWorkers) throws Exception {
         logger.info("Deploying worker \"" + workerID + "\" running \""
                 + codeName + "\" on host " + clusterName);
 
@@ -66,9 +66,9 @@ public class Deployment {
             throw new Exception("Cluster \"" + clusterName
                     + "\"not found in grid description file \"deploy.grid\"");
         }
-        
+
         String amuseHome = cluster.getProperties().getProperty("amuse.home");
-        
+
         if (clusterName.equals("local")) {
             amuseHome = new File("../..").getAbsolutePath().toString();
         }
@@ -77,7 +77,6 @@ public class Deployment {
             throw new Exception("amuse.home property not set for cluster \""
                     + clusterName + "\" in grid description file deploy.grid");
         }
-        
 
         // get or create Application for worker
         Application application = applications.getApplication(codeName);
@@ -90,7 +89,7 @@ public class Deployment {
 
             // application.addInputFile(new
             // File("libibis-amuse-bhtree_worker.so"));
-            application.setMainClass("ibis.amuse.CodeServer");
+            application.setMainClass("ibis.amuse.CodeInterface");
             application.setMemorySize(1000);
             application.setLog4jFile(new File("log4j.properties"));
 
@@ -110,13 +109,14 @@ public class Deployment {
         jobDescription.setPoolName("amuse");
 
         String absCodeDir = amuseHome + "/" + codeDir;
-        
+
         jobDescription.getApplication().setSystemProperty("java.library.path",
                 absCodeDir);
 
         jobDescription.getApplication().setArguments("--code-name", codeName,
                 "--worker-id", workerID, "--amuse-home", amuseHome,
-                "--code-dir", codeDir);
+                "--code-dir", codeDir, "--number-of-workers",
+                Integer.toString(nrOfWorkers));
 
         Job result = deploy.submitJob(jobDescription, application, cluster,
                 null, null);

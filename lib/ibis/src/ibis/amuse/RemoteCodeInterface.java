@@ -23,12 +23,12 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class CodeClient implements Runnable {
+public class RemoteCodeInterface implements Runnable {
 
     public static final String MAGIC_STRING = "magic_string";
 
     private static final Logger logger = LoggerFactory
-            .getLogger(CodeClient.class);
+            .getLogger(RemoteCodeInterface.class);
     
     private static int nextID = 0;
 
@@ -87,7 +87,7 @@ public class CodeClient implements Runnable {
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    CodeClient(SocketChannel socket, Ibis ibis, Deployment deployment)
+    RemoteCodeInterface(SocketChannel socket, Ibis ibis, Deployment deployment)
             throws IOException {
         this.channel = socket;
         this.ibis = ibis;
@@ -225,8 +225,8 @@ public class CodeClient implements Runnable {
                 
                 finish = System.currentTimeMillis();
                 
-                if (logger.isInfoEnabled()) {
-                    logger.info("call took " + (finish - start) + " ms");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("call took " + (finish - start) + " ms");
                 }
             } catch (IOException e) {
                 logger.error("Error on handling call", e);

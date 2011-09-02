@@ -20,10 +20,10 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class SocketCode implements Runnable {
+public class SocketCodeInterface implements Runnable {
 
     private static final Logger logger = LoggerFactory
-            .getLogger(SocketCode.class);
+            .getLogger(SocketCodeInterface.class);
 
     private static final int ACCEPT_TRIES = 5;
     private static final int ACCEPT_TIMEOUT = 500; //ms
@@ -48,7 +48,7 @@ public class SocketCode implements Runnable {
 
     private final Process process;
 
-    SocketCode(String codeName, String codeDir, String amuseHome, ReceivePort receivePort,
+    SocketCodeInterface(String codeName, String codeDir, String amuseHome, ReceivePort receivePort,
             SendPort sendPort) throws IOException {
         this.receivePort = receivePort;
         this.sendPort = sendPort;
@@ -169,7 +169,7 @@ public class SocketCode implements Runnable {
     }
 
     public static void main(String[] arguments) throws Exception {
-        SocketCode code = new SocketCode(arguments[0], arguments[1], arguments[2], null, null);
+        SocketCodeInterface code = new SocketCodeInterface(arguments[0], arguments[1], arguments[2], null, null);
 
         code.requestMessage.clear();
         code.requestMessage.setFunctionID(1644113439);
