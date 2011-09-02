@@ -1,16 +1,19 @@
 from amuse.support.data import core
 
-from amuse.support.units import units
-from amuse.support.units import constants
-from amuse.support.units import nbody_system
-from amuse.support.units import quantities
+
+
+
+
 
 #import unittest
 from amuse.test import amusetest
 import os.path
 import numpy
 from amuse.io import phigrape
-
+from amuse.units import units
+from amuse.units import constants
+from amuse.units import nbody_system
+from amuse.units import quantities
 class Test(amusetest.TestCase):
 
 

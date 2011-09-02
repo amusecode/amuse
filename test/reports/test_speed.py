@@ -1,10 +1,9 @@
 from amuse.support.codes.core import *
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
 from amuse.support.codes import channel
-
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.test.amusetest import get_path_to_results
 from amuse.support.codes import create_c
 

@@ -3,11 +3,11 @@ from matplotlib import pyplot
 from math import pi
 
 from amuse.support.data.core import Particles
-from amuse.support.units import units, constants
-from amuse.support.units.nbody_system import nbody_to_si
+from amuse.units import units
+from amuse.units import constants
+from amuse.units.nbody_system import nbody_to_si
 from amuse.community.mesa.interface import MESA
 from amuse.community.hermite0.interface import Hermite
-
 
 orbital_period = 1000.0 | units.yr # initial orbital period, will increase when the binary loses mass
 kinetic_to_potential_ratio = 0.8 # (K/|U|), values < 1.0 correspond to bound systems

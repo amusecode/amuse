@@ -1,9 +1,10 @@
 import numpy
 from amuse.test.amusetest import TestCase
-from amuse.support.units import units
-from amuse.support.units import constants
-from amuse.ext.solarsystem import new_solar_system, new_solar_system_for_mercury
 
+
+from amuse.ext.solarsystem import new_solar_system, new_solar_system_for_mercury
+from amuse.units import units
+from amuse.units import constants
 class TestSolarSystem(TestCase):
     
     def test1(self):

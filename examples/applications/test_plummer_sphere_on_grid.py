@@ -6,13 +6,12 @@ from amuse.support.core import late
 
 from amuse.support.data.core import Grid, Particles
 
-
-from amuse.support.units.generic_unit_system import *
-from amuse.support.units.generic_unit_converter import *
-from amuse.support.units import constants
-from amuse.support.units import units
-from amuse.support.units import nbody_system
-from amuse.support.units.quantities import VectorQuantity
+from amuse.units import constants
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units.quantities import VectorQuantity
+from amuse.units.generic_unit_system import *
+from amuse.units.generic_unit_converter import *
 
 from amuse.ext import cloud
 from amuse.community.athena.interface import Athena, AthenaInterface

@@ -1,7 +1,7 @@
 from amuse.test import amusetest
-from amuse.support.units.generic_unit_converter import *
-from amuse.support.units import constants
 
+from amuse.units import constants
+from amuse.units.generic_unit_converter import *
 class TestGenericUnits(amusetest.TestCase):
     def test1(self):
         L = 1 | length

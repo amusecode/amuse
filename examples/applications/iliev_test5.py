@@ -16,10 +16,10 @@ currently fi and simplex are hardcoded as base classes for SPH and radiative tra
 """
 
 import numpy
-from amuse.support.units import units
-from amuse.support.units import nbody_system
 
-from amuse.support.units import constants
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units import constants
 from amuse.community.simplex.interface import SimpleX
 from amuse.community.fi.interface import Fi
 
@@ -27,6 +27,7 @@ from amuse.support.data import core
 
 from amuse.ext.evrard_test import uniform_random_unit_cube,uniform_unit_sphere
 from amuse.io import write_set_to_file
+
 try:
     from amuse import plot
     from matplotlib import pyplot

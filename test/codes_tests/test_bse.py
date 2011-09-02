@@ -1,9 +1,9 @@
 from amuse.community.bse.interface import BSE, BSEInterface
 
 from amuse.support.data.core import Particles
-from amuse.support.units import units
-from amuse.test.amusetest import TestWithMPI
 
+from amuse.test.amusetest import TestWithMPI
+from amuse.units import units
 class TestBSEInterface(TestWithMPI):
     
     class state(object):

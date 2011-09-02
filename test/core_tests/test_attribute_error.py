@@ -1,14 +1,16 @@
 from amuse.test import amusetest
 from amuse.support.data.core import *
 
-from amuse.support.units import units
+
 from amuse.community.hermite0.interface import Hermite
-from amuse.support.units import nbody_system
+
 
 import numpy
 import math
 import os
 from amuse.io import store
+from amuse.units import units
+from amuse.units import nbody_system
 class TestAttributeError(amusetest.TestCase):
     
     def test1(self):

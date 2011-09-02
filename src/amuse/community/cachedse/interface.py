@@ -4,15 +4,9 @@ import fnmatch
 
 #import numpy as np
 
-from amuse.support.units import units
-from amuse.support.units import constants
-
 from amuse.support.data import core
-
-#from amuse.legacy.sse.interface import SSE
-#from amuse.legacy.evtwin.interface import EVtwin
-#from amuse.legacy.mesa.interface import MESA
-
+from amuse.units import units
+from amuse.units import constants
 
 class CachedStellarEvolution:
 

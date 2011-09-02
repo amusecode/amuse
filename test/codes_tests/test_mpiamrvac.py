@@ -4,11 +4,12 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.mpiamrvac.interface import MpiAmrVacInterface
 from amuse.community.mpiamrvac.interface import MpiAmrVac
 
-from amuse.support.units import generic_unit_system
+
 
 import os
 import numpy
 from amuse import io
+from amuse.units import generic_unit_system
 class TestMpiAmrVacInterface(TestWithMPI):
     
     def test1(self):

@@ -1,6 +1,7 @@
 from amuse.support.data import core
-from amuse.support.units import nbody_system
+from amuse.units import nbody_system
 from amuse.support import exceptions
+
 import math
 import numpy
 

@@ -1,8 +1,8 @@
 from amuse.test import amusetest
 
-from amuse.support.units import units
-from amuse.support.units import constants
-from amuse.support.units import nbody_system
+
+
+
 from amuse.support.data import core
 from amuse.support.interface import InCodeComponentImplementation
 
@@ -13,7 +13,9 @@ from amuse.support.data.grids import *
 import numpy
 import inspect
 import collections
-
+from amuse.units import units
+from amuse.units import constants
+from amuse.units import nbody_system
 class TestGrids(amusetest.TestCase):
     
     def test1(self):

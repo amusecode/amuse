@@ -7,11 +7,12 @@ import math
 from amuse.community.huayno.interface import HuaynoInterface, Huayno
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+
+
 
 from amuse.ext import plummer
-
+from amuse.units import nbody_system
+from amuse.units import units
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True

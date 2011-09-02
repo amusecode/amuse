@@ -1,12 +1,9 @@
 import numpy 
 from matplotlib import pyplot
-
-from amuse.support.units import units
-
-from amuse.support.units import nbody_system
+from amuse.units import units
+from amuse.units import nbody_system
 from amuse.ext.plummer import new_plummer_sphere
 from amuse.ext.salpeter import new_salpeter_mass_distribution
-
 
 def new_cluster(number_of_stars = 1000):
     masses = new_salpeter_mass_distribution(

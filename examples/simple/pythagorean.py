@@ -10,13 +10,9 @@ from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.huayno.interface import Huayno
 from amuse.community.bhtree.interface import BHTree
-
-
+from amuse.units import nbody_system
+from amuse.units.quantities import AdaptingVectorQuantity
 from amuse.support.data.core import Particles
-from amuse.support.units.quantities import AdaptingVectorQuantity
-
-
-from amuse.support.units import nbody_system
 
 from matplotlib import pyplot
 

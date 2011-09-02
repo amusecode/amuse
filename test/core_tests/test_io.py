@@ -1,11 +1,13 @@
 from amuse.test import amusetest
 from amuse.support.exceptions import AmuseException
-from amuse.support.units import nbody_system, units
+
 from amuse.support.data import core
 
 import os
 from amuse import io
 from amuse.io import base
+from amuse.units import nbody_system
+from amuse.units import units
 class TestFileFormatProcessor(base.FileFormatProcessor):
     """
     Save files in a test format

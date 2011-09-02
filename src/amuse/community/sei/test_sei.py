@@ -1,6 +1,6 @@
 from amuse.test.amusetest import TestWithMPI
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.support.data import core
 
 import os

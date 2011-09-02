@@ -182,7 +182,7 @@ example
 .. code-block:: python
 
      >>> from amuse.community.bhtree.interface import BHTreeInterface, BHTree
-     >>> from amuse.support.units import nbody_system
+     >>> from amuse.units import nbody_system
      >>> instance = BHTree(BHTree.NBODY)
      >>> instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
 

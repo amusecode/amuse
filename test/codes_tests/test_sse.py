@@ -3,10 +3,11 @@ import os
 from amuse.community.sse.interface import SSEInterface, SSE
 
 from amuse.support.data.core import Particles
-from amuse.support.units import units
+
 
 from amuse.test.amusetest import get_path_to_results, TestWithMPI
 from amuse import io
+from amuse.units import units
 class TestMPIInterface(TestWithMPI):
     
     class state(object):

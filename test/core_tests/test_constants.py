@@ -1,8 +1,8 @@
 from amuse.support.data import core
-from amuse.support.units import units
-from amuse.support.units import nist
-
+from amuse.units import units
+from amuse.units import nist
 from amuse.test import amusetest
+
 import os.path
 
 class Test(amusetest.TestCase):

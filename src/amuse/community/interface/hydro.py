@@ -4,8 +4,8 @@ Hydrodynamics Interface Defintion
 
 from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.interface import InCodeComponentImplementation
-from amuse.support.units import nbody_system
-from amuse.support.units import generic_unit_converter
+from amuse.units import nbody_system
+from amuse.units import generic_unit_converter
 from amuse.community.interface import common
 
 class HydrodynamicsInterface(common.CommonCodeInterface):

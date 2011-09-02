@@ -5,7 +5,7 @@ import warnings
 
 from optparse import OptionParser
 
-from amuse.support.units import units
+from amuse.units import units
 from amuse.support.data import core
 
 from amuse.community.sse.interface import SSE

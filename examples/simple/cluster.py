@@ -2,11 +2,12 @@ import numpy
 
 from matplotlib import pyplot
 
-from amuse.support.units import nbody_system
+from amuse.units import nbody_system
 from amuse.community.hermite0.interface import Hermite
 from amuse.ext.plummer import new_plummer_sphere
 
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 
 smoothing_length = 0.0 | nbody_system.length ** 2

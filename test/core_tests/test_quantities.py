@@ -3,10 +3,13 @@ from amuse.test import amusetest
 import numpy
 import sys
 
-from amuse.support.units import si, units, nbody_system
+
 from amuse.support.data import core
 from amuse.support.exceptions import AmuseException
-from amuse.support.units.quantities import *
+from amuse.units.quantities import *
+from amuse.units import si
+from amuse.units import units
+from amuse.units import nbody_system
 
 class TestQuantities(amusetest.TestCase):
 

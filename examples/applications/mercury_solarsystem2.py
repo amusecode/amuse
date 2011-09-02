@@ -1,7 +1,7 @@
 import numpy
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.ext.solarsystem import new_solar_system_for_mercury
-from amuse.support.units import units
+from amuse.units import units
 from amuse.plot import *
 
 try:

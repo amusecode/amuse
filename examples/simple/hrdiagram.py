@@ -7,11 +7,10 @@ import numpy
 from matplotlib import pyplot
 from amuse.plot import loglog, xlabel, ylabel
 
-from amuse.support.units import units
+from amuse.units import units
 from amuse.support.data import core
 from amuse.community.sse.interface import SSE
 from amuse.support.codes.core import is_mpd_running
-
 
 end_time = 2 | units.Gyr
 stellar_mass =  2.0 | units.MSun

@@ -1,5 +1,5 @@
 from interface import NearestNeighbor
-from amuse.support.units import units, nbody_system
+from amuse.units import units, nbody_system
 from amuse.ext import plummer
 from amuse.io import text
 

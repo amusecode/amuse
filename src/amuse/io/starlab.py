@@ -4,10 +4,10 @@ import pdb #use with pdb.set_trace()
 import re
 
 from amuse.support.data import core
-from amuse.support.units import units
-from amuse.support.units import nbody_system
-from amuse.support.units import generic_unit_converter
 from amuse.io import base
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units import generic_unit_converter
 
 starlab_stellar_types_to_amuse_stellar_type = {
     "planet":units.stellar_type("Unknown stellar type"),

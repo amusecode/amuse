@@ -1,8 +1,8 @@
 from amuse.test import amusetest
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+
+
 import os.path
 
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
@@ -12,6 +12,8 @@ from amuse.community.ph4.interface import ph4
 from amuse.community.fi.interface import Fi
 from amuse.community.gadget2.interface import Gadget2
 from amuse import io
+from amuse.units import nbody_system
+from amuse.units import units
 class TestsForTicket208(amusetest.TestCase):
     
     def _run_addition_removal_test(

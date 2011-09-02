@@ -1,8 +1,9 @@
 from amuse.support.data import core
 from amuse.support.core import late
-from amuse.support.units import units
-from amuse.support.units import quantities
+
 from amuse.io import base
+from amuse.units import units
+from amuse.units import quantities
 
 import numpy
 

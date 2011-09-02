@@ -5,11 +5,12 @@ from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.mercury.interface import MercuryInterface, MercuryWayWard
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+
+
 from amuse.ext import plummer
 from amuse.ext.solarsystem import new_solar_system_for_mercury
-
+from amuse.units import nbody_system
+from amuse.units import units
 DUMMYID=0
 
 try:

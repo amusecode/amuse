@@ -1,11 +1,12 @@
 from amuse.community import *
 
-from amuse.support.units.generic_unit_system import *
+
 
 from amuse.community.interface.mhd import MagnetohydrodynamicsInterface
 
 import numpy
 
+from amuse.units.generic_unit_system import *
 class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     """
     Athena is a grid-based code for astrophysical hydrodynamics. Athena can solve 

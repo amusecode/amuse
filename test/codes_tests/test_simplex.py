@@ -1,11 +1,10 @@
 import os.path
 import numpy
 from amuse.test.amusetest import TestWithMPI
-from amuse.support.units import units
+
 from amuse.support.data.core import Particles
 from amuse.community.simplex.interface import SimpleXInterface, SimpleX
-
-# Change the default for some SimpleX(-Interface) keyword arguments:
+from amuse.units import units
 default_options = dict(number_of_workers=2)
 default_options = dict(number_of_workers=2, redirection="none")
 

@@ -6,14 +6,16 @@ from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
 
 from amuse.support.exceptions import AmuseException
-from amuse.support.units import nbody_system
-from amuse.support.units import generic_unit_converter
-from amuse.support.units import generic_unit_system
-from amuse.support.units import units
+
+
+
+
 from amuse.support.data import core
 from amuse.support.codes import channel
-
-# Change the default for some Gadget2(-Interface) keyword arguments:
+from amuse.units import nbody_system
+from amuse.units import generic_unit_converter
+from amuse.units import generic_unit_system
+from amuse.units import units
 default_options = dict(number_of_workers=2)
 #default_options = dict(number_of_workers=2, redirection="none")
 

@@ -1,8 +1,8 @@
 from amuse.support.codes.core import *
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+
+
 from amuse.support.codes import channel
 
 from amuse.test.amusetest import TestWithMPI
@@ -11,7 +11,8 @@ from amuse.support.codes import create_fortran
 import subprocess
 import os
 import time
-
+from amuse.units import nbody_system
+from amuse.units import units
 codestring = """
 function echo_int(int_in, int_out)
     implicit none

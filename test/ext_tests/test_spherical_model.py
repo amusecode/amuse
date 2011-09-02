@@ -2,10 +2,9 @@ import numpy
 from amuse.test.amusetest import TestCase
 
 from amuse.support.exceptions import AmuseWarning, AmuseException
-from amuse.support.units import units
+
 from amuse.ext.spherical_model import *
-
-
+from amuse.units import units
 class TestUniformSphericalDistribution(TestCase):
     
     def test1(self):

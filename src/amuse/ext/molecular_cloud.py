@@ -3,11 +3,9 @@ from math import sqrt
 import numpy
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
-from amuse.support.units import constants
-
-
+from amuse.units import nbody_system
+from amuse.units import units
+from amuse.units import constants
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import uniform_unit_sphere
 

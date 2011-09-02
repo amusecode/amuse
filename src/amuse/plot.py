@@ -15,8 +15,8 @@ except ImportError:
 
 import numpy    
 
-from amuse.support.units import units
-from amuse.support.units import quantities
+from amuse.units import units
+from amuse.units import quantities
 
 auto_label = "{0}"
 custom_label = "{0} {1}"

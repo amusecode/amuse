@@ -3,12 +3,13 @@ import os
 import numpy
 
 from amuse.test import amusetest
-from amuse.support.units import units
-from amuse.support.units import generic_unit_system
+
+
 from amuse.ext import cloud
 
 from amuse.support.data import core
-
+from amuse.units import units
+from amuse.units import generic_unit_system
 class CloudTests(amusetest.TestCase):
 
     def test1(self):

@@ -7,10 +7,10 @@ Tooltip: 'Amuse example'
 """
 from amuse.community.hermite0.interface import HermiteInterface, Hermite         
 from amuse.support.data import core           
-from amuse.support.units import nbody_system          
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.ext.blender import blender #get blender API         
-import numpy as np      
+import numpy as np
 
 class SunEarth(object):       
                   

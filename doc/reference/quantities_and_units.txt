@@ -20,7 +20,7 @@ McGraw-Hill Book Company], i.e. we can state things like:
 
 .. code-block:: python
 
-    >>> from amuse.support.units import units
+    >>> from amuse.units import units
     >>> q1 = 1.0|units.MSun
     >>> q2 = 1.98892e30|units.kg
     >>> q1 == q2
@@ -36,9 +36,9 @@ generic_unit_converter and the derived nbody_system modules.
 Quantities
 ----------
 
-.. inheritance-diagram:: amuse.support.units.quantities
+.. inheritance-diagram:: amuse.units.quantities
 
-.. automodule:: amuse.support.units.quantities
+.. automodule:: amuse.units.quantities
     
     .. autoclass:: Quantity
         :members:
@@ -59,9 +59,9 @@ Quantities
 
 Units
 -----
-.. inheritance-diagram:: amuse.support.units.core
+.. inheritance-diagram:: amuse.units.core
 
-.. automodule:: amuse.support.units.core
+.. automodule:: amuse.units.core
     :members:
 
 Unit systems and converters
@@ -79,17 +79,17 @@ of Physics*, Vol.44, No.3, **1976**.
 Generic units
 ~~~~~~~~~~~~~
 
-.. automodule:: amuse.support.units.generic_unit_system
+.. automodule:: amuse.units.generic_unit_system
 
 N-body units
 ~~~~~~~~~~~~
 
-.. automodule:: amuse.support.units.nbody_system
+.. automodule:: amuse.units.nbody_system
 
 Converter
 ~~~~~~~~~
 
-.. automodule:: amuse.support.units.generic_unit_converter
+.. automodule:: amuse.units.generic_unit_converter
 
      .. autoclass:: ConvertBetweenGenericAndSiUnits
          :members:
@@ -115,8 +115,8 @@ Usage: example 1
 .. code-block:: python
 
     >>> from amuse.community.hermite0.interface import Hermite
-    >>> from amuse.support.units import nbody_system
-    >>> from amuse.support.units import constants, units
+    >>> from amuse.units import nbody_system
+    >>> from amuse.units import constants, units
     >>> convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     >>> hermite = Hermite(convert_nbody)
 
@@ -127,8 +127,8 @@ Usage: example 2
 .. code-block:: python
     
     >>> from amuse.community.hermite0.interface import Hermite
-    >>> from amuse.support.units import generic_unit_converter as gc
-    >>> from amuse.support.units import constants, units
+    >>> from amuse.units import generic_unit_converter as gc
+    >>> from amuse.units import constants, units
     >>> converter = gc.ConvertBetweenGenericAndSiUnits(constants.G, 1.0 | units.MSun, 1 | units.AU) 
     >>> hermite = Hermite(converter)
 

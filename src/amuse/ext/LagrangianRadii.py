@@ -8,9 +8,8 @@ import operator
 
 from math import sqrt
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
-
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF

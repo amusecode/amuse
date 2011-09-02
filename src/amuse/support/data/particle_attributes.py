@@ -1,17 +1,17 @@
 import numpy
-from amuse.support.units import nbody_system
+
 from amuse.support.data import base
 from amuse.support.data.particles import ParticlesWithUnitsConverted, AbstractParticleSet
+from amuse.units import nbody_system
+from amuse.units import quantities
+from amuse.units import constants
+from amuse.units import units
+from amuse.units.quantities import zero
+from amuse.units.quantities import VectorQuantity
+from amuse.units.quantities import Quantity
+from amuse.units.quantities import new_quantity
+from amuse.units.quantities import zero
 
-from amuse.support.units import quantities
-from amuse.support.units.quantities import zero
-from amuse.support.units.quantities import VectorQuantity
-from amuse.support.units.quantities import Quantity
-from amuse.support.units.quantities import new_quantity
-from amuse.support.units.quantities import zero
-
-from amuse.support.units import constants
-from amuse.support.units import units
 from amuse.support import exceptions
 
 def move_to_center(particles):

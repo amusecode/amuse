@@ -1,11 +1,11 @@
-from amuse.support.units import units
-from amuse.support.units import nbody_system
 from amuse.support.data.core import Particles, Grid
 from amuse.test import amusetest
 
 import os
 from amuse import io
 from amuse.io import store
+from amuse.units import units
+from amuse.units import nbody_system
 class TestStoreHDF(amusetest.TestCase):
 
     def test1(self):

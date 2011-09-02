@@ -147,7 +147,7 @@ application.
     Python 2.6.2 (r262:71600, Sep  1 2009, 16:14:27) 
     [GCC 4.3.2 20081105 (Red Hat 4.3.2-7)] on linux2
     Type "help", "copyright", "credits" or "license" for more information.
-    >>> from amuse.support.units import units
+    >>> from amuse.units import units
     >>> units.m
     unit<m>
     

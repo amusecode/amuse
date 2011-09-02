@@ -1,7 +1,6 @@
 from amuse.test.amusetest import TestCase
 from amuse.support.exceptions import AmuseException
-from amuse.support.units import units
-
+from amuse.units import units
 
 class TestAmusetestTestCase(TestCase):
     

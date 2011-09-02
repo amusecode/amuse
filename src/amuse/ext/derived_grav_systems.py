@@ -1,4 +1,4 @@
-from amuse.support.units import constants
+from amuse.units import constants
 
 class center_of_mass(object):
     """

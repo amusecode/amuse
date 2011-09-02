@@ -2,10 +2,12 @@ from amuse.test import amusetest
 import numpy
 
 from amuse.support.exceptions import AmuseException
-from amuse.support.units import core
-from amuse.support.units.units import *
-from amuse.support.units.constants import *
 
+
+
+from amuse.units import core
+from amuse.units.units import *
+from amuse.units.constants import *
 class TestUnitConversions(amusetest.TestCase):
     def test1(self):
         km = 1000 * m

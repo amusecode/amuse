@@ -2,13 +2,13 @@ import os
 import sys
 import numpy
 
-from amuse.support.units import generic_unit_system
+
 from amuse.support.data import core
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.capreole.interface import CapreoleInterface
 from amuse.community.capreole.interface import Capreole
-
+from amuse.units import generic_unit_system
 class TestMPIInterface(TestWithMPI):
     
     def test0(self):

@@ -4,14 +4,15 @@ import time
 from amuse.community.ph4.interface import ph4Interface, ph4
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+
+
 from amuse.ext.plummer import new_plummer_sphere
 
 from amuse.test.amusetest import TestWithMPI
 
 import numpy
-
+from amuse.units import nbody_system
+from amuse.units import units
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True

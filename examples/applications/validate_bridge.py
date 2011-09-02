@@ -8,20 +8,19 @@ first test of Fujii et al 2007
 import numpy 
 import os
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
-
-
-
+from amuse.io import store
+from amuse.units import nbody_system
+from amuse.units import units
+from amuse.units import constants
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.fi.interface import Fi
 from amuse.ext.bridge import bridge
-from amuse.support.units import constants
+
 from amuse.ext.derived_grav_systems import copycat
 from amuse.ext.kingmodel import new_king_model
-from amuse.io import store
+
 def sys_from_parts(base_class,parts,converter,eps=None,timestep=None,usegl=False,mode=None):
     if mode is None:
         if usegl:

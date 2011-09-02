@@ -8,12 +8,14 @@ from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
-from amuse.support.units.quantities import new_quantity
+
+
+
 
 from amuse.support.codes import channel
-
+from amuse.units import nbody_system
+from amuse.units import units
+from amuse.units.quantities import new_quantity
 class TestInterface(TestWithMPI):
     
     def test1(self):

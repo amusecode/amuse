@@ -2,8 +2,8 @@ from amuse.support.codes.core import *
 
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+
+
 from amuse.support.codes import python_code
 from amuse.support.interface import InCodeComponentImplementation
 
@@ -13,8 +13,8 @@ import parser
 import sys
 import os
 import time
-
-
+from amuse.units import nbody_system
+from amuse.units import units
 class ForTestingInterface(PythonCodeInterface):
     
     def __init__(self, **options):

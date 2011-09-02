@@ -6,14 +6,13 @@ import math
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.smallN.muse_dynamics_mpi import SmallNInterface, SmallN
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+
+
 from amuse.support.data import core
 
 from mpi4py import MPI
-
-
-
+from amuse.units import nbody_system
+from amuse.units import units
 class TestSmallNInterface(TestWithMPI):
     
     def test0(self):

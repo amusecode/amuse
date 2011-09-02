@@ -6,14 +6,15 @@ from numpy import random
 from amuse.test import amusetest
 from amuse.test.amusetest import get_path_to_results
 
-from amuse.support.units import units, nbody_system
+
 
 from amuse.community.fi import interface as interface
 from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import new_plummer_sphere
 from amuse.support.data.particles import Particles
 from amuse.community.hop.interface import HopInterface, Hop
-
+from amuse.units import units
+from amuse.units import nbody_system
 class TestHopInterface(amusetest.TestCase):
     def test1(self):
         print "First test: adding particles, setting and getting."

@@ -9,12 +9,15 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 from amuse.support.data.core import Particles, Particle, ParticlesSuperset, Grid
-from amuse.support.units import units, generic_unit_system, nbody_system, constants
-from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+
+
 from amuse.support.exceptions import AmuseException
 from amuse.ext.grid_to_sph import Grid2SPH, convert_grid_to_SPH
-
-
+from amuse.units import units
+from amuse.units import generic_unit_system
+from amuse.units import nbody_system
+from amuse.units import constants
+from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 class TestGrid2SPH(TestWithMPI):
     
     def setup_simple_grid(self):

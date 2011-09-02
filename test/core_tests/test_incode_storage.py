@@ -1,13 +1,16 @@
 from amuse.test import amusetest
 
-from amuse.support.units import units
-from amuse.support.units import constants
-from amuse.support.units import nbody_system
+
+
+
 
 from amuse.support.data.incode_storage import *
 
 
 import numpy
+from amuse.units import units
+from amuse.units import constants
+from amuse.units import nbody_system
 
 class TestParticles(amusetest.TestCase):
     

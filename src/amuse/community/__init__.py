@@ -7,10 +7,10 @@ from amuse.support.codes.lit import LiteratureReferencesMixIn
 
 from amuse.support.data import parameters
 from amuse.support.data import attributes
-from amuse.support.units import units
-from amuse.support.units import nbody_system
-from amuse.support.units import generic_unit_system
-from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units import generic_unit_system
+from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support import exceptions
 
 from amuse.support.interface import *

@@ -1,5 +1,4 @@
-from amuse.support.units.units import *
-
+from amuse.units.units import *
 pound=named('avoirdupois pound','lbm',0.45359237 * kg)
 g=9.80665 * m/ s**2
 

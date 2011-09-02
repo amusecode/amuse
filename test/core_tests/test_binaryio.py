@@ -1,4 +1,3 @@
-from amuse.support.units import nbody_system
 from amuse.test import amusetest
 from StringIO import StringIO
 
@@ -6,6 +5,7 @@ import os.path
 from amuse import io
 from amuse.io import gadget
 from amuse.io import nemobin
+from amuse.units import nbody_system
 class GadgetFileFormatProcessorTests(amusetest.TestCase):
     header_parts = ( 
         '\x00\x01\x00\x00 N\x00\x00 \xa1\x07\x00 N\x00',

@@ -1,16 +1,16 @@
 
 
 from amuse.support.data import core
-from amuse.support.units import units
-from amuse.support.units import nbody_system
+
+
 
 import numpy
 
 from amuse.community.twobody import twobody
 
 from amuse.test.amusetest import TestWithMPI
-
-
+from amuse.units import units
+from amuse.units import nbody_system
 class TwoBodyCodeTests(TestWithMPI):
     
     def test_stumpff(self):

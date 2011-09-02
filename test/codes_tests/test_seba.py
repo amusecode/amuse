@@ -1,9 +1,9 @@
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.seba.interface import SebaInterface, Seba
-from amuse.support.units import units
-from amuse.support.data.core import Particle
 
+from amuse.support.data.core import Particle
+from amuse.units import units
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):

@@ -38,8 +38,8 @@ the particles, which **need to be quantities**.
 .. code-block:: python
 
     >>> from amuse.support.data import core
-    >>> from amuse.support.units import nbody_system
-    >>> from amuse.support.units import units
+    >>> from amuse.units import nbody_system
+    >>> from amuse.units import units
     >>> from amuse.ext.plummer import MakePlummerModel
     >>> import numpy as np
 

@@ -1,9 +1,8 @@
 import numpy
 
-from amuse.support.units import units
-from amuse.support.units import nbody_system
+from amuse.units import units
+from amuse.units import nbody_system
 from amuse.support.data.core import Particles, ParticlesWithUnitsConverted
-
 from amuse.ext.evrard_test import uniform_random_unit_cube,regular_grid_unit_cube,body_centered_grid_unit_cube
 
 def approximate_inverse_error_function(x):

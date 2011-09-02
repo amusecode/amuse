@@ -7,12 +7,13 @@ from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 
 from amuse.support.data.core import Particles
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+
+
 
 import numpy
 import threading
-
+from amuse.units import nbody_system
+from amuse.units import units
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True

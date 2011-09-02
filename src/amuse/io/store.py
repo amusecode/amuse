@@ -3,10 +3,13 @@ import numpy
 import pickle
 import os.path
 
-from amuse.support.data.core import Particles, AttributeStorage
-from amuse.support.units import si, units, core
-from amuse.support import exceptions
 from amuse.io import base
+from amuse.units import si
+from amuse.units import units
+from amuse.units import core
+from amuse.support.data.core import Particles, AttributeStorage
+
+from amuse.support import exceptions
 
 class HDF5AttributeStorage(AttributeStorage):
 

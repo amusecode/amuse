@@ -88,15 +88,14 @@ from amuse.support.data import parameters
 from amuse.support.data.core import Particles, ParticleInformationChannel, Particle
 from amuse.support.data.core import AttributeStorage
 from amuse.support.methods import AbstractCodeMethodWrapper
-import numpy
-
-from amuse.support.units import nbody_system, units
-from amuse.support.units import quantities
-
+from amuse.units import nbody_system
+from amuse.units import units
+from amuse.units import quantities
 from amuse.support.data import base
 from amuse.support.core import late
 from amuse.support import exceptions
 
+import numpy
 import inspect
 
 class ParticleMappingMethod(AbstractCodeMethodWrapper):

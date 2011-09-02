@@ -6,12 +6,13 @@ import math
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.athena.interface import AthenaInterface, Athena
 
-from amuse.support.units import generic_unit_system
-from amuse.support.units import units
+
+
 from amuse.support.data import core
 
 from mpi4py import MPI
-
+from amuse.units import generic_unit_system
+from amuse.units import units
 class TestAthenaInterface(TestWithMPI):
     
     def test0(self):

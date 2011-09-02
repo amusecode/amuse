@@ -6,12 +6,13 @@ import collections
 import getopt
 import os
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+
+
 from amuse.support.data import core
 from amuse.support.data import particle_attributes
 from amuse.support.codes.core import is_mpd_running
-
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.community.kepler.interface import Kepler
 
 def test1():

@@ -1,7 +1,7 @@
+from amuse.units import units
+from amuse.units import nbody_system as nbody
 from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
-from amuse.support.units import units
-from amuse.support.units import nbody_system as nbody
-    
+
 class StoppingConditionInterface(object):
 
     @legacy_function

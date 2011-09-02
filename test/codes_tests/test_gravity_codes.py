@@ -7,15 +7,15 @@ from amuse.community.gadget2.interface import Gadget2
 from amuse.community.fi.interface import Fi
 
 from amuse.support.data import core
-from amuse.support.units import units
-from amuse.support.units import nbody_system
+
+
 
 from amuse.ext.plummer import new_plummer_sphere
 
 import numpy
 import time
-
-
+from amuse.units import units
+from amuse.units import nbody_system
 class _TestGravityCodes(TestWithMPI):
     length_unit = nbody_system.length
     speed_unit = nbody_system.speed

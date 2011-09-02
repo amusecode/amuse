@@ -2,13 +2,11 @@ import numpy
 from numpy import random
 from matplotlib import pyplot
 
-from amuse.support.units import units
-
-from amuse.support.units import nbody_system
+from amuse.units import units
+from amuse.units import nbody_system
 from amuse.support.data.particles import Particles
 from amuse.ext.salpeter import new_salpeter_mass_distribution
 from amuse.community.hop.interface import Hop
-
 
 def new_cluster(number_of_stars = 1000):
     masses = new_salpeter_mass_distribution(

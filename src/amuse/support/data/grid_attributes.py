@@ -1,6 +1,6 @@
-from amuse.support.units.quantities import zero
 from amuse.support.data import base
 from amuse.support.data import grids
+from amuse.units.quantities import zero
 
 import numpy
 

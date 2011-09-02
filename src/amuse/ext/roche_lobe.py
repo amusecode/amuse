@@ -2,11 +2,11 @@ import numpy
 import math
 from operator import itemgetter
 from amuse.support.data.core import Particles
-from amuse.support.units import units, constants
+from amuse.units import units
+from amuse.units import constants
 from amuse.support.exceptions import AmuseWarning, AmuseException
 from amuse.community.mesa.interface import MESA
 from amuse.support.data.particles import ParticlesSubset, ParticlesSuperset
-
 
 class RocheLobeOverflow(object):
     """

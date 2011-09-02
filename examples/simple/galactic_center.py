@@ -8,10 +8,9 @@
 
 import numpy
 
-
-from amuse.support.units import units
-from amuse.support.units import constants
-from amuse.support.units import nbody_system
+from amuse.units import units
+from amuse.units import constants
+from amuse.units import nbody_system
 
 from amuse.ext.bridge import bridge
 from amuse.ext.kingmodel import new_king_model

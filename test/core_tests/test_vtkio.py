@@ -1,5 +1,3 @@
-from amuse.support.units import units
-from amuse.support.units import generic_unit_system
 from amuse.support.data import core
 from amuse.test import amusetest
 import StringIO
@@ -7,9 +5,12 @@ import textwrap
 import os
 import numpy
 
-from amuse.support.units  import generic_unit_system
+
 from amuse import io
 from amuse.io import vtk
+from amuse.units import units
+from amuse.units import generic_unit_system
+from amuse.units import generic_unit_system
 class VtkStructuredGridTests(amusetest.TestCase):
     
     def test1(self):

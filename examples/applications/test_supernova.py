@@ -8,8 +8,11 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 from amuse.support.data.core import Particles, Grid
-from amuse.support.units import units, generic_unit_system, nbody_system, constants
-from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+from amuse.units import units
+from amuse.units import generic_unit_system
+from amuse.units import nbody_system
+from amuse.units import constants
+from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.exceptions import AmuseException
 from amuse.community.mesa.interface import MESA
 from amuse.community.gadget2.interface import Gadget2

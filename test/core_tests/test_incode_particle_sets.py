@@ -1,11 +1,9 @@
-from amuse.support.units import units
-from amuse.support.units import quantities
 from amuse.support.data import core
-
+from amuse.test import amusetest
+from amuse.units import units
+from amuse.units import quantities
 from amuse.support import interface
 from amuse.support import exceptions
-
-from amuse.test import amusetest
 
 class ExampleParticlesInterface(interface.InCodeComponentImplementation):
     """This is an example class to demonstrate how to work with incode particle sets

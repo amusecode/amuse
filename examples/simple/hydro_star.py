@@ -1,9 +1,8 @@
 from amuse.support.data.core import Particle
-from amuse.support.units import units
+from amuse.units import units
 from amuse.community.evtwin.interface import EVtwin
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
 from amuse.plot import sph_particles_plot, native_plot
-
 
 def create_particles():
     star =  Particle()

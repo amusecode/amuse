@@ -1,8 +1,7 @@
 import numpy
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
-
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics

@@ -11,9 +11,9 @@ import numpy
   
 from matplotlib import pyplot 
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
-    
+from amuse.units import nbody_system
+from amuse.units import units
+
 from amuse.community.fi.interface import Fi
 
 from amuse.ext.molecular_cloud import molecular_cloud

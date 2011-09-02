@@ -1,7 +1,7 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
-from amuse.support.units import nbody_system
+from amuse.units import nbody_system
 from amuse.community.interface import common
 
 class SeiInterface(CodeInterface):

@@ -1,9 +1,9 @@
-from amuse.support.units import si
-from amuse.support.units import units
-from amuse.support.units import nbody_system
+from amuse.units import si
+from amuse.units import units
+from amuse.units import nbody_system
 
 import numpy
-        
+
 class AttributeDefinition(object):
     def __init__(self, name, description, unit, default_value):
         self.name = name

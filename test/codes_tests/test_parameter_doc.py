@@ -6,9 +6,10 @@ from amuse.community.bhtree.interface import BHTreeInterface, BHTree
 from amuse.community.hermite0.interface import HermiteInterface, Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
 
+
+from amuse.units import nbody_system
+from amuse.units import units
 class TestParameterDoc(amusetest.TestCase):
 
     def test_bhtree(self):

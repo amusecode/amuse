@@ -31,8 +31,8 @@ directory:
 .. code-block:: python
    :linenos:
    
-   from amuse.support.units.units import *
-   from amuse.support.units import constants
+   from amuse.units.units import *
+   from amuse.units import constants
    
    def convert_to_freq(wavelengths = [355.1, 468.6, 616.5, 748.1, 893.1] | nano(m)):
       """
@@ -60,7 +60,7 @@ Then this script can be executed from the AMUSE interactive command line:
    616.5 nm   -->  486281.359286 GHz
    748.1 nm   -->  400738.481486 GHz
    893.1 nm   -->  335676.24902 GHz
-   >>> from amuse.support.units.units import *
+   >>> from amuse.units.units import *
    >>> myscript.convert_to_freq([21.0, 18.0, 6.0] | cm)
    The speed of light in vacuum: 299792458.0 m * s**-1
    wavelength -->  frequency
@@ -107,8 +107,8 @@ is used for. First we import the necessary AMUSE modules.
    
    >>> from amuse.community.bhtree.interface import BHTree
    >>> from amuse.support.data import core
-   >>> from amuse.support.units import nbody_system
-   >>> from amuse.support.units import units
+   >>> from amuse.units import nbody_system
+   >>> from amuse.units import units
 
 Gravitational dynamics legacy codes usually work with `N-body units 
 <http://en.wikipedia.org/wiki/N-body_units>`_ internally. We have to 
@@ -197,7 +197,7 @@ In the `test/examples <http://www.amusecode.org/trac/amuse/browser/trunk/example
    Evolved model successfully.
    Plotting the data...
    All done!
-   >>> from amuse.support.units.units import *
+   >>> from amuse.units.units import *
    >>> test_HRdiagram_cluster.simulate_stellar_evolution(end_time=5000 | Myr)
    The evolution of  1000  stars will be  simulated until t= 5000 Myr ...
    ...

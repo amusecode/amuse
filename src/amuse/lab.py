@@ -7,25 +7,26 @@ This is the public interface to the AMUSE
 
 from amuse.support.core import late
 
-from amuse.support.units import units
-from amuse.support.units import core
-from amuse.support.units import si
-from amuse.support.units import constants
-from amuse.support.units import nbody_system
-from amuse.support.units import nbody_system as nbody
 
+from amuse.units import units
+from amuse.units import core
+from amuse.units import si
+from amuse.units import constants
+from amuse.units import nbody_system
+from amuse.units import nbody_system as nbody
+from amuse.units.quantities import zero
+from amuse.units.quantities import ScalarQuantity
+from amuse.units.quantities import VectorQuantity
+from amuse.units.quantities import AdaptingVectorQuantity
+from amuse.units.quantities import new_quantity
 
-
-
-
-
+from amuse.io import write_set_to_file
+from amuse.io import read_set_from_file
+from amuse.io import get_options_for_format
 
 from amuse.support.data import particle_attributes
 from amuse.support.data.core import Particle, Particles, ParticlesSuperset, Grid
-
 from amuse.support.data.console import set_printing_strategy, get_current_printing_strategy
-
-
 
 from amuse.ext.solarsystem import new_solar_system_for_mercury, new_solar_system
 from amuse.ext.plummer import new_plummer_sphere
@@ -58,14 +59,7 @@ from amuse.community.bse.interface import BSE, BSEInterface
 from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 from amuse.community.mesa.interface import MESA, MESAInterface
 from amuse.community.mmams.interface import MakeMeAMassiveStar, MakeMeAMassiveStarInterface
-from amuse.io import write_set_to_file
-from amuse.io import read_set_from_file
-from amuse.io import get_options_for_format
-from amuse.support.units.quantities import zero
-from amuse.support.units.quantities import ScalarQuantity
-from amuse.support.units.quantities import VectorQuantity
-from amuse.support.units.quantities import AdaptingVectorQuantity
-from amuse.support.units.quantities import new_quantity
+
 
 def vector(value = [], unit = None):
     if unit is None:

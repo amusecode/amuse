@@ -1,9 +1,7 @@
 from operator import itemgetter
 from amuse.community import *
-
-from amuse.support.units import units
-from amuse.support.units import constants
-
+from amuse.units import units
+from amuse.units import constants
 from amuse.support.data.core import Particles, ParticlesSubset
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.community.interface import common

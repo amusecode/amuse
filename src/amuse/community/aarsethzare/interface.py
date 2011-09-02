@@ -1,5 +1,5 @@
 from amuse.community import *
-from amuse.support.units import units
+from amuse.units import units
 
 class AarsethZareInterface(CodeInterface, LiteratureReferencesMixIn):
     """

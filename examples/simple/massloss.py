@@ -1,9 +1,9 @@
 import numpy
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.sse.interface import SSE
-from amuse.support.units import units
-from amuse.support.units import nbody_system
-from amuse.support.units.quantities import VectorQuantity
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units.quantities import VectorQuantity
 from amuse.support.data import core
 
 from amuse.plot import *

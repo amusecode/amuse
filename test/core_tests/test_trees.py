@@ -1,9 +1,9 @@
 from amuse.test import amusetest
 
 from amuse.support.exceptions import AmuseException
-from amuse.support.units import units
-from amuse.support.units import constants
-from amuse.support.units import nbody_system
+from amuse.units import units
+from amuse.units import constants
+from amuse.units import nbody_system
 from amuse.support.data.core import Particles
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.data import trees

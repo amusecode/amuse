@@ -1,15 +1,12 @@
 from amuse.community.smallN.muse_dynamics_mpi import *
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.support.data.core import Particle
 from time import time
 import math, sys
 
 # MPI Debugging
 from amuse.support.codes import channel
-#channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
-#channel.MessageChannel.DEBUGGER = channel.MessageChannel.GDB
-#channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
 
 if __name__ == "__main__":
     test_list = [1, 2]

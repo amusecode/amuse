@@ -2,13 +2,14 @@ import numpy
 import pickle
 import os.path
 from collections import namedtuple
+from amuse.units import units
+from amuse.units import constants
+from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.data.core import Particles
-from amuse.support.units import units, constants
+from amuse.support.data.console import set_printing_strategy
 from amuse.support.exceptions import AmuseWarning, AmuseException
 from amuse.ext.spherical_model import new_spherical_particle_distribution, get_enclosed_mass_from_tabulated, EnclosedMassInterpolator
 from amuse.community.gadget2.interface import Gadget2
-from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
-from amuse.support.data.console import set_printing_strategy
 
 StellarModelInSPH = namedtuple('StellarModelInSPH', ['gas_particles', 'core_particle', 'core_radius'])
 

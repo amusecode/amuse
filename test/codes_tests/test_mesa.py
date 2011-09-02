@@ -7,9 +7,9 @@ from amuse.community.mesa.interface import MESA, MESAInterface
 
 from amuse.support.exceptions import AmuseException
 from amuse.support.data.core import Particles, Particle
-from amuse.support.units import units
-from amuse.support.codes import channel
 
+from amuse.support.codes import channel
+from amuse.units import units
 class TestMESAInterface(TestWithMPI):
     
     def test1(self):

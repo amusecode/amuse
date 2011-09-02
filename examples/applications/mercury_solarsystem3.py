@@ -2,9 +2,8 @@ import numpy
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.community.sse.interface import SSE
 from amuse.ext.solarsystem import new_solar_system_for_mercury
-from amuse.support.units import units
-from amuse.support.units.quantities import VectorQuantity
-
+from amuse.units import units
+from amuse.units.quantities import VectorQuantity
 
 from amuse.plot import *
 

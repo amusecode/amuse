@@ -1,9 +1,10 @@
 from amuse.test import amusetest
 
 from amuse.ext.evrard_test import new_evrard_gas_sphere
-from amuse.support.units import nbody_system as nbody
-from amuse.support.units import units
 
+
+from amuse.units import nbody_system as nbody
+from amuse.units import units
 class TestEvrardModel(amusetest.TestCase):
     def test1(self):
         print "First test: making an Evrard gas sphere model."

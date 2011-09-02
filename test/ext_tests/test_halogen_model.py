@@ -1,9 +1,8 @@
 from amuse.test.amusetest import TestWithMPI
-from amuse.support.units import nbody_system
+
 from amuse.support.exceptions import AmuseException
 from amuse.ext.halogen_model import new_halogen_model
-
-
+from amuse.units import nbody_system
 class NewHalogenModelTests(TestWithMPI):
     
     def test1(self):

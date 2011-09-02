@@ -1,7 +1,7 @@
 from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface
 from amuse.support.core import OrderedDictionary
-from amuse.support.units import derivedsi
+from amuse.units import derivedsi
 
 import tempfile
 import os

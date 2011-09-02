@@ -163,7 +163,7 @@ class AstroPrintingStrategy(PrintingStrategyWithPreferredUnits):
             else ignore_converter_exceptions)
         self.nbody_converter = nbody_converter
         self.print_units = print_units
-        from amuse.support.units import units
+        from amuse.units import units
         self.preferred_units = [units.MSun, units.Myr, units.parsec, units.J]
     
 
@@ -177,7 +177,7 @@ class SIPrintingStrategy(PrintingStrategyWithPreferredUnits):
             else ignore_converter_exceptions)
         self.nbody_converter = nbody_converter
         self.print_units = print_units
-        from amuse.support.units import units
+        from amuse.units import units
         self.preferred_units = [units.m, units.kg, units.s, units.A, units.K, units.mol, units.cd]
     
 
@@ -191,7 +191,7 @@ class CGSPrintingStrategy(PrintingStrategyWithPreferredUnits):
             else ignore_converter_exceptions)
         self.nbody_converter = nbody_converter
         self.print_units = print_units
-        from amuse.support.units import units
+        from amuse.units import units
         self.preferred_units = [units.cm, units.g, units.s, units.A, units.K, units.mol, units.cd]
     
 

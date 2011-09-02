@@ -22,8 +22,8 @@ functions also work on quantities.
 
 .. code-block:: python
     
-    >>> from amuse.support.units.si import *
-    >>> from amuse.support.units.core import named_unit
+    >>> from amuse.units.si import *
+    >>> from amuse.units.core import named_unit
     >>>
     >>> weigth = 80 | kg
     >>> persons = 10
@@ -46,7 +46,7 @@ put quantities into a vector quantity.
 
 .. code-block:: python
     
-    >>> from amuse.support.units.units import MSun
+    >>> from amuse.units.units import MSun
     >>>
     >>> masses = [] | MSun
     >>> for i in range(10):
@@ -60,7 +60,7 @@ put quantities into a vector quantity.
     vector quantities are created and not arrays of quantities. The
     following code will create an array of quantities
     
-    >>> from amuse.support.units.units import MSun
+    >>> from amuse.units.units import MSun
     >>>
     >>> masses = []
     >>> for i in range(2):

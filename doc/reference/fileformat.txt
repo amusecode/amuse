@@ -21,7 +21,7 @@ Supported File Formats
         
         >>> from amuse.io import write_set_to_file
         >>> from amuse.support.data.core import Particles
-        >>> from amuse.support.units import units
+        >>> from amuse.units import units
         >>> x = Particles(100)
         >>> x.mass = 10.0 | units.MSun
         >>> x.radius = range(1.0,101.0) | units.RSun
@@ -85,7 +85,7 @@ Supported File Formats
     
     
         >>> from amuse.support import io
-        >>> from amuse.support.units import nbody_system, units
+        >>> from amuse.units import nbody_system, units
         >>> converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
         >>> particles1 = io.read_set_from_file('plummer1.dyn','starlab', nbody_to_si_converter = converter)
         >>> particles2 = io.read_set_from_file('plummer2.dyn','starlab', dynamics_mass_units = units.MSun, nbody_to_si_converter = converter)
@@ -126,7 +126,7 @@ Supported File Formats
     For example::
     
         >>> from amuse.support import io
-        >>> from amuse.support.units import nbody_system, units
+        >>> from amuse.units import nbody_system, units
         >>> converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
         >>> particles = io.read_set_from_file('plummer.nemo','tsf', nbody_to_si_converter = converter)
         

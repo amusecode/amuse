@@ -84,8 +84,8 @@
 # - sync of systems should be checked
 # - timestepping: adaptive dt?
 
-from amuse.support.units import units
-from amuse.support.units import quantities
+from amuse.units import units
+from amuse.units import quantities
 from amuse.support.data import core
 
 import threading

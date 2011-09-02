@@ -1,10 +1,11 @@
 from amuse.community import *
 
-from amuse.support.units.generic_unit_system import *
+
 
 from amuse.community.interface.hydro import HydrodynamicsInterface
 
 
+from amuse.units.generic_unit_system import *
 class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferencesMixIn):
     """
     Capreole is a grid-based astrophysical hydrodynamics code developed by Garrelt Mellema. 

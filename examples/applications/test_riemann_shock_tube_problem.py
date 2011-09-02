@@ -35,12 +35,13 @@ from amuse.support.core import late
 
 from amuse.support.data.core import Grid, Particles
 
-
-from amuse.support.units.generic_unit_system import *
-from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
-from amuse.support.units.nbody_system import nbody_to_si
-from amuse.support.units import constants
-from amuse.support.units.quantities import VectorQuantity
+from amuse import io
+from amuse.io import text
+from amuse.units import constants
+from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+from amuse.units.nbody_system import nbody_to_si
+from amuse.units.quantities import VectorQuantity
+from amuse.units.generic_unit_system import *
 
 from amuse.support.data.grids import SamplePointsOnMultipleGrids, SamplePointWithIntepolation, SamplePointOnCellCenter
 
@@ -64,8 +65,6 @@ except ImportError:
     
 from numpy import sqrt, arange, searchsorted
 from optparse import OptionParser
-from amuse import io
-from amuse.io import text
 
 class CalculateExactSolutionIn1D(object):
     number_of_points = 1000

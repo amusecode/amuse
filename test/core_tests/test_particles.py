@@ -1,16 +1,18 @@
 from amuse.test import amusetest
 
 from amuse.support.exceptions import AmuseException
-from amuse.support.units import units
-from amuse.support.units import constants
-from amuse.support.units import nbody_system
+
+
+
 from amuse.support.data import core
 from amuse.support.interface import InCodeComponentImplementation
 
 import numpy
 import time
 import sys
-
+from amuse.units import units
+from amuse.units import constants
+from amuse.units import nbody_system
 class TestParticles(amusetest.TestCase):
     
     def test1(self):

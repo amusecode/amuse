@@ -1,9 +1,8 @@
 import re
 
+from amuse.units import units
+from amuse.units import nbody_system
 from amuse.support.data import core
-from amuse.support.units import units
-from amuse.support.units import nbody_system
-
 
 """
 fileformat:

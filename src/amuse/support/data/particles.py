@@ -1,17 +1,15 @@
-from amuse.support.units import constants
-from amuse.support.units import units
-
-from amuse.support.units import quantities
-from amuse.support.units.quantities import Quantity
-from amuse.support.units.quantities import new_quantity
-from amuse.support.units.quantities import zero
-from amuse.support.units.quantities import AdaptingVectorQuantity
-from amuse.support.units.quantities import AdaptingVectorQuantity
-
 from amuse.support.core import CompositeDictionary
 from amuse.support import exceptions
 from amuse.support.data.base import *
 from amuse.support.data.memory_storage import *
+from amuse.units import constants
+from amuse.units import units
+from amuse.units import quantities
+from amuse.units.quantities import Quantity
+from amuse.units.quantities import new_quantity
+from amuse.units.quantities import zero
+from amuse.units.quantities import AdaptingVectorQuantity
+from amuse.units.quantities import AdaptingVectorQuantity
 
 import numpy
 
@@ -1348,7 +1346,7 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     
     The converter must have implement the ConverterInterface.
     
-    >>> from amuse.support.units import nbody_system
+    >>> from amuse.units import nbody_system
     >>> particles_nbody = Particles(2)
     >>> particles_nbody.x = [10.0 , 20.0] | nbody_system.length
     >>> convert_nbody = nbody_system.nbody_to_si(10 | units.kg , 5 | units.m )
@@ -1511,7 +1509,7 @@ class ParticleInformationChannel(object):
            will be set equal to the name
         
         >>> from amuse.support.data.core import Particles
-        >>> from amuse.support.units import units
+        >>> from amuse.units import units
         >>> particles1 = Particles(2)
         >>> particles2 = particles1.copy()
         >>> particles1.mass = 1 | units.m

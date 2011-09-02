@@ -2,9 +2,10 @@ from amuse.test import amusetest
 
 from amuse.ext.kingmodel import new_king_model
 from amuse.support.exceptions import AmuseException
-from amuse.support.units import nbody_system
-from amuse.support.units import units
 
+
+from amuse.units import nbody_system
+from amuse.units import units
 class TestKingModel(amusetest.TestCase):
     def test1(self):
         print "First test: making a King model."

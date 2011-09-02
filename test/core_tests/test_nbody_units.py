@@ -1,7 +1,7 @@
 from amuse.test import amusetest
-from amuse.support.units.nbody_system import *
-from amuse.support.units import constants
 
+from amuse.units import constants
+from amuse.units.nbody_system import *
 class TestNbodyUnits(amusetest.TestCase):
     def test1(self):
         convert_nbody = nbody_to_si(1 | units.parsec, 20 |units.MSun)

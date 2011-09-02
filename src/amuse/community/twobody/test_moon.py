@@ -1,7 +1,8 @@
 import numpy
 import amuse.community.twobody.twobody as twobody
-from amuse.support.units.units import *
 
+
+from amuse.units.units import *
 if __name__=='__main__':
     pos_earth=numpy.array([ 8.418982185410142E-01, 
                             5.355823303978186E-01, 

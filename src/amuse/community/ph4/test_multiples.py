@@ -1,13 +1,12 @@
 import sys, unittest, numpy, random, collections, getopt, os, math
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
 from amuse.support.data import core
 from amuse.support.data import particle_attributes
 from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
-
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.support.data import trees
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.newsmallN.interface import SmallN

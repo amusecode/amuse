@@ -3,14 +3,20 @@ from amuse.test import amusetest
 import pickle
 
 from amuse.support.exceptions import AmuseException
-from amuse.support.units import core
-from amuse.support.units.units import *
-from amuse.support.units import si
-from amuse.support.units import nbody_system
-from amuse.support.units import generic_unit_system
-from amuse.support.units.constants import *
-from amuse.support.units.quantities import zero
 
+
+
+
+
+
+
+from amuse.units import core
+from amuse.units import si
+from amuse.units import nbody_system
+from amuse.units import generic_unit_system
+from amuse.units.quantities import zero
+from amuse.units.units import *
+from amuse.units.constants import *
 class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
 
     def test1(self):

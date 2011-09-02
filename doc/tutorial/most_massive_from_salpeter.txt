@@ -28,7 +28,7 @@ but here we will import the required module and function manually for clarity:
 
 .. code-block:: python
 
-    >>> from amuse.support.units import units
+    >>> from amuse.units import units
     >>> from amuse.ext.salpeter import new_salpeter_mass_distribution
 
 Now, we can calculate the maximum stellar mass for each of 

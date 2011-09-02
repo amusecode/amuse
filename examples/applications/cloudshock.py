@@ -10,10 +10,11 @@ except ImportError:
 
 from amuse.support.data import core
 from amuse.ext import cloud
-from amuse.support.units import generic_unit_system
-from amuse.support.units import units
+from amuse.units import generic_unit_system
+from amuse.units import units
 from amuse.community.capreole.interface import Capreole
 from amuse import io
+
 class CalculateCloudShock(object):
     number_of_workers = 1
     number_of_grid_points = 10

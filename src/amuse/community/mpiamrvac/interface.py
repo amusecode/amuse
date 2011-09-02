@@ -1,8 +1,8 @@
 from amuse.community import *
 from amuse.community.interface.hydro import HydrodynamicsInterface
 from amuse.support.options import OptionalAttributes, option
+from amuse.units import generic_unit_system
 
-from amuse.support.units import generic_unit_system
 import os
 
 class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface):

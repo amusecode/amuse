@@ -1,9 +1,11 @@
 from amuse.test import amusetest
-from amuse.support.units import units, nbody_system, constants
+
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import console
 from amuse.support.data.console import set_printing_strategy, get_current_printing_strategy
-
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units import constants
 class TestPrintingStrategy(amusetest.TestCase):
 
     def test1(self):

@@ -6,9 +6,8 @@ from amuse.community import *
 from amuse.community.interface.se import StellarEvolution, StellarEvolutionInterface, \
     InternalStellarStructure, InternalStellarStructureInterface
 
-
+from amuse.units.quantities import VectorQuantity
 from amuse.support.interface import InCodeComponentImplementation
-from amuse.support.units.quantities import VectorQuantity
 
 class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
         InternalStellarStructureInterface): 

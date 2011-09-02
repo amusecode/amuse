@@ -6,9 +6,10 @@ from matplotlib import pyplot
     
 
 from amuse.support.data.core import Grid
-from amuse.support.units.generic_unit_system import *
+
 from amuse.community.athena.interface import Athena
 
+from amuse.units.generic_unit_system import *
 GAMMA = 1.4
 DIMENSIONS_OF_MESH = (400,400,1)
 PERTUBATION_AMPLITUDE = 0.01 | speed

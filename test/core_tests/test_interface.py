@@ -1,7 +1,7 @@
 from amuse.support import interface
 from amuse.support.exceptions import AmuseException
-from amuse.support.units import units
-from amuse.support.units import nbody_system
+
+
 from amuse.support.data.binding import *
 from amuse.support.data.parameters import *
 from amuse.support.data import core
@@ -12,7 +12,8 @@ from amuse.support.codes.core import legacy_function, LegacyFunctionSpecificatio
 
 from amuse.test import amusetest
 import numpy
-
+from amuse.units import units
+from amuse.units import nbody_system
 class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
     class TestClass(object):
         

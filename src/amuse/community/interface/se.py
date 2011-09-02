@@ -3,7 +3,8 @@ Stellar Dynamics Interface Defintion
 """
 
 import numpy
-from amuse.support.units import units
+
+from amuse.units import units
 from amuse.support import exceptions
 from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
 from amuse.community.interface import common

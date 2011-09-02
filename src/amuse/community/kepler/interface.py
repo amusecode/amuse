@@ -1,7 +1,7 @@
 from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
 from amuse.support.options import option
-from amuse.support.units import units
+from amuse.units import units
 import os.path
 
 class KeplerInterface(CodeInterface,

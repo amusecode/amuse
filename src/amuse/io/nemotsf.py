@@ -1,10 +1,10 @@
 import re
 import numpy
 
-from amuse.support.data import core
-from amuse.support.units import units
-from amuse.support.units import nbody_system
 from amuse.io import base
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.support.data import core
 
 TEMPLATE = \
 """set SnapShot

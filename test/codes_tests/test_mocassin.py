@@ -6,12 +6,13 @@ import math
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.mocassin.interface import MocassinInterface, Mocassin
 
-from amuse.support.units import generic_unit_system
-from amuse.support.units import units
+
+
 from amuse.support.data import core
 
 from mpi4py import MPI
-
+from amuse.units import generic_unit_system
+from amuse.units import units
 class TestMocassinInterface(TestWithMPI):
     
     def test0(self):

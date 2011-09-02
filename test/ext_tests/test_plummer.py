@@ -1,10 +1,10 @@
 from amuse.test import amusetest
 
 from amuse.ext.plummer import *
-from amuse.support.units import nbody_system
-from amuse.support.units import units
 
 
+from amuse.units import nbody_system
+from amuse.units import units
 class TestData(amusetest.TestCase):
     pass
    

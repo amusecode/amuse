@@ -1,8 +1,6 @@
 from amuse.community import *
-
-from amuse.support.units import units
-from amuse.support.units.quantities import Quantity
-
+from amuse.units import units
+from amuse.units.quantities import Quantity
 from amuse.support.data.core import Particles, ParticlesSubset
 from amuse.community.interface import common
 
