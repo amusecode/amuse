@@ -1,6 +1,6 @@
-import time
-import sys
 import numpy
+import sys
+import time
 
 from amuse.community.hermite0.interface import HermiteInterface
 

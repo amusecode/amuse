@@ -1,9 +1,9 @@
-from amuse.support.data import core
-from amuse.units import nbody_system
-from amuse.support import exceptions
-
 import math
 import numpy
+
+from amuse.support import exceptions
+from amuse.support.data import core
+from amuse.units import nbody_system
 
 class MakeKingModel(object):
     def __init__(self, number_of_particles, W0, convert_nbody = None, do_scale = False, 

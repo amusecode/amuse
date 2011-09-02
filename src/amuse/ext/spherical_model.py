@@ -1,8 +1,10 @@
 import numpy
+
 from amuse.support.data.core import Particles
-from amuse.units import units
+from amuse.support.exceptions import AmuseException
+from amuse.support.exceptions import AmuseWarning
 from amuse.units import nbody_system
-from amuse.support.exceptions import AmuseWarning, AmuseException
+from amuse.units import units
 
 class EnclosedMassInterpolator(object):
     """

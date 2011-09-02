@@ -1,13 +1,15 @@
-from math import *
-import numpy
-
-from amuse.units import units
-from amuse.units import nbody_system
-from amuse.support.data.core import Particles, ParticlesWithUnitsConverted
-
 """
 initial conditions for the SPH evrard collapse test
 """
+import numpy
+
+from math import *
+
+from amuse.support.data.core import Particles
+from amuse.support.data.core import ParticlesWithUnitsConverted
+from amuse.units import nbody_system
+from amuse.units import units
+
 class uniform_random_unit_cube(object):
     def __init__(self,targetN):
         self.targetN=targetN

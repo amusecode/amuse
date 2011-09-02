@@ -1,7 +1,8 @@
 import numpy
-from amuse.units import units
+
 from amuse.support.data.core import Particles
 from amuse.support.exceptions import AmuseException
+from amuse.units import units
 
 class Grid2SPH(object):
     """

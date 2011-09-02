@@ -1,5 +1,5 @@
-from amuse.support.data.core import ParticlesWithUnitsConverted
 from amuse.community.halogen.interface import Halogen
+from amuse.support.data.core import ParticlesWithUnitsConverted
 
 def new_halogen_model(number_of_particles, unit_converter = None, do_scale = False, **keyword_arguments):
     """

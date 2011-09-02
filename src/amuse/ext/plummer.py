@@ -2,12 +2,15 @@
 experiment with HDF data format
 """
 
+import numpy
+import numpy.random
+import random
+
+from math import pi
+from math import sqrt
+
 from amuse.support.data import core
 from amuse.units import nbody_system
-
-from math import pi, sqrt
-import numpy, numpy.random
-import random
 
 class MakePlummerModel(object):
     def __init__(self, number_of_particles, convert_nbody = None, radius_cutoff = 22.8042468, mass_cutoff = 0.999,

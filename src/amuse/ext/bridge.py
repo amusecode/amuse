@@ -84,11 +84,11 @@
 # - sync of systems should be checked
 # - timestepping: adaptive dt?
 
-from amuse.units import units
-from amuse.units import quantities
-from amuse.support.data import core
-
 import threading
+
+from amuse.support.data import core
+from amuse.units import quantities
+from amuse.units import units
 
 def potential_energy(system, get_potential):
     parts=system.particles.copy()

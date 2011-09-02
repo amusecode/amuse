@@ -1,9 +1,9 @@
-import sys
 import numpy
 import os
+import sys
 
-from amuse.units import units
 from amuse.units import nbody_system
+from amuse.units import units
 
 class SalpeterIMF(object):
     def __init__(self, mass_min = 0.1 | units.MSun, mass_max = 125 | units.MSun, alpha = -2.35):

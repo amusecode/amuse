@@ -1,8 +1,8 @@
+import inspect
+import numpy
+
 from amuse.support.data import core
 from amuse.units import generic_unit_system
-
-import numpy
-import inspect
 
 def fill_grid_with_cloud_and_medium(
         grid, 

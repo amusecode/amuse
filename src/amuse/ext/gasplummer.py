@@ -1,10 +1,9 @@
 import numpy
 
-from amuse.support.data import core
-
-from amuse.units import units
-from amuse.units import nbody_system
 from amuse.ext.evrard_test import uniform_unit_sphere
+from amuse.support.data import core
+from amuse.units import nbody_system
+from amuse.units import units
 
 class MakePlummerGasModel(object):
     def __init__(self, targetN, convert_nbody = None, base_grid=None, rscale=1/1.695,
