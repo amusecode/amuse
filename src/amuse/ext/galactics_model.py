@@ -1,7 +1,6 @@
 from amuse.community.galactics.interface import GalactICs
 from amuse.community.galactics.interface import GalactICsInterface
-from amuse.support.data.core import ParticlesWithUnitsConverted
-
+from amuse.support.data import ParticlesWithUnitsConverted
 def _new_galactics_model(halo_number_of_particles, unit_converter = None, do_scale = False, **keyword_arguments):
     instance = GalactICs(unit_converter = unit_converter)
     instance.parameters.halo_number_of_particles = halo_number_of_particles

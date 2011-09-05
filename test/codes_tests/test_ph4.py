@@ -3,9 +3,6 @@ import sys
 import time
 from amuse.community.ph4.interface import ph4Interface, ph4
 
-from amuse.support.data import core
-
-
 from amuse.ext.plummer import new_plummer_sphere
 
 from amuse.test.amusetest import TestWithMPI
@@ -13,6 +10,7 @@ from amuse.test.amusetest import TestWithMPI
 import numpy
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.support import data
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -210,7 +208,7 @@ class TestMPIInterface(TestWithMPI):
 
 class TestPH4(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = core.Stars(2)
+        stars = data.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -317,7 +315,7 @@ class TestPH4(TestWithMPI):
 
         instance.initialize_code()
         
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -342,7 +340,7 @@ class TestPH4(TestWithMPI):
         instance = ph4()
         instance.initialize_code()
         
-        particles = core.Particles(6)
+        particles = data.Particles(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
@@ -362,7 +360,7 @@ class TestPH4(TestWithMPI):
         instance = ph4()
         instance.initialize_code()
         instance.parameters.manage_encounters = 2
-        particles = core.Particles(6)
+        particles = data.Particles(6)
         particles.mass =  [0.01, 0.1,  0.1, 0.1, 0.1, 0.1] | nbody_system.mass
         particles.radius =   0.1 | nbody_system.length
         particles.position = [
@@ -409,7 +407,7 @@ class TestPH4(TestWithMPI):
         instance.set_eta(0.01,0.02)
 
         
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
@@ -450,7 +448,7 @@ class TestPH4(TestWithMPI):
         instance.set_eta(0.01,0.02)
 
         
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
@@ -535,7 +533,7 @@ class TestPH4(TestWithMPI):
         self.assertTrue(e1 != e0)
 
     def xtest11(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [
             0.0,1.0, 
             #5,7,
@@ -566,7 +564,7 @@ class TestPH4(TestWithMPI):
         instance.stop()
 
     def xtest12(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [
             0.0,1.0, 
             #5,7,
@@ -597,7 +595,7 @@ class TestPH4(TestWithMPI):
         instance.stop()
 
     def xtest13(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
@@ -621,7 +619,7 @@ class TestPH4(TestWithMPI):
         instance.stop()
 
     def xtest14(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
@@ -655,7 +653,7 @@ class TestPH4(TestWithMPI):
         instance.initialize_code()
         
         
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
@@ -672,7 +670,7 @@ class TestPH4(TestWithMPI):
     def test16(self):
         print "Testing ph4 states"
         stars = new_plummer_sphere(100)
-        black_hole = core.Particle()
+        black_hole = data.Particle()
         black_hole.mass = 1.0 | nbody_system.mass
         black_hole.radius =  0.0 | nbody_system.length
         black_hole.position = [0.0, 0.0, 0.0] | nbody_system.length

@@ -8,10 +8,10 @@ from matplotlib import pyplot
 from amuse.plot import loglog, xlabel, ylabel
 
 from amuse.units import units
-from amuse.support.data import core
 from amuse.community.sse.interface import SSE
 from amuse.support.codes.core import is_mpd_running
 
+from amuse.support import data
 end_time = 2 | units.Gyr
 stellar_mass =  2.0 | units.MSun
 
@@ -19,7 +19,7 @@ def simulate_evolution_tracks():
     stellar_evolution = SSE()
     stellar_evolution.commit_parameters()
 
-    star = core.Particle()
+    star = data.Particle()
     star.mass = stellar_mass
 
     star = stellar_evolution.particles.add_particle(star)

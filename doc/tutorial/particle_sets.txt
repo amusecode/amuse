@@ -26,7 +26,7 @@ two subsets of stars. The first subset contains the stars within
 a certain radius from the center of mass of the plummer system and
 the second subset contains all the other stars.
 
-The plummer module generates a particle set of the form core.Stars(*N*).
+The plummer module generates a particle set of the form data.Stars(*N*).
 
 Imports
 -------
@@ -37,7 +37,7 @@ the particles, which **need to be quantities**.
 
 .. code-block:: python
 
-    >>> from amuse.support.data import core
+    >>> from amuse.support import data
     >>> from amuse.units import nbody_system
     >>> from amuse.units import units
     >>> from amuse.ext.plummer import MakePlummerModel
@@ -132,7 +132,7 @@ The selections are all subsets as we can verify:
 .. code-block:: python
 
     >>> outersphere #doctest:+ELLIPSIS 
-    <amuse.support.data.core.ParticlesSubset object at ...>
+    <amuse.support.data.particles.ParticlesSubset object at ...>
 
 Set operations
 --------------
@@ -209,7 +209,7 @@ First we define a simple dummy legacy code object, with some typical gd interfac
 
     >>> class DummyLegacyCode(object):
     ...     def __init__(self):
-    ...         self.particles = core.Particles()
+    ...         self.particles = data.Particles()
     ...     def add_particles(self, new_particles):
     ...         self.particles.add_particles(new_particles)
     ...     def update_particles(self, particles):
@@ -265,8 +265,8 @@ Let us suppose that the zero-th star, stars[0] has a child and a grandchild star
 
 .. code-block:: python
 
-    >>> child_star = core.Particle()
-    >>> grandchild_star = core.Particle()
+    >>> child_star = data.Particle()
+    >>> grandchild_star = data.Particle()
     >>> child_star.mass = 0.001|units.MSun
     >>> child_star.position = [0,0,0]|units.AU
     >>> child_star.velocity = [0,0,0]|units.AUd
@@ -293,7 +293,7 @@ The descendents of star 0 form a subset:
 .. code-block:: python
 
     >>> stars[0].descendents() #doctest:+ELLIPSIS
-    <amuse.support.data.core.ParticlesSubset object at ...>
+    <amuse.support.data.ParticlesSubset object at ...>
     >>> stars[0].children().mass.value_in(units.MSun)
     array([ 0.001])
     >>> stars[0].descendents().mass

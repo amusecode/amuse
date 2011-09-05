@@ -564,7 +564,7 @@ test_nearestneighbor.py class and add this method:
     def test4(self):
         instance = NearestNeighbor()
         
-        particles = core.Particles(4)
+        particles = data.Particles(4)
         particles.x = [0.0, 1.0, 4.0, 7.5] | generic_unit_system.length
         particles.y = 0.0 | generic_unit_system.length
         particles.z = 0.0 | generic_unit_system.length
@@ -1075,7 +1075,7 @@ Let's add another test::
         instance.set_maximum_number_of_particles(100)
         instance.commit_parameters()
         
-        particles = core.Particles(4)
+        particles = data.Particles(4)
         particles.x = [0.0, 1.0, 4.0, 7.5] | generic_unit_system.length
         particles.y = 0.0 | generic_unit_system.length
         particles.z = 0.0 | generic_unit_system.length

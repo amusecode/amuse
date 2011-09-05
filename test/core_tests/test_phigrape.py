@@ -1,11 +1,3 @@
-from amuse.support.data import core
-
-
-
-
-
-
-#import unittest
 from amuse.test import amusetest
 import os.path
 import numpy
@@ -14,6 +6,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import quantities
+from amuse.support import data
 class Test(amusetest.TestCase):
 
 

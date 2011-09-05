@@ -2,9 +2,9 @@ import math
 import numpy
 
 from amuse.support import exceptions
-from amuse.support.data import core
 from amuse.units import nbody_system
 
+from amuse.support import data
 class MakeKingModel(object):
     def __init__(self, number_of_particles, W0, convert_nbody = None, do_scale = False, 
             beta = 0.0, seed = None, verbose = False):
@@ -457,7 +457,7 @@ class MakeKingModel(object):
     @property
     def result(self):
         masses, positions, velocities = self.makeking()
-        result = core.Particles(self.number_of_particles)
+        result = data.Particles(self.number_of_particles)
         result.mass = nbody_system.mass.new_quantity(masses)
         result.position = nbody_system.length.new_quantity(positions)
         result.velocity = nbody_system.speed.new_quantity(velocities)
@@ -466,7 +466,7 @@ class MakeKingModel(object):
             result.scale_to_standard()
         
         if not self.convert_nbody is None:
-            result = core.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = data.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
             result = result.copy_to_memory()
         
         return result

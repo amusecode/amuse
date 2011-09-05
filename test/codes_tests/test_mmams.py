@@ -2,12 +2,12 @@ import os.path
 import itertools
 from amuse.test.amusetest import TestWithMPI
 from amuse.support.exceptions import AmuseException, CodeException
-from amuse.support.data.core import Particles, Particle
-
 from amuse.community.mesa.interface import MESA
 from amuse.community.evtwin.interface import EVtwin
 from amuse.community.mmams.interface import MakeMeAMassiveStarInterface, MakeMeAMassiveStar
 from amuse.units import units
+from amuse.support.data import Particles
+from amuse.support.data import Particle
 default_options = dict(redirection="none")
 
 class TestMakeMeAMassiveStarInterface(TestWithMPI):

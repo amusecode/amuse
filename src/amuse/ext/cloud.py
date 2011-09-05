@@ -1,9 +1,9 @@
 import inspect
 import numpy
 
-from amuse.support.data import core
 from amuse.units import generic_unit_system
 
+from amuse.support import data
 def fill_grid_with_cloud_and_medium(
         grid, 
         center = None,
@@ -44,7 +44,7 @@ def fill_grid_with_spherical_cloud(
         return
     
     selection = numpy.logical_and( radii >= (radius-dr), radii <= (radius+dr))
-    subgrid = core.Grid.create((subgridsize, subgridsize, subgridsize), grid.cellsize())
+    subgrid = data.Grid.create((subgridsize, subgridsize, subgridsize), grid.cellsize())
     subgrid.x -= grid.cellsize()[0] / 2.0
     subgrid.y -= grid.cellsize()[1] / 2.0
     subgrid.z -= grid.cellsize()[2] / 2.0

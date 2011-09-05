@@ -6,16 +6,13 @@ from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.fi.interface import Fi
 
-from amuse.support.data import core
-
-
-
 from amuse.ext.plummer import new_plummer_sphere
 
 import numpy
 import time
 from amuse.units import units
 from amuse.units import nbody_system
+from amuse.support import data
 class _TestGravityCodes(TestWithMPI):
     length_unit = nbody_system.length
     speed_unit = nbody_system.speed
@@ -160,7 +157,7 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
                 if sc.is_set():
                     particle1 = sc.particles(0)[0]
                     particle2 = sc.particles(1)[0] 
-                    newparticle = core.Particles(1)
+                    newparticle = data.Particles(1)
                     newparticle.mass = particle1.mass + particle2.mass
                     newparticle.radius = particle2.radius
                     newparticle.position = (particle1.position + particle2.position) /2

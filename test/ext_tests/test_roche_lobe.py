@@ -8,9 +8,6 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-from amuse.support.data.core import Particles, Particle, ParticlesSuperset
-
-
 from amuse.support.exceptions import AmuseException
 from amuse.community.mesa.interface import MESA
 from amuse.community.hermite0.interface import Hermite
@@ -20,6 +17,9 @@ from amuse.units import generic_unit_system
 from amuse.units import nbody_system
 from amuse.units import constants
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+from amuse.support.data import Particles
+from amuse.support.data import Particle
+from amuse.support.data import ParticlesSuperset
 turn_tests_into_slowtests = False
 # False True
 

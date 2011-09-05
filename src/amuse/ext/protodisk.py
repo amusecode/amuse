@@ -3,11 +3,11 @@ import numpy
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import uniform_random_unit_cube
-from amuse.support.data.core import Particles
-from amuse.support.data.core import ParticlesWithUnitsConverted
 from amuse.units import nbody_system
 from amuse.units import units
 
+from amuse.support.data import Particles
+from amuse.support.data import ParticlesWithUnitsConverted
 def approximate_inverse_error_function(x):
   a=8*(numpy.pi-3)/3*numpy.pi*(4-numpy.pi)
   return numpy.sign(x)*numpy.sqrt(

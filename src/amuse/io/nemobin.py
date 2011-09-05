@@ -7,9 +7,9 @@ from collections import namedtuple
 from amuse.io import base
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.support.data import core
 from amuse.support.core import late, OrderedMultiDictionary
 
+from amuse.support import data
 class NemoItemType(type):
     mapping = {}
     def __new__(metaclass, name, bases, dict):
@@ -359,9 +359,9 @@ class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
         
     def load_file(self, file):
         nemofile = NemoBinaryFile(file)
-        data = nemofile.read()
+        structure = nemofile.read()
         result = None
-        for snapshot in data['SnapShot']:
+        for snapshot in structure['SnapShot']:
             if not 'Particles' in snapshot.data:
                 continue
             
@@ -370,7 +370,7 @@ class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
             time = parameters['Time'][0].data[0]
             
             if result is None:
-                result = core.Particles(nparticles)
+                result = data.Particles(nparticles)
                 
             particlesitem = snapshot.data['Particles'][0]
             if 'PhaseSpace' in particlesitem.data:

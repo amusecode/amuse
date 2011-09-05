@@ -1,9 +1,5 @@
 
 
-from amuse.support.data import core
-
-
-
 import numpy
 
 from amuse.community.twobody import twobody
@@ -11,6 +7,7 @@ from amuse.community.twobody import twobody
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import units
 from amuse.units import nbody_system
+from amuse.support import data
 class TwoBodyCodeTests(TestWithMPI):
     
     def test_stumpff(self):
@@ -45,7 +42,7 @@ class TwoBodyInterfaceTests(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
         instance = twobody.TwoBody(convert_nbody)
         
-        p = core.Particle()
+        p = data.Particle()
         p.mass = 5.9742e24 | units.kg
         p.radius = 6.371e6 | units.m
         p.position = [0.,7.e6,-1.2124e7] | units.m
@@ -69,7 +66,7 @@ class TwoBodyInterfaceTests(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
         instance = twobody.TwoBody(convert_nbody)
         
-        p = core.Particle()
+        p = data.Particle()
         p.mass = 5.9742e24 | units.kg
         p.radius = 7.1e6 | units.m
         p.position = [0.,7.e6,-1.2124e7] | units.m
@@ -89,7 +86,7 @@ class TwoBodyInterfaceTests(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
         instance = twobody.TwoBody(convert_nbody)
         
-        p = core.Particle()
+        p = data.Particle()
         p.mass = 5.9742e24 | units.kg
         p.radius = 7.1e6 | units.m
         p.position = [0.,7.e6,-1.2124e7] | units.m
@@ -111,7 +108,7 @@ class TwoBodyInterfaceTests(TestWithMPI):
     def test5(self):
         #from: Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd edition
         instance = twobody.TwoBody()
-        p = core.Particle()
+        p = data.Particle()
 
         p.mass = 1.0 | nbody_system.mass
         p.radius = 0.001 | nbody_system.length
@@ -127,7 +124,7 @@ class TwoBodyInterfaceTests(TestWithMPI):
     def test6(self):
         #from: Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd edition
         instance = twobody.TwoBody()
-        p = core.Particles(2)
+        p = data.Particles(2)
 
         p.mass = [1, 0.0] | nbody_system.mass
         p.radius = 0.001 | nbody_system.length

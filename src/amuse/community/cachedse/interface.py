@@ -4,10 +4,10 @@ import fnmatch
 
 #import numpy as np
 
-from amuse.support.data import core
 from amuse.units import units
 from amuse.units import constants
 
+from amuse.support import data
 class CachedStellarEvolution:
 
     """
@@ -66,7 +66,7 @@ class CachedStellarEvolution:
         pass
 
     def __init__(self, baseStellarEvolution, cacheDirectory):
-        self.particles = core.Particles()
+        self.particles = data.Particles()
         self.particlesCache = []
 
         self.baseStellarEvolution = baseStellarEvolution

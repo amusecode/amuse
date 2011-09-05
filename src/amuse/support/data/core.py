@@ -11,3 +11,8 @@ in AMUSE. The actual implementation is in the
 base, storage and particle modules.
 """
 
+import warnings
+
+warnings.warn("amuse.support.data.core is deprecated, use amuse.support.data instead", DeprecationWarning)
+
+

@@ -2,9 +2,9 @@ import os.path
 import numpy
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.support.data.core import Particles
 from amuse.community.simplex.interface import SimpleXInterface, SimpleX
 from amuse.units import units
+from amuse.support.data import Particles
 default_options = dict(number_of_workers=2)
 default_options = dict(number_of_workers=2, redirection="none")
 

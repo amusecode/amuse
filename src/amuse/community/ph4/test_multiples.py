@@ -1,6 +1,5 @@
 import sys, unittest, numpy, random, collections, getopt, os, math
 
-from amuse.support.data import core
 from amuse.support.data import particle_attributes
 from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
@@ -12,6 +11,7 @@ from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.newsmallN.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 
+from amuse.support import data
 def is_a_parent(child1_key, child2_key):
     return child1_key > 0 or child2_key > 0
 
@@ -627,7 +627,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     # 2. Create a particle set to perform the close encounter
     #    calculation.
 
-    particles_in_encounter = core.Particles(0)
+    particles_in_encounter = data.Particles(0)
     
     # 3. Add stars to the encounter set, add in components when we
     #    encounter a binary.
@@ -835,7 +835,7 @@ def test_multiples(infile = None, number_of_stars = 40,
         except Exception as ex:
             gravity = grav(number_of_workers = n_workers, redirection = "none")
     else:
-	gravity = grav(number_of_workers = n_workers, redirection = "none")
+        gravity = grav(number_of_workers = n_workers, redirection = "none")
 
     gravity.initialize_code()
     gravity.parameters.set_defaults()
@@ -877,15 +877,15 @@ def test_multiples(infile = None, number_of_stars = 40,
         vel = []
 
         f = open(infile, 'r')
-	count = 0
+        count = 0
         for line in f:
             if len(line) > 0:
                 count += 1
-		cols = line.split()
+                cols = line.split()
                 if count == 1: snap = int(cols[0])
-		elif count == 2: number_of_stars = int(cols[0])
-		elif count == 3: time = float(cols[0]) | nbody_system.time
-		else:
+                elif count == 2: number_of_stars = int(cols[0])
+                elif count == 3: time = float(cols[0]) | nbody_system.time
+                else:
                     if len(cols) >= 8:
                         id.append(int(cols[0]))
                         mass.append(float(cols[1]))
@@ -893,9 +893,9 @@ def test_multiples(infile = None, number_of_stars = 40,
                                     float(cols[3]), float(cols[4])))
                         vel.append((float(cols[5]),
                                     float(cols[6]), float(cols[7])))
-	f.close()
+        f.close()
 
-        stars = core.Particles(number_of_stars)
+        stars = data.Particles(number_of_stars)
         stars.id = id | units.none
         stars.mass = mass | nbody_system.mass
         stars.position = pos | nbody_system.length
@@ -999,7 +999,7 @@ def test_multiples(infile = None, number_of_stars = 40,
                     print " ", s.id.number, s.mass.number, \
 			       s.x.number, s.y.number, s.z.number
             else:
-		print "number of stars =", len(stars)
+                print "number of stars =", len(stars)
             sys.stdout.flush()
 
         E = print_log('ph4', gravity, E0)

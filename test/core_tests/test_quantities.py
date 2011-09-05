@@ -4,13 +4,13 @@ import numpy
 import sys
 
 
-from amuse.support.data import core
 from amuse.support.exceptions import AmuseException
 from amuse.units.quantities import *
 from amuse.units import si
 from amuse.units import units
 from amuse.units import nbody_system
 
+from amuse.support import data
 class TestQuantities(amusetest.TestCase):
 
     def test1(self):
@@ -42,7 +42,7 @@ class TestQuantities(amusetest.TestCase):
         
     def test5(self):
         number_of_stars = 10
-        stars = core.Stars(number_of_stars)
+        stars = data.Stars(number_of_stars)
         stars.position = [0,0,0] | units.km
         for i, star in enumerate(stars):
             star.position = units.km.new_quantity([float(i+1), float((i+1)*2), float(-1 * (i+1))])

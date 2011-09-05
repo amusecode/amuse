@@ -6,13 +6,10 @@ import math
 
 from amuse.community.hermite0.interface import HermiteInterface, Hermite
 
-from amuse.support.data import core
-
-
-
 from amuse.ext import plummer
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.support import data
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -150,7 +147,7 @@ class TestHermiteInterface(TestWithMPI):
         
 class TestHermite(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = core.Stars(2)
+        stars = data.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -253,7 +250,7 @@ class TestHermite(TestWithMPI):
         instance.parameters.epsilon_squared = 0.00001 | units.AU**2
         instance.dt_dia = 5000
         
-        stars = core.Stars(2)
+        stars = data.Stars(2)
         star1 = stars[0]
         star2 = stars[1]
 
@@ -281,7 +278,7 @@ class TestHermite(TestWithMPI):
         instance = Hermite(convert_nbody, redirection="none")
         instance.initialize_code()
         
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -305,7 +302,7 @@ class TestHermite(TestWithMPI):
         instance = Hermite(convert_nbody)
         instance.initialize_code()
         
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -362,7 +359,7 @@ class TestHermite(TestWithMPI):
         print "Test7: Testing effect of Hermite parameter epsilon_squared"
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         sun = particles[0]
         sun.mass = 1.0 | units.MSun
         sun.position = [0.0, 0.0, 0.0] | units.AU
@@ -396,7 +393,7 @@ class TestHermite(TestWithMPI):
         self.assertEquals(delta[len(final_direction)/2 -1], max(delta))
         
     def test8(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [
             0.0,1.0, 
             #5,7,
@@ -481,7 +478,7 @@ class TestHermite(TestWithMPI):
         instance.stop()
 
     def test11(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
@@ -504,7 +501,7 @@ class TestHermite(TestWithMPI):
         instance.stop()
 
     def test12(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [0.0,1.00] | nbody_system.length
         particles.y = [0.0,0.0] | nbody_system.length
         particles.z = [0.0,0.0] | nbody_system.length

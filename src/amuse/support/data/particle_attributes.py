@@ -355,7 +355,7 @@ def get_binaries(particles,hardness=10,G = constants.G):
     returns the binaries in a particleset. binaries are selected according to a hardness criterion [hardness=10]
     This function returns the binaries as a list of i,j particles. Triple detection is not done.
     
-    >>> from amuse.support.data import core
+    >>> from amuse.support import data
     >>> m = [1,1,1] | units.MSun
     >>> x = [-1,1,0] | units.AU
     >>> y = [0,0,1000] | units.AU
@@ -363,7 +363,7 @@ def get_binaries(particles,hardness=10,G = constants.G):
     >>> vx = [0,0,0] | units.kms
     >>> vy = [1.,-1.,0] | units.kms
     >>> vz = [0,0,0] | units.kms
-    >>> particles = core.create_particle_set( mass=m,x=x,y=y,z=z,vx=vx,vy=vy,vz=vz )
+    >>> particles = data.create_particle_set( mass=m,x=x,y=y,z=z,vx=vx,vy=vy,vz=vz )
     >>> binaries = particles.binaries()
     >>> print len(binaries)
     1

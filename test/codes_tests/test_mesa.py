@@ -6,10 +6,10 @@ from numpy import pi
 from amuse.community.mesa.interface import MESA, MESAInterface
 
 from amuse.support.exceptions import AmuseException
-from amuse.support.data.core import Particles, Particle
-
 from amuse.support.codes import channel
 from amuse.units import units
+from amuse.support.data import Particles
+from amuse.support.data import Particle
 class TestMESAInterface(TestWithMPI):
     
     def test1(self):

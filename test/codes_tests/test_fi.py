@@ -10,10 +10,10 @@ from amuse.ext.spherical_model import new_uniform_spherical_particle_distributio
 from amuse.ext.plummer import new_plummer_sphere
 
 
-from amuse.support.data import core
 from amuse.support.codes import channel
 from amuse.units import nbody_system as nbody
 from amuse.units import units
+from amuse.support import data
 class TestFiInterface(TestWithMPI):
 
     def test1(self):
@@ -304,7 +304,7 @@ class TestFi(TestWithMPI):
         self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
         instance.commit_parameters()
         
-        stars = core.Particles(2)
+        stars = data.Particles(2)
         
         sun = stars[0]
         sun.mass = units.MSun(1.0)
@@ -371,7 +371,7 @@ class TestFi(TestWithMPI):
         instance.parameters.star_formation_flag = True
         self.assertEquals(True, instance.parameters.star_formation_flag)
         
-        stars = core.Particles(2)
+        stars = data.Particles(2)
         stars.mass = [1.0, 3.0e-6] | units.MSun
         stars.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.AU
         stars.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
@@ -497,7 +497,7 @@ class TestFi(TestWithMPI):
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
         gas.h_smooth = 0.0 | nbody.length
         
-        dark = core.Particles(2)
+        dark = data.Particles(2)
         dark.mass = [1.0, 3.0e-6] | units.MSun
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.AU
         dark.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
@@ -534,13 +534,13 @@ class TestFi(TestWithMPI):
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
         gas.h_smooth = 0.0 | nbody.length
         
-        dark = core.Particles(2)
+        dark = data.Particles(2)
         dark.mass = [0.4, 0.4] | nbody.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
         dark.radius = [0.0, 0.0] | units.RSun
         
-        star = core.Particles(2)
+        star = data.Particles(2)
         star.mass = [0.02, 0.02] | nbody.mass
         star.position = [[0.1,0.2,0.3], [0.4,0.5,0.6]] | units.kpc
         star.velocity = [[-300.0,-200.0,-100.0], [-6.0,-5.0,-4.0]] | units.km / units.s
@@ -581,7 +581,7 @@ class TestFi(TestWithMPI):
     
     def test10(self):
         print "Test 10: testing Fi star particles"
-        stars = core.Particles(2)
+        stars = data.Particles(2)
         stars.mass = [1.0, 3.00e-6] | units.MSun
         stars.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.AU
         stars.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
@@ -617,13 +617,13 @@ class TestFi(TestWithMPI):
         gas.h_smooth = 0.0 | nbody.length
         number_sph_particles = len(gas)
         
-        dark = core.Particles(2)
+        dark = data.Particles(2)
         dark.mass = [0.4, 0.4] | nbody.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
         dark.radius = [0.0, 0.0] | units.RSun
         
-        star = core.Particles(2)
+        star = data.Particles(2)
         star.mass = [0.02, 0.02] | nbody.mass
         star.position = [[0.1,0.2,0.3], [0.4,0.5,0.6]] | units.kpc
         star.velocity = [[-300.0,-200.0,-100.0], [-6.0,-5.0,-4.0]] | units.km / units.s
@@ -641,7 +641,7 @@ class TestFi(TestWithMPI):
         self.assertEquals(number_sph_particles+4, len(instance.particles))
         
         print "The 'particles' superset can still be used as standard GD 'particles' set."
-        default = core.Particles(2)
+        default = data.Particles(2)
         default.mass = [0.4, 0.4] | nbody.mass
         default.position = [[0.5,-0.5,0.04], [1.5,0.5,0.08]] | units.kpc
         default.velocity = [[10.0,10.0,10.0], [10.0,10.0,10.0]] | units.km / units.s
@@ -674,7 +674,7 @@ class TestFi(TestWithMPI):
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
         gas.h_smooth = 0.0 | nbody.length
-        dark = core.Particles(2)
+        dark = data.Particles(2)
         dark.mass = [0.4, 0.4] | nbody.mass
         dark.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | nbody.length
         dark.velocity = [[0.1, 0.1, 0.1], [1.0, 1.0, 1.0]] | nbody.speed
@@ -721,7 +721,7 @@ class TestFi(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'END')
     
     def test13(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [0.0,10.0] | nbody.length
         particles.y = 0 | nbody.length
         particles.z = 0 | nbody.length
@@ -745,7 +745,7 @@ class TestFi(TestWithMPI):
         instance.stop()
 
     def test13a(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [0.0,10.0] | nbody.length
         particles.y = 0 | nbody.length
         particles.z = 0 | nbody.length
@@ -774,7 +774,7 @@ class TestFi(TestWithMPI):
         instance.stop()
 
     def test13b(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [0.0,0.0] | nbody.length
         particles.y = 0 | nbody.length
         particles.z = 0 | nbody.length
@@ -928,7 +928,7 @@ class TestFi(TestWithMPI):
         instance.parameters.timestep = 0.1 | nbody.time
         self.assertAlmostEqual(instance.parameters.periodic_box_size, 2.0 | units.kpc, places=6)
         
-        three_particles_IC = core.Particles(3)
+        three_particles_IC = data.Particles(3)
         three_particles_IC.position = [[0.5, 0.0, 0.0], [0.0,-0.5, 0.0], [0.0, 0.0, 0.5]] | nbody.length
         three_particles_IC.velocity =[[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0,-1.0]] | nbody.speed
         three_particles_IC.radius = 0.0 | units.RSun
@@ -952,7 +952,7 @@ class TestFi(TestWithMPI):
         
 
     def test18(self):
-        particles = core.Particles(10)
+        particles = data.Particles(10)
         particles.x = (numpy.array(range(10)) * 1.0) | nbody.length
         particles.y = 0 | nbody.length
         particles.z = 0 | nbody.length

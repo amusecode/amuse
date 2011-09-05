@@ -4,8 +4,6 @@ In this script we simulate a plummer sphere on a grid
 
 from amuse.support.core import late
 
-from amuse.support.data.core import Grid, Particles
-
 from amuse.units import constants
 from amuse.units import units
 from amuse.units import nbody_system
@@ -35,6 +33,8 @@ from optparse import OptionParser
 from amuse import io
 from amuse.io import text
 
+from amuse.support.data import Grid
+from amuse.support.data import Particles
 class HydroGridAndNbody(object):
     
     def __init__(self, gridcode, nbodycode):

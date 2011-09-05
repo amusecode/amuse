@@ -8,11 +8,10 @@ from amuse.community.smallN.muse_dynamics_mpi import SmallNInterface, SmallN
 
 
 
-from amuse.support.data import core
-
 from mpi4py import MPI
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.support import data
 class TestSmallNInterface(TestWithMPI):
     
     def test0(self):
@@ -44,7 +43,7 @@ class TestSmallNInterface(TestWithMPI):
     
 class TestSmallN(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = core.Stars(2)
+        stars = data.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))

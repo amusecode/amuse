@@ -1,10 +1,10 @@
 import numpy
 
 from amuse.ext.evrard_test import uniform_unit_sphere
-from amuse.support.data import core
 from amuse.units import nbody_system
 from amuse.units import units
 
+from amuse.support import data
 class MakePlummerGasModel(object):
     def __init__(self, targetN, convert_nbody = None, base_grid=None, rscale=1/1.695,
                    mass=1.,seed=345672,mass_frac=.999):
@@ -38,7 +38,7 @@ class MakePlummerGasModel(object):
     @property
     def result(self):
         mass,x,y,z,vx,vy,vz,u = self.new_model()
-        result = core.Particles(self.actualN)
+        result = data.Particles(self.actualN)
         result.mass = nbody_system.mass.new_quantity(mass)
         result.x = nbody_system.length.new_quantity(x)
         result.y = nbody_system.length.new_quantity(y)
@@ -49,7 +49,7 @@ class MakePlummerGasModel(object):
         result.u = (nbody_system.speed**2).new_quantity(u)
 
         if not self.convert_nbody is None:
-            result = core.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = data.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
             result = result.copy_to_memory()
             
         return result

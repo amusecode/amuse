@@ -6,16 +6,16 @@ Group:'Add'
 Tooltip: 'Amuse example'
 """
 from amuse.community.hermite0.interface import HermiteInterface, Hermite         
-from amuse.support.data import core           
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.ext.blender import blender #get blender API         
 import numpy as np
 
+from amuse.support import data
 class SunEarth(object):       
                   
     def new_system_of_sun_and_earth(self):      
-        stars = core.Stars(2)         
+        stars = data.Stars(2)         
         sun = stars[0]        
         sun.mass = units.MSun(1.0)      
         sun.position = units.m(np.array((0.0,0.0,0.0)))       

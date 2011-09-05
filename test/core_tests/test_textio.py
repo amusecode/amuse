@@ -1,4 +1,3 @@
-from amuse.support.data import core
 from amuse.test import amusetest
 import StringIO
 import textwrap
@@ -7,6 +6,7 @@ from amuse import io
 from amuse.io import text
 from amuse.units import units
 from amuse.units import generic_unit_system
+from amuse.support import data
 class CursorTests(amusetest.TestCase):
     
     def test1(self):
@@ -48,7 +48,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         self.assertEquals(particles[0].a, 1|units.none)
         
     def test2(self):
-        p = core.Particles(2)
+        p = data.Particles(2)
         p.a = [1, 4] | units.m
         p.b = [2, 5] | units.m
         p.c = [3, 6] | units.m
@@ -63,7 +63,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         self.assertEquals("#a b c\n#m m m\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
     
     def test3(self):
-        x = core.Particles(2)
+        x = data.Particles(2)
         x.mass = [1.0, 2.0] | units.MSun
         x.radius = [3.0, 4.0] | units.RSun
         io.write_set_to_file(x, "test.csv","txt", attribute_types = (units.MSun, units.RSun))
@@ -137,7 +137,7 @@ class CsvFileTextTests(amusetest.TestCase):
         
     def test4(self):
         print "Test 4: Write comma separated values (CSV) - specified attributes"
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.a = [1, 4] | units.none
         particles.b = [2, 5] | units.m
         particles.c = [3, 6] | units.kg / units.m**3
@@ -155,7 +155,7 @@ class CsvFileTextTests(amusetest.TestCase):
     
     def test5(self):
         print "Test 5: Write comma separated values (CSV) - attributes defined automatically"
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.a = [1, 4] | units.none
         particles.b = [2, 5] | units.m
         particles.c = [3, 6] | units.kg / units.m**3
@@ -172,7 +172,7 @@ class CsvFileTextTests(amusetest.TestCase):
     
     def test6(self):
         print "Test 6: Write comma separated values (CSV) - generic units"
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.a = [1, 4] | generic_unit_system.mass
         particles.b = [2, 5] | generic_unit_system.length
         particles.c = [3, 6] | generic_unit_system.energy
@@ -191,7 +191,7 @@ class CsvFileTextTests(amusetest.TestCase):
     
     def test7(self):
         print "Test 7: User interface (write_set_to_file and read_set_from_file)"
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.a = [1, 4] | units.none
         particles.b = [2, 5] | units.m
         particles.c = [3, 6] | units.kg / units.m**3

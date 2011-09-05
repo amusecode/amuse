@@ -1,7 +1,4 @@
 from amuse.test import amusetest
-from amuse.support.data.core import *
-
-
 from amuse.community.hermite0.interface import Hermite
 
 
@@ -11,6 +8,7 @@ import os
 from amuse.io import store
 from amuse.units import units
 from amuse.units import nbody_system
+from amuse.support.data import *
 class TestAttributeError(amusetest.TestCase):
     
     def test1(self):

@@ -7,10 +7,10 @@ from amuse.io import base
 from amuse.units import si
 from amuse.units import units
 from amuse.units import core
-from amuse.support.data.core import Particles, AttributeStorage
-
 from amuse.support import exceptions
 
+from amuse.support.data import Particles
+from amuse.support.data import AttributeStorage
 class HDF5AttributeStorage(AttributeStorage):
 
     def __init__(self, keys, hdfgroup):

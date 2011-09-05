@@ -6,9 +6,9 @@ from collections import namedtuple
 from amuse.io import base
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.support.data import core
 from amuse.support.core import late
 
+from amuse.support import data
 ioversion=2
 
 nheader=8
@@ -87,9 +87,9 @@ class FiFileFormatProcessor(base.FortranFileFormatProcessor):
         
        
     def load_body(self,file):
-        self.gas=core.Particles(self.ngas)
-        self.dark=core.Particles(self.ndm)
-        self.star=core.Particles(self.nstar)
+        self.gas=data.Particles(self.ngas)
+        self.dark=data.Particles(self.ndm)
+        self.star=data.Particles(self.nstar)
         
         for name, type, index, part, unit in variables:
             if self.phead[index - 1] == 1:

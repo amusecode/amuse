@@ -1,5 +1,3 @@
-from amuse.support.data import core
-
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units import quantities
@@ -8,8 +6,9 @@ from amuse.community.hermite0.interface import Hermite
 
 from matplotlib import pyplot
 
+from amuse.support import data
 def new_system_of_sun_and_earth():
-    stars = core.Particles(2)
+    stars = data.Particles(2)
     
     sun = stars[0]
     sun.mass = 1.0 | units.MSun

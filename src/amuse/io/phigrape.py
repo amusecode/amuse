@@ -2,8 +2,7 @@ import re
 
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.support.data import core
-
+from amuse.support import data
 """
 fileformat:
 ===========
@@ -85,7 +84,7 @@ class Inp2Particles(object):
 
         N_particles = int(lines[1])
 
-        Particles = core.Particles(N_particles)
+        Particles = data.Particles(N_particles)
 
         for i, line in enumerate(lines):
             if i<3:
@@ -106,5 +105,5 @@ class Inp2Particles(object):
 
         self.Particles = self.read_to_ram(inputfile)
         if not converter==None:
-            self.Particles=core.ParticlesWithUnitsConverted(self.Particles,
+            self.Particles=data.ParticlesWithUnitsConverted(self.Particles,
                                                             converter.as_converter_from_si_to_nbody())

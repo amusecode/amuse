@@ -4,7 +4,6 @@ import numpy
 from operator import itemgetter
 
 from amuse.community.mesa.interface import MESA
-from amuse.support.data.core import Particles
 from amuse.support.data.particles import ParticlesSubset
 from amuse.support.data.particles import ParticlesSuperset
 from amuse.support.exceptions import AmuseException
@@ -12,6 +11,7 @@ from amuse.support.exceptions import AmuseWarning
 from amuse.units import constants
 from amuse.units import units
 
+from amuse.support.data import Particles
 class RocheLobeOverflow(object):
     """
     Applies Roche-lobe overflow to a set of stars

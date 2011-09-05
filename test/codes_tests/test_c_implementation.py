@@ -1,8 +1,5 @@
 from amuse.support.codes.core import *
 
-from amuse.support.data import core
-
-
 from amuse.support.codes import channel
 
 from amuse.support.interface import InCodeComponentImplementation
@@ -16,6 +13,7 @@ import os
 import time
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.support import data
 codestring = """
 #include <stdio.h>
 #include <stdlib.h>

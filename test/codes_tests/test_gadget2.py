@@ -10,12 +10,12 @@ from amuse.support.exceptions import AmuseException
 
 
 
-from amuse.support.data import core
 from amuse.support.codes import channel
 from amuse.units import nbody_system
 from amuse.units import generic_unit_converter
 from amuse.units import generic_unit_system
 from amuse.units import units
+from amuse.support import data
 default_options = dict(number_of_workers=2)
 #default_options = dict(number_of_workers=2, redirection="none")
 
@@ -355,7 +355,7 @@ class TestGadget2(TestWithMPI):
     default_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(UnitLength, UnitMass, UnitVelocity)
     default_convert_nbody = nbody_system.nbody_to_si(UnitLength, UnitMass)
     
-    three_particles_IC = core.Particles(3)
+    three_particles_IC = data.Particles(3)
     three_particles_IC.position = [[0.5, 0.0, 0.0], [0.0,-0.5, 0.0], [0.0, 0.0, 0.5]] | units.kpc 
     three_particles_IC.velocity =[[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0,-1.0]] | units.km / units.s
     three_particles_IC.mass = 1.0e10 | units.MSun
@@ -393,7 +393,7 @@ class TestGadget2(TestWithMPI):
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2
 
-        dark = core.Particles(2)
+        dark = data.Particles(2)
         dark.mass = [0.4, 0.4] | generic_unit_system.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
@@ -429,7 +429,7 @@ class TestGadget2(TestWithMPI):
         target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
 
-        dark = core.Particles(2)
+        dark = data.Particles(2)
         dark.mass = [0.4, 0.4] | generic_unit_system.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
@@ -534,7 +534,7 @@ class TestGadget2(TestWithMPI):
         print "Testing Gadget states"
         target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
-        dark = core.Particles(2)
+        dark = data.Particles(2)
         dark.mass = [0.4, 0.4] | generic_unit_system.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
@@ -576,7 +576,7 @@ class TestGadget2(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'END')
 
     def test11(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
 
         particles.x = [0.0,10.0] | generic_unit_system.length
         particles.y = 0 | generic_unit_system.length

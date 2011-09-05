@@ -13,8 +13,6 @@ to profile (in the amuse root directory):
 
 
 from amuse.lab import *
-from amuse.support.data.core import ParticlesSuperset
-
 import traceback
 
 import subprocess
@@ -27,6 +25,7 @@ import signal
 
 from mpi4py import MPI
 
+from amuse.support.data import ParticlesSuperset
 class TimeoutException(Exception):
     pass
     

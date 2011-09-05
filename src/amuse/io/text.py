@@ -1,4 +1,3 @@
-from amuse.support.data import core
 from amuse.support.core import late
 
 from amuse.io import base
@@ -6,6 +5,7 @@ from amuse.units import units
 
 import re
 
+from amuse.support import data
 class LineBasedFileCursor(object):
     
     def __init__(self, file):
@@ -218,7 +218,7 @@ class TableFormattedText(base.FileFormatProcessor):
         return float(string)
         
     def new_set(self, number_of_items):
-        return core.Particles(number_of_items)
+        return data.Particles(number_of_items)
         
     @late
     def quantities(self):

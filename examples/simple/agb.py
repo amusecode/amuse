@@ -1,10 +1,10 @@
 import numpy
 from amuse.community.sse.interface import SSE
-from amuse.support.data import core
 from amuse.units import units
 from amuse.ext import solarsystem
 from amuse.plot import *
 
+from amuse.support import data
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True

@@ -1,8 +1,5 @@
 from amuse.support.codes.core import *
 
-from amuse.support.data import core
-
-
 from amuse.support.codes import channel
 
 from amuse.test.amusetest import TestWithMPI
@@ -17,6 +14,7 @@ import subprocess
 import os
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.support import data
 codestring = """
 #include <stopcond.h>
 #ifdef __cplusplus

@@ -7,7 +7,6 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-from amuse.support.data.core import Particles, ParticlesSuperset, Grid
 from amuse.units import units
 from amuse.units import constants
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
@@ -19,6 +18,9 @@ from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
 
 import numpy
 
+from amuse.support.data import Particles
+from amuse.support.data import ParticlesSuperset
+from amuse.support.data import Grid
 def head_on_stellar_merger(
         masses = [0.3, 3.0] | units.MSun, 
         star_age = 310.0 | units.Myr, 

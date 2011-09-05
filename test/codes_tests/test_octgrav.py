@@ -4,9 +4,6 @@ import numpy
 
 from amuse.community.octgrav.interface import OctgravInterface, Octgrav
 
-from amuse.support.data import core
-
-
 from amuse.support.codes import channel
 
 from amuse.ext.plummer import *
@@ -14,6 +11,7 @@ from amuse.ext.plummer import *
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.support import data
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):
@@ -95,7 +93,7 @@ class TestMPIInterface(TestWithMPI):
 
 class TestAmuseInterface(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = core.Stars(2)
+        stars = data.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -163,7 +161,7 @@ class TestAmuseInterface(TestWithMPI):
         instance.stop()
         
     def test3(self):
-        particles = core.Particles(2)
+        particles = data.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length

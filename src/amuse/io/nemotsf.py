@@ -4,8 +4,7 @@ import numpy
 from amuse.io import base
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.support.data import core
-
+from amuse.support import data
 TEMPLATE = \
 """set SnapShot
   set Parameters
@@ -32,7 +31,7 @@ class Particles2Tsf(object):
 
     def convert_to_string(self, particles, converter = None):
         if not converter is None:
-            particles=core.ParticlesWithUnitsConverted(
+            particles=data.ParticlesWithUnitsConverted(
                 particles,
                 converter.as_converter_from_nbody_to_si()
             )
@@ -107,7 +106,7 @@ class Tsf2Particles(object):
 
     def convert_to_particles(self, string, converter = None):
         self.read_to_ram(string)
-        result = core.Particles(self.number_of_particles)
+        result = data.Particles(self.number_of_particles)
         
         result.mass = self.masses|nbody_system.mass
         result.position = [i[0] for i in self.phases]|nbody_system.length
@@ -117,7 +116,7 @@ class Tsf2Particles(object):
             result.savepoint(self.timestamp)
         
         if not converter is None:
-            result=core.ParticlesWithUnitsConverted(
+            result=data.ParticlesWithUnitsConverted(
                 result,
                 converter.as_converter_from_si_to_nbody()
             )

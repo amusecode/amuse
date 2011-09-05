@@ -8,7 +8,6 @@ import os
 
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support.data import core
 from amuse.support.data import particle_attributes
 from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
@@ -17,6 +16,7 @@ from amuse.support.data import trees
 from amuse.community.newsmallN.interface import SmallN as grav
 from amuse.community.kepler.interface import Kepler
 
+from amuse.support import data
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
@@ -102,15 +102,15 @@ def test_smallN(infile = None, number_of_stars = 10,
         vel = []
 
         f = open(infile, 'r')
-	count = 0
+        count = 0
         for line in f:
             if len(line) > 0:
                 count += 1
-		cols = line.split()
+                cols = line.split()
                 if count == 1: snap = int(cols[0])
-		elif count == 2: number_of_stars = int(cols[0])
-		elif count == 3: time = float(cols[0]) | nbody_system.time
-		else:
+                elif count == 2: number_of_stars = int(cols[0])
+                elif count == 3: time = float(cols[0]) | nbody_system.time
+                else:
                     if len(cols) >= 8:
                         id.append(int(cols[0]))
                         mass.append(float(cols[1]))
@@ -118,9 +118,9 @@ def test_smallN(infile = None, number_of_stars = 10,
                                     float(cols[3]), float(cols[4])))
                         vel.append((float(cols[5]),
                                     float(cols[6]), float(cols[7])))
-	f.close()
+        f.close()
 
-        stars = core.Particles(number_of_stars)
+        stars = data.Particles(number_of_stars)
         stars.id = id | units.none
         stars.mass = mass | nbody_system.mass
         stars.position = pos | nbody_system.length
@@ -188,7 +188,7 @@ def test_smallN(infile = None, number_of_stars = 10,
                     print " ", s.id.number, s.mass.number, \
 			       s.x.number, s.y.number, s.z.number
             else:
-		print "number of stars =", len(stars)
+                print "number of stars =", len(stars)
             sys.stdout.flush()
 
         print_log(time, gravity, E0)

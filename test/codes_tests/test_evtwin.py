@@ -6,16 +6,11 @@ from numpy import pi, arange
 from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 
 from amuse.support.exceptions import AmuseException
-from amuse.support.data import core
-
-
-
-
-
 from amuse.support.codes import channel
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units.quantities import new_quantity
+from amuse.support import data
 class TestInterface(TestWithMPI):
     
     def test1(self):
@@ -336,7 +331,7 @@ class TestEVtwin(TestWithMPI):
         #instance.set_init_dat_name(os.path.join(path,'init.dat'))
         #instance.set_init_run_name(os.path.join(path,'init.run'))
         
-        stars = core.Stars(1)
+        stars = data.Stars(1)
         stars[0].mass = 10 | units.MSun
         
         instance.particles.add_particles(stars)
@@ -351,7 +346,7 @@ class TestEVtwin(TestWithMPI):
         instance = EVtwin()
         instance.initialize_code()
         instance.commit_parameters()
-        stars =  core.Stars(1)
+        stars =  data.Stars(1)
         
         star = stars[0]
         star.mass = 5.0 | units.MSun
@@ -424,7 +419,7 @@ class TestEVtwin(TestWithMPI):
         max_age = 9.0 | units.Myr
 
         number_of_stars=len(masses)
-        stars =  core.Stars(number_of_stars)
+        stars =  data.Stars(number_of_stars)
         for i, star in enumerate(stars):
             star.mass = masses[i]
             star.radius = 0.0 | units.RSun
@@ -464,7 +459,7 @@ class TestEVtwin(TestWithMPI):
     def test5(self):
         print "Testing adding and removing particles from stellar evolution code..."
         
-        particles = core.Particles(3)
+        particles = data.Particles(3)
         particles.mass = 1.0 | units.MSun
         
         instance = EVtwin()
@@ -498,7 +493,7 @@ class TestEVtwin(TestWithMPI):
 
     def test6(self):
         print "Test for obtaining the stellar structure model"
-        stars = core.Particles(2)
+        stars = data.Particles(2)
         stars.mass = [1.0, 10.0] | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -526,7 +521,7 @@ class TestEVtwin(TestWithMPI):
     
     def test7(self):
         print "Test for obtaining the stellar composition structure"
-        stars = core.Particles(1)
+        stars = data.Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -554,7 +549,7 @@ class TestEVtwin(TestWithMPI):
     
     def slowtest8(self):
         print "Test for obtaining the stellar composition structure - evolved star"
-        stars = core.Particles(1)
+        stars = data.Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -586,7 +581,7 @@ class TestEVtwin(TestWithMPI):
     
     def xtest9(self):
         print "Test for changing the stellar structure model (not yet implemented)"
-        star = core.Particles(1)
+        star = data.Particles(1)
         star.mass = 1.0 | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -618,7 +613,7 @@ class TestEVtwin(TestWithMPI):
     
     def xtest10(self):
         print "Test for changing the stellar composition (not yet implemented)"
-        star = core.Particles(1)
+        star = data.Particles(1)
         star.mass = 1.0 | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -661,7 +656,7 @@ class TestEVtwin(TestWithMPI):
         
         instance.parameters.min_timestep_stop_condition = 1.0 | units.s
         
-        stars = core.Particles(3)
+        stars = data.Particles(3)
         stars.mass = [1.0, 2.0, 1.0] | units.MSun
         instance.particles.add_particles(stars)
         instance.commit_particles()
@@ -693,7 +688,7 @@ class TestEVtwin(TestWithMPI):
     
     def test12(self):
         print "Testing basic operations: evolve_one_step and evolve_for"
-        stars = core.Particles(2)
+        stars = data.Particles(2)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin(redirection = "none")
         se_stars = instance.particles.add_particles(stars)
@@ -716,7 +711,7 @@ class TestEVtwin(TestWithMPI):
     
     def test13(self):
         print "Test evolve_model optional arguments: end_time and keep_synchronous"
-        stars = core.Particles(3)
+        stars = data.Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         instance = EVtwin(redirection = 'none')
         instance.particles.add_particles(stars)
@@ -745,7 +740,7 @@ class TestEVtwin(TestWithMPI):
     
     def test14(self):
         print "Testing EVtwin states"
-        stars = core.Particles(2)
+        stars = data.Particles(2)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin()
         

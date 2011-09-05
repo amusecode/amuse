@@ -7,7 +7,6 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-from amuse.support.data.core import Particles, Grid
 from amuse.units import units
 from amuse.units import generic_unit_system
 from amuse.units import nbody_system
@@ -19,6 +18,8 @@ from amuse.community.gadget2.interface import Gadget2
 from amuse.community.fi.interface import Fi
 from amuse.ext.star_to_sph import *
 
+from amuse.support.data import Particles
+from amuse.support.data import Grid
 def inject_supernova_energy(gas_particles):
     inner = gas_particles.select(lambda pos : pos.length_squared() < 100.0 | units.RSun**2, ["position"])
     print len(inner), "innermost particles selected."

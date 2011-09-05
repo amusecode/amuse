@@ -1,4 +1,3 @@
-from amuse.support.data import core
 from amuse.test import amusetest
 import StringIO
 import textwrap
@@ -11,10 +10,11 @@ from amuse.io import vtk
 from amuse.units import units
 from amuse.units import generic_unit_system
 from amuse.units import generic_unit_system
+from amuse.support import data
 class VtkStructuredGridTests(amusetest.TestCase):
     
     def test1(self):
-        grid = core. Grid.create([2,3,4], [1,1,1] | generic_unit_system.length)
+        grid = data. Grid.create([2,3,4], [1,1,1] | generic_unit_system.length)
         grid.rho = grid.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
         data_file = StringIO.StringIO()
         instance = vtk.VtkStructuredGrid("test.vts", data_file, grid)
@@ -27,7 +27,7 @@ class VtkStructuredGridTests(amusetest.TestCase):
     
 
     def test2(self):
-        grid = core. Grid.create([4,5,6], [1,1,1] | generic_unit_system.length)
+        grid = data. Grid.create([4,5,6], [1,1,1] | generic_unit_system.length)
         grid.mass = generic_unit_system.density(numpy.random.rand(4,5,6))
         data_file = StringIO.StringIO()
         instance = vtk.VtkStructuredGrid("test.vts", data_file, grid)
@@ -43,7 +43,7 @@ class VtkStructuredGridTests(amusetest.TestCase):
 class VtkUnstructuredGridTests(amusetest.TestCase):
     
     def test1(self):
-        grid = core. Grid.create([2,3,4], [1,1,1] | generic_unit_system.length)
+        grid = data. Grid.create([2,3,4], [1,1,1] | generic_unit_system.length)
         grid.rho = grid.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
         data_file = StringIO.StringIO()
         instance = vtk.VtkUnstructuredGrid("test.vtu", data_file, grid)
@@ -59,7 +59,7 @@ class VtkUnstructuredGridTests(amusetest.TestCase):
         
     
     def test2(self):
-        grid = core. Grid.create([2,2,2], [1,1,1] | generic_unit_system.length)
+        grid = data. Grid.create([2,2,2], [1,1,1] | generic_unit_system.length)
         grid.rho = grid.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
         data_file = StringIO.StringIO()
         instance = vtk.VtkUnstructuredGrid("test.vtu", data_file, grid)
@@ -76,9 +76,9 @@ class VtkUnstructuredGridTests(amusetest.TestCase):
         
     
     def test3(self):
-        grid1 = core. Grid.create([2,2,2], [1,1,1] | generic_unit_system.length)
+        grid1 = data. Grid.create([2,2,2], [1,1,1] | generic_unit_system.length)
         grid1.rho = grid1.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
-        grid2 = core. Grid.create([2,2,2], [1,1,1] | generic_unit_system.length)
+        grid2 = data. Grid.create([2,2,2], [1,1,1] | generic_unit_system.length)
         grid2.position += [1.0,0.0,0.0] | generic_unit_system.length
         grid2.rho = grid2.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
         

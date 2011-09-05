@@ -1,9 +1,9 @@
 import numpy
 
-from amuse.support.data.core import Particle
-from amuse.support.data.core import Particles
 from amuse.units import units
 
+from amuse.support.data import Particle
+from amuse.support.data import Particles
 _solsysdat= \
  [['MERCURY',1.66013679527193009E-07,20.,5.43, \
  -3.83966017419175965E-01, -1.76865300855700736E-01, 2.07959213998758705E-02, \

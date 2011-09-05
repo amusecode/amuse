@@ -2,13 +2,13 @@ from amuse.plot import scatter, xlabel, ylabel, plot
 from matplotlib import pyplot
 from math import pi
 
-from amuse.support.data.core import Particles
 from amuse.units import units
 from amuse.units import constants
 from amuse.units.nbody_system import nbody_to_si
 from amuse.community.mesa.interface import MESA
 from amuse.community.hermite0.interface import Hermite
 
+from amuse.support.data import Particles
 orbital_period = 1000.0 | units.yr # initial orbital period, will increase when the binary loses mass
 kinetic_to_potential_ratio = 0.8 # (K/|U|), values < 1.0 correspond to bound systems
 t_start_evolution_with_wind = 3.0 * orbital_period

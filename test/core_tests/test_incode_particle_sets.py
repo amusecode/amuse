@@ -1,10 +1,10 @@
-from amuse.support.data import core
 from amuse.test import amusetest
 from amuse.units import units
 from amuse.units import quantities
 from amuse.support import interface
 from amuse.support import exceptions
 
+from amuse.support import data
 class ExampleParticlesInterface(interface.InCodeComponentImplementation):
     """This is an example class to demonstrate how to work with incode particle sets
     using the object mapping interface.
@@ -275,7 +275,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         # or let the system determine a unique key
         # to set the key in the script do: core.Particle(1000) where 1000 is the key
         
-        theParticle = core.Particle()
+        theParticle = data.Particle()
         theParticle.mass = 10 | units.kg
         theParticle.x = 0.1 | units.m
         theParticle.y = 0.2 | units.m
@@ -305,7 +305,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         instance = ExampleParticlesInterface()
         self.assertEquals(len(instance.particles), 0)
         
-        theParticle = core.Particle()
+        theParticle = data.Particle()
         theParticle.mass = 10 | units.kg
         theParticle.x = 0.1 | units.m
         theParticle.y = 0.2 | units.m
@@ -341,7 +341,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         instance = ExampleParticlesInterface()
         self.assertEquals(len(instance.particles), 0)
         
-        theParticle = core.Particle()
+        theParticle = data.Particle()
         theParticle.mass = 10 | units.kg
         theParticle.x = 0.1 | units.m
         theParticle.y = 0.2 | units.m
@@ -349,7 +349,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         
         instance.particles.add_particle(theParticle)
         
-        theParticle = core.Particle()
+        theParticle = data.Particle()
         theParticle.mass = 11 | units.kg
         theParticle.x = 0.1 | units.m
         theParticle.y = 0.2 | units.m
@@ -385,7 +385,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         instance = ExampleParticlesInterface()
         self.assertEquals(len(instance.particles), 0)
         
-        theParticle = core.Particle()
+        theParticle = data.Particle()
         theParticle.x = 0.1 | units.m
         theParticle.y = 0.2 | units.m
         theParticle.z = 0.5 | units.m
@@ -402,7 +402,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         instance = ExampleParticlesInterface()
         self.assertEquals(len(instance.particles), 0)
         
-        particles = core.Particles(10)
+        particles = data.Particles(10)
         particles.mass = 0.1 | units.kg
         particles.x = 0.1 | units.m
         particles.y = 0.2 | units.m

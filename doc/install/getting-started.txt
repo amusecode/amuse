@@ -132,7 +132,7 @@ Sun and the Earth, and hand them over to the BHTree instance.
 
 .. code-block:: python
    
-   >>> stars = core.Particles(2)
+   >>> stars = data.Particles(2)
    >>> sun = stars[0]
    >>> sun.mass = 1.0 | units.MSun
    >>> sun.position = [0.0,0.0,0.0] | units.m

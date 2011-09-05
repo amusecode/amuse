@@ -12,10 +12,9 @@ from amuse.community.huayno.interface import Huayno
 from amuse.community.bhtree.interface import BHTree
 from amuse.units import nbody_system
 from amuse.units.quantities import AdaptingVectorQuantity
-from amuse.support.data.core import Particles
-
 from matplotlib import pyplot
 
+from amuse.support.data import Particles
 def new_particles():
     particles = Particles(3)
     

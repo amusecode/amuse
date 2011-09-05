@@ -1,6 +1,4 @@
 from amuse.support.data import parameters
-from amuse.support.data import core
-
 from amuse.support.data import incode_storage
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
@@ -16,6 +14,7 @@ from amuse.support import state
 
 import inspect
 
+from amuse.support import data
 class OldObjectsBindingMixin(object):
 
     def setup_particles(self, particles):
@@ -86,8 +85,8 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
     def get_attribute(self, name, attribute):
         if inspect.ismethod(attribute):
             result = attribute #UnitsConvertionMethod(attribute, self.converter)
-        elif isinstance(attribute, core.AbstractParticleSet):
-            result = attribute #core.ParticlesWithUnitsConverted(attribute, self.converter)
+        elif isinstance(attribute, data.AbstractParticleSet):
+            result = attribute #data.ParticlesWithUnitsConverted(attribute, self.converter)
         elif isinstance(attribute, quantities.Quantity):
             result = self.converter.from_target_to_source(attribute)
         elif isinstance(attribute, CodeMethodWrapper):
@@ -786,12 +785,12 @@ class ParticleSetDefinition(AbstractParticleSetDefinition):
         self.methods = []
         self.is_superset = False
         self.is_inmemory = False
-        self.particles_factory = core.Particles
+        self.particles_factory = data.Particles
 
     def new_storage(self, interface):
     
         if self.is_inmemory:
-            return core.get_in_memory_attribute_storage_factory()()
+            return data.get_in_memory_attribute_storage_factory()()
     
         setters = []
         for name, names in self.setters:
@@ -910,7 +909,7 @@ class ParticleSupersetDefinition(AbstractParticleSetDefinition):
         self.particle_subset_names = particle_subset_names
         self.index_to_default_set = index_to_default_set
         self.is_superset = True
-        self.particles_factory = core.ParticlesSuperset
+        self.particles_factory = data.ParticlesSuperset
         
     
     def new_set_instance(self, handler):
@@ -927,7 +926,7 @@ class GridDefinition(AbstractParticleSetDefinition):
         self.name_of_the_get_range_method = 'get_range'
         self.setters = []
         self.getters = []
-        self.particles_factory = core.Grid
+        self.particles_factory = data.Grid
         self.extra_keyword_arguments_for_getters_and_setters = {}
 
     def new_storage(self, interface):
@@ -959,10 +958,10 @@ class GridDefinition(AbstractParticleSetDefinition):
         result = self.particles_factory(storage = storage)
         return result
 
-class CodeInMemoryParticles(core.Particles):
+class CodeInMemoryParticles(data.Particles):
 
     def __init__(self, code_interface = None, storage = None):
-        core.Particles.__init__(self, storage = storage)
+        data.Particles.__init__(self, storage = storage)
         self._private.code_interface = code_interface
 
 class HandleParticles(HandleCodeInterfaceAttributeAccess):

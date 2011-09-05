@@ -8,11 +8,10 @@ from amuse.community.mocassin.interface import MocassinInterface, Mocassin
 
 
 
-from amuse.support.data import core
-
 from mpi4py import MPI
 from amuse.units import generic_unit_system
 from amuse.units import units
+from amuse.support import data
 class TestMocassinInterface(TestWithMPI):
     
     def test0(self):
@@ -188,7 +187,7 @@ class TestMocassin(TestWithMPI):
         instance.set_constant_hydrogen_density(100.0 | (1/units.cm**3))
         instance.setup_mesh(11 | units.none,11 | units.none,11 | units.none,0.95E+19 | units.cm,0.95E+19 | units.cm,0.95E+19 | units.cm)
         instance.commit_parameters()
-        p = core.Particle()
+        p = data.Particle()
         p.x = 0 | units.cm
         p.y = 0 | units.cm
         p.z = 0 | units.cm

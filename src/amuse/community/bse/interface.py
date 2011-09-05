@@ -1,9 +1,10 @@
 from amuse.community import *
 from amuse.units import units
 from amuse.units.quantities import Quantity
-from amuse.support.data.core import Particles, ParticlesSubset
 from amuse.community.interface import common
 
+from amuse.support.data import Particles
+from amuse.support.data import ParticlesSubset
 class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferencesMixIn): 
     """
     Binary evolution is performed by the **rapid** binary-star evolution (BSE) 

@@ -85,8 +85,6 @@ The InCode storage system is based on a number of classes:
 """
 
 from amuse.support.data import parameters
-from amuse.support.data.core import Particles, ParticleInformationChannel, Particle
-from amuse.support.data.core import AttributeStorage
 from amuse.support.methods import AbstractCodeMethodWrapper
 from amuse.units import nbody_system
 from amuse.units import units
@@ -98,6 +96,10 @@ from amuse.support import exceptions
 import numpy
 import inspect
 
+from amuse.support.data import Particles
+from amuse.support.data import ParticleInformationChannel
+from amuse.support.data import Particle
+from amuse.support.data import AttributeStorage
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):
         AbstractCodeMethodWrapper.__init__(self, method)

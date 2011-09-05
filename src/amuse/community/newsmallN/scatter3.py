@@ -4,13 +4,14 @@ import sys, unittest, numpy, random, collections, getopt, os, math
 
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support.data import core, particle_attributes, trees
+from amuse.support.data import particle_attributes, trees
 from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.community.newsmallN.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 
+from amuse.support import data
 zero = 0.0|units.none
 one = 1.0|units.none
 
@@ -152,7 +153,7 @@ def make_triple(init):
     pos = [pos1, pos2, pos3]
     vel = [vel1, vel2, vel3]
 
-    stars = core.Particles(3)
+    stars = data.Particles(3)
     stars.id = id
     stars.mass = mass
     stars.position = pos

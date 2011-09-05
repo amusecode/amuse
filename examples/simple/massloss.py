@@ -4,10 +4,9 @@ from amuse.community.sse.interface import SSE
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units.quantities import VectorQuantity
-from amuse.support.data import core
-
 from amuse.plot import *
 
+from amuse.support import data
 def simulate_massloss(time):
     return units.MSun(0.5*(1.0+1.0/(1.0+numpy.exp((time.value_in(time.unit)-70.0)/15.))))
 
@@ -15,7 +14,7 @@ if __name__ in ('__main__', '__plot__'):
 
     convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
     
-    particles = core.Particles(2)
+    particles = data.Particles(2)
     sun = particles[0]
     sun.mass = 1.0 | units.MSun
     sun.position = [0.0, 0.0, 0.0] | units.AU

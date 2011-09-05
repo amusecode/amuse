@@ -11,11 +11,10 @@ import numpy
 from matplotlib import pyplot
     
 
-from amuse.support.data.core import Grid
-
 from amuse.community.athena.interface import Athena
 
 from amuse.units.generic_unit_system import *
+from amuse.support.data import Grid
 density = mass / length**3
 momentum =  speed * density
 energy =  mass / (time**2 * length)
