@@ -65,7 +65,7 @@ debian:
 	$(PYTHON) ./support/debian.py
 
 %.code:
-	$(PYTHON) setup.py code --code-name=$*
+	$(PYTHON) setup.py -v code  --code-name=$*
 
 %:
 	$(PYTHON) setup.py code --code-name=$@

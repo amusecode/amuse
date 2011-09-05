@@ -4,8 +4,7 @@ from math import sqrt
 
 from amuse.support import exceptions
 from amuse.support.core import late
-from amuse.support.data import console
-
+from amuse.support import console
 """
 """
 class Quantity(object):

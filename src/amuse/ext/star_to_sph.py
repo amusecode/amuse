@@ -8,7 +8,6 @@ from amuse.community.gadget2.interface import Gadget2
 from amuse.ext.spherical_model import EnclosedMassInterpolator
 from amuse.ext.spherical_model import get_enclosed_mass_from_tabulated
 from amuse.ext.spherical_model import new_spherical_particle_distribution
-from amuse.support.data.console import set_printing_strategy
 from amuse.support.data.core import Particles
 from amuse.support.exceptions import AmuseException
 from amuse.support.exceptions import AmuseWarning
@@ -16,6 +15,7 @@ from amuse.units import constants
 from amuse.units import units
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
+from amuse.support.console import set_printing_strategy
 StellarModelInSPH = namedtuple('StellarModelInSPH', ['gas_particles', 'core_particle', 'core_radius'])
 
 class StellarModel2SPH(object):
