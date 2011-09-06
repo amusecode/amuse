@@ -7,17 +7,17 @@ from amuse.support.codes.create_code import DTypeSpec, DTypeToSpecDictionary
 
 dtype_to_spec = DTypeToSpecDictionary({
     'int32' : DTypeSpec('ints_in', 'ints_out',
-                    'HEADER_INTEGER_COUNT', 'int', ''),
+                    'HEADER_INTEGER_COUNT', 'int', 'MPI_INTEGER'),
     'int64' : DTypeSpec('longs_in', 'longs_out',
-                    'HEADER_LONG_COUNT', 'long long int', ''),
+                    'HEADER_LONG_COUNT', 'long long int', 'MPI_INTEGER'),
     'float32' : DTypeSpec('floats_in', 'floats_out',
-                    'HEADER_FLOAT_COUNT', 'float', ''),
+                    'HEADER_FLOAT_COUNT', 'float', 'MPI_FLOAT'),
     'float64' : DTypeSpec('doubles_in', 'doubles_out',
-                    'HEADER_DOUBLE_COUNT', 'double', ''),
+                    'HEADER_DOUBLE_COUNT', 'double', 'MPI_DOUBLE'),
     'bool' : DTypeSpec('booleans_in', 'booleans_out',
-                    'HEADER_BOOLEAN_COUNT', 'int', ''),
+                    'HEADER_BOOLEAN_COUNT', 'int', 'MPI_INTEGER'),
     'string' : DTypeSpec('strings_in', 'strings_out',
-                    'HEADER_STRING_COUNT', 'int', ''),
+                    'HEADER_STRING_COUNT', 'int', 'MPI_CHARACTER'),
 })
 
 dtypes = ['int32', 'int64', 'float32', 'float64', 'bool', 'string']
@@ -56,9 +56,13 @@ void onexit(void) {
 """
 
 SEND_FUNCTION_STRING = """\
-void send(void *buffer, int length, int file_descriptor) {
+void send(void *buffer, int length, int file_descriptor, int rank) {
     int total_written = 0;
     int bytes_written;
+
+    if (rank != 0) {
+        return;
+    }
 
     while (total_written < length) {
         bytes_written = write(file_descriptor, ((char *) buffer) + total_written,
@@ -75,9 +79,13 @@ void send(void *buffer, int length, int file_descriptor) {
 """
 
 RECEIVE_FUNCTION_STRING = """\
-void receive(void *buffer, int length, int file_descriptor) {
+void receive(void *buffer, int length, int file_descriptor, int rank) {
     int total_read = 0;
     int bytes_read;
+
+    if (rank != 0) {
+        return;
+    }
 
     while (total_read < length) {
         bytes_read = read(file_descriptor, ((char *) buffer) + total_read,
@@ -96,38 +104,47 @@ void receive(void *buffer, int length, int file_descriptor) {
 MAIN_FUNCTION_STRING = """\
 int main(int argc, char *argv[]) {
     int portno;
+    int rank;
     struct sockaddr_in serv_addr;
     struct hostent *server;
     
     MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);
-
-    portno = atoi(argv[1]);
-    socketfd = socket(AF_INET, SOCK_STREAM, 0);
-
-    if (socketfd < 0) {
-            fprintf(stderr, "cannot open socket\\n");
-            exit(1);
-    }
-
-    server = gethostbyname("localhost");
-
-    bzero((char *) &serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    bcopy((char *) server->h_addr, (char *) &serv_addr.sin_addr.s_addr,
-                    server->h_length);
-    serv_addr.sin_port = htons(portno);
-    if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
-                    < 0) {
-            fprintf(stderr, "cannot connect socket\\n");
-            exit(1);
-
-    }
-
-    fprintf(stderr, "sockets: finished initializing code\\n");
-
-    run_loop(socketfd);
     
-    close(socketfd);
+    rank = MPI::COMM_WORLD.Get_rank();
+
+    if (rank == 0) {
+
+        portno = atoi(argv[1]);
+        socketfd = socket(AF_INET, SOCK_STREAM, 0);
+
+        if (socketfd < 0) {
+                fprintf(stderr, "cannot open socket\\n");
+                exit(1);
+        }
+
+        server = gethostbyname("localhost");
+
+        bzero((char *) &serv_addr, sizeof(serv_addr));
+        serv_addr.sin_family = AF_INET;
+        bcopy((char *) server->h_addr, (char *) &serv_addr.sin_addr.s_addr,
+                                    server->h_length);
+        serv_addr.sin_port = htons(portno);
+        if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
+                    < 0) {
+                fprintf(stderr, "cannot connect socket\\n");
+                exit(1);
+
+        }
+
+        fprintf(stderr, "sockets: finished initializing code\\n");
+        
+    }
+
+    run_loop(socketfd, rank);
+    
+    if (rank == 0) {
+        close(socketfd);
+    }
 
     MPI_Finalize();
 
@@ -436,7 +453,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.lf() + RECEIVE_FUNCTION_STRING
         
     def output_runloop_function_def_start(self):
-        self.out.lf().lf() + 'void run_loop(int socketfd) {'
+        self.out.lf().lf() + 'void run_loop(int socketfd, int rank) {'
         self.out.indent()
         self.out.lf().lf() + 'bool must_run_loop = true;'
         
@@ -454,7 +471,9 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.lf().lf() + 'while(must_run_loop) {'
         self.out.indent()
 
-        self.out.lf() + 'receive(header_in, HEADER_SIZE * sizeof(int), socketfd);'
+        self.out.lf() + 'receive(header_in, HEADER_SIZE * sizeof(int), socketfd, rank);'
+        self.out.lf() + 'MPI::COMM_WORLD.Bcast(header_in, HEADER_SIZE, MPI_INT, 0);'
+        
         self.out.lf() + '/*fprintf(stderr, "got header %d %d %d %d %d %d %d %d %d %d\\n", header_in[0], header_in[1], header_in[2], header_in[3], header_in[4], header_in[5], header_in[6], header_in[7], header_in[8], header_in[9]);*/'
         
         self.out.lf() + 'call_count = header_in[HEADER_CALL_COUNT];'
@@ -484,26 +503,29 @@ class GenerateACSourcecodeStringFromASpecificationClass\
                 self.out.lf() + 'for (int i = 0; i < header_in[HEADER_BOOLEAN_COUNT]; i++) {'
                 self.out.indent()
                 self.out.lf() + 'booleans_in[i] = 0;'
-                self.out.lf() + 'receive(&booleans_in[i], 1, socketfd);'
+                self.out.lf() + 'receive(&booleans_in[i], 1, socketfd , rank);'
                 self.out.dedent().lf() + '}'
+                self.out.lf() + 'MPI::COMM_WORLD.Bcast(' + spec.input_var_name + ', header_in[' + spec.counter_name + '], ' + spec.mpi_type + ', 0);'
+
             elif dtype == 'string':
                 self.out.lf() + 'receive(' 
                 self.out + spec.input_var_name 
                 self.out + ', ' + 'header_in[' + spec.counter_name 
-                self.out + '] * sizeof(' + spec.type + '), socketfd);'
+                self.out + '] * sizeof(' + spec.type + '), socketfd, rank);'
+                self.out.lf() + 'MPI::COMM_WORLD.Bcast(strings_in, header_in[HEADER_STRING_COUNT], MPI_INT, 0);'
                 self.out.lf() + 'for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {'
                 self.out.indent()
                 self.out.lf() + 'characters_in[i] = new char[strings_in[i] + 1];'
-                self.out.lf() + 'receive(characters_in[i], strings_in[i], socketfd);'
+                self.out.lf() + 'receive(characters_in[i], strings_in[i], socketfd, rank);'
                 self.out.lf() + "characters_in[i][strings_in[i]] = '\\0';"
+                self.out.lf() + "MPI::COMM_WORLD.Bcast(characters_in[i], strings_in[i], MPI_CHARACTER, 0);"
                 self.out.dedent().lf() + '}'
             else:
                 self.out.lf() + 'receive(' 
                 self.out + spec.input_var_name 
                 self.out + ', ' + 'header_in[' + spec.counter_name 
-                self.out + '] * sizeof(' + spec.type + '), socketfd);'
-
-                                      
+                self.out + '] * sizeof(' + spec.type + '), socketfd, rank);'
+                self.out.lf() + 'MPI::COMM_WORLD.Bcast(' + spec.input_var_name + ', header_in[' + spec.counter_name + '], ' + spec.mpi_type + ', 0);'
             self.out.dedent().lf() + '}'
             self.out.lf() 
 
@@ -514,7 +536,10 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
-            self.out.lf() + 'header_out[' + spec.counter_name + '] = 0;'         
+            self.out.lf() + 'header_out[' + spec.counter_name + '] = 0;'
+            
+            
+        self.out.lf() + 'MPI::COMM_WORLD.Barrier();'
         
     def output_switch_start(self):
         self.out.lf().lf() + 'switch(header_in[HEADER_FUNCTION_ID]) {'
@@ -537,7 +562,12 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.dedent().lf() + '}'
         
     def output_runloop_function_def_end(self):
-        self.out.lf().lf() + 'send(header_out, HEADER_SIZE * sizeof(int), socketfd);'
+        self.out.lf() + 'MPI::COMM_WORLD.Barrier();'
+        
+        self.out.lf() + 'if (rank == 0) {'
+        self.out.lf().indent()
+
+        self.out.lf().lf() + 'send(header_out, HEADER_SIZE * sizeof(int), socketfd, rank);'
         self.out.lf()
         
         self.out.lf() + 'for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {'
@@ -559,10 +589,10 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             self.out.indent().lf()
                 
             if dtype == 'string':
-                self.out + 'send(' + spec.output_var_name + ', ' + 'header_out[' + spec.counter_name + '] * sizeof(' + spec.type + '), socketfd);'
+                self.out + 'send(' + spec.output_var_name + ', ' + 'header_out[' + spec.counter_name + '] * sizeof(' + spec.type + '), socketfd, rank);'
                 self.out.lf() + 'for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {'
                 self.out.indent()
-                self.out.lf() + 'send(characters_out[i], strings_out[i] * sizeof(char), socketfd);'
+                self.out.lf() + 'send(characters_out[i], strings_out[i] * sizeof(char), socketfd, rank);'
                 self.out.dedent();
                 self.out.lf() + '}'
                 self.out.lf()
@@ -572,11 +602,11 @@ class GenerateACSourcecodeStringFromASpecificationClass\
                 self.out.indent()
                 self.out.lf() + 'if (booleans_out[i]) {'
                 self.out.indent()
-                self.out.lf() + 'send(&TRUE_BYTE, 1, socketfd);'
+                self.out.lf() + 'send(&TRUE_BYTE, 1, socketfd, rank);'
                 self.out.dedent()
                 self.out.lf() + '} else {'
                 self.out.indent()
-                self.out.lf() + 'send(&FALSE_BYTE, 1, socketfd);'
+                self.out.lf() + 'send(&FALSE_BYTE, 1, socketfd, rank);'
                 self.out.dedent()
                 self.out.lf() + "}"
                 self.out.dedent();
@@ -584,10 +614,13 @@ class GenerateACSourcecodeStringFromASpecificationClass\
                 self.out.lf()
                 
             else:
-                self.out + 'send(' + spec.output_var_name + ', ' + 'header_out[' + spec.counter_name + '] * sizeof(' + spec.type + '), socketfd);'
+                self.out + 'send(' + spec.output_var_name + ', ' + 'header_out[' + spec.counter_name + '] * sizeof(' + spec.type + '), socketfd, rank);'
             
             self.out.dedent().lf() + '}'
             self.out.lf()
+            
+        self.out.lf().dedent()
+        self.out.lf() + '}'
             
         max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get('string', 0)
         if max != 0:
