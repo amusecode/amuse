@@ -716,7 +716,19 @@ we will use gcc44.
     
     To make a clean install of MacPorts, please read the guide at:
     http://guide.macports.org/
+    
+All in one
+----------
 
+You can install all the packages described below in one go with:
+
+    > sudo port install gcc44
+    
+    > sudo port install python26 mpich2 \
+    hdf5-18 fftw-3 gsl cmake \
+    py26-numpy py26-h5py py26-nose py26-docutils +gcc44
+    
+    > sudo port install py26-matplotlib +gcc44
 
 GCC
 ---
@@ -779,10 +791,11 @@ GSL is used to build Gadget2, GSL can be installed with::
     > sudo port install gsl +gcc44
 
 CMake
----
+-----
 CMake is used to build EVTwin, CMake can be installed with::
 
     > sudo port install cmake
+    
 
 Python packages
 ---------------
@@ -800,6 +813,13 @@ For mpich2 no such variant is needed::
 
     > sudo port install py26-mpi4py
 
+Matplotlib
+----------
+Matplotlib is not required but is very useful for creating graphics, 
+you can install it with::
+
+    > sudo port install py26-matplotlib +gcc44
+    
 
 .. note::
 
@@ -814,6 +834,8 @@ For mpich2 no such variant is needed::
     like so::
     
         ./configure MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90
+
+
     
     
 
