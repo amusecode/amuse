@@ -6,6 +6,8 @@ import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import java.nio.channels.ServerSocketChannel;
@@ -49,7 +51,7 @@ public class SocketCodeInterface implements Runnable {
     private final Process process;
 
     SocketCodeInterface(String codeName, String codeDir, String amuseHome, ReceivePort receivePort,
-            SendPort sendPort) throws IOException {
+            SendPort sendPort, String[] hostnames) throws IOException {
         this.receivePort = receivePort;
         this.sendPort = sendPort;
 
@@ -65,9 +67,21 @@ public class SocketCodeInterface implements Runnable {
 
         serverSocket = ServerSocketChannel.open();
         serverSocket.socket().bind(null);
+        
+        File hostFile = File.createTempFile("host", "file");
+        
+        FileWriter writer = new FileWriter(hostFile);
+        for(String hostname: hostnames) {
+            writer.write(hostname + "\n");
+        }
+        writer.flush();
+        writer.close();
+        
+        logger.info("host file = " + hostFile.getAbsolutePath());
 
         ProcessBuilder builder = new ProcessBuilder();
-        builder.command(executable.toString(),
+        builder.command("mpirun", "--hostfile", hostFile.getAbsolutePath(),
+                executable.toString(),
                 Integer.toString(serverSocket.socket().getLocalPort()));
 
         process = builder.start();
@@ -153,8 +167,8 @@ public class SocketCodeInterface implements Runnable {
                 logger.debug("Done performing call for function " + functionID);
                 finish = System.currentTimeMillis();
                 
-                if (logger.isInfoEnabled()) {
-                    logger.info("Call took " + (finish - start) + " ms");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Call took " + (finish - start) + " ms");
                 }
             } catch (Throwable e) {
                 logger.error("Error while handling request", e);
@@ -169,7 +183,7 @@ public class SocketCodeInterface implements Runnable {
     }
 
     public static void main(String[] arguments) throws Exception {
-        SocketCodeInterface code = new SocketCodeInterface(arguments[0], arguments[1], arguments[2], null, null);
+        SocketCodeInterface code = new SocketCodeInterface(arguments[0], arguments[1], arguments[2], null, null, new String[0]);
 
         code.requestMessage.clear();
         code.requestMessage.setFunctionID(1644113439);

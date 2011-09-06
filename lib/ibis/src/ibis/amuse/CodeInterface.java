@@ -58,7 +58,7 @@ public class CodeInterface implements RegistryEventHandler {
                         sendPort);
             } else {
                 communityCode = new SocketCodeInterface(codeName, codeDir,
-                        amuseHome, receivePort, sendPort);
+                        amuseHome, receivePort, sendPort, hostnames);
             }
 
             receivePort.enableConnections();
