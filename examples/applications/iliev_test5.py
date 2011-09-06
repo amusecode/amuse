@@ -26,7 +26,7 @@ from amuse.community.fi.interface import Fi
 from amuse.ext.evrard_test import uniform_random_unit_cube,uniform_unit_sphere
 from amuse.io import write_set_to_file
 
-from amuse.support import data
+from amuse import datamodel
 try:
     from amuse import plot
     from matplotlib import pyplot
@@ -79,7 +79,7 @@ def glass(N, target_rms=0.05):
   vx,vy,vz=uniform_unit_sphere(N).make_xyz()
    
 
-  p=data.Particles(N)
+  p=datamodel.Particles(N)
   p.x=L*x
   p.y=L*y
   p.z=L*z
@@ -144,7 +144,7 @@ def iliev_test_5_ic( N=10000,
 #  x,y,z=uniform_random_unit_cube(N).make_xyz()
   x,y,z=glass(N,target_rms=0.05)
   
-  p=data.Particles(N)
+  p=datamodel.Particles(N)
   p.x=L*x
   p.y=L*y
   p.z=L*z
@@ -158,7 +158,7 @@ def iliev_test_5_ic( N=10000,
   p.flux=0. | (units.s**-1)
   p.xion=0. | units.none
 
-  sources=data.Particles(Ns)
+  sources=datamodel.Particles(Ns)
   x,y,z=uniform_unit_sphere(Ns).make_xyz()
 
   sources.x=L*x*(1./N)**(1./3)/10

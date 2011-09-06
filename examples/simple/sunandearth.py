@@ -6,9 +6,9 @@ from amuse.community.hermite0.interface import Hermite
 
 from matplotlib import pyplot
 
-from amuse.support import data
+from amuse import datamodel
 def new_system_of_sun_and_earth():
-    stars = data.Particles(2)
+    stars = datamodel.Particles(2)
     
     sun = stars[0]
     sun.mass = 1.0 | units.MSun

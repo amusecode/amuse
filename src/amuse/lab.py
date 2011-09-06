@@ -24,7 +24,6 @@ from amuse.io import write_set_to_file
 from amuse.io import read_set_from_file
 from amuse.io import get_options_for_format
 
-from amuse.support.data import particle_attributes
 from amuse.ext.solarsystem import new_solar_system_for_mercury, new_solar_system
 from amuse.ext.plummer import new_plummer_sphere
 from amuse.ext.kingmodel import new_king_model
@@ -60,10 +59,11 @@ from amuse.community.mmams.interface import MakeMeAMassiveStar, MakeMeAMassiveSt
 
 from amuse.support.console import set_printing_strategy
 from amuse.support.console import get_current_printing_strategy
-from amuse.support.data import Particle
-from amuse.support.data import Particles
-from amuse.support.data import ParticlesSuperset
-from amuse.support.data import Grid
+from amuse.datamodel import particle_attributes
+from amuse.datamodel import Particle
+from amuse.datamodel import Particles
+from amuse.datamodel import ParticlesSuperset
+from amuse.datamodel import Grid
 def vector(value = [], unit = None):
     if unit is None:
         if isinstance(value, core.unit):

@@ -12,12 +12,12 @@ import sys
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
-from amuse.support import data
+from amuse import datamodel
 class TestParticles(amusetest.TestCase):
     
     def test1(self):
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         for i in range(3):
             particles.mass = (i * 1.0) | units.kg
             particles.savepoint((i + 1) * 1.0 | units.s)
@@ -29,13 +29,13 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(masses[2][0], 3.0 | units.s)
 
     def test2(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.mass = [1,1]|units.kg
         heavy = particles.select(lambda m: m>1|units.kg, ["mass"])
         self.assertTrue(heavy.is_empty())
         
     def test3(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         for i in range(3):
             particles.mass = (i * 2.0) | units.kg
             particles.savepoint((i + 1) * 1.0 | units.s)
@@ -50,7 +50,7 @@ class TestParticles(amusetest.TestCase):
     
     def test4(self):
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.mass = 1.0 | units.kg
         particles.vy = 1.0 | units.m / units.s
         particles.vx = 0.0 | units.m / units.s
@@ -69,7 +69,7 @@ class TestParticles(amusetest.TestCase):
         
     def test5(self):
         
-        particles = data.Particles(4)
+        particles = datamodel.Particles(4)
         particles.mass = 1.0 | units.kg
         particles[2].mass = 2.0 | units.kg
         subset = particles.select_array(lambda mass: mass > 1.0 | units.kg, ["mass"])
@@ -80,7 +80,7 @@ class TestParticles(amusetest.TestCase):
 
     def test6(self):
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.mass = 1.0 | units.kg
         particles.vy = 1.0 | units.m / units.s
         particles.vx = 0.0 | units.m / units.s
@@ -103,19 +103,19 @@ class TestParticles(amusetest.TestCase):
     
     def test7(self):
         
-        particles = data.Particles(10)
+        particles = datamodel.Particles(10)
         for i in range(10):
             particles[i].mass = (i * 1.0) | units.kg
 
     def test8(self):
-        particles = data.Particles(4)
+        particles = datamodel.Particles(4)
         particles.mass = [1.,2.,3.,4.] | units.kg
         subset = particles[0:2]
         self.assertEquals(len(subset), 2)
         self.assertTrue(str(subset).find('kg') > 0)
 
     def test9(self):
-        particles = data.Particles(4)
+        particles = datamodel.Particles(4)
         particles.mass = [1.,2.,3.,4.] | units.kg
         particles.vy = [1.,2.,3.,4.] | units.m / units.s
         particles.vx = [0.,1.,2.,3.] | units.m / units.s
@@ -139,7 +139,7 @@ class TestParticles(amusetest.TestCase):
 class TestStars(amusetest.TestCase):
 
     def test1(self):
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         stars[0].mass = 10 | units.g
         stars[0].position = units.m(numpy.array([1.0,2.0,1.0])) 
         stars[1].mass = 10 | units.g
@@ -147,7 +147,7 @@ class TestStars(amusetest.TestCase):
         self.assertEquals(0.5 | units.m, stars.center_of_mass().x)
 
     def test2(self):
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         stars[0].mass = 10 | units.g
         stars[0].velocity = (units.m / units.s)(numpy.array([1.0,2.0,1.0])) 
         stars[1].mass = 10 | units.g
@@ -157,7 +157,7 @@ class TestStars(amusetest.TestCase):
         
     
     def test3(self):
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         stars[0].mass = 10 | units.g
         stars[0].velocity = (units.m / units.s)(numpy.array([1.0,2.0,1.0])) 
         stars[0].position = units.m(numpy.array([1.0,2.0,1.0])) 
@@ -174,7 +174,7 @@ class TestStars(amusetest.TestCase):
 
     
     def test4(self):
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         stars[0].x = 1.0  | units.km
         stars[0].y = 2000.0 | units.m
         stars[0].z = 3500.0 | units.m
@@ -309,7 +309,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test3(self):
         interface = self.TestInterface()
         
-        local_particles = data.Stars(2)
+        local_particles = datamodel.Stars(2)
         local_particles.mass = units.kg.new_quantity([3.0, 4.0])
         
         
@@ -318,7 +318,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         self.assertEquals(len(remote_particles), 2)
         
-        local_particles2 = data.Stars(2)
+        local_particles2 = datamodel.Stars(2)
         local_particles2.mass = units.kg.new_quantity([5.0, 6.0])
        
         remote_particles.add_particles(local_particles2)
@@ -340,7 +340,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test4(self):
         interface = self.TestInterface()
         
-        local_particles = data.Stars(2)
+        local_particles = datamodel.Stars(2)
         local_particles.mass = units.kg.new_quantity([3.0, 4.0])
         
         
@@ -349,7 +349,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         self.assertEquals(len(remote_particles), 2)
         
-        particle = data.Particle()
+        particle = datamodel.Particle()
         particle.mass = units.g.new_quantity(10.0)
         local_particles.add_particle(particle)
         
@@ -360,14 +360,14 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test5(self):
         interface = self.TestInterface()
         
-        local_particles1 = data.Stars(2)
+        local_particles1 = datamodel.Stars(2)
         local_particles1.mass = units.kg.new_quantity([3.0, 4.0])
         
         
         remote_particles = interface.particles
         remote_particles.add_particles(local_particles1)
         
-        local_particles2 = data.Stars(3)
+        local_particles2 = datamodel.Stars(3)
         local_particles2.mass = units.kg.new_quantity([5.0, 6.0, 7.0])
         
         local_particles1.add_particles(local_particles2)
@@ -385,13 +385,13 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test6(self):
         interface = self.TestInterface()
         
-        local_particles1 = data.Stars(2)
+        local_particles1 = datamodel.Stars(2)
         local_particles1.mass = units.kg.new_quantity([3.0, 4.0])
         
         remote_particles = interface.particles
         remote_particles.add_particles(local_particles1)
         
-        local_particle = data.Particle()
+        local_particle = datamodel.Particle()
         local_particle.mass = units.kg.new_quantity(5.0)
         
         local_particles1.add_particle(local_particle)
@@ -415,7 +415,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
 class TestParticlesWithUnitsConverted(amusetest.TestCase):
     
     def test1(self):
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         stars[0].mass = 10 | units.g
         stars[1].mass = 20 | units.g
         
@@ -433,7 +433,7 @@ class TestParticlesWithUnitsConverted(amusetest.TestCase):
                 value = quantity.value_in(self.target_unit)
                 return self.source_unit.new_quantity(value) 
         
-        converted_stars = data.ParticlesWithUnitsConverted(stars, LengthMassConverter())
+        converted_stars = datamodel.ParticlesWithUnitsConverted(stars, LengthMassConverter())
         
         self.assertEquals(stars[0].mass, 10 | units.g)
         self.assertEquals(converted_stars[0].mass, 10 | units.m)
@@ -447,14 +447,14 @@ class TestParticlesWithUnitsConverted(amusetest.TestCase):
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
         
-        stars = data.Stars(1)
+        stars = datamodel.Stars(1)
         stars[0].mass = 10 | nbody_system.mass
         stars[0].x = 10.0 | nbody_system.length
         stars[0].y = 20.0 | nbody_system.length
         stars[0].z = 30.0 | nbody_system.length
         
         
-        converted_stars = data.ParticlesWithUnitsConverted(
+        converted_stars = datamodel.ParticlesWithUnitsConverted(
             stars, 
             convert_nbody.as_converter_from_si_to_nbody())
         
@@ -482,7 +482,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
     
     def test1(self):
         
-        all = data.Particles(3)
+        all = datamodel.Particles(3)
         parent = all[0]
         child1 = all[1]
         child2 = all[2]
@@ -503,7 +503,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         code2 = TestParticlesWithBinding.TestInterface()
         
         
-        all = data.Particles(3)
+        all = datamodel.Particles(3)
         all.mass = [4.0, 3.0, 1.0] | units.kg
         parent = all[0]
         child1 = all[1]
@@ -543,7 +543,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         code2 = TestParticlesWithBinding.TestInterface()
         
         
-        all = data.Particles(5)
+        all = datamodel.Particles(5)
         all.mass = [4.0, 3.0, 1.0, 6.0, 5.0] | units.kg
         parent = all[0]
         child1 = all[1]
@@ -565,7 +565,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         self.assertEquals(len(code2.particles), 2)
         
     def test4(self):
-        all = data.Particles(5)
+        all = datamodel.Particles(5)
         all.mass = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
         parent = all[0]
         child1 = all[1]
@@ -585,7 +585,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         self.assertEquals(len(child3.descendents()), 1)
         
     def test5(self):
-        all = data.Particles(5)
+        all = datamodel.Particles(5)
         all.mass = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
         parent = all[0]
         child1 = all[1]
@@ -612,17 +612,17 @@ class TestParticlesSuperset(amusetest.TestCase):
     
     def test1(self):
         print "Test1: getting attributes of a particle superset."
-        superset = data.Particles(2)
+        superset = datamodel.Particles(2)
         superset.x = [1.0, 2.0] | units.m
-        set2 = data.Particles(2)
+        set2 = datamodel.Particles(2)
         set2.x = [4.0, 5.0] | units.m
-        particle1 = data.Particle()
+        particle1 = datamodel.Particle()
         particle1.x = 3.0 | units.m
-        particle2 = data.Particle()
+        particle2 = datamodel.Particle()
         particle2.x = 6.0 | units.m
         for x in [particle1, set2, particle2]:
-            superset = data.ParticlesSuperset([superset, x.as_set()])
-        self.assertTrue(isinstance(superset, data.ParticlesSuperset))
+            superset = datamodel.ParticlesSuperset([superset, x.as_set()])
+        self.assertTrue(isinstance(superset, datamodel.ParticlesSuperset))
         self.assertEqual(len(superset),6)
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]|units.m))
         # Check whether it returns the right value for the right key when the key order is 'random'
@@ -634,13 +634,13 @@ class TestParticlesSuperset(amusetest.TestCase):
     
     def test2(self):
         print "Test2: setting attributes of a particle superset."
-        superset = data.Particles(2)
-        set2 = data.Particles(2)
-        particle1 = data.Particle()
-        particle2 = data.Particle()
+        superset = datamodel.Particles(2)
+        set2 = datamodel.Particles(2)
+        particle1 = datamodel.Particle()
+        particle2 = datamodel.Particle()
         for x in [particle1, set2, particle2]:
-            superset = data.ParticlesSuperset([superset, x.as_set()])
-        self.assertTrue(isinstance(superset, data.ParticlesSuperset))
+            superset = datamodel.ParticlesSuperset([superset, x.as_set()])
+        self.assertTrue(isinstance(superset, datamodel.ParticlesSuperset))
         self.assertEqual(len(superset),6)
         superset.x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0] | units.m
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]|units.m))
@@ -658,68 +658,68 @@ class TestParticlesSuperset(amusetest.TestCase):
             self.assertEqual(dictionary[key],value)
             
     def test3(self):
-        set1 = data.Particles(2)
-        set2 = data.Particles(3)
+        set1 = datamodel.Particles(2)
+        set2 = datamodel.Particles(3)
         set1.x = [1.0 , 2.0] | units.m 
         set1.y = [3.0 , 4.0] | units.m
         set2.x = [5.0 , 6.0, 7.0] | units.m 
         set2.y = [1.0 , 2.0, 3.0] | units.m
         set1.add_calculated_attribute("xtimesy", lambda x, y : x * y)
         set2.add_calculated_attribute("xtimesy", lambda x, y : x * y)
-        superset = data.ParticlesSuperset([set1, set2])
+        superset = datamodel.ParticlesSuperset([set1, set2])
         self.assertEquals(len(superset), 5)
         self.assertEquals(superset.x, ([1.0, 2.0, 5.0, 6.0, 7.0] | units.m))
         self.assertEquals(superset.xtimesy, ([3.0, 8.0, 5.0, 12.0, 21.0] | units.m ** 2))
         
     def test4(self):
-        set1 = data.Particles(2)
-        set2 = data.Particles(3)
+        set1 = datamodel.Particles(2)
+        set2 = datamodel.Particles(3)
         set1.x = [1.0 , 2.0] | units.m 
         set1.y = [3.0 , 4.0] | units.m
         set2.x = [5.0 , 6.0, 7.0] | units.m 
         set2.y = [1.0 , 2.0, 3.0] | units.m
         set1.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y - o)
         set2.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y + o)
-        superset = data.ParticlesSuperset([set1, set2])
+        superset = datamodel.ParticlesSuperset([set1, set2])
         self.assertEquals(len(superset), 5)
         self.assertEquals(superset.x, ([1.0, 2.0, 5.0, 6.0, 7.0] | units.m))
         self.assertEquals(superset.xtimesypluso(0.0 | units.m ** 2), ([3.0, 8.0, 5.0, 12.0, 21.0] | units.m ** 2))
         self.assertEquals(superset.xtimesypluso(2.0 | units.m ** 2), ([1.0, 6.0, 7.0, 14.0, 23.0] | units.m ** 2))
         
     def test5(self):
-        set1 = data.Particles(2)
-        set2 = data.Particles()
+        set1 = datamodel.Particles(2)
+        set2 = datamodel.Particles()
         set1.x = [1.0 , 2.0] | units.m 
         set1.y = [3.0 , 4.0] | units.m
         set2.x = [] | units.m 
         set2.y = [] | units.m 
         set1.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y - o)
         set2.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y + o)
-        superset = data.ParticlesSuperset([set2, set1])
+        superset = datamodel.ParticlesSuperset([set2, set1])
         self.assertEquals(len(superset), 2)
         self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
         self.assertEquals(superset.xtimesypluso(0.0 | units.m ** 2), ([3.0, 8.0] | units.m ** 2))
         self.assertEquals(superset.xtimesypluso(2.0 | units.m ** 2), ([1.0, 6.0] | units.m ** 2))
-        superset = data.ParticlesSuperset([set1, set2])
+        superset = datamodel.ParticlesSuperset([set1, set2])
         self.assertEquals(len(superset), 2)
         self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
         self.assertEquals(superset.xtimesypluso(0.0 | units.m ** 2), ([3.0, 8.0] | units.m ** 2))
         self.assertEquals(superset.xtimesypluso(2.0 | units.m ** 2), ([1.0, 6.0] | units.m ** 2))
         
     def test6(self):
-        set1 = data.Particles(2)
-        set2 = data.Particles()
+        set1 = datamodel.Particles(2)
+        set2 = datamodel.Particles()
         set1.x = [1.0 , 2.0] | units.m 
         set1.y = [3.0 , 4.0] | units.m
         set2.x = [] | units.m 
         set2.y = [] | units.m 
         set1.add_calculated_attribute("xtimesy", lambda x, y : x * y)
         set2.add_calculated_attribute("xtimesy", lambda x, y : x * y)
-        superset = data.ParticlesSuperset([set1, set2])
+        superset = datamodel.ParticlesSuperset([set1, set2])
         self.assertEquals(len(superset), 2)
         self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
         self.assertEquals(superset.xtimesy, ([3.0, 8.0] | units.m ** 2))
-        superset = data.ParticlesSuperset([set2, set1])
+        superset = datamodel.ParticlesSuperset([set2, set1])
         self.assertEquals(len(superset), 2)
         self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
         self.assertEquals(superset.xtimesy, ([3.0, 8.0] | units.m ** 2))
@@ -728,33 +728,33 @@ class TestParticlesSuperset(amusetest.TestCase):
         def xtimesy1(x,y):
             raise Exception("error querying function on empty set")
             
-        set1 = data.Particles(2)
-        set2 = data.Particles()
+        set1 = datamodel.Particles(2)
+        set2 = datamodel.Particles()
         set1.x = [1.0 , 2.0] | units.m 
         set1.y = [3.0 , 4.0] | units.m
         set2.x = [] | units.m 
         set2.y = [] | units.m 
         set1.add_function_attribute("xtimesy", lambda p : p.x * p.y)
         set2.add_function_attribute("xtimesy", xtimesy1)
-        superset = data.ParticlesSuperset([set1, set2])
+        superset = datamodel.ParticlesSuperset([set1, set2])
         self.assertEquals(len(superset), 2)
         self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
         self.assertEquals(superset.xtimesy(), ([3.0, 8.0] | units.m ** 2))
-        superset = data.ParticlesSuperset([set2, set1])
+        superset = datamodel.ParticlesSuperset([set2, set1])
         self.assertEquals(len(superset), 2)
         self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
         self.assertEquals(superset.xtimesy(), ([3.0, 8.0] | units.m ** 2))
         
     def test8(self):
-        set1 = data.Particles(2)
-        set2 = data.Particles(3)
+        set1 = datamodel.Particles(2)
+        set2 = datamodel.Particles(3)
         set1.x = [1.0 , 2.0] | units.m 
         set1.y = [3.0 , 4.0] | units.m
         set2.x = [5.0 , 6.0, 7.0] | units.m 
         set2.y = [1.0 , 2.0, 3.0] | units.m
         set1.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y - o, lambda all, p, o : p.x * p.x - o)
         set2.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y + o, lambda all, p, o : p.x * p.x - o)
-        superset = data.ParticlesSuperset([set1, set2])
+        superset = datamodel.ParticlesSuperset([set1, set2])
         self.assertEquals(len(superset), 5)
         self.assertEquals(superset.x, ([1.0, 2.0, 5.0, 6.0, 7.0] | units.m))
         self.assertEquals(superset[1].xtimesypluso(0.0 | units.m ** 2), (4.0 | units.m ** 2))
@@ -763,11 +763,11 @@ class TestParticlesSuperset(amusetest.TestCase):
     
     def test9(self):
         
-        particles1 = data.Particles(2)
+        particles1 = datamodel.Particles(2)
         particles1.mass = 10 | units.kg
-        particles2 = data.Particles(2)
+        particles2 = datamodel.Particles(2)
         particles2.mass = 20 | units.kg
-        superset = data.ParticlesSuperset([particles1, particles2])
+        superset = datamodel.ParticlesSuperset([particles1, particles2])
             
         self.assertTrue(hasattr(superset, 'mass'))
         self.assertFalse(hasattr(superset, 'radius'))
@@ -781,8 +781,8 @@ class TestSliceParticles(amusetest.TestCase):
     def test1(self):
         print "Test: slice a particle set."
         number_of_particles = 10
-        original_set = data.Particles(number_of_particles)
-        self.assertTrue(isinstance(original_set, data.Particles))
+        original_set = datamodel.Particles(number_of_particles)
+        self.assertTrue(isinstance(original_set, datamodel.Particles))
         self.assertEqual(len(original_set),number_of_particles)
         print "Defining all kind of slices of the particle set..."
         subset1 = original_set[:2]  # contains first two particles
@@ -795,15 +795,15 @@ class TestSliceParticles(amusetest.TestCase):
         another = original_set[5:6] # contains one particle (ParticlesSubset)
         empty = original_set[2:2]   # contains no particle
         print "Checking their type (slicing returns a subset, indexing returns a particle)... ",
-        self.assertTrue(isinstance(subset1, data.ParticlesSubset))
-        self.assertTrue(isinstance(subset2, data.ParticlesSubset))
-        self.assertTrue(isinstance(odd,     data.ParticlesSubset))
-        self.assertTrue(isinstance(even,    data.ParticlesSubset))
-        self.assertTrue(isinstance(reverse, data.ParticlesSubset))
-        self.assertTrue(isinstance(all,     data.ParticlesSubset))
-        self.assertTrue(isinstance(one,     data.Particle))
-        self.assertTrue(isinstance(another, data.ParticlesSubset))
-        self.assertTrue(isinstance(empty,   data.ParticlesSubset))
+        self.assertTrue(isinstance(subset1, datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(subset2, datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(odd,     datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(even,    datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(reverse, datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(all,     datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(one,     datamodel.Particle))
+        self.assertTrue(isinstance(another, datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(empty,   datamodel.ParticlesSubset))
         print "ok!"
         print "Checking their length... ",
         self.assertEqual(len(subset1), 2)
@@ -821,94 +821,94 @@ class TestAddParticles(amusetest.TestCase):
     
     def test1(self):
         print "Test1: create a particle subset by adding a particle to a set."
-        original_set = data.Particles(4)
+        original_set = datamodel.Particles(4)
         original_set.x = [1.0, 2.0, -789.0, 3.0] | units.m
         set = original_set[:2]
         particle = original_set[3]
-        self.assertTrue(isinstance(set, data.ParticlesSubset))
-        self.assertTrue(isinstance(particle, data.Particle))
+        self.assertTrue(isinstance(set, datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(particle, datamodel.Particle))
         
         new_set = set + particle
-        self.assertTrue(isinstance(new_set, data.ParticlesSubset))
+        self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
         self.assertEqual(len(new_set),len(set)+1)
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0]|units.m))
         
         set += particle
-        self.assertTrue(isinstance(set, data.ParticlesSubset))
+        self.assertTrue(isinstance(set, datamodel.ParticlesSubset))
         self.assertEqual(len(set),3)
         self.assertEqual(set.x, ([1.0, 2.0, 3.0]|units.m))
     
     def test2(self):
         print "Test2: create a particle subset by adding a set to a set."
-        original_set = data.Particles(5)
+        original_set = datamodel.Particles(5)
         original_set.x = [1.0, 2.0, -789.0, 3.0, 4.0] | units.m
         set1 = original_set[:2]
         set2 = original_set[3:]
-        self.assertTrue(isinstance(set1, data.ParticlesSubset))
-        self.assertTrue(isinstance(set2, data.ParticlesSubset))
+        self.assertTrue(isinstance(set1, datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(set2, datamodel.ParticlesSubset))
         
         new_set = set1 + set2
-        self.assertTrue(isinstance(new_set, data.ParticlesSubset))
+        self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
         self.assertEqual(len(new_set),len(set1)+len(set2))
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
         
         set1 += set2
-        self.assertTrue(isinstance(set1, data.ParticlesSubset))
+        self.assertTrue(isinstance(set1, datamodel.ParticlesSubset))
         self.assertEqual(len(set1),4)
         self.assertEqual(set1.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
     
     def test3(self):
         print "Test3: create a particle superset by adding a particle to a set."
-        set = data.Particles(2)
+        set = datamodel.Particles(2)
         set.x = [1.0, 2.0] | units.m
-        particle = data.Particle()
+        particle = datamodel.Particle()
         particle.x = 3.0 | units.m
         
-        superset = data.ParticlesSuperset([set, particle.as_set()])
-        self.assertTrue(isinstance(superset, data.ParticlesSuperset))
+        superset = datamodel.ParticlesSuperset([set, particle.as_set()])
+        self.assertTrue(isinstance(superset, datamodel.ParticlesSuperset))
         self.assertEqual(len(superset),len(set)+1)
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0]|units.m))
         
-        set2 = data.Particles(2)
+        set2 = datamodel.Particles(2)
         set2.x = [3.0, 4.0] | units.m
-        superset = data.ParticlesSuperset([set, set2])
-        self.assertTrue(isinstance(superset, data.ParticlesSuperset))
+        superset = datamodel.ParticlesSuperset([set, set2])
+        self.assertTrue(isinstance(superset, datamodel.ParticlesSuperset))
         self.assertEqual(len(superset),len(set)+len(set2))
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
     
     def test4(self):
         print "Test4: check if the particle is already part of the set."
-        set = data.Particles(2)
-        particle = data.Particle()
-        set = data.ParticlesSuperset([set, particle.as_set()])
-        self.assertRaises(AmuseException, data.ParticlesSuperset, [set, particle.as_set()], 
+        set = datamodel.Particles(2)
+        particle = datamodel.Particle()
+        set = datamodel.ParticlesSuperset([set, particle.as_set()])
+        self.assertRaises(AmuseException, datamodel.ParticlesSuperset, [set, particle.as_set()], 
             expected_message = "Unable to add a particle, because it was already part of this set.")
         self.assertEqual(len(set),3)
-        other_set = data.Particles(2)
-        other_set = data.ParticlesSuperset([other_set, particle.as_set()])
-        self.assertRaises(AmuseException, data.ParticlesSuperset, [set, other_set], 
+        other_set = datamodel.Particles(2)
+        other_set = datamodel.ParticlesSuperset([other_set, particle.as_set()])
+        self.assertRaises(AmuseException, datamodel.ParticlesSuperset, [set, other_set], 
             expected_message = "Unable to add a particle, because it was already part of this set.")
     
     def test5(self):
         print "Test5: recursive addition, create a new superset from supersets."
-        particle = data.Particle()
-        set1 = data.Particles(2)
-        set2 = data.Particles(2)
-        set3 = data.Particles(2)
-        set4 = data.Particles(2)
-        superset1 = data.ParticlesSuperset([set1, set2])
-        superset2 = data.ParticlesSuperset([set3, set4])
+        particle = datamodel.Particle()
+        set1 = datamodel.Particles(2)
+        set2 = datamodel.Particles(2)
+        set3 = datamodel.Particles(2)
+        set4 = datamodel.Particles(2)
+        superset1 = datamodel.ParticlesSuperset([set1, set2])
+        superset2 = datamodel.ParticlesSuperset([set3, set4])
         for x in [particle, set3, superset2]:
-            supersuperset = data.ParticlesSuperset([superset1, x.as_set()])
-            self.assertTrue(isinstance(supersuperset, data.ParticlesSuperset))
+            supersuperset = datamodel.ParticlesSuperset([superset1, x.as_set()])
+            self.assertTrue(isinstance(supersuperset, datamodel.ParticlesSuperset))
             self.assertEqual(len(supersuperset),len(superset1)+len(x.as_set()))
             supersuperset.mass = 1 | units.kg
             self.assertEqual(x.mass, 1 | units.kg)
     
     def test6(self):
         print "Test6: check if the particle belongs to the same particle set as self."
-        set1 = data.Particles(2)
-        set2 = data.Particles(2)
+        set1 = datamodel.Particles(2)
+        set2 = datamodel.Particles(2)
         particle = set2[0]
         self.assertRaises(AmuseException, lambda: set1 + set2, 
             expected_message = "Can't create new subset from particles belonging to "
@@ -919,67 +919,67 @@ class TestAddParticles(amusetest.TestCase):
     
     def test7(self):
         print "Test7: add a particle (set) to a particle."
-        original_set = data.Particles(4)
+        original_set = datamodel.Particles(4)
         particle1 = original_set[0]
         particle2 = original_set[1]
         set = original_set[2:]
-        self.assertTrue(isinstance(particle1, data.Particle))
-        self.assertTrue(isinstance(particle2, data.Particle))
-        self.assertTrue(isinstance(set, data.ParticlesSubset))
+        self.assertTrue(isinstance(particle1, datamodel.Particle))
+        self.assertTrue(isinstance(particle2, datamodel.Particle))
+        self.assertTrue(isinstance(set, datamodel.ParticlesSubset))
         new_set = particle1 + particle2
-        self.assertTrue(isinstance(new_set, data.ParticlesSubset))
+        self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
         self.assertEqual(len(new_set),2)
         new_set = particle1 + set
-        self.assertTrue(isinstance(new_set, data.ParticlesSubset))
+        self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
         self.assertEqual(len(new_set),3)
     
 class TestSubtractParticles(amusetest.TestCase):
     
     def test1(self):
         print "Test1: create a particle subset by removing a particle from a set."
-        set = data.Particles(4)
+        set = datamodel.Particles(4)
         set.x = [1.0, 2.0, -789.0, 3.0] | units.m
         particle = set[2]
-        self.assertTrue(isinstance(particle, data.Particle))
+        self.assertTrue(isinstance(particle, datamodel.Particle))
         
         new_set = set - particle
-        self.assertTrue(isinstance(new_set, data.ParticlesSubset))
+        self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
         self.assertEqual(len(new_set),len(set)-1)
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0]|units.m))
         
         set -= particle
-        self.assertTrue(isinstance(set, data.ParticlesSubset))
+        self.assertTrue(isinstance(set, datamodel.ParticlesSubset))
         self.assertEqual(len(set),3)
         self.assertEqual(set.x, ([1.0, 2.0, 3.0]|units.m))
     
     def test2(self):
         print "Test2: create a particle subset by removing a set from a set."
-        set1 = data.Particles(5)
+        set1 = datamodel.Particles(5)
         set1.x = [1.0, 2.0, -789.0, 3.0, 4.0, -456.0] | units.m
         set2 = set1[2::3]
-        self.assertTrue(isinstance(set1, data.Particles))
-        self.assertTrue(isinstance(set2, data.ParticlesSubset))
+        self.assertTrue(isinstance(set1, datamodel.Particles))
+        self.assertTrue(isinstance(set2, datamodel.ParticlesSubset))
         
         new_set = set1 - set2
-        self.assertTrue(isinstance(new_set, data.ParticlesSubset))
+        self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
         self.assertEqual(len(new_set),len(set1)-len(set2))
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
         
         set1 -= set2
-        self.assertTrue(isinstance(set1, data.ParticlesSubset))
+        self.assertTrue(isinstance(set1, datamodel.ParticlesSubset))
         self.assertEqual(len(set1),4)
         self.assertEqual(set1.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
     
     def test3(self):
         print "Test3: check if the particle is actually part of the set."
-        set = data.Particles(2)
-        particle = data.Particle()
+        set = datamodel.Particles(2)
+        particle = datamodel.Particle()
         self.assertRaises(AmuseException, lambda: set - particle, 
             expected_message = "Unable to subtract a particle, because it is not part of this set.")
     
     def test4(self):
         print "Test4: recursive subtraction, remove particles until the set is empty."
-        set = data.Particles(10)
+        set = datamodel.Particles(10)
         self.assertEqual(len(set), 10)
         while len(set):
             set -= set[0]
@@ -987,10 +987,10 @@ class TestSubtractParticles(amusetest.TestCase):
     
     def test5(self):
         print "Test5: check if it's possible to subtract particle(s) from a particle."
-        particle = data.Particle()
+        particle = datamodel.Particle()
         self.assertRaises(AmuseException, lambda: particle - particle, 
             expected_message = "Cannot subtract particle(s) from a particle.")
-        particle2 = data.Particle()
+        particle2 = datamodel.Particle()
         self.assertRaises(AmuseException, lambda: particle - particle2, 
             expected_message = "Cannot subtract particle(s) from a particle.")
     
@@ -1014,14 +1014,14 @@ class TestIterateOverParticles(amusetest.TestCase):
                 self.radius = 1.0
     
         particles = [Test() for x in range(self.total_number_of_points)]
-        particles = data.Particles(self.total_number_of_points)
+        particles = datamodel.Particles(self.total_number_of_points)
         particles.radius = 2.0 | nbody_system.length
         t0 = time.time()
         self.iterate_over_particles1(particles)
         t1 = time.time()
         dt0 = t1 - t0
         
-        particles = data.Particles(self.total_number_of_points)
+        particles = datamodel.Particles(self.total_number_of_points)
         particles.radius = 2.0 | nbody_system.length
         t0 = time.time()
         self.iterate_over_particles2(particles)
@@ -1049,7 +1049,7 @@ class TestIterateOverParticles(amusetest.TestCase):
     
         particles = [Test() for x in range(self.total_number_of_points)]
         
-        particles = data.Particles(self.total_number_of_points)
+        particles = datamodel.Particles(self.total_number_of_points)
         particles.radius = 2.0 | nbody_system.length
         t0 = time.time()
         #self.iterate_over_array(particles)
@@ -1058,7 +1058,7 @@ class TestIterateOverParticles(amusetest.TestCase):
         t1 = time.time()
         dt0 = t1 - t0
         
-        particles = data.Particles(self.total_number_of_points)
+        particles = datamodel.Particles(self.total_number_of_points)
         particles.radius = 2.0 | nbody_system.length
         t0 = time.time()
         self.iterate_over_particles2(particles)

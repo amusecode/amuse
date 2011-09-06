@@ -9,7 +9,7 @@ from amuse.community.aarsethzare.interface import AarsethZareInterface, AarsethZ
 from amuse.ext import plummer
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -69,7 +69,7 @@ class TestAarsethZareInterface(TestWithMPI):
 
 class TestAarsethZare(TestWithMPI):
     def new_system_of_sun_and_earth_and_moon(self):
-        stars = data.Stars(3)
+        stars = datamodel.Stars(3)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -119,7 +119,7 @@ class TestAarsethZare(TestWithMPI):
     def test2(self):
         instance = AarsethZare()
         
-        particles = data.Particles(3)
+        particles = datamodel.Particles(3)
         particles.mass = 1.0 | nbody_system.mass
         particles.position = [
                 [-10.0, 0.0, 0.0],

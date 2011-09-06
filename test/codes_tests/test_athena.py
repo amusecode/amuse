@@ -11,7 +11,7 @@ from amuse.community.athena.interface import AthenaInterface, Athena
 from mpi4py import MPI
 from amuse.units import generic_unit_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 class TestAthenaInterface(TestWithMPI):
     
     def test0(self):
@@ -570,7 +570,7 @@ class TestAthena(TestWithMPI):
         self.assertEquals(instance.grid[0][0][0].rho, 0.0 |generic_unit_system.mass / generic_unit_system.length ** 3)
         
         
-        potential_grid = data.Grid(12,22,42)
+        potential_grid = datamodel.Grid(12,22,42)
         potential_grid.potential = 2.0 | generic_unit_system.potential
         channel = potential_grid.new_channel_to(instance.potential_grid)
         channel.copy()
@@ -624,7 +624,7 @@ class TestAthena(TestWithMPI):
         momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
         energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
     
-        grid = data.Grid(10,10,1)
+        grid = datamodel.Grid(10,10,1)
         grid.rho = 0.1 | density
         grid.rhovx = 0.0 | momentum
         grid.rhovy = 0.0 | momentum
@@ -673,7 +673,7 @@ class TestAthena(TestWithMPI):
         momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
         energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
     
-        grid = data.Grid(10,10,1)
+        grid = datamodel.Grid(10,10,1)
         grid.rho = 0.1 | density
         grid.rhovx = 0.0 | momentum
         grid.rhovy = 0.0 | momentum
@@ -683,7 +683,7 @@ class TestAthena(TestWithMPI):
         self.assertEquals(grid._get_writeable_attribute_names(), ['energy', 'rho', 'rhovx', 'rhovy', 'rhovz', ] )
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
-        potential_grid = data.Grid(12,12,1)
+        potential_grid = datamodel.Grid(12,12,1)
         potential_grid.potential = 0.0 | generic_unit_system.potential
         channel = potential_grid.new_channel_to(instance.potential_grid)
         channel.copy()
@@ -725,7 +725,7 @@ class TestAthena(TestWithMPI):
         momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
         energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
     
-        grid = data.Grid(10,10,1)
+        grid = datamodel.Grid(10,10,1)
         grid.rho = 0.1 | density
         grid.rhovx = 0.0 | momentum
         grid.rhovy = 0.0 | momentum
@@ -734,7 +734,7 @@ class TestAthena(TestWithMPI):
         
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
-        potential_grid = data.Grid(12,12,1)
+        potential_grid = datamodel.Grid(12,12,1)
         potential_grid.potential = 0.0 | generic_unit_system.potential
         print instance.potential_grid.shape
         print instance.potential_grid.x[0].number.shape
@@ -807,7 +807,7 @@ class TestAthena(TestWithMPI):
         momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
         energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
         
-        grid = data.Grid.create((10,10,10), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((10,10,10), [10.0, 10.0, 10.0] | units.m)
         
         grid.rho = 0.4 | density
         grid.rhovx = 0.1 | momentum
@@ -905,7 +905,7 @@ class TestAthena(TestWithMPI):
         momentum =  generic_unit_system.speed * generic_unit_system.density
         energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
         
-        grid = data.Grid(n,n,n)
+        grid = datamodel.Grid(n,n,n)
         grid.rho =  0.0 | generic_unit_system.density
         grid.rhovx = 0.0 | momentum
         grid.rhovy = 0.0 | momentum
@@ -950,7 +950,7 @@ class TestAthena(TestWithMPI):
         instance.set_grav_mean_rho(0.0)
         
 
-        data.Grid.add_global_vector_attribute("position", ["x","y","z"])
+        datamodel.Grid.add_global_vector_attribute("position", ["x","y","z"])
         n = 10
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
@@ -971,7 +971,7 @@ class TestAthena(TestWithMPI):
         
         result = instance.commit_parameters()
     
-        grid = data.Grid.create((n,n,n), [4.0 , 4.0, 4.0] | generic_unit_system.length)
+        grid = datamodel.Grid.create((n,n,n), [4.0 , 4.0, 4.0] | generic_unit_system.length)
         
         grid.rho = 0.0 | generic_unit_system.density
         grid.rhovx = 0.0 | momentum

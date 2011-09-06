@@ -11,7 +11,7 @@ from amuse.ext.plummer import *
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):
@@ -93,7 +93,7 @@ class TestMPIInterface(TestWithMPI):
 
 class TestAmuseInterface(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -161,7 +161,7 @@ class TestAmuseInterface(TestWithMPI):
         instance.stop()
         
     def test3(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length

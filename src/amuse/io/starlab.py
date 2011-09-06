@@ -8,7 +8,7 @@ from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units import generic_unit_converter
 
-from amuse.support import data
+from amuse import datamodel
 starlab_stellar_types_to_amuse_stellar_type = {
     "planet":units.stellar_type("Unknown stellar type"),
     "proto_star":units.stellar_type("Unknown stellar type"),
@@ -88,7 +88,7 @@ class Xml2Particles(object):
     
     def __init__(self):
         self.xmls = ""
-        self.system = data.Particles()
+        self.system = datamodel.Particles()
         self.translator = {
             #'N':('number', lambda x : int(x) ),
             'm':('mass', lambda x : float(x)|self.dynamics_mass_units) ,
@@ -117,7 +117,7 @@ class Xml2Particles(object):
             return units.stellar_type("Unknown stellar type")
             
     def add_particle_with_parameters(self, subnode, parent):
-        added_particle = self.system.add_particle(data.Particle())  
+        added_particle = self.system.add_particle(datamodel.Particle())  
            
         self._recursive_parse_node_into_particles(
             subnode,
@@ -283,7 +283,7 @@ class ParticlesFromDyn(object):
             return
         else:
             self.convert_nbody = convert_nbody
-            self.Particles = data.ParticlesWithUnitsConverted(
+            self.Particles = datamodel.ParticlesWithUnitsConverted(
                 xml2particles.system,
                 self.convert_nbody.as_converter_from_si_to_nbody()
             )
@@ -371,7 +371,7 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         if unit_converter is None:
             result = xml2particles.system
         else:
-            result = data.ParticlesWithUnitsConverted(
+            result = datamodel.ParticlesWithUnitsConverted(
                 xml2particles.system,
                 unit_converter
             )
@@ -383,7 +383,7 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         
     def store_string(self):
         if not self.nbody_to_si_converter is None:
-            particles = data.ParticlesWithUnitsConverted(
+            particles = datamodel.ParticlesWithUnitsConverted(
                 self.set,
                 self.nbody_to_si_converter.as_converter_from_nbody_to_si()
             )

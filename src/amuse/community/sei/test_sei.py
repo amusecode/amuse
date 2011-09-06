@@ -8,7 +8,7 @@ import math
 
 from interface import SeiInterface,Sei
 
-from amuse.support import data
+from amuse import datamodel
 class TestSeinterface(TestWithMPI):
 
     def test0(self):
@@ -25,7 +25,7 @@ class TestSei(TestWithMPI):
     def test0(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1 | units.AU)
         
-        particle = data.Particles(1)
+        particle = datamodel.Particles(1)
         particle.position = [1.0, 0.0, 0.0,]|units.AU
         particle.velocity = [0.0, 2.0*3.1415926535*1.0/365, 0.0] | units.AUd
         sei = Sei(convert_nbody)

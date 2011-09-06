@@ -2,12 +2,11 @@ from amuse.test import amusetest
 from amuse.support.exceptions import AmuseException
 
 
-from amuse.support.data import parameters
-
 import warnings
 from amuse.support import exceptions
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.datamodel import parameters
 class TestMethodParameterDefintions(amusetest.TestCase):
     def test1(self):
         class TestModule(object):

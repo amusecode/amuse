@@ -5,9 +5,9 @@ from amuse.test import amusetest
 
 from amuse.support.interface import InCodeComponentImplementation
 
-from amuse.support.data.indexing import *
+from amuse.datamodel.indexing import *
 
-from amuse.support.data.grids import *
+from amuse.datamodel.grids import *
 
 import numpy
 import inspect
@@ -15,18 +15,18 @@ import collections
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
-from amuse.support import data
+from amuse import datamodel
 class TestGrids(amusetest.TestCase):
     
     def test1(self):
-        grid = data.Grid(5,4,3)
+        grid = datamodel.Grid(5,4,3)
         grid.mass = 2.0 | units.kg
         self.assertEquals(grid.mass[0][1][2], 2.0 | units.kg)
         self.assertEquals(grid[0][1][2].mass, 2.0 | units.kg)
         self.assertEquals(len(grid.mass), 5)
         
     def test2(self):
-        grid = data.Grid(5,4,3)
+        grid = datamodel.Grid(5,4,3)
         grid.mass = units.kg.new_quantity(numpy.arange(5*4*3).reshape(5,4,3))
         self.assertEquals(grid.number_of_dimensions(), 3)
         subgrid = grid[1]
@@ -35,7 +35,7 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(subgrid.mass.number.shape, (4,3))
     
     def test3(self):
-        grid = data.Grid(5,4,3)
+        grid = datamodel.Grid(5,4,3)
         values = numpy.arange(5*4*3).reshape(5,4,3)
         grid.mass = units.kg.new_quantity(values)
         self.assertEquals(grid.number_of_dimensions(), 3)
@@ -47,7 +47,7 @@ class TestGrids(amusetest.TestCase):
         self.assertTrue(numpy.all(values[1][2] == subgrid.mass.value_in(units.kg)))
         
     def test4(self):
-        grid = data.Grid(5,4,3)
+        grid = datamodel.Grid(5,4,3)
         values = numpy.arange(5*4*3).reshape(5,4,3)
         grid.mass = units.kg.new_quantity(values)
         self.assertEquals(grid.number_of_dimensions(), 3)
@@ -60,7 +60,7 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(gridpoint.mass, 20.0 | units.kg)
         
     def test5(self):
-        grid = data.Grid(5,4,3)
+        grid = datamodel.Grid(5,4,3)
         grid.add_calculated_attribute("squared_mass", lambda m : m * m, ["mass",])
         values = numpy.arange(5*4*3).reshape(5,4,3)
         grid.mass = units.kg.new_quantity(values)
@@ -71,7 +71,7 @@ class TestGrids(amusetest.TestCase):
         self.assertTrue(numpy.all(subgrid.squared_mass == ([18.0, 19.0, 20.0] | units.kg) ** 2))
         
     def test6(self):
-        grid = data.Grid(5,4,3)
+        grid = datamodel.Grid(5,4,3)
         grid.add_function_attribute("sum_mass", lambda grid, x : grid.mass.sum() + x, lambda grid, gridpoint, x : gridpoint.mass + x)
         values = numpy.arange(5*4*3).reshape(5,4,3)
         grid.mass = units.kg.new_quantity(values)
@@ -82,7 +82,7 @@ class TestGrids(amusetest.TestCase):
         self.assertTrue(numpy.all(subgrid.sum_mass(2 | units.kg) == (18.0 + 19.0 + 20.0 + 2.0 | units.kg)))
         
     def test7(self):
-        grid = data.Grid(5,4,3)
+        grid = datamodel.Grid(5,4,3)
         grid.add_vector_attribute("position", ["x","y","z"])
         x = numpy.arange(5*4*3).reshape(5,4,3)
         y = x + 100.0
@@ -103,13 +103,13 @@ class TestGrids(amusetest.TestCase):
         
     
     def test8(self):
-        grid0 = data.Grid(5,4,3)
+        grid0 = datamodel.Grid(5,4,3)
         x = numpy.arange(5*4*3).reshape(5,4,3)
         y = x + 100.0
         grid0.x = units.m.new_quantity(x)
         grid0.y = units.m.new_quantity(y)
         
-        grid1 = data.Grid(5,4,3)
+        grid1 = datamodel.Grid(5,4,3)
         x = numpy.arange(5*4*3).reshape(5,4,3)
         x = x + 200.0
         y = x + 200.0
@@ -128,7 +128,7 @@ class TestGrids(amusetest.TestCase):
         
 
     def test9(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         print grid.x
         self.assertEquals(grid[0][0][0].x, 0.1 | units.m)
         self.assertEquals(grid[0][0][0].y, 0.125 | units.m)
@@ -144,7 +144,7 @@ class TestGrids(amusetest.TestCase):
     
 
     def test11(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         iarray,jarray,karray = grid.indices()
         for i in range(5):
             for j in range(4):
@@ -187,7 +187,7 @@ class TestGrids(amusetest.TestCase):
     
     
     def test12(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         print grid.indices()[0]
         print grid[grid.x>0.4| units.m].indices()
         print grid.x[grid.x>0.4| units.m]
@@ -199,13 +199,13 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(grid[grid.x>0.4| units.m].indices()[2],  karray[grid.x>0.4| units.m])  
         
     def test13(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         self.assertEquals(grid[0].shape, (4,2))
         self.assertEquals(grid[0][0].shape, (2,))
         self.assertEquals(grid[...,2,1].shape, (5,))
         
     def test14(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         self.assertEquals(grid[0].x, grid.x[0])
         self.assertEquals(grid[0][1].x, grid.x[0][1])
         self.assertEquals(grid[1][2][1].x, grid.x[1][2][1])
@@ -220,7 +220,7 @@ class TestGrids(amusetest.TestCase):
     
     def test15(self):
         
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         nk = nj = ni =0
         for plane1 in grid:
             nk += 1
@@ -333,7 +333,7 @@ class TestIndexing(amusetest.TestCase):
 class TestGridAttributes(amusetest.TestCase):
     
     def test1(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         print grid.get_minimum_position()
         self.assertAlmostRelativeEquals(grid.get_minimum_position(),  ([0.0, 0.0, 0.0] | units.m) )
         self.assertAlmostRelativeEquals(grid.get_maximum_position(),  [1.0, 1.0, 1.0] | units.m)
@@ -341,12 +341,12 @@ class TestGridAttributes(amusetest.TestCase):
         self.assertTrue(grid.contains([0.5,0.5,0.5] | units.m))
         
     def test2(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         self.assertTrue(numpy.all(grid.contains([[0.5,0.5,0.5] , [0.1,0.1,0.1]]| units.m)))
         self.assertFalse(numpy.all(grid.contains([[1.1,0.5,0.5] , [0.1,1.1,0.1]]| units.m)))
         
     def test3(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         points = grid.points()
         self.assertEquals(points.shape, (6,5,3, 3))
         self.assertAlmostRelativeEquals(points[0][0][0],  ([0.0,0.0, 0.0] | units.m) )
@@ -359,7 +359,7 @@ class TestGridAttributes(amusetest.TestCase):
         
     
     def test4(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         points = grid.points().reshape([6*5*3,3])
         connectivity = grid.connectivity()
         
@@ -379,7 +379,7 @@ class TestGridAttributes(amusetest.TestCase):
         
     
     def test5(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         points = grid.points().reshape([6*5*3,3])
         connectivity = grid.connectivity()
         
@@ -399,7 +399,7 @@ class TestGridAttributes(amusetest.TestCase):
     
     
     def test6(self):
-        grid = data.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         points = grid.points().reshape([6*5*3,3])
         connectivity = grid.connectivity()
         
@@ -421,7 +421,7 @@ class TestGridAttributes(amusetest.TestCase):
 class TestGridSampling(amusetest.TestCase):
     
     def test1(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
         self.assertEquals(sample.index , [1,1,1])
@@ -440,7 +440,7 @@ class TestGridSampling(amusetest.TestCase):
             self.assertEquals(sample.index , [1,3,4])
 
     def test2(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
         self.assertEquals(sample.index_for_000_cell , [1,1,1])
@@ -468,7 +468,7 @@ class TestGridSampling(amusetest.TestCase):
             
     
     def test3(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
         self.assertEquals(sample.index_for_000_cell , [1,1,1])
@@ -484,7 +484,7 @@ class TestGridSampling(amusetest.TestCase):
         ])
     
     def test4(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
         print sample.surrounding_cells
@@ -494,7 +494,7 @@ class TestGridSampling(amusetest.TestCase):
 
     
     def test5(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
         masses = sample.get_values_of_attribute("mass")
@@ -521,7 +521,7 @@ class TestGridSampling(amusetest.TestCase):
         self.assertAlmostRelativeEquals(sample.mass , 3.0 | units.kg ) 
             
     def test6(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         for xpos in numpy.arange(3.0,5.0,0.1):
             sample = grid.samplePoint([xpos,3.0,3.0]| units.m)
@@ -541,7 +541,7 @@ class TestGridSampling(amusetest.TestCase):
             self.assertAlmostRelativeEquals(sample.mass , (4.0 | units.kg)) 
 
     def test7(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
         self.assertTrue(sample.isvalid)
@@ -552,7 +552,7 @@ class TestGridSampling(amusetest.TestCase):
         
     
     def test8(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m, must_return_values_on_cell_center = True)    
         self.assertEquals(sample.position, [3.0,3.0,3.0]| units.m)    
@@ -562,7 +562,7 @@ class TestGridSampling(amusetest.TestCase):
         self.assertEquals(sample.mass, 3.0 | units.kg)
         
     def test9(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m, must_return_values_on_cell_center = False)    
         self.assertEquals(sample.position, [3.0,3.0,3.0]| units.m)    
@@ -575,7 +575,7 @@ class TestGridSampling(amusetest.TestCase):
 class TestGridSamplingMultiplePoints(amusetest.TestCase):
     
     def test1(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         samples = grid.samplePoints([[3.0,3.0,3.0], [4.0,3.0,3.0]]| units.m)
         self.assertEquals(len(samples), 2)
@@ -585,16 +585,16 @@ class TestGridSamplingMultiplePoints(amusetest.TestCase):
         self.assertEquals(samples.mass , [3.0, 4.0] | units.kg)
     
     def test2(self):
-        grid = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         samples = grid.samplePoints([[3.5,3.0,3.0], [4.5,3.0,3.0]]| units.m)
         self.assertEquals(len(samples), 2)
         self.assertEquals(samples.mass , [3.5, 4.5] | units.kg)
         
     def test3(self):
-        grid1 = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid1 = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid1.mass = grid1.x.value_in(units.m) | units.kg
-        grid2 = data.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid2 = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid2.position += (10.0,0,0) | units.m
         grid2.mass = grid2.x.value_in(units.m) | units.kg
         samples = SamplePointsOnMultipleGrids((grid1, grid2), [[3.0,3.0,3.0], [4.0,3.0,3.0], [13,3,3]]| units.m)

@@ -3,7 +3,7 @@ from amuse.community.smallN.muse_dynamics_mpi import SmallN
 from amuse.units import nbody_system
 
 from amuse.units.units import *
-from amuse.support.data import Particle
+from amuse.datamodel import Particle
 if __name__=='__main__':
     myunits = nbody_system.nbody_to_si(1 | MSun, 1 | AU)
 

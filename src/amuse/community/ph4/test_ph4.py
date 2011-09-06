@@ -10,11 +10,11 @@ from amuse.community.ph4.interface import ph4 as grav
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.support.codes.core import is_mpd_running
-from amuse.support.data import particle_attributes
 from amuse.units import nbody_system
 from amuse.units import units
 
-from amuse.support import data
+from amuse import datamodel
+from amuse.datamodel import particle_attributes
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
@@ -124,7 +124,7 @@ def test_ph4(infile = None, number_of_stars = 40,
                                     float(cols[6]), float(cols[7])))
         f.close()
 
-        stars = data.Particles(number_of_stars)
+        stars = datamodel.Particles(number_of_stars)
         stars.id = id | units.none
         stars.mass = mass | nbody_system.mass
         stars.position = pos | nbody_system.length

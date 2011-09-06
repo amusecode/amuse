@@ -5,7 +5,7 @@ from amuse.units import units
 
 import re
 
-from amuse.support import data
+from amuse import datamodel
 class LineBasedFileCursor(object):
     
     def __init__(self, file):
@@ -218,7 +218,7 @@ class TableFormattedText(base.FileFormatProcessor):
         return float(string)
         
     def new_set(self, number_of_items):
-        return data.Particles(number_of_items)
+        return datamodel.Particles(number_of_items)
         
     @late
     def quantities(self):

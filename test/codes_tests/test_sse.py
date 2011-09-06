@@ -5,7 +5,7 @@ from amuse.community.sse.interface import SSEInterface, SSE
 from amuse.test.amusetest import get_path_to_results, TestWithMPI
 from amuse import io
 from amuse.units import units
-from amuse.support.data import Particles
+from amuse.datamodel import Particles
 class TestMPIInterface(TestWithMPI):
     
     class state(object):

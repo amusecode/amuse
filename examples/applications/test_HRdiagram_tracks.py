@@ -16,7 +16,7 @@ from amuse.community.cachedse.interface import CachedStellarEvolution
 from amuse.support.codes.core import is_mpd_running
 from amuse.test.amusetest import get_path_to_results
 
-from amuse.support import data
+from amuse import datamodel
 usage = """\
 usage: %prog [options]
     
@@ -38,7 +38,7 @@ def simulate_evolution_tracks(
     one. This is only necessary because the time span of each track is different (a solar mass star
     evolution track takes billions of years, but we don't want to also evolve high mass stars for 
     billions of years) In most applications the stars have to be evolved up to a common end time,
-    which can be more easily accomplished by creating an array (stars = data.Stars(number_of_stars))
+    which can be more easily accomplished by creating an array (stars = datamodel.Stars(number_of_stars))
     and using evolve_model(end_time = ...).
     """
     number_of_stars=len(masses)
@@ -51,7 +51,7 @@ def simulate_evolution_tracks(
         " stars with\nvarying masses will be simulated..."
     
     for j in range(number_of_stars):
-        star = data.Particle()
+        star = datamodel.Particle()
         star.mass = masses[j]
         print "Created new star with mass: ", star.mass
 

@@ -5,7 +5,7 @@ from amuse.support.exceptions import AmuseWarning
 from amuse.units import nbody_system
 from amuse.units import units
 
-from amuse.support.data import Particles
+from amuse.datamodel import Particles
 class EnclosedMassInterpolator(object):
     """
     Interpolator used in 'get_enclosed_mass_from_tabulated' and 'get_radius_for_enclosed_mass'.

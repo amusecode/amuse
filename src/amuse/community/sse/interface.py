@@ -5,8 +5,8 @@ from amuse.units import constants
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.community.interface import common
 
-from amuse.support.data import Particles
-from amuse.support.data import ParticlesSubset
+from amuse.datamodel import Particles
+from amuse.datamodel import ParticlesSubset
 class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferencesMixIn): 
     """
     Stellar evolution is performed by the rapid single-star evolution (SSE)

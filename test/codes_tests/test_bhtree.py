@@ -9,18 +9,13 @@ import math
 
 from amuse.community.bhtree.interface import BHTreeInterface, BHTree
 from amuse.support.exceptions import AmuseException
-from amuse.support.data import particle_attributes
-
-
-
-
-
 from amuse.ext import plummer
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units import quantities
-from amuse.support import data
+from amuse import datamodel
+from amuse.datamodel import particle_attributes
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -182,7 +177,7 @@ class TestBHTreeInterface(TestWithMPI):
     
 class TestBHTree(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -203,7 +198,7 @@ class TestBHTree(TestWithMPI):
         instance = BHTree(convert_nbody)
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
         
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         
         sun = stars[0]
         sun.mass = units.MSun(1.0)
@@ -258,7 +253,7 @@ class TestBHTree(TestWithMPI):
         #instance.use_self_gravity = 0
         instance.commit_parameters()
         
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -313,7 +308,7 @@ class TestBHTree(TestWithMPI):
         instance.commit_parameters()
         
         
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         star1 = stars[0]
         star2 = stars[1]
 
@@ -397,7 +392,7 @@ class TestBHTree(TestWithMPI):
         instance = BHTree(convert_nbody)
         instance.commit_parameters()
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -424,7 +419,7 @@ class TestBHTree(TestWithMPI):
         instance = BHTree(convert_nbody)
         instance.commit_parameters()
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -446,7 +441,7 @@ class TestBHTree(TestWithMPI):
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
@@ -484,7 +479,7 @@ class TestBHTree(TestWithMPI):
         instance.commit_parameters()
         
         
-        particles = data.Particles(6)
+        particles = datamodel.Particles(6)
         particles.mass = 1.0 | nbody_system.mass
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
@@ -526,7 +521,7 @@ class TestBHTree(TestWithMPI):
 
         instance = BHTree(convert_nbody)
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -554,7 +549,7 @@ class TestBHTree(TestWithMPI):
         instance = BHTree(convert_nbody)
         instance.commit_parameters()
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -582,7 +577,7 @@ class TestBHTree(TestWithMPI):
         instance = BHTree(convert_nbody)
         instance.commit_parameters()
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [30.0, 30.0] | units.kg
@@ -655,7 +650,7 @@ class TestBHTree(TestWithMPI):
         print "Test15: Testing effect of BHTree parameter epsilon_squared"
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         sun = particles[0]
         sun.mass = 1.0 | units.MSun
         sun.position = [0.0, 0.0, 0.0] | units.AU
@@ -715,7 +710,7 @@ class TestBHTree(TestWithMPI):
         
     
     def test17(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.x = [
             0.0,1.0, 
             #5,7,
@@ -750,7 +745,7 @@ class TestBHTree(TestWithMPI):
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
        
     def test18(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
@@ -773,7 +768,7 @@ class TestBHTree(TestWithMPI):
         instance.stop()
 
     def test19(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0.0 | nbody_system.length
         particles.z = 0.0 | nbody_system.length

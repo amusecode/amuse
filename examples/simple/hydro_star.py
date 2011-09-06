@@ -3,7 +3,7 @@ from amuse.community.evtwin.interface import EVtwin
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
 from amuse.plot import sph_particles_plot, native_plot
 
-from amuse.support.data import Particle
+from amuse.datamodel import Particle
 def create_particles():
     star =  Particle()
     star.mass = 3.0 | units.MSun

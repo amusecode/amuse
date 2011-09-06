@@ -1,15 +1,14 @@
-from amuse.support.data import particle_attributes
-
 from amuse.test import amusetest
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
 
-from amuse.support import data
+from amuse import datamodel
+from amuse.datamodel import particle_attributes
 class TestParticlesAttributes(amusetest.TestCase):
     
     def test1(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.position = [[-1, 0, 0], [1,0,0]] | nbody_system.length
         particles.velocity = [[-1, 0, 0], [1,0,0]] | nbody_system.length/nbody_system.time
         particles.mass = 0.4 | nbody_system.mass
@@ -25,7 +24,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.position = [[-1, 0, 0], [1,0,0]] | units.parsec
         particles.velocity = [[-1, 0, 0], [1,0,0]] | units.parsec / units.Myr
         particles.mass = 0.5 | units.MSun 

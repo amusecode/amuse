@@ -8,8 +8,8 @@ from math import *
 from amuse.units import nbody_system
 from amuse.units import units
 
-from amuse.support.data import Particles
-from amuse.support.data import ParticlesWithUnitsConverted
+from amuse.datamodel import Particles
+from amuse.datamodel import ParticlesWithUnitsConverted
 class uniform_random_unit_cube(object):
     def __init__(self,targetN):
         self.targetN=targetN

@@ -14,7 +14,6 @@ except ImportError:
 
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support.data import particle_attributes
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.sse.interface import SSE
@@ -26,6 +25,7 @@ from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
 from amuse.io import store
 
+from amuse.datamodel import particle_attributes
 def plot_particles(particles, name_of_the_figure):
     
     if HAS_MATPLOTLIB:

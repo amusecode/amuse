@@ -5,8 +5,8 @@ from amuse import io
 from amuse.io import store
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.support.data import Particles
-from amuse.support.data import Grid
+from amuse.datamodel import Particles
+from amuse.datamodel import Grid
 class TestStoreHDF(amusetest.TestCase):
 
     def test1(self):

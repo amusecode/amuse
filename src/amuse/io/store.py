@@ -9,8 +9,8 @@ from amuse.units import units
 from amuse.units import core
 from amuse.support import exceptions
 
-from amuse.support.data import Particles
-from amuse.support.data import AttributeStorage
+from amuse.datamodel import Particles
+from amuse.datamodel import AttributeStorage
 class HDF5AttributeStorage(AttributeStorage):
 
     def __init__(self, keys, hdfgroup):

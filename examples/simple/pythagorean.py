@@ -14,7 +14,7 @@ from amuse.units import nbody_system
 from amuse.units.quantities import AdaptingVectorQuantity
 from matplotlib import pyplot
 
-from amuse.support.data import Particles
+from amuse.datamodel import Particles
 def new_particles():
     particles = Particles(3)
     

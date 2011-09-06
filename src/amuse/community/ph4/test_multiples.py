@@ -1,17 +1,17 @@
 import sys, unittest, numpy, random, collections, getopt, os, math
 
-from amuse.support.data import particle_attributes
 from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support.data import trees
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.newsmallN.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 
-from amuse.support import data
+from amuse import datamodel
+from amuse.datamodel import particle_attributes
+from amuse.datamodel import trees
 def is_a_parent(child1_key, child2_key):
     return child1_key > 0 or child2_key > 0
 
@@ -627,7 +627,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     # 2. Create a particle set to perform the close encounter
     #    calculation.
 
-    particles_in_encounter = data.Particles(0)
+    particles_in_encounter = datamodel.Particles(0)
     
     # 3. Add stars to the encounter set, add in components when we
     #    encounter a binary.
@@ -895,7 +895,7 @@ def test_multiples(infile = None, number_of_stars = 40,
                                     float(cols[6]), float(cols[7])))
         f.close()
 
-        stars = data.Particles(number_of_stars)
+        stars = datamodel.Particles(number_of_stars)
         stars.id = id | units.none
         stars.mass = mass | nbody_system.mass
         stars.position = pos | nbody_system.length

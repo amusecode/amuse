@@ -33,8 +33,8 @@ from optparse import OptionParser
 from amuse import io
 from amuse.io import text
 
-from amuse.support.data import Grid
-from amuse.support.data import Particles
+from amuse.datamodel import Grid
+from amuse.datamodel import Particles
 class HydroGridAndNbody(object):
     
     def __init__(self, gridcode, nbodycode):

@@ -1,5 +1,6 @@
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
+from amuse import datamodel
 
 from amuse.community.mpiamrvac.interface import MpiAmrVacInterface
 from amuse.community.mpiamrvac.interface import MpiAmrVac
@@ -484,7 +485,7 @@ class TestMpiAmrVac(TestWithMPI):
         
         instance.commit_parameters()
     
-        grid = data.Grid(10,10,10)
+        grid = datamodel.Grid(10,10,10)
         grid.rho = 0.1 | generic_unit_system.density
         grid.rhovx = 0.0 | generic_unit_system.momentum_density
         grid.rhovy = 0.0 |  generic_unit_system.momentum_density
@@ -532,7 +533,7 @@ class TestMpiAmrVac(TestWithMPI):
         
         name, error = instance.get_typeghostfill()
         self.assertEquals(name, 'linear')
-        grid = data.Grid(10,10,10)
+        grid = datamodel.Grid(10,10,10)
         grid.rho = 0.1 | generic_unit_system.density
         grid.rhovx = 0.0 | generic_unit_system.momentum_density
         grid.rhovy = 0.0 |  generic_unit_system.momentum_density
@@ -550,7 +551,7 @@ class TestMpiAmrVac(TestWithMPI):
     
         self.assertEquals((50,50,50), instance.acceleration_grid.shape)
         
-        acc_grid = data.Grid(50,50,50)
+        acc_grid = datamodel.Grid(50,50,50)
         acceleration = 1 | generic_unit_system.acceleration
         acc_grid.ax = acceleration
         acc_grid.ay = acceleration
@@ -602,7 +603,7 @@ class TestMpiAmrVac(TestWithMPI):
         
         instance.commit_parameters()
     
-        grid = data.Grid(10,10,1)
+        grid = datamodel.Grid(10,10,1)
         grid.rho = 0.1 | generic_unit_system.density
         grid.rhovx = 0.0 | generic_unit_system.momentum_density
         grid.rhovy = 0.0 |  generic_unit_system.momentum_density

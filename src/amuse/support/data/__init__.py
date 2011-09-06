@@ -1,15 +1,7 @@
-"""
-This module provides access to all set handling 
-in AMUSE. The actual implementation is in the
-base, storage and particle modules.
-"""
+import warnings
 
-from amuse.support.data.base import *
-from amuse.support.data.memory_storage import *
-from amuse.support.data.particles import *
-from amuse.support.data import particle_attributes
-from amuse.support.data.grids import *
-from amuse.support.data import grid_attributes
+from amuse.datamodel import *
 
+warnings.warn("amuse.support.data has moved to amuse.datamodel", DeprecationWarning)
 
 

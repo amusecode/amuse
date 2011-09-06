@@ -3,7 +3,7 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.seba.interface import SebaInterface, Seba
 
 from amuse.units import units
-from amuse.support.data import Particle
+from amuse.datamodel import Particle
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):

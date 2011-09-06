@@ -7,7 +7,7 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.capreole.interface import CapreoleInterface
 from amuse.community.capreole.interface import Capreole
 from amuse.units import generic_unit_system
-from amuse.support import data
+from amuse import datamodel
 class TestMPIInterface(TestWithMPI):
     
     def test0(self):
@@ -264,7 +264,7 @@ class TestCapreole(TestWithMPI):
         instance.commit_parameters()
     
         self.assertEquals(len(list(instance.itergrids())),1)
-        grid = data.Grid(10,10,10)
+        grid = datamodel.Grid(10,10,10)
         grid.rho = 0.4 | generic_unit_system.density
         grid.rhovx = 0.1 | generic_unit_system.momentum_density
         grid.rhovy = 0.0 |  generic_unit_system.momentum_density
@@ -307,7 +307,7 @@ class TestCapreole(TestWithMPI):
         
         instance.commit_parameters()
     
-        grid = data.Grid(3,3,3)
+        grid = datamodel.Grid(3,3,3)
         grid.rho = 0.1 | generic_unit_system.density
         grid.rhovx = 0.0 | generic_unit_system.momentum_density
         grid.rhovy = 0.0 |  generic_unit_system.momentum_density
@@ -347,7 +347,7 @@ class TestCapreole(TestWithMPI):
         
         instance.commit_parameters()
     
-        grid = data.Grid(5,5,5)
+        grid = datamodel.Grid(5,5,5)
         grid.rho = 0.1 | generic_unit_system.density
         grid.rhovx = 0.0 | generic_unit_system.momentum_density
         grid.rhovy = 0.0 |  generic_unit_system.momentum_density
@@ -359,7 +359,7 @@ class TestCapreole(TestWithMPI):
         
         self.assertEquals((5,5,5), instance.acceleration_grid.shape)
         
-        acc_grid = data.Grid(5,5,5)
+        acc_grid = datamodel.Grid(5,5,5)
         acc_grid.ax = 1 | generic_unit_system.acceleration
         acc_grid.ay = 1 | generic_unit_system.acceleration
         acc_grid.az = 1 | generic_unit_system.acceleration

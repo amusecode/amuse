@@ -3,7 +3,7 @@ import numpy
 from amuse.support.exceptions import AmuseException
 from amuse.units import units
 
-from amuse.support.data import Particles
+from amuse.datamodel import Particles
 class Grid2SPH(object):
     """
     Converts a (cartesian) hydrodynamics Grid into an SPH model consisting of the 

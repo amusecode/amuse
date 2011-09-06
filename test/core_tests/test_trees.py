@@ -5,13 +5,12 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.support.interface import InCodeComponentImplementation
-from amuse.support.data import trees
-
 import numpy
 import time
 import sys
 
-from amuse.support.data import Particles
+from amuse.datamodel import trees
+from amuse.datamodel import Particles
 class TestBinaryTree(amusetest.TestCase):
     
     def test1(self):

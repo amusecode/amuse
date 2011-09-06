@@ -14,7 +14,7 @@ import subprocess
 import os
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 codestring = """
 #include <stopcond.h>
 #ifdef __cplusplus

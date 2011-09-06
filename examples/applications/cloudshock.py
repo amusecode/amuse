@@ -14,7 +14,7 @@ from amuse.units import units
 from amuse.community.capreole.interface import Capreole
 from amuse import io
 
-from amuse.support import data
+from amuse import datamodel
 class CalculateCloudShock(object):
     number_of_workers = 1
     number_of_grid_points = 10
@@ -192,17 +192,17 @@ def main():
         
     grids = model.get_solution_at_time(0.5 * model.get_tau())
     
-    sample_grid = data.Grid.create(
+    sample_grid = datamodel.Grid.create(
         (100,400,1),
         (10.0,40,0) | generic_unit_system.length
     )
     sample_grid.z += 5.0 | generic_unit_system.length
     
-    sampler =  data.SamplePointsOnMultipleGrids(
+    sampler =  datamodel.SamplePointsOnMultipleGrids(
         grids,
         sample_grid.position.reshape((numpy.prod(sample_grid.shape),3,)),
-        data.SamplePointOnCellCenter,
-        data.NonOverlappingGridsIndexer
+        datamodel.SamplePointOnCellCenter,
+        datamodel.NonOverlappingGridsIndexer
     )
     
     print "start sampling"

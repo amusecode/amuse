@@ -10,7 +10,7 @@ from amuse.test.amusetest import TestWithMPI
 import numpy
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -214,7 +214,7 @@ class TestMPIInterface(TestWithMPI):
 
 class TestPhigrape(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -318,7 +318,7 @@ class TestPhigrape(TestWithMPI):
 
         instance.initialize_code()
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -344,7 +344,7 @@ class TestPhigrape(TestWithMPI):
         instance.set_eta(0.01,0.02)
 
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
@@ -382,7 +382,7 @@ class TestPhigrape(TestWithMPI):
         instance = PhiGRAPE()
         instance.initialize_code()
         
-        particles = data.Particles(6)
+        particles = datamodel.Particles(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
@@ -402,7 +402,7 @@ class TestPhigrape(TestWithMPI):
         instance.set_eta(0.01,0.02)
 
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
@@ -433,7 +433,7 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
         
     def test8(self):
-        particles = data.Particles(6)
+        particles = datamodel.Particles(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
@@ -525,7 +525,7 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
 
     def test11(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.x = [
             0.0,1.0, 
             #5,7,
@@ -556,7 +556,7 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
 
     def test12(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.x = [
             0.0,1.0, 
             #5,7,
@@ -587,7 +587,7 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
 
     def test13(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
@@ -611,7 +611,7 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
 
     def test14(self):
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length

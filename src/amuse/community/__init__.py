@@ -5,8 +5,6 @@ from amuse.support.codes.stopping_conditions import StoppingConditionInterface, 
 
 from amuse.support.codes.lit import LiteratureReferencesMixIn
 
-from amuse.support.data import parameters
-from amuse.support.data import attributes
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
@@ -15,6 +13,8 @@ from amuse.support import exceptions
 
 from amuse.support.interface import *
 
+from amuse.datamodel import parameters
+from amuse.datamodel import attributes
 """
 Existing, production codes
 

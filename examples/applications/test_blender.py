@@ -11,11 +11,11 @@ from amuse.units import units
 from amuse.ext.blender import blender #get blender API         
 import numpy as np
 
-from amuse.support import data
+from amuse import datamodel
 class SunEarth(object):       
                   
     def new_system_of_sun_and_earth(self):      
-        stars = data.Stars(2)         
+        stars = datamodel.Stars(2)         
         sun = stars[0]        
         sun.mass = units.MSun(1.0)      
         sun.position = units.m(np.array((0.0,0.0,0.0)))       

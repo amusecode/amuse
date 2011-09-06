@@ -10,7 +10,7 @@ from amuse.community.evtwin.interface import EVtwin
 
 from amuse.community.cachedse.interface import CachedStellarEvolution, ParticlesTimeseries
 
-from amuse.support import data
+from amuse import datamodel
 class EVtwin2SSE:
 
     """
@@ -46,7 +46,7 @@ class EVtwin2SSE:
             self._SSE = pSSE
 
         # initialize member variables
-        self.particles = data.Particles()
+        self.particles = datamodel.Particles()
         self.EVtwinAgeAtSwitch = float("nan") | units.Myr
         self.EVtwinException = None
         self.ActiveModel = self._EVtwin # self.ActiveModel.__class__.__name__ contains name of active model
@@ -220,7 +220,7 @@ if __name__ == '__main__':
     stellar_evolution = EVtwin2SSE()
     stellar_evolution.commit_paremeters() 
 
-    star = data.Particle()
+    star = datamodel.Particle()
     star.mass = 2.0 | units.MSun
 
     star = stellar_evolution.particles.add_particle(star)

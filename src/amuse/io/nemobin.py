@@ -9,7 +9,7 @@ from amuse.units import units
 from amuse.units import nbody_system
 from amuse.support.core import late, OrderedMultiDictionary
 
-from amuse.support import data
+from amuse import datamodel
 class NemoItemType(type):
     mapping = {}
     def __new__(metaclass, name, bases, dict):
@@ -370,7 +370,7 @@ class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
             time = parameters['Time'][0].data[0]
             
             if result is None:
-                result = data.Particles(nparticles)
+                result = datamodel.Particles(nparticles)
                 
             particlesitem = snapshot.data['Particles'][0]
             if 'PhaseSpace' in particlesitem.data:

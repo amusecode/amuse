@@ -4,7 +4,7 @@ from amuse.test import amusetest
 
 import os.path
 
-from amuse.support import data
+from amuse import datamodel
 class Test(amusetest.TestCase):
     
     def generate_constants_if_necessary(self):

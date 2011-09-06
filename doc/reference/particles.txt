@@ -57,7 +57,7 @@ Sets of particles
 The AMUSE datamodel assumes all particles come in sets. The
 data of a particle is stored in the set.
 
-.. automodule:: amuse.support.data.core
+.. automodule:: amuse.datamodel
 
     .. autoclass:: AbstractParticleSet
         :members:
@@ -86,7 +86,7 @@ data of a particle is stored in the set.
     Methods to retreive physical properties of the particles set
     ------------------------------------------------------------
     
-.. automodule:: amuse.support.data.particle_attributes
+.. automodule:: amuse.datamodel.particle_attributes
 
     .. autofunction:: center_of_mass 
         :noindex:

@@ -8,13 +8,13 @@ import os
 
 
 
-from amuse.support.data import particle_attributes
 from amuse.support.codes.core import is_mpd_running
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.community.kepler.interface import Kepler
 
-from amuse.support import data
+from amuse import datamodel
+from amuse.datamodel import particle_attributes
 def test1():
     mass = 1 | nbody_system.mass
     semi = 1 | nbody_system.length

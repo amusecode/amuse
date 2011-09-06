@@ -132,7 +132,7 @@ The selections are all subsets as we can verify:
 .. code-block:: python
 
     >>> outersphere #doctest:+ELLIPSIS 
-    <amuse.support.data.particles.ParticlesSubset object at ...>
+    <amuse.datamodel.particles.ParticlesSubset object at ...>
 
 Set operations
 --------------
@@ -293,7 +293,7 @@ The descendents of star 0 form a subset:
 .. code-block:: python
 
     >>> stars[0].descendents() #doctest:+ELLIPSIS
-    <amuse.support.data.ParticlesSubset object at ...>
+    <amuse.datamodel.ParticlesSubset object at ...>
     >>> stars[0].children().mass.value_in(units.MSun)
     array([ 0.001])
     >>> stars[0].descendents().mass
@@ -310,7 +310,7 @@ the applicability to *all* particles when multiple legacy codes
 are used. Furthermore, the particle set functions provide a uniform
 way of doing the calculations. Speed might be the downside.
 
-.. automodule:: amuse.support.data.particle_attributes
+.. automodule:: amuse.datamodel.particle_attributes
        
 .. autofunction:: center_of_mass 
     :noindex:

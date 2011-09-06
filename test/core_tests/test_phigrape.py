@@ -6,7 +6,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import quantities
-from amuse.support import data
+from amuse import datamodel
 class Test(amusetest.TestCase):
 
 

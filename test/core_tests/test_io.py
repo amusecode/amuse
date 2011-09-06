@@ -6,7 +6,7 @@ from amuse import io
 from amuse.io import base
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 class TestFileFormatProcessor(base.FileFormatProcessor):
     """
     Save files in a test format
@@ -90,7 +90,7 @@ class FrameworkTests(amusetest.TestCase):
 class FormatTests(amusetest.TestCase):
     
     def test1(self):
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | nbody_system.mass
         x.radius = [3.0, 4.0] | nbody_system.length
         x.position = [[1,2,3], [3,5,6]] | nbody_system.length
@@ -107,7 +107,7 @@ class FormatTests(amusetest.TestCase):
         
     
     def test2(self):
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | nbody_system.mass
         x.radius = [3.0, 4.0] | nbody_system.length
         x.position = [[1,2,3], [3,5,6]] | nbody_system.length
@@ -125,7 +125,7 @@ class FormatTests(amusetest.TestCase):
         os.remove("test.dyn")
         
     def test3(self):
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         convert = nbody_system.nbody_to_si(1 | units.kg, 2 | units.m)
         x.mass = [1.0, 2.0] | units.kg
         x.radius = [3.0, 4.0] | units.m
@@ -146,7 +146,7 @@ class FormatTests(amusetest.TestCase):
     
     def test4(self):
         
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         convert = nbody_system.nbody_to_si(1 | units.kg, 2 | units.m)
         x.mass = [1.0, 2.0] | units.kg
         x.radius = [3.0, 4.0] | units.m
@@ -168,7 +168,7 @@ class FormatTests(amusetest.TestCase):
         print "Testing HDF5 io"
         if os.path.exists("test_unit.hdf5"):
             os.remove("test_unit.hdf5")
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | units.kg
         x.radius = [3.0, 4.0] | units.m
         x.position = [[1,2,3], [3,5,6]] | units.m
@@ -187,7 +187,7 @@ class FormatTests(amusetest.TestCase):
         print "Testing HDF5 io, with options"
         if os.path.exists("test_unit.hdf5"):
             os.remove("test_unit.hdf5")
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | units.kg
         io.write_set_to_file(x, "test_unit.hdf5","hdf5")
         x.mass = [10.0, 20.0] | units.kg
@@ -212,9 +212,9 @@ class FormatTests(amusetest.TestCase):
         print "Testing HDF5 io with a ParticlesSuperset"
         if os.path.exists("test_unit.hdf5"):
             os.remove("test_unit.hdf5")
-        set1 = data.Particles(2)
-        set2 = data.Particles(2)
-        superset = data.ParticlesSuperset([set1, set2])
+        set1 = datamodel.Particles(2)
+        set2 = datamodel.Particles(2)
+        superset = datamodel.ParticlesSuperset([set1, set2])
         superset.mass = [1.0, 2.0, 3.0, 4.0] | units.kg
         superset.radius = [3.0, 4.0, 5.0, 6.0] | units.m
         superset.position = [[1,2,3], [3,5,6], [3,2,1], [-3,-5,-6]] | units.m
@@ -249,7 +249,7 @@ class FormatTests(amusetest.TestCase):
         self.assertEquals(default, True)
     
     def test9(self):
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | units.kg
         self.assertRaises(AmuseException, io.write_set_to_file, x, "test_unit.bogus", "bogus", 
             expected_message = "You tried to load or save a file with fileformat 'bogus'"
@@ -257,7 +257,7 @@ class FormatTests(amusetest.TestCase):
     
     def test10(self):
         print "Testing saving/loading timestamp in Starlab"
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         convert = nbody_system.nbody_to_si(1 | units.kg, 2 | units.m)
         x.mass = [1.0, 2.0] | units.kg
         x.position = [[1,2,3], [3,5,6]] | units.m
@@ -270,7 +270,7 @@ class FormatTests(amusetest.TestCase):
         self.assertAlmostEquals(x.position, y.position,8)
         self.assertAlmostEquals(x.velocity, y.velocity,8)
         
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | nbody_system.mass
         x.position = [[1,2,3], [3,5,6]] | nbody_system.length
         x.velocity = [[1,2,3], [3,5,6]] | nbody_system.speed
@@ -287,7 +287,7 @@ class FormatTests(amusetest.TestCase):
     
     def test11(self):
         print "Testing saving/loading timestamp in NEMO"
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         convert = nbody_system.nbody_to_si(1 | units.kg, 2 | units.m)
         x.mass = [1.0, 2.0] | units.kg
         x.position = [[1,2,3], [3,5,6]] | units.m
@@ -301,7 +301,7 @@ class FormatTests(amusetest.TestCase):
         self.assertAlmostEquals(x.position, y.position,8)
         self.assertAlmostEquals(x.velocity, y.velocity,8)
         
-        x = data.Particles(2)
+        x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | nbody_system.mass
         x.position = [[1,2,3], [3,5,6]] | nbody_system.length
         x.velocity = [[1,2,3], [3,5,6]] | nbody_system.speed

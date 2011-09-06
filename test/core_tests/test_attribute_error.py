@@ -8,7 +8,7 @@ import os
 from amuse.io import store
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.support.data import *
+from amuse.datamodel import *
 class TestAttributeError(amusetest.TestCase):
     
     def test1(self):

@@ -4,7 +4,7 @@ from amuse.test import amusetest
 
 
 
-from amuse.support.data.incode_storage import *
+from amuse.datamodel.incode_storage import *
 
 
 import numpy

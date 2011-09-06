@@ -25,7 +25,7 @@ import signal
 
 from mpi4py import MPI
 
-from amuse.support.data import ParticlesSuperset
+from amuse.datamodel import ParticlesSuperset
 class TimeoutException(Exception):
     pass
     

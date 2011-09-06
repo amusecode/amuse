@@ -9,7 +9,7 @@ from amuse.community.huayno.interface import HuaynoInterface, Huayno
 from amuse.ext import plummer
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -85,7 +85,7 @@ class TestHuaynoInterface(TestWithMPI):
 
 class TestHuayno(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -182,7 +182,7 @@ class TestHuayno(TestWithMPI):
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | units.AU**2
         
-        stars = data.Stars(2)
+        stars = datamodel.Stars(2)
         star1 = stars[0]
         star2 = stars[1]
 
@@ -210,7 +210,7 @@ class TestHuayno(TestWithMPI):
         instance = Huayno(convert_nbody, redirection="none")
         instance.initialize_code()
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -234,7 +234,7 @@ class TestHuayno(TestWithMPI):
         instance = Huayno(convert_nbody)
         instance.initialize_code()
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         self.assertEquals(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
@@ -279,7 +279,7 @@ class TestHuayno(TestWithMPI):
         print "Test7: Testing effect of Huayno parameter epsilon_squared"
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         
-        particles = data.Particles(2)
+        particles = datamodel.Particles(2)
         sun = particles[0]
         sun.mass = 1.0 | units.MSun
         sun.position = [0.0, 0.0, 0.0] | units.AU

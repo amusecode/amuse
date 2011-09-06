@@ -41,8 +41,6 @@ from amuse.units.nbody_system import nbody_to_si
 from amuse.units.quantities import VectorQuantity
 from amuse.units.generic_unit_system import *
 
-from amuse.support.data.grids import SamplePointsOnMultipleGrids, SamplePointWithIntepolation, SamplePointOnCellCenter
-
 from amuse.community.athena.interface import Athena
 from amuse.community.capreole.interface import Capreole
 from amuse.community.mpiamrvac.interface import MpiAmrVac
@@ -64,8 +62,11 @@ except ImportError:
 from numpy import sqrt, arange, searchsorted
 from optparse import OptionParser
 
-from amuse.support.data import Grid
-from amuse.support.data import Particles
+from amuse.datamodel import Grid
+from amuse.datamodel import Particles
+from amuse.datamodel.grids import SamplePointsOnMultipleGrids
+from amuse.datamodel.grids import SamplePointWithIntepolation
+from amuse.datamodel.grids import SamplePointOnCellCenter
 class CalculateExactSolutionIn1D(object):
     number_of_points = 1000
     

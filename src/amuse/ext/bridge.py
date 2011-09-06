@@ -89,7 +89,7 @@ import threading
 from amuse.units import quantities
 from amuse.units import units
 
-from amuse.support import data
+from amuse import datamodel
 def potential_energy(system, get_potential):
     parts=system.particles.copy()
     pot=get_potential(parts.radius,parts.x,parts.y,parts.z)
@@ -229,7 +229,7 @@ class bridge(object):
         for x in self.systems:
             if hasattr(x,"particles"):
                 arr.append(x.particles)
-        return data.ParticlesSuperset(arr)                
+        return datamodel.ParticlesSuperset(arr)                
 
 # 'private' functions
 

@@ -12,7 +12,7 @@ import numpy
 import time
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.support import data
+from amuse import datamodel
 class _TestGravityCodes(TestWithMPI):
     length_unit = nbody_system.length
     speed_unit = nbody_system.speed
@@ -157,7 +157,7 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
                 if sc.is_set():
                     particle1 = sc.particles(0)[0]
                     particle2 = sc.particles(1)[0] 
-                    newparticle = data.Particles(1)
+                    newparticle = datamodel.Particles(1)
                     newparticle.mass = particle1.mass + particle2.mass
                     newparticle.radius = particle2.radius
                     newparticle.position = (particle1.position + particle2.position) /2

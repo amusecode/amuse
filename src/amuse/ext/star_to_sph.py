@@ -15,7 +15,7 @@ from amuse.units import units
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
 from amuse.support.console import set_printing_strategy
-from amuse.support.data import Particles
+from amuse.datamodel import Particles
 StellarModelInSPH = namedtuple('StellarModelInSPH', ['gas_particles', 'core_particle', 'core_radius'])
 
 class StellarModel2SPH(object):

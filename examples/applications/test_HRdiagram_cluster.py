@@ -18,7 +18,7 @@ from amuse.test.amusetest import get_path_to_results
 
 import numpy
 
-from amuse.support import data
+from amuse import datamodel
 usage = """\
 usage: %prog [options]
 	
@@ -52,7 +52,7 @@ def simulate_stellar_evolution(
     total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
     
     print "Initializing the particles"
-    stars = data.Particles(number_of_stars)
+    stars = datamodel.Particles(number_of_stars)
     stars.mass = salpeter_masses
     print "Stars to evolve:"
     print stars

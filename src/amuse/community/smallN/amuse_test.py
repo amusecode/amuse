@@ -7,7 +7,7 @@ import math, sys
 # MPI Debugging
 from amuse.support.codes import channel
 
-from amuse.support.data import Particle
+from amuse.datamodel import Particle
 if __name__ == "__main__":
     test_list = [1, 2]
 

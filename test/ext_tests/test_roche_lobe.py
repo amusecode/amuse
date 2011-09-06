@@ -17,9 +17,9 @@ from amuse.units import generic_unit_system
 from amuse.units import nbody_system
 from amuse.units import constants
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
-from amuse.support.data import Particles
-from amuse.support.data import Particle
-from amuse.support.data import ParticlesSuperset
+from amuse.datamodel import Particles
+from amuse.datamodel import Particle
+from amuse.datamodel import ParticlesSuperset
 turn_tests_into_slowtests = False
 # False True
 

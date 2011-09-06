@@ -1,10 +1,10 @@
 from amuse.test import amusetest
 import numpy
 
-from amuse.support.data.memory_storage import InMemoryGridAttributeStorage
-from amuse.support.data.memory_storage import get_in_memory_attribute_storage_factory
-from amuse.support.data.memory_storage import InMemoryVectorQuantityAttribute
 from amuse.units import units
+from amuse.datamodel.memory_storage import InMemoryGridAttributeStorage
+from amuse.datamodel.memory_storage import get_in_memory_attribute_storage_factory
+from amuse.datamodel.memory_storage import InMemoryVectorQuantityAttribute
 class TestInMemoryAttributeStorage(amusetest.TestCase):
     
     def test1(self):

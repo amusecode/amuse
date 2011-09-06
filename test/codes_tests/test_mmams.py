@@ -6,8 +6,8 @@ from amuse.community.mesa.interface import MESA
 from amuse.community.evtwin.interface import EVtwin
 from amuse.community.mmams.interface import MakeMeAMassiveStarInterface, MakeMeAMassiveStar
 from amuse.units import units
-from amuse.support.data import Particles
-from amuse.support.data import Particle
+from amuse.datamodel import Particles
+from amuse.datamodel import Particle
 default_options = dict(redirection="none")
 
 class TestMakeMeAMassiveStarInterface(TestWithMPI):

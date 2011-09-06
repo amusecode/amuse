@@ -8,7 +8,7 @@ from amuse.units import units
 from amuse.units import nbody_system
 from amuse.support.core import late
 
-from amuse.support import data
+from amuse import datamodel
 class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
     """
     Process (read) a Gadget binary data file (saving to Gadget files not supported)
@@ -193,7 +193,7 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
             ids_per_set.append(self.ids[offset:offset+x])
             offset += x
             
-        sets = [data.Particles(len(x), keys=x) for x in ids_per_set]
+        sets = [datamodel.Particles(len(x), keys=x) for x in ids_per_set]
         offset = 0
         for x in sets:
             length = len(x)

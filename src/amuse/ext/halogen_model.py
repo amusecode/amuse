@@ -1,5 +1,5 @@
 from amuse.community.halogen.interface import Halogen
-from amuse.support.data import ParticlesWithUnitsConverted
+from amuse.datamodel import ParticlesWithUnitsConverted
 def new_halogen_model(number_of_particles, unit_converter = None, do_scale = False, **keyword_arguments):
     """
     Create an alpha-beta-gamma-model using Halogen with the given number of 

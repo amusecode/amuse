@@ -6,8 +6,8 @@ from amuse.ext.evrard_test import uniform_random_unit_cube
 from amuse.units import nbody_system
 from amuse.units import units
 
-from amuse.support.data import Particles
-from amuse.support.data import ParticlesWithUnitsConverted
+from amuse.datamodel import Particles
+from amuse.datamodel import ParticlesWithUnitsConverted
 def approximate_inverse_error_function(x):
   a=8*(numpy.pi-3)/3*numpy.pi*(4-numpy.pi)
   return numpy.sign(x)*numpy.sqrt(

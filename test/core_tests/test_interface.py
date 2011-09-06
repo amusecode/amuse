@@ -2,8 +2,8 @@ from amuse.support import interface
 from amuse.support.exceptions import AmuseException
 
 
-from amuse.support.data.binding import *
-from amuse.support.data.parameters import *
+from amuse.datamodel.binding import *
+from amuse.datamodel.parameters import *
 from amuse.support.core import OrderedDictionary
 from amuse.support import exceptions
 
@@ -13,7 +13,7 @@ from amuse.test import amusetest
 import numpy
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.support import data
+from amuse import datamodel
 class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
     class TestClass(object):
         
@@ -671,7 +671,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler.add_getter('particles', 'get_mass', names = ('mass',))
         
         
-        local_particles = data.Particles(4)
+        local_particles = datamodel.Particles(4)
         local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
         
         remote_particles = instance.particles
@@ -708,7 +708,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler.add_select_from_particle('particles', 'get_next', public_name = 'next')
         
         
-        local_particles = data.Particles(4)
+        local_particles = datamodel.Particles(4)
         local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
         
         remote_particles = instance.particles
@@ -747,7 +747,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler.add_getter('particles', 'get_next', names = ('next',))
         
         
-        local_particles = data.Particles(4)
+        local_particles = datamodel.Particles(4)
         local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
         
         remote_particles = instance.particles
@@ -785,7 +785,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler.add_method('particles', 'add_1_to_mass', 'add_one')
         
         
-        local_particles = data.Particles(4)
+        local_particles = datamodel.Particles(4)
         local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
         
         remote_particles = instance.particles
@@ -824,7 +824,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler = instance.get_handler('UNIT')
         handler.set_nbody_converter(convert_nbody)
 
-        local_particles = data.Particles(4)
+        local_particles = datamodel.Particles(4)
         local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
         
         remote_particles = instance.particles
@@ -867,7 +867,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler = instance.get_handler('UNIT')
         handler.set_nbody_converter(convert_nbody)
     
-        local_particles = data.Particles(4)
+        local_particles = datamodel.Particles(4)
         local_particles.mass = units.kg.new_quantity([3.0, 4.0, 6.0, 5.0])
         
         remote_particles = instance.particles
@@ -911,7 +911,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler = instance.get_handler('UNIT')
         handler.set_nbody_converter(convert_nbody)
     
-        local_particles = data.Particles(4)
+        local_particles = datamodel.Particles(4)
         local_particles.mass = units.kg.new_quantity([3.5, 4.0, 6.0, 4.5])
         
         remote_particles = instance.particles

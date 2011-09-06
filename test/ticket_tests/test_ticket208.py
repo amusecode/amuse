@@ -11,7 +11,7 @@ from amuse.community.gadget2.interface import Gadget2
 from amuse import io
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 class TestsForTicket208(amusetest.TestCase):
     
     def _run_addition_removal_test(
@@ -24,7 +24,7 @@ class TestsForTicket208(amusetest.TestCase):
         
         instance.initialize_code()
     
-        particles = data.Particles(10)
+        particles = datamodel.Particles(10)
         particles.mass = xrange(1,11) | mass_unit
         particles.radius = xrange(1,11) | length_unit
         particles.x = xrange(1,11) | length_unit
@@ -46,7 +46,7 @@ class TestsForTicket208(amusetest.TestCase):
         self.assertEquals(len(instance.particles), 8)
         self.assertAlmostRelativeEquals(instance.particles.mass.as_quantity_in(mass_unit), [1,2,4,5,7,8,9,10] | mass_unit)
         
-        particles_new = data.Particles(1)
+        particles_new = datamodel.Particles(1)
         particles_new.mass = 20 | mass_unit
         particles_new.radius = 21 | length_unit
         particles_new.x = 22 | length_unit

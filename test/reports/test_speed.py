@@ -11,7 +11,7 @@ import os
 import numpy
 import time
 
-from amuse.support import data
+from amuse import datamodel
 codestring = """
 
 #include <stdio.h>

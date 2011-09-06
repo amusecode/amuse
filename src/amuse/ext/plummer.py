@@ -11,7 +11,7 @@ from math import sqrt
 
 from amuse.units import nbody_system
 
-from amuse.support import data
+from amuse import datamodel
 class MakePlummerModel(object):
     def __init__(self, number_of_particles, convert_nbody = None, radius_cutoff = 22.8042468, mass_cutoff = 0.999,
             do_scale = False, random_state = None):
@@ -91,7 +91,7 @@ class MakePlummerModel(object):
     @property
     def result(self):
         masses, positions, velocities = self.new_model()
-        result = data.Particles(self.number_of_particles)
+        result = datamodel.Particles(self.number_of_particles)
         result.mass = nbody_system.mass.new_quantity(numpy.hstack(masses))
         result.position = nbody_system.length.new_quantity(positions)
         result.velocity = nbody_system.speed.new_quantity( velocities)
@@ -102,7 +102,7 @@ class MakePlummerModel(object):
             result.scale_to_standard()
 
         if not self.convert_nbody is None:
-            result = data.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = datamodel.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
             result = result.copy_to_memory()
 
         return result

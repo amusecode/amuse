@@ -1064,7 +1064,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             internal_structure.X_Si[::-1],
             internal_structure.X_Fe[::-1]
         )
-        tmp_star = data.Particle()
+        tmp_star = datamodel.Particle()
         tmp_star.age_tag = current_age
         return self.imported_stars.add_particle(tmp_star)
 

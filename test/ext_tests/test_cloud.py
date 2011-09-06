@@ -9,11 +9,11 @@ from amuse.ext import cloud
 
 from amuse.units import units
 from amuse.units import generic_unit_system
-from amuse.support import data
+from amuse import datamodel
 class CloudTests(amusetest.TestCase):
 
     def test1(self):
-        grid = data.Grid.create((10,10,10), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.Grid.create((10,10,10), [10.0, 10.0, 10.0] | units.m)
         
         grid.rho = 0.0 | units.kg / units.m**3
         grid.rhovx = 0.0 | units.kg / (units.s * units.m**2)
@@ -21,7 +21,7 @@ class CloudTests(amusetest.TestCase):
         grid.rhovz = 0.0 | units.kg / (units.s * units.m**2)
         grid.energy = 1.0 | units.kg / ((units.s**2) * units.m)
         
-        data.Grid.add_global_vector_attribute("position", ["x","y","z"])
+        datamodel.Grid.add_global_vector_attribute("position", ["x","y","z"])
         
         cloud.fill_grid_with_spherical_cloud(
             grid, 
@@ -54,8 +54,8 @@ class CloudTests(amusetest.TestCase):
 
     def test2(self):
         n = 10
-        grid = data.Grid.create((n,n,n), [10.0, 10.0, 10.0] | generic_unit_system.length)
-        data.Grid.add_global_vector_attribute("position", ["x","y","z"])
+        grid = datamodel.Grid.create((n,n,n), [10.0, 10.0, 10.0] | generic_unit_system.length)
+        datamodel.Grid.add_global_vector_attribute("position", ["x","y","z"])
         
         cloud.fill_grid_with_cloud_shock(
             grid, 

@@ -8,7 +8,7 @@ from amuse.ext import plummer
 from amuse.ext.solarsystem import new_solar_system_for_mercury
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 DUMMYID=0
 
 try:
@@ -192,7 +192,7 @@ class TestMercuryInterface(TestWithMPI):
 
 class TestMercury(TestWithMPI):
     def sun_and_earth(self):
-        orbiter = data.Particles(1)
+        orbiter = datamodel.Particles(1)
         orbiter.mass = 5.97e24 | units.kg
         orbiter.density = 1.0|units.g/units.cm**3
         orbiter.position = [1.0,0.0,0.0] | units.AU
@@ -200,7 +200,7 @@ class TestMercury(TestWithMPI):
         orbiter.angularmomentum = [1.0,0,0] | units.MSun * units.AU**2/units.day
         orbiter.celimit = 0.0 | units.none
         
-        centre = data.Particles(1)
+        centre = datamodel.Particles(1)
         centre.mass = 1.0 | units.MSun
         centre.radius = .0000001 | units.AU
         centre.j2 = .0001|units.AU**2

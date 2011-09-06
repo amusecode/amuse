@@ -20,7 +20,7 @@ Supported File Formats
     To write a data set to a space separated text file do:: 
         
         >>> from amuse.io import write_set_to_file
-        >>> from amuse.support.data.core import Particles
+        >>> from amuse.datamodel.core import Particles
         >>> from amuse.units import units
         >>> x = Particles(100)
         >>> x.mass = 10.0 | units.MSun

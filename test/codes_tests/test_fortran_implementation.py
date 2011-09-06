@@ -10,7 +10,7 @@ import os
 import time
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 codestring = """
 function echo_int(int_in, int_out)
     implicit none

@@ -7,7 +7,7 @@ import numpy as math
 
 # tbd: initial value for time_Radius solver
 
-from amuse.support.data import Particles
+from amuse.datamodel import Particles
 def stumpff_C(z):
     if(z==0): 
         return 1/2.

@@ -12,13 +12,14 @@ except ImportError:
 from amuse.support.core import late
 from amuse.units.quantities import VectorQuantity
 from amuse.units.generic_unit_system import *
-from amuse.support.data.grids import SamplePointsOnMultipleGrids, SamplePointWithIntepolation, SamplePointOnCellCenter
-
 from amuse.community.capreole.interface import Capreole
 from amuse import io
 from amuse.io import text
 
-from amuse.support.data import Grid
+from amuse.datamodel import Grid
+from amuse.datamodel.grids import SamplePointsOnMultipleGrids
+from amuse.datamodel.grids import SamplePointWithIntepolation
+from amuse.datamodel.grids import SamplePointOnCellCenter
 try:
     from amuse import plot
     from matplotlib import pyplot

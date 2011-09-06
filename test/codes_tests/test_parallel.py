@@ -10,7 +10,7 @@ import numpy
 import threading
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support.data import Particles
+from amuse.datamodel import Particles
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True

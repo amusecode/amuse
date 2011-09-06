@@ -18,9 +18,9 @@ from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_m
 from optparse import OptionParser
 import numpy
 
-from amuse.support.data import Particles
-from amuse.support.data import ParticlesSuperset
-from amuse.support.data import Grid
+from amuse.datamodel import Particles
+from amuse.datamodel import ParticlesSuperset
+from amuse.datamodel import Grid
 def slowtest1():
     head_on_stellar_merger()
 

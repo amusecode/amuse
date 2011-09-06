@@ -7,7 +7,7 @@ import fnmatch
 from amuse.units import units
 from amuse.units import constants
 
-from amuse.support import data
+from amuse import datamodel
 class CachedStellarEvolution:
 
     """
@@ -66,7 +66,7 @@ class CachedStellarEvolution:
         pass
 
     def __init__(self, baseStellarEvolution, cacheDirectory):
-        self.particles = data.Particles()
+        self.particles = datamodel.Particles()
         self.particlesCache = []
 
         self.baseStellarEvolution = baseStellarEvolution

@@ -14,7 +14,7 @@ import os
 import time
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support import data
+from amuse import datamodel
 codestring = """
 #include <stdio.h>
 #include <stdlib.h>

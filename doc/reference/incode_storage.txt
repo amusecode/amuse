@@ -2,7 +2,7 @@
 Sets and Grids in Codes
 =======================
 
-.. automodule:: amuse.support.data.incode_storage
+.. automodule:: amuse.datamodel.incode_storage
     :members:
     :undoc-members:
     :show-inheritance:
