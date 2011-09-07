@@ -3,8 +3,6 @@ from amuse.support.codes.core import LegacyFunctionSpecification, is_mpd_running
 
 from amuse.support.codes.stopping_conditions import StoppingConditionInterface, StoppingConditions
 
-from amuse.support.codes.lit import LiteratureReferencesMixIn
-
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
@@ -15,6 +13,7 @@ from amuse.support.interface import *
 
 from amuse.datamodel import parameters
 from amuse.datamodel import attributes
+from amuse.support.literature import LiteratureReferencesMixIn
 """
 Existing, production codes
 

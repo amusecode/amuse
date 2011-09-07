@@ -13,7 +13,10 @@ EXES = $(BINDIR)dbh $(BINDIR)genhalo $(BINDIR)genbulge \
   $(BINDIR)getfreqs $(BINDIR)gendisk $(BINDIR)diskdf $(BINDIR)toascii
 
 
-all: $(EXES) 
+all: $(BINDIR) $(EXES) 
+
+$(BINDIR):
+	cd src; mkdir bin
 
 $(EXES): Makefile
 	make -C src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)"
