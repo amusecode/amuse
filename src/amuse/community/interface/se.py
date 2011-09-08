@@ -6,9 +6,10 @@ import numpy
 
 from amuse.units import units
 from amuse.support import exceptions
-from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
 from amuse.community.interface import common
 
+from amuse.rfi.core import legacy_function
+from amuse.rfi.core import LegacyFunctionSpecification
 class StellarEvolutionInterface(common.CommonCodeInterface):
 
 

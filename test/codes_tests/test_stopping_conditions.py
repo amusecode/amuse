@@ -1,12 +1,6 @@
-from amuse.support.codes.core import *
-
-from amuse.support.codes import channel
-
 from amuse.test.amusetest import TestWithMPI
-from amuse.support.codes import create_c
-#cello
-from amuse.support.codes import create_fortran
 
+#cello
 from amuse.support.codes import stopping_conditions
 from amuse.support.interface import InCodeComponentImplementation
 
@@ -15,6 +9,10 @@ import os
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.rfi.tools import create_c
+from amuse.rfi.tools import create_fortran
+from amuse.rfi import channel
+from amuse.rfi.core import *
 codestring = """
 #include <stopcond.h>
 #ifdef __cplusplus

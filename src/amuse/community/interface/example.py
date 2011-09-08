@@ -2,8 +2,8 @@
 Example function for documentation purposess
 """
 
-from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
-
+from amuse.rfi.core import legacy_function
+from amuse.rfi.core import LegacyFunctionSpecification
 class ExampleInterface(object):
     @legacy_function   
     def example_function():

@@ -3,11 +3,11 @@ import os.path
 import pickle
 import random
 import numpy
-from amuse.support.codes.core import PythonCodeInterface
 from amuse.community import *
 from amuse.community.interface.common import CommonCode, CommonCodeInterface
 from subprocess import Popen, PIPE
 
+from amuse.rfi.core import PythonCodeInterface
 class GalactICsImplementation(object):
     
     def __init__(self):

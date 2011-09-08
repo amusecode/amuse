@@ -1,12 +1,6 @@
-from amuse.support.codes.core import *
-
-from amuse.support.codes import channel
-
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
-from amuse.support.codes import create_c
-from amuse.support.codes import create_c_sockets
 from amuse.support import exceptions
 
 import subprocess
@@ -15,6 +9,10 @@ import time
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.rfi.tools import create_c
+from amuse.rfi.tools import create_c_sockets
+from amuse.rfi import channel
+from amuse.rfi.core import *
 codestring = """
 #include <stdio.h>
 #include <stdlib.h>

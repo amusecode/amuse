@@ -1,12 +1,11 @@
 from amuse.test import amusetest
-from amuse.support.codes.core import *
-from amuse.support.codes import create_fortran
-
 import numpy
 import inspect
 import collections
 
 
+from amuse.rfi.tools import create_fortran
+from amuse.rfi.core import *
 class ForTestingInterface(CodeInterface):
     
     def __init__(self, exefile, **options):

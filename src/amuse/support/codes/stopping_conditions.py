@@ -1,6 +1,7 @@
 from amuse.units import units
 from amuse.units import nbody_system as nbody
-from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
+from amuse.rfi.core import legacy_function
+from amuse.rfi.core import LegacyFunctionSpecification
 
 class StoppingConditionInterface(object):
 

@@ -18,7 +18,6 @@ from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.sse.interface import SSE
 from amuse.community.phiGRAPE.interface import PhiGRAPE
-from amuse.support.codes.core import is_mpd_running
 from amuse.test.amusetest import get_path_to_results
 
 from amuse.ext.plummer import MakePlummerModel
@@ -26,6 +25,7 @@ from amuse.ext.salpeter import SalpeterIMF
 from amuse.io import store
 
 from amuse.datamodel import particle_attributes
+from amuse.rfi.core import is_mpd_running
 def plot_particles(particles, name_of_the_figure):
     
     if HAS_MATPLOTLIB:

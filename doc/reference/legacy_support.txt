@@ -2,5 +2,5 @@
 Support code for the community code interfaces
 ===============================================
 
-.. automodule:: amuse.support.codes.core
+.. automodule:: amuse.rfi.core
     :members:

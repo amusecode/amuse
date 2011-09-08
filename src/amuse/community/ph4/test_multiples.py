@@ -1,6 +1,5 @@
 import sys, unittest, numpy, random, collections, getopt, os, math
 
-from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.units import nbody_system
@@ -12,6 +11,7 @@ from amuse.community.kepler.interface import Kepler
 from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
+from amuse.rfi.core import is_mpd_running
 def is_a_parent(child1_key, child2_key):
     return child1_key > 0 or child2_key > 0
 

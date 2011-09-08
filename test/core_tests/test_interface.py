@@ -7,13 +7,13 @@ from amuse.datamodel.parameters import *
 from amuse.support.core import OrderedDictionary
 from amuse.support import exceptions
 
-from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
-
 from amuse.test import amusetest
 import numpy
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse import datamodel
+from amuse.rfi.core import legacy_function
+from amuse.rfi.core import LegacyFunctionSpecification
 class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
     class TestClass(object):
         

@@ -3,11 +3,9 @@ from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.interface import gd
 from amuse.community.interface.gd import GravitationalDynamicsInterface
-from amuse.support.codes.create_definition import CodeDocStringProperty
-
-from amuse.support.codes import create_definition
-from amuse.support.codes.core import LegacyFunctionSpecification
-
+from amuse.rfi.tools import create_definition
+from amuse.rfi.tools.create_definition import CodeDocStringProperty
+from amuse.rfi.core import LegacyFunctionSpecification
 class TestGravitationalDynamics(TestWithMPI):
     def test1(self):
         x = GravitationalDynamicsInterface()

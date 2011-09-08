@@ -229,11 +229,11 @@ if __name__ == '__main__':
     
     setup_sys_path()
     
-    from amuse.support.codes import create_c
-    from amuse.support.codes import create_fortran
-    from amuse.support.codes import create_dir
-    from amuse.support.codes import create_c_sockets
-    from amuse.support.codes import create_fortran_sockets
+    from amuse.rfi.tools import create_c
+    from amuse.rfi.tools import create_fortran
+    from amuse.rfi.tools import create_dir
+    from amuse.rfi.tools import create_c_sockets
+    from amuse.rfi.tools import create_fortran_sockets
     
     uc = ParseCommandLine()
     uc.start()

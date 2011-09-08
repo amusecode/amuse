@@ -1,16 +1,13 @@
-from amuse.support.codes.core import *
-
-from amuse.support.codes import channel
-
 from amuse.test.amusetest import TestWithMPI
-from amuse.support.codes import create_fortran
-
 import subprocess
 import os
 import time
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.rfi.tools import create_fortran
+from amuse.rfi import channel
+from amuse.rfi.core import *
 codestring = """
 function echo_int(int_in, int_out)
     implicit none

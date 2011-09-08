@@ -7,7 +7,7 @@ import sys
 
 from sphinx import addnodes
 
-from amuse.support.codes.core import is_mpd_running
+from amuse.rfi.core import is_mpd_running
 from sphinx.ext.autodoc import AttributeDocumenter, ModuleLevelDocumenter
 from sphinx.util import force_decode
 from sphinx.util.docstrings import prepare_docstring

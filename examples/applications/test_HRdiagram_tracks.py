@@ -13,10 +13,10 @@ from amuse.community.mesa.interface import MESA
 
 from amuse.community.cachedse.interface import CachedStellarEvolution
 
-from amuse.support.codes.core import is_mpd_running
 from amuse.test.amusetest import get_path_to_results
 
 from amuse import datamodel
+from amuse.rfi.core import is_mpd_running
 usage = """\
 usage: %prog [options]
     

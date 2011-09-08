@@ -4,14 +4,13 @@ import numpy
 
 from amuse.community.octgrav.interface import OctgravInterface, Octgrav
 
-from amuse.support.codes import channel
-
 from amuse.ext.plummer import *
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.rfi import channel
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):

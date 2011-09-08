@@ -8,7 +8,6 @@ import os
 
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.community.newsmallN.interface import SmallN as grav
@@ -17,6 +16,7 @@ from amuse.community.kepler.interface import Kepler
 from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
+from amuse.rfi.core import is_mpd_running
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy

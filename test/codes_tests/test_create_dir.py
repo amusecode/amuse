@@ -4,8 +4,7 @@ import shutil
 import subprocess
 import sys
 
-from amuse.support.codes import create_dir
-
+from amuse.rfi.tools import create_dir
 class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.TestCase):
     
     def test1(self):

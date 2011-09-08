@@ -1,6 +1,3 @@
-from amuse.support.codes.core import CodeInterface, legacy_function, legacy_global
-from amuse.support.codes.core import LegacyFunctionSpecification, is_mpd_running
-
 from amuse.support.codes.stopping_conditions import StoppingConditionInterface, StoppingConditions
 
 from amuse.units import units
@@ -14,6 +11,11 @@ from amuse.support.interface import *
 from amuse.datamodel import parameters
 from amuse.datamodel import attributes
 from amuse.support.literature import LiteratureReferencesMixIn
+from amuse.rfi.core import CodeInterface
+from amuse.rfi.core import legacy_function
+from amuse.rfi.core import legacy_global
+from amuse.rfi.core import LegacyFunctionSpecification
+from amuse.rfi.core import is_mpd_running
 """
 Existing, production codes
 

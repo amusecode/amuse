@@ -5,9 +5,8 @@ from time import time
 import math, sys
 
 # MPI Debugging
-from amuse.support.codes import channel
-
 from amuse.datamodel import Particle
+from amuse.rfi import channel
 if __name__ == "__main__":
     test_list = [1, 2]
 

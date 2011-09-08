@@ -10,12 +10,12 @@ from amuse.support.exceptions import AmuseException
 
 
 
-from amuse.support.codes import channel
 from amuse.units import nbody_system
 from amuse.units import generic_unit_converter
 from amuse.units import generic_unit_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.rfi import channel
 default_options = dict(number_of_workers=2)
 #default_options = dict(number_of_workers=2, redirection="none")
 

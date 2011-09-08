@@ -1,6 +1,4 @@
 from amuse.community import *
-from amuse.support.codes.core import *
-
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 import copy,numpy
 import numpy as math
@@ -8,6 +6,7 @@ import numpy as math
 # tbd: initial value for time_Radius solver
 
 from amuse.datamodel import Particles
+from amuse.rfi.core import *
 def stumpff_C(z):
     if(z==0): 
         return 1/2.

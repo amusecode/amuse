@@ -1,7 +1,3 @@
-from amuse.support.codes.core import *
-
-
-from amuse.support.codes import python_code
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
@@ -13,6 +9,8 @@ import time
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.rfi import python_code
+from amuse.rfi.core import *
 class ForTestingInterface(PythonCodeInterface):
     
     def __init__(self, **options):

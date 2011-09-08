@@ -1,17 +1,15 @@
-from amuse.support.codes.core import *
-
-from amuse.support.codes import channel
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.test.amusetest import get_path_to_results
-from amuse.support.codes import create_c
-
 import subprocess
 import os
 import numpy
 import time
 
 from amuse import datamodel
+from amuse.rfi.tools import create_c
+from amuse.rfi import channel
+from amuse.rfi.core import *
 codestring = """
 
 #include <stdio.h>

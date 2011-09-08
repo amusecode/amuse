@@ -10,10 +10,10 @@ from amuse.ext.spherical_model import new_uniform_spherical_particle_distributio
 from amuse.ext.plummer import new_plummer_sphere
 
 
-from amuse.support.codes import channel
 from amuse.units import nbody_system as nbody
 from amuse.units import units
 from amuse import datamodel
+from amuse.rfi import channel
 class TestFiInterface(TestWithMPI):
 
     def test1(self):
