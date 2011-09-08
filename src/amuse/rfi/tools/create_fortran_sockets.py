@@ -23,6 +23,7 @@ dtype_to_spec = DTypeToSpecDictionary({
 
 dtypes = ['int32', 'int64', 'float32', 'float64', 'bool', 'string']
 
+mpi_types = {'int32': 'MPI_INTEGER', 'int64': 'MPI_LONG_LONG_INT', 'float32': 'MPI_REAL', 'float64': 'MPI_DOUBLE_PRECISION', 'bool': 'MPI_LOGICAL', 'string': 'MPI_CHARACTER'}
 
 forsockets_module_code = """module forsockets
     integer HEADER_FLAGS, HEADER_CALL_ID, HEADER_FUNCTION_ID, HEADER_CALL_COUNT, & 
@@ -196,33 +197,40 @@ main_program_code = """
     implicit none
     
     include 'mpif.h'
-    integer :: provided,ioerror, port
+    integer :: provided,ioerror, port, rank
     character(len=32) :: port_string
 
     call mpi_init_thread(mpi_thread_multiple, provided, ioerror)
+    call mpi_comm_rank(MPI_COMM_WORLD, rank, ioerror)
 
-    call get_command_argument(1, port_string)
+    if (rank .eq. 0) then
 
-    read (port_string,*) port
+      call get_command_argument(1, port_string)
 
-    call forsockets_init(port)
+      read (port_string,*) port
+
+      call forsockets_init(port)
+    end if
     
-    call run_loop()
+    call run_loop(rank)
     
     call mpi_finalize(ioerror)
 
-    call forsockets_close()
+    if (rank .eq. 0) then
+      call forsockets_close()
+    end if
 
   end program amuse_worker
 """
 
                 
 string_receive_code = """
-      call receive_integers(c_loc(strings_in), header_in(HEADER_STRING_COUNT))
+      if (rank .eq. 0) then
+        call receive_integers(c_loc(strings_in), header_in(HEADER_STRING_COUNT))
+      end if
+      call MPI_BCast(strings_in, header_in(HEADER_STRING_COUNT) , MPI_INTEGER, 0, MPI_COMM_WORLD, ioerror)
 
       !print*, 'received string header:', strings_in
-
-
 
       do i = 1, header_in(HEADER_STRING_COUNT), 1
         if (strings_in(i) .gt. MAX_STRING_LENGTH) then
@@ -232,32 +240,36 @@ string_receive_code = """
         end if
         
         characters_in(i) = ' '
-          
-        call receive_string(c_loc(characters_in(i)), strings_in(i))
+        
+        if (rank .eq. 0) then
+          call receive_string(c_loc(characters_in(i)), strings_in(i))
+        end if
+        
+        call MPI_BCast(characters_in(i), strings_in(i) , MPI_INTEGER, 0, MPI_COMM_WORLD, ioerror)
 
-        print*, 'received string: ', characters_in(i), ' of length ', strings_in(i)
+        !print*, 'received string: ', characters_in(i), ' of length ', strings_in(i)
 
       end do
 """
 
 string_send_code = """
-      !figure out length of all strings
-      do i = 1, header_out(HEADER_STRING_COUNT), 1
-          strings_out(i) = len_trim(characters_out(i))
-          
-          if (strings_out(i) .gt. index(characters_out(i), char(0)) .and. index(characters_out(i), char(0)) .gt. 0) then
-              strings_out(i) = index(characters_out(i), char(0)) - 1
-          end if
-
-      end do
-
-      !send string header
-      call send_integers(c_loc(strings_out), header_out(HEADER_STRING_COUNT))
-
-      do i = 1, header_out(HEADER_STRING_COUNT), 1
-          print*, 'sending string ', characters_out(i), ' of length ', strings_out(i)
-          call send_string(c_loc(characters_out(i)), strings_out(i))
-      end do     
+          !figure out length of all strings
+          do i = 1, header_out(HEADER_STRING_COUNT), 1
+              strings_out(i) = len_trim(characters_out(i))
+              
+              if (strings_out(i) .gt. index(characters_out(i), char(0)) .and. index(characters_out(i), char(0)) .gt. 0) then
+                  strings_out(i) = index(characters_out(i), char(0)) - 1
+              end if
+    
+          end do
+    
+          !send string header
+          call send_integers(c_loc(strings_out), header_out(HEADER_STRING_COUNT))
+    
+          do i = 1, header_out(HEADER_STRING_COUNT), 1
+              print*, 'sending string ', characters_out(i), ' of length ', strings_out(i)
+              call send_string(c_loc(characters_out(i)), strings_out(i))
+          end do     
 """                
 
         
@@ -597,19 +609,20 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                     self.out + ')'
 
     def output_runloop_function_def_start(self):
-        self.out.lf() + 'subroutine run_loop'
+        self.out.lf() + 'subroutine run_loop (rank)'
         self.out.indent()
         self.out.lf() + 'use iso_c_binding'
         self.out.lf() + 'use forsockets'
         self.output_modules()
         self.out.lf() + "implicit none"
+        self.out.lf() + "integer, intent(in) :: rank"
         self.out.lf()
         self.output_mpi_include()
         self.out.lf().lf()
         self.out.lf().lf() + 'integer (c_int32_t) internal__redirect_outputs'
         self.out.lf().lf()
         self.out.n() + 'integer (c_int32_t) :: max_length = 255, MAX_STRING_LENGTH = ' + self.MAX_STRING_LEN
-        self.out.n() + 'logical :: must_run_loop, error'
+        self.out.n() + 'logical :: must_run_loop, error, ioerror'
         self.out.n() + 'integer i, length'
         
         self.out.lf() + 'character (c_char), allocatable, target :: characters_in(:) * ' + self.MAX_STRING_LEN
@@ -649,10 +662,18 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
 #        self.out.lf().lf() + 'call MPI_COMM_GET_PARENT(parent, ioerror)'
 #        self.out.lf()      + 'call MPI_COMM_RANK(parent, rank, ioerror)'
         self.out.lf().lf() + 'must_run_loop = .true.'
+#        self.out.lf() + "print*, 'my rank is ', rank"
+
         self.out.lf().lf() + 'do while (must_run_loop)'
         self.out.indent()
 
-        self.out.lf().lf() + 'call receive_integers(c_loc(header_in), HEADER_SIZE)'
+        self.out.lf() + 'if (rank .eq. 0) then'
+        self.out.indent().lf() + 'call receive_integers(c_loc(header_in), HEADER_SIZE)'
+        self.out.dedent().lf() + 'end if'
+        self.out.lf() + 'call mpi_bcast(header_in, HEADER_SIZE, MPI_INTEGER, 0, MPI_COMM_WORLD, ioerror)'
+        
+#        self.out.lf() + "print*, 'getting data for for function with function id', header_in(HEADER_FUNCTION_ID), ' on rank ', rank"
+        
 #        self.out.lf().lf() + "print*, 'received header:', header_in"
         self.out.lf().lf() + 'length = header_in(HEADER_CALL_COUNT)'
         
@@ -673,15 +694,18 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
             self.out.lf() + 'if (header_in(' + spec.counter_name + ')'
             self.out + ' .gt. 0) then'
     
-            self.out.indent().lf()
+            self.out.indent()
             
             if dtype == 'string':
                 self.out.lf() + string_receive_code
             else:
-                self.out + 'call receive_'
+                self.out.lf() + 'if (rank .eq. 0) then'
+                self.out.indent().lf() + 'call receive_'
                 self.out + spec.mpi_type + 's(c_loc('
                 self.out + spec.input_var_name + '), header_in('
                 self.out + spec.counter_name + '))'
+                self.out.dedent().lf() + 'end if'
+                self.out.lf() + 'call MPI_BCast(' + spec.input_var_name + ', header_in(' + spec.counter_name + ') , ' + mpi_types[dtype] + ', 0, MPI_COMM_WORLD, ioerror)'
         
             self.out.dedent().lf()
             self.out + 'end if'
@@ -692,6 +716,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf() + 'header_out(HEADER_CALL_ID) = header_in(HEADER_CALL_ID)'
         self.out.lf() + 'header_out(HEADER_FUNCTION_ID) = header_in(HEADER_FUNCTION_ID)'
         self.out.lf() + 'header_out(HEADER_CALL_COUNT) = header_in(HEADER_CALL_COUNT)'
+        
+        self.out.lf().lf() + 'call mpi_barrier (MPI_COMM_WORLD,ioerror)'
         
         self.out.lf().lf() + 'error = .false.'
         
@@ -728,6 +754,12 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
 #        self.out.dedent().lf()
         
 #        self.out.lf().lf() + "!print*, 'sending header', header_out"
+
+        self.out.lf().lf() + 'call mpi_barrier (MPI_COMM_WORLD,ioerror)'
+
+        self.out.lf() + 'if (rank .eq. 0) then'
+        self.out.indent()
+
         self.out.lf().lf() + 'call send_integers(c_loc(header_out), HEADER_SIZE)'
         self.out.lf()
         
@@ -749,10 +781,11 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 
             self.out.dedent().lf() +'end if'
             self.out.lf()
+
+        self.out.dedent().lf() + 'end if'
         
         self.out.dedent()
         self.out.lf() + 'end do'
-        
         
         self.out.lf()
         self.output_deallocate_statements()
@@ -833,10 +866,7 @@ class GenerateAFortranStubStringFromASpecificationClass\
         if hasattr(self.specification_class, 'use_modules'):
             for x in self.specification_class.use_modules:
                 self.out.n() + 'use ' + x 
-        
-    
-        
-        
+
 
         
        
