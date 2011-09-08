@@ -1,5 +1,5 @@
 
-MPIF90 ?= openmpif90
+MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 FC = $(MPIF90)
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
@@ -31,7 +31,6 @@ OMPFLAGS=# -openmp -openmp_report0
 PIC=#-fPIC
 
 # gfortran flags
-
 
 ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
 FFLAGS = -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
@@ -110,5 +109,6 @@ clean:
 	make -C src purge
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
 	rm -f fi_worker_periodic fi_worker_gl fi_worker
+	rm -f fi_worker_sockets worker-sockets.f90	
 	rm -f worker_code_periodic worker_code
 
