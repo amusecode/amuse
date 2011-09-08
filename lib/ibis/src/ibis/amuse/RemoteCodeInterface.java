@@ -29,17 +29,17 @@ public class RemoteCodeInterface implements Runnable {
 
     private static final Logger logger = LoggerFactory
             .getLogger(RemoteCodeInterface.class);
-    
+
     private static int nextID = 0;
 
     private final SocketChannel channel;
 
     private final String codeName;
-    
+
     private final String codeDir;
 
     private final String hostname;
-    
+
     private final int nrOfWorkers;
 
     private final String id;
@@ -53,9 +53,9 @@ public class RemoteCodeInterface implements Runnable {
     private final SendPort sendPort;
 
     private final ReceivePortIdentifier remotePort;
-    
+
     private static String getNextID() {
-        return "worker-" + nextID++;
+        return Integer.toString(nextID++);
     }
 
     private static ReceivePortIdentifier receivePortAddress(
@@ -93,7 +93,7 @@ public class RemoteCodeInterface implements Runnable {
         this.ibis = ibis;
 
         try {
-            id = getNextID();
+
 
             if (logger.isDebugEnabled()) {
                 logger.debug("New connection from "
@@ -132,10 +132,12 @@ public class RemoteCodeInterface implements Runnable {
             codeName = initRequest.getString(0);
             codeDir = initRequest.getString(1);
             hostname = initRequest.getString(2);
-            
+
             nrOfWorkers = initRequest.getInteger(0);
 
             // initialize ibis ports
+            
+            id = codeName + "-" + getNextID();
 
             receivePort = ibis
                     .createReceivePort(Daemon.portType, id.toString());
@@ -144,8 +146,9 @@ public class RemoteCodeInterface implements Runnable {
             sendPort = ibis.createSendPort(Daemon.portType);
 
             // start deployment of worker (possibly on remote machine)
-
-            job = deployment.deploy(codeName, codeDir, hostname, id, nrOfWorkers);
+            
+            job = deployment.deploy(codeName, codeDir, hostname, id,
+                    nrOfWorkers);
 
             // we expect a "hello" message from the worker. Will also check if
             // the job is still running
@@ -153,10 +156,24 @@ public class RemoteCodeInterface implements Runnable {
 
             sendPort.connect(remotePort);
 
-            // send OK reply to amuse
-            AmuseMessage initReply = new AmuseMessage(initRequest.getCallID(),
-                    initRequest.getFunctionID(), initRequest.getCount());
+            // do init function at remote worker so it can initialize the code
 
+            // write init message
+            WriteMessage writeMessage = sendPort.newMessage();
+            initRequest.writeTo(writeMessage);
+            writeMessage.finish();
+
+            // read reply
+            AmuseMessage initReply = new AmuseMessage();
+            ReadMessage readMessage = receivePort.receive();
+            initReply.readFrom(readMessage);
+            readMessage.finish();
+
+            if (initReply.getError() != null) {
+                throw new IOException(initReply.getError());
+            }
+
+            // send reply to amuse
             initReply.writeTo(channel);
 
             ThreadPool.createNew(this, "Amuse worker");
@@ -172,6 +189,7 @@ public class RemoteCodeInterface implements Runnable {
                     AmuseMessage.FUNCTION_ID_INIT, 1, exception.getMessage()
                             + ": " + e.getMessage());
             errormessage.writeTo(channel);
+            
             throw exception;
         }
     }
@@ -180,17 +198,17 @@ public class RemoteCodeInterface implements Runnable {
         AmuseMessage request = new AmuseMessage();
         AmuseMessage result = new AmuseMessage();
         long start, finish;
-        
+
         boolean running = true;
 
         while (running) {
-           start = System.currentTimeMillis();
+            start = System.currentTimeMillis();
 
             try {
-                //logger.debug("wating for request...");
+                // logger.debug("wating for request...");
                 request.readFrom(channel);
 
-                //logger.debug("performing request " + request);
+                // logger.debug("performing request " + request);
 
                 if (request.getFunctionID() == AmuseMessage.FUNCTION_ID_STOP) {
                     // this will be the last call we perform
@@ -206,7 +224,7 @@ public class RemoteCodeInterface implements Runnable {
                 request.writeTo(writeMessage);
                 writeMessage.finish();
 
-                //logger.debug("waiting for result");
+                logger.debug("waiting for result");
 
                 ReadMessage readMessage = receivePort.receive();
                 result.readFrom(readMessage);
@@ -217,14 +235,14 @@ public class RemoteCodeInterface implements Runnable {
                             result.getError());
                 }
 
-                //logger.debug("request " + request.getCallID()
-                //        + " handled, result: " + result);
+                logger.debug("request " + request.getCallID()
+                + " handled, result: " + result);
 
                 // forward result to the channel
                 result.writeTo(channel);
-                
+
                 finish = System.currentTimeMillis();
-                
+
                 if (logger.isDebugEnabled()) {
                     logger.debug("call took " + (finish - start) + " ms");
                 }
@@ -280,7 +298,7 @@ public class RemoteCodeInterface implements Runnable {
     }
 
     public String toString() {
-        return "Worker \"" + id + "\" running \"" + codeName
-                + "\" on host " + hostname;
+        return "Worker \"" + id + "\" running \"" + codeName + "\" on host "
+                + hostname;
     }
 }

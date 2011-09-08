@@ -38,8 +38,7 @@ public class OutputPrefixForwarder implements Runnable {
     }
 
     /**
-     * Forwards standard out of server to given output stream. Filters out line
-     * containing server address.
+     * Forwards input stream to given output stream.
      */
     public void run() {
         while (true) {

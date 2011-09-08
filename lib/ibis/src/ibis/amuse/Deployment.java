@@ -78,6 +78,17 @@ public class Deployment {
                     + clusterName + "\" in grid description file deploy.grid");
         }
 
+        String mpirun = cluster.getProperties().getProperty("mpirun");
+
+        if (mpirun == null) {
+            if (!clusterName.equals("local")) {
+                logger.warn("mpirun property not set for cluster \""
+                        + clusterName
+                        + "\" in grid description file deploy.grid, using default (mpirun)");
+            }
+            mpirun = "mpirun";
+        }
+
         // get or create Application for worker
         Application application = applications.getApplication(codeName);
 
@@ -102,12 +113,15 @@ public class Deployment {
         experiment.addJob(jobDescription);
 
         jobDescription.getCluster().setName(clusterName);
+
         jobDescription.setProcessCount(nrOfWorkers);
         jobDescription.setResourceCount(nrOfWorkers);
         jobDescription.setRuntime(60);
         jobDescription.getApplication().setName(codeName);
         jobDescription.setPoolName("amuse");
 
+        jobDescription.getApplication().addOutputFile(new File("output"));
+        
         String absCodeDir = amuseHome + "/" + codeDir;
 
         jobDescription.getApplication().setSystemProperty("java.library.path",
@@ -116,7 +130,7 @@ public class Deployment {
         jobDescription.getApplication().setArguments("--code-name", codeName,
                 "--worker-id", workerID, "--amuse-home", amuseHome,
                 "--code-dir", codeDir, "--number-of-workers",
-                Integer.toString(nrOfWorkers));
+                Integer.toString(nrOfWorkers), "--mpirun", mpirun);
 
         Job result = deploy.submitJob(jobDescription, application, cluster,
                 null, null);

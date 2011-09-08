@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
-import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.IbisProperties;
@@ -24,8 +23,25 @@ import ibis.ipl.PortType;
  * 
  */
 public class PoolInfo {
-    
-    private static final Logger logger = LoggerFactory.getLogger(PoolInfo.class);
+
+    private static class Shutdown extends Thread {
+        private final Ibis ibis;
+
+        Shutdown(Ibis ibis) {
+            this.ibis = ibis;
+        }
+
+        public void run() {
+            try {
+                ibis.end();
+            } catch (IOException e) {
+                logger.error("Error ending PoolInfo");
+            }
+        }
+    }
+
+    private static final Logger logger = LoggerFactory
+            .getLogger(PoolInfo.class);
 
     private final Ibis ibis;
 
@@ -43,13 +59,18 @@ public class PoolInfo {
         Properties properties = new Properties();
 
         properties.setProperty(IbisProperties.POOL_NAME, poolID);
-        properties.setProperty(IbisProperties.POOL_SIZE, Integer.toString(poolSize));
+        properties.setProperty(IbisProperties.POOL_SIZE,
+                Integer.toString(poolSize));
+
+        String host = InetAddress.getLocalHost().getHostAddress();
+
+        ibis = IbisFactory.createIbis(ibisCapabilities, properties, true, null,
+                null, host, new PortType[0]);
         
-        String hostname = InetAddress.getLocalHost().getHostName();
-        
-        ibis = IbisFactory.createIbis(ibisCapabilities, properties, true, null, null, hostname, new PortType[0]);
-        
-        logger.info("initialized poolinfo, waiting for others");
+        //end ibis when shutdown
+        Runtime.getRuntime().addShutdownHook(new Shutdown(ibis));
+
+        logger.info("initializing poolinfo, waiting for others");
 
         ibis.registry().waitUntilPoolClosed();
 
@@ -67,15 +88,19 @@ public class PoolInfo {
         }
         this.rank = rank;
         
-        System.err.println("Hostnames: " + Arrays.toString(hostnames));
+        logger.info("initialized poolinfo. Hosts: " + Arrays.toString(hostnames));
     }
 
     public String[] getHostnames() {
         return hostnames;
     }
 
-    public void terminate() throws IOException {
-        ibis.registry().terminate();
+    public void terminate() {
+        try {
+            ibis.registry().terminate();
+        } catch (IOException e) {
+            logger.error("Could not terminate poolinfo pool", e);
+        }
     }
 
     public void waitUntilTerminated() {

@@ -1,12 +1,6 @@
 package ibis.amuse;
 
-import ibis.ipl.ReadMessage;
-import ibis.ipl.ReceivePort;
-import ibis.ipl.SendPort;
-import ibis.ipl.WriteMessage;
-
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -22,25 +16,15 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class SocketCodeInterface implements Runnable {
+public class SocketCodeInterface extends CodeInterface {
 
     private static final Logger logger = LoggerFactory
             .getLogger(SocketCodeInterface.class);
 
     private static final int ACCEPT_TRIES = 5;
-    private static final int ACCEPT_TIMEOUT = 500; //ms
+    private static final int ACCEPT_TIMEOUT = 500; // ms
 
     private final File executable;
-
-    // messages used for receiving/sending requests
-
-    private final AmuseMessage requestMessage;
-    private final AmuseMessage resultMessage;
-
-    // Ibis communication stuff
-
-    private final ReceivePort receivePort;
-    private final SendPort sendPort;
 
     // local socket communication stuff
 
@@ -50,147 +34,119 @@ public class SocketCodeInterface implements Runnable {
 
     private final Process process;
 
-    SocketCodeInterface(String codeName, String codeDir, String amuseHome, ReceivePort receivePort,
-            SendPort sendPort, String[] hostnames) throws IOException {
-        this.receivePort = receivePort;
-        this.sendPort = sendPort;
+    private AmuseMessage requestMessage;
+    private AmuseMessage resultMessage;
 
-        requestMessage = new AmuseMessage();
-        resultMessage = new AmuseMessage();
+    SocketCodeInterface(String workerID, PoolInfo poolInfo, String codeName,
+            String codeDir, String amuseHome, String mpirun) throws Exception {
+        super(workerID, poolInfo);
 
-        executable = new File(amuseHome + File.separator + codeDir + File.separator + codeName);
+        AmuseMessage initRequest = receiveInitRequest();
 
-        if (!executable.canExecute()) {
-            throw new IOException("Cannot find executable for code " + codeName
-                    + ": " + executable);
-        }
+        try {
 
-        serverSocket = ServerSocketChannel.open();
-        serverSocket.socket().bind(null);
-        
-        File hostFile = File.createTempFile("host", "file");
-        
-        FileWriter writer = new FileWriter(hostFile);
-        for(String hostname: hostnames) {
-            writer.write(hostname + "\n");
-        }
-        writer.flush();
-        writer.close();
-        
-        logger.info("host file = " + hostFile.getAbsolutePath());
+            executable = new File(amuseHome + File.separator + codeDir
+                    + File.separator + codeName);
 
-        ProcessBuilder builder = new ProcessBuilder();
-        builder.command("mpirun", "--hostfile", hostFile.getAbsolutePath(),
-                executable.toString(),
-                Integer.toString(serverSocket.socket().getLocalPort()));
+            if (!executable.canExecute()) {
+                throw new IOException("Cannot find executable for code "
+                        + codeName + ": " + executable);
+            }
 
-        process = builder.start();
-        
-        new OutputPrefixForwarder(process.getInputStream(), System.out, "stdout of " + codeName + ": ");
-        new OutputPrefixForwarder(process.getErrorStream(), System.err, "stderr of " + codeName + ": ");
-
-        logger.info("process started");
-
-        socket = acceptConnection(serverSocket);
-        
-        logger.info("connection established");
-
-    }
-    
-    private static SocketChannel acceptConnection(ServerSocketChannel serverSocket) throws IOException {
-        serverSocket.configureBlocking(false);
-        for(int i = 0; i < ACCEPT_TRIES;i++) {
-            SocketChannel result = serverSocket.accept();
+            serverSocket = ServerSocketChannel.open();
+            serverSocket.socket().bind(null);
             
+            File hostFile = File.createTempFile("host", "file");
+
+            FileWriter writer = new FileWriter(hostFile);
+            for (String hostname : poolInfo.getHostnames()) {
+                writer.write(hostname + "\n");
+            }
+            writer.flush();
+            writer.close();
+            
+            logger.info("host file = " + hostFile.getAbsolutePath());
+
+            ProcessBuilder builder = new ProcessBuilder();
+            if (mpirun == null) {
+                mpirun = "mpirun";
+            }
+            
+            builder.command(mpirun, "--hostfile", hostFile.getAbsolutePath(),
+                    executable.toString(),
+                    Integer.toString(serverSocket.socket().getLocalPort()));
+            
+            //make sure there is an "output" directory for a code to put output in
+            new File("output").mkdir();
+
+            process = builder.start();
+
+            new OutputPrefixForwarder(process.getInputStream(), System.out,
+                    "stdout of " + codeName + ": ");
+            new OutputPrefixForwarder(process.getErrorStream(), System.err,
+                    "stderr of " + codeName + ": ");
+
+            logger.info("process started");
+
+            socket = acceptConnection(serverSocket);
+
+            logger.info("connection established");
+
+        } catch (Throwable e) {
+            sendInitReply(initRequest.getCallID(), e);
+
+            end();
+
+            throw new Exception("error on starting socket code", e);
+        }
+        sendInitReply(initRequest.getCallID());
+    }
+
+    private static SocketChannel acceptConnection(
+            ServerSocketChannel serverSocket) throws IOException {
+        serverSocket.configureBlocking(false);
+        for (int i = 0; i < ACCEPT_TRIES; i++) {
+            SocketChannel result = serverSocket.accept();
+
             if (result != null) {
                 return result;
             }
             try {
                 Thread.sleep(ACCEPT_TIMEOUT);
             } catch (InterruptedException e) {
-                //IGNORE
+                // IGNORE
             }
         }
-        throw new IOException("worker not started, socket connection failed to initialize");
+        throw new IOException(
+                "worker not started, socket connection failed to initialize");
     }
 
     @Override
-    /**
-     * Continuously receives a message, performs a call, sends a reply.
-     */
-    public void run() {
-        boolean running = true;
-        long start, finish;
+    void call() throws IOException {
+        logger.debug("performing call with function ID "
+                + requestMessage.getFunctionID());
+        requestMessage.writeTo(socket);
+        resultMessage.readFrom(socket);
+        logger.debug("done performing call with function ID "
+                + requestMessage.getFunctionID() + " error = "
+                + resultMessage.getError());
+    }
 
-        while (running) {
-            
-            try {
-                start = System.currentTimeMillis();
-                logger.debug("Receiving call message");
-                ReadMessage readMessage = receivePort.receive();
-
-                logger.debug("Reading call request from IPL message");
-
-                requestMessage.readFrom(readMessage);
-
-                readMessage.finish();
-
-                int functionID = requestMessage.getFunctionID();
-
-                if (functionID == AmuseMessage.FUNCTION_ID_STOP) {
-                    // final request handled
-                    running = false;
-                }
-
-                logger.debug("Performing call for function " + functionID);
-                try {
-                    requestMessage.writeTo(socket);
-                    resultMessage.readFrom(socket);
-                } catch (Exception e) {
-                    logger.error("exception on performing call", e);
-                    // put an exception in the result message
-                    resultMessage.clear();
-                    resultMessage.setCallID(requestMessage.getCallID());
-                    resultMessage.setFunctionID(requestMessage.getFunctionID());
-                    resultMessage.setCallCount(requestMessage.getCount());
-                    resultMessage.setError(e.getMessage());
-                }
-
-                logger.debug("result: " + resultMessage);
-
-                WriteMessage writeMessage = sendPort.newMessage();
-
-                resultMessage.writeTo(writeMessage);
-
-                writeMessage.finish();
-
-                logger.debug("Done performing call for function " + functionID);
-                finish = System.currentTimeMillis();
-                
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Call took " + (finish - start) + " ms");
-                }
-            } catch (Throwable e) {
-                logger.error("Error while handling request", e);
-                try {
-                    Thread.sleep(1000);
-                } catch (Exception e2) {
-                    // IGNORE
-                }
-            }
-        }
+    @Override
+    void end() {
         process.destroy();
+
+        super.end();
     }
 
-    public static void main(String[] arguments) throws Exception {
-        SocketCodeInterface code = new SocketCodeInterface(arguments[0], arguments[1], arguments[2], null, null, new String[0]);
-
-        code.requestMessage.clear();
-        code.requestMessage.setFunctionID(1644113439);
-        code.requestMessage.setCallCount(1);
-
-        code.requestMessage.writeTo(code.socket);
-        code.resultMessage.readFrom(code.socket);
-
+    @Override
+    void setRequestMessage(AmuseMessage message) {
+        this.requestMessage = message;
     }
+
+    @Override
+    void setResultMessage(AmuseMessage message) {
+        this.resultMessage = message;
+    }
+
 }
