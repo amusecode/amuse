@@ -47,6 +47,7 @@ VU.cores = 340
 VU.latitude = 52.3328
 VU.longitude = 4.8669
 VU.amuse.home=/home/niels/amuse
+VU.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
 
 ASTRON.server.adaptor = SshTrilead
 ASTRON.server.uri = any://fs0.das4.cs.vu.nl
