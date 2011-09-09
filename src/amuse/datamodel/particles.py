@@ -784,6 +784,32 @@ class AbstractParticleSet(AbstractSet):
         sorted_indices =  values.argsort(kind=kind)
         keys = self.get_all_keys_in_store()
         return self._subset(keys[sorted_indices])
+        
+        
+    def sorted_by_attributes(self, *attributes):
+        """
+        Returns a subset with the same particles, but sorted
+        using the given attribute names. The last attribute name
+        in the call is used for the primary sort order, the 
+        second-to-last attribute name for the secondary sort order,
+        and so on. See also numpy.lexsort
+                  
+        
+        >>> particles = Particles(4)
+        >>> particles.mass = [2.0, 3.0, 1.0, 4.0] | units.kg
+        >>> particles.radius = [3.0, 2.0, 1.0, 2.0] | units.m
+        >>> sorted = particles.sorted_by_attributes('mass', 'radius')
+        >>> print sorted.radius
+        [1.0, 2.0, 2.0, 3.0] m
+        >>> print sorted.mass
+        [1.0, 3.0, 4.0, 2.0] kg
+        """
+        keys = self.get_all_keys_in_store()
+        values = self.get_values_in_store(keys, attributes)
+        values = [x.number for x in values]
+        sorted_indices =  numpy.lexsort(values)
+        
+        return self._subset(keys[sorted_indices])
     
     def __dir__(self):
         """
