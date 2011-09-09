@@ -625,6 +625,17 @@ class VectorQuantity(Quantity):
         """
         sorted_values = numpy.sort(self.number)
         return VectorQuantity(sorted_values, self.unit)
+        
+    def argsort(self, **options):
+        """
+        Returns the indices that would sort an array.
+
+        >>> from amuse.units import si
+        >>> v1 = [3.0, 1.0, 2.0] | si.kg
+        >>> v1.argsort()
+        [1, 2, 0]
+        """
+        return numpy.argsort(self.number, **options)
 
 
     def sorted_with(self, *others):

@@ -222,11 +222,11 @@ class legacy_function(object):
         ...
         >>> x = LegacyExample()
         >>> x.evolve.specification #doctest: +ELLIPSIS
-        <amuse.support.codes.core.LegacyFunctionSpecification object at 0x...>
+        <amuse.rfi.core.LegacyFunctionSpecification object at 0x...>
         >>> LegacyExample.evolve #doctest: +ELLIPSIS
-        <amuse.support.codes.core.legacy_function object at 0x...>
+        <amuse.rfi.core.legacy_function object at 0x...>
         >>> x.evolve #doctest: +ELLIPSIS
-        <amuse.support.codes.core.CodeFunction object at 0x...>
+        <amuse.rfi.core.CodeFunction object at 0x...>
         
                     
         :argument specification_function: The function to be decorated

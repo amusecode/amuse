@@ -746,7 +746,28 @@ class AbstractParticleSet(AbstractSet):
     def _subset(self, keys):
         return ParticlesSubset(self._original_set(), keys)
         
+    
+    def sorted_by_attribute(self, attribute):
+        """
+        Returns a subset with the same particles, but sorted
+        using the given attribute name
         
+        >>> particles = Particles(3)
+        >>> particles.mass = [2.0, 3.0, 1.0] | units.kg
+        >>> particles.radius = [1.0, 2.0, 3.0] | units.m
+        >>> sorted = particles.sorted_by_attribute('mass')
+        >>> print sorted.mass
+        [1.0, 2.0, 3.0] kg
+        >>> print sorted.radius
+        [3.0, 1.0, 2.0] m
+        >>> from amuse.io import write_set_to_file
+        >>> write_set_to_file(sorted, 'bla.txt', 'txt')
+        """
+        values = getattr(self, attribute)
+        sorted_indices =  values.argsort(kind='mergesort')
+        keys = self.get_all_keys_in_store()
+        return self._subset(keys[sorted_indices])
+    
     def __dir__(self):
         """
         Utility function for introspection of paricle objects
@@ -1227,6 +1248,8 @@ class ParticlesSuperset(AbstractParticleSet):
             return flag[index]
         else:
             return flag[index][rev_idx]
+            
+    
     
     
 class ParticlesSubset(AbstractParticleSet):
