@@ -655,8 +655,13 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
-        instance.initialize_code() 
+        instance.initialize_code()
+        instance.parameters.stabilize_new_stellar_model_flag = False
+        print instance.parameters.stabilize_new_stellar_model_flag
         instance.commit_parameters() 
+        print instance.parameters.stabilize_new_stellar_model_flag, "this is strange!!"
+        instance.parameters.stabilize_new_stellar_model_flag = False
+        print instance.parameters.stabilize_new_stellar_model_flag
         instance.particles.add_particles(star)
         instance.commit_particles()
         instance.evolve_model()
@@ -683,7 +688,6 @@ class TestMESA(TestWithMPI):
         self.assertEqual(instance.imported_stars[0].get_number_of_zones(), number_of_zones)
         self.assertIsOfOrder(instance.imported_stars[0].get_radius_profile()[-1],          1.0 | units.RSun)
         self.assertIsOfOrder(instance.imported_stars[0].get_temperature_profile()[0],  1.0e7 | units.K)
-#        self.assertIsOfOrder(instance.imported_stars[0].get_luminosity_profile()[-1],      1.0 | units.LSun)
         self.assertIsOfOrder(instance.imported_stars[0].get_pressure_profile()[0],      1.0e17 | units.barye)
         self.assertAlmostEqual(instance.imported_stars[0].get_mass_profile(), 
                                instance.native_stars[0].get_mass_profile())

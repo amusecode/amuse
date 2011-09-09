@@ -53,7 +53,7 @@ download:
 	$(DOWNLOAD_FROM_SVN)
 
 clean:
-	$(RM) -f *~ *.pyc *.mod *.o worker_code worker_code.f90
+	$(RM) -f *~ *.pyc *.mod *.o worker_code worker_code.f90 $(MESA_LIB)
 	$(RM) -f mesa_worker mesa_worker_sockets worker_code-sockets.f90
 	make -C $(MESA_MAKE_DIR) clean
 

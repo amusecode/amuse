@@ -25,6 +25,8 @@
          integer :: id_new_model
          
          logical :: debugging = .false.
+         logical :: do_stabilize_new_stellar_model = .true.
+         
          contains
          logical function failed(str, ierr)
             character (len=*), intent(in) :: str
@@ -1125,13 +1127,13 @@
       implicit none
       integer, intent(in) :: AMUSE_id
       integer :: ierr
-      double precision, pointer :: tmp2d(:,:), tmp1d(:)
       type (star_info), pointer :: s
       
       erase_memory = -1
       call get_star_ptr(AMUSE_id, s, ierr)
       if (failed('get_star_ptr', ierr)) return
       if (s%generations > 1) then
+         s% nz_old = s% nz
          call realloc2d_if_necessary(s% xa_old, s% species, s% nz, ierr)
          if (failed('realloc2d_if_necessary', ierr)) return
          s% xa_old(:,:) = s% xa(:,:)
@@ -1145,6 +1147,7 @@
          if (failed('realloc1d_if_necessary', ierr)) return
          s% dq_old(:) = s% dq(:)
          if (s%generations == 3) then
+            s% nz_older = s% nz
             call realloc2d_if_necessary(s% xa_older, s% species, s% nz, ierr)
             if (failed('realloc2d_if_necessary', ierr)) return
             s% xa_older(:,:) = s% xa(:,:)
@@ -1494,6 +1497,32 @@
          set_semi_convection_efficiency = 0
       end function set_semi_convection_efficiency
 
+! Retrieve the current value of the do_stabilize_new_stellar_model flag
+      integer function get_stabilize_new_stellar_model_flag(AMUSE_value)
+         use amuse_support, only: do_stabilize_new_stellar_model
+         implicit none
+         integer, intent(out) :: AMUSE_value
+         if (do_stabilize_new_stellar_model) then
+            AMUSE_value = 1
+         else
+            AMUSE_value = 0
+         end if
+         get_stabilize_new_stellar_model_flag = 0
+      end function get_stabilize_new_stellar_model_flag
+
+! Set the current value of the do_stabilize_new_stellar_model flag
+      integer function set_stabilize_new_stellar_model_flag(AMUSE_value)
+         use amuse_support, only: do_stabilize_new_stellar_model
+         implicit none
+         integer, intent(in) :: AMUSE_value
+         if (AMUSE_value /= 0) then
+            do_stabilize_new_stellar_model = .true.
+         else
+            do_stabilize_new_stellar_model = .false.
+         end if
+         set_stabilize_new_stellar_model_flag = 0
+      end function set_stabilize_new_stellar_model_flag
+
 ! Retrieve the maximum number of stars that can be allocated in the code
       integer function get_maximum_number_of_stars(AMUSE_value)
          use star_def, only: max_star_handles
@@ -1504,23 +1533,20 @@
       end function get_maximum_number_of_stars
 
 ! Create a new particle from a user supplied model (non-ZAMS, e.g. merger product)
-! First, create an empty model
-   function new_stellar_model(d_mass, radius, rho, temperature, luminosity, &
+   integer function new_specified_stellar_model(d_mass, radius, rho, temperature, luminosity, &
          XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, n)
       use amuse_support
       use star_lib, only: alloc_star, star_setup, show_terminal_header
       use star_private_def, only: star_info, get_star_ptr
       use run_star_support, only: setup_for_run_star, before_evolve
       use read_model, only: set_zero_age_params, finish_load_model
-      use alloc, only: set_var_info, set_q_flag ! <-?
-      use alloc, only: allocate_star_info_arrays
+      use alloc, only: set_var_info, set_q_flag, allocate_star_info_arrays
       use micro, only: init_mesa_micro
       use init_model, only: get_zams_model
       use chem_lib, only: get_nuclide_index
       use star_utils, only: set_qs, set_q_vars
       use do_one_utils, only: set_phase_of_evolution
       use evolve_support, only: yrs_for_init_timestep
-      !use adjust_mesh, only: remesh
       use const_def, only: secyer, Msun, Lsun
       
       implicit none
@@ -1528,15 +1554,16 @@
       double precision, intent(in) :: d_mass(n), radius(n), rho(n), &
          temperature(n), luminosity(n), XH(n), XHE(n), XC(n), XN(n), &
          XO(n), XNE(n), XMG(n), XSI(n), XFE(n)
-      integer :: new_stellar_model, ierr
+      double precision :: x(n)
+      integer :: ierr, k
       type (star_info), pointer :: s
       
       if (new_model_defined) then
-         new_stellar_model = -30
+         new_specified_stellar_model = -30
          return
       endif
       
-      new_stellar_model = -1
+      new_specified_stellar_model = -1
       id_new_model = alloc_star(ierr)
       if (failed('alloc_star', ierr)) return
       call get_star_ptr(id_new_model, s, ierr)
@@ -1579,7 +1606,19 @@
       s% xs(s% i_lnd, :) = log(rho(:))
       s% xs(s% i_lnT, :) = log(temperature(:))
       s% xs(s% i_lnR, :) = log(radius(:))
-      s% xs(s% i_lum, :) = (100*Lsun * s% initial_mass**3.5 / s% nz)*(/(ierr,ierr=s% nz,1,-1)/) !luminosity(:)
+      if (luminosity(1) <= 0) then
+         ! No luminosities provided, make an educated guess
+         do k = 1, s% nz
+            if (temperature(k) .gt. 1.0e7) exit
+         end do
+         if (debugging) write(*,*) "temperature(", k, ") = ", temperature(k)
+         if (debugging) write(*,*) "radius(", k, ") = ", radius(k)
+         x = radius / radius(k)
+         if (debugging) write(*,*) "x(", k, ") = ", x(k), x(1), x(s% nz)
+         s% xs(s% i_lum, :) = Lsun * s% initial_mass**3.5 * (1.0 - (1.0 + x) * exp(-x**2 - x))
+      else
+         s% xs(s% i_lum, :) = luminosity(:)
+      endif
       s% dq(:) = d_mass(:) / s% initial_mass
       s% xa(s% net_iso(get_nuclide_index('h1')), :) = XH(:)
       s% xa(s% net_iso(get_nuclide_index('he3')), :) = 0.0d0
@@ -1607,16 +1646,170 @@
       if (failed('setup_for_run_star', ierr)) return
       call before_evolve(id_new_model, ierr)
       if (failed('before_evolve', ierr)) return
-      s% trace_evolve = .true.
-      s% report_ierr = .true.
-      !ierr = remesh(s, .true., .false., .false.)
-      !if (failed('remesh', ierr)) return
+      if (debugging) s% trace_evolve = .true.
+      if (debugging) s% report_ierr = .true.
       call show_terminal_header(id_new_model, ierr)
       if (failed('show_terminal_header', ierr)) return
       call flush()
       new_model_defined = .true.
-      new_stellar_model = 0
-   end function
+      new_specified_stellar_model = 0
+   end function new_specified_stellar_model
+
+   integer function new_stellar_model(d_mass, radius, rho, temperature, luminosity, &
+         XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, n)
+      use amuse_support
+      use star_lib, only: alloc_star, star_setup, show_terminal_header
+      use star_private_def, only: star_info, get_star_ptr
+      use run_star_support, only: setup_for_run_star, before_evolve
+      use read_model, only: set_zero_age_params, finish_load_model
+      use alloc, only: set_var_info, set_q_flag, allocate_star_info_arrays
+      use micro, only: init_mesa_micro
+      use init_model, only: get_zams_model
+      use chem_lib, only: get_nuclide_index
+      use star_utils, only: set_qs, set_q_vars
+      use do_one_utils, only: set_phase_of_evolution
+      use evolve_support, only: yrs_for_init_timestep
+      use mesh_adjust, only: do_mesh_adjust
+      use adjust_mesh, only: remesh
+      use hydro_eqns, only: P_eqn_phot
+      use hydro_vars, only: set_vars
+      use const_def, only: secyer, Msun, Lsun
+      use star_utils, only: set_xqs
+      
+      implicit none
+      integer, intent(in) :: n
+      double precision, intent(in) :: d_mass(n), radius(n), rho(n), &
+         temperature(n), luminosity(n), XH(n), XHE(n), XC(n), XN(n), &
+         XO(n), XNE(n), XMG(n), XSI(n), XFE(n)
+      double precision :: total_mass, original_timestep, f
+      integer :: new_particle, ierr, tmp1_id_new_model, tmp2_id_new_model, &
+         new_specified_stellar_model, finalize_stellar_model, match_mesh, &
+         evolve_for, evolve_one_step, index_low
+      logical :: do_T = .false.
+      type (star_info), pointer :: s, s_tmp
+      
+      if (new_model_defined) then
+         new_stellar_model = -30
+         return
+      endif
+      
+      ! *** Define a temporary star with the target 'new' structure: ***
+      new_stellar_model = new_specified_stellar_model(d_mass, radius, rho, &
+         temperature, luminosity, XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, n)
+      if (failed('new_specified_stellar_model', new_stellar_model)) return
+      
+      if (do_stabilize_new_stellar_model) then
+         new_stellar_model = -1
+         if (debugging) write(*,*) 'tmp1_id_new_model', tmp1_id_new_model
+         ierr = finalize_stellar_model(tmp1_id_new_model, 0.0d0)
+         if (failed('finalize_stellar_model', ierr)) return
+         call get_star_ptr(tmp1_id_new_model, s_tmp, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         if (debugging) write(*,*) 'CHECK:', s_tmp% nz, n
+         
+         ! *** Now, first create a normal ZAMS star ***
+         total_mass = sum(d_mass)
+         ierr = new_particle(tmp2_id_new_model, total_mass)
+         if (failed('new_particle', ierr)) return
+         id_new_model = tmp2_id_new_model
+         if (debugging) write(*,*) 'id_new_model', id_new_model
+         call get_star_ptr(id_new_model, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         
+         ! *** Match the mesh containing the target structure to the mesh of the new particle ***
+         ierr = match_mesh(tmp1_id_new_model, s% nz, s% dq)
+         if (failed('match_mesh', ierr)) return
+         
+         ! *** Copy the relevant variables (chemical fractions only, or also hydro vars...)
+         original_timestep = s% dt_next
+         f = 1.0d-4
+         if (debugging) then
+            s% trace_evolve = .true.
+            s% report_ierr = .true.
+         end if
+         do
+            s% xa(:,:) = f * s_tmp% xa(:,:) + (1.0d0 - f) * s% xa(:,:)
+            ierr = evolve_for(id_new_model, 10.0 * s% min_timestep_limit)
+            if (failed('evolve_for', ierr)) return
+            if (debugging) write(*,*) 'f: ', f
+            call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
+            if (failed('check_remeshed', ierr)) return
+            if (debugging) write(*,*) 'CHECK check_remeshed OK'
+            if (f >= 1.0d0) exit
+            f = min(1.5d0 * f, 1.0d0)
+         end do
+         
+         if (do_T) then
+            f = 1.0d-8
+            index_low = s% nz / 10 ! Do not meddle with the atmosphere!
+            do
+               s% xa(:,:) = s_tmp% xa(:,:)
+               s% xs(s% i_lnT,index_low:) = f*s_tmp%xs(s_tmp%i_lnT,index_low:) + (1d0-f)*s%xs(s%i_lnT,index_low:)
+               ierr = evolve_for(id_new_model, 10.0 * s% min_timestep_limit)
+               if (failed('evolve_for', ierr)) return
+               if (debugging) write(*,*) 'f: ', f
+               call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
+               if (failed('check_remeshed', ierr)) return
+               if (debugging) write(*,*) 'CHECK check_remeshed OK'
+               if (f >= 1.0d0) exit
+               f = min(1.5d0 * f, 1.0d0)
+            end do
+         end if
+         
+         ! *** Restore the original timestep ***
+         if (debugging) write(*,*) 'timesteps', s% dt_next, original_timestep
+         do while (s% dt_next .lt. original_timestep)
+            if (debugging) write(*,*) 'increasing timesteps', s% dt_next, original_timestep
+            s% dt_next = s% dt_next * 1.5
+            s% xa(:,:) = s_tmp% xa(:,:)
+            if (do_T) s% xs(s% i_lnT,index_low:) = s_tmp% xs(s_tmp% i_lnT,index_low:)
+            ierr = evolve_one_step(id_new_model)
+            do while (ierr /= 0)
+               if (debugging) write(*,*) 'Oops, too large timestep I guess...', s% dt_next, ' -> ', s% dt_next/1.5
+               s% dt_next = s% dt_next / 1.5  ! Decrease the timestep again,
+               original_timestep = s% dt_next ! ... and make sure we exit the outer loop
+               s% xa(:,:) = s_tmp% xa(:,:)
+               if (do_T) s% xs(s% i_lnT,index_low:) = s_tmp% xs(s_tmp% i_lnT,index_low:)
+               ierr = evolve_one_step(id_new_model)
+               if (s% dt_next <= s% min_timestep_limit) then
+                  s% dt_next = s% min_timestep_limit
+                  exit
+               end if
+            end do
+         end do
+         
+         s% xa(:,:) = s_tmp% xa(:,:)
+         if (do_T) s% xs(s% i_lnT,index_low:) = s_tmp% xs(s_tmp% i_lnT,index_low:)
+         
+         s% trace_evolve = .false.
+         s% report_ierr = .false.
+         call flush()
+         new_model_defined = .true.
+         new_stellar_model = 0
+      end if
+      
+      contains
+      
+      subroutine check_remeshed(nz, nz_orig, dq, dq_orig, ierr)
+         implicit none
+         integer, intent(in) :: nz, nz_orig
+         double precision, intent(in) :: dq(nz), dq_orig(nz_orig)
+         integer, intent(out) :: ierr
+         integer :: i
+         if (nz .ne. nz_orig) then
+            ierr = -1
+            return
+         end if
+         do i = 1, nz
+            if (dq(i) .ne. dq_orig(i)) then
+               ierr = -1
+               return
+            end if
+         end do
+         ierr = 0
+      end subroutine check_remeshed
+      
+   end function new_stellar_model
 
    function finalize_stellar_model(star_id, age_tag)
       use amuse_support
@@ -1641,3 +1834,259 @@
       finalize_stellar_model = 0
    end function
 
+   ! matches/interpolates existing mesh based on supplied dq's
+   integer function match_mesh(model_id, nz_target, dq_target)
+      use amuse_support, only: failed, debugging
+      use star_private_def, only: star_info, get_star_ptr
+      use alloc, only: free_star_info_arrays, allocate_star_info_arrays
+      use mesh_plan, only: do_mesh_plan
+      use mesh_adjust, only: do_mesh_adjust
+      use adjust_mesh_support, only: check_validity
+      use hydro_vars, only: set_vars
+      use rates_def, only: i_rate, ipp, icno, i3alf, iphoto
+      use net_lib, only: clean_up_fractions
+      use num_lib, only: safe_log10
+      use utils_lib
+      use star_utils, only: set_q_vars, report_xa_bad_nums, &
+         std_dump_model_info_for_ndiff, set_qs, set_xqs
+      use chem_def
+      
+      integer, intent(in) :: model_id, nz_target
+      double precision, intent(inout) :: dq_target(nz_target)
+      
+      type (star_info), pointer :: s_tmp
+      logical, parameter :: dbg_remesh = .true.
+      logical, parameter :: skip_net = .false., check_for_bad_nums = .true.
+      integer :: k, k2, ierr, species, nvar, nz, nz_new, nz_old, &
+         unchanged, split, merged
+      type (star_info), target :: prev_info
+      type (star_info), pointer :: prv
+      double precision, pointer, dimension(:) :: xq_old, xq_new, energy
+
+      double precision, parameter :: max_sum_abs = 10d0
+      double precision, parameter :: xsum_tol = 1d-2
+      double precision, parameter :: h_cntr_limit = 0.5d0 ! for pre-MS decision
+      double precision, parameter :: he_cntr_limit = 0.1d0 ! for RGB vs AGB decision
+      
+ 3       format(a40,2i6,99(1pe26.16))
+      
+      call get_star_ptr(model_id, s_tmp, ierr)
+      if (failed('get_star_ptr', ierr)) return
+      if (debugging) write(*,*) 'enter match_mesh'
+      ierr = 0
+      match_mesh = -1
+      
+      species = s_tmp% species
+      nz_old = s_tmp% nz
+      nz = nz_old
+      nz_new = nz_target
+      
+      call clean_up_fractions(1, nz, species, nz, s_tmp% xa, max_sum_abs, xsum_tol, ierr)
+      if (failed('clean_up_fractions', ierr)) return
+      
+      nullify(xq_old, xq_new)
+      allocate(energy(nz), stat=ierr)
+      
+      energy(1:nz) = exp(s_tmp% lnE(1:nz))
+      
+      s_tmp% mesh_call_number = s_tmp% mesh_call_number + 1
+      
+      ! save pointers to arrays that will need to be updated for new mesh
+      prv => prev_info
+      prv = s_tmp ! this makes copies of pointers and scalars
+      
+      if (associated(s_tmp% comes_from)) deallocate(s_tmp% comes_from)
+      allocate(s_tmp% comes_from(nz_target), xq_old(nz), xq_new(nz_target), stat=ierr)
+      if (failed('allocate', ierr)) return
+      
+      call check_validity(s_tmp, ierr)
+      if (failed('check_validity', ierr)) return
+      
+      if (check_for_bad_nums) then
+         if (has_bad_num(species*nz, s_tmp% xa)) then
+            write(*,*) 'bad num in xa before calling mesh_plan: model_number', s_tmp% model_number
+            call report_xa_bad_nums(s_tmp, ierr)
+            stop 'remesh'
+         end if
+      end if
+      
+      call set_xqs(nz, xq_old, s_tmp% dq, ierr)
+      if (failed('set_xqs xq_old', ierr)) return
+      call set_xqs(nz_target, xq_new, dq_target, ierr)
+      if (failed('set_xqs xq_new', ierr)) return
+      
+      ! Set comes_from
+      !      ! xq_old(comes_from(k)+1) > xq_new(k) >= xq_old(comes_from(k)), if comes_from(k) < nz_old.
+      s_tmp% comes_from(:) = 0
+      k2 = 1
+      s_tmp% comes_from(1) = k2
+      do k = 2, nz_target
+         do
+            if (k2 == nz) exit
+            if (xq_new(k) >= xq_old(k2+1)) then
+               k2 = k2 + 1
+            else
+               exit
+            end if
+         end do
+         s_tmp% comes_from(k) = k2
+      end do
+      nz = nz_new
+      s_tmp% nz = nz
+      nvar = s_tmp% nvar
+      
+      call allocate_star_info_arrays(s_tmp, ierr)
+      if (failed('allocate_star_info_arrays', ierr)) return
+      
+      if (associated(s_tmp% cell_type)) deallocate(s_tmp% cell_type)
+      allocate(s_tmp% cell_type(nz))
+      call set_types_of_new_cells(s_tmp% cell_type)
+      
+      s_tmp% rate_factors(1:prv% num_reactions) = prv% rate_factors(1:prv% num_reactions)
+      
+      ! store new q and dq
+      s_tmp% dq(:) = dq_target(:)
+      call set_qs(nz, s_tmp% q, s_tmp% dq, ierr)
+      if (failed('set_qs', ierr)) return
+      
+      ! testing -- check for q strictly decreasing
+      do k = 2, nz
+         if (xq_new(k) <= xq_new(k-1)) then
+            write(*,3) 'bad xq_new before call do_mesh_adjust', &
+               k, nz, xq_new(k), xq_new(k-1), dq_target(k-1), xq_new(k-1) + dq_target(k-1)
+            stop 'adjust mesh'
+         end if
+      end do
+
+      if (s_tmp% q_flag) call set_q_vars(s_tmp)
+      
+      if (dbg_remesh) write(*,*) 'call do_mesh_adjust'
+      call do_mesh_adjust( &
+         nz, nz_old, prv% xs, prv% xa, energy, prv% eta, prv% dq, xq_old, &
+         s_tmp% xs, s_tmp% xa, s_tmp% dq, xq_new, s_tmp% species, s_tmp% chem_id, s_tmp% net_iso, s_tmp% eos_handle, &
+         s_tmp% mesh_adjust_use_quadratic, s_tmp% mesh_adjust_get_T_from_E, &
+         s_tmp% i_lnd, s_tmp% i_lnT, s_tmp% i_lnR, s_tmp% i_lum, s_tmp% i_vel, s_tmp% i_lndq, s_tmp% i_lnq, &
+         s_tmp% q_flag, s_tmp% v_flag, &
+         prv% mstar, s_tmp% comes_from, s_tmp% cell_type, ierr)
+      if (failed('do_mesh_adjust', ierr)) return
+      if (dbg_remesh) write(*,*) 'back from do_mesh_adjust'
+      
+      ! testing
+      do k = 2, nz
+         if (xq_new(k) <= xq_new(k-1)) then
+            write(*,3) 'bad xq_new after call do_mesh_adjust', k, nz, xq_new(k), xq_new(k-1)
+            stop 'adjust mesh'
+         end if
+      end do
+
+      if (ierr /= 0 .and. s_tmp% report_ierr) then
+         write(*,*) 'mesh_adjust problem'
+         write(*,*) 'doing mesh_call_number', s_tmp% mesh_call_number
+         write(*,*) 's_tmp% model_number', s_tmp% model_number
+         write(*,*) 's_tmp% nz', s_tmp% nz
+         write(*,*) 's_tmp% num_retries', s_tmp% num_retries
+         write(*,*) 's_tmp% num_backups', s_tmp% num_backups
+         write(*,*) 
+      end if
+      
+      if (check_for_bad_nums) then
+         if (has_bad_num(species*nz, s_tmp% xa)) then
+            write(*,*) 'bad num in xa after calling mesh_adjust: model_number', s_tmp% model_number
+            stop 'remesh'
+         end if
+      end if
+      
+      if (s_tmp% prev_cdc_tau > 0) then ! interpolate cdc
+         call set_prev_cdc(ierr)
+         if (ierr /= 0 .and. s_tmp% report_ierr) &
+            write(*,*) 'mesh_adjust problem: ierr from set_prev_cdc'
+      end if
+
+      call free_star_info_arrays(prv)
+
+      call dealloc
+      match_mesh = 0
+
+      contains
+      
+      subroutine set_prev_cdc(ierr)
+         use interp_1d_def
+         use interp_1d_lib
+         integer, intent(out) :: ierr
+         integer, parameter :: nwork = pm_work_size
+         double precision, pointer :: work(:,:)
+         ierr = 0
+         allocate(work(nz_old, nwork), stat=ierr)
+         if (ierr /= 0) return
+         call interpolate_vector( &
+            nz_old, prv% q, nz, s_tmp% q, prv% cdc, s_tmp% cdc_prev, interp_pm, nwork, work, ierr)
+         deallocate(work)
+      end subroutine set_prev_cdc
+
+      
+      subroutine set_types_of_new_cells(cell_type)
+         use mesh_adjust, only: split_type, unchanged_type, merged_type
+         integer, pointer :: cell_type(:)
+         integer :: k, k_old, new_type
+         
+ 2       format(a40,2i6,99(1pe26.16))
+         
+         unchanged=0; split=0; merged=0
+      
+         do k=1,nz_new
+            k_old = s_tmp% comes_from(k)
+            new_type = -111
+            if (xq_new(k) < xq_old(k_old)) then
+               write(*,*) 'xq_new(k) < xq_old(k_old)'
+               write(*,2) 'xq_new(k)', k, xq_new(k)
+               write(*,2) 'xq_old(k_old)', k_old, xq_old(k_old)
+               write(*,*) 'adjust mesh set_types_of_new_cells'
+               stop 1
+            else if (xq_new(k) > xq_old(k_old)) then
+               new_type = split_type
+            else if (k_old == nz_old) then
+               if (k == nz_new) then
+                  new_type = unchanged_type
+               else
+                  new_type = split_type
+               end if
+            else if (k == nz_new) then
+               new_type = split_type
+            else ! k_old < nz_old .and. k < nz .and. xq_new(k) == xq_old(k_old)
+               if (xq_new(k+1) == xq_old(k_old+1)) then
+                  new_type = unchanged_type
+               else if (xq_new(k+1) > xq_old(k_old+1)) then
+                  new_type = merged_type
+               else
+                  new_type = split_type
+               end if
+            end if
+            cell_type(k) = new_type
+            select case (new_type)
+               case (split_type)
+                  split = split + 1
+               case (unchanged_type)
+                  unchanged = unchanged + 1
+               case (merged_type)
+                  merged = merged + 1
+               case default
+                  write(*,*) 'failed to set new_type in adjust mesh set_types_of_new_cells'
+                  stop 'set_types_of_new_cells'
+            end select
+         end do
+         
+         if (unchanged + split + merged /= nz_new) then
+            write(*,2) 'unchanged + split + merged', unchanged + split + merged
+            write(*,2) 'nz_new', nz_new
+            stop 'set_types_of_new_cells'
+         end if
+      
+      end subroutine set_types_of_new_cells
+
+      subroutine dealloc
+         if (associated(xq_old)) deallocate(xq_old)
+         if (associated(xq_new)) deallocate(xq_new)
+         if (associated(energy)) deallocate(energy)
+      end subroutine dealloc
+
+   end function match_mesh

@@ -120,7 +120,7 @@ def _smart_length_units_for_vector_quantity(quantity):
             return length_unit
     return units.m
 
-def sph_particles_plot(particles, u_range = None):
+def sph_particles_plot(particles, u_range = None, min_size = 100):
     """
     Very simple and fast procedure to make a plot of the hydrodynamics state of 
     a set of SPH particles. The particles must have the following attributes defined: 
@@ -147,13 +147,14 @@ def sph_particles_plot(particles, u_range = None):
     
     colors = numpy.transpose(numpy.array([red, green, blue]))
     n_pixels = native_plot.gcf().get_dpi() * native_plot.gcf().get_size_inches()
-    sizes = n_pixels[0]*n_pixels[1] * ((3 * h_smooths / ((max(x)-min(x)) + (max(y)-min(y)) + (max(z)-min(z))))**2).value_in(units.none)
+    phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((max(x)-min(x))**2 + (max(y)-min(y))**2)
+    sizes = numpy.maximum((h_smooths**2 * phys_to_pix2).value_in(units.none), min_size)
     current_axes = native_plot.gca()
     current_axes.set_axis_bgcolor('#101010')
     current_axes.set_aspect("equal", adjustable = "datalim")
     x = x.as_quantity_in(_smart_length_units_for_vector_quantity(x))
     y = y.as_quantity_in(_smart_length_units_for_vector_quantity(x))
-    scatter(x, y, sizes, colors, edgecolors = "none", alpha = 0.02)
+    scatter(x, y, sizes, colors, edgecolors = "none", alpha = 0.1)
     xlabel('x')
     ylabel('y')
 

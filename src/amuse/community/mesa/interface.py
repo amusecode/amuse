@@ -674,6 +674,20 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def get_stabilize_new_stellar_model_flag():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('stabilize_new_stellar_model_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_stabilize_new_stellar_model_flag():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('stabilize_new_stellar_model_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
     @legacy_function   
     def new_stellar_model():
         """
@@ -809,6 +823,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "dutch_wind_efficiency", 
             "The Dutch mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 4).",
             default_value = 0.0 | units.none
+        )
+        object.add_boolean_parameter(
+            "get_stabilize_new_stellar_model_flag",
+            "set_stabilize_new_stellar_model_flag",
+            "stabilize_new_stellar_model_flag",
+            "Flag specifying whether to stabilize any loaded stellar models first.",
+            default_value = True
         )
         
         
