@@ -12,7 +12,7 @@ C=========================================================================
 
 C---  local vars
       INTEGER          i,ip,power,imode
-      DOUBLE PRECISION a2_mod,adot2_mod,tmp,xhelp
+      DOUBLE PRECISION a2_mod,adot2_mod,tmp
 
 
       IF (imode.NE.1) THEN      ! get time step for all active particles
@@ -84,11 +84,14 @@ C---  set time step to power of two value
                tmp = dt_min     
             ENDIF
 
-            xhelp = tmp
- 100        CONTINUE            ! check if timestep is good for particle time
-            tmp   = xhelp
-            xhelp = 0.5d0*xhelp
-            IF (tmp*DBLE(INT(t_loc(ip)/tmp)).NE.t_loc(ip)) GOTO 100
+            DO WHILE ((tmp*DBLE(INT(t_loc(ip)/tmp))) .NE. t_loc(ip))
+                tmp = 0.5d0 * tmp
+                IF (tmp.LT.dt_min) THEN
+                   WRITE(0,500) myRank,i,tmp,dt_min,time_cur
+                   tmp = dt_min
+                   EXIT
+                ENDIF
+            ENDDO
 
 C---  setting time step
             dt_loc(ip) = tmp
