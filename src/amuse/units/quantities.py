@@ -633,7 +633,7 @@ class VectorQuantity(Quantity):
         >>> from amuse.units import si
         >>> v1 = [3.0, 1.0, 2.0] | si.kg
         >>> v1.argsort()
-        [1, 2, 0]
+        array([1, 2, 0])
         """
         return numpy.argsort(self.number, **options)
 

@@ -745,12 +745,31 @@ class AbstractParticleSet(AbstractSet):
         
     def _subset(self, keys):
         return ParticlesSubset(self._original_set(), keys)
-        
     
-    def sorted_by_attribute(self, attribute):
+    def reversed(self):
+        """
+        Returns a subset with the same particles, but with reversed
+        sequenctial order (the first particle will become last)
+        
+        >>> particles = Particles(3)
+        >>> particles.radius = [1.0, 2.0, 3.0] | units.m
+        >>> r = particles.reversed()
+        >>> print r.radius
+        [3.0, 2.0, 1.0] m
+        
+        """
+        
+        keys = self.get_all_keys_in_store()
+        return self._subset(keys[::-1])
+        
+    def sorted_by_attribute(self, attribute, kind='mergesort'):
         """
         Returns a subset with the same particles, but sorted
         using the given attribute name
+        
+        :argument: kind, the sort method for supported kinds see
+            the numpy.sort documentation
+            
         
         >>> particles = Particles(3)
         >>> particles.mass = [2.0, 3.0, 1.0] | units.kg
@@ -760,11 +779,9 @@ class AbstractParticleSet(AbstractSet):
         [1.0, 2.0, 3.0] kg
         >>> print sorted.radius
         [3.0, 1.0, 2.0] m
-        >>> from amuse.io import write_set_to_file
-        >>> write_set_to_file(sorted, 'bla.txt', 'txt')
         """
         values = getattr(self, attribute)
-        sorted_indices =  values.argsort(kind='mergesort')
+        sorted_indices =  values.argsort(kind=kind)
         keys = self.get_all_keys_in_store()
         return self._subset(keys[sorted_indices])
     
