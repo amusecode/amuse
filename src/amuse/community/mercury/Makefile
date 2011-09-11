@@ -1,5 +1,5 @@
 
-MPIF90 ?= mpif90
+MPIF90 ?= openmpif90
 
 FC = $(MPIF90)
 SRC=src
@@ -59,3 +59,4 @@ clean:
 	make -C src clean
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
 	rm -f mercury_worker mercury_worker_gl
+	rm -f mercury_worker_sockets worker-sockets.f90
