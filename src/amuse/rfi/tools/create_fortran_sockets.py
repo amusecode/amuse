@@ -23,7 +23,7 @@ dtype_to_spec = DTypeToSpecDictionary({
 
 dtypes = ['int32', 'int64', 'float32', 'float64', 'bool', 'string']
 
-mpi_types = {'int32': 'MPI_INTEGER', 'int64': 'MPI_LONG_LONG_INT', 'float32': 'MPI_REAL', 'float64': 'MPI_DOUBLE_PRECISION', 'bool': 'MPI_LOGICAL', 'string': 'MPI_CHARACTER'}
+mpi_types = {'int32': 'MPI_INTEGER', 'int64': 'MPI_INTEGER8', 'float32': 'MPI_REAL', 'float64': 'MPI_DOUBLE_PRECISION', 'bool': 'MPI_LOGICAL', 'string': 'MPI_CHARACTER'}
 
 forsockets_module_code = """module forsockets
     integer HEADER_FLAGS, HEADER_CALL_ID, HEADER_FUNCTION_ID, HEADER_CALL_COUNT, & 
