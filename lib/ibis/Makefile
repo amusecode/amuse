@@ -1,17 +1,16 @@
-ANT = ant
-DOWNLOAD_FROM_WEB = ./download_svn.py
-
+VERSION = -20110912-snapshot
 CODEDIR = deploy
+DOWNLOAD_FROM_WEB = ./downloadhttp.py
 
-JAVA_HOME=${JDK}
+JDK ?= /usr
 
-all: ${CODEDIR}
-	${ANT}
+CLASSPATH="deploy/lib/*:tmp"
+
+all: ${CODEDIR} lib/ibis-amuse.jar
 
 $(CODEDIR):
 ifdef DOWNLOAD_CODES
-	$(RM) -Rf deploy
-	$(DOWNLOAD_FROM_WEB)
+	$(DOWNLOAD_FROM_WEB) $(VERSION)
 else
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -26,9 +25,23 @@ else
 	@make -s --no-print-directory -C . raise_error
 endif
 
+lib/ibis-amuse.jar: src/*/*/*.java
+	@echo Compiling Amuse/Ibis lib
+	$(RM) -r lib tmp
+	mkdir tmp
+	mkdir lib
+	$(JDK)/bin/javac -classpath $(CLASSPATH) -d tmp src/*/*/*.java
+	$(JDK)/bin/java -classpath $(CLASSPATH) ibis.compile.Ibisc tmp
+	$(JDK)/bin/javah -classpath tmp -d include ibis.amuse.JNICodeInterface
+	@echo Building jar file
+	$(JDK)/bin/jar -cf lib/ibis-amuse.jar -C tmp .
+	$(JDK)/bin/jar -uf lib/ibis-amuse.jar images/*
+	$(RM) -r tmp
+	@echo done compiling Amuse/Ibis lib
+
 clean:
-	$(ANT) clean
+	$(RM) -r lib tmp
 	
-distclean:
-	$(ANT) distclean
+distclean: clean
+	$(RM) -r deploy
 

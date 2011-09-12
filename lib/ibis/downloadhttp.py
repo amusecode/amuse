@@ -46,6 +46,7 @@ class DownloadIbisDeployFromWebpage(object):
         urllib.urlretrieve(url, filename = filename)
         print "downloading finished"
         self.unpack_downloaded_file(filename)
+	os.remove(filename)
 	self.rename_unpacked_dir()
 	
     
