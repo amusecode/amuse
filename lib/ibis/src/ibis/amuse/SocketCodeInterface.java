@@ -76,6 +76,7 @@ public class SocketCodeInterface extends CodeInterface {
                     .toArray(new String[0])) {
                 for (String blacklistedKey : ENVIRONMENT_BLACKLIST) {
                     if (key.startsWith(blacklistedKey)) {
+                        builder.environment().remove(key);
                         logger.info("removed " + key + " from environment");
                     }
                 }
