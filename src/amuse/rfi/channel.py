@@ -1435,6 +1435,15 @@ class IbisChannel(MessageChannel):
         self._is_inuse = False
         self.socket = None
     
+    def get_full_name_of_the_worker(self, type):
+        if os.path.isabs(self.name_of_the_worker):
+            if os.path.exists(self.name_of_the_worker):
+                return self.name_of_the_worker
+            
+        directory_of_this_module = os.path.dirname(inspect.getfile(type))
+        full_name_of_the_worker = os.path.join(directory_of_this_module, self.name_of_the_worker)
+        full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+        return full_name_of_the_worker
 
     def start(self):
         logging.getLogger("channel").debug("connecting to daemon")
