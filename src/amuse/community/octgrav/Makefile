@@ -1,4 +1,4 @@
-MPICXX ?= mpicxx
+MPICXX ?= openmpicxx
 
 CODEPATH = src/octgrav_v1.7d
 CODELIB = $(CODEPATH)/liboctgrav.a 
@@ -65,15 +65,21 @@ octgrav:
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py OctgravInterface -o $@ 
 
+worker_code-sockets.cc: interface.py
+	$(CODE_GENERATOR) --type=c --mode=sockets interface.py OctgravInterface -o $@ 
+
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py OctgravInterface -o $@
 
 octgrav_worker: worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(OBJS) $(LIBS) $(CODELIB) -o $@ $(SCLIBS)
 
+octgrav_worker_sockets: worker_code-sockets.cc worker_code.h $(OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(OBJS) $(LIBS) $(CODELIB) -o $@ $(SCLIBS)
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) worker_code *~ octgrav_worker
+	$(RM) worker_code-sockets.cc octgrav_worker_sockets
 	$(MAKE) -C $(CODEPATH) clean	
 
 distclean: clean
