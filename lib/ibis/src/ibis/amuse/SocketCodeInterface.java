@@ -6,9 +6,12 @@ import java.io.IOException;
 
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import quicktime.app.spaces.Collection;
 
 /**
  * Class representing a code that is used via a loopback socket interface.
@@ -23,6 +26,9 @@ public class SocketCodeInterface extends CodeInterface {
 
     private static final int ACCEPT_TRIES = 5;
     private static final int ACCEPT_TIMEOUT = 500; // ms
+
+    private static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_",
+            "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_" };
 
     private final File executable;
 
@@ -55,7 +61,7 @@ public class SocketCodeInterface extends CodeInterface {
 
             serverSocket = ServerSocketChannel.open();
             serverSocket.socket().bind(null);
-            
+
             File hostFile = File.createTempFile("host", "file");
 
             FileWriter writer = new FileWriter(hostFile);
@@ -64,19 +70,30 @@ public class SocketCodeInterface extends CodeInterface {
             }
             writer.flush();
             writer.close();
-            
+
             logger.info("host file = " + hostFile.getAbsolutePath());
 
             ProcessBuilder builder = new ProcessBuilder();
+
+            for (String key : builder.environment().keySet()
+                    .toArray(new String[0])) {
+                for (String blacklistedKey : ENVIRONMENT_BLACKLIST) {
+                    if (key.startsWith(blacklistedKey)) {
+                        logger.info("removed " + key + " from environment");
+                    }
+                }
+            }
+
             if (mpirun == null) {
                 mpirun = "mpirun";
             }
-            
+
             builder.command(mpirun, "--hostfile", hostFile.getAbsolutePath(),
                     executable.toString(),
                     Integer.toString(serverSocket.socket().getLocalPort()));
-            
-            //make sure there is an "output" directory for a code to put output in
+
+            // make sure there is an "output" directory for a code to put output
+            // in
             new File("output").mkdir();
 
             process = builder.start();
