@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export SGE_ROOT=/cm/shared/apps/sge/6.2u5
+export SGE_ROOT=/cm/shared/apps/sge/6.2u5p2
 
 NR_NODES=$1
 shift
