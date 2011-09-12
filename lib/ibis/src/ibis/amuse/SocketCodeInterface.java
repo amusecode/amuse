@@ -6,12 +6,9 @@ import java.io.IOException;
 
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import quicktime.app.spaces.Collection;
 
 /**
  * Class representing a code that is used via a loopback socket interface.
