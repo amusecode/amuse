@@ -20,16 +20,17 @@ def get_substitution_rules(
 def patch_global_h(
         value_of_periodic_flag = False, 
         is_dry_run = True,
-        filename = "src/globals.h",
+        inputfile = "src/globals.h",
+        outputfile = "src/globals.h",
         name_of_backupfile = "src/globals.h.bck",
     ):
     
     rules = get_substitution_rules(value_of_periodic_flag)
     
-    with open(filename, "r") as input:
+    with open(inputfile, "r") as input:
         lines = input.readlines()
     
-    if not is_dry_run:
+    if not is_dry_run and inputfile == outputfile:
         with open(name_of_backupfile, "w") as output:
             output.writelines(lines)
     
@@ -43,7 +44,7 @@ def patch_global_h(
     if is_dry_run:
         sys.stdout.writelines(output_lines)
     else:
-        with open(filename, "w") as output:
+        with open(outputfile, "w") as output:
             output.writelines(output_lines)
     
     
@@ -65,6 +66,20 @@ def new_option_parser():
         action="store_true",
         default = False,
         help="don't patch the file only output on standard input"
+    )
+    result.add_option(
+        "-i",
+        "--input", 
+        dest="inputfile",
+        default = "src/globals.h",
+        help="name of the globals.h file"
+    )
+    result.add_option(
+        "-o",
+        "--output", 
+        dest="outputfile",
+        default = "src/globals.h",
+        help="name of the globals.h file"
     )
     return result
     

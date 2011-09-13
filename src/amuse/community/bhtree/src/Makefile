@@ -1,4 +1,3 @@
-
 CODELIB = libbhtree.a
 
 CXXFLAGS += -Wall -DTREE -DNOGRAPHICS 
