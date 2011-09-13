@@ -8,11 +8,20 @@ class interpreters(object):
 class compilers(object):
     cxx = '@CXX@' 
     cc  = '@CC@'
-    f95 = '@FC@'
+    fc = '@FC@'
     
     cxx_flags = '@CXXFLAGS@'
     cc_flags  = '@CFLAGS@'
-    f95_flags = '@FCFLAGS@'
+    fc_flags = '@FCFLAGS@'
+    
+    found_fftw = '@FOUND_FFTW@'
+    fftw_flags = '@FFTW_FLAGS@'
+    fftw_libs = '@FFTW_LIBS@'
+    
+    found_gsl = '@FOUND_GSL@'
+    gsl_flags = '@GSL_FLAGS@'
+    gsl_libs = '@GSL_LIBS@'
+    
 
 class mpi(object):
     mpicxx = '@MPICXX@' 

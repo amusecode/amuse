@@ -12,6 +12,7 @@ from distutils.dep_util import newer
 from distutils.util import convert_path
 from distutils import log
 from distutils import spawn
+from distutils.errors import DistutilsError
 from subprocess import call, Popen, PIPE, STDOUT
 from numpy.distutils import fcompiler
 import StringIO
@@ -90,6 +91,7 @@ class CodeCommand(Command):
         
         self.set_cuda_variables()
         self.set_mpi_variables()
+        self.set_compiler_variables()
         self.set_java_variables()
         self.set_libdir_variables()
         self.set_libs_variables()
@@ -105,7 +107,7 @@ class CodeCommand(Command):
             return
             
         if is_configured:
-            self.environment['FORTRAN'] = config.compilers.f95
+            self.environment['FORTRAN'] = config.compilers.fc
             return
         
         if 'FC' in os.environ:
@@ -194,10 +196,26 @@ class CodeCommand(Command):
 
     
     def set_compiler_variables(self):
+        if is_configured and not hasattr(config.compilers, 'found_fftw'):
+            raise DistutilsError("configuration is not up to data, please reconfigure amuse by running 'configure'")
+            
         if is_configured:
-            self.environment['CXX'] = config.mpi.cxx
-            self.environment['CC'] = config.mpi.cc
-            self.environment['FC'] = config.mpi.fc
+            self.environment['CXX'] = config.compilers.cxx
+            self.environment['CC'] = config.compilers.cc
+            self.environment['FC'] = config.compilers.fc
+            self.environment['CFLAGS'] = config.compilers.cc_flags
+            self.environment['CXXFLAGS'] = config.compilers.cxx_flags
+            self.environment['FCFLAGS'] = config.compilers.fc_flags
+            
+            if config.compilers.found_fftw == 'yes':
+                self.environment['FFTW_FLAGS'] = config.compilers.fftw_flags
+                self.environment['FFTW_LIBS'] = config.compilers.fftw_libs
+            
+            
+            if config.compilers.found_gsl == 'yes':
+                self.environment['GSL_FLAGS'] = config.compilers.gsl_flags
+                self.environment['GSL_LIBS'] = config.compilers.gsl_libs
+                
             return
 
     def set_java_variables(self):

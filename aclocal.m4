@@ -14,3 +14,5 @@
 m4_include([m4/ax_mpi.m4])
 m4_include([m4/python_module.m4])
 m4_include([m4/java.m4])
+m4_include([m4/fftw.m4])
+m4_include([m4/gsl.m4])
