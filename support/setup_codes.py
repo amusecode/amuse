@@ -192,6 +192,14 @@ class CodeCommand(Command):
             self.environment['MPIF90'] = config.mpi.mpif95
             return
 
+    
+    def set_compiler_variables(self):
+        if is_configured:
+            self.environment['CXX'] = config.mpi.cxx
+            self.environment['CC'] = config.mpi.cc
+            self.environment['FC'] = config.mpi.fc
+            return
+
     def set_java_variables(self):
         if is_configured:
             self.environment['JNI_INCLUDES'] = config.java.jni_includes
@@ -433,12 +441,13 @@ class BuildCodes(CodeCommand):
         for x in self.makefile_libpaths():
             
             shortname = x[len(self.lib_dir) + 1:] + '-library'
-            self.announce("building {0}".format(shortname), level = log.INFO)
+            starttime = datetime.datetime.now()
+            self.announce("[{1:%H:%M:%S}] building {0}".format(shortname, starttime), level =  log.INFO)
             returncode, outputlog = self.run_make_on_directory(shortname, x, 'all', environment)
             
+            endtime = datetime.datetime.now()
             if returncode == 2:
-                self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level = log.DEBUG)
-                
+                self.announce("[{2:%H:%M:%S}] building {0}, failed, see {1!r} for error log".format(shortname, buildlog, endtime), level =  log.DEBUG)
                 if self.is_download_needed(outputlog):
                     is_download_needed.append(shortname)
                 elif self.is_cuda_needed(outputlog):
@@ -446,7 +455,7 @@ class BuildCodes(CodeCommand):
                 else:
                     not_build.append(shortname)
             else:
-                self.announce("building {0}, succeeded".format(shortname), level =  log.INFO)
+                self.announce("[{1:%H:%M:%S}] building {0}, succeeded".format(shortname, endtime), level =  log.DEBUG)
                 build.append(shortname)
             
         #environment.update(self.environment)
@@ -597,6 +606,17 @@ class BuildOneCode(CodeCommand):
             path = os.path.join(self.codes_dir, name)
             if os.path.isdir(path):
                 yield path
+        
+    def subdirs_in_lib_dir(self):
+        names = os.listdir(self.lib_dir)
+        for name in names:
+            if name.startswith('.'):
+                continue
+            if not name.lower().startswith(self.code_name.lower()):
+                continue
+            path = os.path.join(self.lib_dir, name)
+            if os.path.isdir(path):
+                yield path
                 
     
     
@@ -619,6 +639,21 @@ class BuildOneCode(CodeCommand):
                 self.announce("building " + x + " version: " + target_name)
                 returncode, _ = self.call(['make','-C', x, target], env = environment)
                 results.append((target,returncode,))
+        
+        for x in self.makefile_libpaths():
+            shortname = x[len(self.codes_dir) + 1:].lower()
+            
+            self.announce("cleaning " + x)
+            self.call(['make','-C', x, 'clean'], env=environment)
+            returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
+            results.append(('default',returncode,))
+            
+            special_targets = self.get_special_targets(shortname, x, environment)
+            for target,target_name in special_targets:
+                self.announce("building " + x + " version: " + target_name)
+                returncode, _ = self.call(['make','-C', x, target], env = environment)
+                results.append((target,returncode,))
+            
         
         for name, returncode in results:
             print name, "...", "failed" if returncode == 2 else "succeeded"
