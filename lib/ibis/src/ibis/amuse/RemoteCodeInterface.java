@@ -41,6 +41,8 @@ public class RemoteCodeInterface implements Runnable {
     private final String hostname;
 
     private final int nrOfWorkers;
+    
+    private final int nrOfNodes;
 
     private final String id;
 
@@ -134,6 +136,7 @@ public class RemoteCodeInterface implements Runnable {
             hostname = initRequest.getString(2);
 
             nrOfWorkers = initRequest.getInteger(0);
+            nrOfNodes = initRequest.getInteger(1);
 
             // initialize ibis ports
             
@@ -148,7 +151,7 @@ public class RemoteCodeInterface implements Runnable {
             // start deployment of worker (possibly on remote machine)
             
             job = deployment.deploy(codeName, codeDir, hostname, id,
-                    nrOfWorkers);
+                    nrOfWorkers, nrOfNodes);
 
             // we expect a "hello" message from the worker. Will also check if
             // the job is still running

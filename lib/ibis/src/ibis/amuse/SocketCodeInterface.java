@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +41,31 @@ public class SocketCodeInterface extends CodeInterface {
     private AmuseMessage requestMessage;
     private AmuseMessage resultMessage;
 
+    private static String[] makeHostList(String[] hostnames, int nrOfWorkers) throws Exception {
+        ArrayList<String> result = new ArrayList<String>();
+   
+        
+        for(int i = 0; i < hostnames.length; i++) {
+            //number of processes per node
+            int workerCount = nrOfWorkers / hostnames.length;
+            //nrOfWorkers not divideble by number of hosts. see if this is a "remainder" node with an extra worker
+            if (i < nrOfWorkers % hostnames.length) {
+                workerCount++;
+            }
+            for(int j = 0; j < workerCount; j++) {
+                result.add(hostnames[i]);
+            }
+        }
+        if (result.size() != nrOfWorkers) {
+            throw new Exception("error in creating host file. Size is " + result.size() + " but should be " + nrOfWorkers);
+        }
+        
+        return result.toArray(new String[0]);
+        
+    }
+    
     SocketCodeInterface(String workerID, PoolInfo poolInfo, String codeName,
-            String codeDir, String amuseHome, String mpirun) throws Exception {
+            String codeDir, String amuseHome, String mpirun, int nrOfWorkers) throws Exception {
         super(workerID, poolInfo);
 
         AmuseMessage initRequest = receiveInitRequest();
@@ -62,7 +86,7 @@ public class SocketCodeInterface extends CodeInterface {
             File hostFile = File.createTempFile("host", "file");
 
             FileWriter writer = new FileWriter(hostFile);
-            for (String hostname : poolInfo.getHostnames()) {
+            for (String hostname : makeHostList(poolInfo.getHostnames(), nrOfWorkers)) {
                 writer.write(hostname + "\n");
             }
             writer.flush();

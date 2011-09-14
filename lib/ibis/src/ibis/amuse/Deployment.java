@@ -53,9 +53,9 @@ public class Deployment {
     }
 
     public Job deploy(String codeName, String codeDir, String clusterName,
-            String workerID, int nrOfWorkers) throws Exception {
+            String workerID, int nrOfWorkers, int nrOfNodes) throws Exception {
         logger.info("Deploying worker \"" + workerID + "\" running \""
-                + codeName + "\" on host " + clusterName);
+                + codeName + "\" on host " + clusterName + " with " + nrOfWorkers + " workers on " + nrOfNodes + " nodes");
 
         if (clusterName.equalsIgnoreCase("localhost")) {
             clusterName = "local";
@@ -114,8 +114,8 @@ public class Deployment {
 
         jobDescription.getCluster().setName(clusterName);
 
-        jobDescription.setProcessCount(nrOfWorkers);
-        jobDescription.setResourceCount(nrOfWorkers);
+        jobDescription.setProcessCount(nrOfNodes);
+        jobDescription.setResourceCount(nrOfNodes);
         jobDescription.setRuntime(60);
         jobDescription.getApplication().setName(codeName);
         jobDescription.setPoolName("amuse");
@@ -129,8 +129,9 @@ public class Deployment {
 
         jobDescription.getApplication().setArguments("--code-name", codeName,
                 "--worker-id", workerID, "--amuse-home", amuseHome,
-                "--code-dir", codeDir, "--number-of-workers",
-                Integer.toString(nrOfWorkers), "--mpirun", mpirun);
+                "--code-dir", codeDir, "--number-of-workers", 
+                Integer.toString(nrOfWorkers),"--number-of-nodes",
+                Integer.toString(nrOfNodes), "--mpirun", mpirun);
 
         Job result = deploy.submitJob(jobDescription, application, cluster,
                 null, null);

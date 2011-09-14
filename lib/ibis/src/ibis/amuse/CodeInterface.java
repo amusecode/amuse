@@ -294,6 +294,7 @@ public abstract class CodeInterface implements RegistryEventHandler, Runnable {
         String amuseHome = null;
         String codeDir = null;
         int nrOfWorkers = 1;
+        int nrOfNodes = 1;
         String mpirun = null;
 
         for (int i = 0; i < arguments.length; i++) {
@@ -319,6 +320,9 @@ public abstract class CodeInterface implements RegistryEventHandler, Runnable {
                     || arguments[i].equals("--number-of-workers")) {
                 i++;
                 nrOfWorkers = Integer.parseInt(arguments[i]);
+            } else if (arguments[i].equals("--number-of-nodes")) {
+                i++;
+                nrOfNodes = Integer.parseInt(arguments[i]);
             } else if (arguments[i].equals("-m")
                     || arguments[i].equals("--mpirun")) {
                 i++;
@@ -335,14 +339,14 @@ public abstract class CodeInterface implements RegistryEventHandler, Runnable {
         try {
             logger.info("Starting worker " + id + " running " + codeName);
 
-            poolInfo = new PoolInfo(id, nrOfWorkers);
+            poolInfo = new PoolInfo(id, nrOfNodes);
 
             if (poolInfo.getRank() == 0) {
                 if (jni) {
                     codeInterface = new JNICodeInterface(id, poolInfo, codeName);
                 } else {
                     codeInterface = new SocketCodeInterface(id, poolInfo, codeName,
-                            codeDir, amuseHome, mpirun);
+                            codeDir, amuseHome, mpirun, nrOfWorkers);
                 }
 
                 Runtime.getRuntime().addShutdownHook(

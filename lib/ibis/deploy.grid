@@ -49,6 +49,25 @@ VU.longitude = 4.8669
 VU.amuse.home=/home/niels/amuse
 VU.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
 
+VU-GPU.server.adaptor = SshTrilead
+VU-GPU.server.uri = any://fs0.das4.cs.vu.nl
+VU-GPU.job.adaptor = SshTrilead
+VU-GPU.job.uri = any://fs0.das4.cs.vu.nl/jobmanager-sge
+VU-GPU.file.adaptors = SshTrilead,Local
+VU-GPU.java.path = java
+VU-GPU.job.wrapper.script = das4-gpu.script
+#VU-GPU.user.name =
+#VU-GPU.user.key = 
+#VU-GPU.server.output.files =
+#VU-GPU.server.system.properties =
+VU-GPU.nodes = 85
+VU-GPU.cores = 340
+#VU-GPU.memory = 
+VU-GPU.latitude = 52.3328
+VU-GPU.longitude = 4.8669
+VU-GPU.amuse.home=/home/niels/amuse
+VU-GPU.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
+
 ASTRON.server.adaptor = SshTrilead
 ASTRON.server.uri = any://fs0.das4.cs.vu.nl
 ASTRON.job.adaptor = SshTrilead
