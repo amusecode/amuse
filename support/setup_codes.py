@@ -84,14 +84,16 @@ class CodeCommand(Command):
         if self.lib_dir is None:
             self.lib_dir = 'lib'
         
-        self.set_fortran_variables()
-        
-        self.environment['F90'] = self.environment['FORTRAN']
-        self.environment['FC'] = self.environment['FORTRAN']
         
         self.set_cuda_variables()
         self.set_mpi_variables()
         self.set_compiler_variables()
+        
+        
+        self.set_fortran_variables()
+        
+        self.environment['F90'] = self.environment['FORTRAN']
+        self.environment['FC'] = self.environment['FORTRAN']
         self.set_java_variables()
         self.set_libdir_variables()
         self.set_libs_variables()
