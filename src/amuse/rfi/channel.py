@@ -1409,6 +1409,7 @@ class IbisChannel(MessageChannel):
             self.number_of_workers = 1
             
         logging.getLogger("channel").debug("number of workers is %d", self.number_of_workers)
+        logging.getLogger("channel").debug("number of nodes is %d", self.number_of_nodes)
         
         self.daemon_host = 'localhost'    # Ibis deamon always running on the local machine
         self.daemon_port = 61575          # A random-but-fixed port number for the Ibis daemon
@@ -1455,7 +1456,7 @@ class IbisChannel(MessageChannel):
         
         self.socket.sendall('magic_string'.encode('utf-8'))
         
-        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers]}
+        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers, self.number_of_nodes]}
         
         message = SocketMessage(10101010, 1, arguments);
 
@@ -1483,6 +1484,10 @@ class IbisChannel(MessageChannel):
     
     @option(type="int", sections=("channel",))
     def number_of_workers(self):
+        return 1
+    
+    @option(type="int", sections=("channel",))
+    def number_of_nodes(self):
         return 1
        
     def stop(self):
