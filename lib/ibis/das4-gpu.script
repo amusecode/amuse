@@ -1,0 +1,27 @@
+#!/bin/bash
+
+export SGE_ROOT=/cm/shared/apps/sge/6.2u5p2
+
+NR_NODES=$1
+shift
+NR_PROCS=$1
+shift
+JAVA=$1
+shift
+ARGS=$*
+
+OPTION=-1
+RUNTIME=4:00:00
+
+if [ `expr $NR_NODES \* 4` = "$NR_PROCS" ]; then
+
+	OPTION=-4
+
+elif [ `expr $NR_NODES \* 2` = "$NR_PROCS" ]; then
+
+	OPTION=-2
+
+fi
+
+exec /cm/shared/package/reserve.sge/bin/prun $OPTION -asocial -t $RUNTIME -np $NR_NODES -native '-l num_gpu=1' $JAVA $ARGS
+
