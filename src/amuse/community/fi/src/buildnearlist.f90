@@ -128,6 +128,7 @@ function getlocalscale(spos) result(scale)
   lpos=bottom(root,1:3)
   upos=bottom(root,1:3)+rsize
   scale=dist2box(spos,lpos,upos)
+  print *, lpos, upos, spos, scale
   if(scale.EQ.0) then
     daughter=root
     scale=rsize

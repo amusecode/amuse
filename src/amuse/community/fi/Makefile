@@ -53,7 +53,7 @@ endif
 
 FFLAGS+= $(OMPFLAGS) 
 
-FFLAGS+= -I./src/
+FFLAGS+= -I./src -I.
 
 LIBS+=$(FFTWLIB)
 
@@ -79,7 +79,11 @@ $(BUILDDIR)/Makefile:
 	-mkdir $(BUILDDIR)
 	ln -s ../src/Makefile  $(BUILDDIR)/Makefile
 	
-$(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
+$(BUILDDIR)/globals.h:
+	-mkdir $(BUILDDIR)
+	cp src/globals.h $(BUILDDIR)/globals.h
+	
+$(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(BUILDDIR)/globals.h $(FILES) Makefile
 	-mkdir $(BUILDDIR)
 	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src 
 

@@ -470,6 +470,7 @@ subroutine pretreewalk(k,kmax,nbuf,buf,ntodo,todo)
     if(.not.directsum) then
       ppos=pos(p,1:3); pacc4=acc(p,4); peps=epsgrav(p)
       scale=getlocalscale(ppos)/bh_tol
+      print*, scale, eps, rsize
       scale=MIN(eps*3,scale)
       scale2=scale**2
 !   if(gdgop.AND.pacc4.GT.0.AND.mass(p).GT.0) then

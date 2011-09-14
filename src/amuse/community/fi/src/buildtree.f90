@@ -44,6 +44,7 @@ subroutine setbox(option)
   integer :: low,up,k
   real posmax,posmin,absmax
  
+  print *,periodic
   if(periodic) then
     rsize=pboxsize
     rmin(1)=-0.5*pboxsize
