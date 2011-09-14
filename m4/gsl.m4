@@ -45,7 +45,7 @@ AC_DEFUN([AX_GSL],[
                     CFLAGS="$save_CFLAGS"
                     
                      save_LIBS="$LIBS"
-                    LIBS="-L$ac_GSL_LDOPTS -lgsl $save_LIBS"
+                    LIBS="$ac_GSL_LDOPTS -lgsl $save_LIBS"
                     AC_CHECK_LIB([gsl], [gsl_blas_dgemm],
                             [GSL_LIBS="$ac_GSL_LDOPTS -lgsl"],
                             [AC_MSG_WARN([libgsl : library missing. (Cannot find symbol gsl_blas_dgemm) in $with_gsl_library. Check if libgsl is installed and if the version is correct])]
