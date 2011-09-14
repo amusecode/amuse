@@ -7,7 +7,7 @@ include $(SRCDIR)/makefile_options
 BUILDDIR = build
 PERIODIC_BUILDDIR = build_periodic
 
-PERIODIC_OPT := "$(OPT) -DPERIODIC -DNOGRAVITY"
+PERIODIC_OPT := $(OPT) -DPERIODIC -DNOGRAVITY
 
 CXXFLAGS += -Wall -g -DTOOLBOX $(OPT)
 
@@ -45,7 +45,7 @@ all:	gadget2_worker
 
 
 clean:
-	rm -f *.o *.pyc worker_code.cc worker_code.h worker_code worker_code_periodic
+	rm -f *.o *.po *.pyc worker_code.cc worker_code.h worker_code worker_code_periodic
 	rm -f gadget2_worker gadget2_worker_periodic gadget2_worker_sockets worker_code-sockets.cc
 	rm -f gadget2_worker_periodic_sockets
 	make -C $(SRCDIR) clean
@@ -72,7 +72,7 @@ $(BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options
 	
 	
 $(CODELIB): $(BUILDDIR)/Makefile $(BUILDDIR)/makefile_options $(LIBFILES) $(SRCDIR)/Makefile $(SRCDIR)/makefile_options
-	make -C $(BUILDDIR) all OPT=$(PERIODIC_OPT) VPATH=../src
+	make -C $(BUILDDIR) all VPATH=../src
 
 gadget2_worker: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)
@@ -90,7 +90,7 @@ $(PERIODIC_BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options
 	cp $(SRCDIR)/makefile_options $(PERIODIC_BUILDDIR)/makefile_options
 	
 $(PERIODIC_BUILDDIR)/libgadget.a:  $(PERIODIC_BUILDDIR)/Makefile $(PERIODIC_BUILDDIR)/makefile_options
-	make -C $(PERIODIC_BUILDDIR) all OPT=$(PERIODIC_OPT) VPATH=../src
+	make -C $(PERIODIC_BUILDDIR) all OPT="$(PERIODIC_OPT)" VPATH=../src
 	
 gadget2_worker_periodic: worker_code.cc worker_code.h gadget_code.po $(PERIODIC_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) $(GSL_FLAGS) $< gadget_code.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a  $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o
@@ -99,7 +99,7 @@ gadget2_worker_periodic_sockets: worker_code-sockets.cc worker_code.h gadget_cod
 	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) $(GSL_FLAGS) $< gadget_code.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o
 	
 gadget_code.po: gadget_code.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) $(PERIODIC_OPT) -c -o $@ $< $(SCLIBS) $(GSL_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) -DPERIODIC -DNOGRAVITY -c -o $@ $< $(SCLIBS) $(GSL_LIBS)
 	
 gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) -c -o $@ $< $(SCLIBS) $(GSL_LIBS)

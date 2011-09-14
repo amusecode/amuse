@@ -53,7 +53,7 @@ endif
 
 FFLAGS+= $(OMPFLAGS) 
 
-FFLAGS+= -I./src -I.
+FFLAGS+= -I.
 
 LIBS+=$(FFTWLIB)
 
@@ -79,11 +79,7 @@ $(BUILDDIR)/Makefile:
 	-mkdir $(BUILDDIR)
 	ln -s ../src/Makefile  $(BUILDDIR)/Makefile
 	
-$(BUILDDIR)/globals.h:
-	-mkdir $(BUILDDIR)
-	cp src/globals.h $(BUILDDIR)/globals.h
-	
-$(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(BUILDDIR)/globals.h $(FILES) Makefile
+$(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
 	-mkdir $(BUILDDIR)
 	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src 
 
@@ -102,15 +98,13 @@ $(PERIODIC_BUILDDIR)/Makefile:
 	-mkdir $(PERIODIC_BUILDDIR)
 	ln -s ../src/Makefile $(PERIODIC_BUILDDIR)/Makefile
 	
-$(PERIODIC_BUILDDIR)/globals.h:
-	-mkdir $(PERIODIC_BUILDDIR)
-	./patch_globals_dot_h.py --periodic -i src/globals.h -o $(PERIODIC_BUILDDIR)/globals.h
-	
-$(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile $(PERIODIC_BUILDDIR)/globals.h
+$(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile 
+	./patch_globals_dot_h.py --periodic
 	make -C $(PERIODIC_BUILDDIR) amuse_interface FFLAGS="-I./$(PERIODIC_BUILDDIR) $(FFLAGS)" FC="$(FC)" VPATH=../src 
-
-fi_worker_periodic: worker.f90 interface.o $(PERIODIC_BUILDDIR)/libfi.a
-	$(FC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SCLIBS) $(FFTWLIB)
+	./patch_globals_dot_h.py
+	
+fi_worker_periodic: worker.f90 interface.po $(PERIODIC_BUILDDIR)/libfi.a
+	$(FC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SCINC) worker.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SCLIBS) $(FFTWLIB)
 
 worker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@
@@ -121,6 +115,9 @@ worker-sockets.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 glworker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< GlFiInterface -o $@
 
+interface.po:interface.f90
+	$(FC) $(FFLAGS) -I./$(PERIODIC_BUILDDIR) -c -o $@ $<
+    
 clean:
 	make -C src purge
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
