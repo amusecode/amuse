@@ -94,15 +94,15 @@ fi_worker_gl: glworker.f90 interface.o $(BUILDDIR)/libfi.a
 	$(FC) $(FFLAGS) $(SCINC) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SCLIBS)
 
-$(PERIODIC_BUILDDIR)/Makefile: $(PERIODIC_BUILDDIR)
+$(PERIODIC_BUILDDIR)/Makefile:
 	-mkdir $(PERIODIC_BUILDDIR)
 	ln -s ../src/Makefile $(PERIODIC_BUILDDIR)/Makefile
 	
-$(PERIODIC_BUILDDIR)/globals.h: $(PERIODIC_BUILDDIR)
+$(PERIODIC_BUILDDIR)/globals.h:
 	-mkdir $(PERIODIC_BUILDDIR)
 	./patch_globals_dot_h.py --periodic -i src/globals.h -o $(PERIODIC_BUILDDIR)/globals.h
 	
-$(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR) $(PERIODIC_BUILDDIR)/Makefile $(PERIODIC_BUILDDIR)/globals.h
+$(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile $(PERIODIC_BUILDDIR)/globals.h
 	make -C $(PERIODIC_BUILDDIR) amuse_interface FFLAGS="-I./$(PERIODIC_BUILDDIR) $(FFLAGS)" FC="$(FC)" VPATH=../src 
 
 fi_worker_periodic: worker.f90 interface.o $(PERIODIC_BUILDDIR)/libfi.a
