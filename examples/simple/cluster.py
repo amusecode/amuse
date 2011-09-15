@@ -4,7 +4,6 @@ from matplotlib import pyplot
 
 from amuse.units import nbody_system
 from amuse.community.hermite0.interface import Hermite
-#from amuse.community.bhtree.interface import BHTree
 from amuse.ext.plummer import new_plummer_sphere
 
 import logging
@@ -30,7 +29,6 @@ def simulate_small_cluster(
     particles = new_plummer_sphere(number_of_stars)
     particles.scale_to_standard()
    
-#    gravity = BHTree()
     gravity = Hermite(number_of_workers = number_of_workers)
     gravity.parameters.epsilon_squared = 0.15 | nbody_system.length ** 2
     
