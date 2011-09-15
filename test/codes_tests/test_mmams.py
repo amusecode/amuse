@@ -601,13 +601,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
-        instance = MakeMeAMassiveStar(**default_options)
-        instance.initialize_code()
-        instance.commit_parameters()
-        instance.particles.add_particles(stars)
-        self.assertEqual(instance.number_of_particles, 2)
-        
-        stellar_evolution = self.new_instance(MESA, redirection="none")
+        stellar_evolution = self.new_instance(MESA)#, redirection="none")
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
@@ -615,74 +609,117 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stellar_evolution.commit_parameters()
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
-        try:
-            while True:
-                stellar_evolution.evolve_model()
-        except AmuseException:
-            print "Evolved stars to", stellar_evolution.particles.age
-            print "Radius:", stellar_evolution.particles.radius
         
-        stellar_model = [None, None]
-        for i in [0, 1]:
-            number_of_zones     = stellar_evolution.particles[i].get_number_of_zones()
-            mass_profile        = stellar_evolution.particles[i].get_mass_profile(
-                number_of_zones = number_of_zones) * stellar_evolution.particles[i].mass
-            cumul_mass_profile  = stellar_evolution.particles[i].get_cumulative_mass_profile(
-                number_of_zones = number_of_zones) * stellar_evolution.particles[i].mass
-            density_profile     = stellar_evolution.particles[i].get_density_profile(number_of_zones = number_of_zones)
-            radius_profile      = stellar_evolution.particles[i].get_radius_profile(number_of_zones = number_of_zones)
-            temperature_profile = stellar_evolution.particles[i].get_temperature_profile(number_of_zones = number_of_zones)
-            luminosity_profile  = stellar_evolution.particles[i].get_luminosity_profile(number_of_zones = number_of_zones)
-            mu_profile          = stellar_evolution.particles[i].get_mu_profile(number_of_zones = number_of_zones)
-            pressure_profile    = stellar_evolution.particles[i].get_pressure_profile(number_of_zones = number_of_zones)
-            composition_profile = stellar_evolution.particles[i].get_chemical_abundance_profiles(number_of_zones = number_of_zones)
-            species_names       = stellar_evolution.particles[i].get_names_of_species()
-            self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24', 'si28', ''][:-(1+i)])
+        if os.path.exists(os.path.join(get_path_to_results(), "test_mmams_9.pkl")):
+           # Remove the next line to speed-up, and only test MESA loading the merger product
+           #os.remove(os.path.join(get_path_to_results(), "test_mmams_9.pkl"))
+           pass
+        
+        if os.path.exists(os.path.join(get_path_to_results(), "test_mmams_9.pkl")):
+            with open(os.path.join(get_path_to_results(), "test_mmams_9.pkl"), 'r') as in_file:
+                stellar_model = pickle.load(in_file)
+        else:
+            instance = MakeMeAMassiveStar(**default_options)
+            instance.initialize_code()
+            instance.parameters.target_n_shells_mixing = 10000
+            instance.parameters.dump_mixed_flag = True
+            instance.commit_parameters()
+            instance.particles.add_particles(stars)
+            self.assertEqual(instance.number_of_particles, 2)
             
-            instance.particles[i].add_shell(mass_profile, cumul_mass_profile, radius_profile, density_profile, 
-                pressure_profile, temperature_profile, luminosity_profile, mu_profile, composition_profile[0], 
-                composition_profile[1]+composition_profile[2], composition_profile[3], 
-                composition_profile[4], composition_profile[5], composition_profile[6], 
-                composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
+            try:
+                while True:
+                    stellar_evolution.particles[0].evolve_one_step()
+            except AmuseException:
+                stellar_evolution.particles[1].evolve_for(stellar_evolution.particles[0].age)
+                print "Evolved stars to", stellar_evolution.particles.age
+                print "Radius:", stellar_evolution.particles.radius
             
-            self.assertEqual(instance.particles[i].number_of_zones, number_of_zones)
-            stellar_model[i] = instance.particles[i].internal_structure()
-            self.assertTrue(set(['d_mass', 'mass', 'radius', 'rho', 'pressure', 
-                'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H', 'X_He', 'X_C', 
-                'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']).issubset(
-                    stellar_model[i].all_attributes()
+            stellar_model = [None, None]
+            for i in [0, 1]:
+                number_of_zones     = stellar_evolution.particles[i].get_number_of_zones()
+                mass_profile        = stellar_evolution.particles[i].get_mass_profile(
+                    number_of_zones = number_of_zones) * stellar_evolution.particles[i].mass
+                cumul_mass_profile  = stellar_evolution.particles[i].get_cumulative_mass_profile(
+                    number_of_zones = number_of_zones) * stellar_evolution.particles[i].mass
+                density_profile     = stellar_evolution.particles[i].get_density_profile(number_of_zones = number_of_zones)
+                radius_profile      = stellar_evolution.particles[i].get_radius_profile(number_of_zones = number_of_zones)
+                temperature_profile = stellar_evolution.particles[i].get_temperature_profile(number_of_zones = number_of_zones)
+                luminosity_profile  = stellar_evolution.particles[i].get_luminosity_profile(number_of_zones = number_of_zones)
+                mu_profile          = stellar_evolution.particles[i].get_mu_profile(number_of_zones = number_of_zones)
+                pressure_profile    = stellar_evolution.particles[i].get_pressure_profile(number_of_zones = number_of_zones)
+                composition_profile = stellar_evolution.particles[i].get_chemical_abundance_profiles(number_of_zones = number_of_zones)
+                species_names       = stellar_evolution.particles[i].get_names_of_species()
+                self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24', 'si28', ''][:-(1+i)])
+                
+                instance.particles[i].add_shell(mass_profile, cumul_mass_profile, radius_profile, density_profile, 
+                    pressure_profile, temperature_profile, luminosity_profile, mu_profile, composition_profile[0], 
+                    composition_profile[1]+composition_profile[2], composition_profile[3], 
+                    composition_profile[4], composition_profile[5], composition_profile[6], 
+                    composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
+                
+                self.assertEqual(instance.particles[i].number_of_zones, number_of_zones)
+                stellar_model[i] = instance.particles[i].internal_structure()
+                self.assertTrue(set(['d_mass', 'mass', 'radius', 'rho', 'pressure', 
+                    'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H', 'X_He', 'X_C', 
+                    'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']).issubset(
+                        stellar_model[i].all_attributes()
+                    )
                 )
+            
+            self.assertAlmostEqual(stellar_model[0].mass[0],  0.0 | units.MSun, 3)
+            self.assertAlmostEqual(stellar_model[0].mass[-1], 20.0 | units.MSun)
+            self.assertAlmostEqual(stellar_model[0].radius[0],     7.4820941908e-4 | units.RSun)
+            self.assertAlmostEqual(stellar_model[0].radius[-1],    7.63066161669e2 | units.RSun)
+            self.assertIsOfOrder(stellar_model[0].temperature[0],  3.66003952576e8 | units.K)
+            self.assertIsOfOrder(stellar_model[0].temperature[-1], 3.67886047945e3 | units.K)
+            self.assertAlmostEqual(stellar_model[0].X_H[0], 0.0 | units.none)
+            self.assertAlmostEqual(stellar_model[0].X_H[-1], 0.63084 | units.none, 3)
+            
+            self.assertEqual(instance.number_of_particles, 2)
+            merge_product = Particle()
+            merge_product.primary = instance.particles[0]
+            merge_product.secondary = instance.particles[1]
+            instance.merge_products.add_particle(merge_product)
+            self.assertEqual(instance.number_of_particles, 3)
+            print instance.particles.number_of_zones
+            #self.assertEqual(instance.particles.number_of_zones, [1043, 985, 935])
+            
+            mmams_merged_model = instance.merge_products[0].internal_structure()
+            print mmams_merged_model.mass[[0, -1]]
+            print mmams_merged_model.radius[[0, -1]]
+            print mmams_merged_model.temperature[[0, -1]]
+            print mmams_merged_model.X_H[[0, -1]]
+#~            self.assertAlmostEqual(mmams_merged_model.mass[[0, -1]],        [0.0259, 25.7055] | units.MSun, 3)
+#~            self.assertAlmostEqual(mmams_merged_model.radius[[0, -1]],      [0.036,  7.574] | units.RSun, 2)
+#~            self.assertAlmostEqual(mmams_merged_model.temperature[[0, -1]], [40844102.7, 1832217.8] | units.K, 1)
+#~            self.assertAlmostEqual(mmams_merged_model.X_H[[0, -1]],         [0.6743, 0.6999] | units.none, 2)
+            stellar_model = dict(
+                mass        = mmams_merged_model.mass,
+                radius      = mmams_merged_model.radius,
+                rho         = mmams_merged_model.rho,
+                temperature = mmams_merged_model.temperature,
+                luminosity  = mmams_merged_model.luminosity,
+                X_H  = mmams_merged_model.X_H,
+                X_He = mmams_merged_model.X_He,
+                X_C  = mmams_merged_model.X_C,
+                X_N  = mmams_merged_model.X_N,
+                X_O  = mmams_merged_model.X_O,
+                X_Ne = mmams_merged_model.X_Ne,
+                X_Mg = mmams_merged_model.X_Mg,
+                X_Si = mmams_merged_model.X_Si,
+                X_Fe = mmams_merged_model.X_Fe
             )
+            instance.stop()
+            with open(os.path.join(get_path_to_results(), "test_mmams_9.pkl"), 'w') as out_file:
+                pickle.dump(stellar_model, out_file)
         
-        self.assertAlmostEqual(stellar_model[0].mass[0],  0.0 | units.MSun, 3)
-        self.assertAlmostEqual(stellar_model[0].mass[-1], 20.0 | units.MSun, 0)
-        self.assertAlmostEqual(stellar_model[0].radius[0], 0.0 | units.RSun, 1)
-        self.assertAlmostRelativeEqual(stellar_model[0].radius[-1], 1151.20 | units.RSun, 1)
-        self.assertIsOfOrder(stellar_model[0].temperature[0], 3.5e8 | units.K)
-        self.assertIsOfOrder(stellar_model[0].temperature[-1], 3500 | units.K)
-        self.assertAlmostEqual(stellar_model[0].X_H[0], 0.0 | units.none, 4)
-        self.assertAlmostEqual(stellar_model[0].X_H[-1], 0.63084 | units.none, 3)
-        
-        self.assertEqual(instance.number_of_particles, 2)
-        merge_product = Particle()
-        merge_product.primary = instance.particles[0]
-        merge_product.secondary = instance.particles[1]
-        instance.merge_products.add_particle(merge_product)
-        self.assertEqual(instance.number_of_particles, 3)
-        self.assertEqual(instance.particles.number_of_zones, [1043, 985, 22570])
-        
-        stellar_model = instance.merge_products[0].internal_structure()
-        self.assertAlmostEqual(stellar_model.mass[[0, -1]],        [0.0, 19.0029] | units.MSun, 3)
-        self.assertAlmostEqual(stellar_model.radius[[0, -1]],      [0.0, 1479.8835] | units.RSun, 3)
-        self.assertIsOfOrder(stellar_model.temperature[[0, -1]], [2.6e8, 1.0] | units.K)
-        self.assertAlmostEqual(stellar_model.X_H[[0, -1]],         [0.0, 0.70003] | units.none, 4)
-
-        merged_in_code = stellar_evolution.new_particle_from_model(stellar_model, 10.0 | units.Myr)
-        instance.stop()
+        merged_in_code = stellar_evolution.new_particle_from_model(stellar_model, 0.0 | units.Myr)
         stellar_evolution.particles.remove_particles(stars)
+        print 'number_of_backups_in_a_row', stellar_evolution.particles.get_number_of_backups_in_a_row()
         print stellar_evolution.particles
-        for i in range(10):
-            stellar_evolution.evolve_model()
+        for i in range(100):
+            stellar_evolution.evolve_model((1+i) | units.yr)
             print stellar_evolution.particles
         stellar_evolution.stop()
     
@@ -813,6 +850,57 @@ class TestMakeMeAMassiveStar(TestWithMPI):
             print "mass:", stellar_model.mass[-1]
             print "radius:", stellar_model.radius[-1]
             print "X_H:", stellar_model.X_H[[0, -1]]
+        
+        print "Storing the merger products in", os.path.join(get_path_to_results(), "test_mmams_11.pkl")
+        mmams_merged_models = []
+        for mmams_merged_model in stellar_models:
+            mmams_merged_models.append(dict(
+                mass        = mmams_merged_model.mass,
+                radius      = mmams_merged_model.radius,
+                rho         = mmams_merged_model.rho,
+                temperature = mmams_merged_model.temperature,
+                luminosity  = mmams_merged_model.luminosity,
+                X_H  = mmams_merged_model.X_H,
+                X_He = mmams_merged_model.X_He,
+                X_C  = mmams_merged_model.X_C,
+                X_N  = mmams_merged_model.X_N,
+                X_O  = mmams_merged_model.X_O,
+                X_Ne = mmams_merged_model.X_Ne,
+                X_Mg = mmams_merged_model.X_Mg,
+                X_Si = mmams_merged_model.X_Si,
+                X_Fe = mmams_merged_model.X_Fe
+            ))
+        with open(os.path.join(get_path_to_results(), "test_mmams_11.pkl"), 'w') as out_file:
+            pickle.dump(mmams_merged_models, out_file)
+    
+    def slowtest11b(self):
+        print "Test 11b: Continue the stellar evolution of the products from test 11 with MESA"
+        if os.path.exists(os.path.join(get_path_to_results(), "test_mmams_11.pkl")):
+            with open(os.path.join(get_path_to_results(), "test_mmams_11.pkl"), 'r') as in_file:
+                stellar_models = pickle.load(in_file)
+        else:
+            return
+        print len(stellar_models)
+        
+        stellar_evolution = self.new_instance(MESA)#, redirection="none")
+        if stellar_evolution is None:
+            print "MESA was not built. Skipping test."
+            return
+        stellar_evolution.initialize_code() 
+        stellar_evolution.parameters.metallicity = 0.0
+        stellar_evolution.commit_parameters()
+        for i, stellar_model in enumerate(stellar_models):
+            if i != 4:
+                stellar_evolution.model_time = 0 | units.yr
+                print "\n\n\n***", i, "***", stellar_model['mass'][-1]
+                stellar_evolution.particles.remove_particles(stellar_evolution.particles)
+                merged_in_code = stellar_evolution.new_particle_from_model(stellar_model, 0.0 | units.Myr)
+                print stellar_evolution.particles
+                for i in range(10):
+                    stellar_evolution.evolve_model((1+i) | units.yr)
+                    print stellar_evolution.particles
+        
+        stellar_evolution.stop()
     
     def slowtest12(self):
         print "Test 12: same as slowtest11, but new mmams instance each merger"

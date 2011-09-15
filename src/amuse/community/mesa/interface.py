@@ -897,7 +897,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_number_of_backups_in_a_row", 
             (object.INDEX,), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "reset_number_of_backups_in_a_row", 

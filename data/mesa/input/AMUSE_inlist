@@ -468,7 +468,7 @@
          
          log_cnt = -1 ! write info to LOGS/star.log when mod(model_number, log_cnt) = 0.
          
-         terminal_cnt = 50 ! write info to terminal when mod(model_number, terminal_cnt) = 0.
+         terminal_cnt = 1 ! write info to terminal when mod(model_number, terminal_cnt) = 0.
          write_header_frequency = 10
             ! output the log header info to the terminal
             ! when mod(model_number, write_header_frequency*terminal_cnt) = 0.

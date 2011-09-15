@@ -1659,6 +1659,7 @@
          XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, n)
       use amuse_support
       use star_lib, only: alloc_star, star_setup, show_terminal_header
+      use star_def, only: result_reason_str
       use star_private_def, only: star_info, get_star_ptr
       use run_star_support, only: setup_for_run_star, before_evolve
       use read_model, only: set_zero_age_params, finish_load_model
@@ -1684,8 +1685,9 @@
       double precision :: total_mass, original_timestep, f
       integer :: new_particle, ierr, tmp1_id_new_model, tmp2_id_new_model, &
          new_specified_stellar_model, finalize_stellar_model, match_mesh, &
-         evolve_for, evolve_one_step, index_low
+         evolve_for, evolve_one_step, erase_memory, index_low, k1, k2
       logical :: do_T = .false.
+      logical :: do_restore_timestep = .false.
       type (star_info), pointer :: s, s_tmp
       
       if (new_model_defined) then
@@ -1729,58 +1731,84 @@
          end if
          do
             s% xa(:,:) = f * s_tmp% xa(:,:) + (1.0d0 - f) * s% xa(:,:)
+            ierr = erase_memory(id_new_model)
+            if (failed('erase_memory', ierr)) return
             ierr = evolve_for(id_new_model, 10.0 * s% min_timestep_limit)
             if (failed('evolve_for', ierr)) return
             if (debugging) write(*,*) 'f: ', f
             call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
             if (failed('check_remeshed', ierr)) return
             if (debugging) write(*,*) 'CHECK check_remeshed OK'
+            if (debugging) write(*,*) 'Backups', s% number_of_backups_in_a_row
+            if (s% number_of_backups_in_a_row > 15) exit
             if (f >= 1.0d0) exit
             f = min(1.5d0 * f, 1.0d0)
          end do
          
+         ! *** Give the model the opportunity to remesh ***
+         s% mesh_delta_coeff = 0.5
+         ierr = remesh(s, .true., .false., .false.) 
+         if (failed('remesh', ierr)) return 
+         ierr = erase_memory(id_new_model)
+         if (failed('erase_memory', ierr)) return
+         ierr = match_mesh(tmp1_id_new_model, s% nz, s% dq)
+         if (failed('match_mesh', ierr)) return
+         s% number_of_backups_in_a_row = 0
+         s% mesh_delta_coeff = 1
+         
+         ! *** Optionally, also do hydro vars ***
          if (do_T) then
             f = 1.0d-8
             index_low = s% nz / 10 ! Do not meddle with the atmosphere!
             do
                s% xa(:,:) = s_tmp% xa(:,:)
                s% xs(s% i_lnT,index_low:) = f*s_tmp%xs(s_tmp%i_lnT,index_low:) + (1d0-f)*s%xs(s%i_lnT,index_low:)
+               ierr = erase_memory(id_new_model)
+               if (failed('erase_memory', ierr)) return
                ierr = evolve_for(id_new_model, 10.0 * s% min_timestep_limit)
                if (failed('evolve_for', ierr)) return
                if (debugging) write(*,*) 'f: ', f
                call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
                if (failed('check_remeshed', ierr)) return
                if (debugging) write(*,*) 'CHECK check_remeshed OK'
+               if (debugging) write(*,*) 'Backups', s% number_of_backups_in_a_row
                if (f >= 1.0d0) exit
                f = min(1.5d0 * f, 1.0d0)
             end do
          end if
          
          ! *** Restore the original timestep ***
-         if (debugging) write(*,*) 'timesteps', s% dt_next, original_timestep
-         do while (s% dt_next .lt. original_timestep)
-            if (debugging) write(*,*) 'increasing timesteps', s% dt_next, original_timestep
-            s% dt_next = s% dt_next * 1.5
-            s% xa(:,:) = s_tmp% xa(:,:)
-            if (do_T) s% xs(s% i_lnT,index_low:) = s_tmp% xs(s_tmp% i_lnT,index_low:)
-            ierr = evolve_one_step(id_new_model)
-            do while (ierr /= 0)
-               if (debugging) write(*,*) 'Oops, too large timestep I guess...', s% dt_next, ' -> ', s% dt_next/1.5
-               s% dt_next = s% dt_next / 1.5  ! Decrease the timestep again,
-               original_timestep = s% dt_next ! ... and make sure we exit the outer loop
+         if (debugging) write(*,*) 'timesteps', s% dt_old, s% dt, s% dt_next, original_timestep
+         s% dt_next = 10.0 * s% min_timestep_limit
+         s% dt = 10.0 * s% min_timestep_limit
+         if (debugging) write(*,*) 'timesteps', s% dt_old, s% dt, s% dt_next, original_timestep
+         ierr = evolve_one_step(id_new_model)
+         if (debugging) write(*,*) ierr, s% result_reason, trim(result_reason_str(s% result_reason))
+         if (debugging) write(*,*) 'timesteps', s% dt_old, s% dt, s% dt_next, original_timestep
+         if (do_restore_timestep) then
+            do k1 = 1, 10
+               if (debugging) write(*,*) 'increasing timesteps', s% dt_old, s% dt, s% dt_next, original_timestep
+               if (debugging) write(*,*) 'Backups', s% number_of_backups_in_a_row
                s% xa(:,:) = s_tmp% xa(:,:)
                if (do_T) s% xs(s% i_lnT,index_low:) = s_tmp% xs(s_tmp% i_lnT,index_low:)
-               ierr = evolve_one_step(id_new_model)
-               if (s% dt_next <= s% min_timestep_limit) then
-                  s% dt_next = s% min_timestep_limit
-                  exit
-               end if
+               ierr = erase_memory(id_new_model)
+               if (failed('erase_memory', ierr)) return
+               do k2 = 1, 10
+                  ierr = evolve_one_step(id_new_model)
+                  if (debugging) write(*,*) ierr, s% result_reason, trim(result_reason_str(s% result_reason))
+               end do
+               if (s% number_of_backups_in_a_row > 0) exit
             end do
-         end do
+         end if
          
          s% xa(:,:) = s_tmp% xa(:,:)
          if (do_T) s% xs(s% i_lnT,index_low:) = s_tmp% xs(s_tmp% i_lnT,index_low:)
+         ierr = erase_memory(id_new_model)
+         if (failed('erase_memory', ierr)) return
          
+         if (debugging) write(*,*) 'Backups:', s% number_of_backups_in_a_row
+         s% number_of_backups_in_a_row = 0
+         if (debugging) write(*,*) 'Backups reset:', s% number_of_backups_in_a_row
          s% trace_evolve = .false.
          s% report_ierr = .false.
          call flush()
