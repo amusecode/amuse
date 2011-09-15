@@ -68,14 +68,19 @@ void onexit(void) {
     MPI_Finalized(&flag);
     
     if(!flag) {
-        MPI::Intercomm parent = MPI::COMM_WORLD.Get_parent();
-        int rank = parent.Get_rank();
+        MPI_Comm parent;
+        MPI_Comm_get_parent(&parent);
+        
+        int rank = 0;
+        
+        MPI_Comm_rank(parent, &rank);
         
         message_header reply_header;
         reply_header.tag = -2;
         reply_header.send(parent, rank);
         
-        parent.Disconnect();
+        MPI_Comm_disconnect(&parent);
+        
         MPI_Finalize();
     }
 }
@@ -393,7 +398,7 @@ class GenerateCMessageHeaderClassDefinition(MakeCCodeString):
         self.out + '{}'
         
     def make_send_function(self):
-        self.out.lf() + 'void send(MPI::Intercomm & intercomm, int rank){'
+        self.out.lf() + 'void send(MPI_Comm & intercomm, int rank){'
         self.out.indent()
         self.out.lf() + 'int header[' + self.length_of_the_header + '];'
         self.out.lf() + 'header[0] = tag;'
@@ -402,17 +407,17 @@ class GenerateCMessageHeaderClassDefinition(MakeCCodeString):
             spec = self.dtype_to_spec[dtype] 
             self.out.lf() + 'header[' + (i+2) + '] ='
             self.out + spec.counter_name + ';'
-        self.out.lf() + 'intercomm.Send(header, '+ self.length_of_the_header 
-        self.out +', MPI_INT, 0, 999);'
+        self.out.lf() + 'MPI_Send(header, '+ self.length_of_the_header 
+        self.out +', MPI_INT, 0, 999, intercomm);'
         self.out.dedent()
         self.out.lf() + '}'
         
     def make_recv_function(self):
-        self.out.lf() + 'void recv(MPI::Intercomm & intercomm, int rank) {'
+        self.out.lf() + 'void recv(MPI_Comm & intercomm, int rank) {'
         self.out.indent()
         self.out.lf() + 'int header[' + self.length_of_the_header + '];'
-        self.out.lf() + 'intercomm.Bcast(header, '+ self.length_of_the_header 
-        self.out +', MPI_INT, 0);'
+        self.out.lf() + 'MPI_Bcast(header, '+ self.length_of_the_header 
+        self.out +', MPI_INT, 0, intercomm);'
         self.out.lf() + 'tag = header[0];'
         self.out.lf() + 'len = header[1];'
         for i, dtype in enumerate(dtypes):
@@ -494,9 +499,10 @@ class GenerateACSourcecodeStringFromASpecificationClass\
     def output_runloop_function_def_start(self):
         self.out.lf().lf() + 'void run_loop() {'
         self.out.indent()
-        self.out.lf().lf() + 'MPI::Intercomm parent = '
-        self.out + 'MPI::COMM_WORLD.Get_parent();'
-        self.out.n() + 'int rank = parent.Get_rank();'
+        self.out.lf().lf() + 'MPI_Comm parent;'
+        self.out + 'MPI_Comm_get_parent(&parent);'
+        self.out.n() + 'int rank = 0;'
+        self.out + 'MPI_Comm_rank(parent, &rank);'
         self.out.lf().lf() + 'bool must_run_loop = true;'
         self.out.lf() + 'char * characters = 0, * output_characters = 0;'
         
@@ -528,23 +534,23 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             if max == 0:
                 continue
             self.out + 'if(request_header.' + spec.counter_name + ' > 0) {'
-            self.out.indent().lf() + 'parent.Bcast(' 
+            self.out.indent().lf() + 'MPI_Bcast(' 
             self.out + spec.input_var_name 
             self.out + ', ' + 'request_header.' + spec.counter_name 
             self.out + ' * ' + 'request_header.len'
-            self.out + ', ' + spec.mpi_type+ ', 0);'
+            self.out + ', ' + spec.mpi_type+ ', 0, parent);'
             
             if dtype == 'string':
                 self.out.lf() + 'characters = new char['
                 self.out +  spec.input_var_name + '[' + 'request_header.' + spec.counter_name 
                 self.out + ' * ' + 'request_header.len' + ' - 1] + 1'
                 self.out + '];'
-                self.out.lf() + 'parent.Bcast(' 
+                self.out.lf() + 'MPI_Bcast(' 
                 self.out + 'characters'
                 self.out + ',  ' 
                 self.out + spec.input_var_name + '[' + 'request_header.' + spec.counter_name 
                 self.out + ' * ' + 'request_header.len' + '- 1] + 1'
-                self.out + ', ' +'MPI_CHARACTER'+ ', 0);'
+                self.out + ', ' +'MPI_CHARACTER'+ ', 0, parent);'
             
             self.out.dedent().lf() +'}'
             
@@ -566,7 +572,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.dedent().lf() + '}'
         
     def output_runloop_function_def_end(self):
-        self.out.lf().lf() + 'MPI::COMM_WORLD.Barrier();'
+        self.out.lf().lf() + 'MPI_Barrier(MPI_COMM_WORLD);'
         self.out.lf().lf()
         
         self.out.lf() + 'if(rank == 0) {'
@@ -604,15 +610,15 @@ class GenerateACSourcecodeStringFromASpecificationClass\
                 self.out.dedent().lf() +'}'
                 self.out.lf()
                 
-            self.out + 'parent.Send(' + spec.output_var_name 
+            self.out + 'MPI_Send(' + spec.output_var_name 
             self.out + ', ' + 'reply_header.' + spec.counter_name 
             self.out + ' * ' + 'request_header.len'
-            self.out + ', ' + spec.mpi_type+ ', 0, 999);'
+            self.out + ', ' + spec.mpi_type+ ', 0, 999, parent);'
             
             if dtype == 'string':
-                self.out.lf() + 'parent.Send(' + 'output_characters'
+                self.out.lf() + 'MPI_Send(' + 'output_characters'
                 self.out + ',  offset' # + spec.output_var_name +'['+'reply_header.' + spec.counter_name +' - 1] + 1'
-                self.out + ', ' + 'MPI_BYTE' + ', 0, 999);'
+                self.out + ', ' + 'MPI_BYTE' + ', 0, 999, parent);'
                 
             self.out.dedent().lf() +'}'
             
@@ -626,7 +632,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         
         self.output_delete_statements()
         
-        self.out.lf().lf() + 'parent.Disconnect();'
+        self.out.lf().lf() + 'MPI_Comm_disconnect(&parent);'
         self.out.dedent()
         self.out.lf() + '}'
     
@@ -702,8 +708,8 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.lf().lf() + 'int main(int argc, char *argv[])'
         self.out.lf() + '{'
         self.out.indent().lf() 
-        #self.out.lf() + 'int provided;'
-        self.out.lf() + 'MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);'
+        self.out.lf() + 'int provided;'
+        self.out.lf() + 'MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);'
         #self.out.lf() + 'MPI::Init(argc, argv);'
         self.out.lf() + 'atexit(onexit);'
         self.out.lf().lf() + 'run_loop();'
