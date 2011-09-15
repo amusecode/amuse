@@ -1,7 +1,5 @@
 from amuse.support.core import late, print_out
 
-from amuse.community import *
-
 import os
 
 interface_file_template = """\
@@ -225,11 +223,11 @@ class CreateADirectoryAndPopulateItWithFiles(object):
         
     @late 
     def name_of_the_superclass_for_the_community_code_interface_class(self):
-        return CodeInterface.__name__
+        return "CodeInterface"
         
     @late
     def name_of_the_superclass_for_the_code_interface_class(self):
-        return InCodeComponentImplementation.__name__
+        return "InCodeComponentImplementation"
         
     def start(self):
         
