@@ -1,0 +1,16 @@
+FC= ifort
+IFORTFLAGS= -ftz -fpe0 -g -traceback -heap-arrays -fpp 
+FFLAGS= $(IFORTFLAGS) -xHOST -O3 -no-prec-div -funroll-loops -mkl -inline-level=2 
+#FFLAGS= $(IFORTFLAGS) -fast
+
+ISLIB= -L
+ISINC= -I
+ISMOD= -I
+ISRLIB= -Wl,-rpath=
+
+DIRHDF= /home/galtay/usr/hdf5-1.8.5-patch1-ifort-11.1/hdf5
+
+IFORTRLIB= $(ISRLIB)/opt/intel/Compiler/11.1/073/mkl/lib/em64t
+IFORTRLIB+= $(ISRLIB)/opt/intel/Compiler/11.1/073/lib/intel64
+
+OPT += $(IFORTRLIB)

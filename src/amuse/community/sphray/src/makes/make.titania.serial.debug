@@ -1,0 +1,17 @@
+FC= gfortran
+FFLAGS= -g -C -m64
+
+ISLIB=  -L
+ISINC=  -I
+ISMOD=  -J
+ISRLIB= -Wl,-rpath=
+
+OPT += $(R64LIB)
+
+DIRHDF= $(HDF64)
+
+
+
+
+
+

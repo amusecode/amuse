@@ -1,0 +1,14 @@
+FC= ifort
+IFORTFLAGS= -fpe0 -g -traceback -heap-arrays -fpp 
+FFLAGS= $(IFORTFLAGS) -O3 -no-prec-div
+
+
+ISLIB= -L
+ISINC= -I
+ISMOD= -I
+ISRLIB= -Wl,-rpath=
+
+DIRHDF= /usr/lib64
+
+
+

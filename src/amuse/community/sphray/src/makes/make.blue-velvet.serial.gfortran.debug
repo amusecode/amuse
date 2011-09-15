@@ -1,0 +1,10 @@
+FC= gfortran
+FFLAGS= -g -cpp
+# FFLAGS= -g -cpp -fno-range-check
+
+ISLIB= -L
+ISINC= -I
+ISMOD= -I
+ISRLIB= -L
+
+DIRHDF= /home/galtay/usr/hdf5-1.8.5-patch1-gfortran-4.5/hdf5

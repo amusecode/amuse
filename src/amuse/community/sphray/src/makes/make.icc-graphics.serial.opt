@@ -1,0 +1,10 @@
+FC=f95
+FFLAGS= -O5 -xtarget=native -libmil -fsimple=2 -xlibmopt -m64
+
+ISLIB= -L
+ISINC= -I
+ISMOD= -M
+ISRLIB= -R
+
+DIRHDF= /usr/local/hdf5/current
+

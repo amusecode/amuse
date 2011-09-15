@@ -1,0 +1,17 @@
+FC= ifort
+IFORTFLAGS= -ftz -fpe0 -g -traceback -heap-arrays -fpp 
+FFLAGS= $(IFORTFLAGS) -xHOST -O3 -ipo -no-prec-div -funroll-loops -mkl -inline-level=2 
+
+
+ISLIB= -L
+ISINC= -I
+ISMOD= -I
+ISRLIB= -Wl,-rpath=
+
+DIRHDF= /export/ldataa/galtay/opt/hdf5-1.8.4/hdf5
+
+IFORTRLIB= $(ISRLIB)/export/ldataa/galtay/opt/intel/Compiler/11.1/059/mkl/lib/em64t
+IFORTRLIB+= $(ISRLIB)/export/ldataa/galtay/opt/intel/Compiler/11.1/059/lib/intel64
+
+OPT += $(IFORTRLIB)
+

@@ -1,0 +1,11 @@
+FC= ifort
+IFORTFLAGS= -ftz -fpe0 -g -traceback -heap-arrays -fpp 
+FFLAGS= $(IFORTFLAGS) -C
+
+ISLIB= -L
+ISINC= -I
+ISMOD= -I
+ISRLIB= -Wl,-rpath=
+
+DIRHDF= /export/ldataa/galtay/opt/hdf5-1.8.4/hdf5
+
