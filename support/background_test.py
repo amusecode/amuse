@@ -597,6 +597,7 @@ class RunTests(object):
                    
                 if message[0] == 'start-report':
                     self.last_test_started = message[1]
+                    print self.last_test_started
                     continue
                     
                 last_message = message
