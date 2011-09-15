@@ -1,5 +1,4 @@
 MPICXX ?= mpicxx
-CXXFLAGS += -Wall -g -DTOOLBOX
 
 AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
@@ -14,7 +13,7 @@ STD_SRCMMAS_DIRDIR   = src/mmas2/src/std
 
 #INCLUDES = -I/opt/local/include -Isrc/mmas2/src
 INCLUDES = -Isrc/mmas2/src
-LIBS = -lgsl -lgslcblas \
+LIBS = $(GSLFLAGS) -lgsl -lgslcblas \
 	-L$(BUILDDIR)/src/mmas -l_mmas2 \
 	-L$(BUILDDIR)/src/eos -leos \
 	-L$(BUILDDIR)/src/usm -lusm \
@@ -23,13 +22,13 @@ LIBS = -lgsl -lgslcblas \
 OBJECTS = interface.o
 SOURCES = interface.cc
 
-all: $(BUILDDIR)/Makefile mmas2 mmams_worker
+all: $(BUILDDIR)/Makefile  mmas2 mmams_worker
 
 $(BUILDDIR)/Makefile:
 	@-mkdir build
 	cd $(BUILDDIR) && cmake ../src/mmas2
 	
-mmas2: 
+mmas2: $(BUILDDIR)/Makefile
 	make -C $(BUILDDIR)
 
 worker_code.cc: interface.py
