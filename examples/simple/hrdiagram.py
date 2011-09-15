@@ -8,14 +8,18 @@ from matplotlib import pyplot
 from amuse.plot import loglog, xlabel, ylabel
 
 from amuse.units import units
-from amuse.community.sse.interface import SSE
+from amuse.community.mesa.interface import MESA
+#from amuse.community.evtwin.interface import EVtwin
+#from amuse.community.sse.interface import SSE
 from amuse import datamodel
 from amuse.rfi.core import is_mpd_running
 end_time = 2 | units.Gyr
 stellar_mass =  2.0 | units.MSun
 
 def simulate_evolution_tracks():
-    stellar_evolution = SSE()
+#    stellar_evolution = SSE()
+#    stellar_evolution = EVtwin()
+    stellar_evolution = MESA()
     stellar_evolution.commit_parameters()
 
     star = datamodel.Particle()

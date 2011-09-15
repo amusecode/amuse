@@ -46,21 +46,20 @@ def plot_particles_and_mass_distribution(particles):
     bin_sizes = bin_edges[1:] - bin_edges[:-1]
     
     y = number_of_particles / bin_sizes
-    y = y / len(particles)
     x = (bin_edges[1:] + bin_edges[:-1]) / 2.0
     
-    y = y[number_of_particles > 0.0] 
-    x = x[number_of_particles > 0.0]
+    y = y[number_of_particles > 10.0] 
+    x = x[number_of_particles > 10.0]
     subplot.scatter(x, y)
     
     c = ((0.1**-1.35) - (125.0**-1.35)) / 1.35
-    subplot.plot(x, 1.0 / c * (x**-2.35))
+    subplot.plot(x, len(particles)/ c * (x**-2.35))
     
     subplot.set_xscale('log')
     subplot.set_yscale('log')
     
-    subplot.set_xlabel(u'M/M\u2299')
-    subplot.set_ylabel('N/Ntot')
+    subplot.set_xlabel(u'M [M\u2299]')
+    subplot.set_ylabel('N')
     
     pyplot.show()
     
