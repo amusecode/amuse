@@ -1,15 +1,57 @@
-from amuse.test import amusetest
-from amuse.community.hermite0.interface import Hermite
-
-
 import numpy
 import math
 import os
+
+from amuse.test import amusetest
 from amuse.io import store
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.datamodel import *
+from amuse.datamodel import incode_storage
+
 class TestAttributeError(amusetest.TestCase):
+    
+    def new_code_particles(self):
+        class Code(object):
+            def __init__(self):
+                # mass
+                self.data = []
+                self.get_mass_called = False
+                self.set_mass_called = False
+                self.number_of_particles = 0
+                
+            def get_number_of_particles(self):
+                return  self.number_of_particles
+                
+            def get_mass(self,index):
+                self.get_mass_called = True
+                data_to_return = [self.data[i] for i in index]
+                return units.kg(data_to_return)
+                
+            def set_mass(self,index,mass):
+                self.set_mass_called = True
+                pass
+                
+            def new_particle(self, mass):
+                mass = mass.value_in(units.kg)
+                self.data = mass
+                self.number_of_particles = len(self.data)
+                return [i for i in range(len(mass))]
+                
+        code = Code()
+        storage = incode_storage.InCodeAttributeStorage(
+            code,
+            incode_storage.NewParticleMethod(code.new_particle,("mass",)),
+            None,
+            code.get_number_of_particles,
+            [],
+            [
+                incode_storage.ParticleGetAttributesMethod(code.get_mass,("mass",)),
+            ],
+            name_of_the_index = "index"
+        )
+        
+        return Particles(storage = storage)
     
     def test1(self):
         print "Test1: Should get error when accessing non-existent attributes (InMemoryAttributeStorage)."
@@ -36,22 +78,14 @@ class TestAttributeError(amusetest.TestCase):
         superset.mass = 1.0 | units.MSun
         superset.radius = 1.0 | units.RSun
         for i, x in enumerate(superset):
-            x.position = units.AU(numpy.array((math.cos(i),math.sin(i),0.0)))
-            x.velocity = units.kms(numpy.array((math.sin(i),math.cos(i),0.0)))
-        instances = [particles, particle, subset, superset]
-        classes = [Particles, Particle, ParticlesSubset, ParticlesSuperset]
-        lengths = [4, 1, 2, 5]
+            x.mass = 2.0 | units.kg
+        instances = [particles, particle.as_set(), subset, superset]
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         for i, x in enumerate(instances):
-            self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x.as_set()), lengths[i])
-            gravity = Hermite(convert_nbody)
-            gravity.initialize_code()
-            if isinstance(x, Particle): x = x.as_set()
-            gravity.particles.add_particles(x)
-            self.assertRaises(AttributeError, lambda: gravity.particles.bogus, expected_message = 
+            code_particles = self.new_code_particles()
+            code_particles.add_particles(x)
+            self.assertRaises(AttributeError, lambda: code_particles.bogus, expected_message = 
                 "You tried to access attribute 'bogus' but this attribute is not defined for this set.")
-            gravity.stop()
     
     def test3(self):
         print "Test3: Should get error when accessing non-existent attributes (HDF5 storage)."
@@ -101,30 +135,22 @@ class TestAttributeError(amusetest.TestCase):
                 "Can only assign quantities or other particles to an attribute.")
     
     def test5(self):
-        print "Test5: Should get error when setting attributes with non-quantities (in Legacy code storage)."
+        print "Test5: Should get error when setting attributes with non-quantities (in code storage)."        
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
         superset  = ParticlesSuperset([particles, particle.as_set()])
         superset.mass = 1.0 | units.MSun
-        superset.radius = 1.0 | units.RSun
         for i, x in enumerate(superset):
-            x.position = units.AU(numpy.array((math.cos(i),math.sin(i),0.0)))
-            x.velocity = units.kms(numpy.array((math.sin(i),math.cos(i),0.0)))
-        instances = [particles, particle, subset, superset]
+            x.mass = 2.0 | units.kg
+        instances = [particles, particle.as_set(), subset, superset]
         classes = [Particles, Particle, ParticlesSubset, ParticlesSuperset]
-        lengths = [4, 1, 2, 5]
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         for i, x in enumerate(instances):
-            self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x.as_set()), lengths[i])
-            gravity = Hermite(convert_nbody)
-            gravity.initialize_code()
-            if isinstance(x, Particle): x = x.as_set()
-            gravity.particles.add_particles(x)
-            self.assertRaises(AttributeError, self.bogus_func, gravity.particles, expected_message = 
+            code_particles = self.new_code_particles()
+            code_particles.add_particles(x)
+            self.assertRaises(AttributeError, self.bogus_func, code_particles, expected_message = 
                 "Can only assign quantities or other particles to an attribute.")
-            gravity.stop()
     
     def test6(self):
         print "Test6: Should get error when setting attributes with non-quantities (HDF5 storage)."
