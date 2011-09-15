@@ -51,6 +51,7 @@ interface.o: interface.cc
 	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $< $(LIBS)
 
 clean:
+	@-make -C $(SRCMAKEDIR) clean
 	rm -f *.pyc *.o
 	rm -f worker_code.cc worker_code.h mmams_worker
 	rm -f worker_code-sockets.cc mmams_worker_sockets
