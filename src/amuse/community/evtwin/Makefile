@@ -2,22 +2,20 @@
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 FC ?= $(FORTRAN)
-CMAKE_Fortran_COMPILER ?= $(FORTRAN)
 
 AMUSE_DIR ?= ../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-LIBDIR=src/lib
 SRCDIR=src/code
-MODDIR=src/modules
+BUILDDIR=build
 
 CMAKE_DEPS=src/CMakeLists.txt src/cmake/CompilerFlags.cmake src/cmake/FileList.cmake
 
 SRC = $(SRCDIR)/library_v2.f90 $(SRCDIR)/export.f90 $(SRCDIR)/import.f90 \
       $(SRCDIR)/create_new_model.f90 $(SRCDIR)/prtoft.f90
 
-EVTWINLIB=$(LIBDIR)/libtwin.a
+EVTWINLIB=$(BUILDDIR)/libtwin.a
 
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
 FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
@@ -27,39 +25,31 @@ LD = ld
 AR = ar ruv
 RANLIB = ranlib
 
-all:    create_Makefile evtwin_worker
+all:    $(BUILDDIR)/Makefile evtwin_worker
 
-create_Makefile: $(CMAKE_DEPS)
-	mkdir -p $(MODDIR)
-	cd $(MODDIR) && cmake ..
+$(BUILDDIR)/Makefile: $(CMAKE_DEPS)
+	-mkdir -p $(BUILDDIR)
+	cd $(BUILDDIR) && FC=$(FORTRAN) cmake ../src
 
 clean:
-	-make -C $(MODDIR) clean
 	rm -f *.pyc make.log
 	rm -f mpi_code.f90 worker_code evtwin_worker twin_library_v2.mod mesh.mod evtwin_worker_sockets worker_code-sockets.f90 forsockets.mod
-	rm -f $(MODDIR)/CMakeCache.txt
-	rm -rf $(MODDIR)/CMakeFiles
-	rm -rf $(MODDIR)/Makefile
+	rm -f $(BUILDDIR)/CMakeCache.txt
+	rm -rf $(BUILDDIR)/CMakeFiles
+	rm -rf $(BUILDDIR)/Makefile
+	rm -rf $(BUILDDIR)
 
 distclean:
 	make -C src distclean
 	/bin/rm -f *.pyc
 
 evtwin_worker: mpi_code.f90 $(SRC)
-	@-mkdir -p $(LIBDIR)
-#	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN)
-	make -s --no-print-directory -C $(MODDIR)
-#	cp $(MODDIR)/twin_library_v2.mod .
-#	cp $(MODDIR)/mesh.mod .
-	$(MPIF90) -I$(MODDIR) $< -o $@ $(EVTWINLIB)
+	make -s --no-print-directory -C $(BUILDDIR)
+	$(MPIF90) -I$(BUILDDIR) $< -o $@ $(EVTWINLIB)
 
 evtwin_worker_sockets: worker_code-sockets.f90 $(SRC)
-	@-mkdir -p $(LIBDIR)
-#	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN)
-	make -s --no-print-directory -C $(MODDIR)
-#	cp $(MODDIR)/twin_library_v2.mod .
-#	cp $(MODDIR)/mesh.mod .
-	$(MPIF90) -I$(MODDIR) $(FSINC) $< -o $@ $(EVTWINLIB) $(FSLIBS)
+	make -s --no-print-directory -C $(BUILDDIR)
+	$(MPIF90) -I$(BUILDDIR) $(FSINC) $< -o $@ $(EVTWINLIB) $(FSLIBS)
 
 mpi_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@

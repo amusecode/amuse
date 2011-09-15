@@ -55,5 +55,5 @@ install (TARGETS "ev" RUNTIME DESTINATION "bin")
 
 # Place the executable in code/ in the top-level STARS directory, for
 # historical reasons.
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/code)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${BUILDDIR})
+set(LIBRARY_OUTPUT_PATH ${BUILDDIR})
