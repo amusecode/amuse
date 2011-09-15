@@ -577,7 +577,7 @@ class TestMESA(TestWithMPI):
         print "Test for changing the stellar composition"
         star = Particles(1)
         star.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance(MESA, redirection = 'none')
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -587,7 +587,7 @@ class TestMESA(TestWithMPI):
         instance.commit_particles()
         instance.evolve_model()
         
-        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        composition = instance.particles[0].get_chemical_abundance_profiles()
         h1_profile = composition[0] * 1
         he4_profile = composition[2] * 1
         k_surface = -1 # index to the outer mesh cell (surface)
