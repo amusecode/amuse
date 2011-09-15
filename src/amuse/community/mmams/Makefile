@@ -51,6 +51,12 @@ interface.o: interface.cc
 
 clean:
 	@-make -C $(SRCMAKEDIR) clean
+	cd $(SRCMAKEDIR)  && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles
+	cd $(SRCDIR)      && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles
+	cd $(MMAS_DIR) && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles ccache
+	cd $(EOS_DIR)  && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles ccache
+	cd $(USM_DIR)  && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles ccache
+	cd $(STD_DIR)  && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles ccache
 	rm -f *.pyc *.o
 	rm -f worker_code.cc worker_code.h mmams_worker
 	rm -f worker_code-sockets.cc mmams_worker_sockets
