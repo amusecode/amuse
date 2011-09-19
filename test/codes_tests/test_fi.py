@@ -7,13 +7,11 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.fi.interface import FiInterface, Fi
 from amuse.ext.evrard_test import new_evrard_gas_sphere
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
-from amuse.ext.plummer import new_plummer_sphere
-
-
 from amuse.units import nbody_system as nbody
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi import channel
+from amuse.ic.plummer import new_plummer_sphere
 class TestFiInterface(TestWithMPI):
 
     def test1(self):

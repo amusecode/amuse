@@ -4,11 +4,11 @@ import numpy as np
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.mercury.interface import MercuryInterface, MercuryWayWard
-from amuse.ext import plummer
 from amuse.ext.solarsystem import new_solar_system_for_mercury
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.ic import plummer
 DUMMYID=0
 
 try:

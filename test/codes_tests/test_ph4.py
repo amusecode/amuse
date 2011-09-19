@@ -3,14 +3,13 @@ import sys
 import time
 from amuse.community.ph4.interface import ph4Interface, ph4
 
-from amuse.ext.plummer import new_plummer_sphere
-
 from amuse.test.amusetest import TestWithMPI
 
 import numpy
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.ic.plummer import new_plummer_sphere
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True

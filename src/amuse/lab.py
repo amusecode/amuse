@@ -25,7 +25,6 @@ from amuse.io import read_set_from_file
 from amuse.io import get_options_for_format
 
 from amuse.ext.solarsystem import new_solar_system_for_mercury, new_solar_system
-from amuse.ext.plummer import new_plummer_sphere
 from amuse.ext.kingmodel import new_king_model
 from amuse.ext.halogen_model import new_halogen_model
 from amuse.ext.galactics_model import new_galactics_model
@@ -64,6 +63,7 @@ from amuse.datamodel import Particle
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSuperset
 from amuse.datamodel import Grid
+from amuse.ic.plummer import new_plummer_sphere
 def vector(value = [], unit = None):
     if unit is None:
         if isinstance(value, core.unit):

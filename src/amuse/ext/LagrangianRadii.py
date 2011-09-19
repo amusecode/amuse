@@ -8,12 +8,12 @@ import unittest
 
 from math import sqrt
 
-from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
 from amuse.units import nbody_system
 from amuse.units import units
 
 from amuse.rfi.core import is_mpd_running
+from amuse.ic.plummer import new_plummer_sphere
 MassFraction = [0.005, 0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0] \
     | units.none
 
@@ -95,7 +95,7 @@ if __name__ == '__main__' :
         convert_nbody.set_as_default()
         print m_tot
 
-    stars = MakePlummerModel(nstars, convert_nbody, random_state = seed).result;
+    stars = new_plummer_sphere(nstars, convert_nbody, random_state = seed);
     stars.mass = masses 
     
     LagrangianRadii(stars, verbose=1)

@@ -405,9 +405,9 @@ def densitycentre_coreradius_coredens(parts):
     calculate position of the density centre, coreradius and coredensity
 
     >>> import numpy
-    >>> from amuse.ext.plummer import MakePlummerModel
+    >>> from amuse.ic.plummer import new_plummer_sphere
     >>> numpy.random.seed(1234)
-    >>> parts=MakePlummerModel(100).result
+    >>> parts=new_plummer_sphere(100)
     >>> pos,coreradius,coredens=parts.densitycentre_coreradius_coredens()
     >>> print coreradius
     0.286582946447 length
@@ -444,9 +444,9 @@ def LagrangianRadii(stars,
     Calculate lagrangian radii. Output is radii, mass fraction 
 
     >>> import numpy
-    >>> from amuse.ext.plummer import MakePlummerModel
+    >>> from amuse.ic.plummer import new_plummer_sphere
     >>> numpy.random.seed(1234)
-    >>> parts=MakePlummerModel(100).result
+    >>> parts=new_plummer_sphere(100)
     >>> lr,mf=parts.LagrangianRadii()
     >>> print lr[5]
     0.856966667972 length

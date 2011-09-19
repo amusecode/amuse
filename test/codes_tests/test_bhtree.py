@@ -9,13 +9,13 @@ import math
 
 from amuse.community.bhtree.interface import BHTreeInterface, BHTree
 from amuse.support.exceptions import AmuseException
-from amuse.ext import plummer
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units import quantities
 from amuse import datamodel
 from amuse.datamodel import particle_attributes
+from amuse.ic import plummer
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -687,7 +687,7 @@ class TestBHTree(TestWithMPI):
     def test16(self):
         numpy.random.seed(0)
         number_of_stars = 2
-        stars = plummer.MakePlummerModel(number_of_stars).result
+        stars = plummer.new_plummer_sphere(number_of_stars)
         stars.radius = 0.00001 | nbody_system.length
         stars.scale_to_standard()
         

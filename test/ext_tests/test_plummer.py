@@ -1,10 +1,8 @@
 from amuse.test import amusetest
-
-from amuse.ext.plummer import *
-
-
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.ic.plummer import *
+
 class TestData(amusetest.TestCase):
     pass
    
@@ -23,14 +21,12 @@ class TestPlummer(TestData):
         
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(6|units.kg, 7 | units.m) 
-        m =  MakePlummerModel(2, convert_nbody)
-        stars = m.result
+        stars =  new_plummer_sphere(2, convert_nbody)
         self.assertEquals(stars[0].mass.value_in(units.kg), 3.0)
         self.assertEquals(stars[1].mass.value_in(units.kg), 3.0)
         
     def test3(self):
-        m =  MakePlummerModel(2, None)
-        stars = m.result
+        stars =  new_plummer_sphere(2, None)
         self.assertEquals(stars[0].mass.value_in(nbody_system.mass), 0.5)
         self.assertEquals(stars[1].mass.value_in(nbody_system.mass), 0.5)
         

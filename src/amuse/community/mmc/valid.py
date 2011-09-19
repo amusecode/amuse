@@ -5,13 +5,14 @@ from amuse.community.hermite0.interface import HermiteInterface
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface
 from amuse.community.bhtree.interface import BHTreeInterface
 
-from amuse.ext.plummer import MakePlummerModel
 import time as systime
 
 import coreradius
 from interface import mmcInterface
 from interface import mmc
 
+from amuse.ic.plummer import MakePlummerModel
+from amuse.ic.plummer import new_plummer_sphere
 def plummer(x):
   plummer = MakePlummerModel(x)
   mass,pos,vel=plummer.new_model()

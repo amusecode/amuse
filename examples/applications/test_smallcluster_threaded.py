@@ -23,11 +23,11 @@ from amuse.community.sse.interface import SSE
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.test.amusetest import get_path_to_results
 
-from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
 
 from amuse.datamodel import particle_attributes
 from amuse.rfi.core import is_mpd_running
+from amuse.ic.plummer import new_plummer_sphere
 def plot_particles(particles, name_of_the_figure):
     
     if HAS_MATPLOTLIB:
@@ -114,7 +114,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr,
     
     convert_nbody = nbody_system.nbody_to_si(total_mass, 1.0 | units.parsec)
     
-    particles = MakePlummerModel(number_of_stars, convert_nbody).result;
+    particles = new_plummer_sphere(number_of_stars, convert_nbody);
    
     gravity = BHTree(convert_nbody)
     gravity.initialize_code()

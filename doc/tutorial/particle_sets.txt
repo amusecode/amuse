@@ -40,7 +40,7 @@ the particles, which **need to be quantities**.
     >>> from amuse.support import data
     >>> from amuse.units import nbody_system
     >>> from amuse.units import units
-    >>> from amuse.ext.plummer import MakePlummerModel
+    >>> from amuse.ic.plummer import new_plummer_sphere
     >>> import numpy as np
 
 
@@ -63,7 +63,7 @@ Let's generate a plummer model consisting of 1000 stars,
 .. code-block:: python
 
     >>> convert_nbody = nbody_system.nbody_to_si(100.0 | units.MSun, 1 | units.parsec)
-    >>> plummer = MakePlummerModel(1000, convert_nbody).result
+    >>> plummer = new_plummer_sphere(1000, convert_nbody)
 
 We can work on the new **plummer** particle set, but we want to keep this
 set unchanged for now. So, we copy all data to a working set:

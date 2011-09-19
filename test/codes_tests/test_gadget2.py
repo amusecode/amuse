@@ -1,7 +1,6 @@
 import numpy
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.gadget2.interface import Gadget2Interface, Gadget2
-from amuse.ext.plummer import MakePlummerModel, new_plummer_sphere
 from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
 
@@ -16,6 +15,8 @@ from amuse.units import generic_unit_system
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi import channel
+from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_sphere
 default_options = dict(number_of_workers=2)
 #default_options = dict(number_of_workers=2, redirection="none")
 
@@ -409,7 +410,7 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
         convert_nbody = nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
-        dark = MakePlummerModel(100, convert_nbody).result
+        dark = new_plummer_sphere(100, convert_nbody)
         instance.dm_particles.add_particles(dark)
         instance.evolve_model(1.0 | units.Myr)
         instance.stop()

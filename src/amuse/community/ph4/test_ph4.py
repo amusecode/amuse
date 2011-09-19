@@ -7,7 +7,6 @@ import sys
 import unittest
 
 from amuse.community.ph4.interface import ph4 as grav
-from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.units import nbody_system
 from amuse.units import units
@@ -15,6 +14,7 @@ from amuse.units import units
 from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.rfi.core import is_mpd_running
+from amuse.ic.plummer import new_plummer_sphere
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
@@ -74,7 +74,7 @@ def test_ph4(infile = None, number_of_stars = 40,
     if infile == None:
 
         print "making a Plummer model"
-        stars = MakePlummerModel(number_of_stars).result
+        stars = new_plummer_sphere(number_of_stars)
 
         id = numpy.arange(number_of_stars)
         stars.id = id+1 | units.none

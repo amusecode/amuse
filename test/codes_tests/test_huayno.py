@@ -6,10 +6,10 @@ import math
 
 from amuse.community.huayno.interface import HuaynoInterface, Huayno
 
-from amuse.ext import plummer
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.ic import plummer
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True

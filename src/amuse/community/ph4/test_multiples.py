@@ -1,6 +1,5 @@
 import sys, unittest, numpy, random, collections, getopt, os, math
 
-from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.units import nbody_system
 from amuse.units import units
@@ -12,6 +11,7 @@ from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
 from amuse.rfi.core import is_mpd_running
+from amuse.ic.plummer import new_plummer_sphere
 def is_a_parent(child1_key, child2_key):
     return child1_key > 0 or child2_key > 0
 
@@ -845,7 +845,7 @@ def test_multiples(infile = None, number_of_stars = 40,
     if infile == None:
 
         print "making a Plummer model"
-        stars = MakePlummerModel(number_of_stars).result
+        stars = new_plummer_sphere(number_of_stars)
 
         id = numpy.arange(number_of_stars) 
         stars.id = id+1 | units.none

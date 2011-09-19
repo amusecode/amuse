@@ -1,8 +1,10 @@
-from amuse.support.core import late, print_out
 import numpy
 import sys
+
+from amuse.support.core import late, print_out
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import legacy_global
+
 class DTypeSpec(object):
     def __init__(self, input_var_name, output_var_name, counter_name, 
         type, mpi_type = 'UNKNOWN'):

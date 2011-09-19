@@ -4,13 +4,12 @@ import numpy
 
 from amuse.community.octgrav.interface import OctgravInterface, Octgrav
 
-from amuse.ext.plummer import *
-
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi import channel
+from amuse.ic.plummer import *
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):
@@ -125,8 +124,7 @@ class TestAmuseInterface(TestWithMPI):
     def test1(self):
         plummer_size = 500
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        plummer =  MakePlummerModel(plummer_size, convert_nbody)
-        stars = plummer.result
+        stars =  new_plummer_sphere(plummer_size, convert_nbody)
         stars.radius = range(1, plummer_size+1)|units.km
 
         instance = self.new_instance_of_an_optional_code(Octgrav, convert_nbody)
@@ -184,8 +182,7 @@ class TestAmuseInterface(TestWithMPI):
 
     def test4(self):
         plummer_size = 500
-        plummer =  MakePlummerModel(plummer_size)
-        stars = plummer.result
+        stars = new_plummer_sphere(plummer_size)
         stars.radius=0|nbody_system.length
 
         instance = self.new_instance_of_an_optional_code(Octgrav)

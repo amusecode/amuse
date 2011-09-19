@@ -2,9 +2,8 @@ import os
 import sys
 import numpy
 
-from amuse.ext.plummer import MakePlummerModel
-
 from amuse.community.hop.interface import HopInterface as Hop
+from amuse.ic.plummer import MakePlummerModel
 
 import logging
 #logging.basicConfig(level=logging.DEBUG)
