@@ -13,14 +13,13 @@ from amuse.units import constants
 from amuse.units import nbody_system
 
 from amuse.ext.bridge import bridge
-from amuse.ext.kingmodel import new_king_model
-
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.fi.interface import Fi
 from amuse.community.gadget2.interface import Gadget2
 
 from matplotlib import pyplot
 
+from amuse.ic.kingmodel import new_king_model
 class galactic_center(object):
     """
       skeleton grav code for use in bridge.

@@ -9,9 +9,9 @@ from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.bhtree.interface import BHTree
 from amuse.ext.bridge import bridge
-from amuse.ext.kingmodel import new_king_model
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.ic.kingmodel import new_king_model
 def sys_from_parts(base_class,parts,converter,eps=None):
     interface=base_class(converter)
     interface.initialize_code()

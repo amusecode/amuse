@@ -19,8 +19,7 @@ from amuse.community.fi.interface import Fi
 from amuse.ext.bridge import bridge
 
 from amuse.ext.derived_grav_systems import copycat
-from amuse.ext.kingmodel import new_king_model
-
+from amuse.ic.kingmodel import new_king_model
 def sys_from_parts(base_class,parts,converter,eps=None,timestep=None,usegl=False,mode=None):
     if mode is None:
         if usegl:
