@@ -4,7 +4,6 @@ import sys, unittest, numpy, random, collections, getopt, os, math
 
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.community.newsmallN.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 
@@ -13,6 +12,7 @@ from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 zero = 0.0|units.none
 one = 1.0|units.none
 

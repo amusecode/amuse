@@ -6,8 +6,6 @@ import warnings
 from optparse import OptionParser
 
 from amuse.units import units
-from amuse.ext.salpeter import SalpeterIMF
-
 from amuse.community.sse.interface import SSE
 from amuse.community.evtwin.interface import EVtwin
 from amuse.community.mesa.interface import MESA
@@ -19,6 +17,7 @@ import numpy
 
 from amuse import datamodel
 from amuse.rfi.core import is_mpd_running
+from amuse.ic.salpeter import new_salpeter_mass_distribution
 usage = """\
 usage: %prog [options]
 	
@@ -48,8 +47,7 @@ def simulate_stellar_evolution(
     print ("Deriving a set of", str(number_of_stars), "random masses",  
             "following a Salpeter IMF between 0.1 and 125 MSun (alpha = -2.35).")
     
-    initial_mass_function = SalpeterIMF()
-    total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
+    salpeter_masses = new_salpeter_mass_distribution(number_of_stars)
     
     print "Initializing the particles"
     stars = datamodel.Particles(number_of_stars)

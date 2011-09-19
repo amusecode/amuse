@@ -20,12 +20,12 @@ from amuse.community.sse.interface import SSE
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.test.amusetest import get_path_to_results
 
-from amuse.ext.salpeter import SalpeterIMF
 from amuse.io import store
 
 from amuse.datamodel import particle_attributes
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.salpeter import new_salpeter_mass_distribution
 def plot_particles(particles, name_of_the_figure):
     
     if HAS_MATPLOTLIB:
@@ -90,9 +90,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr,
                            name_of_the_figure = "test-2.svg"):
     #numpy.random.seed(1)
     
-    initial_mass_function = SalpeterIMF()
-    total_mass, salpeter_masses \
-        = initial_mass_function.next_set(number_of_stars)
+    salpeter_masses = new_salpeter_mass_distribution(number_of_stars)
+    total_mass = salpeter_masses.sum()
     
     convert_nbody = nbody_system.nbody_to_si(total_mass, 1.0 | units.parsec)
     

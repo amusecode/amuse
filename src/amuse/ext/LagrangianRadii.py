@@ -8,12 +8,12 @@ import unittest
 
 from math import sqrt
 
-from amuse.ext.salpeter import SalpeterIMF
 from amuse.units import nbody_system
 from amuse.units import units
 
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.salpeter import new_salpeter_mass_distribution
 MassFraction = [0.005, 0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0] \
     | units.none
 
@@ -83,8 +83,8 @@ if __name__ == '__main__' :
     alpha = -2.35
 
     r_vir = 1 | length_unit
-    initial_mass_function = SalpeterIMF(m_min, m_max, alpha)
-    m_tot, masses = initial_mass_function.next_set(nstars)
+    masses = new_salpeter_mass_distribution(nstars, m_min, m_max, alpha)
+    m_tot = masses.sum()
 
     if not with_units :
         convert_nbody = None

@@ -7,7 +7,6 @@ import sys
 import unittest
 
 from amuse.community.ph4.interface import ph4 as grav
-from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.units import nbody_system
 from amuse.units import units
 
@@ -15,6 +14,7 @@ from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy

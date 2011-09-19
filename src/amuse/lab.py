@@ -29,7 +29,6 @@ from amuse.ext.kingmodel import new_king_model
 from amuse.ext.halogen_model import new_halogen_model
 from amuse.ext.galactics_model import new_galactics_model
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution, new_spherical_particle_distribution
-from amuse.ext.salpeter import new_salpeter_mass_distribution, new_salpeter_mass_distribution_nbody
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
 
 from amuse.community.bhtree.interface import BHTree, BHTreeInterface
@@ -64,6 +63,8 @@ from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSuperset
 from amuse.datamodel import Grid
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.salpeter import new_salpeter_mass_distribution
+from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 def vector(value = [], unit = None):
     if unit is None:
         if isinstance(value, core.unit):
