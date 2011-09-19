@@ -55,36 +55,36 @@ class galactic_center(object):
         
 def king_model_cluster(interface,N=1024,W0=3, Mcluster=4.e4 | units.MSun,
                                  Rcluster= .7 | units.parsec,parameters=[]):
-      """
-      helper function to setup an nbody king model cluster (returns code with particles)
-      """      
-      converter=nbody_system.nbody_to_si(Mcluster,Rcluster)
+    """
+    helper function to setup an nbody king model cluster (returns code with particles)
+    """      
+    converter=nbody_system.nbody_to_si(Mcluster,Rcluster)
 
-      parts=new_king_model(N,W0,convert_nbody=converter)
-      parts.radius=0.0| units.parsec
+    parts=new_king_model(N,W0,convert_nbody=converter)
+    parts.radius=0.0| units.parsec
 
-      nb=interface(converter)
-      for name,value in parameters:
-          setattr(nb.parameters, name, value)
+    nb=interface(converter)
+    for name,value in parameters:
+      setattr(nb.parameters, name, value)
 
-      nb.particles.add_particles(parts)
+    nb.particles.add_particles(parts)
 
-      return nb
+    return nb
 
 def shift_sys(system,dx,dy,dz,dvx,dvy,dvz):
-      """
-      helper function to shift system
-      """
-      parts=system.particles.copy()
-      parts.x=parts.x+dx
-      parts.y=parts.y+dy
-      parts.z=parts.z+dz
-      parts.vx=parts.vx+dvx
-      parts.vy=parts.vy+dvy
-      parts.vz=parts.vz+dvz
-      channel=parts.new_channel_to(system.particles)
-      channel.copy_attributes(["x","y","z","vx","vy","vz"])
-#      parts.copy_values_of_state_attributes_to(system.particles)
+    """
+    helper function to shift system
+    """
+    parts=system.particles.copy()
+    parts.x=parts.x+dx
+    parts.y=parts.y+dy
+    parts.z=parts.z+dz
+    parts.vx=parts.vx+dvx
+    parts.vy=parts.vy+dvy
+    parts.vz=parts.vz+dvz
+    channel=parts.new_channel_to(system.particles)
+    channel.copy_attributes(["x","y","z","vx","vy","vz"])
+    #      parts.copy_values_of_state_attributes_to(system.particles)
     
 if __name__ in ('__main__', '__plot__'):
 
@@ -119,19 +119,20 @@ if __name__ in ('__main__', '__plot__'):
     f=pyplot.figure(figsize=(8,16))
 
     for i,t in enumerate(times):
-      sys.evolve_model(t,timestep=timestep)
+        sys.evolve_model(t,timestep=timestep)
 
-      x=sys.particles.x.value_in(units.parsec)
-      y=sys.particles.y.value_in(units.parsec)
+        x=sys.particles.x.value_in(units.parsec)
+        y=sys.particles.y.value_in(units.parsec)
 
-      subplot=f.add_subplot(4,2,i+1)
-      subplot.plot(x,y,'r .')
-      subplot.plot([0.],[0.],'b +')
-      subplot.set_xlim(-60,60)
-      subplot.set_ylim(-60,60)
-      subplot.set_title(t)
-      if i==7:
-        subplot.set_xlabel('parsec')
+        subplot=f.add_subplot(4,2,i+1)
+        subplot.plot(x,y,'r .')
+        subplot.plot([0.],[0.],'b +')
+        subplot.set_xlim(-60,60)
+        subplot.set_ylim(-60,60)
+        subplot.set_title(t)
+        if i==7:
+            subplot.set_xlabel('parsec')
+            
     cluster.stop()
     pyplot.show()
 #    pyplot.savefig('test.eps')
