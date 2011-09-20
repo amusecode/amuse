@@ -160,8 +160,8 @@ class bridge(object):
                  first=False
              else:
                  self.kick_systems(timestep)
-                 self.drift_systems(self.time+timestep)
-                 self.time=self.time+timestep
+             self.drift_systems(self.time+timestep)
+             self.time=self.time+timestep
         if not first:
              self.kick_systems(timestep/2)         
         return 0    
