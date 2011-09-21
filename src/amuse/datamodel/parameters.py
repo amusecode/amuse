@@ -355,6 +355,7 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
 
     def set_value(self, parameter, object, bool):
         self.set_legacy_value(parameter, object, 1 if bool else 0)
+        parameter.is_set = True
 
     def get_legacy_value(self,  parameter, object):
         if self.get_method is None:

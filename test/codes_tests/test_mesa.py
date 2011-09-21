@@ -1,6 +1,7 @@
-from amuse.test.amusetest import TestWithMPI
+from amuse.test.amusetest import TestWithMPI, get_path_to_results
 import sys
 import os.path
+from subprocess import PIPE, Popen
 from numpy import pi
 
 from amuse.community.mesa.interface import MESA, MESAInterface
@@ -10,6 +11,7 @@ from amuse.units import units
 from amuse.datamodel import Particles
 from amuse.datamodel import Particle
 from amuse.rfi import channel
+
 class TestMESAInterface(TestWithMPI):
     
     def test1(self):
@@ -577,7 +579,7 @@ class TestMESA(TestWithMPI):
         print "Test for changing the stellar composition"
         star = Particles(1)
         star.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA, redirection = 'none')
+        instance = self.new_instance(MESA)#, redirection = 'none')
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -585,23 +587,26 @@ class TestMESA(TestWithMPI):
         instance.commit_parameters() 
         instance.particles.add_particles(star)
         instance.commit_particles()
-        instance.evolve_model()
+        instance.evolve_model(0.3 | units.Myr)
         
         composition = instance.particles[0].get_chemical_abundance_profiles()
-        h1_profile = composition[0] * 1
-        he4_profile = composition[2] * 1
         k_surface = -1 # index to the outer mesh cell (surface)
         
         self.assertAlmostEquals(composition[ :1, k_surface].sum(),  0.7 | units.none)
         self.assertAlmostEquals(composition[1:3, k_surface].sum(),  (0.3 | units.none) - instance.parameters.metallicity)
         self.assertAlmostEquals(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
         
-        composition[0] = he4_profile
-        composition[2] = h1_profile
-        instance.particles[0].set_chemical_abundance_profiles(composition)
-        instance.evolve_model()
+        # Gradually and consistently increase helium and decrease hydrogen abundances until reversed
+        for alpha in [0.3, 1.0, -0.5, -0.125]:
+            h1_profile = composition[0] * 1
+            he4_profile = composition[2] * 1
+            composition[0] = alpha * he4_profile + (1-alpha) * h1_profile
+            composition[2] = (1-alpha) * he4_profile + alpha * h1_profile
+            instance.particles[0].set_chemical_abundance_profiles(composition)
+            instance.evolve_model()
+            instance.evolve_model()
+            composition = instance.particles[0].get_chemical_abundance_profiles()
         
-        composition       = instance.particles[0].get_chemical_abundance_profiles()
         self.assertAlmostEquals(composition[ :2, k_surface].sum(),  (0.3 | units.none) - instance.parameters.metallicity)
         self.assertAlmostEquals(composition[2:3, k_surface].sum(),  0.7 | units.none)
         self.assertAlmostEquals(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
@@ -631,19 +636,19 @@ class TestMESA(TestWithMPI):
         print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
         instance.evolve_model()
         self.assertAlmostEqual(instance.particles.age, [6415.0029, 6415.0029, 6415.0029] | units.yr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [120000.0, 21213.2034, 7698.0035] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [81044.2541, 21213.2034, 7698.0035] | units.yr, 3)
         self.assertAlmostEqual(instance.model_time, 6415.0029 | units.yr, 3)
         
         print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
         instance.evolve_model(15000 | units.yr)
         self.assertAlmostEqual(instance.particles.age, [15000.0, 15000.0, 15000.0] | units.yr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [144000.0, 25455.8441, 9237.6043] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [65327.1194, 25455.8441, 7589.0067] | units.yr, 3)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3)
         
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
-        self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([144000.0, 25455.8441, 9237.6043] | units.yr), 3)
-        self.assertAlmostEqual(instance.particles.time_step, [172800.0, 30547.0129, 11085.1251] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([65327.1194, 25455.8441, 7589.0067] | units.yr), 3)
+        self.assertAlmostEqual(instance.particles.time_step, [78392.5433, 30547.0129, 9106.8081] | units.yr, 3)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
         instance.stop()
     
@@ -651,17 +656,13 @@ class TestMESA(TestWithMPI):
         print "Test for importing new stellar models"
         star = Particles(1)
         star.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA, redirection="none")
+        instance = self.new_instance(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
         instance.initialize_code()
         instance.parameters.stabilize_new_stellar_model_flag = False
-        print instance.parameters.stabilize_new_stellar_model_flag
         instance.commit_parameters() 
-        print instance.parameters.stabilize_new_stellar_model_flag, "this is strange!!"
-        instance.parameters.stabilize_new_stellar_model_flag = False
-        print instance.parameters.stabilize_new_stellar_model_flag
         instance.particles.add_particles(star)
         instance.commit_particles()
         instance.evolve_model()
@@ -829,9 +830,62 @@ class TestMESA(TestWithMPI):
             se_stars[1].evolve_for(step_size)
             self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
         self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
-        self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 3)
-        self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 3)
-        self.assertAlmostRelativeEqual(se_stars[0].temperature, se_stars[1].temperature, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 2)
+        self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 2)
+        self.assertAlmostRelativeEqual(se_stars[0].temperature, se_stars[1].temperature, 2)
         instance.stop()
+    
+    def test17(self):
+        print "MESA validation"
+        number_of_steps = 11#4
+        star = Particle()
+        star.mass = 1.0 | units.MSun
+        
+        testpath = get_path_to_results()
+        fifo_name = os.path.join(testpath, "mesa_fifo")
+        if os.path.exists(fifo_name):
+            os.remove(fifo_name)
+        os.mkfifo(fifo_name)
+        pid = os.fork()
+        if pid:
+            rfile = open(fifo_name, 'r')
+            amuse_output = rfile.read()
+            rfile.close()
+        else:
+            instance = self.new_instance(MESA, redirection = 'file', redirect_file = fifo_name)
+            se_star = instance.particles.add_particle(star)
+            for i in range(number_of_steps):
+                se_star.evolve_one_step()
+            instance.stop()
+            # Closing child process
+            os._exit(0)
+        os.unlink(fifo_name)
+        
+        mesa_src_path = os.path.join(os.path.dirname(sys.modules[MESA.__module__].__file__), 'src')
+        mesa_star_path = os.path.join(mesa_src_path, 'star', 'test', 'star')
+        
+        #generate the inlist for the (stand-alone) MESA star run:
+        instance = self.new_instance(MESA, redirection = 'null')
+        with open(instance.default_path_to_inlist, 'r') as default_inlist:
+            with open(os.path.join(testpath, 'inlist'), 'w') as test_inlist:
+                for one_line in default_inlist.readlines():
+                    if ("max_model_number" in one_line):
+                        test_inlist.write("         max_model_number = "+str(number_of_steps+1)+"\n")
+                    elif ("mesa_data_dir" in one_line):
+                        test_inlist.write("      mesa_data_dir = '"+os.path.join(mesa_src_path, 'data')+"'\n")
+                    else:
+                        test_inlist.write(one_line)
+        instance.stop()
+        
+        (stdout, stderr) = Popen([mesa_star_path], cwd = testpath, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate()
+        self.assertEquals(stderr, "")
+        for i, line in enumerate(stdout.splitlines()):
+            #print i, line, line in amuse_output
+            if i == 52 + 4 * number_of_steps + 8 * (number_of_steps/10) + (3 if number_of_steps > 55 else 0):
+                self.assertEqual(line, "stop because model_number >= max_model_number")
+                break
+            else:
+                self.assertTrue(line in amuse_output)
+    
 
 
