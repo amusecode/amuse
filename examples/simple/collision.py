@@ -65,8 +65,8 @@ if __name__ in ('__main__', '__plot__'):
     stopping_condition.enable()
     
     code.evolve_model(4 | nbody_system.time)
-    print stopping_condition.is_set()
-    print stopping_condition.particles(0)[0].mass
-    print stopping_condition.particles(0)
+    if not stopping_condition.is_set():
+        raise Exception("No stopping collision detected in the given timeframe.")
+        
     plot_particles_and_highlight_collision(particles, stopping_condition.particles(0), stopping_condition.particles(1) )
 
