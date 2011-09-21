@@ -3,6 +3,8 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface, Gravita
 import copy,numpy
 import numpy as math
 
+from amuse.units.quantities import zero
+
 # tbd: initial value for time_Radius solver
 
 from amuse.datamodel import Particles
@@ -282,6 +284,16 @@ class TwoBodyImplementation(object):
         except:        
             return -1
 
+    def set_velocity(self, index_of_the_particle, vx, vy, vz):
+        try:
+            particle = self.particles[index_of_the_particle]
+            particle['vx'] =vx
+            particle['vy'] =vy
+            particle['vz'] =vz
+            return 0
+        except:        
+            return -1
+
       
     def get_state(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
         try:
@@ -362,6 +374,56 @@ class TwoBodyImplementation(object):
         
         kinetic_energy.value = 0.5*mass*v2
         return 0 
+  
+    def get_gravity_at_point(self, r, x,y,z,ax,ay,az):
+
+        if(len(self.particles)!=1 and len(self.particles)!=2):
+            return -1
+
+        if(len(self.particles)==1):
+            return -2
+
+        if(len(self.particles)==2):
+            ax.value=0.
+            ay.value=0.
+            az.value=0.
+            for i in [0,1]:
+              mass=self.particles[i]['mass']
+              xx=self.particles[i]['x']
+              yy=self.particles[i]['y']
+              zz=self.particles[i]['z']
+              dr2=((xx-x)**2+(yy-y)**2+(zz-z)**2+r**2)
+        
+              ax.value+=self.__G*mass*(xx-x)/dr2**1.5
+              ay.value+=self.__G*mass*(yy-y)/dr2**1.5
+              az.value+=self.__G*mass*(zz-z)/dr2**1.5
+            
+            return 0
+         
+        return -3   
+
+    def get_potential_at_point(self, r, x,y,z,phi):
+
+        if(len(self.particles)!=1 and len(self.particles)!=2):
+            return -1
+
+        if(len(self.particles)==1):
+            return -2
+
+        if(len(self.particles)==2):
+            phi=zero
+            for i in [0,1]:
+              mass=self.particles[i]['mass']
+              xx=self.particles[i]['x']
+              yy=self.particles[i]['y']
+              zz=self.particles[i]['z']
+              dr2=((xx-x)**2+(yy-y)**2+(zz-z)**2+r**2)
+        
+              ax+=-self.__G*mass/dr2**0.5
+
+            return 0
+         
+        return -3   
       
     def get_potential_energy(self, potential_energy):
         if(len(self.particles)!=1 and len(self.particles)!=2):
@@ -382,6 +444,7 @@ class TwoBodyImplementation(object):
             dpos=pos0-pos1
             mu=self.__G*(self.particles[0]['mass']+self.particles[1]['mass'])
         r=math.sqrt(reduce(lambda x,y: x+ y**2,dpos,0))
+
         potential_energy.value = -mu/r
         return 0    
 
@@ -476,4 +539,3 @@ class TwoBody(GravitationalDynamics):
     def define_parameters(self, object):
         pass
     
-
