@@ -690,6 +690,8 @@ class TestGadget2(TestWithMPI):
         mean_density = self.default_convert_nbody.to_si(3.0/(4.0*numpy.pi) | nbody_system.density)
         select = slice(number_sph_particles/2) # select 50% particles closest to center to avoid boundaries
         self.assertIsOfOrder(rho_sort[select]/mean_density, r_sort.mean()/r_sort[select])
+        self.assertAlmostEqual(instance.gas_particles.u * instance.gas_particles.rho, 
+            1.5 * instance.gas_particles.pressure)
     
     def test15(self):
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES, 

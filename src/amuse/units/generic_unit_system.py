@@ -56,6 +56,7 @@ density = mass / volume
 momentum_density = density * speed
 energy_density = density * specific_energy
 charge = current * time
+pressure = mass / length / (time ** 2)
 
 def is_generic_unit(unit):
     for factor, x in unit.base:
