@@ -311,14 +311,14 @@ class GalactICsImplementation(object):
             print "Exception occurred in generate_particles:", ex
             return -1
     
-    def get_mass(self, index_of_the_particle, mass):
+    def get_mass(self, index_of_the_particle, mass, length):
         try:
             mass.value = self._particle_data[index_of_the_particle, 0]
             return 0
         except:        
             return -1
     
-    def get_position(self, index_of_the_particle, x, y, z):
+    def get_position(self, index_of_the_particle, x, y, z, length):
         try:
             x.value = self._particle_data[index_of_the_particle, 1]
             y.value = self._particle_data[index_of_the_particle, 2]
@@ -327,7 +327,7 @@ class GalactICsImplementation(object):
         except:        
             return -1
     
-    def get_velocity(self, index_of_the_particle, vx, vy, vz):
+    def get_velocity(self, index_of_the_particle, vx, vy, vz, length):
         try:
             vx.value = self._particle_data[index_of_the_particle, 4]
             vy.value = self._particle_data[index_of_the_particle, 5]
@@ -459,8 +459,9 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
-        function.can_handle_array = True
+        function.must_handle_array = True
         return function
 
     @legacy_function
@@ -470,8 +471,9 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current x component of the position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current y component of the position vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current z component of the position vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
-        function.can_handle_array = True
+        function.must_handle_array = True
         return function
 
     @legacy_function
@@ -481,8 +483,9 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         function.addParameter('vx', dtype='float64', direction=function.OUT, description = "The current x component of the velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.OUT, description = "The current y component of the velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.OUT, description = "The current z component of the velocity vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
-        function.can_handle_array = True
+        function.must_handle_array = True
         return function
     
 

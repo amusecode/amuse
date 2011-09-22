@@ -61,6 +61,7 @@ class PythonImplementation(object):
                     try:
                         self.handle_message(message, result_message)
                     except Exception as ex:
+                        print ex
                         result_message.tag = -1
                 else:
                     result_message.tag = -1
@@ -95,13 +96,18 @@ class PythonImplementation(object):
             unpacked = unpack_array(array, input_message.length, type)
             setattr(input_message,attribute, unpacked)
             
-        for index in range(input_message.length):
-            keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification)
-            try:
-                result = method(**keyword_arguments)
-            except TypeError:
-                result = method(*list(keyword_arguments))
-            self.fill_output_message(output_message, index, result, keyword_arguments, specification)
+        if specification.must_handle_array:
+            keyword_arguments = self.new_keyword_arguments_from_message(input_message, None,  specification)
+            result = method(**keyword_arguments)
+            self.fill_output_message(output_message, None, result, keyword_arguments, specification)
+        else:
+            for index in range(input_message.length):
+                keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification)
+                try:
+                    result = method(**keyword_arguments)
+                except TypeError:
+                    result = method(*list(keyword_arguments))
+                self.fill_output_message(output_message, index, result, keyword_arguments, specification)
         
             
         for type, attribute in self.dtype_to_message_attribute.iteritems():
@@ -115,29 +121,40 @@ class PythonImplementation(object):
             attribute = self.dtype_to_message_attribute[parameter.datatype]
             argument_value = None
             if parameter.direction == LegacyFunctionSpecification.IN:
-                argument_value = getattr(input_message, attribute)[parameter.input_index][index]
-            if parameter.direction == LegacyFunctionSpecification.INOUT:
-                argument_value = ValueHolder(getattr(input_message, attribute)[parameter.input_index][index])
-            if parameter.direction == LegacyFunctionSpecification.OUT:
+                if specification.must_handle_array:
+                    argument_value = getattr(input_message, attribute)[parameter.input_index]
+                else:
+                    argument_value = getattr(input_message, attribute)[parameter.input_index][index]
+            elif parameter.direction == LegacyFunctionSpecification.INOUT:
+                if specification.must_handle_array:
+                    argument_value = ValueHolder(getattr(input_message, attribute)[parameter.input_index])
+                else:
+                    argument_value = ValueHolder(getattr(input_message, attribute)[parameter.input_index][index])
+            elif parameter.direction == LegacyFunctionSpecification.OUT:
                 argument_value = ValueHolder(None)
+            elif parameter.direction == LegacyFunctionSpecification.LENGTH:
+                argument_value = input_message.length
             keyword_arguments[parameter.name] = argument_value
         return keyword_arguments
         
     def fill_output_message(self, output_message, index, result, keyword_arguments, specification):
         
-            
         if not specification.result_type is None:
             attribute = self.dtype_to_message_attribute[specification.result_type]
-            getattr(output_message, attribute)[0][index] = result
+            if specification.must_handle_array:
+                getattr(output_message, attribute)[0] = result
+            else:
+                getattr(output_message, attribute)[0][index] = result
                 
         for parameter in specification.parameters:
             attribute = self.dtype_to_message_attribute[parameter.datatype]
-            if parameter.direction == LegacyFunctionSpecification.INOUT:
-                argument_value = keyword_arguments[parameter.name] 
-                getattr(output_message, attribute)[parameter.output_index][index] = argument_value.value
-            if parameter.direction == LegacyFunctionSpecification.OUT:
+            if parameter.direction == LegacyFunctionSpecification.OUT or \
+               parameter.direction == LegacyFunctionSpecification.INOUT:
                 argument_value = keyword_arguments[parameter.name]
-                getattr(output_message, attribute)[parameter.output_index][index] = argument_value.value
+                if specification.must_handle_array:
+                    getattr(output_message, attribute)[parameter.output_index] = argument_value.value
+                else:
+                    getattr(output_message, attribute)[parameter.output_index][index] = argument_value.value
     
     def get_dtype_to_count(self, specification):
         dtype_to_count = {}

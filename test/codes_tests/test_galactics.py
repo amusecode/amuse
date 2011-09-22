@@ -6,8 +6,8 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.galactics.interface import GalactICsInterface, GalactICs
 
 # Change the default for some GalactICs(-Interface) keyword arguments:
-default_options = dict()
-#default_options = dict(redirection = "none")
+#default_options = dict()
+default_options = dict(redirection = "none")
 
 class GalactICsInterfaceTests(TestWithMPI):
     
