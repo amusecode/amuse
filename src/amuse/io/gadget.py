@@ -223,7 +223,7 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         
         if self.number_of_gas_particles > 0:
             gas_set = sets[self.GAS]
-            unit = nbody_system.length / nbody_system.time ** 2
+            unit = (nbody_system.length / nbody_system.time) ** 2
             gas_set.internal_energy = unit.new_quantity(self.u)
             unit = nbody_system.mass / nbody_system.length ** 3
             if not self.density is None:
