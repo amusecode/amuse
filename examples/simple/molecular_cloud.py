@@ -83,14 +83,14 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
     i=0
     L=3
     while i<nplot:
-      ttarget=i*tend/(nplot-1)
-      sys.evolve_model(ttarget,timestep=dt) 
-      rho=make_map(sph,N=200,L=L)
-      subplot=fig.add_subplot(ncolumn,nrow,i+1)
-      subplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)),
+        ttarget=i*tend/(nplot-1)
+        sys.evolve_model(ttarget,timestep=dt) 
+        rho=make_map(sph,N=200,L=L)
+        subplot=fig.add_subplot(ncolumn,nrow,i+1)
+        subplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)),
         extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5)
-      subplot.set_title(ttarget.in_(units.Myr))
-      i=i+1
+        subplot.set_title(ttarget.in_(units.Myr))
+        i=i+1
 
     sph.stop()
     pyplot.show()

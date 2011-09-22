@@ -1,13 +1,23 @@
+"""
+Evolve a cluster until a collision is detected. 
+
+The stars in the cluster are distributed using a plummer sphere, the
+masses are set according to a Salpeter initial mass function.
+
+By default the radii of all stars are equal and very large. 
+
+All units are in nbody units.
+"""
+
 import numpy 
 from matplotlib import pyplot
-from amuse.units import units
-from amuse.units import nbody_system
-from amuse.ic.plummer import new_plummer_sphere
-from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
-from amuse.community.hermite0.interface import Hermite
-
+from amuse.lab import *
 
 def new_cluster(number_of_stars = 1000, radius = None):
+    """
+    Return a new cluster of stars with the given radii and a salpeter 
+    mass distribution.
+    """
     if radius == None:
         radius = (0.5 / number_of_stars) | nbody_system.length
         
@@ -18,6 +28,10 @@ def new_cluster(number_of_stars = 1000, radius = None):
     return particles
 
 def plot_particles_and_highlight_collision(particles, particles1, particles2):
+    """
+    Plot the stars and on top of these plot the particles involved
+    in the collision.
+    """
     figure = pyplot.figure()
     subplot = figure.add_subplot(1, 1, 1)
       
@@ -59,12 +73,15 @@ if __name__ in ('__main__', '__plot__'):
     numpy.random.seed(1212)
     
     particles = new_cluster(128)
+    
     code = Hermite()
     code.particles.add_particles(particles)
+    
     stopping_condition = code.stopping_conditions.collision_detection
     stopping_condition.enable()
     
     code.evolve_model(4 | nbody_system.time)
+    
     if not stopping_condition.is_set():
         raise Exception("No stopping collision detected in the given timeframe.")
         
