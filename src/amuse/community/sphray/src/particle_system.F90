@@ -99,6 +99,9 @@ end type particle_type
 !> source type
 !================
 type source_type
+
+   integer(i4b) :: id        !< id added for AMUSE
+   
    real(r4b)    :: pos(3)    !< x,y,z coordinates
 
 #ifdef incVel

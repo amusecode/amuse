@@ -23,17 +23,17 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(), **options)
         LiteratureReferencesMixIn.__init__(self)
 
-    def name_of_the_worker(self, mode):
+    def name_of_the_worker(self):
         return 'sphray_worker'
         
-    def get_data_directory(self):
+    def data_directory(self):
         """
         Returns the root name of the directory for the 
         application data files.
         """
         return os.path.join(get_amuse_root_dir(), 'data', 'sphray', 'input')
 
-    def get_output_directory(self):
+    def output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
@@ -43,13 +43,20 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
     def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
         pass
 
+
+    @legacy_function    
+    def commit_particles():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
+
     @legacy_function    
     def new_gas_particle():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.OUT)
+        function.addParameter('id', dtype='int32', direction=function.OUT)
         for x in ['mass','hsml','x','y','z','rho','xe','u']:
-            function.addParameter(x, dtype='d', direction=function.IN)
+            function.addParameter(x, dtype='float32', direction=function.IN)
         function.result_type = 'i'
         return function
 
@@ -57,27 +64,29 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
     def new_src_particle():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.OUT)
+        function.addParameter('id', dtype='int32', direction=function.OUT)
         for x in ['L','x','y','z','SpcType']:
-            function.addParameter(x, dtype='d', direction=function.IN)
+            function.addParameter(x, dtype='float32', direction=function.IN)
         function.result_type = 'i'
         return function
 
+    @legacy_function    
     def get_state_gas():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','hsml','x','y','z','rho','xe','u']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
+            function.addParameter(x, dtype='float32', direction=function.OUT)
         function.result_type = 'i'
         return function
 
+    @legacy_function    
     def get_state_src():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('id', dtype='int32', direction=function.IN)
         for x in ['L','x','y','z','SpcType']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
+            function.addParameter(x, dtype='float32', direction=function.OUT)
         function.result_type = 'i'
         return function
 
@@ -113,6 +122,40 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.addParameter('data_directory', dtype='string', direction=function.OUT,
             description = "Name of the data directory")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Value was retrieved
+        -1 - ERROR
+            Could not retrieve value
+        """
+        return function
+
+    @legacy_function
+    def set_output_directory():
+        """
+        Update the output path.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('output_directory', dtype='string', direction=function.IN,
+            description = "Name of the output directory")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was set
+        -1 - ERROR
+            Directory does not exist
+        """
+        return function
+
+    @legacy_function
+    def get_output_directory():
+        """
+        Retrieve the output path.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('output_directory', dtype='string', direction=function.OUT,
+            description = "Name of the output directory")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK

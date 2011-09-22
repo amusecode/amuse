@@ -2,6 +2,7 @@ module amuse_sphrayMod
   use myf03_mod
   use global_mod, only: psys, PLAN,GV
   use particle_system_mod, only: particle_type,source_type
+  implicit none
   
   type(particle_type), allocatable :: par_buffer(:)
   type(source_type), allocatable :: src_buffer(:)
@@ -10,10 +11,36 @@ module amuse_sphrayMod
   integer(i8b) :: nmaxpar_buffer=100000,nmaxsrc_buffer=10000
 
   integer(i8b) :: tot_id=0
-  integer, allocatable :: iid(:)
-  logical :: id_searcheable=.FALSE.
+  integer, allocatable :: gid(:),sid(:)
+  logical :: gas_searcheable=.FALSE.,src_searcheable=.FALSE.
+
+  character(len=clen) :: data_directory='./'
+  character(len=clen) :: SpectraFile='./spectra/thermal1e5.cdf'        !< [Config File] file containing spectra tables
+  character(len=clen) :: b2cdFile='./column_depth/latmon_b2cd_table.txt'           !< [Config File] file containing b2cd tables
+  character(len=clen) :: AtomicRatesFile='./atomic_rates/atomic_rates_Hui.txt'    !< [Config File] file containnig atomic rates tables
+
 
  contains
+
+subroutine sphray_set_data_directory(x)
+  character(len=clen) :: x
+  data_directory=x
+end subroutine  
+
+subroutine sphray_get_data_directory(x)
+  character(len=clen) :: x
+  x=data_directory
+end subroutine  
+
+subroutine sphray_set_output_directory(x)
+  character(len=clen) :: x
+  GV%OutputDir=x
+end subroutine  
+
+subroutine sphray_get_output_directory(x)
+  character(len=clen) :: x
+  x=GV%OutputDir
+end subroutine  
 
 function new_id()
   integer new_id
@@ -41,6 +68,9 @@ end subroutine
 subroutine sphray_commit_particles
   integer(i8b) :: n
 
+ gas_searcheable=.FALSE.
+ src_searcheable=.FALSE. 
+
  if(npar_buffer.GT.0) then
    n=size(psys%par)
    call extend_par(psys%par,n+npar_buffer)
@@ -63,6 +93,10 @@ subroutine sphray_commit_parameters
   use spectra_mod, only: read_spectra_file
   use atomic_rates_mod, only: read_atomic_rates_file, get_atomic_rates
   use atomic_rates_mod, only: write_atomic_rates_to_log_file
+  
+  GV%SpectraFile=trim(data_directory)//'/'//trim(SpectraFile)        !< [Config File] file containing spectra tables
+  GV%b2cdFile=trim(data_directory)//'/'//trim(b2cdFile)           !< [Config File] file containing b2cd tables
+  GV%AtomicRatesFile=trim(data_directory)//'/'//trim(AtomicRatesFile)    !< [Config File] file containnig atomic rates tables
   
   call read_b2cd_file(GV%b2cdFile)
   call read_spectra_file(GV%SpectraFile)
@@ -234,7 +268,7 @@ function sphray_get_gas_particle_state(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
     rho, u , xe 
   integer(i4b) :: i,index,ret
 
-    index=find_particle(id)
+    index=find_gas(id)
     if(index.LT.0) then
       ret=index
       return
@@ -246,7 +280,7 @@ function sphray_get_gas_particle_state(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
     hsml=psys%par(index)%hsml
     rho=psys%par(index)%rho
     xe=psys%par(index)%ye
-    rho=u_from_temp( real(psys%par(index)%T, r8b) , real(psys%par(index)%ye,r8b) ,GV%H_mf) 
+    u=u_from_temp( real(psys%par(index)%T, r8b) , real(psys%par(index)%ye,r8b) ,GV%H_mf) 
 
 end function
 
@@ -256,7 +290,7 @@ function sphray_set_gas_particle_state(ids,mass,hsml,x,y,z,rho,xe,u) result(ret)
     rho, u , xe 
   integer(i4b) :: i,index,ret
 
-    index=find_particle(ids)
+    index=find_gas(ids)
     if(index.LT.0) then
       ret=index
       return
@@ -273,21 +307,60 @@ function sphray_set_gas_particle_state(ids,mass,hsml,x,y,z,rho,xe,u) result(ret)
 end function
 
 
-subroutine sphray_add_gas_particle(ids,mass,hsml,x,y,z,rho,xe,u)
-  integer(i4b) ::  ids
+function sphray_get_src_particle_state(id,L,x,y,z,SpcType) result(ret)
+  integer(i4b) :: id
+  real(r4b) :: L,x,y,z,SpcType
+  integer(i4b) :: i,index,ret
+
+    index=find_src(id)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    L=psys%src(index)%L
+    x=psys%src(index)%pos(1)
+    y=psys%src(index)%pos(2)
+    z=psys%src(index)%pos(3)
+    SpcType=psys%src(index)%SpcType
+
+end function
+
+function sphray_set_src_particle_state(id,L,x,y,z,SpcType) result(ret)
+  integer(i4b) ::  id
+  real(r4b) :: L,x,y,z,SpcType
+  integer(i4b) :: i,index,ret
+
+    index=find_src(id)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    psys%src(index)%L=L
+    psys%src(index)%pos(1)=x
+    psys%src(index)%pos(2)=y
+    psys%src(index)%pos(3)=z
+    psys%src(index)%SpcType=SpcType
+ 
+end function
+
+
+subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u)
+  integer(i4b) ::  id
   real(r4b) :: mass, hsml,x,y,z, &
     rho, u , xe 
   integer(i4b) :: i
+
+  gas_searcheable=.FALSE.
   
   do while(npar_buffer+1.GT.nmaxpar_buffer) 
     nmaxpar_buffer=2*nmaxpar_buffer
     call extend_par(par_buffer,nmaxpar_buffer)
   enddo
   
-    ids=new_id()
+    id=new_id()
     npar_buffer=npar_buffer+1
     par_buffer(npar_buffer)%mass=mass
-    par_buffer(npar_buffer)%id=ids
+    par_buffer(npar_buffer)%id=id
     par_buffer(npar_buffer)%pos(1)=x
     par_buffer(npar_buffer)%pos(2)=y
     par_buffer(npar_buffer)%pos(3)=z
@@ -315,18 +388,21 @@ subroutine sphray_add_gas_particle(ids,mass,hsml,x,y,z,rho,xe,u)
 end subroutine
 
 subroutine sphray_add_src_particle(id,L,x,y,z,SpcType)
-  integer(i4b) ::  ids
+  integer(i4b) ::  id
   real(r4b) :: L,  x,y,z,SpcType
   integer(i4b) :: i
+
+  src_searcheable=.FALSE. 
   
   do while(nsrc_buffer+1.GT.nmaxsrc_buffer)
     nmaxsrc_buffer=nmaxsrc_buffer*2 
     call extend_src(src_buffer,nmaxsrc_buffer)
   enddo 
     
-    ids=new_id()
+    id=new_id()
     nsrc_buffer=nsrc_buffer+1
     src_buffer(nsrc_buffer)%L=L
+    src_buffer(nsrc_buffer)%id=id   
     src_buffer(nsrc_buffer)%pos(1)=x
     src_buffer(nsrc_buffer)%pos(2)=y
     src_buffer(nsrc_buffer)%pos(3)=z
@@ -346,6 +422,7 @@ end subroutine
 
 subroutine sphray_evolve(tend)
   use amuse_mainloop_mod
+  real(r8b) :: tend
  
   PLAN%snap(1)%TimeToNext=tend
   PLAN%snap(1)%RunTime=tend-PLAN%snap(1)%TimeAt
@@ -355,7 +432,9 @@ subroutine sphray_evolve(tend)
   call preparemain
   call mainloop
 
-  PLAN%snap(1)%TimeAt=tend 
+  PLAN%snap(1)%TimeAt=tend
+  gas_searcheable=.FALSE.
+  src_searcheable=.FALSE. 
 end subroutine
 
 subroutine preparemain()
@@ -369,6 +448,7 @@ subroutine preparemain()
   type(gadget_constants_type) :: gconst
   real(r8b) :: a=1.     !< scale factor
   real(r8b) :: h=1.     !< Hubble paraemter (little H)
+  integer(i4b) :: i
 
 ! most of this stuff should go into (re)commit parameters/particles
 
@@ -563,7 +643,7 @@ function u_from_temp(T,ye,Hmf) result(U)
 
   mu = 4.0d0 / (3.0d0 * Hmf + 1.0d0 + 4.0d0 * Hmf * ye)
   Udum = gconst%BOLTZMANN * T /( (gconst%GAMMA - 1.0d0) * mu * gconst%PROTONMASS )
-  U = Udum * cgs_mass / cgs_enrg
+  U = Udum * GV%cgs_mass / GV%cgs_enrg
 
 end function
 
@@ -571,6 +651,7 @@ subroutine extend_par(buf,n)
   type(particle_type), allocatable :: buf(:),tmpbuf(:)
   integer(i8b) :: n,m   
 
+  m=0
   if(allocated(buf)) then
     m=min(n,size(buf))
     allocate(tmpbuf(m))
@@ -591,6 +672,7 @@ subroutine extend_src(buf,n)
   type(source_type), allocatable :: buf(:),tmpbuf(:)
   integer(i8b) :: n,m   
 
+  m=0
   if(allocated(buf)) then
     m=min(n,size(buf))
     allocate(tmpbuf(m))
@@ -607,20 +689,22 @@ subroutine extend_src(buf,n)
     
 end subroutine
 
-function find_particle(id_) result(index)
+function find_gas(id_) result(index)
   use hashMod
+  type(hash_type),save ::  hash
   integer id_,index
   integer, save :: nbod=0
   
-  if(.NOT.id_searcheable) then
+  if(.NOT.gas_searcheable) then
     nbod=size(psys%par)
-    if(allocated(iid)) deallocate(iid)
-    allocate(iid(nbod))
-    iid(1:nbod)=psys%par(1:nbod)%id
-    call initHash(nbod/2+1,nbod, iid)
+    if(allocated(gid)) deallocate(gid)
+    allocate(gid(nbod))
+    gid(1:nbod)=psys%par(1:nbod)%id
+    call initHash(nbod/2+1,nbod, gid,hash)
+    gas_searcheable=.TRUE.
   endif
   
-  index=find(id_,iid)  
+  index=find(id_,gid,hash)  
 
   if(index.LE.0) then
     index=-1
@@ -630,7 +714,40 @@ function find_particle(id_) result(index)
     index=-2
     return
   endif
-  if(iid(index).NE.id_) then
+  if(gid(index).NE.id_) then
+    index=-3
+    return
+  endif      
+  
+end function  
+
+
+function find_src(id_) result(index)
+  use hashMod
+  type(hash_type), save :: hash
+  integer id_,index
+  integer, save :: nbod=0
+  
+  if(.NOT.src_searcheable) then
+    nbod=size(psys%src)
+    if(allocated(sid)) deallocate(sid)
+    allocate(sid(nbod))
+    sid(1:nbod)=psys%src(1:nbod)%id
+    call initHash(nbod/2+1,nbod, sid,hash)
+    src_searcheable=.TRUE.
+  endif
+  
+  index=find(id_,sid,hash)  
+
+  if(index.LE.0) then
+    index=-1
+    return
+  endif
+  if(index.GT.nbod) then
+    index=-2
+    return
+  endif
+  if(sid(index).NE.id_) then
     index=-3
     return
   endif      

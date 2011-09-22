@@ -21,7 +21,7 @@ FFLAGS= -cpp -O5
 endif
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
-IFORTFLAGS= -fpe0 -g -traceback -heap-arrays -fpp 
+IFORTFLAGS= -fpe0 -g -traceback -heap-arrays -fpp -u
 FFLAGS= $(IFORTFLAGS) -O3 -no-prec-div
 endif
 
