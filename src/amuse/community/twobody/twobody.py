@@ -375,56 +375,45 @@ class TwoBodyImplementation(object):
         kinetic_energy.value = 0.5*mass*v2
         return 0 
   
-    def get_gravity_at_point(self, r, x,y,z,ax,ay,az):
-
-        if(len(self.particles)!=1 and len(self.particles)!=2):
-            return -1
-
+    def get_gravity_at_point(self, eps, x, y, z, ax, ay, az, length):
         if(len(self.particles)==1):
             return -2
-
-        if(len(self.particles)==2):
+        elif(len(self.particles)==2):
             ax.value=0.
             ay.value=0.
             az.value=0.
             for i in [0,1]:
-              mass=self.particles[i]['mass']
-              xx=self.particles[i]['x']
-              yy=self.particles[i]['y']
-              zz=self.particles[i]['z']
-              dr2=((xx-x)**2+(yy-y)**2+(zz-z)**2+r**2)
-        
-              ax.value+=self.__G*mass*(xx-x)/dr2**1.5
-              ay.value+=self.__G*mass*(yy-y)/dr2**1.5
-              az.value+=self.__G*mass*(zz-z)/dr2**1.5
+                mass=self.particles[i]['mass']
+                xx=self.particles[i]['x']
+                yy=self.particles[i]['y']
+                zz=self.particles[i]['z']
+                dr2=((xx-x)**2+(yy-y)**2+(zz-z)**2+eps**2)
+                
+                ax.value+=self.__G*mass*(xx-x)/dr2**1.5
+                ay.value+=self.__G*mass*(yy-y)/dr2**1.5
+                az.value+=self.__G*mass*(zz-z)/dr2**1.5
             
             return 0
-         
-        return -3   
-
-    def get_potential_at_point(self, r, x,y,z,phi):
-
-        if(len(self.particles)!=1 and len(self.particles)!=2):
+        else:
             return -1
-
+    
+    def get_potential_at_point(self, eps, x, y, z, phi, length):
         if(len(self.particles)==1):
             return -2
-
-        if(len(self.particles)==2):
-            phi=zero
+        elif(len(self.particles)==2):
+            phi.value = zero
             for i in [0,1]:
-              mass=self.particles[i]['mass']
-              xx=self.particles[i]['x']
-              yy=self.particles[i]['y']
-              zz=self.particles[i]['z']
-              dr2=((xx-x)**2+(yy-y)**2+(zz-z)**2+r**2)
-        
-              ax+=-self.__G*mass/dr2**0.5
-
+                mass=self.particles[i]['mass']
+                xx=self.particles[i]['x']
+                yy=self.particles[i]['y']
+                zz=self.particles[i]['z']
+                dr2=((xx-x)**2+(yy-y)**2+(zz-z)**2+eps**2)
+                
+                phi.value += -self.__G*mass/dr2**0.5
             return 0
-         
-        return -3   
-      
+        else:
+            return -1
+    
     def get_potential_energy(self, potential_energy):
         if(len(self.particles)!=1 and len(self.particles)!=2):
             return -1
@@ -522,6 +511,48 @@ class TwoBodyInterface(PythonCodeInterface, GravitationalDynamicsInterface):
     
     def __init__(self, **options):
         PythonCodeInterface.__init__(self, TwoBodyImplementation, **options)
+    
+    @legacy_function
+    def get_gravity_at_point():
+        """
+        Determine the gravitational force on a given point
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.IN,
+            description = "The smoothing parameter")
+        function.addParameter('x', dtype='float64', direction=function.IN,
+            description = "The position vector of the point")
+        function.addParameter('y', dtype='float64', direction=function.IN,
+            description = "The position vector of the point")
+        function.addParameter('z', dtype='float64', direction=function.IN,
+            description = "The position vector of the point")
+        function.addParameter('ax', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('ay', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('az', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+    
+    @legacy_function
+    def get_potential_at_point():
+        """
+        Determine the potential on a given point
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.IN,
+         description = "The smoothing factor, may be ignored by the code")
+        function.addParameter('x', dtype='float64', direction=function.IN)
+        function.addParameter('y', dtype='float64', direction=function.IN)
+        function.addParameter('z', dtype='float64', direction=function.IN)
+        function.addParameter('phi', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
 
 class TwoBody(GravitationalDynamics):
     
