@@ -135,7 +135,18 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals((particles.mass*particles.specific_kinetic_energy()).sum(), Ek)
         self.assertEquals(0.5*(particles.mass*particles.potential()).sum(), Ep)
 
-       
+    def test10(self):
+        particles = datamodel.Particles(4)
+        particles.mass = [1.,2.,3.,4.] | units.kg
+        subset = particles[0:2]
+        self.assertEquals(len(subset), 2)
+        masses, = subset.get_values_in_store(None, ['mass'])
+        self.assertEquals(len(masses), 2)
+        subset.mass = 5.0 | units.kg
+        self.assertAlmostRelativeEquals( particles.mass , [5.,5.,3.,4.] | units.kg)
+        subset.set_values_in_store(None, ['mass'], [6.0 | units.kg,])
+        self.assertAlmostRelativeEquals( particles.mass , [6., 6.,3.,4.] | units.kg)
+        
 class TestStars(amusetest.TestCase):
 
     def test1(self):

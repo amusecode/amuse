@@ -1353,9 +1353,15 @@ class ParticlesSubset(AbstractParticleSet):
         self._private.keys =  numpy.delete(self._private.keys,indices)
     
     def get_values_in_store(self, keys, attributes):
+        if keys is None:
+            keys = self.get_all_keys_in_store()
+            
         return self._private.particles.get_values_in_store(keys, attributes)
         
     def set_values_in_store(self, keys, attributes, values):
+        if keys is None:
+            keys = self.get_all_keys_in_store()
+            
         self._private.particles.set_values_in_store(keys, attributes, values)
     
     def get_attribute_names_defined_in_store(self):
