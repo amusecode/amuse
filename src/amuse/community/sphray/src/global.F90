@@ -272,6 +272,12 @@ subroutine set_dt_from_dtcode( GV )
   GV%dt_s    = GV%dt_code * GV%cgs_time / GV%LittleH 
   GV%dt_myr  = GV%dt_s / gconst%sec_per_megayear
 
+  print*,'********'
+  print*,GV%dt_code
+  print*,GV%dt_s
+  print*,GV%dt_myr
+  print*,'********'
+
 end subroutine set_dt_from_dtcode
 
 

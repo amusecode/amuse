@@ -109,7 +109,6 @@ contains
        !------------------------- 
        src_rays: do rayn = one, PLAN%snap(snapn)%SrcRays
 
-          
           GV%rayn                = GV%rayn + 1
           GV%src_rayn            = GV%src_rayn + 1
           GV%TotalSourceRaysCast = GV%TotalSourceRaysCast + 1                
@@ -131,6 +130,9 @@ contains
           GV%itime = GV%itime + 1
           call set_time_elapsed_from_itime( GV )
           GV%IonizingPhotonsPerSec = GV%TotalPhotonsCast / GV%time_elapsed_s
+
+          print*, rayn, PLAN%snap(snapn)%SrcRays,GV%time_elapsed_myr
+
 
           globalraylist%ray = ray
           call trace_ray(globalraylist%ray, globalraylist, psys, tree) 

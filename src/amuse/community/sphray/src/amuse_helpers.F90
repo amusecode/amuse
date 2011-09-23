@@ -11,6 +11,7 @@ module amuse_sphrayMod
   integer(i8b) :: nmaxpar_buffer=100000,nmaxsrc_buffer=10000
 
   integer(i8b) :: tot_id=0
+  integer(i8b) :: ngas=0,nsrc=0
   integer, allocatable :: gid(:),sid(:)
   logical :: gas_searcheable=.FALSE.,src_searcheable=.FALSE.
 
@@ -65,21 +66,77 @@ subroutine sphray_init
     
 end subroutine
 
+function clean_gas(par) result(np)
+  integer :: left,right,np
+  type(particle_type) :: par(:),tmp
+  left=1
+  right=size(par)
+  if(right.EQ.0) then
+    np=0
+    return
+  endif    
+  do while(.TRUE.)
+    do while(par(left)%mass.GE.0.AND.left.LT.right)
+      left=left+1
+    enddo
+    do while(par(right)%mass.LT.0.AND.left.LT.right)
+      right=right-1
+    enddo
+    if(left.LT.right) then
+      tmp=par(left)
+      par(left)=par(right)
+      par(right)=tmp
+    else
+      exit
+    endif  
+  enddo  
+  if(par(left)%mass.GE.0) left=left+1
+  np=left-1
+end function
+
+function clean_src(par) result(np)
+  integer :: left,right,np
+  type(source_type) :: par(:),tmp
+  left=1
+  right=size(par)
+  if(right.EQ.0) then
+    np=0
+    return
+  endif    
+  do while(.TRUE.)
+    do while(par(left)%L.GE.0.AND.left.LT.right)
+      left=left+1
+    enddo
+    do while(par(right)%L.LT.0.AND.left.LT.right)
+      right=right-1
+    enddo
+    if(left<right) then
+      tmp=par(left)
+      par(left)=par(right)
+      par(right)=tmp
+    else
+      exit
+    endif  
+  enddo  
+  if(par(left)%L.GE.0) left=left+1
+  np=left-1
+end function
+
 subroutine sphray_commit_particles
-  integer(i8b) :: n
+  integer :: n
 
  gas_searcheable=.FALSE.
  src_searcheable=.FALSE. 
 
- if(npar_buffer.GT.0) then
-   n=size(psys%par)
+ n=clean_gas(psys%par)
+ if(npar_buffer.GT.0.OR.n.NE.size(psys%par)) then
    call extend_par(psys%par,n+npar_buffer)
    psys%par(n+1:n+npar_buffer)=par_buffer(1:npar_buffer)
    npar_buffer=0
  endif
 
- if(nsrc_buffer.GT.0) then
-   n=size(psys%src)
+ n=clean_src(psys%src)
+ if(nsrc_buffer.GT.0.OR.n.NE.size(psys%src)) then
    call extend_src(psys%src,n+nsrc_buffer)
    psys%src(n+1:n+nsrc_buffer)=src_buffer(1:nsrc_buffer)
    nsrc_buffer=0
@@ -247,8 +304,9 @@ end subroutine
 
 subroutine amuse_output_planning
 ! equiv of do_output_planning
- allocate( PLAN%OutputTimes(1) )
- PLAN%OutputTimes(1)=1.d99   ! probably doesn't matter
+ allocate( PLAN%OutputTimes(0:1) )
+ GV%NumTotOuts = GV%NumStdOuts  ! =-1
+ PLAN%OutputTimes=1.d99   ! probably doesn't matter
 ! deferred to just before evolve 
 end subroutine
 
@@ -273,14 +331,17 @@ function sphray_get_gas_particle_state(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
       ret=index
       return
     endif  
+        
     mass=psys%par(index)%mass
     x=psys%par(index)%pos(1)
     y=psys%par(index)%pos(2)
     z=psys%par(index)%pos(3)
     hsml=psys%par(index)%hsml
     rho=psys%par(index)%rho
-    xe=psys%par(index)%ye
+    xe=psys%par(index)%xHII
     u=u_from_temp( real(psys%par(index)%T, r8b) , real(psys%par(index)%ye,r8b) ,GV%H_mf) 
+
+    ret=0
 
 end function
 
@@ -304,6 +365,8 @@ function sphray_set_gas_particle_state(ids,mass,hsml,x,y,z,rho,xe,u) result(ret)
     psys%par(index)%ye=xe
     psys%par(index)%T=temp_from_u( real(u,r8b) , real(xe,r8b), GV%H_mf)  
 
+    ret=0
+
 end function
 
 
@@ -317,11 +380,13 @@ function sphray_get_src_particle_state(id,L,x,y,z,SpcType) result(ret)
       ret=index
       return
     endif  
+    
     L=psys%src(index)%L
     x=psys%src(index)%pos(1)
     y=psys%src(index)%pos(2)
     z=psys%src(index)%pos(3)
     SpcType=psys%src(index)%SpcType
+    ret=0
 
 end function
 
@@ -335,12 +400,13 @@ function sphray_set_src_particle_state(id,L,x,y,z,SpcType) result(ret)
       ret=index
       return
     endif  
+        
     psys%src(index)%L=L
     psys%src(index)%pos(1)=x
     psys%src(index)%pos(2)=y
     psys%src(index)%pos(3)=z
     psys%src(index)%SpcType=SpcType
- 
+    ret=0
 end function
 
 
@@ -357,6 +423,7 @@ subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u)
     call extend_par(par_buffer,nmaxpar_buffer)
   enddo
   
+    ngas=ngas+1
     id=new_id()
     npar_buffer=npar_buffer+1
     par_buffer(npar_buffer)%mass=mass
@@ -399,6 +466,7 @@ subroutine sphray_add_src_particle(id,L,x,y,z,SpcType)
     call extend_src(src_buffer,nmaxsrc_buffer)
   enddo 
     
+    nsrc=nsrc+1
     id=new_id()
     nsrc_buffer=nsrc_buffer+1
     src_buffer(nsrc_buffer)%L=L
@@ -411,14 +479,35 @@ subroutine sphray_add_src_particle(id,L,x,y,z,SpcType)
 
 end subroutine
 
+function sphray_remove_gas_particle(id) result(ret)
+  integer(i4b) :: id
+  integer(i4b) :: index,ret
 
-subroutine sphray_remove_gas_particle
+  index=find_gas(id)
+  if(index.LT.0) then
+    ret=index
+    return
+  endif  
 
-end subroutine
+  psys%par(index)%mass=-1
+  ngas=ngas-1
+  ret=0
+end function
 
-subroutine sphray_remove_src_particle
+function sphray_remove_src_particle(id) result(ret)
+  integer(i4b) :: id
+  integer(i4b) :: index,ret
 
-end subroutine
+  index=find_src(id)
+  if(index.LT.0) then
+    ret=index
+    return
+  endif  
+
+  psys%src(index)%L=-1
+  nsrc=nsrc-1
+  ret=0
+end function
 
 subroutine sphray_evolve(tend)
   use amuse_mainloop_mod
@@ -567,7 +656,7 @@ subroutine set_default_parameters
 
 
   GV%RayScheme="raynum"           !< [Config File] one of {raynum, header}
-  GV%ForcedRayNumber=100000     !< [Config File] number of rays to trace if RayScheme = raynum
+  GV%ForcedRayNumber=10000     !< [Config File] number of rays to trace if RayScheme = raynum
 
   GV%RayStats=.false.            !< [Config File] T = massive output file on ray statistics in raystats.dat
   GV%BndryCond=0           !< [Config File] one of {-1:reflecting 0:vacuum 1:periodic}
@@ -599,7 +688,7 @@ subroutine set_default_parameters
 
   GV%OutputTiming='standard'        !< [Config File] one of {standard, forced}
   GV%NumStdOuts=-1          !< [Config File] if OutputTiming = "standard", # of outputs (maybe +1 initial)
-
+  
   GV%DoInitialOutput=.false.     !< [Config File] produces output before any raytracing
   GV%IonFracOutRays=10000      !< [Config File] do mini output every IonFracOutRays src rays
 
@@ -719,6 +808,11 @@ function find_gas(id_) result(index)
     return
   endif      
   
+  if(psys%par(index)%mass<0) then
+    index=-4
+    return
+  endif  
+  
 end function  
 
 
@@ -751,7 +845,12 @@ function find_src(id_) result(index)
     index=-3
     return
   endif      
-  
+   
+  if(psys%src(index)%L<0) then
+    index=-4
+    return
+  endif  
+
 end function  
 
 

@@ -22,7 +22,7 @@ endif
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
 IFORTFLAGS= -fpe0 -g -traceback -heap-arrays -fpp -u
-FFLAGS= $(IFORTFLAGS) -O3 -no-prec-div
+FFLAGS= $(IFORTFLAGS) -O3 -no-prec-div -p
 endif
 
 FFLAGS2= -I./src/

@@ -71,7 +71,7 @@ end function
 
 function set_state_gas(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
   use amuse_sphrayMod
-  integer :: ret,id
+  integer(i4b) :: ret,id
   real(r4b) :: mass,hsml,x,y,z,rho,xe,u
   ret=sphray_set_gas_particle_state(id,mass,hsml,x,y,z,rho,xe,u)
 end function
@@ -128,4 +128,16 @@ function get_output_directory(x) result(ret)
   character(len=512) :: x
   call sphray_get_output_directory(x)
   ret=0
+end function
+
+function remove_gas_particle(id) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  ret=sphray_remove_gas_particle(id)
+end function
+
+function remove_src_particle(id) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  ret=sphray_remove_src_particle(id)
 end function

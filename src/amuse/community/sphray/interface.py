@@ -51,6 +51,12 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return function
 
     @legacy_function    
+    def recommit_particles():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
     def new_gas_particle():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
@@ -89,6 +95,44 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
             function.addParameter(x, dtype='float32', direction=function.OUT)
         function.result_type = 'i'
         return function
+
+    @legacy_function    
+    def set_state_gas():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['mass','hsml','x','y','z','rho','xe','u']:
+            function.addParameter(x, dtype='float32', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_state_src():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN)
+        for x in ['L','x','y','z','SpcType']:
+            function.addParameter(x, dtype='float32', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+
+    @legacy_function    
+    def remove_src_particle():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def remove_gas_particle():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
 
     @legacy_function    
     def evolve_model():
