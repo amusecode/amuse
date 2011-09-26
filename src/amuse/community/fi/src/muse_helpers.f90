@@ -420,12 +420,13 @@ subroutine muse_get_hydro_state(x,y,z,vx,vy,vz, &
 
   vdisp_included=.NOT.isotherm
   if(sphtreecount.NE.ppropcount+pordercount) call makesphtree
-!$omp parallel do private(i,ppos,pvel,rh,rhv,rhe,rhv2,h,dum,ethtoent,nneigh) &
+!$omp parallel private(i,ppos,pvel,rh,rhv,rhe,rhv2,h,dum,ethtoent,nneigh) &
 !$omp shared(x,y,z,vx,vy,vz,rh_out,rhvx_out,rhvy_out,rhvz_out,rhe_out,n,vdisp_included)
+  h=0
+!$omp do  
   do i=1,n
     ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
     pvel(1)=vx(i);pvel(2)=vy(i);pvel(3)=vz(i)  
-    h=0.
     call hsmdenspos2(ppos,h,rh,dum,nneigh)
     call gatter_hydro_state(nneigh,ppos,pvel,h,rh,rhv,rhv2,rhe)
     if(uentropy) then
@@ -445,6 +446,7 @@ subroutine muse_get_hydro_state(x,y,z,vx,vy,vz, &
       if(rh.GT.0) rhe_out(i)=rhe+sum(rhv**2)/rh
     endif
   enddo
+!$omp end parallel
   
 end subroutine
 
