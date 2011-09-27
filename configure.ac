@@ -64,6 +64,7 @@ AS_IF([test x"$WITH_CUDA" != xno],[
 	[])
     
     PREV_LDFLAGS=${LDFLAGS}
+    save_LIBS="$LIBS"
     LDFLAGS="-L$CUDA_TK/lib -L$CUDA_TK/lib64"
     AC_CHECK_LIB(
 	[cudart],
@@ -71,6 +72,7 @@ AS_IF([test x"$WITH_CUDA" != xno],[
 	[],
 	[AC_MSG_ERROR([CUDA_TK, cuda toolkit path is incorrect])]
     )
+    LIBS="$save_LIBS"
     LDFLAGS=${PREV_LDFLAGS}
 ])
 
