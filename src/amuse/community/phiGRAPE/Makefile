@@ -82,6 +82,9 @@ phigrape_worker_gl: glworker_code.f90 phigrape_code.o $(CODELIB)
 phigrape_worker_gpu: worker_code.f90 phigrape_code.o $(CODELIB)
 	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SCLIBS)
 
+phigrape_worker_gpu_sockets: worker_code-sockets.f90 phigrape_code.o $(CODELIB)
+	$(MPIF90) $(FFLAGS) $(SCINC) $(FSINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SCLIBS) $(FSLIBS)
+
 phigrape_worker_gl_gpu: glworker_code.f90 phigrape_code.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
