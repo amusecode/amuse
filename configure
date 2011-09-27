@@ -5625,8 +5625,53 @@ fi
 
                     CFLAGS="$save_CFLAGS"
 
-                     save_LIBS="$LIBS"
+                    save_LIBS="$LIBS"
                     LIBS="$ac_GSL_LDOPTS -lgsl $save_LIBS"
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cblas_dgemm in -lgslcblas" >&5
+$as_echo_n "checking for cblas_dgemm in -lgslcblas... " >&6; }
+if test "${ac_cv_lib_gslcblas_cblas_dgemm+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgslcblas  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char cblas_dgemm ();
+int
+main ()
+{
+return cblas_dgemm ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gslcblas_cblas_dgemm=yes
+else
+  ac_cv_lib_gslcblas_cblas_dgemm=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gslcblas_cblas_dgemm" >&5
+$as_echo "$ac_cv_lib_gslcblas_cblas_dgemm" >&6; }
+if test "x$ac_cv_lib_gslcblas_cblas_dgemm" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBGSLCBLAS 1
+_ACEOF
+
+  LIBS="-lgslcblas $LIBS"
+
+fi
+
                     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gsl_blas_dgemm in -lgsl" >&5
 $as_echo_n "checking for gsl_blas_dgemm in -lgsl... " >&6; }
 if test "${ac_cv_lib_gsl_gsl_blas_dgemm+set}" = set; then :
@@ -5664,7 +5709,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gsl_gsl_blas_dgemm" >&5
 $as_echo "$ac_cv_lib_gsl_gsl_blas_dgemm" >&6; }
 if test "x$ac_cv_lib_gsl_gsl_blas_dgemm" = x""yes; then :
-  GSL_LIBS="$ac_GSL_LDOPTS -lgsl"
+  GSL_LIBS="$ac_GSL_LDOPTS -lgsl -gslcblas"
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libgsl : library missing. (Cannot find symbol gsl_blas_dgemm) in $with_gsl_library. Check if libgsl is installed and if the version is correct" >&5
 $as_echo "$as_me: WARNING: libgsl : library missing. (Cannot find symbol gsl_blas_dgemm) in $with_gsl_library. Check if libgsl is installed and if the version is correct" >&2;}
