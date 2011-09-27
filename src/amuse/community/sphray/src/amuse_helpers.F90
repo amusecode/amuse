@@ -23,6 +23,8 @@ module amuse_sphrayMod
 
  contains
 
+
+
 subroutine sphray_set_data_directory(x)
   character(len=clen) :: x
   data_directory=x
@@ -68,8 +70,13 @@ end subroutine
 
 function clean_gas(par) result(np)
   integer :: left,right,np
-  type(particle_type) :: par(:),tmp
+  type(particle_type), allocatable :: par(:)
+  type(particle_type) :: tmp
   left=1
+  if(.NOT.allocated(par)) then
+    np = 0
+    return
+  endif
   right=size(par)
   if(right.EQ.0) then
     np=0
@@ -96,8 +103,13 @@ end function
 
 function clean_src(par) result(np)
   integer :: left,right,np
-  type(source_type) :: par(:),tmp
+  type(source_type), allocatable :: par(:)
+  type(source_type) :: tmp
   left=1
+  if(.NOT.allocated(par)) then
+    np = 0
+    return
+  endif
   right=size(par)
   if(right.EQ.0) then
     np=0
@@ -127,7 +139,7 @@ subroutine sphray_commit_particles
 
  gas_searcheable=.FALSE.
  src_searcheable=.FALSE. 
-
+ 
  n=clean_gas(psys%par)
  if(npar_buffer.GT.0.OR.n.NE.size(psys%par)) then
    call extend_par(psys%par,n+npar_buffer)
@@ -737,7 +749,8 @@ function u_from_temp(T,ye,Hmf) result(U)
 end function
 
 subroutine extend_par(buf,n)
-  type(particle_type), allocatable :: buf(:),tmpbuf(:)
+  type(particle_type), allocatable, intent (inout) :: buf(:)
+  type(particle_type), allocatable :: tmpbuf(:)
   integer(i8b) :: n,m   
 
   m=0
@@ -747,10 +760,11 @@ subroutine extend_par(buf,n)
     tmpbuf(1:m)=buf(1:m)
     deallocate(buf)
   endif
-
+  
   allocate(buf(n))
   
-  if(m.GT.0) then
+  
+  if(m.GT.0 .and. allocated(tmpbuf)) then
     buf(1:m)=tmpbuf(1:m)
     deallocate(tmpbuf)
   endif
