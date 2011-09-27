@@ -51,6 +51,7 @@ class unit(object):
 
     Units can also be named, by creating a named unit.
     """
+    __array_priority__ = 100
     
     def __mul__(self, other):
        
