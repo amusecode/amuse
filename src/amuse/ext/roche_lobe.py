@@ -81,48 +81,6 @@ class RocheLobeOverflow(object):
         return result
     
 
-class LowMassXrayBinary(object):
-    """
-    Simulates a Low Mass X-ray Binary, using a single Stellar Evolution star model 
-    and a recipe for Roche-lobe overflow. 
-    """
-    def __init__(self, mass_primary, mass_secondary, accretion_efficiency = 1.0):
-        self.binary = Particles(2)
-        self.primary = self.binary[0]
-        self.secondary = self.binary[1]
-        self.binary.mass = [mass_primary, mass_secondary]
-        self.stellar_evolution_code = MESA
-    
-    def initialize(self, initial_age):
-        self.stellar_evolution = self.stellar_evolution_code()
-        self.stellar_evolution.initialize_module_with_default_parameters() 
-        self.stellar_evolution.particles.add_particle(self.secondary)
-        self.stellar_evolution.commit_particles()
-        self.stellar_evolution.evolve_model(initial_age)
-        self.secondary = self.stellar_evolution.particles[0]
-    
-    def roche_lobe_overflow_evolve(self, overflow_radius):
-        d_mass = do_roche_lobe_overflow(self.secondary, overflow_radius)
-        self.secondary.evolve_one_step()
-        return self.primary.mass, self.secondary.mass, self.secondary.age
-    
-
-def new_low_mass_xray_binary(mass_primary, mass_secondary, initial_age, **keyword_arguments):
-    """
-    Creates a low mass X-ray binary, of which the secondary is evolved using 
-    a Stellar Evolution legacy code. Mass is peeled off the star during 
-    evolution to mimic Roche lobe overflow to the primary (neutron star or
-    black hole).
-    
-    :argument mass_primary: Mass of the primary star (assumed to be a neutron star or black hole)
-    :argument mass_secondary: Mass of the secondary star (assumed to be a low mass star filling its Roche lobe)
-    :argument initial_age: Age of the secondary star when Roche lobe oveflow is assumed to start
-    """
-    low_mass_xray_binary = LowMassXrayBinary(mass_primary, mass_secondary, **keyword_arguments)
-    low_mass_xray_binary.initialize(initial_age)
-    return low_mass_xray_binary
-
-
 def determine_RLOF_mass_excess(star, rmax):
     """
     Determine how much mass sticks out of radius rmax.

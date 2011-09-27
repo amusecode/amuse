@@ -69,7 +69,7 @@ class TestRocheLobeOverflow(TestWithMPI):
             print "3 - radius after recovery:", star.radius
             self.assertEqual(star.mass, current_mass - d_mass)
             print current_mass, "MESA star succesfully recovered after ripping off", expected
-            print "Number of backup steps taken by MESA:", star.get_number_of_backups_in_a_row().number
+            print "Number of backup steps taken by MESA:", star.get_number_of_backups_in_a_row()
     
     def test2(self):
         print "Testing the RocheLobeOverflow class"
@@ -127,7 +127,7 @@ class TestRocheLobeOverflow(TestWithMPI):
             stellar_evolution.evolve_model()
             self.assertAlmostEqual(stellar_evolution.particles.mass, stars.mass - mass_lost)
             print stars.mass, "MESA stars succesfully recovered after ripping off", mass_lost
-            print "Number of backup steps taken by MESA:", stellar_evolution.particles.get_number_of_backups_in_a_row().number
+            print "Number of backup steps taken by MESA:", stellar_evolution.particles.get_number_of_backups_in_a_row()
     
     def test4(self):
         print "Testing RocheLobeOverflow with companions"
@@ -160,7 +160,7 @@ class TestRocheLobeOverflow(TestWithMPI):
             self.assertAlmostEqual(se_companions.mass, companions.mass + mass_lost * accretion_efficiency)
             print primaries.mass, "MESA stars succesfully recovered after ripping off", mass_lost
             print companions.mass, "MESA stars succesfully recovered after accreting", mass_lost * accretion_efficiency
-            print "Number of backup steps taken by MESA:", stellar_evolution.particles.get_number_of_backups_in_a_row().number
+            print "Number of backup steps taken by MESA:", stellar_evolution.particles.get_number_of_backups_in_a_row()
     
     def test5(self):
         print "Testing RocheLobeOverflow with variable roche-radii"
@@ -204,7 +204,7 @@ class TestRocheLobeOverflow(TestWithMPI):
             stellar_evolution.evolve_model()
             self.assertAlmostEqual(se_stars.mass, stars.mass - mass_lost - mass_lost_2)
             print stars.mass, "MESA stars succesfully recovered after ripping off", mass_lost + mass_lost_2
-            print "Number of backup steps taken by MESA:", [star.get_number_of_backups_in_a_row().number for star in se_stars]
+            print "Number of backup steps taken by MESA:", [star.get_number_of_backups_in_a_row() for star in se_stars]
     
     def test6(self):
         print "Testing RocheLobeOverflow with companions in a dynamics code"
@@ -261,45 +261,6 @@ class TestRocheLobeOverflow(TestWithMPI):
         self.assertAlmostEqual(rlof.overflow_radii, Eggleton_roche_estimate * separations)
         mass_lost = rlof.do_roche_lobe_overflow()
         self.assertAlmostEqual(mass_lost, [0.00004012, 0.0] | units.MSun)
-
-
-class TestLowMassXrayBinary(TestWithMPI):
-    
-    def test1(self):
-        
-        stellar_evolution = self.new_instance(MESA)
-        if stellar_evolution is None:
-            self.skip("MESA was not built. Skipping test.")
-            return
-        stellar_evolution.stop()
-        
-        lmxb = LowMassXrayBinary(5 | units.MSun, 1.1 | units.MSun)
-        print lmxb.secondary
-        lmxb.initialize(1 | units.Gyr)
-        print lmxb.secondary
-        self.assertTrue(lmxb.secondary.age >= 1 | units.Gyr)
-        next_age = lmxb.secondary.age + lmxb.secondary.time_step
-        primary_mass, secondary_mass, age = lmxb.roche_lobe_overflow_evolve(1.5 * lmxb.secondary.radius)
-        self.assertAlmostRelativeEqual(age, next_age)
-        self.assertEqual(primary_mass, 5 | units.MSun)
-        self.assertAlmostEqual(secondary_mass, 1.1 | units.MSun)
-        
-    def test2(self):
-        
-        stellar_evolution = self.new_instance(MESA)
-        if stellar_evolution is None:
-            self.skip("MESA was not built. Skipping test.")
-            return
-        stellar_evolution.stop()
-        
-        lmxb = LowMassXrayBinary(5 | units.MSun, 1.1 | units.MSun)
-        lmxb.initialize(1 | units.Gyr)
-        next_age = lmxb.secondary.age + lmxb.secondary.time_step
-        primary_mass, secondary_mass, age = lmxb.roche_lobe_overflow_evolve(1.5 * lmxb.secondary.radius)
-        self.assertAlmostRelativeEqual(age, next_age)
-        self.assertEqual(primary_mass, 5 | units.MSun)
-        self.assertAlmostEqual(secondary_mass, 1.1 | units.MSun)
-    
 
 
 def mass_profile_plot(star, figname):
