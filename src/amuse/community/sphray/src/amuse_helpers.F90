@@ -352,6 +352,7 @@ function sphray_get_gas_particle_state(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
     rho=psys%par(index)%rho
     xe=psys%par(index)%xHII
     u=u_from_temp( real(psys%par(index)%T, r8b) , real(psys%par(index)%ye,r8b) ,GV%H_mf) 
+!    print*, psys%par(index)%T,u, u_from_temp( real(psys%par(index)%T, r8b) ,real(xe,r8b) ,GV%H_mf)
 
     ret=0
 
@@ -423,10 +424,14 @@ end function
 
 
 subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u)
+  use particle_system_mod, only: particle_set_ye,particle_set_ci_eq
   integer(i4b) ::  id
   real(r4b) :: mass, hsml,x,y,z, &
     rho, u , xe 
   integer(i4b) :: i
+  logical :: DoH
+  logical :: DoHe 
+  logical :: caseA(2)
 
   gas_searcheable=.FALSE.
   
@@ -446,23 +451,24 @@ subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u)
     par_buffer(npar_buffer)%hsml=hsml
     par_buffer(npar_buffer)%rho=rho
     par_buffer(npar_buffer)%T=temp_from_u( real(u,r8b) , real(xe,r8b), GV%H_mf)   
+!    print*,par_buffer(npar_buffer)%T
     par_buffer(npar_buffer)%ye=xe   
     par_buffer(npar_buffer)%xHI=xe   
     par_buffer(npar_buffer)%xHII=1-xe   
 
-!  caseA = .false.
-!  if (GV%HydrogenCaseA) caseA(1) = .true.
-!  if (GV%HeliumCaseA)   caseA(2) = .true.
+  caseA = .false.
+  if (GV%HydrogenCaseA) caseA(1) = .true.
+  if (GV%HeliumCaseA)   caseA(2) = .true.
 
-!  DoH = .true.
-!#ifdef incHe
-!  DoHe = .true.
-!#else
-!  DoHe = .false.
-!#endif
+  DoH = .true.
+#ifdef incHe
+  DoHe = .true.
+#else
+  DoHe = .false.
+#endif
 
-!  call particle_set_ci_eq( par_buffer, caseA, DoH, DoHe, fit='hui' )
-!  call particle_set_ye( par_buffer, GV%H_mf, GV%He_mf, GV%NeBackground )
+  call particle_set_ci_eq( par_buffer(npar_buffer), caseA, DoH, DoHe, fit='hui' )
+  call particle_set_ye( par_buffer(npar_buffer), GV%H_mf, GV%He_mf, GV%NeBackground )
 
 end subroutine
 
@@ -625,6 +631,17 @@ subroutine preparemain()
   GV%total_photons = (GV%TotalSimTime * GV%cgs_time / GV%LittleH) * (GV%total_lum * GV%Lunit)
 
 end subroutine
+
+subroutine sphray_set_isothermal(flag)
+  logical :: flag
+  GV%FixSnapTemp=flag
+end subroutine
+
+subroutine sphray_get_isothermal(flag)
+  logical :: flag
+  flag=GV%FixSnapTemp
+end subroutine
+
 
 subroutine set_default_parameters
   GV%Verbosity=3              !< [Config File] 0=silent, 1=whisper, 2=talk, 3=debug

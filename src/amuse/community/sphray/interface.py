@@ -133,6 +133,21 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.result_type = 'i'
         return function
 
+    @legacy_function   
+    def set_isothermal():
+        """ set_isothermal([0,1]): isothermal if 1, Temperature evolution if 0 """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('isothermal_flag', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_isothermal():
+        """ get_isothermal(): isothermal if 1, Temperature evolution if 0 """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('isothermal_flag', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
 
     @legacy_function    
     def evolve_model():

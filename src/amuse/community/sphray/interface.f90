@@ -141,3 +141,21 @@ function remove_src_particle(id) result(ret)
   integer(i4b) :: ret,id
   ret=sphray_remove_src_particle(id)
 end function
+
+function set_isothermal(flag) result(ret)
+  use amuse_sphrayMod
+  integer flag,ret
+  if(flag.NE.0) call sphray_set_isothermal(.TRUE.)
+  if(flag.EQ.0) call sphray_set_isothermal(.FALSE.)
+  ret=0
+end function
+
+function get_isothermal(flag) result(ret)
+  use amuse_sphrayMod
+  integer :: ret,flag
+  logical :: x
+  flag=0
+  call sphray_get_isothermal(x)
+  if(x) flag=1
+  ret=0
+end function
