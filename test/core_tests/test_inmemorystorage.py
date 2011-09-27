@@ -72,6 +72,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
                 units.km.new_quantity(numpy.array([1.0,2.0]))
             ]
         )
+        values = instance.get_values_in_store(None, ["a", "b"])
         self.assertEquals(values[0][0], 1000.0 | units.m)
         self.assertEquals(values[0][2], 2000.0 | units.m)
         self.assertEquals(values[1][0], 9.0 | units.kg)
