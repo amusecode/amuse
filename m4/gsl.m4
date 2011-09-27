@@ -59,6 +59,7 @@ AC_DEFUN([AX_GSL],[
                         FOUND_GSL="yes"],
                         [AC_MSG_WARN([Cannot find headers of the library GSL, please provide the --with-gsl argument.])]
                     )
+                    AC_CHECK_LIB([gslcblas],[cblas_dgemm])
                     AC_CHECK_LIB(
                         [gsl],
                         [gsl_blas_dgemm],
