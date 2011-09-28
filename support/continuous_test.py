@@ -29,12 +29,13 @@ def number_str(number, singular, plural = None):
     return str(number) + ' ' + (singular if number == 1 else plural)
 
 
-def _run_the_tests(directory):
+def _run_the_tests(directory, do_update = False):
     
-    print "updating the code"
-    call(["svn", "update"])
-    call(["make", "clean"])
-    call(["make", "all"])
+    if do_update:
+        print "updating the code"
+        call(["svn", "update"])
+        call(["make", "clean"])
+        call(["make", "all"])
     
     print "start test run"
     report = background_test.RunTests.instance.run_tests(None)
@@ -259,12 +260,24 @@ if __name__ == '__main__':
       default=os.getcwd(),
       type="string")
       
+    parser.add_option("-u", "--update", 
+      dest="do_update",
+      help="update the code before running the tests", 
+      default=True,
+      action="store_true",
+      type="boolean")
+    parser.add_option("", "--no-update", 
+      dest="do_update",
+      help="do not update the code before running the tests", 
+      action="store_false",
+      type="boolean")
+      
     (options, args) = parser.parse_args()
     
     signal.signal(signal.SIGALRM, handler)
     signal.alarm(60 * 60) #building and testing must be done in 1 hour
 
-    report = _run_the_tests(options.directory) 
+    report = _run_the_tests(options.directory, options.do_update) 
     WriteTestReportOnTestingBlog(report).start()
     
     
