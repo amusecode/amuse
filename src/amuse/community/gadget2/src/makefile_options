@@ -60,3 +60,19 @@ OPT   +=  -DNOSTOP_WHEN_BELOW_MINTIMESTEP
 
 #--------------------------------------- Glass making
 #OPT   +=  -DMAKEGLASS=262144
+
+
+#############################################################################
+#                Concordance of Thermal & Kinetic Feedback Methods          #
+#                        Time integration scheme fix                        #
+#                                                                           #
+#                        F.Durier & C.Dalla Vecchia                         #
+#                               July 2011                                   #
+#                                                                           #
+#############################################################################
+
+OPT   +=  -DTIMESTEP_LIMITER=4
+#OPT   +=  -DTIMESTEP_UPDATE
+
+# NB: the variable TIMESTEP_LIMITER has been defined to 4 (recommended value), 
+# but can be changed to any other power of 2 before compilation.

@@ -195,3 +195,15 @@ void   write_header_attributes_in_hdf5(hid_t handle);
 void   write_file(char *fname, int readTask, int lastTask);
 void   write_pid_file(void);
 
+
+#ifdef TIMESTEP_LIMITER
+  int  time_compare_key(const void *a, const void *b);
+  int  time_limiter_evaluate(int target, int mode);
+
+  void make_it_active(int target);
+#endif
+
+#ifdef TIMESTEP_UPDATE
+  void get_sigvel(void);
+  void get_sigvel_evaluate(int target, int mode);
+#endif

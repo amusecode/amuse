@@ -206,4 +206,7 @@ struct hydrodata_out
  *HydroDataResult,              /*!< stores the locally computed SPH hydro results for imported particles */
  *HydroDataPartialResult;       /*!< imported partial SPH hydro-force results from other processors */
 
+#ifdef TIMESTEP_LIMITER
+struct timedata_in *TimeDataIn, *TimeDataGet;
+#endif
 

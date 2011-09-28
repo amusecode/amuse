@@ -28,7 +28,7 @@ CODELIB = $(BUILDDIR)/libgadget.a
 ALLVARS = $(BUILDDIR)/allvars.o
 
 LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
-	$(SRCDIR)/endrun.c  $(SRCDIR)/global.c  $(SRCDIR)/timestep.c  \
+	$(SRCDIR)/endrun.c  $(SRCDIR)/global.c  \
 	$(SRCDIR)/init.c  $(SRCDIR)/restart.c  $(SRCDIR)/io.c  \
 	$(SRCDIR)/accel.c  $(SRCDIR)/read_ic.c  $(SRCDIR)/ngb.c  \
 	$(SRCDIR)/system.c  $(SRCDIR)/allocate.c  $(SRCDIR)/density.c  \
@@ -36,7 +36,12 @@ LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 	$(SRCDIR)/domain.c  $(SRCDIR)/allvars.c  $(SRCDIR)/potential.c  \
 	$(SRCDIR)/forcetree.c  $(SRCDIR)/peano.c  $(SRCDIR)/gravtree_forcetest.c  \
 	$(SRCDIR)/pm_periodic.c  $(SRCDIR)/pm_nonperiodic.c  $(SRCDIR)/longrange.c  \
-	$(SRCDIR)/density_at_pos.c
+	$(SRCDIR)/density_at_pos.c \
+	$(SRCDIR)/timestep_limit.c  $(SRCDIR)/sigvel.c
+#  ^^^ Durier & Dalla Vecchia timestepping fix ^^^
+
+#	$(SRCDIR)/timestep.c
+#  ^^^ original timestepping ^^^
 
 INTERFACE_OBJ = gadget_code.o
 INTERFACE_SRC  = $(INTERFACE_OBJ:.o=.cc)

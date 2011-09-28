@@ -428,6 +428,8 @@ extern struct global_data_all_processes
 
   double CourantFac;		/*!< SPH-Courant factor */
 
+  int BunchSizeTime;		/*!< number of particles fitting into the communication buffer in the timestep communication */
+
 
   /* frequency of tree reconstruction/domain decomposition */
 
@@ -513,6 +515,9 @@ extern struct particle_data
   int Type;		        /*!< flags particle type.  0=gas, 1=halo, 2=disk, 3=bulge, 4=stars, 5=bndry */
   int Ti_endstep;               /*!< marks start of current timestep of particle on integer timeline */ 
   int Ti_begstep;               /*!< marks end of current timestep of particle on integer timeline */
+#ifdef TIMESTEP_LIMITER
+  int Ti_sizestep;
+#endif
 #ifdef FLEXSTEPS
   int FlexStepGrp;		/*!< a random 'offset' on the timeline to create a smooth groouping of particles */
 #endif
@@ -548,6 +553,10 @@ extern struct sph_particle_data
   FLOAT Rot[3];		        /*!< local velocity curl */
   FLOAT DhsmlDensityFactor;     /*!< correction factor needed in the equation of motion of the conservative entropy formulation of SPH */
   FLOAT MaxSignalVel;           /*!< maximum "signal velocity" occuring for this particle */
+#ifdef TIMESTEP_UPDATE
+  int   FeedbackFlag;
+  FLOAT FeedAccel[3];  /*!< acceleration due to feedback force */
+#endif
 }
  *SphP,                        	/*!< holds SPH particle data on local processor */
  *DomainSphBuf;                 /*!< buffer for SPH particle data in domain decomposition */
@@ -771,5 +780,18 @@ extern struct hydrodata_out
  *HydroDataPartialResult;       /*!< imported partial SPH hydro-force results from other processors */
 
 
+#ifdef TIMESTEP_LIMITER
+  extern struct timedata_in
+  {
+    FLOAT  Pos[3];
+    FLOAT  Hsml;
+    int    Size;
+    int    Begin;
+    int    Index;
+    int    Task;
+  }
+  *TimeDataIn,
+  *TimeDataGet;
 #endif
 
+#endif

@@ -117,6 +117,13 @@ void init(void)
 	  SphP[i].HydroAccel[j] = 0;
 	}
 
+#ifdef TIMESTEP_UPDATE
+  SphP[i].FeedbackFlag = 0;
+
+  for(j = 0; j < 3; j++)
+      SphP[i].FeedAccel[j] = 0;
+#endif
+
       SphP[i].DtEntropy = 0;
 
       if(RestartFlag == 0)

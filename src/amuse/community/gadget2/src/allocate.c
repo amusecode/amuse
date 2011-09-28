@@ -83,6 +83,12 @@ void allocate_commbuffers(void)
   DomainSphBuf = (struct sph_particle_data *) (DomainPartBuf + All.BunchSizeDomain);
   DomainKeyBuf = (peanokey *) (DomainSphBuf + All.BunchSizeDomain);
 
+#ifdef TIMESTEP_LIMITER
+  All.BunchSizeTime =
+    (All.BufferSize * 1024 * 1024) / (2 * sizeof(struct timedata_in));
+  TimeDataIn = (struct timedata_in *) CommBuffer;
+  TimeDataGet = TimeDataIn + All.BunchSizeTime;
+#endif
 
   if(ThisTask == 0)
     {

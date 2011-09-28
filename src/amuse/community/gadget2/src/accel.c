@@ -59,6 +59,18 @@ void compute_accelerations(int mode)
 
   if(All.TotN_gas > 0)
     {
+#ifdef TIMESTEP_UPDATE
+      int i, j;
+
+      for(i = 0; i < N_gas; i++)
+        if(P[i].Ti_endstep == All.Ti_Current && SphP[i].FeedbackFlag > 0)
+          {
+	    SphP[i].FeedbackFlag = 0;
+
+            for(j = 0; j < 3; j++)
+              SphP[i].FeedAccel[j] = 0;
+          }
+#endif
       if(ThisTask == 0)
 	{
 	  printf("Start density computation...\n");
@@ -86,6 +98,13 @@ void compute_accelerations(int mode)
       hydro_force();		/* adds hydrodynamical accelerations and computes viscous entropy injection  */
       tend = second();
       All.CPU_Hydro += timediff(tstart, tend);
+
+#ifdef TIMESTEP_UPDATE
+      tstart = second();
+      get_sigvel();
+      tend = second();
+      All.CPU_Hydro += timediff(tstart, tend);
+#endif
     }
 
   if(ThisTask == 0)

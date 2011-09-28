@@ -221,14 +221,19 @@ OPTIONS =  $(OPTIMIZE) $(OPT)
 EXEC   = Gadget2
 
 LIBOBJS = run.o  predict.o begrun.o endrun.o global.o  \
-	 timestep.o  init.o restart.o  io.o    \
+	 init.o restart.o  io.o    \
 	 accel.o   read_ic.o  ngb.o  \
 	 system.o  allocate.o  density.o  \
 	 gravtree.o hydra.o  driftfac.o  \
 	 domain.o   potential.o  \
      forcetree.o   peano.o gravtree_forcetest.o \
 	 pm_periodic.o pm_nonperiodic.o longrange.o \
-	 density_at_pos.o
+	 density_at_pos.o \
+	 timestep_limit.o  sigvel.o
+#  ^^^ Durier & Dalla Vecchia timestepping fix ^^^
+
+#	 timestep.o
+#  ^^^ original timestepping ^^^
 
 OBJS   = main.o allvars.o $(LIBOBJS)
 
