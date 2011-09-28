@@ -1,7 +1,7 @@
-Index: mocassin/src/mocassin.2.02.66/source/common_mod.f90
+Index: mocassin/src/mocassin.2.02.69/source/common_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.66/source/common_mod.f90	2010-11-03 10:24:32.000000000 +0100
-+++ mocassin/src/mocassin.2.02.66/source/common_mod.f90	2010-11-23 13:38:11.000000000 +0100
+--- mocassin.orig/src/mocassin.2.02.69/source/common_mod.f90	2010-11-03 10:24:32.000000000 +0100
++++ mocassin/src/mocassin.2.02.69/source/common_mod.f90	2010-11-23 13:38:11.000000000 +0100
 @@ -374,19 +374,19 @@
      logical            :: lgPlaneIonization! plane parallel ionization?    
      logical            :: lgSymmetricXYZ   ! symmetric in x, y, and z?
@@ -35,10 +35,10 @@ Index: mocassin/src/mocassin.2.02.66/source/common_mod.f90
      character(len=30),pointer       :: grainLabel(:)    ! name of this species
  
      integer,pointer    :: viewPointPtheta(:), viewPointPphi(:)       ! viewing angles
-Index: mocassin/src/mocassin.2.02.66/source/grid_mod.f90
+Index: mocassin/src/mocassin.2.02.69/source/grid_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.66/source/grid_mod.f90	2010-11-03 10:24:32.000000000 +0100
-+++ mocassin/src/mocassin.2.02.66/source/grid_mod.f90	2010-11-23 13:38:11.000000000 +0100
+--- mocassin.orig/src/mocassin.2.02.69/source/grid_mod.f90	2010-11-03 10:24:32.000000000 +0100
++++ mocassin/src/mocassin.2.02.69/source/grid_mod.f90	2010-11-23 13:38:11.000000000 +0100
 @@ -1696,12 +1696,15 @@
  
                Lstar(1) = (meanField/1.e36)*grid%xAxis(grid%nx)*grid%zAxis(grid%nz)
@@ -59,30 +59,3 @@ Index: mocassin/src/mocassin.2.02.66/source/grid_mod.f90
  
             print*, 'out setMotherGrid'
  
-Index: mocassin/src/mocassin.2.02.66/source/hydro_mod.f90
-===================================================================
---- mocassin.orig/src/mocassin.2.02.66/source/hydro_mod.f90	2010-11-03 10:24:32.000000000 +0100
-+++ mocassin/src/mocassin.2.02.66/source/hydro_mod.f90	2010-11-23 13:54:50.000000000 +0100
-@@ -543,7 +543,8 @@
-              if(.not.lgElementOn(elem)) exit
- 
-              close(18)
--             open(file=dataFile(elem,ion), unit=18, action="read", status='old', &
-+             
-+             open(file=trim(home)//dataFile(elem,ion), unit=18, action="read", status='old', &
-                   & position='rewind', iostat=ios)
- 
-              if (ios == 0) then
-Index: mocassin/src/mocassin.2.02.66/source/emission_mod.f90
-===================================================================
---- mocassin.orig/src/mocassin.2.02.66/source/emission_mod.f90	2010-11-23 13:58:20.000000000 +0100
-+++ mocassin/src/mocassin.2.02.66/source/emission_mod.f90	2010-11-23 13:58:50.000000000 +0100
-@@ -2154,7 +2154,7 @@
- 
-     ! open file containing atomic data
-     close(11)
--    open(unit=11,  action="read", file = file_name, status="old", position="rewind", &
-+    open(unit=11,  action="read", file = trim(home)//file_name, status="old", position="rewind", &
-          & iostat = ios)
- 
-     if (ios /= 0) then

@@ -9,7 +9,7 @@ AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-VERSION = 2.02.66
+VERSION = 2.02.69
 CODEDIR = src/mocassin.$(VERSION)
 CODELIB = $(CODEDIR)/libmocassin.a
 

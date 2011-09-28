@@ -8,7 +8,7 @@ import os
 import time
 
 class MocassinInterface(CodeInterface, CommonCodeInterface):
-    MOCASSIN_VERSION = '2.02.66'
+    MOCASSIN_VERSION = '2.02.69'
     use_modules = ['mocassin_interface',]
     
     def __init__(self, **keyword_arguments):
@@ -97,6 +97,14 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         function = LegacyFunctionSpecification() 
         function.result_type = 'int32'
         return function
+        
+        
+    @legacy_function
+    def set_random_seed():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='int32', direction=function.IN) 
+        function.result_type = 'int32'
+        return function
     
     @legacy_function    
     def get_position_of_index():
@@ -161,7 +169,13 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         function.addParameter('value', dtype='bool', direction=function.OUT)
         function.result_type = 'int32'
         return function
-        
+    
+    @legacy_function    
+    def set_has_constant_hydrogen_density():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='bool', direction=function.IN)
+        function.result_type = 'int32'
+        return function  
     
     @legacy_function    
     def redirect_outputs_to():
@@ -758,7 +772,7 @@ class Mocassin(InCodeComponentImplementation):
         
         object.add_method(
             'setup_mesh',
-            (units.none, units.none, units.none, units.cm, units.cm, units.cm, units.none,),
+            (units.none,  units.none, units.none, units.cm, units.cm, units.cm, units.none,),
             (object.ERROR_CODE,)
         )
         

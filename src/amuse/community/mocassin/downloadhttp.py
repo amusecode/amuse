@@ -78,7 +78,7 @@ class DownloadAthenaFromWebpage(object):
     backup_url_template = "http://www.amusecode.org/codes/mocassin.{version}.tar.gz"
     url_template = "http://www.amusecode.org/codes/mocassin.{version}.tar.gz"
     filename_template = "mocassin.{version}.tar.gz"
-    version = "2.02.66"
+    version = "2.02.69"
     
     def directory(self):
         return os.path.abspath(os.path.dirname(__file__))

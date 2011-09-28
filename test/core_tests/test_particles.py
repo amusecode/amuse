@@ -13,6 +13,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse import datamodel
+
 class TestParticles(amusetest.TestCase):
     
     def test1(self):
@@ -146,6 +147,32 @@ class TestParticles(amusetest.TestCase):
         self.assertAlmostRelativeEquals( particles.mass , [5.,5.,3.,4.] | units.kg)
         subset.set_values_in_store(None, ['mass'], [6.0 | units.kg,])
         self.assertAlmostRelativeEquals( particles.mass , [6., 6.,3.,4.] | units.kg)
+        
+        
+    def xtest11(self):
+        particles = datamodel.Particles(3)
+        print range(3)| units.kg
+        particles.mass = range(3)| units.kg
+        particles.nounit = range(3)
+        print particles.mass
+        self.assertAlmostRelativeEquals( particles.mass ,range(3)| units.kg)
+        self.assertAlmostRelativeEquals( particles.nounit , [0, 1, 2])
+        
+        
+        
+    def xtest12(self):
+        particles = datamodel.Particles(3)
+        particles.mass = range(3)| units.kg
+        particles[0].child = particles[1]
+        particles[1].child = particles[2]
+        print particles[0].child
+        print particles[1].child
+        print particles[2].child
+        self.assertEquals(particles[0].child, particles[1])
+        self.assertEquals(particles[1].child, particles[2])
+        self.assertEquals(particles[2].child, None)
+
+
         
 class TestStars(amusetest.TestCase):
 

@@ -1,0 +1,24 @@
+Index: mocassin/src/mocassin.2.02.69/source/iteration_mod.f90
+===================================================================
+--- mocassin.orig/src/mocassin.2.02.69/source/iteration_mod.f90	2010-11-04 13:07:37.000000000 +0100
++++ mocassin/src/mocassin.2.02.69/source/iteration_mod.f90	2011-09-28 14:42:16.000000000 +0200
+@@ -1127,7 +1127,7 @@
+ 
+            if ( totPercent >= minConvergence ) then
+               
+-              if (taskid==0) then
++              if (lgOutput .and. taskid==0) then
+                  print*, "! iterateMC: [talk] convergence reached after ", &
+                       &                           nIterateMC, " iterations. & Finishing up ... "
+                  
+@@ -1140,8 +1140,8 @@
+               call mpi_barrier(mpi_comm_world, ierr)
+ 
+            else if (nIterateMC >= maxIterateMC) then
+-
+-              if (taskid==0) then
++              
++              if (lgOutput .and. taskid==0) then
+ 
+                  print*, " ! iterateMC: maximum number of iterations reached. Finishing up ... ",&
+                       & maxIterateMC
