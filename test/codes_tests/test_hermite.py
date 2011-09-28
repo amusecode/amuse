@@ -548,6 +548,6 @@ class TestHermite(TestWithMPI):
          
          
         for index, n in enumerate([2,3,4,5]):
-            self.assertAlmostRelativeEqual(expected_positions, positions_per_workers[index])
+            self.assertAlmostEqual(expected_positions, positions_per_workers[index], 15)
     
     
