@@ -10,6 +10,7 @@ AC_PROG_CXX()
 AC_PROG_FC([],95)
 AC_ARG_VAR([PYTHON], [Python interpreter])
 
+
 AS_IF([test "x$PYTHON" = "x"], [PYTHON=python])
 
 AC_PATH_PROG([PYTHON], [$PYTHON], [])
@@ -108,9 +109,31 @@ AC_LANG(Fortran)
 AX_MPI()
 
 AC_LANG(C)
-AX_FFTW()
-AX_GSL()
 
+PKG_CHECK_MODULES([FFTW],[fftw3 >= 3.2],
+    [
+    FFTW_FLAGS="$FFTW_CFLAGS"
+    FOUND_FFTW=yes
+    AC_SUBST(FFTW_FLAGS)
+    ],
+    [AX_FFTW()]
+)
+AC_SUBST(FOUND_FFTW)
+
+PKG_CHECK_MODULES([GSL],[gsl >= 1.0],
+    [
+    GSL_FLAGS="$GSL_CFLAGS"
+    FOUND_GSL=yes
+    AC_SUBST(GSL_FLAGS)
+    ],
+    [
+    AX_PATH_GSL(1.0, [FOUND_GSL=yes], [
+	FOUND_GSL=no
+	AC_MSG_WARN([gsl not found, please specify --with-gsl])
+    ])
+])
+
+AC_SUBST(FOUND_GSL)
 
 AC_CHECK_PYTHON_MODULE(numpy, __version__)
 AS_IF([test x"$PYTHON_numpy" != x1],

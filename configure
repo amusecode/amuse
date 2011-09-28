@@ -667,15 +667,21 @@ PYTHON_mpi4py_VERSION
 PYTHON_mpi4py
 PYTHON_numpy_VERSION
 PYTHON_numpy
-GSL_LIBS
-GSL_FLAGS
 FOUND_GSL
-FFTW_LIBS
+GSL_FLAGS
+GSL_CONFIG
+GSL_LIBS
+GSL_CFLAGS
 FFTW_FLAGS
 FOUND_FFTW
 EGREP
 GREP
 CPP
+FFTW_LIBS
+FFTW_CFLAGS
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
+PKG_CONFIG
 MPIFC
 MPICC
 MPILIBS
@@ -753,7 +759,9 @@ enable_cuda
 with_jdk
 with_sapporo
 with_fftw
-with_gsl
+with_gsl_prefix
+with_gsl_exec_prefix
+enable_gsltest
 '
       ac_precious_vars='build_alias
 host_alias
@@ -776,7 +784,14 @@ JAVA_HOME
 MPICXX
 MPICC
 MPIFC
-CPP'
+PKG_CONFIG
+PKG_CONFIG_PATH
+PKG_CONFIG_LIBDIR
+FFTW_CFLAGS
+FFTW_LIBS
+CPP
+GSL_CFLAGS
+GSL_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1388,6 +1403,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-cuda           Enable CUDA for codes
+  --disable-gsltest       Do not try to compile and run a test GSL program
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1397,7 +1413,8 @@ Optional Packages:
                           Development Kit at JAVA_HOME.
   --with-sapporo          Use sapporo library in given directory
   --with-fftw=PFX         Prefix where FFTW has been installed
-  --with-gsl=PFX          Prefix where GSL has been installed
+  --with-gsl=PFX   Prefix where GSL is installed (optional)
+  --with-gsl-exec-prefix=PFX Exec prefix where GSL is installed (optional)
 
 Some influential environment variables:
   CC          C compiler command
@@ -1419,7 +1436,16 @@ Some influential environment variables:
   MPICXX      MPI C++ compiler command
   MPICC       MPI C compiler command
   MPIFC       MPI Fortran compiler command
+  PKG_CONFIG  path to pkg-config utility
+  PKG_CONFIG_PATH
+              directories to add to pkg-config's search path
+  PKG_CONFIG_LIBDIR
+              path overriding pkg-config's built-in search path
+  FFTW_CFLAGS C compiler flags for FFTW, overriding pkg-config
+  FFTW_LIBS   linker flags for FFTW, overriding pkg-config
   CPP         C preprocessor
+  GSL_CFLAGS  C compiler flags for GSL, overriding pkg-config
+  GSL_LIBS    linker flags for GSL, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -3699,6 +3725,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
 if test "x$PYTHON" = "x"; then :
   PYTHON=python
 fi
@@ -5006,6 +5033,127 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_PKG_CONFIG+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_ac_pt_PKG_CONFIG+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -5404,6 +5552,65 @@ done
 
 
 
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for FFTW" >&5
+$as_echo_n "checking for FFTW... " >&6; }
+
+if test -n "$FFTW_CFLAGS"; then
+    pkg_cv_FFTW_CFLAGS="$FFTW_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"fftw3 >= 3.2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "fftw3 >= 3.2") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_FFTW_CFLAGS=`$PKG_CONFIG --cflags "fftw3 >= 3.2" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$FFTW_LIBS"; then
+    pkg_cv_FFTW_LIBS="$FFTW_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"fftw3 >= 3.2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "fftw3 >= 3.2") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_FFTW_LIBS=`$PKG_CONFIG --libs "fftw3 >= 3.2" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        FFTW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "fftw3 >= 3.2" 2>&1`
+        else
+	        FFTW_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "fftw3 >= 3.2" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$FFTW_PKG_ERRORS" >&5
+
+
 
 # Check whether --with-fftw was given.
 if test "${with_fftw+set}" = set; then :
@@ -5573,67 +5780,69 @@ fi
 
 
 
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 
-# Check whether --with-gsl was given.
-if test "${with_gsl+set}" = set; then :
-  withval=$with_gsl;
-                test "$withval" = no && { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: gsl is a required package for some modules" >&5
-$as_echo "$as_me: WARNING: gsl is a required package for some modules" >&2;}
-                test "$withval" = yes || gsl_prefix="$withval"
-                with_gsl=yes
+
+# Check whether --with-fftw was given.
+if test "${with_fftw+set}" = set; then :
+  withval=$with_fftw;
+                test "$withval" = no && { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: fftw is a required package for some modules" >&5
+$as_echo "$as_me: WARNING: fftw is a required package for some modules" >&2;}
+                test "$withval" = yes || fftw_prefix="$withval"
+                with_fftw=yes
 else
-   with_gsl=yes
+   with_fftw=yes
 
 fi
 
 
-        if test "$with_gsl" = yes ; then :
+        if test "$with_fftw" = yes ; then :
 
             #user override
-            if test "x$GSL_LIBS" != x && test "x$GSL_FLAGS" != x ; then :
+            if test "x$FFTW_LIBS" != x && test "x$FFTW_FLAGS" != x ; then :
 
-                have_gsl=yes
-                FOUND_GSL=yes
+                have_fftw=yes
+                FOUND_FFTW="yes"
 
 else
 
                 saved_LIBS="$LIBS"
                 saved_CXXFLAGS="$CXXFLAGS"
-                GSL_LIBS=""
-                GSL_FLAGS=""
-                FOUND_GSL=no
+                FFTW_LIBS=""
+                FFTW_FLAGS=""
+                FOUND_FFTW="no"
 
-
-                if test x$gsl_prefix != x; then
-                    ac_GSL_CFLAGS="-I$gsl_prefix/include"
-                    ac_GSL_LDOPTS="-L$gsl_prefix/lib"
+                if test x$fftw_prefix != x; then
+                    ac_FFTW_CFLAGS="-I$fftw_prefix/include"
+                    ac_FFTW_LDOPTS="-L$fftw_prefix/lib"
 
 
                     save_CFLAGS="$CFLAGS"
-                    CFLAGS="$ac_GSL_CFLAGS $save_CFLAGS"
-                    ac_fn_c_check_header_mongrel "$LINENO" "gsl/gsl_sys.h" "ac_cv_header_gsl_gsl_sys_h" "$ac_includes_default"
-if test "x$ac_cv_header_gsl_gsl_sys_h" = x""yes; then :
-  GSL_FLAGS="$ac_GSL_CFLAGS",
-                        FOUND_GSL="yes"
-
+                    CFLAGS="$ac_FFTW_CFLAGS $save_CFLAGS"
+                    ac_fn_c_check_header_mongrel "$LINENO" "fftw3.h" "ac_cv_header_fftw3_h" "$ac_includes_default"
+if test "x$ac_cv_header_fftw3_h" = x""yes; then :
+  FFTW_FLAGS="$ac_FFTW_CFLAGS"
+                        FOUND_FFTW="yes"
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers of the library GSL in $gsl_prefix/include." >&5
-$as_echo "$as_me: WARNING: Cannot find headers of the library GSL in $gsl_prefix/include." >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&5
+$as_echo "$as_me: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&2;}
 
 fi
 
 
                     CFLAGS="$save_CFLAGS"
 
-                    save_LIBS="$LIBS"
-                    LIBS="$ac_GSL_LDOPTS -lgsl $save_LIBS"
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cblas_dgemm in -lgslcblas" >&5
-$as_echo_n "checking for cblas_dgemm in -lgslcblas... " >&6; }
-if test "${ac_cv_lib_gslcblas_cblas_dgemm+set}" = set; then :
+                     save_LIBS="$LIBS"
+                    LIBS="$ac_FFTW_LDOPTS -lfftw3 $save_LIBS"
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
+$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
+if test "${ac_cv_lib_fftw3_fftw_plan_dft_r2c+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lgslcblas  $LIBS"
+LIBS="-lfftw3  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -5643,100 +5852,55 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char cblas_dgemm ();
+char fftw_plan_dft_r2c ();
 int
 main ()
 {
-return cblas_dgemm ();
+return fftw_plan_dft_r2c ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gslcblas_cblas_dgemm=yes
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
 else
-  ac_cv_lib_gslcblas_cblas_dgemm=no
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gslcblas_cblas_dgemm" >&5
-$as_echo "$ac_cv_lib_gslcblas_cblas_dgemm" >&6; }
-if test "x$ac_cv_lib_gslcblas_cblas_dgemm" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBGSLCBLAS 1
-_ACEOF
-
-  LIBS="-lgslcblas $LIBS"
-
-fi
-
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gsl_blas_dgemm in -lgsl" >&5
-$as_echo_n "checking for gsl_blas_dgemm in -lgsl... " >&6; }
-if test "${ac_cv_lib_gsl_gsl_blas_dgemm+set}" = set; then :
-  $as_echo_n "(cached) " >&6
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
+$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
+if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = x""yes; then :
+  FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3"
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lgsl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char gsl_blas_dgemm ();
-int
-main ()
-{
-return gsl_blas_dgemm ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gsl_gsl_blas_dgemm=yes
-else
-  ac_cv_lib_gsl_gsl_blas_dgemm=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gsl_gsl_blas_dgemm" >&5
-$as_echo "$ac_cv_lib_gsl_gsl_blas_dgemm" >&6; }
-if test "x$ac_cv_lib_gsl_gsl_blas_dgemm" = x""yes; then :
-  GSL_LIBS="$ac_GSL_LDOPTS -lgsl -gslcblas"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libgsl : library missing. (Cannot find symbol gsl_blas_dgemm) in $with_gsl_library. Check if libgsl is installed and if the version is correct" >&5
-$as_echo "$as_me: WARNING: libgsl : library missing. (Cannot find symbol gsl_blas_dgemm) in $with_gsl_library. Check if libgsl is installed and if the version is correct" >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $with_fftw_library. Check if libfftw3 is installed and if the version is correct" >&5
+$as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $with_fftw_library. Check if libfftw3 is installed and if the version is correct" >&2;}
 
 fi
 
                     LIBS="$save_LIBS"
 
                 else
-                    ac_fn_c_check_header_mongrel "$LINENO" "gsl/gsl_sys.h" "ac_cv_header_gsl_gsl_sys_h" "$ac_includes_default"
-if test "x$ac_cv_header_gsl_gsl_sys_h" = x""yes; then :
-  GSL_FLAGS=""
-                        FOUND_GSL="yes"
+                    ac_fn_c_check_header_mongrel "$LINENO" "fftw3.h" "ac_cv_header_fftw3_h" "$ac_includes_default"
+if test "x$ac_cv_header_fftw3_h" = x""yes; then :
+  FFTW_FLAGS=""
+                        FOUND_FFTW="yes"
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers of the library GSL, please provide the --with-gsl argument." >&5
-$as_echo "$as_me: WARNING: Cannot find headers of the library GSL, please provide the --with-gsl argument." >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&5
+$as_echo "$as_me: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&2;}
 
 fi
 
 
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cblas_dgemm in -lgslcblas" >&5
-$as_echo_n "checking for cblas_dgemm in -lgslcblas... " >&6; }
-if test "${ac_cv_lib_gslcblas_cblas_dgemm+set}" = set; then :
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
+$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
+if test "${ac_cv_lib_fftw3_fftw_plan_dft_r2c+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lgslcblas  $LIBS"
+LIBS="-lfftw3  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -5746,76 +5910,31 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char cblas_dgemm ();
+char fftw_plan_dft_r2c ();
 int
 main ()
 {
-return cblas_dgemm ();
+return fftw_plan_dft_r2c ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gslcblas_cblas_dgemm=yes
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
 else
-  ac_cv_lib_gslcblas_cblas_dgemm=no
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gslcblas_cblas_dgemm" >&5
-$as_echo "$ac_cv_lib_gslcblas_cblas_dgemm" >&6; }
-if test "x$ac_cv_lib_gslcblas_cblas_dgemm" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBGSLCBLAS 1
-_ACEOF
-
-  LIBS="-lgslcblas $LIBS"
-
-fi
-
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gsl_blas_dgemm in -lgsl" >&5
-$as_echo_n "checking for gsl_blas_dgemm in -lgsl... " >&6; }
-if test "${ac_cv_lib_gsl_gsl_blas_dgemm+set}" = set; then :
-  $as_echo_n "(cached) " >&6
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
+$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
+if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = x""yes; then :
+  FFTW_LIBS="-lfftw3"
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lgsl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char gsl_blas_dgemm ();
-int
-main ()
-{
-return gsl_blas_dgemm ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gsl_gsl_blas_dgemm=yes
-else
-  ac_cv_lib_gsl_gsl_blas_dgemm=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gsl_gsl_blas_dgemm" >&5
-$as_echo "$ac_cv_lib_gsl_gsl_blas_dgemm" >&6; }
-if test "x$ac_cv_lib_gsl_gsl_blas_dgemm" = x""yes; then :
-  GSL_LIBS="-lgsl"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libgsl : library missing. (Cannot find symbol gsl_blas_dgemm) in $with_gsl_library. Check if libgsl is installed and if the version is correct" >&5
-$as_echo "$as_me: WARNING: libgsl : library missing. (Cannot find symbol gsl_blas_dgemm) in $with_gsl_library. Check if libgsl is installed and if the version is correct" >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $with_fftw_library. Check if libfftw3 is installed and if the version is correct" >&5
+$as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $with_fftw_library. Check if libfftw3 is installed and if the version is correct" >&2;}
 
 fi
 
@@ -5833,6 +5952,588 @@ fi
 
 
 
+
+else
+	FFTW_CFLAGS=$pkg_cv_FFTW_CFLAGS
+	FFTW_LIBS=$pkg_cv_FFTW_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+    FFTW_FLAGS="$FFTW_CFLAGS"
+    FOUND_FFTW=yes
+
+
+fi
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSL" >&5
+$as_echo_n "checking for GSL... " >&6; }
+
+if test -n "$GSL_CFLAGS"; then
+    pkg_cv_GSL_CFLAGS="$GSL_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gsl >= 1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gsl >= 1.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GSL_CFLAGS=`$PKG_CONFIG --cflags "gsl >= 1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$GSL_LIBS"; then
+    pkg_cv_GSL_LIBS="$GSL_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gsl >= 1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gsl >= 1.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GSL_LIBS=`$PKG_CONFIG --libs "gsl >= 1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        GSL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gsl >= 1.0" 2>&1`
+        else
+	        GSL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gsl >= 1.0" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$GSL_PKG_ERRORS" >&5
+
+
+
+
+# Check whether --with-gsl-prefix was given.
+if test "${with_gsl_prefix+set}" = set; then :
+  withval=$with_gsl_prefix; gsl_prefix="$withval"
+else
+  gsl_prefix=""
+fi
+
+
+# Check whether --with-gsl-exec-prefix was given.
+if test "${with_gsl_exec_prefix+set}" = set; then :
+  withval=$with_gsl_exec_prefix; gsl_exec_prefix="$withval"
+else
+  gsl_exec_prefix=""
+fi
+
+# Check whether --enable-gsltest was given.
+if test "${enable_gsltest+set}" = set; then :
+  enableval=$enable_gsltest;
+else
+  enable_gsltest=yes
+fi
+
+
+  if test "x${GSL_CONFIG+set}" != xset ; then
+     if test "x$gsl_prefix" != x ; then
+         GSL_CONFIG="$gsl_prefix/bin/gsl-config"
+     fi
+     if test "x$gsl_exec_prefix" != x ; then
+        GSL_CONFIG="$gsl_exec_prefix/bin/gsl-config"
+     fi
+  fi
+
+  # Extract the first word of "gsl-config", so it can be a program name with args.
+set dummy gsl-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_GSL_CONFIG+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $GSL_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_GSL_CONFIG="$GSL_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_GSL_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_GSL_CONFIG" && ac_cv_path_GSL_CONFIG="no"
+  ;;
+esac
+fi
+GSL_CONFIG=$ac_cv_path_GSL_CONFIG
+if test -n "$GSL_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GSL_CONFIG" >&5
+$as_echo "$GSL_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  min_gsl_version=1.0
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSL - version >= $min_gsl_version" >&5
+$as_echo_n "checking for GSL - version >= $min_gsl_version... " >&6; }
+  no_gsl=""
+  if test "$GSL_CONFIG" = "no" ; then
+    no_gsl=yes
+  else
+    GSL_FLAGS=`$GSL_CONFIG --cflags`
+    GSL_LIBS=`$GSL_CONFIG --libs`
+
+    gsl_major_version=`$GSL_CONFIG --version | \
+           sed 's/^\([0-9]*\).*/\1/'`
+    if test "x${gsl_major_version}" = "x" ; then
+       gsl_major_version=0
+    fi
+
+    gsl_minor_version=`$GSL_CONFIG --version | \
+           sed 's/^\([0-9]*\)\.\{0,1\}\([0-9]*\).*/\2/'`
+    if test "x${gsl_minor_version}" = "x" ; then
+       gsl_minor_version=0
+    fi
+
+    gsl_micro_version=`$GSL_CONFIG --version | \
+           sed 's/^\([0-9]*\)\.\{0,1\}\([0-9]*\)\.\{0,1\}\([0-9]*\).*/\3/'`
+    if test "x${gsl_micro_version}" = "x" ; then
+       gsl_micro_version=0
+    fi
+
+    if test "x$enable_gsltest" = "xyes" ; then
+      ac_save_CFLAGS="$CFLAGS"
+      ac_save_LIBS="$LIBS"
+      CFLAGS="$CFLAGS $GSL_FLAGS"
+      LIBS="$LIBS $GSL_LIBS"
+
+      rm -f conf.gsltest
+      if test "$cross_compiling" = yes; then :
+  echo $ac_n "cross compiling; assumed OK... $ac_c"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* my_strdup (const char *str);
+
+char*
+my_strdup (const char *str)
+{
+  char *new_str;
+
+  if (str)
+    {
+      new_str = (char *)malloc ((strlen (str) + 1) * sizeof(char));
+      strcpy (new_str, str);
+    }
+  else
+    new_str = NULL;
+
+  return new_str;
+}
+
+int main (void)
+{
+  int major = 0, minor = 0, micro = 0;
+  int n;
+  char *tmp_version;
+
+  system ("touch conf.gsltest");
+
+  /* HP/UX 9 (%@#!) writes to sscanf strings */
+  tmp_version = my_strdup("$min_gsl_version");
+
+  n = sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) ;
+
+  if (n != 2 && n != 3) {
+     printf("%s, bad version string\n", "$min_gsl_version");
+     exit(1);
+   }
+
+   if (($gsl_major_version > major) ||
+      (($gsl_major_version == major) && ($gsl_minor_version > minor)) ||
+      (($gsl_major_version == major) && ($gsl_minor_version == minor) && ($gsl_micro_version >= micro)))
+     {
+       exit(0);
+     }
+   else
+     {
+       exit(1);
+     }
+}
+
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+else
+  no_gsl=yes
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+       CFLAGS="$ac_save_CFLAGS"
+       LIBS="$ac_save_LIBS"
+     fi
+  fi
+  if test "x$no_gsl" = x ; then
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+     :
+  else
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+     if test "$GSL_CONFIG" = "no" ; then
+       echo "*** The gsl-config script installed by GSL could not be found"
+       echo "*** If GSL was installed in PREFIX, make sure PREFIX/bin is in"
+       echo "*** your path, or set the GSL_CONFIG environment variable to the"
+       echo "*** full path to gsl-config."
+     else
+       if test -f conf.gsltest ; then
+        :
+       else
+          echo "*** Could not run GSL test program, checking why..."
+          CFLAGS="$CFLAGS $GSL_FLAGS"
+          LIBS="$LIBS $GSL_LIBS"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+
+int
+main ()
+{
+ return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+   echo "*** The test program compiled, but did not run. This usually means"
+          echo "*** that the run-time linker is not finding GSL or finding the wrong"
+          echo "*** version of GSL. If it is not finding GSL, you'll need to set your"
+          echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
+          echo "*** to the installed location  Also, make sure you have run ldconfig if that"
+          echo "*** is required on your system"
+	  echo "***"
+          echo "*** If you have an old version installed, it is best to remove it, although"
+          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"
+else
+   echo "*** The test program failed to compile or link. See the file config.log for the"
+          echo "*** exact error that occured. This usually means GSL was incorrectly installed"
+          echo "*** or that you have moved GSL since it was installed. In the latter case, you"
+          echo "*** may want to edit the gsl-config script: $GSL_CONFIG"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+          CFLAGS="$ac_save_CFLAGS"
+          LIBS="$ac_save_LIBS"
+       fi
+     fi
+#     GSL_FLAGS=""
+#     GSL_LIBS=""
+     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: gsl not found, please specify --with-gsl" >&5
+$as_echo "$as_me: WARNING: gsl not found, please specify --with-gsl" >&2;}
+  fi
+
+
+  rm -f conf.gsltest
+
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+
+# Check whether --with-gsl-prefix was given.
+if test "${with_gsl_prefix+set}" = set; then :
+  withval=$with_gsl_prefix; gsl_prefix="$withval"
+else
+  gsl_prefix=""
+fi
+
+
+# Check whether --with-gsl-exec-prefix was given.
+if test "${with_gsl_exec_prefix+set}" = set; then :
+  withval=$with_gsl_exec_prefix; gsl_exec_prefix="$withval"
+else
+  gsl_exec_prefix=""
+fi
+
+# Check whether --enable-gsltest was given.
+if test "${enable_gsltest+set}" = set; then :
+  enableval=$enable_gsltest;
+else
+  enable_gsltest=yes
+fi
+
+
+  if test "x${GSL_CONFIG+set}" != xset ; then
+     if test "x$gsl_prefix" != x ; then
+         GSL_CONFIG="$gsl_prefix/bin/gsl-config"
+     fi
+     if test "x$gsl_exec_prefix" != x ; then
+        GSL_CONFIG="$gsl_exec_prefix/bin/gsl-config"
+     fi
+  fi
+
+  # Extract the first word of "gsl-config", so it can be a program name with args.
+set dummy gsl-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_GSL_CONFIG+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $GSL_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_GSL_CONFIG="$GSL_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_GSL_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_GSL_CONFIG" && ac_cv_path_GSL_CONFIG="no"
+  ;;
+esac
+fi
+GSL_CONFIG=$ac_cv_path_GSL_CONFIG
+if test -n "$GSL_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GSL_CONFIG" >&5
+$as_echo "$GSL_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  min_gsl_version=1.0
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSL - version >= $min_gsl_version" >&5
+$as_echo_n "checking for GSL - version >= $min_gsl_version... " >&6; }
+  no_gsl=""
+  if test "$GSL_CONFIG" = "no" ; then
+    no_gsl=yes
+  else
+    GSL_FLAGS=`$GSL_CONFIG --cflags`
+    GSL_LIBS=`$GSL_CONFIG --libs`
+
+    gsl_major_version=`$GSL_CONFIG --version | \
+           sed 's/^\([0-9]*\).*/\1/'`
+    if test "x${gsl_major_version}" = "x" ; then
+       gsl_major_version=0
+    fi
+
+    gsl_minor_version=`$GSL_CONFIG --version | \
+           sed 's/^\([0-9]*\)\.\{0,1\}\([0-9]*\).*/\2/'`
+    if test "x${gsl_minor_version}" = "x" ; then
+       gsl_minor_version=0
+    fi
+
+    gsl_micro_version=`$GSL_CONFIG --version | \
+           sed 's/^\([0-9]*\)\.\{0,1\}\([0-9]*\)\.\{0,1\}\([0-9]*\).*/\3/'`
+    if test "x${gsl_micro_version}" = "x" ; then
+       gsl_micro_version=0
+    fi
+
+    if test "x$enable_gsltest" = "xyes" ; then
+      ac_save_CFLAGS="$CFLAGS"
+      ac_save_LIBS="$LIBS"
+      CFLAGS="$CFLAGS $GSL_FLAGS"
+      LIBS="$LIBS $GSL_LIBS"
+
+      rm -f conf.gsltest
+      if test "$cross_compiling" = yes; then :
+  echo $ac_n "cross compiling; assumed OK... $ac_c"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* my_strdup (const char *str);
+
+char*
+my_strdup (const char *str)
+{
+  char *new_str;
+
+  if (str)
+    {
+      new_str = (char *)malloc ((strlen (str) + 1) * sizeof(char));
+      strcpy (new_str, str);
+    }
+  else
+    new_str = NULL;
+
+  return new_str;
+}
+
+int main (void)
+{
+  int major = 0, minor = 0, micro = 0;
+  int n;
+  char *tmp_version;
+
+  system ("touch conf.gsltest");
+
+  /* HP/UX 9 (%@#!) writes to sscanf strings */
+  tmp_version = my_strdup("$min_gsl_version");
+
+  n = sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) ;
+
+  if (n != 2 && n != 3) {
+     printf("%s, bad version string\n", "$min_gsl_version");
+     exit(1);
+   }
+
+   if (($gsl_major_version > major) ||
+      (($gsl_major_version == major) && ($gsl_minor_version > minor)) ||
+      (($gsl_major_version == major) && ($gsl_minor_version == minor) && ($gsl_micro_version >= micro)))
+     {
+       exit(0);
+     }
+   else
+     {
+       exit(1);
+     }
+}
+
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+else
+  no_gsl=yes
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+       CFLAGS="$ac_save_CFLAGS"
+       LIBS="$ac_save_LIBS"
+     fi
+  fi
+  if test "x$no_gsl" = x ; then
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+     :
+  else
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+     if test "$GSL_CONFIG" = "no" ; then
+       echo "*** The gsl-config script installed by GSL could not be found"
+       echo "*** If GSL was installed in PREFIX, make sure PREFIX/bin is in"
+       echo "*** your path, or set the GSL_CONFIG environment variable to the"
+       echo "*** full path to gsl-config."
+     else
+       if test -f conf.gsltest ; then
+        :
+       else
+          echo "*** Could not run GSL test program, checking why..."
+          CFLAGS="$CFLAGS $GSL_FLAGS"
+          LIBS="$LIBS $GSL_LIBS"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+
+int
+main ()
+{
+ return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+   echo "*** The test program compiled, but did not run. This usually means"
+          echo "*** that the run-time linker is not finding GSL or finding the wrong"
+          echo "*** version of GSL. If it is not finding GSL, you'll need to set your"
+          echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
+          echo "*** to the installed location  Also, make sure you have run ldconfig if that"
+          echo "*** is required on your system"
+	  echo "***"
+          echo "*** If you have an old version installed, it is best to remove it, although"
+          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"
+else
+   echo "*** The test program failed to compile or link. See the file config.log for the"
+          echo "*** exact error that occured. This usually means GSL was incorrectly installed"
+          echo "*** or that you have moved GSL since it was installed. In the latter case, you"
+          echo "*** may want to edit the gsl-config script: $GSL_CONFIG"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+          CFLAGS="$ac_save_CFLAGS"
+          LIBS="$ac_save_LIBS"
+       fi
+     fi
+#     GSL_FLAGS=""
+#     GSL_LIBS=""
+     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: gsl not found, please specify --with-gsl" >&5
+$as_echo "$as_me: WARNING: gsl not found, please specify --with-gsl" >&2;}
+  fi
+
+
+  rm -f conf.gsltest
+
+
+else
+	GSL_CFLAGS=$pkg_cv_GSL_CFLAGS
+	GSL_LIBS=$pkg_cv_GSL_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+    GSL_FLAGS="$GSL_CFLAGS"
+    FOUND_GSL=yes
+
+
+
+fi
 
 
 

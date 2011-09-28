@@ -11,6 +11,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+m4_include([m4/pkg.m4])
 m4_include([m4/ax_mpi.m4])
 m4_include([m4/python_module.m4])
 m4_include([m4/java.m4])
