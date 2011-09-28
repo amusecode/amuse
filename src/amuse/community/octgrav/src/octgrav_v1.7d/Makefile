@@ -1,6 +1,5 @@
-CXX = g++
-CC  = gcc
-LD  = g++
+CXX ?= g++
+CC  ?= gcc
 
 .SUFFIXES: .o .f90 .cpp .cu
 
@@ -9,12 +8,12 @@ CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
 
 OFLAGS = -O0 -g -Wall 
 OFLAGS = -O3 -g -mpreferred-stack-boundary=4 -funroll-loops -fforce-addr
-CFLAGS = $(OFLAGS)  -I$(CUDA_TK)/include
-CXXFLAGS = $(CFLAGS)
+CFLAGS ?= $(OFLAGS)  -I$(CUDA_TK)/include
+CXXFLAGS ?= $(CFLAGS)
 
-NVCC      = $(CUDA_TK)/bin/nvcc
+NVCC      ?= $(CUDA_TK)/bin/nvcc
 
-NVCCFLAGS = -D_DEBUG --compiler-options -fno-inline \
+NVCCFLAGS ?= -D_DEBUG --compiler-options -fno-inline \
 		--maxrregcount=32 -O0 -g -I$(CUDA_SDK)/common/inc
 
 #device emulation version:
@@ -50,7 +49,7 @@ LIBS = $(CUDA_LIBDIRS) $(CUDA_LIBS)
 all: $(OCTLIB) $(PROG) 
 
 $(PROG): $(OBJS)
-	$(LD) $(CXXFLAGS) $(LIBS) $^ -o $@ -L. -l$(OCTLIB)
+	$(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -L. -l$(OCTLIB)
 
 $(OCTLIB): $(LIBOBJS) $(CUOBJS)
 	ar qv lib$@.a $^
