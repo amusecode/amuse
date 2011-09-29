@@ -38,11 +38,11 @@ public class Deployment {
 
         Workspace workspace = new Workspace(grid, applications, experiment);
 
-        deploy = new Deploy(new File("deploy"), verbose, false, 0, null, null,
+        deploy = new Deploy(new File("deploy"), verbose, false, useGui, 0, null, null,
                 true);
 
         if (useGui) {
-            gui = new GUI(deploy, workspace, Mode.MONITOR, logos);
+            gui = new GUI(deploy, workspace, Mode.MONITOR, true, logos);
         } else {
             gui = null;
         }

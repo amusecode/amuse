@@ -7,4 +7,4 @@ fi
 
 MAIN_CLASS=ibis.deploy.gui.GUI
 
-exec java -Dapple.laf.useScreenMenuBar=true -splash:images/ibis-splash.png -classpath $DEPLOY_HOME:$DEPLOY_HOME/lib/*:$DEPLOY_HOME/lib/castor-1.1.1-xml.jar -Djava.library.path=$DEPLOY_HOME/lib/native_libraries -Dgat.adaptor.path=$DEPLOY_HOME/lib/adaptors -Dibis.deploy.home=$DEPLOY_HOME $MAIN_CLASS $*
+exec java -Dapple.laf.useScreenMenuBar=true -splash:images/ibis-splash.png -classpath $DEPLOY_HOME:$DEPLOY_HOME/lib/*:$DEPLOY_HOME/lib/castor-1.1.1-xml.jar -Djava.library.path=$DEPLOY_HOME/lib/natives -Dgat.adaptor.path=$DEPLOY_HOME/lib/adaptors -Dibis.deploy.home=$DEPLOY_HOME $MAIN_CLASS $*

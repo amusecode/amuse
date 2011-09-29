@@ -23,5 +23,6 @@ elif [ `expr $NR_NODES \* 2` = "$NR_PROCS" ]; then
 
 fi
 
-exec /cm/shared/package/reserve.sge/bin/prun $OPTION -asocial -t $RUNTIME -np $NR_NODES -native '-l num_gpu=1' $JAVA $ARGS
+#exec /cm/shared/package/reserve.sge/bin/prun $OPTION -asocial -t $RUNTIME -np $NR_NODES -native '-l num_gpu=1' $JAVA $ARGS
+exec /cm/shared/package/reserve.sge/bin/prun $OPTION -asocial -t $RUNTIME -np $NR_NODES -q gpu.q  $JAVA $ARGS
 

@@ -131,7 +131,7 @@ Delft.job.adaptor = SshTrilead
 Delft.job.uri = any://fs3.das4.tudelft.nl/jobmanager-sge
 Delft.file.adaptors = SshTrilead,Local
 Delft.java.path = java
-Delft.job.wrapper.script = das4.script
+Delft.job.wrapper.script = das4-gpu.script
 #Delft.user.name = 
 #Delft.user.key = 
 #Delft.cache.dir = 
@@ -142,6 +142,8 @@ Delft.cores = 136
 #Delft.memory = 
 Delft.latitude = 51.9979
 Delft.longitude = 4.3742
+Delft.amuse.home=/home/niels/amuse
+Delft.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
 
 # Details of cluster "Leiden"
 Leiden.server.adaptor = SshTrilead
