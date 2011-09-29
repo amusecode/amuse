@@ -19,7 +19,7 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         return (os.path.join(os.path.join(os.path.dirname(__file__), 'src'), 'mocassin.{0}'.format(self.MOCASSIN_VERSION))) + os.sep
         
     def get_default_output_directory(self):
-        return (os.path.join(os.path.join(os.path.dirname(__file__), 'src'), 'mocassin.{0}'.format(self.MOCASSIN_VERSION))) + os.sep
+        return os.path.join(get_amuse_root_dir(), 'data', 'mocassin', 'output')+ os.sep
         
     def setup_abundancies(self):
         fd, name = tempfile.mkstemp()
