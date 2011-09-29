@@ -13,13 +13,17 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="mocassin_worker", **keyword_arguments)
-    
+        self._abundancies_table = None
+        
     def get_default_input_directory(self):
+        return (os.path.join(os.path.join(os.path.dirname(__file__), 'src'), 'mocassin.{0}'.format(self.MOCASSIN_VERSION))) + os.sep
+        
+    def get_default_output_directory(self):
         return (os.path.join(os.path.join(os.path.dirname(__file__), 'src'), 'mocassin.{0}'.format(self.MOCASSIN_VERSION))) + os.sep
         
     def setup_abundancies(self):
         fd, name = tempfile.mkstemp()
-        print name
+        #print name
         if len(name) > 1024:
             raise Exception("Error in filename length of abundancies file, maximum length is 1024")
         with os.fdopen(fd, 'w') as f:
@@ -30,6 +34,11 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         
     
     def abundancies_table(self):
+        if self._abundancies_table  is None:
+            self._abundancies_table = self.default_abundancies_table()
+        return self._abundancies_table
+        
+    def default_abundancies_table(self):
         result = OrderedDictionary()
         result['H'] = 1.     
         result['He'] = 0.1    
@@ -62,7 +71,7 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         result['Cu'] = 0.
         result['Zn'] = 0.
         return result
-
+        
     @legacy_function
     def setup_mesh():
         function = LegacyFunctionSpecification() 
@@ -143,6 +152,20 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
 
     @legacy_function    
     def get_input_directory():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('path', dtype='s', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function    
+    def set_output_directory():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('path', dtype='s', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function    
+    def get_output_directory():
         function = LegacyFunctionSpecification()  
         function.addParameter('path', dtype='s', direction=function.OUT)
         function.result_type = 'int32'
@@ -316,33 +339,9 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         function.result_type = 'int32'
         return function
 
-    @legacy_function
-    def set_inner_radius_of_the_ionised_region():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('value', dtype='float64', direction=function.IN)
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def get_inner_radius_of_the_ionised_region():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('value', dtype='float64', direction=function.OUT)
-        function.result_type = 'int32'
-        return function
     
-    @legacy_function
-    def set_outer_radius_of_the_ionised_region():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('value', dtype='float64', direction=function.IN)
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def get_outer_radius_of_the_ionised_region():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('value', dtype='float64', direction=function.OUT)
-        function.result_type = 'int32'
-        return function
+    
+ 
         
     @legacy_function
     def set_convergence_limit():
@@ -502,6 +501,33 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         return function
 
 
+    @legacy_function
+    def get_grid_electron_density():
+        function = LegacyFunctionSpecification()  
+        for parametername in ['i','j','k']:
+            function.addParameter(parametername, dtype='int32', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
+        
+        function.addParameter('density', dtype='float64', direction=function.OUT)
+            
+        function.addParameter('n', dtype='int32', direction=function.LENGTH)
+        function.must_handle_array = True
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_grid_electron_density():
+        function = LegacyFunctionSpecification()  
+        for parametername in ['i','j','k']:
+            function.addParameter(parametername, dtype='int32', direction=function.IN)
+        
+        function.addParameter('density', dtype='float64', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
+            
+        function.addParameter('n', dtype='int32', direction=function.LENGTH)
+        function.must_handle_array = True
+        function.result_type = 'int32'
+        return function
         
 #class Parameters(object):
 #    emit_rate_of_photons = MethodParameter(name = "emit_rate_of_photons", unit = units.seconds, default = )
@@ -521,6 +547,22 @@ class Mocassin(InCodeComponentImplementation):
         return (1, ni, 1, nj, 1, nk)
         
     def define_methods(self, object):
+        
+        object.add_method(
+            'commit_grid',
+            (),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'commit_particles',
+            (),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'iterate',
+            (),
+            (object.ERROR_CODE,)
+        )
         object.add_method(
             'get_position_of_index',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
@@ -537,11 +579,6 @@ class Mocassin(InCodeComponentImplementation):
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (units.K, object.ERROR_CODE,)
         )
-        object.add_method(
-            'get_grid_electron_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (units.cm**-3, object.ERROR_CODE,)
-        )
         
         object.add_method(
             'get_grid_hydrogen_density',
@@ -554,6 +591,20 @@ class Mocassin(InCodeComponentImplementation):
             (object.INDEX, object.INDEX, object.INDEX, units.cm**-3 , object.INDEX),
             (object.ERROR_CODE,)
         )
+        
+                
+        object.add_method(
+            'get_grid_electron_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (units.cm**-3, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'set_grid_electron_density',
+            (object.INDEX, object.INDEX, object.INDEX, units.cm**-3 , object.INDEX),
+            (object.ERROR_CODE,)
+        )
+
         
         object.add_method(
             'get_grid_active',
@@ -663,6 +714,18 @@ class Mocassin(InCodeComponentImplementation):
         )
         
         object.add_method(
+            "get_output_directory",
+            (),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_output_directory",
+            (object.NO_UNIT, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
             "get_low_limit_of_the_frequency_mesh",
             (),
             (units.ryd, object.ERROR_CODE,)
@@ -710,17 +773,6 @@ class Mocassin(InCodeComponentImplementation):
             (object.ERROR_CODE,)
         )
         
-        object.add_method(
-            "get_outer_radius_of_the_ionised_region",
-            (),
-            (units.cm, object.ERROR_CODE,)
-        )
-        
-        object.add_method(
-            "set_outer_radius_of_the_ionised_region",
-            (units.cm, ),
-            (object.ERROR_CODE,)
-        )
         
         object.add_method(
             "get_symmetricXYZ",
@@ -885,14 +937,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
-            "get_outer_radius_of_the_ionised_region",
-            "set_outer_radius_of_the_ionised_region", 
-            "outer_radius_of_the_ionised_region", 
-            "<fill>", 
-            default_value = 0.0 | units.cm
-        )
-    
+        
     
         object.add_method_parameter(
             "get_symmetricXYZ",
@@ -1000,6 +1045,7 @@ class Mocassin(InCodeComponentImplementation):
         object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
         object.add_getter('grid', 'get_grid_electron_temperature', names=('electron_temperature',))
         object.add_getter('grid', 'get_grid_electron_density', names=('electron_density',))
+        object.add_setter('grid', 'set_grid_electron_density', names=('electron_density',))
         object.add_getter('grid', 'get_grid_hydrogen_density', names=('hydrogen_density',))
         object.add_setter('grid', 'set_grid_hydrogen_density', names=('hydrogen_density',))
         

@@ -445,7 +445,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.n() + 'character (len=100000) :: output_characters'
         self.out.n() + 'character (len=100000) :: input_characters'
         
-        self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
+        #self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
         self.out.lf().lf() + 'integer header('
         self.out + self.length_of_the_header + ')'
         self.out.lf().lf() + 'integer :: tag_in, tag_out'

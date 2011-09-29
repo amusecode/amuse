@@ -142,7 +142,7 @@ CONTAINS
         INTEGER iterate
         
         call MCIterationDriver(grid3D(1:nGrids))
-        iterate=-1
+        iterate=0
     END FUNCTION
     
     FUNCTION initialize_code()
@@ -476,6 +476,11 @@ CONTAINS
                 return
             end if
             
+            if (grid3D(1)%nCells.EQ.0) then
+                commit_grid = -1
+                return
+            end if 
+            
             nPhotonsDiffuseLoc = nPhotonsDiffuse/grid3D(1)%nCells
 
             commit_grid = setup_subgrid_references(grid3D(1:nGrids))
@@ -485,7 +490,7 @@ CONTAINS
             end if
         end if
         
-        if(associated(hydrogen_density_input)) deallocate(hydrogen_density_input)
+        !if(associated(hydrogen_density_input)) deallocate(hydrogen_density_input)
         
         is_grid_committed = .true.
         
@@ -606,9 +611,12 @@ CONTAINS
         CHARACTER(LEN=*) filename
         INTEGER index, set_abundancies_filename
         
+        if (index > 1) then
+            abundanceFile(index) = TRIM(filename)
+        else
+            abundanceFile = TRIM(filename)
+        end if
         
-        !abundanceFile(index) = TRIM(filename)
-        abundanceFile = TRIM(filename)
         set_abundancies_filename = 0
     END FUNCTION
 
@@ -638,6 +646,25 @@ CONTAINS
         
         path = home
         get_input_directory = 0
+    END FUNCTION
+    
+    
+    FUNCTION set_output_directory(path)
+        IMPLICIT NONE
+        CHARACTER(LEN=*) path
+        INTEGER set_output_directory
+        outputDir = TRIM(path)
+        set_output_directory = 0
+    END FUNCTION
+    
+
+    FUNCTION get_output_directory(path)
+        IMPLICIT NONE
+        CHARACTER(LEN=*) path
+        INTEGER get_output_directory
+        
+        path = outputDir
+        get_output_directory = 0
     END FUNCTION
     
     FUNCTION set_constant_hydrogen_density(value)
@@ -860,38 +887,6 @@ CONTAINS
         value = nuMin
         get_low_limit_of_the_frequency_mesh = 0
     END FUNCTION
-    
-    FUNCTION set_inner_radius_of_the_ionised_region(value)
-        IMPLICIT NONE
-        double precision, INTENT(IN) :: value
-        INTEGER set_inner_radius_of_the_ionised_region
-        R_in = value
-        set_inner_radius_of_the_ionised_region = 0
-    END FUNCTION
-
-    FUNCTION get_inner_radius_of_the_ionised_region(value)
-        IMPLICIT NONE
-        double precision, INTENT(OUT) :: value
-        INTEGER get_inner_radius_of_the_ionised_region
-        value = R_in
-        get_inner_radius_of_the_ionised_region = 0
-    END FUNCTION
-
-    FUNCTION set_outer_radius_of_the_ionised_region(value)
-        IMPLICIT NONE
-        double precision, INTENT(IN) :: value
-        INTEGER set_outer_radius_of_the_ionised_region
-        R_out = value
-        set_outer_radius_of_the_ionised_region = 0
-    END FUNCTION
-
-    FUNCTION get_outer_radius_of_the_ionised_region(value)
-        IMPLICIT NONE
-        double precision, INTENT(OUT) :: value
-        INTEGER get_outer_radius_of_the_ionised_region
-        value = R_out
-        get_outer_radius_of_the_ionised_region = 0
-    END FUNCTION
 
     FUNCTION set_convergence_limit(value)
         IMPLICIT NONE
@@ -982,37 +977,6 @@ CONTAINS
         get_grid_electron_temperature = 0
     END FUNCTION
 
-    FUNCTION get_grid_electron_density(i,j,k,index_of_grid,electron_density, n)
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: n
-        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
-        
-        double precision, INTENT(OUT), DIMENSION(N) :: electron_density
-        
-        INTEGER get_grid_electron_density
-        INTEGER :: index, active_cell_index
-
-
-        
-        DO index = 1,n
-            
-            IF (index_of_grid(index).GT.nGrids) THEN
-                get_grid_electron_density = -1
-                return
-            END IF
-            active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
-            if (active_cell_index .eq. 0) then
-                
-                    electron_density(index) = 0
-                
-            else
-                
-                    electron_density(index) = grid3D(index_of_grid(index))%Ne(active_cell_index)
-                
-            end if
-        END DO
-        get_grid_electron_density = 0
-    END FUNCTION
 
     FUNCTION get_grid_active(i,j,k,index_of_grid,is_active, n)
         IMPLICIT NONE
@@ -1111,6 +1075,80 @@ CONTAINS
         end if
         
         set_grid_hydrogen_density = 0
+    END FUNCTION
+
+
+
+    FUNCTION get_grid_electron_density(i,j,k,index_of_grid,density, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
+        
+        double precision, INTENT(OUT), DIMENSION(N) :: density
+        
+        INTEGER get_grid_electron_density
+        INTEGER :: index, active_cell_index
+
+        if (.not.is_grid_committed) then
+            DO index = 1,n
+                density(index) = 0.0
+            END DO
+            get_grid_electron_density = -1
+            return
+        else
+        
+            DO index = 1,n
+                
+                IF (index_of_grid(index).GT.nGrids) THEN
+                    get_grid_electron_density = -1
+                    return
+                END IF
+                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+                if (active_cell_index .eq. 0) then
+                    
+                        density(index) = 0.0
+                    
+                else
+                    
+                        density(index) = grid3D(index_of_grid(index))%Ne(active_cell_index)
+                    
+                end if
+            END DO
+        end if
+        get_grid_electron_density = 0
+    END FUNCTION
+
+    FUNCTION set_grid_electron_density(i,j,k,density,index_of_grid, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
+        
+        double precision, INTENT(IN), DIMENSION(N) :: density
+        
+        INTEGER set_grid_electron_density
+        INTEGER :: index, active_cell_index
+
+
+        if (is_grid_committed) then
+            DO index = 1,n
+                
+                IF (index_of_grid(index).GT.nGrids) THEN
+                    set_grid_electron_density = -1
+                    return
+                END IF
+                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+                if (active_cell_index .ne. 0) then
+                    
+                    grid3D(index_of_grid(index))%Ne(active_cell_index) = density(index)
+                    
+                end if
+            END DO
+        else
+            set_grid_electron_density = -1
+            return
+        end if
+        
+        set_grid_electron_density = 0
     END FUNCTION
 
     
@@ -1970,7 +2008,7 @@ CONTAINS
            end if
                  
             setup_mother_grid = 0
-           print*, 'out setMotherGrid'
+           print*, 'out setup_mother_grid'
 
     end function setup_mother_grid
 END MODULE

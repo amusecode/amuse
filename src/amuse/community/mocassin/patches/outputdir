@@ -1,0 +1,278 @@
+Index: mocassin/src/mocassin.2.02.69/source/common_mod.f90
+===================================================================
+--- mocassin.orig/src/mocassin.2.02.69/source/common_mod.f90	2011-09-29 10:32:04.000000000 +0200
++++ mocassin/src/mocassin.2.02.69/source/common_mod.f90	2011-09-29 10:35:23.000000000 +0200
+@@ -391,7 +391,8 @@
+     character(len=4096)  :: dustFile(2)      ! dust files
+     character(len=4096)  :: MdMgFile         ! name of MdMg file
+     character(len=4096)  :: NdustFile        ! name of Ndust file    
+-    character(len=4096)  :: home=''          ! home directory if specified    
++    character(len=4096)  :: home=''          ! home directory if specified
++    character(len=4096)  :: outputDir='output/'    ! directory for outputing files, if specified    
+     character(len=4096)  :: Qfile            ! name of Qfile 
+     character(len=30),pointer       :: grainLabel(:)    ! name of this species
+ 
+Index: mocassin/src/mocassin.2.02.69/source/grid_mod.f90
+===================================================================
+--- mocassin.orig/src/mocassin.2.02.69/source/grid_mod.f90	2011-09-28 16:06:19.000000000 +0200
++++ mocassin/src/mocassin.2.02.69/source/grid_mod.f90	2011-09-29 10:37:55.000000000 +0200
+@@ -1753,7 +1753,7 @@
+               print*, 'Total volume of the active region [e45 cm^3]: ', totalVolume
+               if (lgEcho) then 
+                  print*, 'Total volume of the echo [e45 cm^3]: ', echoVolume*846732407.," or ",echoVolume," ly^3"
+-                 open(unit=99, status='unknown', position='rewind', file='output/echo.out', action="write",iostat=ios)
++                 open(unit=99, status='unknown', position='rewind', file=trim(outputDir)//'echo.out', action="write",iostat=ios)
+                  write(99,*)'Total volume of the active region [e45 cm^3]: ', totalVolume
+                  write(99,*)'Total volume of the echo [e45 cm^3]: ', echoVolume*846732407.," or ",echoVolume," ly^3"
+                  if (echoVolume .eq. 0.) then
+@@ -2680,7 +2680,7 @@
+            print* , 'in writeGrid'
+ 
+            close(21)
+-           open(unit=21, file="output/grid0.out",  action="write", position="rewind",status="unknown", iostat = ios)
++           open(unit=21, file=trim(outputDir)//"grid0.out",  action="write", position="rewind",status="unknown", iostat = ios)
+            if (ios /= 0 ) then
+               print*, "! writeGrid: can't open file for writing - grid1.out"
+               stop
+@@ -2689,13 +2689,13 @@
+            if (lgGas) then
+               ! open files for writing
+               close(20)
+-              open(unit=20, file="output/grid1.out", action="write",position="rewind",status="unknown", iostat = ios)
++              open(unit=20, file=trim(outputDir)//"grid1.out", action="write",position="rewind",status="unknown", iostat = ios)
+               if (ios /= 0 ) then
+                  print*, "! writeGrid: can't open file for writing - grid1.out"
+                  stop
+               end if
+               close(30)
+-              open(unit=30, file="output/grid2.out", action="write",position="rewind",status="unknown", iostat = ios)   
++              open(unit=30, file=trim(outputDir)//"grid2.out", action="write",position="rewind",status="unknown", iostat = ios)   
+               if (ios /= 0 ) then
+                  print*, "! writeGrid: can't open file for writing - grid2.out"
+                  stop
+@@ -2703,7 +2703,7 @@
+            end if
+            if (lgDust) then
+               close(50)
+-              open(unit=50, file="output/dustGrid.out", action="write",position="rewind",status="unknown", iostat = ios)
++              open(unit=50, file=trim(outputDir)//"dustGrid.out", action="write",position="rewind",status="unknown", iostat = ios)
+               if (ios /= 0 ) then
+                  print*, "! writeGrid: can't open file for writing - dustGrid.out"
+                  stop
+@@ -2798,7 +2798,7 @@
+ 
+         ! stellar parameters
+         close(42) 
+-        open(unit=42, file="output/photoSource.out", action="write",position="rewind",status="unknown", iostat = ios)   
++        open(unit=42, file=trim(outputDir)//"photoSource.out", action="write",position="rewind",status="unknown", iostat = ios)   
+         if (ios /= 0 ) then
+             print*, "! writeGrid: can't open file for writing - photoSource.out"
+             stop
+@@ -2820,7 +2820,7 @@
+ 
+         ! general simulation parameters
+         close(40)
+-        open(unit=40, file="output/grid3.out", action="write",position="rewind",status="unknown", iostat = ios)   
++        open(unit=40, file=trim(outputDir)//"grid3.out", action="write",position="rewind",status="unknown", iostat = ios)   
+         if (ios /= 0 ) then
+             print*, "! writeGrid: can't open file for writing - grid3.out"
+             stop
+@@ -3024,7 +3024,7 @@
+ 
+       ! read stellar parameters
+       close(72) 
+-      open(unit=72, file="output/photoSource.out",action="read", position="rewind",status="old", iostat = ios)   
++      open(unit=72, file=trim(outputDir)//"photoSource.out",action="read", position="rewind",status="old", iostat = ios)   
+       if (ios /= 0 ) then
+          print*, "! writeGrid: can't open file for reading - photoSource.out"
+          stop
+@@ -3059,7 +3059,7 @@
+ 
+       ! read in file containing general simulation parameters
+       close(77)
+-      open(unit=77, file='output/grid3.out', action="read",position='rewind',  &
++      open(unit=77, file=trim(outputDir)//'grid3.out', action="read",position='rewind',  &
+ &          status='old', iostat = err)
+       if (err /= 0) then
+          print*, "! resetMotherGrid: error opening file grid3.out"
+@@ -3199,7 +3199,7 @@
+       allocate(lgDataAvailable(3:nElements, nstages))
+ 
+       close(89)
+-      open(unit=89, file='output/grid0.out',  action="read",position='rewind',  &
++      open(unit=89, file=trim(outputDir)//'grid0.out',  action="read",position='rewind',  &
+            &          status='old', iostat = err)
+       if (err /= 0) then
+          print*, "! resetGrid: error opening file grid0.out"
+@@ -3208,7 +3208,7 @@
+ 
+       if (lgGas) then
+          close(78)
+-         open(unit=78, file='output/grid1.out',  action="read",position='rewind',  &
++         open(unit=78, file=trim(outputDir)//'grid1.out',  action="read",position='rewind',  &
+               &          status='old', iostat = err)
+          if (err /= 0) then
+             print*, "! resetGrid: error opening file grid1.out"
+@@ -3216,7 +3216,7 @@
+          end if
+          ! open the grid2.out file for later
+          close(79)
+-         open(unit=79, file='output/grid2.out', action="read", position='rewind',  &
++         open(unit=79, file=trim(outputDir)//'grid2.out', action="read", position='rewind',  &
+               &          status='old', iostat = err)
+          if (err /= 0) then
+             print*, "! resetGrid: error opening file grid2.out"
+@@ -3225,7 +3225,7 @@
+       end if
+       if (lgDust) then
+          close(88)
+-         open(unit=88, file='output/dustGrid.out', action="read", position='rewind',  &
++         open(unit=88, file=trim(outputDir)//'dustGrid.out', action="read", position='rewind',  &
+               &          status='old', iostat = err)
+          if (err /= 0) then
+             print*, "! resetGrid: error opening file dustGrid.out"
+Index: mocassin/src/mocassin.2.02.69/source/output_mod.f90
+===================================================================
+--- mocassin.orig/src/mocassin.2.02.69/source/output_mod.f90	2011-07-29 16:26:19.000000000 +0200
++++ mocassin/src/mocassin.2.02.69/source/output_mod.f90	2011-09-29 10:36:21.000000000 +0200
+@@ -928,13 +928,13 @@
+ 
+         ! write the lineFlux.out file          
+         if (present(extMap)) then
+-           open(unit=10, status='unknown', position='rewind', file='output/lineFlux.ext', action="write", iostat=ios)
++           open(unit=10, status='unknown', position='rewind', file=trim(outputDir)//'lineFlux.ext', action="write", iostat=ios)
+            if (ios /= 0) then
+               print*, "! outputGas: can't open file for writing: lineFlux.out"
+               stop
+            end if
+         else
+-           open(unit=10, status='unknown', position='rewind', file='output/lineFlux.out', action="write",iostat=ios)
++           open(unit=10, status='unknown', position='rewind', file=trim(outputDir)//'lineFlux.out', action="write",iostat=ios)
+            if (ios /= 0) then
+               print*, "! outputGas: can't open file for writing: lineFlux.out"
+               stop
+@@ -1246,13 +1246,13 @@
+         close(10)
+         
+         ! write the temperature.out file
+-        open(unit=20, status='unknown', position='rewind', file='output/temperature.out', action="write",iostat=ios)
++        open(unit=20, status='unknown', position='rewind', file=trim(outputDir)//'temperature.out', action="write",iostat=ios)
+         if (ios /= 0) then
+            print*, "! outputGas: can't open file for writing: temperature.out"
+            stop
+         end if
+         
+-        open(unit=27, status='unknown', position='append', file='output/summary.out', action="write",iostat=ios)
++        open(unit=27, status='unknown', position='append', file=trim(outputDir)//'summary.out', action="write",iostat=ios)
+         if (ios /= 0) then
+            print*, "! iterationMC: can't open file for writing, summary.out"
+            stop
+@@ -1260,7 +1260,7 @@
+ 
+         
+         ! write ionratio.out file
+-        open(unit=30, status='unknown', position='rewind', file='output/ionratio.out', action="write",iostat=ios)
++        open(unit=30, status='unknown', position='rewind', file=trim(outputDir)//'ionratio.out', action="write",iostat=ios)
+         if (ios /= 0) then
+            print*, "! outputGas: can't open file for writing: ionratio.out"
+            stop
+@@ -1268,7 +1268,7 @@
+         
+         if (lgDebug) then
+            
+-           open(unit=60, status='unknown', position='rewind', file='output/ionDen.out', action="write",iostat=ios)
++           open(unit=60, status='unknown', position='rewind', file=trim(outputDir)//'ionDen.out', action="write",iostat=ios)
+            if (ios /= 0) then
+               print*, "! outputGas: can't open file for writing: ionDen.out"
+               stop
+@@ -2372,7 +2372,7 @@
+ 
+       close(73)
+ 
+-      open(unit=73, file='output/tauNu.out', status='unknown', position='rewind', iostat = ios, action="write")
++      open(unit=73, file=trim(outputDir)//'tauNu.out', status='unknown', position='rewind', iostat = ios, action="write")
+ 
+ 
+       ! initialize arrays with zero
+@@ -2492,13 +2492,13 @@
+ 
+       close(16)
+ 
+-      open(unit=16,file='output/SED.out',status='unknown', position='rewind',iostat=ios, action="write")              
++      open(unit=16,file=trim(outputDir)//'SED.out',status='unknown', position='rewind',iostat=ios, action="write")              
+       if (ios /= 0) then
+          print*, "! writeSED: Cannot open output/SED.out for writing"
+          stop
+       end if
+ 
+-!      open(unit=116,file='output/sourceSED.out',status='unknown', position='rewind',iostat=ios, action="write")              
++!      open(unit=116,file=trim(outputDir)//'sourceSED.out',status='unknown', position='rewind',iostat=ios, action="write")              
+ !      if (ios /= 0) then
+ !         print*, "! writeSED: Cannot open output/sourceSED.out for writing"
+ !         stop
+@@ -2637,7 +2637,7 @@
+          SEDnoExt = SED(:,0)
+       elseif (lgEquivalentTau .and. nIterateMC>1) then
+ 
+-         open (unit=74,file='output/equivalentTau.out',action='write', position='rewind',&
++         open (unit=74,file=trim(outputDir)//'equivalentTau.out',action='write', position='rewind',&
+               & iostat=ios, status='unknown')
+ 
+          do freq = 1, nbins
+@@ -2703,7 +2703,7 @@
+ 
+       close(19)
+ 
+-      open(unit=19,file='output/contCube.out',status='unknown', position='rewind',iostat=ios, action="write")       
++      open(unit=19,file=trim(outputDir)//'contCube.out',status='unknown', position='rewind',iostat=ios, action="write")       
+       if (ios /= 0) then
+          print*, "! writeContCube: Cannot open file for writing"
+          stop
+Index: mocassin/src/mocassin.2.02.69/source/iteration_mod.f90
+===================================================================
+--- mocassin.orig/src/mocassin.2.02.69/source/iteration_mod.f90	2011-09-28 16:06:19.000000000 +0200
++++ mocassin/src/mocassin.2.02.69/source/iteration_mod.f90	2011-09-29 10:39:36.000000000 +0200
+@@ -247,7 +247,7 @@
+ 
+            
+            if (taskid==0 .and. lgWritePss) then
+-              open(unit=89, file='output/qHeatPss.out',  action="write",status='unknown', position='rewind', iostat=ios)
++              open(unit=89, file=trim(outputDir)//'qHeatPss.out',  action="write",status='unknown', position='rewind', iostat=ios)
+               if (ios /= 0) then
+                  print*, "! iterationMC: can't open file for writing, output/qHeatPss.out"
+                  stop
+@@ -576,7 +576,7 @@
+               planeIonDistribution = planeIonDistributionTemp
+ 
+               if (taskid ==0) then
+-                 open(file="output/planeIonDistribution.out",  action="write",unit=18, status="unknown")
++                 open(file=trim(outputDir)//"planeIonDistribution.out",  action="write",unit=18, status="unknown")
+                  do i = 1, grid(1)%nx
+                     do k = 1, grid(1)%nz
+                        write(18,*) i,k,planeIonDistribution(i,k)
+@@ -825,7 +825,7 @@
+               lgBlackTemp          = 0 
+ 
+                if (lgTraceHeating.and.taskid==0) then
+-                 open(file="output/thermalBalance.out",  action="write",unit=57, status="unknown", iostat=ios)
++                 open(file=trim(outputDir)//"thermalBalance.out",  action="write",unit=57, status="unknown", iostat=ios)
+                  if (ios /= 0) then
+                     print*, "! iterationMC: can't open file for writing, output/thermalBalance.out"
+                     stop
+@@ -1000,14 +1000,14 @@
+               if (taskid == 0) then
+                  if (nIterateMC == 1) then
+                     close(21)
+-                    open(unit=21, status='unknown', position='rewind', file='output/summary.out', iostat=ios)
++                    open(unit=21, status='unknown', position='rewind', file=trim(outputDir)//'summary.out', iostat=ios)
+                     if (ios /= 0) then
+                        print*, "! iterationMC: can't open file for writing, summary.out -1"
+                        stop
+                     end if
+                  else
+                     close(21)
+-                    open(unit=21, status='unknown', position='append', file='output/summary.out', iostat=ios)
++                    open(unit=21, status='unknown', position='append', file=trim(outputDir)//'summary.out', iostat=ios)
+                     if (ios /= 0) then
+                        print*, "! iterationMC: can't open file for writing, summary.out -2"
+                        stop

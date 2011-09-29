@@ -61,8 +61,6 @@ class TestMocassinInterface(TestWithMPI):
         instance.set_total_number_of_points_in_frequency_mesh(600)
         instance.set_high_limit_of_the_frequency_mesh(15)
         instance.set_low_limit_of_the_frequency_mesh(1.001e-5)
-        instance.set_inner_radius_of_the_ionised_region(30.e17)
-        instance.set_outer_radius_of_the_ionised_region(0.95E+19)
         instance.set_convergence_limit(0.09)
         instance.set_number_of_ionisation_stages(6)
         instance.setup_auto_convergence(0.2, 2.0, 1000000000)
@@ -77,7 +75,7 @@ class TestMocassinInterface(TestWithMPI):
         indices_x = list(range(1,12,1))
         is_active,error = instance.get_grid_active(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
         self.assertEquals(0, error)
-        self.assertEquals([False,False,False,False,True,True,True,True,True,True,True] , is_active)
+        self.assertEquals([True,True,True,True,True,True,True,True,True,True,True] , is_active)
         
         
         indices_x = list(range(5,12,1))
@@ -87,7 +85,7 @@ class TestMocassinInterface(TestWithMPI):
         indices_x = list(range(1,5,1))
         temperatures,error = instance.get_grid_electron_temperature(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
         self.assertEquals(0, error)
-        self.assertEquals([0.0] * len(indices_x), temperatures)
+        self.assertEquals([6000.0] * len(indices_x), temperatures)
         
         ni, nj, nk, error = instance.get_max_indices(1)
         self.assertEquals(0, error)
@@ -115,8 +113,6 @@ class TestMocassinInterface(TestWithMPI):
         instance.set_total_number_of_points_in_frequency_mesh(600)
         instance.set_high_limit_of_the_frequency_mesh(15.)
         instance.set_low_limit_of_the_frequency_mesh(1.001e-5)
-        instance.set_inner_radius_of_the_ionised_region(30.0e17)
-        instance.set_outer_radius_of_the_ionised_region(0.95e+19)
         instance.set_convergence_limit(0.09)
         instance.set_number_of_ionisation_stages(6)
         instance.setup_auto_convergence(0.8, 2.0, 1000000000)
@@ -263,12 +259,9 @@ class TestMocassin(TestWithMPI):
         instance.set_maximum_number_of_monte_carlo_iterations(1)
         instance.set_total_number_of_photons(100)
         #instance.set_constant_hydrogen_density(100 | units.cm**-3)
-        instance.set_inner_radius_of_the_ionised_region(0 | units.cm)
-        instance.set_outer_radius_of_the_ionised_region(0.95E+19 | units.cm * 10)
         instance.commit_parameters()
         instance.grid.hydrogen_density = 100 | units.cm**-3
-        error = instance.commit_grid()
-        self.assertEquals(error, 0)
+        instance.commit_grid()
         
         p = datamodel.Particle()
         p.x = 0 | units.cm
