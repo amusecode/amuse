@@ -93,18 +93,18 @@ class Grid(AbstractGrid):
             self._private.attribute_storage = InMemoryGridAttributeStorage(*args)
     
     @classmethod
-    def create(cls, shape, lengths):
+    def create(cls, shape, lengths, axes_names = ('x', 'y', 'z')):
         """Returns a grid with cells between 0 and lengths.
         """
-        result = cls(shape[0], shape[1], shape[2])
-        ix,iy,iz=(numpy.indices(shape)+0.5)
+        result = cls(*shape)
+    
+        all_indices = numpy.indices(shape)+0.5
         
         def positions(indices, length, n):
             return length * (indices/n)
     
-        result.x = positions(ix, lengths[0], shape[0])
-        result.y = positions(iy, lengths[1], shape[1])
-        result.z = positions(iz, lengths[2], shape[2])
+        for indices, length, n, axis_name in zip(all_indices, lengths, shape, axes_names):
+            setattr(result, axis_name, positions(indices, length, n))
         
         return result
             
@@ -129,13 +129,13 @@ class Grid(AbstractGrid):
         return self._private.attribute_storage.get_all_keys_in_store()
     
     def __getitem__(self, index):
-        if indexing.number_of_dimensions_after_index(3, index) == 0:
+        if indexing.number_of_dimensions_after_index(self.number_of_dimensions(), index) == 0:
             return GridPoint(index, self)
         else:
             return SubGrid(self, index)
             
     def number_of_dimensions(self):
-        return 3
+        return len(self.shape)
         
     @property
     def shape(self):
@@ -172,11 +172,11 @@ class SubGrid(AbstractGrid):
         return None
 
     def number_of_dimensions(self):
-        return indexing.number_of_dimensions_after_index(3, self._private.indices)
+        return indexing.number_of_dimensions_after_index(self._original_set().number_of_dimensions(), self._private.indices)
         
     def __getitem__(self, index):
         combined_index = indexing.combine_indices(self._private.indices, index)
-        if indexing.number_of_dimensions_after_index(3, combined_index) == 0:
+        if indexing.number_of_dimensions_after_index(self._original_set().number_of_dimensions(), combined_index) == 0:
             return GridPoint(combined_index, self._original_set())
         else:
             return SubGrid(self._original_set(), combined_index)

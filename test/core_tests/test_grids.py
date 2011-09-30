@@ -232,6 +232,26 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(nj, 4 * 5)
         self.assertEquals(ni, 2 * 4 * 5)
                     
+    def test16(self):
+        grid = datamodel.Grid.create((5,4,2,4), [1.0 | units.m, 1.0 | units.m, 1.0 | units.m, 1.0 | units.s], ('x', 'y', 'z', 't') )
+        self.assertEquals(grid.shape, (5,4,2,4))
+        self.assertEquals(grid.x.shape, (5,4,2,4))
+        self.assertAlmostRelativeEquals( grid[1][2][1].x, ([0.3] * 4) | units.m)
+        self.assertAlmostRelativeEquals( grid[1][2][1].t, [0.125, 0.375, 0.625, 0.875] | units.s)
+        self.assertEquals(grid[0].x, grid.x[0])
+        self.assertEquals(grid[0][1].x, grid.x[0][1])
+        self.assertEquals(grid[1][2][1].x, grid.x[1][2][1])
+        self.assertEquals(grid[1][2][1][2].x, grid.x[1][2][1][2])
+
+    def test17(self):
+        grid = datamodel.Grid.create((4,2), [1.0 | units.m, 1.0 | units.m])
+        self.assertEquals(grid.shape, (4,2) )
+        self.assertEquals(grid.x.shape, (4,2))
+        self.assertAlmostRelativeEquals( grid[1].x, ([0.375] * 2) | units.m)
+        self.assertAlmostRelativeEquals( grid[1][1].y, 0.75 | units.m)
+        self.assertEquals(grid[0].x, grid.x[0])
+        self.assertEquals(grid[0][1].x, grid.x[0][1])
+
 class TestIndexing(amusetest.TestCase):
     def test1(self):
         self.assertEquals(2, number_of_dimensions_after_index(3, 1))
