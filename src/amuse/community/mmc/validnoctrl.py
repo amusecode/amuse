@@ -5,8 +5,7 @@ from amuse.community.hermite0.interface import HermiteInterface
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface
 from amuse.community.bhtree.interface import BHTreeInterface
 from amuse.ext.ClusterCore import *
-from amuse.ic.plummer import MakePlummerModel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import _MakePlummerModel
 
 
 import time as systime
@@ -16,7 +15,7 @@ from interface import mmcInterface
 from interface import mmc
 
 def plummer(x):
-  plummer = MakePlummerModel(x)
+  plummer = _MakePlummerModel(x)
   mass,pos,vel=plummer.new_model()
 
   mass=mass[0:,0]

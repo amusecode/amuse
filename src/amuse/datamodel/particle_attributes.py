@@ -205,6 +205,19 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
 
     return G * sum_of_energies
 
+def thermal_energy(particles):
+    """
+    Returns the total internal energy of the (gas)
+    particles in the particles set.
+
+    >>> from amuse.datamodel import Particles
+    >>> particles = Particles(2)
+    >>> particles.u = [0.5, 0.5] | units.ms**2
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.thermal_energy()
+    quantity<1.0 m**2 * kg * s**-2>
+    """
+    return (particles.mass * particles.u).sum()
 
 
 def particle_specific_kinetic_energy(set, particle):
@@ -474,6 +487,7 @@ AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_ma
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
 AbstractParticleSet.add_global_function_attribute("kinetic_energy", kinetic_energy)
 AbstractParticleSet.add_global_function_attribute("potential_energy", potential_energy)
+AbstractParticleSet.add_global_function_attribute("thermal_energy", thermal_energy)
 AbstractParticleSet.add_global_function_attribute("virial_radius", virial_radius)
 AbstractParticleSet.add_global_function_attribute("total_mass", total_mass)
 

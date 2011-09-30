@@ -1,7 +1,9 @@
+import numpy
+
 from amuse.test import amusetest
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.ic.plummer import *
+from amuse.ic.plummer import new_plummer_sphere, _MakePlummerModel
 
 class TestData(amusetest.TestCase):
     pass
@@ -9,8 +11,8 @@ class TestData(amusetest.TestCase):
 class TestPlummer(TestData):
     def test1(self):
         numpy.random.seed(0)
-        print numpy.random.get_state()
-        m =  MakePlummerModel(2, None)
+        #print numpy.random.get_state()
+        m = _MakePlummerModel(2)
         m1, p, v = m.new_model()
         self.assertEquals(m1[0,0], 0.5)
         self.assertEquals(m1[1,0], 0.5)

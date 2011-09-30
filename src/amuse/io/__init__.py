@@ -1,3 +1,10 @@
+"""
+File input and output
+
+AMUSE can read and write to/from several data formats. The main routines
+are write_set_to_file and read_set_from_file, explained below.
+"""
+
 from amuse.io.base import *
 from amuse.io import text
 from amuse.io.nemotsf import NemoFileFormatProcessor
@@ -16,3 +23,5 @@ HDF5FileFormatProcessor.register()
 GadgetFileFormatProcessor.register()
 VtkStructuredGrid.register()
 VtkUnstructuredGrid.register()
+
+__all__ = ["read_set_from_file", "write_set_to_file", "get_options_for_format"]

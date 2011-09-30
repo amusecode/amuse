@@ -11,10 +11,10 @@ import coreradius
 from interface import mmcInterface
 from interface import mmc
 
-from amuse.ic.plummer import MakePlummerModel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import _MakePlummerModel
+
 def plummer(x):
-  plummer = MakePlummerModel(x)
+  plummer = _MakePlummerModel(x)
   mass,pos,vel=plummer.new_model()
 
   mass=mass[0:,0]

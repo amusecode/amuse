@@ -3,7 +3,7 @@ import sys
 import numpy
 
 from amuse.community.hop.interface import HopInterface as Hop
-from amuse.ic.plummer import MakePlummerModel
+from amuse.ic.plummer import _MakePlummerModel
 
 import logging
 #logging.basicConfig(level=logging.DEBUG)
@@ -17,7 +17,7 @@ def hopfromnb(nb,ids):
   return hop,ids2
 
 def plummer(x):
-  plummer=MakePlummerModel(x)
+  plummer=_MakePlummerModel(x)
   mass,pos,vel=plummer.new_model()
 
   mass=mass[0:,0]

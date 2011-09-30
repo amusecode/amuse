@@ -147,10 +147,11 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
     
         if self.number_of_gas_particles > 0:
             self.u = self.read_fortran_block_floats(file)
+        else:
+            self.u = None
         
         if self.is_initial_conditions_format:
             self.density = None
-            self.u = None
             self.hsml = None
             self.pot = None
             self.acc = None
@@ -162,7 +163,6 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
             self.density = self.read_fortran_block_floats(file)
             self.hsml = self.read_fortran_block_floats(file)
         else:
-            self.u = None
             self.density  = None
             self.hsml = None
             
@@ -224,7 +224,7 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         if self.number_of_gas_particles > 0:
             gas_set = sets[self.GAS]
             unit = (nbody_system.length / nbody_system.time) ** 2
-            gas_set.internal_energy = unit.new_quantity(self.u)
+            gas_set.u = unit.new_quantity(self.u)
             unit = nbody_system.mass / nbody_system.length ** 3
             if not self.density is None:
                 gas_set.rho = unit.new_quantity(self.density)

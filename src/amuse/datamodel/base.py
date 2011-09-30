@@ -107,13 +107,13 @@ class DerivedAttribute(object):
         return None
     
     def set_values_for_entities(self, particles, value):
-        raise exceptions.AmuseException("cannot set value of attribute '{0}'")
+        raise exceptions.AmuseException("cannot set value of a DerivedAttribute")
 
     def get_value_for_entity(self, particles, key):
         return None
 
     def set_value_for_entity(self, particles, key, value):
-        raise exceptions.AmuseException("cannot set value of attribute '{0}'")
+        raise exceptions.AmuseException("cannot set value of a DerivedAttribute")
 
 class VectorAttribute(DerivedAttribute):
     """

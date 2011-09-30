@@ -1,3 +1,11 @@
+"""
+Salpeter initial mass function (IMF)
+
+This module contains the functions new_salpeter_mass_distribution and
+new_salpeter_mass_distribution_nbody, used to generate realisations of the 
+Salpeter IMF.
+"""
+
 import numpy
 import os
 import sys
@@ -5,7 +13,7 @@ import sys
 from amuse.units import nbody_system
 from amuse.units import units
 
-class SalpeterIMF(object):
+class _SalpeterIMF(object):
     def __init__(self, mass_min = 0.1 | units.MSun, mass_max = 125 | units.MSun, alpha = -2.35):
         self.mass_min = mass_min
         self.mass_max = mass_max
@@ -50,7 +58,7 @@ def new_salpeter_mass_distribution(number_of_particles, *list_arguments, **keywo
     
     :argument alpha: the dimensionless exponent of the Salpeter function (defaults to -2.35)
     """
-    uc = SalpeterIMF(*list_arguments, **keyword_arguments)
+    uc = _SalpeterIMF(*list_arguments, **keyword_arguments)
     return uc.next_set(number_of_particles)[1]
     
 def new_salpeter_mass_distribution_nbody(number_of_particles, **keyword_arguments):
@@ -65,7 +73,7 @@ def new_salpeter_mass_distribution_nbody(number_of_particles, **keyword_argument
     if not 'mass_max' in keyword_arguments:
         keyword_arguments['mass_max'] = 125 | nbody_system.mass
         
-    uc = SalpeterIMF(**keyword_arguments)
+    uc = _SalpeterIMF(**keyword_arguments)
     total_mass, result = uc.next_set(number_of_particles)
     result *=  (1.0 | total_mass.unit) / total_mass
     return result
