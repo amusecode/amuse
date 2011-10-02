@@ -783,10 +783,6 @@ function amuse_get_position(id,x,y,z) result(ret)
   real*8 :: x,y,z
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
-    print*, id,nbodies
-    print*
-    print*,nbexist(1:nbodies)
-    stop
     ret=-1
     return
   endif 

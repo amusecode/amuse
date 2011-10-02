@@ -140,12 +140,13 @@ subroutine extrapeth(dt)
   mintime=1.e10
   maxtime=0.
   tottime=0.
+
 !$omp parallel private(deth,eth,p,lhe,lerad,drad, &
 !$omp ethtoent,time1,time2) &
 !$omp shared(dt) &
 !$omp reduction(+ : tottime) & 
 !$omp reduction(max : jmax,imax,maxtime)	&
-!$omp reduction(min : mintime) 
+!$omp reduction(min : mintime)
   call cpu_time(time1)
 !$omp do
   do p=1,nsph

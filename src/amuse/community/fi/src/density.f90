@@ -303,7 +303,7 @@ subroutine densnhsmooth
 !$omp parallel shared(nchunk) &
 !$omp private(i,j,p,k,nneigh,kmin,kmax, buf,todo,ntodo,ib,chunk,oldrho) &
 !$omp reduction( max : imax,nnmax,maxtime) &
-!$omp reduction(+ : jtot,nntot,tottime,totalsearches, drhosum) &
+!$omp reduction(+ : jtot,nntot,tottime,totalsearches,drhosum) &
 !$omp reduction( min : nnmin,mintime) 
   call cpu_time(time1)
   ncalls=0;nsearches=0
@@ -322,7 +322,7 @@ subroutine densnhsmooth
         call pcond_srch(root,p,nneigh,srlist)
         oldrho=rho(p)
         call pdensity(p,nneigh)
-        if(oldrho.NE.0) drhosum=drhosum+(rho(p)-oldrho)**2/oldrho**2
+        if(oldrho.NE.0) drhosum=drhosum+abs(rho(p)-oldrho)/oldrho
         nnmin=MIN(nnmin,nneigh)
         nnmax=MAX(nnmax,nneigh)
         nntot=nntot+nneigh
@@ -347,8 +347,8 @@ subroutine densnhsmooth
     print*,'<densnhsmooth> max iter, fails:',imax,jtot
   endif
   
-  if(drhosum/npactive.GT.0.001) &
-    print*,' *** drho warning *** ',drhosum/npactive, npactive
+  if(verbosity.GT.0.AND.drhosum/npactive.GT.0.01) &
+      print*,' *** drho warning *** ',drhosum/npactive, npactive
 end subroutine
 
 subroutine gatterdens(n,spos,hsearch,dens,ddensdh)
