@@ -28,21 +28,19 @@ redirect_outputs_function_template = """
 function internal__redirect_outputs(stdoutfile, stderrfile)
     implicit none
     
-    include 'mpif.h'
-    
     character(LEN=*) , INTENT(IN) :: stdoutfile, stderrfile
     character(1024) :: fullname
-    integer :: mpi_rank, mpi_err, internal__redirect_outputs
+    integer :: mpi_rank1, mpi_err1, internal__redirect_outputs
     
     CLOSE(UNIT=5) ! always close stdin
     
-    call mpi_comm_rank(MPI_COMM_WORLD, mpi_rank, mpi_err)
+    call mpi_comm_rank(MPI_COMM_WORLD, mpi_rank1, mpi_err1)
     
     if (stdoutfile .NE. 'none' ) then
         
         close(UNIT=6)
         if (stdoutfile .NE. '/dev/null') then
-            write (fullname, '(A,".",I3.3)')  stdoutfile, mpi_rank
+            write (fullname, '(A,".",I3.3)')  stdoutfile, mpi_rank1
             open(unit=6, file=trim(fullname), access="append")
         end if
     end if
@@ -51,7 +49,7 @@ function internal__redirect_outputs(stdoutfile, stderrfile)
         close(UNIT=0)
         
         if (stderrfile .NE. '/dev/null') then
-            write( fullname, '(A,".",I3.3)' )  stderrfile, mpi_rank
+            write( fullname, '(A,".",I3.3)' )  stderrfile, mpi_rank1
             open(unit=0, file=trim(fullname), access="APPEND")
         end if
         
@@ -355,9 +353,10 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.output_runloop_function_def_start()
         self.output_switch_start()
         self.output_sourcecode_for_functions()
-        self.output_switch_end()
+        self.output_switch_end() 
+        
+        
         self.output_runloop_function_def_end()
-        self.output_redirect_output()
         self.output_main()
         self._result = self.out.string
 
@@ -372,9 +371,19 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
             for x in self.specification_class.use_modules:
                 self.out.n() + 'use ' + x 
                 
+    def must_include_declaration_of_function(self, x):
+        if x.specification.name.startswith("internal__"):
+            return False
+        
+        return True
+        
+        
     def output_declarations_for_the_functions(self):
         if not hasattr(self.specification_class, 'use_modules'):
             for x in self.interface_functions:
+                if not self.must_include_declaration_of_function(x):
+                    continue
+                    
                 specification = x.specification
                 if specification.id == 0:
                     continue
@@ -435,6 +444,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf().lf() + 'SUBROUTINE run_loop'
         self.out.indent()
         self.output_modules()
+        self.out.lf().lf() + 'IMPLICIT NONE'
         self.out.lf()
         self.output_mpi_include()
         self.out.n() + 'integer :: rank, parent, ioerror, maxlen = 255'
@@ -631,6 +641,12 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf() + 'call MPI_COMM_DISCONNECT(parent, ioerror)'
         self.out.lf() + 'return'
         
+        
+        self.out.lf().lf() + 'CONTAINS'
+        self.out.indent()
+        self.output_redirect_output()
+        self.out.dedent()
+        
         self.out.dedent().lf() + 'end subroutine'
     
     def output_deallocate_statements(self):
@@ -657,6 +673,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf().lf() + 'call run_loop()'
         self.out.lf().lf() + 'call MPI_FINALIZE(ioerror)'
         self.out.dedent().lf()+'end program muse_worker'
+        
         
         
 

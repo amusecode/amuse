@@ -57,7 +57,29 @@ funcs =\
 codestringfort = \
 """
 MODULE MMC
+    interface
+            function run_a_while(iphase)
+                integer :: run_a_while
+                integer :: iphase
+            end function run_a_while
+            function set_flagr(temp_, N)
+                integer, intent(in)::N
+                double precision temp_(N)
+                integer set_flagr
+            end function
+            
+            function get_flagr(id, flagr_)
+                integer id
+                double precision flagr_
+                integer get_flagr
+            end function
 
+
+            function get_nlagra(temp_)
+                integer get_nlagra
+                integer temp_
+            end function
+    end interface
 CONTAINS
 
 FUNCTION nonstandard_init()
@@ -209,13 +231,6 @@ FUNCTION test_sort_routine(n, aa, bb)
   res = test_sort(n, aa, bb)
   test_sort_routine = 0
 END FUNCTION 
-
-FUNCTION internal__redirect_outputs( stdoutfile, stderrfile)
-  IMPLICIT NONE
-  INTEGER :: internal__redirect_outputs
-  CHARACTER(LEN=*) :: stdoutfile, stderrfile
-  internal__redirect_outputs=0
-END FUNCTION
 
 FUNCTION run( )
   IMPLICIT NONE
