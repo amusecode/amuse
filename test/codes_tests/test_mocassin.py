@@ -238,7 +238,7 @@ class TestMocassin(TestWithMPI):
         self.assertEquals(instance.grid.shape[2], 13)
         
     def test3(self):
-        instance=self.new_instance(Mocassin) #, redirection = "none")
+        instance=self.new_instance(Mocassin)#, redirection = "none")
         instance.initialize_code()
         instance.set_random_seed(1)
         instance.set_input_directory(instance.get_default_input_directory())

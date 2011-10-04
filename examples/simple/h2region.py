@@ -2,7 +2,6 @@
 
 """
 
-
 import numpy
 
 from matplotlib import pyplot
@@ -16,6 +15,7 @@ from amuse.units import nbody_system
 from amuse.ext.protodisk import ProtoPlanetaryDisk
 from amuse.datamodel import Particle
 from amuse.datamodel import Grid
+from amuse.io import write_set_to_file
 
 
 def make_grid(number_of_points, length, constant_hydrogen_density, inner_radius, outer_radius):
@@ -29,7 +29,6 @@ def make_grid(number_of_points, length, constant_hydrogen_density, inner_radius,
     
 def setup_abundancies(code):
     table = code.abundancies_table()
-    print table
     for atom in table.keys():
         table[atom] = 0.0
     table['H'] = 1.0
@@ -39,21 +38,18 @@ def setup_abundancies(code):
     table['O'] = 3.3e-4
     table['Ne'] = 5.e-5
     table['S'] = 9.e-6
-    print  code.abundancies_table()
     
 if __name__ in ("__main__","__plot__"):
 
     inner_radius = 30.0e17 | units.cm
     outer_radius = 0.95e19 | units.cm
-    grid_size    = 11
+    grid_size    = 13
     hydrogen_density = 100 | units.cm ** -3
     
     star=Particle()
     star.position = [0.0] * 3 | units.AU
     star.temperature = 20000 | units.K
     star.luminosity = 600.5 | 1e37 * units.erg * (units.s**-1)
-    print star.luminosity
-    print (star.luminosity).as_quantity_in(units.LSun)
     
     grid=make_grid(
         number_of_points = grid_size,
@@ -63,7 +59,7 @@ if __name__ in ("__main__","__plot__"):
         outer_radius = outer_radius
     )
     
-    radiative_transfer = Mocassin(debugger="xterm")
+    radiative_transfer = Mocassin(debugger="xterm", number_of_workers = 1)
     
     #radiative_transfer.redirect_outputs_to("moc3-out.txt", "moc3-err.txt")
     radiative_transfer.set_input_directory(radiative_transfer.get_default_input_directory())
@@ -104,7 +100,9 @@ if __name__ in ("__main__","__plot__"):
     radius = grid.radius.flatten()
     electron_temperature = grid.electron_temperature.flatten()
     selection = electron_temperature > 0 | units.K
-    print electron_temperature[selection].value_in(units.K)    
+    
+    write_set_to_file(grid, 'h2region.h5', 'amuse')
+    
     pyplot.scatter(
         radius[selection].value_in(1e17 * units.cm),
         electron_temperature[selection].value_in(units.K)        
@@ -113,6 +111,6 @@ if __name__ in ("__main__","__plot__"):
     pyplot.xlabel('10^17 cm')
     pyplot.ylabel('K')
     pyplot.xlim(30, 100)
-    pyplot.ylim(1000,8000)
+    pyplot.ylim(5500,7500)
     pyplot.show()
          
