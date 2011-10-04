@@ -279,5 +279,6 @@ class TestMocassin(TestWithMPI):
         #print instance.grid.electron_temperature[3]
         
         instance.iterate()
+        self.assertAlmostRelativeEquals(0.0,  instance.get_percentage_converged())
         self.assertAlmostRelativeEquals(0.00297847623006 | units.cm**-3 , instance.grid.electron_density[3][1][2], 10)
         self.assertAlmostRelativeEquals(0.00351035199128 | units.cm**-3 , instance.grid.electron_density[3][1][3], 10)

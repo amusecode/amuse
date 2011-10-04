@@ -171,6 +171,12 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         function.result_type = 'int32'
         return function
         
+    @legacy_function    
+    def get_percentage_converged():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
 
     @legacy_function    
     def get_constant_hydrogen_density():
@@ -265,6 +271,12 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         
     @legacy_function
     def iterate():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def step():
         function = LegacyFunctionSpecification()  
         function.result_type = 'int32'
         return function
@@ -562,6 +574,18 @@ class Mocassin(InCodeComponentImplementation):
             'iterate',
             (),
             (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'step',
+            (),
+            (object.ERROR_CODE,)
+        )
+        
+        
+        object.add_method(
+            'get_percentage_converged',
+            (),
+            (object.NO_UNIT, object.ERROR_CODE)
         )
         object.add_method(
             'get_position_of_index',

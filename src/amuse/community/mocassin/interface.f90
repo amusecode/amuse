@@ -143,16 +143,41 @@ CONTAINS
         IMPLICIT NONE
         include 'mpif.h'
         INTEGER iterate
-        integer :: error
+        integer :: error, iStar
         
         ! call MCIterationDriver(grid3D(1:nGrids))
         
         
         
         do while (.true.)
-           error = step_monte_carlo(grid3D(1:nGrids))
+           error = step()
            
-           error = calculate_convergence(grid3D(1:nGrids))
+           nPhotonsTot = nPhotons(1)
+           do iStar=1, nStars              
+              nPhotonsTot = nPhotonsTot+nPhotons(iStar)
+           end do
+
+           if (nIterateMC > 1 .and. totPercent < 95. .and. lgAutoPackets & 
+                & .and. nPhotonsTot < maxPhotons .and. totPercentOld > 0.) then
+
+              if ( (totPercent-totPercentOld)/totPercentOld <= convIncPercent ) then
+                 nPhotons = nPhotons*nPhotIncrease
+                 deltaE   = deltaE/nPhotIncrease
+
+                 if (taskid==0) &
+                      & print*, "! iterateMC: [talk] Total number of energy packets &
+                      &increased to ", nPhotons
+
+                 if (Ldiffuse>0.) then
+                    nPhotonsDiffuseLoc = nPhotonsDiffuseLoc*nPhotIncrease
+                    if (taskid==0) &
+                         & print*, "! iterateMC: [talk] number of diffuse energy packets &
+                         &per cell increased to ", nPhotonsDiffuseLoc
+                 end if              
+
+              end if              
+           end if
+           
         
            totPercentOld = totPercent
 
@@ -210,6 +235,27 @@ CONTAINS
         
         iterate=0
     END FUNCTION
+    
+    FUNCTION step()
+        IMPLICIT NONE
+        include 'mpif.h'
+        INTEGER step
+        integer :: error
+        
+        error = step_monte_carlo(grid3D(1:nGrids))
+       
+        if (error.NE.0) then
+            step = error
+            return
+        end if
+        
+        error = calculate_convergence(grid3D(1:nGrids))
+        
+        totPercentOld = totPercent
+        
+        step=error
+    END FUNCTION
+    
     
     FUNCTION initialize_code()
         IMPLICIT NONE
@@ -750,6 +796,17 @@ CONTAINS
         get_constant_hydrogen_density = 0
     END FUNCTION
 
+
+    FUNCTION get_percentage_converged(value)
+        IMPLICIT NONE
+        DOUBLE PRECISION, INTENT(OUT) :: value
+        INTEGER get_percentage_converged
+        
+        value = totPercent
+        
+        get_percentage_converged = 0
+    END FUNCTION
+    
     FUNCTION has_constant_hydrogen_density(value)
         IMPLICIT NONE
         LOGICAL, INTENT(OUT) :: value
@@ -2991,7 +3048,6 @@ CONTAINS
         type(grid_type), intent(inout) :: grid(*)
         integer :: calculate_convergence
         integer :: iG,  icomp, icontrib ! counters
-        integer :: istar ! counters
         integer :: i,j,k ! counters
         integer :: ios, ierr ! counters
         integer :: totCells
@@ -3152,31 +3208,7 @@ CONTAINS
            
            end if
         
-           nPhotonsTot = nPhotons(1)
-           do iStar=1, nStars              
-              nPhotonsTot = nPhotonsTot+nPhotons(iStar)
-           end do
-
-           if (nIterateMC > 1 .and. totPercent < 95. .and. lgAutoPackets & 
-                & .and. nPhotonsTot < maxPhotons .and. totPercentOld > 0.) then
-
-              if ( (totPercent-totPercentOld)/totPercentOld <= convIncPercent ) then
-                 nPhotons = nPhotons*nPhotIncrease
-                 deltaE   = deltaE/nPhotIncrease
-
-                 if (taskid==0) &
-                      & print*, "! iterateMC: [talk] Total number of energy packets &
-                      &increased to ", nPhotons
-
-                 if (Ldiffuse>0.) then
-                    nPhotonsDiffuseLoc = nPhotonsDiffuseLoc*nPhotIncrease
-                    if (taskid==0) &
-                         & print*, "! iterateMC: [talk] number of diffuse energy packets &
-                         &per cell increased to ", nPhotonsDiffuseLoc
-                 end if              
-
-              end if              
-           end if
+           
 
 
 !           if (Ldiffuse>0. .and. nIterateMC > 1 .and. totPercent < 95. .and. lgAutoPackets & 
