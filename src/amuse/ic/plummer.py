@@ -1,7 +1,9 @@
 """
 Plummer model generator
 
-This module contains the function new_plummer_sphere, used to create Plummer models.
+This module contains a function used to create Plummer (1911) models, which 
+follow a spherically symmetric density profile of the form:
+rho = c * (1 + r**2)**(-5/2)
 """
 
 import numpy

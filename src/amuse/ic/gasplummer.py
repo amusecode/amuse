@@ -1,8 +1,10 @@
 """
 Plummer gas model generator
 
-This module contains the function new_plummer_gas_model, used to create Plummer 
-models consisting of (SPH) gas particles.
+This module contains a function used to create Plummer (1911) models consisting 
+of (SPH) gas particles.
+Plummer models follow a spherically symmetric density profile of the form:
+rho = c * (1 + r**2)**(-5/2)
 """
 
 import numpy

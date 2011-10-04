@@ -6,17 +6,22 @@ dynamics, stellar evolution, hydrodynamics and radiative transfer can easily be
 coupled, in order to perform state-of-the-art simulations of a wide range of 
 different astrophysical phenomena.
 
-It contains several packages, most notably (help available for each of these):
-units     - AMUSE uses quantities, i.e. a number or array with a unit attached, 
+It contains several packages, most notably:
+units     - AMUSE uses quantities, i.e. a number (or array) with a unit attached, 
             instead of just numbers (vital when coupling different codes!)
 datamodel - defines particles and grids, on which data (quantities) can be stored
 ic        - a collection of routines to generate initial conditions
-io        - 
-community - 
+io        - how to read and write data in several file formats
+community - a variety of existing codes of different physical domains, each with 
+            a uniform interface to enable coupling
 
+Help is available for each of these packages, e.g.:
+> amuse.sh
+>>> import amuse.ic
+>>> help(amuse.ic) # doctest: +ELLIPSIS
+Help on package amuse.ic in amuse:
+...
 
-AMUSE contains a lot of functionality to execute astrophysical experiments.
-Look into the interface packages for the interfacing to physical model simulation software.
-You can also use AMUSE to convert common data formats.
-
+or (directly from the terminal):
+> pydoc amuse.ic
 """

@@ -1,8 +1,7 @@
 """
 Salpeter initial mass function (IMF)
 
-This module contains the functions new_salpeter_mass_distribution and
-new_salpeter_mass_distribution_nbody, used to generate realisations of the 
+This module contains functions used to generate realisations of the 
 Salpeter IMF.
 """
 

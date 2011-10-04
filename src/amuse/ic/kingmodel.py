@@ -1,7 +1,7 @@
 """
 King model generator
 
-This module contains the function new_king_model, used to create King models.
+This module contains a function used to create King models.
 """
 
 import math
