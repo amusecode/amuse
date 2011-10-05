@@ -14,6 +14,7 @@ MODULE mocassin_interface
     logical :: is_grid_committed = .false.
     real, pointer :: hydrogen_density_input(:,:,:)
     integer :: totPercentOld
+    integer :: total_number_of_photons = 1000000
     
     type(grid_type) :: grid3D(maxGrids)       ! the 3D Cartesian  grid
     
@@ -143,7 +144,7 @@ CONTAINS
         IMPLICIT NONE
         include 'mpif.h'
         INTEGER iterate
-        integer :: error, iStar
+        integer :: error
         
         ! call MCIterationDriver(grid3D(1:nGrids))
         
@@ -152,10 +153,6 @@ CONTAINS
         do while (.true.)
            error = step()
            
-           nPhotonsTot = nPhotons(1)
-           do iStar=1, nStars              
-              nPhotonsTot = nPhotonsTot+nPhotons(iStar)
-           end do
 
            if (nIterateMC > 1 .and. totPercent < 95. .and. lgAutoPackets & 
                 & .and. nPhotonsTot < maxPhotons .and. totPercentOld > 0.) then
@@ -222,11 +219,6 @@ CONTAINS
               
               call mpi_barrier(mpi_comm_world, ierr)
                  
-              ! step up MC iterations counter
-              nIterateMC = nIterateMC + 1
-              
-              if (lgTalk) print*, "! iterateMC: [talk] now starting iteration #",&
-                   &                            nIterateMC
 
               
            end if
@@ -240,18 +232,48 @@ CONTAINS
         IMPLICIT NONE
         include 'mpif.h'
         INTEGER step
-        integer :: error
+        integer :: error, iStar
+        
+        !reinitialize the number of photons per star
+        !if a change in the total number of photons occured
+        if(total_number_of_photons.NE.nPhotonsTot) then
+            nPhotonsTot = total_number_of_photons
+            do iStar=1, nStars              
+                nPhotons(iStar) = nPhotonsTot / nStars
+                deltaE(iStar) = Lstar(iStar)/nPhotons(iStar)
+            end do
+            
+            ! deal with round-off in number of photons by summing the counts
+            nPhotonsTot = 0.0
+            do iStar=1, nStars           
+                nPhotonsTot = nPhotonsTot+nPhotons(iStar) 
+            end do
+            total_number_of_photons = nPhotonsTot
+        end if
+        
         
         error = step_monte_carlo(grid3D(1:nGrids))
-       
+        print *, "step error", error
         if (error.NE.0) then
             step = error
             return
         end if
         
+       
         error = calculate_convergence(grid3D(1:nGrids))
         
+        nPhotonsTot = 0.0
+        do iStar=1, nStars             
+            nPhotonsTot = nPhotonsTot+nPhotons(iStar)
+        end do
+        total_number_of_photons = nPhotonsTot
+        
         totPercentOld = totPercent
+        
+        
+        ! step up MC iterations counter
+        nIterateMC = nIterateMC + 1
+              
         
         step=error
     END FUNCTION
@@ -481,8 +503,10 @@ CONTAINS
         INTEGER i
         Integer :: nxA,nyA,nzA
         
+        nPhotonsTot = total_number_of_photons
+        
         do i = 1, nStars
-           nPhotons(i) = NphotonsTot/nStars
+           nPhotons(i) = nPhotonsTot/nStars
            deltaE(i) = Lstar(i)/nPhotons(i)
         end do
         
@@ -504,6 +528,22 @@ CONTAINS
         
         
         call setStarPosition(grid3D(1)%xAxis,grid3D(1)%yAxis,grid3D(1)%zAxis, grid3D(1:nGrids))
+        
+        
+    END FUNCTION
+    
+    
+    FUNCTION recommit_particles()
+        IMPLICIT NONE
+        INTEGER recommit_particles
+        INTEGER i
+        
+        nPhotonsTot = total_number_of_photons
+        
+        do i = 1, nStars
+           nPhotons(i) = nPhotonsTot/nStars
+           deltaE(i) = Lstar(i)/nPhotons(i)
+        end do
         
         
     END FUNCTION
@@ -885,8 +925,10 @@ CONTAINS
     FUNCTION set_total_number_of_photons(value)
         IMPLICIT NONE
         integer, INTENT(IN) :: value
-        INTEGER set_total_number_of_photons
-        nPhotonsTot = value
+        INTEGER :: set_total_number_of_photons
+        
+        total_number_of_photons = value
+       
         set_total_number_of_photons = 0
     END FUNCTION
 
@@ -894,7 +936,7 @@ CONTAINS
         IMPLICIT NONE
         integer, INTENT(OUT) :: value
         INTEGER get_total_number_of_photons
-        value = nPhotonsTot
+        value = total_number_of_photons
         get_total_number_of_photons = 0
     END FUNCTION
 
@@ -2147,7 +2189,6 @@ CONTAINS
         type(grid_type), intent(inout) :: grid(*)
         integer :: step_monte_carlo
         integer :: i,j,k
-        
         ! local variables
         real, pointer :: budgetTemp(:,:)      ! temporary dust heating budget array
         real, pointer :: dustPDFTemp(:,:)     ! temporary dust emission PDF array
@@ -2182,6 +2223,7 @@ CONTAINS
 
         integer                :: dcp, nsp
          
+        step_monte_carlo = 0
 
         ! re-initialize MC estimators
         do iG = 1, nGrids

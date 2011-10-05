@@ -238,7 +238,7 @@ class TestMocassin(TestWithMPI):
         self.assertEquals(instance.grid.shape[2], 13)
         
     def test3(self):
-        instance=self.new_instance(Mocassin)#, redirection = "none")
+        instance=self.new_instance(Mocassin) #, debugger = "xterm")
         instance.initialize_code()
         instance.set_random_seed(1)
         instance.set_input_directory(instance.get_default_input_directory())
@@ -278,7 +278,8 @@ class TestMocassin(TestWithMPI):
         #print instance.grid.electron_density[3]
         #print instance.grid.electron_temperature[3]
         
-        instance.iterate()
+        instance.step()
+        
         self.assertAlmostRelativeEquals(0.0,  instance.get_percentage_converged())
         self.assertAlmostRelativeEquals(0.00297847623006 | units.cm**-3 , instance.grid.electron_density[3][1][2], 10)
         self.assertAlmostRelativeEquals(0.00351035199128 | units.cm**-3 , instance.grid.electron_density[3][1][3], 10)
