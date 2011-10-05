@@ -54,7 +54,7 @@ def plot_temperature_line(radii, electron_temperatures):
     pyplot.ylim(5500,7500)
     pyplot.show()
     
-def main(number_of_grid_cells = 15):
+def main(number_of_grid_cells = 15, min_convergence = 60):
     inner_radius = 30.0e17 | units.cm
     outer_radius = 95.0e17 | units.cm
     
@@ -73,7 +73,7 @@ def main(number_of_grid_cells = 15):
         outer_radius = outer_radius
     )
     
-    radiative_transfer = Mocassin(debugger="xterm", number_of_workers = 1)
+    radiative_transfer = Mocassin(number_of_workers = 2) #, debugger = "xterm")
     
     #radiative_transfer.redirect_outputs_to("moc3-out.txt", "moc3-err.txt")
     radiative_transfer.set_input_directory(radiative_transfer.get_default_input_directory())
@@ -109,19 +109,18 @@ def main(number_of_grid_cells = 15):
     
     for i in range(20):
         radiative_transfer.step()
-        percentage_converged = radiative_transfer.get_percentage_converged()
-        print percentage_converged
         
-        if percentage_converged >= 0.6:
+        percentage_converged = radiative_transfer.get_percentage_converged()
+        print "percentage converged :", percentage_converged
+        
+        if percentage_converged >= min_convergence:
             break
             
-        if i == 1:
-            continue
-            
-        if percentage_converged > 0.95:
+        if previous_percentage_converged < 5 or percentage_converged > 95:
             continue
             
         convergence_increase = (percentage_converged-previous_percentage_converged)/previous_percentage_converged
+        print "convergence increase :", convergence_increase
         if convergence_increase < 0.2:
             radiative_transfer.total_number_of_photons *= 2
                     
@@ -148,6 +147,14 @@ def new_option_parser():
         help="number of cells in each direction",
         type="int"
     )
+    result.add_option(
+        "-c", "--min-convergence", 
+        default = 60,
+        dest="min_convergence",
+        help="stop the iteratation when the solution is converged to the given percentage (in whole numbers between 10 and 100)",
+        type="int"
+    )
+    
     return result
     
 if __name__ in ("__main__","__plot__"):
