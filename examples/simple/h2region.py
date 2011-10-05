@@ -75,9 +75,11 @@ def main(number_of_grid_cells = 15, min_convergence = 60):
     
     radiative_transfer = Mocassin(number_of_workers = 2) #, debugger = "xterm")
     
-    #radiative_transfer.redirect_outputs_to("moc3-out.txt", "moc3-err.txt")
     radiative_transfer.set_input_directory(radiative_transfer.get_default_input_directory())
+    radiative_transfer.set_output_directory(radiative_transfer.get_default_output_directory())
+    
     radiative_transfer.initialize_code()
+    
     radiative_transfer.set_symmetricXYZ(True)
     
     radiative_transfer.parameters.length_x = outer_radius
@@ -105,26 +107,28 @@ def main(number_of_grid_cells = 15, min_convergence = 60):
     radiative_transfer.particles.add_particle(star)
     radiative_transfer.commit_particles()
     
+    max_number_of_photons = radiative_transfer.parameters.total_number_of_photons * 10
+    
     previous_percentage_converged = 0.0
     
     for i in range(20):
         radiative_transfer.step()
         
         percentage_converged = radiative_transfer.get_percentage_converged()
-        print "percentage converged :", percentage_converged
+        print "percentage converged :", percentage_converged, ", step :", i
         
         if percentage_converged >= min_convergence:
             break
             
-        if previous_percentage_converged < 5 or percentage_converged > 95:
-            continue
+        if previous_percentage_converged > 5 and percentage_converged < 95:
+            convergence_increase = (percentage_converged-previous_percentage_converged)/previous_percentage_converged
             
-        convergence_increase = (percentage_converged-previous_percentage_converged)/previous_percentage_converged
-        print "convergence increase :", convergence_increase
-        if convergence_increase < 0.2:
-            radiative_transfer.total_number_of_photons *= 2
+            print "convergence increase :", convergence_increase
+            
+            if convergence_increase < 0.2 and radiative_transfer.total_number_of_photons < max_number_of_photons:
+                radiative_transfer.total_number_of_photons *= 2
                     
-                    
+        previous_percentage_converged = percentage_converged    
         
     
     grid.electron_temperature = radiative_transfer.grid.electron_temperature
