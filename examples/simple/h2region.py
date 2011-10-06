@@ -54,14 +54,14 @@ def plot_temperature_line(radii, electron_temperatures):
     pyplot.ylim(5500,7500)
     pyplot.show()
     
-def main(number_of_grid_cells = 15, min_convergence = 60):
+def main(number_of_grid_cells = 15, min_convergence = 20):
     inner_radius = 30.0e17 | units.cm
     outer_radius = 95.0e17 | units.cm
     
     hydrogen_density = 100 | units.cm ** -3
     
     star=Particle()
-    star.position = [0.0] * 3 | units.AU
+    star.position = [0.0, 0.0, 0.0] | units.AU
     star.temperature = 20000 | units.K
     star.luminosity = 600.5 | 1e37 * units.erg * (units.s**-1)
     
@@ -85,21 +85,17 @@ def main(number_of_grid_cells = 15, min_convergence = 60):
     radiative_transfer.parameters.length_x = outer_radius
     radiative_transfer.parameters.length_y = outer_radius
     radiative_transfer.parameters.length_z = outer_radius
-    radiative_transfer.parameters.mesh_size = [number_of_grid_cells]*3
+    radiative_transfer.parameters.mesh_size = [number_of_grid_cells, number_of_grid_cells, number_of_grid_cells]
     setup_abundancies(radiative_transfer)
     
     radiative_transfer.parameters.initial_nebular_temperature = 6000.0 | units.K
     radiative_transfer.parameters.high_limit_of_the_frequency_mesh = 15 | units.ryd
     radiative_transfer.parameters.low_limit_of_the_frequency_mesh  = 1.001e-5| units.ryd
     
-    radiative_transfer.parameters.maximum_number_of_monte_carlo_iterations = 20
-    radiative_transfer.parameters.minimum_convergence_level = 100
     radiative_transfer.parameters.total_number_of_photons = 10000000
     radiative_transfer.parameters.total_number_of_points_in_frequency_mesh = 600
     radiative_transfer.parameters.convergence_limit = 0.09
     radiative_transfer.parameters.number_of_ionisation_stages = 6
-    
-    radiative_transfer.setup_auto_convergence(0.2, 2.0, 1000000000)
     
     radiative_transfer.commit_parameters()
     radiative_transfer.grid.hydrogen_density = grid.hydrogen_density
@@ -107,7 +103,7 @@ def main(number_of_grid_cells = 15, min_convergence = 60):
     radiative_transfer.particles.add_particle(star)
     radiative_transfer.commit_particles()
     
-    max_number_of_photons = radiative_transfer.parameters.total_number_of_photons * 10
+    max_number_of_photons = radiative_transfer.parameters.total_number_of_photons * 100
     
     previous_percentage_converged = 0.0
     
@@ -115,18 +111,15 @@ def main(number_of_grid_cells = 15, min_convergence = 60):
         radiative_transfer.step()
         
         percentage_converged = radiative_transfer.get_percentage_converged()
-        print "percentage converged :", percentage_converged, ", step :", i
+        print "percentage converged :", percentage_converged, ", step :", i, ", photons:", radiative_transfer.parameters.total_number_of_photons
         
         if percentage_converged >= min_convergence:
             break
             
         if previous_percentage_converged > 5 and percentage_converged < 95:
             convergence_increase = (percentage_converged-previous_percentage_converged)/previous_percentage_converged
-            
-            print "convergence increase :", convergence_increase
-            
-            if convergence_increase < 0.2 and radiative_transfer.total_number_of_photons < max_number_of_photons:
-                radiative_transfer.total_number_of_photons *= 2
+            if convergence_increase < 0.2 and radiative_transfer.parameters.total_number_of_photons < max_number_of_photons:
+                radiative_transfer.parameters.total_number_of_photons *= 2
                     
         previous_percentage_converged = percentage_converged    
         
