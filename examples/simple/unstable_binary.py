@@ -1,6 +1,7 @@
 from amuse.plot import scatter, xlabel, ylabel, plot
 from matplotlib import pyplot
 from math import pi
+from optparse import OptionParser
 
 from amuse.units import units
 from amuse.units import constants
@@ -9,13 +10,9 @@ from amuse.community.mesa.interface import MESA
 from amuse.community.hermite0.interface import Hermite
 
 from amuse.datamodel import Particles
-orbital_period = 1000.0 | units.yr # initial orbital period, will increase when the binary loses mass
-kinetic_to_potential_ratio = 0.8 # (K/|U|), values < 1.0 correspond to bound systems
-t_start_evolution_with_wind = 3.0 * orbital_period
-t_end = 20.0 * orbital_period
 
 
-def set_up_initial_conditions():
+def set_up_initial_conditions(orbital_period, kinetic_to_potential_ratio):
     print "Setting up initial conditions"
     stars =  Particles(2)
     stars.mass = [10.0, 1.0] | units.MSun
@@ -52,7 +49,9 @@ def set_up_gravitational_dynamics_code(stars):
     gravitational_dynamics.particles.add_particle(stars[1])
     return gravitational_dynamics, view_on_the_primary
     
-def simulate_binary_evolution(binary):
+    
+
+def simulate_binary_evolution(binary, orbital_period, t_start_evolution_with_wind, t_end):
     distance = [] | units.AU
     mass = [] | units.MSun
     time = [] | units.yr
@@ -97,7 +96,59 @@ def orbit_plot(distance, mass, time):
     pyplot.margins(0.05)
     pyplot.show()
 
-if __name__ in ("__main__", "__plot__"):
-    binary = set_up_initial_conditions()
-    distance, mass, time = simulate_binary_evolution(binary)
+def main(
+        orbital_period = 1000.0, 
+        kinetic_to_potential_ratio = 0.8, 
+        periods_nowind = 3,
+        periods_wind = 2,
+    ):
+    
+    orbital_period =  orbital_period | units.yr
+    t_start_evolution_with_wind = periods_nowind * orbital_period
+    t_end = (periods_nowind + periods_wind) * orbital_period
+    
+    binary = set_up_initial_conditions(orbital_period, kinetic_to_potential_ratio)
+    distance, mass, time = simulate_binary_evolution(binary, orbital_period, t_start_evolution_with_wind, t_end)
     orbit_plot(distance, mass, time)
+    
+def new_option_parser():
+    result = OptionParser()
+    result.add_option(
+        "-o", "--orbitalperiod", 
+        default = 1000,
+        dest="orbital_period",
+        help="initial orbital period of the binary (in years)",
+        type="float"
+    )
+    result.add_option(
+        "-k", "--kpratio", 
+        default = 0.8,
+        dest="kinetic_to_potential_ratio",
+        help="kinetec to potential energy ratio, values less than 1.0 correspond to bound systems",
+        type="float"
+    )
+    result.add_option(
+        "--periods-nowind", 
+        default = 3,
+        dest="periods_nowind",
+        help="number of orbital periods to evolve the binary without stellar winds",
+        type="int"
+    )
+    
+    result.add_option(
+        "--periods-wind", 
+        default = 2,
+        dest="periods_wind",
+        help="number of orbital periods to evolve the binary with winds",
+        type="int"
+    )
+    
+    return result
+    
+    
+
+    
+    
+if __name__ in ("__main__", "__plot__"):
+    options, args = new_option_parser().parse_args()
+    main(**options.__dict__)
