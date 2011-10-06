@@ -146,9 +146,9 @@ def new_option_parser():
     return result
     
     
-
+if __name__ == "__plot__":
+    main(1000, 0.8, 2, 2)
     
-    
-if __name__ in ("__main__", "__plot__"):
+if __name__ == "__main__":
     options, args = new_option_parser().parse_args()
     main(**options.__dict__)

@@ -154,7 +154,10 @@ def new_option_parser():
     
     return result
     
-if __name__ in ("__main__","__plot__"):
+if __name__ == "__plot__":
+    main(13, 30)
+    
+if __name__ == "__main__":
     options, arguments = new_option_parser().parse_args()
     main(**options.__dict__)
     

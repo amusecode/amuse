@@ -7,7 +7,7 @@ from amuse.community.hermite0.interface import Hermite
 import logging
 
 from amuse.ic.plummer import new_plummer_sphere
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 smoothing_length = 0.0 | nbody_system.length ** 2
 
