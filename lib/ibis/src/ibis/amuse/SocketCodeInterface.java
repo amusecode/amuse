@@ -22,8 +22,8 @@ public class SocketCodeInterface extends CodeInterface {
     private static final Logger logger = LoggerFactory
             .getLogger(SocketCodeInterface.class);
 
-    private static final int ACCEPT_TRIES = 5;
-    private static final int ACCEPT_TIMEOUT = 500; // ms
+    private static final int ACCEPT_TRIES = 20;
+    private static final int ACCEPT_TIMEOUT = 1000; // ms
 
     private static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_",
             "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_" };
