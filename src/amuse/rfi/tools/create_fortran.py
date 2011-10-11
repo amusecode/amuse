@@ -524,8 +524,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
-            max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(spec,0)
-           
+            max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype,0)
             
             self.out.lf() + 'if (' + spec.counter_name + '_in'
             self.out + ' .gt. 0) then'
@@ -595,7 +594,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
             self.out.lf() + 'if (' + spec.counter_name + '_out'
             self.out + ' .gt. 0) then'
             self.out.indent().lf()
-            max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(spec,0)
+            max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype,0)
+            
             if max == 0:
                 self.out.lf() + 'tag_out = -2'
             else:
