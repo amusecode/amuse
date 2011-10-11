@@ -120,7 +120,7 @@ def _smart_length_units_for_vector_quantity(quantity):
             return length_unit
     return units.m
 
-def sph_particles_plot(particles, u_range = None, min_size = 100):
+def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1):
     """
     Very simple and fast procedure to make a plot of the hydrodynamics state of 
     a set of SPH particles. The particles must have the following attributes defined: 
@@ -154,7 +154,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100):
     current_axes.set_aspect("equal", adjustable = "datalim")
     x = x.as_quantity_in(_smart_length_units_for_vector_quantity(x))
     y = y.as_quantity_in(_smart_length_units_for_vector_quantity(x))
-    scatter(x, y, sizes, colors, edgecolors = "none", alpha = 0.1)
+    scatter(x, y, sizes, colors, edgecolors = "none", alpha = alpha)
     xlabel('x')
     ylabel('y')
 
