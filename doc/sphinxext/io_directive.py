@@ -2,7 +2,7 @@ from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.parsers.rst import Directive
 
-from amuse.support import io
+from amuse import io
 import textwrap
 from sphinx import addnodes
 

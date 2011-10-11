@@ -29,13 +29,26 @@ def number_str(number, singular, plural = None):
     return str(number) + ' ' + (singular if number == 1 else plural)
 
 
+def get_svn_credentials():
+    if 'RVPW' in os.environ:
+        svnpassword = os.environ['RVPW']
+    else:
+        svnpassword = ''
+    if 'RVUSR' in os.environ:
+        svnusername = os.environ['RVUSR']
+    else:
+        svnusername = 'reviewboard'
+    return svnpassword, svnusername
+        
 def _run_the_tests(directory, do_update = False):
-    
-    svnpassword =  os.environ['RVPW']
-    svnusername = 'reviewboard'
-    print "updating the code"
-    print u' '.join(["svn", "--no-auth-cache", '--password', svnpassword, '--username', svnusername, "update"])
-    call(["svn", "--no-auth-cache", '--password', svnpassword, '--username', svnusername, "update"])
+    svnpassword, svnusername = get_svn_credentials()
+    arguments = ["svn", "--no-auth-cache"]
+    if svnpassword:
+        arguments.extend(('--password', svnpassword))
+    if svnusername:
+        arguments.extend(('--username', svnusername))
+    arguments.append("update")
+    call(arguments)
     call(["make", "clean"])
     call(["make", "all"])
     
@@ -48,10 +61,15 @@ class MakeSVNStatusReport(object):
     
     def start(self):
         
-        svnpassword =  os.environ['RVPW']
-        svnusername = 'reviewboard'
-        print ' '.join(['svn', "--no-auth-cache", '--password', svnpassword, '--username', svnusername, 'info', '--xml'])
-        process = Popen(['svn', "--no-auth-cache", '--password', svnpassword, '--username', svnusername, 'info', '--xml'], stdout = PIPE, stderr = PIPE)
+        svnpassword, svnusername = get_svn_credentials()
+        arguments = ["svn", "--no-auth-cache"]
+        if svnpassword:
+            arguments.extend(('--password', svnpassword))
+        if svnusername:
+            arguments.extend(('--username', svnusername))
+        arguments.extend(('info', '--xml'))
+        
+        process = Popen(arguments, stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
         doc = self.minidom.parseString(stdoutstring)
         commit_node = list(doc.getElementsByTagName('commit'))[0]
@@ -270,13 +288,11 @@ if __name__ == '__main__':
       dest="do_update",
       help="update the code before running the tests", 
       default=True,
-      action="store_true",
-      type="boolean")
+      action="store_true")
     parser.add_option("", "--no-update", 
       dest="do_update",
       help="do not update the code before running the tests", 
-      action="store_false",
-      type="boolean")
+      action="store_false")
       
     (options, args) = parser.parse_args()
     
