@@ -524,30 +524,36 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
+            max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(spec,0)
+           
+            
             self.out.lf() + 'if (' + spec.counter_name + '_in'
             self.out + ' .gt. 0) then'
-    
-            self.out.indent().lf() + 'call MPI_BCast('
-            self.out + spec.input_var_name + ', '
-            self.out + spec.counter_name + '_in'
-            self.out + ' * ' + 'len_in'
-            self.out + ', &'
-    
-            self.out.indent().n() + spec.mpi_type
-            self.out + ', 0, parent,&'
-            self.out.n() + 'ioError);'
-            if dtype == 'string':
-            
-                self.out.dedent()
-                
-                self.out.lf() + 'call MPI_BCast('
-                self.out + 'characters' + ', '
-                self.out + spec.input_var_name + '('+spec.counter_name + '_in' + '* len_in' +') + 1'
+            self.out.indent().lf()
+            if max == 0:
+                self.out + 'tag_out = -2'
+            else:
+                self.out + 'call MPI_BCast('
+                self.out + spec.input_var_name + ', '
+                self.out + spec.counter_name + '_in'
+                self.out + ' * ' + 'len_in'
                 self.out + ', &'
-    
-                self.out.indent().n() + 'MPI_CHARACTER'
+        
+                self.out.indent().n() + spec.mpi_type
                 self.out + ', 0, parent,&'
                 self.out.n() + 'ioError);'
+                if dtype == 'string':
+                
+                    self.out.dedent()
+                    
+                    self.out.lf() + 'call MPI_BCast('
+                    self.out + 'characters' + ', '
+                    self.out + spec.input_var_name + '('+spec.counter_name + '_in' + '* len_in' +') + 1'
+                    self.out + ', &'
+        
+                    self.out.indent().n() + 'MPI_CHARACTER'
+                    self.out + ', 0, parent,&'
+                    self.out.n() + 'ioError);'
                 
             self.out.dedent().dedent().lf()
             self.out + 'end if'
