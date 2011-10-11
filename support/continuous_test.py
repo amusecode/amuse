@@ -31,11 +31,13 @@ def number_str(number, singular, plural = None):
 
 def _run_the_tests(directory, do_update = False):
     
-    if do_update:
-        print "updating the code"
-        call(["svn", "update"])
-        call(["make", "clean"])
-        call(["make", "all"])
+    svnpassword =  os.environ['RVPW']
+    svnusername = 'reviewboard'
+    print "updating the code"
+    print u' '.join(["svn", "--no-auth-cache", '--password', svnpassword, '--username', svnusername, "update"])
+    call(["svn", "--no-auth-cache", '--password', svnpassword, '--username', svnusername, "update"])
+    call(["make", "clean"])
+    call(["make", "all"])
     
     print "start test run"
     report = background_test.RunTests.instance.run_tests(None)
@@ -45,7 +47,11 @@ class MakeSVNStatusReport(object):
     from xml.dom import minidom 
     
     def start(self):
-        process = Popen(['svn','info', '--xml'], stdout = PIPE, stderr = PIPE)
+        
+        svnpassword =  os.environ['RVPW']
+        svnusername = 'reviewboard'
+        print ' '.join(['svn', "--no-auth-cache", '--password', svnpassword, '--username', svnusername, 'info', '--xml'])
+        process = Popen(['svn', "--no-auth-cache", '--password', svnpassword, '--username', svnusername, 'info', '--xml'], stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
         doc = self.minidom.parseString(stdoutstring)
         commit_node = list(doc.getElementsByTagName('commit'))[0]
@@ -194,7 +200,7 @@ class WriteTestReportOnTestingBlog(object):
         with open(path,"w") as file:
             file.write(''.join(self.parts))
             
-        call(["scp", path, "castle.strw.leidenuniv.nl:"+self.remote_directory])
+        call(["scp", "-i", "forreportkey.id", path, "castle.strw.leidenuniv.nl:"+self.remote_directory])
         
     def write_item_on_test(self, x):
         self.parts.append('<li>')
@@ -275,9 +281,15 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(60 * 60) #building and testing must be done in 1 hour
-
-    report = _run_the_tests(options.directory, options.do_update) 
-    WriteTestReportOnTestingBlog(report).start()
+    signal.alarm(120 * 60) #building and testing must be done in 2 hours
+    os.setpgrp()
+    try:
+        report = _run_the_tests(options.directory) 
+        WriteTestReportOnTestingBlog(report).start()
+    finally:
+        #os.killpg(0, signal.SIGKILL)
+	pass
+    
+    
     
     
