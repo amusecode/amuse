@@ -384,6 +384,16 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         return function
     
     @legacy_function
+    def get_dt_entropy():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('dt_entropy', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def get_n_neighbours():
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
@@ -1141,6 +1151,7 @@ class Gadget2(GravitationalDynamics):
         object.add_method('RUN', 'get_smoothing_length')
         object.add_method('RUN', 'get_density')
         object.add_method('RUN', 'get_pressure')
+        object.add_method('RUN', 'get_dt_entropy')
         object.add_method('RUN', 'get_n_neighbours')
         object.add_method('RUN', 'get_epsilon_dm_part')
         object.add_method('RUN', 'get_epsilon_gas_part')
@@ -1550,6 +1561,7 @@ class Gadget2(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_smoothing_length')
         object.add_getter('gas_particles', 'get_density')
         object.add_getter('gas_particles', 'get_pressure')
+        object.add_getter('gas_particles', 'get_dt_entropy')
         object.add_getter('gas_particles', 'get_n_neighbours')
         object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('radius',))
         object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('epsilon',))
@@ -1838,6 +1850,11 @@ class Gadget2(GravitationalDynamics):
             "get_pressure",
             (object.INDEX,),
             (generic_unit_system.pressure, object.ERROR_CODE)
+        )
+        object.add_method(
+            "get_dt_entropy",
+            (object.INDEX,),
+            (generic_unit_system.specific_energy / generic_unit_system.time, object.ERROR_CODE)
         )
         object.add_method(
             "get_n_neighbours",

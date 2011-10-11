@@ -1755,6 +1755,46 @@ int get_pressure(int *index, double *pressure_out, int length){
     }
     return 0;
 }
+int get_dt_entropy(int *index, double *dt_entropy_out, int length){
+    int errors = 0;
+    double buffer[length];
+    int count[length];
+    int local_index;
+
+    if (!density_up_to_date){
+        density();
+        density_up_to_date = true;
+    }
+
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            count[i] = 1;
+            buffer[i] = SphP[local_index].DtEntropy;
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+        }
+    }
+    if(ThisTask) {
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                dt_entropy_out[i] = 0;
+            } else
+                dt_entropy_out[i] = buffer[i];
+        }
+    }
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
+}
 int get_n_neighbours(int *index, double *n_neighbours, int length){
     int errors = 0;
     double buffer[length];
