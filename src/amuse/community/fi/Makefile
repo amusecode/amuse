@@ -19,7 +19,7 @@ GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
 
 X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
 
-FFTWLIB = -lfftw3 -lfftw3_threads
+FFTW_LIBS ?= -lfftw3 
 
 THREADLIB = -L. -lpthread $(BUILDDIR)/libpt.a
 
@@ -55,7 +55,8 @@ FFLAGS+= $(OMPFLAGS)
 
 FFLAGS+= -I.
 
-LIBS+=$(FFTWLIB)
+LIBS+=$(FFTW_LIBS)
+LIBS+=-lfftw3_threads
 
 FILES=$(SRC)/muse_helpers.f90 $(SRC)/mem.f90 $(SRC)/elements.f90 $(SRC)/cooling.f90 \
   $(SRC)/ionize.f90 $(SRC)/molecules.f90 $(SRC)/H2cool.f90 $(SRC)/starprop.f90 \
@@ -104,7 +105,7 @@ $(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile
 	./patch_globals_dot_h.py
 	
 fi_worker_periodic: worker.f90 interface.po $(PERIODIC_BUILDDIR)/libfi.a
-	$(FC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SCINC) worker.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SCLIBS) $(FFTWLIB)
+	$(FC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SCINC) worker.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SCLIBS) $(FFTW_LIBS)
 
 worker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@
