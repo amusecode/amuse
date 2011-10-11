@@ -451,7 +451,7 @@ class BuildCodes(CodeCommand):
         self.announce("building libraries and community codes", level = log.INFO)
         self.announce("build, for logging, see '{0}'".format(buildlog), level = log.INFO)
         
-        with open(buildlog, "a") as output:
+        with open(buildlog, "w") as output:
             output.write('*'*100)
             output.write('\n')
             output.write('Building libraries and codes\n')
