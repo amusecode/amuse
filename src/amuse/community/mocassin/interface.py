@@ -541,6 +541,37 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         function.result_type = 'int32'
         return function
         
+    
+    @legacy_function
+    def get_grid_ion_density():
+        function = LegacyFunctionSpecification()  
+        for parametername in ['i','j','k','elemen', 'bin']:
+            function.addParameter(parametername, dtype='int32', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
+        
+        function.addParameter('value', dtype='float64', direction=function.OUT)
+            
+        function.addParameter('n', dtype='int32', direction=function.LENGTH)
+        function.must_handle_array = True
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_grid_ion_density():
+        function = LegacyFunctionSpecification()  
+        for parametername in ['i','j','k','elemen', 'bin']:
+            function.addParameter(parametername, dtype='int32', direction=function.IN)
+        
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
+            
+        function.addParameter('n', dtype='int32', direction=function.LENGTH)
+        function.must_handle_array = True
+        function.result_type = 'int32'
+        return function
+        
+    
+        
 #class Parameters(object):
 #    emit_rate_of_photons = MethodParameter(name = "emit_rate_of_photons", unit = units.seconds, default = )
 #
@@ -557,6 +588,12 @@ class Mocassin(InCodeComponentImplementation):
     def get_index_range_inclusive(self, index_of_grid = 1):
         ni, nj, nk = self.get_max_indices(index_of_grid)
         return (1, ni, 1, nj, 1, nk)
+        
+    def get_index_range_inclusive_ion_density_grid(self, index_of_grid = 1):
+        ni, nj, nk = self.get_max_indices(index_of_grid)
+        nstages = self.get_number_of_ionisation_stages()
+        nbins = self.get_total_number_of_points_in_frequency_mesh()
+        return (1, ni, 1, nj, 1, nk, 1, nstages.value_in(units.none), 1, nbins.value_in(units.none))
         
     def define_methods(self, object):
         
@@ -629,6 +666,17 @@ class Mocassin(InCodeComponentImplementation):
             (object.ERROR_CODE,)
         )
 
+        object.add_method(
+            'get_grid_ion_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'set_grid_ion_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX, units.none , object.INDEX),
+            (object.ERROR_CODE,)
+        )
         
         object.add_method(
             'get_grid_active',
@@ -1074,6 +1122,13 @@ class Mocassin(InCodeComponentImplementation):
         object.add_setter('grid', 'set_grid_hydrogen_density', names=('hydrogen_density',))
         
         object.define_extra_keywords('grid', {'index_of_grid':1})
+        
+        
+        object.define_grid('ion_density_grid')
+        object.set_grid_range('ion_density_grid', 'get_index_range_inclusive_ion_density_grid')
+        object.add_getter('ion_density_grid', 'get_grid_ion_density', names=('density',))
+        object.add_setter('ion_density_grid', 'set_grid_ion_density', names=('density',))
+        object.define_extra_keywords('ion_density_grid', {'index_of_grid':1})
         
         object.define_inmemory_set('particles')
         

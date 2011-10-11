@@ -187,6 +187,10 @@ class TestMocassinInterface(TestWithMPI):
         value,error = instance.get_grid_hydrogen_density(1,1,1)
         self.assertEquals(error, 0)
         self.assertEquals(value, 100)
+        
+        value,error = instance.get_grid_ion_density(1,1,1,1,1)
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEquals(value, 1e-5, 6)
     
         is_active,error = instance.get_grid_active(1,2,1)
     
@@ -277,9 +281,16 @@ class TestMocassin(TestWithMPI):
         
         #print instance.grid.electron_density[3]
         #print instance.grid.electron_temperature[3]
+        print instance.ion_density_grid.density[3][1][2][0][0]
+        self.assertAlmostRelativeEquals(1e-5 | units.none, instance.ion_density_grid.density[3][1][2][0][0], 7)
+        self.assertAlmostRelativeEquals(1e-5 | units.none , instance.ion_density_grid.density[3][1][3][0][0], 7)
         
         instance.step()
+        
+        print instance.ion_density_grid.density[3][1][2][0][0]
         
         self.assertAlmostRelativeEquals(0.0,  instance.get_percentage_converged())
         self.assertAlmostRelativeEquals(0.00297847623006 | units.cm**-3 , instance.grid.electron_density[3][1][2], 10)
         self.assertAlmostRelativeEquals(0.00351035199128 | units.cm**-3 , instance.grid.electron_density[3][1][3], 10)
+        self.assertAlmostRelativeEquals(0.99998998642 | units.none, instance.ion_density_grid.density[3][1][2][0][0], 7)
+        self.assertAlmostRelativeEquals(0.99998998642 | units.none , instance.ion_density_grid.density[3][1][3][0][0], 7)

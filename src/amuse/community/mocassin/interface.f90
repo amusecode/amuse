@@ -1317,6 +1317,82 @@ CONTAINS
     END FUNCTION
 
     
+    
+
+    FUNCTION get_grid_ion_density(i,j,k,element,bin, index_of_grid, density, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k,element,bin, index_of_grid
+        
+        double precision, INTENT(OUT), DIMENSION(N) :: density
+        
+        INTEGER get_grid_ion_density
+        INTEGER :: index, active_cell_index
+
+        if (.not.is_grid_committed) then
+            DO index = 1,n
+                density(index) = 0.0
+            END DO
+            get_grid_ion_density = -1
+            return
+        else
+        
+            DO index = 1,n
+                
+                IF (index_of_grid(index).GT.nGrids) THEN
+                    get_grid_ion_density = -1
+                    return
+                END IF
+                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+                if (active_cell_index .eq. 0) then
+                    
+                        density(index) = 0.0
+                    
+                else
+                        
+                        density(index) = grid3D(index_of_grid(index))%ionDen(active_cell_index, element(index), bin(index))
+                    
+                end if
+            END DO
+        end if
+        get_grid_ion_density = 0
+    END FUNCTION
+
+    FUNCTION set_grid_ion_density(i,j,k,element, bin,density,index_of_grid, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k,element, bin, index_of_grid
+        
+        double precision, INTENT(IN), DIMENSION(N) :: density
+        
+        INTEGER set_grid_ion_density
+        INTEGER :: index, active_cell_index
+
+
+        if (is_grid_committed) then
+            DO index = 1,n
+                
+                IF (index_of_grid(index).GT.nGrids) THEN
+                    set_grid_ion_density = -1
+                    return
+                END IF
+                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+                if (active_cell_index .ne. 0) then
+                    
+                    grid3D(index_of_grid(index))%ionDen(active_cell_index, element(index), bin(index)) = density(index)
+                    
+                end if
+            END DO
+        else
+            set_grid_ion_density = -1
+            return
+        end if
+        
+        set_grid_ion_density = 0
+    END FUNCTION
+    
+    
+    
     FUNCTION get_max_indices(index_of_grid,ni,nj,nk)
         IMPLICIT NONE
         INTEGER, INTENT(IN) :: index_of_grid
