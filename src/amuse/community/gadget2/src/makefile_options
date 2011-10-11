@@ -72,7 +72,7 @@ OPT   +=  -DNOSTOP_WHEN_BELOW_MINTIMESTEP
 #############################################################################
 
 OPT   +=  -DTIMESTEP_LIMITER=4
-#OPT   +=  -DTIMESTEP_UPDATE
+OPT   +=  -DTIMESTEP_UPDATE
 
 # NB: the variable TIMESTEP_LIMITER has been defined to 4 (recommended value), 
 # but can be changed to any other power of 2 before compilation.

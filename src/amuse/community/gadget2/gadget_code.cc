@@ -1622,6 +1622,13 @@ int set_internal_energy(int *index, double *internal_energy, int length){
             SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
                 pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
             count[i] = 1;
+#ifdef TIMESTEP_UPDATE
+            SphP[local_index].FeedbackFlag = 2;
+#endif
+#ifdef TIMESTEP_LIMITER
+            if(P[local_index].Ti_endstep != All.Ti_Current)
+                make_it_active(local_index);
+#endif
         } else count[i] = 0;
     }
     return check_counts(count, length);
