@@ -595,40 +595,44 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
             self.out.lf() + 'if (' + spec.counter_name + '_out'
             self.out + ' .gt. 0) then'
             self.out.indent().lf()
-            if dtype == 'string':
-                self.out.lf() + 'offset = 1'
-                self.out.lf() + 'DO i = 1, '+spec.counter_name + '_out * len_out' + ',1'
-                self.out.indent().lf()
-                self.out.lf() + 'str_len = LEN_TRIM(output_characters(i*' + self.MAX_STRING_LEN + ':((i+1)*' + self.MAX_STRING_LEN + ')-1))'
-                self.out.lf() + 'output_characters(offset:offset+255) = output_characters(i*' + self.MAX_STRING_LEN + ':((i+1)*' + self.MAX_STRING_LEN + ')-1)'
-                self.out.lf() + 'offset = offset + str_len - 1'
-                self.out.lf() + spec.output_var_name + '(i) = offset'
-                self.out.lf() + 'offset = offset + 2'
-                self.out.dedent().lf() + 'END DO'
-                
-                self.out.lf() + 'call MPI_SEND('
-                self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
-                self.out + ' * len_out'
-                self.out + ', &'
-                self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
-                self.out.lf() + 'parent, ioerror)'
-                self.out.dedent()
-                
-                self.out.lf() + 'call MPI_SEND('
-                self.out + 'output_characters' + ', ' + 'offset -1'
-                self.out + ', &'
-                self.out.indent().lf() + 'MPI_CHARACTER' + ', 0, 999, &'
-                self.out.lf() + 'parent, ioerror)'
-                
-                
+            max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(spec,0)
+            if max == 0:
+                self.out.lf() + 'tag_out = -2'
             else:
-                self.out.lf()
-                self.out + 'call MPI_SEND('
-                self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
-                self.out + ' * len_out'
-                self.out + ', &'
-                self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
-                self.out.lf() + 'parent, ioerror)'
+                if dtype == 'string':
+                    self.out.lf() + 'offset = 1'
+                    self.out.lf() + 'DO i = 1, '+spec.counter_name + '_out * len_out' + ',1'
+                    self.out.indent().lf()
+                    self.out.lf() + 'str_len = LEN_TRIM(output_characters(i*' + self.MAX_STRING_LEN + ':((i+1)*' + self.MAX_STRING_LEN + ')-1))'
+                    self.out.lf() + 'output_characters(offset:offset+255) = output_characters(i*' + self.MAX_STRING_LEN + ':((i+1)*' + self.MAX_STRING_LEN + ')-1)'
+                    self.out.lf() + 'offset = offset + str_len - 1'
+                    self.out.lf() + spec.output_var_name + '(i) = offset'
+                    self.out.lf() + 'offset = offset + 2'
+                    self.out.dedent().lf() + 'END DO'
+                    
+                    self.out.lf() + 'call MPI_SEND('
+                    self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
+                    self.out + ' * len_out'
+                    self.out + ', &'
+                    self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
+                    self.out.lf() + 'parent, ioerror)'
+                    self.out.dedent()
+                    
+                    self.out.lf() + 'call MPI_SEND('
+                    self.out + 'output_characters' + ', ' + 'offset -1'
+                    self.out + ', &'
+                    self.out.indent().lf() + 'MPI_CHARACTER' + ', 0, 999, &'
+                    self.out.lf() + 'parent, ioerror)'
+                    
+                    
+                else:
+                    self.out.lf()
+                    self.out + 'call MPI_SEND('
+                    self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
+                    self.out + ' * len_out'
+                    self.out + ', &'
+                    self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
+                    self.out.lf() + 'parent, ioerror)'
                 
             self.out.dedent().dedent().lf() +'end if'
         
