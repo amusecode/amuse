@@ -1309,7 +1309,9 @@ class SocketChannel(MessageChannel):
         self.stdout = None
         self.stderr = None
         
-    
+        arguments = []
+        
+        
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self)
         else:
@@ -1322,6 +1324,7 @@ class SocketChannel(MessageChannel):
                 self.stderr = None
             else:
                 self.stderr = open(self.redirect_stderr_file, "w")
+            command = self.full_name_of_the_worker
             
         arguments.insert(0, command)        
         arguments.append(str(server_socket.getsockname()[1]))
