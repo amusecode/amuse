@@ -1569,18 +1569,25 @@ int get_internal_energy(int *index, double *internal_energy, int length){
     double buffer[length];
     int count[length];
     int local_index;
+#ifndef ISOTHERM_EQS
     double a3;
-
+    
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+#endif
+    
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
     }
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
+#ifdef ISOTHERM_EQS
+            buffer[i] = SphP[local_index].Entropy;
+#else
             buffer[i] = SphP[local_index].Entropy *
                 pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+#endif
         } else {
             count[i] = 0;
             buffer[i] = 0;
@@ -1610,17 +1617,24 @@ int get_internal_energy(int *index, double *internal_energy, int length){
 int set_internal_energy(int *index, double *internal_energy, int length){
     int count[length];
     int local_index;
+#ifndef ISOTHERM_EQS
     double a3;
+    
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+#endif
 
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
     }
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+#ifdef ISOTHERM_EQS
+            SphP[local_index].Entropy = internal_energy[i];
+#else
             SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
                 pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
+#endif
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
             SphP[local_index].FeedbackFlag = 2;
@@ -1760,19 +1774,26 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
     double buffer[length];
     int count[length];
     int local_index;
+#ifndef ISOTHERM_EQS
     double a3;
+    
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+#endif
 
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
     }
 
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
+#ifdef ISOTHERM_EQS
+            buffer[i] = SphP[local_index].DtEntropy;
+#else
             buffer[i] = SphP[local_index].DtEntropy *
                 pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+#endif
         } else {
             count[i] = 0;
             buffer[i] = 0;
