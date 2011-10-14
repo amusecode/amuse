@@ -720,15 +720,22 @@ we will use gcc44.
 All in one
 ----------
 
-You can install all the packages described below in one go with:
+You can install all the packages described below in one go with::
 
     > sudo port install gcc44
     
-    > sudo port install python26 mpich2 \
+    > sudo port install python26 openmpi \
     hdf5-18 fftw-3 gsl cmake \
     py26-numpy py26-h5py py26-nose py26-docutils +gcc44
     
+    > sudo port install py26-mpi4py +openmpi
+    
     > sudo port install py26-matplotlib +gcc44
+    
+After installing you will need to configure the code with the following line::
+
+    > ./configure MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90
+    
 
 GCC
 ---
@@ -760,13 +767,10 @@ the python26 versions
 MPI2
 ----
 MacPorts provides packages for mpich2 and openmpi. Although you can
-probably install both, this is not recommended.
+probably install both, this is not recommended. We suggest you install
+openmpi.
 
-To install mpich2, do::
-
-    > sudo port install mpich2 +gcc44
-
-If you prefer OpenMpi over MPICH2, you can install openmpi with::
+To install openmpi, do::
 
      > sudo port install openmpi +gcc44
 
@@ -809,9 +813,6 @@ If you installed openmpi in the MPI2 step you need to set the
 
     > sudo port install py26-mpi4py +openmpi
 
-For mpich2 no such variant is needed::
-
-    > sudo port install py26-mpi4py
 
 Matplotlib
 ----------
