@@ -12,7 +12,7 @@ AC_DEFUN([AX_FFTW],[
              [ with_fftw=yes ] 
         )
     
-        AS_IF([test "$with_fftw" = yes ],
+        AS_IF([test "x$with_fftw" != xno ],
         [
             #user override
             AS_IF([test "x$FFTW_LIBS" != x && test "x$FFTW_FLAGS" != x ],
@@ -46,7 +46,7 @@ AC_DEFUN([AX_FFTW],[
                     LIBS="$ac_FFTW_LDOPTS -lfftw3 $save_LIBS"
                     AC_CHECK_LIB([fftw3], [fftw_plan_dft_r2c],
                             [FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3"],
-                            [AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $with_fftw_library. Check if libfftw3 is installed and if the version is correct])]
+                            [AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct])]
                             )
                     LIBS="$save_LIBS"
                     
@@ -61,7 +61,9 @@ AC_DEFUN([AX_FFTW],[
                         [fftw3],
                         [fftw_plan_dft_r2c],
                         [FFTW_LIBS="-lfftw3"],
-                        [AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $with_fftw_library. Check if libfftw3 is installed and if the version is correct])]
+                        [
+                        FOUND_FFTW="no"
+                        AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c). Check if libfftw3 is installed and if the version is correct])]
                     )
                 fi
 
