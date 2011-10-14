@@ -258,15 +258,18 @@ void idata::get_acc_and_jerk()
 
     }
 
+#ifndef NOMPI
     //cout << "idata Barrier 1 for " << jdat->mpi_rank << endl << flush;
     jdat->mpi_comm.Barrier();
     //cout << "idata Barrier 1a for " << jdat->mpi_rank << endl << flush;
+#endif
 
     if (jdat->mpi_size > 1) {
 
 	// Combine partial potentials, accs, and jerks to get the totals.
 	// If size = 1, the data have already been saved in ipot, etc.
 
+#ifndef NOMPI
 	jdat->mpi_comm.Allreduce(ppot, ipot, ni, MPI_DOUBLE, MPI_SUM);
 	jdat->mpi_comm.Allreduce(pacc, iacc, 3*ni, MPI_DOUBLE, MPI_SUM);
 	jdat->mpi_comm.Allreduce(pjerk, ijerk, 3*ni, MPI_DOUBLE, MPI_SUM);
@@ -275,7 +278,17 @@ void idata::get_acc_and_jerk()
 	// the global nearest neighbor distances.
 
 	jdat->mpi_comm.Allreduce(pdnn, idnn, ni, MPI_DOUBLE, MPI_MIN);
-
+#else
+    for(int i = 0; i < ni; i++)
+    {
+        ipot[i] = ppot[i];
+        for(int j = 0; j < 3; j++)
+        {
+            iacc[i][j] = pacc[i][j];
+            ijerk[i][j] = pjerk[i][j];
+        }
+    }
+#endif
 	// Currently, pnn[i] is the nearest neighbor of i in the local j
 	// domain.  Use the idnn array to decide if the local nearest
 	// neighbor is the global one.  (We are assuming here that the
@@ -285,12 +298,21 @@ void idata::get_acc_and_jerk()
 	for (int i = 0; i < ni; i++)
 	    if (pdnn[i] > idnn[i]) pnn[i] = 0;
 
+#ifndef NOMPI
 	jdat->mpi_comm.Allreduce(pnn, inn, ni, MPI_INT, MPI_SUM);
+#else
+    for(int i = 0; i < ni; i++)
+    {
+        inn[i] = pnn[i];
+    }
+#endif
     }
 
+#ifndef NOMPI
     //cout << "idata Barrier 2 for " << jdat->mpi_rank << endl << flush;
     jdat->mpi_comm.Barrier();
     //cout << "idata Barrier 2a for " << jdat->mpi_rank << endl << flush;
+#endif
 }
 
 void idata::predict(real t)

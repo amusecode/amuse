@@ -24,6 +24,7 @@ class compilers(object):
     
 
 class mpi(object):
+    is_enabled = '@WITH_MPI@'=='yes'
     mpicxx = '@MPICXX@' 
     mpicc  = '@MPICC@'
     mpif95 = '@MPIFC@'

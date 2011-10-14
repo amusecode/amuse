@@ -23,7 +23,10 @@ int initialize_code()
     // Begin the initialization by creating the jdata data structure.
 
     jd = new jdata;
+
+#ifndef NOMPI
     jd->setup_mpi(MPI::COMM_WORLD);
+#endif
     jd->setup_gpu();
     if (jd->mpi_rank == 0) {
 	cout << "initialize_code: ";

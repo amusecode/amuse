@@ -706,7 +706,11 @@ Please do a 'make clean; make' in the root directory.
     @late
     def channel_factory(self):
         if self.channel_type == 'mpi':
-            return MpiChannel
+            if  MpiChannel.is_supported():
+                return MpiChannel
+            else:   
+                return SocketChannel
+                
         elif self.channel_type == 'remote':
             return MultiprocessingMPIChannel
         elif self.channel_type == 'ibis':

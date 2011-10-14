@@ -189,6 +189,49 @@ redirect_outputs_interface_code = """
   end interface
 """
 
+main_program_code_ifdef = """
+  program amuse_worker
+    use iso_c_binding
+    use forsockets
+    
+    implicit none
+    
+#ifndef NOMPI
+    include 'mpif.h'
+#endif
+    integer :: provided,ioerror, port, rank
+    character(len=32) :: port_string
+
+#ifndef NOMPI
+    call mpi_init_thread(mpi_thread_multiple, provided, ioerror)
+    call mpi_comm_rank(MPI_COMM_WORLD, rank, ioerror)
+#else
+    rank = 0
+    ioerror = 0
+#endif
+
+    if (rank .eq. 0) then
+
+      call get_command_argument(1, port_string)
+
+      read (port_string,*) port
+
+      call forsockets_init(port)
+    end if
+    
+    call run_loop(rank)
+    
+#ifndef NOMPI
+    call mpi_finalize(ioerror)
+#endif
+
+
+    if (rank .eq. 0) then
+      call forsockets_close()
+    end if
+
+  end program amuse_worker
+"""
 main_program_code = """
   program amuse_worker
     use iso_c_binding
@@ -216,6 +259,7 @@ main_program_code = """
     
     call mpi_finalize(ioerror)
 
+
     if (rank .eq. 0) then
       call forsockets_close()
     end if
@@ -239,7 +283,7 @@ string_receive_code = """
             call exit(1)
         end if
         
-        characters_in(i) = ' '
+        characters_in(i) = ''
         
         if (rank .eq. 0) then
           call receive_string(c_loc(characters_in(i)), strings_in(i))
@@ -358,8 +402,8 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
                 
             if parameter.direction == LegacyFunctionSpecification.IN:
                 if parameter.datatype == 'string':
-                    self.out.n() + 'trim(characters_in'
-                    self.out + '(' + self.index_string(parameter.input_index) + '))'      
+                    self.out.n() + '(characters_in'
+                    self.out + '(' + self.index_string(parameter.input_index) + ')(1:LEN_TRIM(characters_in('+self.index_string(parameter.input_index) + '))))'      
                 else:
                     self.out.n() + spec.input_var_name 
                     self.out + '(' + self.index_string(parameter.input_index) + ')'
@@ -549,7 +593,9 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self._result = self.out.string
 
     def output_mpi_include(self):
+        #self.out.lf_noindent() + '#ifndef NOMPI'
         self.out.n() + "INCLUDE 'mpif.h'"
+        #self.out.lf_noindent() + '#endif'
         
   
             
@@ -670,7 +716,9 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf() + 'if (rank .eq. 0) then'
         self.out.indent().lf() + 'call receive_integers(c_loc(header_in), HEADER_SIZE)'
         self.out.dedent().lf() + 'end if'
+        #self.out.lf_noindent() + '#ifndef NOMPI'
         self.out.lf() + 'call mpi_bcast(header_in, HEADER_SIZE, MPI_INTEGER, 0, MPI_COMM_WORLD, ioerror)'
+        #self.out.lf_noindent() + '#endif'
         
 #        self.out.lf() + "print*, 'getting data for for function with function id', header_in(HEADER_FUNCTION_ID), ' on rank ', rank"
         
@@ -705,8 +753,10 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 self.out + spec.input_var_name + '), header_in('
                 self.out + spec.counter_name + '))'
                 self.out.dedent().lf() + 'end if'
+                
+                #self.out.lf_noindent() + '#ifndef NOMPI'
                 self.out.lf() + 'call MPI_BCast(' + spec.input_var_name + ', header_in(' + spec.counter_name + ') , ' + mpi_types[dtype] + ', 0, MPI_COMM_WORLD, ioerror)'
-        
+                #self.out.lf_noindent() + '#endif'
             self.out.dedent().lf()
             self.out + 'end if'
             self.out.lf()
@@ -717,7 +767,9 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf() + 'header_out(HEADER_FUNCTION_ID) = header_in(HEADER_FUNCTION_ID)'
         self.out.lf() + 'header_out(HEADER_CALL_COUNT) = header_in(HEADER_CALL_COUNT)'
         
+        #self.out.lf_noindent() + '#ifndef NOMPI'
         self.out.lf().lf() + 'call mpi_barrier (MPI_COMM_WORLD,ioerror)'
+        #self.out.lf_noindent() + '#endif'
         
         self.out.lf().lf() + 'error = .false.'
         
@@ -755,8 +807,10 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         
 #        self.out.lf().lf() + "!print*, 'sending header', header_out"
 
-        self.out.lf().lf() + 'call mpi_barrier (MPI_COMM_WORLD,ioerror)'
-
+        #self.out.lf().lf_noindent() + '#ifndef NOMPI'
+        self.out.lf() + 'call mpi_barrier (MPI_COMM_WORLD,ioerror)'
+        #self.out.lf_noindent() + '#endif'
+        
         self.out.lf() + 'if (rank .eq. 0) then'
         self.out.indent()
 

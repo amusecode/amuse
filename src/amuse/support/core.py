@@ -164,6 +164,12 @@ class print_out(object):
         self.number_of_characters_on_current_line = 0
         self.do_indent()
         return self
+        
+    def lf_noindent(self):
+        """Start a new-line"""
+        self.parts.append('\n')
+        self.number_of_characters_on_current_line = 0
+        return self
 
     def do_indent(self):
         for ignore in range(self._indent):

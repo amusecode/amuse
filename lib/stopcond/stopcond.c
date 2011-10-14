@@ -275,7 +275,7 @@ int get_stopping_condition_out_of_box_parameter_(double *value) {
     return get_stopping_condition_out_of_box_parameter(value);
 }
 
-#ifdef MPILIB
+#if defined( MPILIB ) && !defined(NOMPI)
 
 #include <mpi.h>
 int sc_mpi_rank;

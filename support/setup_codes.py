@@ -145,6 +145,13 @@ class CodeCommand(Command):
         self.environment['FORTRAN'] = fortran_executable
     
     
+    
+    def is_mpi_enabled(self):
+        if is_configured and hasattr(config.mpi, 'is_enabled'):
+            return config.mpi.is_enabled
+        else:
+            return True
+    
     def set_cuda_variables(self):
         all_found = True
         if is_configured and config.cuda.is_enabled:
@@ -207,7 +214,7 @@ class CodeCommand(Command):
             self.environment['FC'] = config.compilers.fc
             self.environment['CFLAGS'] = config.compilers.cc_flags
             self.environment['CXXFLAGS'] = config.compilers.cxx_flags
-            self.environment['FCFLAGS'] = config.compilers.fc_flags
+            self.environment['FFLAGS'] = config.compilers.fc_flags
             
             if config.compilers.found_fftw == 'yes':
                 self.environment['FFTW_FLAGS'] = config.compilers.fftw_flags
@@ -342,6 +349,9 @@ class CodeCommand(Command):
                 if(index_of_the_colon > 0):
                     targetname = line[len(name + '_worker_'):index_of_the_colon]
                     result.append((line[:index_of_the_colon], targetname,))
+                    
+        if not self.is_mpi_enabled():
+            return [x for x in result if x[-1].endswith('sockets')]
         return result
     
     def call(self, arguments, buildlogfile = None, **keyword_arguments):
@@ -457,7 +467,8 @@ class BuildCodes(CodeCommand):
             output.write('Building libraries and codes\n')
             output.write('*'*100)
             output.write('\n')
-            
+        
+        
         for x in self.makefile_libpaths():
             
             shortname = x[len(self.lib_dir) + 1:] + '-library'
@@ -496,7 +507,9 @@ class BuildCodes(CodeCommand):
                     is_cuda_needed.append(shortname)
                 else:
                     not_build.append(shortname)
-                continue
+                    
+                if self.is_mpi_enabled():
+                    continue
             else:
                 build.append(shortname)
                 is_built = True
@@ -530,6 +543,18 @@ class BuildCodes(CodeCommand):
         for x in sorted_keys:
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
+        if not self.is_mpi_enabled():
+            print build_to_special_targets
+            all_build = set(build)
+            for i, x in enumerate(list(not_build)):
+                print i, x, x in build_to_special_targets
+                if x in build_to_special_targets:
+                    del not_build[i]
+                    if not x in all_build:
+                        build.append(x)
+                        all_build.add(x)
+                    
+                
         
         if not_build or not_build_special or is_download_needed or is_cuda_needed:
             if not_build:
@@ -646,13 +671,16 @@ class BuildOneCode(CodeCommand):
         environment.update(os.environ)
         
         results = []
+        
         for x in self.makefile_paths():
             shortname = x[len(self.codes_dir) + 1:].lower()
             
             self.announce("cleaning " + x)
             self.call(['make','-C', x, 'clean'], env=environment)
-            returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
-            results.append(('default',returncode,))
+                        
+            if self.is_mpi_enabled():
+                returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
+                results.append(('default',returncode,))
             
             special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:
@@ -665,6 +693,7 @@ class BuildOneCode(CodeCommand):
             
             self.announce("cleaning " + x)
             self.call(['make','-C', x, 'clean'], env=environment)
+
             returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
             results.append(('default',returncode,))
             

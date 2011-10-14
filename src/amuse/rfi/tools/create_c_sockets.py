@@ -108,9 +108,13 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in serv_addr;
     struct hostent *server;
     
+#ifndef NOMPI
     MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);
     
     rank = MPI::COMM_WORLD.Get_rank();
+#else
+    rank = 0;
+#endif
 
     if (rank == 0) {
 
@@ -146,7 +150,9 @@ int main(int argc, char *argv[]) {
         close(socketfd);
     }
 
+#ifndef NOMPI
     MPI_Finalize();
+#endif
 
     return 0;
 }
@@ -419,7 +425,9 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.lf() + GLOBAL_VARIABLES_STRING;
         
     def output_includes(self):
-        self.out.n() + '#include <mpi.h>'
+        self.out.n() + '#ifndef NOMPI'
+        self.out.n() + '    #include <mpi.h>'
+        self.out.n() + '#endif'
         self.out.n() + '#include <iostream>'
         self.out.n() + '#include <string.h>'
         self.out.n() + '#include <stdlib.h>'
@@ -472,7 +480,9 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.indent()
 
         self.out.lf() + 'receive(header_in, HEADER_SIZE * sizeof(int), socketfd, rank);'
+        self.out.lf_noindent() + '#ifndef NOMPI'
         self.out.lf() + 'MPI::COMM_WORLD.Bcast(header_in, HEADER_SIZE, MPI_INT, 0);'
+        self.out.lf_noindent() + '#endif'
         
         self.out.lf() + '/*fprintf(stderr, "got header %d %d %d %d %d %d %d %d %d %d\\n", header_in[0], header_in[1], header_in[2], header_in[3], header_in[4], header_in[5], header_in[6], header_in[7], header_in[8], header_in[9]);*/'
         
@@ -505,27 +515,37 @@ class GenerateACSourcecodeStringFromASpecificationClass\
                 self.out.lf() + 'booleans_in[i] = 0;'
                 self.out.lf() + 'receive(&booleans_in[i], 1, socketfd , rank);'
                 self.out.dedent().lf() + '}'
+                
+                self.out.lf_noindent() + '#ifndef NOMPI'
                 self.out.lf() + 'MPI::COMM_WORLD.Bcast(' + spec.input_var_name + ', header_in[' + spec.counter_name + '], ' + spec.mpi_type + ', 0);'
-
+                self.out.lf_noindent() + '#endif'
+                
             elif dtype == 'string':
                 self.out.lf() + 'receive(' 
                 self.out + spec.input_var_name 
                 self.out + ', ' + 'header_in[' + spec.counter_name 
                 self.out + '] * sizeof(' + spec.type + '), socketfd, rank);'
+                
+                self.out.lf_noindent() + '#ifndef NOMPI'
                 self.out.lf() + 'MPI::COMM_WORLD.Bcast(strings_in, header_in[HEADER_STRING_COUNT], MPI_INT, 0);'
+                self.out.lf_noindent() + '#endif'
                 self.out.lf() + 'for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {'
                 self.out.indent()
                 self.out.lf() + 'characters_in[i] = new char[strings_in[i] + 1];'
                 self.out.lf() + 'receive(characters_in[i], strings_in[i], socketfd, rank);'
                 self.out.lf() + "characters_in[i][strings_in[i]] = '\\0';"
+                self.out.lf_noindent() + '#ifndef NOMPI'
                 self.out.lf() + "MPI::COMM_WORLD.Bcast(characters_in[i], strings_in[i], MPI_CHARACTER, 0);"
+                self.out.lf_noindent() + '#endif'
                 self.out.dedent().lf() + '}'
             else:
                 self.out.lf() + 'receive(' 
                 self.out + spec.input_var_name 
                 self.out + ', ' + 'header_in[' + spec.counter_name 
                 self.out + '] * sizeof(' + spec.type + '), socketfd, rank);'
+                self.out.lf_noindent() + '#ifndef NOMPI'
                 self.out.lf() + 'MPI::COMM_WORLD.Bcast(' + spec.input_var_name + ', header_in[' + spec.counter_name + '], ' + spec.mpi_type + ', 0);'
+                self.out.lf_noindent() + '#endif'
             self.out.dedent().lf() + '}'
             self.out.lf() 
 
@@ -539,7 +559,9 @@ class GenerateACSourcecodeStringFromASpecificationClass\
             self.out.lf() + 'header_out[' + spec.counter_name + '] = 0;'
             
             
+        self.out.lf_noindent() + '#ifndef NOMPI'
         self.out.lf() + 'MPI::COMM_WORLD.Barrier();'
+        self.out.lf_noindent() + '#endif'
         
     def output_switch_start(self):
         self.out.lf().lf() + 'switch(header_in[HEADER_FUNCTION_ID]) {'
@@ -562,7 +584,9 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.dedent().lf() + '}'
         
     def output_runloop_function_def_end(self):
+        self.out.lf_noindent() + '#ifndef NOMPI'
         self.out.lf() + 'MPI::COMM_WORLD.Barrier();'
+        self.out.lf_noindent() + '#endif'
         
         self.out.lf() + 'if (rank == 0) {'
         self.out.lf().indent()

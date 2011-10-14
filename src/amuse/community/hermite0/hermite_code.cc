@@ -29,8 +29,9 @@
 #include <string>
 #include <map>
 
+#ifndef NOMPI
 #include <mpi.h>
-
+#endif
 
 
 // AMUSE STOPPING CONDITIONS SUPPORT
@@ -303,6 +304,8 @@ void predict_step(real dt)
 static int id_coll_primary = -1, id_coll_secondary = -1;
 
 inline int mpi_distribute_data(int n) {
+
+#ifndef NOMPI
     MPI_Bcast(&n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
     
     if(mpi_rank) {
@@ -324,11 +327,14 @@ inline int mpi_distribute_data(int n) {
     MPI_Bcast(&ident[0], n, MPI_INTEGER, 0, MPI_COMM_WORLD);
     
     mpi_distribute_stopping_conditions();
-    
+#endif
+
     return n;
 }
 
 inline void mpi_collect_data(int n, real *epot, real *coll_time_q_out, real coll_time_q_in) {
+
+#ifndef NOMPI
     real summed = 0.0;
     MPI_Reduce(&coll_time_q_in, &summed, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
     *coll_time_q_out = summed;
@@ -354,6 +360,7 @@ inline void mpi_collect_data(int n, real *epot, real *coll_time_q_out, real coll
     }
     
     mpi_collect_stopping_conditions();
+#endif
 }
 
 void get_acc_jerk_pot_coll(real *epot, real *coll_time)
@@ -690,7 +697,10 @@ int evolve_system(real t_end)
     // can be extrapolated when the interface calls for positions and
     // velocities.
     
+#ifndef NOMPI
     MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+#endif
+
     get_acc_jerk_pot_coll(&epot, &coll_time);
     
     real dt = calculate_step(coll_time);
@@ -726,7 +736,11 @@ int evolve_system(real t_end)
     while (true) {
         while (t < t_dia && t+dt <= t_end) {
 	  dt = calculate_step(coll_time);
+	  
+#ifndef NOMPI
 	  MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+#endif
+
 	  evolve_step(dt, &epot, &coll_time);        // sets t, t_evolve
 	  
 	  if (test_mode) {
@@ -804,7 +818,10 @@ int evolve_system(real t_end)
     
     if (!(set_conditions & enabled_conditions))
       {
+
+#ifndef NOMPI
         MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+#endif
         get_acc_jerk_pot_coll(&epot, &coll_time);
         dt = calculate_step(coll_time);
         t_evolve = t;
@@ -817,8 +834,11 @@ int evolve_system(real t_end)
     // collision has been detected, we return with t_evolve = t;
     // otherwise, we set t_evolve = t_end. 
     must_run = 0;
+
+#ifndef NOMPI
     MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
-    
+#endif
+
     return nest_err;
 }
 
@@ -1144,6 +1164,8 @@ int set_acceleration(int id, double ax, double ay, double az)
 }
 
 int evolve_not_on_root() {
+
+#ifndef NOMPI
     int must_run = 1;
     int mpi_error = MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
     if(mpi_error) {
@@ -1157,6 +1179,7 @@ int evolve_not_on_root() {
             return -1;
         }
     }
+#endif
     return 0;
 }
 
@@ -1173,6 +1196,8 @@ int evolve_model(double t_end)
 
 int initialize_code()
 {
+
+#ifndef NOMPI
     int error = 0;
     error = MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     if(error) {
@@ -1184,6 +1209,10 @@ int initialize_code()
         cerr << error << endl;
         return -1;
     }
+#else
+    mpi_rank = 0;
+    mpi_size = 1;
+#endif
     //cerr <<"mpi rank: "<<mpi_rank<<", mpi size: "<<mpi_size<<endl;
     
     // AMUSE STOPPING CONDITIONS SUPPORT
@@ -1193,7 +1222,11 @@ int initialize_code()
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
     set_support_for_condition(OUT_OF_BOX_DETECTION);
     // -----------------------
+
+#ifndef NOMPI
     mpi_setup_stopping_conditions();
+#endif
+
     return 0;
 }
 
@@ -1582,17 +1615,24 @@ int synchronize_model() {
         if (t_evolve < t_wanted)
         {
             must_run = 1;
-            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+            
+#ifndef NOMPI
+            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);  
+#endif
             evolve_step(t_wanted-t_evolve, &epot, &coll_time);
             nsteps++;
-
-            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+            
+#ifndef NOMPI
+            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD); 
+#endif
             get_acc_jerk_pot_coll(&epot, &coll_time);
             
             t_evolve = t_wanted;
         } 
-        must_run = 0;
+        must_run = 0; 
+#ifndef NOMPI
         MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+#endif
     }
     return 0;
 }

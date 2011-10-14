@@ -10,7 +10,10 @@
 #include <cmath>
 #include <cstring>
 #include <unistd.h>
+
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 using namespace std;
 typedef double real;

@@ -783,7 +783,9 @@ void jdata::get_densities_on_gpu()	// under development
 			   knn, pneighbors+(j+jj)*knn);
     }
 
+#ifndef NOMPI
     mpi_comm.Barrier();
+#endif
 
     // Each process now has a partial (p)neighbor list for all nj
     // j-particles relative to its own j-domain, of length knn per
@@ -806,11 +808,13 @@ void jdata::get_densities_on_gpu()	// under development
 
 	    // Send data to rank-offset...
 
+#ifndef NOMPI
 	    cout << mpi_rank << " sending neighbors to" << mpi_rank-offset
 		 << endl << flush;
 	    mpi_comm.Send(pneighbors, nj*knn, MPI_INT,
 			  mpi_rank-offset, 42);
 	    cout << mpi_rank << " send done" << endl << flush;
+#endif
 
 	    // ...and become inactive.
 
@@ -822,12 +826,14 @@ void jdata::get_densities_on_gpu()	// under development
 
 		// Receive data from mpi_rank+offset.
 
-		cout << mpi_rank << " receiving neighbors from"
+#ifndef NOMPI
+        cout << mpi_rank << " receiving neighbors from"
 		     << mpi_rank+offset
 		     << endl << flush;
 		mpi_comm.Recv(pneighbors+nj*knn, nj*knn, MPI_INT,
 			      mpi_rank+offset, 42);
 		cout << mpi_rank << " receive done" << endl << flush;
+#endif
 
 		// Merge lists.
 
@@ -851,7 +857,9 @@ void jdata::get_densities_on_gpu()	// under development
 	}
 
 	PRC(mpi_rank); PRL(s);
+#ifndef NOMPI
 	mpi_comm.Barrier();
+#endif
     }
 #endif
 

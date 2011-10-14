@@ -260,8 +260,9 @@ module amuse_helpers
 
   function amuse_set_boundary(lowx,highx,lowy,highy,lowz,highz) result(ret)
     integer :: ret
-    character(len=10) :: lowx,highx,lowy,highy,lowz,highz
+    character(len=*) :: lowx,highx,lowy,highy,lowz,highz
     logical :: periods(3)=.FALSE.
+
 
     select case (lowx)
     case("reflective")

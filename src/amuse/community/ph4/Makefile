@@ -54,12 +54,18 @@ $(CODELIB_GPU):
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py ph4Interface -o $@
+	
+worker_code-sockets.cc: interface.py
+	$(CODE_GENERATOR) --type=c --mode=sockets interface.py ph4Interface -o $@
 
 interface.h: interface.py
 	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py ph4Interface -o $@
 
 ph4_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)
+
+ph4_worker_sockets: worker_code-sockets.cc interface.h $(CODELIB) $(OBJS)
+	$(MPICXX) $(CXXFLAGS) worker_code-sockets.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)
 
 ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU) -DGPU

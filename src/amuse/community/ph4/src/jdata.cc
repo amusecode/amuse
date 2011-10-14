@@ -39,6 +39,7 @@
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
 
+#ifndef NOMPI
 void jdata::setup_mpi(MPI::Intracomm comm)
 {
     const char *in_function = "jdata::setup_mpi";
@@ -48,6 +49,7 @@ void jdata::setup_mpi(MPI::Intracomm comm)
     mpi_size = mpi_comm.Get_size();
     mpi_rank = mpi_comm.Get_rank();
 }
+#endif
 
 void jdata::setup_gpu()
 {
@@ -489,7 +491,11 @@ real jdata::get_pot(bool reeval)		// default = false
 	    mypot += mass[jd]*dpot;
 	}
 
+#ifndef NOMPI
 	mpi_comm.Allreduce(&mypot, &total_pot, 1, MPI_DOUBLE, MPI_SUM);
+#else
+    total_pot = mypot;
+#endif
 
 	total_pot /= 2;				// double counting
 

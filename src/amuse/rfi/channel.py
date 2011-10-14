@@ -17,9 +17,13 @@ import array
 
 import logging
 
-from mpi4py import rc
-rc.initialize = False
-from mpi4py import MPI
+try:
+    from mpi4py import rc
+    rc.initialize = False
+    from mpi4py import MPI
+except ImportError:
+    MPI = None
+    
 from subprocess import Popen, PIPE
 
 from amuse.support.options import OptionalAttributes, option, GlobalOptions
@@ -395,7 +399,7 @@ class MessageChannel(OptionalAttributes):
     
     @classmethod
     def GDB(cls, full_name_of_the_worker, channel):
-        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb',  full_name_of_the_worker]
+        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb', '--args',  full_name_of_the_worker]
         command = 'xterm'
         return command, arguments
         
@@ -514,6 +518,9 @@ def is_mpd_running():
     
         
     """
+    if not MpiChannel.is_supported():
+        return True
+        
     name_of_the_vendor, version = MPI.get_vendor()
     if name_of_the_vendor == 'MPICH2':
         if version == (1,3,2):
@@ -539,7 +546,6 @@ class MpiChannel(MessageChannel):
     :argument hostname: Name of the node to run the application on
     """
     _mpi_is_broken_after_possible_code_crash = False
-    
     
     def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
         MessageChannel.__init__(self, **options)
@@ -637,6 +643,10 @@ class MpiChannel(MessageChannel):
     def debugger_method(self):
         return self.DEBUGGERS[self.debugger]
     
+    @classmethod
+    def is_supported(cls):
+        return not MPI is None
+        
     def start(self):
         
         must_close_std_streams = True
@@ -1281,6 +1291,10 @@ class SocketChannel(MessageChannel):
         self.socket = None
     
 
+    @late
+    def debugger_method(self):
+        return self.DEBUGGERS[self.debugger]
+        
     def start(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.bind(('', 0))
@@ -1288,20 +1302,31 @@ class SocketChannel(MessageChannel):
         
         logging.getLogger("channel").debug("starting socket worker process")
     
-        if self.redirect_stdout_file is None  or self.redirect_stdout_file == "none":
-            self.stdout = None
-        else:
-            self.stdout = open(self.redirect_stdout_file, "w")
-
-        if self.redirect_stderr_file is None or self.redirect_stderr_file == "none":
-            self.stderr = None
-        else:
-            self.stderr = open(self.redirect_stderr_file, "w")
-       
+        
         #set arguments to name of the worker, and port number we listen on 
-        arguments = [self.name_of_the_worker, str(server_socket.getsockname()[1])]
     
-        self.process = Popen(arguments, -1, self.full_name_of_the_worker, None, self.stdout, self.stderr)
+    
+        self.stdout = None
+        self.stderr = None
+        
+    
+        if not self.debugger_method is None:
+            command, arguments = self.debugger_method(self.full_name_of_the_worker, self)
+        else:
+            if self.redirect_stdout_file is None  or self.redirect_stdout_file == "none":
+                self.stdout = None
+            else:
+                self.stdout = open(self.redirect_stdout_file, "w")
+    
+            if self.redirect_stderr_file is None or self.redirect_stderr_file == "none":
+                self.stderr = None
+            else:
+                self.stderr = open(self.redirect_stderr_file, "w")
+            
+        arguments.insert(0, command)        
+        arguments.append(str(server_socket.getsockname()[1]))
+    
+        self.process = Popen(arguments, -1, command, None, self.stdout, self.stderr)
         
         #logging.getLogger("channel").debug("waiting for connection from worker")
      
@@ -1333,6 +1358,9 @@ class SocketChannel(MessageChannel):
     def stop(self):
         logging.getLogger("channel").info("stopping socket worker %s", self.name_of_the_worker)
         self.socket.close()
+        
+        # should lookinto using poll with a timeout or some other mechanism
+        # when debugger method is on, no killing
         self.process.kill()
         
         if not self.stdout is None:

@@ -77,7 +77,10 @@ class jdata {
     int nj;
     int njbuf;
 
+#ifndef NOMPI
     MPI::Intracomm mpi_comm;		// communicator for the N-body system
+#endif
+
     int mpi_size;
     int mpi_rank;
 
@@ -131,9 +134,14 @@ class jdata {
     jdata() {
 	nj = 0;
 	njbuf = 0;
+#ifndef NOMPI
 	mpi_comm = NULL;
 	mpi_size = 0;
 	mpi_rank = -1;
+#else
+	mpi_size = 1;
+	mpi_rank = 0;
+#endif
 	have_gpu = false;		// correct values will be set at
 	use_gpu = false;		// run time, in setup_gpu()
 	eps2 = eta = rmin = dtmin = 0;
@@ -164,7 +172,11 @@ class jdata {
     // In jdata.cc:
 
     void set_manage_encounters(int m);
+
+#ifndef NOMPI
     void setup_mpi(MPI::Intracomm comm);
+#endif
+
     void setup_gpu();
     int get_particle_id(int offset = 0);
     int add_particle(real pmass, real pradius, vec ppos, vec pvel,

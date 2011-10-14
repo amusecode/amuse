@@ -100,15 +100,42 @@ AC_ARG_WITH([sapporo],
 
 AC_SUBST(WITH_SAPPORO)
 
+AC_ARG_ENABLE(mpi,
+    [AS_HELP_STRING([--enable-mpi],[Enable MPI support for communicating with codes, by default enabled])],
+    [WITH_MPI=no
+    AS_IF([test "x$enable_mpi" != "xno"], [
+	    WITH_MPI=yes
+    ])
+    ],
+    [WITH_MPI=yes]
+)
 
-AC_LANG(C++)
-AX_MPI()
-AC_LANG(C)
-AX_MPI()
-AC_LANG(Fortran)
-AX_MPI()
+AC_SUBST(WITH_MPI)
+
+AS_IF([test x"$WITH_MPI" != xno],[
+    AC_LANG(C++)
+    AX_MPI()
+    AC_LANG(C)
+    AX_MPI()
+    AC_LANG(Fortran)
+    AX_MPI()
+], [
+    MPICC="$CC"
+    MPICXX="$CXX"
+    MPIFC="$FC"
+    
+    CFLAGS="$CFLAGS -DNOMPI"
+    CXXFLAGS="$CXXFLAGS -DNOMPI"
+    FCFLAGS="$FCFLAGS -DNOMPI"
+    
+    AC_SUBST(MPICC)
+    AC_SUBST(MPICXX)
+    AC_SUBST(MPIFC)
+]    
+)
 
 AC_LANG(C)
+
 
 PKG_CHECK_MODULES([FFTW],[fftw3 >= 3.2],
     [
@@ -142,13 +169,20 @@ AS_IF([test x"$PYTHON_numpy" != x1],
 AS_VERSION_COMPARE([$PYTHON_numpy_VERSION], [1.3.0],
         [AC_MSG_ERROR([numpy version $PYTHON_numpy_VERSION found, but at least 1.3.0 needed])]
 )
-AC_CHECK_PYTHON_MODULE(mpi4py, __version__)
-AS_IF([test x"$PYTHON_mpi4py" != x1],
-    [AC_MSG_ERROR([mpi4py not found, please install mpi4py first])]
-)
-AS_VERSION_COMPARE([$PYTHON_mpi4py_VERSION], [1.1.0],
-        [AC_MSG_ERROR([numpy version $PYTHON_mpi4py_VERSION found, but at least 1.1.0 needed])]
-)
+
+
+AS_IF([test x"$WITH_MPI" != xno],[
+    AC_CHECK_PYTHON_MODULE(mpi4py, __version__)
+    AS_IF([test x"$PYTHON_mpi4py" != x1],
+        [AC_MSG_ERROR([mpi4py not found, please install mpi4py first])]
+    )
+
+    AS_VERSION_COMPARE([$PYTHON_mpi4py_VERSION], [1.1],
+            [AC_MSG_ERROR([numpy version $PYTHON_mpi4py_VERSION found, but at least 1.1.0 needed])]
+    )
+])
+
+
 AC_CHECK_PYTHON_MODULE(h5py, version.version)
 AS_VERSION_COMPARE([$PYTHON_h5py_VERSION], [1.1.0],
         [AC_MSG_WARN([h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed])]
