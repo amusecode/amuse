@@ -1755,21 +1755,24 @@ int get_pressure(int *index, double *pressure_out, int length){
     }
     return 0;
 }
-int get_dt_entropy(int *index, double *dt_entropy_out, int length){
+int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int length){
     int errors = 0;
     double buffer[length];
     int count[length];
     int local_index;
+    double a3;
 
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
     }
 
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
-            buffer[i] = SphP[local_index].DtEntropy;
+            buffer[i] = SphP[local_index].DtEntropy *
+                pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
         } else {
             count[i] = 0;
             buffer[i] = 0;
@@ -1784,9 +1787,9 @@ int get_dt_entropy(int *index, double *dt_entropy_out, int length){
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
-                dt_entropy_out[i] = 0;
+                d_internal_energy_dt_out[i] = 0;
             } else
-                dt_entropy_out[i] = buffer[i];
+                d_internal_energy_dt_out[i] = buffer[i];
         }
     }
     if (errors){
