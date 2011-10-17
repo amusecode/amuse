@@ -140,8 +140,10 @@ AC_LANG(C)
 PKG_CHECK_MODULES([FFTW],[fftw3 >= 3.2],
     [
     FFTW_FLAGS="$FFTW_CFLAGS"
+    FFTW_LIBS="$FFTW_LIBS -lfftw3_thread"
     FOUND_FFTW=yes
     AC_SUBST(FFTW_FLAGS)
+    AC_SUBST(FFTW_LIBS)
     ],
     [AX_FFTW()]
 )

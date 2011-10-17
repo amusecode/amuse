@@ -43,9 +43,9 @@ AC_DEFUN([AX_FFTW],[
                     CFLAGS="$save_CFLAGS"
                     
                      save_LIBS="$LIBS"
-                    LIBS="$ac_FFTW_LDOPTS -lfftw3 $save_LIBS"
+                    LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads $save_LIBS"
                     AC_CHECK_LIB([fftw3], [fftw_plan_dft_r2c],
-                            [FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3"],
+                            [FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads"],
                             [AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct])]
                             )
                     LIBS="$save_LIBS"
@@ -60,7 +60,7 @@ AC_DEFUN([AX_FFTW],[
                     AC_CHECK_LIB(
                         [fftw3],
                         [fftw_plan_dft_r2c],
-                        [FFTW_LIBS="-lfftw3"],
+                        [FFTW_LIBS="-lfftw3 -lfftw3_threads"],
                         [
                         FOUND_FFTW="no"
                         AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c). Check if libfftw3 is installed and if the version is correct])]

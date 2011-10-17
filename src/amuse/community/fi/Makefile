@@ -19,7 +19,7 @@ GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
 
 X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
 
-FFTW_LIBS ?= -lfftw3 
+FFTW_LIBS ?= -lfftw3 -lfftw3_thread
 
 THREADLIB = -L. -lpthread $(BUILDDIR)/libpt.a
 
@@ -56,7 +56,6 @@ FFLAGS+= $(OMPFLAGS)
 FFLAGS+= -I.
 
 LIBS+=$(FFTW_LIBS)
-LIBS+=-lfftw3_threads
 
 FILES=$(SRC)/muse_helpers.f90 $(SRC)/mem.f90 $(SRC)/elements.f90 $(SRC)/cooling.f90 \
   $(SRC)/ionize.f90 $(SRC)/molecules.f90 $(SRC)/H2cool.f90 $(SRC)/starprop.f90 \
