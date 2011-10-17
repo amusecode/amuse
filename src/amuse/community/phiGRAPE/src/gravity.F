@@ -39,7 +39,7 @@ C---  local vars
 
 C---  set some initial guess for first call of GRAPES
       IF (ifirst.EQ.1) THEN
-         DO i=1,n_act
+         DO i=1,n_act_loc
 
             ig = ind_act(i)
 
@@ -55,7 +55,7 @@ C---  set actual time on GRAPE
       CALL g6_set_ti(clusterid, tnow)
 
 C---  n_act is all active particles and on all nodes the same
-      ni = n_act
+      ni = n_act_loc
 
       error = is_stopping_condition_enabled(COLLISION_DETECTION,
      $        is_collision_detection_enabled)
@@ -66,12 +66,11 @@ C---  define the local phi, a, adot for these active particles
       DO i=0,ni-1,npipe
          nn = npipe                            ! block size 48 or smaller
          IF ((ni - i).LT.npipe) nn = ni - i
-
          DO ii=1,nn
 
             iii = i+ii
+        
             ig  = ind_act(iii)
-
             index_i(ii) = ig
             h2_i(ii)    = eps2
 
@@ -88,7 +87,6 @@ C---  define the local phi, a, adot for these active particles
 
          IF (ifirst.EQ.1) THEN
 C---  get forces etc. based on bad initial guess
-
            CALL g6calc_firsthalf(clusterid, n_loc-nbh, nn,
      $           index_i,x_i,v_i,
      $           a_i, jerk_i, p_i, eps2, h2_i)

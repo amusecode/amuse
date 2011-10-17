@@ -73,10 +73,10 @@ $(BUILDDIR)/Makefile: $(SRCDIR)/Makefile
 	cp $(SRCDIR)/Makefile $(BUILDDIR)/Makefile
 	
 $(CODELIB): $(BUILDDIR)/Makefile
-	make -C $(BUILDDIR) all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)" VPATH=../src
+	make -C $(BUILDDIR) all "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)" VPATH=../src
 
 phigrape_worker: worker_code.f90 phigrape_code.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
+	$(MPIF90) $(FFLAGS) $(SCINC) -DNOMPI $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
 
 
 
@@ -92,26 +92,26 @@ phigrape_worker_mpi: worker_code.f90 phigrape_code.mpio $(MPI_BUILDDIR)/libphigr
 	$(MPIF90) $(FFLAGS) $(SCINC)  -DMPI $^ $(MPI_BUILDDIR)/libphigrape.a -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
 
 phigrape_worker_sockets: worker_code-sockets.f90 phigrape_code.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) $(SCINC) $(FSINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS) $(FSLIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $(FSINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS) $(FSLIBS)
 
 phigrape_worker_gl: glworker_code.f90 phigrape_code.o $(CODELIB)
-	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
+	make -C src gl "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)"
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
 	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SCLIBS)
 
 phigrape_worker_gpu: worker_code.f90 phigrape_code.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SCLIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SCLIBS)
 
 phigrape_worker_gpu_sockets: worker_code-sockets.f90 phigrape_code.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) $(SCINC) $(FSINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SCLIBS) $(FSLIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $(FSINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SCLIBS) $(FSLIBS)
 
 phigrape_worker_gl_gpu: glworker_code.f90 phigrape_code.o $(CODELIB)
-	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
+	make -C src gl "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)"
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
 	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(GPULIBS) $(SCLIBS)
 
 phigrape_worker_grape: worker_code.f90 phigrape_code.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS) $(SCLIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS) $(SCLIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterface -o $@
@@ -125,13 +125,16 @@ glworker_code.f90: interface.py
 clean:
 	make -C src clean
 	rm -f *.pyc *.o
-	rm -Rf build build_mpi
+	rm -Rf build
+	rm -Rf build_mpi
 	rm -f worker_code_gpu worker_code_grape
 	rm -f worker_code worker_code.f90
 	rm -f worker_code-sockets.f90 phigrape_worker_sockets
 	rm -f glworker_code glworker_code.f90
 	rm -f glworker_code_gpu glworker_code_grape
 	rm -f phigrape_worker phigrape_worker_gl phigrape_worker_gl_gpu phigrape_worker_gpu
+	rm -f phigrape_worker_mpi 
+	rm -f phigrape_worker_gpu_sockets
 
 __init__.py:
 	touch $@

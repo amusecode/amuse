@@ -17,8 +17,10 @@ C---  local vars
       INTEGER ierr
 
 C---  Scatter the "local" vectors from "global" 
+      
       CALL MPI_Scatter(ind, n_loc, MPI_INT,    ind_loc, n_loc,
      $                      MPI_INT,    rootRank, MPI_COMM_WORLD,ierr)
+     
       CALL MPI_Scatter(m,   n_loc, MPI_DOUBLE, m_loc,   n_loc,
      $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
       CALL MPI_Scatter(h,   n_loc, MPI_DOUBLE, h_loc,   n_loc,

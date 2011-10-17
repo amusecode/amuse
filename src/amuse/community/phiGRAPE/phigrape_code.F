@@ -658,13 +658,11 @@ C--------------------------------------------------------------------
       DOUBLE PRECISION time
       INTEGER i
 
-      print *, "commit_particles 1"
       
 C (re)start grape (fip)
 C  update local particles on grape
       CALL amuse_init_grape
       CALL update_grape(1) 
-      print *, "commit_particles 2"
 
       time = 0.0d0
       

@@ -44,22 +44,22 @@ C---  also get total number of active particles
 C---  allgather global indices of all active particles
 C---  NOTE: Gatherv + Bcast is equivalent to Allgatherv but no extra 
 C---        memory is needed 
-      if(myRank .eq. rootRank) then
-      
-        CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc,MPI_INT, ind_act,
-     $                 n_act_v,
-     $                 disp_act_v, MPI_INT,rootRank,
-     $                                           MPI_COMM_WORLD,ierr)
-      else       
-        CALL MPI_Gatherv(ind_act, n_act_loc, MPI_INT, ind_act, n_act_v,
-     $                 disp_act_v, MPI_INT,rootRank,
-     $                                           MPI_COMM_WORLD,ierr)
-      endif
+C      if(myRank .eq. rootRank) then
+C      
+C        CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc,MPI_INT, ind_act,
+C     $                 n_act_v,
+C     $                 disp_act_v, MPI_INT,rootRank,
+C     $                                           MPI_COMM_WORLD,ierr)
+C      else       
+C        CALL MPI_Gatherv(ind_act, n_act_loc, MPI_INT, ind_act, n_act_v,
+C     $                 disp_act_v, MPI_INT,rootRank,
+C     $                                           MPI_COMM_WORLD,ierr)
+C      endif
       
       
     
-      CALL MPI_Bcast(ind_act, n_act, MPI_INT, rootRank,
-     $                                           MPI_COMM_WORLD,ierr)
+C      CALL MPI_Bcast(ind_act, n_act, MPI_INT, rootRank,
+C     $                                           MPI_COMM_WORLD,ierr)
 
 C---  allgather the predicted positions and velocities of active particles
       CALL MPI_Allgatherv(body_pred_loc, 6*n_act_loc,       MPI_DOUBLE, 
@@ -82,7 +82,11 @@ C---  allgather the predicted positions and velocities of active particles
       CALL MPI_Bcast(h_act, n_act, MPI_DOUBLE, rootRank,
      $                                          MPI_COMM_WORLD,ierr)
 
-      print *, "m_act: ", m_act(1:2)
+      print *, "m_act before: ", m_act(1:n_act_loc)
+      print *, "n_act_v:", n_act_v(1:n_proc)
+      print *, "disp_act_v:",disp_act_v(1:n_proc)
+      print *, " n_act_loc:",n_act_loc
+      print *, "n_act:", n_act
       if(myRank .eq. rootRank) then
       CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc, MPI_DOUBLE, m_act, 
      $                 n_act_v, disp_act_v, MPI_DOUBLE,rootRank,
@@ -95,8 +99,10 @@ C---  allgather the predicted positions and velocities of active particles
       CALL MPI_Bcast(m_act, n_act, MPI_DOUBLE, rootRank,
      $                                          MPI_COMM_WORLD,ierr)
 
-      print *, "m_act: ", m_act(1:2)
-#else
+      print *, "m_act after: ", m_act(1:n_act)
+
+#endif
+#ifdef NOMPI 
       n_act = n_act_loc         ! set total number of active particles for serial runs (NOMPI)
 #endif
 

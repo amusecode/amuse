@@ -231,7 +231,7 @@ class TestPhigrape(TestWithMPI):
     
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = PhiGRAPE(convert_nbody)#, redirection="none")#, debugger="xterm")
+        instance = PhiGRAPE(convert_nbody)#, debugger="xterm")
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
@@ -244,13 +244,13 @@ class TestPhigrape(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
     
+        position_at_start = earth.position.value_in(units.AU)[0]
         instance.evolve_model(365 | units.day)
     
         instance.particles.copy_values_of_all_attributes_to(stars)
         
-        position_at_start = earth.position.value_in(units.AU)[0]
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
-        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
+        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 3)
         
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
@@ -456,7 +456,7 @@ class TestPhigrape(TestWithMPI):
     
     def test9(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = PhiGRAPE(convert_nbody, redirection="none")#, debugger="xterm")
+        instance = PhiGRAPE(convert_nbody)#, debugger="xterm")
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
@@ -640,7 +640,7 @@ class TestPhigrape(TestWithMPI):
         
         
     def test15(self):
-        instance = PhiGRAPE(number_of_workers = 2, redirection = "none")
+        instance = PhiGRAPE(number_of_workers = 1)#, redirection = "none")
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
@@ -690,7 +690,7 @@ class TestPhigrape(TestWithMPI):
     
     
     def xtest16(self):
-        instance = PhiGRAPE(number_of_workers = 1, redirection = "none")
+        instance = PhiGRAPE(number_of_workers = 2, redirection = "none")
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
