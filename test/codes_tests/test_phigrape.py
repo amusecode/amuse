@@ -639,9 +639,108 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
         
         
-    def xtest15(self):
+    def test15(self):
+        instance = PhiGRAPE(number_of_workers = 2, redirection = "none")
+        instance.initialize_code()
+    
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.set_eta(0.01,0.02)
+        instance.dt_dia = 5000
+        print 1
+        particles = datamodel.Particles(2)
+        particles.x = [-1.0,1.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx =  0 | nbody_system.speed
+        particles.vy =  0 | nbody_system.speed
+        particles.vz =  0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+        
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
+    
+        instance.evolve_model(0.01 | nbody_system.time)
+    
+        instance.particles.copy_values_of_all_attributes_to(particles)
+        
+        print instance.particles.position.x
+        self.assertEquals(instance.particles[0].position.x, -instance.particles[1].position.x)
+        self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.999969482111 | nbody_system.length, 8)
+        
+        instance.evolve_model(0.10 | nbody_system.time)
+    
+        instance.particles.copy_values_of_all_attributes_to(particles)
+        
+        print instance.particles.position.x
+        self.assertEquals(instance.particles[0].position.x, -instance.particles[1].position.x)
+        self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.99804560161 | nbody_system.length, 8)
+        
+        instance.evolve_model(0.50 | nbody_system.time)
+    
+        instance.particles.copy_values_of_all_attributes_to(particles)
+        
+        print instance.particles.position.x
+        self.assertEquals(instance.particles[0].position.x, -instance.particles[1].position.x)
+        self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.968416814302 | nbody_system.length, 8)
+        
+        instance.cleanup_code()
+        
+        instance.stop()
+    
+    
+    def test16(self):
+        instance = PhiGRAPE(number_of_workers = 2, redirection = "none")
+        instance.initialize_code()
+    
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.set_eta(0.01,0.02)
+        instance.dt_dia = 5000
+        print 1
+        particles = datamodel.Particles(2)
+        particles.x = [-1.0,1.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx =  0 | nbody_system.speed
+        particles.vy =  0 | nbody_system.speed
+        particles.vz =  0 | nbody_system.speed
+        particles.mass = [1.0, 0.5] | nbody_system.mass
+        
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
+    
+        instance.evolve_model(0.01 | nbody_system.time)
+    
+        instance.particles.copy_values_of_all_attributes_to(particles)
+        
+        print instance.particles.position.x
+        self.assertAlmostRelativeEquals(instance.particles[0].position.x, -0.999984741095 | nbody_system.length, 8)
+        self.assertAlmostRelativeEquals(instance.particles[1].position.x,  0.999969482189 | nbody_system.length, 8)
+        
+        #instance.evolve_model(0.10 | nbody_system.time)
+    
+        #instance.particles.copy_values_of_all_attributes_to(particles)
+        
+        # print instance.particles.position.x
+        #self.assertEquals(instance.particles[0].position.x, -instance.particles[1].position.x)
+        #self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.99804560161 | nbody_system.length, 8)
+        
+        #instance.evolve_model(0.50 | nbody_system.time)
+    
+        #instance.particles.copy_values_of_all_attributes_to(particles)
+        
+        #print instance.particles.position.x
+        #self.assertEquals(instance.particles[0].position.x, -instance.particles[1].position.x)
+        #self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.968416814302 | nbody_system.length, 8)
+        
+        instance.cleanup_code()
+        
+        instance.stop()
+        
+    def xtest17(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = PhiGRAPE(convert_nbody, number_of_workers = 2, redirection = "none")
+        instance = PhiGRAPE(convert_nbody, number_of_workers=2, redirection = "none")
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
@@ -654,16 +753,24 @@ class TestPhigrape(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
     
+        position_at_start = earth.position.value_in(units.AU)[0]
+        print instance.particles[0].position.as_quantity_in(units.AU)
+        print instance.particles[1].position.as_quantity_in(units.AU)
         instance.evolve_model(365 | units.day)
+        print instance.particles[0].position.as_quantity_in(units.AU)
+        print instance.particles[1].position.as_quantity_in(units.AU)
     
+        raise Exception('11')
         instance.particles.copy_values_of_all_attributes_to(stars)
         
-        position_at_start = earth.position.value_in(units.AU)[0]
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
-        print earth.position.value_in(units.AU)   , position_at_start
-        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
         
+        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 3)
+        
+        print instance.particles[0].position.as_quantity_in(units.AU)
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
+        
+        print instance.particles[0].position.as_quantity_in(units.AU)
         
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]

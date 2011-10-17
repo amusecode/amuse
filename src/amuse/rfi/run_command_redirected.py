@@ -10,11 +10,13 @@ if __name__ == '__main__':
     if sys.argv[1] == 'none':
         stdout = None
     else:
+        fname=sys.argv[1]
         stdout = open(fname,'w')
         
     if sys.argv[2] == 'none':
         stderr = None
     else:
+        fname=sys.argv[2]
         stderr = open(fname,'w')
     
     

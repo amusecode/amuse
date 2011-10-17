@@ -880,14 +880,6 @@ C---  just release GRAPE
       ENDIF
 C          --------
 
-C--------------------------------------------------------------------
-C---  stop MPI and end program
-C--------------------------------------------------------------------
-#ifndef NOMPI
-      CALL mpi_finalize(ierr)
-C          ------------
-#endif
-
       cleanup_code = 0
       RETURN
       END
