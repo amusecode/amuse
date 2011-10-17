@@ -236,8 +236,11 @@ int recommit_parameters(){
 }
 
 int commit_particles(){
-    double t0, t1, a3;
+    double t0, t1;
     int i, j;
+#ifndef ISOTHERM_EQS
+    double a3;
+#endif
 
     t0 = second();
     All.TotNumPart = dm_particles_in_buffer + sph_particles_in_buffer;
@@ -358,10 +361,16 @@ int commit_particles(){
 
 void push_particle_data_on_state_vectors(){
     map<long long, int>::iterator iter;
-    double a3;
     int i;
+#ifndef ISOTHERM_EQS
+    double a3;
 
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    if (!density_up_to_date){
+        density();
+        density_up_to_date = true;
+    }
+#endif
     for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
         i = (*iter).second;
         if (P[i].Type == 0){
@@ -374,7 +383,11 @@ void push_particle_data_on_state_vectors(){
             state.vx =   P[i].Vel[0];
             state.vy =   P[i].Vel[1];
             state.vz =   P[i].Vel[2];
+#ifdef ISOTHERM_EQS
+            state.u = SphP[i].Entropy;
+#else
             state.u = SphP[i].Entropy * pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+#endif
             sph_states.insert(std::pair<long long, sph_state>(P[i].ID, state));
         } else {
             // store dark matter particle data
@@ -1415,6 +1428,7 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
     double buffer[length*8];
     int count[length];
     int local_index;
+#ifndef ISOTHERM_EQS
     double a3;
 
     if (!density_up_to_date){
@@ -1422,6 +1436,7 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
         density_up_to_date = true;
     }
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+#endif
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
@@ -1432,8 +1447,12 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
             buffer[i+4*length] = P[local_index].Vel[0];
             buffer[i+5*length] = P[local_index].Vel[1];
             buffer[i+6*length] = P[local_index].Vel[2];
+#ifdef ISOTHERM_EQS
+            buffer[i+7*length] = SphP[local_index].Entropy;
+#else
             buffer[i+7*length] = SphP[local_index].Entropy *
                 pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+#endif
         } else {
             count[i] = 0;
             buffer[i] = 0;
@@ -1486,6 +1505,7 @@ int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
         double *vx, double *vy, double *vz, double *internal_energy, int length){
     int count[length];
     int local_index;
+#ifndef ISOTHERM_EQS
     double a3;
 
     if (!density_up_to_date){
@@ -1493,6 +1513,7 @@ int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
         density_up_to_date = true;
     }
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+#endif
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             P[local_index].Mass = mass[i];
@@ -1502,8 +1523,12 @@ int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
             P[local_index].Vel[0] = vx[i];
             P[local_index].Vel[1] = vy[i];
             P[local_index].Vel[2] = vz[i];
+#ifdef ISOTHERM_EQS
+            SphP[local_index].Entropy = internal_energy[i];
+#else
             SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
                 pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
+#endif
             count[i] = 1;
         } else count[i] = 0;
     }
@@ -1573,12 +1598,11 @@ int get_internal_energy(int *index, double *internal_energy, int length){
     double a3;
     
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-#endif
-    
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
     }
+#endif
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
@@ -1621,12 +1645,11 @@ int set_internal_energy(int *index, double *internal_energy, int length){
     double a3;
     
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-#endif
-
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
     }
+#endif
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
 #ifdef ISOTHERM_EQS
@@ -1778,21 +1801,19 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
     double a3;
     
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-#endif
-
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
     }
-
+#endif
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
 #ifdef ISOTHERM_EQS
             buffer[i] = SphP[local_index].DtEntropy;
 #else
-            buffer[i] = SphP[local_index].DtEntropy *
-                pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+            buffer[i] = - SphP[local_index].Pressure * SphP[local_index].DivVel /
+                SphP[local_index].Density;
 #endif
         } else {
             count[i] = 0;
@@ -2021,9 +2042,12 @@ int get_potential_at_point(double eps, double x, double y, double z, double * ph
 }
 int get_hydro_state_at_point(double x, double y, double z, double vx, double vy, double vz,
         double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
-    double pos[3], vel[3], a3;
+    double pos[3], vel[3];
     double h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
     int error;
+#ifndef ISOTHERM_EQS
+    double a3;
+#endif
     error = contruct_tree_if_needed();
     if (error)
         return error;

@@ -6,23 +6,22 @@ from amuse.ext.spherical_model import new_uniform_spherical_particle_distributio
 
 from amuse.support.exceptions import AmuseException
 
-
-
-
 from amuse.units import nbody_system
 from amuse.units import generic_unit_converter
 from amuse.units import generic_unit_system
 from amuse.units import units
-from amuse import datamodel
+from amuse.datamodel import Particles
 from amuse.rfi import channel
 from amuse.ic.plummer import new_plummer_sphere
-from amuse.ic.plummer import new_plummer_sphere
+
 default_options = dict(number_of_workers=2)
 #default_options = dict(number_of_workers=2, redirection="none")
 
 # ... but never use (number_of_workers>1) for tests with only a few particles:
 few_particles_default_options = dict()
-few_particles_default_options = dict(redirection="none")
+#few_particles_default_options = dict(redirection="none")
+
+testing_isotherm_no_gravity = False
 
 class TestGadget2Interface(TestWithMPI):
 
@@ -73,7 +72,10 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEquals([1, 0], instance.new_dm_particle(1.,  1, 0, 0,  0, 0, 0).values())
         self.assertEquals([2, 0], instance.new_dm_particle(1., -1, 0, 0,  0, 0, 0).values())
         self.assertEquals(0, instance.commit_particles())
-        self.assertAlmostEqual(-0.500 , instance.get_potential(1)['Potential'], places=1)
+        if testing_isotherm_no_gravity:
+            self.assertAlmostEqual(0.000 , instance.get_potential(1)['Potential'], places=1)
+        else:
+            self.assertAlmostEqual(-0.500 , instance.get_potential(1)['Potential'], places=1)
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
@@ -356,7 +358,7 @@ class TestGadget2(TestWithMPI):
     default_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(UnitLength, UnitMass, UnitVelocity)
     default_convert_nbody = nbody_system.nbody_to_si(UnitLength, UnitMass)
     
-    three_particles_IC = datamodel.Particles(3)
+    three_particles_IC = Particles(3)
     three_particles_IC.position = [[0.5, 0.0, 0.0], [0.0,-0.5, 0.0], [0.0, 0.0, 0.5]] | units.kpc 
     three_particles_IC.velocity =[[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0,-1.0]] | units.km / units.s
     three_particles_IC.mass = 1.0e10 | units.MSun
@@ -394,7 +396,7 @@ class TestGadget2(TestWithMPI):
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2
 
-        dark = datamodel.Particles(2)
+        dark = Particles(2)
         dark.mass = [0.4, 0.4] | generic_unit_system.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
@@ -430,7 +432,7 @@ class TestGadget2(TestWithMPI):
         target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
 
-        dark = datamodel.Particles(2)
+        dark = Particles(2)
         dark.mass = [0.4, 0.4] | generic_unit_system.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
@@ -497,14 +499,14 @@ class TestGadget2(TestWithMPI):
         print "Testing read-only Gadget parameters"
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
-        for par, value in [ ('no_gravity_flag',False),
-                            ('isothermal_flag', False),
+        for par, value in [ ('no_gravity_flag', testing_isotherm_no_gravity),
+                            ('isothermal_flag', testing_isotherm_no_gravity),
                             ('eps_is_h_flag',   False),
                             ('code_mass_unit',     self.default_converter.to_si(generic_unit_system.mass)),
                             ('code_length_unit',   self.default_converter.to_si(generic_unit_system.length)),
                             ('code_time_unit',     self.default_converter.to_si(generic_unit_system.time)),
                             ('code_velocity_unit', self.default_converter.to_si(generic_unit_system.speed)),
-                            ('polytropic_index_gamma', (5.0/3) | units.none)]:
+                            ('polytropic_index_gamma', (1.0 if testing_isotherm_no_gravity else 5.0/3) | units.none)]:
             self.assertEquals(value, getattr(instance.parameters, par))
             def try_set_parameter(par, value, instance):
                 setattr(instance.parameters, par, value)
@@ -520,7 +522,10 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **default_options)
         instance.gas_particles.add_particles(gas)
         self.assertEquals(instance.model_time,                        0.0 | units.s)
-        self.assertAlmostEquals(instance.potential_energy, -4.27843220393 | 1e+50*units.J)
+        if testing_isotherm_no_gravity:
+            self.assertAlmostEquals(instance.potential_energy,            0.0 | 1e+50*units.J)
+        else:
+            self.assertAlmostEquals(instance.potential_energy, -4.27843220393 | 1e+50*units.J)
         self.assertAlmostEquals(instance.kinetic_energy,              0.0 | 1e+49*units.J)
         self.assertAlmostEquals(instance.thermal_energy,    4.27851824913 | 1e+49*units.J)
         self.assertAlmostEquals(instance.total_radius,      3.96592921066 | 1e+19*units.m)
@@ -535,7 +540,7 @@ class TestGadget2(TestWithMPI):
         print "Testing Gadget states"
         target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
-        dark = datamodel.Particles(2)
+        dark = Particles(2)
         dark.mass = [0.4, 0.4] | generic_unit_system.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
@@ -577,7 +582,7 @@ class TestGadget2(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'END')
 
     def test11(self):
-        particles = datamodel.Particles(2)
+        particles = Particles(2)
 
         particles.x = [0.0,10.0] | generic_unit_system.length
         particles.y = 0 | generic_unit_system.length
@@ -617,7 +622,8 @@ class TestGadget2(TestWithMPI):
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
-                     8.4252e-10 | units.kg * units.m**-1 * units.s**-2]
+                    (7.6297e-10 if testing_isotherm_no_gravity else 
+                     8.4252e-10) | units.kg * units.m**-1 * units.s**-2]
         for value, expect in zip(hydro_state, expected):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         
@@ -628,7 +634,8 @@ class TestGadget2(TestWithMPI):
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
-                     1.0742e-09 | units.kg * units.m**-1 * units.s**-2]
+                    (8.9175e-10 if testing_isotherm_no_gravity else 
+                     1.0742e-09) | units.kg * units.m**-1 * units.s**-2]
         for value, expect in zip(hydro_state, expected):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         
@@ -692,6 +699,17 @@ class TestGadget2(TestWithMPI):
         self.assertIsOfOrder(rho_sort[select]/mean_density, r_sort.mean()/r_sort[select])
         self.assertAlmostEqual(instance.gas_particles.u * instance.gas_particles.rho, 
             1.5 * instance.gas_particles.pressure)
+        
+        self.assertAlmostEqual(instance.gas_particles.du_dt, 0 | units.m**2 * units.s**-3)
+        u_0 = instance.gas_particles.u.sum()
+        instance.evolve_model(0.1 | units.Myr)
+        if testing_isotherm_no_gravity:
+            self.assertAlmostEqual(instance.gas_particles.du_dt, 0 | units.m**2 * units.s**-3)
+        else: # Collapsing ==> heating:
+            self.assertTrue(instance.gas_particles.du_dt.sum() >= 0 | units.m**2 * units.s**-3)
+            self.assertIsOfOrder(instance.gas_particles.du_dt.sum() * (0.1 | units.Myr), 
+                instance.gas_particles.u.sum() - u_0)
+        instance.stop()
     
     def test15(self):
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES, 
@@ -812,7 +830,7 @@ class TestGadget2(TestWithMPI):
         
         wrong_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(self.UnitLength, 
             self.UnitMass, 1.0e15 * units.yr)
-        instance = Gadget2(wrong_converter, redirection = 'none', **default_options)
+        instance = Gadget2(wrong_converter, **default_options)
         instance.gas_particles.add_particles(gas)
         self.assertRaises(AmuseException, instance.evolve_model, 1.0e13 | units.yr, expected_message = 
             "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -8, error is 'A particle "
@@ -831,7 +849,7 @@ class TestGadget2(TestWithMPI):
         
         wrong_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(self.UnitLength, 
             self.UnitMass, 1.0e-15 * units.yr)
-        instance = Gadget2(wrong_converter, redirection = 'none', **default_options)
+        instance = Gadget2(wrong_converter, **default_options)
         instance.parameters.max_size_timestep = 3.0e-14 | units.yr
         instance.gas_particles.add_particles(gas)
         self.assertRaises(AmuseException, instance.evolve_model, 1.1e-13 | units.yr, expected_message = 
