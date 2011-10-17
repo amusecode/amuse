@@ -168,10 +168,10 @@ class TestQuantities(amusetest.TestCase):
     
     def test16(self):
         # Tests for add/sub of quantity (with none unit) and number
-        self.assertEquals( (2.0 | units.none) + 1.0,  3.0 | units.none )
-        self.assertEquals( (2.0 | units.none) - 1.0,  1.0 | units.none )
-        self.assertEquals( 1.0 + (2.0 | units.none),  3.0 | units.none )
-        self.assertEquals( 1.0 - (2.0 | units.none), -1.0 | units.none )
+        self.assertEquals( (2.0 | units.none) + 1.0,  3.0  )
+        self.assertEquals( (2.0 | units.none) - 1.0,  1.0  )
+        self.assertEquals( 1.0 + (2.0 | units.none),  3.0  )
+        self.assertEquals( 1.0 - (2.0 | units.none), -1.0  )
     
     def test17(self):
         # Tests for add/sub of quantity (with other unit) and number
@@ -200,4 +200,12 @@ class TestQuantities(amusetest.TestCase):
         self.assertEquals(quantity ,  'string' | units.string)
         quantity = u'string' | units.string
         self.assertEquals(quantity , u'string' | units.string)
+
+    def test1(self):
+        x = 1.0 | si.kg
+        self.assertTrue(x==x.amin())
+        self.assertTrue(x==x.prod())
+        self.assertTrue(x==x.sorted())
+        self.assertTrue(x==x.amax())
+        self.assertTrue(x==x.sum())
 

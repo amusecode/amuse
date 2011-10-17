@@ -262,7 +262,17 @@ class ScalarQuantity(Quantity):
         self.unit = tuple[0]
         self.number = tuple[1]
 
-
+    def sum(self, axis=None, dtype=None, out=None):
+        return self
+    def prod(self, axis=None, dtype=None):
+        return self
+    def amin(self, axis = None):
+        return self
+    def amax(self, axis = None):
+        return self
+    def sorted(self):
+        return self
+        
 class VectorQuantity(Quantity):
     """
     A VectorQuantity object represents a physical vector
