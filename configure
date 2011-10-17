@@ -6004,7 +6004,7 @@ else
 $as_echo "yes" >&6; }
 
     FFTW_FLAGS="$FFTW_CFLAGS"
-    FFTW_LIBS="$FFTW_LIBS -lfftw3_thread"
+    FFTW_LIBS="$FFTW_LIBS -lfftw3_threads"
     FOUND_FFTW=yes
 
 

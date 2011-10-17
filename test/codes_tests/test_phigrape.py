@@ -637,3 +637,46 @@ class TestPhigrape(TestWithMPI):
         self.assertTrue((end-start)<very_short_time_to_evolve.value_in(units.s) + 2)#2 = some overhead compensation
 
         instance.stop()
+        
+        
+    def test15(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+        instance = PhiGRAPE(convert_nbody, number_of_workers = 2, redirection = "none")
+        instance.initialize_code()
+    
+        instance.parameters.epsilon_squared = 0.0 | units.AU**2
+        instance.set_eta(0.01,0.02)
+        instance.dt_dia = 5000
+        
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
+    
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
+    
+        instance.evolve_model(365 | units.day)
+    
+        instance.particles.copy_values_of_all_attributes_to(stars)
+        
+        position_at_start = earth.position.value_in(units.AU)[0]
+        position_after_full_rotation = earth.position.value_in(units.AU)[0]
+        print earth.position.value_in(units.AU)   , position_at_start
+        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
+        
+        instance.evolve_model(365.0 + (365.0 / 2) | units.day)
+        
+        instance.particles.copy_values_of_all_attributes_to(stars)
+        position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
+        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
+                
+        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
+        
+        instance.particles.copy_values_of_all_attributes_to(stars)
+        position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
+        #self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
+        
+        instance.cleanup_code()
+        
+        instance.stop()
+
+    

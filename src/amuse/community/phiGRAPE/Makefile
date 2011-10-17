@@ -3,7 +3,6 @@ MPICC ?= mpicc
 MPIF90 ?= mpif90
 FC = $(MPIF90)
 CC = $(MPICC)
-OPTS+=-DNOMPI
 GL_PATH ?= /data/pelupes/libraries/f90gl-1.2.11
 
 AMUSE_DIR?=../../../..
@@ -12,7 +11,10 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 SRCDIR = src
 
-CODELIB=$(SRCDIR)/libphigrape.a
+MPI_BUILDDIR=build_mpi
+BUILDDIR = build
+
+CODELIB=$(BUILDDIR)/libphigrape.a
 
 GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
 
@@ -65,11 +67,29 @@ debuginfo:
 	@echo "making phigrape..; some debugging info follows:"
 	@echo $(SCLIBS)
 
-$(CODELIB):
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+
+$(BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
+	-mkdir $(BUILDDIR) 
+	cp $(SRCDIR)/Makefile $(BUILDDIR)/Makefile
+	
+$(CODELIB): $(BUILDDIR)/Makefile
+	make -C $(BUILDDIR) all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)" VPATH=../src
 
 phigrape_worker: worker_code.f90 phigrape_code.o $(CODELIB)
 	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
+
+
+
+
+$(MPI_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
+	-mkdir $(MPI_BUILDDIR) 
+	cp $(SRCDIR)/Makefile $(MPI_BUILDDIR)/Makefile
+	
+$(MPI_BUILDDIR)/libphigrape.a:  $(MPI_BUILDDIR)/Makefile
+	make -C $(MPI_BUILDDIR) all "FC=$(FC)" "OPTS=-DMPI" "CC=$(CC)" VPATH=../src
+	
+phigrape_worker_mpi: worker_code.f90 phigrape_code.mpio $(MPI_BUILDDIR)/libphigrape.a
+	$(MPIF90) $(FFLAGS) $(SCINC)  -DMPI $^ $(MPI_BUILDDIR)/libphigrape.a -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
 
 phigrape_worker_sockets: worker_code-sockets.f90 phigrape_code.o $(CODELIB)
 	$(MPIF90) $(FFLAGS) $(SCINC) $(FSINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS) $(FSLIBS)
@@ -105,6 +125,7 @@ glworker_code.f90: interface.py
 clean:
 	make -C src clean
 	rm -f *.pyc *.o
+	rm -Rf build build_mpi
 	rm -f worker_code_gpu worker_code_grape
 	rm -f worker_code worker_code.f90
 	rm -f worker_code-sockets.f90 phigrape_worker_sockets
@@ -116,7 +137,13 @@ __init__.py:
 	touch $@
 
 %.o: %.f90
-	$(FC) $(FFLAGS) -c $<
+	$(FC)  $(FFLAGS) -c $<
+
+%.mpio: %.F
+	$(FC)  $(SCINC) -DMPI $(FFLAGS) -c $< -o $@
+
+%.o: %.F
+	$(FC)  $(SCINC) -DNOMPI $(FFLAGS) -c $<
 
 .f.o:
 	$(FC) $(FFLAGS) $(SCINC) -c $<

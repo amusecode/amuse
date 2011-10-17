@@ -1,6 +1,7 @@
 from subprocess import call
 
 import sys
+import os.path
 import time
 import signal
 
@@ -9,12 +10,27 @@ if __name__ == '__main__':
     if sys.argv[1] == 'none':
         stdout = None
     else:
-        stdout = open(sys.argv[1],'w')
+        fname = sys.argv[1]
+        orig_name = fname
+        count = 1
+        if os.path.exists(sys.argv[1]):
+            fname = orig_name + '-' + str(count)
+            count += 1
+            
+        stdout = open(fname,'w')
         
     if sys.argv[2] == 'none':
         stderr = None
     else:
-        stderr = open(sys.argv[2],'w')
+        fname = sys.argv[1]+'-err' if sys.argv[2] == sys.argv[1] else sys.argv[2]
+        
+        orig_name = fname
+        count = 1
+        if os.path.exists(sys.argv[1]):
+            fname = orig_name + '-' +  str(count)
+            count += 1
+            
+        stderr = open(fname,'w')
     
     
     stdin = open('/dev/null','r')

@@ -15,19 +15,29 @@ class PhiGRAPEInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalD
     MODE_GPU   = 'gpu'
     MODE_GRAPE = 'grape'
 
-    def __init__(self, mode = MODE_G6LIB, **options):
-        CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
+    def __init__(self, mode = MODE_G6LIB, number_of_workers = 1, **options):
+        CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode, number_of_workers), number_of_workers = number_of_workers, **options)
         LiteratureReferencesMixIn.__init__(self)
 
-    def name_of_the_worker(self, mode):
-        if mode == self.MODE_G6LIB:
-            return 'phigrape_worker'
-        elif mode == self.MODE_GPU:
-            return 'phigrape_worker_gpu'
-        elif mode == self.MODE_GRAPE:
-            return 'phigrape_worker_grape'
+    def name_of_the_worker(self, mode, number_of_workers):
+        if number_of_workers > 1:
+            if mode == self.MODE_G6LIB:
+                return 'phigrape_worker_mpi'
+            elif mode == self.MODE_GPU:
+                return 'phigrape_worker_gpu'
+            elif mode == self.MODE_GRAPE:
+                return 'phigrape_worker_grape'
+            else:
+                return 'phigrape_worker_mpi'
         else:
-            return 'phigrape_worker'
+            if mode == self.MODE_G6LIB:
+                return 'phigrape_worker'
+            elif mode == self.MODE_GPU:
+                return 'phigrape_worker_gpu'
+            elif mode == self.MODE_GRAPE:
+                return 'phigrape_worker_grape'
+            else:
+                return 'phigrape_worker'
 
     def initialize_particles(self, time):
         return self.commit_particles()
