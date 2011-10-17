@@ -689,8 +689,8 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
     
     
-    def test16(self):
-        instance = PhiGRAPE(number_of_workers = 2, redirection = "none")
+    def xtest16(self):
+        instance = PhiGRAPE(number_of_workers = 1, redirection = "none")
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
