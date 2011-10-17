@@ -639,7 +639,7 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
         
         
-    def test15(self):
+    def xtest15(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         instance = PhiGRAPE(convert_nbody, number_of_workers = 2, redirection = "none")
         instance.initialize_code()
