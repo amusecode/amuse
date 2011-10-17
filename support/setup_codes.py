@@ -43,11 +43,13 @@ class CodeCommand(Command):
          "compile/link with debugging information"),
         ('force', 'f',
          "forcibly build everything (ignore file timestamps)"),
+        ('variant', 'V',
+         "build variants of the codes (gpu versions etc)"),
         ('code-dir=', 'd', "directory containing codes"),
         ('lib-dir=', 'l', "directory containing libraries to build"),
     ]
 
-    boolean_options = ['force', 'inplace', 'debug']
+    boolean_options = ['force', 'inplace', 'debug', 'variant']
 
     def initialize_options (self):
         self.codes_dir = None
@@ -57,6 +59,7 @@ class CodeCommand(Command):
         self.environment_notset = {}
         self.found_cuda = False
         self.found_sapporo = False
+        self.variant = False
         self.inplace = 1
         
         self.build_lib = None
@@ -515,6 +518,8 @@ class BuildCodes(CodeCommand):
                 is_built = True
                 self.announce("[{1:%H:%M:%S}] building {0}, succeeded".format(shortname, endtime), level =  log.DEBUG)
             
+            if not self.variant:
+                continue
                 
             special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:

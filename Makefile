@@ -7,6 +7,10 @@ export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
 all:
 	@-mkdir -p test_results
+	$(PYTHON) setup.py build build_codes --variant 
+	
+novariant:
+	@-mkdir -p test_results
 	$(PYTHON) setup.py build
 
 docclean:
