@@ -4,6 +4,9 @@ import os.path
 
 import logging
 
+import pydoc
+
+
 from subprocess import Popen, PIPE
 
 from amuse.support import exceptions
@@ -253,7 +256,6 @@ class legacy_function(object):
         if result.id is None:
             result.id = abs(self.crc32(result.name))
         if result.description is None:
-            import pydoc
             result.description = pydoc.getdoc(self.specification_function)
         return result
     
