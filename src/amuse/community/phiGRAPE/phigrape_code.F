@@ -1439,6 +1439,7 @@ C timeout and number of steps detection goes here i quess...
      $                       TIMEOUT_DETECTION)
              ENDIF
          ENDIF
+    
          CALL gather_collisions
 
 C---  break if collision occured
@@ -1459,8 +1460,6 @@ C             ----------
 C         CALL sync
 C             ----
 C      ENDIF
-
-
 
       CALL gatherParts
 C--------------------------------------------------------------------
@@ -1489,6 +1488,8 @@ C     close grape before exiting (fip)
       
       CALL selectsync(time_cur)
 
+      CALL allgather_ap()
+      
       CALL sync
 
       CALL gatherParts

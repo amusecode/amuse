@@ -39,7 +39,7 @@ C---  local vars
 
 C---  set some initial guess for first call of GRAPES
       IF (ifirst.EQ.1) THEN
-         DO i=1,n_act_loc
+         DO i=1,n_act
 
             ig = ind_act(i)
 
@@ -55,7 +55,7 @@ C---  set actual time on GRAPE
       CALL g6_set_ti(clusterid, tnow)
 
 C---  n_act is all active particles and on all nodes the same
-      ni = n_act_loc
+      ni = n_act
 
       error = is_stopping_condition_enabled(COLLISION_DETECTION,
      $        is_collision_detection_enabled)

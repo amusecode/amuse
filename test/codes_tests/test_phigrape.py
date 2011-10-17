@@ -640,7 +640,7 @@ class TestPhigrape(TestWithMPI):
         
         
     def test15(self):
-        instance = PhiGRAPE(number_of_workers = 1)#, redirection = "none")
+        instance = PhiGRAPE(number_of_workers = 2)#, redirection = "none")
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
@@ -689,7 +689,7 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
     
     
-    def xtest16(self):
+    def test16(self):
         instance = PhiGRAPE(number_of_workers = 2, redirection = "none")
         instance.initialize_code()
     
@@ -718,27 +718,27 @@ class TestPhigrape(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.particles[0].position.x, -0.999984741095 | nbody_system.length, 8)
         self.assertAlmostRelativeEquals(instance.particles[1].position.x,  0.999969482189 | nbody_system.length, 8)
         
-        #instance.evolve_model(0.10 | nbody_system.time)
+        instance.evolve_model(0.10 | nbody_system.time)
     
-        #instance.particles.copy_values_of_all_attributes_to(particles)
+        instance.particles.copy_values_of_all_attributes_to(particles)
         
-        # print instance.particles.position.x
-        #self.assertEquals(instance.particles[0].position.x, -instance.particles[1].position.x)
-        #self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.99804560161 | nbody_system.length, 8)
+        print instance.particles.position.x
+        self.assertAlmostRelativeEquals(instance.particles[0].position.x, -0.999022960148 | nbody_system.length, 8)
+        self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.998045920305 | nbody_system.length, 8)
         
-        #instance.evolve_model(0.50 | nbody_system.time)
+        instance.evolve_model(0.50 | nbody_system.time)
     
-        #instance.particles.copy_values_of_all_attributes_to(particles)
+        instance.particles.copy_values_of_all_attributes_to(particles)
         
-        #print instance.particles.position.x
-        #self.assertEquals(instance.particles[0].position.x, -instance.particles[1].position.x)
-        #self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.968416814302 | nbody_system.length, 8)
+        print instance.particles.position.x
+        self.assertAlmostRelativeEquals(instance.particles[0].position.x, -0.984250788742 | nbody_system.length, 8)
+        self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.968501583383 | nbody_system.length, 8)
         
         instance.cleanup_code()
         
         instance.stop()
         
-    def xtest17(self):
+    def test17(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         instance = PhiGRAPE(convert_nbody, number_of_workers=2, redirection = "none")
         instance.initialize_code()
@@ -760,7 +760,6 @@ class TestPhigrape(TestWithMPI):
         print instance.particles[0].position.as_quantity_in(units.AU)
         print instance.particles[1].position.as_quantity_in(units.AU)
     
-        raise Exception('11')
         instance.particles.copy_values_of_all_attributes_to(stars)
         
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
