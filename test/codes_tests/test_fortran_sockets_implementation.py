@@ -467,7 +467,7 @@ class TestInterface(TestWithMPI):
         
         self.assertEquals(out, "hello")
         
-    def xtest12(self):
+    def test12(self):
         
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
         out, error = instance.echo_string_fixed_len("abc")
