@@ -36,21 +36,12 @@ class _SalpeterIMF(object):
         
     def next_mass(self,N=1):
         return self.mass(self.random.random(N))
-#    def next_mass(self):
-#        return self.mass(self.random.random())
-        
+    
     def next_set(self, number_of_stars):
-#        set_of_masses = self.mass_min.unit.new_quantity(numpy.zeros(number_of_stars))
-#        total_mass = self.mass_min.unit.new_quantity(0.0)
         set_of_masses=self.next_mass(number_of_stars).in_(self.mass_min.unit)
         total_mass=set_of_masses.sum()
-#        for i in range(number_of_stars):
-#           mass = self.next_mass()
-#           set_of_masses[i] = mass
-#           total_mass += mass
-        
         return (total_mass, set_of_masses)
-        
+    
 
 def new_salpeter_mass_distribution(number_of_particles, *list_arguments, **keyword_arguments):
     """Returns a salpeter mass distribution in SI units.
@@ -58,7 +49,7 @@ def new_salpeter_mass_distribution(number_of_particles, *list_arguments, **keywo
     :argument alpha: the dimensionless exponent of the Salpeter function (defaults to -2.35)
     """
     uc = _SalpeterIMF(*list_arguments, **keyword_arguments)
-    return uc.next_set(number_of_particles)[1]
+    return uc.next_mass(number_of_particles).as_quantity_in(uc.mass_min.unit)
     
 def new_salpeter_mass_distribution_nbody(number_of_particles, **keyword_arguments):
     """Returns a salpeter mass distribution in nbody masses.
