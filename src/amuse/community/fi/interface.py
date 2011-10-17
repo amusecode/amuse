@@ -1492,12 +1492,9 @@ class GlFiInterface(FiInterface):
         else:
             return 'fi_worker_gl'
 
-    def __init__(self, **options):
-        CodeInterface.__init__(self,name_of_the_worker = 'fi_worker_gl', **options)
-    
     def __init__(self,mode=FiInterface.MODE_NORMAL, **options):
-        LegacyInterface.__init__(self,name_of_the_worker = self.name_of_the_worker(mode), **options)
-    
+        CodeInterface.__init__(self,name_of_the_worker = self.name_of_the_worker(mode), **options)
+        
     @legacy_function
     def viewer():
         function = LegacyFunctionSpecification()  

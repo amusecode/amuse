@@ -93,7 +93,7 @@
       !
       INTEGER ncells,ninterp,ndim,nsubcell,nbodcell,nbods1
       
-      PARAMETER(ncells=3*nbodsmax/5,ninterp=5000)
+      PARAMETER(ncells=nbodsmax,ninterp=5000)
       PARAMETER(ndim=3,nsubcell=2**ndim)
       PARAMETER(nbodcell=nbodsmax+ncells,nbods1=nbodsmax+1)
       

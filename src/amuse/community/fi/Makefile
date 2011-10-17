@@ -1,6 +1,6 @@
 
 MPIF90 ?= mpif90
-FORTRAN ?= gfortran
+FORTRAN ?= mpif90
 FC = $(MPIF90)
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 
@@ -14,22 +14,26 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 
 GLOBJECTS=$(BUILDDIR)/fthread.o $(BUILDDIR)/stars3d.o $(BUILDDIR)/libpt.a
+PGLOBJECTS=$(PERIODIC_BUILDDIR)/fthread.o $(PERIODIC_BUILDDIR)/stars3d.o $(PERIODIC_BUILDDIR)/libpt.a
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
 GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
 
 X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
 
-FFTW_LIBS ?= -lfftw3 -lfftw3_thread
+FFTW_LIBS ?= -lfftw3  -lfftw3_threads
 
 THREADLIB = -L. -lpthread $(BUILDDIR)/libpt.a
+PTHREADLIB = -L. -lpthread $(PERIODIC_BUILDDIR)/libpt.a
 
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
+OMPFLAGS=# -openmp -openmp_report0 
+
+
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
 FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 
-OMPFLAGS=# -openmp -openmp_report0 
 PIC=#-fPIC
 
 # gfortran flags
@@ -44,8 +48,8 @@ endif
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
 # ifort flags
-FFLAGS= -r8 -O -ip -u $(PIC)
-GLLIB = $(GLLIB) -lguide 
+FFLAGS= -r8 -O2 -ip -u $(PIC)
+#GLLIB = $(GLLIB) -lguide 
 endif
 
 #FFLAGS= -fdefault-real-8 -O -ffree-line-length-256 -frecord-marker=4 $(PIC)
@@ -105,6 +109,13 @@ $(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile
 	
 fi_worker_periodic: worker.f90 interface.po $(PERIODIC_BUILDDIR)/libfi.a
 	$(FC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SCINC) worker.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SCLIBS) $(FFTW_LIBS)
+
+fi_worker_periodic_gl: glworker.f90 interface.po $(PERIODIC_BUILDDIR)/libfi.a
+	make -C $(PERIODIC_BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src 
+	$(FC) $(FFLAGS) $(SCINC) glworker.f90 interface.po -o $@  $(PGLOBJECTS) \
+	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SCLIBS)
+
+
 
 worker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@

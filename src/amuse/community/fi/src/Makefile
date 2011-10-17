@@ -155,9 +155,7 @@ muse_sph_interface_gl: muse_interface.f90 muse_interface_gl.f90 \
 
 objects: $(FILES) $(SFILES)
 
-libpt.a: pt.c ptf77.c pt.h
-	cc -c $(PIC) pt.c
-	cc -c $(PIC) ptf77.c
+libpt.a: pt.o ptf77.o pt.h
 	ar crs libpt.a pt.o ptf77.o
 
 gl: stars3d.o libpt.a fthread.o
