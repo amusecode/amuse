@@ -22,6 +22,8 @@ enum { GRAPE5 = 0, FOURTH, SIXTH, EIGHT};        //0, 1, 2, 3
 #include "include/cudadev.h"
 #endif
 
+
+
 #include <cassert>
 #include <iostream>
 #include <omp.h>
@@ -29,6 +31,7 @@ enum { GRAPE5 = 0, FOURTH, SIXTH, EIGHT};        //0, 1, 2, 3
 #include <sys/time.h>
 
 #include "include/defines.h"
+
 
 namespace sapporo2 {
 

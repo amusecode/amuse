@@ -31,11 +31,12 @@ CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcuda
 
 SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo-2
+SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo -fopenmp
 GRAPE6_LIBDIRS ?= -L$(GRAPE6)/lib
 
 BOOSTLIBS = -L/opt/local/lib -lboost_thread-mt
-LLIBSDIR = $(SAPPORO_LIBDIRS) $(GRAPE6_LIBDIRS)
-GPULIBS  =  $(CUDA_LIBS) -lsapporo -fopenmp -lpthread -L/usr/lib64 -lstdc++
+LLIBSDIR =  $(GRAPE6_LIBDIRS)
+GPULIBS  =  $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread -L/usr/lib64 -lstdc++
 GRAPE6LIBS  ?= -lg6lx
 LIBS     =  -lm -lpthread
 

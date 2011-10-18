@@ -73,7 +73,18 @@ AC_ARG_WITH([sapporo],
     [WITH_SAPPORO=no]
 )
 
+AC_ARG_ENABLE(sapporo2,
+    [AS_HELP_STRING([--enable-sapporo2],[Use the provided sapporo library version 2, instead of sapporo_light])],
+    [SAPPORO_VERSION="light"
+    AS_IF([test "x$enable_sapporo2" != "xno"], [
+	SAPPORO_VERSION="2"
+    ])
+    ],
+    [SAPPORO_VERSION="light"]
+)
+
 AC_SUBST(WITH_SAPPORO)
+AC_SUBST(SAPPORO_VERSION)
 
 PKG_CHECK_MODULES([FFTW],[fftw3 >= 3.2],
     [

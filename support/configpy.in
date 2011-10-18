@@ -39,6 +39,7 @@ class cuda(object):
     toolkit_path = '@CUDA_TK@'
     sdk_path     = '@CUDA_SDK@'
     cuda_libs = '@CUDA_LIBS@'
+    sapporo_version = '@SAPPORO_VERSION@'
     
 class modules(object):
     have_matplotlib = @PYTHON_matplotlib@==1

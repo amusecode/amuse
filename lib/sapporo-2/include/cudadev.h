@@ -17,6 +17,17 @@
 #include <vector_types.h>
 #include <builtin_types.h>
 
+#ifdef __INCLUDE_KERNELS__
+extern unsigned char CUDA_kernels4th_ptx[];
+extern unsigned char CUDA_kernels6thDP_ptx[];
+extern unsigned char CUDA_kernelsG5DS_ptx[];
+extern unsigned char CUDA_kernelsG5SP_ptx[];
+extern unsigned int CUDA_kernels4th_ptx_len;
+extern unsigned int CUDA_kernels6thDP_ptx_len;
+extern unsigned int CUDA_kernelsG5DS_ptx_len;
+extern unsigned int CUDA_kernelsG5SP_ptx_len;
+#endif
+
 namespace dev {
 
 #  define CUT_CHECK_ERROR(errorMessage) {				\
@@ -459,25 +470,65 @@ namespace dev {
       
       if(fp == NULL) {
         fprintf(stderr, "Cannot open source file: %s \n", fileName);
-	assert(false);
-      }
-      
-      fseek(fp, 0, SEEK_END);
-      const int file_size = ftell(fp);      
-      ptx_source.reserve(file_size + 512);     
-      fseek(fp, 0, SEEK_SET);
-      const size_t read = fread(&ptx_source[0], sizeof(char), file_size, fp);
-      
-      //Set the last char to NULL else old values in the extra memory
-      //buffer will crash the compiler....
-      ptx_source[file_size] = '\0';
-      
-      if(read == 0) {
-        fprintf(stderr, "Cannot read source file: %s \n", fileName);
+#ifdef __INCLUDE_KERNELS__
+
+        fprintf(stderr, "Checking for compiled in version of file: %s\n", fileName);
+
+        string temp = string(fileName);
+        
+        if(temp.rfind("kernels4th.ptx") != string::npos)
+        {
+            ptx_source.append((const char*)CUDA_kernels4th_ptx,CUDA_kernels4th_ptx_len);
+            ptx_source.append(512, '\0');
+            fprintf(stderr, "Found compiled in version of file: %s\n", fileName);
+        }
+        else if(temp.rfind("kernels6thDP.ptx") != string::npos)
+        {
+            ptx_source.append((const char*)CUDA_kernels6thDP_ptx,CUDA_kernels6thDP_ptx_len);
+            ptx_source.append(512, '\0');
+            fprintf(stderr, "Found compiled in version of file: %s\n", fileName);
+        }
+        else if(temp.rfind("kernelsG5DS.ptx") != string::npos)
+        {
+            ptx_source.append((const char*)CUDA_kernelsG5DS_ptx,CUDA_kernelsG5DS_ptx_len);
+            ptx_source.append(512, '\0');
+            fprintf(stderr, "Found compiled in version of file: %s\n", fileName);
+        }
+        else if(temp.rfind("kernelsG5SP.ptx") != string::npos)
+        {
+            ptx_source.append((const char*)CUDA_kernelsG5SP_ptx,CUDA_kernelsG5SP_ptx_len);
+            ptx_source.append(512, '\0');
+            fprintf(stderr, "Found compiled in version of file: %s\n", fileName);
+        }
+        else
+        {
+            fprintf(stderr, "Cannot find compiled in replacement for: %s \n", fileName);
+            assert(false);
+        }
+#else
         assert(false);
+#endif
+      }
+      else{
+        fseek(fp, 0, SEEK_END);
+        const int file_size = ftell(fp);      
+        ptx_source.reserve(file_size + 512);     
+        fseek(fp, 0, SEEK_SET);
+        const size_t read = fread(&ptx_source[0], sizeof(char), file_size, fp);
+         
+        //Set the last char to NULL else old values in the extra memory
+        //buffer will crash the compiler....
+        ptx_source[file_size] = '\0';
+          
+        if(read == 0) {
+          fprintf(stderr, "Cannot read source file: %s \n", fileName);
+          assert(false);
+        }
+          
+        fclose(fp); 
       }
       
-      fclose(fp);          
+               
     }
 
   public:
@@ -499,7 +550,7 @@ namespace dev {
                      const char *compilerOptions = "",
                      const int maxrregcount = -1,
 //                      const int architecture = CU_TARGET_COMPUTE_11) {
-                     const int architecture = CU_TARGET_COMPUTE_13) {
+                     const int architecture = CU_TARGET_COMPUTE_12) {
       
       assert(ContextFlag);
       assert(!ProgramFlag);

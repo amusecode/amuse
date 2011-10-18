@@ -682,6 +682,7 @@ FFTW_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
+SAPPORO_VERSION
 WITH_SAPPORO
 CUDA_LIBS
 WITH_CUDA
@@ -761,6 +762,7 @@ with_jdk
 enable_mpi
 enable_cuda
 with_sapporo
+enable_sapporo2
 with_fftw
 with_gsl_prefix
 with_gsl_exec_prefix
@@ -1408,6 +1410,8 @@ Optional Features:
   --enable-mpi            Enable MPI support for communicating with codes, by
                           default enabled
   --enable-cuda           Enable CUDA for codes
+  --enable-sapporo2       Use the provided sapporo library version 2, instead
+                          of sapporo_light
   --disable-gsltest       Do not try to compile and run a test GSL program
 
 Optional Packages:
@@ -5178,6 +5182,22 @@ else
   WITH_SAPPORO=no
 
 fi
+
+
+# Check whether --enable-sapporo2 was given.
+if test "${enable_sapporo2+set}" = set; then :
+  enableval=$enable_sapporo2; SAPPORO_VERSION="light"
+    if test "x$enable_sapporo2" != "xno"; then :
+
+	SAPPORO_VERSION="2"
+
+fi
+
+else
+  SAPPORO_VERSION="light"
+
+fi
+
 
 
 

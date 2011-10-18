@@ -19,7 +19,8 @@ CXXFLAGS =  -fPIC $(OFLAGS) -I$(CUDA_TK)/include
 NVCC      = $(CUDA_TK)/bin/nvcc  
 
 #NVCCFLAGS = -arch sm_12  #<-- gives slightly faster kernels, because of limited DP support
-NVCCFLAGS ?= -arch sm_20
+#NVCCFLAGS ?= -arch sm_20
+NVCCFLAGS ?= -arch=sm_12
 
 # Use with Mac OS X
 # NVCCFLAGS = -arch sm_12 -Xcompiler="-Duint=unsigned\ int"
@@ -28,7 +29,7 @@ LDFLAGS = -lcuda -lOpenCL -fopenmp
 
 
 INCLUDEPATH = ./include
-CXXFLAGS  += -I$(INCLUDEPATH)
+CXXFLAGS  += -I$(INCLUDEPATH) -D__INCLUDE_KERNELS__
 NVCCFLAGS += -I$(INCLUDEPATH)
 
 CUDAKERNELSPATH = CUDA
@@ -58,18 +59,19 @@ $(TARGET): $(LIBOBJ)
 	ar qv $@ $^        
 
 %.o: $(SRCPATH)/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS)  -c $< -o $@
 
 $(CUDAKERNELSPATH)/%.ptx: $(CUDAKERNELSPATH)/%.cu
 	$(NVCC) $(NVCCFLAGS) -ptx $< -o $@
 
 clean:
 	/bin/rm -rf *.o *.ptx *.a CUDA/*ptx
+	rm *.ptxh include/*.ptxh
 
 $(OBJ): $(INCLUDEPATH)/*.h
 
 #testkernel.ptx: 
-sapporohostclass.o : sapporohostclass.h sapdevclass.h $(INCLUDEPATH)/defines.h
+sapporohostclass.o : include/kernels4th.ptxh include/kernels6thDP.ptxh include/kernelsG5DS.ptxh include/kernelsG5SP.ptxh sapporohostclass.h sapdevclass.h $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernels4th.ptx : $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernels4thDP.ptx : $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernels6thDP.ptx : $(INCLUDEPATH)/defines.h
@@ -78,6 +80,8 @@ $(CUDAKERNELSPATH)/kernelsG5SP.ptx : $(INCLUDEPATH)/defines.h
 
 libsapporo.a : sapporohostclass.o
 
+include/%.ptxh:CUDA/%.ptx
+	xxd -i $< $@
 
 
 

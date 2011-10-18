@@ -13,6 +13,13 @@ vel_j.w = eps2
 
 */
 
+#ifdef __INCLUDE_KERNELS__
+#include "kernels4th.ptxh"
+#include "kernels6thDP.ptxh"
+#include "kernelsG5DS.ptxh"
+#include "kernelsG5SP.ptxh"
+#endif
+
 int remapList[16384];
 
 inline int n_norm(int n, int j) {

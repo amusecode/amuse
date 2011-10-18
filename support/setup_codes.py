@@ -252,13 +252,23 @@ class CodeCommand(Command):
                 self.environment_notset[varname] ='-L<directory>'
         
         if 'SAPPORO_LIBDIRS' in self.environment:
-            self.environment['SAPPOROLIBS'] = '-L{0} -lsapporo'.format(
+            self.environment['SAPPORO_LIBS'] = '-L{0} -lsapporo'.format(
                 self.environment['SAPPORO_LIBDIRS']
             )
         else:
-            self.environment['SAPPOROLIBS'] = '-L{0}/lib/sapporo-2 -lsapporo -fopenmp'.format(
-                os.path.abspath(os.getcwd())
-            )
+            if is_configured and hasattr(config.cuda, 'sapporo_version'):
+                if config.cuda.sapporo_version == '2':
+                    self.environment['SAPPORO_LIBS'] = '-L{0}/lib/sapporo-2 -lsapporo'.format(
+                        os.path.abspath(os.getcwd())
+                    )
+                else:
+                    self.environment['SAPPORO_LIBS'] = '-L{0}/lib/sapporo_light -lsapporo'.format(
+                        os.path.abspath(os.getcwd())
+                    )
+            else:
+                self.environment['SAPPORO_LIBS'] = '-L{0}/lib/sapporo_light -lsapporo'.format(
+                    os.path.abspath(os.getcwd())
+                )
             self.environment['BOOSTLIBS'] = ''
      
     def set_libs_variables(self):

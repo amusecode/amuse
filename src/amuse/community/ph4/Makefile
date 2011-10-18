@@ -14,7 +14,9 @@ CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS)
 
 CUDA_TK  ?= /usr/local/cuda
-SAPPOROLIBS ?= -L../../../../lib/sapporo-2/ -lsapporo -fopenmp
+
+SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo-2
+SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo -fopenmp
 
 # Boost is needed by sapporo.
 
@@ -24,7 +26,7 @@ CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
 
 LDFLAGS_GPU =	$(LDFLAGS) \
-		$(SAPPOROLIBS) \
+		$(SAPPORO_LIBS) \
 		$(CUDA_LIBS) \
 		$(BOOSTLIBS)
 
@@ -34,7 +36,6 @@ CODELIB = src/libph4.a
 
 CODELIB_GPU = src/libph4gpu.a
 
-SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo-2
 
 AMUSE_DIR ?= ../../../..
 
