@@ -1487,8 +1487,6 @@ C     close grape before exiting (fip)
       CALL update_grape(1) 
       
       CALL selectsync(time_cur)
-
-      CALL allgather_ap()
       
       CALL sync
 
