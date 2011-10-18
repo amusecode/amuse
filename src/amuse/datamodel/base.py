@@ -22,8 +22,8 @@ class KeyGenerator(object):
         
 class BasicUniqueKeyGenerator(KeyGenerator):
     
-    def __init__(self):
-        self.lowest_unique_key = 1
+    def __init__(self, lowest_unique_key = 1):
+        self.lowest_unique_key = lowest_unique_key
     
     def next(self):
         new_key = self.lowest_unique_key
@@ -60,7 +60,13 @@ class RandomNumberUniqueKeyGenerator(KeyGenerator):
         
 UniqueKeyGenerator = RandomNumberUniqueKeyGenerator()
 
-
+def set_sequential_key_generator(start_number):
+    global UniqueKeyGenerator
+    UniqueKeyGenerator = BasicUniqueKeyGenerator(lowest_unique_key = lowest_unique_key)
+    
+def set_random_key_generator(number_of_bits = RandomNumberUniqueKeyGenerator.DEFAULT_NUMBER_OF_BITS):
+    global UniqueKeyGenerator
+    UniqueKeyGenerator = RandomNumberUniqueKeyGenerator(number_of_bits = number_of_bits)
 
 class AttributeStorage(object):
     """

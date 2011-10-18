@@ -862,7 +862,7 @@ class Particles(AbstractParticleSet):
     
     
     """
-    def __init__(self, size = 0, storage = None, keys = None):
+    def __init__(self, size = 0, storage = None, keys = None, keys_generator = None):
         AbstractParticleSet.__init__(self)
         
         if storage is None:
@@ -872,7 +872,10 @@ class Particles(AbstractParticleSet):
     
         if size > 0 or not keys is None:
             if keys is None:
-                particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
+                if keys_generator is None:
+                    keys_generator = UniqueKeyGenerator
+                    
+                particle_keys = keys_generator.next_set_of_keys(size)
             else:
                 particle_keys = keys
             self.add_particles_to_store(particle_keys)
