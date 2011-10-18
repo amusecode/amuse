@@ -682,12 +682,16 @@ FFTW_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
+WITH_SAPPORO
+CUDA_LIBS
+WITH_CUDA
+CUDA_TK
+CUDA_SDK
 MPIFC
 MPICC
 MPILIBS
 MPICXX
 WITH_MPI
-WITH_SAPPORO
 JNI_INCLUDES
 JAR
 JAVAH
@@ -697,9 +701,6 @@ JAVAC
 JAVA
 JDK
 JAVA_HOME
-WITH_CUDA
-CUDA_TK
-CUDA_SDK
 NVCC
 PYTHON
 ac_ct_FC
@@ -756,10 +757,10 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-enable_cuda
 with_jdk
-with_sapporo
 enable_mpi
+enable_cuda
+with_sapporo
 with_fftw
 with_gsl_prefix
 with_gsl_exec_prefix
@@ -780,12 +781,12 @@ FC
 FCFLAGS
 PYTHON
 NVCC
-CUDA_SDK
-CUDA_TK
 JAVA_HOME
 MPICXX
 MPICC
 MPIFC
+CUDA_SDK
+CUDA_TK
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
@@ -1404,9 +1405,9 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-cuda           Enable CUDA for codes
   --enable-mpi            Enable MPI support for communicating with codes, by
                           default enabled
+  --enable-cuda           Enable CUDA for codes
   --disable-gsltest       Do not try to compile and run a test GSL program
 
 Optional Packages:
@@ -1434,12 +1435,12 @@ Some influential environment variables:
   FCFLAGS     Fortran compiler flags
   PYTHON      Python interpreter
   NVCC        CUDA compiler command
-  CUDA_SDK    CUDA sdk directory
-  CUDA_TK     CUDA toolkit directory
   JAVA_HOME   Java sdk directory
   MPICXX      MPI C++ compiler command
   MPICC       MPI C compiler command
   MPIFC       MPI Fortran compiler command
+  CUDA_SDK    CUDA sdk directory
+  CUDA_TK     CUDA toolkit directory
   PKG_CONFIG  path to pkg-config utility
   PKG_CONFIG_PATH
               directories to add to pkg-config's search path
@@ -1645,52 +1646,6 @@ fi
 
 } # ac_fn_fc_try_compile
 
-# ac_fn_c_try_link LINENO
-# -----------------------
-# Try to link conftest.$ac_ext, and return whether this succeeded.
-ac_fn_c_try_link ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  rm -f conftest.$ac_objext conftest$ac_exeext
-  if { { ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
-$as_echo "$ac_try_echo"; } >&5
-  (eval "$ac_link") 2>conftest.err
-  ac_status=$?
-  if test -s conftest.err; then
-    grep -v '^ *+' conftest.err >conftest.er1
-    cat conftest.er1 >&5
-    mv -f conftest.er1 conftest.err
-  fi
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest$ac_exeext && {
-	 test "$cross_compiling" = yes ||
-	 $as_test_x conftest$ac_exeext
-       }; then :
-  ac_retval=0
-else
-  $as_echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_retval=1
-fi
-  # Delete the IPA/IPO (Inter Procedural Analysis/Optimization) information
-  # created by the PGI compiler (conftest_ipa8_conftest.oo), as it would
-  # interfere with the next link command; also delete a directory that is
-  # left behind by Apple's compiler.  We do this before executing the actions.
-  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
-  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
-  as_fn_set_status $ac_retval
-
-} # ac_fn_c_try_link
-
 # ac_fn_cxx_try_link LINENO
 # -------------------------
 # Try to link conftest.$ac_ext, and return whether this succeeded.
@@ -1803,6 +1758,52 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
 
 } # ac_fn_cxx_check_func
+
+# ac_fn_c_try_link LINENO
+# -----------------------
+# Try to link conftest.$ac_ext, and return whether this succeeded.
+ac_fn_c_try_link ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  rm -f conftest.$ac_objext conftest$ac_exeext
+  if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+$as_echo "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then :
+  ac_retval=0
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_retval=1
+fi
+  # Delete the IPA/IPO (Inter Procedural Analysis/Optimization) information
+  # created by the PGI compiler (conftest_ipa8_conftest.oo), as it would
+  # interfere with the next link command; also delete a directory that is
+  # left behind by Apple's compiler.  We do this before executing the actions.
+  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
+  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
+  as_fn_set_status $ac_retval
+
+} # ac_fn_c_try_link
 
 # ac_fn_c_check_func LINENO FUNC VAR
 # ----------------------------------
@@ -3776,238 +3777,6 @@ fi
 
 
 
-#
-#  Cuda libraries and sdk
-#
-# Check whether --enable-cuda was given.
-if test "${enable_cuda+set}" = set; then :
-  enableval=$enable_cuda; WITH_CUDA=no
-    if test "x$enable_cuda" != "xno"; then :
-
-	WITH_CUDA=yes
-
-fi
-
-else
-  WITH_CUDA=no
-
-fi
-
-
-
-
-
-if test x"$WITH_CUDA" != xno; then :
-
-    WITH_CUDA=yes
-    # Extract the first word of "nvcc", so it can be a program name with args.
-set dummy nvcc; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_path_NVCC+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $NVCC in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_NVCC="$NVCC" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy="$PATH:/usr/local/cuda/cuda/bin:/usr/local/cuda/bin:$CUDA_TK/bin:/opt/cuda/cuda/bin:/opt/cuda/bin
-    "
-for as_dir in $as_dummy
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_NVCC="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_path_NVCC" && ac_cv_path_NVCC="no"
-  ;;
-esac
-fi
-NVCC=$ac_cv_path_NVCC
-if test -n "$NVCC"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NVCC" >&5
-$as_echo "$NVCC" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-
-
-    if test x"$CUDA_TK" = x; then :
-
-
-	if test x"$NVCC" = xno; then :
-  as_fn_error $? "CUDA_TK path is not set, and could not find nvcc in path, please set CUDA_TK variable" "$LINENO" 5
-
-fi
-
-	CUDA_TK_BIN=`$as_dirname -- "$NVCC" ||
-$as_expr X"$NVCC" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$NVCC" : 'X\(//\)[^/]' \| \
-	 X"$NVCC" : 'X\(//\)$' \| \
-	 X"$NVCC" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$NVCC" |
-    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\/\)[^/].*/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\).*/{
-	    s//\1/
-	    q
-	  }
-	  s/.*/./; q'`
-	CUDA_TK=`$as_dirname -- "$CUDA_TK_BIN" ||
-$as_expr X"$CUDA_TK_BIN" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$CUDA_TK_BIN" : 'X\(//\)[^/]' \| \
-	 X"$CUDA_TK_BIN" : 'X\(//\)$' \| \
-	 X"$CUDA_TK_BIN" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$CUDA_TK_BIN" |
-    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\/\)[^/].*/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\).*/{
-	    s//\1/
-	    q
-	  }
-	  s/.*/./; q'`
-
-
-fi
-
-    if test x"$CUDA_SDK" = xno; then :
-  as_fn_error $? "CUDA_SDK path is not set, please set the CUDA_SDK variable first or disable CUDA" "$LINENO" 5
-
-fi
-    as_ac_File=`$as_echo "ac_cv_file_$CUDA_TK/lib" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CUDA_TK/lib" >&5
-$as_echo_n "checking for $CUDA_TK/lib... " >&6; }
-if eval "test \"\${$as_ac_File+set}\"" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "$CUDA_TK/lib"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-else
-  as_fn_error $? "cuda toolkit path is incorrect, must have lib directory" "$LINENO" 5
-fi
-
-
-    as_ac_File=`$as_echo "ac_cv_file_$CUDA_SDK/common/inc/cutil.h" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CUDA_SDK/common/inc/cutil.h" >&5
-$as_echo_n "checking for $CUDA_SDK/common/inc/cutil.h... " >&6; }
-if eval "test \"\${$as_ac_File+set}\"" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "$CUDA_SDK/common/inc/cutil.h"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-else
-  as_fn_error $? "cuda sdk path is incorrect, must have common/inc/cutil.h in the CUDA_SDK path" "$LINENO" 5
-fi
-
-
-    PREV_LDFLAGS=${LDFLAGS}
-    save_LIBS="$LIBS"
-    LDFLAGS="-L$CUDA_TK/lib -L$CUDA_TK/lib64"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lcudart" >&5
-$as_echo_n "checking for main in -lcudart... " >&6; }
-if test "${ac_cv_lib_cudart_main+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcudart  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_cudart_main=yes
-else
-  ac_cv_lib_cudart_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_cudart_main" >&5
-$as_echo "$ac_cv_lib_cudart_main" >&6; }
-if test "x$ac_cv_lib_cudart_main" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBCUDART 1
-_ACEOF
-
-  LIBS="-lcudart $LIBS"
-
-else
-  as_fn_error $? "CUDA_TK, cuda toolkit path is incorrect" "$LINENO" 5
-
-fi
-
-    LIBS="$save_LIBS"
-    LDFLAGS=${PREV_LDFLAGS}
-
-fi
-
-
-
-
 
 
 
@@ -4397,21 +4166,6 @@ fi
 
 
 
-#
-# Sapporo
-#
-
-
-# Check whether --with-sapporo was given.
-if test "${with_sapporo+set}" = set; then :
-  withval=$with_sapporo; WITH_SAPPORO=yes
-else
-  WITH_SAPPORO=no
-
-fi
-
-
-
 
 # Check whether --enable-mpi was given.
 if test "${enable_mpi+set}" = set; then :
@@ -4426,6 +4180,7 @@ else
   WITH_MPI=yes
 
 fi
+
 
 
 
@@ -5071,6 +4826,359 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+    # Check whether --enable-cuda was given.
+if test "${enable_cuda+set}" = set; then :
+  enableval=$enable_cuda; WITH_CUDA=no
+        if test "x$enable_cuda" != "xno"; then :
+
+        WITH_CUDA=yes
+
+fi
+
+else
+  WITH_CUDA=no
+
+fi
+
+
+
+
+    if test x"$WITH_CUDA" != xno; then :
+
+        WITH_CUDA=yes
+        # Extract the first word of "nvcc", so it can be a program name with args.
+set dummy nvcc; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_NVCC+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $NVCC in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_NVCC="$NVCC" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/local/cuda/cuda/bin:/usr/local/cuda/bin:$CUDA_TK/bin:/opt/cuda/cuda/bin:/opt/cuda/bin
+        "
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_NVCC="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_NVCC" && ac_cv_path_NVCC="no"
+  ;;
+esac
+fi
+NVCC=$ac_cv_path_NVCC
+if test -n "$NVCC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NVCC" >&5
+$as_echo "$NVCC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+
+
+        if test x"$CUDA_TK" = x; then :
+
+
+        if test x"$NVCC" = xno; then :
+  as_fn_error $? "CUDA_TK path is not set, and could not find nvcc in path, please set CUDA_TK variable" "$LINENO" 5
+
+fi
+
+        CUDA_TK_BIN=`$as_dirname -- "$NVCC" ||
+$as_expr X"$NVCC" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$NVCC" : 'X\(//\)[^/]' \| \
+	 X"$NVCC" : 'X\(//\)$' \| \
+	 X"$NVCC" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$NVCC" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q'`
+        CUDA_TK=`$as_dirname -- "$CUDA_TK_BIN" ||
+$as_expr X"$CUDA_TK_BIN" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$CUDA_TK_BIN" : 'X\(//\)[^/]' \| \
+	 X"$CUDA_TK_BIN" : 'X\(//\)$' \| \
+	 X"$CUDA_TK_BIN" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$CUDA_TK_BIN" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q'`
+
+
+fi
+
+        if test x"$CUDA_SDK" = xno; then :
+  as_fn_error $? "CUDA_SDK path is not set, please set the CUDA_SDK variable first or disable CUDA" "$LINENO" 5
+
+fi
+        as_ac_File=`$as_echo "ac_cv_file_$CUDA_TK/lib" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CUDA_TK/lib" >&5
+$as_echo_n "checking for $CUDA_TK/lib... " >&6; }
+if eval "test \"\${$as_ac_File+set}\"" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "$CUDA_TK/lib"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+else
+  as_fn_error $? "cuda toolkit path is incorrect, must have lib directory" "$LINENO" 5
+fi
+
+
+        as_ac_File=`$as_echo "ac_cv_file_$CUDA_SDK/common/inc/cutil.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CUDA_SDK/common/inc/cutil.h" >&5
+$as_echo_n "checking for $CUDA_SDK/common/inc/cutil.h... " >&6; }
+if eval "test \"\${$as_ac_File+set}\"" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "$CUDA_SDK/common/inc/cutil.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+else
+  as_fn_error $? "cuda sdk path is incorrect, must have common/inc/cutil.h in the CUDA_SDK path" "$LINENO" 5
+fi
+
+
+
+        save_LIBS="$LIBS"
+        CUDART_LIBS=''
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking directories for -lcudart" >&5
+$as_echo_n "checking directories for -lcudart... " >&6; }
+    #
+    # A lot of this is taken from AC_CHECK_LIB.  Note that we always check
+    # the "no directory" case first.
+    #
+    ac_lib_var=`echo cudart'_'main | tr './+\055' '__p_'`
+    ac_save_LIBS="$LIBS"
+    if eval "test \"\${ac_cv_lib_$ac_lib_var+set}\"" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  for dir in "" $CUDA_TK/lib $CUDA_TK/lib64
+    do
+        ac_cache_save_LIBS="$LIBS"
+        if test "X$dir" = "X"; then
+            LIBS="$LIBS -lcudart "
+        else
+            LIBS="$LIBS -L$dir -lcudart "
+        fi
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+main()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  if test "X$dir" = "X"; then
+            eval "ac_cv_lib_$ac_lib_var=yes"
+        else
+            eval "ac_cv_lib_$ac_lib_var=$dir"
+        fi
+        break
+else
+  eval "ac_cv_lib_$ac_lib_var=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        LIBS="$ac_cache_save_LIBS"
+    done
+
+fi
+#
+    LIBS="$ac_save_LIBS"
+    if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" != no"; then
+      eval "dir=\"`echo '$ac_cv_lib_'$ac_lib_var`\""
+      if test "$dir" = "yes"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found in $dir" >&5
+$as_echo "found in $dir" >&6; }
+      fi
+        if test "$dir" = "yes"; then
+          LIBS="$LIBS -lcudart"
+        else
+          LIBS="$LIBS -L$dir -lcudart"
+        fi
+        CUDART_LIBS=$LIBS
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+      as_fn_error $? "cannot find cuda runtime libraries in $CUDA_TK/lib $CUDA_TK/lib64" "$LINENO" 5
+
+    fi
+
+        LIBS="$save_LIBS"
+
+        save_LIBS="$LIBS"
+        CUDA_PATH=
+        CUDA_LIBS=''
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking directories for -lcuda" >&5
+$as_echo_n "checking directories for -lcuda... " >&6; }
+    #
+    # A lot of this is taken from AC_CHECK_LIB.  Note that we always check
+    # the "no directory" case first.
+    #
+    ac_lib_var=`echo cuda'_'main | tr './+\055' '__p_'`
+    ac_save_LIBS="$LIBS"
+    if eval "test \"\${ac_cv_lib_$ac_lib_var+set}\"" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  for dir in "" /usr/lib /usr/lib64 /usr/lib/nvidia /usr/lib64/nvidia  $CUDA_TK/lib $CUDA_TK/lib64
+    do
+        ac_cache_save_LIBS="$LIBS"
+        if test "X$dir" = "X"; then
+            LIBS="$LIBS -lcuda "
+        else
+            LIBS="$LIBS -L$dir -lcuda "
+        fi
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+main()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  if test "X$dir" = "X"; then
+            eval "ac_cv_lib_$ac_lib_var=yes"
+        else
+            eval "ac_cv_lib_$ac_lib_var=$dir"
+        fi
+        break
+else
+  eval "ac_cv_lib_$ac_lib_var=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        LIBS="$ac_cache_save_LIBS"
+    done
+
+fi
+#
+    LIBS="$ac_save_LIBS"
+    if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" != no"; then
+      eval "dir=\"`echo '$ac_cv_lib_'$ac_lib_var`\""
+      if test "$dir" = "yes"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found in $dir" >&5
+$as_echo "found in $dir" >&6; }
+      fi
+        if test "$dir" = "yes"; then
+          LIBS="$LIBS -lcuda"
+        else
+          LIBS="$LIBS -L$dir -lcuda"
+        fi
+        CUDA_LIBS="$LIBS $CUDART_LIBS"
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+      as_fn_error $? "cannot find cuda library" "$LINENO" 5
+
+    fi
+
+        LIBS="$save_LIBS"
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+#
+# Sapporo
+#
+
+
+# Check whether --with-sapporo was given.
+if test "${with_sapporo+set}" = set; then :
+  withval=$with_sapporo; WITH_SAPPORO=yes
+else
+  WITH_SAPPORO=no
+
+fi
+
 
 
 

@@ -16,70 +16,6 @@ AS_IF([test "x$PYTHON" = "x"], [PYTHON=python])
 AC_PATH_PROG([PYTHON], [$PYTHON], [])
 AC_ARG_VAR([NVCC], [CUDA compiler command])
 
-#
-#  Cuda libraries and sdk
-#
-AC_ARG_ENABLE(cuda,
-    [AS_HELP_STRING([--enable-cuda],[Enable CUDA for codes])],
-    [WITH_CUDA=no
-    AS_IF([test "x$enable_cuda" != "xno"], [
-	WITH_CUDA=yes
-    ])
-    ],
-    [WITH_CUDA=no]
-)
-AC_ARG_VAR([CUDA_SDK], [CUDA sdk directory])
-AC_ARG_VAR([CUDA_TK], [CUDA toolkit directory])
-
-AS_IF([test x"$WITH_CUDA" != xno],[
-    WITH_CUDA=yes
-    AC_PATH_PROG(
-	[NVCC], 
-	nvcc,
-	[no],
-	$PATH:/usr/local/cuda/cuda/bin:/usr/local/cuda/bin:$CUDA_TK/bin:/opt/cuda/cuda/bin:/opt/cuda/bin
-    )
-    
-    
-    AS_IF([test x"$CUDA_TK" = x],
-    [
-	
-	AS_IF([test x"$NVCC" = xno],
-	    [AC_MSG_ERROR([CUDA_TK path is not set, and could not find nvcc in path, please set CUDA_TK variable])]
-	)
-	
-	CUDA_TK_BIN=`AS_DIRNAME("$NVCC")`
-	CUDA_TK=`AS_DIRNAME("$CUDA_TK_BIN")`
-    ]
-    )
-    
-    AS_IF([test x"$CUDA_SDK" = xno],
-	[AC_MSG_ERROR([CUDA_SDK path is not set, please set the CUDA_SDK variable first or disable CUDA])]
-    )
-    AC_CHECK_FILE([$CUDA_TK/lib], [],
-	[AC_MSG_ERROR([cuda toolkit path is incorrect, must have lib directory])], 
-	[])
-	
-    AC_CHECK_FILE([$CUDA_SDK/common/inc/cutil.h], [],
-	[AC_MSG_ERROR([cuda sdk path is incorrect, must have common/inc/cutil.h in the CUDA_SDK path])], 
-	[])
-    
-    PREV_LDFLAGS=${LDFLAGS}
-    save_LIBS="$LIBS"
-    LDFLAGS="-L$CUDA_TK/lib -L$CUDA_TK/lib64"
-    AC_CHECK_LIB(
-	[cudart],
-	[main],
-	[],
-	[AC_MSG_ERROR([CUDA_TK, cuda toolkit path is incorrect])]
-    )
-    LIBS="$save_LIBS"
-    LDFLAGS=${PREV_LDFLAGS}
-])
-
-AC_SUBST(WITH_CUDA)
-AC_SUBST(CUDA_SDK)
-AC_SUBST(CUDA_TK)
 
 AC_ARG_VAR([JAVA_HOME], [Java sdk directory])
 
@@ -88,17 +24,6 @@ AMUSE_CHECK_JDK()
 AC_SUBST(JDK)
 AC_SUBST(JNI_INCLUDES)
 
-#
-# Sapporo 
-#
-
-AC_ARG_WITH([sapporo],
-    [AS_HELP_STRING([--with-sapporo],[Use sapporo library in given directory])],
-    [WITH_SAPPORO=yes],
-    [WITH_SAPPORO=no]
-)
-
-AC_SUBST(WITH_SAPPORO)
 
 AC_ARG_ENABLE(mpi,
     [AS_HELP_STRING([--enable-mpi],[Enable MPI support for communicating with codes, by default enabled])],
@@ -136,6 +61,19 @@ AS_IF([test x"$WITH_MPI" != xno],[
 
 AC_LANG(C)
 
+AX_CUDA()
+
+#
+# Sapporo 
+#
+
+AC_ARG_WITH([sapporo],
+    [AS_HELP_STRING([--with-sapporo],[Use sapporo library in given directory])],
+    [WITH_SAPPORO=yes],
+    [WITH_SAPPORO=no]
+)
+
+AC_SUBST(WITH_SAPPORO)
 
 PKG_CHECK_MODULES([FFTW],[fftw3 >= 3.2],
     [

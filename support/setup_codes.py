@@ -160,15 +160,20 @@ class CodeCommand(Command):
         if is_configured and config.cuda.is_enabled:
             self.found_cuda = True
             self.environment['CUDA_LIBDIRS'] = '-L'+config.cuda.toolkit_path+'/lib' + ' -L'+config.cuda.toolkit_path+'/lib64'
-            self.environment['CUDA_LIBS'] = '-lcudart'
             self.environment['CUDA_TK'] = config.cuda.toolkit_path
             self.environment['CUDA_SDK'] = config.cuda.sdk_path
+            if hasattr(config.cuda, 'cuda_libs'):
+                self.environment['CUDA_LIBS'] = config.cuda.cuda_libs
+            else:
+                raise DistutilsError("configuration is not up to date for cuda, please reconfigure amuse by running 'configure --enable-cuda'")
+               
             return
             
         if is_configured and not config.cuda.is_enabled:
             self.found_cuda = True
             self.environment['CUDA_LIBDIRS'] = '-L/NOCUDACONFIGURED/lib' + ' -LNOCUDACONFIGURED/lib64'
             self.environment['CUDA_LIBS'] = '-lnocuda'
+            self.environment['CUDART_LIBS'] = '-lnocudart'
             self.environment['CUDA_TK'] = '/NOCUDACONFIGURED'
             self.environment['CUDA_SDK'] = '/NOCUDACONFIGURED'
             return 
@@ -209,7 +214,7 @@ class CodeCommand(Command):
     
     def set_compiler_variables(self):
         if is_configured and not hasattr(config.compilers, 'found_fftw'):
-            raise DistutilsError("configuration is not up to data, please reconfigure amuse by running 'configure'")
+            raise DistutilsError("configuration is not up to date, please reconfigure amuse by running 'configure'")
             
         if is_configured:
             self.environment['CXX'] = config.compilers.cxx
@@ -251,7 +256,7 @@ class CodeCommand(Command):
                 self.environment['SAPPORO_LIBDIRS']
             )
         else:
-            self.environment['SAPPOROLIBS'] = '-L{0}/lib/sapporo_light -l sapporo'.format(
+            self.environment['SAPPOROLIBS'] = '-L{0}/lib/sapporo-2 -lsapporo -fopenmp'.format(
                 os.path.abspath(os.getcwd())
             )
             self.environment['BOOSTLIBS'] = ''

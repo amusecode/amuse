@@ -38,6 +38,7 @@ class cuda(object):
     compiler     = '@NVCC@'
     toolkit_path = '@CUDA_TK@'
     sdk_path     = '@CUDA_SDK@'
+    cuda_libs = '@CUDA_LIBS@'
     
 class modules(object):
     have_matplotlib = @PYTHON_matplotlib@==1
