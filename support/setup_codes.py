@@ -658,17 +658,20 @@ class BuildOneCode(CodeCommand):
     description = "build one code"
     user_options = list(CodeCommand.user_options)
     user_options.append( ('code-name=', 'n', "name of the code",), )
+    user_options.append( ('clean=', 'c', "clean code",), )
     
     
     def initialize_options(self):
         CodeCommand.initialize_options(self)
         self.code_name = None
+        self.clean = 'yes'
         
     
     def finalize_options (self):
         CodeCommand.finalize_options(self)
         if self.code_name is None:
             raise Exception("no code was specified")
+        self.must_clean = self.clean == 'yes'
     
     
     def subdirs_in_codes_dir(self):
@@ -705,8 +708,9 @@ class BuildOneCode(CodeCommand):
         for x in self.makefile_paths():
             shortname = x[len(self.codes_dir) + 1:].lower()
             
-            self.announce("cleaning " + x)
-            self.call(['make','-C', x, 'clean'], env=environment)
+            if self.must_clean:
+                self.announce("cleaning " + x)
+                self.call(['make','-C', x, 'clean'], env=environment)
                         
             if self.is_mpi_enabled():
                 returncode, _ = self.call(['make','-C', x, 'all'], env = environment)

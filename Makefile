@@ -2,6 +2,7 @@
 
 PYTHON ?= python2.6
 VERSION ?= undefined
+CLEAN ?= yes
 
 export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
@@ -69,7 +70,7 @@ debian:
 	$(PYTHON) ./support/debian.py
 
 %.code:
-	$(PYTHON) setup.py -v code  --code-name=$*
+	$(PYTHON) setup.py -v code  --clean=$(CLEAN) --code-name=$*
 
 %:
 	$(PYTHON) setup.py code --code-name=$@
