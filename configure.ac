@@ -58,6 +58,17 @@ AS_IF([test x"$WITH_MPI" != xno],[
     AC_SUBST(MPIFC)
 ]    
 )
+AC_LANG(C)
+AX_OPENMP(
+     [HAVE_OPENMP="yes"]
+    ,[HAVE_OPENMP="no"]
+)
+AC_LANG(Fortran)
+AX_OPENMP()
+    
+AC_SUBST(HAVE_OPENMP)
+AC_SUBST(OPENMP_CFLAGS)
+AC_SUBST(OPENMP_FCFLAGS)
 
 AC_LANG(C)
 

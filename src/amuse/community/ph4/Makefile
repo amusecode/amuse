@@ -16,7 +16,8 @@ LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS)
 CUDA_TK  ?= /usr/local/cuda
 
 SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo-2
-SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo -fopenmp
+OPENMP_CFLAGS ?= -fopenmp
+SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo $(OPENMP_CFLAGS)
 
 # Boost is needed by sapporo.
 

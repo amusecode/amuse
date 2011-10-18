@@ -98,6 +98,7 @@ class CodeCommand(Command):
         self.environment['F90'] = self.environment['FORTRAN']
         self.environment['FC'] = self.environment['FORTRAN']
         self.set_java_variables()
+        self.set_openmp_flags()
         self.set_libdir_variables()
         self.set_libs_variables()
         self.save_cfgfile_if_not_exists()
@@ -241,6 +242,14 @@ class CodeCommand(Command):
             self.environment['JDK'] = config.java.jdk
         return
 
+    def set_openmp_flags(self):
+        if is_configured and hasattr(config, 'openmp'):
+            self.environment['OPENMP_FCFLAGS'] = config.openmp.fcflags
+            self.environment['OPENMP_CFLAGS'] = config.openmp.cflags
+        else:
+            self.environment['OPENMP_FCFLAGS'] = ''
+            self.environment['OPENMP_CFLAGS'] = ''
+            
     def set_libdir_variables(self):
         for varname in ('SAPPORO_LIBDIRS', 'GRAPE6_LIBDIRS'):
             if varname in self.environment:
@@ -258,8 +267,9 @@ class CodeCommand(Command):
         else:
             if is_configured and hasattr(config.cuda, 'sapporo_version'):
                 if config.cuda.sapporo_version == '2':
-                    self.environment['SAPPORO_LIBS'] = '-L{0}/lib/sapporo-2 -lsapporo'.format(
-                        os.path.abspath(os.getcwd())
+                    self.environment['SAPPORO_LIBS'] = '-L{0}/lib/sapporo-2 -lsapporo {1}'.format(
+                        os.path.abspath(os.getcwd()),
+                        config.openmp.cflags
                     )
                 else:
                     self.environment['SAPPORO_LIBS'] = '-L{0}/lib/sapporo_light -lsapporo'.format(

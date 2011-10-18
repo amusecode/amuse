@@ -688,6 +688,9 @@ CUDA_LIBS
 WITH_CUDA
 CUDA_TK
 CUDA_SDK
+OPENMP_FCFLAGS
+OPENMP_CFLAGS
+HAVE_OPENMP
 MPIFC
 MPICC
 MPILIBS
@@ -4824,6 +4827,128 @@ else
 
 
 fi
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenMP flag of C compiler" >&5
+$as_echo_n "checking for OpenMP flag of C compiler... " >&6; }
+if test "${ax_cv_c_openmp+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  saveCFLAGS=$CFLAGS
+ax_cv_c_openmp=unknown
+# Flags to try:  -fopenmp (gcc), -openmp (icc), -mp (SGI & PGI),
+#                -xopenmp (Sun), -omp (Tru64), -qsmp=omp (AIX), none
+ax_openmp_flags="-fopenmp -openmp -mp -xopenmp -omp -qsmp=omp none"
+if test "x$OPENMP_CFLAGS" != x; then
+  ax_openmp_flags="$OPENMP_CFLAGS $ax_openmp_flags"
+fi
+for ax_openmp_flag in $ax_openmp_flags; do
+  case $ax_openmp_flag in
+    none) CFLAGS=$saveC ;;
+    *) CFLAGS="$saveCFLAGS $ax_openmp_flag" ;;
+  esac
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char omp_set_num_threads ();
+int
+main ()
+{
+return omp_set_num_threads ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ax_cv_c_openmp=$ax_openmp_flag; break
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+done
+CFLAGS=$saveCFLAGS
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_c_openmp" >&5
+$as_echo "$ax_cv_c_openmp" >&6; }
+if test "x$ax_cv_c_openmp" = "xunknown"; then
+  HAVE_OPENMP="no"
+
+else
+  if test "x$ax_cv_c_openmp" != "xnone"; then
+    OPENMP_CFLAGS=$ax_cv_c_openmp
+  fi
+  HAVE_OPENMP="yes"
+
+fi
+
+ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenMP flag of Fortran compiler" >&5
+$as_echo_n "checking for OpenMP flag of Fortran compiler... " >&6; }
+if test "${ax_cv_fc_openmp+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  saveFCFLAGS=$FCFLAGS
+ax_cv_fc_openmp=unknown
+# Flags to try:  -fopenmp (gcc), -openmp (icc), -mp (SGI & PGI),
+#                -xopenmp (Sun), -omp (Tru64), -qsmp=omp (AIX), none
+ax_openmp_flags="-fopenmp -openmp -mp -xopenmp -omp -qsmp=omp none"
+if test "x$OPENMP_FCFLAGS" != x; then
+  ax_openmp_flags="$OPENMP_FCFLAGS $ax_openmp_flags"
+fi
+for ax_openmp_flag in $ax_openmp_flags; do
+  case $ax_openmp_flag in
+    none) FCFLAGS=$saveFC ;;
+    *) FCFLAGS="$saveFCFLAGS $ax_openmp_flag" ;;
+  esac
+  cat > conftest.$ac_ext <<_ACEOF
+      program main
+      call omp_set_num_threads
+      end
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"; then :
+  ax_cv_fc_openmp=$ax_openmp_flag; break
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+done
+FCFLAGS=$saveFCFLAGS
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_fc_openmp" >&5
+$as_echo "$ax_cv_fc_openmp" >&6; }
+if test "x$ax_cv_fc_openmp" = "xunknown"; then
+  :
+else
+  if test "x$ax_cv_fc_openmp" != "xnone"; then
+    OPENMP_FCFLAGS=$ax_cv_fc_openmp
+  fi
+
+$as_echo "#define HAVE_OPENMP 1" >>confdefs.h
+
+fi
+
+
+
+
+
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'

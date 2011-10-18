@@ -55,7 +55,7 @@ endif
 #FFLAGS= -fdefault-real-8 -O -ffree-line-length-256 -frecord-marker=4 $(PIC)
 
 
-FFLAGS+= $(OMPFLAGS) 
+#FFLAGS+= $(OPENMP_FCFLAGS) 
 
 FFLAGS+= -I.
 

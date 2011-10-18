@@ -13,6 +13,7 @@
 
 m4_include([m4/pkg.m4])
 m4_include([m4/ax_mpi.m4])
+m4_include([m4/ax_openmp.m4])
 m4_include([m4/find.m4])
 m4_include([m4/cuda.m4])
 m4_include([m4/python_module.m4])

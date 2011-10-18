@@ -41,6 +41,11 @@ class cuda(object):
     cuda_libs = '@CUDA_LIBS@'
     sapporo_version = '@SAPPORO_VERSION@'
     
+class openmp(object):
+    is_enabled   = '@HAVE_OPENMP@'=='yes'
+    fcflags = '@OPENMP_FCFLAGS@'
+    cflags = '@OPENMP_CFLAGS@' 
+    
 class modules(object):
     have_matplotlib = @PYTHON_matplotlib@==1
     have_h5py       = @PYTHON_h5py@==1

@@ -31,7 +31,8 @@ CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcuda
 
 SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo-2
-SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo -fopenmp
+OPENMP_CFLAGS ?= -fopenmp
+SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo $(OPENMP_CFLAGS)
 GRAPE6_LIBDIRS ?= -L$(GRAPE6)/lib
 
 BOOSTLIBS = -L/opt/local/lib -lboost_thread-mt
