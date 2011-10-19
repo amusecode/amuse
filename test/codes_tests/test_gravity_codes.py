@@ -110,7 +110,33 @@ class _TestGravityCodes(TestWithMPI):
             instance.stop()
     
 
-
+    def test7(self):
+        factory = self.gravity_code_factory()
+        instance = self.new_instance_of_an_optional_code(factory)
+        try:
+            particles = new_plummer_sphere(100, convert_nbody = self.nbody_converter)
+            new_particles = new_plummer_sphere(50, convert_nbody = self.nbody_converter)
+            instance.particles.add_particles(particles)
+            instance.commit_particles()
+            
+            self.assertEquals(len(instance.particles), 100)
+            instance.synchronize_model()
+            instance.particles.remove_particle(particles[40])
+            instance.particles.remove_particle(particles[70])
+            instance.particles.add_particle(new_particles[0])
+            instance.recommit_particles()
+            # test the get_mass, get_position and get_velocity functions
+            # if they are implemented for the code, otherwise will call
+            # get_state multiple times
+            # todo, fi fails, need to check with inti
+            #self.assertAlmostRelativeEqual(instance.particles[-1].mass, new_particles[0].mass)
+            #self.assertAlmostRelativeEqual(instance.particles[-1].velocity, new_particles[0].velocity)
+            #self.assertAlmostRelativeEqual(instance.particles[-1].position, new_particles[0].position)
+            instance.particles.synchronize_to(particles)
+            self.assertEquals(len(particles), 99)
+            self.assertEquals(particles[-1], new_particles[0])
+        finally:
+            instance.stop()
 
     def new_gravity_code(self):
         self.gravity_code_factory()
@@ -132,7 +158,7 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
     def gravity_code_factory(self):
         return PhiGRAPE
         
-    def test7(self):
+    def testextra0(self):
         factory = self.gravity_code_factory()
         instance = self.new_instance_of_an_optional_code(factory, mode='gpu')
         try:

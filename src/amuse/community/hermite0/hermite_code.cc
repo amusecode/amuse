@@ -959,9 +959,8 @@ int get_state(int id, double *_mass, double *_radius, double *x, double *y, doub
   if(mpi_rank) {return 0;}
   //*id_out = -1;
 
-  //unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-  int i;
-  i = id;
+  unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
+  
   if (i < (int) ident.size())
     {
       vec position = pos[i];
