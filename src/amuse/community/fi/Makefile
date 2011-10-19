@@ -28,7 +28,7 @@ PTHREADLIB = -L. -lpthread $(PERIODIC_BUILDDIR)/libpt.a
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
-OMPFLAGS=# -openmp -openmp_report0 
+OPENMP_FCFLAGS?=# -openmp -openmp_report0 
 
 
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
