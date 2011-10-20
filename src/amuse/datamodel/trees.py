@@ -8,6 +8,9 @@ class BinaryTreesOnAParticleSet(object):
         
         
     def iter_roots(self):
+        return self.iter_binary_trees()
+        
+    def iter_binary_trees(self):
         binaries = self._binaries()
         binaries_children1 = self._get_inner_nodes(binaries, self.name_of_firstchild_attribute)
         binaries_children2 = self._get_inner_nodes(binaries, self.name_of_secondchild_attribute)
@@ -69,6 +72,7 @@ class BinaryTreeOnParticle(object):
                 children.append(child2)
             
             stack.extend(reversed(children))
+            
     def iter_leafs(self):
         stack = [self.particle]
         while len(stack) > 0:
@@ -87,9 +91,6 @@ class BinaryTreeOnParticle(object):
         
             if len(children) == 0:
                 yield current
-
-
-
 
 
     def iter_inner_nodes(self):
@@ -122,8 +123,19 @@ class BinaryTreeOnParticle(object):
     def get_leafs_subset(self):    
         keys = [x.key for x in self.iter_leafs()]
         return self.particle.particles_set._subset(keys)
-
-
+    
+    def copy(self):
+        copy_of_set = self.get_tree_subset().copy_to_memory()
+        root = copy_of_set[0]
+        return BinaryTreeOnParticle(
+            root,
+            name_of_firstchild_attribute = self.name_of_firstchild_attribute,
+            name_of_secondchild_attribute = self.name_of_secondchild_attribute
+        )
+        
+    def get_tree_subset(self):    
+        keys = [x.key for x in iter(self)]
+        return self.particle.particles_set._subset(keys)
 
     def iter_events(self):
         stack = [('start', self.particle)]
@@ -154,6 +166,23 @@ class BinaryTreeOnParticle(object):
                 yield level, particle
             else:
                 level -= 1
-        
+    
+    
+    def __iter__(self):
+        stack = [self.particle]
+        while len(stack) > 0:
+            current = stack.pop()
+            yield current
+            
+            children = []
+            child1 = getattr(current, self.name_of_firstchild_attribute)
+            if not child1 is None:
+                children.append(child1)
+                
+            child2 = getattr(current, self.name_of_secondchild_attribute)
+            if not child2 is None:
+                children.append(child2)
+            
+            stack.extend(reversed(children))
             
 

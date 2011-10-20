@@ -704,6 +704,7 @@ int evolve_system(real t_end)
     get_acc_jerk_pot_coll(&epot, &coll_time);
     
     real dt = calculate_step(coll_time);
+    std::cout<<"t"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
     t_wanted = t_end;
     if (!init_flag)
       {

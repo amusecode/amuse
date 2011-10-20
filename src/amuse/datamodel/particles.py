@@ -573,9 +573,11 @@ class AbstractParticleSet(AbstractSet):
         """
         Synchronize the particles of this set
         with the contents of the provided set.
-        After this call the proveded set will have
-        the same particles as the given set. This call
-        will check if particles have been removed or
+        
+        After this call the `other_particles` set will have
+        the same particles as this set.
+        
+        This call will check if particles have been removed or
         added it will not copy values of existing particles
         over.
         
@@ -601,7 +603,6 @@ class AbstractParticleSet(AbstractSet):
         my_keys = set(self.get_all_keys_in_store())
         added_keys = my_keys - other_keys
         removed_keys = other_keys - my_keys
-        
         added_keys = list(added_keys)
         if added_keys:
             attributes = self.get_attribute_names_defined_in_store()
@@ -862,7 +863,7 @@ class Particles(AbstractParticleSet):
     
     
     """
-    def __init__(self, size = 0, storage = None, keys = None, keys_generator = None):
+    def __init__(self, size = 0, storage = None, keys = None, keys_generator = None, particles = None):
         AbstractParticleSet.__init__(self)
         
         if storage is None:
@@ -870,7 +871,13 @@ class Particles(AbstractParticleSet):
         else:
             self._private.attribute_storage = storage
     
-        if size > 0 or not keys is None:
+        if not particles is None:
+            if isinstance(particles,AbstractParticleSet):
+                self.add_particles(particles)
+            else:
+                for x in iter(particles):
+                    self.add_particle(x)
+        elif size > 0 or not keys is None:
             if keys is None:
                 if keys_generator is None:
                     keys_generator = UniqueKeyGenerator
@@ -1749,10 +1756,13 @@ class Particle(object):
         
     def __eq__(self, other):
         return isinstance(other, type(self)) and other.key == self.key
+    
+    def __hash__(self):
+        return self.key.__hash__()
+        
     def __ne__(self, other):
         return not (isinstance(other, type(self)) and other.key == self.key)
-        
-        
+
     def set_default(self, attribute, quantity):
         if not attribute in self.particles_set.get_attribute_names_defined_in_store():
             self.particles_set._set_value_of_attribute(self, attribute, quantity)

@@ -180,7 +180,7 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
     """
 
     if len(particles) < 2:
-        return G * zero
+        return zero * G
 
     mass = particles.mass
     x_vector = particles.x

@@ -558,7 +558,8 @@ int get_children_of_particle(int index_of_the_particle,
     if (od && od->get_younger_sister()) {
 	*child1 = od->get_index();
 	*child2 = od->get_younger_sister()->get_index();
-    } else
-	*child1 = *child2 = 0;
+    } else {
+	*child1 = *child2 = -1;
+    }
     return 0;
 }
