@@ -523,6 +523,7 @@ def is_mpd_running():
         
     name_of_the_vendor, version = MPI.get_vendor()
     if name_of_the_vendor == 'MPICH2':
+        must_check_mpd = True
         if 'AMUSE_MPD_CHECK' in os.environ:
             must_check_mpd = os.environ['AMUSE_MPD_CHECK'] == '1'
         if not must_check_mpd or version == (1,3,2):
