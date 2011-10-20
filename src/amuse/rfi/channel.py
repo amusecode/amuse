@@ -11,6 +11,7 @@ import threading
 import select
 import tempfile
 import atexit
+import time
 
 import socket
 import array
@@ -405,7 +406,7 @@ class MessageChannel(OptionalAttributes):
         
     @classmethod
     def DDD(cls, full_name_of_the_worker, channel):
-        arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd',  full_name_of_the_worker]
+        arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd', '--args',  full_name_of_the_worker]
         command = 'xterm'
         return command, arguments
         
@@ -1314,7 +1315,6 @@ class SocketChannel(MessageChannel):
         
         arguments = []
         
-        
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self)
         else:
@@ -1331,9 +1331,12 @@ class SocketChannel(MessageChannel):
             
         arguments.insert(0, command)        
         arguments.append(str(server_socket.getsockname()[1]))
-    
-        self.process = Popen(arguments, -1, command, None, self.stdout, self.stderr)
-        
+        self.process = Popen(
+            arguments,
+            executable = command, 
+            stdout = self.stdout, 
+            stderr = self.stderr
+        )
         #logging.getLogger("channel").debug("waiting for connection from worker")
      
         self.socket, address = server_socket.accept()
@@ -1367,8 +1370,14 @@ class SocketChannel(MessageChannel):
         
         # should lookinto using poll with a timeout or some other mechanism
         # when debugger method is on, no killing
-        self.process.kill()
-        
+        count = 0
+        while(count < 5):
+            returncode = self.process.poll()
+            if not returncode is None:
+                break
+            time.sleep(0.2)
+            count += 1  
+                 
         if not self.stdout is None:
             self.stdout.close()
             

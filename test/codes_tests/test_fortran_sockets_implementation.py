@@ -372,6 +372,18 @@ class TestInterface(TestWithMPI):
         super(TestInterface, self).setUp()
         print "building"
         self.build_worker()
+        self.check_not_in_mpiexec()
+        
+    def check_not_in_mpiexec(self):
+        """
+        The tests will fork another process, if the test run
+        is itself an mpi process, the tests may fail. 
+        
+        For the hydra process manager the tests will fail.
+        So skip the tests if we detect hydra
+        """
+        if 'HYDRA_CONTROL_FD' in os.environ:
+            self.skip('cannot run the socket tests under hydra process manager')
         
     def test1(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")

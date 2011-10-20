@@ -438,6 +438,18 @@ class TestInterface(TestWithMPI):
             print ex
             raise
         print "done"
+        self.check_not_in_mpiexec()
+        
+    def check_not_in_mpiexec(self):
+        """
+        The tests will fork another process, if the test run
+        is itself an mpi process, the tests may fail. 
+        
+        For the hydra process manager the tests will fail.
+        So skip the tests if we detect hydra
+        """
+        if 'HYDRA_CONTROL_FD' in os.environ:
+            self.skip('cannot run the socket tests under hydra process manager')
         
     def test1(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
@@ -539,7 +551,7 @@ class TestInterface(TestWithMPI):
 
     
     def test11(self):
-        instance = ForTestingInterface(self.exefile, channel_type="sockets")
+        instance = ForTestingInterface(self.exefile, redirection="none", channel_type="sockets")
         (output_ints,) = instance.echo_array([4,5,6])
         instance.stop()
         print output_ints
