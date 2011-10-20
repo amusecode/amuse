@@ -531,8 +531,7 @@ def is_mpd_running():
             must_check_mpd = False
         if 'HYDRA_CONTROL_FD' in os.environ:
             must_check_mpd = False
-        for x in sorted(os.environ.keys()):
-            print x, os.environ[x]
+        
         if not must_check_mpd or version == (1,3,2):
             return True
         try:
