@@ -523,7 +523,9 @@ def is_mpd_running():
         
     name_of_the_vendor, version = MPI.get_vendor()
     if name_of_the_vendor == 'MPICH2':
-        if version == (1,3,2):
+        if 'AMUSE_MPD_CHECK' in os.environ:
+            must_check_mpd = os.environ['AMUSE_MPD_CHECK'] == '1'
+        if not must_check_mpd or version == (1,3,2):
             return True
         try:
             process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)
