@@ -842,25 +842,19 @@ class TestMESA(TestWithMPI):
         star.mass = 1.0 | units.MSun
         
         testpath = get_path_to_results()
-        fifo_name = os.path.join(testpath, "mesa_fifo")
-        if os.path.exists(fifo_name):
-            os.remove(fifo_name)
-        os.mkfifo(fifo_name)
-        pid = os.fork()
-        if pid:
-            rfile = open(fifo_name, 'r')
-            amuse_output = rfile.read()
-            rfile.close()
-        else:
-            instance = self.new_instance(MESA, redirection = 'file', redirect_file = fifo_name)
-            se_star = instance.particles.add_particle(star)
-            for i in range(number_of_steps):
-                se_star.evolve_one_step()
-            instance.stop()
-            # Closing child process
-            os._exit(0)
-        os.unlink(fifo_name)
+        outputfile_name = os.path.join(testpath, "mesa_output")
+       
+        instance = self.new_instance(MESA, redirection = 'file', redirect_file = outputfile_name)
+        se_star = instance.particles.add_particle(star)
+        for i in range(number_of_steps):
+            se_star.evolve_one_step()
+        instance.stop()
+      
+        rfile = open(outputfile_name, 'r')
+        amuse_output = rfile.read()
+        rfile.close()
         
+        print amuse_output
         mesa_src_path = os.path.join(os.path.dirname(sys.modules[MESA.__module__].__file__), 'src')
         mesa_star_path = os.path.join(mesa_src_path, 'star', 'test', 'star')
         
