@@ -1,3 +1,6 @@
+AMUSE_DIR?=../../../..
+include ${AMUSE_DIR}/config.mk
+
 MPICXX ?= mpicxx
 
 CFLAGS   += -Wall -g -fPIC -DTOOLBOX  $(MUSE_INCLUDE_DIR)
@@ -9,8 +12,6 @@ BHTC		= $(BHTCDIR)/BHTC
 BHTC_EXTRAS	= $(BHTCDIR)/nbody.o
 
 OBJS = bhtree_code.o 
-
-AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

@@ -1,1 +1,63 @@
 PYTHON=@PYTHON@
+
+#
+# Compilers, for compiling without MPI
+# these compilers must be the same or compatible with
+# the mpi compilers
+#
+CXX=@CXX@
+CC=@CC@
+FC=@FC@
+
+#
+# Default flags, append to these in the makefiles
+#
+CXXFLAGS=@CXXFLAGS@
+CFLAGS=@CFLAGS@
+FCFLAGS=@FCFLAGS@
+
+#
+# MPI Compilers
+#
+MPI_ENABLED=@WITH_MPI@
+MPICXX=@MPICXX@
+MPICC=@MPICC@
+MPIFC=@MPIFC@
+
+#
+# Java
+#
+JNI_INCLUDES=@JNI_INCLUDES@
+JDK=@JDK@
+
+#
+# OpenMP
+#
+
+OPENMP_ENABLED=@HAVE_OPENMP@
+OPENMP_FCFLAGS=@OPENMP_FCFLAGS@
+OPENMP_CFLAGS=@OPENMP_CFLAGS@
+    
+#
+# Libraries: FFTW, GSL, CUDA, SAPPORO
+#
+
+FOUND_FFTW=@FOUND_FFTW@
+FFTW_FLAS=@FFTW_FLAGS@
+FFTW_LIBS=@FFTW_LIBS@
+    
+FOUND_GSL=@FOUND_GSL@
+GSL_FLAGS=@GSL_FLAGS@
+GSL_LIBS=@GSL_LIBS@
+
+CUDA_ENABLES=@WITH_CUDA@
+NVCC=@NVCC@
+CUDA_TK=@CUDA_TK@
+CUDA_SDK=@CUDA_SDK@
+CUDA_LIBS=@CUDA_LIBS@
+
+SAPPORO_VERSION=@SAPPORO_VERSION@
+SAPPORO_LIBS=-L${AMUSE_DIR}/lib/${SAPPORO_VERSION} -lsapporo
+
+
+
