@@ -1,7 +1,7 @@
 import numpy
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.gadget2.interface import Gadget2Interface, Gadget2
-from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere
+from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere, body_centered_grid_unit_cube
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
 
 from amuse.support.exceptions import AmuseException
@@ -10,9 +10,17 @@ from amuse.units import nbody_system
 from amuse.units import generic_unit_converter
 from amuse.units import generic_unit_system
 from amuse.units import units
-from amuse.datamodel import Particles
+from amuse.datamodel import Particles, Grid
 from amuse.rfi import channel
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.gasplummer import new_plummer_gas_model
+
+try:
+    from matplotlib import pyplot
+    HAS_MATPLOTLIB = True
+    from amuse.plot import plot, xlabel, ylabel
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 default_options = dict(number_of_workers=2)
 #default_options = dict(number_of_workers=2, redirection="none")
@@ -859,4 +867,203 @@ class TestGadget2(TestWithMPI):
             "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -6, error is 'Can't evolve backwards in time.'")
         instance.stop()
     
+    def test22(self):
+        print "Testing Gadget timestep limiter (Durier & Dalla Vecchia 2011)"
+        number_sph_particles = 1000
+        numpy.random.seed(345672)
+        gas = new_plummer_gas_model(number_sph_particles, self.default_convert_nbody, base_grid = body_centered_grid_unit_cube)
+        
+        n_timescales = 0.025
+        t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
+        print "Evolving to ("+str(n_timescales), "nbody timescales): ", t_end
+        n_steps = 5
+        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        
+        instance = Gadget2(self.default_converter, **default_options)
+        instance.parameters.max_size_timestep = t_end
+        gas = instance.gas_particles.add_particles(gas)
+        
+        kinetic_energies =   [] | units.erg
+        potential_energies = [] | units.erg
+        thermal_energies =   [] | units.erg
+        
+        for time in times[:3]:
+            instance.evolve_model(time)
+            potential_energies.append( instance.potential_energy)
+            kinetic_energies.append(   instance.kinetic_energy)
+            thermal_energies.append(   instance.thermal_energy)
+            print str(time)+": E =", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+        
+        central_particle = gas.select_array(lambda x, y, z : (x**2 + y**2 + z**2) == min(x**2 + y**2 + z**2), ["x", "y", "z"])
+        print "Initial internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g)
+        delta_E = abs(instance.potential_energy) - central_particle[0].u * central_particle[0].mass
+        central_particle.u = abs(instance.potential_energy) / central_particle.mass
+        print "New internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g)
+        print "Changed total energy to:", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1] + delta_E
+        
+        self.assertAlmostRelativeEqual(
+            instance.potential_energy + instance.kinetic_energy + instance.thermal_energy, 
+            potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1] + delta_E, 7)
+        potential_energies[-1] = instance.potential_energy
+        kinetic_energies[-1]   = instance.kinetic_energy
+        thermal_energies[-1]   = instance.thermal_energy
+        
+        for i_step, time in enumerate(times[3:]):
+            instance.evolve_model(time)
+            potential_energies.append( instance.potential_energy)
+            kinetic_energies.append(   instance.kinetic_energy)
+            thermal_energies.append(   instance.thermal_energy)
+            print str(time)+": E =", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+        instance.stop()
+        
+        total_energies = potential_energies + kinetic_energies + thermal_energies
+        self.assertAlmostRelativeEqual(total_energies[1], total_energies[0], 3)
+        self.assertAlmostRelativeEqual(total_energies[2], total_energies[1] + delta_E, 3)
+        self.assertIsOfOrder(total_energies[3], total_energies[2])
+        self.assertIsOfOrder(total_energies[4], total_energies[3])
+    
+    def slowtest22b(self):
+        print "Testing Gadget timestep limiter (Durier & Dalla Vecchia 2011)"
+        number_sph_particles = 10000
+        numpy.random.seed(345672)
+        gas = new_plummer_gas_model(number_sph_particles, self.default_convert_nbody, base_grid = body_centered_grid_unit_cube)
+        
+        n_pixels = 100
+        n_timescales = 0.5
+        t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
+        print "Evolving to ("+str(n_timescales), "nbody timescales): ", t_end
+        n_steps = 100
+        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        
+        instance = Gadget2(self.default_converter, **default_options)
+        instance.parameters.max_size_timestep = t_end
+        gas = instance.gas_particles.add_particles(gas)
+        
+        kinetic_energies =   [] | units.erg
+        potential_energies = [] | units.erg
+        thermal_energies =   [] | units.erg
+        
+        for time in times[:3]:
+            instance.evolve_model(time)
+            potential_energies.append( instance.potential_energy)
+            kinetic_energies.append(   instance.kinetic_energy)
+            thermal_energies.append(   instance.thermal_energy)
+            print time, potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+        
+        view = ([-0.5, 0.5, -0.5, 0.5] * (2.0 | units.none) * 
+            self.default_convert_nbody.to_si(1.0 | nbody_system.length)).as_quantity_in(units.kpc)
+        print "Physical size of window for hydro_plot:", view
+        hydro_plot(
+            view,
+            instance,
+            (n_pixels, n_pixels),
+            "gadget2_slowtest22b_hydro_image{0:=03}.png".format(0)
+        )
+        central_particle = gas.select_array(lambda x, y, z : (x**2 + y**2 + z**2) == min(x**2 + y**2 + z**2), ["x", "y", "z"])
+        print "Position central particle:", central_particle.position.as_quantity_in(units.kpc)
+        print "Center of mass, virial radius of system:", gas.center_of_mass().as_quantity_in(units.kpc), gas.virial_radius().as_quantity_in(units.kpc)
+        print "Initial internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g)
+        delta_E = abs(instance.potential_energy) - central_particle[0].u * central_particle[0].mass
+        central_particle.u = abs(instance.potential_energy) / central_particle.mass
+        print "New internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g)
+        print "Changed total energy to:", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1] + delta_E
+        
+        self.assertAlmostRelativeEqual(
+            instance.potential_energy + instance.kinetic_energy + instance.thermal_energy, 
+            potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1] + delta_E, 7)
+        potential_energies[-1] = instance.potential_energy
+        kinetic_energies[-1]   = instance.kinetic_energy
+        thermal_energies[-1]   = instance.thermal_energy
+        print potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+        
+        for i_step, time in enumerate(times[3:]):
+            if i_step < 20:
+                hydro_plot(
+                    view,
+                    instance,
+                    (n_pixels, n_pixels),
+                    "gadget2_slowtest22b_hydro_image{0:=03}.png".format(i_step+1)
+                )
+            instance.evolve_model(time)
+            potential_energies.append( instance.potential_energy)
+            kinetic_energies.append(   instance.kinetic_energy)
+            thermal_energies.append(   instance.thermal_energy)
+            print time, potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+        instance.stop()
+        
+        total_energies = potential_energies + kinetic_energies + thermal_energies
+        self.assertAlmostRelativeEqual(total_energies[1], total_energies[0], 3)
+        self.assertAlmostRelativeEqual(total_energies[2], total_energies[1] + delta_E, 3)
+        self.assertIsOfOrder(total_energies[3], total_energies[2])
+        self.assertIsOfOrder(total_energies[4], total_energies[3])
+        for i in range(5, n_steps):
+            self.assertAlmostRelativeEqual(total_energies[i], total_energies[i-1], 1)
+        
+        energy_evolution_plot(times, kinetic_energies, potential_energies, thermal_energies, 
+            figname = "gadget2_slowtest22b_energy.png")
+    
 
+def energy_evolution_plot(time, kinetic, potential, thermal, figname):
+    if not HAS_MATPLOTLIB:
+        return
+    pyplot.figure(figsize = (5, 5))
+    plot(time, kinetic, label='K')
+    plot(time, potential, label='U')
+    plot(time, thermal, label='Q')
+    plot(time, kinetic + potential + thermal, label='E')
+    xlabel('Time')
+    ylabel('Energy')
+    pyplot.legend(prop={'size':"x-small"}, loc=4)
+    pyplot.savefig(figname)
+    print "\nPlot of energy evolution was saved to:", figname
+    pyplot.close()
+    
+
+def hydro_plot(view, hydro_code, image_size, figname):
+    """
+    view: the (physical) region to plot [xmin, xmax, ymin, ymax]
+    hydro_code: hydrodynamics code in which the gas to be plotted is defined
+    image_size: size of the output image in pixels (x, y)
+    """
+    if not HAS_MATPLOTLIB:
+        return
+    shape = (image_size[0], image_size[1], 1)
+    size = image_size[0] * image_size[1]
+    axis_lengths = [0.0, 0.0, 0.0] | units.m
+    axis_lengths[0] = view[1] - view[0]
+    axis_lengths[1] = view[3] - view[2]
+    grid = Grid.create(shape, axis_lengths)
+    grid.x += view[0]
+    grid.y += view[2]
+    speed = grid.z.reshape(size) * (0 | 1/units.s)
+    rho, rhovx, rhovy, rhovz, rhoe = hydro_code.get_hydro_state_at_point(grid.x.reshape(size), 
+        grid.y.reshape(size), grid.z.reshape(size), speed, speed, speed)
+    
+    min_v =  800.0 | units.km / units.s
+    max_v = 3000.0 | units.km / units.s
+    min_rho = rho.amin()
+    max_rho = rho.amax()
+    fade_rho = min_rho * (max_rho / min_rho).value_in(units.none)**0.1
+    min_E = 1.0e11 | units.J / units.kg
+    max_E = 1.0e13 | units.J / units.kg
+    
+    v_sqr = (rhovx**2 + rhovy**2 + rhovz**2) / rho**2
+    E = rhoe / rho
+    log_v = numpy.log((v_sqr / min_v**2).value_in(units.none)) / numpy.log((max_v**2 / min_v**2).value_in(units.none))
+    log_rho = numpy.log((rho / min_rho).value_in(units.none)) / numpy.log((max_rho / min_rho).value_in(units.none))
+    log_E = numpy.log((E / min_E).value_in(units.none)) / numpy.log((max_E / min_E).value_in(units.none))
+    
+    red   = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_rho)).reshape(shape)
+    green = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_v)).reshape(shape)
+    blue  = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_E)).reshape(shape)
+    alpha = numpy.minimum(numpy.ones_like(log_v), numpy.maximum(numpy.zeros_like(log_v), 
+        numpy.log((rho / min_rho).value_in(units.none)) / numpy.log((fade_rho / min_rho).value_in(units.none)) )).reshape(shape)
+    
+    rgba = numpy.concatenate((red, green, blue, alpha), axis = 2)
+    
+    pyplot.figure(figsize = (image_size[0]/100.0, image_size[1]/100.0), dpi = 100)
+    im = pyplot.figimage(rgba, origin='lower')
+    
+    pyplot.savefig(figname, transparent=True, dpi = 100)
+    print "\nHydroplot was saved to: ", figname
+    pyplot.close()
