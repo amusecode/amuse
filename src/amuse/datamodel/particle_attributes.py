@@ -138,6 +138,63 @@ def center_of_mass_velocity(particles):
         massy/total_mass,
         massz/total_mass)
 
+def total_momentum(particles):
+    """
+    Returns the total momentum of the particles set.
+
+    >>> from amuse.datamodel import Particles
+    >>> particles = Particles(2)
+    >>> particles.vx = [-1.0, 1.0] | units.ms
+    >>> particles.vy = [0.0, 0.0] | units.ms
+    >>> particles.vz = [0.0, 0.0] | units.ms
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.total_momentum()
+    quantity<[0.0, 0.0, 0.0] m * kg * s**-1>
+    """
+    masses = particles.mass
+    x_values = particles.vx
+    y_values = particles.vy
+    z_values = particles.vz
+
+    momx = (masses * x_values).sum()
+    momy = (masses * y_values).sum()
+    momz = (masses * z_values).sum()
+
+    return quantities.VectorQuantity.new_from_scalar_quantities(momx,
+        momy, momz)
+
+def total_angular_momentum(particles):
+    """
+    Returns the total angular momentum of the particles set.
+
+    >>> from amuse.datamodel import Particles
+    >>> particles = Particles(2)
+    >>> particles.x = [-1.0, 1.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.vx = [0.0, 0.0] | units.ms
+    >>> particles.vy = [-1.0, 1.0] | units.ms
+    >>> particles.vz = [0.0, 0.0] | units.ms
+    >>> particles.mass = [1.0, .5] | units.kg
+    >>> particles.total_angular_momentum()
+    quantity<[0.0, 0.0, 1.5] m**2 * kg * s**-1>
+    """
+    m = particles.mass
+    x = particles.x
+    y = particles.y
+    z = particles.z
+    vx = particles.vx
+    vy = particles.vy
+    vz = particles.vz
+
+    lx=(m*(y*vz-z*vy)).sum()
+    ly=(m*(z*vx-x*vz)).sum()
+    lz=(m*(x*vy-y*vx)).sum()
+
+    return quantities.VectorQuantity.new_from_scalar_quantities(lx,
+        ly, lz)
+
+
 def kinetic_energy(particles):
     """
     Returns the total kinetic energy of the
@@ -490,6 +547,8 @@ AbstractParticleSet.add_global_function_attribute("potential_energy", potential_
 AbstractParticleSet.add_global_function_attribute("thermal_energy", thermal_energy)
 AbstractParticleSet.add_global_function_attribute("virial_radius", virial_radius)
 AbstractParticleSet.add_global_function_attribute("total_mass", total_mass)
+AbstractParticleSet.add_global_function_attribute("total_momentum", total_momentum)
+AbstractParticleSet.add_global_function_attribute("total_angular_momentum", total_angular_momentum)
 
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
