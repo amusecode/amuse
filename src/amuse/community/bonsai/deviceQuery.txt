@@ -1,0 +1,73 @@
+/home/jbedorf/NVIDIA_GPU_Computing_SDK/C/bin/linux/release/deviceQuery Starting...
+
+ CUDA Device Query (Runtime API) version (CUDART static linking)
+
+Found 2 CUDA Capable device(s)
+
+Device 0: "GeForce GTX 480"
+  CUDA Driver Version / Runtime Version          4.0 / 4.0
+  CUDA Capability Major/Minor version number:    2.0
+  Total amount of global memory:                 1535 MBytes (1609760768 bytes)
+  (15) Multiprocessors x (32) CUDA Cores/MP:     480 CUDA Cores
+  GPU Clock Speed:                               1.40 GHz
+  Memory Clock rate:                             1848.00 Mhz
+  Memory Bus Width:                              384-bit
+  L2 Cache Size:                                 786432 bytes
+  Max Texture Dimension Size (x,y,z)             1D=(65536), 2D=(65536,65535), 3D=(2048,2048,2048)
+  Max Layered Texture Size (dim) x layers        1D=(16384) x 2048, 2D=(16384,16384) x 2048
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total number of registers available per block: 32768
+  Warp size:                                     32
+  Maximum number of threads per block:           1024
+  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
+  Maximum sizes of each dimension of a grid:     65535 x 65535 x 65535
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             512 bytes
+  Concurrent copy and execution:                 Yes with 1 copy engine(s)
+  Run time limit on kernels:                     Yes
+  Integrated GPU sharing Host Memory:            No
+  Support host page-locked memory mapping:       Yes
+  Concurrent kernel execution:                   Yes
+  Alignment requirement for Surfaces:            Yes
+  Device has ECC support enabled:                No
+  Device is using TCC driver mode:               No
+  Device supports Unified Addressing (UVA):      Yes
+  Device PCI Bus ID / PCI location ID:           2 / 0
+  Compute Mode:
+     < Default (multiple host threads can use ::cudaSetDevice() with device simultaneously) >
+
+Device 1: "GeForce GTX 480"
+  CUDA Driver Version / Runtime Version          4.0 / 4.0
+  CUDA Capability Major/Minor version number:    2.0
+  Total amount of global memory:                 1536 MBytes (1610285056 bytes)
+  (15) Multiprocessors x (32) CUDA Cores/MP:     480 CUDA Cores
+  GPU Clock Speed:                               1.40 GHz
+  Memory Clock rate:                             1848.00 Mhz
+  Memory Bus Width:                              384-bit
+  L2 Cache Size:                                 786432 bytes
+  Max Texture Dimension Size (x,y,z)             1D=(65536), 2D=(65536,65535), 3D=(2048,2048,2048)
+  Max Layered Texture Size (dim) x layers        1D=(16384) x 2048, 2D=(16384,16384) x 2048
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total number of registers available per block: 32768
+  Warp size:                                     32
+  Maximum number of threads per block:           1024
+  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
+  Maximum sizes of each dimension of a grid:     65535 x 65535 x 65535
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             512 bytes
+  Concurrent copy and execution:                 Yes with 1 copy engine(s)
+  Run time limit on kernels:                     No
+  Integrated GPU sharing Host Memory:            No
+  Support host page-locked memory mapping:       Yes
+  Concurrent kernel execution:                   Yes
+  Alignment requirement for Surfaces:            Yes
+  Device has ECC support enabled:                No
+  Device is using TCC driver mode:               No
+  Device supports Unified Addressing (UVA):      Yes
+  Device PCI Bus ID / PCI location ID:           3 / 0
+  Compute Mode:
+     < Default (multiple host threads can use ::cudaSetDevice() with device simultaneously) >
+
+deviceQuery, CUDA Driver = CUDART, CUDA Driver Version = 4.0, CUDA Runtime Version = 4.0, NumDevs = 2, Device = GeForce GTX 480, Device = GeForce GTX 480
