@@ -22,6 +22,7 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
     The relevant references are:
         .. [#] Springel V., 2005, MNRAS, 364, 1105  (GADGET-2)
         .. [#] Springel V., Yoshida N., White S. D. M., 2001, New Astronomy, 6, 51  (GADGET-1)
+        .. [#] Durier F., Dalla Vecchia C., 2011, MNRAS (Time integration scheme fix)
     """
     include_headers = ['gadget_code.h', 'worker_code.h', 'stopcond.h']
     
