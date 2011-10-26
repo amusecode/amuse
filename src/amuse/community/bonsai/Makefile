@@ -22,7 +22,38 @@ AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: bonsai_worker 
+all: compile bonsai_worker 
+
+$(CUDA_TK):
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "bonsai code"
+	@echo "------------"
+	@echo "CUDA_TK variable is not set to a valid path,"
+	@echo "please set the CUDA_TK variable to the directory"
+	@echo "where you installed CUDA"
+	@echo "the CUDA_TK directory must contain a bin directory with the <nvcc> executable"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+
+$(CUDA_SDK):
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "bonsai code"
+	@echo "------------"
+	@echo "CUDA_SDK variable is not set to a valid path,"
+	@echo "please set the CUDA_SDK variable to the directory"
+	@echo "where you installed the CUDA SDK"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+
+compile: $(CUDA_TK) $(CUDA_SDK) $(CODELIB) 
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
