@@ -1,0 +1,18 @@
+Index: mpiamrvac/src/mpiamrvac/src/makefile
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/makefile	2011-10-26 16:18:54.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/makefile	2011-10-26 16:32:02.000000000 +0200
+@@ -54,11 +54,11 @@
+ ############### VACPreProcessor ################
+ #For the dependency
+ 
+-VACPP_=vacpp.pl
++VACPP_=./vacpp.pl
+ 
+ # ... select one for the compilation rules:
+ #
+-VACPP =vacpp.pl #
++VACPP =./vacpp.pl #
+ 
+ # Select one:
+ 
