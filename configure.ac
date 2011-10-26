@@ -151,7 +151,7 @@ AS_VERSION_COMPARE([$PYTHON_h5py_VERSION], [1.1.0],
         [AC_MSG_WARN([h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed])]
 )
 AC_CHECK_PYTHON_MODULE(nose, __version__)
-AS_VERSION_COMPARE([$PYTHON_nose_VERSION], [0.11],
+AS_VERSION_COMPARE([$PYTHON_nose_VERSION], [0.10],
         [AC_MSG_ERROR([nose version $PYTHON_nose_VERSION found, but at least 0.11 needed])]
 )
 AC_CHECK_PYTHON_MODULE(docutils, __version__)

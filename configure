@@ -7122,7 +7122,7 @@ $as_echo "not found" >&6; }
     fi
 
 as_arg_v1=$PYTHON_nose_VERSION
-as_arg_v2=0.11
+as_arg_v2=0.10
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in #(
   1) :
