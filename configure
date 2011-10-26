@@ -614,7 +614,7 @@ PACKAGE_STRING='amuse 3.1'
 PACKAGE_BUGREPORT=''
 PACKAGE_URL=''
 
-ac_unique_file="build.py"
+ac_unique_file="src/amuse/__init__.py"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -2480,6 +2480,8 @@ ac_config_files="$ac_config_files src/amuse/config.py:support/configpy.in"
 ac_config_files="$ac_config_files support/config.py:support/configpy.in"
 
 ac_config_files="$ac_config_files config.mk"
+
+ac_config_files="$ac_config_files build.py"
 
 
 ac_ext=c
@@ -8034,6 +8036,7 @@ do
     "src/amuse/config.py") CONFIG_FILES="$CONFIG_FILES src/amuse/config.py:support/configpy.in" ;;
     "support/config.py") CONFIG_FILES="$CONFIG_FILES support/config.py:support/configpy.in" ;;
     "config.mk") CONFIG_FILES="$CONFIG_FILES config.mk" ;;
+    "build.py") CONFIG_FILES="$CONFIG_FILES build.py" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -8444,6 +8447,11 @@ which seems to be undefined.  Please make sure it is defined" >&2;}
 
   esac
 
+
+  case $ac_file$ac_mode in
+    "build.py":F) chmod +x build.py ;;
+
+  esac
 done # for ac_tag
 
 

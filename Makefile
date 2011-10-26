@@ -6,9 +6,17 @@ CLEAN ?= yes
 
 export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
-all:
+all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py build build_codes --variant 
+
+build.py: build.py.in
+	@echo "****************************************************************"
+	@echo "build.py does not exist or is out of date, please (re-)configure"
+	@echo "****************************************************************"
+	$(warning build.py does not exist or is out of date, please (re-)configure)
+	sed s:@PYTHON@:${PYTHON}: build.py.in > $@
+	chmod a+x build.py
 	
 novariant:
 	@-mkdir -p test_results
