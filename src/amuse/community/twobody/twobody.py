@@ -294,6 +294,16 @@ class TwoBodyImplementation(object):
         except:        
             return -1
 
+    def set_position(self, index_of_the_particle, x, y, z):
+        try:
+            particle = self.particles[index_of_the_particle]
+            particle['x'] =x
+            particle['y'] =y
+            particle['z'] =z
+            return 0
+        except:        
+            return -1
+
       
     def get_state(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
         try:
