@@ -6,8 +6,8 @@ export FC
 
 AMUSE_DIR ?=../../../..
 MESA_MAKE_DIR=./mesa_reqs
-INCLUDE_DIR=./src/star/make
-MESA_DIR = ./src
+INCLUDE_DIR=./src/mesa/star/make
+MESA_DIR = ./src/mesa
 MESA_LIB=$(MESA_DIR)/lib/libstar.a
 
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
@@ -31,9 +31,9 @@ all:	mesa_worker
 
 
 ifdef DOWNLOAD_CODES
-src: download
+$(MESA_DIR)/install: download
 else
-src:
+$(MESA_DIR)/install:
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""
@@ -51,6 +51,7 @@ endif
 
 download:
 	$(RM) -Rf src
+	-mkdir src
 	$(DOWNLOAD_FROM_SVN)
 
 clean:
@@ -76,7 +77,7 @@ worker_code.f90: interface.py
 worker_code-sockets.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py MESAInterface -o $@
 
-$(MESA_LIB): src
+$(MESA_LIB):  $(MESA_DIR)/install
 	cd $(MESA_DIR); ./install
 
 MESA_code.o: MESA_code.f $(MESA_LIB)
