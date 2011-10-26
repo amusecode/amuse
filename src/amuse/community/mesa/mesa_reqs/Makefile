@@ -1,7 +1,7 @@
 FORTRAN ?= gfortran
 FC = $(FORTRAN)
 
-MESA_DIR = ../src
+MESA_DIR = ../src/mesa
 WORK_DIR = .
 STAR_TEST_DIR = $(MESA_DIR)/star/test
 STAR_LIB_DIR = $(MESA_DIR)/star/make
