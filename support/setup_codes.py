@@ -481,6 +481,8 @@ class BuildCodes(CodeCommand):
         is_cuda_needed = list()
         not_build_special = list()
         build = list()
+        lib_build = list()
+        lib_not_build = list()
         environment = self.environment
         environment.update(os.environ)
         
@@ -512,10 +514,10 @@ class BuildCodes(CodeCommand):
                 elif self.is_cuda_needed(outputlog):
                     is_cuda_needed.append(shortname)
                 else:
-                    not_build.append(shortname)
+                    lib_not_build.append(shortname)
             else:
                 self.announce("[{1:%H:%M:%S}] building {0}, succeeded".format(shortname, endtime), level =  log.DEBUG)
-                build.append(shortname)
+                lib_build.append(shortname)
             
         #environment.update(self.environment)
         makefile_paths = list(self.makefile_paths())
@@ -561,14 +563,14 @@ class BuildCodes(CodeCommand):
                 
         
         with open(buildlog, "a") as output:
-            output.write('*'*100)
+            output.write('*'*80)
             output.write('\n')
             output.write('Building finished\n')
-            output.write('*'*100)
+            output.write('*'*80)
             output.write('\n')
             
         self.announce("Environment variables")
-        self.announce("="*100)
+        self.announce("="*80)
         sorted_keys = sorted(self.environment.keys())
         for x in sorted_keys:
             self.announce("%s\t%s" % (x , self.environment[x] ))
@@ -593,30 +595,43 @@ class BuildCodes(CodeCommand):
                 level = log.INFO
             
             self.announce("Community codes not built (because of errors):",  level = level)
-            self.announce("="*100,  level = level)
+            self.announce("="*80,  level = level)
             for x in not_build:
                 self.announce(' * {0}'.format(x), level =  level)
+            self.announce("Optional builds failed, need special libraries:",  level = level)
             for x in not_build_special:
-                self.announce(' * {0} ** optional, needs special libraries or hardware to compile **'.format(x), level = level)
+                self.announce(' * {0}'.format(x), level = level)
+            self.announce("Optional builds failed, need CUDA/GPU libraries:",  level = level)
             for x in is_cuda_needed:
-                self.announce(' * {0} ** needs CUDA library, please configure with --enable-cuda **'.format(x), level = level)
+                self.announce(' * {0}'.format(x), level = level)
+            self.announce("Optional builds failed, need separate download",  level = level)
             for x in is_download_needed:
-                self.announce(' * {0} ** needs to be download, use make {0}.code DOWNLOAD_CODES=1 to download and build **'.format(x), level = level)
+                self.announce(' * {0} , make {0}.code DOWNLOAD_CODES=1'.format(x), level = level)
 
-            self.announce("="*100,  level = level)
+            self.announce("="*80,  level = level)
         
         if build:
             level = log.INFO
             self.announce("Community codes built",  level = level)
-            self.announce("="*100,  level = level)
+            self.announce("="*80,  level = level)
             for x in build:
                 if x in build_to_special_targets:
                     y = build_to_special_targets[x]
                     self.announce('* {0} ({1})'.format(x,','.join(y)),  level = level)
                 else:
                     self.announce('* {0}'.format(x),  level = level)
-            self.announce("="*100,  level = level)
+            self.announce("="*80,  level = level)
         
+        level = log.INFO
+        self.announce(
+            "{0} out of {1} codes built, {2} out of {3} libraries build".format(
+                len(build), 
+                len(build) + len(not_build), 
+                len(lib_build), 
+                len(lib_build) + len(lib_not_build)
+            ),  
+            level = level
+        )
         
  
 class CleanCodes(CodeCommand):

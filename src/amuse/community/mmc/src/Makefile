@@ -84,7 +84,7 @@ standalone: standalone.o interface_bse.o jarrod.o
 	$(FC) $(FFLAGS) standalone.o interface_bse.o jarrod.o -o standalone
 
 .f.o:
-	$(FC) -c $(FFLAGS) $(SOURCE_AMUSE) $<
+	$(FC) -c $(FFLAGS)  $< -o $@
 
 clean:
 	rm -f *.o *.a

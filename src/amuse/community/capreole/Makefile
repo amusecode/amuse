@@ -1,3 +1,5 @@
+AMUSE_DIR?=../../../..
+-include $(AMUSE_DIR)/config.mk
 
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
@@ -5,7 +7,6 @@ FC = $(MPIF90)
 
 SRC=src
 
-AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 NOMPILIBS=$(SRC)/libcapreole.a

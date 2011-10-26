@@ -34,9 +34,11 @@ mapping_from_command_name_to_command_class = {
     'tests':run_tests, 
     'generate_main': generate_main,
 }
-   
-build.sub_commands.append(('build_codes',None))
-build.sub_commands.append(('generate_main',None))
+
+build.sub_commands = (
+    ('build_codes',None),
+    ('generate_main',None)
+)
 Clean.sub_commands.append(('clean_codes',None))
 Clean.sub_commands.append(('clean_python',None))
  
