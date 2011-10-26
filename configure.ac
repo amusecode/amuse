@@ -129,7 +129,7 @@ AC_CHECK_PYTHON_MODULE(numpy, __version__)
 AS_IF([test x"$PYTHON_numpy" != x1],
     [AC_MSG_ERROR([numpy not found, please install numpy first])]
 )
-AS_VERSION_COMPARE([$PYTHON_numpy_VERSION], [1.3.0],
+AS_VERSION_COMPARE([$PYTHON_numpy_VERSION], [1.2.1],
         [AC_MSG_ERROR([numpy version $PYTHON_numpy_VERSION found, but at least 1.3.0 needed])]
 )
 
