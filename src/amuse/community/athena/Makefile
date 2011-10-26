@@ -1,5 +1,6 @@
 MPICXX ?= mpicxx
 MPICC ?= mpicc
+PYTHON ?= python
 
 VERSION = 4.1
 
@@ -19,8 +20,8 @@ CODELIB = $(ATHENA_DIR)/bin/libathena.a
 AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
-DOWNLOAD_FROM_WEB = ./downloadhttp.py
-PATCH_FILES = ./patch_files.py
+DOWNLOAD_FROM_WEB = $(PYTHON) ./downloadhttp.py
+PATCH_FILES = $(PYTHON) ./patch_files.py
 
 SCLIBS ?= -L../../../../lib/stopcond -lstopcond
 SCINC ?= -I../../../../lib/stopcond

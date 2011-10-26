@@ -1,5 +1,6 @@
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
+PYTHON ?= python
 FC      = $(FORTRAN)
 export FC
 
@@ -24,7 +25,7 @@ STAR_WORK_OBJS = \
    $(MESA_MAKE_DIR)/run_star.o 
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
-DOWNLOAD_FROM_SVN = ./build_mesa.py download
+DOWNLOAD_FROM_SVN = $(PYTHON) ./build_mesa.py download
 
 all:	mesa_worker
 

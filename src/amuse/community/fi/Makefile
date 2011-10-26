@@ -1,6 +1,7 @@
 
 MPIF90 ?= mpif90
 FORTRAN ?= mpif90
+PYTHON ?= python
 FC = $(MPIF90)
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 
@@ -103,9 +104,9 @@ $(PERIODIC_BUILDDIR)/Makefile:
 	ln -s ../src/Makefile $(PERIODIC_BUILDDIR)/Makefile
 	
 $(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile 
-	./patch_globals_dot_h.py --periodic
+	$(PYTHON) ./patch_globals_dot_h.py --periodic
 	make -C $(PERIODIC_BUILDDIR) amuse_interface FFLAGS="-I./$(PERIODIC_BUILDDIR) $(FFLAGS)" FC="$(FC)" VPATH=../src 
-	./patch_globals_dot_h.py
+	$(PYTHON) ./patch_globals_dot_h.py
 	
 fi_worker_periodic: worker.f90 interface.po $(PERIODIC_BUILDDIR)/libfi.a
 	$(FC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SCINC) worker.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SCLIBS) $(FFTW_LIBS)

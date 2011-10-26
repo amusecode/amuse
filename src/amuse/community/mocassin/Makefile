@@ -1,4 +1,5 @@
 MPIF90 ?= mpif90
+PYTHON ?= python
 FC      = $(MPIF90)
 
 
@@ -25,8 +26,8 @@ SOURCES  = \
 OBJECTS = $(SOURCES:.f90=.o)
 
 
-DOWNLOAD_FROM_WEB = ./downloadhttp.py
-PATCH_FILES = ./patch_files.py
+DOWNLOAD_FROM_WEB = $(PYTHON) ./downloadhttp.py
+PATCH_FILES = $(PYTHON) ./patch_files.py
 
 
 FFLAGS   += -Wall -g -I$(CODEDIR)/source

@@ -66,17 +66,22 @@ or
 Testing the build
 -----------------
 
-Before testing the code, the `mpd` process daemon must be started. The
-`mpd` application manages the creation of MPI processes. If this is
-the first time the MPICH2 daemon is run it will complain about a 
-missing ``.mpd.conf`` file. Please follow the instructions printed
-by the mpd daemon.
-
-.. code-block:: sh
+.. warning::
     
-    >> mpd &
+    For MPICH2 installations, the `mpd` process daemon must be 
+    started befor testing the code. The `mpd` application manages 
+    the creation of MPI processes. If this is the first time the 
+    MPICH2 daemon is run it will complain about a missing 
+    ``.mpd.conf`` file. Please follow the instructions printed by 
+    the mpd daemon.
 
-After starting `mpd` we can start the tests.
+    .. code-block:: sh
+        
+        > mpd &
+
+    After starting `mpd` we can start the tests.
+    
+The tests are run using the nosetests program.
 
 .. code-block:: sh
     
@@ -86,14 +91,16 @@ After starting `mpd` we can start the tests.
 
     OK
 
-.. compound::
+.. warning::
     
     On some laptops the hostname will not point
     to the correct internet address. For these laptops 
     you can start the mpd daemon on the localhost ip. To do so,
-    you need to set the ``--ifhn`` option::
+    you need to set the ``--ifhn`` option:
     
-        >> mpd --ifhn=localhost &
+    .. code-block:: sh
+    
+        > mpd --ifhn=localhost &
         
     
     

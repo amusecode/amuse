@@ -1,4 +1,5 @@
 MPIF90 ?= mpif90
+PYTHON ?= python
 FC      = $(MPIF90)
 
 FFLAGS   +=  -g -ffree-form
@@ -18,8 +19,8 @@ CODELIB2D = src/mpiamrvac/src/$(LIBNAME2D)
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-DOWNLOAD_FROM_WEB = ./download_svn.py
-PATCH_FILES = ./patch_files.py
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download_svn.py
+PATCH_FILES = $(PYTHON) ./patch_files.py
 all: mpiamrvac_worker 
 
 ifdef DOWNLOAD_CODES

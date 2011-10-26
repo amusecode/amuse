@@ -144,3 +144,15 @@ div.sphinxsidebar
 }
 .highlight-sh{
 }
+
+div.admonition {
+    margin-bottom: 10px;
+    margin-top: 10px;
+    margin-left: 20px;
+    padding: 7px;
+    border: 1px dotted black;
+}
+
+p.admonition-title {
+    display: none;
+}
