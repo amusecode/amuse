@@ -28,8 +28,6 @@ double t_now		= 0.0;
 
 bool curStateOnHost	= false;
 
-double timestep;
-
 std::string logFileName = "bonsaiLog.txt";
 std::ofstream logFile;
 
@@ -94,6 +92,8 @@ int set_src_directory(char * src_dir)
 // Interface functions:
 int new_particle(int *id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)
 {
+  *id = id_counter;
+
   // Add the new particle and reinitialize immediately.
   bodies_pos.resize(n_bodies+1);
   bodies_pos[n_bodies].x = x;
@@ -117,13 +117,13 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
 
   total_mass += mass;
 
-  *id = id_counter;
-
   return 0;
 }
 
 int delete_particle(int index_of_the_particle)
 {
+  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+  return -2;
   //In order to delete a particle we have to reinitialize
   //the particle arrays, first copy the properties to vectors
   getCurrentStateToHost();
@@ -275,7 +275,7 @@ int get_time_step(double *_timestep)
 
 int set_time_step(double _timestep)
 {
-  bonsai->setDt(timestep);
+  bonsai->setDt(_timestep);
   return 0;
 }
 
@@ -436,7 +436,7 @@ int set_state(int index_of_the_particle, double mass, double radius,
 
 int get_total_radius(double * radius){
   fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return 0;
+  return -2;
 }
 
 int get_total_mass(double * mass){
@@ -466,18 +466,18 @@ int get_potential_energy(double * potential_energy){
 
 int get_index_of_first_particle(int * index_of_the_particle){
   fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return 0;
+  return -2;
 }
 int get_index_of_next_particle(int index_of_the_particle,
                 int * index_of_the_next_particle){
   fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return 0;
+  return -2;
 }
 
 int get_potential_at_point(double eps, double x, double y, double z,
   double * phi){
   fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return 0;
+  return -2;
 }
 
 
@@ -485,26 +485,26 @@ int get_potential_at_point(double eps, double x, double y, double z,
 
 int get_center_of_mass_position(double * x, double * y, double * z){
   fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return 0;
+  return -2;
 }
 
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
   fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return 0;
+  return -2;
 }
 
 
 int get_gravity_at_point(double eps, double x, double y, double z,
   double * forcex, double * forcey, double * forcez){
   fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return 0;
+  return -2;
 }
 
 
 
 
 int cleanup_code(){
-  delete bonsai;
+  if (initialized && bonsai->localTree.n > 0) delete bonsai;
   bonsai = NULL;
   return 0;
 }

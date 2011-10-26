@@ -168,10 +168,11 @@ class tree_structure
     real4 corner;                         //Corner of tree-structure
     real  domain_fac;                     //Domain_fac of tree-structure
 
-  tree_structure(){}
+  tree_structure(){n=0;}
 
   tree_structure(my_dev::context &context)
   {
+    n = 0;
     devContext = &context;
     setMemoryContexts();
     needToReorder = true;

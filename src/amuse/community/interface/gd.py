@@ -990,18 +990,7 @@ class GravitationalDynamics(common.CommonCode):
                 object.ERROR_CODE
             )
         )
-
-        #object.add_method(
-        #    "get_time_step",
-        #    (
-        #        object.NO_UNIT,
-        #    ),
-        #    (
-        #        nbody_system.time,
-        #        object.ERROR_CODE
-        #    )
-        #)
-        #
+        
         object.add_method(
             'get_indices_of_colliding_particles',
             (),
@@ -1047,13 +1036,6 @@ class GravitationalDynamics(common.CommonCode):
             "get_time_step",
             (),
             (nbody_system.time, object.ERROR_CODE,)
-        )
-
-
-        object.add_method(
-            None,
-            (nbody_system.time, ),
-            (object.ERROR_CODE,)
         )
 
 

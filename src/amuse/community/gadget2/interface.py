@@ -1912,12 +1912,6 @@ class Gadget2(GravitationalDynamics):
         )
         
         object.add_method(
-            None,
-            (generic_unit_system.time, ),
-            (object.ERROR_CODE,)
-        )
-        
-        object.add_method(
             "get_nsmooth",
             (),
             (units.none, object.ERROR_CODE,)
@@ -1936,21 +1930,9 @@ class Gadget2(GravitationalDynamics):
         )
         
         object.add_method(
-            None,
-            (units.g, ),
-            (object.ERROR_CODE,)
-        )
-        
-        object.add_method(
             "get_unit_length",
             (),
             (units.cm, object.ERROR_CODE,)
-        )
-        
-        object.add_method(
-            None,
-            (units.cm, ),
-            (object.ERROR_CODE,)
         )
         
         object.add_method(
@@ -1960,21 +1942,9 @@ class Gadget2(GravitationalDynamics):
         )
         
         object.add_method(
-            None,
-            (units.s, ),
-            (object.ERROR_CODE,)
-        )
-        
-        object.add_method(
             "get_unit_velocity",
             (),
             (units.cm / units.s, object.ERROR_CODE,)
-        )
-        
-        object.add_method(
-            None,
-            (units.cm / units.s, ),
-            (object.ERROR_CODE,)
         )
         
         object.add_method(
@@ -2017,12 +1987,6 @@ class Gadget2(GravitationalDynamics):
             "get_gamma",
             (),
             (units.none, object.ERROR_CODE,)
-        )
-        
-        object.add_method(
-            None,
-            (units.none, ),
-            (object.ERROR_CODE,)
         )
         
         object.add_method(
