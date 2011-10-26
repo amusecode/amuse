@@ -2,6 +2,7 @@ from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
 
+import numpy
 import parser
 import sys
 import os
@@ -120,6 +121,30 @@ class ForTestingInterface(PythonCodeInterface):
         function.can_handle_array = True
         return function  
     
+    @legacy_function
+    def get_position():
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('x', dtype='float64', direction=function.OUT)
+        function.addParameter('y', dtype='float64', direction=function.OUT)
+        function.addParameter('z', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+    
+    @legacy_function
+    def set_position():
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('x', dtype='float64', direction=function.IN)
+        function.addParameter('y', dtype='float64', direction=function.IN)
+        function.addParameter('z', dtype='float64', direction=function.IN)
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+    
     
     
     
@@ -128,6 +153,7 @@ class ForTestingImplementation(object):
     
     def __init__(self):
         self.masses = [0.0] * 100
+        self._particle_data = numpy.reshape(numpy.arange(300.0), (-1, 3))
         
     def get_mass(self, index_of_the_particle,  mass):
         try:
@@ -180,7 +206,26 @@ class ForTestingImplementation(object):
     def multiply_ints(self, int_in1, int_in2, int_out):
         int_out.value = int_in1 * int_in2
         return 0
-        
+    
+    def get_position(self, index_of_the_particle, x, y, z, length):
+        try:
+            x.value = self._particle_data[index_of_the_particle, 0]
+            y.value = self._particle_data[index_of_the_particle, 1]
+            z.value = self._particle_data[index_of_the_particle, 2]
+            return 0
+        except:        
+            return -1
+    
+    def set_position(self, index_of_the_particle, x, y, z, length):
+        try:
+            self._particle_data[index_of_the_particle, 0] = x
+            self._particle_data[index_of_the_particle, 1] = y
+            self._particle_data[index_of_the_particle, 2] = z
+            return 0
+        except:        
+            return -1
+    
+
 class ForTesting(InCodeComponentImplementation):
     
     def __init__(self, **options):
@@ -485,8 +530,34 @@ class TestInterface(TestWithMPI):
         with open("pout.000","r") as f:
             content = f.read()
         self.assertEquals(content.strip(), "abc\ndef\nexex")
+    
+    def test21(self):
+        print "Testing must_handle_array for Python codes"
+        instance = ForTestingInterface()
         
+        x,y,z,err = instance.get_position(range(100))
+        self.assertEquals(err, 0)
+        self.assertEquals(x, numpy.arange(0.0, 300.0, 3.0))
+        self.assertEquals(y, numpy.arange(1.0, 300.0, 3.0))
+        self.assertEquals(z, numpy.arange(2.0, 300.0, 3.0))
+        x,y,z,err = instance.get_position(range(101))
+        self.assertEquals(err, -1)
+        self.assertEquals(instance.get_position(1).values(), [3.0, 4.0, 5.0, 0])
+        
+        err = instance.set_position(range(100), numpy.arange(100.0), numpy.arange(100.0, 200.0), numpy.arange(200.0, 300.0))
+        self.assertEquals(err, 0)
+        err = instance.set_position(range(101), numpy.arange(101.0), numpy.arange(101.0, 202.0), numpy.arange(202.0, 303.0))
+        self.assertEquals(err, -1)
+        err = instance.set_position(0, -1.0, -2.0, -3.0)
+        
+        x,y,z,err = instance.get_position(range(100))
+        self.assertEquals(err, 0)
+        self.assertEquals(x, numpy.concatenate(([-1.0], numpy.arange(1.0, 100.0))))
+        self.assertEquals(y, numpy.concatenate(([-2.0], numpy.arange(101.0, 200.0))))
+        self.assertEquals(z, numpy.concatenate(([-3.0], numpy.arange(201.0, 300.0))))
 
+        instance.stop()
+    
 
 
 

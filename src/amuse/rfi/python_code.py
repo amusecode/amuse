@@ -148,8 +148,8 @@ class PythonImplementation(object):
                 
         for parameter in specification.parameters:
             attribute = self.dtype_to_message_attribute[parameter.datatype]
-            if parameter.direction == LegacyFunctionSpecification.OUT or \
-               parameter.direction == LegacyFunctionSpecification.INOUT:
+            if (parameter.direction == LegacyFunctionSpecification.OUT or 
+               parameter.direction == LegacyFunctionSpecification.INOUT):
                 argument_value = keyword_arguments[parameter.name]
                 if specification.must_handle_array:
                     getattr(output_message, attribute)[parameter.output_index] = argument_value.value
