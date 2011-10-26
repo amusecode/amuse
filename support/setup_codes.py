@@ -88,6 +88,11 @@ class CodeCommand(Command):
             self.lib_dir = 'lib'
         
         
+        if is_configured:
+            self.environment['PYTHON'] = config.interpreters.python
+        else:
+            self.environment['PYTHON'] = sys.executable
+            
         self.set_cuda_variables()
         self.set_mpi_variables()
         self.set_compiler_variables()
