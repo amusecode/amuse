@@ -1,4 +1,8 @@
+AMUSE_DIR?=../../../..
+-include $(AMUSE_DIR)/config.mk
+
 MPIF90 ?= mpif90
+PYTHON ?= python
 FC      = $(MPIF90)
 
 FFLAGS   += -Wall -g -fno-automatic
@@ -8,7 +12,6 @@ OBJS = interface.o
 
 CODELIB = src/libmmc.a
 
-AMUSE_DIR?=../../../..
 MMC_DATA_DIR = ../../../../data/mmc
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -34,7 +37,7 @@ compile:
 	make -C amuselib
 
 interface.f90 /src/amuse_interface2.f: makeinterface.py
-	python makeinterface.py
+	$(PYTHON) makeinterface.py
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py mmcInterface -o $@
