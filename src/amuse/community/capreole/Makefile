@@ -6,11 +6,13 @@ FORTRAN ?= gfortran
 FC = $(MPIF90)
 
 SRC=src
+BUILDDIR = build
+MPI_BUILDDIR = build_mpi
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-NOMPILIBS=$(SRC)/libcapreole.a
-MPILIBS=$(SRC)/libcapreole_mpi.a
+NOMPILIBS=$(BUILDDIR)/libcapreole.a
+MPILIBS=$(MPI_BUILDDIR)/libcapreole_mpi.a
 
 GLOBJECTS=$(SRC)/fthread.o $(SRC)/viewer.o $(SRC)/libpt.a
 
@@ -42,7 +44,7 @@ MPI_FLAGS = -DMPI #
 
 FFLAGS+= $(OMPFLAGS) 
 
-FFLAGS2= -I./src/
+FFLAGS2= -I$(BUILDDIR)
 
 CLASSNAME=CapreoleInterface
 
@@ -59,25 +61,37 @@ all: capreole_worker
 %.o: %.F90 Makefile
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) -c -o $@ $< 
 
-$(MPILIBS):
-	make -C src clean
-	make -C src amuse_interface_mpi F90FLAGS1="$(FFLAGS)" FC="$(FC)"
+$(BUILDDIR)/%.o: %.F90 Makefile
+	$(FC) $(FFLAGS) -I$(BUILDDIR) $(SCINC) -c -o $@ $< 
 	
-$(NOMPILIBS):
-	make -C src clean
-	make -C src amuse_interface F90FLAGS1="$(FFLAGS)" FC="$(FC)"
+$(MPI_BUILDDIR)/%.o: %.F90 Makefile
+	$(FC) $(FFLAGS) -I$(MPI_BUILDDIR) $(SCINC) -c -o $@ $< 
+
+$(BUILDDIR)/Makefile:
+	-mkdir $(BUILDDIR)
+	cp $(SRC)/Makefile $(BUILDDIR)/Makefile
+
+$(NOMPILIBS): $(BUILDDIR)/Makefile
+	make -C $(BUILDDIR) amuse_interface  VPATH=../src F90FLAGS1="$(FFLAGS)" FC="$(FC)"
 	
-capreole_worker: $(NOMPILIBS) worker.f90 interface.o
+$(MPI_BUILDDIR)/Makefile:
+	-mkdir $(MPI_BUILDDIR)
+	cp $(SRC)/Makefile $(MPI_BUILDDIR)/Makefile
+	
+$(MPILIBS): $(MPI_BUILDDIR)/Makefile
+	make -C $(MPI_BUILDDIR) amuse_interface_mpi  VPATH=../src F90FLAGS1="$(FFLAGS)" FC="$(FC)"
+	
+capreole_worker: $(NOMPILIBS) worker.f90 $(BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS)
 	
-capreole_worker_sockets: $(NOMPILIBS) worker-sockets.F90 interface.o
+capreole_worker_sockets: $(NOMPILIBS) worker-sockets.F90 $(BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $(FSINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS) $(FSLIB)
 
 capreole_worker_mpi: FFLAGS2+=$(MPI_FLAGS)
-capreole_worker_mpi: $(MPILIBS) worker_mpi.f90 interface.o
+capreole_worker_mpi: $(MPILIBS) worker_mpi.f90 $(MPI_BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(MPILIBS) $(SCLIBS)
 
-capreole_worker_gl: $(NOMPILIBS) glworker.f90 interface.o
+capreole_worker_gl: $(NOMPILIBS) glworker.f90 $(MPI_BUILDDIR)/interface.o
 	make -C src clean
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(FC) $(FFLAGS) $(SCINC) $^ -o $@  $(GLOBJECTS) \
@@ -100,3 +114,4 @@ clean:
 	make -C src clean
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90 worker-sockets.F90 worker-sockets.f90
 	rm -f capreole_worker capreole_worker_mpi capreole_worker_gl worker_mpi.f90 capreole_worker_sockets
+	rm -Rf build build_mpi
