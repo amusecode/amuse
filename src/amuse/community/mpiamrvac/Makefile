@@ -1,3 +1,6 @@
+AMUSE_DIR?=../../../..
+-include $(AMUSE_DIR)/config.mk
+
 MPIF90 ?= mpif90
 PYTHON ?= python
 FC      = $(MPIF90)
@@ -11,7 +14,6 @@ OBJS2D = interface_2d.o
 LIBNAME = libmpiamrvac.a
 LIBNAME2D = libmpiamrvac2d.a
 
-AMUSE_DIR?=../../../..
 
 CODEDIR = src/mpiamrvac/src
 CODELIB = src/mpiamrvac/src/$(LIBNAME)
