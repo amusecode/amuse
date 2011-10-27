@@ -31,7 +31,8 @@ all:	mesa_worker
 
 
 ifdef DOWNLOAD_CODES
-$(MESA_DIR)/install: download
+$(MESA_DIR)/install:
+	make -C . download
 else
 $(MESA_DIR)/install:
 		@echo ""
