@@ -6,7 +6,7 @@ from amuse.community.simplex.interface import SimpleXInterface, SimpleX
 from amuse.units import units
 from amuse.datamodel import Particles
 default_options = dict(number_of_workers=2, redirection="none")
-default_options = dict(number_of_workers=1, debugger="gdb")
+default_options = dict(number_of_workers=2)
 
 class TestSimpleXInterface(TestWithMPI):
 

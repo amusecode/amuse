@@ -22,8 +22,8 @@ C---  first get information about how many active particles are on each node
 
 #ifndef NOMPI
 C---  collect all n_act_loc in one array n_act_v
-      CALL MPI_Allgather(n_act_loc, 1,MPI_INT, n_act_v, 1, MPI_INT,
-     $                   MPI_COMM_WORLD,ierr)
+      CALL MPI_Allgather(n_act_loc, 1,MPI_INTEGER, n_act_v, 1, 
+     $                   MPI_INTEGER,MPI_COMM_WORLD,ierr)
       
       
       DO i=1,n_proc
@@ -46,52 +46,55 @@ C---  NOTE: Gatherv + Bcast is equivalent to Allgatherv but no extra
 C---        memory is needed 
       if(myRank .eq. rootRank) then
       
-        CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc,MPI_INT, ind_act,
+        CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc,MPI_INTEGER, ind_act,
      $                 n_act_v,
-     $                 disp_act_v, MPI_INT,rootRank,
+     $                 disp_act_v, MPI_INTEGER,rootRank,
      $                                           MPI_COMM_WORLD,ierr)
       else       
-        CALL MPI_Gatherv(ind_act, n_act_loc, MPI_INT, ind_act, n_act_v,
-     $                 disp_act_v, MPI_INT,rootRank,
+        CALL MPI_Gatherv(ind_act, n_act_loc, MPI_INTEGER, ind_act,
+     $                  n_act_v,disp_act_v, MPI_INTEGER,rootRank,
      $                                           MPI_COMM_WORLD,ierr)
       endif
       
       
     
-      CALL MPI_Bcast(ind_act, n_act, MPI_INT, rootRank,
+      CALL MPI_Bcast(ind_act, n_act, MPI_INTEGER, rootRank,
      $                                           MPI_COMM_WORLD,ierr)
 
 C---  allgather the predicted positions and velocities of active particles
-      CALL MPI_Allgatherv(body_pred_loc, 6*n_act_loc,       MPI_DOUBLE, 
-     $                    body_pred, n3_act_v, disp3_act_v, MPI_DOUBLE,
-     $                                              MPI_COMM_WORLD,ierr)
+      CALL MPI_Allgatherv(body_pred_loc, 6*n_act_loc, 
+     $                    MPI_DOUBLE_PRECISION, body_pred, n3_act_v,
+     $                    disp3_act_v, MPI_DOUBLE_PRECISION,
+     $                    MPI_COMM_WORLD,ierr)
 
       
     
      
       if(myRank .eq. rootRank) then
-      CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc, MPI_DOUBLE, h_act, 
-     $                 n_act_v, disp_act_v, MPI_DOUBLE,rootRank,
-     $                                          MPI_COMM_WORLD,ierr)
+      CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc, MPI_DOUBLE_PRECISION,
+     $                 h_act, 
+     $                 n_act_v, disp_act_v, MPI_DOUBLE_PRECISION,
+     $                 rootRank,MPI_COMM_WORLD,ierr)
       else
-      CALL MPI_Gatherv(h_act, n_act_loc, MPI_DOUBLE, h_act, 
-     $                 n_act_v, disp_act_v, MPI_DOUBLE,rootRank,
-     $                           MPI_COMM_WORLD,ierr)
+      CALL MPI_Gatherv(h_act, n_act_loc, MPI_DOUBLE_PRECISION, h_act, 
+     $                 n_act_v, disp_act_v, MPI_DOUBLE_PRECISION,
+     $                 rootRank,MPI_COMM_WORLD,ierr)
       endif
       
-      CALL MPI_Bcast(h_act, n_act, MPI_DOUBLE, rootRank,
+      CALL MPI_Bcast(h_act, n_act, MPI_DOUBLE_PRECISION, rootRank,
      $                                          MPI_COMM_WORLD,ierr)
 
       if(myRank .eq. rootRank) then
-      CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc, MPI_DOUBLE, m_act, 
-     $                 n_act_v, disp_act_v, MPI_DOUBLE,rootRank,
+      CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc, MPI_DOUBLE_PRECISION, 
+     $                 m_act, n_act_v, disp_act_v, 
+     $                 MPI_DOUBLE_PRECISION,rootRank,
      $                                          MPI_COMM_WORLD,ierr)
       else
-      CALL MPI_Gatherv(m_act, n_act_loc, MPI_DOUBLE, m_act, 
-     $                 n_act_v, disp_act_v, MPI_DOUBLE,rootRank,
-     $                                          MPI_COMM_WORLD,ierr)
+      CALL MPI_Gatherv(m_act, n_act_loc, MPI_DOUBLE_PRECISION, m_act, 
+     $                 n_act_v, disp_act_v, MPI_DOUBLE_PRECISION,
+     $                 rootRank,MPI_COMM_WORLD,ierr)
       endif
-      CALL MPI_Bcast(m_act, n_act, MPI_DOUBLE, rootRank,
+      CALL MPI_Bcast(m_act, n_act, MPI_DOUBLE_PRECISION, rootRank,
      $                                          MPI_COMM_WORLD,ierr)
 
 
