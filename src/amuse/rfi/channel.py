@@ -1483,6 +1483,11 @@ class IbisChannel(MessageChannel):
             
         self._is_inuse = False
         self.socket = None
+
+#    no need to check if the worker is up to date, it may not be on this
+#    machine at all
+#    def _check_if_worker_is_up_to_date(self):
+#        pass
     
     def get_full_name_of_the_worker(self, type):
         if os.path.isabs(self.name_of_the_worker):
