@@ -51,7 +51,7 @@ class InstallPrerequisites(object):
             [], 
             '1.0.0', 
             'nose-' , '.tar.gz', 
-            'http://somethingaboutorange.com/mrl/projects/nose/', 
+            'http://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
           (

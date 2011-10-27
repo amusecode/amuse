@@ -102,15 +102,20 @@ To start the installation do:
 
 You should now be able to install AMUSE.
 
-Using the installation scripts on OS X
+Using the installation scripts on OS Xma
 --------------------------------------
 
-When installing the code on OS.X all steps are the same.The only difference 
-is in setting the PATH variable. The PATH must be extended like this:
+For OS.X you need to install XCode and a gfortran compiler first.
+The XCode development package is available on the 
+`Apple developers site <http://developer.apple.com/devcenter/mac>`_
+or for Lion on the Apple Store application.
 
-.. code-block:: sh
+The standard XCode release does not come with a gfortran compiler. 
+Go to the `HPC Mac OS X site <http://hpc.sourceforge.net/index.php>`_ 
+for a recent gfortran compiler, compatible with the XCode tools.
 
-	export PATH=$PREFIX/Framework/Python.framework/Versions/2.6/bin:$PREFIX/bin:$PATH
+After installing XCode and gfortan, follow the steps described in the
+previous paragraph.
 
 .. _manual:
 
