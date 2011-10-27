@@ -1533,12 +1533,12 @@ C     close grape before exiting (fip)
        
        integer cflag(NPEMAX),id1(NPEMAX),id2(NPEMAX),ierr
               
-       CALL MPI_AllGather(icollision,1,MPI_INT, cflag, 1, 
-     &       MPI_INT,MPI_COMM_WORLD,ierr)
-       CALL MPI_AllGather(idprimary,1,MPI_INT, id1, 1, 
-     &       MPI_INT,MPI_COMM_WORLD,ierr)
-       CALL MPI_AllGather(idsecondary,1,MPI_INT, id2, 1, 
-     &       MPI_INT,MPI_COMM_WORLD,ierr)
+       CALL MPI_AllGather(icollision,1,MPI_INTEGER, cflag, 1, 
+     &       MPI_INTEGER,MPI_COMM_WORLD,ierr)
+       CALL MPI_AllGather(idprimary,1,MPI_INTEGER, id1, 1, 
+     &       MPI_INTEGER,MPI_COMM_WORLD,ierr)
+       CALL MPI_AllGather(idsecondary,1,MPI_INTEGER, id2, 1, 
+     &       MPI_INTEGER,MPI_COMM_WORLD,ierr)
        
        icollision=-1
          DO i=1,n_proc

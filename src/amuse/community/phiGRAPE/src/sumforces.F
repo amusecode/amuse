@@ -29,7 +29,8 @@ C---  equivalence here!!!
 C--------------------------------------------------------------------
 C---  collect all forces on root and then scatter to all PE's
 C--------------------------------------------------------------------
-         CALL MPI_Reduce(body_act_tmp, body_act_new, 7*n_act,MPI_DOUBLE, 
+         CALL MPI_Reduce(body_act_tmp, body_act_new, 7*n_act,
+     $                   MPI_DOUBLE_PRECISION, 
      $                   MPI_SUM, rootRank, MPI_COMM_WORLD,ierr)
          IF (myRank.EQ.rootRank) THEN
             DO i=1,n_act        ! copy forces etc. to main arrays
@@ -43,12 +44,18 @@ C--------------------------------------------------------------------
             ENDDO
          ENDIF
           
-         CALL MPI_Scatter(pot,    n_loc, MPI_DOUBLE, pot_loc,    n_loc,
-     $                    MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-         CALL MPI_Scatter(a,    3*n_loc, MPI_DOUBLE, a_loc,    3*n_loc,
-     $                    MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-         CALL MPI_Scatter(adot, 3*n_loc, MPI_DOUBLE, adot_loc, 3*n_loc,
-     $                    MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+         CALL MPI_Scatter(pot,    n_loc, MPI_DOUBLE_PRECISION, 
+     $                    pot_loc,    n_loc,
+     $                    MPI_DOUBLE_PRECISION, rootRank, 
+     $                    MPI_COMM_WORLD,ierr)
+         CALL MPI_Scatter(a,    3*n_loc, MPI_DOUBLE_PRECISION, 
+     $                    a_loc,    3*n_loc,
+     $                    MPI_DOUBLE_PRECISION, rootRank, 
+     $                    MPI_COMM_WORLD,ierr)
+         CALL MPI_Scatter(adot, 3*n_loc, MPI_DOUBLE_PRECISION,
+     $                    adot_loc, 3*n_loc,
+     $                    MPI_DOUBLE_PRECISION, rootRank, 
+     $                    MPI_COMM_WORLD,ierr)
 
          CALL MPI_Barrier(MPI_COMM_WORLD, ierr)
 C             -----------
@@ -71,7 +78,8 @@ C             -----------
 #ifndef NOMPI         
 C---  Reduce the "global" vectors from "local" 
          CALL MPI_Allreduce(body_act_tmp, body_act_new, 7*n_act,
-     $                      MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD, ierr)
+     $                      MPI_DOUBLE_PRECISION, MPI_SUM,
+     $                      MPI_COMM_WORLD, ierr)
 #endif
 
 

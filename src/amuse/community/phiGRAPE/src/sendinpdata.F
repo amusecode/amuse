@@ -21,31 +21,31 @@ C---  distribute the data to all processes
 C--------------------------------------------------------------------
 
 C---  Broadcast all useful values to all processors... 
-      CALL MPI_Bcast(eps,      1, MPI_DOUBLE, rootRank,
+      CALL MPI_Bcast(eps,      1, MPI_DOUBLE_PRECISION, rootRank,
      $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(t_end,    1, MPI_DOUBLE, rootRank,
-     $                                        MPI_COMM_WORLD,ierr)
-
-      CALL MPI_Bcast(eta,      1, MPI_DOUBLE, rootRank,
-     $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(eta_s,    1, MPI_DOUBLE, rootRank,
+      CALL MPI_Bcast(t_end,    1, MPI_DOUBLE_PRECISION, rootRank,
      $                                        MPI_COMM_WORLD,ierr)
 
-      CALL MPI_Bcast(dt_max,   1, MPI_DOUBLE, rootRank,
+      CALL MPI_Bcast(eta,      1, MPI_DOUBLE_PRECISION, rootRank,
      $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(dt_disk,  1, MPI_DOUBLE, rootRank,
-     $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(dt_contr, 1, MPI_DOUBLE, rootRank,
-     $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(dt_bh,    1, MPI_DOUBLE, rootRank,
-     $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(dt_restart, 1, MPI_DOUBLE, rootRank,
+      CALL MPI_Bcast(eta_s,    1, MPI_DOUBLE_PRECISION, rootRank,
      $                                        MPI_COMM_WORLD,ierr)
 
-      CALL MPI_Bcast(nbh,      1, MPI_INT,    rootRank,
+      CALL MPI_Bcast(dt_max,   1, MPI_DOUBLE_PRECISION, rootRank,
+     $                                        MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(dt_disk,  1, MPI_DOUBLE_PRECISION, rootRank,
+     $                                        MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(dt_contr, 1, MPI_DOUBLE_PRECISION, rootRank,
+     $                                        MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(dt_bh,    1, MPI_DOUBLE_PRECISION, rootRank,
+     $                                        MPI_COMM_WORLD,ierr)
+      CALL MPI_Bcast(dt_restart, 1, MPI_DOUBLE_PRECISION, rootRank,
      $                                        MPI_COMM_WORLD,ierr)
 
-      CALL MPI_Bcast(irestart, 1, MPI_INT,    rootRank,
+      CALL MPI_Bcast(nbh,      1, MPI_INTEGER,    rootRank,
+     $                                        MPI_COMM_WORLD,ierr)
+
+      CALL MPI_Bcast(irestart, 1, MPI_INTEGER,    rootRank,
      $                                        MPI_COMM_WORLD,ierr)
 
 

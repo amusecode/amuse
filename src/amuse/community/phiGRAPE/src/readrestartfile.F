@@ -41,9 +41,9 @@ C---  main data
 
 C---  need to broadcast N here so all nodes now how much data they'll recv.
 #ifndef NOMPI
-      CALL MPI_Bcast(N,        1, MPI_INT,    rootRank,
+      CALL MPI_Bcast(N,        1, MPI_INTEGER,    rootRank,
      $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(time_cur, 1, MPI_DOUBLE, rootRank,
+      CALL MPI_Bcast(time_cur, 1, MPI_DOUBLE_PRECISION, rootRank,
      $                                        MPI_COMM_WORLD,ierr)
 #endif
 
@@ -73,19 +73,19 @@ C---  read data for PE ipe
 
 C---  now send data from root to ipe 
          IF (myRank.EQ.rootRank) THEN 
-            CALL MPI_SEND(a_act_tmp_loc, 3*N, MPI_DOUBLE, ipe,
+            CALL MPI_SEND(a_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION,ipe,
      $                                  itag, MPI_COMM_WORLD,ierr)
-            CALL MPI_SEND(adot_act_tmp_loc, 3*N, MPI_DOUBLE,ipe,
-     $                                  itag, MPI_COMM_WORLD,ierr)
-            CALL MPI_SEND(pot_act_tmp_loc, 3*N, MPI_DOUBLE, ipe,
-     $                                  itag, MPI_COMM_WORLD,ierr)
+            CALL MPI_SEND(adot_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION,
+     $                             ipe,itag, MPI_COMM_WORLD,ierr)
+            CALL MPI_SEND(pot_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION,
+     $                                ipe,itag, MPI_COMM_WORLD,ierr)
          ELSE IF (myRank.EQ.ipe) THEN
-            CALL MPI_RECV(a_act_tmp_loc, 3*N, MPI_DOUBLE, rootRank,
-     $                           itag, MPI_COMM_WORLD,status,ierr)
-            CALL MPI_RECV(adot_act_tmp_loc, 3*N, MPI_DOUBLE, rootRank,
-     $                           itag, MPI_COMM_WORLD,status,ierr)
-            CALL MPI_RECV(pot_act_tmp_loc, 3*N, MPI_DOUBLE, rootRank,
-     $                           itag, MPI_COMM_WORLD,status,ierr)
+            CALL MPI_RECV(a_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION,
+     $                    rootRank,itag, MPI_COMM_WORLD,status,ierr)
+            CALL MPI_RECV(adot_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION, 
+     $                   rootRank,itag, MPI_COMM_WORLD,status,ierr)
+            CALL MPI_RECV(pot_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION, 
+     $                    rootRank,itag, MPI_COMM_WORLD,status,ierr)
          ENDIF
 
       ENDDO
@@ -113,17 +113,17 @@ C---  reading the needed data
       ENDIF
 
 C---  some data needs broadcasting
-      CALL MPI_Bcast(Timesteps, 1, MPI_INT,    rootRank,
+      CALL MPI_Bcast(Timesteps, 1, MPI_INTEGER,    rootRank,
      $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(t_disk,    1, MPI_DOUBLE,    rootRank,
+      CALL MPI_Bcast(t_disk,    1, MPI_DOUBLE_PRECISION,rootRank,
      $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(t_contr,   1, MPI_DOUBLE,    rootRank,
+      CALL MPI_Bcast(t_contr,   1, MPI_DOUBLE_PRECISION,rootRank,
      $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(t_bh,      1, MPI_DOUBLE,    rootRank,
+      CALL MPI_Bcast(t_bh,      1, MPI_DOUBLE_PRECISION,rootRank,
      $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(t_timing,  1, MPI_DOUBLE,    rootRank,
+      CALL MPI_Bcast(t_timing,  1, MPI_DOUBLE_PRECISION,rootRank,
      $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(t_restart, 1, MPI_DOUBLE,    rootRank,
+      CALL MPI_Bcast(t_restart, 1, MPI_DOUBLE_PRECISION,rootRank,
      $                                        MPI_COMM_WORLD,ierr)
 
 

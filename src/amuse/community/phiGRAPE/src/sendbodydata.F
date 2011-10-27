@@ -18,31 +18,40 @@ C---  local vars
 
 C---  Scatter the "local" vectors from "global" 
       
-      CALL MPI_Scatter(ind, n_loc, MPI_INT,    ind_loc, n_loc,
-     $                      MPI_INT,    rootRank, MPI_COMM_WORLD,ierr)
+      CALL MPI_Scatter(ind, n_loc, MPI_INTEGER,  ind_loc, n_loc,
+     $                  MPI_INTEGER, rootRank, MPI_COMM_WORLD,ierr)
      
-      CALL MPI_Scatter(m,   n_loc, MPI_DOUBLE, m_loc,   n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-      CALL MPI_Scatter(h,   n_loc, MPI_DOUBLE, h_loc,   n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-      CALL MPI_Scatter(t,   n_loc, MPI_DOUBLE, t_loc,   n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-      CALL MPI_Scatter(dt,  n_loc, MPI_DOUBLE, dt_loc,  n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-      CALL MPI_Scatter(x, 3*n_loc, MPI_DOUBLE, x_loc, 3*n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-      CALL MPI_Scatter(v, 3*n_loc, MPI_DOUBLE, v_loc, 3*n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+      CALL MPI_Scatter(m,   n_loc, MPI_DOUBLE_PRECISION, m_loc,   n_loc,
+     $                      MPI_DOUBLE_PRECISION, rootRank, 
+     $                      MPI_COMM_WORLD,ierr)
+      CALL MPI_Scatter(h,   n_loc, MPI_DOUBLE_PRECISION, h_loc,   n_loc,
+     $                      MPI_DOUBLE_PRECISION, rootRank, 
+     $                      MPI_COMM_WORLD,ierr)
+      CALL MPI_Scatter(t,   n_loc, MPI_DOUBLE_PRECISION, t_loc,   n_loc,
+     $                      MPI_DOUBLE_PRECISION, rootRank, 
+     $                      MPI_COMM_WORLD,ierr)
+      CALL MPI_Scatter(dt,  n_loc, MPI_DOUBLE_PRECISION, dt_loc,  n_loc,
+     $                      MPI_DOUBLE_PRECISION, rootRank, 
+     $                      MPI_COMM_WORLD,ierr)
+      CALL MPI_Scatter(x, 3*n_loc, MPI_DOUBLE_PRECISION, x_loc, 3*n_loc,
+     $                      MPI_DOUBLE_PRECISION, rootRank, 
+     $                      MPI_COMM_WORLD,ierr)
+      CALL MPI_Scatter(v, 3*n_loc, MPI_DOUBLE_PRECISION, v_loc, 3*n_loc,
+     $                      MPI_DOUBLE_PRECISION, rootRank, 
+     $                      MPI_COMM_WORLD,ierr)
 
 C---  this data only needs scattering when restarting
       IF (irestart.EQ.1) THEN
 
-         CALL MPI_Scatter(a, 3*n_loc, MPI_DOUBLE, a_loc, 3*n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-         CALL MPI_Scatter(adot, 3*n_loc, MPI_DOUBLE, adot_loc, 3*n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-         CALL MPI_Scatter(pot,  n_loc, MPI_DOUBLE, pot_loc,  n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+         CALL MPI_Scatter(a, 3*n_loc, MPI_DOUBLE_PRECISION, a_loc, 
+     $                     3*n_loc, MPI_DOUBLE_PRECISION, rootRank,
+     $                      MPI_COMM_WORLD,ierr)
+         CALL MPI_Scatter(adot, 3*n_loc, MPI_DOUBLE_PRECISION, adot_loc,
+     $                       3*n_loc, MPI_DOUBLE_PRECISION, rootRank, 
+     $                      MPI_COMM_WORLD,ierr)
+         CALL MPI_Scatter(pot,  n_loc, MPI_DOUBLE_PRECISION, pot_loc, 
+     $                       n_loc, MPI_DOUBLE_PRECISION, rootRank,
+     $                      MPI_COMM_WORLD,ierr)
       ENDIF
 
 #ifdef DEBUG

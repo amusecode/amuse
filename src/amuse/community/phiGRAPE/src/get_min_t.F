@@ -8,8 +8,8 @@
 #include <mpif.h>
 C---  some short cuts
       INTEGER   ierr
-C      INTEGER   MPI_INT,MPI_DOUBLE
-C      PARAMETER(MPI_INT=MPI_INTEGER,MPI_DOUBLE=MPI_DOUBLE_PRECISION)
+C      INTEGER   MPI_INT,MPI_DOUBLE_PRECISION
+C      PARAMETER(MPI_INT=MPI_INTEGER,MPI_DOUBLE_PRECISION=MPI_DOUBLE_PRECISION)
 #endif
 
 C---  check for active particles
@@ -24,8 +24,8 @@ C---  get local minimum of next time step
 
 #ifndef NOMPI
 C---  get global mininum of min_t_loc
-      CALL MPI_Allreduce(min_t_loc, min_t, 1, MPI_DOUBLE, MPI_MIN,
-     $                                        MPI_COMM_WORLD,ierr)
+      CALL MPI_Allreduce(min_t_loc, min_t, 1, MPI_DOUBLE_PRECISION,
+     $                                MPI_MIN, MPI_COMM_WORLD,ierr)
 #endif
 #ifdef NOMPI
       min_t = min_t_loc

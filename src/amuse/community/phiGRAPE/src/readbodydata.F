@@ -35,9 +35,9 @@ C--------------------------------------------------------------------
 
 C---  need to broadcast N and time_cur
 #ifndef NOMPI
-      CALL MPI_Bcast(N,        1, MPI_INT,    rootRank,
+      CALL MPI_Bcast(N,        1, MPI_INTEGER,    rootRank,
      $                                        MPI_COMM_WORLD,ierr)
-      CALL MPI_Bcast(time_cur, 1, MPI_DOUBLE, rootRank,
+      CALL MPI_Bcast(time_cur, 1, MPI_DOUBLE_PRECISION, rootRank,
      $                                        MPI_COMM_WORLD,ierr)
 #endif
       

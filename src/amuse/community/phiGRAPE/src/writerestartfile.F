@@ -57,19 +57,19 @@ C---  begin writing data from root
 C---  now send data from ipe to root 
 C---  arrays have to be reset on root later by reading back from file
          IF (myRank.EQ.ipe) THEN 
-            CALL MPI_SEND(a_act_tmp_loc, 3*N, MPI_DOUBLE, rootRank,
-     $                                  itag, MPI_COMM_WORLD,ierr)
-            CALL MPI_SEND(adot_act_tmp_loc, 3*N, MPI_DOUBLE, rootRank,
-     $                                  itag, MPI_COMM_WORLD,ierr)
-            CALL MPI_SEND(pot_act_tmp_loc, 3*N, MPI_DOUBLE, rootRank,
-     $                                  itag, MPI_COMM_WORLD,ierr)
+            CALL MPI_SEND(a_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION, 
+     $                      rootRank, itag, MPI_COMM_WORLD,ierr)
+            CALL MPI_SEND(adot_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION,
+     $                      rootRank, itag, MPI_COMM_WORLD,ierr)
+            CALL MPI_SEND(pot_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION, 
+     $                        rootRank,itag, MPI_COMM_WORLD,ierr)
          ELSE IF (myRank.EQ.rootRank) THEN
-            CALL MPI_RECV(a_act_tmp_loc, 3*N, MPI_DOUBLE, ipe,
-     $                           itag, MPI_COMM_WORLD,status,ierr)
-            CALL MPI_RECV(adot_act_tmp_loc, 3*N, MPI_DOUBLE, ipe,
-     $                           itag, MPI_COMM_WORLD,status,ierr)
-            CALL MPI_RECV(pot_act_tmp_loc, 3*N, MPI_DOUBLE, ipe,
-     $                           itag, MPI_COMM_WORLD,status,ierr)
+            CALL MPI_RECV(a_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION, 
+     $                        ipe,itag, MPI_COMM_WORLD,status,ierr)
+            CALL MPI_RECV(adot_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION,
+     $                        ipe,itag, MPI_COMM_WORLD,status,ierr)
+            CALL MPI_RECV(pot_act_tmp_loc, 3*N, MPI_DOUBLE_PRECISION, 
+     $                       ipe,itag, MPI_COMM_WORLD,status,ierr)
          ENDIF
 
 C---  write data from ipe 

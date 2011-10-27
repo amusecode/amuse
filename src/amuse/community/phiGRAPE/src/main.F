@@ -350,22 +350,30 @@ C---  also compute energy (change needed when output seperate)
          IF ((min_t.GE.t_disk) .OR. (min_t.GE.t_contr)) THEN
 
 #ifndef NOMPI
-            CALL MPI_Gather(m_loc,   n_loc, MPI_DOUBLE, m,   n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-            CALL MPI_Gather(t_loc,   n_loc, MPI_DOUBLE, t,   n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-            CALL MPI_Gather(dt_loc,  n_loc, MPI_DOUBLE, dt,  n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-            CALL MPI_Gather(x_loc, 3*n_loc, MPI_DOUBLE, x, 3*n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-            CALL MPI_Gather(v_loc, 3*n_loc, MPI_DOUBLE, v, 3*n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-            CALL MPI_Gather(pot_loc, n_loc, MPI_DOUBLE, pot, n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-            CALL MPI_Gather(a_loc, 3*n_loc, MPI_DOUBLE, a, 3*n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
-            CALL MPI_Gather(adot_loc, 3*n_loc, MPI_DOUBLE,adot, 3*n_loc,
-     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(m_loc,   n_loc, MPI_DOUBLE_PRECISION, m, 
+     $						n_loc,MPI_DOUBLE_PRECISION,
+     $                      rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(t_loc,   n_loc, MPI_DOUBLE_PRECISION, t, 
+     $                      n_loc,MPI_DOUBLE_PRECISION, 
+     $                      rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(dt_loc,  n_loc, MPI_DOUBLE_PRECISION, dt, 
+     $                      n_loc,MPI_DOUBLE_PRECISION, 
+     $                      rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(x_loc, 3*n_loc, MPI_DOUBLE_PRECISION, x, 
+     $                      3*n_loc,MPI_DOUBLE_PRECISION, 
+     $                      rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(v_loc, 3*n_loc, MPI_DOUBLE_PRECISION, v,
+     $                      3*n_loc,MPI_DOUBLE_PRECISION, 
+     $                      rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(pot_loc, n_loc, MPI_DOUBLE_PRECISION, pot, 
+     $                      n_loc,MPI_DOUBLE_PRECISION, 
+     $                      rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(a_loc, 3*n_loc, MPI_DOUBLE_PRECISION, a,
+     $                      3*n_loc,MPI_DOUBLE_PRECISION, 
+     $                      rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(adot_loc, 3*n_loc, MPI_DOUBLE_PRECISION,
+     $                      adot,3*n_loc,MPI_DOUBLE_PRECISION, 
+     $                      rootRank, MPI_COMM_WORLD,ierr)
 #endif
 
 
