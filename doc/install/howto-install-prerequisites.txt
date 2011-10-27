@@ -12,7 +12,7 @@ These are the packages AMUSE needs:
 
 * Python (version >= 2.6)
 * Numpy (version >= 1.3.0)
-* HDF (version 1.6.5 - 1.8.3)
+* HDF (version 1.6.5 - 1.8.x)
 * h5py (version >= 1.2.0)
 * MPI (OpenMPI or MPICH2)
 * mpi4py (version >= 1.0)

@@ -855,7 +855,7 @@ class TestMESA(TestWithMPI):
         rfile.close()
         
         print amuse_output
-        mesa_src_path = os.path.join(os.path.dirname(sys.modules[MESA.__module__].__file__), 'src')
+        mesa_src_path = os.path.join(os.path.dirname(sys.modules[MESA.__module__].__file__), 'src', 'mesa')
         mesa_star_path = os.path.join(mesa_src_path, 'star', 'test', 'star')
         
         #generate the inlist for the (stand-alone) MESA star run:
