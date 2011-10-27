@@ -6,13 +6,16 @@ import sys
 import numpy
 import math
 
-from interface import SeiInterface,Sei
+from amuse.community.sei.interface import SeiInterface
+from amuse.community.sei.interface import Sei
 
 from amuse import datamodel
-class TestSeinterface(TestWithMPI):
+
+class TestSeiInterface(TestWithMPI):
 
     def test0(self):
         instance = SeiInterface()
+        
         instance.initialization()
         instance.set_state(0,1,0,0,0,0,0)
         for i in range(0,10):

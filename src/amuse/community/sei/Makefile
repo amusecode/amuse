@@ -5,8 +5,9 @@ AMUSE_DIR?=../../../..
 
 MPICXX   ?= mpicxx
 CXX = $(MPICXX)
+CC = $(MPICC)
 
-CFLAGS   += -Wall -g
+CFLAGS   += -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
@@ -32,11 +33,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py SeiInterface -o $@
 
 sei_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	@echo "compiling SEI worker"
 	$(CXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@ -lm
-	@echo "success in compiling sei worker"
-
+	
 .cc.o: $<
-	@echo "compiling interface.cc"
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
-	@echo "success in compiling interface.cc"  

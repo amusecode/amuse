@@ -16,7 +16,12 @@ extern "C" {
 #endif
 #include "interface.h"
 
-void (*tt_operator)(double dt, struct particle *p);
+static double time;
+static double dt;
+
+static struct particle p;
+
+static void (*tt_operator)(double dt, struct particle *p);
 
 int initialization() {
   time = 0.0;
