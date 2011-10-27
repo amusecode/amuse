@@ -1,5 +1,7 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
 AMUSE_DIR?=../../../..
--include $(AMUSE_DIR)/config.mk
+-include ${AMUSE_DIR}/config.mk
 
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran

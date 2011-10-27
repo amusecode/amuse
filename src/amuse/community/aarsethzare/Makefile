@@ -1,3 +1,7 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
 
 MPIF90 ?= mpif90
 
@@ -10,8 +14,6 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 OBJS = interface.o
 
 CODELIB = src/libaarsethzare.a
-
-AMUSE_DIR ?=../../../..
 
 FSOPTS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets -I$(AMUSE_DIR)/lib/forsockets
 

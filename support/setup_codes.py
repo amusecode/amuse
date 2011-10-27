@@ -629,7 +629,7 @@ class BuildCodes(CodeCommand):
         
         level = log.INFO
         self.announce(
-            "{0} out of {1} codes built, {2} out of {3} libraries build".format(
+            "{0} out of {1} codes built, {2} out of {3} libraries built".format(
                 len(build), 
                 len(build) + len(not_build), 
                 len(lib_build), 

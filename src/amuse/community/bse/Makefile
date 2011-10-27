@@ -1,7 +1,10 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
 
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
-AMUSE_DIR ?=../../../..
 
 FSLIB ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
 FSINC ?= -I$(AMUSE_DIR)/lib/forsockets

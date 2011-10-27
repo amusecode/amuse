@@ -1,3 +1,8 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 MPICXX   ?= openmpicxx
 
 CFLAGS   += -Wall -g
@@ -15,10 +20,6 @@ INCLUDES = -I$(CUDA_SDK)/common/inc -I$(CUDA_TK)/include
 OBJS = interface.o libraryInterface.o
 
 CODELIB = src/libbonsai.a
-
-#CODELIB += $(LIBS)
-
-AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

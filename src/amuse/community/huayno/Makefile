@@ -1,3 +1,8 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 
@@ -20,8 +25,6 @@ STDCL = /home/inti/libraries/coprthr_old
 #---------------------------------------------
 
 OBJS = interface.o evolve.o evolve_shared.o evolve_cc.o evolve_kepler.o evolve_ok.o
-
-AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

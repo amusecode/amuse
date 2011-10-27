@@ -1,3 +1,8 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 PYTHON ?= python
@@ -16,8 +21,6 @@ AMUSE_OBJS_SELFGRAV = interface_$(VERSION).selfgrav_o
 AMUSE_OBJS_MHD = interface_$(VERSION).mhd_o
 
 CODELIB = $(ATHENA_DIR)/bin/libathena.a
-
-AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./downloadhttp.py

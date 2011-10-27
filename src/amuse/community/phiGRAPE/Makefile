@@ -1,3 +1,9 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
+
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 MPIF90 ?= mpif90
@@ -5,7 +11,6 @@ FC = $(MPIF90)
 CC = $(MPICC)
 GL_PATH ?= /data/pelupes/libraries/f90gl-1.2.11
 
-AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -28,10 +33,10 @@ CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
 CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
 
 CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
-CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcuda
+CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
 
-SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo-2
-OPENMP_CFLAGS ?= -fopenmp
+SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
+OPENMP_CFLAGS ?= 
 SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo $(OPENMP_CFLAGS)
 GRAPE6_LIBDIRS ?= -L$(GRAPE6)/lib
 

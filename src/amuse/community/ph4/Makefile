@@ -3,7 +3,11 @@
 # subsequent versions are hand-coded, so save a copy.  Note that
 # all compiles must use MPICXX, not CXX.
 
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
 AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 ALL	 = ph4_worker # ph4_worker_gpu
 OPT	  = -O4 -I$(AMUSE_DIR)/lib/stopcond
 
@@ -15,9 +19,8 @@ LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS)
 
 CUDA_TK  ?= /usr/local/cuda
 
-SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo-2
-OPENMP_CFLAGS ?= -fopenmp
-SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo $(OPENMP_CFLAGS)
+SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
+SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo
 
 # Boost is needed by sapporo.
 

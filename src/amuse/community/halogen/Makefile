@@ -1,3 +1,8 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 MPICXX   ?= mpicxx
 
 CFLAGS   += -Wall -g
@@ -7,8 +12,6 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 OBJ = interface.o
 
 CODELIB = src/libhalogen.a
-
-AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

@@ -1,3 +1,8 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 MPICXX ?= mpicxx
 
 SRCDIR		= src
@@ -10,8 +15,6 @@ PERIODIC_BUILDDIR = build_periodic
 PERIODIC_OPT := $(OPT) -DPERIODIC -DNOGRAVITY
 
 CXXFLAGS += -Wall -g -DTOOLBOX $(OPT)
-
-AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

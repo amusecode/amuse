@@ -1,3 +1,7 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
 
 # Makefile to build the worker code.  First draft was auto-generated;
 # subsequent versions are hand-coded, so save a copy.  Note that
@@ -15,8 +19,6 @@ LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi -lm $(MUSE_LD_FLAGS)
 OBJS = interface.o
 
 CODELIB = src/libsmallN.a
-
-AMUSE_DIR ?= ../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

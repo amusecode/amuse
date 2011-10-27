@@ -1,10 +1,14 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 PYTHON ?= python
 FC      = $(FORTRAN)
 export FC
 
-AMUSE_DIR ?=../../../..
 MESA_MAKE_DIR=./mesa_reqs
 INCLUDE_DIR=./src/mesa/star/make
 MESA_DIR = ./src/mesa

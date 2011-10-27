@@ -1,3 +1,8 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 MPICXX ?= mpicxx
 
 CFLAGS   += -Isrc/include -Isrc/include/star
@@ -7,8 +12,6 @@ LDFLAGS  += -Lsrc/node -lnode -Lsrc/std -lstd -lm
 AMUSE_OBJS = interface.o
 
 CODELIB = src/sstar/libsstar.a
-
-AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_SVN = ./downloadsvn.py

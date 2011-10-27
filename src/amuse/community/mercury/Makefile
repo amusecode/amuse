@@ -1,10 +1,13 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
 
 MPIF90 ?= openmpif90
 
 FC = $(MPIF90)
 SRC=src
 
-AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 LIBS=$(SRC)/libmercury.a

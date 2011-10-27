@@ -1,3 +1,8 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 MPICXX   ?= mpicxx
 CXX = $(MPICXX)
 
@@ -8,9 +13,6 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 OBJS = interface.o
 
 CODELIB = src/libsei.a
-
-AMUSE_DIR?=../../../..
-
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: sei_worker 
