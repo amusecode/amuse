@@ -47,6 +47,9 @@ clean:
 	$(RM) simplex_worker simplex_worker_gl *~
 	cd $(SRCDIR) && $(MAKE) clean
 
+distclean: clean
+	cd $(SRCDIR) && $(MAKE) veryclean
+	
 worker.cc: interface.py
 	$(CODE_GENERATOR) --type=c $< SimpleXInterface -o $@
 
