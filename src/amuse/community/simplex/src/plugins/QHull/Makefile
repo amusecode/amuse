@@ -11,7 +11,7 @@
 #
 
 MPICC ?= mpicc
-CFLAGS ?= -g -O2 -fno-strict-aliasing -Wall
+CFLAGS += -fno-strict-aliasing 
 #CFLAGS ?= -g  -Wall
 
 # OBJS in execution frequency order.  CFILES after qhull.c are alphabetical
