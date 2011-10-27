@@ -52,7 +52,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     @property
     def default_path_to_MESA_data(self):
         dir = os.path.dirname(__file__)
-        return os.path.join(dir, 'src', 'data')
+        return os.path.join(dir, 'src', 'mesa', 'data')
 
     @legacy_function
     def set_MESA_paths():
