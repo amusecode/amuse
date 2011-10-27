@@ -26,9 +26,10 @@ PATCH_FILES = $(PYTHON) ./patch_files.py
 all: mpiamrvac_worker 
 
 ifdef DOWNLOAD_CODES
-$(CODEDIR): download
+$(CODEDIR)/makefile:
+	make -C . download
 else
-$(CODEDIR):
+$(CODEDIR)/makefile:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -53,6 +54,7 @@ clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod
 	$(RM) *~ mpiamrvac_worker worker_code.f90
 	-make -C $(CODEDIR) clean
+	$(RM) -f $(CODELIB) $(CODELIB2D)
 	
 distclean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod
@@ -60,11 +62,11 @@ distclean:
 	$(RM) -Rf src
 	$(RM) -Rf .pc
 
-$(CODELIB): $(CODEDIR)
+$(CODELIB): $(CODEDIR)/makefile
 	cd src/mpiamrvac/src; ./setamrvac -d=33 -g=14,14,14 -phi=3 -z=2 -p=hd -u=amuse -cp=openmpi
 	make -C $(CODEDIR) clean amrvac $(LIBNAME) F90FLAGS="$(FFLAGS)"
 
-$(CODELIB2D): $(CODEDIR)
+$(CODELIB2D): $(CODEDIR)/makefile
 	cd src/mpiamrvac/src; ./setamrvac -d=22 -g=14,14 -phi=3 -z=2 -p=hd -u=amuse -cp=openmpi
 	make -C $(CODEDIR) clean amrvac $(LIBNAME2D) F90FLAGS="$(FFLAGS)"
 	

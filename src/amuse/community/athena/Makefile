@@ -36,9 +36,10 @@ FFTWINC = -I/usr/include
 all: athena_worker 
 
 ifdef DOWNLOAD_CODES
-$(ATHENA_DIR): download
+$(ATHENA_DIR)/Makefile:
+	make -C . download
 else
-$(ATHENA_DIR):
+$(ATHENA_DIR)/Makefile:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -72,7 +73,7 @@ distclean: clean
 	$(RM) *~ athena_worker
 	$(RM) -Rf src
 
-$(CODELIB): $(ATHENA_DIR) 
+$(CODELIB): $(ATHENA_DIR)/Makefile
 	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr 
 	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
 	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)

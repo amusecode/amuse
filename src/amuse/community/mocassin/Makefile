@@ -36,9 +36,10 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 all: mocassin_worker 
 
 ifdef DOWNLOAD_CODES
-$(CODEDIR): download
+$(CODEDIR)/makefile:
+	make -C . download
 else
-$(CODEDIR):
+$(CODEDIR)/makefile:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -69,14 +70,14 @@ distclean: clean
 	$(RM) -Rf .pc
 	$(RM) -Rf src.*
 
-$(CODELIB): $(CODEDIR)
+$(CODELIB): $(CODEDIR)/makefile
 	make -C $(CODEDIR) clean
 	make -C $(CODEDIR) all
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MocassinInterface -o $@
 
-mocassin_worker:  $(CODEDIR) worker_code.f90 $(CODELIB) $(OBJS) 
+mocassin_worker:  worker_code.f90 $(CODELIB) $(OBJS) 
 	$(MPIF90) $(FFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) -o $@
 
 %.mod %.o: %.f90
