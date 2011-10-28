@@ -79,6 +79,16 @@ Testing the build
         
         > mpd &
 
+    If the mpd deamon only complains with 'no mpd.conf', these
+    are the steps to take, to create a mpd.conf file:
+    
+    .. code-block:: sh
+        
+        > echo 'MPD_SECRETWORD=secret' > ~/.mpd.conf
+        > chmod 600 ~/.mpd.conf
+        
+    Please make sure to replace '''secret'''.
+    
     After starting `mpd` we can start the tests.
     
 The tests are run using the nosetests program.

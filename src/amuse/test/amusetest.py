@@ -6,6 +6,7 @@ import sys
 import inspect
 
 from amuse.support import exceptions
+from amuse.support import literature
 from amuse.units.si import no_unit
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import to_quantity
@@ -16,6 +17,9 @@ class SkipTest(exceptions.AmuseException):
 class TestCase(unittest.TestCase):
     PRECISION = int(round(numpy.log10(2.0/(numpy.finfo(numpy.double).eps))))-1
     
+    def setUp(self):
+        literature.TrackLiteratureReferences.suppress_output()
+        
     def _check_comparable(self, first, second):
         if isinstance(first, Quantity) is not isinstance(second, Quantity):
             # One exception: quantity with none_unit CAN be compared with non-quantity:
@@ -205,6 +209,7 @@ class TestCase(unittest.TestCase):
 
 class TestWithMPI(TestCase):
     def setUp(self):
+        TestCase.setUp(self)
         from amuse.rfi.core import is_mpd_running
         self.assertTrue(is_mpd_running(), "MPICH2 mpd deamon process not running, cannot run this test as it requires MPI")
             

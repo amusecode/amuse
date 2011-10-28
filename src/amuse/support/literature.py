@@ -40,6 +40,10 @@ class TrackLiteratureReferences(object):
         sys.excepthook = self.exception_hook
         atexit.register(self.atexit_hook)
         
+    @classmethod
+    def suppress_output(cls):
+        cls.default().must_show_literature_references_atexit = False
+        
     def register_class(self, cls):
         self.registered_classes.add(cls)
     
