@@ -23,6 +23,10 @@ AC_DEFUN([AX_CUDA],[
         ],
         [WITH_CUDA=no]
     )
+    AC_ARG_WITH(
+        cuda-libdir, [  --with-cuda-libdir=PFX   Directory where libcuda.so is installed (optional)],
+            cuda_libdir="$withval", cuda_libdir=".")
+            
     AC_ARG_VAR([CUDA_SDK], [CUDA sdk directory])
     AC_ARG_VAR([CUDA_TK], [CUDA toolkit directory])
 
@@ -77,7 +81,7 @@ AC_DEFUN([AX_CUDA],[
         AC_FIND_LIB(
             [cuda],
             [main],
-            [/usr/lib /usr/lib64 /usr/lib/nvidia /usr/lib64/nvidia  $CUDA_TK/lib $CUDA_TK/lib64],
+            [$cuda_libdir /usr/lib /usr/lib64 /usr/lib/nvidia /usr/lib64/nvidia /usr/lib/nvidia-current /usr/lib64/nvidia-current $CUDA_TK/lib $CUDA_TK/lib64],
             [CUDA_LIBS="$LIBS $CUDART_LIBS"],
             [AC_MSG_ERROR([cannot find cuda library])]
         )

@@ -1392,6 +1392,7 @@ Optional Packages:
   --with-jdk=PATH         Try to use 'PATH/include' to find the JNI headers.
                           If PATH is not specified, look for a Java
                           Development Kit at JAVA_HOME.
+  --with-cuda-libdir=PFX   Directory where libcuda.so is installed (optional)
   --with-sapporo          Use sapporo library in given directory
   --with-fftw=PFX         Prefix where FFTW has been installed
   --with-gsl=PFX   Prefix where GSL is installed (optional)
@@ -5144,6 +5145,15 @@ else
 fi
 
 
+# Check whether --with-cuda-libdir was given.
+if test "${with_cuda_libdir+set}" = set; then
+  withval=$with_cuda_libdir; cuda_libdir="$withval"
+else
+  cuda_libdir="."
+fi
+
+
+
 
 
     if test x"$WITH_CUDA" != xno; then
@@ -5435,7 +5445,7 @@ echo $ECHO_N "checking directories for -lcuda... $ECHO_C" >&6; }
     if { as_var=ac_cv_lib_$ac_lib_var; eval "test \"\${$as_var+set}\" = set"; }; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  for dir in "" /usr/lib /usr/lib64 /usr/lib/nvidia /usr/lib64/nvidia  $CUDA_TK/lib $CUDA_TK/lib64
+  for dir in "" $cuda_libdir /usr/lib /usr/lib64 /usr/lib/nvidia /usr/lib64/nvidia /usr/lib/nvidia-current /usr/lib64/nvidia-current $CUDA_TK/lib $CUDA_TK/lib64
     do
         ac_cache_save_LIBS="$LIBS"
         if test "X$dir" = "X"; then
