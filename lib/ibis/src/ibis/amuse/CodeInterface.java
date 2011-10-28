@@ -335,11 +335,14 @@ public abstract class CodeInterface implements RegistryEventHandler, Runnable {
 
         CodeInterface codeInterface = null;
         PoolInfo poolInfo = null;
+        
 
         try {
             logger.info("Starting worker " + id + " running " + codeName);
 
             poolInfo = new PoolInfo(id, nrOfNodes);
+            //start monitoring mpi, offer as MBean
+            new MPIProfilingCollector(poolInfo.getWorkerIbisList(nrOfWorkers));
 
             if (poolInfo.getRank() == 0) {
                 if (jni) {

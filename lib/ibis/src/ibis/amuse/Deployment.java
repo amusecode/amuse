@@ -42,7 +42,7 @@ public class Deployment {
                 true);
 
         if (useGui) {
-            gui = new GUI(deploy, workspace, Mode.MONITOR, true, logos);
+            gui = new GUI(deploy, workspace, Mode.MONITORING_ONLY, true, logos);
         } else {
             gui = null;
         }

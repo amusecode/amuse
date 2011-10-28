@@ -2,6 +2,7 @@ package ibis.amuse;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -94,7 +95,53 @@ public class PoolInfo {
     public String[] getHostnames() {
         return hostnames;
     }
-
+    
+    String[] getWorkerHostList(int nrOfWorkers) throws Exception {
+        ArrayList<String> result = new ArrayList<String>();
+   
+        
+        for(int i = 0; i < hostnames.length; i++) {
+            //number of processes per node
+            int workerCount = nrOfWorkers / hostnames.length;
+            //nrOfWorkers not divideble by number of hosts. see if this is a "remainder" node with an extra worker
+            if (i < nrOfWorkers % hostnames.length) {
+                workerCount++;
+            }
+            for(int j = 0; j < workerCount; j++) {
+                result.add(hostnames[i]);
+            }
+        }
+        if (result.size() != nrOfWorkers) {
+            throw new Exception("error in creating host file. Size is " + result.size() + " but should be " + nrOfWorkers);
+        }
+        
+        return result.toArray(new String[0]);
+        
+    }
+    
+    IbisIdentifier[] getWorkerIbisList(int nrOfWorkers) throws Exception {
+        ArrayList<IbisIdentifier> result = new ArrayList<IbisIdentifier>();
+   
+        
+        for(int i = 0; i < pool.length; i++) {
+            //number of processes per node
+            int workerCount = nrOfWorkers / pool.length;
+            //nrOfWorkers not divideble by number of hosts. see if this is a "remainder" node with an extra worker
+            if (i < nrOfWorkers % pool.length) {
+                workerCount++;
+            }
+            for(int j = 0; j < workerCount; j++) {
+                result.add(pool[i]);
+            }
+        }
+        if (result.size() != nrOfWorkers) {
+            throw new Exception("error in creating host file. Size is " + result.size() + " but should be " + nrOfWorkers);
+        }
+        
+        return result.toArray(new IbisIdentifier[0]);
+        
+    }
+    
     public void terminate() {
         try {
             ibis.registry().terminate();

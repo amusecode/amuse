@@ -1,0 +1,6 @@
+#!/bin/sh
+
+#use this script on a 32-bit machine
+
+exec java -Xmx500M -classpath .:lib/*:lib:deploy/lib/* -Dgat.adaptor.path=deploy/lib/adaptors -Djava.library.path=deploy/lib/native_libraries32 ibis.amuse.Daemon $@
+

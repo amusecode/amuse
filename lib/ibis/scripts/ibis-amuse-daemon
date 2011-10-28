@@ -1,4 +1,4 @@
 #!/bin/sh
 
-exec java -Xmx500M -classpath .:lib/*:lib:deploy/lib/* -Dgat.adaptor.path=deploy/lib/adaptors -Djava.library.path=deploy/lib/natives ibis.amuse.Daemon $@
+exec java -Xmx500M -classpath .:lib/*:lib:deploy/lib/* -Dgat.adaptor.path=deploy/lib/adaptors -Djava.library.path=deploy/lib/native_libraries ibis.amuse.Daemon $@
 
