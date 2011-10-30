@@ -824,7 +824,8 @@ You can install all the packages described below in one go with::
     
 After installing you will need to configure the code with the following line::
 
-    > ./configure MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90
+    > ./configure MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90 \
+                  FC=gfortran-mp-4.4 PYTHON=python2.6
     
 
 GCC
