@@ -9,6 +9,7 @@ AC_CONFIG_FILES([build.py],[chmod +x build.py])
 AC_PROG_CC()
 AC_PROG_CXX()
 AC_PROG_FC([],95)
+AS_IF([test "x$FC" = "x"], [AC_MSG_ERROR([No fortran compiler found, please set the FC flag])])
 AC_ARG_VAR([PYTHON], [Python interpreter])
 
 
