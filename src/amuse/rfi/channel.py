@@ -1065,7 +1065,8 @@ class SocketMessage(AbstractMessage):
         result = []
         
         while nbytes > 0:
-            bytes = thesocket.recv(nbytes, socket.MSG_WAITALL)
+	    chunk = min(nbytes, 10240)
+            bytes = thesocket.recv(chunk, socket.MSG_WAITALL)
             
             if len(bytes) == 0:
                 raise exceptions.CodeException("lost connection to code")
@@ -1309,7 +1310,7 @@ class SocketChannel(MessageChannel):
         server_socket.bind(('', 0))
         server_socket.listen(1)
         
-        logging.getLogger("channel").debug("starting socket worker process")
+        #logging.getLogger("channel").debug("starting socket worker process")
     
         
         #set arguments to name of the worker, and port number we listen on 
@@ -1439,6 +1440,8 @@ class SocketChannel(MessageChannel):
         if message.error:
             raise exceptions.CodeException("Error in worker: " + message.strings[0])
         
+        #logging.getLogger("channel").info("received message for function %d", tag)
+
         return message.to_result(handle_as_array)
 
 class IbisChannel(MessageChannel):
