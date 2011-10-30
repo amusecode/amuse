@@ -26,7 +26,11 @@ AC_DEFUN([AX_FFTW],[
                 FFTW_LIBS=""
                 FFTW_FLAGS=""
                 FOUND_FFTW="no"
-
+                if test x$fftw_prefix == x; then
+                   if test x$PREFIX != x; then
+		      fftw_prefix=$PREFIX 
+                   fi  
+                fi
                 if test x$fftw_prefix != x; then
                     ac_FFTW_CFLAGS="-I$fftw_prefix/include"
                     ac_FFTW_LDOPTS="-L$fftw_prefix/lib"
@@ -49,8 +53,8 @@ AC_DEFUN([AX_FFTW],[
                             [AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct])]
                             )
                     LIBS="$save_LIBS"
-                    
-                else
+	fi
+	if test x$FOUND_FFTW != xyes; then
                     AC_CHECK_HEADER(
                         [fftw3.h],
                         [FFTW_FLAGS=""
@@ -65,8 +69,7 @@ AC_DEFUN([AX_FFTW],[
                         FOUND_FFTW="no"
                         AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c). Check if libfftw3 is installed and if the version is correct])]
                     )
-                fi
-
+		fi
                 
                
             ])
