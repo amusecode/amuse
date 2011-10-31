@@ -3,11 +3,11 @@
 .f.o:
 	$(F77) $(FFLAGS) -c $*.f
 
-F77=gfortran
-CC=gcc
+F77?=gfortran
+CC?=gcc
 #F77=ifort
 #CC=icc
-CFLAGS = -O3
+#CFLAGS = -O3
 #CFLAGS = -O -DRINGASCII -DASCII
 LIBS = -lm
 #These flags for SunOS:
@@ -16,7 +16,7 @@ LIBS = -lm
 
 #Replace FFLAGS and FLIBS above with the following for linux:
 #FFLAGS = -ffixed-line-length-0 -O -fno-backslash
-FFLAGS = -O3 -132 -nofor-main
+FFLAGS += -O3 -132 -nofor-main
 #FLIBS  = -L/usr/X11R6/lib64/ -lX11
 #FLIBS  = -L/usr/X11R6/lib/ -lX11
 
@@ -58,8 +58,9 @@ toascii: toascii.o
 
 #Parallel versions
 
-MPICC=mpicc
-MPIF77=mpif90
+MPICC?=mpicc
+MPIFC?=mpif90
+MPIF77=$(MPIFC)
 
 PARPROGS=pgendisk pgenhalo pgenbulge
 parallel: $(PARPROGS)
