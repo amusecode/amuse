@@ -3,7 +3,7 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-GFORTRAN_VERSION?=$(shell gfortran -dumpversion)
+GFORTRAN_VERSION?=$(shell $(FC) -v 2>&1 |  grep gcc\ version | cut -d\  -f3)
 GFORTRAN_MAJOR_MINOR=$(shell echo $(GFORTRAN_VERSION) | cut -s -d'.' -f1,2)
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
