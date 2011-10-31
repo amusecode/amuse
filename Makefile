@@ -63,8 +63,12 @@ ctags:
 	find src -name "*.cpp" | xargs ctags -a
 
 release: distclean
+	sed 's/version = .*/version = "$(VERSION)",/' < setup.py > releasesetup.py
+	cp setup.py setup.py.bck
+	mv releasesetup.py setup.py 
 	make -C doc release
 	python setup.py  -q sdist
+	cp setup.py.bck setup.py
 
 nightly:
 	make -C doc release
