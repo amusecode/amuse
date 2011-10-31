@@ -707,7 +707,9 @@ nbody_descriptor jdata::integrate_multiple(vector<int> jcomp,
 
     int ncomp = (int)jcomp.size();
     int icomp[ncomp], mcomp[ncomp], total_mass = 0;
-    vec rel_pos[ncomp], rel_vel[ncomp], cmpos = 0, cmvel = 0;
+    vec * rel_pos = new vec[ncomp];
+    vec * rel_vel = new vec[ncomp];
+    vec cmpos = 0, cmvel = 0;
     for (int i = 0; i < ncomp; i++) {
 	int j = jcomp[i];
 	real mj = mass[j];
@@ -787,7 +789,8 @@ nbody_descriptor jdata::integrate_multiple(vector<int> jcomp,
     // The state of the input tree after smallN_evolve isn't quite
     // what we want.  Construct a tree reflecting the hierarchical
     // structure of the system and delete b.
-
+    delete rel_vel;
+    delete rel_pos;
     s.b = get_tree(b);
     rmtree(b);
     return s;
