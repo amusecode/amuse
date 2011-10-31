@@ -636,19 +636,19 @@ class TestMESA(TestWithMPI):
         print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
         instance.evolve_model()
         self.assertAlmostEqual(instance.particles.age, [6415.0029, 6415.0029, 6415.0029] | units.yr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [81044.2541, 21213.2034, 7698.0035] | units.yr, 3)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, [81044.2541, 21213.2034, 7698.0035] | units.yr, 6)
         self.assertAlmostEqual(instance.model_time, 6415.0029 | units.yr, 3)
         
         print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
         instance.evolve_model(15000 | units.yr)
         self.assertAlmostEqual(instance.particles.age, [15000.0, 15000.0, 15000.0] | units.yr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [65327.1194, 25455.8441, 7589.0067] | units.yr, 3)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, [65327.1194, 25455.8441, 7589.0067] | units.yr, 4)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3)
         
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
-        self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([65327.1194, 25455.8441, 7589.0067] | units.yr), 3)
-        self.assertAlmostEqual(instance.particles.time_step, [78392.5433, 30547.0129, 9106.8081] | units.yr, 3)
+        self.assertAlmostRelativeEquals(instance.particles.age, (15000 | units.yr) + ([65327.1194, 25455.8441, 7589.0067] | units.yr), 5)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, [78392.5433, 30547.0129, 9106.8081] | units.yr, 4)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
         instance.stop()
     
