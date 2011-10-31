@@ -1,3 +1,42 @@
+
+AC_DEFUN([AX_GFORTRAN_OPTION], [
+if test "x$GCC" = "xyes"; then
+	AC_MSG_CHECKING([if gfortran accepts $2 option])
+   	if AC_TRY_COMMAND($FC $2) >/dev/null 2>&1; then
+   		$1=$3
+   	        AC_MSG_RESULT([yes])
+   	else
+   		$1=$4
+   		AC_MSG_RESULT([no])
+   	fi
+else
+	unset $1
+        AC_MSG_RESULT([sorry, no gcc available])
+fi
+])
+
+
+
+AC_DEFUN([AX_GFORTRAN_VERSION], [
+  GFORTRAN_VERSION=""
+  AX_GFORTRAN_OPTION(ax_gcc_version_option, [-dumpversion],
+     [yes],
+     [no])
+  AS_IF([test "x$GCC" = "xyes"],[
+    AS_IF([test "x$ax_gcc_version_option" != "xno"],[
+      AC_CACHE_CHECK([gfortran version],[ax_cv_gcc_version],[
+        ax_cv_gcc_version="`$FC -dumpversion`"
+        AS_IF([test "x$ax_cv_gcc_version" = "x"],[
+          ax_cv_gcc_version=""
+        ])
+      ])
+      GFORTRAN_VERSION=$ax_cv_gcc_version
+    ])
+  ])
+  AC_SUBST([GFORTRAN_VERSION])
+])
+
+
 #
 # AC_FIND_LIB(LIBRARY, FUNCTION, LIST-OF-DIRECTORIES [, ACTION-IF-FOUND
 #		[, ACTION-IF-NOT-FOUND [, OTHER-LIBRARIES ]]])

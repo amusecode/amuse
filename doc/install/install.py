@@ -239,7 +239,7 @@ class InstallPrerequisites(object):
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
         else:
-            command.append('--with-pm=mpd:hydra')
+            command.append('--with-pm=mpd:hydra:gforker')
         if not self.fortran90_compiler is None:
             command.append('FC=' + self.fortran90_compiler)
         
@@ -406,8 +406,9 @@ class InstallPrerequisites(object):
 class InstallPrerequisitesOnOSX(InstallPrerequisites):
 
     def mpich2_build(self, path):
+        
         commands = []
-        commands.append([
+        command = [
           './configure',
           '--prefix='+self.prefix,
           '--enable-fc',
@@ -416,7 +417,13 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
           '--with-pm=mpd',
           '--enable-sharedlibs=osx-gcc',
           '--with-device=ch3:sock',
-        ])
+        ]
+        if self.use_hydra_process_manager:
+            command.append('--with-pm=hydra:mpd:gforker')
+        else:
+            command.append('--with-pm=mpd:hydra:gforker')
+            
+        commands.append(command)
         commands.append(['make'])
         commands.append(['make', 'install'])
         for x in commands:

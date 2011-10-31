@@ -3,6 +3,8 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
+GFORTRAN_VERSION?=$(shell gfortran -dumpversion)
+GFORTRAN_MAJOR_MINOR=$(shell echo $(GFORTRAN_VERSION) | cut -s -d'.' -f1,2)
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 PYTHON ?= python
@@ -33,7 +35,10 @@ DOWNLOAD_FROM_SVN = $(PYTHON) ./build_mesa.py download
 
 all:	mesa_worker
 
-
+ifeq (4.6, $(GFORTRAN_MAJOR_MINOR))
+$(MESA_DIR)/install:
+		$(error The current version of MESA in AMUSE cannot be build with gfortran 4.6)
+else
 ifdef DOWNLOAD_CODES
 $(MESA_DIR)/install:
 	make -C . download
@@ -52,6 +57,7 @@ $(MESA_DIR)/install:
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""
 		@make -s --no-print-directory -C . raise_error
+endif
 endif
 
 download:

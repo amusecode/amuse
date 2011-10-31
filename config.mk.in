@@ -8,6 +8,7 @@ PYTHON=@PYTHON@
 CXX=@CXX@
 CC=@CC@
 FC=@FC@
+GFORTRAN_VERSION=@GFORTRAN_VERSION@
 
 #
 # Default flags, append to these in the makefiles
