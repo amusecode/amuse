@@ -125,7 +125,12 @@ class glass_unit_cube(object):
         del sph  
         return x,y,z
 
-
+def uniform_unit_cube(targetN, base_grid=None):
+    if base_grid is None:
+        return uniform_random_unit_cube(targetN)
+    else:
+        return base_grid(targetN)
+    
 class uniform_unit_sphere(object):
     def __init__(self,targetN, base_grid=None):
         cube_sphere_ratio=4/3.*numpy.pi*0.5**3

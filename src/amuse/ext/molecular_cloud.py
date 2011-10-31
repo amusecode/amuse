@@ -4,8 +4,10 @@ from math import sqrt
 
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import uniform_unit_sphere
+from amuse.ext.evrard_test import uniform_unit_cube
 from amuse.units import constants
 from amuse.units import nbody_system
+from amuse.units import generic_unit_converter
 from amuse.units import units
 
 from amuse import datamodel
@@ -233,9 +235,75 @@ class molecular_cloud(object):
 
         return result
 
+class constant_density_div_free_power_law_v_ism_cube(object):
+    def __init__(self,nf=32,power=-3.,targetN=10000, eketh_ratio=1.,
+                   convert=None,seed=None,base_grid=None):
+        self.nf=nf
+        self.power=power
+        self.targetN=targetN
+        self.convert=convert
+        self.seed=seed
+        self.base_grid=base_grid
+        self.eketh_ratio=eketh_ratio
+      
+    def new_model(self):
+        if self.seed is not None:
+            numpy.random.seed(self.seed)
+        vx_field=random_field(self.nf,self.power)
+        vy_field=random_field(self.nf,self.power)
+        vz_field=random_field(self.nf,self.power)
+
+        vx_field,vy_field,vz_field=make_div_free(self.nf,vx_field,vy_field,vz_field)
+
+        base_cube=uniform_unit_cube(self.targetN,base_grid=self.base_grid)
+        x,y,z=base_cube.make_xyz()
+        self.actualN=len(x)
+        vx=interpolate_trilinear(x,y,z,vx_field)
+        vy=interpolate_trilinear(x,y,z,vy_field)
+        vz=interpolate_trilinear(x,y,z,vz_field)
+        mass=numpy.ones_like(x)/self.actualN
+
+        Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
+        vfac=sqrt(1/self.eketh_ratio/Ek)
+        vx=vx*vfac
+        vy=vy*vfac
+        vz=vz*vfac
+        Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
+        print Ek
+
+        internal_energy=numpy.ones_like(x)
+      
+        return (mass,x,y,z,vx,vy,vz,internal_energy)
+
+    @property
+    def result(self):
+        mass,x,y,z,vx,vy,vz,u = self.new_model()
+        result = datamodel.Particles(self.actualN)
+        result.mass = nbody_system.mass.new_quantity(mass)
+        result.x = nbody_system.length.new_quantity(x)
+        result.y = nbody_system.length.new_quantity(y)
+        result.z = nbody_system.length.new_quantity(z)
+        result.vx = nbody_system.speed.new_quantity(vx)
+        result.vy = nbody_system.speed.new_quantity(vy)
+        result.vz = nbody_system.speed.new_quantity(vz)
+        result.u = (nbody_system.speed**2).new_quantity(u)
+
+        if not self.convert is None:
+            result = datamodel.ParticlesWithUnitsConverted(result, self.convert.as_converter_from_si_to_generic())
+            result = result.copy_to_memory()
+
+        return result
+
+def ism_cube(L=10| units.parsec,density=(1.14 | units.amu/units.cm**3), u=50 | (units. kms)**2):
+    
+    total_mass=density*L**3
+    internalE=total_mass*u
+    convert = generic_unit_converter.ConvertBetweenGenericAndSiUnits(total_mass, L, internalE)
+    return constant_density_div_free_power_law_v_ism_cube(convert=convert)
+
+
 if __name__=="__main__":
-    convert_nbody = nbody_system.nbody_to_si(10000. | units.MSun, 1. | units.parsec)
-    cloud=molecular_cloud(convert_nbody=convert_nbody)
+    cloud=ism_cube()
     parts=cloud.result
     print parts[0].u**0.5
     print len(parts)*parts[0].mass.in_(units.MSun)
@@ -245,7 +313,7 @@ if __name__=="__main__":
     print 'Temp:', (gamma1*min(parts.u)*mu/constants.kB).in_(units.K)
 
     total_mass=10000. | units.MSun
-    radius=1. | units.parsec
+    radius=10. | units.parsec
     print 'dens:',(total_mass*3/4./3.1415/radius**3).in_(units.amu/units.cm**3) 
   
   
