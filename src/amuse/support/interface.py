@@ -680,10 +680,16 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
 
 
     def add_vector_parameter(self, name, description, parameter_names):
+        default_value = quantities.AdaptingVectorQuantity()
+        for parameter_name in parameter_names:
+            for defined_parameter in self.definitions:
+                if defined_parameter.name == parameter_name:
+                    default_value.append(defined_parameter.default_value)
         definition = parameters.VectorParameterDefinition(
             name,
             description,
             parameter_names,
+            default_value
         )
         self.definitions.append(definition)
     

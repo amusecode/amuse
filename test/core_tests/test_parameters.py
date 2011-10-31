@@ -4,9 +4,11 @@ from amuse.support.exceptions import AmuseException
 
 import warnings
 from amuse.support import exceptions
-from amuse.units import nbody_system
+from amuse.units import nbody_system, generic_unit_system, generic_unit_converter
 from amuse.units import units
 from amuse.datamodel import parameters
+from amuse.support.interface import HandleParameters
+
 class TestMethodParameterDefintions(amusetest.TestCase):
     def test1(self):
         class TestModule(object):
@@ -681,7 +683,8 @@ class TestParameters(amusetest.TestCase):
         paramer_definition3 = parameters.VectorParameterDefinition(
             "test_vector",
             "vector of parameters",
-            ["test_name", "test_name2"]
+            ["test_name", "test_name2"],
+            [11.0, 12.0] | units.m
         )
         
         class TestModule(object):
@@ -706,4 +709,106 @@ class TestParameters(amusetest.TestCase):
         self.assertEquals(instance.x, 3 | units.m)
         self.assertEquals(instance.y, 4 | units.m)
     
+    def test10(self):
+        print "Testing ParametersWithUnitsConverted on vector parameters"
+        definitions = []
+        for par_name in ["length_x", "length_y", "length_z"]:
+            definitions.append(parameters.ModuleMethodParameterDefinition(
+                "get_"+par_name,
+                "set_"+par_name,
+                par_name,
+                "a test parameter",
+                10.0 | generic_unit_system.length
+            ))
+        
+        definitions.append(parameters.VectorParameterDefinition(
+            "mesh_length",
+            "length of the model in the x, y and z directions",
+            ("length_x", "length_y", "length_z"),
+            [10, 10, 10] | generic_unit_system.length
+        ))
+        
+        class TestModule(object):
+            x = 123.0 | generic_unit_system.length
+            y = 456.0 | generic_unit_system.length
+            z = 789.0 | generic_unit_system.length
+            
+            def get_length_x(self):
+                return self.x
+            def set_length_x(self, value):
+                self.x = value
+            def get_length_y(self):
+                return self.y
+            def set_length_y(self, value):
+                self.y = value
+            def get_length_z(self):
+                return self.z
+            def set_length_z(self, value):
+                self.z = value
+        
+        o = TestModule()
+        x = parameters.Parameters(definitions, o)
+        
+        self.assertTrue("mesh_length" in str(x))
+        self.assertTrue("[123.0, 456.0, 789.0] length" in str(x))
+        
+        converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(2.0 | units.m, 4.0 | units.kg, 6.0 | units.s)
+        y = parameters.ParametersWithUnitsConverted(
+                x,
+                converter.as_converter_from_si_to_generic()
+            )
+        self.assertTrue("mesh_length" in str(y))
+        self.assertTrue("[246.0, 912.0, 1578.0] m" in str(y))
     
+    
+    def test11(self):
+        print "Testing ParametersWithUnitsConverted on vector parameters, using add_vector_parameter"
+        
+        class TestModule(object):
+            x = 123.0 | generic_unit_system.length
+            y = 456.0 | generic_unit_system.length
+            z = 789.0 | generic_unit_system.length
+            
+            def get_length_x(self):
+                return self.x
+            def set_length_x(self, value):
+                self.x = value
+            def get_length_y(self):
+                return self.y
+            def set_length_y(self, value):
+                self.y = value
+            def get_length_z(self):
+                return self.z
+            def set_length_z(self, value):
+                self.z = value
+        
+        o = TestModule()
+        parameters_handler = HandleParameters(o)
+        parameters_handler.add_vector_parameter(
+            "mesh_length",
+            "length of the model in the x, y and z directions",
+            ("length_x", "length_y", "length_z")
+        )
+        for par_name in ["length_x", "length_y", "length_z"]:
+            parameters_handler.add_method_parameter(
+                "get_"+par_name, 
+                "set_"+par_name,
+                par_name, 
+                "a test parameter", 
+                default_value = 10.0 | generic_unit_system.length,
+            )
+        
+        x = parameters_handler.get_attribute(None, None)
+        self.assertTrue("mesh_length" in str(x))
+        self.assertTrue("[123.0, 456.0, 789.0] length" in str(x))
+        
+        converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(2.0 | units.m, 4.0 | units.kg, 6.0 | units.s)
+        y = parameters.ParametersWithUnitsConverted(
+                x,
+                converter.as_converter_from_si_to_generic()
+            )
+        self.assertTrue("mesh_length" in str(y))
+        self.assertTrue("[246.0, 912.0, 1578.0] m" in str(y))
+    
+
+

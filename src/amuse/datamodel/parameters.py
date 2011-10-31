@@ -442,9 +442,10 @@ class Parameter(object):
     
 
 class VectorParameterDefinition(AbstractParameterDefinition):
-    def __init__(self, name, description, names_of_parameters):
+    def __init__(self, name, description, names_of_parameters, default_value):
         AbstractParameterDefinition.__init__(self, name, description)
         self.names_of_parameters = names_of_parameters
+        self.default_value = default_value
 
     def get_value(self, parameter, object):
         all_parameters = parameter.parameter_set
