@@ -910,8 +910,12 @@ class AdaptingVectorQuantity(VectorQuantity):
         self._number.append(quantity.value_in(self.unit))
 
     def append_when_cached(self, quantity):
-        self._remove_cached_number(self)
+        self._remove_cached_number()
         self._number.append(quantity.value_in(self.unit))
+        
+    def append_when_cached_empty(self, quantity):
+        self._remove_cached_number()
+        self.append_start(quantity)
 
 
     def extend(self, quantity):
@@ -933,11 +937,21 @@ class AdaptingVectorQuantity(VectorQuantity):
             pass
         self.append = self.append_normal
 
+    def __str__(self):
+        if self.unit is None:
+            return str(self._number)
+        else:
+            return console.current_printing_strategy.quantity_to_string(self)
+
     @late
     def number(self):
-        self.append = self.append_when_cached
-        return numpy.array(self._number, dtype=self.unit.dtype)
-
+        if self.unit is None:
+            self.append = self.append_when_cached_empty
+            return numpy.array(self._number)
+        else:
+            self.append = self.append_when_cached
+            return numpy.array(self._number, dtype=self.unit.dtype)
+            
 def new_quantity(value, unit):
     """Create a new Quantity object.
 

@@ -201,7 +201,7 @@ class TestQuantities(amusetest.TestCase):
         quantity = u'string' | units.string
         self.assertEquals(quantity , u'string' | units.string)
 
-    def test1(self):
+    def test19(self):
         x = 1.0 | si.kg
         self.assertTrue(x==x.amin())
         self.assertTrue(x==x.prod())
@@ -209,3 +209,33 @@ class TestQuantities(amusetest.TestCase):
         self.assertTrue(x==x.amax())
         self.assertTrue(x==x.sum())
 
+
+class TestAdaptingVectorQuantities(amusetest.TestCase):
+
+    def test1(self):
+        x = AdaptingVectorQuantity()
+        x.append(1 | units.kg)
+        self.assertEquals(x.unit, units.kg)
+        self.assertEquals(len(x), 1)
+        
+    def test2(self):
+        x = AdaptingVectorQuantity()
+        self.assertEquals(len(x), 0)
+        self.assertEquals(len(x.number), 0)
+        self.assertEquals(str(x), '[]')
+        x.append(1 | units.kg)
+        self.assertEquals(x.unit, units.kg)
+        self.assertEquals(len(x), 1)
+        self.assertEquals(str(x), '[1] kg')
+        
+    def test3(self):
+        x = AdaptingVectorQuantity()
+        x.extend([1,2,3] | units.kg)
+        self.assertEquals(x.unit, units.kg)
+        self.assertEquals(len(x), 3)
+        x.number
+        
+        x.extend([1,2,3] | units.g)
+        self.assertEquals(x.unit, units.kg)
+        self.assertEquals(len(x), 6)
+        self.assertAlmostRelativeEquals(x, [1000,2000,3000,1,2,3] | units.g)
