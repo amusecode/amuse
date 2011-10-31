@@ -8,7 +8,7 @@ AMUSE_DIR?=../../../..
 # all compiles must use MPICXX, not CXX.
 
 ALL	 = kepler_worker
-OPT	  = -O4
+OPT	  = # -O4 don't use O4 it is not defined on normal gcc, but has special meaning on LLVM/clang gcc
 
 MPICXX   ?= mpicxx
 

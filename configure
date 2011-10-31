@@ -5147,6 +5147,10 @@ fi
 
 else
   WITH_CUDA=no
+	CUDA_TK=/NOCUDACONFIGURED
+	CUDA_SDK=/NOCUDACONFIGURED
+        CUDA_LIBS="-L$CUDA_SDK cuda cudart"
+
 
 fi
 

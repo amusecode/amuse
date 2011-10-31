@@ -21,7 +21,11 @@ AC_DEFUN([AX_CUDA],[
         WITH_CUDA=yes
         ])
         ],
-        [WITH_CUDA=no]
+        [WITH_CUDA=no
+	CUDA_TK=/NOCUDACONFIGURED
+	CUDA_SDK=/NOCUDACONFIGURED
+        CUDA_LIBS="-L$CUDA_SDK cuda cudart"	
+	]
     )
     AC_ARG_WITH(
         cuda-libdir, [  --with-cuda-libdir=PFX   Directory where libcuda.so is installed (optional)],

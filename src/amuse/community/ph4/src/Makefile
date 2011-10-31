@@ -6,7 +6,7 @@
 # that case.
 
 AMUSE_DIR?=../../../../..
-OPT	  = -O4 -I$(AMUSE_DIR)/lib/stopcond
+OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
 GPU	  = -DGPU
 MPICXX    ?= mpicxx

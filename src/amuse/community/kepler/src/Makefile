@@ -5,7 +5,7 @@
 # that case.
 
 AMUSE_DIR?=../../../../..
-OPT	  = -O4
+OPT	  = # -O4 don't use O4 but O2 or something
 
 GPU	  = -DGPU
 CXX	  ?= mpicxx

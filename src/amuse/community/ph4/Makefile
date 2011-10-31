@@ -9,7 +9,7 @@ AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
 ALL	 = ph4_worker # ph4_worker_gpu
-OPT	  = -O4 -I$(AMUSE_DIR)/lib/stopcond
+OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
 MPICXX   ?= mpicxx
 

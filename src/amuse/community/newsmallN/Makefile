@@ -8,7 +8,7 @@ AMUSE_DIR?=../../../..
 # all compiles must use MPICXX, not CXX.
 
 ALL	 = smallN_worker
-OPT	  = -O4 -I$(AMUSE_DIR)/lib/stopcond
+OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
 MPICXX   ?= mpicxx
 
