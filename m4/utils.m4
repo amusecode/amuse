@@ -25,7 +25,7 @@ AC_DEFUN([AX_GFORTRAN_VERSION], [
   AS_IF([test "x$GCC" = "xyes"],[
     AS_IF([test "x$ax_gcc_version_option" != "xno"],[
       AC_CACHE_CHECK([gfortran version],[ax_cv_gcc_version],[
-        ax_cv_gcc_version="`$FC -dumpversion`"
+        ax_cv_gcc_version="`$FC -dumpversion | sed s/\(\d+\.\d+\.\d+\)/\1/`"
         AS_IF([test "x$ax_cv_gcc_version" = "x"],[
           ax_cv_gcc_version=""
         ])

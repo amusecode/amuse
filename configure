@@ -4989,7 +4989,7 @@ if test "${ax_cv_gcc_version+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-        ax_cv_gcc_version="`$FC -dumpversion`"
+        ax_cv_gcc_version="`$FC -dumpversion | sed s/\(\d+\.\d+\.\d+\)/\1/`"
         if test "x$ax_cv_gcc_version" = "x"; then :
 
           ax_cv_gcc_version=""
