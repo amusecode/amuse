@@ -294,12 +294,14 @@ class constant_density_div_free_power_law_v_ism_cube(object):
 
         return result
 
-def ism_cube(L=10| units.parsec,density=(1.14 | units.amu/units.cm**3), u=50 | (units. kms)**2):
+def ism_cube(targetN=10000,L=10| units.parsec,density=(1.14 | units.amu/units.cm**3), u=50 | (units. kms)**2,
+      nf=32,power=-3.,seed=None,base_grid=None, eketh_ratio=1.):
     
-    total_mass=density*L**3
+    total_mass=density*(2*L)**3
     internalE=total_mass*u
     convert = generic_unit_converter.ConvertBetweenGenericAndSiUnits(total_mass, L, internalE)
-    return constant_density_div_free_power_law_v_ism_cube(convert=convert)
+    return constant_density_div_free_power_law_v_ism_cube(convert=convert,targetN=targetN,nf=nf,
+                             power=power,seed=seed,base_grid=base_grid,eketh_ratio=eketh_ratio)
 
 
 if __name__=="__main__":

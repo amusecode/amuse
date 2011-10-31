@@ -45,7 +45,8 @@ class body_centered_grid_unit_cube(object):
         x=numpy.concatenate( (x1.flatten(),x2.flatten()) )
         y=numpy.concatenate( (y1.flatten(),y2.flatten()) )
         z=numpy.concatenate( (z1.flatten(),z2.flatten()) )
-        return x,y,z
+        a=numpy.where((x>=-1) & (y>=-1) & (z>=-1) & (x<1) & (y<1) & (z<1) )
+        return x[a],y[a],z[a]
 
 
 class glass_unit_cube(object):
@@ -127,7 +128,7 @@ class glass_unit_cube(object):
 
 def uniform_unit_cube(targetN, base_grid=None):
     if base_grid is None:
-        return uniform_random_unit_cube(targetN)
+        return body_centered_grid_unit_cube(targetN)
     else:
         return base_grid(targetN)
     
