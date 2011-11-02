@@ -458,6 +458,7 @@ class TestAthenaInterface(TestWithMPI):
         self.assertEquals(imax, 10)
         self.assertEquals(jmax, 20)
         self.assertEquals(kmax, 40)
+        instance.stop()
     
     
 
@@ -477,6 +478,7 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(-0.05, x)
         self.assertAlmostRelativeEquals(-0.025, y)
         self.assertAlmostRelativeEquals(-0.0125, z)
+        instance.stop()
     
     
 
@@ -536,6 +538,7 @@ class TestAthenaInterface(TestWithMPI):
         print potential, error
         self.assertEquals(error, 0)
         self.assertEquals(potential, 0.5)
+        instance.stop()
     
     
 class TestAthena(TestWithMPI):
@@ -773,6 +776,7 @@ class TestAthena(TestWithMPI):
         #pyplot.savefig("bla.png")
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertNotEquals(x, 0.1)
+        instance.stop()
     
     
 
@@ -938,6 +942,7 @@ class TestAthena(TestWithMPI):
         #print grid.rho[...,0,0]
         #plot.plot(instance.grid.x[...,0,0], grid.rho[...,0,0])
         #pyplot.savefig("bla2.png")
+        instance.stop()
         
     
     def test11(self):
@@ -1012,6 +1017,63 @@ class TestAthena(TestWithMPI):
                 self.assertTrue(x > 0 | generic_unit_system.acceleration)
             else:
                 self.assertTrue(x < 0 | generic_unit_system.acceleration)
-                
+        instance.stop()
+    
+    def test12(self):
+        print "Testing Athena grid setters"
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
+        instance.parameters.gamma = 5/3.0
+        instance.parameters.courant_number = 0.3
+        instance.parameters.mesh_size = (2, 2, 2)
+        instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.y_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.z_boundary_conditions = ("periodic", "periodic")
+        instance.commit_parameters()
+        
+        instance.grid.rho =    1.0 | generic_unit_system.density
+        self.assertAlmostEquals(instance.grid.rho, 
+            numpy.ones((2,2,2)) | generic_unit_system.density)
+        
+        instance.grid.momentum = numpy.reshape(
+            numpy.arange(0.0, 3.0, 0.125), (2,2,2,3))  | generic_unit_system.momentum_density
+        self.assertAlmostEquals(instance.grid.rhovx, 
+            numpy.reshape(numpy.arange(0.000, 3.0, 0.375), (2,2,2)) | generic_unit_system.momentum_density)
+        self.assertAlmostEquals(instance.grid.rhovy, 
+            numpy.reshape(numpy.arange(0.125, 3.0, 0.375), (2,2,2)) | generic_unit_system.momentum_density)
+        self.assertAlmostEquals(instance.grid.rhovz, 
+            numpy.reshape(numpy.arange(0.250, 3.0, 0.375), (2,2,2)) | generic_unit_system.momentum_density)
+        
+        momentum = instance.grid.momentum
+        rhovx = -momentum.x
+        rhovy = 2 * momentum.z
+        rhovz = -0.5 * momentum.y
+        instance.grid.momentum = datamodel.VectorQuantity.new_from_scalar_quantities(rhovx,rhovy,rhovz).transpose(axes=(1,2,3,0))
+        self.assertAlmostEquals(instance.grid.rhovx, 
+            numpy.reshape(numpy.arange(0.000, -3.0, -0.375), (2,2,2)) | generic_unit_system.momentum_density)
+        self.assertAlmostEquals(instance.grid.rhovy, 
+            numpy.reshape(numpy.arange(0.5, 6.0, 0.75), (2,2,2)) | generic_unit_system.momentum_density)
+        self.assertAlmostEquals(instance.grid.rhovz, 
+            numpy.reshape(numpy.arange(-0.0625, -1.5, -0.1875), (2,2,2)) | generic_unit_system.momentum_density)
+        
+        instance.grid[...,0,...].momentum =  [12.0, 13.0, 14.0] | generic_unit_system.momentum_density
+        self.assertAlmostEquals(instance.grid[0,...,...].rhovx, 
+            [[12.0, 12.0], [-0.75, -1.125]] | generic_unit_system.momentum_density)
+        self.assertAlmostEquals(instance.grid[0,...,...].rhovy, 
+            [[13.0, 13.0], [2.0, 2.75]] | generic_unit_system.momentum_density)
+        self.assertAlmostEquals(instance.grid[...,...,0].rhovz, 
+            [[14.0, -0.4375], [14.0, -1.1875]] | generic_unit_system.momentum_density)
+        
+        instance.grid.energy = numpy.reshape(numpy.arange(0.0, 1.0, 0.125), (2,2,2)) | generic_unit_system.energy_density
+        self.assertAlmostEquals(instance.grid[...,0,0].energy, 
+            [0.0, 0.5] | generic_unit_system.energy_density)
+        self.assertAlmostEquals(instance.grid[0,...,0].energy, 
+            [0.0, 0.25] | generic_unit_system.energy_density)
+        self.assertAlmostEquals(instance.grid[0,0,...].energy, 
+            [0.0, 0.125] | generic_unit_system.energy_density)
+        instance.initialize_grid()
+        instance.stop()
         
         

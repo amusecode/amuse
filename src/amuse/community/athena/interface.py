@@ -517,16 +517,34 @@ class Athena(InCodeComponentImplementation):
             object.ERROR_CODE,)
         )
         object.add_method(
+            'set_grid_energy_density',
+            (object.INDEX, object.INDEX, object.INDEX,
+            energy, object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
             'get_grid_energy_density',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             ( energy,
             object.ERROR_CODE,)
         )
         object.add_method(
+            'set_grid_density',
+            (object.INDEX, object.INDEX, object.INDEX,
+            density, object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
             'get_grid_density',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (density,
             object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_grid_momentum_density',
+            (object.INDEX, object.INDEX, object.INDEX,
+            momentum, momentum, momentum, object.INDEX),
+            (object.ERROR_CODE,)
         )
         object.add_method(
             'get_grid_momentum_density',
@@ -645,8 +663,11 @@ class Athena(InCodeComponentImplementation):
         definition.add_setter('set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
         
         definition.add_getter('get_grid_density', names=('rho',))
+        definition.add_setter('set_grid_density', names=('rho',))
         definition.add_getter('get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
+        definition.add_setter('set_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
         definition.add_getter('get_grid_energy_density', names=('energy',))
+        definition.add_setter('set_grid_energy_density', names=('energy',))
         
         
         definition.add_getter('get_grid_gravitational_potential', names=('gravitational_potential',))
