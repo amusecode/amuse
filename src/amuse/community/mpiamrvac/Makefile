@@ -1,9 +1,9 @@
 AMUSE_DIR?=../../../..
 -include $(AMUSE_DIR)/config.mk
 
-MPIF90 ?= mpif90
+MPIFC ?= mpif90
 PYTHON ?= python
-FC      = $(MPIF90)
+FC      = $(MPIFC)
 
 FFLAGS   +=  -g -ffree-form
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -74,10 +74,10 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MpiAmrVacInterface -o $@
 
 mpiamrvac_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIF90) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
+	$(MPIFC) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 	
 mpiamrvac_worker_2d: worker_code.f90 $(CODELIB2D) $(OBJS2D)
-	$(MPIF90) $(CXXFLAGS) $< $(OBJS2D) $(CODELIB2D) -o $@
+	$(MPIFC) $(CXXFLAGS) $< $(OBJS2D) $(CODELIB2D) -o $@
 	
 
 
