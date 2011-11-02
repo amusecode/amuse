@@ -9,6 +9,7 @@ from amuse.community.athena.interface import AthenaInterface, Athena
 
 
 from mpi4py import MPI
+from amuse.units.quantities import VectorQuantity
 from amuse.units import generic_unit_system
 from amuse.units import units
 from amuse import datamodel
@@ -1050,7 +1051,7 @@ class TestAthena(TestWithMPI):
         rhovx = -momentum.x
         rhovy = 2 * momentum.z
         rhovz = -0.5 * momentum.y
-        instance.grid.momentum = datamodel.VectorQuantity.new_from_scalar_quantities(rhovx,rhovy,rhovz).transpose(axes=(1,2,3,0))
+        instance.grid.momentum = VectorQuantity.new_from_scalar_quantities(rhovx,rhovy,rhovz).transpose(axes=(1,2,3,0))
         self.assertAlmostEquals(instance.grid.rhovx, 
             numpy.reshape(numpy.arange(0.000, -3.0, -0.375), (2,2,2)) | generic_unit_system.momentum_density)
         self.assertAlmostEquals(instance.grid.rhovy, 
