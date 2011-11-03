@@ -6,7 +6,6 @@ from collections import namedtuple
 
 from amuse.community.gadget2.interface import Gadget2
 from amuse.ext.spherical_model import EnclosedMassInterpolator
-from amuse.ext.spherical_model import get_enclosed_mass_from_tabulated
 from amuse.ext.spherical_model import new_spherical_particle_distribution
 from amuse.support.exceptions import AmuseException
 from amuse.support.exceptions import AmuseWarning
@@ -118,12 +117,11 @@ class StellarModel2SPH(object):
             i_core = self.number_of_zones - index
             self.core_radius = self.radius_profile[i_core] - ((self.radius_profile[i_core] - self.radius_profile[i_core-1]) *
                 (max_density - self.density_profile[i_core]) / (self.density_profile[i_core-1] - self.density_profile[i_core]))
-            self.core_mass = get_enclosed_mass_from_tabulated(self.core_radius, 
-                radii = self.radius_profile, densities = self.density_profile)
+            self.core_mass = interpolator.get_enclosed_mass(self.core_radius)
             print "core radius:", self.core_radius.as_quantity_in(units.RSun)
             self.density_profile[:i_core] = max_density
-            self.core_mass -= get_enclosed_mass_from_tabulated(self.core_radius, 
-                radii = self.radius_profile, densities = self.density_profile)
+            interpolator.initialize(self.radius_profile, self.density_profile)
+            self.core_mass -= interpolator.get_enclosed_mass(self.core_radius)
             print "core mass in DM particle:", self.core_mass.as_quantity_in(units.MSun)
             self.mass = self.mass - self.core_mass
     

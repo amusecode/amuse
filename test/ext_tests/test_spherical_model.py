@@ -108,8 +108,8 @@ class TestUniformSphericalDistribution(TestCase):
         
         particles = new_spherical_particle_distribution(142, radii = rad, densities = rho)
         self.assertEqual(len(particles), 142)
-        self.assertAlmostEqual(particles.total_mass(), 
-            get_enclosed_mass_from_tabulated(max(rad), radii = rad, densities = rho))
+        interpolator = EnclosedMassInterpolator(rad, rho)
+        self.assertAlmostEqual(particles.total_mass(), interpolator.get_enclosed_mass(max(rad)))
         r_squared = particles.position.lengths_squared()
         self.assertTrue(numpy.all( r_squared < max(rad)**2 ))
         self.assertFalse(numpy.all( r_squared < (0.9*max(rad))**2 ))
@@ -125,7 +125,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertFalse(numpy.all(r_squared < 0.9**2 ))
     
 
-class TestEnclosedMassInterpolator(TestCase):
+class TestXEnclosedMassInterpolator(TestCase):
     
     def test1(self):
         instance = EnclosedMassInterpolator()
@@ -143,36 +143,49 @@ class TestEnclosedMassInterpolator(TestCase):
             numpy.pi * 4.0/3.0 * instance.densities[0] * (0.5 | units.m)**3)
         self.assertEqual(instance.get_enclosed_mass(1.5 | units.m), 
             numpy.pi * 4.0/3.0 * (100*1.0**3 + 80*(1.5**3-1.0**3)) | units.kg)
+        del instance
     
     def test2(self):
-        self.assertRaises(AmuseException, get_enclosed_mass_from_tabulated, 0.0 | units.m, expected_message = 
-            "Interpolator is not initialized. Radius and density tables must be passed in the first call.")
-        self.assertEqual(0.0 | units.kg, get_enclosed_mass_from_tabulated(0.0 | units.m, 
-            [2,4,3,1] | units.m, [80, 30, 50, 100] | (units.kg/units.m**3)))
+        interpolator = EnclosedMassInterpolator()
+        self.assertRaises(AmuseException, interpolator.get_enclosed_mass, 0.0 | units.m, 
+            expected_message = "Can't calculate enclosed mass: interpolator is not initialized")
+        interpolator.initialize([2,4,3,1] | units.m, [80, 30, 50, 100] | (units.kg/units.m**3))
         self.assertEqual(numpy.pi * 4.0/3.0 * 100 * 0.3**3 | units.kg, 
-            get_enclosed_mass_from_tabulated(0.3 | units.m))
+            interpolator.get_enclosed_mass(0.3 | units.m))
+        self.assertEqual([0.0, numpy.pi * 4.0/3.0 * 100 * 0.3**3] | units.kg, 
+            interpolator.get_enclosed_mass([0.0, 0.3] | units.m))
         self.assertEqual(numpy.pi * 4.0/3.0 * 100 * 1.0**3 | units.kg, 
-            get_enclosed_mass_from_tabulated(1.0 | units.m))
+            interpolator.get_enclosed_mass(1.0 | units.m))
         self.assertEqual(numpy.pi * 4.0/3.0 *(100 * 1.0**3 + 80*(1.5**3-1.0**3)) | units.kg, 
-            get_enclosed_mass_from_tabulated(1.5 | units.m))
-        self.assertRaises(AmuseException, get_enclosed_mass_from_tabulated, -0.5 | units.m, expected_message = 
-            "Can't find a valid index. -0.5 m is not in the range [0.0 m, 4.0 m].")
-        self.assertRaises(AmuseException, get_enclosed_mass_from_tabulated, 4.5 | units.m, expected_message = 
-            "Can't find a valid index. 4.5 m is not in the range [0.0 m, 4.0 m].")
+            interpolator.get_enclosed_mass(1.5 | units.m))
+        self.assertRaises(AmuseException, interpolator.get_enclosed_mass, -0.5 | units.m, expected_message = 
+            "Can't find a valid index. [-0.5] m is not in the range [0.0 m, 4.0 m].")
+        self.assertRaises(AmuseException, interpolator.get_enclosed_mass, 4.5 | units.m, expected_message = 
+            "Can't find a valid index. [4.5] m is not in the range [0.0 m, 4.0 m].")
+        self.assertRaises(AmuseException, interpolator.get_enclosed_mass, [2.5, 3.5, 4.5] | units.m, expected_message = 
+            "Can't find a valid index. [4.5] m is not in the range [0.0 m, 4.0 m].")
+        self.assertRaises(AmuseException, interpolator.get_enclosed_mass, [-0.5, 3.5, 4.5] | units.m, expected_message = 
+            "Can't find a valid index. [-0.5, 4.5] m is not in the range [0.0 m, 4.0 m].")
+        del interpolator
     
     def test3(self):
-        self.assertRaises(AmuseException, get_radius_for_enclosed_mass, 0.0 | units.kg, expected_message = 
-            "Interpolator is not initialized. Radius and density tables must be passed in the first call.")
-        self.assertEqual(0.0 | units.m, get_radius_for_enclosed_mass(0.0 | units.kg, 
-            [2,4,3,1] | units.m, [80, 30, 50, 100] | (units.kg/units.m**3)))
+        interpolator = EnclosedMassInterpolator()
+        self.assertRaises(AmuseException, interpolator.get_radius_for_enclosed_mass, 0.0 | units.kg, 
+            expected_message = "Can't calculate radius for enclosed mass: interpolator is not initialized")
+        interpolator.initialize([2,4,3,1] | units.m, [80, 30, 50, 100] | (units.kg/units.m**3))
         self.assertEqual(0.3 | units.m, 
-            get_radius_for_enclosed_mass(numpy.pi * 4.0/3.0 * 100 * 0.3**3 | units.kg))
+            interpolator.get_radius_for_enclosed_mass(numpy.pi * 4.0/3.0 * 100 * 0.3**3 | units.kg))
+        self.assertEqual([0.0, 0.3] | units.m, 
+            interpolator.get_radius_for_enclosed_mass([0.0, numpy.pi * 4.0/3.0 * 100 * 0.3**3] | units.kg))
         self.assertEqual(1.0 | units.m, 
-            get_radius_for_enclosed_mass(numpy.pi * 4.0/3.0 * 100 * 1.0**3 | units.kg))
+            interpolator.get_radius_for_enclosed_mass(numpy.pi * 4.0/3.0 * 100 * 1.0**3 | units.kg))
         self.assertEqual(1.5 | units.m, 
-            get_radius_for_enclosed_mass(numpy.pi * 4.0/3.0 *(100 * 1.0**3 + 80*(1.5**3-1.0**3)) | units.kg))
-        self.assertRaises(AmuseException, get_radius_for_enclosed_mass, -0.5 | units.kg, expected_message = 
-            "Can't find a valid index. -0.5 kg is not in the range [0.0 kg, 11393.509357 kg].")
-        self.assertRaises(AmuseException, get_radius_for_enclosed_mass, 12000 | units.kg, expected_message = 
-            "Can't find a valid index. 12000 kg is not in the range [0.0 kg, 11393.509357 kg].")
+            interpolator.get_radius_for_enclosed_mass(numpy.pi * 4.0/3.0 *(100 * 1.0**3 + 80*(1.5**3-1.0**3)) | units.kg))
+        self.assertRaises(AmuseException, interpolator.get_radius_for_enclosed_mass, -0.5 | units.kg, expected_message = 
+            "Can't find a valid index. [-0.5] kg is not in the range [0.0 kg, 11393.509357 kg].")
+        self.assertRaises(AmuseException, interpolator.get_radius_for_enclosed_mass, 12000 | units.kg, expected_message = 
+            "Can't find a valid index. [12000] kg is not in the range [0.0 kg, 11393.509357 kg].")
+        self.assertRaises(AmuseException, interpolator.get_radius_for_enclosed_mass, [-0.5, 1.0, 12000] | units.kg, expected_message = 
+            "Can't find a valid index. [-0.5, 12000.0] kg is not in the range [0.0 kg, 11393.509357 kg].")
+        del interpolator
     

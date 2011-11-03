@@ -1,19 +1,19 @@
 import numpy
 
-from amuse.support.exceptions import AmuseException
-from amuse.support.exceptions import AmuseWarning
-from amuse.units import nbody_system
-from amuse.units import units
-
+from amuse.support.exceptions import AmuseException, AmuseWarning
+from amuse.units import units, nbody_system
 from amuse.datamodel import Particles
+
 class EnclosedMassInterpolator(object):
     """
     Interpolator used in 'get_enclosed_mass_from_tabulated' and 'get_radius_for_enclosed_mass'.
     These two functions are required for 'new_spherical_particle_distribution'.
     """
-    def __init__(self):
+    def __init__(self, radii = None, densities = None, core_radius = None):
         self.initialized = False
         self.four_thirds_pi = numpy.pi * 4.0/3.0
+        if (radii and densities):
+            self.initialize(radii, densities, core_radius = core_radius)
     
     def initialize(self, radii, densities, core_radius = None):
         self.sort_density_and_radius(densities*1.0, radii*1.0, core_radius = core_radius)
@@ -32,39 +32,28 @@ class EnclosedMassInterpolator(object):
         self.enclosed_mass = self.four_thirds_pi * self.enclosed_mass
     
     def get_index(self, value, sorted_vector):
-        if not sorted_vector[0] <= value <= sorted_vector[-1]:
+        out_of_bounds = numpy.logical_or(sorted_vector[0] > value, value > sorted_vector[-1])
+        if out_of_bounds.any():
+            value = numpy.compress(numpy.array([out_of_bounds]).flatten(), value.number) | value.unit
             raise AmuseException("Can't find a valid index. {0} is not in "
                 "the range [{1}, {2}].".format(value, sorted_vector[0], sorted_vector[-1]))
         index = numpy.searchsorted(sorted_vector, value)
-        return max(index - 1, 0)
+        return numpy.maximum(index - 1, 0)
     
     def get_enclosed_mass(self, radius):
+        if not self.initialized:
+            raise AmuseException("Can't calculate enclosed mass: interpolator is not initialized")
         index = self.get_index(radius, self.radii)
         return (self.enclosed_mass[index] + self.four_thirds_pi * 
             self.densities[index] * (radius**3 - self.radii_cubed[index]))
     
-    def get_radius_for_mass(self, mass):
-        index = self.get_index(mass, self.enclosed_mass)
-        return (((mass - self.enclosed_mass[index]) / (self.four_thirds_pi * self.densities[index]) 
+    def get_radius_for_enclosed_mass(self, enclosed_mass):
+        if not self.initialized:
+            raise AmuseException("Can't calculate radius for enclosed mass: interpolator is not initialized")
+        index = self.get_index(enclosed_mass, self.enclosed_mass)
+        return (((enclosed_mass - self.enclosed_mass[index]) / (self.four_thirds_pi * self.densities[index]) 
             + self.radii_cubed[index]))**(1.0/3.0)
     
-
-def get_enclosed_mass_from_tabulated(radius, radii = None, densities = None, interpolator = EnclosedMassInterpolator(), core_radius = None):
-    if not (radii is densities is None):
-        interpolator.initialize(radii, densities, core_radius = core_radius)
-    if not interpolator.initialized:
-        raise AmuseException("Interpolator is not initialized. Radius and density tables must be passed in the first call.")
-    return interpolator.get_enclosed_mass(radius)
-    
-def get_radius_for_enclosed_mass(mass, radii = None, densities = None, interpolator = EnclosedMassInterpolator(), core_radius = None):
-    if not (radii is densities is None):
-        interpolator.initialize(radii, densities, core_radius = core_radius)
-    if not interpolator.initialized:
-        raise AmuseException("Interpolator is not initialized. Radius and density tables must be passed in the first call.")
-    return interpolator.get_radius_for_mass(mass)
-    
-
-
 
 
 class UniformSphericalDistribution(object):
@@ -298,20 +287,22 @@ def new_spherical_particle_distribution(number_of_particles,
     if (radii is None) or (densities is None):
         raise AmuseException("Using an arbitrary radial density function is not yet "
             "supported. Radius and density tables must be passed instead.")
+    
+    interpolator = EnclosedMassInterpolator()
+    interpolator.initialize(radii, densities, core_radius = core_radius)
     if total_mass is None:
-        total_mass = get_enclosed_mass_from_tabulated((size or max(radii)), radii = radii, densities = densities, core_radius = core_radius)
+        total_mass = interpolator.get_enclosed_mass(size or max(radii))
     particles = Particles(number_of_particles)
     particle_mass = total_mass * 1.0 / number_of_particles
     particles.mass = particle_mass
-    get_radius_for_enclosed_mass(0.0 | units.kg, radii = radii, densities = densities, core_radius = core_radius)
     x, y, z = UniformSphericalDistribution(number_of_particles, **keyword_arguments).result
     # Now scale the uniformly distributed particle positions to match the radial density profile
     f_scale = radii.unit.new_quantity(numpy.empty_like(x))
     r_old = numpy.sqrt(x*x + y*y + z*z)
     dtype = [('r_old', 'float64'), ('x', 'float64'), ('y', 'float64'), ('z', 'float64')]
     sorted = numpy.sort(numpy.array(zip(r_old, x, y, z), dtype=dtype), order='r_old')
-    for i, r_old_i in enumerate(sorted['r_old']):
-        f_scale[i] = get_radius_for_enclosed_mass((i+0.5)*particle_mass, core_radius = core_radius) / r_old_i
+    f_scale = interpolator.get_radius_for_enclosed_mass(
+        (numpy.arange(0.5, number_of_particles + 0.5) | units.none) * particle_mass) / sorted['r_old']
     particles.x = f_scale * sorted['x']
     particles.y = f_scale * sorted['y']
     particles.z = f_scale * sorted['z']
