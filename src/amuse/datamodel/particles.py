@@ -325,6 +325,10 @@ class AbstractParticleSet(AbstractSet):
             return Particle(key, self._original_set())
         else:
             return None
+            
+    def can_extend_attributes(self):
+        return self._original_set().can_extend_attributes()
+        
         
     def copy(self):
         """
@@ -996,6 +1000,9 @@ class Particles(AbstractParticleSet):
 
     def _factory_for_new_collection(self):
         return Particles
+        
+    def can_extend_attributes(self):
+        return self._private.attribute_storage.can_extend_attributes()
     
 class BoundSupersetParticlesFunctionAttribute(object):
     def  __init__(self, name, superset):
@@ -1123,6 +1130,12 @@ class ParticlesSuperset(AbstractParticleSet):
             raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
         
     
+    def can_extend_attributes(self):
+        for x in self._private.particle_sets():
+            if not x.can_extend_attributes():
+                return False
+        return True
+        
     def __len__(self):
         result = 0
         for set in self._private.particle_sets:
@@ -1576,10 +1589,24 @@ class ParticleInformationChannel(object):
         self.to_particles.set_values_in_store(self.keys, attributes, data)
     
     def copy(self):
+        if not self.to_particles.can_extend_attributes():
+            self.copy_overlapping_attributes()
+        else:
+            self.copy_all_attributes()
+        
+    def copy_all_attributes(self):
+        names_to_copy = self.from_particles.get_attribute_names_defined_in_store()
         self._reindex()
-        self.copy_attributes(self.from_particles.get_attribute_names_defined_in_store())
-    
+        self.copy_attributes(list(names_to_copy))    
 
+    def copy_overlapping_attributes(self):
+        self._reindex()
+        
+        from_names = self.from_particles.get_attribute_names_defined_in_store()
+        to_names = self.to_particles.get_attribute_names_defined_in_store()
+        names_to_copy = set(from_names).intersection(set(to_names))
+             
+        self.copy_attributes(list(names_to_copy))  
         
 
     def copy_attribute(self, name, target_name = None):

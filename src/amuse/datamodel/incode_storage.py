@@ -640,6 +640,9 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
     def __len__(self):
         return self._get_number_of_particles()
 
+    def can_extend_attributes(self):
+        return False
+        
     def add_particles_to_store(self, keys, attributes = [], values = []):
         
         indices = self.new_particle_method.add_entities(attributes, values)

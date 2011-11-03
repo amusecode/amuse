@@ -172,6 +172,28 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(particles[1].child, particles[2])
         self.assertEquals(particles[2].child, None)
 
+        
+    def test14(self):
+        
+        particles1 = datamodel.Particles(2)
+        particles1.mass = 1| units.kg
+    
+        particles2 = particles1.copy()
+        particles2.stellar_mass = range(2) * (1.0 | units.kg)
+        particles2.mass = 0 | units.kg
+        
+        self.assertFalse(hasattr(particles1, 'stellar_mass'))
+        
+        channel = particles2.new_channel_to(particles1)
+        channel.copy_overlapping_attributes()
+        
+        self.assertFalse(hasattr(particles1, 'stellar_mass'))
+        self.assertEquals(particles1.mass, [0,0] | units.kg)
+        
+        channel.copy_all_attributes()
+        
+        self.assertTrue(hasattr(particles1, 'stellar_mass'))
+        self.assertEquals(particles1.mass, [0,0] | units.kg)
 
         
 class TestStars(amusetest.TestCase):
@@ -445,7 +467,25 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(len(remote_particles), 2)
         
         
+    def test7(self):
+        interface = self.TestInterface()
         
+        local_particles = datamodel.Stars(2)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0])
+        
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles)
+        
+        local_particles.unknown_attribute = [3.0, 4.0] | units.m
+        local_particles.mass = [1,3] | units.kg
+        
+        channel = local_particles.new_channel_to(remote_particles)
+        self.assertRaises(Exception, channel.copy_all_attributes)
+        
+        channel.copy()
+        
+        self.assertEquals(remote_particles.mass, local_particles.mass)
+
         
         
         

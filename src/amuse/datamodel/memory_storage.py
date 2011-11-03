@@ -15,6 +15,9 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.sorted_keys = []
         self.sorted_indices = []
         self.keys_set = set([])
+    
+    def can_extend_attributes(self):
+        return True
         
     def add_particles_to_store(self, keys, attributes = [], quantities = []):
         if len(quantities) != len(attributes):

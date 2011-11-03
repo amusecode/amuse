@@ -20,6 +20,9 @@ class HDF5AttributeStorage(AttributeStorage):
         self.particle_keys = keys
         self.mapping_from_particle_to_index = self.new_index()
     
+    def can_extend_attributes(self):
+        return True
+        
     def __len__(self):
         return len(self.particle_keys)
         
