@@ -2,6 +2,7 @@ import os
 import numpy
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 from amuse.community import *
+from amuse.support.options import option
 
 class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     """
@@ -41,19 +42,36 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         else:
             return 'gadget2_worker'
     
-    def get_data_directory(self):
+    @option(type="string")
+    def data_directory(self):
         """
         Returns the root name of the directory for the Gadget2
         application data files.
         """
         return os.path.join(get_amuse_root_dir(), 'data', 'gadget2', 'input')
+        
+    
+    @option(type="string")
+    def output_directory(self):
+        """
+        Returns the root name of the directory to use by the 
+        application to store it's output / temporary files in.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'gadget2', 'output')        
+    
+    def get_data_directory(self):
+        """
+        Returns the root name of the directory for the Gadget2
+        application data files.
+        """
+        return self.data_directory
     
     def get_output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'gadget2', 'output')
+        return self.output_directory
     
     @legacy_function
     def new_dm_particle():
