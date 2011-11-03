@@ -212,6 +212,10 @@ class Octgrav(GravitationalDynamics):
 
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
+
+#support for re-initialization
+        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+        object.add_method('END', 'initialize_code')
         
 # this should be checked!
         object.add_method('EDIT', 'get_gravity_at_point')

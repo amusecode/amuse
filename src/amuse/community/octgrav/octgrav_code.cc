@@ -734,6 +734,8 @@ int commit_particles()
 
 int cleanup_code()
 {
+  clear_all();
+  initialized = false;
   return 0;
 }
 
