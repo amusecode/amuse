@@ -1,4 +1,10 @@
-from docutils import core
+try:
+    from docutils import core
+except ValueError:
+    import os
+    os.environ['LANG'] = 'C'
+    from docutils import core
+
 import docutils.nodes as nodes
 from collections import namedtuple
 from amuse.support import exceptions
