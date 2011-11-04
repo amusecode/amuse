@@ -48,6 +48,11 @@ class {0.name_of_the_community_interface_class}Tests(TestWithMPI):
 """
 
 makefile_template_cxx = """\
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?={0.reference_to_amuse_path}
+-include $(AMUSE_DIR)/config.mk
+
 MPICXX   ?= mpicxx
 
 CFLAGS   += -Wall -g
@@ -57,8 +62,6 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 OBJS = {0.name_of_the_interface_code}.o
 
 CODELIB = src/lib{0.name_of_the_community_code}.a
-
-AMUSE_DIR?={0.reference_to_amuse_path}
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -292,8 +295,13 @@ class CreateADirectoryAndPopulateItWithFilesForACCode(CreateADirectoryAndPopulat
 
 
 makefile_template_fortran = """\
-MPIF90 ?= mpif90
-FC      = $(MPIF90)
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?={0.reference_to_amuse_path}
+-include $(AMUSE_DIR)/config.mk
+
+MPIFC ?= mpif90
+FC      = $(MPIFC)
 
 FFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -301,8 +309,6 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 OBJS = {0.name_of_the_interface_code}.o
 
 CODELIB = src/lib{0.name_of_the_community_code}.a
-
-AMUSE_DIR?={0.reference_to_amuse_path}
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -320,15 +326,15 @@ worker_code.f90: {0.name_of_the_python_module}
 \t$(CODE_GENERATOR) --type=f90 interface.py {0.name_of_the_community_interface_class} -o $@
 
 {0.name_of_the_community_code}_worker: worker_code.f90 $(CODELIB) $(OBJS)
-\t$(MPIF90) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
+\t$(MPIFC) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 %.o: %.f90
 \t$(FC) $(FFLAGS) -c -o $@ $<
 """
 
 code_makefile_template_fortran = """\
-MPIF90 ?= mpif90
-FC      = $(MPIF90)
+MPIFC ?= mpif90
+FC      = $(MPIFC)
 
 FFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)

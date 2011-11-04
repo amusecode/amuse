@@ -64,11 +64,11 @@ distclean:
 
 $(CODELIB): $(CODEDIR)/makefile
 	cd src/mpiamrvac/src; ./setamrvac -d=33 -g=14,14,14 -phi=3 -z=2 -p=hd -u=amuse -cp=openmpi
-	make -C $(CODEDIR) clean amrvac $(LIBNAME) F90FLAGS="$(FFLAGS)"
+	make -C $(CODEDIR) clean amrvac $(LIBNAME) F90FLAGS="$(FFLAGS)" F90="$(MPIFC)"
 
 $(CODELIB2D): $(CODEDIR)/makefile
 	cd src/mpiamrvac/src; ./setamrvac -d=22 -g=14,14 -phi=3 -z=2 -p=hd -u=amuse -cp=openmpi
-	make -C $(CODEDIR) clean amrvac $(LIBNAME2D) F90FLAGS="$(FFLAGS)"
+	make -C $(CODEDIR) clean amrvac $(LIBNAME2D) F90FLAGS="$(FFLAGS)" F90="$(MPIFC)"
 	
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MpiAmrVacInterface -o $@

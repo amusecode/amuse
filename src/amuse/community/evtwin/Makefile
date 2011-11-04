@@ -32,7 +32,7 @@ all:    $(BUILDDIR)/Makefile evtwin_worker
 
 $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 	-mkdir -p $(BUILDDIR)
-	cd $(BUILDDIR) && FC=$(FORTRAN) cmake ../src
+	cd $(BUILDDIR) && FC=$(FC) cmake ../src
 
 clean:
 	rm -f *.pyc make.log
