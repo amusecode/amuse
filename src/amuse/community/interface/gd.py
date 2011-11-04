@@ -1111,3 +1111,9 @@ class GravitationalDynamics(common.CommonCode):
     def define_converter(self, object):
         if not self.unit_converter is None:
             object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+    def cleanup_code(self):
+        self.overridden().cleanup_code()
+    
+        handler = self.get_handler('PARTICLES')
+        handler._cleanup_instances()
+

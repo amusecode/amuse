@@ -794,3 +794,38 @@ class TestBHTree(TestWithMPI):
         self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
         self.assertTrue((end-start) < very_short_time_to_evolve.value_in(units.s) + 2)#2 = some overhead compensation
         instance.stop()
+    def test20(self):
+        particles = datamodel.Particles(2)
+        particles.x = [0.0,10.0] | nbody_system.length
+        particles.y = 0.0 | nbody_system.length
+        particles.z = 0.0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx =  0.0 | nbody_system.speed
+        particles.vy =  0.0 | nbody_system.speed
+        particles.vz =  0.0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+
+        very_short_time_to_evolve = 1 | units.s
+        very_long_time_to_evolve = 1e9 | nbody_system.time
+       
+        instance = BHTree()
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_timeout = very_short_time_to_evolve 
+        self.assertEquals(instance.parameters.stopping_conditions_timeout, very_short_time_to_evolve)
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
+        instance.particles.add_particles(particles) 
+        codeparticles1 = instance.particles
+        instance.particles.add_particle(datamodel.Particle(
+            position = [0,1,2] |  nbody_system.length, 
+            velocity = [0,0,0] |  nbody_system.speed,
+            radius = 0.005 | nbody_system.length,
+            mass = 1 | nbody_system.mass
+        ))
+        codeparticles2 = instance.particles
+        self.assertTrue(codeparticles1 is codeparticles2)
+        instance.cleanup_code()
+        codeparticles3 = instance.particles
+        self.assertFalse(codeparticles1 is codeparticles3)
+    
+        instance.stop()
+

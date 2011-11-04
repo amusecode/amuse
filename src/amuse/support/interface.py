@@ -1065,6 +1065,9 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
             public_name = public_name
         )
 
+    def _cleanup_instances(self):
+        self.mapping_from_name_to_set_instance = {}
+
 class OverriddenCodeInterface(object):
 
     def __init__(self, code_interface):
