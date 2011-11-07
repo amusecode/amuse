@@ -21,6 +21,8 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 SCLIBS ?= -L../../../../lib/stopcond -lstopcond
 SCINC ?= -I../../../../lib/stopcond
 
+#PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
+
 GSL_FLAGS ?= $(shell gsl-config --cflags)
 GSL_LIBS ?= $(shell gsl-config --libs)
 GSL_INCL = $(GSL_FLAGS)
@@ -86,7 +88,7 @@ gadget2_worker: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDI
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)
 	
 gadget2_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PROFLIBS) $(ALLVARS)
 	
 
 $(PERIODIC_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
@@ -104,7 +106,7 @@ gadget2_worker_periodic: worker_code.cc worker_code.h gadget_code.po $(PERIODIC_
 	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) $(GSL_FLAGS) $< gadget_code.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a  $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o
 
 gadget2_worker_periodic_sockets: worker_code-sockets.cc worker_code.h gadget_code.po $(PERIODIC_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) $(GSL_FLAGS) $< gadget_code.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) $(GSL_FLAGS) $< gadget_code.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PROFLIBS) $(PERIODIC_BUILDDIR)/allvars.o
 	
 gadget_code.po: gadget_code.cc $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) -DPERIODIC -DNOGRAVITY -c -o $@ $< $(SCLIBS) $(GSL_LIBS)
