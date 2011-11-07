@@ -3,7 +3,7 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= mpif90
+MPIFC ?= mpif90
 FORTRAN ?= gfortran
 FC ?= $(FORTRAN)
 
@@ -48,11 +48,11 @@ distclean:
 
 evtwin_worker: mpi_code.f90 $(SRC)
 	make -s --no-print-directory -C $(BUILDDIR)
-	$(MPIF90) -I$(BUILDDIR) $< -o $@ $(EVTWINLIB)
+	$(MPIFC) -I$(BUILDDIR) $< -o $@ $(EVTWINLIB)
 
 evtwin_worker_sockets: worker_code-sockets.f90 $(SRC)
 	make -s --no-print-directory -C $(BUILDDIR)
-	$(MPIF90) -I$(BUILDDIR) $(FSINC) $< -o $@ $(EVTWINLIB) $(FSLIBS)
+	$(MPIFC) -I$(BUILDDIR) $(FSINC) $< -o $@ $(EVTWINLIB) $(FSLIBS)
 
 mpi_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
