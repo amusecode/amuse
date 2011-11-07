@@ -18,7 +18,7 @@ public class MPIProfilingConnection extends Thread {
 	public static final int SIZEOF_FLOAT = 4;
 	public static final int SIZEOF_DOUBLE = 8;
 	public static final int SIZEOF_BOOLEAN = 1;
-	
+
 	public static final int MAGIC_NUMBER = 449682;
 
 	private final SocketChannel channel;
@@ -41,45 +41,59 @@ public class MPIProfilingConnection extends Thread {
 			long read = channel.read(buffer);
 
 			if (read == -1) {
-				throw new IOException("Connection closed on reading data");
+				if (buffer.position() == 0) {
+					logger.info("MPI profiling connection closed");
+					return;
+				} else {
+					throw new IOException(
+							"unexpected end-of-stream on receiving mpi profiling data");
+				}
 			}
 		}
 	}
 
 	public void run() {
+		ByteBuffer buffer = ByteBuffer.allocateDirect((SIZEOF_INT * 2)
+				+ (poolSize * SIZEOF_LONG));
+		buffer.order(ByteOrder.nativeOrder());
 		try {
-
-			ByteBuffer buffer = ByteBuffer.allocateDirect((SIZEOF_INT * 2) + (poolSize * SIZEOF_LONG));
-			buffer.order(ByteOrder.nativeOrder());
-
 			buffer.clear().limit(SIZEOF_INT);
 
 			readAll(buffer);
-			
+
 			if (buffer.getInt(0) != MAGIC_NUMBER) {
-				throw new Exception("First int of message " + buffer.getInt(0) + " not equal to magic number " + MAGIC_NUMBER);
+				throw new Exception("First int of message " + buffer.getInt(0)
+						+ " not equal to magic number " + MAGIC_NUMBER);
 			}
 
 			while (channel.isConnected()) {
 				buffer.clear();
 				readAll(buffer);
-				
+
+				if (buffer.position() == 0) {
+					// channel closed, the end
+					return;
+				}
+
 				buffer.clear();
-				
+
 				int rank = buffer.getInt();
 				int size = buffer.getInt();
-				
+
+				if (size != poolSize) {
+					throw new Exception("EEP! size " + size
+							+ " not equal to pool size " + poolSize);
+				}
+
 				long[] sentPerRank = new long[size];
-				
+
 				buffer.asLongBuffer().get(sentPerRank);
-				
+
 				collector.addSentBytes(rank, size, sentPerRank);
 			}
 
 		} catch (Exception e) {
 			logger.error("Error on handling mpi profiling connection", e);
-
 		}
 	}
-
 }

@@ -22,6 +22,7 @@ void ibis_statistics_send_buffer(void *buffer, int length) {
 	int bytes_written;
 
 	if (socketfd <= 0) {
+		fprintf(stderr, "could not write data, socket not valid\n");
 		return;
 	}
 
@@ -48,7 +49,7 @@ void ibis_statistics_send_statistics() {
 	ibis_statistics_send_buffer(statistics, size * sizeof(int64_t));
 
 	for (i = 0; i < size; i++) {
-		fprintf(stderr, "rank %2d send %10ld bytes to rank %2d\n", rank, statistics[i], i);
+		/*fprintf(stderr, "rank %2d send %10ld bytes to rank %2d\n", rank, statistics[i], i);*/
 		statistics[i] = 0;
 	}
 }
@@ -82,7 +83,7 @@ void ibis_statistics_socket_connect() {
 		return;
 	}
 
-	fprintf(stderr, "statistics: connecting to socket on port %d\n", portno);
+	/*fprintf(stderr, "statistics: connecting to socket on port %d\n", portno);*/
 
 	server = gethostbyname("localhost");
 
