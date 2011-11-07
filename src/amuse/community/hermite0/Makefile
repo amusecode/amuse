@@ -21,6 +21,8 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
+#PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
+
 all: hermite_worker
 
 cleanall: clean 
@@ -44,7 +46,7 @@ hermite0_worker_sockets: hermite_worker_sockets
 	echo ""
 
 hermite_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(A_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $(A_OBJS) $(CODELIB) -o $@ $(SCLIBS) $<
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $(A_OBJS) $(CODELIB) -o $@ $(SCLIBS) $(PROFLIBS) $<
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
