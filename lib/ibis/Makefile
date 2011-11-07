@@ -1,12 +1,16 @@
 VERSION = -20111028-snapshot
 CODEDIR = deploy
 DOWNLOAD_FROM_WEB = ./downloadhttp.py
+LIBPROFILING = src/profiling/libibisprofiling.a
 
 JDK ?= /usr
 
 CLASSPATH="deploy/lib/*:tmp"
 
-all: ${CODEDIR} lib/ibis-amuse.jar
+all: ${CODEDIR} ${LIBPROFILING} lib/ibis-amuse.jar
+
+$(LIBPROFILING):src/profiling
+	make -C src/profiling all
 
 $(CODEDIR):
 ifdef DOWNLOAD_CODES
@@ -40,6 +44,7 @@ lib/ibis-amuse.jar: src/*/*/*.java
 	@echo done compiling Amuse/Ibis lib
 
 clean:
+	make -C src/profiling clean
 	$(RM) -r lib tmp
 	
 distclean: clean

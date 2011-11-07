@@ -342,14 +342,14 @@ public abstract class CodeInterface implements RegistryEventHandler, Runnable {
 
             poolInfo = new PoolInfo(id, nrOfNodes);
             //start monitoring mpi, offer as MBean
-            new MPIProfilingCollector(poolInfo.getWorkerIbisList(nrOfWorkers));
+            MPIProfilingCollector collector = new MPIProfilingCollector(poolInfo.getWorkerIbisList(nrOfWorkers));
 
             if (poolInfo.getRank() == 0) {
                 if (jni) {
                     codeInterface = new JNICodeInterface(id, poolInfo, codeName);
                 } else {
                     codeInterface = new SocketCodeInterface(id, poolInfo, codeName,
-                            codeDir, amuseHome, mpirun, nrOfWorkers);
+                            codeDir, amuseHome, mpirun, nrOfWorkers, collector.getPort());
                 }
 
                 Runtime.getRuntime().addShutdownHook(

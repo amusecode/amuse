@@ -1,14 +1,12 @@
 package ibis.amuse;
 
-import ibis.util.ThreadPool;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 
-public class OutputPrefixForwarder implements Runnable {
+public class OutputPrefixForwarder extends Thread {
 
     private final BufferedReader input;
 
@@ -34,7 +32,9 @@ public class OutputPrefixForwarder implements Runnable {
 
         this.outputPrefix = outputPrefix;
 
-        ThreadPool.createNew(this, "prefix forwarder");
+        setDaemon(false);
+        setName("prefix forwarder");
+        start();
     }
 
     /**
@@ -47,12 +47,14 @@ public class OutputPrefixForwarder implements Runnable {
 
                 if (line == null) {
                     // we're done
+                	output.flush();
                     return;
                 }
 
                 output.println(outputPrefix + line);
             } catch (IOException e) {
                 // we're done
+            	output.flush();
                 return;
             }
         }

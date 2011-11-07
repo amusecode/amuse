@@ -7,160 +7,191 @@
 #include <string.h>
 #include <stdlib.h>
 
+static int64_t *statistics;
 
-static char *statistic_names[STATS_TOTAL] = { 
-   STATS_NAME_BARRIER, 
-   STATS_NAME_SEND,
-   STATS_NAME_RECV,
-   STATS_NAME_ISEND,
-   STATS_NAME_IRECV,
-   STATS_NAME_BCAST,
-   STATS_NAME_SCATTER,
-   STATS_NAME_GATHER,
-   STATS_NAME_ALLGATHER,
-   STATS_NAME_ALLTOALL,
-   STATS_NAME_REDUCE,
-   STATS_NAME_ALLREDUCE,
-   STATS_NAME_SCAN };
+static int socketfd = -1;
 
-static stats statistics[STATS_MAX_COMM];
+static int rank = 0;
 
-static int nextStat = 0;
+static int size = 0;
 
-static int socketfd = 0;
+static int add_count = 0;
 
-void statistics_socket_connect() {
-    int portno;
-    struct sockaddr_in serv_addr;
-    struct hostent *server;
-    char *portenv;
+void ibis_statistics_send_buffer(void *buffer, int length) {
+	int total_written = 0;
+	int bytes_written;
 
-    socketfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (socketfd <= 0) {
+		return;
+	}
 
-    if (socketfd <= 0) {
-        fprintf(stderr, "statistics: cannot open socket for MPI monitoring\n");
-        return;
-    }
+	while (total_written < length) {
+		bytes_written = write(socketfd, ((char *) buffer) + total_written,
+				length - total_written);
 
-    portenv = getenv("IBIS_MPI_COLLECTOR_PORT");
+		if (bytes_written == -1) {
+			fprintf(stderr, "could not write data\n");
+			socketfd = -1;
+			return;
+		}
 
-    if (portenv == NULL) {
-        fprintf(stderr, "statistics: mpi collector port unknown\n");
-        socketfd = -1;
-        return;
-    }
-
-    portno = atoi(portenv);
-
-    if (portno <= 0) {
-        fprintf(stderr, "statistics: mpi collector port unknown\n");
-        socketfd = -1;
-        return;
-    }
-
-    fprintf(stderr, "statistics: connecting to socket on port %d\n", portno);
-
-    server = gethostbyname("localhost");
-
-    bzero((char *) &serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    bcopy((char *) server->h_addr, (char *) &serv_addr.sin_addr.s_addr, server->h_length);
-    serv_addr.sin_port = htons(portno);
-    if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-        /* set fd to negative number to denote it does not work */
-        fprintf(stderr, "cannot connect socket\n");
-        socketfd = -1;
-        return;
-    }
-
-    write(socketfd, (char *)&portno, 4);
+		total_written = total_written + bytes_written;
+	}
 }
 
+/* send rank of process, total size, and sent count per process */
+void ibis_statistics_send_statistics() {
+	int i;
 
-int create_communicator_statistics(MPI_Comm comm, int rank, int size)
-{
-   int i;
+	ibis_statistics_send_buffer(&rank, sizeof(int32_t));
+	ibis_statistics_send_buffer(&size, sizeof(int32_t));
+	ibis_statistics_send_buffer(statistics, size * sizeof(int64_t));
 
-
-   fprintf(stderr,"creating statistics for %d\n", comm);
-
-   statistics_socket_connect();
-
-   if (nextStat == STATS_MAX_COMM) {
-      return STATS_ERROR;
-   }
-
-   statistics[nextStat].comm = comm;
-   statistics[nextStat].rank = rank;
-   statistics[nextStat].size = size;
-
-   for (i=0;i<STATS_TOTAL;i++) {
-      statistics[nextStat].counters[i] = 0L;
-   }
-
-   nextStat++;
-
-   return STATS_OK;
+	for (i = 0; i < size; i++) {
+		fprintf(stderr, "rank %2d send %10ld bytes to rank %2d\n", rank, statistics[i], i);
+		statistics[i] = 0;
+	}
 }
 
-int inc_communicator_statistics(MPI_Comm comm, int field)
-{
-   int i;
+void ibis_statistics_socket_connect() {
+	int portno;
+	struct sockaddr_in serv_addr;
+	struct hostent *server;
+	char *portenv;
 
-/*   fprintf(stderr,"gathering statistics for %d\n", comm);*/
+	socketfd = socket(AF_INET, SOCK_STREAM, 0);
 
-   if (field < 0 || field >= STATS_TOTAL) { 
-      return STATS_ERROR;
-   }
+	if (socketfd <= 0) {
+		fprintf(stderr, "statistics: cannot open socket for MPI monitoring\n");
+		return;
+	}
 
-   for (i=0;i<nextStat;i++) {
-      if (statistics[i].comm == comm) {
-         statistics[i].counters[field]++;
-         return STATS_OK;
-      }
-   }
+	portenv = getenv("IBIS_MPI_COLLECTOR_PORT");
 
-   return STATS_NOT_FOUND;
+	if (portenv == NULL) {
+		fprintf(stderr, "statistics: mpi collector port unknown\n");
+		socketfd = -1;
+		return;
+	}
+
+	portno = atoi(portenv);
+
+	if (portno <= 0) {
+		fprintf(stderr, "statistics: mpi collector port unknown\n");
+		socketfd = -1;
+		return;
+	}
+
+	fprintf(stderr, "statistics: connecting to socket on port %d\n", portno);
+
+	server = gethostbyname("localhost");
+
+	bzero((char *) &serv_addr, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	bcopy((char *) server->h_addr, (char *) &serv_addr.sin_addr.s_addr,
+			server->h_length);
+	serv_addr.sin_port = htons(portno);
+	if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
+			< 0) {
+		/* set fd to negative number to denote it does not work */
+		fprintf(stderr, "statistics: cannot connect socket\n");
+		socketfd = -1;
+		return;
+	}
+
+	int32_t magic = MAGIC_NUMBER;
+
+	ibis_statistics_send_buffer(&magic, sizeof(int32_t));
 }
 
-static void print_comm_stats(int index) 
-{
-   char bufC[MPI_MAX_OBJECT_NAME+1];
-   int lenC, i;
+void ibis_statistics_init(int myrank, int mysize) {
+	int i;
+	rank = myrank;
+	size = mysize;
 
-   MPI_Comm_get_name(statistics[index].comm, bufC, &lenC);
+	fprintf(stderr, "ibis_statistics_init(%d, %d)\n", rank, size);
 
-   fprintf(stderr, "MPIBIS: COMM STATS %s %d %d ", bufC, statistics[index].size, statistics[index].rank);
+	if (size < 0) {
+		fprintf(stderr, "statistics: negative size pool!\n");
+		socketfd = -1;
+		return;
+	}
 
-   for (i=0;i<STATS_TOTAL;i++) {
-      fprintf(stderr, "/ %s %lu", statistic_names[i], statistics[index].counters[i]);
-   }
+	statistics = malloc(size * sizeof(int64_t));
 
-   fprintf(stderr,"\n");
+	for (i = 0; i < size; i++) {
+		statistics[i] = 0;
+	}
+
+	ibis_statistics_socket_connect();
+
 }
 
-int print_communicator_statistics(MPI_Comm comm)
-{
-   int i;
+void ibis_statistics_add_all_others(int length) {
+	int i;
 
-   for (i=0;i<nextStat;i++) {
-      if (statistics[i].comm == comm) {
-         print_comm_stats(i);
-         return STATS_OK;
-      }
-   }
-
-   return STATS_NOT_FOUND;
+	for (i = 0; i < size; i++) {
+		if (i != rank) {
+			statistics[i] += length;
+		}
+	}
 }
 
-int print_all_communicator_statistics()
-{
-   int i;
- 
-   for (i=0;i<nextStat;i++) {
-      print_comm_stats(i);
-   }
+void ibis_statistics_add(int type, int src_dst_root, int length) {
+	/*	fprintf(stderr, "ibis_statistics_add(%d, %d, %d)\n", type, src_dst_root, length);*/
 
-   return STATS_OK;
+	switch (type) {
+	case STATS_BARRIER:
+		/* guestimate, mostly looks nice in a visualization */
+		ibis_statistics_add_all_others(4);
+		break;
+	case STATS_SEND:
+	case STATS_ISEND:
+		statistics[src_dst_root] += length;
+		break;
+	case STATS_BCAST:
+	case STATS_SCATTER:
+		if (rank == src_dst_root) {
+			ibis_statistics_add_all_others(length);
+		}
+		break;
+	case STATS_GATHER:
+	case STATS_REDUCE:
+		if (rank != src_dst_root) {
+			statistics[src_dst_root] += length;
+		}
+		break;
+	case STATS_ALLGATHER:
+	case STATS_ALLTOALL:
+	case STATS_ALLREDUCE:
+	case STATS_SCAN:
+		ibis_statistics_add_all_others(length);
+		break;
+	case STATS_RECV:
+	case STATS_IRECV:
+		/* we only track sending bytes, not receiving them */
+		break;
+	default:
+		fprintf(stderr, "ibis_statistics_add(%d, %d, %d): don't know type %d\n",
+				type, src_dst_root, length, type);
+		break;
+	}
+
+	add_count++;
+
+	/* send statistics once in a while */
+	if (add_count > 100) {
+		ibis_statistics_send_statistics();
+		add_count = 0;
+	}
+}
+
+void ibis_statistics_finalize() {
+	int i;
+	fprintf(stderr, "ibis_statistics_finalize()\n");
+
+	/* send one last time */
+	ibis_statistics_send_statistics();
+	close(socketfd);
 }
 
