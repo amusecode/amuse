@@ -138,10 +138,17 @@ public class RemoteCodeInterface implements Runnable {
             nrOfWorkers = initRequest.getInteger(0);
             nrOfNodes = initRequest.getInteger(1);
 
+            //get rid of "ugly" parts of id
+            
+            String idName = codeName;
+           
+            idName = idName.replace("_worker", "");
+            idName = idName.replace("_sockets", "");
+            
+            id = idName + "-" + getNextID();
+
             // initialize ibis ports
             
-            id = codeName + "-" + getNextID();
-
             receivePort = ibis
                     .createReceivePort(Daemon.portType, id.toString());
             receivePort.enableConnections();
