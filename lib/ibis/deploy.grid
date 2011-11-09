@@ -29,6 +29,21 @@
 
 local.job.wrapper.script=multicore.script
 
+# Details of cluster "LGM"
+LGM.server.adaptor = SshTrilead
+LGM.server.uri = any://fs.lgm.liacs.nl
+LGM.job.adaptor = SshTrilead
+LGM.job.uri = any://fs.lgm.liacs.nl
+LGM.file.adaptors = SshTrilead,Local
+LGM.java.path = /home/niels/jdk1.6.0_27/bin/java
+LGM.job.wrapper.script = lgm.script
+LGM.nodes = 24
+LGM.cores = 192
+LGM.latitude = 52.1686
+LGM.longitude = 4.4598
+LGM.amuse.home=/home/niels/amuse
+LGM.mpirun=/home/niels/amuse/prerequisites/bin/mpirun
+
 # Details of cluster "VU"
 VU.server.adaptor = SshTrilead
 VU.server.uri = any://fs0.das4.cs.vu.nl
@@ -41,8 +56,8 @@ VU.job.wrapper.script = das4.script
 #VU.user.key = 
 #VU.server.output.files =
 #VU.server.system.properties =
-VU.nodes = 85
-VU.cores = 340
+VU.nodes = 56
+VU.cores = 448
 #VU.memory = 
 VU.latitude = 52.3328
 VU.longitude = 4.8669
@@ -60,8 +75,8 @@ VU-GPU.job.wrapper.script = das4-gpu.script
 #VU-GPU.user.key = 
 #VU-GPU.server.output.files =
 #VU-GPU.server.system.properties =
-VU-GPU.nodes = 85
-VU-GPU.cores = 340
+VU-GPU.nodes = 20
+VU-GPU.cores = 160
 #VU-GPU.memory = 
 VU-GPU.latitude = 52.3328
 VU-GPU.longitude = 4.8669
@@ -85,6 +100,7 @@ ASTRON.cores = 340
 ASTRON.latitude = 52.8133
 ASTRON.longitude = 6.3960
 ASTRON.amuse.home=/home/niels/amuse
+ASTRON.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
 
 # Details of cluster "MultimediaN"
 MultimediaN.server.adaptor = SshTrilead
@@ -104,6 +120,9 @@ MultimediaN.cores = 92
 #MultimediaN.memory = 
 MultimediaN.latitude = 52.3561
 MultimediaN.longitude = 4.953
+MultimediaN.amuse.home=/home/niels/amuse
+MultimediaN.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
+
 
 # Details of cluster "UvA"
 UvA.server.adaptor = SshTrilead
@@ -123,6 +142,8 @@ UvA.cores = 164
 #UvA.memory = 
 UvA.latitude = 52.3561
 UvA.longitude = 4.953
+UvA.amuse.home=/home/niels/amuse
+UvA.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
 
 # Details of cluster "Delft"
 Delft.server.adaptor = SshTrilead
@@ -131,19 +152,27 @@ Delft.job.adaptor = SshTrilead
 Delft.job.uri = any://fs3.das4.tudelft.nl/jobmanager-sge
 Delft.file.adaptors = SshTrilead,Local
 Delft.java.path = java
-Delft.job.wrapper.script = das4-gpu.script
-#Delft.user.name = 
-#Delft.user.key = 
-#Delft.cache.dir = 
-#Delft.server.output.files =
-#Delft.server.system.properties =
-Delft.nodes = 68
-Delft.cores = 136
-#Delft.memory = 
+Delft.job.wrapper.script = das4.script
+Delft.nodes = 20
+Delft.cores = 160
 Delft.latitude = 51.9979
 Delft.longitude = 4.3742
 Delft.amuse.home=/home/niels/amuse
 Delft.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
+
+Delft-GPU.server.adaptor = SshTrilead
+Delft-GPU.server.uri = any://fs3.das4.tudelft.nl
+Delft-GPU.job.adaptor = SshTrilead
+Delft-GPU.job.uri = any://fs3.das4.tudelft.nl/jobmanager-sge
+Delft-GPU.file.adaptors = SshTrilead,Local
+Delft-GPU.java.path = java
+Delft-GPU.job.wrapper.script = das4-gpu.script
+Delft-GPU.nodes = 8
+Delft-GPU.cores = 64
+Delft-GPU.latitude = 51.9979
+Delft-GPU.longitude = 4.3742
+Delft-GPU.amuse.home=/home/niels/amuse
+Delft-GPU.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
 
 # Details of cluster "Leiden"
 Leiden.server.adaptor = SshTrilead
@@ -153,8 +182,6 @@ Leiden.job.uri = any://fs1.das4.liacs.nl/jobmanager-sge
 Leiden.file.adaptors = SshTrilead,Local
 Leiden.java.path = java
 Leiden.job.wrapper.script = das4.script
-Leiden.amuse.home=/home/niels/amuse
-Leiden.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
 #Leiden.user.name = 
 #Leiden.user.key = 
 #Leiden.cache.dir = 
@@ -165,3 +192,5 @@ Leiden.cores = 64
 #Leiden.memory = 
 Leiden.latitude = 52.1686
 Leiden.longitude = 4.4598
+Leiden.amuse.home=/home/niels/amuse
+Leiden.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
