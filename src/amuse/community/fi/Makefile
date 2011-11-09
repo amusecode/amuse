@@ -96,7 +96,7 @@ fi_worker: worker.f90 interface.o $(BUILDDIR)/libfi.a
 	$(MPIFC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SCLIBS)
 
 fi_worker_sockets: worker-sockets.f90 interface.o $(BUILDDIR)/libfi.a
-	$(MPIFC) $(FFLAGS) $(SCINC) $(FSINC) worker-sockets.f90 interface.o -o $@ $(BUILDDIR)/libfi.a\
+	$(MPIFC) $(FFLAGS) $(SCINC) $(FSINC) worker-sockets.f90 interface.o -o $@ $(BUILDDIR)/libfi.a \
 	$(LIBS) $(SCLIBS) $(FSLIBS)
 
 fi_worker_gl: glworker.f90 interface.o $(BUILDDIR)/libfi.a
