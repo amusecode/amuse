@@ -42,7 +42,7 @@ LGM.cores = 192
 LGM.latitude = 52.1686
 LGM.longitude = 4.4598
 LGM.amuse.home=/home/niels/amuse
-LGM.mpirun=/home/niels/amuse/prerequisites/bin/mpirun
+LGM.mpirun=/home/niels/bin/fakempirun
 
 # Details of cluster "VU"
 VU.server.adaptor = SshTrilead
