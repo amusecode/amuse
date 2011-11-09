@@ -43,6 +43,7 @@ LGM.latitude = 52.1686
 LGM.longitude = 4.4598
 LGM.amuse.home=/home/niels/amuse
 LGM.mpirun=/home/niels/bin/fakempirun
+LGM.color=#00FF00
 
 # Details of cluster "VU"
 VU.server.adaptor = SshTrilead
@@ -173,6 +174,7 @@ Delft-GPU.latitude = 51.9979
 Delft-GPU.longitude = 4.3742
 Delft-GPU.amuse.home=/home/niels/amuse
 Delft-GPU.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
+Delft-GPU.color=#00FFFF
 
 # Details of cluster "Leiden"
 Leiden.server.adaptor = SshTrilead
