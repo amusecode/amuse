@@ -19,10 +19,10 @@ SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 
 %.o: %.for Makefile
-	$(CMPLR) $(FFLAGS) -c -o $@ $< 
+	$(CMPLR) $(FFLAGS) $(SCINC) -c -o $@ $< 
 
 %.o: %.f90 Makefile
-	$(CMPLR) $(FFLAGS) -c -o $@ $< 
+	$(CMPLR) $(FFLAGS) $(SCINC) -c -o $@ $< 
 
 all: $(EXECUTABLES)
 
