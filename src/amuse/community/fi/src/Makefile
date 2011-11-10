@@ -1,4 +1,9 @@
 ## makefile for treesph code
+AMUSE_DIR?=../../../../..
+-include ${AMUSE_DIR}/config.mk
+
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 FC=ifort
 F2PY=f2py
@@ -10,7 +15,6 @@ OMPFLAGS= # -openmp -openmp_report0
 # FFLAGS2=-fdefault-real-8 -ffree-line-length-256  -frecord-marker=4
 
 # ifort flags
-
 
 FFLAGS2= -r8 -O2 -ip -u  $(PIC)
 
@@ -59,10 +63,10 @@ F2PYFLAGS=--quiet --f90exec=$(FC) --f77exec=$(FC) \
 all: $(APPS)
 
 %.o: %.f90 globals.h Makefile
-	$(FC) $(FFLAGS)  -c -o $@ $< 
+	$(FC) $(FFLAGS) $(SCINC)  -c -o $@ $< 
 
 %.o: %.f globals.h Makefile
-	$(FC) $(FFLAGS)  -c -o $@ $< 
+	$(FC) $(FFLAGS) $(SCINC) -c -o $@ $< 
 
 stars3d.o: stars3d.f90 mem.o
 	$(FC) $(FFLAGS) $(GLINCLUDE) -c -o $@ $<

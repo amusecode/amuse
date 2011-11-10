@@ -1,3 +1,8 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../../..
+-include ${AMUSE_DIR}/config.mk
+
 #IGNORE:
 CMPLR ?= $(FC)
 FFLAGS += -O 
@@ -10,7 +15,7 @@ TARFILES = $(SRCE) $(DFLE) README.txt Makefile
 EXECUTABLES = mercury
 OBJT = $(SRCE:.for=.o)
 
-AMUSE_DIR?=../../../../../
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 
 %.o: %.for Makefile

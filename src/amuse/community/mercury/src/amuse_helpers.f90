@@ -737,7 +737,7 @@ end function
        coord,bcoord)
 !
       implicit none
-      include "../../../../../lib/stopcond/stopcond.inc"
+      include "stopcond.inc"
       include 'amuse_mercury.inc'
       
 !

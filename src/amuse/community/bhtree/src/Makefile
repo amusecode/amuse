@@ -1,3 +1,6 @@
+AMUSE_DIR?=../../../../..
+include ${AMUSE_DIR}/config.mk
+
 CODELIB = libbhtree.a
 
 CXXFLAGS += -Wall -DTREE -DNOGRAPHICS 
@@ -10,8 +13,8 @@ AR = ar ruv
 RANLIB = ranlib
 RM = rm
 
-SCLIBS ?= -L../../../../../lib/stopcond -lstopcond
-SCINC ?= -I../../../../../lib/stopcond
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 all: BHTC $(CODELIB)
 

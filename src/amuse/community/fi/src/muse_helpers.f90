@@ -278,7 +278,7 @@ end function
 
 subroutine muse_stepsys(tend,sync)
  include 'globals.h'
- include '../../../../../lib/stopcond/stopcond.inc'
+ include 'stopcond.inc'
  real :: tend, stop_boxsize
  integer :: i,p
  integer :: sync

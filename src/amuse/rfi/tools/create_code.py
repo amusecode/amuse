@@ -1,5 +1,6 @@
 import numpy
 import sys
+import os
 
 from amuse.support.core import late, print_out
 from amuse.rfi.core import legacy_function
@@ -28,6 +29,13 @@ class GenerateASourcecodeString(object):
     @late
     def out(self):
         return print_out()
+        
+    @late
+    def must_generate_mpi(self):
+        if 'CFLAGS' in os.environ:
+            return not (os.environ['CFLAGS'].find('-DNOMPI') >= 0)
+        else:
+            return True
 
 class GenerateASourcecodeStringFromASpecificationClass(GenerateASourcecodeString):
     

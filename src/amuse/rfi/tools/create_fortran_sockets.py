@@ -189,26 +189,17 @@ redirect_outputs_interface_code = """
   end interface
 """
 
-main_program_code_ifdef = """
+main_program_code_nompi = """
   program amuse_worker
     use iso_c_binding
     use forsockets
     
     implicit none
     
-#ifndef NOMPI
-    include 'mpif.h'
-#endif
-    integer :: provided,ioerror, port, rank
     character(len=32) :: port_string
+    integer :: port, rank
 
-#ifndef NOMPI
-    call mpi_init_thread(mpi_thread_multiple, provided, ioerror)
-    call mpi_comm_rank(MPI_COMM_WORLD, rank, ioerror)
-#else
     rank = 0
-    ioerror = 0
-#endif
 
     if (rank .eq. 0) then
 
@@ -221,10 +212,6 @@ main_program_code_ifdef = """
     
     call run_loop(rank)
     
-#ifndef NOMPI
-    call mpi_finalize(ioerror)
-#endif
-
 
     if (rank .eq. 0) then
       call forsockets_close()
@@ -291,6 +278,32 @@ string_receive_code = """
         
         call MPI_BCast(characters_in(i), strings_in(i) , MPI_INTEGER, 0, MPI_COMM_WORLD, ioerror)
 
+        !print*, 'received string: ', characters_in(i), ' of length ', strings_in(i)
+
+      end do
+""" 
+
+string_receive_code_nompi = """
+      if (rank .eq. 0) then
+        call receive_integers(c_loc(strings_in), header_in(HEADER_STRING_COUNT))
+      end if
+      
+      !print*, 'received string header:', strings_in
+
+      do i = 1, header_in(HEADER_STRING_COUNT), 1
+        if (strings_in(i) .gt. MAX_STRING_LENGTH) then
+            print*, 'error! cannot receive strings exceeding length ', MAX_STRING_LENGTH
+            
+            call exit(1)
+        end if
+        
+        characters_in(i) = ''
+        
+        if (rank .eq. 0) then
+          call receive_string(c_loc(characters_in(i)), strings_in(i))
+        end if
+        
+        
         !print*, 'received string: ', characters_in(i), ' of length ', strings_in(i)
 
       end do
@@ -593,9 +606,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self._result = self.out.string
 
     def output_mpi_include(self):
-        #self.out.lf_noindent() + '#ifndef NOMPI'
-        self.out.n() + "INCLUDE 'mpif.h'"
-        #self.out.lf_noindent() + '#endif'
+        if self.must_generate_mpi:
+            self.out.n() + "INCLUDE 'mpif.h'"
         
   
             
@@ -716,9 +728,9 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf() + 'if (rank .eq. 0) then'
         self.out.indent().lf() + 'call receive_integers(c_loc(header_in), HEADER_SIZE)'
         self.out.dedent().lf() + 'end if'
-        #self.out.lf_noindent() + '#ifndef NOMPI'
-        self.out.lf() + 'call mpi_bcast(header_in, HEADER_SIZE, MPI_INTEGER, 0, MPI_COMM_WORLD, ioerror)'
-        #self.out.lf_noindent() + '#endif'
+        
+        if self.must_generate_mpi:
+            self.out.lf() + 'call mpi_bcast(header_in, HEADER_SIZE, MPI_INTEGER, 0, MPI_COMM_WORLD, ioerror)'
         
 #        self.out.lf() + "print*, 'getting data for for function with function id', header_in(HEADER_FUNCTION_ID), ' on rank ', rank"
         
@@ -745,7 +757,10 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
             self.out.indent()
             
             if dtype == 'string':
-                self.out.lf() + string_receive_code
+                if self.must_generate_mpi:
+                    self.out.lf() + string_receive_code
+                else:
+                    self.out.lf() + string_receive_code_nompi
             else:
                 self.out.lf() + 'if (rank .eq. 0) then'
                 self.out.indent().lf() + 'call receive_'
@@ -754,9 +769,9 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 self.out + spec.counter_name + '))'
                 self.out.dedent().lf() + 'end if'
                 
-                #self.out.lf_noindent() + '#ifndef NOMPI'
-                self.out.lf() + 'call MPI_BCast(' + spec.input_var_name + ', header_in(' + spec.counter_name + ') , ' + mpi_types[dtype] + ', 0, MPI_COMM_WORLD, ioerror)'
-                #self.out.lf_noindent() + '#endif'
+                if self.must_generate_mpi:
+                    self.out.lf() + 'call MPI_BCast(' + spec.input_var_name + ', header_in(' + spec.counter_name + ') , ' + mpi_types[dtype] + ', 0, MPI_COMM_WORLD, ioerror)'
+    
             self.out.dedent().lf()
             self.out + 'end if'
             self.out.lf()
@@ -767,9 +782,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf() + 'header_out(HEADER_FUNCTION_ID) = header_in(HEADER_FUNCTION_ID)'
         self.out.lf() + 'header_out(HEADER_CALL_COUNT) = header_in(HEADER_CALL_COUNT)'
         
-        #self.out.lf_noindent() + '#ifndef NOMPI'
-        self.out.lf().lf() + 'call mpi_barrier (MPI_COMM_WORLD,ioerror)'
-        #self.out.lf_noindent() + '#endif'
+        if self.must_generate_mpi:
+            self.out.lf().lf() + 'call mpi_barrier (MPI_COMM_WORLD,ioerror)'
         
         self.out.lf().lf() + 'error = .false.'
         
@@ -807,9 +821,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         
 #        self.out.lf().lf() + "!print*, 'sending header', header_out"
 
-        #self.out.lf().lf_noindent() + '#ifndef NOMPI'
-        self.out.lf() + 'call mpi_barrier (MPI_COMM_WORLD,ioerror)'
-        #self.out.lf_noindent() + '#endif'
+        if self.must_generate_mpi:
+            self.out.lf() + 'call mpi_barrier (MPI_COMM_WORLD,ioerror)'
         
         self.out.lf() + 'if (rank .eq. 0) then'
         self.out.indent()
@@ -874,7 +887,11 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf().lf() + redirect_outputs_function_code
         
     def output_main(self):
-        self.out.lf().lf() + main_program_code
+        
+        if self.must_generate_mpi:
+            self.out.lf().lf() + main_program_code
+        else:
+            self.out.lf().lf() + main_program_code_nompi
         
 class GenerateAFortranStubStringFromASpecificationClass\
     (GenerateASourcecodeStringFromASpecificationClass):

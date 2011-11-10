@@ -15,7 +15,6 @@ PERIODIC_BUILDDIR = build_periodic
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 
-
 GLOBJECTS=$(BUILDDIR)/fthread.o $(BUILDDIR)/stars3d.o $(BUILDDIR)/libpt.a
 PGLOBJECTS=$(PERIODIC_BUILDDIR)/fthread.o $(PERIODIC_BUILDDIR)/stars3d.o $(PERIODIC_BUILDDIR)/libpt.a
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/

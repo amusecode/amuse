@@ -34,7 +34,9 @@ class CodeCommand(Command):
          "directory for temporary files (build by-products)"),
         ('inplace', 'i',
          "ignore build-lib and put compiled extensions into the source " +
-         "directory alongside your pure Python modules"),
+         "directory alongside your pure Python modules", 1),
+        ('no-inplace', 'k',
+         "put compiled extensions into the  build temp "),
         ('define=', 'D',
          "C preprocessor macros to define"),
         ('undef=', 'U',
@@ -49,6 +51,8 @@ class CodeCommand(Command):
         ('lib-dir=', 'l', "directory containing libraries to build"),
     ]
 
+    negative_opt = {'no-inplace':'inplace'}
+    
     boolean_options = ['force', 'inplace', 'debug', 'variant']
 
     def initialize_options (self):
@@ -60,7 +64,7 @@ class CodeCommand(Command):
         self.found_cuda = False
         self.found_sapporo = False
         self.variant = False
-        self.inplace = 1
+        self.inplace = True
         
         self.build_lib = None
         self.build_temp = None
@@ -85,7 +89,12 @@ class CodeCommand(Command):
                 self.codes_dir = os.path.join(self.build_lib, 'amuse', 'community')
                 
         if self.lib_dir is None:
-            self.lib_dir = 'lib'
+            if self.inplace:
+                #self.lib_dir = os.path.join(self.amuse_src_dir, 'lib')
+                self.lib_dir = os.path.join('lib')
+            else:
+                #self.lib_dir = os.path.join(self.build_temp, 'lib')
+                self.lib_dir = os.path.join('lib')
         
         
         if is_configured:
@@ -107,7 +116,10 @@ class CodeCommand(Command):
         self.set_libdir_variables()
         self.set_libs_variables()
         self.save_cfgfile_if_not_exists()
-    
+        
+        
+        self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+        
     
     def set_fortran_variables(self):
         if 'FORTRAN' in self.environment:
@@ -583,14 +595,15 @@ class BuildCodes(CodeCommand):
         if not self.is_mpi_enabled():
             print build_to_special_targets
             all_build = set(build)
-            for i, x in enumerate(list(not_build)):
-                print i, x, x in build_to_special_targets
+            not_build_copy = []
+            for x in not_build:
                 if x in build_to_special_targets:
-                    del not_build[i]
                     if not x in all_build:
                         build.append(x)
                         all_build.add(x)
-                    
+                else:
+                    not_build_copy.append(x)
+            not_build = not_build_copy
                 
         
         if not_build or not_build_special or is_download_needed or is_cuda_needed:

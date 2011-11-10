@@ -26,8 +26,8 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./downloadhttp.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 
-SCLIBS ?= -L../../../../lib/stopcond -lstopcond
-SCINC ?= -I../../../../lib/stopcond
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 ATHENA_OBJS = $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o $(ATHENA_DIR)/src/*/*.o))
 

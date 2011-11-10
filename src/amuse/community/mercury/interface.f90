@@ -1,6 +1,6 @@
 function initialize_code() result(ret)
   use amuse_mercuryMod
-#include "../../../../lib/stopcond/stopcond.inc"
+  include "stopcond.inc"
   integer :: ret
   integer :: set_support_for_condition, error
   error = set_support_for_condition(TIMEOUT_DETECTION)

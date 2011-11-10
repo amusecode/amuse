@@ -1,4 +1,6 @@
 
+AMUSE_DIR?=../../../../..
+
 OPTS ?= -DNOMPI
 GL_PATH ?= /data/pelupes/libraries/f90gl-1.2.11
 
@@ -8,7 +10,6 @@ AR = ar ruv
 RANLIB = ranlib
 RM = rm
 
-AMUSE_DIR?=../../../../../
 
 SOURCEF = \
 allgather_ap.F      cmcorr.F        corrector.F     cputime.F		\
@@ -37,7 +38,7 @@ LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
 LIBS     =  $(CUDA_LIBS) -lsapporo -lm -lboost_thread-mt -lpthread
 
 
-G6LIBS ?= -L../../../../../lib/g6 -lg6
+G6LIBS ?= -L$(AMUSE_DIR)/lib/g6 -lg6
 
 LIBS     = -lm
 
@@ -109,10 +110,10 @@ clean:
 	rm -f *.o .m* .n* *.lst *.L *~ phiGRAPE libpt.a *.mod $(CODELIB)
 
 .f.o:
-	$(FC) $(FFLAGS) -c $<
+	$(FC) $(FFLAGS) $(SCINC) -c $<
 
 .c.o:
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) $(SCINC) -c $<
 
 .F.o:
-	$(FC) $(FFLAGS) -c $<
+	$(FC) $(FFLAGS) $(SCINC) -c $<

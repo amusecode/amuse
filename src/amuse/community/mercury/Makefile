@@ -12,6 +12,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 LIBS=$(SRC)/libmercury.a
 
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
@@ -30,10 +31,10 @@ GLCLASSNAME=glMercury
 all: mercury_worker
 
 %.o: %.f90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2)  -c -o $@ $< 
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC)  -c -o $@ $< 
 
 %.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) -c -o $@ $< 
 
 mercury_worker: worker.f90 interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS) $(SCLIBS)

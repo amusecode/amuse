@@ -618,7 +618,7 @@ C====================================================================
       FUNCTION initialize_code()
       IMPLICIT NONE
 #include "src/general.inc"
-#include "../../lib/stopcond/stopcond.inc"
+#include "stopcond.inc"
       INTEGER i,initialize_code
       INTEGER set_support_for_condition, error
 
@@ -1305,7 +1305,7 @@ C            ----------------------
 C---  isync removed      
       IMPLICIT NONE 
 #include "src/general.inc"
-#include "../../../../lib/stopcond/stopcond.inc"
+#include "stopcond.inc"
 C---  local vars
       INTEGER          evolve_model
       DOUBLE PRECISION tend

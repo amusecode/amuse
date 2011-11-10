@@ -2,7 +2,7 @@
 C===  calc the grav for the active particles in first step
       IMPLICIT NONE
 #include "general.inc"
-#include "../../../../../lib/stopcond/stopcond.inc"
+#include "stopcond.inc"
 
       INTEGER is_stopping_condition_enabled
       INTEGER is_collision_detection_enabled

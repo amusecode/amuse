@@ -9,6 +9,9 @@ export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py build build_codes --variant 
+	
+allinbuild:
+	$(PYTHON) setup.py build build_codes --variant --no-inplace --verbose
 
 build.py: build.py.in
 	@echo "****************************************************************"

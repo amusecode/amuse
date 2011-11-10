@@ -18,8 +18,8 @@ CXXFLAGS += -Wall -g -DTOOLBOX $(OPT)
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-SCLIBS ?= -L../../../../lib/stopcond -lstopcond
-SCINC ?= -I../../../../lib/stopcond
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 #PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
 
