@@ -218,6 +218,7 @@ class TestMocassin(TestWithMPI):
         self.assertEquals(10000 | units.K, instance.parameters.initial_nebular_temperature)
         
         self.assertEquals("" | units.string, instance.parameters.abundancies_filename)
+        instance.stop()
         
         
     def test2(self):
@@ -240,6 +241,7 @@ class TestMocassin(TestWithMPI):
         self.assertEquals(instance.grid.shape[0], 11)
         self.assertEquals(instance.grid.shape[1], 12)
         self.assertEquals(instance.grid.shape[2], 13)
+        instance.stop()
         
     def test3(self):
         instance=self.new_instance(Mocassin) #, debugger = "xterm")
@@ -294,3 +296,4 @@ class TestMocassin(TestWithMPI):
         self.assertAlmostRelativeEquals(0.00351035199128 | units.cm**-3 , instance.grid.electron_density[3][1][3], 5)
         self.assertAlmostRelativeEquals(0.99998998642 | units.none, instance.ion_density_grid.density[3][1][2][0][0], 7)
         self.assertAlmostRelativeEquals(0.99998998642 | units.none , instance.ion_density_grid.density[3][1][3][0][0], 7)
+        instance.stop()
