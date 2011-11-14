@@ -14,7 +14,9 @@ from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
 
-class _MakePlummerGasModel(object):
+__all__ = ["new_plummer_gas_model"]
+
+class MakePlummerGasModel(object):
     
     def __init__(self, targetN, convert_nbody = None, base_grid=None, rscale=1/1.695,
                    mass_cutoff = 0.999, do_scale = False):
@@ -85,6 +87,6 @@ def new_plummer_gas_model(number_of_particles, *list_arguments, **keyword_argume
     :argument mass_cutoff: Mass percentage inside radius of 1
     :argument do_scale: scale the result, similar to true nbody units (M=1, Q=0.25, U=-0.5)
     """
-    uc = _MakePlummerGasModel(number_of_particles, *list_arguments, **keyword_arguments)
+    uc = MakePlummerGasModel(number_of_particles, *list_arguments, **keyword_arguments)
     return uc.result
 

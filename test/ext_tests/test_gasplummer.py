@@ -3,14 +3,14 @@ import numpy
 from amuse.test import amusetest
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.ic.gasplummer import new_plummer_gas_model, _MakePlummerGasModel
+from amuse.ic.gasplummer import new_plummer_gas_model, MakePlummerGasModel
 
 class TestPlummerGasModel(amusetest.TestCase):
     
     def test1(self):
         print "Test 1: testing low-level interface (no units or datamodel)"
         numpy.random.seed(345672)
-        mpgm = _MakePlummerGasModel(2)
+        mpgm = MakePlummerGasModel(2)
         mass, x,y,z, vx,vy,vz, u = mpgm.new_model()
         self.assertEquals(mass[0], 0.5)
         self.assertEquals(mass[1], 0.5)

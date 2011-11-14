@@ -16,7 +16,9 @@ from math import sqrt
 from amuse.units import nbody_system
 from amuse import datamodel
 
-class _MakePlummerModel(object):
+__all__ = ["new_plummer_sphere"]
+
+class MakePlummerModel(object):
     def __init__(self, number_of_particles, convert_nbody = None, radius_cutoff = 22.8042468, mass_cutoff = 0.999,
             do_scale = False, random_state = None):
         self.number_of_particles = number_of_particles
@@ -125,5 +127,5 @@ def new_plummer_sphere(number_of_particles, *list_arguments, **keyword_arguments
     :argument mass_cutoff: Mass percentage inside radius of 1
     :argument do_scale: scale the result to exact nbody units (M=1, K=0.25, U=-0.5)
     """
-    uc = _MakePlummerModel(number_of_particles, *list_arguments, **keyword_arguments)
+    uc = MakePlummerModel(number_of_particles, *list_arguments, **keyword_arguments)
     return uc.result

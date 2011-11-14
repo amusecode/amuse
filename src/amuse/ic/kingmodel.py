@@ -6,11 +6,14 @@ This module contains a function used to create King models.
 
 import math
 import numpy
+
 from amuse.support import exceptions
 from amuse.units import nbody_system
 from amuse import datamodel
 
-class _MakeKingModel(object):
+__all__ = ["new_king_model"]
+
+class MakeKingModel(object):
     def __init__(self, number_of_particles, W0, convert_nbody = None, do_scale = False, 
             beta = 0.0, verbose = False):
         self.number_of_particles = number_of_particles
@@ -492,5 +495,5 @@ def new_king_model(number_of_particles, W0, *list_arguments, **keyword_arguments
         b --> -infinity.
     :argument verbose: Be verbose (output is suppressed by default) [False]
     """
-    uc = _MakeKingModel(number_of_particles, W0, *list_arguments, **keyword_arguments)
+    uc = MakeKingModel(number_of_particles, W0, *list_arguments, **keyword_arguments)
     return uc.result
