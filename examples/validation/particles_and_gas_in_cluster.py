@@ -5,6 +5,7 @@ from amuse.community.hermite0.interface import Hermite
 from amuse.community.fi.interface import Fi
 from amuse.community.octgrav.interface import Octgrav
 from amuse.community.gadget2.interface import Gadget2
+from amuse.community.phiGRAPE.interface import PhiGRAPE
 
 from amuse.ic import plummer
 from amuse.ic import gasplummer
@@ -17,8 +18,53 @@ from amuse.units import nbody_system
 from optparse import OptionParser
 
 import numpy
-
+import time
 import pylab
+
+class Timing(object):
+    
+    def __init__(self, name):
+        self.name = name
+        self.subtimings = []
+    
+    def start(self):
+        self.start_time = time.time()
+        
+    def end(self):
+        self.end_time = time.time()
+    
+class Timer(object):
+    
+    def __init__(self, timings):
+        pass
+    
+    def start_timing_of_method(self, name):
+        pass
+        
+    def end_timing_of_method(self, name):
+        pass
+    
+class TimingProxy(object):
+    
+    def __init__(self, target, methods_to_time, timer):
+        self._target = target
+        self._methods_to_time = set(methods_to_time)
+        self._timer = timer
+
+    def __getattribute__(self, name):
+        methods_to_time = object.__getattribute__(self, "_methods_to_time")
+        target = object.__getattribute__(self, "_target")
+        timer = object.__getattribute__(self, "_timer")
+        
+        value = getattr(target, name)
+        if name in methods_to_time:
+            def f(*args, **kwargs):
+                return value(*args, **kwargs)
+            return f
+        else:
+            return value
+        
+    
 
 class GasPlummerModelExternalField(object):
     """
@@ -31,6 +77,7 @@ class GasPlummerModelExternalField(object):
         self.total_mass = total_mass
         self.gravity_constant = constants.G
         self.position = position
+        self.radius_squared = (self.radius**2)
 
     def get_gravity_at_point(self,eps,x,y,z):
         dx = x - self.position.x
@@ -38,12 +85,12 @@ class GasPlummerModelExternalField(object):
         dz = z - self.position.z
         radii_squared=dx**2 + dy**2 + dz**2
         #radii = radii_squared**0.5
-        plummer_radii_squared = radii_squared + (self.radius**2)
-        plummer_radii = plummer_radii_squared **0.5
-        fr=self.gravity_constant*self.total_mass/plummer_radii_squared
-        ax=-fr*dx/plummer_radii
-        ay=-fr*dy/plummer_radii
-        az=-fr*dz/plummer_radii
+        plummer_radii_squared = radii_squared + self.radius_squared
+        plummer_radii_15 = plummer_radii_squared ** 1.5
+        fr=-self.gravity_constant*self.total_mass/plummer_radii_15
+        ax=fr*dx
+        ay=fr*dy
+        az=fr*dz
         return ax,ay,az
 
     def get_potential_at_point(self,eps,x,y,z):
@@ -51,11 +98,14 @@ class GasPlummerModelExternalField(object):
         dy = y - self.position.y
         dz = z - self.position.z
         radii_squared=dx**2 + dy**2 + dz**2
-        radii = radii_squared**0.5
+        #radii = radii_squared**0.5
         
-        plummer_radii = (radii_squared + (self.radius **2))**0.5
+        plummer_radii = (radii_squared + self.radius_squared)**0.5
         phi=self.gravity_constant*self.total_mass/plummer_radii
-        return -phi    
+        return -phi * 2 
+        
+    def stop(self):
+        pass
 
     @property
     def kinetic_energy(self):
@@ -89,6 +139,8 @@ class Main(object):
         ntimesteps = 10,
         interaction_timestep = 0.01,
         must_do_plot = True,
+        gas_to_star_interaction_code = 'none',
+        star_to_gas_interaction_code = 'none',
     ):
         
         if seed >= 0:
@@ -120,20 +172,23 @@ class Main(object):
         self.delta_t = self.endtime / self.ntimesteps  
         self.interaction_timestep = self.converter.to_si(interaction_timestep| nbody_system.time)
         
-        gas_code = getattr(self, 'new_gas_code_'+gas_code)()
-        particles_code = getattr(self,'new_particles_code_'+particles_code)()
-    
-
+        self.gas_code = getattr(self, 'new_gas_code_'+gas_code)()
+        self.star_code = getattr(self,'new_particles_code_'+particles_code)()
+        self.gas_to_star_codes = getattr(self, 'new_gas_to_star_interaction_codes_'+gas_to_star_interaction_code)(self.gas_code)
+        self.star_to_gas_codes = getattr(self,'new_star_to_gas_interaction_codes_'+star_to_gas_interaction_code)(self.star_code)
+        self.gas_code = self.gas_code #TimingProxy(, ['get_gravity_at_point'])
+        
+        
         bridge_code1 = bridge.GravityCodeInField(
-            gas_code, [particles_code]
+            self.gas_code, self.star_to_gas_codes
         )
         bridge_code2 = bridge.GravityCodeInField(
-            particles_code, [gas_code]
+            self.star_code, self.gas_to_star_codes
         )
         
         bridge_system = bridge.Bridge(timestep = self.interaction_timestep)
-        bridge_system.add_code(bridge_code1)
         bridge_system.add_code(bridge_code2)
+        bridge_system.add_code(bridge_code1)
             
         
         if must_do_plot:
@@ -147,18 +202,41 @@ class Main(object):
         
         if must_do_plot:
             pylab.show()
+            pylab.savefig(
+                "{0}-{1}-{2}-{3}.png".format(
+                    particles_code,
+                    gas_code,
+                    nstars,
+                    ngas
+                )
+            )
                 
+        self.star_code.stop()
+        self.gas_code.stop()
+        
+        if must_do_plot:
+            raw_input('Press enter...') 
+        
     def update_plot(self, time, code):
         
         time = self.converter.to_nbody(time).value_in(nbody_system.time), 
         sum_energy = code.kinetic_energy + code.potential_energy + code.thermal_energy
         energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
-        print energy
+        coreradius = self.star_code.particles.virial_radius().value_in(self.rscale.to_unit())
+        kicke =  self.converter.to_nbody(code.kick_energy).value_in(nbody_system.energy)
+       
         if self.line is None:
             pylab.ion()
+            pylab.subplot(1,2,1)
             self.line = pylab.plot([time], [energy])[0]
             pylab.xlim(0, self.converter.to_nbody(self.endtime).value_in(nbody_system.time))
-            pylab.ylim(-0.,-0.5)
+            pylab.ylim(energy * 0.8, energy * 1.2)
+            pylab.subplot(1,2,2)
+            self.line2 = pylab.plot([time], [coreradius])[0]
+            #self.line2 = pylab.plot([time], [kicke])[0]
+            pylab.xlim(0, self.converter.to_nbody(self.endtime).value_in(nbody_system.time))
+            pylab.ylim(0,3)
+            #pylab.ylim(-0.1, 0.1)
         else:
             xdata = self.line.get_xdata()
             ydata = self.line.get_ydata()
@@ -166,8 +244,65 @@ class Main(object):
             ydata = numpy.concatenate( (ydata, [energy]) )
             self.line.set_xdata(xdata)
             self.line.set_ydata(ydata)
-            pylab.draw()
             
+            
+            xdata = self.line2.get_xdata()
+            ydata = self.line2.get_ydata()
+            xdata = numpy.concatenate( (xdata, time) )
+            #ydata = numpy.concatenate( (ydata, [kicke]) )
+            ydata = numpy.concatenate( (ydata, [coreradius]) )
+            self.line2.set_xdata(xdata)
+            self.line2.set_ydata(ydata)
+            
+            pylab.draw()
+    
+    def new_particles_cluster(self):
+        particles=plummer.new_plummer_sphere(self.nstars,convert_nbody=self.converter)
+        particles.radius= self.star_epsilon
+        particles.mass = (1.0/self.nstars) * self.star_mass
+        return particles
+
+    def new_gas_cluster(self):
+        particles=gasplummer.new_plummer_gas_model(self.ngas,convert_nbody=self.converter)
+        particles.h_smooth= self.gas_epsilon
+        particles.mass = (1.0/self.ngas) * self.gas_mass
+        return particles
+        
+    def new_particles_cluster_as_gas(self):
+        particles=plummer.new_plummer_sphere(self.ngas,convert_nbody=self.converter)
+        particles.radius= self.gas_epsilon
+        particles.mass = (1.0/self.ngas) * self.gas_mass
+        return particles
+    
+    def new_gas_to_star_interaction_codes_self(self, gas_code):
+        return [gas_code]
+        
+    def new_star_to_gas_interaction_codes_self(self, star_code):
+        return [star_code]
+        
+    def new_gas_to_star_interaction_codes_none(self, gas_code):
+        return []
+        
+    def new_star_to_gas_interaction_codes_none(self, gas_code):
+        return []
+        
+    def new_gas_to_star_interaction_codes_octgrav(self, gas_code):
+        def new_octgrav():
+            result = Octgrav(self.converter)
+            result.parameters.epsilon_squared = self.gas_epsilon ** 2
+            return result
+            
+        return [bridge.CalculateFieldForCodes(new_octgrav, [gas_code])]
+    
+    
+    def new_gas_to_star_interaction_codes_bhtree(self, gas_code):
+        def new_bhtree():
+            result = BHTree(self.converter)
+            result.parameters.epsilon_squared = self.star_epsilon ** 2
+            return result
+            
+        return [bridge.CalculateFieldForCodes(new_bhtree, [gas_code])]\
+    
     def new_gas_code_fi(self):
         result = Fi(self.converter)
         result.parameters.self_gravity_flag = True
@@ -187,9 +322,6 @@ class Main(object):
         
     def new_gas_code_gadget(self):
         result = Gadget2(self.converter)
-        #result.parameters.timestep = 0.25 * self.interaction_timestep
-        
-        #result.parameters.self_gravity_flag = False
         result.gas_particles.add_particles(self.new_gas_cluster())
         result.commit_particles()
         return result
@@ -208,9 +340,15 @@ class Main(object):
         result.commit_particles()
         return result
         
-    
     def new_particles_code_hermite(self):
         result = Hermite(self.converter)
+        result.parameters.epsilon_squared = self.star_epsilon ** 2
+        result.particles.add_particles(self.new_particles_cluster())
+        result.commit_particles()
+        return result
+        
+    def new_particles_code_phigrape(self):
+        result = PhiGRAPE(self.converter, mode="gpu")
         result.parameters.epsilon_squared = self.star_epsilon ** 2
         result.particles.add_particles(self.new_particles_cluster())
         result.commit_particles()
@@ -219,34 +357,19 @@ class Main(object):
     def new_particles_code_bhtree(self):
         result = BHTree(self.converter)
         result.parameters.epsilon_squared = self.star_epsilon ** 2
+        result.parameters.timestep = 0.125 * self.interaction_timestep
         result.particles.add_particles(self.new_particles_cluster())
         result.commit_particles()
         return result
         
     def new_gas_code_bhtree(self):
         result = BHTree(self.converter)
-        result.parameters.epsilon_squared = self.star_epsilon ** 2
+        result.parameters.epsilon_squared = self.gas_epsilon ** 2
+        result.parameters.timestep = 0.125 * self.interaction_timestep
         result.particles.add_particles(self.new_particles_cluster_as_gas())
         result.commit_particles()
         return result
     
-    def new_particles_cluster(self):
-        particles=plummer.new_plummer_sphere(self.nstars,convert_nbody=self.converter)
-        particles.radius= self.star_epsilon
-        particles.mass = (1.0/self.nstars) * self.star_mass
-        return particles
-
-    def new_gas_cluster(self):
-        particles=gasplummer.new_plummer_gas_model(self.ngas,convert_nbody=self.converter)
-        particles.h_smooth= self.gas_epsilon
-        particles.mass = (1.0/self.ngas) * self.gas_mass
-        return particles
-        
-    def new_particles_cluster_as_gas(self):
-        particles=plummer.new_plummer_sphere(self.ngas,convert_nbody=self.converter)
-        particles.radius= self.gas_epsilon
-        particles.mass = (1.0/self.ngas) * self.gas_mass
-        return particles
 
 def new_option_parser():
     result = OptionParser()
@@ -276,6 +399,20 @@ def new_option_parser():
         default = "hermite",
         dest="particles_code",
         help="the code modelling the particles ('hermite', 'bhtree', 'octgrav', 'phigrape')",
+        type="string"
+    )
+    result.add_option(
+        "--gas-star-code", 
+        default = "self",
+        dest="gas_to_star_interaction_code",
+        help="the code calculating the gravity field of the gas code for the star code (default is self, gas code will calculate field for star code)",
+        type="string"
+    )
+    result.add_option(
+        "--star-gas-code", 
+        default = "self",
+        dest="star_to_gas_interaction_code",
+        help="the code calculating the gravity field of the star code for the gas code (default is self, star code will calculate field for gas code)",
         type="string"
     )
     result.add_option(
