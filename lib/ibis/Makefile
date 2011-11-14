@@ -1,4 +1,4 @@
-VERSION = -20111028-snapshot
+VERSION = -20111109-snapshot
 CODEDIR = deploy
 DOWNLOAD_FROM_WEB = ./downloadhttp.py
 LIBPROFILING = src/profiling/libibisprofiling.a
