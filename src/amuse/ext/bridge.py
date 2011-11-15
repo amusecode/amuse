@@ -93,7 +93,7 @@ from amuse import datamodel
 def potential_energy(system, get_potential):
     parts=system.particles.copy()
     pot=get_potential(parts.radius,parts.x,parts.y,parts.z)
-    return (pot*parts.mass).sum()/2 
+    return (pot*parts.mass).sum() / 2
 
 def kick_system(system, get_gravity, dt):
     parts=system.particles.copy()
@@ -213,7 +213,7 @@ class bridge(object):
             Ep+=x.potential_energy
             if hasattr(x,"particles"):
                 for y in self.partners[x]:
-                    Ep+=potential_energy(x,y.get_potential_at_point)
+                    Ep += potential_energy(x,y.get_potential_at_point)
         return Ep
     
     @property
@@ -222,6 +222,14 @@ class bridge(object):
         for x in self.systems:
             Ek+=x.kinetic_energy
         return Ek
+        
+    @property
+    def thermal_energy(self):  
+        result=quantities.zero
+        for x in self.systems:
+            if hasattr(x,'thermal_energy'):
+                result+=x.thermal_energy
+        return result
           
     @property
     def particles(self):

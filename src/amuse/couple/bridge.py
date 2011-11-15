@@ -91,20 +91,6 @@ from amuse.units import units
 from amuse.units import generic_unit_system
 from amuse import datamodel
 
-def potential_energy(system, get_potential):
-    parts=system.particles.copy()
-    pot=get_potential(parts.radius,parts.x,parts.y,parts.z)
-    return (pot*parts.mass).sum()/2 
-
-def kick_system(system, get_gravity, dt):
-    parts=system.particles.copy()
-    ax,ay,az=get_gravity(parts.radius,parts.x,parts.y,parts.z)
-    parts.vx=parts.vx+dt*ax
-    parts.vy=parts.vy+dt*ay
-    parts.vz=parts.vz+dt*az
-    channel=parts.new_channel_to(system.particles)
-    channel.copy_attributes(["vx","vy","vz"])   
-#    parts.copy_values_of_all_attributes_to(system.particles)
   
 
 class AbstractCalculateFieldForCodes(object):
@@ -127,8 +113,9 @@ class AbstractCalculateFieldForCodes(object):
     def get_potential_at_point(self,radius,x,y,z):
         code = self._setup_code()
         try:
-            for x in self.codes_to_calculate_field_for():
-                code.add_particles(x)
+            for input_code in self.codes_to_calculate_field_for:
+                code.particles.add_particles(input_code.particles)
+            code.commit_particles()
             return code.get_potential_at_point(radius,x,y,z)
         finally:
             self._cleanup_code(code)
@@ -136,9 +123,10 @@ class AbstractCalculateFieldForCodes(object):
     def get_gravity_at_point(self,radius,x,y,z):
         code = self._setup_code()
         try:
-            for x in self.codes_to_calculate_field_for():
-                code.add_particles(x)
-            return code.get_potential_at_point(radius,x,y,z)
+            for input_code in self.codes_to_calculate_field_for:
+                code.particles.add_particles(input_code.particles)
+            code.commit_particles()
+            return code.get_gravity_at_point(radius,x,y,z)
         finally:
             self._cleanup_code(code)
     
@@ -157,7 +145,7 @@ class CalculateFieldForCodes(AbstractCalculateFieldForCodes):
     """
     
     def __init__(self, code_factory_function, input_codes, verbose=False):
-        AbstractCalculateFieldForCodes.__init__(self.input_codes, verbose)
+        AbstractCalculateFieldForCodes.__init__(self, input_codes, verbose)
         self.code_factory_function = code_factory_function
       
     def _setup_code(self):
@@ -174,7 +162,7 @@ class CalculateFieldForCodesUsingReinitialize(AbstractCalculateFieldForCodes):
     """
     
     def __init__(self, code, input_codes, verbose=False):
-        AbstractCalculateFieldForCodes.__init__(self.input_codes, verbose)
+        AbstractCalculateFieldForCodes.__init__(self, input_codes, verbose)
         self.code = code
       
     def _setup_code(self):
@@ -192,7 +180,7 @@ class CalculateFieldForCodesUsingRemove(AbstractCalculateFieldForCodes):
     """
     
     def __init__(self, code, input_codes, verbose=False):
-        AbstractCalculateFieldForCodes.__init__(self.input_codes, verbose)
+        AbstractCalculateFieldForCodes.__init__(self, input_codes, verbose)
         self.code = code
       
     def _setup_code(self):
@@ -359,8 +347,11 @@ class GravityCodeInField(object):
             return quantities.zero
             
         result = self.code.potential_energy
+        particles=self.code.particles.copy()
+        
         for y in self.field_codes:
-            result += potential_energy(self.code,y.get_potential_at_point)
+            energy = self.get_potential_energy_in_field_code(particles, y)
+            result += energy
         return result
     
     @property
@@ -390,21 +381,50 @@ class GravityCodeInField(object):
     def kick(self, dt):
         
         if not hasattr(self.code, 'particles'):
-            return 
-            
+            return quantities.zero
+        
+        particles=self.code.particles.copy()
+        kinetic_energy_before = particles.kinetic_energy()
+        
         for field_code in self.field_codes:
             if(self.verbose):
                 print self.code.__class__.__name__,"receives kick from",y.__class__.__name__,
             
-            kick_system(
-                self.code,
-                field_code.get_gravity_at_point,
+            self.kick_with_field_code(
+                particles,
+                field_code,
                 dt
             )
             
             if(self.verbose):
                 print ".. done"
+        
+        channel=particles.new_channel_to(self.code.particles)
+        channel.copy_attributes(["vx","vy","vz"])   
+        
+        kinetic_energy_after = particles.kinetic_energy()
+        return kinetic_energy_after - kinetic_energy_before
+        
+    
+    def get_potential_energy_in_field_code(self, particles, field_code):
+        pot=field_code.get_potential_at_point(
+            particles.radius,
+            particles.x,
+            particles.y,
+            particles.z
+        )
+        return (pot*particles.mass).sum() / 2
 
+    def kick_with_field_code(self, particles, field_code, dt):
+        ax,ay,az=field_code.get_gravity_at_point(
+            particles.radius,
+            particles.x,
+            particles.y,
+            particles.z
+        )
+        particles.vx += dt * ax
+        particles.vy += dt * ay
+        particles.vz += dt * az 
   
 class Bridge(object):
     def __init__(self, timestep = None, verbose=False):
@@ -415,6 +435,7 @@ class Bridge(object):
         self.time=quantities.zero
         self.verbose=verbose
         self.timestep=timestep
+        self.kick_energy = quantities.zero
         
         self.time_offsets = dict()
     
@@ -510,7 +531,7 @@ class Bridge(object):
         result=quantities.zero
         for x in self.codes:
             result+=x.kinetic_energy
-        return result
+        return result #- self.kick_energy
         
     @property
     def thermal_energy(self):  
@@ -550,6 +571,11 @@ class Bridge(object):
 
     def kick_codes(self,dt):
        
+        self.synchronize_model()
+        
+        de = quantities.zero
         for x in self.codes:
             if hasattr(x,"kick"):
-                x.kick(dt)
+                de += x.kick(dt)
+        
+        self.kick_energy += de

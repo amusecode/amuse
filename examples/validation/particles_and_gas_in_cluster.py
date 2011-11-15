@@ -482,11 +482,19 @@ def new_option_parser():
         help="number of times to do reporting",
         type="int"
     )
+    result.add_option(
+        "--noplot", 
+        dest="must_do_plot",
+        default = True,
+        help="do not show a plot and end as soon as possible",
+        action="store_false"
+    )
     return result
     
     
 if __name__ == "__main__":
     options, arguments = new_option_parser().parse_args()
     options = options.__dict__
+    print options
     Main(**options)
     
