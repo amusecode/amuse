@@ -6,6 +6,7 @@ from amuse import io
 from amuse.io import gadget
 from amuse.io import nemobin
 from amuse.units import nbody_system
+
 class GadgetFileFormatProcessorTests(amusetest.TestCase):
     header_parts = ( 
         '\x00\x01\x00\x00 N\x00\x00 \xa1\x07\x00 N\x00',
@@ -75,6 +76,14 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(len(result[0]), 1472)
         self.assertEquals(len(result[1]), 0)
         
+    def test5(self):
+        options = io.get_options_for_format('gadget')
+        found_has_acceleration = False
+        for name, description, defaultval in options:
+            if name == 'has_acceleration':
+                found_has_acceleration = True   
+        
+        self.assertTrue(found_has_acceleration)
 
 class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
     

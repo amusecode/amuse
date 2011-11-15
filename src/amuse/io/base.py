@@ -235,7 +235,10 @@ class FileFormatProcessor(object):
         """
         for option, method in self.get_options().iteritems():
             default_value = getattr(self, option)
-            description = textwrap.dedent(method.__doc__)
+            doc = method.__doc__
+            if doc is None:
+                doc = ""
+            description = textwrap.dedent(doc)
             yield (option, description, default_value)
             
 class FullTextFileFormatProcessor(FileFormatProcessor):
@@ -304,6 +307,7 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
     
     @format_option
     def endianness(self):
+        """The endianness of the binary date stored in the file"""
         return '@' #native
         
     @late

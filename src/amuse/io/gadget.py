@@ -9,6 +9,7 @@ from amuse.units import nbody_system
 from amuse.support.core import late
 
 from amuse import datamodel
+
 class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
     """
     Process (read) a Gadget binary data file (saving to Gadget files not supported)
@@ -33,6 +34,7 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         
     @base.format_option
     def header_struct_format(self):
+        """The format of the header structure of the gadget file."""
         return (
             ('Npart', 6, 'I'),
             ('Massarr', 6, 'd'),
