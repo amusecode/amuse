@@ -208,6 +208,29 @@ class TestQuantities(amusetest.TestCase):
         self.assertTrue(x==x.sorted())
         self.assertTrue(x==x.amax())
         self.assertTrue(x==x.sum())
+    
+    def test20(self):
+        lengths = [] | units.m
+        lengths.append(1 | units.m)
+        self.assertEqual(lengths, [1] | units.m)
+        lengths.append(2 | units.m)
+        self.assertEqual(lengths, [1, 2] | units.m)
+        
+        positions = [] | units.m
+        positions.append([1, 2, 3] | units.m)
+        self.assertEqual(positions, [[1, 2, 3]] | units.m)
+        positions.append([4, 5, 6] | units.m)
+        self.assertEqual(positions, [[1, 2, 3], [4, 5, 6]] | units.m)
+        
+        two_positions = [] | units.m
+        two_positions.append([[1, 2, 3], [-1, -2, -3]] | units.m)
+        self.assertEqual(two_positions, [[[1, 2, 3], [-1, -2, -3]]] | units.m)
+        two_positions.append([[4, 5, 6], [7, 8, 9]] | units.m)
+        self.assertEqual(two_positions, [[[1, 2, 3], [-1, -2, -3]], [[4, 5, 6], [7, 8, 9]]] | units.m)
+        # Appending quantities with incompatible shapes:
+        two_positions.append(99 | units.m)
+        self.assertEqual(two_positions, [1, 2, 3, -1, -2, -3, 4, 5, 6, 7, 8, 9, 99] | units.m)
+    
 
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):

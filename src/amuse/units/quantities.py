@@ -538,7 +538,15 @@ class VectorQuantity(Quantity):
         >>> print vector
         [1.0, 2.0, 3.0, 4.0] kg
         """
-        self._number = numpy.append(self._number, [scalar_quantity.value_in(self.unit)])
+        append_number = numpy.array(scalar_quantity.value_in(self.unit))
+        # The following lines make sure that appending vectors works as expected,
+        # e.g. ([]|units.m).append([1,2,3]|units.m) -> [[1,2,3]] | units.m
+        # e.g. ([[1,2,3]]|units.m).append([4,5,6]|units.m) -> [[1,2,3],[4,5,6]] | units.m
+        if (append_number.shape and (len(self._number) == 0 or self._number.shape[1:] == append_number.shape)):
+            new_shape = [1 + self._number.shape[0]] + list(append_number.shape)
+        else:
+            new_shape = -1
+        self._number = numpy.append(self._number, append_number).reshape(new_shape)
 
     def extend(self, vector_quantity):
         """
