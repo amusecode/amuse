@@ -20,6 +20,8 @@ from amuse.rfi.channel import MultiprocessingMPIChannel
 from amuse.rfi.channel import IbisChannel
 from amuse.rfi.channel import SocketChannel
 from amuse.rfi.channel import is_mpd_running
+
+
 """
 This module implements the code to the define interfaces between python
 code and C++ or Fortran codes. It provides the abstract base
@@ -587,7 +589,9 @@ class CodeInterface(OptionalAttributes):
         OptionalAttributes.__init__(self, **options)
            
         self.channel = self.channel_factory(name_of_the_worker, type(self), **options)
-        self._check_if_worker_is_up_to_date()
+        
+        if self.must_check_if_worker_is_up_to_date:
+            self._check_if_worker_is_up_to_date()
         
         self.channel.redirect_stdout_file = self.redirection_filenames[0]
         self.channel.redirect_stderr_file = self.redirection_filenames[1]
@@ -678,6 +682,11 @@ Please do a 'make clean; make' in the root directory.
     @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
     def channel_type(self):
         return 'mpi'
+        
+    @option(type='boolean', sections=("channel",))
+    def must_check_if_worker_is_up_to_date(self):
+        return True
+        
         
     @option(choices=("none","null","file"), sections=("channel",))
     def redirection(self):

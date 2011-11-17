@@ -6,6 +6,11 @@ from StringIO import StringIO
 from amuse.support.core import late
 from amuse.support import exceptions
 
+try:
+    import pkg_resources
+except ImportError:
+    pkg_resources = None
+        
 class GlobalOptions(object):
     INSTANCE = None
     
@@ -14,6 +19,14 @@ class GlobalOptions(object):
         self.overriden_options = {}
     
     def load(self):
+        if not pkg_resources is None:
+            if pkg_resources.resource_exists('amuse', 'amuserc'):
+                install_ini_file = pkg_resources.resource_stream('amuse', 'amuserc') 
+                try:
+                    self.config.readfp(install_ini_file)   
+                finally:
+                    install_ini_file.close()
+            
         if not self.rcfilepath is None:
             self.config.read(self.rcfilepath)   
         

@@ -45,7 +45,7 @@ sphray_worker: sphray_worker.f90 interface.o
 	$(MPIF90) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS) $(SCLIBS)
 	
 sphray_worker_sockets: sphray_worker-sockets.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(FSINC) $^ -o $@ $(LIBS) $(SCLIBS) $(FSLIBS)
+	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FSINC) $^ -o $@ $(LIBS) $(SCLIBS) $(FSLIBS)
 
 sphray_worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"

@@ -66,6 +66,7 @@ clean:
 	$(RM) -f *~ athena_worker  athena_worker_selfgrav athena_worker_mhd
 	$(RM) -f worker_code-sockets.cc athena_worker_sockets
 	$(RM) -f $(CODELIB) $(AMUSE_OBJS_SELFGRAV)
+	$(RM) -f *.mhd_o
 
 codeclean: clean
 	make -C $(ATHENA_DIR) clean

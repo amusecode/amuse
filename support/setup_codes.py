@@ -4,6 +4,7 @@ import sys, os, re, subprocess
 import ConfigParser
 import os.path
 import datetime
+import stat
 
 from stat import ST_MODE
 from distutils import sysconfig
@@ -12,9 +13,15 @@ from distutils.dep_util import newer
 from distutils.util import convert_path
 from distutils import log
 from distutils import spawn
+from distutils import file_util
 from distutils.errors import DistutilsError
 from subprocess import call, Popen, PIPE, STDOUT
-from numpy.distutils import fcompiler
+
+try:
+    from numpy.distutils import fcompiler
+except ImportError:
+    fcompiler = None
+
 import StringIO
 # check if Python is called on the first line with this expression
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
@@ -25,7 +32,42 @@ try:
 except ImportError:
     is_configured = False
     
+class GenerateInstallIni(Command):
+    user_options =   (
+        ('build-dir=', 'd', "directory to install to"),
+        ('install-data=', None, "installation directory for data files"),
+        ('force', 'f', "force installation (overwrite existing files)"),
+    )
     
+    boolean_options = ['force']
+    
+    def initialize_options(self):
+        self.build_dir = None
+        self.install_data = None
+        self.force = False
+        
+    def finalize_options(self):
+        self.set_undefined_options('install',
+            ('build_lib', 'build_dir'),
+            ('install_data', 'install_data'),
+            ('force', 'force'),
+        )
+        
+    def run(self):
+        outfilename = os.path.join(self.build_dir, 'amuse', 'amuserc')
+        
+        installinilines = []
+        installinilines.append('[channel]')
+        installinilines.append('must_check_if_worker_is_up_to_date=0')
+        installinilines.append('[data]')
+        installinilines.append('data_dir={0}'.format(self.install_data))
+        
+        self.announce("writing {0}".format(outfilename), level = log.INFO)
+        file_util.write_file(outfilename, installinilines)
+        
+        
+
+
 class CodeCommand(Command):
     user_options = [
         ('build-lib=', 'b',
@@ -85,9 +127,13 @@ class CodeCommand(Command):
         if self.codes_dir is None:
             if self.inplace:
                 self.codes_dir = os.path.join(self.amuse_src_dir,'community')
+                self.codes_src_dir = self.codes_dir
             else:
-                self.codes_dir = os.path.join(self.build_lib, 'amuse', 'community')
-                
+                self.codes_dir = os.path.join(self.build_temp, 'codes')
+                self.codes_src_dir = os.path.join(self.amuse_src_dir,'community')
+        else:
+            self.self.codes_src_dir  = self.codes_dir
+            
         if self.lib_dir is None:
             if self.inplace:
                 #self.lib_dir = os.path.join(self.amuse_src_dir, 'lib')
@@ -309,9 +355,54 @@ class CodeCommand(Command):
                 self.environment_notset[varname] ='-L<directory> -l{0}'.format(libname)
      
     
+                    
+    def copy_codes_to_build_dir(self):
+        for dir in self.makefile_src_paths():
+            reldir = os.path.relpath(dir, self.codes_src_dir)
+            self.copy_tree(
+                dir, 
+                os.path.join(self.codes_dir, reldir)
+            )
+        
+    def copy_worker_codes_to_build_dir(self):
+        worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?')
+        
+        for srcdir in self.makefile_src_paths():
+            reldir = os.path.relpath(srcdir, self.codes_src_dir)
+            temp_builddir = os.path.join(self.codes_dir, reldir)
             
+            self.announce("will copy worker: {0}".format(srcdir), level = log.INFO)
+            lib_builddir = os.path.join(self.build_lib, os.path.relpath(srcdir, os.path.join(self.amuse_src_dir, '..')))
+            
+            
+            shortname = reldir.lower()
+            self.announce(shortname, level = log.INFO)
+            
+            for name in os.listdir(temp_builddir):
+                path = os.path.join(temp_builddir, name)
+                stat = os.stat(path)
+                
+                #self.announce("will copy worker: {0}".format(name), level = log.INFO)
+                if os.path.isfile(path) and os.access(path, os.X_OK):
+                    if worker_code_re.match(name):
+                        topath = os.path.join(lib_builddir, name)
+                        self.copy_file(path, topath)
+                    else:
+                        self.announce("will not copy executable: {0}, it does not match the worker pattern".format(name), level = log.WARN)
+            
+            
+    def subdirs_in_codes_src_dir(self):
+        names = sorted(os.listdir(self.codes_src_dir))
+        for name in names:
+            if name.startswith('.'):
+                continue
+                
+            path = os.path.join(self.codes_src_dir, name)
+            if os.path.isdir(path):
+                yield path
+                
     def subdirs_in_codes_dir(self):
-        names = os.listdir(self.codes_dir)
+        names = sorted(os.listdir(self.codes_dir))
         for name in names:
             if name.startswith('.'):
                 continue
@@ -320,7 +411,7 @@ class CodeCommand(Command):
                 yield path
                 
     def subdirs_in_lib_dir(self):
-        names = os.listdir(self.lib_dir)
+        names = sorted(os.listdir(self.lib_dir))
         for name in names:
             if name.startswith('.'):
                 continue
@@ -335,9 +426,17 @@ class CodeCommand(Command):
                 if os.path.exists(makefile_path):
                     yield x
                     break
-                    
+        
     def makefile_paths(self):
         for x in self.subdirs_in_codes_dir():
+            for name in ('makefile', 'Makefile'):
+                makefile_path = os.path.join(x, name)
+                if os.path.exists(makefile_path):
+                    yield x
+                    break
+                    
+    def makefile_src_paths(self):
+        for x in self.subdirs_in_codes_src_dir():
             for name in ('makefile', 'Makefile'):
                 makefile_path = os.path.join(x, name)
                 if os.path.exists(makefile_path):
@@ -369,6 +468,8 @@ class CodeCommand(Command):
                 config.write(f)
 
     
+    
+        
     def get_special_targets(self, name, directory, environment):
         process = Popen(['make','-qp', '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
@@ -491,7 +592,7 @@ class BuildCodes(CodeCommand):
             if 'CUDA_SDK variable is not set' in line:
                 return True
         return False
-        
+    
     def run (self):
         not_build = list()
         is_download_needed = list()
@@ -508,6 +609,7 @@ class BuildCodes(CodeCommand):
         self.announce("building libraries and community codes", level = log.INFO)
         self.announce("build, for logging, see '{0}'".format(buildlog), level = log.INFO)
         
+        
         with open(buildlog, "w") as output:
             output.write('*'*100)
             output.write('\n')
@@ -515,7 +617,12 @@ class BuildCodes(CodeCommand):
             output.write('*'*100)
             output.write('\n')
         
+        if not self.codes_dir == self.codes_src_dir:
+            self.copy_codes_to_build_dir()
         
+        if not self.inplace:
+            self.environment["DOWNLOAD_CODES"] = "1"
+                  
         for x in self.makefile_libpaths():
             
             shortname = x[len(self.lib_dir) + 1:] + '-library'
@@ -538,6 +645,8 @@ class BuildCodes(CodeCommand):
             
         #environment.update(self.environment)
         makefile_paths = list(self.makefile_paths())
+        
+            
         build_to_special_targets = {}
         
         for x in makefile_paths:
@@ -579,6 +688,9 @@ class BuildCodes(CodeCommand):
                     self.announce("[{2:%H:%M:%S}] building {0} - {1}, succeeded".format(shortname, target_name, endtime), level =  log.DEBUG)
                 
         
+        if not self.codes_dir == self.codes_src_dir:
+            self.copy_worker_codes_to_build_dir()
+            
         with open(buildlog, "a") as output:
             output.write('*'*80)
             output.write('\n')
