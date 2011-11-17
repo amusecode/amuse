@@ -397,6 +397,7 @@ class StellarEvolution(common.CommonCode):
         object.add_method('RUN', 'get_temperature')
     
     def define_methods(self, object):
+        common.CommonCode.define_methods(self, object)
         object.add_method(
             "evolve_one_step",
             (object.INDEX,),

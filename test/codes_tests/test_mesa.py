@@ -272,9 +272,7 @@ class TestMESA(TestWithMPI):
             return
         instance.set_MESA_paths(instance.default_path_to_inlist, 
             instance.default_path_to_MESA_data, instance.get_data_directory())
-        status = instance.initialize_code()
-        self.assertEqual(status,0)
-        instance.parameters.set_defaults()
+        instance.initialize_code()
         self.assertEquals(0.02 | units.no_unit, instance.parameters.metallicity)
         self.assertEquals(1.0e12 | units.yr, instance.parameters.max_age_stop_condition)
         instance.parameters.max_age_stop_condition = 1.0e2 | units.Myr

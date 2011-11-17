@@ -1474,7 +1474,7 @@ contains
    function cleanup_code()
       implicit none
       integer :: cleanup_code
-      cleanup_code = -2
+      cleanup_code = 0
    end function  
        
    function delete_star(star_id)

@@ -750,7 +750,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_min_timestep_stop_condition",
             "min_timestep_stop_condition", 
             "The minimum timestep stop condition of this instance.",
-            default_value = 1.0e6 | units.s
+            default_value = 1.0e-6 | units.s
         )
         
         object.add_method_parameter(
@@ -975,13 +975,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_min_timestep_stop_condition", 
             (), 
-            (units.yr, object.ERROR_CODE,)
+            (units.s, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_min_timestep_stop_condition", 
-            (units.yr, ), 
+            (units.s, ), 
             (object.ERROR_CODE,)
         )
         
