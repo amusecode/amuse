@@ -169,6 +169,7 @@ void quickSortPerm(vector<float>& inVec, vector<int>& permVec, const int& left, 
 }
 
 /*******************************************************************/
+//sorts ascending!!!!
 void quickSortPerm(vector<unsigned long int>& inVec, vector<unsigned long int>& permVec, const int& left, const int& right) {
 
   int i = left, j = right;
@@ -176,8 +177,8 @@ void quickSortPerm(vector<unsigned long int>& inVec, vector<unsigned long int>& 
   unsigned long int buff;
   unsigned long int pivot = inVec[(left+right)/2];
   while(i <= j){
-    while (inVec[i]>pivot) i++;
-    while (inVec[j]<pivot) j--;
+    while (inVec[i]<pivot) i++;
+    while (inVec[j]>pivot) j--;
     if (i<=j){
       // swap vector elements
       buff = inVec[i];
@@ -197,6 +198,7 @@ void quickSortPerm(vector<unsigned long int>& inVec, vector<unsigned long int>& 
 }
 
 /*******************************************************************/
+//sorts descending!!!!!
 void quickSort(vector<float>& inVec, vector<int>& permVec, const int& left, const int& right) {
 
   int i = left, j = right;

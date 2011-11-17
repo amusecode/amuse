@@ -230,6 +230,7 @@ Site& Site::operator=(const Site_Update& p2){
 
   vertex_id      = p2.vertex_id;
   site_id        = p2.site_id;
+  process        = p2.process;
   n_HI           = p2.n_HI;
   n_HII          = p2.n_HII;
   temperature    = p2.temperature;
@@ -268,6 +269,7 @@ Send_Intensity::Send_Intensity(){
 
 Site_Update& Site_Update::operator=(const Site& p2){
 
+  process        = p2.process;
   vertex_id      = p2.vertex_id;
   site_id        = p2.site_id;
   n_HI           = p2.n_HI;

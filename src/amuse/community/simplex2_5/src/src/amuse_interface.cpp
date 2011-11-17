@@ -232,7 +232,7 @@ void AMUSE_SimpleX::convert_units(){
 int AMUSE_SimpleX::initialize(double current_time) {
   
   if(COMM_RANK == 0){
-    cerr << "AMUSE_SimpleX::initialize ...";
+    cerr << "AMUSE_SimpleX: initialising...";
   }
 
   // initialise random number generator with random seed
@@ -307,7 +307,7 @@ int AMUSE_SimpleX::initialize(double current_time) {
   syncflag=0;
  
   if(COMM_RANK == 0){
-    cerr << "Done!" << endl;
+    cerr << " Done" << endl;
   }
  
   return 0;
@@ -325,13 +325,19 @@ int AMUSE_SimpleX::setup_simplex(){
 
 //evolve the radiative transfer over time t_target
 int AMUSE_SimpleX::evolve(double t_target, int sync) {
+  
+
     
   double dt= t_target*secondsPerMyr - total_time;
   
-  cout << "time: " << t_target << " " << dt << "\n"; 
+  //cout << "time: " << t_target << " " << dt << "\n"; 
     
   if(syncflag==1){
     reinitialize();
+  }
+  
+  if(COMM_RANK == 0){
+    cerr << "AMUSE_SimpleX: performing radiation transport...";
   }
     
   if(COMM_RANK == 0){
@@ -340,9 +346,9 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
   }
     
   if(dt > 0){
-    printf("dt, UNIT_T: %g %g \n", dt, UNIT_T);
+    //printf("dt, UNIT_T: %g %g \n", dt, UNIT_T);
     numSweeps=dt/UNIT_T+1;
-    printf("proc %d working for %d sweeps\n",COMM_RANK, numSweeps);
+    //printf("proc %d working for %d sweeps\n",COMM_RANK, numSweeps);
     radiation_transport(1);
     total_time+=numSweeps*UNIT_T;
   }
@@ -355,6 +361,10 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
     syncflag=1;     
   }
   
+  if(COMM_RANK == 0){
+    cerr << " Done" << endl;
+  }
+  
   return 0;
 
 }
@@ -362,6 +372,9 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
 //store everything in the simulation and recompute triangulation and physics
 int AMUSE_SimpleX::reinitialize(){
 
+  if(COMM_RANK == 0){
+    cerr << "AMUSE_SimpleX: recomputing triangulation...";
+  }
    //make sure that the vectors that will be filled are empty 
     site_intensities.clear();
     intens_ids.clear();
@@ -401,9 +414,9 @@ int AMUSE_SimpleX::reinitialize(){
     //send the list to master proc
     send_new_vertex_list();
  
-    if( COMM_RANK == 0 ){
-      cerr << " (" << COMM_RANK << ") Computing triangulation" << endl;
-    }
+    // if( COMM_RANK == 0 ){
+    //   cerr << " (" << COMM_RANK << ") Computing triangulation" << endl;
+    // }
      
     if(COMM_RANK == 0){
 
@@ -440,9 +453,11 @@ int AMUSE_SimpleX::reinitialize(){
 
     //check if vertices have moved to different process and send the
     //info accordingly
-    send_site_physics();  
-    send_site_intensities();
-
+    if(COMM_SIZE > 1){
+      send_site_physics();  
+      send_site_intensities();
+    }
+        
     //compute the triangulation
     compute_triangulation();
 
@@ -460,6 +475,10 @@ int AMUSE_SimpleX::reinitialize(){
     compute_physics( 1 );
     
     remove_border_simplices();
+  
+    if(COMM_RANK == 0){
+      cerr << " Done" << endl;
+    }
     
   syncflag=0;
   return 0;

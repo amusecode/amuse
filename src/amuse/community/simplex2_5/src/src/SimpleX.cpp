@@ -1419,10 +1419,10 @@ void SimpleX::compute_triangulation(){
 	idList=NULL;
       }
 
-      if(!correct){
-	cerr << " (" << COMM_RANK << ") Subbox " << i << " boundaries too small, retriangulating with subbox: (" << x_min << "," << x_max << ") (" 
-	     << y_min << "," << y_max << ") (" << z_min << "," << z_max << ")" << endl;
-      }
+      // if(!correct){
+      //   cerr << " (" << COMM_RANK << ") Subbox " << i << " boundaries too small, retriangulating with subbox: (" << x_min << "," << x_max << ") (" 
+      //     << y_min << "," << y_max << ") (" << z_min << "," << z_max << ")" << endl;
+      // }
 
     }//while triangulation is not correct
 
@@ -1528,7 +1528,7 @@ void SimpleX::create_sites(){
   MPI::COMM_WORLD.Allreduce( &local_numSites, &numSites, 1, MPI::UNSIGNED, MPI::SUM );
 
   if( COMM_RANK == 0 ){
-    cerr << " (" << COMM_RANK << ") Number of sites in triangulation is " << numSites << endl;
+    //cerr << " (" << COMM_RANK << ") Number of sites in triangulation is " << numSites << endl;
     simpleXlog << "  Final triangulation contains " << numSites << " sites " << endl;
   }
 
@@ -2275,19 +2275,19 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
 
     }    
 
-    //sort the inner products and according indices 
+    //sort the inner products and according indices with highest first
     quickSortPerm( max, index, 0, numPixels_ref-1 );
 
     //loop over all pixels of healpix sphere
     for(unsigned int p=0; p<numPixels_ref; p++ ){
       //make sure the index value is in correct interval
       if( (index[p] >=0) && (index[p] < (int) numPixels_ref) ){
-	//fill the mapping
-	mapping_pixels[m][p] = index[p];
+  //fill the mapping
+        mapping_pixels[m][p] = index[p];
       }else{
-	cerr << " (" << COMM_RANK << ") ERROR: in compute_solid_angles, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
-	cerr << " (" << COMM_RANK << ") index[p]: " << index[p] << endl;
-	MPI::COMM_WORLD.Abort( -1 );
+        cerr << " (" << COMM_RANK << ") ERROR: in compute_solid_angles, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
+        cerr << " (" << COMM_RANK << ") index[p]: " << index[p] << endl;
+        MPI::COMM_WORLD.Abort( -1 );
       }
     }
 
@@ -2435,45 +2435,45 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
       //assign memory to vectorNeigh and vectorNeighLength
       vectorNeigh = new float*[it->get_numNeigh()];
       for(unsigned int j=0; j<it->get_numNeigh(); j++){
-	vectorNeigh[j]= new float[3];
+        vectorNeigh[j]= new float[3];
       }
       vectorNeighLength = new float[it->get_numNeigh()];
 
       // Create the vector that points from the site to the neighbour
       for( unsigned int j=0; j<it->get_numNeigh(); j++ ){ 
-	vectorNeigh[j][0] = sites[ it->get_neighId(j) ].get_x() - it->get_x();
-	vectorNeigh[j][1] = sites[ it->get_neighId(j) ].get_y() - it->get_y();
-	vectorNeigh[j][2] = sites[ it->get_neighId(j) ].get_z() - it->get_z();
+        vectorNeigh[j][0] = sites[ it->get_neighId(j) ].get_x() - it->get_x();
+        vectorNeigh[j][1] = sites[ it->get_neighId(j) ].get_y() - it->get_y();
+        vectorNeigh[j][2] = sites[ it->get_neighId(j) ].get_z() - it->get_z();
       }
 
       // Find the neighVec that is closest (in angle) to the refVec
       for(unsigned int m=0; m<numPixels; m++) {
-	float highestInprod=-FLT_MAX;
-	int highestInprodNumber=-1;// to check later if a neighbour is found
-	for( unsigned int j=0; j<it->get_numNeigh(); j++ ){
-	  //calculate inner product between the refVector and the current neighbour
-	  float tempInprod = inproduct(vectorNeigh[j], refVector[m], 3);
-	  //store the highest inner product and its id
-	  if( tempInprod > highestInprod ){
-	    highestInprod = tempInprod;
-	    highestInprodNumber = j;
-	  }
-	}
-	//check if inner products have been calculated correctly
-	if( highestInprodNumber == -1 ){
-	  cerr << "Number of neighbours of site " << it->get_site_id() << " is: " 
-	       << int(it->get_numNeigh()) << endl;
-	  cerr << "In routine compute_solid_angles: there is no highest inproduct." << endl;
-	  MPI::COMM_WORLD.Abort( -1 );
+        float highestInprod=-FLT_MAX;
+        int highestInprodNumber=-1;// to check later if a neighbour is found
+        for( unsigned int j=0; j<it->get_numNeigh(); j++ ){
+    //calculate inner product between the refVector and the current neighbour
+          float tempInprod = inproduct(vectorNeigh[j], refVector[m], 3);
+    //store the highest inner product and its id
+          if( tempInprod > highestInprod ){
+            highestInprod = tempInprod;
+            highestInprodNumber = j;
+          }
+        }
+  //check if inner products have been calculated correctly
+        if( highestInprodNumber == -1 ){
+          cerr << "Number of neighbours of site " << it->get_site_id() << " is: " 
+            << int(it->get_numNeigh()) << endl;
+          cerr << "In routine compute_solid_angles: there is no highest inproduct." << endl;
+          MPI::COMM_WORLD.Abort( -1 );
 
-	}
-	// associate the closest neighbour with this reference direction
-	it->set_outgoing(m, highestInprodNumber);
+        }
+  // associate the closest neighbour with this reference direction
+        it->set_outgoing(m, highestInprodNumber);
       }  //for all pixels
 
       //free memory of neighbour vectors
       for (unsigned int j=0;j<it->get_numNeigh();j++) {
-	delete [] vectorNeigh[j]; 
+        delete [] vectorNeigh[j]; 
       }
       delete [] vectorNeigh;
       delete [] vectorNeighLength;
@@ -3852,35 +3852,35 @@ void SimpleX::store_site_properties(){
       //if neighbour distance<0.0, site is flagged as removed from simulation
       if( it->get_process() == COMM_RANK && !it->get_border() && it->get_neigh_dist() >= 0.0 ){
 
-	bool is_ionised = 0;
-	if( it->get_n_HII() > 0.0 || (it->get_n_HII() + it->get_n_HI()) == 0.0 ){
-	  is_ionised = 1;
-	}
+        bool is_ionised = 0;
+        if( it->get_n_HII() > 0.0 || (it->get_n_HII() + it->get_n_HI()) == 0.0 ){
+          is_ionised = 1;
+        }
 
-	//calculate optical depth
+  //calculate optical depth
 
-	//use the volume to find average neighbour distance, since the 
-	//triangulation hasn't been updated yet after sites were removed
-	double aver_neigh_dist = 3*pow( (double) it->get_volume(), 1.0/3.0 )/(4.0*M_PI);
+  //use the volume to find average neighbour distance, since the 
+  //triangulation hasn't been updated yet after sites were removed
+        double aver_neigh_dist = 3*pow( (double) it->get_volume(), 1.0/3.0 )/(4.0*M_PI);
 
-	//calculate the mean optical depth over frequencies
-	double tau = 0.0;
-	for(short int f=0; f<numFreq; f++){
-	  tau += it->get_n_HI() * UNIT_D * aver_neigh_dist * UNIT_L * cross_H[f] * straight_correction_factor;
-	}
-	tau /= numFreq;
+  //calculate the mean optical depth over frequencies
+        double tau = 0.0;
+        for(short int f=0; f<numFreq; f++){
+          tau += it->get_n_HI() * UNIT_D * aver_neigh_dist * UNIT_L * cross_H[f] * straight_correction_factor;
+        }
+        tau /= numFreq;
 
-	//if optical depth is smaller than the switch set by user, switch from
-	//ballistic to direction conserving
-	if( tau < switchTau && is_ionised ){
-	  it->set_ballistic( 0 );
-	}else{
-	  it->set_ballistic( 1 );
-	}
-	//sources are always direction conserving
-	if( it->get_source() ){
-	  it->set_ballistic( 0 );
-	}
+  //if optical depth is smaller than the switch set by user, switch from
+  //ballistic to direction conserving
+        if( tau < switchTau && is_ionised ){
+          it->set_ballistic( 0 );
+        }else{
+          it->set_ballistic( 1 );
+        }
+  //sources are always direction conserving
+        if( it->get_source() ){
+          it->set_ballistic( 0 );
+        }
       }
     }
   }
@@ -3896,15 +3896,15 @@ void SimpleX::store_site_properties(){
       temp = *it;
 
       if( it->get_source() ){
-	//loop over frequency bins to get total flux
-	double total_flux = 0.0;
-	for(short int f=0; f<numFreq; f++){
-	  total_flux += (double) it->get_flux(f);
-	}
-	temp.set_flux( (float) total_flux );
+  //loop over frequency bins to get total flux
+        double total_flux = 0.0;
+        for(short int f=0; f<numFreq; f++){
+          total_flux += (double) it->get_flux(f);
+        }
+        temp.set_flux( (float) total_flux );
 
       }else{
-	temp.set_flux( 0.0 );
+        temp.set_flux( 0.0 );
       }
 
       //test whether it's better to send atoms instead 
@@ -3950,7 +3950,7 @@ void SimpleX::create_new_vertex_list(){
     }
   }
 
-  cerr << " (" << COMM_RANK << ") number of vertices: " << vertices.size() << endl;
+  //cerr << " (" << COMM_RANK << ") number of vertices: " << vertices.size() << endl;
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Created new vertex list" << endl;
@@ -5373,13 +5373,12 @@ void SimpleX::send_site_ballistics( const vector< unsigned long int >& sites_to_
   return;
 }
 
-// Send physical quantities to sites that have moved to another
-// processor. TODO: send the photons too.
+// Send physical quantities to sites that have moved to another processor
 void SimpleX::send_site_physics( ){
   
   //sort the site_properties on vertex id
   sort( site_properties.begin(), site_properties.end(), compare_vertex_id_site_update );
-
+  
   vector<Vertex>::iterator it=vertices.begin();
   vector<Site_Update>::iterator it2=site_properties.begin();
   
@@ -5387,6 +5386,8 @@ void SimpleX::send_site_physics( ){
   bool isSitesToSend = 1;
   
   vector<Site_Update> site_properties_recv;
+
+
 
   while( isSitesToSend ){
 
@@ -5421,11 +5422,11 @@ void SimpleX::send_site_physics( ){
 
       }else if( it->get_vertex_id() > it2->get_vertex_id() ){
         cerr << " (" << COMM_RANK << ") Warning: Vertex " << it2->get_vertex_id() << " has disappeared from the computational domain " << endl;
-        MPI::COMM_WORLD.Abort(-1);
+        //MPI::COMM_WORLD.Abort(-1);
       }
 
     }
-    
+
     //sort the site updates on process
     sort( sitesToSend.begin(), sitesToSend.end(), compare_process_site_update );
         
@@ -5540,9 +5541,9 @@ void SimpleX::send_site_intensities(){
   
   if( intens_ids.size() > 0 ){  
     //sort the intensity ids on vertex id
-    quickSortPerm( intens_ids, permutation, 0, intens_ids.size() );
+    quickSortPerm( intens_ids, permutation, 0, intens_ids.size()-1 );
   }
-    
+ 
   //update the intensities for the new ordering
   vector<float> tmp = site_intensities;
     
@@ -5719,120 +5720,6 @@ void SimpleX::send_site_intensities(){
   return;
   
 }
-
-//TEST
-void SimpleX::reinit_triangulation(){
-  
-   //make sure that the vectors that will be filled are empty 
-    site_intensities.clear();
-    intens_ids.clear();
-    
-    //make sure that photons have left all ghost vertices 
-    //before calculating local intensities
-    send_intensities();
-
-    //store the intensities in big array
-    store_intensities();
-
-    //in this case, also store the ballistic intensities
-    vector< unsigned long int > sites_to_store = get_ballistic_sites_to_store();
-
-    store_ballistic_intensities( sites_to_store );
-    sites_to_store.clear();
-
-    //remember the orientation index with which the intensities were stored
-    orientation_index_old = orientation_index;
-
-    //store the relevant properties of the sites to be used 
-    //in the coming run
-    store_site_properties();
-
-    //TEST
-    for(SITE_ITERATOR it=sites.begin();it!=sites.end();it++){
-      if(it->get_vertex_id() == 0){
-        cout << " (" << COMM_RANK << ") Found vertex 0." << endl;
-        it->set_x( 0.6 );
-        it->set_y( 0.6 );
-        it->set_z( 0.6 );
-      } 
-    }
-    //END TEST
-
-
-    //create a list of vertices to be triangulated
-    create_new_vertex_list();
-
-    //clear temporary structures in the sites 
-    //and completely clear the sites vector
-    clear_temporary();
-    sites.clear();
-    vector< Site >().swap(sites);
-
-    simplices.clear();
-    vector< Simpl >().swap(simplices);
-
-    //send the list to master proc
-    send_new_vertex_list();
- 
-    if( COMM_RANK == 0 ){
-      cerr << " (" << COMM_RANK << ") Computing triangulation" << endl;
-    }
-     
-    if(COMM_RANK == 0){
-
-      //create a boundary around the unit domain
-      create_boundary();
-      
-      //sort the vertices on id
-      sort( vertices.begin(), vertices.end(), compare_vertex_id_vertex );
-
-      //create octree
-      create_vertex_tree();
-
-      //assign process to vertices
-      //this is necessary to include boundary sites
-      assign_process();
-
-    }else{
-      //clear vertices on other procs
-      vertices.clear();
-      vector< Vertex >().swap(vertices);
-    }
-
-    //send the vertex positions round to all procs, so every proc (temporary!) has its own copy
-    send_vertices();
-
-    //now that all procs have a list of vertices, create octree
-    if( COMM_RANK != 0 ){
-      sort( vertices.begin(), vertices.end(), compare_vertex_id_vertex );
-      create_vertex_tree();
-    }
-
-    //now that the tree is created send the site physics of vertices that have changed process
-    send_site_physics();
-    //send_site_intensities();
-
-    //compute the triangulation
-    compute_triangulation();
-
-    //create the sites vector from the vertex list
-    create_sites();
-
-    //assign the correct site ids to the sites
-    assign_site_ids();  
-
-    //return the physical properties to the sites
-    return_physics();
-    
-    compute_site_properties();
-    
-    //here the intensities are returned
-    compute_physics( 1 );
-    
-    remove_border_simplices();
-  
-}
-//END TEST
 
 
 /****************************************************************************************/
@@ -6048,40 +5935,42 @@ void SimpleX::return_physics(){
   unsigned long int i=0;
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
     //only include sites on this proc that are not in border
-    if( it->get_process() == COMM_RANK ){ 
+    if( it->get_process() == COMM_RANK ){
       if( !it->get_border() ) {
-	//check if the vertex ids match
-	if(it->get_vertex_id() == site_properties[i].get_vertex_id() ){
+        //check if the vertex ids match
+        if(it->get_vertex_id() == site_properties[i].get_vertex_id() ){
 
-	  //assign properties
-	  it->set_n_HI( site_properties[ i ].get_n_HI() );
-	  it->set_n_HII( site_properties[ i ].get_n_HII() ); 
-	  it->set_ballistic( site_properties[ i ].get_ballistic() );
-	  it->set_temperature( site_properties[ i ].get_temperature() );
-	  //if site is source, put flux in first bin
-	  if( site_properties[ i ].get_flux() > 0.0 ){
-	    it->set_source(1);
-	    it->create_flux(numFreq);
-	    it->set_flux( 0, site_properties[ i ].get_flux() );
-	  }else{
-	    it->set_source(0);
-	  }
+          //assign properties
+          it->set_n_HI( site_properties[ i ].get_n_HI() );
+          it->set_n_HII( site_properties[ i ].get_n_HII() ); 
+          it->set_ballistic( site_properties[ i ].get_ballistic() );
+          it->set_temperature( site_properties[ i ].get_temperature() );
+          
+          //if site is source, put flux in first bin
+          if( site_properties[ i ].get_flux() > 0.0 ){
+            it->set_source(1);
+            it->create_flux(numFreq);
+            it->set_flux( 0, site_properties[ i ].get_flux() );
+          }else{
+            it->set_source(0);
+          }
 
-	  i++;
-	}else{
-	  cerr << " (" << COMM_RANK << ") Error in return_physics(): site not mapped" << endl;
-	  cerr << it->get_vertex_id() << " " << i << endl;
-	  MPI::COMM_WORLD.Abort( -1 );
-	}
+          i++;
+          
+        }else{
+          cerr << " (" << COMM_RANK << ") Error in return_physics(): site not mapped" << endl;
+          cerr << it->get_vertex_id() << " " << i << endl;
+          MPI::COMM_WORLD.Abort( -1 );
+        }
       }else{
-	//in case of direction conserving transport, set boundary to 
-	//direction conserving
-	if( dirConsTransport ){
-	  it->set_ballistic( 0 );
-	}else{
-	  //in all other cases, set boundary to ballistic
-	  it->set_ballistic( 1 );
-	}
+  //in case of direction conserving transport, set boundary to 
+  //direction conserving
+        if( dirConsTransport ){
+          it->set_ballistic( 0 );
+        }else{
+    //in all other cases, set boundary to ballistic
+          it->set_ballistic( 1 );
+        }
 
       }//if not in border
     }//if on this proc 
@@ -7632,7 +7521,7 @@ void SimpleX::non_diffuse_transport( Site& site, vector<double>& N_out_total ) {
 void SimpleX::radiation_transport( const unsigned int& run ){
 
   double t0 = MPI::Wtime();
-  int dummy=0;
+  //int dummy=0;
   double numRecombs = 0.0, allRecombs = 0.0; 
   double totalNumRecombs;
 
@@ -7654,17 +7543,17 @@ void SimpleX::radiation_transport( const unsigned int& run ){
     }
   }//if run
 
-  if( COMM_RANK == 0)
-    cerr << endl; 
+  // if( COMM_RANK == 0)
+  //   cerr << endl; 
 
   for( unsigned int times=0; times<numSweeps; times++ ) { 
 
-    if( COMM_RANK == 0 ){
-      if( (int)floor( ( 100.0*times)/numSweeps ) > dummy ) { 
-        dummy = (int) floor((100.0*times)/numSweeps); 
-        cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\t" << dummy+1 << "% completed..." << flush; 
-      } 
-    }
+    // if( COMM_RANK == 0 ){
+    //   if( (int)floor( ( 100.0*times)/numSweeps ) > dummy ) { 
+    //     dummy = (int) floor((100.0*times)/numSweeps); 
+    //     cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\t" << dummy+1 << "% completed..." << flush; 
+    //   } 
+    // }
 
     //Do all sources
     //double total_inten = 0.0;

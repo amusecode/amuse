@@ -97,10 +97,6 @@ int main(int argc, char** argv) {
 
     }
 
-    //TESTING
-    if(run>0)
-      SimpleXGrid.reinit_triangulation();
-
     // For the first run, compute the properties of the triangulation
     if(run == 0){
 
