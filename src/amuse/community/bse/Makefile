@@ -25,8 +25,11 @@ BSEOBJ = src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
 all:    bse_worker
 
 clean:
-	/bin/rm -f *~ *.so *.o src/*.o src/bse bse_worker worker_code worker_code.f90 worker_code-sockets.f90 bse_worker_sockets
-
+	$(RM) -f  *~ *.so *.o src/*.o 
+	$(RM) -f src/bse bse_worker worker_code worker_code.f90 
+	$(RM) -f worker_code-sockets.f90 bse_worker_sockets
+	$(RM) -f forsockets.mod
+	
 bse_worker:	worker_code.f90  BSE_code.o  $(BSEOBJ)
 	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS)"
 	$(MPIF90) $(FFLAGS) $^ -o $@ 

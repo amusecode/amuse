@@ -75,7 +75,7 @@ FILES=$(SRC)/muse_helpers.f90 $(SRC)/mem.f90 $(SRC)/elements.f90 $(SRC)/cooling.
   $(SRC)/project.f90 $(SRC)/clean.f90 $(SRC)/sort.f90 $(SRC)/util.f90 $(SRC)/gravity.f90 \
   $(SRC)/tidalsum.f90 $(SRC)/treewalk.f90 $(SRC)/gravsum.f90 $(SRC)/fuvflux.f90
 
-AMUSE_INTERFACE_DEPS=../interface/gd.py ../interface/common.py ../../support/codes/core.py ../../support/interface.py
+AMUSE_INTERFACE_DEPS=
 
 
 all: fi_worker
@@ -136,10 +136,11 @@ interface.po:interface.f90
     
 clean:
 	make -C src purge
-	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
-	rm -f fi_worker_periodic fi_worker_gl fi_worker
-	rm -f fi_worker_sockets worker-sockets.f90	
-	rm -f worker_code_periodic worker_code
-	rm -Rf $(BUILDDIR)
-	rm -Rf $(PERIODIC_BUILDDIR)
+	$(RM) -f *.o *.po *.pyc *.bck worker worker.f90 glworker glworker.f90
+	$(RM) -f fi_worker_periodic fi_worker_gl fi_worker
+	$(RM) -f fi_worker_sockets worker-sockets.f90
+	$(RM) -f worker_code_periodic worker_code
+	$(RM) -f forsockets.mod
+	$(RM) -Rf $(BUILDDIR)
+	$(RM) -Rf $(PERIODIC_BUILDDIR)
 

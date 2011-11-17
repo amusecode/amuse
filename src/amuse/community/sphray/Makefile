@@ -57,6 +57,8 @@ sphray_worker-sockets.f90: interface.py
 
 clean:
 	make -C src clean
-	rm -f *.o *.pyc *.bck
-	rm -f sphray_worker sphray_worker.f90
-	rm -f sphray_worker_sockets sphray_worker-sockets.f90
+	$(RM) -f *.o *.pyc *.bck
+	$(RM) -f sphray_worker sphray_worker.f90
+	$(RM) -f sphray_worker_sockets sphray_worker-sockets.f90
+	$(RM) -f forsockets.mod
+	$(RM) -f src/lib*.a

@@ -18,7 +18,8 @@ all: hop_worker
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) -f *~ worker_code hop_worker
+	$(RM) -f *~ worker_code hop_worker hop_worker_sockets
+	$(RM) -f worker_code-sockets.cc
 	make -C src clean
 
 $(CODELIB):

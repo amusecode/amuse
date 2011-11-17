@@ -131,7 +131,7 @@ glworker_code.f90: interface.py
 
 clean:
 	make -C src clean
-	rm -f *.pyc *.o
+	rm -f *.pyc *.o *.mpio
 	rm -Rf build
 	rm -Rf build_mpi
 	rm -f worker_code_gpu worker_code_grape
@@ -142,6 +142,7 @@ clean:
 	rm -f phigrape_worker phigrape_worker_gl phigrape_worker_gl_gpu phigrape_worker_gpu
 	rm -f phigrape_worker_mpi 
 	rm -f phigrape_worker_gpu_sockets
+	rm -f forsockets.mod
 
 __init__.py:
 	touch $@

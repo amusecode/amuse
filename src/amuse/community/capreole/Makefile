@@ -114,6 +114,7 @@ glworker.f90: interface.py
 
 clean:
 	make -C src clean
-	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90 worker-sockets.F90 worker-sockets.f90
-	rm -f capreole_worker capreole_worker_mpi capreole_worker_gl worker_mpi.f90 capreole_worker_sockets
-	rm -Rf build build_mpi
+	$(RM) -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90 worker-sockets.F90 worker-sockets.f90
+	$(RM) -f capreole_worker capreole_worker_mpi capreole_worker_gl worker_mpi.f90 capreole_worker_sockets
+	$(RM) -Rf build build_mpi
+	$(RM) -f forsockets.mod

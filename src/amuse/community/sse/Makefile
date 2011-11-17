@@ -20,8 +20,9 @@ all:    sse_worker
 
 
 clean:
-	rm -f *~ *.so *.o src/*.o src/sse worker_code worker_code.f90
-	rm -f sse_worker sse_worker_sockets worker_code-sockets.f90
+	$(RM) -f *~ *.so *.o src/*.o src/sse worker_code worker_code.f90
+	$(RM) -f sse_worker sse_worker_sockets worker_code-sockets.f90
+	$(RM) -f forsockets.mod
 
 sse_worker:	worker_code.f90  SSE_muse_interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN)

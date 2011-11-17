@@ -63,7 +63,7 @@ download:
 
 clean:
 	$(RM) -f *.so *.o *.selfgrav_o *.pyc worker_code.cc worker_code.h 
-	$(RM) -f *~ athena_worker  athena_worker_selfgrav
+	$(RM) -f *~ athena_worker  athena_worker_selfgrav athena_worker_mhd
 	$(RM) -f worker_code-sockets.cc athena_worker_sockets
 	$(RM) -f $(CODELIB) $(AMUSE_OBJS_SELFGRAV)
 
@@ -75,6 +75,7 @@ distclean: clean
 	$(RM) -Rf .pc
 	$(RM) *~ athena_worker
 	$(RM) -Rf src
+	$(RM) -Rf src.*
 
 $(CODELIB): $(ATHENA_DIR)/Makefile
 	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr 

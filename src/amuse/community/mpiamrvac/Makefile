@@ -53,13 +53,16 @@ download:
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod
 	$(RM) *~ mpiamrvac_worker worker_code.f90
+	$(RM) -f mpiamrvac_worker_2d
 	-make -C $(CODEDIR) clean
 	$(RM) -f $(CODELIB) $(CODELIB2D)
 	
 distclean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod
 	$(RM) *~ mpiamrvac_worker worker_code.f90
+	$(RM) -f mpiamrvac_worker_2d
 	$(RM) -Rf src
+	$(RM) -Rf src.*
 	$(RM) -Rf .pc
 
 $(CODELIB): $(CODEDIR)/makefile
