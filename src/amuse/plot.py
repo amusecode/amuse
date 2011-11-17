@@ -120,13 +120,21 @@ def _smart_length_units_for_vector_quantity(quantity):
             return length_unit
     return units.m
 
-def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1):
+def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1, 
+        gd_particles=None, view=None):
     """
     Very simple and fast procedure to make a plot of the hydrodynamics state of 
     a set of SPH particles. The particles must have the following attributes defined: 
     position, u, h_smooth.
     For a more accurate plotting procedure, see for example:
     examples/applications/christmas_card_2010.py
+    
+    :argument particles: the SPH particles to be plotted
+    :argument u_range: range of internal energy for color scale [umin, umax]
+    :argument min_size: minimum size to use for plotting particles, in pixel**2
+    :argument alpha: the opacity of each particle
+    :argument gd_particles: non-SPH particles can be indicated with white circles
+    :argument view: the (physical) region to plot [xmin, xmax, ymin, ymax]
     """
     positions = particles.position
     us        = particles.u
@@ -147,14 +155,28 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1):
     
     colors = numpy.transpose(numpy.array([red, green, blue]))
     n_pixels = native_plot.gcf().get_dpi() * native_plot.gcf().get_size_inches()
-    phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((max(x)-min(x))**2 + (max(y)-min(y))**2)
-    sizes = numpy.maximum((h_smooths**2 * phys_to_pix2).value_in(units.none), min_size)
+    
     current_axes = native_plot.gca()
     current_axes.set_axis_bgcolor('#101010')
-    current_axes.set_aspect("equal", adjustable = "datalim")
-    x = x.as_quantity_in(_smart_length_units_for_vector_quantity(x))
-    y = y.as_quantity_in(_smart_length_units_for_vector_quantity(x))
+    if view:
+        current_axes.set_aspect("equal", adjustable = "box")
+        length_unit = _smart_length_units_for_vector_quantity(view)
+        current_axes.set_xlim(view[0].value_in(length_unit), 
+            view[1].value_in(length_unit), emit=True, auto=False)
+        current_axes.set_ylim(view[2].value_in(length_unit), 
+            view[3].value_in(length_unit), emit=True, auto=False)
+        phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((view[1]-view[0])**2 + (view[3]-view[2])**2)
+    else:
+        current_axes.set_aspect("equal", adjustable = "datalim")
+        length_unit = _smart_length_units_for_vector_quantity(x)
+        phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((max(x)-min(x))**2 + (max(y)-min(y))**2)
+    sizes = numpy.maximum((h_smooths**2 * phys_to_pix2).value_in(units.none), min_size)
+    
+    x = x.as_quantity_in(length_unit)
+    y = y.as_quantity_in(length_unit)
     scatter(x, y, sizes, colors, edgecolors = "none", alpha = alpha)
+    if gd_particles:
+        scatter(gd_particles.x, gd_particles.y, c='w', marker='o')
     xlabel('x')
     ylabel('y')
 
