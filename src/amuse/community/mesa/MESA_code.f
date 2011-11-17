@@ -1696,6 +1696,7 @@
          temperature(n), luminosity(n), XH(n), XHE(n), XC(n), XN(n), &
          XO(n), XNE(n), XMG(n), XSI(n), XFE(n)
       double precision :: total_mass, original_timestep, f
+      double precision :: original_timestep_limit, original_dxdt_nuc_f
       integer :: new_particle, ierr, tmp1_id_new_model, tmp2_id_new_model, &
          new_specified_stellar_model, finalize_stellar_model, match_mesh, &
          evolve_for, evolve_one_step, erase_memory, index_low, k1, k2
@@ -1736,6 +1737,10 @@
          if (failed('match_mesh', ierr)) return
          
          ! *** Copy the relevant variables (chemical fractions only, or also hydro vars...)
+         original_timestep_limit = s% min_timestep_limit
+         s% min_timestep_limit = 1.0d-12
+         original_dxdt_nuc_f = s% dxdt_nuc_factor
+         s% dxdt_nuc_factor = 1.0d-99
          original_timestep = s% dt_next
          f = 1.0d-4
          if (debugging) then
@@ -1750,12 +1755,21 @@
             if (failed('evolve_for', ierr)) return
             if (debugging) write(*,*) 'f: ', f
             call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
-            if (failed('check_remeshed', ierr)) return
+            if (failed('check_remeshed', ierr)) then
+               ierr = match_mesh(tmp1_id_new_model, s% nz, s% dq)
+               if (failed('match_mesh', ierr)) return
+               call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
+               if (failed('check_remeshed 2', ierr)) return
+            end if
             if (debugging) write(*,*) 'CHECK check_remeshed OK'
             if (debugging) write(*,*) 'Backups', s% number_of_backups_in_a_row
             if (s% number_of_backups_in_a_row > 15) exit
             if (f >= 1.0d0) exit
-            f = min(1.5d0 * f, 1.0d0)
+            if (f >= 0.1d0) then
+               f = min(1.1d0 * f, 1.0d0)
+            else
+               f = 1.5d0 * f
+            endif
          end do
          
          ! *** Give the model the opportunity to remesh ***
@@ -1814,10 +1828,24 @@
             end do
          end if
          
-         s% xa(:,:) = s_tmp% xa(:,:)
+         call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
+         if (failed('check_remeshed', ierr)) then
+            ierr = match_mesh(tmp1_id_new_model, s% nz, s% dq)
+            if (failed('match_mesh', ierr)) return
+            call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
+            if (failed('check_remeshed 2', ierr)) return
+         end if
          if (do_T) s% xs(s% i_lnT,index_low:) = s_tmp% xs(s_tmp% i_lnT,index_low:)
          ierr = erase_memory(id_new_model)
          if (failed('erase_memory', ierr)) return
+         
+         s% dxdt_nuc_factor = original_dxdt_nuc_f
+         
+         if (s% dt_next > 10.0 * original_timestep_limit) then
+            s% min_timestep_limit = original_timestep_limit
+         else
+            s% min_timestep_limit = s% dt_next / 10.0
+         endif
          
          if (debugging) write(*,*) 'Backups:', s% number_of_backups_in_a_row
          s% number_of_backups_in_a_row = 0

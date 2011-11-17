@@ -59,13 +59,23 @@ void mmas::merge_stars_consistently(int n_shells, int flag_do_shock_heating) {
     fprintf(stderr, "Computing f_heat using %s method:\n", 
     gsl_root_fsolver_name (s));
     
+    // Calculating lower bound test interval
     double f1 = merge_stars_consistently_eq(f_heat_min, F.params);
-    double f2 = merge_stars_consistently_eq(f_heat_max, F.params);
+    gsl_error_handler_t * previous_handler = gsl_set_error_handler_off();
+    // Calculating upper bound test interval (handling GSL exceptions)
+    double f2;
+    real f_heat_max_iter = f_heat_max;
+    do {
+        f2 = merge_stars_consistently_eq(f_heat_max_iter, F.params);
+        if (f2 == -1e99) f_heat_max_iter /= 2.0;
+    } while (f2 == -1e99 && f_heat_max_iter > 1.0);
+    gsl_set_error_handler(previous_handler);
+    if (f2 == -1e99) f2 = f1; // No shock heating
     
     if (f1*f2 < 0.0 and flag_do_shock_heating)    // if heating rate is appropriate, solve for f_heat, otherwise assume no heating
     {
         fprintf(stderr,"\n\n\n  Solving for f_heat ... \n\n\n");
-        gsl_root_fsolver_set (s, &F, f_heat_min, f_heat_max);
+        gsl_root_fsolver_set (s, &F, f_heat_min, f_heat_max_iter);
         fprintf (stderr, "%5s [%9s, %9s] %9s %9s\n",
             "iter", "lower", "upper", "root", "err(est)");
         

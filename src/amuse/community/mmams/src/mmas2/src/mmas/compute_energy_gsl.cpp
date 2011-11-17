@@ -37,6 +37,10 @@ real mmas::compute_stellar_energy(usm &model) {
   arr_m_mu   = new double[n_shells];
   for (int i = 0; i < n_shells; i++) {
     mass_shell &shell = model.get_shell(i);
+    if (i > 0 && shell.mass <= arr_mass[i-1]){
+        n_shells = i;
+        break;
+    }
     arr_mass[i]   = shell.mass;
     arr_radius[i] = shell.radius;
     arr_temp[i]   = shell.temperature;
@@ -49,7 +53,8 @@ real mmas::compute_stellar_energy(usm &model) {
 //   fprintf(stderr,"radius\n");
   acc_radius    = gsl_interp_accel_alloc();
   interp_radius = gsl_interp_alloc(gsl_interp_linear, n_shells);
-  gsl_interp_init(interp_radius, arr_mass, arr_radius, n_shells);
+  int status = gsl_interp_init(interp_radius, arr_mass, arr_radius, n_shells);
+  if (status != GSL_SUCCESS) return -1e99;
   
 //   fprintf(stderr,"temp\n");
   acc_temp    = gsl_interp_accel_alloc();
