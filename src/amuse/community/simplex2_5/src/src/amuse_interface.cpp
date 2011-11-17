@@ -57,6 +57,9 @@ void AMUSE_SimpleX::read_parameters(){
   //temperature of the ionised gas
   gasIonTemp = 1.e4;
   
+  //temperature of neutral gas
+  gasNeutralTemp = 10.0;
+
   //include recombinations?
   recombination = 1;
 
@@ -124,12 +127,8 @@ int AMUSE_SimpleX::add_vertex(long *id, double x,double y,double z,double rho,
   temp_n_HI_list.push_back( (float) n_HI);
   temp_n_HII_list.push_back( (float) n_HII );
   temp_flux_list.push_back(flux);
-
-  //mean molecular weight
-  double mu = ( n_HI + n_HII )/( n_HI + 2*n_HII );
-    //convert internal energy to temperature
-  double T = (mu * m_H * uInt)/(1.5 * k_B);
-  temp_T_list.push_back(T);
+  temp_u_list.push_back(uInt);
+  temp_dudt_list.push_back(0.0);
 
   return 0;
 
@@ -161,12 +160,8 @@ int AMUSE_SimpleX::add_site(long *id, double x,double y,double z,double rho,
       tempSite.set_source(0);
     }
     tempSite.set_neigh_dist(1.);
-    
-    //mean molecular weight
-    double mu = ( n_HI + n_HII )/( n_HI + 2*n_HII );
-      //convert internal energy to temperature
-    double T = (mu * m_H * uInt)/(1.5 * k_B);
-    tempSite.set_temperature(T);
+    tempSite.set_internalEnergy(uInt);
+    tempSite.set_dinternalEnergydt(0.0);
     
     sites.push_back( tempSite );
     numSites++;
@@ -507,9 +502,7 @@ int AMUSE_SimpleX::get_site(int id, double *x,double *y,double *z,double *rho,
        }
        *flux = totalFlux;
        *xion = (double) p->get_n_HII()/tmp;
-       
-       double mu = ( p->get_n_HI() + p->get_n_HII() )/(p->get_n_HI() + 2*p->get_n_HII() );
-       *uInt = ( 1.5 * k_B * p->get_temperature() )/(mu * m_H);
+       *uInt = p->get_internalEnergy();
        
        return 1;
      }
@@ -593,8 +586,26 @@ int AMUSE_SimpleX::get_internalEnergy(int id, double *uInt){
   p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
   if(p->get_vertex_id() == (unsigned long long int)id){
     if (p->get_process() == COMM_RANK){
-      double mu = ( p->get_n_HI() + p->get_n_HII() )/(p->get_n_HI() + 2*p->get_n_HII() );
-      *uInt = ( 1.5 * k_B * p->get_temperature() )/(mu * m_H);
+      *uInt = p->get_internalEnergy();
+      return 1;
+
+    }
+  }
+  return 0;
+
+  
+}
+
+int AMUSE_SimpleX::get_dinternalEnergydt(int id, double *uInt){
+
+  SITE_ITERATOR p;
+  Site tmp;
+
+  tmp.set_vertex_id((unsigned long long) id);
+  p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+  if(p->get_vertex_id() == (unsigned long long int)id){
+    if (p->get_process() == COMM_RANK){
+      *uInt = p->get_dinternalEnergydt();
       return 1;
 
     }
@@ -627,9 +638,7 @@ int AMUSE_SimpleX::set_site(int id, double x, double y, double z, double rho,
         }
         p->set_n_HI((1-xion)*rho);
         p->set_n_HII(xion*rho);
-        
-        double mu = ( p->get_n_HI() + p->get_n_HII() )/(p->get_n_HI() + 2*p->get_n_HII() );
-        p->set_temperature( (mu * m_H * uInt)/(1.5 * k_B) );
+	p->set_internalEnergy( uInt );
         
         return 1;
     }
@@ -699,6 +708,7 @@ int AMUSE_SimpleX::set_ionisation(int id, double xion){
     }
     return 0;
 }
+
 int AMUSE_SimpleX::set_internalEnergy(int id, double uInt){
     SITE_ITERATOR p;
     Site tmp;
@@ -706,13 +716,25 @@ int AMUSE_SimpleX::set_internalEnergy(int id, double uInt){
     tmp.set_vertex_id((unsigned long long) id);
     p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
     if(p->get_vertex_id() == (unsigned long long int)id){
-      double mu = ( p->get_n_HI() + p->get_n_HII() )/(p->get_n_HI() + 2*p->get_n_HII() );
-      p->set_temperature( (mu * m_H * uInt)/(1.5 * k_B) );
-
-        return 1;
+      p->set_internalEnergy( uInt );
+      return 1;
     }
     return 0;
 }
+
+int AMUSE_SimpleX::set_dinternalEnergydt(int id, double uInt){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+      p->set_dinternalEnergydt( uInt );
+      return 1;
+    }
+    return 0;
+}
+
 
 //relevant global parameters for run
 AMUSE_SimpleX *SimpleXGrid;
@@ -887,6 +909,21 @@ int get_internal_energy(int id, double *uInt){
   return totalret-1;
 }
 
+int get_dinternal_energy_dt(int id, double *dudt){
+  double fdudt=0.0;
+  double send, recv;
+  int ret, totalret;
+  
+  ret = (*SimpleXGrid).get_dinternalEnergydt(id, &fdudt);
+  MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+  send = fdudt;
+  MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
+  MPI::COMM_WORLD.Barrier();
+  *dudt= recv;
+  return totalret-1;
+}
+
+
 int set_state(int id, double x, double y, double z, double rho,
                                            double flux, double xion, double uInt){
     int ret,totalret;
@@ -957,6 +994,16 @@ int set_internal_energy(int id, double uInt){
     MPI::COMM_WORLD.Barrier();
     return totalret-1;
 }
+
+int set_dinternal_energy_dt(int id, double dut){
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).set_dinternalEnergydt(id, dut);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    return totalret-1;
+}
+
 
 int cleanup_code(void){
  (*SimpleXGrid).clear_temporary();

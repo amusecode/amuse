@@ -33,6 +33,7 @@ class AMUSE_SimpleX : public SimpleX {
   int get_flux(int id, double *flux);
   int get_ionisation(int id, double *xion);
   int get_internalEnergy(int id, double *uInt);
+  int get_dinternalEnergydt(int id, double *dudt);
   int set_site(int id, double x, double y, double z, double rho,
 	       double flux, double xion, double uInt);
   int set_position(int id, double x, double y, double z);
@@ -40,6 +41,7 @@ class AMUSE_SimpleX : public SimpleX {
   int set_flux(int id, double flux);
   int set_ionisation(int id, double xion);
   int set_internalEnergy(int id, double uInt);
+  int set_dinternalEnergydt(int id, double dudt);
   int cleanup();
   int get_syncflag(){return syncflag;}
   int set_UNIT_T(double ts){ UNIT_T_MYR=ts;return 0;}

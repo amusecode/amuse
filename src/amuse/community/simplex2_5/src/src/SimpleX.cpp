@@ -257,6 +257,8 @@ void SimpleX::read_parameters( char* initFileName ){
 
   //Temperature of ionized gas
   KeyValueFile.readInto(gasIonTemp, "gasIonTemp", (double) 1.0e4 );
+  //Temperature of neutral gas
+  KeyValueFile.readInto(gasNeutralTemp, "gasNeutralTemp", (double) 10.0 );
   //Units of source
   KeyValueFile.readInto(UNIT_I, "sourceUnits", (double) 1.0e48 );
   //Include recombination?
@@ -557,7 +559,8 @@ void SimpleX::read_vertex_list(){
   temp_n_HI_list.resize(numSites);
   temp_flux_list.resize(numSites);
   temp_n_HII_list.resize(numSites);
-  temp_T_list.resize(numSites);
+  temp_u_list.resize(numSites);
+  temp_dudt_list.resize(numSites);
   temp_clumping_list.resize(numSites);
   
   //structures needed for reading in the values from hdf5
@@ -618,7 +621,10 @@ void SimpleX::read_vertex_list(){
     double_arr.reinit(1,dims);
     file.read_data("Vertices/temperature",offset, &double_arr);
     for(unsigned int j=0; j<dims[0]; j++ ){
-      temp_T_list[ j + i ] = double_arr(j);
+      temp_u_list[ j + i ] = T_to_u(double_arr(j),
+       ( temp_n_HI_list[ j + i ] + temp_n_HII_list[ j + i ] )/
+         (temp_n_HI_list[ j + i ] + 2*temp_n_HII_list[ j + i ]));
+      temp_dudt_list[ j + i ] = 0.0;
     }
 
     //clumping
@@ -5868,8 +5874,10 @@ void SimpleX::assign_read_properties(){
 	it->set_n_HI( temp_n_HI_list[ it->get_vertex_id() ] );
 	//set ionised fraction
 	it->set_n_HII( temp_n_HII_list[ it->get_vertex_id() ] );
-	//set temperature
-	it->set_temperature( temp_T_list[ it->get_vertex_id() ] );
+	//set internal energy
+	it->set_internalEnergy( temp_u_list[ it->get_vertex_id() ] );
+	//set dudt
+	it->set_dinternalEnergydt( temp_dudt_list[ it->get_vertex_id() ] );
 
 	//set number of ionising photons
 	if(temp_flux_list[ it->get_vertex_id() ] > 0.0){
@@ -5890,7 +5898,7 @@ void SimpleX::assign_read_properties(){
 	it->set_n_HI( 0.0 );
 	it->set_n_HII( 0.0 );
 	it->set_source( 0 );
-	it->set_temperature( 0.0 );
+	it->set_internalEnergy( 0.0 );
       }
     }
   }
@@ -5912,8 +5920,10 @@ void SimpleX::assign_read_properties(){
   vector< float >().swap( temp_n_HII_list );
   temp_flux_list.clear();
   vector< float >().swap( temp_flux_list );
-  temp_T_list.clear();
-  vector< float >().swap( temp_T_list );
+  temp_u_list.clear();
+  vector< float >().swap( temp_u_list );
+  temp_dudt_list.clear();
+  vector< float >().swap( temp_dudt_list );
   temp_clumping_list.clear();
   vector< float >().swap( temp_clumping_list );
 
@@ -5940,20 +5950,19 @@ void SimpleX::return_physics(){
         //check if the vertex ids match
         if(it->get_vertex_id() == site_properties[i].get_vertex_id() ){
 
-          //assign properties
-          it->set_n_HI( site_properties[ i ].get_n_HI() );
-          it->set_n_HII( site_properties[ i ].get_n_HII() ); 
-          it->set_ballistic( site_properties[ i ].get_ballistic() );
-          it->set_temperature( site_properties[ i ].get_temperature() );
-          
-          //if site is source, put flux in first bin
-          if( site_properties[ i ].get_flux() > 0.0 ){
-            it->set_source(1);
-            it->create_flux(numFreq);
-            it->set_flux( 0, site_properties[ i ].get_flux() );
-          }else{
-            it->set_source(0);
-          }
+	  //assign properties
+	  it->set_n_HI( site_properties[ i ].get_n_HI() );
+	  it->set_n_HII( site_properties[ i ].get_n_HII() ); 
+	  it->set_ballistic( site_properties[ i ].get_ballistic() );
+	  it->set_internalEnergy( site_properties[ i ].get_internalEnergy() );
+	  //if site is source, put flux in first bin
+	  if( site_properties[ i ].get_flux() > 0.0 ){
+	    it->set_source(1);
+	    it->create_flux(numFreq);
+	    it->set_flux( 0, site_properties[ i ].get_flux() );
+	  }else{
+	    it->set_source(0);
+	  }
 
           i++;
           
@@ -6521,6 +6530,9 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
   //mean molecular weight
   double mu = ( site.get_n_HI() + site.get_n_HII() )/(site.get_n_HI() + 2*site.get_n_HII() );
 
+  double u_min = T_to_u( T_min, mu);
+  double u_max = T_to_u( T_max, mu);
+
   //number of hydrogen atoms
   double N_H = ( site.get_n_HI() + site.get_n_HII() ) * UNIT_D * site.get_volume() * UNIT_V;
 
@@ -6528,7 +6540,7 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
   double duDtAdiabatic = 0.0;//BLA
   
   //divide this by the internal energy to obtain a constant quantity
-  double u_0 = T_to_u(site.get_temperature(), mu);
+  double u_0 = site.get_internalEnergy();
 
   duDtAdiabatic = (u_0 > 0.0)? duDtAdiabatic/u_0 : 0.0;
   
@@ -6536,7 +6548,7 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
   while( t < t_end ){
 
     //current internal energy of the cell per unit mass
-    double u = T_to_u(site.get_temperature(), mu);
+    double u = site.get_internalEnergy();
 
     //total heating inside this cell per second
     double H = heating_rate( N_ion, t_end );
@@ -6561,18 +6573,17 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
     //change in internal energy in total time 
     du *= dt;
 
-    //temperature
-    double T = u_to_T(u+du, mu);
+    //make sure internalEnergy is in range where rates are valid
+    u = u+du;
 
-    //make sure temperature is in range where rates are valid
-    if(T > T_max){
-      T = T_max;
-    }else if(T < T_min){
-      T = T_min;
+    if(u > u_max){
+      u = u_max;
+    }else if(u < u_min){
+      u = u_min;
     }
 
-    //calculate new temperature
-    site.set_temperature( (float) T );
+    //set new internal energy
+    site.set_internalEnergy( (float) u );
 
     //add time step to total time
     t += dt; 
@@ -6855,6 +6866,8 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 	  //if gas gets ionised set temperature to gasIonTemp
 	  if( (double) site.get_n_HII()/n_H > 0.1){
 	    site.set_temperature( gasIonTemp );
+	  } else {
+	    site.set_temperature( gasNeutralTemp );
 	  }
 	}
 
@@ -6999,7 +7012,9 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 	//if gas gets ionised set temperature to gasIonTemp
         if( (double) site.get_n_HII()/n_H > 0.1){
           site.set_temperature( gasIonTemp );
-        }
+	} else {
+	  site.set_temperature( gasNeutralTemp );
+	}
       }
     }
   }

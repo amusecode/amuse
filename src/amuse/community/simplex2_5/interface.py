@@ -162,6 +162,23 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         """
         return function
 
+
+    @legacy_function
+    def get_dinternal_energy_dt():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the d/dt internal energy from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('dudt', dtype='float64', direction=function.OUT, description = "The current d/dt internal energy of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
     
     @legacy_function
     def get_ionisation():
@@ -246,6 +263,23 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to set the internal energy for. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('u', dtype='float64', direction=function.IN, description = "The new internal energy of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+
+    @legacy_function
+    def set_dinternal_energy_dt():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the d/dt internal energy for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('dudt', dtype='float64', direction=function.IN, description = "The new d/dt internal energy of the particle")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -528,6 +562,26 @@ class SimpleX(CommonCode):
                 )
             )
         object.add_method(
+            "get_dinternal_energy_dt",
+            (
+                object.NO_UNIT,
+                ),
+            (
+                units.cm**2 / units.s**3,
+                object.ERROR_CODE
+                )
+            )
+        object.add_method(
+            "set_dinternal_energy_dt",
+            (
+                object.NO_UNIT,
+                units.cm**2 / units.s**3,
+                ),
+            (
+                object.ERROR_CODE
+                )
+            )
+        object.add_method(
             "set_position",
             (
                 object.NO_UNIT,
@@ -674,6 +728,8 @@ class SimpleX(CommonCode):
         object.add_getter('particles', 'get_ionisation')
         object.add_setter('particles', 'set_internal_energy')
         object.add_getter('particles', 'get_internal_energy')
+        object.add_setter('particles', 'set_dinternal_energy_dt')
+        object.add_getter('particles', 'get_dinternal_energy_dt')
 
     
     def define_state(self, object):
@@ -699,6 +755,10 @@ class SimpleX(CommonCode):
         object.add_method('RUN', 'get_flux')
         object.add_method('RUN', 'get_ionisation')
         object.add_method('RUN', 'get_internal_energy')
+        object.add_method('RUN', 'set_dinternal_energy_dt')
+        object.add_method('RUN', 'get_dinternal_energy_dt')
+        object.add_method('UPDATE', 'set_dinternal_energy_dt')
+        object.add_method('UPDATE', 'get_dinternal_energy_dt')
 
 
     

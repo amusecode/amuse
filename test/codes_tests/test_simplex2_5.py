@@ -74,6 +74,11 @@ class TestSimpleXInterface(TestWithMPI):
         for expected, received in zip([3.0, 2.0, 1.0, 0.6, 0.5, 0.4,1234., 0], 
                 [x, y, z, n_H, flux, X_ion,u, error]):
             self.assertAlmostRelativeEqual(expected, received, 5)
+
+
+        self.assertEqual(0, instance.set_dinternal_energy_dt(4, 12345.))
+        dudt,err=instance.get_dinternal_energy_dt(4)
+        self.assertEqual(12345, dudt)
         
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -115,8 +120,7 @@ class TestSimpleXInterface(TestWithMPI):
         
         X_ion, errors = instance.get_ionisation(indices)
         self.assertEqual(errors, [0]*number_of_particles)
-        print X_ion.sum()
-        self.assertAlmostEqual(X_ion.sum()/number_of_particles, 0.000933205)
+        self.assertAlmostEqual(X_ion.sum()/number_of_particles, 0.000922113284446)
         
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -188,11 +192,16 @@ class TestSimpleX(TestWithMPI):
         
         input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
         particles = particles_from_input_file(input_file)
+        particles.dudt = particles.u/(10|units.Myr)
         instance.particles.add_particles(particles)
-        instance.commit_particles()
+#        instance.particles.dudt=particles.dudt
+#        instance.commit_particles()
+        instance.particles.dudt=particles.dudt
         self.assertAlmostEqual(instance.particles.xion.mean(), 0.0 | units.none)
+        self.assertAlmostEqual(instance.particles.dudt.mean().in_(units.cm**2/units.s**3),particles.dudt.mean().in_(units.cm**2/units.s**3))
         instance.evolve_model(0.5 | units.Myr)
-        self.assertAlmostEqual(instance.particles.xion.mean(), 0.000933205 | units.none)
+        self.assertAlmostEqual(instance.particles.dudt.mean().in_(units.cm**2/units.s**3),particles.dudt.mean().in_(units.cm**2/units.s**3))
+        self.assertAlmostEqual(instance.particles.xion.mean(), 0.000922113284446 | units.none)
         instance.cleanup_code()
         instance.stop()
     

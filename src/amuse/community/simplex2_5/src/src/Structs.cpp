@@ -95,12 +95,6 @@ cooling_curve::cooling_curve(string fileName){
     // Read first line (number of elements)
     ifs >> elements;
 
-    //cerr << "Reading " << elements << " elements from "  << fileName << endl;
-
-    // Initialize vectors
-    //Temperature.resize(elements);
-    //Cooling.resize(elements);
-
     // Temporary variables
     double T,C;
 
@@ -115,8 +109,6 @@ cooling_curve::cooling_curve(string fileName){
     // Last entry is repetition
     Temperature.pop_back();
     Cooling.pop_back();
-    
-    //cerr << Temperature.size() << endl;
 
   } else {
     
@@ -127,7 +119,7 @@ cooling_curve::cooling_curve(string fileName){
   max = Temperature.back();
   min = Temperature.front();
   delta = max - min;
-  //cerr << "min/max " << min << "/" << max << " delta " << delta << endl;
+
   // Clear the temperature vector
   Temperature.clear();
 
@@ -148,12 +140,7 @@ double cooling_curve::get_value(double T){
   double pos = ((logT-min)/delta)*double(elements-1);
   int posInt = floor(pos);
   double diff = pos - double(posInt);
-
-  //cerr << "pos is " << pos << endl;
-  //cerr << "posInt is " << posInt << endl;
-  //cerr << "diff is " << diff << endl;
   double value = Cooling[posInt]*(1-diff)+diff*Cooling[posInt+1];
-  //cerr << pow(10.0,Temperature[posInt]*(1-diff)+diff*Temperature[posInt+1]) << endl;
   
   return pow(10.0,value);
 
@@ -182,7 +169,8 @@ Site::Site(){
     n_HI = 0.0;
     n_HII = 0.0;
     ballistic = 1;
-    temperature = 0.0;
+    internalEnergy = 0.0;
+    dinternalEnergydt = 0.0;
     clumping = 1.0;
     source = 0;
 
@@ -206,7 +194,8 @@ Site_Update::Site_Update(){
     site_id = 0;   
     n_HI = 0.0;   
     n_HII = 0.0; 
-    temperature = 0.0;
+    internalEnergy = 0.0;
+    dinternalEnergydt = 0.0;
     //flux = 0.0;            
     ballistic = 0;
   
@@ -233,8 +222,9 @@ Site& Site::operator=(const Site_Update& p2){
   process        = p2.process;
   n_HI           = p2.n_HI;
   n_HII          = p2.n_HII;
-  temperature    = p2.temperature;
-  //flux           = p2.flux;
+  internalEnergy = p2.internalEnergy;
+  dinternalEnergydt = p2.dinternalEnergydt;
+  //flux         = p2.flux;
   ballistic      = (bool) p2.ballistic;
 
   return *this;
@@ -274,7 +264,8 @@ Site_Update& Site_Update::operator=(const Site& p2){
   site_id        = p2.site_id;
   n_HI           = p2.n_HI;
   n_HII          = p2.n_HII;
-  temperature    = p2.temperature;
+  internalEnergy = p2.internalEnergy;
+  dinternalEnergydt = p2.dinternalEnergydt;
   //flux           = p2.flux;
   ballistic      = (unsigned int) p2.ballistic;
 

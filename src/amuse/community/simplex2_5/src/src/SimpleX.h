@@ -439,8 +439,10 @@ class SimpleX{
     vector< float > temp_n_HII_list;
     //! Temporary list of fluxes that are read in
     vector< float > temp_flux_list;
-    //! Temporary list of temperatures that are read in
-    vector< float > temp_T_list;
+    //! Temporary list of internalEnergies that are read in
+    vector< float > temp_u_list;
+    //! Temporary list of dudt that are read in
+    vector< float > temp_dudt_list;
     //! Temporary list of clumping factors that are read in
     vector< float > temp_clumping_list;
     //! Cross section of hydrogen
@@ -492,6 +494,7 @@ class SimpleX{
     double time_conversion;        //!< Time conversion for output
     double sourceTeff;             //!< Effective temperature of the sources in K
     double gasIonTemp;             //!< Temperature of the ionised gas in K
+    double gasNeutralTemp;         //!< Temperature of the neutral gas in K
     double switchTau;              //!< Optical depth below which ballistic transport is no longer trusted
     double totalVolume;            //!< Total volume of all Voronoi cells added up
     double totalAtoms;             //!< Total number of atoms in the simulation domain
