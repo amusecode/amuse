@@ -143,11 +143,13 @@ class MPIMessage(AbstractMessage):
     
         
     def receive(self, comm):
-        header = numpy.zeros(8,  dtype='i')
-        
-        self.mpi_receive(comm, [header, MPI.INT])
-    
+        header = self.receive_header(comm)
         self.receive_content(comm, header)
+    
+    def receive_header(self, comm):
+        header = numpy.zeros(8,  dtype='i')
+        self.mpi_receive(comm, [header, MPI.INT])
+        return header
         
     def receive_content(self, comm, header):
         self.tag = header[0]
@@ -248,8 +250,9 @@ class MPIMessage(AbstractMessage):
         ], dtype='i')
         
         self.mpi_send(comm, [header, MPI.INT])
-        
-        
+        self.send_content(comm)
+    
+    def send_content(self, comm):
         self.send_doubles(comm, self.doubles)
         self.send_ints(comm, self.ints)
         self.send_floats(comm, self.floats)
@@ -325,7 +328,9 @@ class MPIMessage(AbstractMessage):
 class ServerSideMPIMessage(MPIMessage):
     
     def mpi_receive(self, comm, array):
-        comm.Recv(array,  source=0, tag=999)
+        request = comm.Irecv(array,  source=0, tag=999)
+        request.Wait()
+        
         
     def mpi_send(self, comm, array):
         comm.Bcast(array, root=MPI.ROOT)

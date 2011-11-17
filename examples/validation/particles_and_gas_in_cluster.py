@@ -131,7 +131,7 @@ class Main(object):
         total_mass = 1000,
         gas_fraction = 0.9,
         rscale = 1.0,
-        particles_code = 'hermite',
+        star_code = 'hermite',
         gas_code = 'field', 
         star_smoothing_fraction = 0.001,
         gas_smoothing_fraction = 0.05,
@@ -148,8 +148,10 @@ class Main(object):
     
         if ngas < 0:
             ngas = nstars * 10
-        
+            
+        self.must_do_plot = must_do_plot
         self.line = None
+        self.line2 = None
         
         self.ntimesteps = ntimesteps
         self.ngas = ngas
@@ -172,47 +174,31 @@ class Main(object):
         self.delta_t = self.endtime / self.ntimesteps  
         self.interaction_timestep = self.converter.to_si(interaction_timestep| nbody_system.time)
         
-        self.gas_code = getattr(self, 'new_gas_code_'+gas_code)()
-        self.star_code = getattr(self,'new_particles_code_'+particles_code)()
-        self.gas_to_star_codes = getattr(self, 'new_gas_to_star_interaction_codes_'+gas_to_star_interaction_code)(self.gas_code)
-        self.star_to_gas_codes = getattr(self,'new_star_to_gas_interaction_codes_'+star_to_gas_interaction_code)(self.star_code)
-        self.gas_code = self.gas_code #TimingProxy(, ['get_gravity_at_point'])
-        
-        
-        bridge_code1 = bridge.GravityCodeInField(
-            self.gas_code, self.star_to_gas_codes
-        )
-        bridge_code2 = bridge.GravityCodeInField(
-            self.star_code, self.gas_to_star_codes
+        self.create_codes(
+            gas_code,
+            star_code,
+            gas_to_star_interaction_code,
+            star_to_gas_interaction_code,
         )
         
-        bridge_system = bridge.Bridge(timestep = self.interaction_timestep)
-        bridge_system.add_code(bridge_code2)
-        bridge_system.add_code(bridge_code1)
-            
+        self.create_bridge()
         
-        if must_do_plot:
-            self.update_plot(time = 0 * self.delta_t, code = bridge_system)
         
-        for time in self.delta_t * range(1,self.ntimesteps+1):
-            bridge_system.evolve_model(time)
-            print self.converter.to_nbody(time), time.as_quantity_in(units.Myr)
-            if must_do_plot:
-                self.update_plot(time = bridge_system.time, code = bridge_system)
+        
+        self.evolve_model()
         
         if must_do_plot:
             pylab.show()
             pylab.savefig(
                 "{0}-{1}-{2}-{3}.png".format(
-                    particles_code,
+                    star_code,
                     gas_code,
                     nstars,
                     ngas
                 )
             )
-                
-        self.star_code.stop()
-        self.gas_code.stop()
+        
+        self.stop_codes()
         
         if must_do_plot:
             raw_input('Press enter...') 
@@ -273,7 +259,44 @@ class Main(object):
         particles.radius= self.gas_epsilon
         particles.mass = (1.0/self.ngas) * self.gas_mass
         return particles
+        
+    def create_codes(self, gas_code, star_code, gas_to_star_interaction_code, star_to_gas_interaction_code):
+        self.gas_code = getattr(self, 'new_gas_code_'+gas_code)()
+        self.star_code = getattr(self,'new_star_code_'+star_code)()
+        self.gas_to_star_codes = getattr(self, 'new_gas_to_star_interaction_codes_'+gas_to_star_interaction_code)(self.gas_code)
+        self.star_to_gas_codes = getattr(self, 'new_star_to_gas_interaction_codes_'+star_to_gas_interaction_code)(self.star_code)
+        
+    def create_bridge(self):
+        bridge_code1 = bridge.GravityCodeInField(
+            self.gas_code, self.star_to_gas_codes
+        )
+        bridge_code2 = bridge.GravityCodeInField(
+            self.star_code, self.gas_to_star_codes
+        )
+        
+        self.bridge_system = bridge.Bridge(
+            timestep = self.interaction_timestep,
+            use_threading = False
+        )
+        self.bridge_system.add_code(bridge_code2)
+        self.bridge_system.add_code(bridge_code1)
     
+    def stop_codes(self):
+        self.star_code.stop()
+        self.gas_code.stop()
+        
+    
+    def evolve_model(self):
+        if self.must_do_plot:
+            self.update_plot(time = 0 * self.delta_t, code = self.bridge_system)
+            
+        for time in self.delta_t * range(1,self.ntimesteps+1):
+            self.bridge_system.evolve_model(time)
+            print self.converter.to_nbody(self.bridge_system.time)
+            if self.must_do_plot:
+                self.update_plot(time = self.bridge_system.time, code = self.bridge_system)
+        
+        
     def new_gas_to_star_interaction_codes_self(self, gas_code):
         return [gas_code]
         
@@ -340,21 +363,21 @@ class Main(object):
         result.commit_particles()
         return result
         
-    def new_particles_code_hermite(self):
+    def new_star_code_hermite(self):
         result = Hermite(self.converter)
         result.parameters.epsilon_squared = self.star_epsilon ** 2
         result.particles.add_particles(self.new_particles_cluster())
         result.commit_particles()
         return result
         
-    def new_particles_code_phigrape(self):
+    def new_star_code_phigrape(self):
         result = PhiGRAPE(self.converter, mode="gpu")
         result.parameters.epsilon_squared = self.star_epsilon ** 2
         result.particles.add_particles(self.new_particles_cluster())
         result.commit_particles()
         return result
         
-    def new_particles_code_bhtree(self):
+    def new_star_code_bhtree(self):
         result = BHTree(self.converter)
         result.parameters.epsilon_squared = self.star_epsilon ** 2
         result.parameters.timestep = 0.125 * self.interaction_timestep
@@ -397,7 +420,7 @@ def new_option_parser():
     result.add_option(
         "--star-code", 
         default = "hermite",
-        dest="particles_code",
+        dest="star_code",
         help="the code modelling the particles ('hermite', 'bhtree', 'octgrav', 'phigrape')",
         type="string"
     )

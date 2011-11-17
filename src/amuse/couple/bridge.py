@@ -289,14 +289,6 @@ class GravityCodeInField(object):
         """
         evolve combined system to tend, timestep fixes timestep
         """
-       
-#        while self.time < tend:    
-#            dt=min(timestep,tend-self.time)
-#            self.kick_systems(dt/2)   
-#            self.drift_systems(self.time+dt)
-#            self.kick_systems(dt/2)
-#            self.time=self.time+dt
-#        return 0    
  
         if timestep is None:
             timestep = self.timestep
@@ -388,7 +380,7 @@ class GravityCodeInField(object):
         
         for field_code in self.field_codes:
             if(self.verbose):
-                print self.code.__class__.__name__,"receives kick from",y.__class__.__name__,
+                print self.code.__class__.__name__,"receives kick from",field_code.__class__.__name__,
             
             self.kick_with_field_code(
                 particles,
@@ -408,8 +400,8 @@ class GravityCodeInField(object):
     
     def get_potential_energy_in_field_code(self, particles, field_code):
         pot=field_code.get_potential_at_point(
-            particles.radius,
             particles.x,
+            particles.radius,
             particles.y,
             particles.z
         )
@@ -422,12 +414,15 @@ class GravityCodeInField(object):
             particles.y,
             particles.z
         )
+        self.update_velocities(particles, dt, ax, ay, az)
+        
+    def update_velocities(self,particles, dt,  ax, ay, az):
         particles.vx += dt * ax
         particles.vy += dt * ay
         particles.vz += dt * az 
   
 class Bridge(object):
-    def __init__(self, timestep = None, verbose=False):
+    def __init__(self, timestep = None, verbose=False, use_threading=True):
         """
         verbose indicates whether to output some run info
         """  
@@ -436,7 +431,7 @@ class Bridge(object):
         self.verbose=verbose
         self.timestep=timestep
         self.kick_energy = quantities.zero
-        
+        self.use_threading = use_threading
         self.time_offsets = dict()
     
     def add_system(self, interface, partners=set(),do_sync=True):
@@ -563,11 +558,15 @@ class Bridge(object):
             elif hasattr(x,"evolve_model"):
                 threads.append(threading.Thread(target=x.evolve_model, args=(tend-offset,)) )
         
-        for x in threads:
-            x.start()
-        
-        for x in threads:
-            x.join()
+        if self.use_threading:
+            for x in threads:
+                x.start()
+            
+            for x in threads:
+                x.join()
+        else:
+            for x in threads:
+                x.run()
 
     def kick_codes(self,dt):
        
