@@ -35,9 +35,12 @@ class GlobalOptions(object):
     def amuse_rootdirectory(self):
         if 'AMUSE_DIR' in os.environ:
             return os.environ['AMUSE_DIR']
-        result = os.path.abspath(__file__)
+        previous = None
         while not os.path.exists(os.path.join(result,'build.py')):
             result = os.path.dirname(result)
+            if result == previous:
+                return os.path.dirname(os.path.dirname(__file__))
+            previous = result
         return result
     
     @late
