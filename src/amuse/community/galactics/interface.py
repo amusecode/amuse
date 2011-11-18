@@ -5,6 +5,8 @@ import random
 import numpy
 from amuse.community import *
 from amuse.community.interface.common import CommonCode, CommonCodeInterface
+
+from amuse.support.options import option
 from subprocess import Popen, PIPE
 
 from amuse.rfi.core import PythonCodeInterface
