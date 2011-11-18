@@ -125,6 +125,14 @@ class TableFormattedText(base.FileFormatProcessor):
         "lines starting with this character will be handled as part of the footer"
         return self.header_prefix_string
         
+    @base.format_option
+    def key_in_column(self):
+        """column for the key (default is -1, no key stored/loaded).
+        keys will be interleaved with the data if set other than 0.
+        no attribute type or name is needed for the key
+        """
+        return -1
+        
     def read_header(self):
         while not self.cursor.is_at_end() and self.cursor.line().startswith(self.header_prefix_string):
             self.read_header_line(self.cursor.line()[len(self.header_prefix_string):])
@@ -137,14 +145,26 @@ class TableFormattedText(base.FileFormatProcessor):
         values = map(lambda x : [], range(len(self.attribute_names)))
         
         number_of_particles = 0
+        keys = []
         
         while not self.cursor.is_at_end() and not self.cursor.line().startswith(self.footer_prefix_string):
             columns = self.split_into_columns(self.cursor.line())
             if len(columns)>0:
+                
+                if self.key_in_column >= 0:
+                       
+                    if len(columns) != len(self.attribute_names) + 1:
+                        raise base.IoException(
+                            "Number of values on line '{0}' is {1}, expected {2}".format(self.cursor.line(), len(columns), len(self.attribute_names)))
+            
+                    
+                    key = self.convert_string_to_long(columns[self.key_in_column])
+                    keys.append(key)
+                    del columns[self.key_in_column]
+                    
                 if len(columns) != len(self.attribute_names):
                     raise base.IoException(
                         "Number of values on line '{0}' is {1}, expected {2}".format(self.cursor.line(), len(columns), len(self.attribute_names)))
-            
             
                 for value_string, list_of_values in zip(columns, values):
                     list_of_values.append(self.convert_string_to_number(value_string))
@@ -158,7 +178,7 @@ class TableFormattedText(base.FileFormatProcessor):
             values, 
             self.attribute_types
         )
-        self.set = self.new_set(number_of_particles)
+        self.set = self.new_set(number_of_particles, keys = keys)
         self.set.set_values_in_store(self.set.get_all_keys_in_store(), self.attribute_names, quantities)
         
         self.cursor.forward()
@@ -188,8 +208,13 @@ class TableFormattedText(base.FileFormatProcessor):
             columns.append(map(self.convert_number_to_string, x))
         
         rows = []
+        print " self.key_in_column",  self.key_in_column
         for i in range(len(columns[0])):
             row = [x[i] for x in columns]
+            
+            if self.key_in_column >= 0:
+                row.insert(self.key_in_column, self.convert_long_to_string(self.keys[i]))
+            
             rows.append(row)
             
         lines = map(lambda  x : self.column_separator.join(x), rows)
@@ -217,8 +242,14 @@ class TableFormattedText(base.FileFormatProcessor):
     def convert_string_to_number(self, string):
         return float(string)
         
-    def new_set(self, number_of_items):
-        return datamodel.Particles(number_of_items)
+    def convert_string_to_long(self, string):
+        return long(string)
+        
+    def new_set(self, number_of_items, keys = []):
+        if len(keys) > 0:
+            return datamodel.Particles(number_of_items, keys = keys)
+        else:
+            return datamodel.Particles(number_of_items)
         
     @late
     def quantities(self):
@@ -228,10 +259,22 @@ class TableFormattedText(base.FileFormatProcessor):
             return map(lambda x:getattr(self.set, x),self.attribute_names)
 
 
+    @late
+    def keys(self):
+        if self.set is None:
+            return []
+        else:
+            return self.set.key
+
+
 
         
 
     def convert_number_to_string(self, number):
+        return str(number)
+    
+
+    def convert_long_to_string(self, number):
         return str(number)
     
     

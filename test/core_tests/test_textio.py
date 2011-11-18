@@ -85,7 +85,42 @@ class TableFormattedTextTests(amusetest.TestCase):
         contents = stream.getvalue()
         self.assertEquals("#col(0) col(1)\n#mass length\n1.0 3.0\n2.0 4.0\n3.0 5.0\n", contents)
     
-
+    def test5(self):
+        x = datamodel.Particles(2)
+        x.mass = [1.0, 2.0] | units.MSun
+        x.radius = [3.0, 4.0] | units.RSun
+        
+        expected = [
+            "#mass radius\n#MSun RSun\n{0} 1.0 3.0\n{1} 2.0 4.0\n".format(x[0].key, x[1].key),
+            "#mass radius\n#MSun RSun\n1.0 {0} 3.0\n2.0 {1} 4.0\n".format(x[0].key, x[1].key),
+            "#mass radius\n#MSun RSun\n1.0 3.0 {0}\n2.0 4.0 {1}\n".format(x[0].key, x[1].key),
+        ]
+        for column_index, expected_content in enumerate(expected):
+            io.write_set_to_file(
+                x, 
+                "test.csv",
+                "txt", 
+                key_in_column = column_index, 
+                attribute_types = (units.MSun, units.RSun)
+            )
+                
+            with open("test.csv", "r") as f:
+                contents = f.read()
+            
+            self.assertEquals(expected_content, contents)
+            
+            y = io.read_set_from_file(
+                "test.csv",
+                "txt", 
+                key_in_column = column_index, 
+                attribute_types = (units.MSun, units.RSun),
+                attribute_names = ('mass', 'radius')
+            )
+            
+            self.assertEquals(y[0], x[0])
+            self.assertEquals(y[1], x[1])
+        os.remove("test.csv")
+        
 class CsvFileTextTests(amusetest.TestCase):
     
     def test0(self):
