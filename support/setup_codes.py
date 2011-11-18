@@ -63,7 +63,7 @@ class GenerateInstallIni(Command):
         installinilines.append('[data]')
         installinilines.append('data_dir={0}'.format(self.install_data))
         
-        self.mkpath(os.path.join((self.build_dir, 'amuse'))
+        self.mkpath(os.path.join(self.build_dir, 'amuse'))
         file_util.write_file(outfilename, installinilines)
         
         
