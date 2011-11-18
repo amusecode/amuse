@@ -55,14 +55,15 @@ class GenerateInstallIni(Command):
         
     def run(self):
         outfilename = os.path.join(self.build_dir, 'amuse', 'amuserc')
-        
+         
         installinilines = []
         installinilines.append('[channel]')
         installinilines.append('must_check_if_worker_is_up_to_date=0')
+        #installinilines.append('worker_code_suffix=".so"')
         installinilines.append('[data]')
         installinilines.append('data_dir={0}'.format(self.install_data))
         
-        self.announce("writing {0}".format(outfilename), level = log.INFO)
+        self.mkpath(os.path.join((self.build_dir, 'amuse'))
         file_util.write_file(outfilename, installinilines)
         
         
@@ -385,6 +386,10 @@ class CodeCommand(Command):
                 #self.announce("will copy worker: {0}".format(name), level = log.INFO)
                 if os.path.isfile(path) and os.access(path, os.X_OK):
                     if worker_code_re.match(name):
+                        # add .so so that the egg install tools
+                        # will set the executable flags on the workers 
+                        # (executable flags are set on .dll, .so and .py files)
+                        # exename = name + '.so' 
                         topath = os.path.join(lib_builddir, name)
                         self.copy_file(path, topath)
                     else:
