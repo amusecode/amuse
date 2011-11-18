@@ -2,6 +2,7 @@ from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface
 from amuse.support.core import OrderedDictionary
 from amuse.units import derivedsi
+from amuse.support.options import option
 
 import tempfile
 import os
@@ -15,11 +16,26 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         CodeInterface.__init__(self, name_of_the_worker="mocassin_worker", **keyword_arguments)
         self._abundancies_table = None
         
+    @option(type="string", sections=('data',))
+    def input_data_root_directory(self):
+        """
+        The root directory of the input data, read only directories
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
     def get_default_input_directory(self):
         return (os.path.join(os.path.join(os.path.dirname(__file__), 'src'), 'mocassin.{0}'.format(self.MOCASSIN_VERSION))) + os.sep
         
     def get_default_output_directory(self):
-        return os.path.join(get_amuse_root_dir(), 'data', 'mocassin', 'output')+ os.sep
+        return os.path.join(self.input_data_root_directory, 'mocassin', 'output')+ os.sep
         
     def setup_abundancies(self):
         fd, name = tempfile.mkstemp()
@@ -584,7 +600,8 @@ class Mocassin(InCodeComponentImplementation):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self,  MocassinInterface(**options), **options)
-    
+        ensure_data_directory_exists(self.get_default_output_directory())
+        
     def get_index_range_inclusive(self, index_of_grid = 1):
         ni, nj, nk = self.get_max_indices(index_of_grid)
         return (1, ni, 1, nj, 1, nk)

@@ -21,50 +21,9 @@ import numpy
 import time
 import pylab
 
-class Timing(object):
-    
-    def __init__(self, name):
-        self.name = name
-        self.subtimings = []
-    
-    def start(self):
-        self.start_time = time.time()
-        
-    def end(self):
-        self.end_time = time.time()
-    
-class Timer(object):
-    
-    def __init__(self, timings):
-        pass
-    
-    def start_timing_of_method(self, name):
-        pass
-        
-    def end_timing_of_method(self, name):
-        pass
-    
-class TimingProxy(object):
-    
-    def __init__(self, target, methods_to_time, timer):
-        self._target = target
-        self._methods_to_time = set(methods_to_time)
-        self._timer = timer
 
-    def __getattribute__(self, name):
-        methods_to_time = object.__getattribute__(self, "_methods_to_time")
-        target = object.__getattribute__(self, "_target")
-        timer = object.__getattribute__(self, "_timer")
-        
-        value = getattr(target, name)
-        if name in methods_to_time:
-            def f(*args, **kwargs):
-                return value(*args, **kwargs)
-            return f
-        else:
-            return value
-        
-    
+
+
 
 class GasPlummerModelExternalField(object):
     """
@@ -121,7 +80,7 @@ class GasPlummerModelExternalField(object):
 
 
 
-class Main(object):
+class AbstractStarAndGasPlummerCode(object):
 
 
     def __init__(self,
@@ -131,16 +90,11 @@ class Main(object):
         total_mass = 1000,
         gas_fraction = 0.9,
         rscale = 1.0,
-        star_code = 'hermite',
-        gas_code = 'field', 
         star_smoothing_fraction = 0.001,
         gas_smoothing_fraction = 0.05,
         seed = -1,
         ntimesteps = 10,
-        interaction_timestep = 0.01,
-        must_do_plot = True,
-        gas_to_star_interaction_code = 'none',
-        star_to_gas_interaction_code = 'none',
+        must_do_plot = True
     ):
         
         if seed >= 0:
@@ -171,37 +125,7 @@ class Main(object):
         self.converter = nbody_system.nbody_to_si(self.total_mass, self.rscale)
         
         self.endtime = self.converter.to_si(endtime | nbody_system.time)
-        self.delta_t = self.endtime / self.ntimesteps  
-        self.interaction_timestep = self.converter.to_si(interaction_timestep| nbody_system.time)
-        
-        self.create_codes(
-            gas_code,
-            star_code,
-            gas_to_star_interaction_code,
-            star_to_gas_interaction_code,
-        )
-        
-        self.create_bridge()
-        
-        
-        
-        self.evolve_model()
-        
-        if must_do_plot:
-            pylab.show()
-            pylab.savefig(
-                "{0}-{1}-{2}-{3}.png".format(
-                    star_code,
-                    gas_code,
-                    nstars,
-                    ngas
-                )
-            )
-        
-        self.stop_codes()
-        
-        if must_do_plot:
-            raw_input('Press enter...') 
+        self.delta_t = self.endtime / self.ntimesteps
         
     def update_plot(self, time, code):
         
@@ -260,6 +184,96 @@ class Main(object):
         particles.mass = (1.0/self.ngas) * self.gas_mass
         return particles
         
+    def stop(self):
+        pass
+    
+    def evolve_model(self):
+        
+        if self.must_do_plot:
+            self.update_plot(time = 0 * self.delta_t, code = self.code)
+            
+        for time in self.delta_t * range(1,self.ntimesteps+1):
+            self.code.evolve_model(time)
+            print self.converter.to_nbody(self.code.time)
+            if self.must_do_plot:
+                self.update_plot(time = self.bridge_system.time, code = self.code)
+        
+        
+        
+
+
+class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
+
+
+    def __init__(self,
+        nstars = 10, 
+        ngas = -1, 
+        endtime = 10,
+        total_mass = 1000,
+        gas_fraction = 0.9,
+        rscale = 1.0,
+        star_code = 'hermite',
+        gas_code = 'field', 
+        star_smoothing_fraction = 0.001,
+        gas_smoothing_fraction = 0.05,
+        seed = -1,
+        ntimesteps = 10,
+        interaction_timestep = 0.01,
+        must_do_plot = True,
+        gas_to_star_interaction_code = 'none',
+        star_to_gas_interaction_code = 'none',
+        **ignored_options
+    ):
+        
+        AbstractStarAndGasPlummerCode.__init__(
+            self,
+            nstars, 
+            ngas, 
+            endtime,
+            total_mass,
+            gas_fraction,
+            rscale,
+            star_smoothing_fraction,
+            gas_smoothing_fraction,
+            seed,
+            ntimesteps,
+            must_do_plot
+        )
+
+        
+        self.interaction_timestep = self.converter.to_si(interaction_timestep| nbody_system.time)
+        
+        self.create_codes(
+            gas_code,
+            star_code,
+            gas_to_star_interaction_code,
+            star_to_gas_interaction_code,
+        )
+        
+        self.create_bridge()
+        
+        self.code = self.bride_system
+        
+        self.evolve_model()
+        
+        if must_do_plot:
+            pylab.show()
+            pylab.savefig(
+                "{0}-{1}-{2}-{3}.png".format(
+                    star_code,
+                    gas_code,
+                    nstars,
+                    ngas
+                )
+            )
+        
+        self.stop()
+        
+        if must_do_plot:
+            raw_input('Press enter...') 
+        
+   
+        
     def create_codes(self, gas_code, star_code, gas_to_star_interaction_code, star_to_gas_interaction_code):
         self.gas_code = getattr(self, 'new_gas_code_'+gas_code)()
         self.star_code = getattr(self,'new_star_code_'+star_code)()
@@ -281,22 +295,10 @@ class Main(object):
         self.bridge_system.add_code(bridge_code2)
         self.bridge_system.add_code(bridge_code1)
     
-    def stop_codes(self):
+    def stop(self):
         self.star_code.stop()
         self.gas_code.stop()
-        
     
-    def evolve_model(self):
-        if self.must_do_plot:
-            self.update_plot(time = 0 * self.delta_t, code = self.bridge_system)
-            
-        for time in self.delta_t * range(1,self.ntimesteps+1):
-            self.bridge_system.evolve_model(time)
-            print self.converter.to_nbody(self.bridge_system.time)
-            if self.must_do_plot:
-                self.update_plot(time = self.bridge_system.time, code = self.bridge_system)
-        
-        
     def new_gas_to_star_interaction_codes_self(self, gas_code):
         return [gas_code]
         
@@ -392,7 +394,96 @@ class Main(object):
         result.particles.add_particles(self.new_particles_cluster_as_gas())
         result.commit_particles()
         return result
+
+
+
+class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
+
+
+    def __init__(self,
+        nstars = 10, 
+        ngas = -1, 
+        endtime = 10,
+        total_mass = 1000,
+        gas_fraction = 0.9,
+        rscale = 1.0,
+        sph_code = 'fi',
+        star_smoothing_fraction = 0.001,
+        gas_smoothing_fraction = 0.05,
+        seed = -1,
+        ntimesteps = 10,
+        must_do_plot = True,
+        **ignored_options
+    ):
+        
+        AbstractStarAndGasPlummerCode.__init__(
+            self,
+            nstars, 
+            ngas, 
+            endtime,
+            total_mass,
+            gas_fraction,
+            rscale,
+            star_smoothing_fraction,
+            gas_smoothing_fraction,
+            seed,
+            ntimesteps,
+            must_do_plot
+        )
+
+        
+        self.interaction_timestep = self.converter.to_si(interaction_timestep| nbody_system.time)
+        
+        self.create_code(sph_code)
+        
+        self.evolve_model()
+        
+        if must_do_plot:
+            pylab.show()
+            pylab.savefig(
+                "{0}-{1}-{2}.png".format(
+                    sph_code,
+                    nstars,
+                    ngas
+                )
+            )
+        
+        self.stop()
+        
+        if must_do_plot:
+            raw_input('Press enter...') 
+        
+    def create_code(self, name):
+        self.code = getattr(self, 'new_sph_code_'+name)()
+        
+    def stop(self):
+        self.code.stop()
     
+    def new_sph_code_fi(self):
+        result = Fi(self.converter)
+        result.parameters.self_gravity_flag = True
+        result.parameters.use_hydro_flag = True
+        result.parameters.radiation_flag = False
+        result.parameters.periodic_box_size = 500 | units.parsec
+        result.parameters.timestep = 0.125 * self.interaction_timestep
+        
+        #result.parameters.adaptive_smoothing_flag = True
+        #result.parameters.epsilon_squared = self.gas_epsilon ** 2
+        #result.parameters.eps_is_h_flag = False
+        
+        result.parameters.integrate_entropy_flag = False
+        result.particles.add_particles(self.new_particles_cluster())
+        result.gas_particles.add_particles(self.new_gas_cluster())
+        result.commit_particles()
+        return result
+        
+    def new_sph_code_gadget(self):
+        result = Gadget2(self.converter)
+        result.particles.add_particles(self.new_particles_cluster())
+        result.gas_particles.add_particles(self.new_gas_cluster())
+        result.commit_particles()
+        return result
+        
 
 def new_option_parser():
     result = OptionParser()
@@ -422,6 +513,13 @@ def new_option_parser():
         default = "hermite",
         dest="star_code",
         help="the code modelling the particles ('hermite', 'bhtree', 'octgrav', 'phigrape')",
+        type="string"
+    )
+    result.add_option(
+        "--sph-code", 
+        default = "fi",
+        dest="sph_code",
+        help="the code modelling the particles and the gas simultaniously",
         type="string"
     )
     result.add_option(
@@ -512,12 +610,22 @@ def new_option_parser():
         help="do not show a plot and end as soon as possible",
         action="store_false"
     )
+    result.add_option(
+        "--allinoone", 
+        dest="must_do_bridge",
+        default = True,
+        help="simulate the stars and gas with one sph code",
+        action="store_false"
+    )
     return result
     
     
 if __name__ == "__main__":
     options, arguments = new_option_parser().parse_args()
-    options = options.__dict__
-    print options
-    Main(**options)
+    if options.allinone:
+        options = options.__dict__
+        AllInOneStarAndGasPlummerCode(**options)
+    else:
+        options = options.__dict__
+        BridgeStarAndGasPlummerCode(**options)
     

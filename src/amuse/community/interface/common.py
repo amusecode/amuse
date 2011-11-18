@@ -6,6 +6,7 @@ from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
+
 class CommonCodeInterface(object):
 
     @legacy_function
@@ -87,6 +88,8 @@ class CommonCodeInterface(object):
 
     def invoke_state_change(self):
         pass
+        
+        
 
 class CommonCode(InCodeComponentImplementation):
 

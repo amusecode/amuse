@@ -5,6 +5,7 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.sphray.interface import SPHRayInterface
 from amuse.units import units
 from amuse.datamodel import Particles
+from amuse.community import ensure_data_directory_exists
 
 from amuse.io import read_set_from_file
 
@@ -15,8 +16,10 @@ class TestSPHRayInterface(TestWithMPI):
 
     def test1(self):
         print "Test 1: initialization"
+        
         instance = SPHRayInterface(**default_options)
         self.assertEqual(0, instance.initialize_code())
+        ensure_data_directory_exists(instance.output_directory())
         self.assertEquals(0, instance.set_data_directory(instance.data_directory()))        
         self.assertEquals(0, instance.set_output_directory(instance.output_directory()))        
         self.assertEqual(0, instance.commit_parameters())
@@ -26,6 +29,7 @@ class TestSPHRayInterface(TestWithMPI):
     def test2(self):
         print "Test 2: add, commit_particles"
         instance = SPHRayInterface(**default_options)
+        ensure_data_directory_exists(instance.output_directory())
         self.assertEqual(0, instance.set_data_directory(instance.data_directory()))
         self.assertEquals(0, instance.set_output_directory(instance.output_directory()))        
         self.assertEqual(0, instance.initialize_code())
@@ -69,6 +73,7 @@ class TestSPHRayInterface(TestWithMPI):
     def test3(self):
         print "Test 3: add, commit_particles, setters, remove"
         instance = SPHRayInterface(**default_options)
+        ensure_data_directory_exists(instance.output_directory())
         self.assertEqual(0, instance.set_data_directory(instance.data_directory()))
         self.assertEquals(0, instance.set_output_directory(instance.output_directory()))        
         self.assertEqual(0, instance.initialize_code())

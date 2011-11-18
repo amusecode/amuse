@@ -4,23 +4,20 @@ PYTHON ?= python2.6
 VERSION ?= undefined
 CLEAN ?= yes
 
+CONFIGURE_ERROR=
+
 export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
 all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py build build_codes --variant 
-	
+
+build.py:
+	$(error the code is not configured, please run configure first)
+
 allinbuild:
 	$(PYTHON) setup.py build build_codes --variant --no-inplace --verbose
 
-build.py: build.py.in
-	@echo "****************************************************************"
-	@echo "build.py does not exist or is out of date, please (re-)configure"
-	@echo "****************************************************************"
-	$(warning build.py does not exist or is out of date, please (re-)configure)
-	sed s:@PYTHON@:${PYTHON}: build.py.in > $@
-	chmod a+x build.py
-	
 novariant:
 	@-mkdir -p test_results
 	$(PYTHON) setup.py build
@@ -49,6 +46,7 @@ distclean:
 	-find src -name "*.pyc" -exec rm \{} \;
 	-find src -type d -name "__pycache__" -exec rm -Rf \{} \;
 	-find src -type d -name "ccache" -exec rm -Rf \{} \;
+	rm -Rf build
 
 tests:
 	$(PYTHON) setup.py tests
@@ -86,6 +84,7 @@ nightly:
 	
 debian:
 	$(PYTHON) ./support/debian.py
+
 
 %.code:
 	$(PYTHON) setup.py -v code  --clean=$(CLEAN) --code-name=$*

@@ -22,7 +22,23 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
     def __init__(self,  **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(), **options)
         LiteratureReferencesMixIn.__init__(self)
-
+        
+    
+    @option(type="string", sections=('data',))
+    def input_data_root_directory(self):
+        """
+        The root directory of the input data, read only directories
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
     def name_of_the_worker(self):
         return 'sphray_worker'
         
@@ -31,14 +47,14 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         Returns the root name of the directory for the 
         application data files.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'sphray', 'input')
+        return os.path.join(self.input_data_root_directory, 'sphray', 'input')
 
     def output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'sphray', 'output')
+        return os.path.join(self.output_data_root_directory, 'sphray', 'output')
 
     def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
         pass

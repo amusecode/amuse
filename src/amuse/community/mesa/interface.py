@@ -8,6 +8,7 @@ from amuse.community.interface.se import StellarEvolution, StellarEvolutionInter
 
 from amuse.units.quantities import VectorQuantity
 from amuse.support.interface import InCodeComponentImplementation
+from amuse.support.options import option
 
 class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
         InternalStellarStructureInterface): 
@@ -30,26 +31,41 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
-
+        
+    @option(type="string", sections=('data',))
+    def input_data_root_directory(self):
+        """
+        The root directory of the input data, read only directories
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
     def get_data_directory(self):
         """
         Returns the root name of the directory for the MESA
         application data files.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'mesa', 'input')
+        return os.path.join(self.input_data_root_directory, 'mesa', 'input')
     
     def get_output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'mesa', 'output')
+        return os.path.join(self.output_data_root_directory, 'mesa', 'output')
     
     @property
     def default_path_to_inlist(self):
         return os.path.join(self.get_data_directory(), 'AMUSE_inlist')
 
-    @property
+    @option(type="string", sections=('data'))
     def default_path_to_MESA_data(self):
         dir = os.path.dirname(__file__)
         return os.path.join(dir, 'src', 'mesa', 'data')
@@ -721,8 +737,15 @@ class MESA(StellarEvolution, InternalStellarStructure):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
-        self.set_MESA_paths(self.default_path_to_inlist, 
-            self.default_path_to_MESA_data, self.get_data_directory())
+        
+        output_dir = self.get_output_directory()
+        ensure_data_directory_exists(os.path.join(output_dir, 'star_data', 'starting_models'))
+        
+        self.set_MESA_paths(
+            self.default_path_to_inlist, 
+            self.default_path_to_MESA_data, 
+            self.get_output_directory()
+        )
         self.parameters.set_defaults()
         self.model_time = 0.0 | units.yr
         

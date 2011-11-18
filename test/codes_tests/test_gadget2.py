@@ -375,7 +375,7 @@ class TestGadget2(TestWithMPI):
         print "Testing Gadget initialization"
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
-        self.assertTrue("/data/gadget2/output/" in str(instance.parameters.gadget_output_directory))
+        self.assertTrue("gadget2/output/" in str(instance.parameters.gadget_output_directory))
         instance.commit_parameters()
         instance.cleanup_code()
         instance.stop()

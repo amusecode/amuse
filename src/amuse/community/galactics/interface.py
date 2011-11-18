@@ -15,6 +15,8 @@ class GalactICsImplementation(object):
         self._particles_generated = False
         self._particle_data = numpy.array([])
     
+        
+        
     def get_output_path(self, output_path):
         output_path.value = self._output_directory
         return 0
@@ -365,12 +367,20 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
                 "The worker code of the '{0}' interface class is not up to date.\n"
                 "Please do a 'make clean; make' in the root directory.".format(type(self).__name__))
     
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
     def get_output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'galactics', 'output')
+        return os.path.join(self.output_data_root_directory, 'galactics', 'output')
     
     new_particle = None
     
@@ -499,6 +509,7 @@ class GalactICs(CommonCode):
     def initialize_code(self):
         result = self.overridden().initialize_code()
         self.parameters.set_defaults()
+        ensure_data_directory_exists(self.get_output_directory())
         self.parameters.output_directory = self.get_output_directory() | units.string
     
     def define_parameters(self, object):

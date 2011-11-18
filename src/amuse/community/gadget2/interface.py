@@ -42,13 +42,29 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         else:
             return 'gadget2_worker'
     
+            
+    @option(type="string", sections=('data',))
+    def input_data_root_directory(self):
+        """
+        The root directory of the input data, read only directories
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
     @option(type="string")
     def data_directory(self):
         """
         Returns the root name of the directory for the Gadget2
         application data files.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'gadget2', 'input')
+        return os.path.join(self.input_data_root_directory, 'gadget2', 'input')
         
     
     @option(type="string")
@@ -57,7 +73,7 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'gadget2', 'output')        
+        return os.path.join(self.output_data_root_directory, 'gadget2', 'output')        
     
     def get_data_directory(self):
         """
@@ -1139,6 +1155,9 @@ class Gadget2(GravitationalDynamics):
         self.parameters.set_defaults()
         if self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES:
             self.parameters.periodic_boundaries_flag = True
+            
+        ensure_data_directory_exists(self.get_output_directory())
+        
         self.parameters.gadget_output_directory = self.get_output_directory() | units.string
         # The code's units are read-only, and set here to ensure they always match with the unit_converter
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))

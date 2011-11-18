@@ -23,7 +23,22 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface):
             return 'mpiamrvac_worker_2d'
         else:
             return 'mpiamrvac_worker'
-            
+    
+    @option(type="string", sections=('data',))
+    def input_data_root_directory(self):
+        """
+        The root directory of the input data, read only directories
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
     #
     # options
     #
@@ -35,9 +50,9 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface):
         all parameters.
         """
         if self._mode == self.MODE_2D:
-            return os.path.join(get_amuse_root_dir(), 'data', 'mpiamrvac', 'input', 'amrvac_2d.par')
+            return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac_2d.par')
         else:
-            return os.path.join(get_amuse_root_dir(), 'data', 'mpiamrvac', 'input', 'amrvac.par')
+            return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac.par')
     
     #
     # parameters

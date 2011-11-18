@@ -12,13 +12,28 @@ class mmcInterface(CodeInterface, PolarSupport):
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, **keyword_arguments)
 
+    @option(type="string", sections=('data',))
+    def input_data_root_directory(self):
+        """
+        The root directory of the input data, read only directories
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
     @option(type="string")
     def data_directory(self):
         """
         The root name of the directory for the mmc
         application data files.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'mmc')
+        return os.path.join(self.input_data_root_directory, 'data', 'mmc')
 
     @legacy_function
     def nonstandard_init():

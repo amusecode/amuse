@@ -41,6 +41,22 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         CodeInterface.__init__(self, name_of_the_worker="evtwin_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
     
+    @option(type="string", sections=('data',))
+    def input_data_root_directory(self):
+        """
+        The root directory of the input data, read only directories
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
+        
     @option(type="string")
     def data_directory(self):
         """
@@ -48,7 +64,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         application data files. This directory should contain the
         zams data and init.run and init.dat.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'evtwin', 'input')
+        return os.path.join(self.input_data_root_directory, 'evtwin', 'input')
         
 
     @option(type="string")
@@ -57,7 +73,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         The root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'evtwin', 'output')        
+        return os.path.join(self.output_data_root_directory, 'data', 'evtwin', 'output')        
 
     def get_data_directory(self):
         """

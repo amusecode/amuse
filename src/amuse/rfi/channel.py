@@ -451,25 +451,38 @@ class MessageChannel(OptionalAttributes):
     def NODEBUGGER(cls, full_name_of_the_worker, channel):
         return full_name_of_the_worker, []
     
+    @option(type='string', sections=("channel",))
+    def worker_code_suffix(self):
+        return ''
+        
+    @option(type='string', sections=("channel",))
+    def worker_code_prefix(self):
+        return ''
         
     def get_full_name_of_the_worker(self, type):
+        
         if os.path.isabs(self.name_of_the_worker):
             if os.path.exists(self.name_of_the_worker):
+                if not os.access(self.name_of_the_worker, os.X_OK):
+                    raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(self.name_of_the_worker))
+       
                 return self.name_of_the_worker
-            
+        
+        exe_name = self.worker_code_prefix + self.name_of_the_worker + self.worker_code_suffix
+        
         tried_workers = []
         found = False
         current_type=type
         while not found:
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
-            full_name_of_the_worker = os.path.join(directory_of_this_module, self.name_of_the_worker)
+            full_name_of_the_worker = os.path.join(directory_of_this_module, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
             found = os.path.exists(full_name_of_the_worker)
             if not found:
                 tried_workers.append(full_name_of_the_worker)
                 current_type = current_type.__bases__[0]
                 if current_type.__bases__[0] is object:
-                    raise exceptions.CodeException("The worker application does not exists, it should be at: {0}".format(tried_workers))
+                    raise exceptions.CodeException("The worker application does not exists, it should be at: \n{0}".format('\n'.join(tried_workers)))
             else:
                 found = True
         return full_name_of_the_worker
@@ -1475,7 +1488,8 @@ class IbisChannel(MessageChannel):
         if not legacy_interface_type is None:
             self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
         else:
-            self.full_name_of_the_worker = self.name_of_the_worker
+            exe_name = self.worker_code_prefix + self.name_of_the_worker + self.worker_code_suffix
+            self.full_name_of_the_worker = exe_name
             
         logging.getLogger("channel").debug("full name of worker is %s", self.full_name_of_the_worker)
         
@@ -1500,10 +1514,16 @@ class IbisChannel(MessageChannel):
     def get_full_name_of_the_worker(self, type):
         if os.path.isabs(self.name_of_the_worker):
             if os.path.exists(self.name_of_the_worker):
+                if not os.access(self.name_of_the_worker, os.X_OK):
+                    raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(self.name_of_the_worker))
+       
                 return self.name_of_the_worker
+        
+        exe_name = self.worker_code_prefix + self.name_of_the_worker + self.worker_code_suffix
+        
             
         directory_of_this_module = os.path.dirname(inspect.getfile(type))
-        full_name_of_the_worker = os.path.join(directory_of_this_module, self.name_of_the_worker)
+        full_name_of_the_worker = os.path.join(directory_of_this_module, exe_name)
         full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
         return full_name_of_the_worker
 

@@ -1,6 +1,7 @@
 import os.path
 from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
+from amuse.support.options import option
 
 class HalogenInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
@@ -22,12 +23,20 @@ class HalogenInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         CodeInterface.__init__(self, name_of_the_worker="halogen_worker", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
     
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
     def get_output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'halogen', 'output')
+        return os.path.join(self.output_data_root_directory, 'halogen', 'output')
     
     @legacy_function
     def generate_particles():
@@ -314,6 +323,7 @@ class Halogen(CommonCode):
     def initialize_code(self):
         result = self.overridden().initialize_code()
         self.parameters.set_defaults()
+        ensure_data_directory_exists(self.get_output_directory())
         self.parameters.output_directory = self.get_output_directory() | units.string
     
     def define_parameters(self, object):

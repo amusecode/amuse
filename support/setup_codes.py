@@ -61,7 +61,8 @@ class GenerateInstallIni(Command):
         installinilines.append('must_check_if_worker_is_up_to_date=0')
         #installinilines.append('worker_code_suffix=".so"')
         installinilines.append('[data]')
-        installinilines.append('data_dir={0}'.format(self.install_data))
+        installinilines.append('input_data_root_directory={0}'.format(os.path.join(self.install_data,'share','amuse','data')))
+        installinilines.append('output_data_root_directory=amuse-data')
         
         self.mkpath(os.path.join(self.build_dir, 'amuse'))
         file_util.write_file(outfilename, installinilines)
@@ -395,6 +396,36 @@ class CodeCommand(Command):
                     else:
                         self.announce("will not copy executable: {0}, it does not match the worker pattern".format(name), level = log.WARN)
             
+            #
+            # HACK FOR MESA
+            # NEED TO COPY THE DATA DIR
+            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
+            # MAKEFILE
+            #
+            if shortname == 'mesa':
+                output_path = os.path.join(lib_builddir, 'src', 'mesa', 'data')
+                input_path = os.path.join(temp_builddir, 'src', 'mesa', 'data')
+                self.mkpath(output_path)
+                self.copy_tree(
+                    input_path, 
+                    output_path
+                )
+            
+            #
+            # HACK FOR MOCASSIN
+            # NEED TO COPY THE DATA DIR
+            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
+            # MAKEFILE
+            #
+            if shortname == 'mocassin':
+                output_path = os.path.join(lib_builddir, 'src', 'mocassin.2.02.69')
+                input_path = os.path.join(temp_builddir, 'src', 'mocassin.2.02.69')
+                self.mkpath(output_path)
+                self.copy_tree(
+                    input_path, 
+                    output_path
+                )
+                
             
     def subdirs_in_codes_src_dir(self):
         names = sorted(os.listdir(self.codes_src_dir))

@@ -1,5 +1,5 @@
 AMUSE_DIR?=../../../..
-include ${AMUSE_DIR}/config.mk
+-include ${AMUSE_DIR}/config.mk
 
 MPICXX ?= mpicxx
 
