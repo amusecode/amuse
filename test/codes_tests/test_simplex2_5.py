@@ -77,8 +77,8 @@ class TestSimpleXInterface(TestWithMPI):
 
 
         self.assertEqual(0, instance.set_dinternal_energy_dt(4, 12345.))
-        dudt,err=instance.get_dinternal_energy_dt(4)
-        self.assertEqual(12345, dudt)
+        du_dt,err=instance.get_dinternal_energy_dt(4)
+        self.assertEqual(12345, du_dt)
         
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -120,7 +120,7 @@ class TestSimpleXInterface(TestWithMPI):
         
         X_ion, errors = instance.get_ionisation(indices)
         self.assertEqual(errors, [0]*number_of_particles)
-        self.assertAlmostEqual(X_ion.sum()/number_of_particles, 0.000922113284446)
+        self.assertAlmostEqual(X_ion.sum()/number_of_particles, 0.000930585139546)
         
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -131,15 +131,15 @@ class TestSimpleXInterface(TestWithMPI):
         self.assertEqual(0, instance.set_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
         
-        instance.set_box_size_parameter(16384.)
-        instance.set_hilbert_order_parameter(1)
-        instance.set_timestep_parameter(0.5)
+        instance.set_box_size(16384.)
+        instance.set_hilbert_order(1)
+        instance.set_timestep(0.5)
                 
         self.assertEqual(0, instance.commit_parameters())
         
-        self.assertEqual(16384.,instance.get_box_size_parameter()['box_size'])
-        self.assertEqual(1,instance.get_hilbert_order_parameter()['hilbert_order'])
-        self.assertEqual(0.5,instance.get_timestep_parameter()['timestep'])
+        self.assertEqual(16384.,instance.get_box_size()['box_size'])
+        self.assertEqual(1,instance.get_hilbert_order()['hilbert_order'])
+        self.assertEqual(0.5,instance.get_timestep()['timestep'])
 
         input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
         x, y, z, n_H, flux, X_ion,u = read_input_file(input_file)
@@ -147,9 +147,9 @@ class TestSimpleXInterface(TestWithMPI):
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion,u)
         instance.commit_particles()
 
-        self.assertEqual(16384.,instance.get_box_size_parameter()['box_size'])
-        self.assertEqual(1,instance.get_hilbert_order_parameter()['hilbert_order'])
-#        self.assertEqual(0.5,instance.get_timestep_parameter()['timestep'])
+        self.assertEqual(16384.,instance.get_box_size()['box_size'])
+        self.assertEqual(1,instance.get_hilbert_order()['hilbert_order'])
+        self.assertEqual(0.5,instance.get_timestep()['timestep'])
 
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -192,18 +192,56 @@ class TestSimpleX(TestWithMPI):
         
         input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
         particles = particles_from_input_file(input_file)
-        particles.dudt = particles.u/(10|units.Myr)
+        particles.du_dt = particles.u/(10|units.Myr)
         instance.particles.add_particles(particles)
-#        instance.particles.dudt=particles.dudt
+#        instance.particles.du_dt=particles.du_dt
 #        instance.commit_particles()
-        instance.particles.dudt=particles.dudt
+        instance.particles.du_dt=particles.du_dt
         self.assertAlmostEqual(instance.particles.xion.mean(), 0.0 | units.none)
-        self.assertAlmostEqual(instance.particles.dudt.mean().in_(units.cm**2/units.s**3),particles.dudt.mean().in_(units.cm**2/units.s**3))
+        self.assertAlmostEqual(instance.particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
         instance.evolve_model(0.5 | units.Myr)
-        self.assertAlmostEqual(instance.particles.dudt.mean().in_(units.cm**2/units.s**3),particles.dudt.mean().in_(units.cm**2/units.s**3))
-        self.assertAlmostEqual(instance.particles.xion.mean(), 0.000922113284446 | units.none)
+        self.assertAlmostEqual(instance.particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
+        self.assertAlmostEqual(instance.particles.xion.mean(), 0.000930585139546 | units.none)
         instance.cleanup_code()
         instance.stop()
+
+    def test4(self):
+        print "Test 4: default parameters"
+        instance = SimpleX(**default_options)
+        default=dict( timestep= 0.05| units.Myr, 
+                  source_effective_T=  1.e5 | units.K,
+                  hilbert_order= 1 | units.none,
+                  number_of_freq_bins= 1 | units.none,
+                  thermal_evolution_flag = 0 | units.none,
+                  blackbody_spectrum_flag = 0 | units.none,
+                  box_size=13200 | units.parsec,
+                  metal_cooling_flag=0 | units.none,
+                  collisional_ionization_flag=0 | units.none)
+        for x in default:
+            self.assertEqual(getattr(instance.parameters,x), default[x])
+        instance.commit_parameters()
+        for x in default:
+            self.assertEqual(getattr(instance.parameters,x), default[x])
+
+
+    def test5(self):
+        print "Test 4: default parameters"
+        instance = SimpleX(**default_options)
+        param=dict( timestep= 0.1| units.Myr, 
+                  source_effective_T=  2.e5 | units.K,
+                  hilbert_order= 3 | units.none,
+                  number_of_freq_bins= 4 | units.none,
+                  thermal_evolution_flag = 1 | units.none,
+                  blackbody_spectrum_flag = 1 | units.none,
+                  box_size=32100 | units.parsec,
+                  metal_cooling_flag=1 | units.none,
+                  collisional_ionization_flag=1 | units.none)
+        for x in param:
+            setattr(instance.parameters,x, param[x])
+        for x in param:
+            self.assertEqual(getattr(instance.parameters,x), param[x])
+
+
     
 def read_input_file(input_file):
     file = open(input_file, 'r')

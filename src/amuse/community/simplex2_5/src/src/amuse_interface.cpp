@@ -58,7 +58,7 @@ void AMUSE_SimpleX::read_parameters(){
   gasIonTemp = 1.e4;
   
   //temperature of neutral gas
-  gasNeutralTemp = 10.0;
+  gasNeutralTemp = 100.0;
 
   //include recombinations?
   recombination = 1;
@@ -1010,27 +1010,27 @@ int cleanup_code(void){
  return 0;
 }
 
-int set_box_size_parameter(double bs){
+int set_box_size(double bs){
   return (*SimpleXGrid).set_sizeBox(bs);
 }
 
-int get_box_size_parameter(double *bs){
+int get_box_size(double *bs){
   return (*SimpleXGrid).get_sizeBox(bs);
 }
 
-int set_timestep_parameter(double ts){
+int set_timestep(double ts){
   return (*SimpleXGrid).set_UNIT_T(ts);
 }
 
-int get_timestep_parameter(double *ts){
+int get_timestep(double *ts){
   return (*SimpleXGrid).get_UNIT_T(ts);
 }
 
-int set_hilbert_order_parameter(int ho){
+int set_hilbert_order(int ho){
   return (*SimpleXGrid).set_hilbert_order(ho);
 }
 
-int get_hilbert_order_parameter(int *ho){
+int get_hilbert_order(int *ho){
   return (*SimpleXGrid).get_hilbert_order(ho);
 }
 
@@ -1051,12 +1051,37 @@ int get_thermal_evolution(int *ts){
   return (*SimpleXGrid).get_heat_cool(ts);
 }
 
+int set_metal_cooling(int ts){
+  return (*SimpleXGrid).set_metal_cooling(ts);
+}
+
+int get_metal_cooling(int *ts){
+  return (*SimpleXGrid).get_metal_cooling(ts);
+}
+
+
 int set_source_Teff(double ts){
   return (*SimpleXGrid).set_sourceTeff(ts);
 }
 
 int get_source_Teff(double *ts){
   return (*SimpleXGrid).get_sourceTeff(ts);
+}
+
+int set_collisional_ionization(int ts){
+  return (*SimpleXGrid).set_coll_ion(ts);
+}
+
+int get_collisional_ionization(int *ts){
+  return (*SimpleXGrid).get_coll_ion(ts);
+}
+
+int set_blackbody_spectrum(int ts){
+  return (*SimpleXGrid).set_blackBody(ts);
+}
+
+int get_blackbody_spectrum(int *ts){
+  return (*SimpleXGrid).get_blackBody(ts);
 }
 
 

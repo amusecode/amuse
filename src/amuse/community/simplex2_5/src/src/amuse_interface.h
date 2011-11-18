@@ -57,6 +57,12 @@ class AMUSE_SimpleX : public SimpleX {
   int get_numFreq(int *ts){ *ts=numFreq;return 0;}
   int set_heat_cool(int ts){ heat_cool=ts;return 0;}
   int get_heat_cool(int *ts){ *ts=heat_cool;return 0;}
+  int set_metal_cooling(int ts){ metal_cooling=ts;return 0;}
+  int get_metal_cooling(int *ts){ *ts=metal_cooling;return 0;}
+  int set_coll_ion(int ts){ coll_ion=ts;return 0;}
+  int get_coll_ion(int *ts){ *ts=heat_cool;return 0;}
+  int set_blackBody(int ts){ blackBody=ts;return 0;}
+  int get_blackBody(int *ts){ *ts=blackBody;return 0;}
 
 
 
