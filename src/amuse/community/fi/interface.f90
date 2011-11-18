@@ -287,6 +287,11 @@ function get_internal_energy(id,u) result(ret)
   real*8 :: u
   ret=amuse_get_internal_energy(id,u)
 end function
+function get_dinternal_energy_dt(id,dudt) result(ret)
+  integer :: id,ret,amuse_get_dinternal_energy_dt
+  real*8 :: dudt
+  ret=amuse_get_internal_energy(id,dudt)
+end function
 function get_star_tform(id,tf) result(ret)
   integer :: id,ret,amuse_get_star_tform
   real*8 :: tf

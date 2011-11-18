@@ -198,6 +198,14 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function.result_type = 'i'
         return function
     @legacy_function    
+    def get_dinternal_energy_dt():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('du_dt', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
     def get_smoothing_length():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
@@ -1566,6 +1574,7 @@ class Fi(GravitationalDynamics):
         object.add_method('RUN', 'get_velocity')
         object.add_method('RUN', 'get_acceleration')
         object.add_method('RUN', 'get_internal_energy')
+        object.add_method('RUN', 'get_dinternal_energy_dt')
         object.add_method('RUN', 'get_smoothing_length')
         object.add_method('RUN', 'get_density')
         object.add_method('RUN', 'get_star_tform')
@@ -2180,6 +2189,7 @@ class Fi(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_velocity')
         object.add_setter('gas_particles', 'set_internal_energy')
         object.add_getter('gas_particles', 'get_internal_energy')
+        object.add_getter('gas_particles', 'get_dinternal_energy_dt')
         object.add_setter('gas_particles', 'set_smoothing_length')
         object.add_getter('gas_particles', 'get_smoothing_length')
         object.add_getter('gas_particles', 'get_density')
@@ -2318,6 +2328,16 @@ class Fi(GravitationalDynamics):
             ),
             (
                 nbody_system.specific_energy,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_dinternal_energy_dt",
+            (
+                object.INDEX,
+            ),
+            (
+                nbody_system.specific_energy/nbody_system.time,
                 object.ERROR_CODE
             )
         )

@@ -848,6 +848,27 @@ function amuse_get_internal_energy(id,u) result(ret)
   endif
   ret=0 
 end function
+function amuse_get_dinternal_energy_dt(id,u) result(ret)
+  include 'globals.h'
+  integer :: id,ret,p,muse_find_particle
+  real*8 :: u
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif 
+  if(p.GT.nsph) then
+    ret=1
+    return
+  endif  
+  if(nbexist(p).NE.id) call terror("id error 2")
+  if(uentropy) then
+    u=dentdt(p)/gamma1*rho(p)**gamma1
+  else
+    u=dethdt(p)
+  endif
+  ret=0 
+end function
 function amuse_get_star_tform(id,tf) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle
