@@ -290,7 +290,7 @@ end function
 function get_dinternal_energy_dt(id,dudt) result(ret)
   integer :: id,ret,amuse_get_dinternal_energy_dt
   real*8 :: dudt
-  ret=amuse_get_internal_energy(id,dudt)
+  ret=amuse_get_dinternal_energy_dt(id,dudt)
 end function
 function get_star_tform(id,tf) result(ret)
   integer :: id,ret,amuse_get_star_tform
