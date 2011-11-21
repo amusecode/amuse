@@ -367,6 +367,17 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         result.commit_particles()
         return result
         
+    def new_star_code_fi(self):
+        result = Fi(self.converter)
+        result.parameters.self_gravity_flag = True
+        result.parameters.use_hydro_flag = False
+        result.parameters.radiation_flag = False
+        result.parameters.periodic_box_size = 500 | units.parsec
+        result.parameters.timestep = 0.125 * self.interaction_timestep
+        result.star_particles.add_particles(self.new_particles_cluster())
+        result.commit_particles()
+        return result
+        
     def new_gas_code_gadget(self):
         result = Gadget2(self.converter)
         result.gas_particles.add_particles(self.new_gas_cluster())
@@ -404,6 +415,14 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         
     def new_star_code_bhtree(self):
         result = BHTree(self.converter)
+        result.parameters.epsilon_squared = self.star_epsilon ** 2
+        result.parameters.timestep = 0.125 * self.interaction_timestep
+        result.particles.add_particles(self.new_particles_cluster())
+        result.commit_particles()
+        return result
+        
+    def new_star_code_octgrav(self):
+        result = Octgrav(self.converter)
         result.parameters.epsilon_squared = self.star_epsilon ** 2
         result.parameters.timestep = 0.125 * self.interaction_timestep
         result.particles.add_particles(self.new_particles_cluster())
