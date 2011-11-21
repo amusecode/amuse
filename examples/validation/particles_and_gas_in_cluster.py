@@ -133,7 +133,7 @@ class AbstractStarAndGasPlummerCode(object):
         sum_energy = code.kinetic_energy + code.potential_energy + code.thermal_energy
         energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
         coreradius = self.star_code.particles.virial_radius().value_in(self.rscale.to_unit())
-        kicke =  self.converter.to_nbody(code.kick_energy).value_in(nbody_system.energy)
+        #kicke =  self.converter.to_nbody(code.kick_energy).value_in(nbody_system.energy)
        
         if self.line is None:
             pylab.ion()
@@ -196,7 +196,7 @@ class AbstractStarAndGasPlummerCode(object):
             self.code.evolve_model(time)
             print self.converter.to_nbody(self.code.time)
             if self.must_do_plot:
-                self.update_plot(time = self.bridge_system.time, code = self.code)
+                self.update_plot(time = self.code.time, code = self.code)
         
         
         
@@ -252,7 +252,16 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         
         self.create_bridge()
         
-        self.code = self.bride_system
+        self.code = self.bridge_system
+        
+        time = 0
+        sum_energy = self.code.kinetic_energy + self.code.potential_energy + self.code.thermal_energy
+        energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
+        coreradius = self.star_code.particles.virial_radius().value_in(self.rscale.to_unit())
+
+        print "Time          :", time
+        print "Energy        :", energy
+        print "Virial radius :", coreradius
         
         self.evolve_model()
         
@@ -266,6 +275,16 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
                     ngas
                 )
             )
+        
+        
+        time = self.converter.to_nbody(self.code.time).value_in(nbody_system.time)
+        sum_energy = self.code.kinetic_energy + self.code.potential_energy + self.code.thermal_energy
+        energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
+        coreradius = self.star_code.particles.virial_radius().value_in(self.rscale.to_unit())
+        
+        print "Time          :", time
+        print "Energy        :", energy
+        print "Virial radius :", coreradius
         
         self.stop()
         
@@ -374,6 +393,7 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         
     def new_star_code_phigrape(self):
         result = PhiGRAPE(self.converter, mode="gpu")
+        result.parameters.initialize_gpu_once = 1
         result.parameters.epsilon_squared = self.star_epsilon ** 2
         result.particles.add_particles(self.new_particles_cluster())
         result.commit_particles()
@@ -436,6 +456,14 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         
         self.create_code(sph_code)
         
+        sum_energy = self.code.kinetic_energy + self.code.potential_energy + self.code.thermal_energy
+        energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
+        coreradius = self.code.star_particles.virial_radius().value_in(self.rscale.to_unit())
+        
+        print "Time:", 0
+        print "Energy:", energy
+        print "Virial radius:", coreradius
+        
         self.evolve_model()
         
         if must_do_plot:
@@ -447,6 +475,15 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
                     ngas
                 )
             )
+        
+        time = self.converter.to_nbody(self.code.time).value_in(nbody_system.time)
+        sum_energy = self.code.kinetic_energy + self.code.potential_energy + self.code.thermal_energy
+        energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
+        coreradius = self.code.star_particles.virial_radius().value_in(self.rscale.to_unit())
+        
+        print "Time:", time
+        print "Energy:", energy
+        print "Virial radius:", coreradius
         
         self.stop()
         
@@ -472,14 +509,14 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         #result.parameters.eps_is_h_flag = False
         
         result.parameters.integrate_entropy_flag = False
-        result.particles.add_particles(self.new_particles_cluster())
+        result.star_particles.add_particles(self.new_particles_cluster())
         result.gas_particles.add_particles(self.new_gas_cluster())
         result.commit_particles()
         return result
         
     def new_sph_code_gadget(self):
         result = Gadget2(self.converter)
-        result.particles.add_particles(self.new_particles_cluster())
+        result.star_particles.add_particles(self.new_particles_cluster())
         result.gas_particles.add_particles(self.new_gas_cluster())
         result.commit_particles()
         return result
@@ -622,10 +659,10 @@ def new_option_parser():
     
 if __name__ == "__main__":
     options, arguments = new_option_parser().parse_args()
-    if options.allinone:
-        options = options.__dict__
-        AllInOneStarAndGasPlummerCode(**options)
-    else:
+    if options.must_do_bridge:
         options = options.__dict__
         BridgeStarAndGasPlummerCode(**options)
+    else:
+        options = options.__dict__
+        AllInOneStarAndGasPlummerCode(**options)
     
