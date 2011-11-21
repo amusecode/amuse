@@ -297,8 +297,9 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
    
         
     def create_codes(self, gas_code, star_code, gas_to_star_interaction_code, star_to_gas_interaction_code):
-        self.gas_code = getattr(self, 'new_gas_code_'+gas_code)()
         self.star_code = getattr(self,'new_star_code_'+star_code)()
+        self.gas_code = getattr(self, 'new_gas_code_'+gas_code)()
+        
         self.gas_to_star_codes = getattr(self, 'new_gas_to_star_interaction_codes_'+gas_to_star_interaction_code)(self.gas_code)
         self.star_to_gas_codes = getattr(self, 'new_star_to_gas_interaction_codes_'+star_to_gas_interaction_code)(self.star_code)
         
