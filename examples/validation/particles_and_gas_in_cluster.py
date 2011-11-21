@@ -19,7 +19,10 @@ from optparse import OptionParser
 
 import numpy
 import time
-import pylab
+try:
+	import pylab
+except ImportError:
+	pylab = None
 
 
 
