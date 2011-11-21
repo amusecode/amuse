@@ -10,6 +10,7 @@ export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
 all: build.py
 	@-mkdir -p test_results
+	$(PYTHON) setup.py generate_main
 	$(PYTHON) setup.py build build_codes --variant 
 
 build.py:
