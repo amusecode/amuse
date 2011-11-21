@@ -375,7 +375,7 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         result.parameters.radiation_flag = False
         result.parameters.periodic_box_size = 500 | units.parsec
         result.parameters.timestep = 0.125 * self.interaction_timestep
-        result.star_particles.add_particles(self.new_particles_cluster())
+        result.particles.add_particles(self.new_particles_cluster())
         result.commit_particles()
         return result
         
@@ -481,7 +481,7 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         
         sum_energy = self.code.kinetic_energy + self.code.potential_energy + self.code.thermal_energy
         energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
-        coreradius = self.code.star_particles.virial_radius().value_in(self.rscale.to_unit())
+        coreradius = self.code.dm_particles.virial_radius().value_in(self.rscale.to_unit())
         
         print "Time:", 0
         print "Energy:", energy
@@ -502,7 +502,7 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         time = self.converter.to_nbody(self.code.time).value_in(nbody_system.time)
         sum_energy = self.code.kinetic_energy + self.code.potential_energy + self.code.thermal_energy
         energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
-        coreradius = self.code.star_particles.virial_radius().value_in(self.rscale.to_unit())
+        coreradius = self.code.dm_particles.virial_radius().value_in(self.rscale.to_unit())
         
         print "Time:", time
         print "Energy:", energy
@@ -532,14 +532,14 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         #result.parameters.eps_is_h_flag = False
         
         result.parameters.integrate_entropy_flag = False
-        result.star_particles.add_particles(self.new_particles_cluster())
+        result.dm_particles.add_particles(self.new_particles_cluster())
         result.gas_particles.add_particles(self.new_gas_cluster())
         result.commit_particles()
         return result
         
     def new_sph_code_gadget(self):
         result = Gadget2(self.converter)
-        result.star_particles.add_particles(self.new_particles_cluster())
+        result.dm_particles.add_particles(self.new_particles_cluster())
         result.gas_particles.add_particles(self.new_gas_cluster())
         result.commit_particles()
         return result

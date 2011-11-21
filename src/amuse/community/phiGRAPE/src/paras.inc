@@ -10,7 +10,7 @@
 
 !---  minimum time step
       INTEGER    ndtmin          ! minimum time step is dt_min = 2**mdtmin
-      PARAMETER (ndtmin=-23)
+      PARAMETER (ndtmin=-30)
 
 !---  maximum number of processors
       INTEGER    NPEMAX
