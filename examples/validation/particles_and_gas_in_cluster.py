@@ -456,6 +456,7 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         seed = -1,
         ntimesteps = 10,
         must_do_plot = True,
+        interaction_timestep = 0.01,
         **ignored_options
     ):
         
@@ -499,7 +500,7 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
                 )
             )
         
-        time = self.converter.to_nbody(self.code.time).value_in(nbody_system.time)
+        time = self.converter.to_nbody(self.code.model_time).value_in(nbody_system.time)
         sum_energy = self.code.kinetic_energy + self.code.potential_energy + self.code.thermal_energy
         energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
         coreradius = self.code.dm_particles.virial_radius().value_in(self.rscale.to_unit())
@@ -512,6 +513,19 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         
         if must_do_plot:
             raw_input('Press enter...') 
+        
+    def evolve_model(self):
+        
+        if self.must_do_plot:
+            self.update_plot(time = 0 * self.delta_t, code = self.code)
+            
+        for time in self.delta_t * range(1,self.ntimesteps+1):
+            self.code.evolve_model(time)
+            print self.converter.to_nbody(self.code.model_time)
+            if self.must_do_plot:
+                self.update_plot(time = self.code.time, code = self.code)
+        
+        
         
     def create_code(self, name):
         self.code = getattr(self, 'new_sph_code_'+name)()
