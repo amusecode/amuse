@@ -193,6 +193,8 @@ void ibis_statistics_finalize() {
 
 	/* send one last time */
 	ibis_statistics_send_statistics();
-	close(socketfd);
+	if (socketfd > 0) {
+		close(socketfd);
+	}
 }
 
