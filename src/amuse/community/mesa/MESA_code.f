@@ -1,9 +1,9 @@
       module amuse_support
          implicit none
-         character (len=256) :: AMUSE_inlist_path
-         character (len=256) :: AMUSE_mesa_data_dir
-         character (len=256) :: AMUSE_local_data_dir ! Used for output starting_models
-         character (len=256) :: AMUSE_zams_filename = 'zams_z2m2'
+         character (len=4096) :: AMUSE_inlist_path
+         character (len=4096) :: AMUSE_mesa_data_dir
+         character (len=4096) :: AMUSE_local_data_dir ! Used for output starting_models
+         character (len=4096) :: AMUSE_zams_filename = 'zams_z2m2'
          ! (use the solar metallicity model from the MESA starting_models folder)
          double precision :: AMUSE_metallicity = 0.02d0
          double precision :: AMUSE_dmass = 0.1d0
