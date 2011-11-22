@@ -19,7 +19,7 @@ MESA_LIB=$(MESA_DIR)/lib/libstar.a
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
 FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 
-include $(MESA_MAKE_DIR)/makefile_header
+include $(MESA_DIR)/utils/makefile_header
 include $(MESA_MAKE_DIR)/makefile_include
 
 WORK_COMPILE = $(FC) $(FCbasic) $(FCopenmp) $(FCchecks) $(FCdebug) $(FFLAGS) \
@@ -31,7 +31,8 @@ STAR_WORK_OBJS = \
    $(MESA_MAKE_DIR)/run_star.o 
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
-DOWNLOAD_FROM_SVN = $(PYTHON) ./build_mesa.py download
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download_svn.py
+PATCH_FILES = $(PYTHON) ./patch_files.py
 
 all:	mesa_worker
 
@@ -63,7 +64,8 @@ endif
 download:
 	$(RM) -Rf src
 	-mkdir src
-	$(DOWNLOAD_FROM_SVN)
+	$(DOWNLOAD_FROM_WEB)
+	$(PATCH_FILES)
 
 clean:
 	$(RM) -f *~ *.pyc *.mod *.o worker_code worker_code.f90 $(MESA_LIB)
@@ -74,7 +76,9 @@ veryclean: clean
 	cd $(MESA_DIR); ./clean
 
 distclean: clean
-	$(RM) -Rf ./src/
+	$(RM) -Rf src
+	$(RM) -Rf src.*
+	$(RM) -Rf .pc
 
 mesa_worker:	worker_code.f90 MESA_code.o $(STAR_WORK_OBJS)
 	$(MPIF90) $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)

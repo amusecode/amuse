@@ -1,0 +1,40 @@
+Index: mesa/src/mesa/utils/makefile_header
+===================================================================
+--- mesa.orig/src/mesa/utils/makefile_header	2010-03-13 17:25:54.000000000 +0100
++++ mesa/src/mesa/utils/makefile_header	2011-11-22 12:02:50.000000000 +0100
+@@ -39,7 +39,7 @@
+ 
+ 
+ # Intel
+-FC = ifort
++#FC = ifort
+ # NOTE: mesa needs version 11.1 or later of ifort.
+ 
+ # GNU
+@@ -219,7 +219,7 @@
+ #LOAD_PGPLOT = -L/Users/bpaxton/pgplot/lib -lpgplot -L/usr/X11R6/lib -lX11 -lpng
+ 
+ else
+-ifeq ($(FC),gfortran)
++ifeq ($(findstring gfortran, $(notdir $(FC))), gfortran)
+ 
+ USE_PGSTAR = NO
+ LOAD_PGPLOT = 
+@@ -256,7 +256,7 @@
+ # It simply defines things for use by the module makefiles.
+ 
+ 
+-ifeq ($(FC),ifort)
++ifeq ($(findstring ifort, $(notdir $(FC))), ifort)
+ 
+ FCbasic = $(SPECIAL_FC_FLAGS) -vec-report0 -traceback -error-limit 6 \
+    -Wl,-stack_size,0xee6b000 
+@@ -280,7 +280,7 @@
+ # BTW: -Bstatic -static-intel makes it possible to use the executable stand-alone
+ 
+ else
+-ifeq ($(FC),gfortran)
++ifeq ($(findstring gfortran, $(notdir $(FC))), gfortran)
+ 
+ FCbasic = -fno-range-check $(SPECIAL_FC_FLAGS)
+ FCimpno = -fimplicit-none  

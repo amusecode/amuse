@@ -5,6 +5,34 @@ import os
 import sys
 import time
 import urllib
+from optparse import OptionParser
+
+
+class GetCodeFromSVN(object):
+    revision = '2208'
+    url = "http://mesa.svn.sourceforge.net/svnroot/mesa/trunk"
+    
+    def directory(self):
+        return os.path.abspath(os.path.dirname(__file__))
+    
+    def source_directory(self):
+        return os.path.join(self.directory(), 'src')
+        
+    def code_directory(self):
+        return os.path.join(self.source_directory(), 'mesa')
+        
+    def start(self):
+        arguments = [
+            'svn',
+            'export',
+            '-r',
+            self.revision,
+            self.url,
+            self.code_directory()
+        ]
+        subprocess.call(arguments)
+        
+        
 
 class MyFancyUrlopener(urllib.FancyURLopener):
     def retrieve(self, url, filename=None, reporthook=None, data=None):
@@ -119,77 +147,40 @@ class GetCodeFromHttp(object):
             
         print "downloading finished"
         self.unpack_downloaded_file(filename)
-        
-class BuildMesa(object):
     
-    def mesa_directory(self):
-        return os.path.abspath(os.path.dirname(__file__))
-        
-        
-    def get_mesa_source_from_svn(self):
-        mesa_url = "http://mesa.svn.sourceforge.net/svnroot/mesa/trunk"
-        revision = "2208"
-        subprocess.call(['svn', 'export', 
-            '-r', revision, mesa_url, os.path.join('src','mesa')], cwd = self.mesa_directory())
-        self.patch_mesa_source()
-        
-    def get_mesa_source_from_http(self):
-        revision = "2208"
-        instance = GetCodeFromHttp()
-        instance.version = "2208"
-        instance.start()
-        #self.patch_mesa_source()
-        
-    def patch_mesa_source(self):
-        if 1:
-            # no longer copy these files
-            # the patch system will do this
-            return 
-        subprocess.call(['cp','-f','./mesa_reqs/makefile_header',
-            './src/mesa/utils/makefile_header'], cwd = self.mesa_directory())
-        subprocess.call(['cp','-f','./mesa_reqs/create_zams.f',
-            './src/mesa/star/test/src/create_zams.f'], cwd = self.mesa_directory())
-        subprocess.call(['cp','-f','./mesa_reqs/eos_def.f',
-            './src/mesa/eos/public/eos_def.f'], cwd = self.mesa_directory())
-        subprocess.call(['cp','-f','./mesa_reqs/jina_def.f',
-            './src/mesa/jina/public/jina_def.f'], cwd = self.mesa_directory())
-        subprocess.call(['cp','-f','./mesa_reqs/kap_def.f',
-            './src/mesa/kap/public/kap_def.f'], cwd = self.mesa_directory())
-        subprocess.call(['cp','-f','./mesa_reqs/net_def.f',
-            './src/mesa/net/public/net_def.f'], cwd = self.mesa_directory())
-        subprocess.call(['cp','-f','./mesa_reqs/star_def.f',
-            './src/mesa/star/public/star_def.f'], cwd = self.mesa_directory())
-        
-    def build_mesa(self):
-        self.get_mesa_source_from_http()
-        subprocess.call(['./install'], cwd = os.path.join(self.mesa_directory(), 'src', 'mesa'))
-
-    def clean_mesa(self):
-        subprocess.call(['./clean'], cwd = os.path.join(self.mesa_directory(), 'src', 'mesa'))
-        print "Finished cleaning.\n"
-
-    def very_clean_mesa(self):
-        self.clean_mesa()
-        print "Also emptying the EOS, KAP, and NET caches."
-        subprocess.call(['./empty_caches'], cwd = os.path.join(self.mesa_directory(), 'src', 'mesa'))
-
-if __name__ == '__main__':
-    instance = BuildMesa()
-    if len(sys.argv) == 1:
-        instance.build_mesa()
-    elif sys.argv[1] == "download":
-        instance.get_mesa_source_from_http()
-    elif sys.argv[1] == "patch":
-        instance.patch_mesa_source()
-    elif sys.argv[1] == "build":
-        instance.build_mesa()
-    elif sys.argv[1] == "rebuild":
-        instance.clean_mesa()
-        instance.build_mesa()
-    elif sys.argv[1] == "clean":
-        instance.clean_mesa()
-    elif sys.argv[1] == "veryclean":
-        instance.very_clean_mesa()
+def main(must_download_from_svn = False, version = '2208'):
+    if must_download_from_svn:
+        instance = GetCodeFromSVN()
+        instance.revision = version
     else:
-        print "I'm confused: unknown argument: ", sys.argv[1]
-        print "Known arguments: 'download', 'build', 'rebuild', 'clean', 'veryclean'"
+        instance = GetCodeFromHttp()
+        instance.version = version
+        
+    instance.start()
+
+        
+    
+def new_option_parser():
+    result = OptionParser()
+    result.add_option(
+        "-s", "--svn", 
+        default = False,
+        dest="must_download_from_svn",
+        help="if given will download the code from the svn repository",
+        action="store_true"
+    )
+    result.add_option(
+        "--version", 
+        default = '2208',
+        dest="version",
+        help="svn version number to download",
+        type="string"
+    )
+    
+    return result
+    
+if __name__ == "__main__":
+    options, arguments = new_option_parser().parse_args()
+    main(**options.__dict__)
+    
+

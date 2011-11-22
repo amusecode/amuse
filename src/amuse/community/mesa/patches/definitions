@@ -1,0 +1,65 @@
+Index: mesa/src/mesa/eos/public/eos_def.f
+===================================================================
+--- mesa.orig/src/mesa/eos/public/eos_def.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/public/eos_def.f	2011-11-22 12:05:19.000000000 +0100
+@@ -857,7 +857,7 @@
+       double precision, pointer :: x_theta_e(:)
+       
+       
+-      integer, parameter :: max_eos_handles = 10
++      integer, parameter :: max_eos_handles = 1000
+       type (EoS_General_Info), target :: eos_handles(max_eos_handles)
+       
+       
+Index: mesa/src/mesa/jina/public/jina_def.f
+===================================================================
+--- mesa.orig/src/mesa/jina/public/jina_def.f	2010-03-06 21:53:33.000000000 +0100
++++ mesa/src/mesa/jina/public/jina_def.f	2011-11-22 12:05:39.000000000 +0100
+@@ -223,7 +223,7 @@
+ 
+ 
+       ! private to the implementation
+-      integer, parameter :: max_jina_burn_handles = 10 ! make this as large as you want
++      integer, parameter :: max_jina_burn_handles = 1000 ! make this as large as you want
+       type (Jina_Info), dimension(:), target :: jina_burn_handles(max_jina_burn_handles)
+       
+       character (len=256) :: jina_dir
+Index: mesa/src/mesa/kap/public/kap_def.f
+===================================================================
+--- mesa.orig/src/mesa/kap/public/kap_def.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/public/kap_def.f	2011-11-22 12:05:56.000000000 +0100
+@@ -197,7 +197,7 @@
+          ! clipped to the boundaries of the table.
+          ! if this is false and an arg is off the table, an alert is raised.
+       
+-      integer, parameter :: max_kap_handles = 10
++      integer, parameter :: max_kap_handles = 1000
+       type (Kap_General_Info), target :: kap_handles(max_kap_handles)
+       
+ 
+Index: mesa/src/mesa/net/public/net_def.f
+===================================================================
+--- mesa.orig/src/mesa/net/public/net_def.f	2010-03-01 19:11:17.000000000 +0100
++++ mesa/src/mesa/net/public/net_def.f	2011-11-22 12:06:15.000000000 +0100
+@@ -285,7 +285,7 @@
+       
+ 
+    ! private to the implementation
+-      integer, parameter :: max_net_handles = 10
++      integer, parameter :: max_net_handles = 1000
+       type (Net_General_Info), target :: net_handles(max_net_handles)
+       
+       character (len=256) :: net_dir
+Index: mesa/src/mesa/star/public/star_def.f
+===================================================================
+--- mesa.orig/src/mesa/star/public/star_def.f	2010-03-02 19:43:27.000000000 +0100
++++ mesa/src/mesa/star/public/star_def.f	2011-11-22 12:06:26.000000000 +0100
+@@ -128,7 +128,7 @@
+       character (len=32) :: result_reason_str(num_reasons)
+ 
+ 
+-      integer, parameter :: max_star_handles = 10 ! this can be increased as necessary
++      integer, parameter :: max_star_handles = 1000 ! this can be increased as necessary
+       type (star_info), target, save :: star_handles(max_star_handles) 
+          ! gfortran requires "save" here. strange, but true.
+          
