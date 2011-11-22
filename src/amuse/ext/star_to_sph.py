@@ -29,13 +29,15 @@ class StellarModel2SPH(object):
     :argument target_core_mass:   If (with_core_particle): target mass for the non-sph particle
     :argument do_relax: Relax the SPH model - doesn't seem to work satisfactorily yet!
     :argument pickle_file: If provided, read stellar structure from here instead of using 'particle'
+    :argument do_store_composition:  If set, store the local chemical composition on each particle
     :argument base_grid_options: dict() with options for the initial distribution, 
         see new_uniform_spherical_particle_distribution
     """
     
     def __init__(self, particle, number_of_sph_particles, seed = None, 
             do_relax = False, sph_code = Gadget2, compatible_converter = ConvertBetweenGenericAndSiUnits,
-            with_core_particle = False, target_core_mass = None, pickle_file = None, base_grid_options = dict(type = "bcc")):
+            with_core_particle = False, target_core_mass = None, pickle_file = None, 
+            do_store_composition = True, base_grid_options = dict(type = "bcc")):
         self.particle = particle
         self.number_of_sph_particles = number_of_sph_particles
         
@@ -48,6 +50,7 @@ class StellarModel2SPH(object):
         if seed:
             numpy.random.seed(seed)
         
+        self.do_store_composition = do_store_composition
         self.base_grid_options = base_grid_options
         self.do_relax = do_relax
         self.sph_code = sph_code # used to relax the SPH model
@@ -55,14 +58,15 @@ class StellarModel2SPH(object):
     
     def retrieve_stellar_structure(self):
         self.number_of_zones   = self.particle.get_number_of_zones()
-        self.number_of_species = self.particle.get_number_of_species()
-        self.species_names     = self.particle.get_names_of_species(number_of_species = self.number_of_species)
+        if self.do_store_composition:
+            self.number_of_species = self.particle.get_number_of_species()
+            self.species_names     = self.particle.get_names_of_species(number_of_species = self.number_of_species)
+            self.composition_profile = self.particle.get_chemical_abundance_profiles(
+                number_of_zones = self.number_of_zones, number_of_species = self.number_of_species)
         self.density_profile     = self.particle.get_density_profile(number_of_zones = self.number_of_zones)
         self.radius_profile      = self.particle.get_radius_profile(number_of_zones = self.number_of_zones)
         self.temperature_profile = self.particle.get_temperature_profile(number_of_zones = self.number_of_zones)
         self.mu_profile          = self.particle.get_mu_profile(number_of_zones = self.number_of_zones)
-        self.composition_profile = self.particle.get_chemical_abundance_profiles(
-            number_of_zones = self.number_of_zones, number_of_species = self.number_of_species)
         self.specific_internal_energy_profile = (1.5 * constants.kB * self.temperature_profile / self.mu_profile).as_quantity_in(units.m**2/units.s**2)
         # Note: self.radius is in increasing order; from center to surface
         radius_profile = [0] | units.m
@@ -156,7 +160,7 @@ class StellarModel2SPH(object):
                 comp.append(delta*extended[indices] + one_minus_delta*extended[indices+1])
             return interpolated_energies, comp.transpose()
         else:
-            return interpolated_energies
+            return interpolated_energies, None
     
     def convert_to_SPH(self):
         sph_particles = new_spherical_particle_distribution(
@@ -183,7 +187,7 @@ class StellarModel2SPH(object):
         hydro_code.gas_particles.add_particles(particles)
         
         for i in range(1, num_iterations+1):
-            hydro_code.gas_particles.u = self.interpolate_internal_energy(particles.position.lengths(), do_composition_too = False)
+            hydro_code.gas_particles.u, tmp = self.interpolate_internal_energy(particles.position.lengths(), do_composition_too = False)
             hydro_code.evolve_model(i * (1.0e-5 | units.s))
             accelerations     = hydro_code.gas_particles.acceleration
             acc_correlated = (previous_acc * accelerations).sum() / (accelerations * accelerations).sum()
@@ -224,10 +228,15 @@ class StellarModel2SPH(object):
             for result_string in self.relax(sph_particles):
                 print result_string
         
-        sph_particles.add_vector_attribute("composition", self.species_names)
-        specific_internal_energy, composition = self.interpolate_internal_energy(sph_particles.position.lengths())
+        specific_internal_energy, composition = self.interpolate_internal_energy(
+            sph_particles.position.lengths(),
+            do_composition_too = self.do_store_composition
+        )
         sph_particles.u = specific_internal_energy
-        sph_particles.composition = composition
+        if self.do_store_composition:
+            sph_particles.add_vector_attribute("composition", self.species_names)
+            sph_particles.composition = composition
+        
         if self.with_core_particle and self.core_radius:
             core_particle = Particles(1)
             core_particle.mass = self.core_mass
@@ -251,6 +260,7 @@ def convert_stellar_model_to_SPH(particle, number_of_sph_particles, **keyword_ar
     :argument target_core_mass:   If (with_core_particle): target mass for the non-sph particle
     :argument do_relax: Relax the SPH model - doesn't seem to work satisfactorily yet!
     :argument pickle_file: If provided, read stellar structure from here instead of using 'particle'
+    :argument do_store_composition:  If set, store the local chemical composition on each particle
     :argument base_grid_options: dict() with options for the initial distribution, 
         see new_uniform_spherical_particle_distribution
     """

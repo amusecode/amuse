@@ -183,12 +183,12 @@ class TestStellarModel2SPH(TestWithMPI):
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_9_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_6_composition_h1.png")
         )
         composition_comparison_plot(
             midpoints, composition[2], 
             sph_midpoints, sph_particles.he4, 
-            os.path.join(get_path_to_results(), "star2sph_test_9_composition_he4.png")
+            os.path.join(get_path_to_results(), "star2sph_test_6_composition_he4.png")
         )
         
         time_end = 4000.0 | units.s
@@ -202,17 +202,17 @@ class TestStellarModel2SPH(TestWithMPI):
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_9_relaxed_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_6_relaxed_composition_h1.png")
         )
         composition_comparison_plot(
             midpoints, composition[2], 
             sph_midpoints, sph_particles.he4, 
-            os.path.join(get_path_to_results(), "star2sph_test_9_relaxed_composition_he4.png")
+            os.path.join(get_path_to_results(), "star2sph_test_6_relaxed_composition_he4.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, sph_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_9_relaxed_composition_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_6_relaxed_composition_u.png")
         )
         
     def slowtest7(self):
@@ -267,23 +267,23 @@ class TestStellarModel2SPH(TestWithMPI):
         
         sph_midpoints = hydro_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_7_after_t1e4_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_thermal_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_7_after_t1e4_gadget_thermal_energy_evolution.png"))
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, gas.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_7_after_t1e4_gadget_composition_h1.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, gas.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_original_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_7_after_t1e4_gadget_original_u.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, hydro_code.gas_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_new_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_7_after_t1e4_gadget_new_u.png")
         )
         hydro_code.stop()
         print "All done!\n"
@@ -336,7 +336,7 @@ class TestStellarModel2SPH(TestWithMPI):
             thermal_energies.append(   hydro_code.thermal_energy)
         hydro_code.stop()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_12_fi_star2sph.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_8_fi_star2sph.png"))
         print "All done!\n"
     
     def slowtest9(self):
@@ -374,12 +374,12 @@ class TestStellarModel2SPH(TestWithMPI):
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_13_relax_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_9_relax_h1.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, sph_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_13_relax_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_9_relax_u.png")
         )
     
     def slowtest10(self):
@@ -417,12 +417,12 @@ class TestStellarModel2SPH(TestWithMPI):
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_14_before_h1_new.png")
+            os.path.join(get_path_to_results(), "star2sph_test_10_before_h1_new.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, sph_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_14_before_u_new.png")
+            os.path.join(get_path_to_results(), "star2sph_test_10_before_u_new.png")
         )
         t_end = 1.0e4 | units.s
         print "Evolving to:", t_end
@@ -445,23 +445,23 @@ class TestStellarModel2SPH(TestWithMPI):
         
         sph_midpoints = hydro_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_10_after_t1e4_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_thermal_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_10_after_t1e4_gadget_thermal_energy_evolution.png"))
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_10_after_t1e4_gadget_h1.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, sph_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_original_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_10_after_t1e4_gadget_original_u.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, hydro_code.gas_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_new_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_10_after_t1e4_gadget_new_u.png")
         )
         hydro_code.stop()
         print "All done!\n"
@@ -571,9 +571,9 @@ class TestStellarModel2SPH(TestWithMPI):
             thermal_energies.append(   hydro_code.thermal_energy)
         
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_12_merger_"+n_string+"_"+t_end_string+"_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_thermal_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_12_merger_"+n_string+"_"+t_end_string+"_thermal_energy_evolution.png"))
         
         channel = hydro_code.gas_particles.new_channel_to(all_sph_particles)
         channel.copy_attributes(['mass', 'rho', 'x','y','z', 'vx','vy','vz', 'u'])   
@@ -589,12 +589,12 @@ class TestStellarModel2SPH(TestWithMPI):
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, all_sph_particles.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_12_merger_"+n_string+"_"+t_end_string+"_composition_h1.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, all_sph_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_new_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_12_merger_"+n_string+"_"+t_end_string+"_new_u.png")
         )
         hydro_code.stop()
         print "All done!\n"
@@ -634,7 +634,7 @@ class TestStellarModel2SPH(TestWithMPI):
         xlabel('radius')
         ylabel('density')
         pyplot.legend(loc=3)
-        figname = os.path.join(get_path_to_results(), "star2sph_test_17_density.png")
+        figname = os.path.join(get_path_to_results(), "star2sph_test_13_density.png")
         pyplot.savefig(figname)
         print "\nPlot of density profile was saved to: ", figname
         pyplot.close()
@@ -669,23 +669,23 @@ class TestStellarModel2SPH(TestWithMPI):
         
         sph_midpoints = hydro_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_13_n1e3_after_t1e3_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_thermal_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_13_n1e3_after_t1e3_gadget_thermal_energy_evolution.png"))
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, gas.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_13_n1e3_after_t1e3_gadget_composition_h1.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, gas.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_original_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_13_n1e3_after_t1e3_gadget_original_u.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, hydro_code.gas_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_new_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_13_n1e3_after_t1e3_gadget_new_u.png")
         )
         hydro_code.stop()
         print "All done!\n"
@@ -773,13 +773,13 @@ class TestStellarModel2SPH(TestWithMPI):
         
         sph_midpoints = hydro_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_18_after_t1e4_gadget_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e2_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_18_after_t1e4_gadget_thermal_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e2_gadget_thermal_energy_evolution.png"))
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, hydro_code.gas_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_18_after_t1e4_gadget_internal_energy.png")
+            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e2_gadget_internal_energy.png")
         )
         hydro_code.stop()
         print "All done!\n"
@@ -856,7 +856,7 @@ class TestStellarModel2SPH(TestWithMPI):
         hydro_code_string = "_" + str(use_hydro_code.__name__)
         n_string = "_n" + ("%1.0e"%(number_of_sph_particles)).replace("+0","").replace("+","")
         t_end_string = "_t" + ("%1.0e"%(t_end.value_in(units.s))).replace("+0","").replace("+","")
-        base_plotfile_string = "star2sph_test_21" + n_string + hydro_code_string + t_end_string
+        base_plotfile_string = "star2sph_test_17" + n_string + hydro_code_string + t_end_string
         
         stellar_evolution = self.new_instance(MESA, redirection = "none")
         if stellar_evolution is None:
@@ -983,6 +983,35 @@ class TestStellarModel2SPH(TestWithMPI):
             self.assertAlmostRelativeEqual(stellar_model_in_SPH.core_particle[0].mass, tgt_core_mass, 1)
             self.assertAlmostEqual(stellar_model_in_SPH.core_radius, expected_core_radii[i])
         stellar_evolution.stop()
+    
+    def test19(self):
+        print "Test convert_stellar_model_to_SPH with do_store_composition"
+        star = self.StarParticleWithStructure(number_of_species = 4)
+        number_of_sph_particles = 100 # only few particles for test speed-up
+        
+        sph_particles = convert_stellar_model_to_SPH(
+            star, 
+            number_of_sph_particles, 
+            seed = 12345,
+            do_store_composition = False
+        ).gas_particles
+        self.assertEqual(len(sph_particles), number_of_sph_particles)
+        self.assertTrue(set(sph_particles.get_attribute_names_defined_in_store()) ==
+            set(["mass", "x", "y", "z", "vx", "vy", "vz", "u", "h_smooth"]))
+        self.assertTrue(set(sph_particles.get_attribute_names_defined_in_store()).isdisjoint(
+            set(["h1", "he3", "he4", "c12"])))
+        
+        sph_particles = convert_stellar_model_to_SPH(
+            star, 
+            number_of_sph_particles, 
+            seed = 12345,
+        ).gas_particles
+        self.assertEqual(len(sph_particles), number_of_sph_particles)
+        self.assertTrue(set(sph_particles.get_attribute_names_defined_in_store()) >
+            set(["mass", "x", "y", "z", "vx", "vy", "vz", "u", "h_smooth"]))
+        print set(sph_particles.get_attribute_names_defined_in_store())
+        self.assertTrue(set(sph_particles.get_attribute_names_defined_in_store()) >
+            set(["h1", "he3", "he4", "c12"]))
     
 
 def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname):
