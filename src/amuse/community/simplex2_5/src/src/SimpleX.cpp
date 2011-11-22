@@ -5549,17 +5549,18 @@ void SimpleX::send_site_intensities(){
     //sort the intensity ids on vertex id
     quickSortPerm( intens_ids, permutation, 0, intens_ids.size()-1 );
   }
- 
+    
   //update the intensities for the new ordering
   vector<float> tmp = site_intensities;
     
   for( unsigned int i=0; i<permutation.size(); i++ ){
-    unsigned int pos = i*numFreq*numPixels;
+    unsigned int posOld = i*numFreq*numPixels;
+    unsigned int posNew = permutation[i]*numFreq*numPixels;
     for( unsigned short int j=0; j<numFreq*numPixels; j++ ){
-      site_intensities[ pos + j ] = tmp[ permutation[i] ];
+      site_intensities[ posOld + j ] = tmp[ posNew + j ];
     }
-  }  
-    
+  } 
+   
   //loop over all vertices and check if intensities need to be sent   
   vector<Vertex>::iterator it=vertices.begin();
   unsigned long long int intensityIndex = 0;
@@ -6481,8 +6482,6 @@ double SimpleX::heating_rate( const vector<double>& N_ion, const double& t_end )
 
     //number of photons per second
     double N_ion_sec = N_ion[f]/t_end;
-
-    cerr << "N_ion_sec " << N_ion_sec << " N_ion " << N_ion[f] << " t_end " << t_end << endl;  
 
     //heating due to these photons
     heating += N_ion_sec * photon_excess_energy[f];

@@ -9,6 +9,13 @@ OBJDIR = $(SRCDIR)/obj
 APP		 = $(SRCDIR)/bin/SimpleX
 PLUGINS = $(SRCDIR)/plugins
 
+SW = /Users/jppaarde/sw
+#HDF5 = ${SW}/hdf5_1.6.10
+HDF5 = /Users/jppaarde/sw/hdf5-1.6.10/installed
+HDF5_INCL = -I${HDF5}/include
+HDF5_LIB =  -L${HDF5}/lib
+GSL_PATH = /usr/local/scisoft
+
 OBJS = $(OBJDIR)/amuse_interface.o $(OBJDIR)/SimpleX.o \
        $(OBJDIR)/Structs.o $(OBJDIR)/rates.o $(OBJDIR)/Common.o $(OBJDIR)/h5w_serial.o \
        $(OBJDIR)/keyValue.o $(OBJDIR)/tree_structures.o $(OBJDIR)/hilbert.o 
@@ -18,10 +25,10 @@ GLOBJS = $(OBJDIR)/amuse_interface_gl.o
 HEALPIX_PATH = $(PLUGINS)/HEALPix/
 QHULL_PATH = $(PLUGINS)/QHull/
 
-LIBS =  -lhdf5 -lz \
+LIBS =  -L${HDF5}/lib -lhdf5 -lz \
         -L${QHULL_PATH} -lqhull \
         -L${HEALPIX_PATH}/lib  -lhealpix_cxx \
-        -lgslcblas -lgsl 
+        -L${GSL_PATH}/lib -lgslcblas -lgsl 
 
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/

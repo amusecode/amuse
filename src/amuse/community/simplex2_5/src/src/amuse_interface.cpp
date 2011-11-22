@@ -23,7 +23,7 @@ void AMUSE_SimpleX::read_parameters(){
   sizeBox = 13200;
 
   //use blackbody for source? Otherwise monochromatic
-  blackBody = 0;
+  blackBody = 1;
   //effective temperature of source
   sourceTeff = 1.e5;
   
@@ -31,13 +31,13 @@ void AMUSE_SimpleX::read_parameters(){
   UNIT_I = 1.e48;
   
   //number of frequencies
-  numFreq = 1;
+  numFreq = 5;
   
   //include collisional ionisations?
-  coll_ion = 0;
+  coll_ion = 1;
 
   //include heating and cooling?
-  heat_cool = 0;
+  heat_cool = 1;
 
   //include metal line cooling?
   metal_cooling = 0;

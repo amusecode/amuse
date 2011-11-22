@@ -9,6 +9,13 @@ HDF5_PATH = $(PLUGINS)/hdf5
 HEALPIX_PATH = $(PLUGINS)/HEALPix/
 QHULL_PATH = $(PLUGINS)/QHull/
 
+SW = /Users/jppaarde/sw
+#HDF5 = ${SW}/hdf5_1.6.10
+HDF5 = /Users/jppaarde/sw/hdf5-1.6.10/installed
+HDF5_INCL = -I${HDF5}/include
+HDF5_LIB =  -L${HDF5}/lib -lhdf5 -lz
+GSL_PATH = /usr/local/scisoft
+
 SRC=./src/
 OBJ=./obj/
 LIB=./lib/
@@ -19,10 +26,10 @@ CXXCFLAGS := $(CXXCFLAGS_NO_C) -c
 export CXXCFLAGS
 
 MACRODEFS = -DH5_USE_16_API
-MYLIBS = -L$(QHULL_PATH) -lqhull -lgslcblas -lgsl -lhdf5 -lz
+MYLIBS = -L$(QHULL_PATH) -lqhull -L${GSL_PATH}/lib -lgslcblas -lgsl  $(HDF5_LIB) -lhdf5 -lz
 MYINCLUDE = -I$(KEYVALUE_PATH) -I$(QHULL_PATH) -I$(HDF5_PATH)  \
             -I$(PLUGINS)/octree -I$(PLUGINS)/hilbert -I$(SRC) \
-            -I$(PLUGINS)/unit_sphere_tess/include
+            -I$(PLUGINS)/unit_sphere_tess/include $(HDF5_INCL) -I${GSL_PATH}/include
 
 ifeq ($(use_parallel_hdf5),yes)
   MACRODEFS += -D HDF5_PARALLEL
@@ -88,7 +95,7 @@ $(OBJ)h5w_parallel.o: $(HDF5_PATH)/h5w_parallel.cpp $(HDF5_PATH)/h5w_parallel.h 
 	$(MPICXX) -o$(OBJ)h5w_parallel.o -c $(HDF5_PATH)/h5w_parallel.cpp $(CXXCFLAGS) $(MACRODEFS)
 
 $(OBJ)h5w_serial.o: $(HDF5_PATH)/h5w_serial.cpp $(HDF5_PATH)/h5w_serial.h $(HDF5_PATH)/array_class.h
-	$(MPICXX) -o$(OBJ)h5w_serial.o -c $(HDF5_PATH)/h5w_serial.cpp $(CXXCFLAGS) $(MACRODEFS)
+	$(MPICXX) -o$(OBJ)h5w_serial.o -c $(HDF5_PATH)/h5w_serial.cpp $(CXXCFLAGS) $(MACRODEFS) $(HDF5_INCL)
 
 amuse_interface: $(OBJ)amuse_interface.o 
 amuse_interface_gl: $(OBJ)amuse_interface_gl.o 
