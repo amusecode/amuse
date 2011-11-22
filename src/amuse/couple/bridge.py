@@ -548,9 +548,7 @@ class Bridge(object):
 
     def drift_codes(self,tend):
         threads=[]
-        
-        self.synchronize_model()
-        
+                
         for x in self.codes:
             offset=self.time_offsets[x]
             if hasattr(x,"drift"):
