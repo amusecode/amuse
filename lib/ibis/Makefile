@@ -9,7 +9,7 @@ CLASSPATH="deploy/lib/*:tmp"
 
 all: ${CODEDIR} ${LIBPROFILING} lib/ibis-amuse.jar
 
-$(LIBPROFILING):src/profiling
+$(LIBPROFILING):src/profiling/*.c
 	make -C src/profiling all
 
 $(CODEDIR):

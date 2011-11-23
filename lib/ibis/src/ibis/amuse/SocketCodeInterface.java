@@ -40,7 +40,7 @@ public class SocketCodeInterface extends CodeInterface {
 
 	private AmuseMessage requestMessage;
 	private AmuseMessage resultMessage;
-	
+
 	private final OutputPrefixForwarder out;
 	private final OutputPrefixForwarder err;
 
@@ -86,17 +86,15 @@ public class SocketCodeInterface extends CodeInterface {
 					}
 				}
 			}
-			
-			builder.environment().put("IBIS_MPI_COLLECTOR_PORT",
-					Integer.toString(mpiCollectorPort));
 
 			if (mpirun == null) {
 				mpirun = "mpirun";
 			}
 
-			builder.command(mpirun, "-x", "IBIS_MPI_COLLECTOR_PORT", "--hostfile", hostFile.getAbsolutePath(),
-					executable.toString(),
-					Integer.toString(serverSocket.socket().getLocalPort()));
+			builder.command(mpirun, "-machinefile", hostFile.getAbsolutePath(),
+					executable.toString(), Integer.toString(serverSocket
+							.socket().getLocalPort()), "--ibis-monitor-port",
+							Integer.toString(mpiCollectorPort));
 
 			// make sure there is an "output" directory for a code to put output
 			// in
@@ -104,10 +102,10 @@ public class SocketCodeInterface extends CodeInterface {
 
 			process = builder.start();
 
-			out = new OutputPrefixForwarder(process.getInputStream(), System.out,
-					"stdout of " + codeName + ": ");
-			err = new OutputPrefixForwarder(process.getErrorStream(), System.err,
-					"stderr of " + codeName + ": ");
+			out = new OutputPrefixForwarder(process.getInputStream(),
+					System.out, "stdout of " + codeName + ": ");
+			err = new OutputPrefixForwarder(process.getErrorStream(),
+					System.err, "stderr of " + codeName + ": ");
 
 			logger.info("process started");
 
@@ -160,17 +158,17 @@ public class SocketCodeInterface extends CodeInterface {
 		if (process != null) {
 			process.destroy();
 		}
-		
-		//wait for out and err a bit
+
+		// wait for out and err a bit
 		try {
 			out.join(1000);
 		} catch (InterruptedException e) {
-			//IGNORE
+			// IGNORE
 		}
 		try {
 			err.join(1000);
 		} catch (InterruptedException e) {
-			//IGNORE
+			// IGNORE
 		}
 
 		super.end();

@@ -19,7 +19,7 @@
 
 #define MAGIC_NUMBER 449682
 
-void ibis_statistics_init(int rank, int size);
+void ibis_statistics_init(int rank, int size, int port);
 void ibis_statistics_add(int type, int src_dst_root, int length);
 void ibis_statistics_finalize();
 
