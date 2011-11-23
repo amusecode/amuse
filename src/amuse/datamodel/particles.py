@@ -383,6 +383,10 @@ class AbstractParticleSet(AbstractSet):
         channel = self.new_channel_to(particles)
         channel.copy_attributes([attribute_name])
     
+    def copy_values_of_attributes_to(self, attribute_names, particles):
+        channel = self.new_channel_to(particles)
+        channel.copy_attributes(attribute_names)
+    
     def new_channel_to(self, other):
         return ParticleInformationChannel(self, other)
         

@@ -1009,7 +1009,6 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertEqual(len(sph_particles), number_of_sph_particles)
         self.assertTrue(set(sph_particles.get_attribute_names_defined_in_store()) >
             set(["mass", "x", "y", "z", "vx", "vy", "vz", "u", "h_smooth"]))
-        print set(sph_particles.get_attribute_names_defined_in_store())
         self.assertTrue(set(sph_particles.get_attribute_names_defined_in_store()) >
             set(["h1", "he3", "he4", "c12"]))
     

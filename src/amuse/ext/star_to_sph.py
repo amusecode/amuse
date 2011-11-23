@@ -14,7 +14,8 @@ from amuse.units import units
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
 from amuse.support.console import set_printing_strategy
-from amuse.datamodel import Particles
+from amuse.datamodel import Particles, Particle
+
 StellarModelInSPH = namedtuple('StellarModelInSPH', ['gas_particles', 'core_particle', 'core_radius'])
 
 class StellarModel2SPH(object):
@@ -238,13 +239,13 @@ class StellarModel2SPH(object):
             sph_particles.composition = composition
         
         if self.with_core_particle and self.core_radius:
-            core_particle = Particles(1)
+            core_particle = Particle()
             core_particle.mass = self.core_mass
             core_particle.position = [0.0, 0.0, 0.0] | units.m
             core_particle.velocity = [0.0, 0.0, 0.0] | units.m / units.s
             core_particle.radius = 0.0 | units.m
             return StellarModelInSPH(gas_particles=sph_particles, core_particle=core_particle, core_radius=self.core_radius)
-        return StellarModelInSPH(gas_particles=sph_particles, core_particle=Particles(), core_radius=None)
+        return StellarModelInSPH(gas_particles=sph_particles, core_particle=Particle(), core_radius=None)
 
     
 
