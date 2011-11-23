@@ -550,7 +550,7 @@ def is_mpd_running():
         if 'HYDRA_CONTROL_FD' in os.environ:
             must_check_mpd = False
         
-        if not must_check_mpd or version == (1,3,2):
+        if not must_check_mpd:
             return True
         try:
             process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)

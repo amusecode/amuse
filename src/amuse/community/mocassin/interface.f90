@@ -3182,9 +3182,9 @@ CONTAINS
         allocate(noIonBalPercent(nGrids))
         allocate(noTeBalPercent(nGrids))  
         
-        noHitPercent(iG)     = 0.
-        noIonBalPercent(iG)  = 0.
-        noTeBalPercent(iG)   = 0.
+        noHitPercent    = 0.
+        noIonBalPercent  = 0.
+        noTeBalPercent  = 0.
         
          
         do iG = 1, nGrids
@@ -3325,6 +3325,10 @@ CONTAINS
               end if
            
            end if
+                
+        deallocate(noHitPercent)
+        deallocate(noIonBalPercent)
+        deallocate(noTeBalPercent)  
         
            
 
