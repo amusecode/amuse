@@ -459,6 +459,28 @@ class MessageChannel(OptionalAttributes):
     def worker_code_prefix(self):
         return ''
         
+    @option(type='boolean', sections=("channel",))
+    def must_check_if_worker_is_up_to_date(self):
+        return True
+    
+    def check_if_worker_is_up_to_date(self, object):
+        if not self.must_check_if_worker_is_up_to_date:
+            return
+            
+        name_of_the_compiled_file = self.full_name_of_the_worker
+        modificationtime_of_worker = os.stat(name_of_the_compiled_file).st_mtime
+        my_class = type(object)
+        for x in dir(my_class):
+            if x.startswith('__'):
+                continue
+            value = getattr(my_class, x)
+            if hasattr(value, 'crc32'):
+                is_up_to_date = value.is_compiled_file_up_to_date(modificationtime_of_worker)
+                if not is_up_to_date:
+                    raise exceptions.CodeException("""The worker code of the '{0}' interface class is not up to date.
+Please do a 'make clean; make' in the root directory.
+""".format(type(object).__name__))
+
     def get_full_name_of_the_worker(self, type):
         
         if os.path.isabs(self.name_of_the_worker):

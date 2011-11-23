@@ -590,8 +590,7 @@ class CodeInterface(OptionalAttributes):
            
         self.channel = self.channel_factory(name_of_the_worker, type(self), **options)
         
-        if self.must_check_if_worker_is_up_to_date:
-            self._check_if_worker_is_up_to_date()
+        self._check_if_worker_is_up_to_date()
         
         self.channel.redirect_stdout_file = self.redirection_filenames[0]
         self.channel.redirect_stderr_file = self.redirection_filenames[1]
@@ -615,6 +614,9 @@ class CodeInterface(OptionalAttributes):
     def __del__(self):
         self._stop()
     
+    def _check_if_worker_is_up_to_date(self):
+        self.channel.check_if_worker_is_up_to_date(self)
+        
     
     @classmethod
     def ensure_stop_interface_at_exit(cls):
@@ -630,20 +632,7 @@ class CodeInterface(OptionalAttributes):
                 self.channel = None
             del self.channel
         
-    def _check_if_worker_is_up_to_date(self):
-        name_of_the_compiled_file = self.channel.full_name_of_the_worker
-        modificationtime_of_worker = os.stat(name_of_the_compiled_file).st_mtime
-        my_class = type(self)
-        for x in dir(my_class):
-            if x.startswith('__'):
-                continue
-            value = getattr(my_class, x)
-            if isinstance(value, legacy_function):
-                is_up_to_date = value.is_compiled_file_up_to_date(modificationtime_of_worker)
-                if not is_up_to_date:
-                    raise exceptions.CodeException("""The worker code of the '{0}' interface class is not up to date.
-Please do a 'make clean; make' in the root directory.
-""".format(type(self).__name__))
+    
         
     @legacy_function
     def _stop_worker():
@@ -683,9 +672,6 @@ Please do a 'make clean; make' in the root directory.
     def channel_type(self):
         return 'mpi'
         
-    @option(type='boolean', sections=("channel",))
-    def must_check_if_worker_is_up_to_date(self):
-        return True
         
         
     @option(choices=("none","null","file"), sections=("channel",))
