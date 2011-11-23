@@ -525,7 +525,7 @@ void SimpleX::read_vertex_list(){
 
   //open hdf5 file
   char fileName[200];
-  sprintf(fileName, inputFileName.c_str());
+  sprintf(fileName, "%s", inputFileName.c_str());
   h5w file(fileName,'o');        // open file for reading
 
   //read in total number of sites
@@ -2742,20 +2742,20 @@ void SimpleX::store_intensities(){
 
       //loop over directions
       for( unsigned int j=0; j<numPixels; j++ ){
-	//loop over frequencies
-	for(short int f=0; f<numFreq; f++){
+  //loop over frequencies
+        for(short int f=0; f<numFreq; f++){
 
-	  //position of this direction in array
-	  unsigned int pos = f + j*numFreq + site_intensities.size() - numFreq*numPixels;
+    //position of this direction in array
+          unsigned int pos = f + j*numFreq + site_intensities.size() - numFreq*numPixels;
 
-	  //add all intensity to site_intensities in correct place
-	  site_intensities[pos] += it->get_intensityIn(f,j) + it->get_intensityOut(f,j);
+    //add all intensity to site_intensities in correct place
+          site_intensities[pos] += it->get_intensityIn(f,j) + it->get_intensityOut(f,j);
 
-	  //now that they are stored, set them to zero
-	  it->set_intensityOut(f,j,0.0);
-	  it->set_intensityIn(f,j,0.0);
+    //now that they are stored, set them to zero
+          it->set_intensityOut(f,j,0.0);
+          it->set_intensityIn(f,j,0.0);
 
-	}//for all freq
+        }//for all freq
       }//for all pixels
     }//if
   }//for all sites
@@ -5591,17 +5591,23 @@ void SimpleX::send_site_intensities(){
         it++;
 
       }else if( it->get_vertex_id() == intens_ids[intensityIndex] ){
-
+        //check whether vertex is on other proc. If so, it needs to be send
         if( it->get_process() != COMM_RANK ){
-          for(short int f=0;f<numFreq;f++){
-            Send_Intensity tmpSend;
-            tmpSend.set_process( it->get_process() );
-            tmpSend.set_freq_bin( f );
-            tmpSend.set_id( intens_ids[intensityIndex] );
-            tmpSend.set_intensityIn( site_intensities[ intensityIndex*numFreq + f ] );
-            
-            intensitiesToSend.push_back( tmpSend );
-            nSendLocal[ it->get_process() ]++;
+          //loop over directions
+          for( unsigned int j=0; j<numPixels; j++ ){
+            //loop over frequencies
+            for(short int f=0; f<numFreq; f++){
+              Send_Intensity tmpSend;
+              tmpSend.set_process( it->get_process() );
+              tmpSend.set_neighId( j );
+              tmpSend.set_freq_bin( f );
+              tmpSend.set_id( intens_ids[intensityIndex] );
+              unsigned int pos = intensityIndex*numPixels*numFreq + j*numFreq + f;
+              tmpSend.set_intensityIn( site_intensities[ pos ] );
+
+              intensitiesToSend.push_back( tmpSend );
+              nSendLocal[ it->get_process() ]++;
+            }
           }
         }
 
@@ -5614,7 +5620,7 @@ void SimpleX::send_site_intensities(){
       }
 
     }
-    
+            
     //sort the site updates on process
     sort( intensitiesToSend.begin(), intensitiesToSend.end(), compare_process_send_intensity );
         
@@ -5704,22 +5710,23 @@ void SimpleX::send_site_intensities(){
   //insert in vectors
   vector<Send_Intensity>::iterator it2=intensities_recv.begin(); 
   while(it2!=intensities_recv.end() ){
-    
+
     unsigned long long int index =  it2->get_id();
     intens_ids.push_back( index );
-    
-    for(short int f=0; f<numFreq; f++){
+
+    for(unsigned int j=0; j<numPixels; j++){
+      for(short int f=0; f<numFreq; f++){
       //check to be sure
-      if( it2->get_id() != index ){
-        cerr << " (" << COMM_RANK << ") Error in sendSiteIntensities(): Not all frequency bins have been received " << endl;
-        cerr << "    Frequency bin: " << it2->get_freq_bin() << endl;
-        MPI::COMM_WORLD.Abort(-1);
+        if( it2->get_id() != index ){
+          cerr << " (" << COMM_RANK << ") Error in sendSiteIntensities(): Not all bins have been received " << endl;
+          cerr << "     Direction bin: " << it2->get_neighId() << " Frequency bin: " << it2->get_freq_bin() << endl;
+          MPI::COMM_WORLD.Abort(-1);
+        }
+
+        site_intensities.push_back( it2->get_intensityIn() );
+        it2++;
       }
-      
-      site_intensities.push_back( it2->get_intensityIn() );
-      it2++;
     }
-    
   }
   
   //remove entries not on this proc
