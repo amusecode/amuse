@@ -57,3 +57,4 @@ hermite_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(A_OBJS
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
 	rm -f hermite_worker worker_code-sockets.cc hermite_worker_sockets
+	rm -rf *.dSYM

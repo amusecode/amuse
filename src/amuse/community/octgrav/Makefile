@@ -83,6 +83,7 @@ octgrav_worker_sockets: worker_code-sockets.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(OBJS) $(LIBS) $(CODELIB) -o $@ $(SCLIBS)
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
+	rm -rf *.dSYM
 	$(RM) worker_code *~ octgrav_worker
 	$(RM) worker_code-sockets.cc octgrav_worker_sockets
 	$(MAKE) -C $(CODEPATH) clean	
