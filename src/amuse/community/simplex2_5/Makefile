@@ -1,20 +1,17 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include $(AMUSE_DIR)/config.mk
+
 MPICXX ?= mpicxx
 export MPICXX
 
-AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 SRCDIR = src
 OBJDIR = $(SRCDIR)/obj
 APP		 = $(SRCDIR)/bin/SimpleX
 PLUGINS = $(SRCDIR)/plugins
-
-SW = /Users/jppaarde/sw
-#HDF5 = ${SW}/hdf5_1.6.10
-HDF5 = /Users/jppaarde/sw/hdf5-1.6.10/installed
-HDF5_INCL = -I${HDF5}/include
-HDF5_LIB =  -L${HDF5}/lib
-GSL_PATH = /usr/local/scisoft
 
 OBJS = $(OBJDIR)/amuse_interface.o $(OBJDIR)/SimpleX.o \
        $(OBJDIR)/Structs.o $(OBJDIR)/rates.o $(OBJDIR)/Common.o $(OBJDIR)/h5w_serial.o \
@@ -25,10 +22,18 @@ GLOBJS = $(OBJDIR)/amuse_interface_gl.o
 HEALPIX_PATH = $(PLUGINS)/HEALPix/
 QHULL_PATH = $(PLUGINS)/QHull/
 
-LIBS =  -L${HDF5}/lib -lhdf5 -lz \
-        -L${QHULL_PATH} -lqhull \
-        -L${HEALPIX_PATH}/lib  -lhealpix_cxx \
-        -L${GSL_PATH}/lib -lgslcblas -lgsl 
+HDF5_PATH = /Users/jppaarde/sw/hdf5-1.6.10/installed
+HDF5_FLAGS ?= -I$(HDF5_PATH)/include
+HDF5_LIBS  ?= -L$(HDF5_PATH)/lib -lhdf5 -lz
+
+GSL_PATH = /usr/local/scisoft
+GSL_FLAGS ?= -I$(GSL_PATH)/
+GSL_LIBS ?= -L$(GSL_PATH)/lib -lgslcblas -lgsl 
+
+LIBS =  $(HDF5_LIBS) \
+        $(GSL_LIBS) \
+        -L$(QHULL_PATH) -lqhull \
+        -L$(HEALPIX_PATH)/lib  -lhealpix_cxx
 
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
@@ -48,6 +53,9 @@ clean:
 	$(RM) simplex_worker simplex_worker_gl *~
 	cd $(SRCDIR) && $(MAKE) clean
 
+distclean: clean
+	cd $(SRCDIR) && $(MAKE) veryclean
+	
 worker.cc: interface.py
 	$(CODE_GENERATOR) --type=c $< SimpleXInterface -o $@
 
@@ -68,5 +76,6 @@ simplex_worker_gl: worker_gl.cc worker_gl.h $(OBJS) $(GLOBJS)
 
 $(OBJDIR)/amuse_interface.o: $(SRCDIR)/src/amuse_interface.cpp $(SRCDIR)/src/amuse_interface.h
 	cd $(SRCDIR) && $(MAKE) amuse_interface
+	
 $(OBJDIR)/amuse_interface_gl.o: $(SRCDIR)/src/amuse_interface_gl.cpp
 	cd $(SRCDIR) && $(MAKE) amuse_interface_gl

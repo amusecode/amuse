@@ -5,32 +5,34 @@ use_healpix = yes
 
 PLUGINS = ./plugins
 KEYVALUE_PATH = $(PLUGINS)/keyValue
-HDF5_PATH = $(PLUGINS)/hdf5
 HEALPIX_PATH = $(PLUGINS)/HEALPix/
 QHULL_PATH = $(PLUGINS)/QHull/
 
-SW = /Users/jppaarde/sw
-#HDF5 = ${SW}/hdf5_1.6.10
-HDF5 = /Users/jppaarde/sw/hdf5-1.6.10/installed
-HDF5_INCL = -I${HDF5}/include
-HDF5_LIB =  -L${HDF5}/lib -lhdf5 -lz
+HDF5_PLUGIN = $(PLUGINS)/hdf5
+
+HDF5_PATH = /Users/jppaarde/sw/hdf5-1.6.10/installed
+HDF5_FLAGS ?= -I$(HDF5_PATH)/include
+HDF5_LIBS  ?= -L$(HDF5_PATH)/lib -lhdf5 -lz
+HDF5_PLUGIN_FLAGS = -I$(HDF5_PLUGIN)
+
 GSL_PATH = /usr/local/scisoft
+GSL_FLAGS ?= -I$(GSL_PATH)/
+GSL_LIBS ?= -L$(GSL_PATH)/lib -lgslcblas -lgsl 
 
 SRC=./src/
 OBJ=./obj/
 LIB=./lib/
 BIN=./bin/
 
-CXXCFLAGS_NO_C = -Wall -ansi -O2 -g0 -ffast-math -fomit-frame-pointer -g
+CXXCFLAGS_NO_C = -Wall -ansi -O2 -g -ffast-math -fomit-frame-pointer
 CXXCFLAGS := $(CXXCFLAGS_NO_C) -c
 export CXXCFLAGS
 
 MACRODEFS = -DH5_USE_16_API
-MYLIBS = -L$(QHULL_PATH) -lqhull -L${GSL_PATH}/lib -lgslcblas -lgsl  $(HDF5_LIB) -lhdf5 -lz
-MYINCLUDE = -I$(KEYVALUE_PATH) -I$(QHULL_PATH) -I$(HDF5_PATH)  \
+MYLIBS = -L$(QHULL_PATH) -lqhull $(GSL_LIBS)  $(HDF5_LIBS)
+MYINCLUDE = -I$(KEYVALUE_PATH) -I$(QHULL_PATH) $(HDF5_PLUGIN_FLAGS) $(HDF5_FLAGS) \
             -I$(PLUGINS)/octree -I$(PLUGINS)/hilbert -I$(SRC) \
-            -I$(PLUGINS)/unit_sphere_tess/include $(HDF5_INCL) -I${GSL_PATH}/include
-
+            -I$(PLUGINS)/unit_sphere_tess/include $(GSL_FLAGS)
 ifeq ($(use_parallel_hdf5),yes)
   MACRODEFS += -D HDF5_PARALLEL
   OBJS = $(OBJ)h5w_parallel.o
@@ -51,7 +53,7 @@ OBJS += $(OBJ)SimpleX.o  $(OBJ)Structs.o $(OBJ)Common.o $(OBJ)rates.o	 \
 
 all: HEALPix QHull SimpleX
 
-amuse: HEALPix QHull amuse_interface
+amuse: HEALPix QHull SimpleX amuse_interface
 
 obj:
 	mkdir obj
@@ -85,17 +87,17 @@ $(OBJ)Common.o: $(SRC)Common.cpp $(SRC)Common.h
 $(OBJ)rates.o: $(SRC)rates.h $(SRC)rates.cpp
 	$(MPICXX) -o$(OBJ)rates.o -c $(SRC)rates.cpp $(CXXCFLAGS)
 
-$(OBJ)SimpleX.o: $(SRC)SimpleX.cpp $(SRC)SimpleX.h $(SRC)Structs.h $(SRC)Common.h ${SRC}rates.h
+$(OBJ)SimpleX.o: $(SRC)SimpleX.cpp $(SRC)SimpleX.h $(SRC)Structs.h $(SRC)Common.h $(SRC)rates.h
 	$(MPICXX) -o$(OBJ)SimpleX.o $(MYINCLUDE) $(MACRODEFS) -c $(SRC)SimpleX.cpp $(CXXCFLAGS) 
 
 $(OBJ)Main.o: $(SRC)Main.cpp $(SRC)Main.h $(SRC)SimpleX.h $(SRC)Common.h
 	$(MPICXX) -o$(OBJ)Main.o $(MYINCLUDE) -c $(SRC)Main.cpp $(CXXCFLAGS) $(MACRODEFS)
 
-$(OBJ)h5w_parallel.o: $(HDF5_PATH)/h5w_parallel.cpp $(HDF5_PATH)/h5w_parallel.h $(HDF5_PATH)/array_class.h
-	$(MPICXX) -o$(OBJ)h5w_parallel.o -c $(HDF5_PATH)/h5w_parallel.cpp $(CXXCFLAGS) $(MACRODEFS)
+$(OBJ)h5w_parallel.o: $(HDF5_PLUGIN)/h5w_parallel.cpp $(HDF5_PLUGIN)/h5w_parallel.h $(HDF5_PLUGIN)/array_class.h
+	$(MPICXX) -o$(OBJ)h5w_parallel.o -c $(HDF5_PLUGIN)/h5w_parallel.cpp $(CXXCFLAGS) $(MACRODEFS)
 
-$(OBJ)h5w_serial.o: $(HDF5_PATH)/h5w_serial.cpp $(HDF5_PATH)/h5w_serial.h $(HDF5_PATH)/array_class.h
-	$(MPICXX) -o$(OBJ)h5w_serial.o -c $(HDF5_PATH)/h5w_serial.cpp $(CXXCFLAGS) $(MACRODEFS) $(HDF5_INCL)
+$(OBJ)h5w_serial.o: $(HDF5_PLUGIN)/h5w_serial.cpp $(HDF5_PLUGIN)/h5w_serial.h $(HDF5_PLUGIN)/array_class.h
+	$(MPICXX) -o$(OBJ)h5w_serial.o -c $(HDF5_PLUGIN)/h5w_serial.cpp $(CXXCFLAGS) $(MACRODEFS) $(HDF5_FLAGS) $(HDF5_PLUGIN_FLAGS)
 
 amuse_interface: $(OBJ)amuse_interface.o 
 amuse_interface_gl: $(OBJ)amuse_interface_gl.o 

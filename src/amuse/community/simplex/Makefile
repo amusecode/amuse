@@ -1,7 +1,7 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
 AMUSE_DIR?=../../../..
--include ${AMUSE_DIR}/config.mk
+-include $(AMUSE_DIR)/config.mk
 
 MPICXX ?= mpicxx
 export MPICXX
@@ -22,12 +22,17 @@ HEALPIX_PATH = $(PLUGINS)/HEALPix/
 QHULL_PATH = $(PLUGINS)/QHull/
 
 HDF5_PATH = /Users/jppaarde/sw/hdf5-1.6.10/installed
-GSL_PATH = /usr/local/scisoft
+HDF5_FLAGS ?= -I$(HDF5_PATH)/include
+HDF5_LIBS  ?= -L$(HDF5_PATH)/lib -lhdf5 -lz
 
-LIBS =  -L${HDF5_PATH}/lib -lhdf5 -lz \
-        -L${QHULL_PATH} -lqhull \
-        -L${HEALPIX_PATH}/lib  -lhealpix_cxx \
-        -L${GSL_PATH}/lib -lgslcblas -lgsl 
+GSL_PATH = /usr/local/scisoft
+GSL_FLAGS ?= -I$(GSL_PATH)/
+GSL_LIBS ?= -L$(GSL_PATH)/lib -lgslcblas -lgsl 
+
+LIBS =  $(HDF5_LIBS) \
+        $(GSL_LIBS) \
+        -L$(QHULL_PATH) -lqhull \
+        -L$(HEALPIX_PATH)/lib  -lhealpix_cxx
 
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/

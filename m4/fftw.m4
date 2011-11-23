@@ -37,7 +37,9 @@ AC_DEFUN([AX_FFTW],[
                     
                     
                     save_CFLAGS="$CFLAGS"
+                    save_CPPFLAGS="$CPPFLAGS"
                     CFLAGS="$ac_FFTW_CFLAGS $save_CFLAGS"
+                    CPPFLAGS="$ac_FFTW_CFLAGS $save_CPPFLAGS"
                     AC_CHECK_HEADER(
                         [fftw3.h],
                         [FFTW_FLAGS="$ac_FFTW_CFLAGS"
@@ -45,6 +47,7 @@ AC_DEFUN([AX_FFTW],[
                         [AC_MSG_WARN([Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include.])]
                     )
                     CFLAGS="$save_CFLAGS"
+                    CPPFLAGS="$save_CPPFLAGS"
                     
                      save_LIBS="$LIBS"
                     LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads $save_LIBS"
