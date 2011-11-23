@@ -135,6 +135,10 @@ subroutine muse_reset(time)
  sphtreecount=-1
  ppropcount=0
  pordercount=0
+ dum=0 
+ !must set dum to zero before calling muse_find_particle, 
+ !not all fortran versions will reset
+ !the parameters to zero
  dum=muse_find_particle(dum, -1,-1,-1,dumm)
 
  input=0
