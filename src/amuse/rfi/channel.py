@@ -1489,18 +1489,19 @@ class IbisChannel(MessageChannel):
     def __init__(self, name_of_the_worker, legacy_interface_type=None, **options):
         MessageChannel.__init__(self, **options)
         
+        #logging.basicConfig(level=logging.DEBUG)
+        
         logging.getLogger("channel").debug("initializing IbisChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker + "_sockets"
         
-        if self.hostname == None:
-            self.hostname = 'local'
+        if self.hostname == None or self.hostname == 'local':
+            self.hostname = 'localhost'
             
         if self.number_of_workers == 0:
             self.number_of_workers = 1
             
-        logging.getLogger("channel").debug("number of workers is %d", self.number_of_workers)
-        logging.getLogger("channel").debug("number of nodes is %d", self.number_of_nodes)
+        logging.getLogger("channel").debug("number of workers is %d, number of nodes is %s", self.number_of_workers, self.number_of_nodes)
         
         self.daemon_host = 'localhost'    # Ibis deamon always running on the local machine
         self.daemon_port = 61575          # A random-but-fixed port number for the Ibis daemon
@@ -1527,11 +1528,15 @@ class IbisChannel(MessageChannel):
             
         self._is_inuse = False
         self.socket = None
+      
 
-#    no need to check if the worker is up to date, it may not be on this
-#    machine at all
-#    def _check_if_worker_is_up_to_date(self):
-#        pass
+    def check_if_worker_is_up_to_date(self, object):
+        if self.hostname != 'localhost':
+            return
+        
+        logging.getLogger("channel").debug("hostname = %s, checking for worker", self.hostname)
+        
+        MessageChannel.check_if_worker_is_up_to_date(self, object)
     
     def get_full_name_of_the_worker(self, type):
         if os.path.isabs(self.name_of_the_worker):
