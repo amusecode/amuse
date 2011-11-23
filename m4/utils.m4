@@ -23,13 +23,17 @@ AC_DEFUN([AX_GFORTRAN_VERSION], [
      [yes],
      [no])
   AS_IF([test "x$GCC" = "xyes"],[
+  
     AS_IF([test "x$ax_gcc_version_option" != "xno"],[
-      AC_CACHE_CHECK([gfortran version],[ax_cv_gcc_version],[
-        ax_cv_gcc_version="`gfortran -v 2>&1 |  grep gcc\ version | cut -d\  -f3`"
+      
+	    AC_MSG_CHECKING([checking gfortran version])
+        ax_cv_gcc_version="`$FC -v 2>&1 |  grep gcc\ version | cut -d\  -f3`"
         AS_IF([test "x$ax_cv_gcc_version" = "x"],[
           ax_cv_gcc_version=""
-        ])
-      ])
+          AC_MSG_RESULT([could not determine version])
+        ], [
+          AC_MSG_RESULT([$ax_cv_gcc_version])])
+      
       GFORTRAN_VERSION=$ax_cv_gcc_version
     ])
   ])

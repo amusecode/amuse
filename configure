@@ -5155,25 +5155,26 @@ fi
 
   if test "x$GCC" = "xyes"; then
 
+
     if test "x$ax_gcc_version_option" != "xno"; then
 
-      { echo "$as_me:$LINENO: checking gfortran version" >&5
-echo $ECHO_N "checking gfortran version... $ECHO_C" >&6; }
-if test "${ax_cv_gcc_version+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
 
-        ax_cv_gcc_version="`gfortran -v 2>&1 |  grep gcc\ version | cut -d\  -f3`"
+	    { echo "$as_me:$LINENO: checking checking gfortran version" >&5
+echo $ECHO_N "checking checking gfortran version... $ECHO_C" >&6; }
+        ax_cv_gcc_version="`$FC -v 2>&1 |  grep gcc\ version | cut -d\  -f3`"
         if test "x$ax_cv_gcc_version" = "x"; then
 
           ax_cv_gcc_version=""
+          { echo "$as_me:$LINENO: result: could not determine version" >&5
+echo "${ECHO_T}could not determine version" >&6; }
 
-fi
+else
 
-
-fi
-{ echo "$as_me:$LINENO: result: $ax_cv_gcc_version" >&5
+          { echo "$as_me:$LINENO: result: $ax_cv_gcc_version" >&5
 echo "${ECHO_T}$ax_cv_gcc_version" >&6; }
+fi
+
+
       GFORTRAN_VERSION=$ax_cv_gcc_version
 
 fi
