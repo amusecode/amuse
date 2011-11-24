@@ -1,0 +1,51 @@
+Index: mpiamrvac/src/mpiamrvac/src/amr_coarsen_refine.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/amr_coarsen_refine.t	2010-11-29 17:05:48.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/amr_coarsen_refine.t	2011-11-24 09:57:42.000000000 +0100
+@@ -122,7 +122,7 @@
+ ! sure that neighbors will not differ more than one level of refinement.
+ 
+ if (nbufferx^D/=0|.or.) then
+-   call MPI_ALLREDUCE(MPI_IN_PLACE,refine,ngridshi*npe,MPI_LOGICAL,MPI_LOR, &
++   call MPI_ALLREDUCE(refine,MPI_IN_PLACE,ngridshi*npe,MPI_LOGICAL,MPI_LOR, &
+                       icomm,ierrmpi)
+ else
+    call MPI_ALLGATHER(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,refine,ngridshi, &
+@@ -170,7 +170,7 @@
+ 
+ call MPI_ALLGATHER(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,coarsen,ngridshi, &
+                    MPI_LOGICAL,icomm,ierrmpi)
+-!!call MPI_ALLREDUCE(MPI_IN_PLACE,coarsen2,ngridshi*npe,MPI_LOGICAL,MPI_LOR, &
++!!call MPI_ALLREDUCE(coarsen2,MPI_IN_PLACE,ngridshi*npe,MPI_LOGICAL,MPI_LOR, &
+ !!                      icomm,ierrmpi)
+ 
+ !!coarsen(1:ngridshi,:)=coarsen2(1:ngridshi,:)
+Index: mpiamrvac/src/mpiamrvac/src/convert.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/convert.t	2010-12-16 15:40:45.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/convert.t	2011-11-24 09:52:18.000000000 +0100
+@@ -2325,9 +2325,9 @@
+    end do
+    NumGridsOnLevel_mype(level,0:npe-1)=0
+    NumGridsOnLevel_mype(level,mype) = NumGridsOnLevel(level)
+-   call MPI_ALLREDUCE(MPI_IN_PLACE,NumGridsOnLevel_mype(level,0:npe-1),npe,MPI_INTEGER,&
++   call MPI_ALLREDUCE(NumGridsOnLevel_mype(level,0:npe-1),MPI_IN_PLACE,npe,MPI_INTEGER,&
+                  MPI_MAX,icomm,ierrmpi)
+-   call MPI_ALLREDUCE(MPI_IN_PLACE,NumGridsOnLevel(level),1,MPI_INTEGER,MPI_SUM, &
++   call MPI_ALLREDUCE(NumGridsOnLevel(level),MPI_IN_PLACE,1,MPI_INTEGER,MPI_SUM, &
+                    icomm,ierrmpi)
+ end do
+ 
+Index: mpiamrvac/src/mpiamrvac/src/setdt.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/setdt.t	2010-05-19 16:43:52.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/setdt.t	2011-11-24 09:52:59.000000000 +0100
+@@ -110,7 +110,7 @@
+       storeeqparch=min(storeeqparch,courantpar/dt&
+                                 *{^D&minval(pgeo(igrid)%dx(ixM^T,^D))} )
+    end do
+-   call MPI_ALLREDUCE(MPI_IN_PLACE,storeeqparch,1,&
++   call MPI_ALLREDUCE(storeeqparch,MPI_IN_PLACE,1,&
+                          MPI_DOUBLE_PRECISION,MPI_MIN,icomm,ierrmpi)
+ }
+ 

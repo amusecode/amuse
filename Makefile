@@ -48,6 +48,7 @@ distclean:
 	-find src -type d -name "__pycache__" -exec rm -Rf \{} \;
 	-find src -type d -name "ccache" -exec rm -Rf \{} \;
 	rm -Rf build
+	-rm amuse.sh
 
 tests:
 	$(PYTHON) setup.py tests

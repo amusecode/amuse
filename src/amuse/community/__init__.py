@@ -64,7 +64,7 @@ def ensure_data_directory_exists(directory):
         previous = current
         current = os.path.dirname(current)
     
-    print stack_to_make
+    print stack_to_makeol; 
     for x in reversed(stack_to_make):
         if(x):
             os.mkdir(x)
