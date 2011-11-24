@@ -6543,7 +6543,7 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
   double N_H = ( site.get_n_HI() + site.get_n_HII() ) * UNIT_D * site.get_volume() * UNIT_V;
 
   //inclusion of adiabatic cooling term from hydro
-  double duDtAdiabatic = 0.0;//BLA
+  double duDtAdiabatic = site.get_dinternalEnergydt();
   
   //divide this by the internal energy to obtain a constant quantity
   double u_0 = site.get_internalEnergy();

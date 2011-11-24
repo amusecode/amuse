@@ -350,7 +350,7 @@ class Site : public Vertex {
   float n_HI;                       //!< Number density of neutral hydrogen
   float n_HII;                      //!< Number density of ionised hydrogen
   float internalEnergy;             //!< Internal energy of the gas
-  float dinternalEnergydt;          //!< Rate of change of internal energy
+  float dinternalEnergydt;          //!< Rate of change of internal energy (adiabatic)
   float clumping;                   //!< Clumping factor of the gas
   bool ballistic;                   //!< Ballistic transport or direction conserving?
   bool source;                      //!< Source or not?
