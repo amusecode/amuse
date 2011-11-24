@@ -37,6 +37,7 @@ class GenerateInstallIni(Command):
         ('build-dir=', 'd', "directory to install to"),
         ('install-data=', None, "installation directory for data files"),
         ('force', 'f', "force installation (overwrite existing files)"),
+        ('root=', None, "install everything relative to this alternate root directory"),
     )
     
     boolean_options = ['force']
@@ -45,23 +46,30 @@ class GenerateInstallIni(Command):
         self.build_dir = None
         self.install_data = None
         self.force = False
+        self.root = None
         
     def finalize_options(self):
         self.set_undefined_options('install',
             ('build_lib', 'build_dir'),
             ('install_data', 'install_data'),
+            ('root', 'root'),
             ('force', 'force'),
         )
         
     def run(self):
         outfilename = os.path.join(self.build_dir, 'amuse', 'amuserc')
-         
+        
+        
+        data_dir = os.path.join(self.install_data,'share','amuse','data')
+        if not self.root is None:
+            data_dir = os.path.relpath(data_dir,self.root)
+            data_dir =  os.path.join('/',data_dir)
         installinilines = []
         installinilines.append('[channel]')
         installinilines.append('must_check_if_worker_is_up_to_date=0')
         #installinilines.append('worker_code_suffix=".so"')
         installinilines.append('[data]')
-        installinilines.append('input_data_root_directory={0}'.format(os.path.join(self.install_data,'share','amuse','data')))
+        installinilines.append('input_data_root_directory={0}'.format(data_dir))
         installinilines.append('output_data_root_directory=amuse-data')
         
         self.mkpath(os.path.join(self.build_dir, 'amuse'))
