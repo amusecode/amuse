@@ -430,16 +430,16 @@ int get_mass(int index_of_the_particle, double * mass) {
 int get_densest_neighbor(int index_of_the_particle, int * index_of_densest_neighbor) {
   if(index_of_the_particle > highest_index) return -1;
   AmuseParticle * p = particlesMap[index_of_the_particle];
-  if (p->neighbor == -1 ) return -1;
+  if (p->neighbor == -1 ) return 0;
   *index_of_densest_neighbor = p->neighbor;
   return 0;
 }
 
 int get_group_id(int index_of_the_particle, int * group_id) {
   if (!bHopDone) return -1;
-  if(index_of_the_particle > highest_index) return -1;
+  if(index_of_the_particle > highest_index) return -2;
   AmuseParticle * p = particlesMap[index_of_the_particle];
-  if (p->group == -1){ *group_id = p->group; return -1; }
+  if (p->group == -1){ *group_id = p->group; return 0; }
   *group_id = p->group;
   return 0;
 }
