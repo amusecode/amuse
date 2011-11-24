@@ -42,9 +42,6 @@ def ensure_data_directory_exists(directory):
     directory = os.path.expanduser(directory)
     directory = os.path.expandvars(directory)
     
-    print __file__
-    print "will make dir:", directory
-    print "will make dir:", os.path.abspath(directory)
     if os.path.exists(directory):
         if os.path.isdir(directory):
             return
@@ -64,7 +61,6 @@ def ensure_data_directory_exists(directory):
         previous = current
         current = os.path.dirname(current)
     
-    print stack_to_makeol; 
     for x in reversed(stack_to_make):
         if(x):
             os.mkdir(x)
