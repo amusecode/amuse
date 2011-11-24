@@ -212,14 +212,14 @@ class HalogenInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     @legacy_function
     def get_random_seed():
         function = LegacyFunctionSpecification()
-        function.addParameter('value', dtype='float64', direction=function.OUT)
+        function.addParameter('value', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
     
     @legacy_function
     def set_random_seed():
         function = LegacyFunctionSpecification()
-        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.addParameter('value', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
     
@@ -396,7 +396,7 @@ class Halogen(CommonCode):
             "set_random_seed",
             "random_seed",
             "the initial seed to be used by the random number generator",
-            default_value = 42.0 | units.none
+            default_value = 42 | units.none
         )
         
         object.add_boolean_parameter(

@@ -2,7 +2,7 @@
 #define MAXLEN_PATH 250
 
 // Default parameters:
-DOUBLE randomseed = 42.0;
+INT randomseed = 42;
 
 // Other globals:
 INT outputgridr, outputgriddf;
@@ -204,7 +204,7 @@ int generate_particles(){
         fprintf(file,"Mtheo               = "OFD3" MU\n",bh->mass + halo->sp->M);
         fprintf(file,"Msamp               = "OFD3" MU\n",gi->stuff->Mp);
         fprintf(file,"(Msamp-Mtheo)/Mtheo = "OFD3"\n",gi->stuff->Mp/(bh->mass + halo->sp->M)-1.0);
-        fprintf(file,"Random seed         = "OFD3"\n",randomseed);
+        fprintf(file,"Random seed         = "OFI1"\n",randomseed);
         fprintf(file,"\n");
         fprintf(file,"Times for individual steps\n\n");
         fprintf(file,"Calculation of halo properties and initialisation of grid in r: "OFD1" seconds.\n",t1-t0);
@@ -357,11 +357,11 @@ int set_black_hole_mass(double black_hole_mass){
     return 0;
 }
 
-int get_random_seed(double *random_seed_out){
+int get_random_seed(int *random_seed_out){
     *random_seed_out = randomseed;
     return 0;
 }
-int set_random_seed(double random_seed_in){
+int set_random_seed(int random_seed_in){
     randomseed = random_seed_in;
     return 0;
 }

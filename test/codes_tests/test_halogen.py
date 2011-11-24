@@ -33,7 +33,7 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEquals(instance.set_model_beta(5.0),  0)
         self.assertEquals(instance.set_model_gamma(0.0), 0)
         self.assertEquals(instance.set_target_number_of_particles(100), 0)
-        self.assertEquals(instance.set_random_seed(1.0), 0)
+        self.assertEquals(instance.set_random_seed(1), 0)
         self.assertEquals(instance.set_total_mass(9.0),  0)
         self.assertEquals(instance.set_scale_radius(9.0), 0)
         self.assertEquals(instance.set_cutoff_radius(9.0), 0)
@@ -44,7 +44,7 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEquals([5.0, 0], instance.get_model_beta().values())
         self.assertEquals([0.0, 0], instance.get_model_gamma().values())
         self.assertEquals([100, 0], instance.get_target_number_of_particles().values())
-        self.assertEquals([1.0, 0], instance.get_random_seed().values())
+        self.assertEquals([1, 0], instance.get_random_seed().values())
         self.assertEquals([9.0, 0], instance.get_total_mass().values())
         self.assertEquals([9.0, 0], instance.get_scale_radius().values())
         self.assertEquals([9.0, 0], instance.get_cutoff_radius().values())
@@ -63,7 +63,7 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEquals(instance.set_model_beta(5.0), 0)
         self.assertEquals(instance.set_model_gamma(0.0), 0)
         self.assertEquals(instance.set_target_number_of_particles(number_of_particles), 0)
-        self.assertEquals(instance.set_random_seed(1.0), 0)
+        self.assertEquals(instance.set_random_seed(1), 0)
         self.assertEquals(instance.set_output_path(instance.get_output_directory()), 0)
         self.assertEquals(instance.commit_parameters(), 0)
         
@@ -100,7 +100,7 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEquals(instance.set_model_beta(5.0), 0)
         self.assertEquals(instance.set_model_gamma(0.0), 0)
         self.assertEquals(instance.set_target_number_of_particles(1000), 0)
-        self.assertEquals(instance.set_random_seed(1.0), 0)
+        self.assertEquals(instance.set_random_seed(1), 0)
         self.assertEquals(instance.set_write_output_flag(1.0), 0)
         
         self.assertEquals(instance.get_output_basename().values(), ["halogen", 0])
@@ -166,7 +166,7 @@ class HalogenTests(TestWithMPI):
             self.assertFalse(value is getattr(instance.parameters, par))
         
         for par, value in [('alpha', -1.0), ('beta', -1.0), ('gamma', -1.0),
-                ('number_of_particles', -1), ('random_seed', 42.0)]:
+                ('number_of_particles', -1), ('random_seed', 42)]:
             self.assertEquals(value | units.none, getattr(instance.parameters, par))
             setattr(instance.parameters, par, 1 | units.none)
             self.assertEquals(1 | units.none, getattr(instance.parameters, par))
@@ -214,10 +214,11 @@ class HalogenTests(TestWithMPI):
         instance.parameters.beta  = 5.0
         instance.parameters.gamma = 0.0
         instance.parameters.number_of_particles = number_of_particles
-        instance.parameters.random_seed = 1.0
+        instance.parameters.random_seed = 1
         instance.commit_parameters()
         instance.generate_particles()
         self.assertEquals(len(instance.particles), number_of_particles)
+        print instance.particles.x
         self.assertAlmostEquals(instance.particles.total_mass(), 1.0 | nbody_system.mass)
         self.assertAlmostEquals(instance.particles.kinetic_energy(), 
             #0.146972646724 | nbody_system.energy) # for number_of_particles = 1000
@@ -241,14 +242,14 @@ class HalogenTests(TestWithMPI):
         instance.parameters.beta  = 5.0
         instance.parameters.gamma = 0.0
         instance.parameters.number_of_particles = number_of_particles
-        instance.parameters.random_seed = 1.0
+        instance.parameters.random_seed = 1
         instance.commit_parameters()
         
         instance.generate_particles()
         set1 = instance.particles.copy()
         self.assertEquals(len(set1), number_of_particles)
         
-        instance.parameters.random_seed = 1.0
+        instance.parameters.random_seed = 1
         instance.generate_particles()
         set2 = instance.particles.copy()
         self.assertEquals(len(set2), number_of_particles)
@@ -282,7 +283,7 @@ class HalogenTests(TestWithMPI):
         instance.parameters.beta  = 5.0
         instance.parameters.gamma = 0.0
         instance.parameters.number_of_particles = number_of_particles
-        instance.parameters.random_seed = 1.0
+        instance.parameters.random_seed = 1
         instance.commit_parameters()
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
         instance.overridden().generate_particles()
@@ -302,11 +303,11 @@ class HalogenTests(TestWithMPI):
         instance.parameters.beta  = 5.0
         instance.parameters.gamma = 0.0
         instance.parameters.number_of_particles = number_of_particles
-        instance.parameters.random_seed = 1.0
+        instance.parameters.random_seed = 1
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
         self.assertEquals(instance.get_number_of_particles_updated(), 0)
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
-        instance.parameters.random_seed = 2.0
+        instance.parameters.random_seed = 2
         self.assertEquals(instance.get_name_of_current_state(), 'PARAMETER_CHANGE_B')
         self.assertEquals(instance.get_number_of_particles_updated(), 0)
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
@@ -329,7 +330,7 @@ class HalogenTests(TestWithMPI):
         instance.parameters.beta  = 5.0
         instance.parameters.gamma = 5.0
         instance.parameters.number_of_particles = number_of_particles
-        instance.parameters.random_seed = 1.0
+        instance.parameters.random_seed = 1
         self.assertRaises(exceptions.AmuseException, instance.commit_parameters, expected_message = 
             "Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
             "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
