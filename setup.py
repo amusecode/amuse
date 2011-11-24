@@ -117,14 +117,29 @@ def find_data_files(srcdir, destdir, *wildcards, **kw):
 
 all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive = True)
 
+packages = find_packages('src')
+packages.extend(['amuse.tests.' + x for x in find_packages('test')])
+packages.extend(['amuse.examples.' + x for x in find_packages('examples')])
+
+package_data = {
+    'amuse.rfi': ['*.template'],
+    'amuse.tests.core_tests': [
+        '*.txt', '*.dyn', '*.ini',
+         '*.dat', 'gadget_snapshot'
+    ],
+    'amuse.tests.ticket_tests': [
+        '*.out'
+    ]
+}
+
 setup(
     name = 'amuse',
     version = '5.1',
     cmdclass = mapping_from_command_name_to_command_class,
     ext_modules = extensions,
-    package_dir = {'': 'src'},
-    packages =  find_packages('src'),
-    package_data={'amuse.rfi': ['*.template']},
+    package_dir = {'': 'src', 'amuse.tests' :'test', 'amuse.examples' : 'examples'},
+    packages =  packages,
+    package_data = package_data,
     data_files = all_data_files,
     classifiers = [
         'Development Status :: 4 - Beta',
