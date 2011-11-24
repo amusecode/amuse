@@ -58,6 +58,7 @@ clean:
 	rm -f *.o *.po *.pyc worker_code.cc worker_code.h worker_code worker_code_periodic
 	rm -f gadget2_worker gadget2_worker_periodic gadget2_worker_sockets worker_code-sockets.cc
 	rm -f gadget2_worker_periodic_sockets
+	rm -rf *.dSYM
 	make -C $(SRCDIR) clean
 	rm -Rf $(PERIODIC_BUILDDIR)
 	rm -Rf $(BUILDDIR)

@@ -7,13 +7,13 @@ CUDAPATH    ?= $(CUDA_TK)
 CUDASDKPATH ?= $(CUDA_SDK)
 CUDAINCLUDE ?= -I$(CUDAPATH)/include -I$(CUDASDKPATH)/common/inc
 
-CXX  := g++
-CC   := gcc
-NVCC := $(CUDAPATH)/bin/nvcc
+CXX  ?= g++
+CC   ?= gcc
+NVCC ?= $(CUDAPATH)/bin/nvcc
 
 
-NVCCFLAGS :=  -D_CONSOLE -O0 -g -D_DEBUG  -maxrregcount=32 $(CUDAINCLUDE)
-CXXFLAGS  := -g -DNGB $(CUDAINCLUDE)
+NVCCFLAGS :=  -D_CONSOLE -O0 -g -D_DEBUG  -maxrregcount=32 $(CUDAINCLUDE) -m64
+CXXFLAGS  := -g -DNGB $(CUDAINCLUDE) -m64
 LDFLAGS   := 
 
 OBJS = \
