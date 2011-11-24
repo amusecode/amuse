@@ -2395,9 +2395,9 @@ CONTAINS
             call MPI_Reduce(y,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
             call MPI_Reduce(z,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         else
-            call MPI_Reduce(x , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(y , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(z , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, x, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, y, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, z, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         
         get_position_of_index=0
@@ -2444,9 +2444,9 @@ CONTAINS
             call MPI_Reduce(j,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
             call MPI_Reduce(k,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         else
-            call MPI_Reduce(i , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(j , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(k , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, i, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, j, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, k, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         
         get_index_of_position=-2
@@ -2512,7 +2512,7 @@ CONTAINS
         if(mype .GT. 0) then
             call MPI_Reduce(level,  0, 1, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         else
-            call MPI_Reduce(level , MPI_IN_PLACE, 1, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, level, 1, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         
         get_level_of_grid = 0
@@ -2554,9 +2554,9 @@ CONTAINS
             call MPI_Reduce(dx2,  0, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
             call MPI_Reduce(dx3,  0, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         else
-            call MPI_Reduce(dx1 , MPI_IN_PLACE, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(dx2 , MPI_IN_PLACE, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(dx3 , MPI_IN_PLACE, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, dx1, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, dx2, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, dx3, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         
         get_cell_size_of_grid = 0
@@ -2646,11 +2646,11 @@ CONTAINS
             call MPI_Reduce(m3,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
             call MPI_Reduce(en,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         else
-            call MPI_Reduce(rho , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(m1 , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(m2 , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(m3 , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(en , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, rho, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m1, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m2, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m3, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, en, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         
         
@@ -2696,7 +2696,7 @@ CONTAINS
         if(mype .GT. 0) then
             call MPI_Reduce(rho,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         else
-            call MPI_Reduce(rho , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, rho, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         get_grid_density = 0
     end function
@@ -2744,9 +2744,9 @@ CONTAINS
             call MPI_Reduce(m2,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
             call MPI_Reduce(m3,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         else
-            call MPI_Reduce(m1 , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(m2 , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
-            call MPI_Reduce(m3 , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m1, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m2, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m3, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         
         get_grid_momentum_density = 0
@@ -2791,7 +2791,7 @@ CONTAINS
         if(mype .GT. 0) then
             call MPI_Reduce(en,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         else
-            call MPI_Reduce(en , MPI_IN_PLACE, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, en, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         
         get_grid_energy_density = 0

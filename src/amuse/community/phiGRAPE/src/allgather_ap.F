@@ -46,12 +46,12 @@ C---  NOTE: Gatherv + Bcast is equivalent to Allgatherv but no extra
 C---        memory is needed 
       if(myRank .eq. rootRank) then
       
-        CALL MPI_Gatherv(ind_act, n_act_loc,MPI_INTEGER, MPI_IN_PLACE,
+        CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc,MPI_INTEGER, ind_act,
      $                 n_act_v,
      $                 disp_act_v, MPI_INTEGER,rootRank,
      $                                           MPI_COMM_WORLD,ierr)
       else       
-        CALL MPI_Gatherv(ind_act, n_act_loc, MPI_INTEGER, MPI_IN_PLACE,
+        CALL MPI_Gatherv(ind_act, n_act_loc, MPI_INTEGER, ind_act,
      $                  n_act_v,disp_act_v, MPI_INTEGER,rootRank,
      $                                           MPI_COMM_WORLD,ierr)
       endif
@@ -71,13 +71,12 @@ C---  allgather the predicted positions and velocities of active particles
     
      
       if(myRank .eq. rootRank) then
-      CALL MPI_Gatherv(h_act, n_act_loc, MPI_DOUBLE_PRECISION,
-     $                 MPI_IN_PLACE, 
+      CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc, MPI_DOUBLE_PRECISION,
+     $                 h_act, 
      $                 n_act_v, disp_act_v, MPI_DOUBLE_PRECISION,
      $                 rootRank,MPI_COMM_WORLD,ierr)
       else
-      CALL MPI_Gatherv(h_act, n_act_loc, MPI_DOUBLE_PRECISION, 
-     $                 MPI_IN_PLACE,
+      CALL MPI_Gatherv(h_act, n_act_loc, MPI_DOUBLE_PRECISION, h_act, 
      $                 n_act_v, disp_act_v, MPI_DOUBLE_PRECISION,
      $                 rootRank,MPI_COMM_WORLD,ierr)
       endif
