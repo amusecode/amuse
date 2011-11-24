@@ -7,10 +7,10 @@ MPICXX ?= mpicxx
 MPICC ?= mpicc
 
 # (ugly) fix for MacPorts+OpenMPI compilers
-ifneq (,$(shell type -P openmpicxx))
-	MPICXX = openmpicxx
-	MPICC = openmpicc
-endif
+#ifneq (,$(shell type -P openmpicxx))
+#	MPICXX = openmpicxx
+#	MPICC = openmpicc
+#endif
 
 # -D_GNU_SOURCE is needed to define M_SQRT2 when compiling on certain machines (e.g. gpu-1.strw); may not be necessary anymore
 CCFLAGS += -O2 -Wall -std=gnu99 -D_GNU_SOURCE
