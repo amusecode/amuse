@@ -867,7 +867,7 @@ function amuse_get_dinternal_energy_dt(id,u) result(ret)
   endif  
   if(nbexist(p).NE.id) call terror("id error 2")
   if(uentropy) then
-    u=-csound(p)*hsmdivv(p)/(gamma*hsmooth(p))+dentdt(p)/gamma1*rho(p)**gamma1
+    u=-csound(p)**2*hsmdivv(p)/(gamma*hsmooth(p))+dentdt(p)/gamma1*rho(p)**gamma1
   else
     u=dethdt(p)
   endif
