@@ -609,7 +609,8 @@ subroutine pethdotaccsphco(p,n)
   lcsound=csound(p)
   call ethdotaccsphco(n,h,ppos,pvel,pacc,lrho,lcsound,ldrhodh,ldethdt,imumax)
   acc(p,1:3)=acc(p,1:3)+pacc(1:3)
-  if(.NOT.isotherm) dethdt(p)=ldethdt
+!  if(.NOT.isotherm) dethdt(p)=ldethdt
+  dethdt(p)=ldethdt
   mumaxdvh(p)=imumax
 end
 
