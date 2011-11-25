@@ -13,7 +13,7 @@ CXXFLAGS ?= $(CFLAGS)
 
 NVCC      ?= $(CUDA_TK)/bin/nvcc
 
-NVCCFLAGS ?= -D_DEBUG -m64 --compiler-options -fno-inline \
+NVCCFLAGS ?= -D_DEBUG --compiler-options -fno-inline \
 		--maxrregcount=32 -O0 -g -I$(CUDA_SDK)/common/inc
 
 #device emulation version:
