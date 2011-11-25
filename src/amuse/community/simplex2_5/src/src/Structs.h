@@ -630,6 +630,7 @@ bool compare_process_send_neigh(const Send_Neigh& x, const Send_Neigh& y);
 
 //!compare Send_Intensity class by process for sort routine
 bool compare_process_send_intensity(const Send_Intensity& x, const Send_Intensity& y);
+bool compare_index_send_intensity(const Send_Intensity& x, const Send_Intensity& y);
 
 //!compare Site_Remove class by process for sort routine
 bool compare_process_site_remove(const Site_Remove& x, const Site_Remove& y);

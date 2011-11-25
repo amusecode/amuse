@@ -301,6 +301,10 @@ bool compare_vertex_id_send_neigh(const Send_Neigh& x, const Send_Neigh& y){
 bool compare_process_send_intensity(const Send_Intensity& x, const Send_Intensity& y){
   return x.get_process() < y.get_process();
 }
+//overload < operator to use sort function
+bool compare_index_send_intensity(const Send_Intensity& x, const Send_Intensity& y){
+  return x.get_id() < y.get_id();
+}
 
 //overload < operator to use sort function
 bool compare_process_site_remove(const Site_Remove& x, const Site_Remove& y){

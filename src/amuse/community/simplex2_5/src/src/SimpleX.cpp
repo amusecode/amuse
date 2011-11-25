@@ -5620,7 +5620,7 @@ void SimpleX::send_site_intensities(){
       }
 
     }
-            
+           
     //sort the site updates on process
     sort( intensitiesToSend.begin(), intensitiesToSend.end(), compare_process_send_intensity );
         
@@ -5707,6 +5707,9 @@ void SimpleX::send_site_intensities(){
 
   }//while there are sites to send
   
+  //sort the received intensities on vertex id
+  //sort( intensities_recv.begin(), intensities_recv.end(), compare_index_send_intensity );
+  
   //insert in vectors
   vector<Send_Intensity>::iterator it2=intensities_recv.begin(); 
   while(it2!=intensities_recv.end() ){
@@ -5714,18 +5717,22 @@ void SimpleX::send_site_intensities(){
     unsigned long long int index =  it2->get_id();
     intens_ids.push_back( index );
 
-    for(unsigned int j=0; j<numPixels; j++){
-      for(short int f=0; f<numFreq; f++){
-      //check to be sure
-        if( it2->get_id() != index ){
-          cerr << " (" << COMM_RANK << ") Error in sendSiteIntensities(): Not all bins have been received " << endl;
-          cerr << "     Direction bin: " << it2->get_neighId() << " Frequency bin: " << it2->get_freq_bin() << endl;
-          MPI::COMM_WORLD.Abort(-1);
-        }
+    //create space for the frequencies
+    site_intensities.insert( site_intensities.end(), numFreq*numPixels, 0.0 );
 
-        site_intensities.push_back( it2->get_intensityIn() );
-        it2++;
+    for(unsigned int j=0; j<numPixels*numFreq; j++){
+
+      unsigned int pos = it2->get_freq_bin() + it2->get_neighId()*numFreq + site_intensities.size() - numFreq*numPixels;
+          
+      //check to be sure
+      if( it2->get_id() != index ){
+        cerr << " (" << COMM_RANK << ") Error in sendSiteIntensities(): Not all bins have been received " << endl;
+        cerr << "     Direction bin: " << it2->get_neighId() << " Frequency bin: " << it2->get_freq_bin() << endl;
+        MPI::COMM_WORLD.Abort(-1);
       }
+
+      site_intensities[pos] =  it2->get_intensityIn();
+      it2++;
     }
   }
   
