@@ -6548,7 +6548,8 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
   //divide this by the internal energy to obtain a constant quantity
   double u_0 = site.get_internalEnergy();
 
-  duDtAdiabatic = (u_0 > 0.0)? duDtAdiabatic/u_0 : 0.0;
+  // not a good idea (shock heating terms)
+  // duDtAdiabatic = (u_0 > 0.0)? duDtAdiabatic/u_0 : 0.0;
   
   //loop until end time is reached 
   while( t < t_end ){
@@ -6561,9 +6562,10 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
 
     //total cooling inside this cell per second
     double C = cooling_rate( site ); 
-
+    
     //change in internal energy per second per unit mass
-    double du = duDtAdiabatic*u + (H - C)/(N_H * m_H);
+    double du = duDtAdiabatic + (H - C)/(N_H * m_H);
+    // removed *u
 
     //determine heating time scale
     t_heat = ( fabs(du) > 0.0 ) ?  u/fabs(du) : 1.e5*UNIT_T; 
