@@ -55,7 +55,7 @@ int cleanup_code(){
 int commit_parameters(){
     commit_parameters_result = 0;
     fprintf(stderr,"Checking parameters, calculating halo properties and initialising grid in r... \n");
-    srand(randomseed);
+    srand48(randomseed);
     halo->sp->rcutoff = input_cutoff_radius;
     
     /*

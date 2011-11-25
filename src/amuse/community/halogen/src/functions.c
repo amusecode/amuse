@@ -228,7 +228,8 @@ DOUBLE lininterpolate(INT n, const DOUBLE *gridx, const DOUBLE *gridy, DOUBLE x)
 
 DOUBLE rand01() {
 
-    return ( ((DOUBLE) rand()) / ((DOUBLE) RAND_MAX) );
+    return drand48();
+//    return ( ((DOUBLE) rand()) / ((DOUBLE) RAND_MAX) );
     }
 
 /* 

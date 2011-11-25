@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 	}
 
     fprintf(stderr,"Checking parameters, calculating halo properties and initialising grid in r... \n");
-    srand(randomseed);
+    srand48(randomseed);
 
     /*
     ** Check main input parameters

@@ -218,17 +218,13 @@ class HalogenTests(TestWithMPI):
         instance.commit_parameters()
         instance.generate_particles()
         self.assertEquals(len(instance.particles), number_of_particles)
-        print instance.particles.x
         self.assertAlmostEquals(instance.particles.total_mass(), 1.0 | nbody_system.mass)
         self.assertAlmostEquals(instance.particles.kinetic_energy(), 
-            #0.146972646724 | nbody_system.energy) # for number_of_particles = 1000
-            0.164458665999 | nbody_system.energy) # for number_of_particles = 100
+            0.17345836639 | nbody_system.energy)
         self.assertAlmostEquals(instance.particles.potential_energy(G = nbody_system.G), 
-            #-0.302450766675 | nbody_system.energy) # for number_of_particles = 1000
-            -0.273350349603 | nbody_system.energy) # for number_of_particles = 100
+            -0.310395778644 | nbody_system.energy)
         self.assertAlmostEquals(instance.particles.virial_radius(), 
-            #1.65316162196 | nbody_system.length) # for number_of_particles = 1000
-            1.82915441932 | nbody_system.length) # for number_of_particles = 100
+            1.61084664935 | nbody_system.length)
         
         instance.cleanup_code()
         instance.stop()
@@ -264,7 +260,7 @@ class HalogenTests(TestWithMPI):
         self.assertEquals(len(set3), number_of_particles)
         self.assertEquals(set1.mass, set3.mass)
         self.assertRaises(self.failureException, self.assertEquals, set1.x, set3.x)
-        self.assertAlmostEquals(abs(set1.x).median(), abs(set3.x).median(), 1)
+        self.assertIsOfOrder(abs(set1.x).median(), abs(set3.x).median(), 1)
         self.assertAlmostEquals(abs(set1.vy).median(), abs(set3.vy).median(), 1)
         
         instance.cleanup_code()
