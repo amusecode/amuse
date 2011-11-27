@@ -5708,7 +5708,7 @@ void SimpleX::send_site_intensities(){
   }//while there are sites to send
   
   //sort the received intensities on vertex id
-  //sort( intensities_recv.begin(), intensities_recv.end(), compare_index_send_intensity );
+  sort( intensities_recv.begin(), intensities_recv.end(), compare_index_send_intensity );
   
   //insert in vectors
   vector<Send_Intensity>::iterator it2=intensities_recv.begin(); 
@@ -5728,6 +5728,8 @@ void SimpleX::send_site_intensities(){
       if( it2->get_id() != index ){
         cerr << " (" << COMM_RANK << ") Error in sendSiteIntensities(): Not all bins have been received " << endl;
         cerr << "     Direction bin: " << it2->get_neighId() << " Frequency bin: " << it2->get_freq_bin() << endl;
+        cerr << "     Index: " << index << endl;
+        cerr << "     Total number of intensities received: " << intensities_recv.size() << endl;
         MPI::COMM_WORLD.Abort(-1);
       }
 
