@@ -12,7 +12,7 @@ class NewHalogenModelTests(TestWithMPI):
         self.assertEquals(len(particles), number_of_particles)
         self.assertAlmostEquals(particles.total_mass(), 1.0 | nbody_system.mass)
         self.assertAlmostEquals(particles.kinetic_energy(), 
-            0.164458665999 | nbody_system.energy) # for number_of_particles = 100
+            0.17345836639 | nbody_system.energy) # for number_of_particles = 100
         
         self.assertRaises(AmuseException, new_halogen_model, number_of_particles, expected_message = 
             "Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
