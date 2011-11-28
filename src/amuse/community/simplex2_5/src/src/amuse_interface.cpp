@@ -342,7 +342,8 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
     
   if(dt > 0){
     //printf("dt, UNIT_T: %g %g \n", dt, UNIT_T);
-    numSweeps=dt/UNIT_T+1;
+    numSweeps=dt/UNIT_T;
+    if(numSweeps==0) numSweeps=1;
     //printf("proc %d working for %d sweeps\n",COMM_RANK, numSweeps);
     radiation_transport(1);
     total_time+=numSweeps*UNIT_T;
