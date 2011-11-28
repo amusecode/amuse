@@ -803,6 +803,14 @@ int evolve_model(double t_target) {
  return (*SimpleXGrid).evolve(t_target, 1);
 }
 
+int get_time(double *t){
+    return (*SimpleXGrid).get_time(t);
+}
+
+int set_time(double t){
+    return (*SimpleXGrid).set_time(t);
+}
+
 int get_state(int id, double *x, double *y, double *z, double *rho,
                                            double *flux, double *xion, double *uInt){
     double fx=0.0, fy=0.0, fz=0.0, frho=0.0, fflux=0.0, fxion=0.0, fuInt=0.0;

@@ -361,6 +361,22 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return function
 
     @legacy_function
+    def set_time():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_time():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+
+
+    @legacy_function
     def set_source_Teff():
         function = LegacyFunctionSpecification()
         function.addParameter('sourceTeff', dtype='float64', direction=function.IN)
@@ -486,6 +502,9 @@ class SimpleX(CommonCode):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, SimpleXInterface(**options))
         self.set_output_directory(self.output_directory)
+
+    def define_properties(self, object):
+        object.add_property('get_time', public_name = "model_time")
     
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -874,6 +893,18 @@ class SimpleX(CommonCode):
             (units.parsec, ),
             (object.ERROR_CODE,)
         )
+
+        object.add_method(
+            'get_time',
+            (),
+            (units.s,object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_time',
+            (units.s,),
+            (object.ERROR_CODE,)
+        )
+
     
     def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_particle')

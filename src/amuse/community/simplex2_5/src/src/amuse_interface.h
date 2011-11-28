@@ -26,6 +26,8 @@ class AMUSE_SimpleX : public SimpleX {
   int initialize(double current_time);
   int reinitialize();
   int evolve(double dt, int sync);
+  int get_time(double *t){*t=total_time;return 0;}
+  int set_time(double t){total_time=t;return 0;}
   int get_site(int id, double *x,double *y,double *z,double *rho,
 	       double *flux,double *xion, double *uInt);
   int get_position(int id, double *x, double *y, double *z);

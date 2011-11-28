@@ -207,7 +207,8 @@ class TestSimpleX(TestWithMPI):
 
     def test4(self):
         print "Test 4: default parameters"
-        instance = SimpleX(**default_options)
+        instance = SimpleX(debugger='gdb',**default_options)
+
         default=dict( timestep= 0.05| units.Myr, 
                   source_effective_T=  1.e5 | units.K,
                   hilbert_order= 1 | units.none,
@@ -223,6 +224,11 @@ class TestSimpleX(TestWithMPI):
         for x in default:
             self.assertEqual(getattr(instance.parameters,x), default[x])
 
+        tnow=instance.model_time
+        self.assertEqual(tnow, 0. | units.Myr)    
+        instance.model_time=321. | units.Myr
+        tnow=instance.model_time
+        self.assertEqual(tnow, 321. | units.Myr)    
 
     def test5(self):
         print "Test 4: default parameters"
