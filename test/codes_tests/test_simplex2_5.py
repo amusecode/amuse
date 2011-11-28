@@ -207,7 +207,7 @@ class TestSimpleX(TestWithMPI):
 
     def test4(self):
         print "Test 4: default parameters"
-        instance = SimpleX(debugger='gdb',**default_options)
+        instance = SimpleX(**default_options)
 
         default=dict( timestep= 0.05| units.Myr, 
                   source_effective_T=  1.e5 | units.K,
