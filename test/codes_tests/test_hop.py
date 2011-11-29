@@ -15,6 +15,7 @@ from amuse.units import nbody_system
 from amuse.datamodel.particles import Particles
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_sphere
+
 class TestHopInterface(amusetest.TestCase):
     def test1(self):
         print "First test: adding particles, setting and getting."
@@ -73,7 +74,7 @@ class TestHopInterface(amusetest.TestCase):
             hop.calculate_densities()
             
             d, err = hop.get_density(0)
-            self.assertAlmostRelativeEquals(d,ds[method], 8)
+            self.assertAlmostRelativeEquals(d,ds[method], 5)
     
     def test3(self): 
     
@@ -209,7 +210,7 @@ class TestHop(amusetest.TestCase):
             
             d = hop.particles[0].density
             
-            self.assertAlmostRelativeEquals(d, ds[method] | nbody_system.density, 8)
+            self.assertAlmostRelativeEquals(d, ds[method] | nbody_system.density, 5)
     
     def test3(self): 
     

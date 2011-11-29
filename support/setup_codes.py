@@ -404,35 +404,37 @@ class CodeCommand(Command):
                     else:
                         self.announce("will not copy executable: {0}, it does not match the worker pattern".format(name), level = log.WARN)
             
-            #
-            # HACK FOR MESA
-            # NEED TO COPY THE DATA DIR
-            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
-            # MAKEFILE
-            #
-            if shortname == 'mesa':
-                output_path = os.path.join(lib_builddir, 'src', 'mesa', 'data')
-                input_path = os.path.join(temp_builddir, 'src', 'mesa', 'data')
-                self.mkpath(output_path)
-                self.copy_tree(
-                    input_path, 
-                    output_path
-                )
-            
-            #
-            # HACK FOR MOCASSIN
-            # NEED TO COPY THE DATA DIR
-            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
-            # MAKEFILE
-            #
-            if shortname == 'mocassin':
-                output_path = os.path.join(lib_builddir, 'src', 'mocassin.2.02.69')
-                input_path = os.path.join(temp_builddir, 'src', 'mocassin.2.02.69')
-                self.mkpath(output_path)
-                self.copy_tree(
-                    input_path, 
-                    output_path
-                )
+            have_downloaded_codes = False
+            if have_downloaded_codes:
+                #
+                # HACK FOR MESA
+                # NEED TO COPY THE DATA DIR
+                # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
+                # MAKEFILE
+                #
+                if shortname == 'mesa':
+                    output_path = os.path.join(lib_builddir, 'src', 'mesa', 'data')
+                    input_path = os.path.join(temp_builddir, 'src', 'mesa', 'data')
+                    self.mkpath(output_path)
+                    self.copy_tree(
+                        input_path, 
+                        output_path
+                    )
+                
+                #
+                # HACK FOR MOCASSIN
+                # NEED TO COPY THE DATA DIR
+                # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
+                # MAKEFILE
+                #
+                if shortname == 'mocassin':
+                    output_path = os.path.join(lib_builddir, 'src', 'mocassin.2.02.69')
+                    input_path = os.path.join(temp_builddir, 'src', 'mocassin.2.02.69')
+                    self.mkpath(output_path)
+                    self.copy_tree(
+                        input_path, 
+                        output_path
+                    )
                 
             
     def subdirs_in_codes_src_dir(self):
@@ -665,7 +667,8 @@ class BuildCodes(CodeCommand):
             self.copy_codes_to_build_dir()
         
         if not self.inplace:
-            self.environment["DOWNLOAD_CODES"] = "1"
+            #self.environment["DOWNLOAD_CODES"] = "1"
+            pass
                   
         for x in self.makefile_libpaths():
             
