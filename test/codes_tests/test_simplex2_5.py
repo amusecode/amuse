@@ -120,7 +120,7 @@ class TestSimpleXInterface(TestWithMPI):
         
         X_ion, errors = instance.get_ionisation(indices)
         self.assertEqual(errors, [0]*number_of_particles)
-        self.assertAlmostEqual(X_ion.sum()/number_of_particles, 0.000930585139546)
+        self.assertAlmostEqual(X_ion.sum()/number_of_particles, 0.000845247683257)
         
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -201,7 +201,7 @@ class TestSimpleX(TestWithMPI):
         self.assertAlmostEqual(instance.particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
         instance.evolve_model(0.5 | units.Myr)
         self.assertAlmostEqual(instance.particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
-        self.assertAlmostEqual(instance.particles.xion.mean(), 0.000930585139546 | units.none)
+        self.assertAlmostEqual(instance.particles.xion.mean(), 0.000845247683257 | units.none)
         instance.cleanup_code()
         instance.stop()
 
