@@ -339,14 +339,12 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
     //cerr << "start sweeping" << endl;
     simpleXlog << endl << "  start sweeping till " << t_target << endl;  
   }
-    
-  if(dt > 0){
-    //printf("dt, UNIT_T: %g %g \n", dt, UNIT_T);
-    numSweeps=dt/UNIT_T;
-    if(numSweeps==0) numSweeps=1;
-    //printf("proc %d working for %d sweeps\n",COMM_RANK, numSweeps);
-    radiation_transport(1);
-    total_time+=numSweeps*UNIT_T;
+
+  numSweeps=1;
+  while(total_time < t_target*secondsPerMyr - UNIT_T/2)
+  {
+  radiation_transport(1);
+  total_time+=UNIT_T;
   }
 
   if(COMM_RANK == 0){
