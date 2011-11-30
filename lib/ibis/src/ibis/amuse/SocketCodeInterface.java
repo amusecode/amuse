@@ -55,10 +55,13 @@ public class SocketCodeInterface extends CodeInterface {
 
             executable = new File(amuseHome + File.separator + codeDir
                     + File.separator + codeName);
-
-            if (!executable.canExecute()) {
+            if (!executable.isFile()) {
                 throw new IOException("Cannot find executable for code "
                         + codeName + ": " + executable);
+            }
+            
+            if (!executable.canExecute()) {
+                throw new IOException(executable + " is not executable");
             }
 
             serverSocket = ServerSocketChannel.open();
