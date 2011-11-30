@@ -697,8 +697,6 @@ class MpiChannel(MessageChannel):
         return not MPI is None
         
     def start(self):
-        
-        must_close_std_streams = True
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self)
         else:
@@ -716,6 +714,8 @@ class MpiChannel(MessageChannel):
         fd_stdin = None
         fd_stdout = None
         fd_stderr = None
+        
+        must_close_std_streams = True
         
         if must_close_std_streams:
             fd_stdin = os.dup(0)
@@ -1169,7 +1169,7 @@ class SocketMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.copy(numpy.frombuffer(bytes, dtype='i'))
+            result = numpy.copy(numpy.frombuffer(bytes, dtype='int32'))
             
             return result
         else:
@@ -1181,7 +1181,7 @@ class SocketMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.copy(numpy.frombuffer(bytes, dtype='l'))
+            result = numpy.copy(numpy.frombuffer(bytes, dtype='int64'))
             
             return result
         else:
