@@ -58,8 +58,8 @@ public class Daemon implements RegistryEventHandler {
 
     private final Deployment deployment;
 
-    public Daemon(int port, boolean verbose, boolean gui) throws Exception {
-        deployment = new Deployment(verbose, gui, "images/strw-logo-blue.png", "images/nova-logo.png");
+    public Daemon(int port, boolean verbose, boolean gui, boolean hubs) throws Exception {
+        deployment = new Deployment(verbose, gui, hubs, "images/strw-logo-blue.png", "images/nova-logo.png");
 
         Properties properties = new Properties();
         properties.put("ibis.server.address", deployment.getServerAddress());
@@ -148,6 +148,7 @@ public class Daemon implements RegistryEventHandler {
         int port = DEFAULT_PORT;
         boolean verbose = false;
         boolean gui = false;
+        boolean hubs = true;
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-p") || arguments[i].equals("--port")) {
@@ -159,6 +160,8 @@ public class Daemon implements RegistryEventHandler {
             } else if (arguments[i].equals("-g")
                     || arguments[i].equals("--gui")) {
                 gui = true;
+            } else if (arguments[i].equals("--no-hubs")) {
+                hubs=false;
             } else if (arguments[i].equals("-h")
                     || arguments[i].equals("--help")) {
                 printUsage();
@@ -171,7 +174,7 @@ public class Daemon implements RegistryEventHandler {
         }
 
         try {
-            Daemon daemon = new Daemon(port, verbose, gui);
+            Daemon daemon = new Daemon(port, verbose, gui, hubs);
 
             Runtime.getRuntime().addShutdownHook(new Shutdown(daemon));
 

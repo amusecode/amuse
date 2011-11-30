@@ -14,6 +14,7 @@ import ibis.deploy.Grid;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
+import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.Mode;
 
@@ -30,7 +31,7 @@ public class Deployment {
     private final ApplicationSet applications;
     private final Experiment experiment;
 
-    public Deployment(boolean verbose, boolean useGui, String... logos)
+    public Deployment(boolean verbose, boolean useGui, boolean useHubs, String... logos)
             throws Exception {
         grid = new Grid(new File("deploy.grid"));
         experiment = new Experiment("amuse");
@@ -40,6 +41,9 @@ public class Deployment {
 
         deploy = new Deploy(new File("deploy"), verbose, false, useGui, 0, null, null,
                 true);
+        if (!useHubs) {
+            deploy.setHubPolicy(HubPolicy.OFF);
+        }
 
         if (useGui) {
             gui = new GUI(deploy, workspace, Mode.MONITORING_ONLY, true, logos);
