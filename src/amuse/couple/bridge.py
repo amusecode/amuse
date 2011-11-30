@@ -360,11 +360,26 @@ class GravityCodeInField(object):
     @property
     def particles(self):
         return self.code.particles         
-
+    
+    @property
+    def gas_particles(self):
+        if hasattr(self.code, "gas_particles"):
+            return self.code.gas_particles
+        else:
+            raise AttributeError
+    
+    @property
+    def dm_particles(self):
+        if hasattr(self.code, "dm_particles"):
+            return self.code.dm_particles
+        else:
+            raise AttributeError
+    
     def drift(self, tend):
         if not hasattr(self.code,"evolve_model"):
             return
-        
+        if (self.verbose):
+            print self.code.__class__.__name__, "is evolving to", tend
         self.code.evolve_model(tend)
         
         if(self.verbose): 
@@ -439,9 +454,8 @@ class Bridge(object):
         add a system to bridge integrator  
         """
         
-        if hasattr(x,"particles"):
+        if hasattr(interface, "particles"):
             code = GravityCodeInField(interface, partners, do_sync, self.verbose)
-            self.codes.append(code)
             self.add_code(code)
         else:
             if len(partners):
@@ -487,7 +501,12 @@ class Bridge(object):
                 if(self.verbose): print x.__class__.__name__,"is synchronizing",
                 x.synchronize_model()    
                 if(self.verbose): print ".. done"
-                            
+    
+    def stop(self):
+        for one_code in self.codes:
+            if hasattr(one_code, "stop"):
+                one_code.stop()
+    
     def get_potential_at_point(self,radius,x,y,z):
         pot=0.*radius
         for x in self.codes:
@@ -516,8 +535,10 @@ class Bridge(object):
       
     @property
     def potential_energy(self):
+#        return self.particles.potential_energy()
         result=quantities.zero
         for x in self.codes:
+#            print x.__class__.__name__, "U:", x.potential_energy
             result+=x.potential_energy
         return result
     
@@ -525,6 +546,7 @@ class Bridge(object):
     def kinetic_energy(self):  
         result=quantities.zero
         for x in self.codes:
+#            print x.__class__.__name__, "K:", x.kinetic_energy
             result+=x.kinetic_energy
         return result #- self.kick_energy
         
@@ -533,6 +555,7 @@ class Bridge(object):
         result=quantities.zero
         for x in self.codes:
             if hasattr(x,'thermal_energy'):
+#                print x.__class__.__name__, "Q:", x.thermal_energy
                 result+=x.thermal_energy
         return result
           
@@ -542,6 +565,36 @@ class Bridge(object):
         for x in self.codes:
             if hasattr(x,"particles"):
                 array.append(x.particles)
+        if len(array) == 0:
+            raise AttributeError
+        elif len(array) == 1:
+            return array[0]
+        return datamodel.ParticlesSuperset(array)                
+    
+    @property
+    def gas_particles(self):
+        array=[]
+        for x in self.codes:
+            if hasattr(x,"gas_particles"):
+                array.append(x.gas_particles)
+        if len(array) == 0:
+            raise AttributeError
+        elif len(array) == 1:
+            return array[0]
+        return datamodel.ParticlesSuperset(array)                
+    
+    @property
+    def dm_particles(self):
+        array=[]
+        for x in self.codes:
+            if hasattr(x,"dm_particles"):
+                array.append(x.dm_particles)
+            elif hasattr(x,"particles"):
+                array.append(x.particles)
+        if len(array) == 0:
+            raise AttributeError
+        elif len(array) == 1:
+            return array[0]
         return datamodel.ParticlesSuperset(array)                
 
 # 'private' functions

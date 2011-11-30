@@ -14,8 +14,16 @@ except ImportError:
     native_plot = FakePlotLibrary()
 
 import numpy    
+try:
+    from pynbody.array import SimArray
+    from pynbody.snapshot import SimSnap, _new
+    import pynbody.plot.sph as pynbody_sph
+    HAS_PYNBODY = True
+except ImportError:
+    HAS_PYNBODY = False
 
-from amuse.units import units
+from amuse.support.exceptions import AmuseException
+from amuse.units import units, constants
 from amuse.units import quantities
 
 auto_label = "{0}"
@@ -179,6 +187,81 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
         scatter(gd_particles.x, gd_particles.y, c='w', marker='o')
     xlabel('x')
     ylabel('y')
+
+def convert_particles_to_pynbody_data(particles, length_unit=units.kpc, pynbody_unit="kpc"):
+    if not HAS_PYNBODY:
+        raise AmuseException("Couldn't find pynbody")
+    
+    if hasattr(particles, "u"):
+        pynbody_data = _new(gas=len(particles))
+    else:
+        pynbody_data = _new(dm=len(particles))
+    pynbody_data._filename = "AMUSE"
+    if hasattr(particles, "mass"):
+        pynbody_data['mass'] = SimArray(particles.mass.value_in(units.MSun), "Msol")
+    if hasattr(particles, "position"):
+        pynbody_data['x'] = SimArray(particles.x.value_in(length_unit), pynbody_unit)
+        pynbody_data['y'] = SimArray(particles.y.value_in(length_unit), pynbody_unit)
+        pynbody_data['z'] = SimArray(particles.z.value_in(length_unit), pynbody_unit)
+    if hasattr(particles, "velocity"):
+        pynbody_data['vx'] = SimArray(particles.vx.value_in(units.km / units.s), "km s^-1")
+        pynbody_data['vy'] = SimArray(particles.vy.value_in(units.km / units.s), "km s^-1")
+        pynbody_data['vz'] = SimArray(particles.vz.value_in(units.km / units.s), "km s^-1")
+    if hasattr(particles, "h_smooth"):
+        pynbody_data['smooth'] = SimArray(particles.h_smooth.value_in(length_unit), pynbody_unit)
+    if hasattr(particles, "rho"):
+        pynbody_data['rho'] = SimArray(particles.rho.value_in(units.MSun / length_unit**3), 
+            "Msol "+pynbody_unit+"^-3")
+    if hasattr(particles, "u"):
+#        pynbody_data['u'] = SimArray(particles.u.value_in(units.km**2 / units.s**2), "km^2 s^-2")
+        temp = 2.0/3.0 * particles.u * mu() / constants.kB
+        pynbody_data['temp'] = SimArray(temp.value_in(units.K), "K")
+    return pynbody_data
+
+def mu(X = None, Y = 0.25, Z = 0.02, x_ion = 0.1):
+    """
+    Compute the mean molecular weight in kg (the average weight of particles in a gas)
+    X, Y, and Z are the mass fractions of Hydrogen, of Helium, and of metals, respectively.
+    x_ion is the ionisation fraction (0 < x_ion < 1), 1 means fully ionised
+    """
+    if X is None:
+        X = 1.0 - Y - Z
+    elif abs(X + Y + Z - 1.0) > 1e-6:
+        raise AmuseException("Error in calculating mu: mass fractions do not sum to 1.0")
+    return constants.proton_mass / (X*(1.0+x_ion) + Y*(1.0+2.0*x_ion)/4.0 + Z*x_ion/2.0)
+
+def _smart_length_units_for_pynbody_data(length):
+    length_units = [(units.Gpc, "Gpc"), (units.Mpc, "Mpc"), (units.kpc, "kpc"), 
+        (units.parsec, "pc"), (units.AU, "au"), (units.km, "km")]
+    for length_unit, pynbody_unit in length_units:
+        if length > (1 | length_unit):
+            return length_unit, pynbody_unit
+    return units.m, "m"
+
+def pynbody_column_density_plot(particles, width=None, qty='rho', units=None, 
+        sideon=False, faceon=False, **kwargs):
+    if not HAS_PYNBODY:
+        raise AmuseException("Couldn't find pynbody")
+    
+    if width is None:
+        width = 2.0 * particles.position.lengths_squared().amax().sqrt()
+    length_unit, pynbody_unit = _smart_length_units_for_pynbody_data(width)
+    pyndata = convert_particles_to_pynbody_data(particles, length_unit, pynbody_unit)
+    UnitlessArgs.strip([1]|length_unit, [1]|length_unit)
+    
+    if sideon:
+        function = pynbody_sph.sideon_image
+    elif faceon:
+        function = pynbody_sph.faceon_image
+    else:
+        function = pynbody_sph.image
+    
+    if units is None and qty == 'rho':
+        units = 'm_p cm^-2'
+    
+    function(pyndata, width=width.value_in(length_unit), qty=qty, units=units, **kwargs)
+    UnitlessArgs.current_plot = native_plot.gca()
+
 
 if __name__ == '__main__':
     import numpy as np
