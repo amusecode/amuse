@@ -448,6 +448,9 @@ class CodeCommand(Command):
                 yield path
                 
     def subdirs_in_codes_dir(self):
+        if not os.path.exists(self.codes_dir):
+            return
+            
         names = sorted(os.listdir(self.codes_dir))
         for name in names:
             if name.startswith('.'):
@@ -869,7 +872,7 @@ class BuildOneCode(CodeCommand):
     
     def subdirs_in_codes_dir(self):
         if not os.path.exists(self.codes_dir):
-            return []
+            return
             
         names = os.listdir(self.codes_dir)
         for name in names:
