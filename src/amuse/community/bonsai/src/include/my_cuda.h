@@ -552,7 +552,6 @@ namespace my_dev {
         return;
       }
 
-      
       assert(context_flag);
       if (hDeviceMem_flag)
       {
@@ -632,7 +631,12 @@ namespace my_dev {
     ///////////
 
     void setContext(class context &c) {
-      assert(!context_flag);
+      if(context_flag)
+      {
+	      //Check if the context is changed, that is not allowed!
+	      assert(c.get_context() == this->hContext);
+      }
+
       this->hContext   = c.get_context();     
       context_flag     = true;
     }
@@ -703,7 +707,7 @@ namespace my_dev {
 
     void ccalloc(int n, bool pinned = false, int flags = 0) {
       assert(context_flag);
-      assert(!hDeviceMem_flag);
+     // assert(!hDeviceMem_flag);
       
       this->pinned_mem = pinned;      
       this->flags = flags;

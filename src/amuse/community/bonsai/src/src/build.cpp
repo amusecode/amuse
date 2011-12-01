@@ -689,7 +689,7 @@ void octree::allocateParticleMemory(tree_structure &tree)
   //and the arrays that have the same size as there are
   //particles. Eg valid arrays used in tree construction
   int n_bodies = tree.n;
-  
+ 
   if(nProcs > 1)                //10% extra space, only in parallel when
     n_bodies = n_bodies*1.1;    //number of particles can fluctuate
   
@@ -775,7 +775,6 @@ void octree::allocateParticleMemory(tree_structure &tree)
   tree.node_key.cmalloc(n_bodies, false);
   tree.n_children.cmalloc(n_bodies, false);
   tree.node_bodies.cmalloc(n_bodies, false);  
-  
   //General memory buffers
     
   //Set the context for the memory

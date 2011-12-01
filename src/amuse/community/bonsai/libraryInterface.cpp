@@ -110,20 +110,20 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
   bodies_grav.resize(n_bodies+1);
 
   n_bodies++;
-  id_counter++;
 
   starids.push_back(id_counter);
   radii.push_back(radius);
 
+  id_counter++;
   total_mass += mass;
 
   return 0;
 }
 
-int delete_particle(int index_of_the_particle)
+int delete_particle(int id_of_the_particle)
 {
-  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return -2;
+//  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+//  return -2;
   //In order to delete a particle we have to reinitialize
   //the particle arrays, first copy the properties to vectors
   getCurrentStateToHost();
@@ -139,12 +139,15 @@ int delete_particle(int index_of_the_particle)
   memcpy(&bodies_pos[0], &bonsai->localTree.bodies_pos[0], sizeof(float4)*n_bodies);
   memcpy(&bodies_vel[0], &bonsai->localTree.bodies_vel[0], sizeof(float4)*n_bodies);
   memcpy(&bodies_grav[0], &bonsai->localTree.bodies_acc1[0], sizeof(float4)*n_bodies);
-  memcpy(&starids[0], &bonsai->localTree.bodies_ids[0], sizeof(float4)*n_bodies);
+  memcpy(&starids[0], &bonsai->localTree.bodies_ids[0], sizeof(int)*n_bodies);
 
-  int i = index_of_the_particle;
 
-  if (i >= 0 && i < n_bodies)
+//  if (i >= 0 && i < n_bodies)
   {
+  for(int i=0 ; i < n_bodies; i++)
+  {	 
+     if(id_of_the_particle == starids[i])
+     {
       total_mass -= bodies_pos[i].w;
       bodies_pos.erase(bodies_pos.begin()+i);
       bodies_vel.erase(bodies_vel.begin()+i);
@@ -153,8 +156,10 @@ int delete_particle(int index_of_the_particle)
       radii.erase(radii.begin()+i);
       n_bodies--;
       return 0;
+     }
   }
-  else
+  }
+//  else
   {
     return -1;
   }
@@ -334,8 +339,9 @@ int synchronize_model(){
 }
 
 int recommit_particles(){
-  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return 0;
+  //return 0;
+  return commit_particles();
+  
 }
 
 
