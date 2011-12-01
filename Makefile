@@ -24,6 +24,7 @@ docclean:
 
 clean:
 	$(PYTHON) setup.py clean
+	$(PYTHON) setup.py clean --inplace
 
 distclean:
 	-rm -f config.mk

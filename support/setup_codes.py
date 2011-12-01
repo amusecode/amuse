@@ -826,8 +826,9 @@ class CleanCodes(CodeCommand):
                
                 
             for x in self.makefile_paths():
-                self.announce("cleaning " + x)
-                call(['make','-C', x, 'clean'], stdout = output, stderr = output)
+                if os.path.exists(x):
+                    self.announce("cleaning " + x)
+                    call(['make','-C', x, 'clean'], stdout = output, stderr = output)
  
 class DistCleanCodes(CodeCommand):
 
