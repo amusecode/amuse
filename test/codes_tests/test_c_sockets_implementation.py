@@ -6,6 +6,7 @@ from amuse.support import exceptions
 import subprocess
 import os
 import time
+
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
@@ -13,6 +14,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi.tools import create_c_sockets
 from amuse.rfi import channel
 from amuse.rfi.core import *
+
 codestring = """
 #include <stdio.h>
 #include <stdlib.h>
@@ -431,6 +433,7 @@ class TestInterface(TestWithMPI):
     
     def setUp(self):
         super(TestInterface, self).setUp()
+        
         print "building...",
         try:
             self.build_worker()
@@ -448,6 +451,7 @@ class TestInterface(TestWithMPI):
         For the hydra process manager the tests will fail.
         So skip the tests if we detect hydra
         """
+        
         if 'HYDRA_CONTROL_FD' in os.environ:
             self.skip('cannot run the socket tests under hydra process manager')
         

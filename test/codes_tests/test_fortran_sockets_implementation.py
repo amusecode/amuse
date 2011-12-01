@@ -281,6 +281,31 @@ class ForTestingInterface(CodeInterface):
     
 class TestInterface(TestWithMPI):
     
+    def is_fortan_version_up_to_date(self):
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'compilers')
+            if is_configured:
+                is_configured = hasattr(config.compilers, 'gfortran_version')
+        except ImportError:
+            is_configured = False
+    
+        if is_configured:
+            if not config.compilers.gfortran_version:
+                return True
+            
+            try:
+                parts = [int(x) for x in config.compilers.gfortran_version.split('.')]
+            except:
+                parts = []
+                
+            if len(parts) < 2:
+                return True
+                
+            return parts[0] >= 4 and parts[1] >= 3
+        else:
+            return True
+            
     def get_mpif90_name(self):
         try:
             from amuse import config
@@ -371,9 +396,14 @@ class TestInterface(TestWithMPI):
     def setUp(self):
         super(TestInterface, self).setUp()
         print "building"
+        self.check_fortran_version()
         self.build_worker()
         self.check_not_in_mpiexec()
         
+    def check_fortran_version(self):
+        if not self.is_fortan_version_up_to_date():
+            self.skip('cannot compile fortran socket modules with old gcc compilers (missing C support)')
+            
     def check_not_in_mpiexec(self):
         """
         The tests will fork another process, if the test run

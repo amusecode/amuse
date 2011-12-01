@@ -22,6 +22,8 @@ class compilers(object):
     gsl_flags = '@GSL_FLAGS@'
     gsl_libs = '@GSL_LIBS@'
     
+    gfortran_version = '@GFORTRAN_VERSION@'
+       
 
 class mpi(object):
     is_enabled = '@WITH_MPI@'=='yes'

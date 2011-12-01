@@ -9,11 +9,45 @@ from amuse.community import ensure_data_directory_exists
 
 from amuse.io import read_set_from_file
 
-default_options = dict(redirection="none")
-
+#default_options = dict(redirection="none")
+default_options={}
 
 class TestSPHRayInterface(TestWithMPI):
 
+    def is_fortan_version_up_to_date(self):
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'compilers')
+            if is_configured:
+                is_configured = hasattr(config.compilers, 'gfortran_version')
+        except ImportError:
+            is_configured = False
+    
+        if is_configured:
+            if not config.compilers.gfortran_version:
+                return True
+            
+            try:
+                parts = [int(x) for x in config.compilers.gfortran_version.split('.')]
+            except:
+                parts = []
+                
+            if len(parts) < 2:
+                return True
+                
+            return parts[0] >= 4 and parts[1] > 1
+        else:
+            return True
+            
+    def setUp(self):
+        super(TestWithMPI, self).setUp()
+        self.check_fortran_version()
+        
+    def check_fortran_version(self):
+        if not self.is_fortan_version_up_to_date():
+            self.skip('cannot compile, fortran module names cannot be resolved correctly in this gfortran version')
+            
+            
     def test1(self):
         print "Test 1: initialization"
         
