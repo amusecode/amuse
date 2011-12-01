@@ -15,7 +15,6 @@ from amuse.ic.plummer import new_plummer_sphere
 from amuse.support.exceptions import AmuseException
 
 default_options = dict()
-#default_options = dict(redirection="none")
 
 
 class TestBonsaiInterface(TestWithMPI):
@@ -111,15 +110,17 @@ class TestBonsai(TestWithMPI):
         instance.stop()
     
     def test5(self):
-        print "Testing Bonsai remove_particle -- WIP"
+        print "Testing Bonsai remove_particle"
         convert_nbody = nbody_system.nbody_to_si(100.0 | units.MSun, 1.0 | units.parsec)
         instance = self.new_instance_of_an_optional_code(Bonsai, convert_nbody, **default_options)
         instance.initialize_code()
         plummer = new_plummer_sphere(500, convert_nbody = convert_nbody)
         instance.particles.add_particles(plummer)
         instance.commit_particles()
-        self.assertRaises(AmuseException, instance.particles.remove_particle, plummer[0], 
-            expected_message = "Error when calling 'delete_particle' of a 'Bonsai', errorcode is -2")
+        instance.particles.remove_particle(plummer[0])
+#    self.assertRaises(AmuseException, instance.particles.remove_particle, plummer[0], 
+#            expected_message = "Error when calling 'delete_particle' of a 'Bonsai', errorcode is -2")
+        print instance.particles[0].mass
         instance.stop()
     
     def test6(self):
