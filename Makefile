@@ -11,16 +11,12 @@ export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-	$(PYTHON) setup.py build build_codes --variant 
+	$(PYTHON) setup.py build_codes --inplace
 
 build.py:
 	$(error the code is not configured, please run configure first)
 
 allinbuild:
-	$(PYTHON) setup.py build build_codes --variant --no-inplace --verbose
-
-novariant:
-	@-mkdir -p test_results
 	$(PYTHON) setup.py build
 
 docclean:

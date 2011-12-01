@@ -3,7 +3,6 @@ from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.command.install import install
 from distutils.util import convert_path
-#from distutils.command.install_lib import install_lib
 from distutils.cmd import Command
 from distutils.extension import Extension
 
@@ -53,7 +52,7 @@ mapping_from_command_name_to_command_class = {
     'install':install
 }
 
-
+build.sub_commands.append(('build_codes', None))
 Clean.sub_commands.append(('clean_codes',None))
 Clean.sub_commands.append(('clean_python',None))
 

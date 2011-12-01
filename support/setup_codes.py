@@ -115,8 +115,8 @@ class CodeCommand(Command):
         self.environment_notset = {}
         self.found_cuda = False
         self.found_sapporo = False
-        self.variant = False
-        self.inplace = True
+        self.variant = True
+        self.inplace = False
         
         self.build_lib = None
         self.build_temp = None
