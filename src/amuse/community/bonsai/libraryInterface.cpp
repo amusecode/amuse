@@ -1,7 +1,7 @@
 #include "src/include/octree.h"
 
 
-
+#include <map>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -28,6 +28,10 @@ double t_now		= 0.0;
 
 bool curStateOnHost	= false;
 
+
+std::map<int, int> idToIndex;
+std::map<int, int>::iterator iTIIter;
+
 std::string logFileName = "bonsaiLog.txt";
 std::ofstream logFile;
 
@@ -38,16 +42,45 @@ int getCurrentStateToHost()
   if(!curStateOnHost)
   {
      //Retrieve the current state from the device
-     bonsai->desort_bodies(bonsai->localTree);
+  //   bonsai->desort_bodies(bonsai->localTree);
 
      bonsai->localTree.bodies_pos.d2h();
      bonsai->localTree.bodies_vel.d2h();
      bonsai->localTree.bodies_ids.d2h();
      bonsai->localTree.bodies_acc1.d2h();
 
+     //From code into std::vectors
+     memcpy(&bodies_pos[0], &bonsai->localTree.bodies_pos[0], sizeof(float4)*n_bodies);
+     memcpy(&bodies_vel[0], &bonsai->localTree.bodies_vel[0], sizeof(float4)*n_bodies);
+     memcpy(&bodies_grav[0], &bonsai->localTree.bodies_acc1[0], sizeof(float4)*n_bodies);
+     memcpy(&starids[0], &bonsai->localTree.bodies_ids[0], sizeof(int)*n_bodies);
+
+	
+     //Build the map to index
+     idToIndex.clear();
+     for(int i=0; i < n_bodies; i++)
+     {
+        idToIndex[starids[i]] = i;
+     }
+
      curStateOnHost = true;
   }
   return 0;
+}
+
+
+int getIdxFromId(int id)
+{
+  iTIIter = idToIndex.find(id);
+  if(iTIIter != idToIndex.end())
+  {
+    return (*iTIIter).second;
+  }
+  else
+  {
+    fprintf(stderr, "Request for unknown particle-id: %d \n", id);
+    return -1;
+  }
 }
 
 //End helper functions
@@ -73,13 +106,6 @@ int initialize_code()
   initialized = true;
 
   return 0;
-}
-
-
-int echo(int input)
-{
-	initialize_code();
-	return input;
 }
 
 int set_src_directory(char * src_dir)
@@ -120,10 +146,8 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
   return 0;
 }
 
-int delete_particle(int id_of_the_particle)
+int delete_particle(int id)
 {
-//  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-//  return -2;
   //In order to delete a particle we have to reinitialize
   //the particle arrays, first copy the properties to vectors
   getCurrentStateToHost();
@@ -136,39 +160,48 @@ int delete_particle(int id_of_the_particle)
   radii.resize(n_bodies);
 
   //From code into std::vectors
-  memcpy(&bodies_pos[0], &bonsai->localTree.bodies_pos[0], sizeof(float4)*n_bodies);
-  memcpy(&bodies_vel[0], &bonsai->localTree.bodies_vel[0], sizeof(float4)*n_bodies);
-  memcpy(&bodies_grav[0], &bonsai->localTree.bodies_acc1[0], sizeof(float4)*n_bodies);
-  memcpy(&starids[0], &bonsai->localTree.bodies_ids[0], sizeof(int)*n_bodies);
+  //memcpy(&bodies_pos[0], &bonsai->localTree.bodies_pos[0], sizeof(float4)*n_bodies);
+  //memcpy(&bodies_vel[0], &bonsai->localTree.bodies_vel[0], sizeof(float4)*n_bodies);
+  //memcpy(&bodies_grav[0], &bonsai->localTree.bodies_acc1[0], sizeof(float4)*n_bodies);
+  //memcpy(&starids[0], &bonsai->localTree.bodies_ids[0], sizeof(int)*n_bodies);
+  
+  int index = getIdxFromId(id);
+  if(index < 0) return -1;  
 
+ 
+  if(id == starids[index])
+  {
+    total_mass -= bodies_pos[index].w;
+    bodies_pos.erase(bodies_pos.begin()+index);
+    bodies_vel.erase(bodies_vel.begin()+index);
+    bodies_grav.erase(bodies_grav.begin()+index);
+    starids.erase(starids.begin()+index);
+    radii.erase(radii.begin()+index);
+    n_bodies--;
 
-//  if (i >= 0 && i < n_bodies)
+    //Have to rebuild the idx to id since it has become
+    //invalid since we removed something
+    idToIndex.clear();
+    for(int i=0; i < n_bodies; i++) {
+      idToIndex[starids[i]] = i;
+    }
+
+    return 0;
+  }     
+  else
   {
-  for(int i=0 ; i < n_bodies; i++)
-  {	 
-     if(id_of_the_particle == starids[i])
-     {
-      total_mass -= bodies_pos[i].w;
-      bodies_pos.erase(bodies_pos.begin()+i);
-      bodies_vel.erase(bodies_vel.begin()+i);
-      bodies_grav.erase(bodies_grav.begin()+i);
-      starids.erase(starids.begin()+i);
-      radii.erase(radii.begin()+i);
-      n_bodies--;
-      return 0;
-     }
+    //The id array is out of sync??
+    return -2;
   }
-  }
-//  else
-  {
-    return -1;
-  }
+
 }
 
 
 int commit_particles()
 {
   assert(initialized == true);
+  
+  idToIndex.clear();
 
   bonsai->localTree.setN(n_bodies);
   bonsai->allocateParticleMemory(bonsai->localTree);
@@ -191,11 +224,15 @@ int commit_particles()
   bonsai->localTree.bodies_Pvel.h2d();
   bonsai->localTree.bodies_ids.h2d();
 
+
   //Build a tree-structure for initial initialization
   bonsai->sort_bodies(bonsai->localTree);
   bonsai->build(bonsai->localTree);
   bonsai->allocateTreePropMemory(bonsai->localTree);
   bonsai->compute_properties(bonsai->localTree);
+
+
+  curStateOnHost = false;
 
   return 0;
 }
@@ -214,7 +251,10 @@ int get_state(int id, double *mass, double *radius, double *x, double *y, double
 
   getCurrentStateToHost();
 
-  int i = id;
+  int i = getIdxFromId(id);
+  if(i < 0) return -1;
+
+
   if (i >= 0 && i < n_bodies)
   {
     *mass   = bonsai->localTree.bodies_pos[i].w;
@@ -335,6 +375,7 @@ int recommit_parameters(){
 
 int synchronize_model(){
   fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+
   return 0;
 }
 
@@ -346,93 +387,166 @@ int recommit_particles(){
 
 
 //Particle property functions
-int get_mass(int index_of_the_particle, double * mass){
+int get_mass(int id, double * mass){
   getCurrentStateToHost();
+  int index_of_the_particle = getIdxFromId(id);  
+  if(index_of_the_particle < 0)     return -1;
+  
   *mass = bonsai->localTree.bodies_pos[index_of_the_particle].w;
   return 0;
 }
 
-int set_mass(int index_of_the_particle, double mass){
+int set_mass(int *index, double *mass, int length){
   getCurrentStateToHost();
-  bonsai->localTree.bodies_pos[index_of_the_particle].w = mass;
+  
+  for (int i = 0; i < length; i++)
+  { 
+    int index_of_the_particle = getIdxFromId(index[i]);  
+    if(index_of_the_particle < 0)    return -1;
+
+    bonsai->localTree.bodies_pos[index_of_the_particle].w = mass[i];
+  }
+  
+  bonsai->localTree.bodies_pos.h2d();
+  
   return 0;
 }
 
-int get_radius(int index_of_the_particle, double * radius){
+int get_radius(int id, double * radius){
+  int index_of_the_particle = getIdxFromId(id);    
+  if(index_of_the_particle < 0)     return -1;
+  
   *radius = radii[index_of_the_particle];
   return 0;
 }
 
-int set_radius(int index_of_the_particle, double radius){
+int set_radius(int id, double radius){
+  int index_of_the_particle = getIdxFromId(id);  
+  if(index_of_the_particle < 0)     return -1;
+  
   radii[index_of_the_particle] = radius;
   return 0;
 }
 
-int get_potential(int index_of_the_particle, double * potential){
+int get_potential(int id, double * potential){
   getCurrentStateToHost();
+  int index_of_the_particle = getIdxFromId(id);  
+  if(index_of_the_particle < 0)     return -1;
+  
   *potential = bonsai->localTree.bodies_acc1[index_of_the_particle].w;
   return 0;
 }
 
-int set_acceleration(int index_of_the_particle, double ax, double ay,
-  double az){
+int set_acceleration(int *id, double *ax, double *ay, double *az, int length){
   getCurrentStateToHost();
-  bonsai->localTree.bodies_acc1[index_of_the_particle].x = ax;
-  bonsai->localTree.bodies_acc1[index_of_the_particle].x = ay;
-  bonsai->localTree.bodies_acc1[index_of_the_particle].x = az;
+  
+  for(int i=0; i < length; i++)
+  {
+    int index_of_the_particle = getIdxFromId(id[i]);  
+    if(index_of_the_particle < 0)    return -1;
+    
+    bonsai->localTree.bodies_acc1[index_of_the_particle].x = ax[i];
+    bonsai->localTree.bodies_acc1[index_of_the_particle].y = ay[i];
+    bonsai->localTree.bodies_acc1[index_of_the_particle].z = az[i];
+  }
+  
+  bonsai->localTree.bodies_acc1.h2d();
+  
   return 0;
 }
 
-int get_acceleration(int index_of_the_particle, double * ax, double * ay,
-  double * az){
+int get_acceleration(int id, double * ax, double * ay, double * az){
   getCurrentStateToHost();
+  int index_of_the_particle = getIdxFromId(id);  
+  if(index_of_the_particle < 0)     return -1;
+  
   *ax = bonsai->localTree.bodies_acc1[index_of_the_particle].x;
   *ay = bonsai->localTree.bodies_acc1[index_of_the_particle].y;
   *az = bonsai->localTree.bodies_acc1[index_of_the_particle].z;
   return 0;
 }
 
-int get_velocity(int index_of_the_particle, double * vx, double * vy,
-  double * vz){
+int get_velocity(int id, double * vx, double * vy, double * vz){
   getCurrentStateToHost();
+  int index_of_the_particle = getIdxFromId(id);  
+  if(index_of_the_particle < 0)     return -1;
+  
   *vx = bonsai->localTree.bodies_vel[index_of_the_particle].x;
   *vy = bonsai->localTree.bodies_vel[index_of_the_particle].y;
   *vz = bonsai->localTree.bodies_vel[index_of_the_particle].z;
   return 0;
 }
 
-int get_position(int index_of_the_particle, double * x, double * y,
-  double * z){
+int get_position(int id, double * x, double * y, double * z){
   getCurrentStateToHost();
+  int index_of_the_particle = getIdxFromId(id);  
+  if(index_of_the_particle < 0)    return -1;
+  
   *x = bonsai->localTree.bodies_pos[index_of_the_particle].x;
   *y = bonsai->localTree.bodies_pos[index_of_the_particle].y;
   *z = bonsai->localTree.bodies_pos[index_of_the_particle].z;
   return 0;
 }
 
-int set_position(int index_of_the_particle, double x, double y, double z){
+int set_position(int *id, double *x, double *y, double *z, int length){
   getCurrentStateToHost();
-  bonsai->localTree.bodies_pos[index_of_the_particle].x = x;
-  bonsai->localTree.bodies_pos[index_of_the_particle].x = y;
-  bonsai->localTree.bodies_pos[index_of_the_particle].x = z;
+    
+  for(int i=0; i < length; i++)
+  {
+    int index_of_the_particle = getIdxFromId(id[i]);  
+    if(index_of_the_particle < 0)    return -1;
+    
+    bonsai->localTree.bodies_pos[index_of_the_particle].x = x[i];
+    bonsai->localTree.bodies_pos[index_of_the_particle].y = y[i];
+    bonsai->localTree.bodies_pos[index_of_the_particle].z = z[i];
+  }
+  
+  bonsai->localTree.bodies_pos.h2d();
+  
   return 0;
 }
 
-int set_velocity(int index_of_the_particle, double vx, double vy,
-  double vz){
+int set_velocity(int *id, double *vx, double *vy, double *vz, int length){
   getCurrentStateToHost();
-  bonsai->localTree.bodies_vel[index_of_the_particle].x = vx;
-  bonsai->localTree.bodies_vel[index_of_the_particle].x = vy;
-  bonsai->localTree.bodies_vel[index_of_the_particle].x = vz;
+  
+  for(int i=0; i < length; i++)
+  {
+    int index_of_the_particle = getIdxFromId(id[i]);  
+    if(index_of_the_particle < 0)    return -1;
+  
+    bonsai->localTree.bodies_vel[index_of_the_particle].x = vx[i];
+    bonsai->localTree.bodies_vel[index_of_the_particle].y = vy[i];
+    bonsai->localTree.bodies_vel[index_of_the_particle].z = vz[i];
+  }
   return 0;
 }
 
-int set_state(int index_of_the_particle, double mass, double radius,
-  double x, double y, double z, double vx, double vy, double vz){
-  set_mass(index_of_the_particle, mass);
-  set_radius(index_of_the_particle, radius);
-  set_position(index_of_the_particle, x, y, z);
-  set_velocity(index_of_the_particle, x, y, z);
+
+int set_state(int *index, double *radius, double *mass, double *x, double *y, double *z, 
+              double *vx, double *vy, double *vz, int length){
+  getCurrentStateToHost();
+  
+  for (int i = 0; i < length; i++)    
+  {
+    int index_of_the_particle = getIdxFromId(index[i]);  
+    if(index_of_the_particle < 0)    return -1;
+    
+    bonsai->localTree.bodies_pos[index_of_the_particle].x = x[i];
+    bonsai->localTree.bodies_pos[index_of_the_particle].y = y[i];
+    bonsai->localTree.bodies_pos[index_of_the_particle].z = z[i];
+    bonsai->localTree.bodies_pos[index_of_the_particle].w = mass[i];
+    
+    bonsai->localTree.bodies_vel[index_of_the_particle].x = vx[i];
+    bonsai->localTree.bodies_vel[index_of_the_particle].y = vy[i];
+    bonsai->localTree.bodies_vel[index_of_the_particle].z = vz[i];            
+    
+    radii[index_of_the_particle] = radius[i];
+  }
+  
+  
+  bonsai->localTree.bodies_pos.h2d();    
+  bonsai->localTree.bodies_vel.h2d();
+  
   return 0;
 }
 
@@ -487,8 +601,6 @@ int get_potential_at_point(double eps, double x, double y, double z,
 }
 
 
-
-
 int get_center_of_mass_position(double * x, double * y, double * z){
   fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
   return -2;
@@ -506,11 +618,9 @@ int get_gravity_at_point(double eps, double x, double y, double z,
   return -2;
 }
 
-
-
-
 int cleanup_code(){
   if (initialized && bonsai->localTree.n > 0) delete bonsai;
+  //TODO waarom de test op n? 
   bonsai = NULL;
   return 0;
 }

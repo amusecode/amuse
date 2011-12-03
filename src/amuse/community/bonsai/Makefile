@@ -17,7 +17,7 @@ CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 LIBS = -lcuda -lOpenCL $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia
 INCLUDES = -I$(CUDA_SDK)/common/inc -I$(CUDA_TK)/include 
 
-OBJS = interface.o libraryInterface.o
+OBJS = libraryInterface.o
 
 CODELIB = src/libbonsai.a
 

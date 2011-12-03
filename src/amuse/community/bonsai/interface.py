@@ -21,15 +21,6 @@ class BonsaiInterface(CodeInterface, GravitationalDynamicsInterface):
         return function
     
     @legacy_function
-    def echo_int():
-        function = LegacyFunctionSpecification()
-        function.addParameter('int_in', dtype='int32', direction=function.IN)
-        function.addParameter('int_out', dtype='int32', direction=function.OUT)
-        function.result_type = 'int32'
-        function.can_handle_array = True
-        return function
-    
-    @legacy_function
     def set_time():
         function = LegacyFunctionSpecification()
         function.addParameter('time', dtype='d', direction=function.IN)
@@ -43,6 +34,128 @@ class BonsaiInterface(CodeInterface, GravitationalDynamicsInterface):
             description = "The current timestep for the system")
         function.result_type = 'int32'
         return function
+        
+    @legacy_function
+    def set_mass():
+        """
+        Update the mass of a particle. Mass is a scalar property of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        """        
+
+        return function     
+        
+    @legacy_function
+    def set_state():
+        """
+        Update the current state of a particle. The *minimal* information of a stellar
+        dynamics particle (mass, position and velocity) is updated.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle")  
+        function.addParameter('x', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
+        function.addParameter('vx', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+  
+        
+    @legacy_function
+    def set_position():
+        """
+        Update the position of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('x', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            code does not support updating of a particle
+        """
+        return function       
+        
+    @legacy_function
+    def set_velocity():
+        """
+        Set the velocity vector of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('vx', dtype='float64', direction=function.IN, description = "The current x component of the velocity vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.IN, description = "The current y component of the velocity vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.IN, description = "The current z component of the velocity vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function        
+        
+    @legacy_function
+    def set_acceleration():
+        """
+        Set the velocity vector of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('ax', dtype='float64', direction=function.IN, description = "The current x component of the velocity vector of the particle")
+        function.addParameter('ay', dtype='float64', direction=function.IN, description = "The current y component of the velocity vector of the particle")
+        function.addParameter('az', dtype='float64', direction=function.IN, description = "The current z component of the velocity vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function        
 
 
 class Bonsai(GravitationalDynamics):
