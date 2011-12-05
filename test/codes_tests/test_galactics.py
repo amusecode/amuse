@@ -262,11 +262,11 @@ class GalactICsTests(TestWithMPI):
         if "64" in os.uname()[-1]:
             mass_halo = 1179.03507 | nbody_system.mass
             expected_kinetic_energy = 2506.90523413 | nbody_system.energy
-            accuracy = 4
+            accuracy = 5
         else:
             mass_halo = 1178.83539 | nbody_system.mass
             expected_kinetic_energy = 2505.93403345 | nbody_system.energy
-            accuracy = 5
+            accuracy = 4
         self.assertAlmostRelativeEquals(instance.particles.total_mass(), mass_halo, accuracy)
         self.assertAlmostRelativeEquals(instance.particles.kinetic_energy(), expected_kinetic_energy, accuracy)
         instance.cleanup_code()
