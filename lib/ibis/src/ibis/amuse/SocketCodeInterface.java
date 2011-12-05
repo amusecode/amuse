@@ -106,9 +106,9 @@ public class SocketCodeInterface extends CodeInterface {
             process = builder.start();
 
             out = new OutputPrefixForwarder(process.getInputStream(),
-                    System.out, "stdout of " + codeName + ": ");
+                    System.out, workerID);
             err = new OutputPrefixForwarder(process.getErrorStream(),
-                    System.err, "stderr of " + codeName + ": ");
+                    System.err, workerID);
 
             logger.info("process started");
 

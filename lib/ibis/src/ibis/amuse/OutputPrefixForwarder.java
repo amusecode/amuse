@@ -12,14 +12,14 @@ public class OutputPrefixForwarder extends Thread {
 
     private final PrintStream output;
 
-    private final String outputPrefix;
+    private final String codeName;
 
     /**
      * @param input
      *            Input stream
      * @param output
      *            Stream to forward output to
-     * @param outputPrefix
+     * @param codeName
      *            Prefix to add to all lines of output
      * 
      * @throws IOException
@@ -30,7 +30,7 @@ public class OutputPrefixForwarder extends Thread {
         this.input = new BufferedReader(new InputStreamReader(input));
         this.output = output;
 
-        this.outputPrefix = outputPrefix;
+        this.codeName = outputPrefix;
 
         setDaemon(false);
         setName("prefix forwarder");
@@ -51,7 +51,7 @@ public class OutputPrefixForwarder extends Thread {
                     return;
                 }
 
-                output.println(outputPrefix + line);
+                output.printf("%tT %s - %s\n", System.currentTimeMillis(), codeName, line);
             } catch (IOException e) {
                 // we're done
             	output.flush();
