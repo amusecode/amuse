@@ -1,9 +1,0 @@
-#!/bin/bash
-
-shift
-
-shift
-
-echo $LD_LIBRARY_PATH
-
-mpirun $@

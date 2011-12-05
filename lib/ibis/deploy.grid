@@ -27,7 +27,7 @@
 
 # default.user.name=ndrost
 
-local.job.wrapper.script=multicore.script
+#local.job.wrapper.script=multicore.script
 
 # Details of cluster "LGM"
 LGM.server.adaptor = SshTrilead
@@ -184,15 +184,21 @@ Leiden.job.uri = any://fs1.das4.liacs.nl/jobmanager-sge
 Leiden.file.adaptors = SshTrilead,Local
 Leiden.java.path = java
 Leiden.job.wrapper.script = das4.script
-#Leiden.user.name = 
-#Leiden.user.key = 
-#Leiden.cache.dir = 
-#Leiden.server.output.files =
-#Leiden.server.system.properties =
 Leiden.nodes = 32
 Leiden.cores = 64
-#Leiden.memory = 
 Leiden.latitude = 52.1686
 Leiden.longitude = 4.4598
 Leiden.amuse.home=/home/niels/amuse
 Leiden.mpirun=/cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpirun
+
+Para.server.adaptor = SshTrilead
+Para.server.uri = ssh://para1.strw.leidenuniv.nl
+Para.job.adaptor = SshPbs
+Para.job.uri = sshpbs://para1.strw.leidenuniv.nl
+Para.file.adaptors = SshTrilead,Local
+Para.java.path = java
+Para.latitude = 52.1686
+Para.longitude = 4.4598
+Para.amuse.home=/home/ndrost/amuse
+Para.user.name=ndrost
+Para.mpirun=/software/mpi/bin/mpirun
