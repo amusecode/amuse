@@ -60,7 +60,9 @@ public class MPIProfilingCollector extends Thread implements
 
 		sent.put(ibis, currentValue + bytesSent);
 		
-		logger.info("ibis " + ibis + " now has " + (currentValue + bytesSent) + " sent bytes");
+		if (logger.isDebugEnabled()) {
+		    logger.debug("ibis " + ibis + " now has " + (currentValue + bytesSent) + " sent bytes");
+		}
 	}
 
 	synchronized void addSentBytes(int rank, int size, long[] bytesSentPerRank) {
