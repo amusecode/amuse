@@ -41,7 +41,7 @@ class Install(install):
 mapping_from_command_name_to_command_class = {
     'build_latex':build_latex, 
     'build_codes':BuildCodes,
-    'code':BuildOneCode,
+    'build_code':BuildOneCode,
     'clean_codes':CleanCodes,
     'dist_clean':DistCleanCodes,
     'clean_python':clean,

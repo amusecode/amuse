@@ -86,7 +86,9 @@ debian:
 
 
 %.code:
-	$(PYTHON) setup.py -v code  --clean=$(CLEAN) --code-name=$*
+ifneq (,$(findstring s,$(MAKEFLAGS)))
+	$(PYTHON) setup.py build_code --inplace --clean=$(CLEAN) --code-name=$*
+else
+	$(PYTHON) setup.py -v build_code --inplace --clean=$(CLEAN) --code-name=$*
+endif
 
-%:
-	$(PYTHON) setup.py code --code-name=$@

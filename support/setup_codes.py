@@ -907,6 +907,7 @@ class BuildOneCode(CodeCommand):
         for x in self.makefile_paths():
             shortname = x[len(self.codes_dir) + 1:].lower()
             
+            self.announce( "building code {0}".format(shortname), level = log.INFO)
             if self.must_clean:
                 self.announce("cleaning " + x)
                 self.call(['make','-C', x, 'clean'], env=environment)
@@ -922,6 +923,7 @@ class BuildOneCode(CodeCommand):
                 results.append((target,returncode,))
         
         for x in self.makefile_libpaths():
+            self.announce( "building library {0}".format(shortname), level = log.INFO)
             shortname = x[len(self.codes_dir) + 1:].lower()
             
             self.announce("cleaning " + x)
@@ -938,7 +940,7 @@ class BuildOneCode(CodeCommand):
             
         
         for name, returncode in results:
-            print name, "...", "failed" if returncode == 2 else "succeeded"
+            self.announce( "{0} ... {1}".format(name, "failed" if returncode == 2 else "succeeded"),  level = log.INFO)
             
 
                 
