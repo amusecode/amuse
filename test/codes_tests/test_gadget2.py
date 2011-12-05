@@ -112,6 +112,9 @@ class TestGadget2Interface(TestWithMPI):
             self.assertAlmostEquals(result,expected)
         for result,expected in zip(instance.get_velocity(2),[0,-1,0, 0]):
             self.assertAlmostEquals(result,expected)
+        
+        self.assertEquals(0, instance.set_state(1, 0.01, 1,2,3, 4,5,6))
+        self.assertEquals([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], instance.get_state(1).values())
 
         self.assertEquals(0, instance.evolve_model(0.01))
         mass, result = instance.get_mass(1)
@@ -423,6 +426,10 @@ class TestGadget2(TestWithMPI):
         dark = new_plummer_sphere(100, convert_nbody)
         instance.dm_particles.add_particles(dark)
         instance.evolve_model(1.0 | units.Myr)
+        copied = instance.dm_particles.copy()
+        from_copy_to_code = copied.new_channel_to(instance.dm_particles)
+        copied.mass *= 2
+        from_copy_to_code.copy_attributes(["mass", "x", "y", "z", "vx", "vy", "vz"])
         instance.stop()
 
     def test5(self):
