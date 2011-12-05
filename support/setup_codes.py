@@ -937,8 +937,8 @@ class BuildOneCode(CodeCommand):
                 results.append((target,returncode,))
         
         for x in self.makefile_libpaths():
-            self.announce( "building library {0}".format(shortname), level = log.INFO)
             shortname = x[len(self.codes_dir) + 1:].lower()
+            self.announce( "building library {0}".format(shortname), level = log.INFO)
             
             self.announce("cleaning " + x)
             self.call(['make','-C', x, 'clean'], env=environment)
