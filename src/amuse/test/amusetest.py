@@ -247,9 +247,13 @@ def get_path_to_results():
 
 def get_amuse_root_dir():
     if 'AMUSE_DIR' in os.environ:
-        return os.environ['AMUSE_DIR']
+        return os.environ['AMUSE_DIR']    
+    previous = None
     result = os.path.abspath(__file__)
     while not os.path.exists(os.path.join(result,'build.py')):
         result = os.path.dirname(result)
+        if result == previous:
+            return os.path.dirname(os.path.dirname(__file__))
+        previous = result
     return result
       
