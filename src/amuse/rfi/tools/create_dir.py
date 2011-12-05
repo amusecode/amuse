@@ -1,5 +1,8 @@
 from amuse.support.core import late, print_out
 
+from amuse.support.options import option
+from amuse.support.options import OptionalAttributes
+
 import os
 
 interface_file_template = """\
@@ -139,7 +142,7 @@ int echo_int(int input, int * output){
 
 """
 
-class CreateADirectoryAndPopulateItWithFiles(object):
+class CreateADirectoryAndPopulateItWithFiles(OptionalAttributes):
     
     @late
     def path_of_the_root_directory(self):
@@ -215,10 +218,7 @@ class CreateADirectoryAndPopulateItWithFiles(object):
         
     @late
     def path_of_amuse(self):
-        current = os.path.dirname(os.path.dirname(__file__))
-        while not os.path.exists(os.path.join(current, 'build.py')):
-            current = os.path.dirname(current)
-        return current
+        return self.amuse_root_dir
         
     @late
     def reference_to_amuse_path(self):
@@ -231,6 +231,19 @@ class CreateADirectoryAndPopulateItWithFiles(object):
     @late
     def name_of_the_superclass_for_the_code_interface_class(self):
         return "InCodeComponentImplementation"
+        
+    @option(sections=['data'])
+    def amuse_root_dir(self):
+        if 'AMUSE_DIR' in os.environ:
+            return os.environ['AMUSE_DIR']    
+        previous = None
+        result = os.path.abspath(__file__)
+        while not os.path.exists(os.path.join(result,'build.py')):
+            result = os.path.dirname(result)
+            if result == previous:
+                return os.path.dirname(os.path.dirname(__file__))
+            previous = result
+        return result
         
     def start(self):
         

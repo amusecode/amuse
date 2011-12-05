@@ -7,6 +7,7 @@ import inspect
 
 from amuse.support import exceptions
 from amuse.support import literature
+from amuse.support import options
 from amuse.units.si import no_unit
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import to_quantity
@@ -233,27 +234,57 @@ class TestWithMPI(TestCase):
             self.skip("Tried to instantiate a new object of the optional code with type '{0}', but this code is not available".format(factory))
          
          
-def get_path_to_results():
-    name_of_testresults_directory = 'test_results'
-    if os.path.exists(os.path.abspath(name_of_testresults_directory)):
-        return os.path.abspath(name_of_testresults_directory)
+class TestDefaults(options.OptionalAttributes):
+        
+    @options.option(sections=['test'])
+    def path_to_results(self):
+        name_of_testresults_directory = self.name_of_testresults_directory
+        if os.path.exists(os.path.abspath(name_of_testresults_directory)):
+            if os.access(os.path.abspath(name_of_testresults_directory),  os.W_OK):
+                return os.path.abspath(name_of_testresults_directory)
+            else:
+                result = os.getcwd()
+                if not os.access(os.getcwd(),  os.W_OK):
+                    raise Exception("the current directory must be writable for amuse tests")
+                return os.getcwd()
+        
+        amuse_root_dir = self.amuse_root_dir
+        test_results_dir = os.path.join(amuse_root_dir, self.name_of_testresults_directory)
+        if os.path.exists(test_results_dir):
+            try:
+                f = open('test.txt','w')
+                f.close()                    
+                return test_results_dir
+            except IOError as ex:
+                if not os.access(os.getcwd(),  os.W_OK):
+                    raise Exception("the current directory must be writable for amuse tests")
+                return os.getcwd()
+        else:
+            if not os.access(os.getcwd(),  os.W_OK):
+                raise Exception("the current directory must be writable for amuse tests")
+            return os.getcwd()
+
+    @options.option(sections=['test'])
+    def name_of_testresults_directory(self):
+        return 'test_results'
     
-    amuse_root_dir = get_amuse_root_dir()
-    test_results_dir = os.path.join(amuse_root_dir, 'test_results')
-    if os.path.exists(test_results_dir):
-        return test_results_dir
-    else:
-        return os.getcwd()
+    @options.option(sections=['data'])
+    def amuse_root_dir(self):
+        if 'AMUSE_DIR' in os.environ:
+            return os.environ['AMUSE_DIR']    
+        previous = None
+        result = os.path.abspath(__file__)
+        while not os.path.exists(os.path.join(result,'build.py')):
+            result = os.path.dirname(result)
+            if result == previous:
+                return os.path.dirname(os.path.dirname(__file__))
+            previous = result
+        return result
+
+
+def get_path_to_results():
+    return TestDefaults().path_to_results
 
 def get_amuse_root_dir():
-    if 'AMUSE_DIR' in os.environ:
-        return os.environ['AMUSE_DIR']    
-    previous = None
-    result = os.path.abspath(__file__)
-    while not os.path.exists(os.path.join(result,'build.py')):
-        result = os.path.dirname(result)
-        if result == previous:
-            return os.path.dirname(os.path.dirname(__file__))
-        previous = result
-    return result
-      
+    return TestDefaults().amuse_root_dir
+    

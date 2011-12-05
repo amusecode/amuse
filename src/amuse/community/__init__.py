@@ -1,5 +1,8 @@
 from amuse.support.codes.stopping_conditions import StoppingConditionInterface, StoppingConditions
 
+from amuse.support.options import option
+from amuse.support.options import OptionalAttributes
+
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
@@ -25,18 +28,23 @@ Existing, production codes
 Contains the source code of production codes and software to embed these codes into AMUSE
 """
 
+class _Defaults(OptionalAttributes):
+    
+    @option(sections=['data'])
+    def amuse_root_dir(self):
+        if 'AMUSE_DIR' in os.environ:
+            return os.environ['AMUSE_DIR']    
+        previous = None
+        result = os.path.abspath(__file__)
+        while not os.path.exists(os.path.join(result,'build.py')):
+            result = os.path.dirname(result)
+            if result == previous:
+                raise exceptions.AmuseException("Could not locate AMUSE root directory!")
+            previous = result
+        return result
+
 def get_amuse_root_dir():
-    if not 'amuse_root_dir' in locals():
-        import os
-        try:
-            amuse_root_dir = os.environ['AMUSE_DIR']
-        except KeyError:
-            amuse_root_dir = os.path.abspath(__file__)
-            while not os.path.exists(os.path.join(amuse_root_dir, 'build.py')):
-                (amuse_root_dir, subdir) = os.path.split(amuse_root_dir)
-                if not subdir:
-                    raise exceptions.AmuseException("Could not locate AMUSE root directory!")
-    return amuse_root_dir
+    return _Defaults().amuse_root_dir
     
 def ensure_data_directory_exists(directory):
     directory = os.path.expanduser(directory)

@@ -60,7 +60,7 @@ class GenerateInstallIni(Command):
         outfilename = os.path.join(self.build_dir, 'amuse', 'amuserc')
         
         
-        data_dir = os.path.join(self.install_data,'share','amuse','data')
+        data_dir = os.path.join(self.install_data,'share','amuse')
         if not self.root is None:
             data_dir = os.path.relpath(data_dir,self.root)
             data_dir =  os.path.join('/',data_dir)
@@ -69,8 +69,9 @@ class GenerateInstallIni(Command):
         installinilines.append('must_check_if_worker_is_up_to_date=0')
         #installinilines.append('worker_code_suffix=".so"')
         installinilines.append('[data]')
-        installinilines.append('input_data_root_directory={0}'.format(data_dir))
+        installinilines.append('input_data_root_directory={0}'.format(os.path.join(data_dir, 'data')))
         installinilines.append('output_data_root_directory=amuse-data')
+        installinilines.append('amuse_root_dir={0}'.format(data_dir))
         
         self.mkpath(os.path.join(self.build_dir, 'amuse'))
         file_util.write_file(outfilename, installinilines)
@@ -435,7 +436,20 @@ class CodeCommand(Command):
                         input_path, 
                         output_path
                     )
-                
+            #
+            # HACK FOR GALACTICS
+            # NEED TO COPY THE BIN DIR
+            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
+            # MAKEFILE
+            #
+            if shortname == 'galactics':
+                output_path = os.path.join(lib_builddir, 'src', 'bin')
+                input_path = os.path.join(temp_builddir, 'src', 'bin')
+                self.mkpath(output_path)
+                self.copy_tree(
+                    input_path, 
+                    output_path
+                )
             
     def subdirs_in_codes_src_dir(self):
         names = sorted(os.listdir(self.codes_src_dir))
@@ -819,36 +833,36 @@ class CleanCodes(CodeCommand):
     description = "clean build products in codes"
 
     def run (self):
-        buildlog = "make-clean.log"
             
+        environment = self.environment
+        environment.update(os.environ)
         self.announce("Cleaning libraries and community codes", level = 2)
-        with open(buildlog, "aw") as output:
-            for x in self.makefile_libpaths():
-                self.announce("cleaning libary " + x)
-                call(['make','-C', x, 'clean'], stdout = output, stderr = output)
-               
-                
-            for x in self.makefile_paths():
-                if os.path.exists(x):
-                    self.announce("cleaning " + x)
-                    call(['make','-C', x, 'clean'], stdout = output, stderr = output)
+        for x in self.makefile_libpaths():
+            self.announce("cleaning libary " + x)
+            self.call(['make','-C', x, 'clean'], env=environment)
+           
+            
+        for x in self.makefile_paths():
+            if os.path.exists(x):
+                self.announce("cleaning " + x)
+                self.call(['make','-C', x, 'clean'], env=environment)
  
 class DistCleanCodes(CodeCommand):
 
     description = "clean for distribution"
 
     def run (self):
-        buildlog = "make-clean.log"
-            
+        environment = self.environment
+        environment.update(os.environ)
+        
         self.announce("Cleaning for distribution, libraries and community codes", level = 2)
-        with open(buildlog, "aw") as output:
-            for x in self.makefile_libpaths():
-                self.announce("cleaning libary:" + x)
-                call(['make','-C', x, 'distclean'], stdout = output, stderr = output)
-                
-            for x in self.makefile_paths():
-                self.announce("cleaning community code:" + x)
-                call(['make','-C', x, 'distclean'], stdout = output, stderr = output)
+        for x in self.makefile_libpaths():
+            self.announce("cleaning libary:" + x)
+            self.call(['make','-C', x, 'distclean'], env=environment)
+            
+        for x in self.makefile_paths():
+            self.announce("cleaning community code:" + x)
+            self.call(['make','-C', x, 'distclean'], env=environment)
         
 class BuildOneCode(CodeCommand):  
     description = "build one code"

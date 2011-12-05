@@ -32,20 +32,22 @@ distclean:
 	-rm -f support/config.pyc
 	-rm -f src/amuse/config.py
 	-rm -f src/amuse/config.pyc
+	-rm -f amuse.sh
 	
 	-rm -f test/*.000 test/fort.* test/perr test/pout test/test.h5 test/*.log
 	-rm -f test/codes_tests/perr test/codes_tests/pout
 	-rm -f test/core_tests/plummer_back_100.ini
 	-rm -f test/test_python_implementation test/twobody
 	
-	$(PYTHON) setup.py  clean
-	$(PYTHON) setup.py  dist_clean
+	$(PYTHON) setup.py clean
+	$(PYTHON) setup.py dist_clean
+	$(PYTHON) setup.py dist_clean --inplace
+	
 	make -C doc clean
 	-find src -name "*.pyc" -exec rm \{} \;
 	-find src -type d -name "__pycache__" -exec rm -Rf \{} \;
 	-find src -type d -name "ccache" -exec rm -Rf \{} \;
-	rm -Rf build
-	-rm amuse.sh
+	-rm -Rf build
 
 tests:
 	$(PYTHON) setup.py tests

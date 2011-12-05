@@ -34,7 +34,7 @@ int initialize_code()
 codestringF = """
       FUNCTION initialize_code()
       IMPLICIT NONE
-      include "../../lib/stopcond/stopcond.inc"
+      include "stopcond.inc"
       INTEGER :: initialize_code
       INTEGER :: set_supported_conditions
       INTEGER :: return
@@ -258,7 +258,7 @@ class TestInterfaceF(TestWithMPI):
             f.write(string)
         
         rootdir = self.get_amuse_root_dir()
-        arguments = [self.get_mpif90_name(), "-I",rootdir + "/lib/stopcond", "-c",  "-o", objectname, sourcename]
+        arguments = [self.get_mpif90_name(), "-I","{0}/lib/stopcond".format(rootdir), "-c",  "-o", objectname, sourcename]
         process = subprocess.Popen(
             arguments,
             stdin = subprocess.PIPE,
@@ -276,7 +276,7 @@ class TestInterfaceF(TestWithMPI):
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)
-        arguments.extend(["-L"+rootdir+"/lib/stopcond","-lstopcond"])
+        arguments.extend(["-L{0}/lib/stopcond".format(rootdir),"-lstopcond"])
         print 'build command:'
         print ' '.join(arguments)
         process = subprocess.Popen(

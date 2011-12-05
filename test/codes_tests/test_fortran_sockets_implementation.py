@@ -335,7 +335,7 @@ class TestInterface(TestWithMPI):
             f.write(string)
         
         process = subprocess.Popen(
-            [self.get_mpif90_name(), "-g", "-I/lib/forsockets", "-c",  "-o" , objectname, sourcename],
+            [self.get_mpif90_name(), "-g", "-I{0}/lib/forsockets".format(self.get_amuse_root_dir()), "-c",  "-o" , objectname, sourcename],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
@@ -359,7 +359,7 @@ class TestInterface(TestWithMPI):
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)
-        arguments.append("-Llib/forsockets")
+        arguments.append("-L{0}/lib/forsockets".format(self.get_amuse_root_dir()))
         arguments.append("-lforsockets")
         
         process = subprocess.Popen(

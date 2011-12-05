@@ -15,6 +15,7 @@ from support.run_tests import run_tests
 import os
 import fnmatch
 import re
+import glob
 
 #include_dirs.append(sysconfig.get_python_inc())
 
@@ -111,23 +112,30 @@ def find_data_files(srcdir, destdir, *wildcards, **kw):
     else:
         walk_helper((file_list, wildcards, converter, destdir),
                     srcdir,
-                    [os.path.basename(f) for f in glob.glob(opj(srcdir, '*'))])
+                    [os.path.basename(f) for f in glob.glob(os.path.join(srcdir, '*'))])
     return file_list
 
 all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive = True)
+all_data_files.extend(find_data_files('support', 'share/amuse/support', '*', recursive = False))
+all_data_files.extend(find_data_files('lib', 'share/amuse/lib', '*.[ha]', '*.mod', '*.inc', recursive = True))
+all_data_files.append(('share/amuse',['./config.mk','./build.py']))
 
 packages = find_packages('src')
-packages.extend(['amuse.tests.' + x for x in find_packages('test')])
+packages.extend(['amuse.test.suite.' + x for x in find_packages('test')])
 packages.extend(['amuse.examples.' + x for x in find_packages('examples')])
 
 package_data = {
     'amuse.rfi': ['*.template'],
-    'amuse.tests.core_tests': [
-        '*.txt', '*.dyn', '*.ini',
-         '*.dat', 'gadget_snapshot'
+    'amuse.test.suite.core_tests': [
+        '*.txt', '*.dyn', '*.ini', 
+        '*.nemo',
+        '*.dat', 'gadget_snapshot'
     ],
-    'amuse.tests.ticket_tests': [
+    'amuse.test.suite.ticket_tests': [
         '*.out'
+    ],
+    'amuse': [
+        '*rc'
     ]
 }
 
@@ -136,7 +144,7 @@ setup(
     version = '5.1',
     cmdclass = mapping_from_command_name_to_command_class,
     ext_modules = extensions,
-    package_dir = {'': 'src', 'amuse.tests' :'test', 'amuse.examples' : 'examples'},
+    package_dir = {'': 'src', 'amuse.test.suite' :'test', 'amuse.examples' : 'examples'},
     packages =  packages,
     package_data = package_data,
     data_files = all_data_files,

@@ -25,7 +25,8 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         instance = create_dir.CreateADirectoryAndPopulateItWithFilesForACCode()
         instance.name_of_the_code_interface_class = 'TestCode'
         instance.path_of_the_root_directory = root
-        self.assertEquals(instance.reference_to_amuse_path,'../..')
+        if create_dir.CreateADirectoryAndPopulateItWithFiles().amuse_root_dir == os.getcwd():
+            self.assertEquals(instance.reference_to_amuse_path,'../..')
         
         instance.start()
         
@@ -95,7 +96,8 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         instance = create_dir.CreateADirectoryAndPopulateItWithFilesForAFortranCode()
         instance.name_of_the_code_interface_class = 'TestCodeF'
         instance.path_of_the_root_directory = root
-        self.assertEquals(instance.reference_to_amuse_path,'../..')
+        if create_dir.CreateADirectoryAndPopulateItWithFiles().amuse_root_dir == os.getcwd():
+            self.assertEquals(instance.reference_to_amuse_path,'../..')
         
         instance.start()
         

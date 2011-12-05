@@ -7,8 +7,8 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.galactics.interface import GalactICsInterface, GalactICs
 
 # Change the default for some GalactICs(-Interface) keyword arguments:
-#default_options = dict()
-default_options = dict(redirection = "none")
+default_options = dict()
+#default_options = dict(redirection = "none")
 
 class GalactICsInterfaceTests(TestWithMPI):
     
@@ -17,6 +17,7 @@ class GalactICsInterfaceTests(TestWithMPI):
         instance = GalactICsInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.set_output_path(instance.get_output_directory()), 0)
+        ensure_data_directory_exists(instance.get_output_directory())
         self.assertEqual(instance.set_generate_bulge_flag(False), 0)
         self.assertEqual(instance.set_generate_disk_flag(False), 0)
         self.assertEqual(instance.set_order_of_multipole_expansion(0), 0)
@@ -29,6 +30,7 @@ class GalactICsInterfaceTests(TestWithMPI):
         instance = GalactICsInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.set_output_path(os.path.join(instance.get_output_directory(), "test")), 0)
+        ensure_data_directory_exists(instance.get_output_directory())
         
         self.assertEquals(instance.set_generate_halo_flag(False), 0)
         self.assertEquals(instance.set_disk_do_center_flag(False), 0)
@@ -57,6 +59,7 @@ class GalactICsInterfaceTests(TestWithMPI):
         instance = GalactICsInterface(**default_options)
         self.assertEquals(instance.initialize_code(), 0)
         self.assertEquals(instance.set_output_path(instance.get_output_directory()), 0)
+        ensure_data_directory_exists(instance.get_output_directory())
         self.assertEquals(instance.set_halo_number_of_particles(n_particles_halo), 0)
         self.assertEquals(instance.set_bulge_number_of_particles(n_particles_bulge), 0)
         self.assertEquals(instance.set_disk_number_of_particles(n_particles_disk), 0)
@@ -115,6 +118,7 @@ class GalactICsInterfaceTests(TestWithMPI):
         instance = GalactICsInterface(**default_options)
         self.assertEquals(instance.initialize_code(), 0)
         self.assertEquals(instance.set_output_path(instance.get_output_directory()), 0)
+        ensure_data_directory_exists(instance.get_output_directory())
         self.assertEquals(instance.set_halo_number_of_particles(number_of_particles_halo), 0)
         self.assertEquals(instance.set_generate_bulge_flag(False), 0)
         self.assertEquals(instance.set_generate_disk_flag(False), 0)

@@ -835,6 +835,13 @@ class TestMESA(TestWithMPI):
     
     def test17(self):
         print "MESA validation"
+        
+        mesa_src_path = os.path.join(os.path.dirname(sys.modules[MESA.__module__].__file__), 'src', 'mesa')
+        mesa_star_path = os.path.join(mesa_src_path, 'star', 'test', 'star')
+        
+        if not os.path.exists(mesa_star_path) or not os.access(mesa_star_path, os.X_OK):
+            self.skip("no mesa executable in binary distribution, test cannot run")
+        
         number_of_steps = 11#4
         star = Particle()
         star.mass = 1.0 | units.MSun
@@ -852,9 +859,6 @@ class TestMESA(TestWithMPI):
         amuse_output = rfile.read()
         rfile.close()
         
-        print amuse_output
-        mesa_src_path = os.path.join(os.path.dirname(sys.modules[MESA.__module__].__file__), 'src', 'mesa')
-        mesa_star_path = os.path.join(mesa_src_path, 'star', 'test', 'star')
         
         #generate the inlist for the (stand-alone) MESA star run:
         instance = self.new_instance(MESA, redirection = 'null')

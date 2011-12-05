@@ -209,6 +209,8 @@ class option(object):
     def get_sections(self, instance):
         result = []
         result.extend(instance.option_sections)
+        result.extend(instance.__class__.__name__)
+        result.extend(instance.__class__.__name__.split('.')[-1])
         result.extend(self.sections)
         return result
         

@@ -223,6 +223,7 @@ class GalactICsImplementation(object):
             in_diskdf = self.generate_in_diskdf_string()
             dbh_dir, is_new = self._location_dbh_dat(in_dbh + in_diskdf)
             self._cwd = dbh_dir
+            
             if not is_new:
                 return 0
             print "Writing output to:", self._cwd
