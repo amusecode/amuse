@@ -316,7 +316,6 @@ AMUSE_DIR?={0.reference_to_amuse_path}
 MPIFC ?= mpif90
 FC      = $(MPIFC)
 
-FFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = {0.name_of_the_interface_code}.o
@@ -339,17 +338,16 @@ worker_code.f90: {0.name_of_the_python_module}
 \t$(CODE_GENERATOR) --type=f90 interface.py {0.name_of_the_community_interface_class} -o $@
 
 {0.name_of_the_community_code}_worker: worker_code.f90 $(CODELIB) $(OBJS)
-\t$(MPIFC) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
+\t$(MPIFC) $(FCFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 %.o: %.f90
-\t$(FC) $(FFLAGS) -c -o $@ $<
+\t$(FC) $(FCFLAGS) -c -o $@ $<
 """
 
 code_makefile_template_fortran = """\
 MPIFC ?= mpif90
 FC      = $(MPIFC)
 
-FFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 CODELIB = lib{0.name_of_the_community_code}.a
@@ -371,7 +369,7 @@ $(CODELIB): $(CODEOBJS)
 \t$(RANLIB) $@
 
 %.o: %.f90
-\t$(FC) $(FFLAGS) -c -o $@ $<
+\t$(FC) $(FCFLAGS) -c -o $@ $<
 
 """
 
