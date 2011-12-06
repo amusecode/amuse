@@ -2,12 +2,15 @@ from amuse.test.amusetest import TestWithMPI
 import subprocess
 import os
 import time
+import shlex
+
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi.tools import create_fortran
 from amuse.rfi import channel
 from amuse.rfi.core import *
+
 codestring = """
 function echo_int(int_in, int_out)
     implicit none
@@ -292,6 +295,10 @@ class TestInterface(TestWithMPI):
         else:
             return os.environ['MPIFC'] if 'MPIFC' in os.environ else 'mpif90'
     
+    def get_mpif90_arguments(self):
+        name = self.get_mpif90_name()
+        return list(shlex.split(name))
+        
     def wait_for_file(self, filename):
         for dt in [0.01, 0.01, 0.02, 0.05]:
             if os.path.exists(filename):
@@ -308,8 +315,10 @@ class TestInterface(TestWithMPI):
         with open(sourcename, "w") as f:
             f.write(string)
         
+        arguments = self.get_mpif90_arguments()
+        arguments.extend(["-g", "-c",  "-o", objectname, sourcename])
         process = subprocess.Popen(
-            [self.get_mpif90_name(), "-g", "-c",  "-o", objectname, sourcename],
+            arguments,
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
@@ -329,7 +338,7 @@ class TestInterface(TestWithMPI):
         if os.path.exists(exename):
             os.remove(exename)
             
-        arguments = [self.get_mpif90_name()]
+        arguments = self.get_mpif90_arguments()
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)

@@ -6,6 +6,8 @@ from amuse.support.interface import InCodeComponentImplementation
 
 import subprocess
 import os
+import shlex
+
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
@@ -271,6 +273,10 @@ class TestInterfaceF(TestWithMPI):
             return config.mpi.mpif95
         else:
             return os.environ['MPIFC'] if 'MPIFC' in os.environ else 'mpif90'
+            
+    def get_mpif90_arguments(self):
+        name = self.get_mpif90_name()
+        return list(shlex.split(name))
 
     def f90_compile(self, objectname, string):
         root, ext = os.path.splitext(objectname)
@@ -281,7 +287,8 @@ class TestInterfaceF(TestWithMPI):
             f.write(string)
         
         rootdir = self.get_amuse_root_dir()
-        arguments = [self.get_mpif90_name(), "-I","{0}/lib/stopcond".format(rootdir), "-c",  "-o", objectname, sourcename]
+        arguments = self.get_mpif90_arguments()
+        arguments.extend(["-I","{0}/lib/stopcond".format(rootdir), "-c",  "-o", objectname, sourcename])
         process = subprocess.Popen(
             arguments,
             stdin = subprocess.PIPE,
@@ -295,7 +302,7 @@ class TestInterfaceF(TestWithMPI):
     def f90_build(self, exename, objectnames):
         rootdir = self.get_amuse_root_dir()
         
-        arguments = [self.get_mpif90_name()]
+        arguments = self.get_mpif90_arguments()
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)
