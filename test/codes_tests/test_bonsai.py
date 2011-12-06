@@ -22,11 +22,6 @@ class TestBonsaiInterface(TestWithMPI):
     def test0(self):
         print "Instantie aanmaken"
         instance = self.new_instance_of_an_optional_code(BonsaiInterface, **default_options)
-        print "aangemaakt"
-        result,error = instance.echo_int(12)
-        print "call instance done"
-        self.assertEquals(error, 0)
-        self.assertEquals(result, 12)
         instance.stop()
     
     def test1(self):
