@@ -1,0 +1,54 @@
+Index: mesa/src/mesa/alert/public/alert_lib.f
+===================================================================
+--- mesa.orig/src/mesa/alert/public/alert_lib.f	2011-12-06 15:39:44.000000000 +0100
++++ mesa/src/mesa/alert/public/alert_lib.f	2011-12-06 15:53:56.000000000 +0100
+@@ -27,19 +27,20 @@
+       ! for interactive debuggers, this is a good place for a breakpoint
+       
+       ! follows the convention that info > 0 for warnings and < 0 for errors
+-      
+       implicit none
+       
+       character (len=1000) :: alert_message = ''
+       integer :: alert_info = 0
+-
+       contains
+       
+       subroutine alert(info, message)
++         INCLUDE 'mpif.h'
+          integer, intent(in) :: info
++         integer :: parent, ierr
++         integer, dimension(8) :: header
+          character(*), intent(in) :: message
+          logical, parameter :: stop_for_warnings = .false.         
+-         logical, parameter :: stop_for_errors = .false.
++         logical, parameter :: stop_for_errors = .true.
+          alert_info = info
+          if (info > 0) then
+             write(alert_message,'(2a)') 'WARNING: ', trim(message)
+@@ -55,6 +56,13 @@
+             if (stop_for_errors) then
+                write(*,'(a)') 'alert message: ' // trim(alert_message)
+                write(*,*) ' stopping because of alert'
++               call MPI_Comm_get_parent(parent, ierr)
++               header = 0
++               header(1) = -2
++               header(2) = 1
++               call MPI_Send(header, 8, MPI_INT, 0, 999, parent, ierr)
++               call MPI_Comm_disconnect(parent, ierr)
++               call MPI_Finalize(ierr)
+                stop 1 ! error code
+             end if
+          end if
+Index: mesa/src/mesa/utils/makefile_header
+===================================================================
+--- mesa.orig/src/mesa/utils/makefile_header	2011-12-06 13:23:07.000000000 +0100
++++ mesa/src/mesa/utils/makefile_header	2011-12-06 15:56:53.000000000 +0100
+@@ -313,6 +313,7 @@
+ endif
+ endif
+ 
++FC = $(MPIFC)
+ # some definitions used in the module makefiles
+ MODULE_DIR = ..
+ MOD_PUBLIC_DIR = $(MODULE_DIR)/public

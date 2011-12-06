@@ -313,6 +313,8 @@ FCopenmp =
 endif
 endif
 
+FC = $(MPIFC)
+
 # some definitions used in the module makefiles
 MODULE_DIR = ..
 MOD_PUBLIC_DIR = $(MODULE_DIR)/public
