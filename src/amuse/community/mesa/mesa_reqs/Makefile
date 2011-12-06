@@ -27,7 +27,7 @@ endif
 OBJS = $(STAR_WORK_OBJS) run.o
 
 $(STAR) : lib_mesa_star $(OBJS)
-	$(FC) $(FCopenmp) $(FFLAGS) -o $(WORK_DIR)/$(STAR) $(OBJS) $(LOAD_MESA_STAR)
+	$(MPIFC) $(FCopenmp) $(FFLAGS) -o $(WORK_DIR)/$(STAR) $(OBJS) $(LOAD_MESA_STAR)
 	
 #################################################################
 
