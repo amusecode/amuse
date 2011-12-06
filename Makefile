@@ -33,6 +33,7 @@ distclean:
 	-rm -f src/amuse/config.py
 	-rm -f src/amuse/config.pyc
 	-rm -f amuse.sh
+	-rm -f build.py
 	
 	-rm -f test/*.000 test/fort.* test/perr test/pout test/test.h5 test/*.log
 	-rm -f test/codes_tests/perr test/codes_tests/pout
