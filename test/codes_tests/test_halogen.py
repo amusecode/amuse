@@ -96,6 +96,8 @@ class HalogenInterfaceTests(TestWithMPI):
         print "Testing HalogenInterface output file name and directory"
         instance = HalogenInterface(**default_options)
         self.assertEquals(instance.initialize_code(), 0)
+        ensure_data_directory_exists(instance.get_output_directory())
+        
         self.assertEquals(instance.set_model_alpha(2.0), 0)
         self.assertEquals(instance.set_model_beta(5.0), 0)
         self.assertEquals(instance.set_model_gamma(0.0), 0)
@@ -119,14 +121,17 @@ class HalogenInterfaceTests(TestWithMPI):
             [os.path.join(instance.get_output_directory(), ""), 0])
         
         self.assertEquals(instance.commit_parameters(), 0)
-        
         outputfile = os.path.join(instance.get_output_directory(), "test.IC.ascii")
         if os.path.exists(outputfile):
             os.remove(outputfile)
         self.assertEquals(instance.generate_particles(), 0)
         self.assertTrue(os.path.exists(outputfile))
         
+        
         halogen4muse_path = os.path.join(os.path.dirname(amuse.community.halogen.__file__), 'src', 'halogen4muse')
+        if not os.path.exists(halogen4muse_path) or not os.access(halogen4muse_path, os.X_OK):
+            return
+            
         subprocess.call([halogen4muse_path, '-a', '2', '-b', '5', '-c', '0', '-N', 
             '1000', '-name', 'test_stand_alone', '-randomseed', '1'], cwd = instance.get_output_directory())
         stdoutput = subprocess.Popen(["diff", "test.IC.ascii", "test_stand_alone.IC.ascii"], 
