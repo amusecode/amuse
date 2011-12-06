@@ -57,7 +57,7 @@ build.sub_commands.append(('build_codes', None))
 Clean.sub_commands.append(('clean_codes',None))
 Clean.sub_commands.append(('clean_python',None))
 
-Install.sub_commands.append( ('generate_install_ini',None) )
+Install.sub_commands.insert(0, ('generate_install_ini',None) )
 
 def find_packages(where='.', exclude=()):
     """Return a list all Python packages found within directory 'where'
