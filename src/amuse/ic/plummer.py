@@ -16,7 +16,7 @@ from math import sqrt
 from amuse.units import nbody_system
 from amuse import datamodel
 
-__all__ = ["new_plummer_sphere"]
+__all__ = ["new_plummer_sphere", "new_plummer_model"]
 
 class MakePlummerModel(object):
     def __init__(self, number_of_particles, convert_nbody = None, radius_cutoff = 22.8042468, mass_cutoff = 0.999,
@@ -129,3 +129,5 @@ def new_plummer_sphere(number_of_particles, *list_arguments, **keyword_arguments
     """
     uc = MakePlummerModel(number_of_particles, *list_arguments, **keyword_arguments)
     return uc.result
+
+new_plummer_model = new_plummer_sphere

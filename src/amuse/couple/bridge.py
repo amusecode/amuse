@@ -268,7 +268,7 @@ class CalculateFieldForParticles(object):
 class GravityCodeInField(object):
     
     
-    def __init__(self, code, field_codes, do_sync=True, verbose=False):
+    def __init__(self, code, field_codes, do_sync=True, verbose=False, radius_is_eps=False):
         """
         verbose indicates whether to output some run info
         """  
@@ -283,6 +283,7 @@ class GravityCodeInField(object):
         self.do_sync=do_sync
         self.verbose=verbose
         self.timestep=None
+        self.radius_is_eps = radius_is_eps
     
       
     def evolve_model(self,tend,timestep=None):
@@ -413,10 +414,16 @@ class GravityCodeInField(object):
         return kinetic_energy_after - kinetic_energy_before
         
     
+    def _softening_lengths(self, particles):
+        if self.radius_is_eps:
+            return particles.radius
+        else:
+            return (self.code.epsilon_squared**0.5).as_vector_with_length(len(particles))
+    
     def get_potential_energy_in_field_code(self, particles, field_code):
         pot=field_code.get_potential_at_point(
+            self._softening_lengths(particles),
             particles.x,
-            particles.radius,
             particles.y,
             particles.z
         )
@@ -424,7 +431,7 @@ class GravityCodeInField(object):
 
     def kick_with_field_code(self, particles, field_code, dt):
         ax,ay,az=field_code.get_gravity_at_point(
-            particles.radius,
+            self._softening_lengths(particles),
             particles.x,
             particles.y,
             particles.z
@@ -449,13 +456,13 @@ class Bridge(object):
         self.use_threading = use_threading
         self.time_offsets = dict()
     
-    def add_system(self, interface, partners=set(),do_sync=True):
+    def add_system(self, interface, partners=set(),do_sync=True, radius_is_eps=False):
         """
         add a system to bridge integrator  
         """
         
         if hasattr(interface, "particles"):
-            code = GravityCodeInField(interface, partners, do_sync, self.verbose)
+            code = GravityCodeInField(interface, partners, do_sync, self.verbose, radius_is_eps)
             self.add_code(code)
         else:
             if len(partners):
@@ -535,10 +542,8 @@ class Bridge(object):
       
     @property
     def potential_energy(self):
-#        return self.particles.potential_energy()
         result=quantities.zero
         for x in self.codes:
-#            print x.__class__.__name__, "U:", x.potential_energy
             result+=x.potential_energy
         return result
     
@@ -546,7 +551,6 @@ class Bridge(object):
     def kinetic_energy(self):  
         result=quantities.zero
         for x in self.codes:
-#            print x.__class__.__name__, "K:", x.kinetic_energy
             result+=x.kinetic_energy
         return result #- self.kick_energy
         
@@ -555,7 +559,6 @@ class Bridge(object):
         result=quantities.zero
         for x in self.codes:
             if hasattr(x,'thermal_energy'):
-#                print x.__class__.__name__, "Q:", x.thermal_energy
                 result+=x.thermal_energy
         return result
           
