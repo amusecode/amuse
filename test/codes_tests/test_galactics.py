@@ -129,19 +129,20 @@ class GalactICsInterfaceTests(TestWithMPI):
         self.assertEquals(instance.generate_particles(), 0)
         self.assertEquals(instance.get_number_of_particles_updated().values(), [number_of_particles_halo, 0])
 
-        if "64" in os.uname()[-1]:
-            mass_halo = 1179.03507
-            expected_mean_pos = numpy.array([73.71981114, 79.16010066, 76.47781355])
-            expected_mean_vel = numpy.array([0.95465595, 0.90994227, 0.92280032])
-        else:
-            mass_halo = 1178.83539
-            expected_mean_pos = numpy.array([73.73911318, 79.18082641, 76.49783728])
-            expected_mean_vel = numpy.array([0.95453909, 0.90982887, 0.92268653])
+        
         
         masses, errors = instance.get_mass(range(number_of_particles_halo))
         self.assertEquals(errors, numpy.zeros(number_of_particles_halo))
-        self.assertAlmostRelativeEquals(masses, numpy.ones(number_of_particles_halo)*mass_halo/number_of_particles_halo, 4)
+        self.assertAlmostRelativeEquals(masses, numpy.ones(number_of_particles_halo)*masses[0])
+        total_mass = masses.sum() 
         
+        if ((total_mass-1179.03507)/1179.03507) < 1e-5:
+            expected_mean_pos = numpy.array([73.71981114, 79.16010066, 76.47781355])
+            expected_mean_vel = numpy.array([0.95465595, 0.90994227, 0.92280032])
+        else:
+            expected_mean_pos = numpy.array([73.73911318, 79.18082641, 76.49783728])
+            expected_mean_vel = numpy.array([0.95453909, 0.90982887, 0.92268653])
+            
         x_positions, y_positions, z_positions, errors = instance.get_position(range(number_of_particles_halo))
         self.assertEquals(errors, numpy.zeros(number_of_particles_halo))
         self.assertAlmostEquals(numpy.array([numpy.mean(x_positions), numpy.mean(y_positions), 
@@ -263,14 +264,9 @@ class GalactICsTests(TestWithMPI):
         instance.commit_parameters()
         instance.generate_particles()
         self.assertEquals(len(instance.particles), 1000)
-        if "64" in os.uname()[-1]:
-            mass_halo = 1179.03507 | nbody_system.mass
-            expected_kinetic_energy = 2506.90523413 | nbody_system.energy
-            accuracy = 5
-        else:
-            mass_halo = 1178.83539 | nbody_system.mass
-            expected_kinetic_energy = 2505.93403345 | nbody_system.energy
-            accuracy = 4
+        accuracy = 3
+        mass_halo = 1179 | nbody_system.mass
+        expected_kinetic_energy = 2506 | nbody_system.energy
         self.assertAlmostRelativeEquals(instance.particles.total_mass(), mass_halo, accuracy)
         self.assertAlmostRelativeEquals(instance.particles.kinetic_energy(), expected_kinetic_energy, accuracy)
         instance.cleanup_code()
