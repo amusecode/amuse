@@ -75,7 +75,7 @@ class TestFiInterface(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        instance=FiInterface(redirection="none")
+        instance=FiInterface()
         instance.initialize_code()
         instance.commit_parameters()        
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -918,7 +918,7 @@ class TestFi(TestWithMPI):
         UnitMass = 1.989e43 | units.g           # 1.0e10 solar masses
         UnitVelocity = 1e5 | units.cm / units.s # 1 km/sec
         convert_nbody = nbody.nbody_to_si(UnitLength, UnitMass)
-        instance = Fi(convert_nbody, mode = FiInterface.MODE_PERIODIC_BOUNDARIES, redirection="none")
+        instance = Fi(convert_nbody, mode = FiInterface.MODE_PERIODIC_BOUNDARIES)
         self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
         instance.parameters.use_hydro_flag = False
         instance.parameters.self_gravity_flag = False

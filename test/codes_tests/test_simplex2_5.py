@@ -5,7 +5,7 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.simplex2_5.interface import SimpleXInterface, SimpleX
 from amuse.units import units
 from amuse.datamodel import Particles
-default_options = dict(number_of_workers=2, redirection="none")
+#default_options = dict(number_of_workers=2, redirection="none")
 default_options = dict(number_of_workers=1)#,debugger='gdb')
 
 class TestSimpleXInterface(TestWithMPI):

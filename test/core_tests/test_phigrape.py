@@ -15,10 +15,11 @@ class Test(amusetest.TestCase):
         instance = phigrape.Inp2Particles()
         instance.convert_to_particles(os.path.join(directory, 'plummer_100.ini'))
         rev_instance = phigrape.Particles2Inp()
-        rev_instance.convert_to_inp(instance.Particles,os.path.join(directory, 'plummer_back_100.ini'))
-
+        output = os.path.join(self.get_path_to_results(), 'plummer_back_100.ini')
+        rev_instance.convert_to_inp(instance.Particles,output)
+    
         control_instance = phigrape.Inp2Particles()
-        control_instance.convert_to_particles(os.path.join(directory, 'plummer_back_100.ini'))
+        control_instance.convert_to_particles(os.path.join(directory, output))
 
         self.assertAlmostEqual(control_instance.Particles.mass, instance.Particles.mass, 16)
         self.assertAlmostEqual(control_instance.Particles[1].position, instance.Particles[1].position, 16)

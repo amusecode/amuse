@@ -21,7 +21,7 @@ from amuse.couple import multiples
 class TestSimpleMultiples(TestWithMPI):
 
     def new_smalln(self):
-        result = SmallN(redirection = 'none')
+        result = SmallN()
         result.parameters.timestep_parameter = 0.1
         result.parameters.cm_index = 2001
         return result
@@ -29,7 +29,7 @@ class TestSimpleMultiples(TestWithMPI):
    
         
     def test0(self):
-        code = Hermite(redirection = 'none')
+        code = Hermite()
         stars = datamodel.Particles(2)
         stars.mass = 1 | nbody_system.mass
         stars.position = [
@@ -58,7 +58,7 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertAlmostRelativeEquals(multiples_code.multiples_energy_correction - multiples_code.kinetic_energy, -total_energy0, 7)
     
     def test1(self):
-        code = Hermite(redirection = 'none')
+        code = Hermite()
         stars = datamodel.Particles(3)
         stars.mass = 1 | nbody_system.mass
         stars.position = [

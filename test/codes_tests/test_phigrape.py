@@ -690,7 +690,7 @@ class TestPhigrape(TestWithMPI):
     
     
     def test16(self):
-        instance = PhiGRAPE(number_of_workers = 2, redirection = "none")
+        instance = PhiGRAPE(number_of_workers = 2)
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
@@ -740,7 +740,7 @@ class TestPhigrape(TestWithMPI):
         
     def test17(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = PhiGRAPE(convert_nbody, number_of_workers=2, redirection = "none")
+        instance = PhiGRAPE(convert_nbody, number_of_workers=2)
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | units.AU**2

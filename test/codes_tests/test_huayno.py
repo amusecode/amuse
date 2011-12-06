@@ -178,7 +178,7 @@ class TestHuayno(TestWithMPI):
     def test3(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        instance = Huayno(convert_nbody, redirection="none")
+        instance = Huayno(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | units.AU**2
         
@@ -207,7 +207,7 @@ class TestHuayno(TestWithMPI):
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = Huayno(convert_nbody, redirection="none")
+        instance = Huayno(convert_nbody)
         instance.initialize_code()
         
         particles = datamodel.Particles(2)

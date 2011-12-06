@@ -425,7 +425,7 @@ class TestEVtwin(TestWithMPI):
             star.radius = 0.0 | units.RSun
 
 #       Initialize stellar evolution code
-        instance = EVtwin(redirection = 'none') #debugger="xterm")
+        instance = EVtwin() #debugger="xterm")
         instance.initialize_code()
         if instance.get_maximum_number_of_stars() < number_of_stars:
             instance.set_maximum_number_of_stars(number_of_stars)
@@ -650,7 +650,7 @@ class TestEVtwin(TestWithMPI):
     
     def slowtest11(self):
         print "Test 11: Continue the stellar evolution of a 'merger product' - WIP"
-        instance = EVtwin(redirection = "none")
+        instance = EVtwin()
         instance.initialize_code()
         instance.commit_parameters()
         
@@ -690,7 +690,7 @@ class TestEVtwin(TestWithMPI):
         print "Testing basic operations: evolve_one_step and evolve_for"
         stars = datamodel.Particles(2)
         stars.mass = 1.0 | units.MSun
-        instance = EVtwin(redirection = "none")
+        instance = EVtwin()
         se_stars = instance.particles.add_particles(stars)
         self.assertAlmostEqual(se_stars.age, [0.0, 0.0] | units.yr)
         
@@ -713,7 +713,7 @@ class TestEVtwin(TestWithMPI):
         print "Test evolve_model optional arguments: end_time and keep_synchronous"
         stars = datamodel.Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
-        instance = EVtwin(redirection = 'none')
+        instance = EVtwin()
         instance.particles.add_particles(stars)
         
         self.assertAlmostEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)

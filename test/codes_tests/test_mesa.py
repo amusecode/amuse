@@ -34,7 +34,7 @@ class TestMESAInterface(TestWithMPI):
         print "Testing get/set of metallicity (tests new ZAMS model implicitly)..."
         print "The first time this test will take quite some time" \
             " to generate new starting models."
-        instance = self.new_instance(MESAInterface, redirection = 'none')
+        instance = self.new_instance(MESAInterface)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -706,7 +706,7 @@ class TestMESA(TestWithMPI):
         print "Testing MESA wind parameters..."
         stars = Particles(9)
         stars.mass = 10.0 | units.MSun
-        instance = self.new_instance(MESA, redirection="none")
+        instance = self.new_instance(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return

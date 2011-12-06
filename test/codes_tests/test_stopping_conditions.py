@@ -102,16 +102,30 @@ class ForTesting(InCodeComponentImplementation):
         
 class TestInterface(TestWithMPI):
     
-    def get_mpif90_name(self):
-        return os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
-    
+            
     def get_mpicc_name(self):
-        return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'mpi')
+        except ImportError:
+            is_configured = False
     
+        if is_configured:
+            return config.mpi.mpicc
+        else:
+            return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
+            
     def get_mpicxx_name(self):
-        return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'mpi')
+        except ImportError:
+            is_configured = False
     
-
+        if is_configured:
+            return config.mpi.mpicxx
+        else:
+            return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
     
     def cxx_compile(self, objectname, string):
   
@@ -194,7 +208,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(next, 1)
         
     def test2(self):
-        instance = ForTesting(self.exefile, redirection = "none") #, debugger = "xterm")
+        instance = ForTesting(self.exefile) #, debugger = "xterm")
         instance.initialize_code()
         self.assertTrue(instance.stopping_conditions.pair_detection.is_supported())
         self.assertTrue(instance.stopping_conditions.collision_detection.is_supported())
@@ -202,7 +216,7 @@ class TestInterface(TestWithMPI):
         instance.stop()
         
     def test3(self):
-        instance = ForTesting(self.exefile, redirection = "none") #, debugger = "xterm")
+        instance = ForTesting(self.exefile) #, debugger = "xterm")
         self.assertFalse(instance.stopping_conditions.pair_detection.is_enabled())
         instance.stopping_conditions.pair_detection.enable()
         self.assertTrue(instance.stopping_conditions.pair_detection.is_enabled())
@@ -245,9 +259,18 @@ class TestInterface(TestWithMPI):
 
 
 class TestInterfaceF(TestWithMPI):
-    def get_mpif90_name(self):
-        return os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
     
+    def get_mpif90_name(self):
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'mpi')
+        except ImportError:
+            is_configured = False
+    
+        if is_configured:
+            return config.mpi.mpif95
+        else:
+            return os.environ['MPIFC'] if 'MPIFC' in os.environ else 'mpif90'
 
     def f90_compile(self, objectname, string):
         root, ext = os.path.splitext(objectname)
@@ -321,7 +344,7 @@ class TestInterfaceF(TestWithMPI):
         self.assertEquals(next, 1)
 
     def test2(self):
-        instance = ForTesting(self.exefile, redirection = "none") #, debugger = "xterm")
+        instance = ForTesting(self.exefile) #, debugger = "xterm")
         instance.initialize_code()
         self.assertTrue(instance.stopping_conditions.pair_detection.is_supported())
         self.assertTrue(instance.stopping_conditions.collision_detection.is_supported())
@@ -329,7 +352,7 @@ class TestInterfaceF(TestWithMPI):
         instance.stop()
 
     def test3(self):
-        instance = ForTesting(self.exefile, redirection = "none") #, debugger = "xterm")
+        instance = ForTesting(self.exefile) #, debugger = "xterm")
         self.assertFalse(instance.stopping_conditions.pair_detection.is_enabled())
         instance.stopping_conditions.pair_detection.enable()
         self.assertTrue(instance.stopping_conditions.pair_detection.is_enabled())

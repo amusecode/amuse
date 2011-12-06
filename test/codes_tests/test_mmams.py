@@ -10,7 +10,8 @@ from amuse.units import units
 from amuse.datamodel import Particles, Particle
 
 # Change the default for some MakeMeAMassiveStar(-Interface) keyword arguments:
-default_options = dict(redirection="none")
+#default_options = dict(redirection="none")
+default_options = dict()
 
 class TestMakeMeAMassiveStarInterface(TestWithMPI):
     
@@ -326,7 +327,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.particles.add_particles(stars)
         self.assertEqual(instance.number_of_particles, 2)
         
-        stellar_evolution = self.new_instance(MESA, redirection="none")
+        stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
@@ -410,7 +411,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
-        stellar_evolution = self.new_instance(MESA, redirection="none")
+        stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
@@ -533,7 +534,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.parameters.target_n_shells = 20000
         instance.commit_parameters()
         
-        stellar_evolution = self.new_instance(MESA, redirection="none")
+        stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
@@ -606,7 +607,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
-        stellar_evolution = self.new_instance(MESA, redirection="none")
+        stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
@@ -732,7 +733,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.particles.add_particles(stars)
         self.assertEqual(instance.number_of_particles, 2)
         
-        stellar_evolution = EVtwin(redirection="none")
+        stellar_evolution = EVtwin()
         stellar_evolution.initialize_code() 
         stellar_evolution.commit_parameters()
         stellar_evolution.particles.add_particles(stars)
@@ -779,7 +780,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stars = Particles(number_of_stars)
         stars.mass = masses
         
-        stellar_evolution = self.new_instance(MESA, redirection="none")
+        stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
@@ -908,7 +909,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stars = Particles(number_of_stars)
         stars.mass = masses
         
-        stellar_evolution = self.new_instance(MESA, redirection="none")
+        stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return

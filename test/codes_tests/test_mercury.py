@@ -130,7 +130,7 @@ class TestMercuryInterface(TestWithMPI):
         instance.stop()
 
     def test9(self):
-        instance=MercuryInterface(redirection='none')
+        instance=MercuryInterface()
         instance.initialize_code()
         pid,err=instance.new_orbiter(0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.)  
         n,err=instance.get_number_of_orbiters()  
@@ -279,7 +279,7 @@ class TestMercury(TestWithMPI):
 
     def test0(self):
         centre, orbiter = self.sun_and_earth()
-        mercury = MercuryWayWard(redirection = "none")#,debugger='xterm')
+        mercury = MercuryWayWard()#,debugger='xterm')
         mercury.initialize_code()
         mercury.central_particle.add_particles(centre)
         mercury.orbiters.add_particles(orbiter)
@@ -303,7 +303,7 @@ class TestMercury(TestWithMPI):
     def test1(self):
         centre, orbiters = new_solar_system_for_mercury()
 
-        mercury = MercuryWayWard(redirection='none')
+        mercury = MercuryWayWard()
         mercury.initialize_code()
 
         mercury.central_particle.add_particles(centre)
