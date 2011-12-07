@@ -902,29 +902,37 @@ class AdaptingVectorQuantity(VectorQuantity):
 
     def __init__(self, value = [], unit = None):
         VectorQuantity.__init__(self, value, unit)
-        self._number = list(value)
+        del self._number
+        self._number_list = list(value)
         if unit is None:
             self.append = self.append_start
+            self.prepend = self.prepend_start
         else:
             self.append = self.append_normal
-
-
+            self.prepend = self.prepend_normal
+    
+    def __getattr__(self, attribute):
+        if attribute == "_number":
+            if self.unit is None:
+                return numpy.array(self._number_list)
+            else:
+                return numpy.array(self._number_list, dtype=self.unit.dtype)
+        else:
+            raise AttributeError
+    
     def append_start(self, quantity):
         self.unit = quantity.unit
-        self._number.append(quantity.value_in(self.unit))
+        self._number_list.append(quantity.value_in(self.unit))
         self.append = self.append_normal
+        self.prepend = self.prepend_normal
 
     def append_normal(self, quantity):
-        self._number.append(quantity.value_in(self.unit))
-
-    def append_when_cached(self, quantity):
-        self._remove_cached_number()
-        self._number.append(quantity.value_in(self.unit))
-        
-    def append_when_cached_empty(self, quantity):
-        self._remove_cached_number()
-        self.append_start(quantity)
-
+        self._number_list.append(quantity.value_in(self.unit))
+    
+    prepend_start = append_start
+    
+    def prepend_normal(self, quantity):
+        self._number_list.insert(0, quantity.value_in(self.unit))
 
     def extend(self, quantity):
         for x in quantity:
@@ -932,34 +940,18 @@ class AdaptingVectorQuantity(VectorQuantity):
 
     def __setitem__(self, index, quantity):
         quantity_in_my_units = quantity.as_quantity_in(self.unit)
-        self._number[index] = quantity_in_my_units.number
+        self._number_list[index] = quantity_in_my_units.number
         self._remove_cached_number()
 
     def __getitem__(self, index):
         return new_quantity(self.number[index], self.unit)
 
-    def _remove_cached_number(self):
-        try:
-            delattr(self, "number")
-        except AttributeError:
-            pass
-        self.append = self.append_normal
-
     def __str__(self):
         if self.unit is None:
-            return str(self._number)
+            return str(self._number_list)
         else:
             return console.current_printing_strategy.quantity_to_string(self)
 
-    @late
-    def number(self):
-        if self.unit is None:
-            self.append = self.append_when_cached_empty
-            return numpy.array(self._number)
-        else:
-            self.append = self.append_when_cached
-            return numpy.array(self._number, dtype=self.unit.dtype)
-            
 def new_quantity(value, unit):
     """Create a new Quantity object.
 

@@ -237,10 +237,19 @@ class TestAdaptingVectorQuantities(amusetest.TestCase):
 
     def test1(self):
         x = AdaptingVectorQuantity()
+        self.assertEquals(x.append.__name__, "append_start")
         x.append(1 | units.kg)
         self.assertEquals(x.unit, units.kg)
         self.assertEquals(len(x), 1)
+        self.assertEquals(x.append.__name__, "append_normal")
         
+        self.assertTrue(isinstance(x._number_list, list))
+        self.assertFalse(isinstance(x._number_list, numpy.ndarray))
+        self.assertTrue(isinstance(x.number, numpy.ndarray))
+        self.assertFalse(isinstance(x.number, list))
+        self.assertEquals(x._number_list, [1])
+        self.assertEquals(x.number, numpy.array([1]))
+    
     def test2(self):
         x = AdaptingVectorQuantity()
         self.assertEquals(len(x), 0)
@@ -250,15 +259,44 @@ class TestAdaptingVectorQuantities(amusetest.TestCase):
         self.assertEquals(x.unit, units.kg)
         self.assertEquals(len(x), 1)
         self.assertEquals(str(x), '[1] kg')
-        
+        x.append(2 | units.kg)
+        self.assertEquals(x.unit, units.kg)
+        self.assertEquals(len(x), 2)
+        self.assertEquals(str(x), '[1, 2] kg')
+    
     def test3(self):
         x = AdaptingVectorQuantity()
         x.extend([1,2,3] | units.kg)
         self.assertEquals(x.unit, units.kg)
         self.assertEquals(len(x), 3)
-        x.number
+        self.assertEquals(x.number, numpy.array([1,2,3]))
         
         x.extend([1,2,3] | units.g)
         self.assertEquals(x.unit, units.kg)
         self.assertEquals(len(x), 6)
         self.assertAlmostRelativeEquals(x, [1000,2000,3000,1,2,3] | units.g)
+    
+    def test4(self):
+        x = AdaptingVectorQuantity()
+        x.prepend(1 | units.kg)
+        self.assertEquals(x.unit, units.kg)
+        self.assertEquals(len(x), 1)
+        self.assertEquals(str(x), '[1] kg')
+        x.prepend(2 | units.kg)
+        self.assertEquals(x.unit, units.kg)
+        self.assertEquals(len(x), 2)
+        self.assertEquals(str(x), '[2, 1] kg')
+    
+    def test5(self):
+        # Everything mixed...
+        x = AdaptingVectorQuantity()
+        x.extend([3,4,5] | units.kg)
+        x.append(6 | units.kg)
+        x.prepend(2 | units.kg)
+        x.extend([7000,8000,9000] | units.g)
+        x.prepend(1000 | units.g)
+        x.append(10000 | units.g)
+        self.assertEquals(x.unit, units.kg)
+        self.assertEquals(len(x), 10)
+        self.assertEquals(x.number, numpy.array([1,2,3,4,5,6,7,8,9,10]))
+        self.assertEquals(x, [1,2,3,4,5,6,7,8,9,10]|units.kg)
