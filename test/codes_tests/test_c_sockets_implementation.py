@@ -555,7 +555,7 @@ class TestInterface(TestWithMPI):
 
     
     def test11(self):
-        instance = ForTestingInterface(self.exefile, redirection="none", channel_type="sockets")
+        instance = ForTestingInterface(self.exefile, channel_type="sockets")
         (output_ints,) = instance.echo_array([4,5,6])
         instance.stop()
         print output_ints

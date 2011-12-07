@@ -15,6 +15,7 @@ from amuse.community.kepler.interface import Kepler
 from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.rfi.core import is_mpd_running
+
 def test1():
     mass = 1 | nbody_system.mass
     semi = 1 | nbody_system.length
@@ -24,7 +25,7 @@ def test1():
     
 def run_kepler(mass, semi, ecc, time):
 
-    kep = Kepler(redirection = "none")
+    kep = Kepler()
     kep.initialize_code()
 
     kep.set_longitudinal_unit_vector(1.0|units.none, 1.0|units.none,
