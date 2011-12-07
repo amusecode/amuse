@@ -155,7 +155,7 @@ class GalactICsInterfaceTests(TestWithMPI):
         self.assertAlmostEquals(numpy.array([numpy.mean(x_velocities), numpy.mean(y_velocities), 
             numpy.mean(z_velocities)]), numpy.array([0.0]*3))
         self.assertAlmostRelativeEquals(numpy.array([numpy.mean(abs(x_velocities)), numpy.mean(abs(y_velocities)), 
-            numpy.mean(abs(z_velocities))]), expected_mean_vel, 4)
+            numpy.mean(abs(z_velocities))]), expected_mean_vel, 3)
         
         self.assertEquals(instance.cleanup_code(), 0)
         instance.stop()
