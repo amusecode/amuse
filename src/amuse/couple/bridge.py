@@ -418,7 +418,7 @@ class GravityCodeInField(object):
         if self.radius_is_eps:
             return particles.radius
         else:
-            return (self.code.epsilon_squared**0.5).as_vector_with_length(len(particles))
+            return (self.code.parameters.epsilon_squared**0.5).as_vector_with_length(len(particles))
     
     def get_potential_energy_in_field_code(self, particles, field_code):
         pot=field_code.get_potential_at_point(
