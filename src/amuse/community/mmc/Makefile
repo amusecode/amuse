@@ -1,11 +1,12 @@
 AMUSE_DIR?=../../../..
 -include $(AMUSE_DIR)/config.mk
 
-MPIF90 ?= mpif90
+MPIFC  ?= mpif90
+MPIF90 ?= $(MPIFC)
 PYTHON ?= python
-FC      = $(MPIF90)
+FC      = $(MPIFC)
 
-FFLAGS   += -Wall -g -fno-automatic
+FCLAGS   += -fno-automatic
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
@@ -43,8 +44,8 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py mmcInterface -o $@
 
 worker_code: worker_code.f90 $(OBJS) $(CODELIB) 
-	$(MPIF90) $(CXXFLAGS) $(OBJS) $(SRCINC) $< $(CODELIB) -o $@
+	$(MPIFC) $(FCFLAGS) $(OBJS) $(SRCINC) $< $(CODELIB) -o $@
 
 interface.o: interface.f90 
-	$(FC) $(FFLAGS) $(SRCINC) -c -o $@ $<
+	$(FC) $(FCLAGS) $(SRCINC) -c -o $@ $<
 

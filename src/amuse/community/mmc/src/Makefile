@@ -25,8 +25,8 @@ FFLAGS = -fno-automatic -g
 #FC = gfortran
 
 # AMUSE STUFF======
-MPIF90 ?= mpif90
-FC      = $(MPIF90)
+MPIFC ?= mpif90
+FC      = $(MPIFC)
 #FFLAGS += -Wall -g
 # =================
 #FC = pgf77

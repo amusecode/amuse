@@ -1,6 +1,6 @@
 FC ?= mpif90
 
-FFLAGS   += -Wall -g
+FCFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 CODELIB = libaarsethzare.a
@@ -22,5 +22,5 @@ $(CODELIB): $(CODEOBJS)
 	$(RANLIB) $@
 
 %.o: %.f90
-	$(FC) $(FFLAGS) -c -o $@ $<
+	$(FC) $(FCFLAGS) -c -o $@ $<
 

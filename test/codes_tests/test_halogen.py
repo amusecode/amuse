@@ -129,11 +129,19 @@ class HalogenInterfaceTests(TestWithMPI):
         
         
         halogen4muse_path = os.path.join(os.path.dirname(amuse.community.halogen.__file__), 'src', 'halogen4muse')
+        
         if not os.path.exists(halogen4muse_path) or not os.access(halogen4muse_path, os.X_OK):
             return
             
-        subprocess.call([halogen4muse_path, '-a', '2', '-b', '5', '-c', '0', '-N', 
-            '1000', '-name', 'test_stand_alone', '-randomseed', '1'], cwd = instance.get_output_directory())
+        subprocess.call([
+            halogen4muse_path, 
+            '-a', '2', 
+            '-b', '5', 
+            '-c', '0', 
+            '-N', '1000', 
+            '-name', 'test_stand_alone', 
+            '-randomseed', '1'
+        ], cwd = instance.get_output_directory())
         stdoutput = subprocess.Popen(["diff", "test.IC.ascii", "test_stand_alone.IC.ascii"], 
             cwd = instance.get_output_directory(), stdout = subprocess.PIPE).communicate()[0]
         self.assertEquals(stdoutput, "")

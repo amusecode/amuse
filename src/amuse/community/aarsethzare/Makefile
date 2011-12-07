@@ -3,12 +3,11 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= mpif90
-
+MPIFC ?= mpif90
 FORTRAN ?= gfortran
 FC ?= $(FORTRAN)
 
-FFLAGS   += -Wall -g
+FFLAGS   += -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
@@ -37,10 +36,10 @@ worker_code-sockets.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py AarsethZareInterface -o $@
 
 aarsethzare_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIF90) $(CXXFLAGS) worker_code.f90 $(OBJS) $(CODELIB) -o $@
+	$(MPIFC) $(FCFLAGS) worker_code.f90 $(OBJS) $(CODELIB) -o $@
 	
 aarsethzare_worker_sockets: worker_code-sockets.f90 $(CODELIB) $(OBJS)
-	$(MPIF90) $(CXXFLAGS) $(FSOPTS) worker_code-sockets.f90 $(OBJS) $(CODELIB) -o $@ 
+	$(MPIFC) $(FCFLAGS) $(FSOPTS) worker_code-sockets.f90 $(OBJS) $(CODELIB) -o $@ 
 	
 
 %.o: %.f90
