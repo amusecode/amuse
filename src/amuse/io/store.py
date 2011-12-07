@@ -150,10 +150,17 @@ class StoreHDF(object):
     PARTICLES_GROUP_NAME = "particles"
     GRIDS_GROUP_NAME = "grids"
     
-    def __init__(self, filename, append_to_file=True):
-        if not append_to_file and os.path.exists(filename):
+    def __init__(self, filename, append_to_file=True, open_for_writing = True):
+        if not append_to_file and open_for_writing and os.path.exists(filename):
             os.remove(filename)
-        self.hdf5file = h5py.File(filename,'a')
+            
+        if append_to_file and open_for_writing:
+            if os.access(filename, os.W_OK):
+                self.hdf5file = h5py.File(filename,'a') 
+            else:
+                raise exceptions.AmuseException("{0} is not writable, cannot add data to the file".format(filename)) 
+        else:
+            self.hdf5file = h5py.File(filename,'r')
     
     
     def store(self, container):
@@ -306,11 +313,11 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         self.append_to_file = append_to_file
     
     def load(self):
-        processor = StoreHDF(self.filename, self.append_to_file)
+        processor = StoreHDF(self.filename, False, open_for_writing = False)
         return processor.load()
         
     def store(self):
-        processor = StoreHDF(self.filename, self.append_to_file)
+        processor = StoreHDF(self.filename, self.append_to_file, open_for_writing = True)
         try:
             return processor.store(self.set)
         finally:
@@ -318,6 +325,8 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     
     @base.format_option
     def append_to_file(self):
-        "By default new data is appended to HDF5 files. Set this to False to overwrite existing files."
+        """If set to True, new data is appended to HDF5 files. 
+        If set to False, the existing file is removed and overwritten.
+        Only relevant for write set to file. (default: True)"""
         return True
     
