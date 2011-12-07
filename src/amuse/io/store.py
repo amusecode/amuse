@@ -154,13 +154,19 @@ class StoreHDF(object):
         if not append_to_file and open_for_writing and os.path.exists(filename):
             os.remove(filename)
             
-        if append_to_file and open_for_writing:
-            if os.access(filename, os.W_OK):
-                self.hdf5file = h5py.File(filename,'a') 
+        if append_to_file:
+            if open_for_writing:
+                self.hdf5file = h5py.File(filename,'a')
             else:
-                raise exceptions.AmuseException("{0} is not writable, cannot add data to the file".format(filename)) 
+                if os.access(filename, os.W_OK):
+                    self.hdf5file = h5py.File(filename,'a')
+                else:
+                    self.hdf5file = h5py.File(filename,'r')
         else:
-            self.hdf5file = h5py.File(filename,'r')
+            if open_for_writing:
+                self.hdf5file = h5py.File(filename,'w')
+            else:
+                self.hdf5file = h5py.File(filename,'r')
     
     
     def store(self, container):
