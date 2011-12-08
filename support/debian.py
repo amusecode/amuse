@@ -59,7 +59,7 @@ class generate_debian_package(object):
         if self.version == 'svn':
             self.version = 'r{0}'.format(self.get_svn_revision())
             
-        self.amuse_version = 'amuse-{0}'.format(version)
+        self.amuse_version = 'amuse-{0}'.format(self.version)
         self.debianversion = '0ubuntu'
         
         if arch is None:
@@ -71,16 +71,16 @@ class generate_debian_package(object):
         self.package_path = os.path.abspath(self.package_name)
     
     def get_svn_revision(self):
-        stdoutstring, stderrstring = os.call(
+        stdoutstring, stderrstring = subprocess.Popen(
             ['svn','info'],
-            stdout=subprocess.PIPE),
-            stderr=subprocess.PIPE)
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         ).communicate()
         lines = stdoutstring.splitlines()
         revision = '0000'
         for x in lines:
-            if line.startswith('Revision:'):
-                label, revision = line.split(': ')
+            if x.startswith('Revision:'):
+                label, revision = x.split(': ')
         return revision
         
         
@@ -109,7 +109,7 @@ class generate_debian_package(object):
         
         dependency_string = ', '.join(depends)
         with open(os.path.join(debian_path, 'control'),'w') as f:
-            f.write(control.format(version, dependency_string))
+            f.write(control.format(self.version, dependency_string))
 
         #f = open(os.path.join(debian_path, 'postinst'),'w')
         #f.write(postinst)
@@ -177,7 +177,7 @@ class generate_debian_package(object):
                 'fakeroot',
                 'dpkg-deb',
                 '--build',
-                package_name
+                self.package_name
                 ]
             )
             
@@ -187,7 +187,8 @@ class generate_debian_package(object):
         #    shutil.rmtree(self.package_path)
             
         #os.system('python setup.py generate_main')
-            
+        pass
+          
     def touch(self, filename):
         if not os.path.exists(filename):
             open(filename, 'w').close()
@@ -201,14 +202,13 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "-v", "--version", 
-        default = svn,
+        default = 'svn',
         dest="version",
-        help="version of the debian package to create, default to svn based",
+        help="version of the debian package to create, defaults to svn based",
         type="string"
     )    
     result.add_option(
         "-a", "--arch", 
-        default = svn,
         dest="arch",
         default = None,
         help="architecture to build (i386 or amd64)",
