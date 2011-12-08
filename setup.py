@@ -117,7 +117,7 @@ def find_data_files(srcdir, destdir, *wildcards, **kw):
 
 all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive = True)
 all_data_files.extend(find_data_files('support', 'share/amuse/support', '*', recursive = False))
-all_data_files.extend(find_data_files('lib', 'share/amuse/lib', '*.[ha]', '*.mod', '*.inc', recursive = True))
+all_data_files.extend(find_data_files('lib', 'share/amuse/lib', '*.h', '*.a', '*.mod', '*.inc', recursive = True))
 all_data_files.append(('share/amuse',['./config.mk','./build.py']))
 
 packages = find_packages('src')
