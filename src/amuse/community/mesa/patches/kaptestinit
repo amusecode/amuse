@@ -1,0 +1,28 @@
+Index: mesa/src/mesa/kap/test/src/test_kap_support.f
+===================================================================
+--- mesa.orig/src/mesa/kap/test/src/test_kap_support.f	2011-12-08 12:10:00.000000000 +0100
++++ mesa/src/mesa/kap/test/src/test_kap_support.f	2011-12-08 13:38:31.000000000 +0100
+@@ -79,6 +79,8 @@
+             logRho =   -6
+             zbase =    0.01d0
+             xh =    0.7d0
++            dxc =   0.0d0
++            dxo =   0.0d0
+              
+          else if (which == 2) then ! C/O enhanced
+          
+Index: mesa/src/mesa/kap/test/test_output
+===================================================================
+--- mesa.orig/src/mesa/kap/test/test_output	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/test/test_output	2011-12-08 13:39:22.000000000 +0100
+@@ -5,8 +5,8 @@
+                                   logRho   -6.0000000000000000E+00
+                                    zbase    1.0000000000000000E-02
+                                       xh    6.9999999999999996E-01
+-                                     dxc    6.0134700169990685-154
+-                                     dxo    6.0134700169990685-154
++                                     dxc    0.0000000000000000E+00
++                                     dxo    0.0000000000000000E+00
+  
+                                 log10kap   -4.4899999621474185E-01
+                            dlnkap_dlnRho    1.9495729357004166E-02

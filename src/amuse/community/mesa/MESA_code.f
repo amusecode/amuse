@@ -45,9 +45,9 @@
             endif
          end function evolve_failed
          subroutine get_zams_filename(str, ierr)
-            character (len=256), intent(out) :: str
+            character (len=1024), intent(out) :: str
             integer, intent(out) :: ierr
-            character (len=256) :: metallicity_str
+            character (len=1024) :: metallicity_str
             integer :: metallicity_exp, metallicity_factor
             if (AMUSE_metallicity.eq.0.0d0) then
                str = trim(AMUSE_local_data_dir) // '/star_data/starting_models/zams_z0m0'
@@ -243,7 +243,7 @@
       implicit none
       double precision, intent(in) :: AMUSE_value
       integer :: ierr, iounit
-      character (len=256) :: file
+      character (len=1024) :: file
       set_metallicity = -1
       AMUSE_metallicity = AMUSE_value
       call get_zams_filename(AMUSE_zams_filename, ierr)
