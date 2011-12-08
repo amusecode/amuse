@@ -69,8 +69,9 @@ class generate_debian_package(object):
         self.cleanup()
 
     def makescripts(self):
-        os.system('python setup.py generate_main --amuse-dir=/usr/share/{0}'.format(amuse_version))
-
+        #os.system('python setup.py generate_main --amuse-dir=/usr/share/{0}'.format(amuse_version))
+        pass
+        
     def makedirs(self):
         package_path = os.path.abspath(package_name)
         
@@ -94,13 +95,14 @@ class generate_debian_package(object):
         #os.chmod(os.path.join(debian_path, 'postinst'), 0b11110  
         
         if not os.path.exists('build'):
-            os.makedirs('builld')
+            os.makedirs('build')
             
         mpi4pyfile = 'mpi4py-1.2.2.tar.gz'
         urllib.urlretrieve('http://mpi4py.googlecode.com/files/{0}'.format(mpi4pyfile))
         shutil.copyfile(mpi4pyfile, os.path.join('build', mpi4pyfile))
         
-        subprocess.call([
+        subprocess.call(
+            [
             'tar',
             '-xf',
             mpi4pyfile
@@ -108,22 +110,26 @@ class generate_debian_package(object):
             ,
             cwd=os.path.join('build')
         )
-        subprocess.call([
+        subprocess.call(
+            [
             sys.executable,
             'setup.py',
             'install',
             '--prefix=/usr',
+            '--install-layout=deb',
             '--root={0}'.format(package_path),
             ]
             ,
             cwd=os.path.join('build','mpi4py-1.2.2')
         )
         
-        subprocess.call([
+        subprocess.call(
+            [
             sys.executable,
             'setup.py',
             'install',
             '--prefix=/usr',
+            '--install-layout=deb',
             '--root={0}'.format(package_path),
             ]
         )
@@ -142,17 +148,25 @@ class generate_debian_package(object):
         #os.chmod('./{0}/usr/bin/iamuse.sh'.format(package_name), 0b111101101)
 
     def package(self):
-        if os.path.exists('./'+package_name):
-            print "trying to create debian package.."
-            os.system('fakeroot dpkg-deb --build {0}'.format(package_name))
+        package_path = os.path.abspath(package_name)
+        if os.path.exists(package_path):
+            print "creating debian package.."
+            subprocess.call(
+                [
+                'fakeroot',
+                'dpkg-deb',
+                '--build',
+                package_name
+                ]
+            )
             
     def cleanup(self):
         package_path = os.path.abspath(package_name)
         
-        if os.path.exists(package_path):
-            shutil.rmtree(package_path)
+        #if os.path.exists(package_path):
+        #    shutil.rmtree(package_path)
             
-        os.system('python setup.py generate_main')
+        #os.system('python setup.py generate_main')
             
     def __repr__(self):
         s = "generated debian package: {0}.deb".format(package_name)
