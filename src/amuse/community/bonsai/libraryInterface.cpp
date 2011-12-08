@@ -576,6 +576,8 @@ int set_velocity(int *id, double *vx, double *vy, double *vz, int length){
     bonsai->localTree.bodies_vel[index_of_the_particle].y = vy[i];
     bonsai->localTree.bodies_vel[index_of_the_particle].z = vz[i];
   }
+
+  bonsai->localTree.bodies_vel.h2d();
   return 0;
 }
 
