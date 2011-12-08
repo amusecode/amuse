@@ -17,6 +17,7 @@ long long my_dev::base_mem::maxMemUsage;
 
 vector<float4> bodies_pos;
 vector<float4> bodies_vel;
+vector<float2> bodies_time;
 vector<float4> bodies_grav(0);   // (w = potential)
 vector<int>    starids(0);       // list of identifiers
 vector<float>  radii(0);         // list of radii
@@ -25,6 +26,7 @@ int id_counter          = 0;
 int n_bodies            = 0;
 double total_mass       = 0;
 double t_now		= 0.0;
+double timestep_h	= 0.0;
 
 bool curStateOnHost	= false;
 
@@ -48,11 +50,13 @@ int getCurrentStateToHost()
      bonsai->localTree.bodies_vel.d2h();
      bonsai->localTree.bodies_ids.d2h();
      bonsai->localTree.bodies_acc1.d2h();
+     bonsai->localTree.bodies_time.d2h();
 
      //From code into std::vectors
      memcpy(&bodies_pos[0], &bonsai->localTree.bodies_pos[0], sizeof(float4)*n_bodies);
      memcpy(&bodies_vel[0], &bonsai->localTree.bodies_vel[0], sizeof(float4)*n_bodies);
      memcpy(&bodies_grav[0], &bonsai->localTree.bodies_acc1[0], sizeof(float4)*n_bodies);
+     memcpy(&bodies_time[0], &bonsai->localTree.bodies_time[0], sizeof(float2)*n_bodies);
      memcpy(&starids[0], &bonsai->localTree.bodies_ids[0], sizeof(int)*n_bodies);
 
 	
@@ -133,6 +137,14 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
   bodies_vel[n_bodies].z = vz;
   bodies_vel[n_bodies].w = 0;
 
+  bodies_time.resize(n_bodies+1);
+  bodies_time[n_bodies].x = t_now;
+
+  double tempTimeStep =  bonsai->getDt();
+
+  bodies_time[n_bodies].y = t_now + tempTimeStep;
+
+
   bodies_grav.resize(n_bodies+1);
 
   n_bodies++;
@@ -158,6 +170,7 @@ int delete_particle(int id)
   bodies_grav.resize(n_bodies);
   starids.resize(n_bodies);
   radii.resize(n_bodies);
+  bodies_time.resize(n_bodies);
 
   //From code into std::vectors
   //memcpy(&bodies_pos[0], &bonsai->localTree.bodies_pos[0], sizeof(float4)*n_bodies);
@@ -175,6 +188,7 @@ int delete_particle(int id)
     bodies_pos.erase(bodies_pos.begin()+index);
     bodies_vel.erase(bodies_vel.begin()+index);
     bodies_grav.erase(bodies_grav.begin()+index);
+    bodies_time.erase(bodies_time.begin()+index);
     starids.erase(starids.begin()+index);
     radii.erase(radii.begin()+index);
     n_bodies--;
@@ -381,8 +395,52 @@ int synchronize_model(){
 
 int recommit_particles(){
   //return 0;
-  return commit_particles();
+ 
+
+  //Recommit also copies the acc and time from host to device
+  //while those are not needed/available in the commit_particles
+
+  assert(initialized == true);
   
+  idToIndex.clear();
+
+  bonsai->localTree.setN(n_bodies);
+  bonsai->allocateParticleMemory(bonsai->localTree);
+
+  //Load data into the host buffers
+  for(int i=0; i < n_bodies; i++)
+  {
+    bonsai->localTree.bodies_pos[i] = bodies_pos[i];
+    bonsai->localTree.bodies_vel[i] = bodies_vel[i];
+    bonsai->localTree.bodies_ids[i] = starids[i];
+    bonsai->localTree.bodies_time[i] = bodies_time[i];
+    bonsai->localTree.bodies_ids[i] = starids[i];
+    bonsai->localTree.bodies_acc1[i] = bodies_grav[i];
+
+    bonsai->localTree.bodies_Ppos[i] = bodies_pos[i];
+    bonsai->localTree.bodies_Pvel[i] = bodies_vel[i];
+  }
+
+  //Copy the particles to the device
+  bonsai->localTree.bodies_pos.h2d();
+  bonsai->localTree.bodies_vel.h2d();
+  bonsai->localTree.bodies_Ppos.h2d();
+  bonsai->localTree.bodies_Pvel.h2d();
+  bonsai->localTree.bodies_ids.h2d();
+  bonsai->localTree.bodies_acc1.h2d();
+  bonsai->localTree.bodies_time.h2d();
+
+
+  //Build a tree-structure for initial initialization
+  bonsai->sort_bodies(bonsai->localTree);
+  bonsai->build(bonsai->localTree);
+  bonsai->allocateTreePropMemory(bonsai->localTree);
+  bonsai->compute_properties(bonsai->localTree);
+
+
+  curStateOnHost = false;
+
+  return 0;
 }
 
 

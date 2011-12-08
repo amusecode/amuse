@@ -1835,8 +1835,8 @@ double octree::compute_energies(tree_structure &tree)
   {
   printf("iter=%d : time= %lg  Etot= %.10lg  Ekin= %lg   Epot= %lg : de= %lg ( %lg ) d(de)= %lg ( %lg ) t_sim=  %lg sec\n",
 		  iter, this->t_current, Etot, Ekin, Epot, de, de_max, dde, dde_max, get_time() - tinit);  
-  fprintf(stderr,"iter=%d : time= %lg  Etot= %.10lg  Ekin= %lg   Epot= %lg : de= %lg ( %lg ) d(de)= %lg ( %lg ) t_sim=  %lg sec\n", 
-		  iter, this->t_current, Etot, Ekin, Epot, de, de_max, dde, dde_max, get_time() - tinit);          
+  fprintf(stderr,"iter=%d : time= %lg t_end= %lg  Etot= %.10lg  Ekin= %lg   Epot= %lg : de= %lg ( %lg ) d(de)= %lg ( %lg ) t_sim=  %lg sec\n", 
+		  iter, this->t_current, this->tEnd, Etot, Ekin, Epot, de, de_max, dde, dde_max, get_time() - tinit);          
   }
   
 //   mpiSync();
