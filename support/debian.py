@@ -4,19 +4,9 @@ import subprocess
 import urllib
 import platform
 import sys
+from optparse import OptionParser
 
 
-version = '5.1'
-amuse_version = 'amuse-{0}'.format(version)
-debianversion = '0ubuntu'
-architecture = 'i386' if platform.architecture()[0] == '32bit' else 'amd64'
-
-#f=os.popen('uname -m')
-#architecture = f.readlines()[0]
-#print architecture
-#f.close()
-
-package_name = 'amuse_{0}-{1}-{2}'.format(version, debianversion, architecture)
 depends = \
 [
     'bash (>= 2.05a-11)',
@@ -62,32 +52,64 @@ easy_install mpi4py
 
 
 class generate_debian_package(object):
-    def __init__(self):
+    
+    def __init__(self, version = 'svn', arch = None):
+        self.version = version
+        
+        if self.version == 'svn':
+            self.version = 'r{0}'.format(self.get_svn_revision())
+            
+        self.amuse_version = 'amuse-{0}'.format(version)
+        self.debianversion = '0ubuntu'
+        
+        if arch is None:
+            self.architecture = 'i386' if platform.architecture()[0] == '32bit' else 'amd64'
+        else:
+            self.architecture = arch
+            
+        self.package_name = 'amuse_{0}-{1}-{2}'.format(self.version, self.debianversion, self.architecture)
+        self.package_path = os.path.abspath(self.package_name)
+    
+    def get_svn_revision(self):
+        stdoutstring, stderrstring = os.call(
+            ['svn','info'],
+            stdout=subprocess.PIPE),
+            stderr=subprocess.PIPE)
+        ).communicate()
+        lines = stdoutstring.splitlines()
+        revision = '0000'
+        for x in lines:
+            if line.startswith('Revision:'):
+                label, revision = line.split(': ')
+        return revision
+        
+        
+    def run(self):
+        self.setup_deb_builddir()
         self.makescripts()
-        self.makedirs()
+        self.install_in_deb_builddir()
         self.package()
         self.cleanup()
+        
+        print "generated debian package: {0}.deb".format(package_name)
 
     def makescripts(self):
         #os.system('python setup.py generate_main --amuse-dir=/usr/share/{0}'.format(amuse_version))
         pass
         
-    def makedirs(self):
-        package_path = os.path.abspath(package_name)
+    def setup_deb_builddir(self):
+        if os.path.exists(self.package_path):
+            shutil.rmtree(self.package_path)
+        os.makedirs(self.package_path)
         
-        if os.path.exists(package_path):
-            shutil.rmtree(package_path)
-
-        os.makedirs(package_path)
+    def install_in_deb_builddir(self):
+        debian_path = os.path.join(self.package_path, 'DEBIAN')
+        os.makedirs(debian_path)
+        
         
         dependency_string = ', '.join(depends)
-        
-        debian_path = os.path.join(package_path, 'DEBIAN')
-        
-        os.makedirs(debian_path)
-        f = open(os.path.join(debian_path, 'control'),'w')
-        f.write(control.format(version, dependency_string))
-        f.close()
+        with open(os.path.join(debian_path, 'control'),'w') as f:
+            f.write(control.format(version, dependency_string))
 
         #f = open(os.path.join(debian_path, 'postinst'),'w')
         #f.write(postinst)
@@ -117,7 +139,7 @@ class generate_debian_package(object):
             'install',
             '--prefix=/usr',
             '--install-layout=deb',
-            '--root={0}'.format(package_path),
+            '--root={0}'.format(self.package_path),
             ]
             ,
             cwd=os.path.join('build','mpi4py-1.2.2')
@@ -130,7 +152,7 @@ class generate_debian_package(object):
             'install',
             '--prefix=/usr',
             '--install-layout=deb',
-            '--root={0}'.format(package_path),
+            '--root={0}'.format(self.package_path),
             ]
         )
             
@@ -148,8 +170,7 @@ class generate_debian_package(object):
         #os.chmod('./{0}/usr/bin/iamuse.sh'.format(package_name), 0b111101101)
 
     def package(self):
-        package_path = os.path.abspath(package_name)
-        if os.path.exists(package_path):
+        if os.path.exists(self.package_path):
             print "creating debian package.."
             subprocess.call(
                 [
@@ -161,22 +182,42 @@ class generate_debian_package(object):
             )
             
     def cleanup(self):
-        package_path = os.path.abspath(package_name)
         
-        #if os.path.exists(package_path):
-        #    shutil.rmtree(package_path)
+        #if os.path.exists(self.package_path):
+        #    shutil.rmtree(self.package_path)
             
         #os.system('python setup.py generate_main')
             
-    def __repr__(self):
-        s = "generated debian package: {0}.deb".format(package_name)
-        return s
-
     def touch(self, filename):
         if not os.path.exists(filename):
             open(filename, 'w').close()
             
     
-if __name__ == '__main__':
-    instance = generate_debian_package()
+def main(version = 'svn', arch = None):
+    command = generate_debian_package(version, arch)
+    command.run()
+    
+def new_option_parser():
+    result = OptionParser()
+    result.add_option(
+        "-v", "--version", 
+        default = svn,
+        dest="version",
+        help="version of the debian package to create, default to svn based",
+        type="string"
+    )    
+    result.add_option(
+        "-a", "--arch", 
+        default = svn,
+        dest="arch",
+        default = None,
+        help="architecture to build (i386 or amd64)",
+        type="string"
+    )    
+    return result
+    
+if __name__ == "__main__":
+    options, arguments = new_option_parser().parse_args()
+    main(**options.__dict__)
+    
    
