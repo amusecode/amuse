@@ -91,7 +91,7 @@ class generate_debian_package(object):
         self.package()
         self.cleanup()
         
-        print "generated debian package: {0}.deb".format(package_name)
+        print "generated debian package: {0}.deb".format(self.package_name)
 
     def makescripts(self):
         #os.system('python setup.py generate_main --amuse-dir=/usr/share/{0}'.format(amuse_version))
