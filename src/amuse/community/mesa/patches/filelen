@@ -1,0 +1,2403 @@
+Index: mesa/src/mesa/atm/preprocessor/src/create_table_atm.f
+===================================================================
+--- mesa.orig/src/mesa/atm/preprocessor/src/create_table_atm.f	2010-03-03 06:03:05.000000000 +0100
++++ mesa/src/mesa/atm/preprocessor/src/create_table_atm.f	2011-12-08 11:41:22.000000000 +0100
+@@ -38,7 +38,7 @@
+          integer, parameter :: which_atm_option = atm_Eddington_grey
+          integer :: chem_id(num_isos)
+          integer :: ierr, i_Teff, i_logg
+-         character(len=256) :: data_dir, clogZ, output_file
++         character(len=4096) :: data_dir, clogZ, output_file
+          logical, parameter :: use_cache = .true.
+          logical, parameter :: skip_partials = .true.
+          double precision :: M, R, L, X, Y, Z, XC, XN, XO, XNe, XMg, abar, zbar, z2bar
+Index: mesa/src/mesa/atm/private/table_atm.f
+===================================================================
+--- mesa.orig/src/mesa/atm/private/table_atm.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/atm/private/table_atm.f	2011-12-08 11:40:45.000000000 +0100
+@@ -30,7 +30,7 @@
+ 
+       character(len=8):: atm_mix(nZ) !not used currently -- nor is alphaFe
+       character(len=40) :: table_atm_files(nZ)
+-      character(len=256) :: table_atm_data_dir
++      character(len=4096) :: table_atm_data_dir
+       
+       logical :: have_atm_table(nZ), table_atm_is_initialized = .false.
+       logical :: use_cache_for_table_atm
+@@ -47,7 +47,7 @@
+       logical, intent(in) :: use_cache
+       integer, intent(out) :: ierr
+       integer :: i, j, nZ_tmp, ng_tmp, nT_tmp, ibound(ng,nZ), iounit, tmp_version(nZ)
+-      character(len=256) :: filename
++      character(len=4096) :: filename
+       
+       ierr = 0
+       iounit = alloc_iounit(ierr)
+@@ -224,7 +224,7 @@
+          use utils_lib
+          use interp_2D_lib_db, only: interp_mkbicub_db
+          implicit none
+-         character(len=256) :: filename, cache_file
++         character(len=4096) :: filename, cache_file
+          integer, intent(in)  :: iZ !index of Z table to be loaded
+          integer, intent(out) :: ierr
+          integer :: iounit, i, j, ibound_tmp(ng), ibcTmin, ibcTmax, ibcgmin, ibcgmax, ilinT, iling
+Index: mesa/src/mesa/atm/test/src/test_atm_support.f
+===================================================================
+--- mesa.orig/src/mesa/atm/test/src/test_atm_support.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/atm/test/src/test_atm_support.f	2011-12-08 11:41:17.000000000 +0100
+@@ -17,7 +17,7 @@
+       subroutine do_test_atm
+          use const_lib
+    	   integer :: ierr
+-   	   character(len=256) :: data_dir
++   	   character(len=4096) :: data_dir
+    	   
+          data_dir = '../../data'   	
+          
+@@ -72,7 +72,7 @@
+          double precision :: Teff, lnT, lnP, dlnT_dL, dlnT_dlnR
+          double precision :: dlnP_dL, dlnP_dlnR, dlnP_dlnm, dlnP_dlnkap
+          integer :: ierr
+-         character(len=256) :: data_dir
++         character(len=4096) :: data_dir
+ 
+          include 'formats.dek'
+ 
+@@ -142,7 +142,7 @@
+          double precision :: Teff, lnT, lnP, dlnT_dL, dlnT_dlnR
+          double precision :: dlnP_dL, dlnP_dlnR, dlnP_dlnm, dlnP_dlnkap
+          integer :: ierr
+-         character(len=256) :: data_dir
++         character(len=4096) :: data_dir
+          
+          include 'formats.dek'
+ 
+@@ -239,7 +239,7 @@
+          double precision, dimension(num_eos_basic_results) :: &
+             res, d_dlnRho_const_T, d_dlnT_const_Rho
+          integer :: ierr
+-         character(len=256) :: data_dir
++         character(len=4096) :: data_dir
+          logical, parameter :: use_cache = .true.
+          logical, parameter :: skip_partials = .true.
+          
+Index: mesa/src/mesa/chem/private/chem_isos_io.f
+===================================================================
+--- mesa.orig/src/mesa/chem/private/chem_isos_io.f	2010-03-01 19:11:17.000000000 +0100
++++ mesa/src/mesa/chem/private/chem_isos_io.f	2011-12-08 11:22:41.000000000 +0100
+@@ -35,7 +35,7 @@
+          character (len=*), intent(in) :: data_dir
+       	integer, intent(out) :: ierr
+       	integer :: i, iounit, pass
+-      	character (len=256) :: filename
++      	character (len=4096) :: filename
+       	
+       	ierr = 0
+ 	
+@@ -195,4 +195,4 @@
+       end subroutine write_nuclides
+       
+ 
+-      end module chem_isos_io
+\ No newline at end of file
++      end module chem_isos_io
+Index: mesa/src/mesa/chem/public/chem_lib.f
+===================================================================
+--- mesa.orig/src/mesa/chem/public/chem_lib.f	2010-03-02 23:17:47.000000000 +0100
++++ mesa/src/mesa/chem/public/chem_lib.f	2011-12-08 11:23:40.000000000 +0100
+@@ -142,7 +142,7 @@
+          integer :: nnuc, iounit
+       	character(len=iso_name_length), pointer :: names(:)
+          integer, dimension(:), pointer :: Z, A ! will be allocated by chem_read_ZA
+-         character (len=256) :: filename
++         character (len=4096) :: filename
+          
+          ierr = 0
+          iounit = alloc_iounit(ierr)
+Index: mesa/src/mesa/colors/private/mod_colors.f
+===================================================================
+--- mesa.orig/src/mesa/colors/private/mod_colors.f	2010-03-02 19:43:27.000000000 +0100
++++ mesa/src/mesa/colors/private/mod_colors.f	2011-12-08 11:33:40.000000000 +0100
+@@ -279,7 +279,7 @@
+ 
+ 			! read file and build lists
+ 			integer :: ios, cnt
+-			character (len=256) :: fname
++			character (len=4096) :: fname
+ 			double precision :: lgt, lgg, colors(n_colors), lgz
+ 			type (lgg_list), pointer :: glist
+ 			type (lgt_list), pointer :: tlist
+Index: mesa/src/mesa/colors/test/src/test_colors.f
+===================================================================
+--- mesa.orig/src/mesa/colors/test/src/test_colors.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/colors/test/src/test_colors.f	2011-12-08 11:33:52.000000000 +0100
+@@ -12,7 +12,7 @@
+ 
+       subroutine do_test_colors
+ 
+-			character (len=256) :: data_dir
++			character (len=4096) :: data_dir
+ 			integer :: info
+ 			
+ 			logical, parameter :: do_one = .true.
+@@ -101,7 +101,7 @@
+ 
+       subroutine create_plot_files
+ 
+-         character (len=256) fname, dir
++         character (len=4096) fname, dir
+ 			integer, parameter :: max_num_masses = 100
+ 			double precision, dimension(max_num_masses) :: mass, logl, logteff
+ 			double precision :: read_junk, log_g, fe_h, results(n_colors)
+Index: mesa/src/mesa/diffusion/test/src/test_diffusion.f
+===================================================================
+--- mesa.orig/src/mesa/diffusion/test/src/test_diffusion.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/diffusion/test/src/test_diffusion.f	2011-12-08 11:12:05.000000000 +0100
+@@ -130,7 +130,7 @@
+          
+          integer :: i, j, k, nmid
+          logical :: okay, use_cache
+-         character (len=256) :: data_dir
++         character (len=4096) :: data_dir
+          
+          1 format(a40,1pe26.16)
+          2 format(a40,i6,1pe26.16)
+@@ -286,7 +286,7 @@
+             dlnkap_dlnRho, dlnkap_dlnT, &
+             z, xh, xhe, xc, xn, xo, xne, xheavy, metals(nmet), opacity
+          integer :: k, ks, j
+-         character (len=100) :: data_dir
++         character (len=4096) :: data_dir
+          
+          1 format(a40,1pe26.16)
+          2 format(a40,i6,1pe26.16)
+@@ -761,7 +761,7 @@
+       subroutine write_diffusion_results
+          use utils_lib
+          use const_def
+-         character (len=100) :: filename
++         character (len=4096) :: filename
+          integer :: k, ierr, iounit, i
+          double precision :: ad2vh, ad2vhe, ad2vo
+          double precision :: tau0  
+Index: mesa/src/mesa/eos/eosDE_builder/src/create_eosDE_files.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDE_builder/src/create_eosDE_files.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDE_builder/src/create_eosDE_files.f	2011-12-08 11:34:28.000000000 +0100
+@@ -76,7 +76,7 @@
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, log_free_e, gamma1, gamma3, grad_ad, eta, logT_guess
+          integer :: ierr, i, j, num_logVs, num_logRhos, call_number
+-         character (len=256) :: dir, fname
++         character (len=4096) :: dir, fname
+             
+          include 'formats.dek'
+ 
+@@ -187,7 +187,7 @@
+          use alert_lib,only:alert_message
+          use eval_eosDE, only: eos_handle
+ 
+-         character (len=256) :: data_dir
++         character (len=4096) :: data_dir
+          integer :: info
+          logical, parameter :: use_cache = .true.
+          
+Index: mesa/src/mesa/eos/eosDE_builder/src/make_DEplots.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDE_builder/src/make_DEplots.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDE_builder/src/make_DEplots.f	2011-12-08 11:34:38.000000000 +0100
+@@ -44,7 +44,7 @@
+             logRho, Rho, logE, energy, logS, chiRho, chiT, &
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, log_free_e, gamma1, gamma3, grad_ad, eta
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+ 	      integer, parameter :: io_unit0 = 40
+          
+          include 'formats.dek'
+@@ -120,7 +120,7 @@
+             logT, logPgas, logS, chiRho, chiT, &
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, log_free_e, gamma1, gamma3, grad_ad, eta, S, T
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+ 	      integer, parameter :: io_unit0 = 40
+          
+          include 'formats.dek'
+@@ -251,7 +251,7 @@
+          integer, intent(in) :: io_first, io_params, io_logV, io_logRho
+          integer, intent(out) :: io_last
+          character (len=*), intent(in) :: dir
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/eos/eosDP_builder/src/create_eosDP_files.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDP_builder/src/create_eosDP_files.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDP_builder/src/create_eosDP_files.f	2011-12-08 11:38:06.000000000 +0100
+@@ -76,7 +76,7 @@
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, log_free_e, gamma1, gamma3, grad_ad, eta, logT_guess
+          integer :: ierr, i, j, num_logBs, num_logRhos, call_number
+-         character (len=256) :: dir, fname
++         character (len=4096) :: dir, fname
+             
+          include 'formats.dek'
+ 
+@@ -187,7 +187,7 @@
+          use alert_lib,only:alert_message
+          use eval_eosDP, only: eos_handle
+ 
+-         character (len=256) :: data_dir
++         character (len=4096) :: data_dir
+          integer :: info
+          logical, parameter :: use_cache = .true.
+          
+Index: mesa/src/mesa/eos/eosDP_builder/src/make_DPplots.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDP_builder/src/make_DPplots.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDP_builder/src/make_DPplots.f	2011-12-08 11:38:17.000000000 +0100
+@@ -44,7 +44,7 @@
+             logRho, Rho, logPgas, Pgas, logE, logS, chiRho, chiT, &
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, log_free_e, gamma1, gamma3, grad_ad, eta
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+ 	      integer, parameter :: io_unit0 = 40
+          
+          include 'formats.dek'
+@@ -120,7 +120,7 @@
+             logT, logE, energy, logS, chiRho, chiT, &
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, log_free_e, gamma1, gamma3, grad_ad, eta, S, T
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+ 	      integer, parameter :: io_unit0 = 40
+          
+          include 'formats.dek'
+@@ -252,7 +252,7 @@
+          integer, intent(in) :: io_first, io_params, io_logB, io_logRho
+          integer, intent(out) :: io_last
+          character (len=*), intent(in) :: dir
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/eos/eosDT_builder/src/EOS5_xtrin_H-He.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/EOS5_xtrin_H-He.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDT_builder/src/EOS5_xtrin_H-He.f	2011-12-08 11:40:19.000000000 +0100
+@@ -455,7 +455,7 @@
+       subroutine readcoeos_hhe(filename)
+ c..... The purpose of this subroutine is to read the data tables
+       save
+-      character (len=256) filename
++      character (len=4096) filename
+       parameter (mx=6,mv=12,nr=169,nt=197)
+       real moles
+       character*1 blank
+Index: mesa/src/mesa/eos/eosDT_builder/src/create_eos_files.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/create_eos_files.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/eos/eosDT_builder/src/create_eos_files.f	2011-12-08 11:39:39.000000000 +0100
+@@ -78,7 +78,7 @@
+ 		
+       double precision, intent(in) :: Z_in, X_in
+       
+-      character (len=256) :: dir, fname
++      character (len=4096) :: dir, fname
+       integer :: io_unit, i, j, num_logTs, num_logQs, info
+ 
+       double precision :: del_logT, logT_min, logT_max, del_logQ, logQ_min, logQ_max, logRho_min
+Index: mesa/src/mesa/eos/eosDT_builder/src/helm_opal_scvh_driver.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/helm_opal_scvh_driver.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDT_builder/src/helm_opal_scvh_driver.f	2011-12-08 11:40:26.000000000 +0100
+@@ -24,7 +24,7 @@
+       implicit none
+       
+       
+-      character (len=256) :: data_dir
++      character (len=4096) :: data_dir
+ 	   integer :: include_radiation
+ 		integer, parameter :: imax = 261, jmax = 101  ! dimensions of our version of helm table
+       
+Index: mesa/src/mesa/eos/eosDT_builder/src/make_DTplots.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/make_DTplots.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDT_builder/src/make_DTplots.f	2011-12-08 11:39:30.000000000 +0100
+@@ -51,7 +51,7 @@
+             Rho, logE, logS, chiRho, chiT, chiY, &
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, free_e, gamma1, gamma3, grad_ad, eta, Prad, Pgas, P
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+ 	      integer, parameter :: io_unit0 = 40
+          
+          include 'formats.dek'
+@@ -134,7 +134,7 @@
+             Rho, logE, logS, chiRho, chiT, chiY, &
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, free_e, gamma1, gamma3, grad_ad, eta, E, S
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+ 	      integer, parameter :: io_unit0 = 40
+          
+          include 'formats.dek'
+@@ -291,7 +291,7 @@
+          integer, intent(in) :: io_first, io_params, io_logQ, io_logT
+          integer, intent(out) :: io_last
+          character (len=*), intent(in) :: dir
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/eos/eosDT_builder/src/opal_core.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/opal_core.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDT_builder/src/opal_core.f	2011-12-08 11:40:09.000000000 +0100
+@@ -26,7 +26,7 @@
+ c            results(10) is mu_M
+ c            results(11) is log_Ne
+ 		integer info ! returned = 0 if AOK
+-      character (len=256) data_dir, filename
++      character (len=4096) data_dir, filename
+       parameter (mx=5,mv=12,nr=169,nt=197)
+       common/eeos/esact,eos(mv)
+       double precision xh_in,ztab_in,t6_in,r_in,results_out(iorder),pgas_out,prad_out
+@@ -495,7 +495,7 @@
+       subroutine readcoeos(filename)
+ !..... The purpose of this subroutine is to read the data tables
+       save
+-      character (len=256) filename
++      character (len=4096) filename
+       parameter (mx=5,mv=12,nr=169,nt=197)
+       real moles
+       character*1 blank
+Index: mesa/src/mesa/eos/eosDT_builder/src/scvh_core.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/scvh_core.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDT_builder/src/scvh_core.f	2011-12-08 11:39:58.000000000 +0100
+@@ -149,7 +149,7 @@
+      >      dddt_tab, dddp_tab, dsdt_tab, dsdp_tab, dtdp_tab
+          integer :: i, j, jj, nps, k
+          double precision :: tlg,plg,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10
+-		   character (len=256) :: full_name
++		   character (len=4096) :: full_name
+ 		   write(full_name,'(3a)') trim(data_dir), '/', trim(filename)
+    		write(*,*) 'read ' // trim(full_name)
+          open(unit=1,file=trim(full_name),action='read')
+@@ -358,7 +358,7 @@
+       
+       integer ict(6)                    ! code specifying output desired
+       double precision fval(6)                      ! output data
+-		character (len=256) :: filename
++		character (len=4096) :: filename
+       
+ 
+       double precision :: output_values(np,nt)
+Index: mesa/src/mesa/eos/eosDT_builder/src/xtrin.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/xtrin.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosDT_builder/src/xtrin.f	2011-12-08 11:39:17.000000000 +0100
+@@ -70,7 +70,7 @@
+ c
+       save
+ 		integer info ! returned = 0 if AOK
+-      character (len=256) filename
++      character (len=4096) filename
+       real moles
+       parameter (mx=5,mv=12,nr=169,nt=197)
+       character blank*1
+@@ -452,7 +452,7 @@
+       subroutine readcoeos(filename)
+ !..... The purpose of this subroutine is to read the data tables
+       save
+-      character (len=256) filename
++      character (len=4096) filename
+       parameter (mx=5,mv=12,nr=169,nt=197)
+       real moles
+       character*1 blank
+Index: mesa/src/mesa/eos/eosPT_builder/src/create_eosPT_files.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosPT_builder/src/create_eosPT_files.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosPT_builder/src/create_eosPT_files.f	2011-12-08 11:37:19.000000000 +0100
+@@ -76,7 +76,7 @@
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, log_free_e, gamma1, gamma3, grad_ad, eta, logRho_guess
+          integer :: ierr, i, j, num_logWs, num_logTs, call_number
+-         character (len=256) :: dir, fname
++         character (len=4096) :: dir, fname
+             
+          include 'formats.dek'
+ 
+@@ -188,7 +188,7 @@
+          use scvh_eval
+          use eval_eosPT, only: eos_handle
+ 
+-         character (len=256) :: data_dir, scvh_data_dir
++         character (len=4096) :: data_dir, scvh_data_dir
+          integer :: info
+          logical, parameter :: use_cache = .true.
+          
+Index: mesa/src/mesa/eos/eosPT_builder/src/make_PTplots.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosPT_builder/src/make_PTplots.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosPT_builder/src/make_PTplots.f	2011-12-08 11:37:44.000000000 +0100
+@@ -48,7 +48,7 @@
+             logRho, logE, logS, chiRho, chiT, &
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, log_free_e, gamma1, gamma3, grad_ad, eta, P, Prad, E, S
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+ 	      integer, parameter :: io_unit0 = 40
+          
+          include 'formats.dek'
+@@ -155,7 +155,7 @@
+             logRho, logE, logS, chiRho, chiT, &
+             Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
+             mu, log_free_e, gamma1, gamma3, grad_ad, eta, energy, S, Rho
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+ 	      integer, parameter :: io_unit0 = 40
+          
+          include 'formats.dek'
+@@ -308,7 +308,7 @@
+          integer, intent(in) :: io_first, io_params, io_logW, io_logT
+          integer, intent(out) :: io_last
+          character (len=*), intent(in) :: dir
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/eos/eosPT_builder/src/scvh_eval.f
+===================================================================
+--- mesa.orig/src/mesa/eos/eosPT_builder/src/scvh_eval.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/eosPT_builder/src/scvh_eval.f	2011-12-08 11:37:33.000000000 +0100
+@@ -165,7 +165,7 @@
+             dddt_tab, dddp_tab, dsdt_tab, dsdp_tab, dtdp_tab
+          integer :: i, j, jj, nps, k
+          double precision :: tlg,plg,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10
+-		   character (len=256) :: full_name
++		   character (len=4096) :: full_name
+ 		   write(full_name,'(3a)') trim(data_dir), '/', trim(filename)
+    		write(*,*) 'read ' // trim(full_name)
+          open(unit=1,file=trim(full_name),action='read')
+@@ -401,7 +401,7 @@
+       
+       integer ict(6)                    ! code specifying output desired
+       double precision fval(6)                      ! output data
+-		character (len=256) :: filename
++		character (len=4096) :: filename
+       
+ 
+       double precision :: output_values(np,nt)
+Index: mesa/src/mesa/eos/private/eosDE_load_tables.f
+===================================================================
+--- mesa.orig/src/mesa/eos/private/eosDE_load_tables.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/private/eosDE_load_tables.f	2011-12-08 11:35:01.000000000 +0100
+@@ -114,7 +114,7 @@
+          
+          subroutine read_sizes
+ 
+-            character (len=256) :: message, fname, cache_filename
++            character (len=4096) :: message, fname, cache_filename
+             integer :: iounit
+             
+             iounit = alloc_iounit(ierr); if (ierr /= 0) return
+@@ -158,7 +158,7 @@
+             integer, intent(in) :: ix, iz
+             integer, intent(out) :: ierr
+ 
+-            character (len=256) :: fname, cache_filename
++            character (len=4096) :: fname, cache_filename
+             integer :: iounit1, iounit2
+             
+             iounit1 = alloc_iounit(ierr); if (ierr /= 0) return
+@@ -179,7 +179,7 @@
+ 
+          double precision, intent(in) :: Z, X
+          character (*), intent(in) :: data_dir
+-         character (len=256), intent(out) :: fname, cache_filename
++         character (len=4096), intent(out) :: fname, cache_filename
+             
+          if (X < 0.005) then
+             write(fname,'(a,a,i1,a)') trim(data_dir), 
+@@ -215,7 +215,7 @@
+      >         logV_min_in, logV_max_in, del_logV_in, X_in, Z_in, logV, logRho
+          integer :: j,i,k,iV,ios,status
+          real, dimension(:,:,:), pointer :: tbl2
+-         character (len=256) :: message
++         character (len=4096) :: message
+          double precision, parameter :: tiny = 1e-6
+ 
+          info = 0            
+@@ -371,7 +371,7 @@
+          real :: fval(num_eosDE_file_vals), df_dx(num_eosDE_file_vals), df_dy(num_eosDE_file_vals)
+          
+          integer :: v, vlist(3), var, i, j
+-         character (len=256) :: message
++         character (len=4096) :: message
+ 
+          info = 0
+          
+Index: mesa/src/mesa/eos/private/eosDP_load_tables.f
+===================================================================
+--- mesa.orig/src/mesa/eos/private/eosDP_load_tables.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/private/eosDP_load_tables.f	2011-12-08 11:36:57.000000000 +0100
+@@ -114,7 +114,7 @@
+          
+          subroutine read_sizes
+ 
+-            character (len=256) :: message, fname, cache_filename
++            character (len=4096) :: message, fname, cache_filename
+             integer :: iounit
+             
+             iounit = alloc_iounit(ierr); if (ierr /= 0) return
+@@ -156,7 +156,7 @@
+             integer, intent(in) :: ix, iz
+             integer, intent(out) :: ierr
+ 
+-            character (len=256) :: fname, cache_filename
++            character (len=4096) :: fname, cache_filename
+             integer :: iounit1, iounit2
+             
+             iounit1 = alloc_iounit(ierr); if (ierr /= 0) return
+@@ -177,7 +177,7 @@
+ 
+          double precision, intent(in) :: Z, X
+          character (*), intent(in) :: data_dir
+-         character (len=256), intent(out) :: fname, cache_filename
++         character (len=4096), intent(out) :: fname, cache_filename
+             
+          if (X < 0.005) then
+             write(fname,'(a,a,i1,a)') trim(data_dir), 
+@@ -213,7 +213,7 @@
+      >         logB_min_in, logB_max_in, del_logB_in, X_in, Z_in, logB, logT
+          integer :: j,i,k,iW,ios,status
+          real, dimension(:,:,:), pointer :: tbl2
+-         character (len=256) :: message
++         character (len=4096) :: message
+          double precision, parameter :: tiny = 1e-6
+ 
+          info = 0            
+@@ -369,7 +369,7 @@
+          real :: fval(num_eosDP_file_vals), df_dx(num_eosDP_file_vals), df_dy(num_eosDP_file_vals)
+          
+          integer :: v, vlist(3), var, i, j
+-         character (len=256) :: message
++         character (len=4096) :: message
+ 
+          info = 0
+          
+Index: mesa/src/mesa/eos/private/eosDT_load_tables.f
+===================================================================
+--- mesa.orig/src/mesa/eos/private/eosDT_load_tables.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/private/eosDT_load_tables.f	2011-12-08 11:36:30.000000000 +0100
+@@ -113,7 +113,7 @@
+          
+          subroutine read_sizes
+ 
+-            character (len=256) :: message, fname, cache_filename
++            character (len=4096) :: message, fname, cache_filename
+             integer :: iounit
+             
+             iounit = alloc_iounit(ierr); if (ierr /= 0) return
+@@ -155,7 +155,7 @@
+             integer, intent(in) :: ix, iz
+             integer, intent(out) :: ierr
+ 
+-            character (len=256) :: fname, cache_filename
++            character (len=4096) :: fname, cache_filename
+             integer :: iounit1, iounit2
+             
+             iounit1 = alloc_iounit(ierr); if (ierr /= 0) return
+@@ -177,7 +177,7 @@
+ 
+          double precision, intent(in) :: Z, X
+          character (*), intent(in) :: data_dir
+-         character (len=256), intent(out) :: fname, cache_filename
++         character (len=4096), intent(out) :: fname, cache_filename
+             
+          if (X < 0.005) then
+             write(fname,'(a,a,i1,a)') trim(data_dir), 
+@@ -213,7 +213,7 @@
+      >         logQ_min_in, logQ_max_in, del_logQ_in, X_in, Z_in, logQ, logT
+          integer :: j,i,k,iQ,ios,status
+          real, dimension(:,:,:), pointer :: tbl2
+-         character (len=256) :: message
++         character (len=4096) :: message
+          double precision, parameter :: tiny = 1e-6
+ 
+          info = 0            
+@@ -371,7 +371,7 @@
+          real :: fval(num_eos_file_vals), df_dx(num_eos_file_vals), df_dy(num_eos_file_vals)
+          
+          integer :: v, vlist(3), var, i, j
+-         character (len=256) :: message
++         character (len=4096) :: message
+ 
+          info = 0
+          
+Index: mesa/src/mesa/eos/private/eosPT_load_tables.f
+===================================================================
+--- mesa.orig/src/mesa/eos/private/eosPT_load_tables.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/private/eosPT_load_tables.f	2011-12-08 11:36:09.000000000 +0100
+@@ -114,7 +114,7 @@
+          
+          subroutine read_sizes
+ 
+-            character (len=256) :: message, fname, cache_filename
++            character (len=4096) :: message, fname, cache_filename
+             integer :: iounit
+             
+             iounit = alloc_iounit(ierr); if (ierr /= 0) return
+@@ -156,7 +156,7 @@
+             integer, intent(in) :: ix, iz
+             integer, intent(out) :: ierr
+ 
+-            character (len=256) :: fname, cache_filename
++            character (len=4096) :: fname, cache_filename
+             integer :: iounit1, iounit2
+             
+             iounit1 = alloc_iounit(ierr); if (ierr /= 0) return
+@@ -177,7 +177,7 @@
+ 
+          double precision, intent(in) :: Z, X
+          character (*), intent(in) :: data_dir
+-         character (len=256), intent(out) :: fname, cache_filename
++         character (len=4096), intent(out) :: fname, cache_filename
+             
+          if (X < 0.005) then
+             write(fname,'(a,a,i1,a)') trim(data_dir), 
+@@ -213,7 +213,7 @@
+      >         logW_min_in, logW_max_in, del_logW_in, X_in, Z_in, logW, logT
+          integer :: j,i,k,iW,ios,status
+          real, dimension(:,:,:), pointer :: tbl2
+-         character (len=256) :: message
++         character (len=4096) :: message
+          double precision, parameter :: tiny = 1e-6
+ 
+          info = 0            
+@@ -369,7 +369,7 @@
+          real :: fval(num_eosPT_file_vals), df_dx(num_eosPT_file_vals), df_dy(num_eosPT_file_vals)
+          
+          integer :: v, vlist(3), var, i, j
+-         character (len=256) :: message
++         character (len=4096) :: message
+ 
+          info = 0
+          
+Index: mesa/src/mesa/eos/private/eos_initialize.f
+===================================================================
+--- mesa.orig/src/mesa/eos/private/eos_initialize.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/private/eos_initialize.f	2011-12-08 11:35:42.000000000 +0100
+@@ -61,7 +61,7 @@
+          integer, parameter :: imax = 261, jmax = 101  ! dimensions of our version of helm table
+          
+          ! helm table lives in eosDT_data
+-         character (len=256) :: eosDT_data_dir
++         character (len=4096) :: eosDT_data_dir
+          
+          if (eos_root_is_initialized) return
+          
+@@ -97,4 +97,4 @@
+       
+       
+       end module eos_initialize
+-      
+\ No newline at end of file
++      
+Index: mesa/src/mesa/eos/private/helm_alloc.f
+===================================================================
+--- mesa.orig/src/mesa/eos/private/helm_alloc.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/private/helm_alloc.f	2011-12-08 11:36:37.000000000 +0100
+@@ -126,7 +126,7 @@
+ !..must be called once before the helmeos routine is invoked.
+ 
+ !..declare local variables
+-      character (len=256) :: filename, message
++      character (len=4096) :: filename, message
+       integer          i,j,ios,imax,jmax
+       double precision tsav,dsav,dth,dt2,dti,dt2i,dt3i,
+      1                 dd,dd2,ddi,dd2i,dd3i
+Index: mesa/src/mesa/eos/public/eos_def.f
+===================================================================
+--- mesa.orig/src/mesa/eos/public/eos_def.f	2011-12-06 13:23:07.000000000 +0100
++++ mesa/src/mesa/eos/public/eos_def.f	2011-12-08 11:37:53.000000000 +0100
+@@ -868,7 +868,7 @@
+       logical :: eosDE_is_initialized = .false.
+       logical :: eosDP_is_initialized = .false.
+       
+-      character(len=256) :: data_dir_for_eos
++      character(len=4096) :: data_dir_for_eos
+       
+       contains
+       
+Index: mesa/src/mesa/eos/test/src/eos_support.f
+===================================================================
+--- mesa.orig/src/mesa/eos/test/src/eos_support.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/eos/test/src/eos_support.f	2011-12-08 11:38:35.000000000 +0100
+@@ -98,7 +98,7 @@
+          use alert_lib,only:alert_message
+          !..allocate and load the eos tables
+ 
+-         character (len=256) :: data_dir
++         character (len=4096) :: data_dir
+          integer :: info
+          double precision :: logT_all_HELM, logT_all_OPAL
+          
+Index: mesa/src/mesa/eos/test/src/plot_eosDE.f
+===================================================================
+--- mesa.orig/src/mesa/eos/test/src/plot_eosDE.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/test/src/plot_eosDE.f	2011-12-08 11:46:04.000000000 +0100
+@@ -15,7 +15,7 @@
+       
+       subroutine Build_DE_Plots
+ 
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+       
+          double precision lgE_min,lgE_max,lgRho_min,lgRho_max,dlgE,
+      >      dlgRho,lgRho,lgE,Rho,energy
+@@ -228,8 +228,8 @@
+       subroutine Open_Plot_Outfiles(io_first, io_last, io_params, io_rho, io_tmp, dir)
+          integer, intent(IN) :: io_first, io_params, io_rho, io_tmp
+          integer, intent(OUT) :: io_last
+-         character (len=256), intent(IN) :: dir
+-         character (len=256) :: fname
++         character (len=4096), intent(IN) :: dir
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/eos/test/src/plot_eosDP.f
+===================================================================
+--- mesa.orig/src/mesa/eos/test/src/plot_eosDP.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/test/src/plot_eosDP.f	2011-12-08 11:39:04.000000000 +0100
+@@ -15,7 +15,7 @@
+       
+       subroutine Build_DP_Plots
+ 
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+       
+          double precision logB_min, logB_max, logRho_min, logRho_max, dlogB,
+      >      dlogRho, logRho, logB, Rho, Pgas, logPgas
+@@ -247,8 +247,8 @@
+       subroutine Open_Plot_Outfiles(io_first, io_last, io_params, io_rho, io_tmp, dir)
+          integer, intent(IN) :: io_first, io_params, io_rho, io_tmp
+          integer, intent(OUT) :: io_last
+-         character (len=256), intent(IN) :: dir
+-         character (len=256) :: fname
++         character (len=4096), intent(IN) :: dir
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/eos/test/src/plot_eosDT.f
+===================================================================
+--- mesa.orig/src/mesa/eos/test/src/plot_eosDT.f	2010-02-10 03:12:06.000000000 +0100
++++ mesa/src/mesa/eos/test/src/plot_eosDT.f	2011-12-08 11:38:49.000000000 +0100
+@@ -15,7 +15,7 @@
+       
+       subroutine Build_DT_Plots
+ 
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+       
+          double precision lgT_min,lgT_max,lgRho_min,lgRho_max,dlgT,
+      >      dlgRho,lgRho,lgT,Rho,T
+@@ -339,8 +339,8 @@
+       subroutine Open_Plot_Outfiles(io_first, io_last, io_params, io_rho, io_tmp, dir)
+          integer, intent(IN) :: io_first, io_params, io_rho, io_tmp
+          integer, intent(OUT) :: io_last
+-         character (len=256), intent(IN) :: dir
+-         character (len=256) :: fname
++         character (len=4096), intent(IN) :: dir
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/eos/test/src/plot_eosPT.f
+===================================================================
+--- mesa.orig/src/mesa/eos/test/src/plot_eosPT.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/eos/test/src/plot_eosPT.f	2011-12-08 11:38:29.000000000 +0100
+@@ -16,7 +16,7 @@
+       
+       subroutine Build_PT_Plots
+ 
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+       
+          double precision logT_min, logT_max, logPgas_min, logPgas_max, dlogT,
+      >      dlogPgas, logPgas, logT, Pgas, T
+@@ -260,8 +260,8 @@
+       subroutine Open_Plot_Outfiles(io_first, io_last, io_params, io_pgas, io_tmp, dir)
+          integer, intent(IN) :: io_first, io_params, io_pgas, io_tmp
+          integer, intent(OUT) :: io_last
+-         character (len=256), intent(IN) :: dir
+-         character (len=256) :: fname
++         character (len=4096), intent(IN) :: dir
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/eos/test/src/sample_eos.f
+===================================================================
+--- mesa.orig/src/mesa/eos/test/src/sample_eos.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/eos/test/src/sample_eos.f	2011-12-08 11:38:56.000000000 +0100
+@@ -37,7 +37,7 @@
+          double precision :: Z, X, abar, zbar, Rho, T, Pgas,log10Rho
+          double precision :: dlnRho_dlnPgas_const_T, dlnRho_dlnT_const_Pgas, d_dlnRho_const_T, d_dlnT_const_Rho
+          double precision, dimension(num_eos_basic_results) :: res, d_dlnd, d_dlnT
+-         character (len=256) :: data_dir
++         character (len=4096) :: data_dir
+          integer :: ierr
+          
+          call const_init
+@@ -120,7 +120,7 @@
+          use eos_lib
+          integer, intent(out) :: handle
+ 
+-         character (len=256) :: data_dir
++         character (len=4096) :: data_dir
+          integer :: ierr
+          logical, parameter :: use_cache = .true.
+          
+Index: mesa/src/mesa/interp_1d/private/interp_1d_mp.f
+===================================================================
+--- mesa.orig/src/mesa/interp_1d/private/interp_1d_mp.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/interp_1d/private/interp_1d_mp.f	2011-12-08 11:41:33.000000000 +0100
+@@ -49,7 +49,7 @@
+      >         spL, spR, t, tmax, tmp, tmp1, tmp2
+          double precision, parameter :: tiny = 1e-20
+          integer :: i
+-         character (len=256) :: message
++         character (len=4096) :: message
+ 
+          ierr = 0
+          
+Index: mesa/src/mesa/interp_1d/test/src/plot_interp_1d.f
+===================================================================
+--- mesa.orig/src/mesa/interp_1d/test/src/plot_interp_1d.f	2010-01-06 16:42:19.000000000 +0100
++++ mesa/src/mesa/interp_1d/test/src/plot_interp_1d.f	2011-12-08 11:46:32.000000000 +0100
+@@ -42,8 +42,8 @@
+       subroutine write_points(nx, xpts, f, ix, dir)
+          integer, intent(in) :: nx, ix
+          double precision, intent(in) :: xpts(nx), f(4, nx)
+-         character (len=256), intent(in) :: dir
+-         character (len=256) :: fname
++         character (len=4096), intent(in) :: dir
++         character (len=4096) :: fname
+          integer, parameter :: io = 40
+          integer :: i
+          write(fname, '(2a, i1, a)') trim(dir), '/pts', ix, '.data'
+@@ -72,7 +72,7 @@
+          integer :: io_first, io_last, io_xs, io, x_points, i, ierr
+          double precision :: x_max, x_min, dx, x, z1, dz1_dx, z2, dz2_dx
+          double precision :: z3, dz3_dx, z4, dz4_dx, z5, dz5_dx, z6, dz6_dx
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+          
+          integer, parameter :: nx = 11
+          double precision :: xpts1(nx), f1_mp(4, nx), f1_pm(4, nx), widths(nx)
+@@ -210,8 +210,8 @@
+       subroutine Open_1d_Outfiles(io_first, io_last, io_xs, dir)
+          integer, intent(in) :: io_first, io_xs
+          integer, intent(out) :: io_last
+-         character (len=256), intent(in) :: dir
+-         character (len=256) :: fname
++         character (len=4096), intent(in) :: dir
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/arg.data'
+Index: mesa/src/mesa/interp_2d/test/src/plot_interp_2d.f
+===================================================================
+--- mesa.orig/src/mesa/interp_2d/test/src/plot_interp_2d.f	2010-01-06 16:42:19.000000000 +0100
++++ mesa/src/mesa/interp_2d/test/src/plot_interp_2d.f	2011-12-08 11:20:47.000000000 +0100
+@@ -16,7 +16,7 @@
+ 
+          integer :: io_first, io_last, io_xs, io_ys, io, x_points, y_points, i, j
+          double precision :: x_max, x_min, y_max, y_min, dx, dy, x, y, z, dz_dx, dz_dy
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+          
+          call get_2D_test_values_db
+          call setup_to_interp_2D_db
+@@ -65,8 +65,8 @@
+       subroutine Open_2D_Outfiles(io_first, io_last, io_xs, io_ys, dir)
+          integer, intent(IN) :: io_first, io_xs, io_ys
+          integer, intent(OUT) :: io_last
+-         character (len=256), intent(IN) :: dir
+-         character (len=256) :: fname
++         character (len=4096), intent(IN) :: dir
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/x.data'
+Index: mesa/src/mesa/jina/private/reaclib_input.f
+===================================================================
+--- mesa.orig/src/mesa/jina/private/reaclib_input.f	2010-03-12 06:24:17.000000000 +0100
++++ mesa/src/mesa/jina/private/reaclib_input.f	2011-12-08 11:32:17.000000000 +0100
+@@ -82,7 +82,7 @@
+       	character(len=*), parameter :: line2 = '(4es13.6)'
+       	character(len=*), parameter :: line3 = '(3es13.6)'
+       	character(len=iso_name_length) :: species
+-      	character(len=256) :: filename
++      	character(len=4096) :: filename
+ 
+       	ierr = 0
+       	reaclib_unitno = alloc_iounit(ierr)
+Index: mesa/src/mesa/jina/public/jina_def.f
+===================================================================
+--- mesa.orig/src/mesa/jina/public/jina_def.f	2011-12-06 13:23:07.000000000 +0100
++++ mesa/src/mesa/jina/public/jina_def.f	2011-12-08 11:32:33.000000000 +0100
+@@ -226,7 +226,7 @@
+       integer, parameter :: max_jina_burn_handles = 1000 ! make this as large as you want
+       type (Jina_Info), dimension(:), target :: jina_burn_handles(max_jina_burn_handles)
+       
+-      character (len=256) :: jina_dir
++      character (len=4096) :: jina_dir
+       
+    	type(reaclib_data) :: reaclib
+    	integer :: nreaclib
+Index: mesa/src/mesa/jina/test/src/test_jina.f
+===================================================================
+--- mesa.orig/src/mesa/jina/test/src/test_jina.f	2010-03-12 06:24:17.000000000 +0100
++++ mesa/src/mesa/jina/test/src/test_jina.f	2011-12-08 11:32:48.000000000 +0100
+@@ -1362,7 +1362,7 @@
+             jsi27, jsi28, jsi29, jsi30, jsi31, jsi32, jp29, jp30, jp31, jp32, js31, js32
+          double precision :: category_factors(num_categories)
+       	character(len=iso_name_length), pointer :: names(:)
+-      	character (len=256) :: fname
++      	character (len=4096) :: fname
+       
+       	include 'formats.dek'
+       	
+@@ -1744,7 +1744,7 @@
+       use test_jina_support
+    	
+    	integer :: ierr
+-   	character(len=256) :: data_dir
++   	character(len=4096) :: data_dir
+       data_dir = '../../data'   	
+ 
+    	call const_init
+Index: mesa/src/mesa/kap/preprocessor/src/co_enhanced.f
+===================================================================
+--- mesa.orig/src/mesa/kap/preprocessor/src/co_enhanced.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/preprocessor/src/co_enhanced.f	2011-12-08 11:17:42.000000000 +0100
+@@ -223,7 +223,7 @@
+          integer, parameter :: num_dXCOs = 8
+          double precision :: dXCOs(num_dXCOs), Y, dXC, dXO, mid, XC_base, XO_base
+          integer :: i, j, num_Tables, io_unit, pass, num1, num2, num3, ios
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          double precision, parameter :: tiny = 1d-10
+ 			
+          integer, parameter :: file_type = 2
+Index: mesa/src/mesa/kap/preprocessor/src/create_tables.f
+===================================================================
+--- mesa.orig/src/mesa/kap/preprocessor/src/create_tables.f	2010-01-25 01:37:43.000000000 +0100
++++ mesa/src/mesa/kap/preprocessor/src/create_tables.f	2011-12-08 11:18:54.000000000 +0100
+@@ -29,7 +29,7 @@
+       
+       double precision :: which_z
+       integer :: io_unit, ios, which_format, ilgT, cnt, table_version
+-      character (len=256) :: output_dir, opal_data_dir, header_info, ferg_data_dir, &
++      character (len=4096) :: output_dir, opal_data_dir, header_info, ferg_data_dir, &
+          opal_type1_table, table_prefix, co_header_info, ferg_prefix
+ 
+       logical :: do_kappa_test = .false.
+Index: mesa/src/mesa/kap/preprocessor/src/ferg.f
+===================================================================
+--- mesa.orig/src/mesa/kap/preprocessor/src/ferg.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/preprocessor/src/ferg.f	2011-12-08 11:16:47.000000000 +0100
+@@ -50,7 +50,7 @@
+       subroutine init_ferg(Z, X, data_dir, prefix)
+ 			double precision, intent(in) :: Z, X
+ 			character (len=*), intent(in) :: data_dir, prefix
+-			character (len=256) :: fname
++			character (len=4096) :: fname
+ 			call set_ferg_logTs
+ 			call set_ferg_logRs
+ 			call get_ferg_filename(Z, X, data_dir, prefix, fname)
+Index: mesa/src/mesa/kap/preprocessor/src/ferg_logP.f
+===================================================================
+--- mesa.orig/src/mesa/kap/preprocessor/src/ferg_logP.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/preprocessor/src/ferg_logP.f	2011-12-08 11:17:29.000000000 +0100
+@@ -61,8 +61,8 @@
+ 		
+       subroutine Init_ferg_logP(Z, X, dir, logP_dir)
+ 			double precision, intent(IN) :: Z, X
+-			character (len=256), intent(IN) :: dir, logP_dir
+-			character (len=256) :: fname
++			character (len=4096), intent(IN) :: dir, logP_dir
++			character (len=4096) :: fname
+ 			! read the table of logP values for the given Z and X
+ 			call Read_logPs(Z, X, logP_dir)
+ 			call Get_logK_filename(Z, X, dir, fname)
+@@ -193,10 +193,10 @@
+ 
+ 		subroutine Read_logPs(Z, X, dir)
+ 			double precision, intent(IN) :: Z, X
+-			character (len=256), intent(IN) :: dir
++			character (len=4096), intent(IN) :: dir
+ 		
+ 			integer :: ix, iz, io_logP, i, j
+-			character (len=256) :: fname, xstr, zstr
++			character (len=4096) :: fname, xstr, zstr
+ 			
+ 			integer :: first_logR(logP_num_logTs), last_logR(logP_num_logTs)
+ 			real :: logP, dlogP, lPs(logP_num_logRs)
+Index: mesa/src/mesa/kap/preprocessor/src/fixed_metal.f
+===================================================================
+--- mesa.orig/src/mesa/kap/preprocessor/src/fixed_metal.f	2010-01-24 23:43:39.000000000 +0100
++++ mesa/src/mesa/kap/preprocessor/src/fixed_metal.f	2011-12-08 11:18:14.000000000 +0100
+@@ -157,7 +157,7 @@
+       
+       double precision :: Y, Z, logR, logT, T, logRho, Rho, logK_pot, logK_not, abar, zbar, w4, w5, w6, logK, opac_rad, opac_cond
+       integer :: i, j, io_unit, ios, info
+-      character (len=256) :: fname
++      character (len=4096) :: fname
+ 
+       Z = Z_in
+ 
+Index: mesa/src/mesa/kap/preprocessor/src/kap_support.f
+===================================================================
+--- mesa.orig/src/mesa/kap/preprocessor/src/kap_support.f	2010-01-25 01:37:43.000000000 +0100
++++ mesa/src/mesa/kap/preprocessor/src/kap_support.f	2011-12-08 11:17:54.000000000 +0100
+@@ -226,7 +226,7 @@
+          double precision :: dXC, dXO, T6, R, frac, opac, Y,  &
+                   logK_lowT, logK_highT, fac, logK_Compton
+ 			double precision, parameter :: logT1 = log10(8.5d3), logT2 = log10(1.25e4), logT3 = 8.2, logT4 = 8.69
+-			character (len=256) :: opal_type1_filename
++			character (len=4096) :: opal_type1_filename
+ 			logical :: dbg
+ 			
+ 			! OPAL tables have logT = 3.75 for lowest temp. below that, switch to the low temp evaluation only.
+@@ -465,7 +465,7 @@
+          logical, intent(in) :: co_enhanced
+          character(len=*), intent(in) :: opal_data_dir, opal_type1_table
+          integer :: io_unit,i,info
+-         character(len=256) :: filename
++         character(len=4096) :: filename
+          character(len=2) :: element
+ 
+          if(co_enhanced) then
+Index: mesa/src/mesa/kap/preprocessor/src/opal_type2.f
+===================================================================
+--- mesa.orig/src/mesa/kap/preprocessor/src/opal_type2.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/preprocessor/src/opal_type2.f	2011-12-08 11:16:16.000000000 +0100
+@@ -61,7 +61,7 @@
+ 		subroutine open_unit2(m,z)
+ 			integer, intent(IN) :: m
+ 			real, intent(IN) :: z
+-			character (len=256) :: dir, zstr, xstr, fname
++			character (len=4096) :: dir, zstr, xstr, fname
+ 			integer :: iz, ios
+ 			iz = z * 1d3 + 0.5d0
+ 			zstr = ''
+Index: mesa/src/mesa/kap/preprocessor/src/plot.f
+===================================================================
+--- mesa.orig/src/mesa/kap/preprocessor/src/plot.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/preprocessor/src/plot.f	2011-12-08 11:18:32.000000000 +0100
+@@ -19,7 +19,7 @@
+ 
+          integer, parameter :: io_unit0 = 40
+          integer :: info_out, i, j, k
+-         character (len=256) :: dir, opal_data_dir, opal_type1_table, ferg_dir, ferg_prefix
++         character (len=4096) :: dir, opal_data_dir, opal_type1_table, ferg_dir, ferg_prefix
+          
+          double precision :: X, Zbase, dXC, dXO, Rho, logRho, T, logT, logK, logR
+          double precision logT_min,logT_max,logR_min,logR_max,dlogT,dlogR,opac_rad,opac_cond, &
+@@ -147,8 +147,8 @@
+       subroutine Open_Plot_Outfiles(io_first, io_last, io_params, ioR, io_tmp, dir)
+          integer, intent(IN) :: io_first, io_params, ioR, io_tmp
+          integer, intent(OUT) :: io_last
+-         character (len=256), intent(IN) :: dir
+-         character (len=256) :: fname
++         character (len=4096), intent(IN) :: dir
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/kap/private/load_co_kap.f
+===================================================================
+--- mesa.orig/src/mesa/kap/private/load_co_kap.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/private/load_co_kap.f	2011-12-08 11:13:22.000000000 +0100
+@@ -77,7 +77,7 @@
+          logical, intent(in) :: read_later
+          integer, intent(out) :: ierr
+ 
+-         character (len=256) :: fname, filename, cache_filename
++         character (len=4096) :: fname, filename, cache_filename
+          integer :: iounit1, iounit2
+          
+          ierr = 0
+@@ -121,7 +121,7 @@
+          integer :: CO_table_numbers(num_kap_CO_dXs,num_kap_CO_dXs)
+          integer :: next_dXO_table(max_num_CO_tables) 
+          integer :: next_dXC_table(max_num_CO_tables) 
+-         character (len=256) :: message
++         character (len=4096) :: message
+          real, parameter :: tiny = 1d-6
+ 
+          ierr = 0
+@@ -285,7 +285,7 @@
+             logical, intent(in) :: reading_cache
+             integer, intent(out) :: ierr
+          
+-            character (len=256) :: message
++            character (len=4096) :: message
+             character (len=1) :: char
+             integer :: c_num_tables, c_num_logRs, c_num_logTs, c_version
+             real :: c_xin, c_zz, c_logR_min, c_logR_max, c_logT_min, c_logT_max
+@@ -456,7 +456,7 @@
+          real :: X, Z, xin, zz, Y, dXC, dXO, err, logT
+          real :: kap_table(sz_per_Kap_point,num_logRs,num_logTs)         
+          real :: logKs(num_logRs), logRs(num_logRs)
+-         character (len=256) :: message
++         character (len=4096) :: message
+          real, parameter :: tiny = 1e-6
+          
+          logical :: store_logRs, store_logTs
+@@ -607,7 +607,7 @@
+          integer, intent(out) :: ili_logRs, ili_logTs, ierr
+          
+          real :: table(sz_per_kap_point, num_logRs, num_logTs)
+-         character (len=256) :: message
++         character (len=4096) :: message
+          integer :: ibcxmin                   ! bc flag for x=xmin
+          real :: bcxmin(num_logTs)               ! bc data vs. y at x=xmin
+          integer :: ibcxmax                   ! bc flag for x=xmax
+Index: mesa/src/mesa/kap/private/load_kap.f
+===================================================================
+--- mesa.orig/src/mesa/kap/private/load_kap.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/private/load_kap.f	2011-12-08 11:13:44.000000000 +0100
+@@ -94,7 +94,7 @@
+          logical, intent(in) :: read_later
+          integer, intent(out) :: ierr
+ 
+-         character (len=256) :: fname, filename, cache_filename
++         character (len=4096) :: fname, filename, cache_filename
+          integer :: iounit1, iounit2
+          
+          ierr = 0
+@@ -132,7 +132,7 @@
+          real :: X, Z
+          integer :: ios, form, version, n, num_logRs, num_logTs, status
+          real :: xin, zz, logR_min, logR_max, logT_min, logT_max, xErr, zErr
+-         character (len=256) :: message
++         character (len=4096) :: message
+          real, parameter :: tiny = 1d-6
+ 
+          ierr = 0
+@@ -284,7 +284,7 @@
+             logical, intent(in) :: reading_cache
+             integer, intent(out) :: ierr
+             
+-            character (len=256) :: message
++            character (len=4096) :: message
+             character (len=1) :: char
+             integer :: i, c_version, c_num_logRs, c_num_logTs
+             real :: c_xin, c_zz, c_logR_min, c_logR_max, c_logT_min, c_logT_max
+@@ -396,7 +396,7 @@
+          real, intent(in) :: logRs(num_logRs), logTs(num_logTs)
+          integer, intent(out) :: ili_logRs, ili_logTs, ierr
+          
+-         character (len=256) :: message
++         character (len=4096) :: message
+          integer :: ibcxmin                   ! bc flag for x=xmin
+          real :: bcxmin(num_logTs)               ! bc data vs. y at x=xmin
+          integer :: ibcxmax                   ! bc flag for x=xmax
+Index: mesa/src/mesa/kap/public/kap_def.f
+===================================================================
+--- mesa.orig/src/mesa/kap/public/kap_def.f	2011-12-06 13:23:07.000000000 +0100
++++ mesa/src/mesa/kap/public/kap_def.f	2011-12-08 11:14:36.000000000 +0100
+@@ -187,7 +187,7 @@
+       
+       
+       ! info for on-demand loading
+-      character (len=256) :: kap_dir
++      character (len=4096) :: kap_dir
+       character (len=256) :: kap_prefix = 'gn93'
+       logical :: kap_use_cache
+ 
+Index: mesa/src/mesa/kap/test/src/plot_kap_model.f
+===================================================================
+--- mesa.orig/src/mesa/kap/test/src/plot_kap_model.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/kap/test/src/plot_kap_model.f	2011-12-08 11:15:13.000000000 +0100
+@@ -97,7 +97,7 @@
+       
+       
+       subroutine write_results_for_model_data
+-         character (len=256) :: filename
++         character (len=4096) :: filename
+          integer :: ierr, iounit, k
+          
+          filename = 'plot_data/kap_model.data'
+@@ -160,4 +160,4 @@
+ 
+       call Finish
+ 
+-      end program plot_kap_model
+\ No newline at end of file
++      end program plot_kap_model
+Index: mesa/src/mesa/kap/test/src/sample_kap.f
+===================================================================
+--- mesa.orig/src/mesa/kap/test/src/sample_kap.f	2010-01-06 16:42:19.000000000 +0100
++++ mesa/src/mesa/kap/test/src/sample_kap.f	2011-12-08 11:14:58.000000000 +0100
+@@ -36,7 +36,7 @@
+       !multiple core CPUs. the loop that calls the opacity routine kap_get for
+       !each gridpoint in the sample model makes use of this via OpenMP.
+ 
+-      character(len=256) :: mesa_data_dir, kappa_file_prefix, model_file, output_file
++      character(len=4096) :: mesa_data_dir, kappa_file_prefix, model_file, output_file
+       logical :: use_cache, cubic_X_interpolation, cubic_Z_interpolation
+       integer :: handle, i, ii, info, iounit, Npts, Nspec, omp_err
+       integer, parameter :: maxpts = 2000, maxspec = 31
+Index: mesa/src/mesa/kap/test/src/test_kap_support.f
+===================================================================
+--- mesa.orig/src/mesa/kap/test/src/test_kap_support.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/kap/test/src/test_kap_support.f	2011-12-08 11:42:50.000000000 +0100
+@@ -165,7 +165,7 @@
+          logical, intent(in) :: quietly
+          !..allocate and load the opacity tables
+ 
+-         character (len=256) :: data_dir, kap_dir, opal_dir, cbeg_ferg
++         character (len=4096) :: data_dir, kap_dir, opal_dir, cbeg_ferg
+          integer :: ierr
+          logical, parameter :: use_cache = .true.
+          
+@@ -204,7 +204,7 @@
+       subroutine read_test_data(quietly, ierr)
+          logical, intent(in) :: quietly         
+          integer, intent(out) :: ierr
+-         character(len=100) :: filename
++         character(len=4096) :: filename
+          integer :: iounit, k, j
+          filename = 'kap_test.data'
+          if (.not. quietly) then
+@@ -346,7 +346,7 @@
+       subroutine write_plot_data
+          use chem_def
+          integer, parameter :: io_unit0 = 40
+-         character (len=256) :: dir
++         character (len=4096) :: dir
+          double precision, pointer, dimension(:,:,:) :: output_values, co_output_values
+          double precision :: Zbase, xh, dxc, dxo, &
+             logT_max, logT_min, logRho_max, logRho_min, dlogT, dlogRho, logT, logRho
+@@ -464,9 +464,9 @@
+             io_first, io_last, io_params, io_rho, io_tmp, dir, compare_to_CO)
+          integer, intent(IN) :: io_first, io_params, io_rho, io_tmp
+          integer, intent(OUT) :: io_last
+-         character (len=256), intent(IN) :: dir
++         character (len=4096), intent(IN) :: dir
+          logical, intent(in) :: compare_to_CO
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          integer :: io
+          
+          fname = trim(dir) // '/params.data'
+Index: mesa/src/mesa/karo/private/karo.f
+===================================================================
+--- mesa.orig/src/mesa/karo/private/karo.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/karo/private/karo.f	2011-12-08 11:32:04.000000000 +0100
+@@ -548,7 +548,7 @@
+          integer, intent(out) :: ierr
+          
+          integer :: iounit, idxO
+-         character (len=256) :: karo_file
++         character (len=4096) :: karo_file
+          
+          ierr = 0
+          iounit = alloc_iounit(ierr)
+@@ -575,7 +575,7 @@
+          character (len=*), intent(in) :: data_dir
+          integer, intent(out) :: ierr
+          
+-         character (len=256) :: fname, clin
++         character (len=4096) :: fname, clin
+          integer :: i, idCO, idCO_in, nr_in, len_clin, line
+          real :: X_in, Y_in, Z_in, dXC_in, dXO_in, c_minus_o_in, c_div_o_in
+          real :: logRs_in(nr), lgT_in
+Index: mesa/src/mesa/karo/test/src/test_karo.f
+===================================================================
+--- mesa.orig/src/mesa/karo/test/src/test_karo.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/karo/test/src/test_karo.f	2011-12-08 11:32:10.000000000 +0100
+@@ -89,7 +89,7 @@
+       integer :: ierr, kap_handle, iounit
+       logical, parameter :: use_kap_cache = .true.
+       logical, parameter :: show_difference = .true.
+-      character (len=256) :: karo_data_dir, mesa_data_dir, karo_file
++      character (len=4096) :: karo_data_dir, mesa_data_dir, karo_file
+       
+       karo_data_dir = '../kR_gn93.Z.01'
+       mesa_data_dir = '../../data'
+Index: mesa/src/mesa/mlt/private/mlt.f
+===================================================================
+--- mesa.orig/src/mesa/mlt/private/mlt.f	2010-03-05 00:45:47.000000000 +0100
++++ mesa/src/mesa/mlt/private/mlt.f	2011-12-08 11:40:32.000000000 +0100
+@@ -157,7 +157,7 @@
+          double precision :: d_omega_dvb(nvbs), d_theta_dvb(nvbs) !, d_a0_dvb(nvbs)
+ 
+          double precision, parameter :: tiny = 1d-30
+-         character (len=256) :: message        
++         character (len=4096) :: message        
+          logical :: Schwarzschild_stable, Ledoux_stable, Ledoux_unstable
+          double precision :: g, deltag, gamma0, dlnP_dr, vsem, Dsem, Drad, 
+      >      dlnmu_dlnT, dlnmu_dlnd         
+Index: mesa/src/mesa/mtx/blas_src/mtx_lib.f
+===================================================================
+--- mesa.orig/src/mesa/mtx/blas_src/mtx_lib.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/mtx/blas_src/mtx_lib.f	2011-12-08 11:20:31.000000000 +0100
+@@ -67,13 +67,13 @@
+ 			! form == 1 means log10(max(1d-99,data)))
+ 			! form == 2 means sign(1d0,data)*log10(1+data**2)
+      		double precision, intent(in) :: jac(ldj,sz), out_of_bounds
+-			character (len=256), intent(in) :: jac_filename
++			character (len=4096), intent(in) :: jac_filename
+ 			integer, intent(out) :: ierr
+ 			
+ 			
+ 			integer :: k, kk, j, i
+ 			double precision :: v
+-			character (len=256) :: message
++			character (len=4096) :: message
+ 			
+ 			ierr = 0
+ 			
+@@ -134,12 +134,13 @@
+ 			! form == 1 means log10(max(1d-99,data)))
+ 			! form == 2 means sign(1d0,data)*log10(1+data**2)
+      		double precision, intent(in) :: jac(ldj,sz), out_of_bounds
+-			character (len=256), intent(in) :: names(m), jac_filename, rows_filename, cols_filename
++			character (len=256), intent(in) :: names(m)
++            character (len=4096), intent(in) :: jac_filename, rows_filename, cols_filename
+ 			integer, intent(out) :: ierr
+ 			
+ 			integer :: var, eqn, k, kk, j, i, qcnt, io_unit
+ 			double precision :: v
+-			character (len=256) :: message
++			character (len=4096) :: message
+ 			
+ 			io_unit = 56
+ 			ierr = 0
+@@ -253,10 +254,10 @@
+          use alert_lib
+          integer, intent(in) :: n, m, io_unit, var, eqn
+          double precision, dimension(m,m,n), intent(in) :: em2, em1, e00, ep1, ep2
+-         character (len=256), intent(in) :: filename
++         character (len=4096), intent(in) :: filename
+          integer, intent(out) :: ierr
+          
+-         character (len=256) :: message
++         character (len=4096) :: message
+ 
+          open(unit = io_unit, file = trim(filename), iostat=ierr)
+          if (ierr /= 0) then
+Index: mesa/src/mesa/net/private/net_initialize.f
+===================================================================
+--- mesa.orig/src/mesa/net/private/net_initialize.f	2010-03-03 20:03:23.000000000 +0100
++++ mesa/src/mesa/net/private/net_initialize.f	2011-12-08 11:21:58.000000000 +0100
+@@ -41,7 +41,7 @@
+          character (len=*), intent(in) :: data_dir, reaction_filename
+          integer, intent(out) :: ierr
+          
+-         character (len=256) :: line, filename, rname, cname, iname, str, message
++         character (len=4096) :: line, filename, rname, cname, iname, str, message
+          integer :: iounit, len, i, j, jj, k, cnt, ir, ic, ii, ye, rho, n, num_reactions
+          character (len=maxlen_reaction_Info) :: info
+          double precision :: Q, Qneu
+@@ -523,7 +523,7 @@
+          integer, intent(out) :: ierr
+          
+          integer :: iounit, n, i, t, id
+-         character (len=256) :: buffer, string, filename
++         character (len=4096) :: buffer, string, filename
+          logical, parameter :: dbg = .false.
+          
+          ierr = 0
+@@ -628,7 +628,7 @@
+          
+          
+          subroutine error
+-            character (len=256) :: message
++            character (len=4096) :: message
+             ierr = -1
+             write(message,'(a)') ' problem reading net file ' // trim(filename)
+      >            // ' ' // trim(string)
+Index: mesa/src/mesa/net/public/net_def.f
+===================================================================
+--- mesa.orig/src/mesa/net/public/net_def.f	2011-12-06 13:23:07.000000000 +0100
++++ mesa/src/mesa/net/public/net_def.f	2011-12-08 11:22:08.000000000 +0100
+@@ -288,7 +288,7 @@
+       integer, parameter :: max_net_handles = 1000
+       type (Net_General_Info), target :: net_handles(max_net_handles)
+       
+-      character (len=256) :: net_dir
++      character (len=4096) :: net_dir
+ 
+       
+       contains
+Index: mesa/src/mesa/net/test/src/plot_net.f
+===================================================================
+--- mesa.orig/src/mesa/net/test/src/plot_net.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/net/test/src/plot_net.f	2011-12-08 11:43:42.000000000 +0100
+@@ -30,7 +30,7 @@
+       implicit none
+       
+       integer :: ierr
+-   	character(len=256) :: data_dir
++   	character(len=4096) :: data_dir
+       data_dir = '../../data'   	
+       
+       call const_init
+Index: mesa/src/mesa/net/test/src/test_net.f
+===================================================================
+--- mesa.orig/src/mesa/net/test/src/test_net.f	2010-03-06 20:39:41.000000000 +0100
++++ mesa/src/mesa/net/test/src/test_net.f	2011-12-08 11:22:20.000000000 +0100
+@@ -31,7 +31,7 @@
+       implicit none
+       
+       integer :: ierr
+-   	character(len=256) :: data_dir
++   	character(len=4096) :: data_dir
+       data_dir = '../../data'   	
+       
+       call const_init
+Index: mesa/src/mesa/net/test/src/test_net_support.f
+===================================================================
+--- mesa.orig/src/mesa/net/test/src/test_net_support.f	2010-03-06 20:39:41.000000000 +0100
++++ mesa/src/mesa/net/test/src/test_net_support.f	2011-12-08 11:44:04.000000000 +0100
+@@ -318,7 +318,7 @@
+          double precision :: logRho_min, logRho_max, dlogT, dlogRho
+          integer :: logT_points, logRho_points
+          integer :: io, io_first, io_last, io_rho, io_tmp, io_params, num_out
+-         character (len=256) :: fname, dir
++         character (len=4096) :: fname, dir
+ 
+          double precision, allocatable :: output_values(:, :, :)
+ 
+@@ -531,8 +531,8 @@
+       
+       integer function Open_Files(io_start, dir)
+          integer, intent(in) :: io_start
+-         character (len=256), intent(in) :: dir
+-         character (len=256) fname
++         character (len=4096), intent(in) :: dir
++         character (len=4096) fname
+          integer :: io
+          io = io_start
+          
+Index: mesa/src/mesa/num/private/mod_newton.f
+===================================================================
+--- mesa.orig/src/mesa/num/private/mod_newton.f	2010-01-27 02:08:56.000000000 +0100
++++ mesa/src/mesa/num/private/mod_newton.f	2011-12-08 11:50:37.000000000 +0100
+@@ -282,7 +282,7 @@
+          integer :: iiter, ndiag, zone, neq, idiag, tiny_corr_cnt, ldAF, ldA, i, j, k, info,
+      >      last_jac_iter, max_iterations_for_jacobian, lsvar_lo, lsvar_hi, force_iter_value,
+      >      max_iter_for_enforce_resid_tol
+-         character (len=256) :: err_msg
++         character (len=4096) :: err_msg
+          logical :: first_try, make_new_j, dbg_msg, made_new_j, doing_extra, passed_tol_tests,
+      >      reject_if_ill_conditioned, overlay_AF
+          integer, parameter :: num_tol_msgs = 15
+@@ -790,7 +790,7 @@
+          subroutine oops(msg, restore_flag) ! for cases where need to call restore_stuff
+             character (len=*), intent(in) :: msg
+             logical, intent(in) :: restore_flag
+-            character (len=256) :: full_msg
++            character (len=4096) :: full_msg
+             if (.not. make_new_j) then
+                full_msg = trim(msg) // ' -- rebuild matrix and retry'
+                call write_msg(full_msg)
+@@ -889,7 +889,7 @@
+             integer, intent(out) :: ierr
+       
+             integer :: i, j, k, iter, k_max_corr, i_max_corr
+-            character (len=256) :: message
++            character (len=4096) :: message
+             logical :: first_time
+             double precision :: a1, alam, alam2, alamin, a2, disc, f2,
+      >         rhs1, rhs2, temp, test, tmplam, max_corr, fold, corr_coeff_limit
+@@ -1468,7 +1468,7 @@
+             integer, intent(out) :: ierr
+       
+             integer :: i, neq
+-            character (len=256) :: err_msg
++            character (len=4096) :: err_msg
+             neq = nvar*nz
+             ierr = 0         
+             i = num_work_params+1
+Index: mesa/src/mesa/num/test/src/test_support.f
+===================================================================
+--- mesa.orig/src/mesa/num/test/src/test_support.f	2010-01-06 02:27:30.000000000 +0100
++++ mesa/src/mesa/num/test/src/test_support.f	2011-12-08 11:33:32.000000000 +0100
+@@ -250,7 +250,7 @@
+          double precision :: xend ! ending value for the interval of integration
+          double precision :: y(nv), expect(nv), yprime(nv)
+          character (len=64) :: str
+-         character (len=256) :: dir, fname
++         character (len=4096) :: dir, fname
+          integer, parameter :: lrpar = 2, lipar = 1, nrdens = nv
+          integer, parameter :: liwork = nrdens+100, lwork = 11*nv+8*nrdens+100
+          double precision :: rpar(lrpar), max_abs_yp2, work(lwork), h, max_step_size
+@@ -354,7 +354,7 @@
+          double precision :: xend ! ending value for the interval of integration
+          double precision :: y(nv), expect(nv), yprime(nv)
+          character (len=64) :: str
+-         character (len=256) :: dir, fname
++         character (len=4096) :: dir, fname
+          integer, parameter :: lrpar = 2, lipar = 1
+          double precision :: rpar(lrpar), max_abs_yp2, h, max_step_size
+          integer :: io_unit, i, ipar(lipar), lout, iout, idid, itol, j
+Index: mesa/src/mesa/pulse/private/ctrls_io.f
+===================================================================
+--- mesa.orig/src/mesa/pulse/private/ctrls_io.f	2010-02-10 05:01:25.000000000 +0100
++++ mesa/src/mesa/pulse/private/ctrls_io.f	2011-12-08 11:21:10.000000000 +0100
+@@ -37,19 +37,19 @@
+       
+       
+       logical :: read_extra_controls_inlist1
+-      character (len=256) :: extra_controls_inlist1_name 
++      character (len=4096) :: extra_controls_inlist1_name 
+    
+       logical :: read_extra_controls_inlist2
+-      character (len=256) :: extra_controls_inlist2_name 
++      character (len=4096) :: extra_controls_inlist2_name 
+    
+       logical :: read_extra_controls_inlist3
+-      character (len=256) :: extra_controls_inlist3_name 
++      character (len=4096) :: extra_controls_inlist3_name 
+    
+       logical :: read_extra_controls_inlist4
+-      character (len=256) :: extra_controls_inlist4_name 
++      character (len=4096) :: extra_controls_inlist4_name 
+    
+       logical :: read_extra_controls_inlist5
+-      character (len=256) :: extra_controls_inlist5_name 
++      character (len=4096) :: extra_controls_inlist5_name 
+       
+ 
+       namelist /pulse_controls/ &
+@@ -97,7 +97,7 @@
+          type (pulse_info), pointer:: p
+          character(*), intent(in) :: filename
+          integer, intent(out) :: ierr
+-         character (len=256) :: message
++         character (len=4096) :: message
+          integer :: unit
+          call copy
+          ierr = 0
+@@ -230,7 +230,7 @@
+          integer, intent(in) :: level  
+          integer, intent(out) :: ierr
+          logical :: read_extra1, read_extra2, read_extra3, read_extra4, read_extra5
+-         character (len=256) :: message, extra1, extra2, extra3, extra4, extra5
++         character (len=4096) :: message, extra1, extra2, extra3, extra4, extra5
+          integer :: unit 
+          
+          ierr = 0        
+Index: mesa/src/mesa/rates/private/rates_initialize.f
+===================================================================
+--- mesa.orig/src/mesa/rates/private/rates_initialize.f	2010-01-24 23:43:39.000000000 +0100
++++ mesa/src/mesa/rates/private/rates_initialize.f	2011-12-08 11:45:30.000000000 +0100
+@@ -27,7 +27,7 @@
+       
+       implicit none
+       
+-      character (len=256) :: net_dir
++      character (len=4096) :: net_dir
+       
+       
+       contains
+@@ -40,7 +40,7 @@
+          character (len=*), intent(in) :: data_dir
+          integer, intent(out) :: ierr
+          
+-         character (len=256) :: ppn_datafile
++         character (len=4096) :: ppn_datafile
+          
+          ierr = 0
+          net_dir = trim(data_dir) // '/net_data'
+@@ -71,7 +71,7 @@
+ 		   integer, intent(out) :: ierr
+          
+          integer :: iounit, n, i, t, id, read_int
+-         character (len=256) :: buffer, string, filename
++         character (len=4096) :: buffer, string, filename
+          logical, parameter :: dbg = .false.
+          
+          ierr = 0
+@@ -172,8 +172,8 @@
+          
+          type (rate_info), pointer :: ri
+          integer :: i, iounit, n, t, ir
+-         character (len=132) :: line, dir, rate_name, rate_fname, rate_file, filename, message
+-         character (len=256) :: buffer, string
++         character (len=4096) :: line, dir, rate_name, rate_fname, rate_file, filename, message
++         character (len=4096) :: buffer, string
+          
+          logical, parameter :: dbg = .false.
+          
+@@ -295,7 +295,7 @@
+          double precision, pointer :: work(:,:)
+          double precision, pointer :: T8s(:)
+          double precision, pointer :: f(:,:)
+-         character (len=256) :: line
++         character (len=4096) :: line
+          
+          ierr = 0
+          iounit = alloc_iounit(ierr)
+Index: mesa/src/mesa/rates/test/src/test_rates.f
+===================================================================
+--- mesa.orig/src/mesa/rates/test/src/test_rates.f	2010-03-13 18:46:55.000000000 +0100
++++ mesa/src/mesa/rates/test/src/test_rates.f	2011-12-08 11:31:52.000000000 +0100
+@@ -22,7 +22,7 @@
+          integer, parameter :: max_nrates_to_eval = 500
+          integer :: nrates_to_eval, irs(max_nrates_to_eval)
+          double precision :: raw_rates(max_nrates_to_eval)
+-   	   character(len=256) :: data_dir
++   	   character(len=4096) :: data_dir
+          
+          logical, parameter :: use_fxt_rates = .false.
+          
+Index: mesa/src/mesa/screen/test/src/test_screen.f
+===================================================================
+--- mesa.orig/src/mesa/screen/test/src/test_screen.f	2010-03-06 20:39:41.000000000 +0100
++++ mesa/src/mesa/screen/test/src/test_screen.f	2011-12-08 11:41:27.000000000 +0100
+@@ -24,7 +24,7 @@
+          double precision, dimension(:), pointer :: zs13, zhat, zhat2, lzav, aznut, zs13inv ! (max jscr)
+          double precision, pointer :: graboske_cache(:,:,:) ! (3,max_z_to_cache,max_z_to_cache)
+          logical :: use_graboske_et_al_screening
+-   	   character(len=256) :: data_dir
++   	   character(len=4096) :: data_dir
+    	   integer :: h1, he3, he4, c12, n14, o16, ne20, mg24
+          
+          include 'formats.dek'
+Index: mesa/src/mesa/star/private/adjust_xyz.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/adjust_xyz.f	2010-03-08 19:17:15.000000000 +0100
++++ mesa/src/mesa/star/private/adjust_xyz.f	2011-12-08 11:49:04.000000000 +0100
+@@ -477,7 +477,7 @@
+          integer, intent(out) :: ierr
+          
+          integer :: iounit, t, n, i, cid, j, cnt
+-         character (len=256) :: buffer, string
++         character (len=4096) :: buffer, string
+          logical, parameter :: dbg = .true.
+          
+          ierr = 0
+Index: mesa/src/mesa/star/private/ctrls_io.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/ctrls_io.f	2010-03-04 02:31:00.000000000 +0100
++++ mesa/src/mesa/star/private/ctrls_io.f	2011-12-08 11:24:34.000000000 +0100
+@@ -32,19 +32,19 @@
+       
+       
+       logical :: read_extra_controls_inlist1
+-      character (len=256) :: extra_controls_inlist1_name 
++      character (len=4096) :: extra_controls_inlist1_name 
+    
+       logical :: read_extra_controls_inlist2
+-      character (len=256) :: extra_controls_inlist2_name 
++      character (len=4096) :: extra_controls_inlist2_name 
+    
+       logical :: read_extra_controls_inlist3
+-      character (len=256) :: extra_controls_inlist3_name 
++      character (len=4096) :: extra_controls_inlist3_name 
+    
+       logical :: read_extra_controls_inlist4
+-      character (len=256) :: extra_controls_inlist4_name 
++      character (len=4096) :: extra_controls_inlist4_name 
+    
+       logical :: read_extra_controls_inlist5
+-      character (len=256) :: extra_controls_inlist5_name 
++      character (len=4096) :: extra_controls_inlist5_name 
+       
+ 
+       namelist /controls/ &
+@@ -868,7 +868,7 @@
+          character(*), intent(in) :: filename
+          integer, intent(in) :: id
+          integer, intent(out) :: ierr
+-         character (len=256) :: message
++         character (len=4096) :: message
+          integer :: unit
+          type (star_info), pointer :: s
+          call get_star_ptr(id, s, ierr)
+@@ -1731,7 +1731,7 @@
+          integer, intent(in) :: level  
+          integer, intent(out) :: ierr
+          logical :: read_extra1, read_extra2, read_extra3, read_extra4, read_extra5
+-         character (len=256) :: message, extra1, extra2, extra3, extra4, extra5
++         character (len=4096) :: message, extra1, extra2, extra3, extra4, extra5
+          integer :: unit 
+          
+          ierr = 0        
+Index: mesa/src/mesa/star/private/do_one_utils.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/do_one_utils.f	2010-03-06 20:39:41.000000000 +0100
++++ mesa/src/mesa/star/private/do_one_utils.f	2011-12-08 11:25:35.000000000 +0100
+@@ -107,7 +107,7 @@
+ 
+          integer, pointer, dimension(:) :: model_numbers, model_priorities, model_logs
+          integer :: max_num_mods, num_models, model_log_number
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          integer :: model_priority
+          
+          include 'formats.dek'
+Index: mesa/src/mesa/star/private/evolve_support.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/evolve_support.f	2010-03-02 19:43:27.000000000 +0100
++++ mesa/src/mesa/star/private/evolve_support.f	2011-12-08 11:27:18.000000000 +0100
+@@ -257,7 +257,7 @@
+          end interface
+          integer, intent(in) :: id
+          integer, intent(out) :: ierr         
+-         character (len=256) :: filename, num_str
++         character (len=4096) :: filename, num_str
+          type (star_info), pointer :: s
+          call get_star_ptr(id, s, ierr)
+          if (ierr /= 0) return
+Index: mesa/src/mesa/star/private/hydro_newton.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/hydro_newton.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/star/private/hydro_newton.f	2011-12-08 11:23:49.000000000 +0100
+@@ -711,7 +711,7 @@
+          integer, intent(out) :: ierr
+ 
+          integer :: j, iounit, i_delta
+-         character (len=256) :: logfilename, log_format_str, data_dir, filename
++         character (len=4096) :: logfilename, log_format_str, data_dir, filename
+          logical :: initialize_log_file
+          double precision, pointer :: tmp(:), tmp2(:)
+           
+Index: mesa/src/mesa/star/private/log.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/log.f	2010-03-12 19:35:19.000000000 +0100
++++ mesa/src/mesa/star/private/log.f	2011-12-08 11:26:51.000000000 +0100
+@@ -61,7 +61,7 @@
+          integer, intent(out) :: ierr
+ 
+          integer :: iounit, n, i, t, id, j, cnt, ii
+-         character (len=256) :: buffer, string, filename
++         character (len=4096) :: buffer, string, filename
+          integer, parameter :: max_level = 20
+ 
+          logical, parameter :: dbg = .false.
+Index: mesa/src/mesa/star/private/profile.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/profile.f	2010-03-02 19:43:27.000000000 +0100
++++ mesa/src/mesa/star/private/profile.f	2011-12-08 11:27:09.000000000 +0100
+@@ -69,7 +69,7 @@
+          integer, intent(out) :: ierr
+ 
+          integer :: iounit, n, i, t, id, j, k
+-         character (len=256) :: buffer, string, filename
++         character (len=4096) :: buffer, string, filename
+          integer, parameter :: max_level = 20
+ 
+          logical, parameter :: dbg = .false.
+@@ -330,7 +330,7 @@
+          use utils_lib, only:alloc_iounit, free_iounit
+          use star_utils, only: get_tau
+          type (star_info), pointer :: s
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          integer, intent(in) :: id_extra
+          interface
+             include 'extra_profile_cols.dek'
+@@ -344,7 +344,7 @@
+          integer :: io, i, j, nz, col, k, n, species, h1, he4, numcols, num_extra_cols
+          integer, pointer :: chem_id(:)
+          logical, parameter :: dbg = .false.
+-         character (len=256) :: fname1
++         character (len=4096) :: fname1
+          character (len=maxlen_log_column_name), pointer :: extra_col_names(:)
+          double precision, pointer :: extra_col_vals(:,:)
+ 
+Index: mesa/src/mesa/star/private/read_model.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/read_model.f	2010-03-01 19:11:17.000000000 +0100
++++ mesa/src/mesa/star/private/read_model.f	2011-12-08 11:24:19.000000000 +0100
+@@ -154,7 +154,7 @@
+          integer :: iounit, n, i, t, file_type, year_month_day_when_created, nz, species, nvar
+          logical :: do_read_prev
+          double precision :: initial_mass, initial_z
+-         character (len=256) :: buffer, string, message
++         character (len=4096) :: buffer, string, message
+          character (len=net_name_len) :: net_name
+       	character(len=iso_name_length), pointer :: names(:) ! (species)
+       	integer, pointer :: perm(:) ! (species)
+Index: mesa/src/mesa/star/private/star_private_def.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/star_private_def.f	2010-03-01 19:11:17.000000000 +0100
++++ mesa/src/mesa/star/private/star_private_def.f	2011-12-08 11:44:43.000000000 +0100
+@@ -245,7 +245,7 @@
+             ppn_rate_numbers_fname, kappa_file_prefix
+          integer, intent(out) :: ierr
+ 
+-         character (len=256) :: karo_data_dir
++         character (len=4096) :: karo_data_dir
+          logical, parameter :: use_cache = .true.
+ 
+          ierr = 0
+Index: mesa/src/mesa/star/private/star_utils.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/star_utils.f	2010-03-01 19:11:17.000000000 +0100
++++ mesa/src/mesa/star/private/star_utils.f	2011-12-08 11:26:01.000000000 +0100
+@@ -630,7 +630,7 @@
+       
+       subroutine std_write_internals_to_file(id, num)
+          integer, intent(in) :: num, id
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          integer :: ierr
+          ierr = 0
+          write(fname, '(a, i1, a)') 'plot_data/internals', mod(abs(num), 10), '.data'
+@@ -735,7 +735,7 @@
+          type (star_info), pointer :: s 
+          integer, intent(in) :: num
+          integer, intent(out) :: ierr
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          integer :: iounit
+          ierr = 0
+          write(fname, '(a, i1)') 'n', mod(abs(num), 10)
+Index: mesa/src/mesa/star/private/winds.f
+===================================================================
+--- mesa.orig/src/mesa/star/private/winds.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/star/private/winds.f	2011-12-08 11:24:47.000000000 +0100
+@@ -391,7 +391,7 @@
+          integer, intent(out) :: ierr
+ 
+          integer :: iounit
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          logical, parameter :: dbg_data = .false.
+          real :: x, MASSLOSS,C,Cmin,MI,M,L,T,XC12,XC13,XO16,XHIN
+          integer :: LF,CF
+Index: mesa/src/mesa/star/public/star_def.f
+===================================================================
+--- mesa.orig/src/mesa/star/public/star_def.f	2011-12-06 13:23:07.000000000 +0100
++++ mesa/src/mesa/star/public/star_def.f	2011-12-08 11:54:22.000000000 +0100
+@@ -73,7 +73,7 @@
+ 
+       integer, parameter :: star_def_version = 14
+       integer, parameter :: max_generations = 3
+-      integer, parameter :: strlen = 256
++      integer, parameter :: strlen = 4096
+       integer, parameter :: net_name_len = strlen
+       integer, parameter :: name_len = 32           
+       integer, parameter :: max_num_mixing_regions = 100
+@@ -133,7 +133,7 @@
+          ! gfortran requires "save" here. strange, but true.
+          
+          
+-      character (len=256) :: data_dir_for_mesa
++      character (len=4096) :: data_dir_for_mesa
+          
+          
+       ! debugging storage
+Index: mesa/src/mesa/star/test/src/calibrate.f
+===================================================================
+--- mesa.orig/src/mesa/star/test/src/calibrate.f	2010-03-08 01:39:53.000000000 +0100
++++ mesa/src/mesa/star/test/src/calibrate.f	2011-12-08 11:30:04.000000000 +0100
+@@ -47,7 +47,7 @@
+       double precision, dimension(max_tries) :: alphas, Ys, Zs, log_Ls, log_Rs, surface_ZXs
+          
+       ! controls
+-      character (len=256) :: starting_model_name, calibration_log_file, save_model_filename
++      character (len=4096) :: starting_model_name, calibration_log_file, save_model_filename
+       double precision :: starting_alpha, starting_Y, starting_Z, tol_correction_norm
+       double precision :: target_log_luminosity, target_log_radius, target_age, epsder
+       double precision :: target_surface_ZX_ratio
+@@ -59,7 +59,7 @@
+          use_calibration_log, calibration_log_file, change_Z, save_model_filename, &
+          save_profile_at_end, load_starting_model
+ 
+-      character (len=256) :: log_columns_file, profile_columns_file
++      character (len=4096) :: log_columns_file, profile_columns_file
+ 
+       contains
+ 
+@@ -383,7 +383,7 @@
+          
+          double precision :: new_Y, new_Z, alpha, surface_ZX_ratio
+          integer :: i, id_extra
+-         character (len=256) :: fname
++         character (len=4096) :: fname
+          type (star_info), pointer :: s
+          
+          include 'formats.dek'
+@@ -563,7 +563,7 @@
+          character (len=*), intent(in) :: calibration_inlist
+          integer, intent(out) :: ierr
+ 
+-         character (len=256) :: filename, message
++         character (len=4096) :: filename, message
+          integer :: unit
+          
+          11 format(a30, f16.6)
+Index: mesa/src/mesa/star/test/src/create_zams.f
+===================================================================
+--- mesa.orig/src/mesa/star/test/src/create_zams.f	2011-12-06 13:23:07.000000000 +0100
++++ mesa/src/mesa/star/test/src/create_zams.f	2011-12-08 11:29:31.000000000 +0100
+@@ -35,7 +35,7 @@
+ 
+          
+       ! controls
+-      character (len=256) :: zams_name
++      character (len=4096) :: zams_name
+       double precision :: create_z, mlo, mhi, dmass
+       namelist /create_zams_job/ &
+          zams_name, create_z, mlo, mhi, dmass
+@@ -64,7 +64,7 @@
+          double precision :: init_m
+          integer :: i, j, k, n, id, result, result_reason
+ !         integer :: id
+-         character (len=256) :: ms_file
++         character (len=4096) :: ms_file
+          character (len=1024) :: line
+          logical :: first_try, okay
+ 
+@@ -221,7 +221,7 @@
+          end function failed
+          
+          subroutine dump_initial_model 
+-            character (len=256) :: fname
++            character (len=4096) :: fname
+             fname = 'initial_model.data'
+             write(*, *) 'dump initial model to ' // trim(fname)
+             call write_internals(s% id, fname, ierr)
+@@ -247,7 +247,7 @@
+          integer :: io_ms_mod, io_ms_index      
+          double precision :: init_m
+          integer :: i, j, k, n, id, result, result_reason
+-         character (len=256) :: ms_file
++         character (len=4096) :: ms_file
+          character (len=1024) :: line
+          logical :: first_try, okay
+ 
+@@ -414,7 +414,7 @@
+          end function failed
+          
+          subroutine dump_initial_model 
+-            character (len=256) :: fname
++            character (len=4096) :: fname
+             fname = 'initial_model.data'
+             write(*, *) 'dump initial model to ' // trim(fname)
+             call write_internals(s% id, fname, ierr)
+@@ -517,7 +517,7 @@
+          character (len=*), intent(in) :: zams_inlist
+          integer, intent(out) :: ierr
+ 
+-         character (len=256) :: filename, message
++         character (len=4096) :: filename, message
+          integer :: unit
+          
+          11 format(a30, f16.6)
+Index: mesa/src/mesa/star/test/src/isochrone.f
+===================================================================
+--- mesa.orig/src/mesa/star/test/src/isochrone.f	2010-03-01 22:01:48.000000000 +0100
++++ mesa/src/mesa/star/test/src/isochrone.f	2011-12-08 11:31:43.000000000 +0100
+@@ -30,7 +30,7 @@
+ 
+       implicit none
+       
+-      character (len=256) :: masses_filename
++      character (len=4096) :: masses_filename
+       double precision :: initial_Z
+       double precision :: isochrone_age
+       
+@@ -51,7 +51,7 @@
+          integer, intent(out) :: ierr
+          
+          integer :: iounit, n, i, t, capacity
+-         character (len=256) :: buffer, string
++         character (len=4096) :: buffer, string
+          
+          nmasses = 0
+          if (.not. associated(arry)) then
+@@ -158,7 +158,7 @@
+          integer, intent(out) :: ierr
+ 
+          
+-         character (len=256) :: message
++         character (len=4096) :: message
+          integer :: unit
+          
+          ! set defaults
+@@ -233,7 +233,7 @@
+          
+          integer :: i, j, result
+          logical :: first_try
+-         character (len=256) :: log_name, profiles_index_name, log_data_prefix
++         character (len=4096) :: log_name, profiles_index_name, log_data_prefix
+ 
+          logical, parameter :: dbg = .true.
+          
+Index: mesa/src/mesa/star/test/src/pgstar.f
+===================================================================
+--- mesa.orig/src/mesa/star/test/src/pgstar.f	2010-03-13 17:07:44.000000000 +0100
++++ mesa/src/mesa/star/test/src/pgstar.f	2011-12-08 11:29:41.000000000 +0100
+@@ -59,7 +59,7 @@
+          
+          subroutine clear_file(fname0)
+             character (len=*), intent(in) :: fname0
+-            character (len=256) :: fname
++            character (len=4096) :: fname
+             logical :: fexist
+             fname = trim(s% log_directory) // '/' // trim(fname0)
+             inquire(file=trim(fname), exist=fexist)
+Index: mesa/src/mesa/star/test/src/pgstar_hr.f
+===================================================================
+--- mesa.orig/src/mesa/star/test/src/pgstar_hr.f	2010-03-12 18:38:38.000000000 +0100
++++ mesa/src/mesa/star/test/src/pgstar_hr.f	2011-12-08 11:30:48.000000000 +0100
+@@ -52,7 +52,7 @@
+          real :: HR_logL_last, HR_logTeff_last
+          real :: del, dx, dy
+          real, dimension(:), pointer :: ages, xvec, yvec
+-         character (len=256) :: msg, fname0, fname, str
++         character (len=4096) :: msg, fname0, fname, str
+          integer :: lw, lw_sav, sz, k, kmin, kmax
+ 
+          ! Spectral types for the top axis (ajc = Annie Jump Cannon!)
+Index: mesa/src/mesa/star/test/src/pgstar_summary.f
+===================================================================
+--- mesa.orig/src/mesa/star/test/src/pgstar_summary.f	2010-03-13 17:07:44.000000000 +0100
++++ mesa/src/mesa/star/test/src/pgstar_summary.f	2011-12-08 11:31:03.000000000 +0100
+@@ -46,7 +46,7 @@
+          type (star_info), pointer :: s
+          integer :: screenid
+          
+-         character (len=256) :: str
++         character (len=4096) :: str
+          integer :: ierr, nz, k, sp, cnt, hi, low, lw, peakTk, &
+             npts, i, j, lrat, rat, grid_min, grid_max
+          logical :: flag, vary 
+Index: mesa/src/mesa/star/test/src/pgstar_support.f
+===================================================================
+--- mesa.orig/src/mesa/star/test/src/pgstar_support.f	2010-03-13 17:07:44.000000000 +0100
++++ mesa/src/mesa/star/test/src/pgstar_support.f	2011-12-08 11:30:37.000000000 +0100
+@@ -66,19 +66,19 @@
+          prev_TRho_Profile_win_size, prev_TRho_Profile_win_ratio
+ 
+       logical :: read_extra_pgstar_inlist1
+-      character (len=256) :: extra_pgstar_inlist1_name 
++      character (len=4096) :: extra_pgstar_inlist1_name 
+ 
+       logical :: read_extra_pgstar_inlist2
+-      character (len=256) :: extra_pgstar_inlist2_name 
++      character (len=4096) :: extra_pgstar_inlist2_name 
+ 
+       logical :: read_extra_pgstar_inlist3
+-      character (len=256) :: extra_pgstar_inlist3_name 
++      character (len=4096) :: extra_pgstar_inlist3_name 
+ 
+       logical :: read_extra_pgstar_inlist4
+-      character (len=256) :: extra_pgstar_inlist4_name 
++      character (len=4096) :: extra_pgstar_inlist4_name 
+ 
+       logical :: read_extra_pgstar_inlist5
+-      character (len=256) :: extra_pgstar_inlist5_name 
++      character (len=4096) :: extra_pgstar_inlist5_name 
+ 
+       namelist /pgstar/ &
+          main_win_flag, HR_win_flag, TRho_win_flag, CONV_win_flag, TRho_Profile_win_flag, &
+@@ -522,7 +522,7 @@
+             implicit none
+             logical :: fexist
+             integer :: iounit, ioerr, i, j, r, g, b, len
+-            character (len=1024) :: msg, fname, pgplotdir, line
++            character (len=4096) :: msg, fname, pgplotdir, line
+ 
+             iounit = alloc_iounit(ioerr)
+             if (ioerr /= 0) stop "no iounits in loadRGBtxt"
+@@ -593,7 +593,7 @@
+          real, dimension(:), pointer :: logTs, logRhos ! will allocate
+          integer, intent(out) :: ierr
+          
+-         character (len=256) :: filename
++         character (len=4096) :: filename
+          real :: logT, logRho
+          integer :: iounit, i, sz, cnt
+          
+@@ -676,7 +676,7 @@
+          integer, intent(out) :: ierr  
+ 
+          logical :: read_extra1, read_extra2, read_extra3, read_extra4, read_extra5
+-         character (len=256) :: message, extra1, extra2, extra3, extra4, extra5
++         character (len=4096) :: message, extra1, extra2, extra3, extra4, extra5
+          integer :: unit
+ 
+          if (level >= 10) then
+Index: mesa/src/mesa/star/test/src/pgstar_trho.f
+===================================================================
+--- mesa.orig/src/mesa/star/test/src/pgstar_trho.f	2010-03-12 18:38:38.000000000 +0100
++++ mesa/src/mesa/star/test/src/pgstar_trho.f	2011-12-08 11:30:44.000000000 +0100
+@@ -52,7 +52,7 @@
+          real :: TRho_logT_last, TRho_logRho_last
+          real :: del, dx, dy
+          real, dimension(:), pointer :: ages, xvec, yvec
+-         character (len=256) :: msg, fname0, fname, str
++         character (len=4096) :: msg, fname0, fname, str
+          integer :: lw, lw_sav, sz, k, kmin, kmax
+          
+          logical, parameter :: dbg = .false.
+Index: mesa/src/mesa/star/test/src/run_star_support.f
+===================================================================
+--- mesa.orig/src/mesa/star/test/src/run_star_support.f	2010-03-02 19:43:27.000000000 +0100
++++ mesa/src/mesa/star/test/src/run_star_support.f	2011-12-08 11:50:02.000000000 +0100
+@@ -32,9 +32,9 @@
+ 
+       implicit none
+       
+-      character (len=256) :: mesa_data_dir
++      character (len=4096) :: mesa_data_dir
+ 
+-      character (len=256) :: profile_columns_file, log_columns_file
++      character (len=4096) :: profile_columns_file, log_columns_file
+       
+       logical :: show_log_description_at_start
+       logical :: show_net_reactions_info, show_net_species_info
+@@ -51,10 +51,10 @@
+       double precision :: pre_ms_d_log10_P
+       
+       logical :: save_star_job_namelist
+-      character (len=256) :: star_job_namelist_name 
++      character (len=4096) :: star_job_namelist_name 
+       
+       logical :: load_saved_model
+-      character (len=256) :: saved_model_name 
++      character (len=4096) :: saved_model_name 
+ 
+       logical :: set_max_dt_to_frac_lifetime
+       double precision :: max_frac_of_lifetime_per_step
+@@ -120,15 +120,15 @@
+       double precision :: logT_all_HELM, logT_all_OPAL
+ 
+       logical :: change_net
+-      character (len=256) :: new_net_name
++      character (len=4096) :: new_net_name
+ 
+       logical :: set_uniform_xa_from_file
+-      character (len=256) :: file_for_uniform_xa
++      character (len=4096) :: file_for_uniform_xa
+       
+       logical :: auto_extend_net
+       
+       integer :: save_model_number
+-      character (len=256) :: save_model_filename
++      character (len=4096) :: save_model_filename
+       logical :: save_prev_along_with_current
+       
+       integer :: profile_model_number
+@@ -138,26 +138,26 @@
+       logical :: report_retries
+       logical :: report_backups
+       
+-      character (len=256) :: net_reaction_filename
++      character (len=4096) :: net_reaction_filename
+       
+-      character (len=256) :: rates_dir
++      character (len=4096) :: rates_dir
+       
+-      character (len=256) :: ppn_rate_numbers_fname
++      character (len=4096) :: ppn_rate_numbers_fname
+       
+       logical :: read_extra_star_job_inlist1
+-      character (len=256) :: extra_star_job_inlist1_name 
++      character (len=4096) :: extra_star_job_inlist1_name 
+       
+       logical :: read_extra_star_job_inlist2
+-      character (len=256) :: extra_star_job_inlist2_name 
++      character (len=4096) :: extra_star_job_inlist2_name 
+       
+       logical :: read_extra_star_job_inlist3
+-      character (len=256) :: extra_star_job_inlist3_name 
++      character (len=4096) :: extra_star_job_inlist3_name 
+       
+       logical :: read_extra_star_job_inlist4
+-      character (len=256) :: extra_star_job_inlist4_name 
++      character (len=4096) :: extra_star_job_inlist4_name 
+       
+       logical :: read_extra_star_job_inlist5
+-      character (len=256) :: extra_star_job_inlist5_name 
++      character (len=4096) :: extra_star_job_inlist5_name 
+ 
+       integer :: nzlo, nzhi
+       logical :: set_abundance
+@@ -171,23 +171,23 @@
+       logical :: do_special_test, use_Qs_from_vital
+       
+       logical :: run_calibration
+-      character (len=256) :: calibration_inlist 
++      character (len=4096) :: calibration_inlist 
+       
+       integer :: save_fgong_for_model_number
+-      character (len=256) :: save_fgong_filename 
++      character (len=4096) :: save_fgong_filename 
+       
+       logical :: run_create_isochrone
+-      character (len=256) :: isochrone_inlist 
++      character (len=4096) :: isochrone_inlist 
+ 
+       logical :: run_extras_multi_track
+       
+       logical :: run_create_zams
+-      character (len=256) :: zams_inlist 
++      character (len=4096) :: zams_inlist 
+       
+       logical :: run_sample_zams
+       double precision :: sample_zams_mlo, sample_zams_mhi, sample_zams_dmass
+ 
+-      character(len=256) :: kappa_file_prefix
++      character(len=4096) :: kappa_file_prefix
+ 
+       namelist /star_job/ &
+          mesa_data_dir, profile_columns_file, log_columns_file, save_photo_when_terminate, &
+@@ -854,7 +854,7 @@
+          use utils_lib
+          character(*), intent(in) :: filename
+          integer, intent(out) :: ierr
+-         character (len=256) :: message
++         character (len=4096) :: message
+          integer :: unit
+          if (ierr /= 0) return
+          ierr = 0
+@@ -885,7 +885,7 @@
+          integer, intent(out) :: ierr  
+          
+          logical :: read_extra1, read_extra2, read_extra3, read_extra4, read_extra5
+-         character (len=256) :: message, extra1, extra2, extra3, extra4, extra5
++         character (len=4096) :: message, extra1, extra2, extra3, extra4, extra5
+          integer :: unit
+          
+          if (level >= 10) then
+@@ -989,7 +989,7 @@
+          integer, intent(out) :: nmasses, ierr
+          
+          integer :: iounit, n, i, t, capacity
+-         character (len=256) :: buffer, string
++         character (len=4096) :: buffer, string
+          
+          nmasses = 0
+          if (.not. associated(masses)) then
+Index: mesa/src/mesa/star/test_suite/rlo/src/rlo_exp.f
+===================================================================
+--- mesa.orig/src/mesa/star/test_suite/rlo/src/rlo_exp.f	2010-03-01 22:01:48.000000000 +0100
++++ mesa/src/mesa/star/test_suite/rlo/src/rlo_exp.f	2011-12-08 11:27:37.000000000 +0100
+@@ -474,7 +474,7 @@
+          type (star_info), pointer :: s
+          integer, intent(out) :: ierr
+ 
+-         character (len=256) :: filename, message
++         character (len=4096) :: filename, message
+          integer :: unit
+          
+          11 format(a30, f16.6)
+@@ -563,7 +563,7 @@
+          use num_lib
+          type (star_info), pointer :: s
+          integer :: iounit, ierr, k
+-         character (len=100) :: filename
++         character (len=4096) :: filename
+          ierr = 0
+          iounit = alloc_iounit(ierr)
+          if (ierr /= 0) return
+@@ -583,7 +583,7 @@
+          use num_lib
+          type (star_info), pointer :: s
+          integer :: iounit, ierr
+-         character (len=100) :: filename
++         character (len=4096) :: filename
+          ierr = 0
+          iounit = alloc_iounit(ierr)
+          if (ierr /= 0) return
+Index: mesa/src/mesa/utils/public/utils_lib.f
+===================================================================
+--- mesa.orig/src/mesa/utils/public/utils_lib.f	2010-03-09 06:25:26.000000000 +0100
++++ mesa/src/mesa/utils/public/utils_lib.f	2011-12-08 11:19:07.000000000 +0100
+@@ -103,7 +103,7 @@
+       subroutine append_line(n, arry, filename, format_str, initialize, ierr)
+          integer, intent(in) :: n
+          double precision, intent(in) :: arry(n)
+-         character (len=256), intent(in) :: filename, format_str
++         character (len=4096), intent(in) :: filename, format_str
+          logical, intent(in) :: initialize
+          integer, intent(out) :: ierr
+          integer :: iounit
+@@ -127,7 +127,7 @@
+       subroutine append_data(n, arry, filename, format_str, initialize, ierr)
+          integer, intent(in) :: n
+          double precision, intent(in) :: arry(n)
+-         character (len=256), intent(in) :: filename, format_str
++         character (len=4096), intent(in) :: filename, format_str
+          logical, intent(in) :: initialize
+          integer, intent(out) :: ierr
+          integer :: iounit, i
+Index: mesa/src/mesa/utils/test/src/test_utils.f
+===================================================================
+--- mesa.orig/src/mesa/utils/test/src/test_utils.f	2010-02-16 04:43:43.000000000 +0100
++++ mesa/src/mesa/utils/test/src/test_utils.f	2011-12-08 11:19:21.000000000 +0100
+@@ -72,7 +72,7 @@
+       
+       subroutine test_token_read
+          integer :: iounit, n, i, t, ierr
+-         character (len=256) :: buffer, string, filename
++         character (len=4096) :: buffer, string, filename
+ 
+          write(*,*)
+          write(*,*) 'test_token_read'
+Index: mesa/src/mesa/weaklib/private/load_weak.f
+===================================================================
+--- mesa.orig/src/mesa/weaklib/private/load_weak.f	2010-03-06 02:30:58.000000000 +0100
++++ mesa/src/mesa/weaklib/private/load_weak.f	2011-12-08 11:34:01.000000000 +0100
+@@ -56,7 +56,7 @@
+          integer, intent(out) :: ierr
+          
+          integer :: iounit, i, ios, id
+-         character (len=256) :: filename, cache_filename, string
++         character (len=4096) :: filename, cache_filename, string
+ 	      character(len=iso_name_length) :: lhs1, rhs1, lhs2, rhs2, weak_lhs, weak_rhs
+ 	      character(len=2*iso_name_length+1) :: key
+ 
+Index: mesa/src/mesa/weaklib/public/weak_def.f
+===================================================================
+--- mesa.orig/src/mesa/weaklib/public/weak_def.f	2010-03-06 02:30:58.000000000 +0100
++++ mesa/src/mesa/weaklib/public/weak_def.f	2011-12-08 11:34:11.000000000 +0100
+@@ -26,7 +26,7 @@
+       
+       implicit none
+       
+-      character (len=256) :: weak_data_dir
++      character (len=4096) :: weak_data_dir
+       
+       logical :: weak_data_loaded
+       
+Index: mesa/src/mesa/weaklib/test/src/test_weak.f
+===================================================================
+--- mesa.orig/src/mesa/weaklib/test/src/test_weak.f	2010-03-07 00:33:28.000000000 +0100
++++ mesa/src/mesa/weaklib/test/src/test_weak.f	2011-12-08 11:34:20.000000000 +0100
+@@ -32,7 +32,7 @@
+ 		   double precision :: logT, T, T9, dT9, dlnT, YeRho, &
+ 		      ye, rho, logRho, dlogRho, eta, d_eta_dlnT, d_eta_dlnRho
+ 	      character(len=iso_name_length) :: weak_lhs, weak_rhs
+-   	   character(len=256) :: data_dir
++   	   character(len=4096) :: data_dir
+          
+          include 'formats.dek'
+ 
