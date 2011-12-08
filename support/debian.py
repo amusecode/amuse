@@ -1,10 +1,15 @@
 import os
 import shutil
+import subprocess
+import urllib
+import platform
+import sys
 
-version = '2.2-1'
+
+version = '5.1'
 amuse_version = 'amuse-{0}'.format(version)
-debianversion = 'ubuntu'
-architecture = 'amd64'
+debianversion = '0ubuntu'
+architecture = 'i386' if platform.architecture()[0] == '32bit' else 'amd64'
 
 #f=os.popen('uname -m')
 #architecture = f.readlines()[0]
@@ -15,6 +20,9 @@ package_name = 'amuse_{0}-{1}-{2}'.format(version, debianversion, architecture)
 depends = \
 [
     'bash (>= 2.05a-11)',
+    'build-essential',
+    'cmake',
+    'gfortran',
     'python2.6 (>=2.6.0)',
     'python-numpy (>=1.3.0)',
     'python-nose (>=0.11)',
@@ -27,9 +35,11 @@ depends = \
     'libfftw3-3', 
     'libfftw3-dev', 
     'libfftw3-doc',
-    'mpich2 (>=1.2.1)',
+    'libopenmpi-dev (>=1.4.1)',
+    'openmpi-bin',
     'libgsl0ldbl',
-    'libgsl0-dev'
+    'libgsl0-dev',
+    
 ]
 control = \
 """
@@ -50,17 +60,6 @@ postinst = \
 easy_install mpi4py
 """
 
-dirtree = \
-[
-package_name,
-'./{0}/DEBIAN'.format(package_name),
-'./{0}/usr'.format(package_name),
-'./{0}/usr/bin'.format(package_name),
-'./{0}/usr/share'.format(package_name),
-'./{0}/usr/share/{1}'.format(package_name, amuse_version),
-'./{0}/usr/share/doc'.format(package_name),
-'./{0}/usr/share/doc/{1}'.format(package_name, amuse_version)
-]
 
 class generate_debian_package(object):
     def __init__(self):
@@ -73,35 +72,74 @@ class generate_debian_package(object):
         os.system('python setup.py generate_main --amuse-dir=/usr/share/{0}'.format(amuse_version))
 
     def makedirs(self):
-        if os.path.exists('./'+package_name):
-            shutil.rmtree(package_name)
+        package_path = os.path.abspath(package_name)
+        
+        if os.path.exists(package_path):
+            shutil.rmtree(package_path)
 
-        for d in dirtree:
-            os.mkdir(d)
-
+        os.makedirs(package_path)
+        
         dependency_string = ', '.join(depends)
-
-        f = open('./{0}/DEBIAN/control'.format(package_name),'w')
+        
+        debian_path = os.path.join(package_path, 'DEBIAN')
+        
+        os.makedirs(debian_path)
+        f = open(os.path.join(debian_path, 'control'),'w')
         f.write(control.format(version, dependency_string))
         f.close()
 
-        f = open('./{0}/DEBIAN/postinst'.format(package_name),'w')
-        f.write(postinst)
-        f.close()
-        os.chmod('./{0}/DEBIAN/postinst'.format(package_name), 0b111101101)
+        #f = open(os.path.join(debian_path, 'postinst'),'w')
+        #f.write(postinst)
+        #f.close()
+        #os.chmod(os.path.join(debian_path, 'postinst'), 0b11110  
+        
+        if not os.path.exists('build'):
+            os.makedirs('builld')
+            
+        mpi4pyfile = 'mpi4py-1.2.2.tar.gz'
+        urllib.urlretrieve('http://mpi4py.googlecode.com/files/{0}'.format(mpi4pyfile))
+        shutil.copyfile(mpi4pyfile, os.path.join('build', mpi4pyfile))
+        
+        subprocess.call([
+            'tar',
+            '-xf',
+            mpi4pyfile
+            ]
+            ,
+            cwd=os.path.join('build')
+        )
+        subprocess.call([
+            sys.executable,
+            'setup.py',
+            'install',
+            '--prefix=/usr',
+            '--root={0}'.format(package_path),
+            ]
+            ,
+            cwd=os.path.join('build','mpi4py-1.2.2')
+        )
+        
+        subprocess.call([
+            sys.executable,
+            'setup.py',
+            'install',
+            '--prefix=/usr',
+            '--root={0}'.format(package_path),
+            ]
+        )
+            
+        #shutil.copytree('src', './{0}/usr/share/{1}/src'.format(package_name, amuse_version))
+        #shutil.copytree('test', './{0}/usr/share/{1}/test'.format(package_name, amuse_version))
+        #shutil.copytree('data', './{0}/usr/share/{1}/data'.format(package_name, amuse_version))
+        #shutil.copytree('lib', './{0}/usr/share/{1}/lib'.format(package_name, amuse_version))
+        #shutil.copytree('doc', './{0}/usr/share/doc/{1}/doc'.format(package_name, amuse_version))
+        #self.touch('./{0}/usr/share/{1}/build.py'.format(package_name, amuse_version))
 
-        shutil.copytree('src', './{0}/usr/share/{1}/src'.format(package_name, amuse_version))
-        shutil.copytree('test', './{0}/usr/share/{1}/test'.format(package_name, amuse_version))
-        shutil.copytree('data', './{0}/usr/share/{1}/data'.format(package_name, amuse_version))
-        shutil.copytree('lib', './{0}/usr/share/{1}/lib'.format(package_name, amuse_version))
-        shutil.copytree('doc', './{0}/usr/share/doc/{1}/doc'.format(package_name, amuse_version))
-        self.touch('./{0}/usr/share/{1}/build.py'.format(package_name, amuse_version))
+        #shutil.copy('amuse.sh', './{0}/usr/bin'.format(package_name))
+        #shutil.copy('iamuse.sh', './{0}/usr/bin'.format(package_name))
 
-        shutil.copy('amuse.sh', './{0}/usr/bin'.format(package_name))
-        shutil.copy('iamuse.sh', './{0}/usr/bin'.format(package_name))
-
-        os.chmod('./{0}/usr/bin/amuse.sh'.format(package_name), 0b111101101)
-        os.chmod('./{0}/usr/bin/iamuse.sh'.format(package_name), 0b111101101)
+        #os.chmod('./{0}/usr/bin/amuse.sh'.format(package_name), 0b111101101)
+        #os.chmod('./{0}/usr/bin/iamuse.sh'.format(package_name), 0b111101101)
 
     def package(self):
         if os.path.exists('./'+package_name):
@@ -109,7 +147,11 @@ class generate_debian_package(object):
             os.system('fakeroot dpkg-deb --build {0}'.format(package_name))
             
     def cleanup(self):
-        shutil.rmtree(package_name)
+        package_path = os.path.abspath(package_name)
+        
+        if os.path.exists(package_path):
+            shutil.rmtree(package_path)
+            
         os.system('python setup.py generate_main')
             
     def __repr__(self):
@@ -123,4 +165,4 @@ class generate_debian_package(object):
     
 if __name__ == '__main__':
     instance = generate_debian_package()
-    print instance
+   
