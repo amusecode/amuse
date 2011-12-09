@@ -1,7 +1,6 @@
 include Makefile
 include configure
 include README.txt
-include distribute_setup.py
 include config.mk.in
 include build.py.in
 include support/configpy.in
