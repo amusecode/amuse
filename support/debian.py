@@ -120,7 +120,10 @@ class generate_debian_package(object):
             os.makedirs('build')
             
         mpi4pyfile = 'mpi4py-1.2.2.tar.gz'
-        urllib.urlretrieve('http://mpi4py.googlecode.com/files/{0}'.format(mpi4pyfile))
+        urllib.urlretrieve(
+            'http://mpi4py.googlecode.com/files/{0}'.format(mpi4pyfile),
+            mpi4pyfile
+        )
         shutil.copyfile(mpi4pyfile, os.path.join('build', mpi4pyfile))
         
         subprocess.call(
