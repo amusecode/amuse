@@ -4,7 +4,6 @@ import ibis.ipl.IbisIdentifier;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
@@ -22,8 +21,6 @@ public class MPIProfilingCollector extends Thread implements
 	private static final Logger logger = LoggerFactory
 			.getLogger(MPIProfilingCollector.class);
 
-        public static final int MPI_PROFILING_PORT = 52861;
-	
 	private final Map<IbisIdentifier, Long> sent;
 
 	private final IbisIdentifier[] rankToIbis;
@@ -42,7 +39,7 @@ public class MPIProfilingCollector extends Thread implements
 		mbs.registerMBean(this, name);
 
 		serverSocket = ServerSocketChannel.open();
-		serverSocket.socket().bind(new InetSocketAddress(MPI_PROFILING_PORT));
+		serverSocket.socket().bind(null);
 
 		this.setDaemon(true);
 		this.setName(this.getClass().getName());
