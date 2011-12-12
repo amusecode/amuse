@@ -45,6 +45,66 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
             fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
             self.assertAlmostEqual(fx, fx0[0], 5)
             self.assertAlmostEqual(potential0, potential1, 6)
+    
+    def test2(self):
+        print "CalculateFieldForParticles, nbody units, no gravity_constant exceptions"
+        stars = new_plummer_model(100)
+        self.assertRaises(AmuseException, bridge.CalculateFieldForParticles, stars, 
+            expected_message = "For generic units the gravity_constant must be specified")
+        self.assertRaises(AmuseException, bridge.CalculateFieldForParticles, Particles(), 
+            expected_message = "Particle data not yet available, so the gravity_constant must be specified")
+        instance = bridge.CalculateFieldForParticles(particles = stars, gravity_constant = nbody_system.G)
+    
+    def test3(self):
+        print "CalculateFieldForParticles get_potential_at_point, no softening"
+        epsilon = 0 | units.m
+        
+        convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
+        numpy.random.seed(12345)
+        stars = new_plummer_model(100, convert_nbody=convert)
+        
+        cluster = ExampleGravityCodeInterface()
+        cluster.parameters.epsilon_squared = epsilon**2 
+        cluster.particles.add_particles(stars)
+        
+        instance = bridge.CalculateFieldForParticles(particles = stars)
+        instance.smoothing_length_squared = epsilon**2
+        
+        zeros = numpy.zeros(9) | units.parsec
+        pos_range = numpy.linspace(-1.0, 1.0, 9) | units.parsec
+        self.assertAlmostRelativeEqual(
+            instance.get_potential_at_point(zeros, pos_range, zeros, zeros), 
+            cluster.get_potential_at_point(zeros, pos_range, zeros, zeros))
+        for a_calculate_field, a_code in zip(
+                instance.get_gravity_at_point(zeros, pos_range, zeros, zeros), 
+                cluster.get_gravity_at_point(zeros, pos_range, zeros, zeros)):
+            self.assertAlmostRelativeEqual(a_calculate_field, a_code, 12)
+    
+    def test4(self):
+        print "CalculateFieldForParticles get_potential_at_point, with softening"
+        epsilon = 0.5 | units.parsec
+        
+        convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
+        numpy.random.seed(12345)
+        stars = new_plummer_model(100, convert_nbody=convert)
+        
+        cluster = ExampleGravityCodeInterface()
+        cluster.parameters.epsilon_squared = epsilon**2 
+        cluster.particles.add_particles(stars)
+        
+        instance = bridge.CalculateFieldForParticles(particles = stars)
+        instance.smoothing_length_squared = epsilon**2
+        
+        zeros = numpy.zeros(9) | units.parsec
+        pos_range = numpy.linspace(-1.0, 1.0, 9) | units.parsec
+        self.assertAlmostRelativeEqual(
+            instance.get_potential_at_point(zeros, pos_range, zeros, zeros), 
+            cluster.get_potential_at_point(zeros, pos_range, zeros, zeros))
+        for a_calculate_field, a_code in zip(
+                instance.get_gravity_at_point(zeros, pos_range, zeros, zeros), 
+                cluster.get_gravity_at_point(zeros, pos_range, zeros, zeros)):
+            self.assertAlmostRelativeEqual(a_calculate_field, a_code, 12)
+    
 
 class ExampleGravityCodeInterface(object):
     
@@ -72,6 +132,22 @@ class ExampleGravityCodeInterface(object):
                 (self.particles.z.reshape((-1,1)) - z.reshape((1,-1)))**2).sqrt()).sum(axis=0)
         return -constants.G * (self.particles.mass / (self.epsilon_squared + eps**2 + (self.particles.x - x)**2 + 
             (self.particles.y - y)**2 + (self.particles.z - z)**2).sqrt()).sum()
+    
+    def get_gravity_at_point(self, eps, x ,y, z):
+        if isinstance(x, VectorQuantity):
+            delta_x = x.reshape((1,-1)) - self.particles.x.reshape((-1,1))
+            delta_y = y.reshape((1,-1)) - self.particles.y.reshape((-1,1))
+            delta_z = z.reshape((1,-1)) - self.particles.z.reshape((-1,1))
+            factor = -constants.G * (self.particles.mass.reshape((-1,1)) / 
+                (self.epsilon_squared + eps.reshape((1,-1))**2 + delta_x**2 + 
+                delta_y**2 + delta_z**2)**1.5)
+            return (factor*delta_x).sum(axis=0), (factor*delta_y).sum(axis=0), (factor*delta_z).sum(axis=0)
+        delta_x = self.particles.x - x
+        delta_y = self.particles.y - y
+        delta_z = self.particles.z - z
+        factor = -constants.G * (self.particles.mass / 
+            (self.epsilon_squared + eps**2 + delta_x**2 + delta_y**2 + delta_z**2)**1.5)
+        return (factor*delta_x).sum(), (factor*delta_y).sum(), (factor*delta_z).sum()
     
     @property
     def potential_energy(self):

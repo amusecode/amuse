@@ -78,5 +78,18 @@ class TestGenericUnits(amusetest.TestCase):
     def test6(self):
         self.assertRaises(NotAQuantityException, ConvertBetweenGenericAndSiUnits, 1)
         self.assertRaises(NotAScalarException, ConvertBetweenGenericAndSiUnits,  1 | units.km, [1,2] | units.s, )
+       
+    def test7(self):
+        converter = ConvertBetweenGenericAndSiUnits(1.0 | units.MSun, 1.0 | units.AU, 1.0 | units.yr)
+        G_in_generic = converter.to_generic(constants.G)
+        self.assertEqual(str(G_in_generic.unit), 'length**3 * mass**-1 * time**-2')
+        self.assertAlmostEqual(G_in_generic.number, 39.4852492465)
+        
+        time_unit = ((1.0 | units.AU)**3 / (constants.G * (1.0 | units.MSun))).sqrt().as_quantity_in(units.yr)
+        self.assertAlmostEqual(time_unit, 0.159141174195 | units.yr)
+        converter = ConvertBetweenGenericAndSiUnits(1.0 | units.MSun, 1.0 | units.AU, time_unit)
+        G_in_generic = converter.to_generic(constants.G)
+        self.assertEqual(str(G_in_generic.unit), 'length**3 * mass**-1 * time**-2')
+        self.assertAlmostEqual(G_in_generic.number, 1.0)
     
-    
+

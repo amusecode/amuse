@@ -87,9 +87,9 @@
 import threading
 
 from amuse.units import quantities
-from amuse.units import units
-from amuse.units import generic_unit_system
+from amuse.units import units, constants, generic_unit_system, nbody_system
 from amuse import datamodel
+from amuse.support.exceptions import AmuseException
 
   
 
@@ -196,25 +196,19 @@ class CalculateFieldForParticles(object):
     of particles can be from another code.
     """
     
-    def __init__(self, convert = None,  particles = datamodel.Particles(), gravity_constant = None):
+    def __init__(self, particles = datamodel.Particles(), gravity_constant = None):
         self.particles = particles
-        self.convert = convert
-        if self.convert is None and gravity_constant is None:
+        if gravity_constant is None:
             if len(particles) and hasattr(particles, 'mass'):
                 try:
                     particles[0].mass.value_in(units.kg)
-                    self.gravity_constant = units.G
+                    self.gravity_constant = constants.G
                 except:
-                    self.gravity_constant = generic_units_system.G
+                    raise AmuseException("For generic units the gravity_constant must be specified")
             else:
-                self.gravity_constant = generic_units_system.G
-        elif not self.convert is None and gravity_constant is None:
-            self.gravity_constant = self.convert.to_si(generic_units_system.G)
-        elif not gravity_constant is None:
-            self.gravity_constant = gravity_constant
+                raise AmuseException("Particle data not yet available, so the gravity_constant must be specified")
         else:
-            raise Exception("incorrect input parameters")
-            
+            self.gravity_constant = gravity_constant
         self.smoothing_length_squared = quantities.zero
       
     def cleanup_code():
@@ -226,19 +220,15 @@ class CalculateFieldForParticles(object):
         
     def get_potential_at_point(self,radius,x,y,z):
         positions = self.particles.position
-        m1 = self.particles.mass.sum()
         result = quantities.AdaptingVectorQuantity()
-        #xt = x.reshape(x.lenghth, 1)
-        #yt = y.reshape(y.lenghth, 1)
-        #zt = z.reshape(z.lenghth, 1)
         
         for i in range(len(x)):
             dx = x[i] - positions.x
             dy = y[i] - positions.y
             dz = z[i] - positions.z
             dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
-            dr = (dr_squared+self.smoothing_length_squared).sqrt()
-            energy_of_this_particle = (m1 / dr).sum()
+            dr = (dr_squared + self.smoothing_length_squared).sqrt()
+            energy_of_this_particle = (self.particles.mass / dr).sum()
             result.append(-self.gravity_constant * energy_of_this_particle)
         return result
     
@@ -253,7 +243,8 @@ class CalculateFieldForParticles(object):
             dx = x[i] - positions.x
             dy = y[i] - positions.y
             dz = z[i] - positions.z
-            dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+            dr_squared = ((dx * dx) + (dy * dy) + (dz * dz) + 
+                self.smoothing_length_squared + radius[i]**2)
             
             ax = -self.gravity_constant * (m1*dx/dr_squared**1.5).sum()
             ay = -self.gravity_constant * (m1*dy/dr_squared**1.5).sum()
