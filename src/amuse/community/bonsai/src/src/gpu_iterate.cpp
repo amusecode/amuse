@@ -9,7 +9,8 @@ static double de_max = 0;
 static double dde_max = 0;  
 
 
-my_dev::dev_stream *execStream;
+//my_dev::dev_stream *execStream;
+my_dev::dev_stream *execStream = NULL;
 
 void octree::makeLET()
 {
@@ -209,8 +210,9 @@ void octree::iterate() {
 
   int Nact_since_last_tree_rebuild = 0;
   real4 r_min, r_max;
-  
-  execStream = new my_dev::dev_stream(0);
+ 
+  if(execStream == NULL)
+    execStream = new my_dev::dev_stream(0);
 
   //Initial prediction/acceleration to setup the system
   //Will be at time 0
