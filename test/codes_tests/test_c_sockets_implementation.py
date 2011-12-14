@@ -452,8 +452,8 @@ class TestInterface(TestWithMPI):
         So skip the tests if we detect hydra
         """
         
-        if 'HYDRA_CONTROL_FD' in os.environ:
-            self.skip('cannot run the socket tests under hydra process manager')
+        if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
+            self.skip('cannot run the socket tests under mpi process manager')
         
     def test1(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
