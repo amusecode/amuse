@@ -585,44 +585,47 @@ real r_nn_2;
 
 void bhnode::accumulate_force_from_tree(vec & ipos, real eps2, real theta2,
 					vec & acc,
-					real & phi)
+					real & phi, int iindex)
 {
     vec dx = cmpos - ipos;
     real r2 = dx*dx;
     if (r2*theta2 > l*l){
-	// node and position is well separated;
-	accumulate_force_from_point(dx, r2, eps2, acc, phi, cmmass);
+	    // node and position is well separated;
+	    accumulate_force_from_point(dx, r2, eps2, acc, phi, cmmass);
     }else{
-	int i;
-	if (isleaf){
-	    bhparticle * bp = bpfirst;
-	    for(i = 0; i < nparticle; i++){
-		vec dx = (bp+i)->get_rp()->get_pos()-ipos;
-		real r2 = dx*dx;
-
-		// Added by Steve (8/07).
-
-		if (r2 < r_nn_2) {
-		    int iindex = (bp+i)->get_rp()->get_index();
-		    if (iindex != my_index) {
-		      r_nn_2 = r2;
-		      nn_index = iindex;
-		      nn_ptr = (bp+i)->get_rp();
-		    }
-		}
-
-		accumulate_force_from_point(dx, r2, eps2, acc, phi,
-					    (bp+i)->get_rp()->get_mass());
-		total_interactions += 1;
-	    }
-	}else{
-	    for(i=0;i<8;i++){
-		if (child[i] != NULL){
-		child[i]->accumulate_force_from_tree(ipos, eps2, theta2,
-						     acc, phi);
-		}
-	    }
-	}
+        int i;
+        if (isleaf){
+            bhparticle * bp = bpfirst;
+            
+            for(i = 0; i < nparticle; i++){
+                vec dx = (bp+i)->get_rp()->get_pos()-ipos;
+                real r2 = dx*dx;
+        
+                // Added by Steve (8/07).
+                // Turned off by AVE (12/12)
+                if (r2 < r_nn_2) {
+                    int iindex = (bp+i)->get_rp()->get_index();
+                    if (iindex != my_index) {
+                      r_nn_2 = r2;
+                      nn_index = iindex;
+                      nn_ptr = (bp+i)->get_rp();
+                    }
+                }
+                
+                
+                accumulate_force_from_point(dx, r2, eps2, acc, phi,
+                                (bp+i)->get_rp()->get_mass());
+                total_interactions += 1;
+            
+            }
+        }else{
+            for(i=0;i<8;i++){
+                if (child[i] != NULL){
+                    child[i]->accumulate_force_from_tree(ipos, eps2, theta2,
+                                     acc, phi, iindex);
+                }
+            }
+        }
     }
 }
 
@@ -805,7 +808,7 @@ void real_particle::calculate_gravity_using_tree(real eps2, real theta2)
     r_nn_2 = 1.e30;
 
     bn->accumulate_force_from_tree(pos, eps2, theta2,
-				   acc_gravity, phi_gravity);
+				   acc_gravity, phi_gravity, index);
     nisum += 1;
 
 
@@ -836,7 +839,7 @@ vec real_system::calculate_gravity_at_point(vec pos, real eps2, real theta2)
     nn_index = -1;
     r_nn_2 = 0.0; // turn-off collision detection
 
-    bn->accumulate_force_from_tree(pos, eps2, theta2, acc_gravity, phi_gravity);
+    bn->accumulate_force_from_tree(pos, eps2, theta2, acc_gravity, phi_gravity, -1);
     
     return acc_gravity;
 }
@@ -850,7 +853,7 @@ real real_system::calculate_potential_at_point(vec pos, real eps2, real theta2)
     nn_index = -1;
     r_nn_2 = 0.0; // turn-off collision detection
 
-    bn->accumulate_force_from_tree(pos, eps2, theta2, acc_gravity, phi_gravity);
+    bn->accumulate_force_from_tree(pos, eps2, theta2, acc_gravity, phi_gravity, -1);
       
     return phi_gravity;
 }

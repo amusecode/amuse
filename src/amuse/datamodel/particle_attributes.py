@@ -470,40 +470,46 @@ def get_binaries(particles,hardness=10,G = constants.G):
 
     return binaries
 
-def densitycentre_coreradius_coredens(parts):
+def densitycentre_coreradius_coredens(particles):
     """
     calculate position of the density centre, coreradius and coredensity
 
     >>> import numpy
     >>> from amuse.ic.plummer import new_plummer_sphere
     >>> numpy.random.seed(1234)
-    >>> parts=new_plummer_sphere(100)
-    >>> pos,coreradius,coredens=parts.densitycentre_coreradius_coredens()
+    >>> particles=new_plummer_sphere(100)
+    >>> pos,coreradius,coredens=particles.densitycentre_coreradius_coredens()
     >>> print coreradius
     0.286582946447 length
     """
 
     from amuse.community.hop.interface import Hop
     hop=Hop()
-    hop.particles.add_particles(parts)
+    hop.particles.add_particles(particles)
     hop.parameters.density_method=2
     hop.parameters.number_of_neighbors_for_local_density=7
     hop.calculate_densities()
 
-    dens=hop.particles.density
+    density=hop.particles.density
     x=hop.particles.x
     y=hop.particles.y
     z=hop.particles.z
-    rho=dens.amax()
+    rho=density.amax()
 
-    tdens=numpy.sum(dens)
-    x_core=numpy.sum(dens*x)/tdens
-    y_core=numpy.sum(dens*y)/tdens
-    z_core=numpy.sum(dens*z)/tdens
+    total_density=numpy.sum(density)
+    x_core=numpy.sum(density*x)/total_density
+    y_core=numpy.sum(density*y)/total_density
+    z_core=numpy.sum(density*z)/total_density
 
     rc=numpy.sqrt(
-        numpy.sum(dens**2*((x-x_core)**2+(y-y_core)**2+(z-z_core)**2))/numpy.sum(dens**2))
+        numpy.sum(
+            density**2*(
+            (x-x_core)**2+(y-y_core)**2+(z-z_core)**2
+            ) 
+        ) / numpy.sum(density**2)
+    )
     hop.stop()
+    
     return [x_core,y_core,z_core],rc,rho
 
 def LagrangianRadii(stars,
@@ -538,6 +544,93 @@ def LagrangianRadii(stars,
         else:
             lr.append(rsorted[i-1])
     return lr,mf
+    
+    
+
+def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G):
+    """
+    Returns the total potential energy of the particles in the particles set.
+
+    :argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
+    :argument smooting_length_squared: the smoothing length is added to every distance.
+    :argument G: gravitational constant, need to be changed for particles in different units systems
+
+    >>> from amuse.datamodel import Particles
+    >>> field_particles = Particles(2)
+    >>> field_particles.x = [0.0, 2.0] | units.m
+    >>> field_particles.y = [0.0, 0.0] | units.m
+    >>> field_particles.z = [0.0, 0.0] | units.m
+    >>> field_particles.mass = [1.0, 1.0] | units.kg
+    >>> particles = Particles(2)
+    >>> particles.x = [1.0, 3.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.potential_energy_in_field(field_particles)
+    quantity<-2.22476e-10 m**2 * kg * s**-2>
+    """
+    if len(field_particles) == 0:
+        return zero * G
+        
+    n = len(particles)
+    dimensions = particles.position.shape[-1]
+    transposed_positions = particles.position.reshape([n,1,dimensions]) 
+    dxdydz = transposed_positions - field_particles.position
+    dr_squared = (dxdydz**2).sum(-1)
+    dr = (dr_squared+smoothing_length_squared).sqrt()
+    m_m = particles.mass.reshape([n,1]) * field_particles.mass
+    return -G * (m_m / dr).sum()
+    
+def distances_squared(particles,field_particles):
+    """
+    Returns the total potential energy of the particles in the particles set.
+
+    :argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
+    
+    >>> from amuse.datamodel import Particles
+    >>> field_particles = Particles(2)
+    >>> field_particles.x = [0.0, 2.0] | units.m
+    >>> field_particles.y = [0.0, 0.0] | units.m
+    >>> field_particles.z = [0.0, 0.0] | units.m
+    >>> particles = Particles(3)
+    >>> particles.x = [1.0, 3.0, 4] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> distances_squared(particles, field_particles)
+    quantity<[[ 1.  1.], [ 9.  1.], [ 16.   4.]] m**2>
+    """
+
+    n = len(particles)
+    dimensions = particles.position.shape[-1]
+    transposed_positions = particles.position.reshape([n,1,dimensions]) 
+    dxdydz = transposed_positions - field_particles.position
+    return (dxdydz**2).sum(-1)
+    
+
+def velocity_diff_squared(particles,field_particles):
+    """
+    Returns the total potential energy of the particles in the particles set.
+
+    :argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
+    
+    >>> from amuse.datamodel import Particles
+    >>> field_particles = Particles(2)
+    >>> field_particles.vx = [0.0, 2.0] | units.m
+    >>> field_particles.vy = [0.0, 0.0] | units.m
+    >>> field_particles.vz = [0.0, 0.0] | units.m
+    >>> particles = Particles(3)
+    >>> particles.vx = [1.0, 3.0, 4] | units.m
+    >>> particles.vy = [0.0, 0.0] | units.m
+    >>> particles.vz = [0.0, 0.0] | units.m
+    >>> velocity_diff_squared(particles, field_particles)
+    quantity<[[ 1.  1.], [ 9.  1.], [ 16.   4.]] m**2>
+    """
+
+    n = len(particles)
+    dimensions = particles.velocity.shape[-1]
+    transposed_positions = particles.velocity.reshape([n,1,dimensions]) 
+    dxdydz = transposed_positions - field_particles.velocity
+    return (dxdydz**2).sum(-1)
 
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
@@ -549,6 +642,8 @@ AbstractParticleSet.add_global_function_attribute("virial_radius", virial_radius
 AbstractParticleSet.add_global_function_attribute("total_mass", total_mass)
 AbstractParticleSet.add_global_function_attribute("total_momentum", total_momentum)
 AbstractParticleSet.add_global_function_attribute("total_angular_momentum", total_angular_momentum)
+
+AbstractParticleSet.add_global_function_attribute("potential_energy_in_field", potential_energy_in_field)
 
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])

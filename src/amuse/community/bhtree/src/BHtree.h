@@ -109,7 +109,7 @@ public:
     void set_cm_quantities();
     void accumulate_force_from_tree(vec & ipos, real eps2, real theta2,
 				   vec & acc,
-				   real & phi);
+				   real & phi, int iindex);
     void add_to_interaction_list(bhnode & dest_node, real theta2,
 				 vec * pos_list,
 				 real * mass_list,

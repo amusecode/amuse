@@ -80,17 +80,21 @@ class Multiples(object):
 
     def __init__(self, gravity_code, resolve_collision_code_creation_function, **options):
         self.gravity_code = gravity_code
-        self.particles = self.gravity_code.particles.copy()
-        self.particles.id = self.gravity_code.particles.index_in_code
+        self._immemory_particles = self.gravity_code.particles.copy()
+        self._immemory_particles.id = self.gravity_code.particles.index_in_code
         
-        self.particles.child1 = 0 | units.object_key # for printing
-        self.particles.child2 = 0 | units.object_key
+        self._immemory_particles.child1 = 0 | units.object_key # for printing
+        self._immemory_particles.child2 = 0 | units.object_key
         
-        self.channel_from_code_to_memory = self.gravity_code.particles.new_channel_to(self.particles)
+        self.channel_from_code_to_memory = self.gravity_code.particles.new_channel_to(self._immemory_particles)
         
         self.resolve_collision_code_creation_function = resolve_collision_code_creation_function
         self.multiples_energy_correction = zero * self.gravity_code.kinetic_energy
         self.root_to_tree = {}
+    
+    @property
+    def particles(self):
+        return self.gravity_code.particles
     
     @property 
     def total_mass(self):
@@ -169,12 +173,12 @@ class Multiples(object):
                 # TODO
                 self.channel_from_code_to_memory.copy()
                 
-                star1 = star1.as_particle_in_set(self.particles)
-                star2 = star2.as_particle_in_set(self.particles)
+                star1 = star1.as_particle_in_set(self._immemory_particles)
+                star2 = star2.as_particle_in_set(self._immemory_particles)
                 
                 self.manage_encounter(
                     star1, star2, 
-                    self.particles,
+                    self._immemory_particles,
                     self.gravity_code.particles
                 )
 
@@ -183,7 +187,7 @@ class Multiples(object):
                 # recommit and reinitialize a list if gravity supports
                 # it. TODO
                 self.gravity_code.recommit_particles()
-                self.gravity_code.particles.synchronize_to(self.particles) #star will be the same as gravity_stars
+                self.gravity_code.particles.synchronize_to(self._immemory_particles) #star will be the same as gravity_stars
 
                 energy = self.get_total_energy(self.gravity_code)
                 print "deltaE multiples:", self.multiples_energy_correction, 'dE =', (energy - start_energy)-self.multiples_energy_correction
