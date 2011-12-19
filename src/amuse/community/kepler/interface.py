@@ -475,11 +475,17 @@ class KeplerInterface(CodeInterface,
 
 class Kepler(CommonCode):
 
-    def __init__(self, **options):
+    def __init__(self, unit_converter = None,  **options):
+        self.unit_converter = unit_converter
+        
         CommonCode.__init__(self,
                                KeplerInterface(**options),
                                **options)
 
+    def define_converter(self, object):
+        if not self.unit_converter is None:
+            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+    
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
 

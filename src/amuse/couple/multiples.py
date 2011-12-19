@@ -58,9 +58,16 @@ def print_log(s, gravity, E0 = zero):
     return E
 
 def get_component_binary_elements(comp1, comp2):
-    kep = Kepler(redirection = "none")
+    try:
+        in_parsec = comp1.position.as_quantity_in(units.parsec)
+        unit_converter = nbody_system.nbody_to_si(comp1.mass + comp2.mass, (comp2.position - comp1.position).length())
+    except:
+        unit_converter = None
+        
+    kep = Kepler(unit_converter = unit_converter, redirection = "none")
     kep.initialize_code()
 
+    
     mass = comp1.mass + comp2.mass
     pos = comp2.position - comp1.position
     vel = comp2.velocity - comp1.velocity
@@ -73,12 +80,12 @@ def get_component_binary_elements(comp1, comp2):
 
     return mass,a,e,r,E
 
-def get_cm_binary_elements(p):
+def get_cm_binary_elements(p, unit_converter = None):
     return get_component_binary_elements(p.child1, p.child2)
 
 class Multiples(object):
 
-    def __init__(self, gravity_code, resolve_collision_code_creation_function, **options):
+    def __init__(self, gravity_code, resolve_collision_code_creation_function, gravity_constant = None, **options):
         self.gravity_code = gravity_code
         self._immemory_particles = self.gravity_code.particles.copy()
         self._immemory_particles.id = self.gravity_code.particles.index_in_code
@@ -91,7 +98,10 @@ class Multiples(object):
         self.resolve_collision_code_creation_function = resolve_collision_code_creation_function
         self.multiples_energy_correction = zero * self.gravity_code.kinetic_energy
         self.root_to_tree = {}
-    
+        if gravity_constant is None:
+            gravity_constant = nbody_system.G
+            
+        self.gravity_constant = gravity_constant
     @property
     def particles(self):
         return self.gravity_code.particles
@@ -286,12 +296,12 @@ class Multiples(object):
         collided_stars = datamodel.Particles(particles = (star1, star2))
         
         total_energy_of_stars_to_remove  = collided_stars.kinetic_energy()
-        total_energy_of_stars_to_remove += collided_stars.potential_energy(G=nbody_system.G)
+        total_energy_of_stars_to_remove += collided_stars.potential_energy(G=self.gravity_constant)
 
         phi_in_field_of_stars_to_remove = potential_energy_in_field(
             collided_stars, 
             stars - collided_stars,
-            G = nbody_system.G
+            G = self.gravity_constant
         )
         
         # 2. Create a particle set to perform the close encounter
@@ -543,7 +553,7 @@ def compress_binary_components(comp1, comp2, scale):
     pos2 = comp2.position
     sep12 = ((pos2-pos1)**2).sum()
 
-    if sep12 > scale*scale:
+    if False and sep12 > scale*scale:
         print '\ncompressing components', int(comp1.id.number), \
               'and', int(comp2.id.number), 'to separation', scale.number
         sys.stdout.flush()
@@ -639,8 +649,7 @@ def compress_binary_components(comp1, comp2, scale):
         offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
 
 def print_elements(s, a, e, r, E):
-    print '%s elements  a = %.4e  e = %.5f  r = %.4e  E = %.4e' \
-	  % (s, a.number, e.number, r.number, E.number)
+    print '{0} elements  a = {1}  e = {2}  r = {3}  E = {4}'.format(s, a, e, r, E)
 
 def print_multiple(m, level=0):
 
@@ -659,10 +668,10 @@ def print_multiple(m, level=0):
     if not m.child2 is None:
         print_multiple(m.child2, level+1)
 
-def print_pair_of_stars(s, star1, star2):
+def print_pair_of_stars(s, star1, star2, unit_converter = None):
     m1 = star1.mass
     m2 = star2.mass
-    M,a,e,r,E = get_component_binary_elements(star1, star2)
+    M,a,e,r,E = get_component_binary_elements(star1, star2, unit_converter = unit_converter)
     print_elements(s, a, e, r, E*m1*m2/(m1+m2))
     print_multiple(star1)
     print_multiple(star2)
@@ -670,7 +679,9 @@ def print_pair_of_stars(s, star1, star2):
 def scale_top_level_list(
         singles, multiples, 
         scale,
-        field, phi_in_field_of_stars_to_remove):
+        field, phi_in_field_of_stars_to_remove,
+        unit_converter = None
+    ):
 
     # The smallN particles were followed until their interaction could
     # be unambiguously classified as over.  They may now be very far
@@ -735,7 +746,7 @@ def scale_top_level_list(
         comp1 = top_level_nodes[0]
         comp2 = top_level_nodes[1]
         print '\nunscaled top-level pair:'
-        print_pair_of_stars('pair', comp1, comp2)
+        #print_pair_of_stars('pair', comp1, comp2, unit_converter = unit_converter)
         compress_binary_components(comp1, comp2, scale)
         print '\nscaled top-level pair:'
         print_pair_of_stars('pair', comp1, comp2)
