@@ -5394,17 +5394,17 @@ fi
 # Check whether --enable-sapporo2 was given.
 if test "${enable_sapporo2+set}" = set; then :
   enableval=$enable_sapporo2; SAPPORO_VERSION="light"
-    SAPPORO_LIBS="-L\${AMUSE_DIR}/lib/sapporo_${SAPPORO_VERSION} -lsapporo"
+    SAPPORO_LIBS="-L\${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo"
     if test "x$enable_sapporo2" != "xno"; then :
 
 	SAPPORO_VERSION="2"
-    SAPPORO_LIBS="${OPENMP_CFLAGS} -L${AMUSE_DIR}/lib/sapporo_${SAPPORO_VERSION} -lsapporo"
+    SAPPORO_LIBS="${OPENMP_CFLAGS} -L\${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo"
 
 fi
 
 else
   SAPPORO_VERSION="light"
-    SAPPORO_LIBS="-L\${AMUSE_DIR}/lib/sapporo_${SAPPORO_VERSION} -lsapporo"
+    SAPPORO_LIBS="-L\${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo"
 
 fi
 
