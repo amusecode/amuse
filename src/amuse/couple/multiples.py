@@ -815,7 +815,7 @@ def scale_top_level_list(
     # Finally, include the internal top-level energy in dEmult.
 
     total_energy_of_stars_to_add = top_level_nodes.kinetic_energy()
-    total_energy_of_stars_to_add += top_level_nodes.potential_energy(G=nbody_system.G)
+    total_energy_of_stars_to_add += top_level_nodes.potential_energy(G=gravity_constant)
     
     print 'final etot =', total_energy_of_stars_to_add
 
