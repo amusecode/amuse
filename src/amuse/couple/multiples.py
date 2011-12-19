@@ -58,16 +58,9 @@ def print_log(s, gravity, E0 = zero):
     return E
 
 def get_component_binary_elements(comp1, comp2):
-    try:
-        in_parsec = comp1.position.as_quantity_in(units.parsec)
-        unit_converter = nbody_system.nbody_to_si(comp1.mass + comp2.mass, (comp2.position - comp1.position).length())
-    except:
-        unit_converter = None
-        
-    kep = Kepler(unit_converter = unit_converter, redirection = "none")
+    kep = Kepler(redirection = "none")
     kep.initialize_code()
 
-    
     mass = comp1.mass + comp2.mass
     pos = comp2.position - comp1.position
     vel = comp2.velocity - comp1.velocity
@@ -80,7 +73,7 @@ def get_component_binary_elements(comp1, comp2):
 
     return mass,a,e,r,E
 
-def get_cm_binary_elements(p, unit_converter = None):
+def get_cm_binary_elements(p):
     return get_component_binary_elements(p.child1, p.child2)
 
 class Multiples(object):
@@ -553,7 +546,7 @@ def compress_binary_components(comp1, comp2, scale):
     pos2 = comp2.position
     sep12 = ((pos2-pos1)**2).sum()
 
-    if False and sep12 > scale*scale:
+    if sep12 > scale*scale:
         print '\ncompressing components', int(comp1.id.number), \
               'and', int(comp2.id.number), 'to separation', scale.number
         sys.stdout.flush()
@@ -649,7 +642,8 @@ def compress_binary_components(comp1, comp2, scale):
         offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
 
 def print_elements(s, a, e, r, E):
-    print '{0} elements  a = {1}  e = {2}  r = {3}  E = {4}'.format(s, a, e, r, E)
+    print '%s elements  a = %.4e  e = %.5f  r = %.4e  E = %.4e' \
+	  % (s, a.number, e.number, r.number, E.number)
 
 def print_multiple(m, level=0):
 
@@ -668,10 +662,10 @@ def print_multiple(m, level=0):
     if not m.child2 is None:
         print_multiple(m.child2, level+1)
 
-def print_pair_of_stars(s, star1, star2, unit_converter = None):
+def print_pair_of_stars(s, star1, star2):
     m1 = star1.mass
     m2 = star2.mass
-    M,a,e,r,E = get_component_binary_elements(star1, star2, unit_converter = unit_converter)
+    M,a,e,r,E = get_component_binary_elements(star1, star2)
     print_elements(s, a, e, r, E*m1*m2/(m1+m2))
     print_multiple(star1)
     print_multiple(star2)
@@ -679,9 +673,7 @@ def print_pair_of_stars(s, star1, star2, unit_converter = None):
 def scale_top_level_list(
         singles, multiples, 
         scale,
-        field, phi_in_field_of_stars_to_remove,
-        unit_converter = None
-    ):
+        field, phi_in_field_of_stars_to_remove):
 
     # The smallN particles were followed until their interaction could
     # be unambiguously classified as over.  They may now be very far
@@ -746,7 +738,7 @@ def scale_top_level_list(
         comp1 = top_level_nodes[0]
         comp2 = top_level_nodes[1]
         print '\nunscaled top-level pair:'
-        #print_pair_of_stars('pair', comp1, comp2, unit_converter = unit_converter)
+        print_pair_of_stars('pair', comp1, comp2)
         compress_binary_components(comp1, comp2, scale)
         print '\nscaled top-level pair:'
         print_pair_of_stars('pair', comp1, comp2)
