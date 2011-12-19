@@ -91,15 +91,19 @@ AC_ARG_WITH([sapporo],
 AC_ARG_ENABLE(sapporo2,
     [AS_HELP_STRING([--enable-sapporo2],[Use the provided sapporo library version 2, instead of sapporo_light])],
     [SAPPORO_VERSION="light"
+    SAPPORO_LIBS="-L\${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo"
     AS_IF([test "x$enable_sapporo2" != "xno"], [
 	SAPPORO_VERSION="2"
+    SAPPORO_LIBS="${OPENMP_CFLAGS} -L${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo"
     ])
     ],
-    [SAPPORO_VERSION="light"]
+    [SAPPORO_VERSION="light"
+    SAPPORO_LIBS="-L\${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo]"
 )
 
 AC_SUBST(WITH_SAPPORO)
 AC_SUBST(SAPPORO_VERSION)
+AC_SUBST(SAPPORO_LIBS)
 
 PKG_CHECK_MODULES([FFTW],[fftw3 >= 3.2],
     [
