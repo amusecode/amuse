@@ -389,7 +389,8 @@ class Multiples(object):
             roots_of_trees,
             initial_scale,
             stars - collided_stars, 
-            phi_in_field_of_stars_to_remove
+            phi_in_field_of_stars_to_remove,
+            self.gravity_constant
         )
         # 5d. Add stars not in a binary to the gravity code.
 
@@ -684,7 +685,7 @@ def print_pair_of_stars(s, star1, star2):
 def scale_top_level_list(
         singles, multiples, 
         scale,
-        field, phi_in_field_of_stars_to_remove):
+        field, phi_in_field_of_stars_to_remove, gravity_constant):
 
     # The smallN particles were followed until their interaction could
     # be unambiguously classified as over.  They may now be very far
@@ -774,7 +775,7 @@ def scale_top_level_list(
     phi_in_field_of_stars_to_add = potential_energy_in_field(
         top_level_nodes, 
         field,
-        G = nbody_system.G
+        G = gravity_constant
     )
     
     print 'phi_external_final_before =', phi_in_field_of_stars_to_remove
