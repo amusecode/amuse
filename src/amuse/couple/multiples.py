@@ -58,7 +58,14 @@ def print_log(s, gravity, E0 = zero):
     return E
 
 def get_component_binary_elements(comp1, comp2):
-    kep = Kepler(redirection = "none")
+    try:
+        comp1.mass.value_in(units.kg) #see if it is in si, will throw exception if not
+        unit_converter = nbody_system.nbody_to_si(comp1.mass + comp2.mass, (comp2.position - comp1.position).length())
+    except Exception as ex:
+        print ex
+        unit_converter = None
+        
+    kep = Kepler(unit_converter, redirection = "none")
     kep.initialize_code()
 
     mass = comp1.mass + comp2.mass
@@ -562,8 +569,13 @@ def compress_binary_components(comp1, comp2, scale):
         # process to handle the transformation.  Obviously
         # more efficient to define a single kepler at the
         # start of the calculation and reuse it.
-
-        kep = Kepler(redirection = "none")
+        try:
+            comp1.mass.value_in(units.kg) #see if it is in si, will throw exception if not
+            unit_converter = nbody_system.nbody_to_si(comp1.mass + comp2.mass, (comp2.position - comp1.position).length())
+        except Exception as ex:
+            unit_converter = None
+            
+        kep = Kepler(unit_converter = unit_converter, redirection = "none")
         kep.initialize_code()
         mass = comp1.mass + comp2.mass
         rel_pos = pos2 - pos1
@@ -642,8 +654,7 @@ def compress_binary_components(comp1, comp2, scale):
         offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
 
 def print_elements(s, a, e, r, E):
-    print '%s elements  a = %.4e  e = %.5f  r = %.4e  E = %.4e' \
-	  % (s, a.number, e.number, r.number, E.number)
+    print '{0} elements  a = {1}  e = {2}  r = {3}  E = {4}'.format(s, a, e, r, E)
 
 def print_multiple(m, level=0):
 
