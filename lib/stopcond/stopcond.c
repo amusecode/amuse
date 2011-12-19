@@ -175,6 +175,10 @@ int reset_stopping_conditions_() {
 }
 
 int next_index_for_stopping_condition() {
+    if(number_of_stopping_conditions_set + 1 > (MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET - 1))
+    {
+	return -1;
+    }
     number_of_stopping_conditions_set++;
     return number_of_stopping_conditions_set - 1;
 }

@@ -62,7 +62,6 @@ def get_component_binary_elements(comp1, comp2):
         comp1.mass.value_in(units.kg) #see if it is in si, will throw exception if not
         unit_converter = nbody_system.nbody_to_si(comp1.mass + comp2.mass, (comp2.position - comp1.position).length())
     except Exception as ex:
-        print ex
         unit_converter = None
         
     kep = Kepler(unit_converter, redirection = "none")
@@ -83,6 +82,8 @@ def get_component_binary_elements(comp1, comp2):
 def get_cm_binary_elements(p):
     return get_component_binary_elements(p.child1, p.child2)
 
+    
+
 class Multiples(object):
 
     def __init__(self, gravity_code, resolve_collision_code_creation_function, gravity_constant = None, **options):
@@ -102,6 +103,7 @@ class Multiples(object):
             gravity_constant = nbody_system.G
             
         self.gravity_constant = gravity_constant
+        
     @property
     def particles(self):
         return self.gravity_code.particles
@@ -236,6 +238,8 @@ class Multiples(object):
         print "in steps of", delta_t
         sys.stdout.flush()
     
+        stored_radius = particles[0].radius
+        
         start_energy = self.get_total_energy(resolve_collision_code)
     
         # Channel to copy values from the code to the set in memory.
@@ -259,12 +263,15 @@ class Multiples(object):
 
                 resolve_collision_code.update_particle_set()
                 resolve_collision_code.particles.synchronize_to(particles)
+                print "resolve_collision_code.particles.radius", resolve_collision_code.particles.radius
                 channel.copy()
                 resolve_collision_code.stop()
 
+                particles[particles.radius < (0.0 | stored_radius.unit)].radius = stored_radius
+                print "particles.radius", particles.radius, stored_radius, len(particles[particles.radius < (0.0 | stored_radius.unit)])
                 return start_energy, energy
     
-    
+        
         resolve_collision_code.stop()
         raise Exception(
             "Did not finish the small-N simulation before end time {0}".format(end_time)
@@ -294,7 +301,7 @@ class Multiples(object):
         #     scale_top_level_list.)
 
         collided_stars = datamodel.Particles(particles = (star1, star2))
-        
+               
         total_energy_of_stars_to_remove  = collided_stars.kinetic_energy()
         total_energy_of_stars_to_remove += collided_stars.potential_energy(G=self.gravity_constant)
 
@@ -325,7 +332,6 @@ class Multiples(object):
         else:
             particles_in_encounter.add_particle(star2)
 
-
         print '\nparticles in encounter (flat tree):'
         for p in particles_in_encounter:
             print_multiple(p)
@@ -349,10 +355,10 @@ class Multiples(object):
         particles_in_encounter.position += cmpos
         particles_in_encounter.velocity += cmvel
             
-        print '\nparticles in encounter (after resolve):'
-        print particles_in_encounter.to_string(['x','y','z',
-                                                'vx','vy','vz',
-                                                 'mass', 'id', 'child1', 'child2'])
+        #print '\nparticles in encounter (after resolve):'
+        #print particles_in_encounter.to_string(['x','y','z',
+        #                                        'vx','vy','vz',
+        #                                         'mass', 'id', 'child1', 'child2'])
         
         # print 'after smallN:'
         # print particles_in_encounter.to_string(['x','y','z',
@@ -393,7 +399,6 @@ class Multiples(object):
             self.gravity_constant
         )
         # 5d. Add stars not in a binary to the gravity code.
-
         if len(stars_not_in_a_multiple) > 0:
             gravity_stars.add_particles(stars_not_in_a_multiple)
             
@@ -410,6 +415,7 @@ class Multiples(object):
             
         self.multiples_energy_correction += (total_energy_of_stars_to_add - total_energy_of_stars_to_remove) + phi_correction
 
+        print "NUMBER OF TREES:", len(self.root_to_tree)
             
     
     
@@ -717,7 +723,6 @@ def scale_top_level_list(
     ls = len(singles)
     lm = len(multiples)
     lt = ls + lm
-
     if lt == 1:
         if lm == 1:
 
@@ -728,6 +733,7 @@ def scale_top_level_list(
             # components to periastron.
 
             root = multiples[0]
+            
             print '\nunscaled binary node:'
             print_multiple(root)
             comp1 = root.child1
@@ -735,6 +741,9 @@ def scale_top_level_list(
             compress_binary_components(comp1, comp2, scale)
             print '\nscaled binary node:'
             print_multiple(root)
+            
+            dr = (root.child1.position - root.child2.position).length()
+            root.radius = dr
 
     elif lt == 2:
 

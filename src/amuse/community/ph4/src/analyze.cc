@@ -152,6 +152,7 @@ hdyn2 *flat_copy_tree(hdyn *bin)
 	b->set_mass(b->get_mass()+bb->get_mass());
 	by->set_pos(bb->get_pos());
 	by->set_vel(bb->get_vel());
+	by->set_radius(bb->get_radius());
 	hdyn *pp = bb->get_parent();
 	while (pp != bin) {
 	    by->inc_pos(pp->get_pos());

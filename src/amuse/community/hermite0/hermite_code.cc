@@ -433,9 +433,16 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
               real rsum = radius[i] + radius[j];
               if (r2 <= rsum*rsum) {
                 int stopping_index  = next_index_for_stopping_condition();
-                set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-                set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
-                set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
+                if(stopping_index < 0)
+                {
+                    
+                }
+                else
+                {
+                    set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+                    set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
+                    set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
+                }
               }
             }
 	    if(is_pair_detection_enabled) {
@@ -448,14 +455,21 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
                 //T = T1 + T2 = 0.5 * m1*m2/M v^2 (rel vel w.r.t. C.O.M)
                 if (mass[i]+mass[j]/sqrt(r2 + eps2) > 0.5 * v2) {
                   int stopping_index = next_index_for_stopping_condition();
-                  set_stopping_condition_info(stopping_index, PAIR_DETECTION);
-                  if (mass[i] >= mass[j]) {
-                    set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
-                    set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
-                  }
-                  else {
-                    set_stopping_condition_particle_index(stopping_index, 0, ident[j]);
-                    set_stopping_condition_particle_index(stopping_index, 1, ident[i]);
+                  if(stopping_index < 0)
+                    {
+                    
+                    }
+                  else
+                  {
+                      set_stopping_condition_info(stopping_index, PAIR_DETECTION);
+                      if (mass[i] >= mass[j]) {
+                        set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
+                        set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
+                      }
+                      else {
+                        set_stopping_condition_particle_index(stopping_index, 0, ident[j]);
+                        set_stopping_condition_particle_index(stopping_index, 1, ident[i]);
+                      }
                   }
                 }
               }

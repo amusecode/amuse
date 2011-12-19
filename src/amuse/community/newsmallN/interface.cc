@@ -265,7 +265,7 @@ int set_radius(int index_of_the_particle, double radius)
 int get_radius(int index_of_the_particle, double * radius)
 {
     hdyn *bb = particle_with_index(b, index_of_the_particle);
-    if (!bb) return -1;
+    if (!bb){*radius = 0.0; return -1;}
     *radius = bb->get_radius();
     return 0;
 }
@@ -517,7 +517,7 @@ int update_particle_tree()
     for_all_nodes(hdyn, b, bb)
 	if (bb->get_parent() && bb->get_oldest_daughter()) {
 	    int newindex = b->get_cm_index();
-	    b->set_cm_index(newindex);
+	    b->set_cm_index(newindex+1);
 	    bb->set_index(newindex);
 	    UpdatedParticles.push_back(UpdatedParticle(newindex, 1));
 	}

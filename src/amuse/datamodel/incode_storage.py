@@ -757,7 +757,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         keys = []
         for i in indices:
             if i in self.mapping_from_index_in_the_code_to_particle_key:
-                raise exceptions.AmuseException("adding an index that is already managed, bookkeeping is broken")
+                raise exceptions.AmuseException("adding an index '{0}' that is already managed, bookkeeping is broken".format(i))
             newkey = base.UniqueKeyGenerator.next()
             self.mapping_from_index_in_the_code_to_particle_key[i] = newkey
             self.mapping_from_particle_key_to_index_in_the_code[newkey] = i
