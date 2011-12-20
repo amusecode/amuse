@@ -4,14 +4,13 @@ Stopping Conditions
 
 Introduction
 ------------
-Codes in AMUSE evolve their models in three loops, the "inner",
-the "outer" loop, and the "script" loop. The
-"inner" loop is controlled by the code and evolves the model
-in a sufficiently small step to limit errors
-and be able to simulate important physics. The "outer" loop invokes
-the "inner" loop until a condition is met specified by the AMUSE script.
-The AMUSE script (or the "script" loops) interacts with the "outer"
-loop.
+Codes in AMUSE evolve their models in three loops, the "inner", the 
+"outer" loop, and the "script" loop. The "inner" loop is controlled 
+by the code and evolves the model in a sufficiently small steps to 
+limit errors and be able to simulate important physics. The "outer" 
+loop invokes the "inner" loop until a condition is met specified by 
+the AMUSE script. The AMUSE script (or the "script" loop) interacts 
+with the "outer" loop.
 
  .. graphviz::
 
@@ -44,8 +43,9 @@ loop.
     }
 
 In AMUSE the outer loop is always limited by the model time. Every
-:func:`evolve` call has one argument, the model time. When the
-simulation goes beyond this time, control is returned to the caller.
+:func:`evolve_model` call has one argument, the model time. When the
+simulation is about to go beyond this time (or is at this time),
+control is returned to the caller.
 This process is shown in the following code example.
 
 .. code-block:: c
@@ -93,21 +93,19 @@ shows how these conditions might work in a C code.
         return
     }
 
-For example, a code might be able to detect a collision
-of two stars and the user wants to handle this event.
-If the code would proceed to the end time, the collision
-is long over and the user has no way to know about
-the collision and cannot handle it.
+For example, a code might be able to detect a collision of two stars 
+and the user wants to handle this event. If the code would proceed 
+to the end time, the collision is long over and the user has no way 
+to know about the collision and cannot handle it.
 
 .. image:: stopping_conditions_collision.png
 
-The **stopping conditions** framework in AMUSE
-provides functionality for using and implementing stopping
-conditions. This framework uses simple tables in the
-codes and translates these tables to objects in the python
-scripts. In the next section the use of this framework
-is described. In the final section the implementation of
-the framework in a community code is described.
+The **stopping conditions** framework in AMUSE provides 
+functionality for using and implementing stopping conditions. This 
+framework uses simple tables in the codes and translates these 
+tables to objects in the python scripts. In the next section the use 
+of this framework is described. In the final section the 
+implementation of the framework in a community code is described.
 
 Using stopping conditions
 -------------------------
@@ -173,16 +171,15 @@ the :func:`evolve` loop.
     False
     >>> code.stop()
 
-When a stopping condition was hit during the inner or outer loop evaluation
-the user can query which particles were involved.
-The particles involved are stored in columns.
-For pair wise detections (collection and pair) the condition
-provides two columns. The first column contains all the first particles
-of the pairs and the second column contains all the second particles
-of the pairs. These columns can be queried with the :meth:`particles`
-method on a stopping condition attribute. This method takes one
-argument, the column index and returns a particle subset with
-the involved particles.
+When a stopping condition was hit during the inner or outer loop 
+evaluation the user can query which particles were involved. The 
+particles involved are stored in columns. For pair wise detections 
+(collection and pair) the condition provides two columns. The first 
+column contains all the first particles of the pairs and the second 
+column contains all the second particles of the pairs. These columns 
+can be queried with the :meth:`particles` method on a stopping 
+condition attribute. This method takes one argument, the column 
+index and returns a particle subset with the involved particles.
 
 ========  ============  ============
 Pair      particles(0)  particles(1)
@@ -208,11 +205,10 @@ Pair      particles(0)  particles(1)
 
 Implementing stopping conditions
 --------------------------------
-All codes supporting stopping conditions
-must implement the :class:`StoppingConditionInterface`
-interface. This can be easily done by inheriting
-from the :class:`StoppingConditionInterface` and implementing
-all the functions defined in the interface:
+All codes supporting stopping conditions must implement the 
+:class:`StoppingConditionInterface` interface. This can be easily 
+done by inheriting from the :class:`StoppingConditionInterface` and 
+implementing all the functions defined in the interface:
 
 .. code-block:: python
 

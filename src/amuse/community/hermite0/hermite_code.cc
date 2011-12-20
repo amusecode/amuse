@@ -729,7 +729,15 @@ int evolve_system(real t_end)
     // Don't flag a collision if no step is to be taken (presumably
     // just handled?).
 
-    if (t + dt > t_end) return -1;
+    if (t + dt > t_end){
+        
+        must_run = 0;
+#ifndef NOMPI
+        MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+#endif
+        return -1;
+    
+    }
     
     
     // AMUSE STOPPING CONDITIONS
@@ -848,8 +856,9 @@ int evolve_system(real t_end)
     // synchronized at time t, with t <= t_evolve < t + dt.  If a
     // collision has been detected, we return with t_evolve = t;
     // otherwise, we set t_evolve = t_end. 
+    
+    
     must_run = 0;
-
 #ifndef NOMPI
     MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
 #endif
@@ -1622,7 +1631,8 @@ int synchronize_model() {
     if (set_conditions & enabled_conditions) {
         return 0;
     }
-     if(mpi_rank)     {
+     
+    if(mpi_rank)     {
         evolve_not_on_root();
     } else {
         int must_run = 0;

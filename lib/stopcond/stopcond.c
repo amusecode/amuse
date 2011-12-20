@@ -316,7 +316,7 @@ int mpi_collect_stopping_conditions() {
     memset(counts, 0, sizeof(counts));
     memset(displs, 0, sizeof(displs));
     long set = 0;
-    MPI_Reduce(&set_conditions, &set, 1, MPI_LONG,  MPI_BOR, 0, MPI_COMM_WORLD);
+    MPI_Allreduce(&set_conditions, &set, 1, MPI_INTEGER,  MPI_BOR, MPI_COMM_WORLD);
     set_conditions = set;
     MPI_Gather(&number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INT, 0, MPI_COMM_WORLD);
     if(sc_mpi_rank == 0) {
@@ -324,6 +324,10 @@ int mpi_collect_stopping_conditions() {
 	for(i = 0; i < sc_mpi_size; i++) {
 	    number_of_stopping_conditions_set += counts[i];
 	}
+    }
+    if(sc_mpi_rank == 0 && number_of_stopping_conditions_set > (MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET-1) )
+    {
+	return -1;
     }
     if(sc_mpi_rank == 0) {
 	int x = 0;
