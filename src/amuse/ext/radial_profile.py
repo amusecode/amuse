@@ -1,6 +1,6 @@
 import numpy
 
-def radial_profile(N,r,dat):
+def radial_profile(r,dat,N=100):
   n=len(r)
   a=r.argsort()
   i=0
