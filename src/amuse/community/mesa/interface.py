@@ -1205,7 +1205,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             range(1,number_of_species+1) | units.none
         )
     
-    def new_particle_from_model(self, internal_structure, current_age):
+    def new_particle_from_model(self, internal_structure, current_age, key=None):
         mass_profile = [0.0] | units.MSun
         if isinstance(internal_structure, dict):
             mass_profile.extend(internal_structure['mass'])
@@ -1243,7 +1243,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
                 internal_structure.X_Si[::-1],
                 internal_structure.X_Fe[::-1]
             )
-        tmp_star = datamodel.Particle()
+        tmp_star = datamodel.Particle(key=key)
         tmp_star.age_tag = current_age
         return self.imported_stars.add_particle(tmp_star)
 

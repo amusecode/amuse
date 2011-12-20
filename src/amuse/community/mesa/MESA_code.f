@@ -1621,7 +1621,7 @@
       s% xs(s% i_lnR, :) = log(radius(:))
       if (luminosity(1) <= 0) then
          ! No luminosities provided, make an educated guess
-         do k = 1, s% nz
+         do k = 1, s% nz - 3
             if (temperature(k) .gt. 1.0e7) exit
          end do
          if (debugging) write(*,*) "temperature(", k, ") = ", temperature(k)
