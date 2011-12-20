@@ -30,7 +30,7 @@ def radial_density(r,mass,N=100,dim=3):
   oldrshell=0.*r[0]
   while i < n:
     ra=r[a[i:i+N]].sum()/min(n-i,N)
-    rshell=r[a[i:i+N]].amax()
+    rshell=(r[a[min(n-1,i+N)]]+r[a[min(n-1,i+N-1)]])/2
     da=mass[a[i:i+N]].sum()/(rshell**dim-oldrshell**dim)
     oldrshell=rshell
     r_a.append(ra)
@@ -44,7 +44,7 @@ if __name__=="__main__":
   
   plum=MakePlummerModel(100000).result
   r=(plum.x**2+plum.y**2+plum.z**2)**0.5
-  ra,dens=radial_density(r,plum.mass,100)
+  ra,dens=radial_density(r,plum.mass,1000)
   
   ascl=1/1.695
   
