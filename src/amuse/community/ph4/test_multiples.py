@@ -906,7 +906,7 @@ def test_multiples(infile = None, number_of_stars = 40,
     sys.stdout.flush()
 
     global root_index
-    rooot_index = len(stars) + 1000
+    root_index = len(stars) + 1000
     #-----------------------------------------------------------------
 
     if softening_length == -1 | nbody_system.length:
