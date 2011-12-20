@@ -588,17 +588,14 @@ extern "C" __global__ void copyNodeDataToGroupData(const int n_groups,
 
 
 //Compute the properties for the groups
-extern "C" __global__ void copyNodeDataToGroupData2(const int n_groups,
-                                                    const int n_particles,   
-                                                    real4 *bodies_pos,
-//                                                     uint4 *group_data,
-                                                    int2  *group_list,                                                
-                                                    real4 *groupCenterInfo,
-                                                    real4 *groupSizeInfo){
+extern "C" __global__ void setPHGroupData(const int n_groups,
+                                          const int n_particles,   
+                                          real4 *bodies_pos,
+                                          int2  *group_list,                                                
+                                          real4 *groupCenterInfo,
+                                          real4 *groupSizeInfo){
   const int bid =  blockIdx.y *  gridDim.x +  blockIdx.x;
   const int tid = threadIdx.y * blockDim.x + threadIdx.x;
-
-//   const int idx = bid * (blockDim.x * blockDim.y) + tid;
 
   if(bid >= n_groups)     return;
 
@@ -675,196 +672,10 @@ extern "C" __global__ void copyNodeDataToGroupData2(const int n_groups,
     groupCenterInfo[bid].y = grpCenter.y;
     groupCenterInfo[bid].z = grpCenter.z;
 
-    //Test stats
+    //Test stats for physical group size
     groupCenterInfo[bid].w = l;
-
-/*
-  //Extra check, shouldnt be necessary, probably it is otherwise the test for leaf can fail
-  //So it IS important Otherwise 0.0 < 0 can fail, now it will be: -1e-12 < 0 
-  if(l < 0.000001)
-    l = 0.000001;
-
-  #ifdef IMPBH
-    float cellOp = (l/theta) + s;
-  #else
-    //Minimum distance method
-    float cellOp = (l/theta); 
-  #endif
-    
-  cellOp = cellOp*cellOp;
-
-  if(r_max.w > 0)
-  {
-    cellOp = -cellOp;       //This is a leaf node
-  }
-  
-
-  boxCenterInfo[idx].w = cellOp;
-*/
-
 
     //groupCenterInfo[idx].w = free variable
   } //end tid == 0
 }//end copyNode2grp
 
-
-/*   
-  
-//Compute the properties for the groups
-extern "C" __global__ void copyNodeDataToGroupData2(const int n_groups,
-                                                    const int n_particles,   
-                                                    real4 *bodies_pos,
-                                                    uint4 *group_data,
-                                                    int2  *group_list,                                                
-                                                    real4 *groupCenterInfo,
-                                                    real4 *groupSizeInfo,
-                                                    uint2 *bodies_key,
-                                                    uint  *validCount){
-  const int bid =  blockIdx.y *  gridDim.x +  blockIdx.x;
-  const int tid = threadIdx.y * blockDim.x + threadIdx.x;
-
-  const int idx = bid * (blockDim.x * blockDim.y) + tid;
-
-  if(bid >= n_groups)     return;
-
-  //Do a reduction on the particles assigned to this group
-
-  volatile __shared__ float3 shmem[2*NCRIT];
-  volatile float3 *sh_rmin = (float3*)&shmem [ 0];
-  volatile float3 *sh_rmax = (float3*)&shmem[NCRIT];
-
-  float3 r_min = (float3){+1e10f, +1e10f, +1e10f};
-  float3 r_max = (float3){-1e10f, -1e10f, -1e10f};
-
-  int start = group_list[bid].x;
-  int end   = group_list[bid].y;
-  
-  int partIdx = min(start + threadIdx.x, end);
-
-  //Set the shared memory with the data
-  if (idx >= n_particles)
-  {
-    sh_rmin[tid].x = r_min.x; sh_rmin[tid].y = r_min.y; sh_rmin[tid].z = r_min.z;
-    sh_rmax[tid].x = r_max.x; sh_rmax[tid].y = r_max.y; sh_rmax[tid].z = r_max.z;
-  }
-  else
-  {
-    sh_rmin[tid].x = bodies_pos[partIdx].x; sh_rmin[tid].y = bodies_pos[partIdx].y; sh_rmin[tid].z = bodies_pos[partIdx].z;
-    sh_rmax[tid].x = bodies_pos[partIdx].x; sh_rmax[tid].y = bodies_pos[partIdx].y; sh_rmax[tid].z = bodies_pos[partIdx].z;
-  }
-
-  __syncthreads();
-  // do reduction in shared mem  
-  if(blockDim.x >= 512) if (tid < 256) {sh_MinMax(tid, tid + 256, &r_min, &r_max, sh_rmin, sh_rmax);} __syncthreads();
-  if(blockDim.x >= 256) if (tid < 128) {sh_MinMax(tid, tid + 128, &r_min, &r_max, sh_rmin, sh_rmax);} __syncthreads();
-  if(blockDim.x >= 128) if (tid < 64)  {sh_MinMax(tid, tid + 64,  &r_min, &r_max, sh_rmin, sh_rmax);} __syncthreads();
-
-  if(blockDim.x >= 64) if (tid < 32) { sh_MinMax(tid, tid + 32, &r_min, &r_max, sh_rmin, sh_rmax); }
-  if(blockDim.x >= 32) if (tid < 16) { sh_MinMax(tid, tid + 16, &r_min, &r_max, sh_rmin, sh_rmax); }
-  
-  if(tid < 8)
-  {        
-//     sh_MinMax(tid, tid + 16, &r_min, &r_max, sh_rmin, sh_rmax);
-    sh_MinMax(tid, tid +  8, &r_min, &r_max, sh_rmin, sh_rmax);
-    sh_MinMax(tid, tid +  4, &r_min, &r_max, sh_rmin, sh_rmax);
-    sh_MinMax(tid, tid +  2, &r_min, &r_max, sh_rmin, sh_rmax);
-    sh_MinMax(tid, tid +  1, &r_min, &r_max, sh_rmin, sh_rmax);
-  }
-
-
-//   if(bid < 2 && tid == 0)
-//   {
-//     printf("bid: %d \t min: %f\t%f\t%f max: %f\t%f\t%f\n", bid, r_min.x, r_min.y, r_min.z, r_max.x, r_max.y, r_max.z);
-//   }
-
-  // write result for this block to global mem
-
-if(0)
-{
- uint2 key_c = bodies_key[partIdx];
- uint2 key_m;
-
- int level = 2;
- uint2 mask = get_mask(level);
- mask.x = mask.x | ((uint)1 << 30) | ((uint)1 << 31);
-    key_m.x = key_c.x & mask.x;
-    key_m.y = key_c.y & mask.y;
-
-
-  float4 curPos =  bodies_pos[partIdx];
-  float4 nexPos =  bodies_pos[partIdx+1];
-
-  float ds =  ((curPos.x-nexPos.x)*(curPos.x-nexPos.x)) + 
-              ((curPos.y-nexPos.y)*(curPos.y-nexPos.y)) + 
-              ((curPos.z-nexPos.z)*(curPos.z-nexPos.z));
-
-
-
-// if(blockIdx.x == 18807)
-// {
-// printf("[%d %d ] %f %f %f key [%X %X] masked: [%X %X]  \tDS: %f \n", blockIdx.x, threadIdx.x, 
-//                                         bodies_pos[partIdx].x, bodies_pos[partIdx].y, bodies_pos[partIdx].z,
-//                                         key_c.x, key_c.y, key_m.x, key_m.y, ds);
-// }
-
-  int valid = ((idx % 32) == 0);
-//   valid = 0;
-
-  if(ds > 500)
-  {
-     valid = 1;
-//   printf("TEST: %d %d \t d: %f \n", blockIdx.x, threadIdx.x, ds);
-  }
-
-
-validCount[idx] = (idx) | (uint)(valid << 31);  
-
-}
-
-   if (tid == 0)
-  {
-    //Compute the group center and size
-    float3 grpCenter;
-    grpCenter.x = 0.5*(r_min.x + r_max.x);
-    grpCenter.y = 0.5*(r_min.y + r_max.y);
-    grpCenter.z = 0.5*(r_min.z + r_max.z);
-
-    float3 grpSize = (float3){fmaxf(fabs(grpCenter.x-r_min.x), fabs(grpCenter.x-r_max.x)),
-                              fmaxf(fabs(grpCenter.y-r_min.y), fabs(grpCenter.y-r_max.y)),
-                              fmaxf(fabs(grpCenter.z-r_min.z), fabs(grpCenter.z-r_max.z))};
-
-    //Store the box size and opening criteria
-    groupSizeInfo[bid].x = grpSize.x;
-    groupSizeInfo[bid].y = grpSize.y;
-    groupSizeInfo[bid].z = grpSize.z;
-
-    int nchild             = end-start;
-    start                  = start | (nchild-1) << CRITBIT;
-    groupSizeInfo[bid].w   = __int_as_float(start);  
-
-//     if(bid < 2 && tid == 0)
-//     {
-//       printf("bid: %d \t nchild: %d size: %f %f %f cntr: %f %f %f\n", bid, nchild, grpSize.x,grpSize.y,grpSize.z,
-//              grpCenter.x,grpCenter.y,grpCenter.z);
-//     }
-
-    float l = max(grpSize.x, max(grpSize.y, grpSize.z));
-
-    groupCenterInfo[bid].x = grpCenter.x;
-    groupCenterInfo[bid].y = grpCenter.y;
-    groupCenterInfo[bid].z = grpCenter.z;
-
-    //Test stats
-    groupCenterInfo[bid].w = l;
-
-if(l > 18 || blockIdx.x == 9099)
-{
-
-printf("[%d %d ] %f %f %f size: %f \n", blockIdx.x, threadIdx.x,  bodies_pos[partIdx].x, bodies_pos[partIdx].y, bodies_pos[partIdx].z, l);
-
-}
-
-    //groupCenterInfo[idx].w = free variable
-  } //end tid == 0
-}//end copyNode2grp
-*/

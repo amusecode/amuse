@@ -182,6 +182,14 @@ __inline__ int clFinish(int param)
   return cuCtxSynchronize();   
 }
 
+    
+    static int getNumberOfCUDADevices()
+    {
+      // Get number of devices supporting CUDA
+      int temp = 0;
+      CU_SAFE_CALL(cuDeviceGetCount(&temp));
+      return temp;
+    }
 
 
 namespace my_dev {
@@ -212,10 +220,13 @@ namespace my_dev {
     //Compute capabilty, important for default compilation mode
     int ccMajor;
     int ccMinor;
-    int defaultComputeMode;    
+    int defaultComputeMode;   
+
     
     
   public:
+    
+     int multiProcessorCount;   //Required to configure parts of the code
 
     context() {
       hContext_flag     = false;     
@@ -276,6 +287,7 @@ namespace my_dev {
       logID = 0;
       return create(disable_timing); 
     }
+
 
     int create(bool disableT = false) {
       assert(hInit_flag);     
@@ -351,7 +363,10 @@ namespace my_dev {
       
      //Retrieve CC of the selected device
       cuDeviceComputeCapability(&ccMajor, &ccMinor, hDevice);
-      setDefaultComputeMode();      
+      setDefaultComputeMode();   
+      
+      //Get the number of multiprocessors of the device
+      CU_SAFE_CALL(cuDeviceGetAttribute(&multiProcessorCount, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, hDevice )); 
       
       hContext_flag = true;
     }
@@ -428,6 +443,17 @@ namespace my_dev {
       void sync()
       {
         CU_SAFE_CALL(cuStreamSynchronize(stream));        
+      }
+      
+      bool isFinished()
+      {
+        CUresult res = cuStreamQuery(stream);
+        if(res == CUDA_SUCCESS) return true;
+        if(res == CUDA_ERROR_NOT_READY) return false;
+        
+        //Some other result
+        CU_SAFE_CALL(res);
+        return false;
       }
       
       CUstream s()
@@ -552,6 +578,7 @@ namespace my_dev {
         return;
       }
 
+      
       assert(context_flag);
       if (hDeviceMem_flag)
       {
@@ -630,13 +657,13 @@ namespace my_dev {
     
     ///////////
 
-    void setContext(class context &c) {
+    void setContext(class context &c) {      
       if(context_flag)
       {
-	      //Check if the context is changed, that is not allowed!
-	      assert(c.get_context() == this->hContext);
+        //Check if the context is changed, this is not allowed!
+        assert(c.get_context() == this->hContext);        
       }
-
+      
       this->hContext   = c.get_context();     
       context_flag     = true;
     }
@@ -651,17 +678,18 @@ namespace my_dev {
                       int allignOffset)
     {
       assert(context_flag);
-//       assert(!hDeviceMem_flag);
-//       this->pinned_mem  = src_buffer.get_pinned();      
-//       this->flags       = src_buffer.get_flags();     
+   
       this->pinned_mem  = pinned;
       this->flags       = flags;
       this->childMemory = true;
 
       size = n;
         
-      //Dont forget to add the allignment values
-      host_ptr = (T*)ParentHost_ptr +  allignOffset*sizeof(uint);
+      //Dont forget to add the allignment values      
+      //The following line has a bug, it first casts and then adds offset*sizeof ELEMENTS
+      //host_ptr = (T*)ParentHost_ptr +  allignOffset*sizeof(uint); 
+      //This line correctly increases the memory location with number of bytes before casting
+      host_ptr = (T*) ((char*)ParentHost_ptr +  allignOffset*sizeof(uint));
 
       hDeviceMem   = cudaMem + offset*sizeof(uint) + allignOffset*sizeof(uint);
       DeviceMemPtr = (void*)(size_t)(hDeviceMem);
@@ -707,7 +735,7 @@ namespace my_dev {
 
     void ccalloc(int n, bool pinned = false, int flags = 0) {
       assert(context_flag);
-     // assert(!hDeviceMem_flag);
+//       assert(!hDeviceMem_flag);
       
       this->pinned_mem = pinned;      
       this->flags = flags;
@@ -731,6 +759,9 @@ namespace my_dev {
 //      h2d();
       hDeviceMem_flag = true;
     }
+    
+    
+    #if 0
     
 //     void cresize(int n, bool pinned = false)
     //Set reduce to false to not reduce the size, to speed up pinned memory buffers
@@ -792,6 +823,75 @@ namespace my_dev {
 
 //       h2d();    //Move data to the device again
     }
+    #endif
+    
+//     void cresize(int n, bool pinned = false)
+    //Set reduce to false to not reduce the size, to speed up pinned memory buffers
+    void cresize(int n, bool reduce = true)     
+    {
+      if(size == n)     //No need if we are already at the correct size
+        return;
+      
+      if(size > n && reduce == false) //Do not make the memory size smaller
+      {
+        return;
+      }
+      
+//       d2h();    //Get datafrom the device
+   
+      if(pinned_mem)
+      {
+        //No realloc function so do it by hand
+        T *tmp_ptr;            
+        CU_SAFE_CALL(cuMemAllocHost((void**)&tmp_ptr, n*sizeof(T)));        
+        //Copy old content to newly allocated mem
+        int tmpSize = min(size,n);
+               
+        //Copy the old data to the new pointer and free the old location
+        memcpy (((void*) tmp_ptr), ((void*) host_ptr), tmpSize*sizeof(T)); 
+        CU_SAFE_CALL(cuMemFreeHost((void*)host_ptr));
+        host_ptr = tmp_ptr;
+      }
+      else
+      {
+        //Resizes the current array
+        //New size is smaller, don't do anything with the allocated memory                
+        host_ptr = (T*)realloc(host_ptr, n*sizeof(T));
+      }
+      
+      //This version compared to the commented out one above, first allocates
+      //new memory and then copies the old one in the new one and free's the old one
+      CUdeviceptr hDeviceMemNew;
+      CU_SAFE_CALL(cuMemAlloc(&hDeviceMemNew, n*sizeof(T)));      
+      increaseMemUsage(n*sizeof(T));    
+      int nToCopy = min(size, n); //Do not copy more than we have memory
+      CU_SAFE_CALL(cuMemcpyDtoD(hDeviceMemNew, hDeviceMem, nToCopy*sizeof(T)));
+      //Now free the old memory
+      CU_SAFE_CALL(cuMemFree(hDeviceMem));
+      decreaseMemUsage(size*sizeof(T));   
+      hDeviceMem = hDeviceMemNew;
+      DeviceMemPtr = (void*)(size_t)hDeviceMem;    
+      size = n;
+      
+      //Rebind the textures
+      for(unsigned int i = 0; i < textures.size(); i++)
+      { 
+        //Sometimes textures are only bound to a part of the total memory
+        //So check this
+        if(textures[i].texOffset < 0)
+        {
+          CU_SAFE_CALL(cuTexRefSetAddress(0, textures[i].texture, hDeviceMem, n*sizeof(T)));   
+        }
+        else
+        {
+          CUdeviceptr tempDeviceMemPtr = (CUdeviceptr) a(textures[i].texOffset);
+          CU_SAFE_CALL(cuTexRefSetAddress(0, textures[i].texture, tempDeviceMemPtr, sizeof(T)*textures[i].texSize));             
+        }        
+      }      
+
+//       h2d();    //Move data to the device again
+    }
+    
 
             
     
@@ -856,6 +956,9 @@ namespace my_dev {
     void d2h(int number, bool OCL_BLOCKING = true, CUstream stream = 0)   {      
       assert(context_flag);
       assert(hDeviceMem_flag);
+      
+      if(number == 0) return;
+      
       assert(size > 0);
       
       if(OCL_BLOCKING)
@@ -888,6 +991,28 @@ namespace my_dev {
         CU_SAFE_CALL(cuMemcpyHtoDAsync(hDeviceMem, host_ptr, size*sizeof(T), stream));          
       }        
     }
+    
+    //D2h that only copies a certain number of items to the host
+    void h2d(int number, bool OCL_BLOCKING = true, CUstream stream = 0)   {      
+      assert(context_flag);
+      assert(hDeviceMem_flag);
+      assert(size > 0);
+      
+      if(number == 0) return;
+      
+      if(OCL_BLOCKING)
+      {
+        CU_SAFE_CALL(cuMemcpyHtoD(hDeviceMem, &host_ptr[0], number*sizeof(T)));
+      }
+      else
+      {
+        //Async copy, ONLY works for page-locked memory therefore default parameter
+        //is blocking.
+        assert(pinned_mem);
+        CU_SAFE_CALL(cuMemcpyHtoDAsync(hDeviceMem, host_ptr, number*sizeof(T), stream));             
+      }      
+    }        
+    
     
     //JB: Modified this so that it copies a device buffer to an other device
     //buffer, and the host buffer to the other host buffer
@@ -1301,7 +1426,7 @@ namespace my_dev {
         {
           //Get the offsetted memory location
           //Fail if mem_size is not set!
-          assert(mem_size > 0);
+          assert(mem_size >= 0);
           CUdeviceptr tempDeviceMemPtr = (CUdeviceptr) memobj.a(offset);
           CU_SAFE_CALL(cuTexRefSetAddress(0, cu_texref, tempDeviceMemPtr, sizeof(T)*mem_size));
 //           CU_SAFE_CALL(cuTexRefSetAddress(0, cu_texref, memobj.d(), sizeof(T)*mem_size));   
@@ -1330,7 +1455,7 @@ namespace my_dev {
         kernelArguments[arg].texSize   = mem_size;
         
         //Check for the texture offset and texture size, if they are both set
-        if(kernelArguments[arg].texOffset >= 0) assert(kernelArguments[arg].texSize > 0);
+        if(kernelArguments[arg].texOffset >= 0) assert(kernelArguments[arg].texSize >= 0);
         
         if(kernelArguments[arg].texOffset < 0)
         {
@@ -1430,7 +1555,7 @@ namespace my_dev {
      
       //TODO put this in a define sequence so we can compile it with and without debug
 //       printf("Waiting on kernel: %s to finish...", hKernelName);
-      CU_SAFE_CALL(cuCtxSynchronize());      
+//       CU_SAFE_CALL(cuCtxSynchronize());      
 //       printf("finished \n");
       
     }
@@ -1459,7 +1584,7 @@ namespace my_dev {
 //       cuFuncSetCacheConfig(hKernel, CU_FUNC_CACHE_PREFER_L1);
       //TODO put this in a define sequence so we can compile it with and without debug
 //       fprintf(stderr,"Waiting on kernel: %s to finish...", hKernelName);
-      CU_SAFE_CALL_KERNEL(cuCtxSynchronize(), hKernelName);   
+//       CU_SAFE_CALL_KERNEL(cuCtxSynchronize(), hKernelName);   
 //       fprintf(stderr,"finished \n");
 
     }

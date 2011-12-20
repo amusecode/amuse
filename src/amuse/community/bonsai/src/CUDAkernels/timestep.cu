@@ -644,16 +644,6 @@ extern "C"  __global__  void distanceCheck(const int n_bodies,
     out[partID*2+0]  = curPos;                                                                                                                              
     out[partID*2+1]  = vel[idx];                                                                                                                            
   }                                                                                                                                                         
-                                                                                                                                                            
-/*                                                                                                                                                          
-  real4 curPos = pos[idx];                                                                                                                                  
-  if(curPos.w > 0.3)                                                                                                                                        
-  {                                                                                                                                                         
-    int index = atomicInc((unsigned int*)&out[0].x, 1);                                                                                                     
-                                                                                                                                                            
-    curPos.w = ids[idx];                                                                                                                                    
-    out[index+1] = curPos;                                                                                                                                  
-  }                                                                                                                                                         
-*/                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                  
 }     
 

@@ -1,16 +1,19 @@
 #include "support_kernels.cu"
 #include <stdio.h>
 
-// #define LMEM_STACK_SIZE 512
-#define LMEM_STACK_SIZE 2048
-#define ACCS(i) (i % LMEM_STACK_SIZE)
+template<int SHIFT>
+__forceinline__ __device__ int ACCS(const int i)
+{
+  return (i & ((LMEM_STACK_SIZE << SHIFT) - 1))*blockDim.x + threadIdx.x;
+}
+
 
 #define BTEST(x) (-(int)(x))
 
-texture<float4, 1, cudaReadModeElementType> texNodeSize; 
-texture<float4, 1, cudaReadModeElementType> texNodeCenter; 
-texture<float4, 1, cudaReadModeElementType> texMultipole; 
-texture<float4, 1, cudaReadModeElementType> texBody; 
+texture<float4, 1, cudaReadModeElementType> texNodeSize;
+texture<float4, 1, cudaReadModeElementType> texNodeCenter;
+texture<float4, 1, cudaReadModeElementType> texMultipole;
+texture<float4, 1, cudaReadModeElementType> texBody;
 
 template<class T>
  struct ADDOP {
@@ -153,37 +156,42 @@ __device__ T inclusive_scan_array(volatile T *ptr_global, const int N, const uns
 #ifdef INDSOFT
 __device__ float4 get_D04(float ds2, float epsP, float epsQ) {
 
-
   float eps = fmaxf(epsP, epsQ);
-
-  float dist   = sqrt(ds2);
-
   float epseff = epsP + epsQ;
   float ids, ids2, ids3;
 
-  if(dist >= epseff)
+  if(ds2 >= (epseff*epseff))
   {
-     ids  = 1./dist;
+     ids  = rsqrtf(ds2);
+     //if(isnan(ids)) ids = 0; not needed if we use non-zero softening
      ids3 = ids*ids*ids;
   }
   else
   {
-    float epseffi = 1./epseff;
+    //these two lines are faster than a real sqrt
+    float dist = ds2*rsqrtf(ds2); //Gives NaN is ds is 0
+    if(isnan(dist)) dist = 0.f;
+    //float    dist = sqrtf(ds2); //Slower than the two lines above
+    //assert(!isnan(dist));
+
+    float epseffi = 1.f/epseff;
     float rhinv   = dist*epseffi;
 
-    if(rhinv < 0.5)
+
+    if(rhinv < 0.5f)
     {
-      ids3  = 4./3. + (rhinv*rhinv)*(4.*rhinv-4.8);
-      ids   = 1.4 - (rhinv*rhinv)*(8./3.+(rhinv*rhinv)*(3.2*rhinv-4.8));
+      ids3  = 4.f/3.f + (rhinv*rhinv)*(4.f*rhinv-4.8f);
+      ids   = 1.4f - (rhinv*rhinv)*(8.f/3.f+(rhinv*rhinv)*(3.2f*rhinv-4.8f));
     }
     else
     {
-      ids3 = 8./3.-6.*rhinv+4.8*(rhinv*rhinv)-4./3.*(rhinv*rhinv*rhinv)-1./120./(rhinv*rhinv*rhinv);
-      ids  = 1.6-1/(30.*rhinv)-(rhinv*rhinv)*(16./3.+rhinv*(-8.+rhinv*(4.8-rhinv*16./15.)));
+      ids3 = 8.f/3.f-6.f*rhinv+4.8f*(rhinv*rhinv)-4.f/3.f*(rhinv*rhinv*rhinv)-1.f/120.f/(rhinv*rhinv*rhinv);
+      ids  = 1.6f-1/(30.f*rhinv)-(rhinv*rhinv)*(16.f/3.f+rhinv*(-8.f+rhinv*(4.8f-rhinv*16.f/15.f)));
     }//end if rhin < 0.5
 
-    ids  = ids*2*epseffi;
-    ids3 =  ids3*8*(epseffi*epseffi*epseffi);
+    ids  = ids*2.0f*epseffi;
+    ids3 =  ids3*8.0f*(epseffi*epseffi*epseffi);
+
   } //end dist >= epseff
 
   ids2 = ids*ids;
@@ -196,7 +204,8 @@ __device__ float4 get_D04(float ds2, float epsP, float epsQ) {
 
 __device__ float4 get_D04(float ds2) {
 #if 1
-  float ids  = rsqrtf(ds2);
+  float ids  = rsqrtf(ds2);  //Does not work with zero-softening
+  //   if(isnan(ids)) ids = 0;               //This does work with zero-softening, few percent performance drop
 #else
   const float ids = (ds2 > 0.0f) ? rsqrtf(ds2) : 0.0f;
 #endif
@@ -236,7 +245,7 @@ __device__ float4 add_acc(float4 acc,  float4 pos,
   float  D0  = D04.x*massj;
   float  D1  = D04.y*massj;
 
-  acc.w -= D0;  
+  acc.w -= D0;
   acc.x += D1*dr.x;
   acc.y += D1*dr.y;
   acc.z += D1*dr.z;
@@ -305,13 +314,13 @@ __device__ float4 add_acc(float4 acc, float4 pos,
 #endif
 {
   //Compute the distance between the group and the cell
-  float3 dr = {fabsf(groupCenter.x - nodeCenter.x) - (groupSize.x + nodeSize.x),
-               fabsf(groupCenter.y - nodeCenter.y) - (groupSize.y + nodeSize.y),
-               fabsf(groupCenter.z - nodeCenter.z) - (groupSize.z + nodeSize.z)};
+  float3 dr = {fabs(groupCenter.x - nodeCenter.x) - (groupSize.x + nodeSize.x),
+               fabs(groupCenter.y - nodeCenter.y) - (groupSize.y + nodeSize.y),
+               fabs(groupCenter.z - nodeCenter.z) - (groupSize.z + nodeSize.z)};
 
-  dr.x += fabsf(dr.x); dr.x *= 0.5f;
-  dr.y += fabsf(dr.y); dr.y *= 0.5f;
-  dr.z += fabsf(dr.z); dr.z *= 0.5f;
+  dr.x += fabs(dr.x); dr.x *= 0.5f;
+  dr.y += fabs(dr.y); dr.y *= 0.5f;
+  dr.z += fabs(dr.z); dr.z *= 0.5f;
 
   //Distance squared, no need to do sqrt since opening criteria has been squared
   float ds2    = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z;
@@ -333,13 +342,13 @@ __device__ bool split_node_grav_impbh(float4 nodeCOM, float4 groupCenter, float4
 #endif
 {
   //Compute the distance between the group and the cell
-  float3 dr = {fabsf(groupCenter.x - nodeCOM.x) - (groupSize.x),
-               fabsf(groupCenter.y - nodeCOM.y) - (groupSize.y),
-               fabsf(groupCenter.z - nodeCOM.z) - (groupSize.z)};
+  float3 dr = {fabs(groupCenter.x - nodeCOM.x) - (groupSize.x),
+               fabs(groupCenter.y - nodeCOM.y) - (groupSize.y),
+               fabs(groupCenter.z - nodeCOM.z) - (groupSize.z)};
 
-  dr.x += fabsf(dr.x); dr.x *= 0.5f;
-  dr.y += fabsf(dr.y); dr.y *= 0.5f;
-  dr.z += fabsf(dr.z); dr.z *= 0.5f;
+  dr.x += fabs(dr.x); dr.x *= 0.5f;
+  dr.y += fabs(dr.y); dr.y *= 0.5f;
+  dr.z += fabs(dr.z); dr.z *= 0.5f;
 
   //Distance squared, no need to do sqrt since opening criteria has been squared
   float ds2    = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z;
@@ -363,15 +372,13 @@ return make_float4(v.x, v.y, v.z, v.w);
 #define DOGRAV
 
 
-template<int DIM2>
+template<int DIM2, int SHIFT>
 __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 				      int tid, int tx, int ty,
 				      int body_i, float4 pos_i,
 				      real4 group_pos,
-                                      float4 corner2, //TODO can be removed
-                                      float inv_theta, float eps2,
+                                      float eps2,
                                       uint2 node_begend,
-                                   //   uint4 *node_data_list,
                                       real4 *multipole_data,
                                       real4 *body_pos,
 				      int *shmem,
@@ -383,15 +390,12 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 				      volatile float4 *boxCenterInfo,
                                       float group_eps,
                                       real4 *body_vel) {
-//   const int DIM2x = 4;
-//   const int DIM2y = 2;
-//   const int DIM2  = DIM2x + DIM2y;
+
 
   float4 acc_i = {0.0f, 0.0f, 0.0f, 0.0f};
   ngb = -1;
   float ds2_min = 1.0e10f;
 
-  float massTEST = 0;
 
   /*********** set necessary thread constants **********/
 
@@ -427,11 +431,8 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 
   #ifdef INDSOFT
     //This works with shmem of dimx15
-    float *sh_eps     = (float* )&sh_jid    [DIM];     //JB Partially overwrites the prefix part
+    float *sh_eps     = (float* )&sh_jid    [DIM];  //JB Partially overwrites the prefix part
     float  *node_eps  = (float*) &approx[ 2*DIM];   //JB 11*DIM, 14*DIM,  3*DIM
-
-  //   float *sh_eps   = (float*)&shmem [15*DIM];
-  //   float *node_eps = (float*)&shmem [15*DIM];
   #endif
 
 
@@ -450,7 +451,7 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
     int n_stack0 = 0;
     int n_stack_pre = 0;
 
-    { nstack[ACCS(n_stack0)] = root_node + tid;   n_stack0++; }
+    { nstack[ACCS<SHIFT>(n_stack0)] = root_node + tid;   n_stack0++; }
 
     /*********** walk each level **********/
     while (n_nodes0 > 0) {
@@ -467,23 +468,22 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 	/***
 	**** --> fetch the list of nodes rom LMEM
 	***/
-	bool use_node = tid <  n_nodes0;
- 	{ prefix[tid] = nstack[ACCS(c_stack0)];   c_stack0++; }
+	bool use_node = tid <  n_nodes0; 	
+        { prefix[tid] = nstack[ACCS<SHIFT>(c_stack0)];   c_stack0++; }
 	__syncthreads();
 	int node  = prefix[min(tid, n_nodes0 - 1)];
-	n_nodes0 -= DIM;
+
+        if(n_nodes0 > 0){//Work around pre CUDA 4.1 compiler bug
+                n_nodes0 -= DIM;
+        }
 
 	/***
 	**** --> process each of the nodes in the list in parallel
 	***/
-/*	uint4  node_data  = node_data_list[node];
-	uint2  node_key   = {node_data.x, node_data.y};                    // calculating node's parameters
-	float  node_size  = __int_as_float(node_data.z);                   // size of the node
- 	float4 node_pos   = get_pos(node_key, fabsf(node_size), corner);   // pos & size of the node*/
 
         #ifndef TEXTURES
           float4 nodeSize = get_float4(boxSizeInfo[node]);                   //Fetch the size of the box. Size.w = child info
-          float4 node_pos = get_float4(boxCenterInfo[node]);                 //Fetch the center of the box. center.w = opening info     
+          float4 node_pos = get_float4(boxCenterInfo[node]);                 //Fetch the center of the box. center.w = opening info
         #else
           float4 nodeSize =  tex1Dfetch(texNodeSize, node);
           float4 node_pos =  tex1Dfetch(texNodeCenter, node);
@@ -526,6 +526,14 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
         int child    =    node_data & 0x0FFFFFFF;                         //Index to the first child of the node
         int nchild   = (((node_data & 0xF0000000) >> 28)) & mask;         //The number of children this node has
 
+
+
+        //If there is a discrepancy between the device and the host in determining if 
+        //a node should be used on a remote process than the first child of the node is set
+        //to zero. Since this can not be correct it indicates a difference between host and device
+        //we work around this by setting split to false. This has minor impact on the accuracy but 
+        //prevents more serious / incorrect results by walking the tree multiple times
+        if((((split && !leaf) && use_node)) && child == 0) split = false;
 
   	/***
 	**** --> calculate prefix
@@ -576,8 +584,13 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
         /*** if half of shared memory or more is filled with the the nodes, dump these into slowmem stack ***/
 	while(n_offset >= DIM) {
 	  n_offset -= DIM;
-	  nstack[ACCS(n_stack1)] = nodes[n_offset + tid];   n_stack1++;
+	  nstack[ACCS<SHIFT>(n_stack1)] = nodes[n_offset + tid];   n_stack1++;
 	  n_nodes1 += DIM;
+          if((n_stack1 - c_stack0) >= (LMEM_STACK_SIZE << SHIFT))
+          {
+            //We overwrote our current stack
+            apprCount = -1; return acc_i;        
+          }
 	}
 	__syncthreads();
 
@@ -636,7 +649,6 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
           {
             apprCount++;
 #ifdef DOGRAV
-            massTEST += node_mon0[offs + i];
             #ifdef INDSOFT
               acc_i = add_acc(acc_i, pos_i,
                               node_mon0[offs + i], node_mon1[offs + i],
@@ -764,7 +776,6 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 	      //if (body_i != sh_jid[offs + j]) {
 		float ds2 = 1.0e10f;
                 direCount++;
-                massTEST += sh_mass[offs + j];
 #ifdef DOGRAV
                 #ifdef INDSOFT
                   acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], sh_eps[offs + j], ds2, eps2);
@@ -796,10 +807,16 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 
 
       n_nodes1 += n_offset;
-      if (n_offset > 0)
-	{ nstack[ACCS(n_stack1)] = nodes[tid];   n_stack1++; }
-      __syncthreads();
+      if (n_offset > 0){ 
+        nstack[ACCS<SHIFT>(n_stack1)] = nodes[tid];   n_stack1++; 
 
+        if((n_stack1 - c_stack0) >= (LMEM_STACK_SIZE << SHIFT))
+        {
+          //We overwrote our current stack
+          apprCount = -1; return acc_i;  
+        }
+      }
+      __syncthreads();
 
 
       /***
@@ -852,12 +869,14 @@ if(n_approx > 0)
       node_eps[tid]  = 0.01f;
     #endif
   }
+
   __syncthreads();
+
 #pragma unroll
   for (int i = 0; i < DIMx; i++)
   {
-    apprCount++;
-    massTEST += node_mon0[offs + i];
+//     if(node_mon0[offs + i] > 0.0f)
+      apprCount++;
 #ifdef DOGRAV
     #ifdef INDSOFT
       acc_i = add_acc(acc_i, pos_i,
@@ -906,7 +925,6 @@ if(n_direct > 0)
     if ((sh_jid[offs + j] >= 0)) {
       float ds2 = 1.0e10f;
       direCount++;
-      massTEST += sh_mass[offs + j];
 #ifdef DOGRAV
       #ifdef INDSOFT
         acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], sh_eps[offs + j], ds2, eps2);
@@ -922,9 +940,6 @@ if(n_direct > 0)
   }
   __syncthreads();
 }
-
-
-//   acc_i.w = massTEST;
 
   /***
   **** --> reduce data between threads
@@ -955,6 +970,7 @@ if(n_direct > 0)
   //Sum the interaction counters
   sh_ds2[tid] = direCount;
   sh_ngb[tid] = apprCount;
+
   __syncthreads();
 
 
@@ -973,8 +989,7 @@ if(n_direct > 0)
 }
 
 extern "C" __global__ void dev_approximate_gravity(const int n_active_groups,
-                                                   float4  corner,
-                                                   float inv_theta,
+                                                   int   n_bodies,
                                                    float eps2,
                                                    uint2 node_begend,
                                                    int    *active_groups,
@@ -989,128 +1004,168 @@ extern "C" __global__ void dev_approximate_gravity(const int n_active_groups,
                                                    float4  *boxCenterInfo,
                                                    float4  *groupCenterInfo,
                                                    real4   *body_vel,   //Of remote particles
-                                                   int     *group_list,
                                                    float4  *localbody,
-                                                   float4  *localvel) {
+                                                   float4  *localvel,
+                                                   int     *MEM_BUF) {
 
   const int blockDim2 = NTHREAD2;
 
 
    __shared__ int shmem[15*(1 << blockDim2)];
-   int             lmem[LMEM_STACK_SIZE];
+//    int             lmem[LMEM_STACK_SIZE];
 
 
   /*********** check if this block is linked to a leaf **********/
 
   int bid = gridDim.x * blockIdx.y + blockIdx.x;
 
-  if (bid >= n_active_groups) return;
+  while(true)
+  {
 
-  int tid = threadIdx.y * blockDim.x + threadIdx.x;
-
-
-  /*********** set necessary thread constants **********/
-  real4 curGroupSize = groupSizeInfo[active_groups[bid]];
-  int   groupData = __float_as_int(curGroupSize.w);
-  uint body_i     =   groupData & CRITMASK;
-  uint nb_i       = ((groupData & INVCMASK) >> CRITBIT) + 1;
-
-  real4 group_pos = groupCenterInfo[active_groups[bid]];
-
-//   printf("[%f %f %f %f ] \n [%f %f %f %f ] %d %d \n", curGroupSize.x, curGroupSize.y, curGroupSize.z, curGroupSize.w,
-//           group_pos.x, group_pos.y, group_pos.z, group_pos.w, body_i, nb_i);
-
-
-  int DIM2x = 0;
-  while (((nb_i - 1) >> DIM2x) > 0) DIM2x++;
-
-  DIM2x = max(DIM2x,4);
-  int DIM2y = blockDim2 - DIM2x;
-
-  int tx = tid & ((1 << DIM2x) - 1);
-  int ty = tid >> DIM2x;
-#ifdef __DEVICE_EMULATION__
-  if (tid == 0)
-    fprintf(stderr, "bid= %d [%d]  DIM= (%d %d) bi= %d nb= %d\n",
-	    bid, n_active_groups,  1 << DIM2x, 1 << DIM2y, body_i, nb_i);
-#endif
-
-  body_i += tx%nb_i;
-
-
-  //float4 pos_i = tex1Dfetch(bodies_pos_ref, body_i);   // texture read: 4 floats
-//   float4 pos_i = body_pos[body_i];
-  float4 pos_i = localbody[body_i];   // <- For LET we use the local body
-
-  int ngb_i;
-
-  float4 acc_i;
-
-  #ifdef INDSOFT
-    eps2 = localvel[body_i].w;   
-    float group_eps = eps2;
-
-    volatile float *reduc = (float*) &shmem[0];
-    reduc[threadIdx.x] = eps2;
-
-    //Find the maximum softening value for the particles in this group
-    __syncthreads();
-    // do reduction in shared mem  
-    if(blockDim.x >= 512) if (tid < 256) {reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 256]);} __syncthreads();
-    if(blockDim.x >= 256) if (tid < 128) {reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 128]);} __syncthreads();
-    if(blockDim.x >= 128) if (tid < 64)  {reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 64]);} __syncthreads();
-    if(blockDim.x >= 64) if (tid < 32) { reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 32]);}
-    if(blockDim.x >= 32) if (tid < 16) { reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 16]);}
-
-    if(tid < 8)
+    if(threadIdx.x == 0)
     {
-      reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 8]);
-      reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 4]);
-      reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 2]);
-      reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 1]);
+      bid         = atomicAdd(&active_inout[n_bodies], 1);
+      shmem[0]    = bid;
     }
     __syncthreads();
 
-    group_eps = reduc[0];
-  #else
-    float group_eps  = 0;
+    bid   = shmem[0];
+
+    if (bid >= n_active_groups) return;
+
+    int tid = threadIdx.y * blockDim.x + threadIdx.x;
+
+    int *lmem = &MEM_BUF[blockIdx.x*LMEM_STACK_SIZE*blockDim.x];
+
+    /*********** set necessary thread constants **********/
+    real4 curGroupSize = groupSizeInfo[active_groups[bid]];
+    int   groupData = __float_as_int(curGroupSize.w);
+    uint body_i     =   groupData & CRITMASK;
+    uint nb_i       = ((groupData & INVCMASK) >> CRITBIT) + 1;
+
+    real4 group_pos = groupCenterInfo[active_groups[bid]];
+
+
+    int DIM2x = 0;
+    while (((nb_i - 1) >> DIM2x) > 0) DIM2x++;
+
+    DIM2x = max(DIM2x,4);
+    int DIM2y = blockDim2 - DIM2x;
+
+    int tx = tid & ((1 << DIM2x) - 1);
+    int ty = tid >> DIM2x;
+  #ifdef __DEVICE_EMULATION__
+    if (tid == 0)
+      fprintf(stderr, "bid= %d [%d]  DIM= (%d %d) bi= %d nb= %d\n",
+              bid, n_active_groups,  1 << DIM2x, 1 << DIM2y, body_i, nb_i);
   #endif
 
-
-  int apprCount = 0;
-  int direCount = 0;
-
-  acc_i = approximate_gravity<blockDim2>(DIM2x, DIM2y, tid, tx, ty,
-						body_i, pos_i, group_pos, corner,
-                                                inv_theta, eps2, node_begend,
-                                                multipole_data, body_pos,
-                                                shmem, lmem, ngb_i, apprCount, direCount, boxSizeInfo, curGroupSize, boxCenterInfo,
-                                                group_eps, body_vel);
+    body_i += tx%nb_i;
 
 
- if (tid < nb_i) {
-//     acc_out     [body_i] = acc_i;
+    //float4 pos_i = tex1Dfetch(bodies_pos_ref, body_i);   // texture read: 4 floats
+  //   float4 pos_i = body_pos[body_i];
+    float4 pos_i = localbody[body_i];   // <- For LET we use the local body
 
-//This is changed in the LET version, we do a summation and
-//should change some other things, TODO, like neighbour and active particle
-  acc_out     [body_i].x += acc_i.x;
-  acc_out     [body_i].y += acc_i.y;
-  acc_out     [body_i].z += acc_i.z;
-  acc_out     [body_i].w += acc_i.w;
-//   acc_out     [body_i].w = acc_i.w;
+    int ngb_i;
 
-// if(body_i == 0){
-//   printf("Final res in LET: %f\t%f\t%f\t%f\n", acc_i.x,acc_i.y,acc_i.z,acc_i.w);
-//   acc_out     [body_i].x = acc_i.x;
-//   acc_out     [body_i].y = acc_i.y;
-//   acc_out     [body_i].z = acc_i.z;
-//   acc_out     [body_i].w = acc_i.w;
-// // }
+    float4 acc_i;
 
-  ngb_out     [body_i] = ngb_i;
-  active_inout[body_i] = 1;
-  interactions[body_i].x = apprCount;
-  interactions[body_i].y = direCount ;
-  }
+    #ifdef INDSOFT
+      eps2 = localvel[body_i].w;
+      float group_eps = eps2;
+
+      volatile float *reduc = (float*) &shmem[0];
+      reduc[threadIdx.x] = eps2;
+
+      //Find the maximum softening value for the particles in this group
+      __syncthreads();
+      // do reduction in shared mem
+      if(blockDim.x >= 512) if (tid < 256) {reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 256]);} __syncthreads();
+      if(blockDim.x >= 256) if (tid < 128) {reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 128]);} __syncthreads();
+      if(blockDim.x >= 128) if (tid < 64)  {reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 64]);} __syncthreads();
+      if(blockDim.x >= 64) if (tid < 32) { reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 32]);}
+      if(blockDim.x >= 32) if (tid < 16) { reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 16]);}
+
+      if(tid < 8)
+      {
+        reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 8]);
+        reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 4]);
+        reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 2]);
+        reduc[threadIdx.x] = group_eps = fmaxf(group_eps, reduc[threadIdx.x + 1]);
+      }
+      __syncthreads();
+
+      group_eps = reduc[0];
+    #else
+      float group_eps  = 0;
+    #endif
+
+
+    int apprCount = 0;
+    int direCount = 0;
+    acc_i = approximate_gravity<blockDim2, 0>(DIM2x, DIM2y, tid, tx, ty,
+                                                  body_i, pos_i, group_pos,
+                                                  eps2, node_begend,
+                                                  multipole_data, body_pos,
+                                                  shmem, lmem, ngb_i, apprCount, direCount, boxSizeInfo, curGroupSize, boxCenterInfo,
+                                                  group_eps, body_vel);
+
+    if(apprCount < 0)
+    {
+
+      //Try to get access to the big stack, only one block per time is allowed
+      if(threadIdx.x == 0)
+      {
+        int res = atomicExch(&active_inout[n_bodies+1], 1); //If the old value (res) is 0 we can go otherwise sleep
+        int waitCounter  = 0;
+        while(res != 0)
+        {
+            //Sleep
+            for(int i=0; i < (1024); i++)
+            {
+                    waitCounter += 1;
+            }
+            //Test again
+            shmem[0] = waitCounter;
+            res = atomicExch(&active_inout[n_bodies+1], 1); 
+        }
+
+      }
+
+      __syncthreads();
+
+      lmem = &MEM_BUF[gridDim.x*LMEM_STACK_SIZE*blockDim.x];    //Use the extra large buffer
+      apprCount = direCount = 0;
+      acc_i = approximate_gravity<blockDim2, 8>( DIM2x, DIM2y, tid, tx, ty,
+                                              body_i, pos_i, group_pos,
+                                              eps2, node_begend,
+                                              multipole_data, body_pos,
+                                              shmem, lmem, ngb_i, apprCount, direCount, boxSizeInfo, curGroupSize, boxCenterInfo,
+                                              group_eps, body_vel);
+
+      lmem = &MEM_BUF[blockIdx.x*LMEM_STACK_SIZE*blockDim.x]; //Back to normal location
+
+      if(threadIdx.x == 0)
+      {
+              atomicExch(&active_inout[n_bodies+1], 0); //Release the lock
+      }
+    }//end if apprCount < 0
+
+
+    if (tid < nb_i) {
+    
+      acc_out     [body_i].x += acc_i.x;
+      acc_out     [body_i].y += acc_i.y;
+      acc_out     [body_i].z += acc_i.z;
+      acc_out     [body_i].w += acc_i.w;
+
+
+      ngb_out     [body_i] = ngb_i;
+      active_inout[body_i] = 1;
+      interactions[body_i].x = apprCount;
+      interactions[body_i].y = direCount ;
+    }
+  } //end while
 }
 

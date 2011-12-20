@@ -1,6 +1,16 @@
 #define IMPBH   //Improved barnes hut opening method
 //#define INDSOFT //Individual softening using cubic spline kernel
 
+//Tree-walk and stack configuration
+//#define LMEM_STACK_SIZE            3072         //Number of storage places PER thread, MUST be power 2 !!!!
+//#define LMEM_STACK_SIZE            2048         //Number of storage places PER thread, MUST be power 2 !!!!
+#define LMEM_STACK_SIZE            1024         //Number of storage places PER thread, MUST be power 2 !!!!
+//#define LMEM_STACK_SIZE            512         //Number of storage places PER thread, MUST be power 2 !!!!
+#define TREE_WALK_BLOCKS_PER_SM    8           //Number of GPU thread-blocks used for tree-walk
+                                                //this is per SM, 8 is ok for Fermi architecture, 16 is save side
+
+#define TEXTURE_BOUNDARY  512   //Fermi architecture boundary for textures
+
 #define MAXLEVELS 30
 
 

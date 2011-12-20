@@ -30,8 +30,8 @@ extern "C" __global__ void dataReorderF2(const int n_particles,
   int idx = bid * dim + tid;
   if (idx >= n_particles) return;
 
-   int newIndex = permutation[idx];
-   destination[idx] = source[newIndex];  
+  int newIndex = permutation[idx];
+  destination[idx] = source[newIndex];  
 }
 
 extern "C" __global__ void dataReorderI1(const int n_particles,

@@ -1,3 +1,22 @@
+/*
+
+Bonsai V2: A parallel GPU N-body gravitational Tree-code
+
+By:
+Jeroen Bedorf
+Evghenii Gaburov
+Simon Portegies Zwart
+
+Leiden Observatory, Leiden University
+
+www.castle.strw.leidenuniv.nl
+
+
+
+*/
+
+
+
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
@@ -110,6 +129,128 @@ void read_dumbp_file_parallel(vector<real4> &bodyPositions, vector<real4> &bodyV
   bodyPositions.resize(bodyPositions.size()-1);  
   NTotal2 = particleCount-1;
   
+  cerr << "NTotal: " << NTotal << "\tper proc: " << perProc << "\tFor ourself:" << bodiesIDs.size() << endl;
+}
+
+
+void read_tipsy_file_parallel(vector<real4> &bodyPositions, vector<real4> &bodyVelocities,  vector<int> &bodiesIDs,  float eps2,
+                     string fileName, int rank, int procs, int &NTotal2, int &NFirst, int &NSecond, int &NThird, octree *tree)  
+{
+  //Process 0 does the file reading and sends the data
+  //to the other processes
+  
+  //Now we have different types of files, try to determine which one is used
+  /*****
+  If individual softening is on there is only one option:
+  Header is formatted as follows: 
+  N     #       #       #
+  so read the first number and compute how particles should be distributed
+  
+  If individual softening is NOT enabled, i can be anything, but for ease I assume standard dumbp files:
+  no Header
+  ID mass x y z vx vy vz
+  now the next step is risky, we assume mass adds up to 1, so number of particles will be : 1 / mass
+  use this as initial particle distribution
+  
+  */
+  
+  
+  char fullFileName[256];
+  sprintf(fullFileName, "%s", fileName.c_str());
+
+  cout << "Trying to read file: " << fullFileName << endl;
+  
+  
+  
+  ifstream inputFile(fullFileName, ios::in | ios::binary);
+  if(!inputFile.is_open())
+  {
+    cout << "Can't open input file \n";
+    exit(0);
+  }
+  
+  dump  h;
+  inputFile.read((char*)&h, sizeof(h));  
+
+  int NTotal;
+  int idummy;
+  real4 positions;
+  real4 velocity;
+
+     
+  //Read tipsy header  
+  NTotal        = h.nbodies;
+  NFirst        = h.ndark;
+  NSecond       = h.nstar;
+  NThird        = h.nsph;
+  
+  //Rough divide
+  uint perProc = NTotal / procs;
+  bodyPositions.reserve(perProc+10);
+  bodyVelocities.reserve(perProc+10);
+  bodiesIDs.reserve(perProc+10);
+  perProc -= 1;
+
+  //Start reading
+  int particleCount = 0;
+  int procCntr = 1;
+  
+  dark_particle d;
+  star_particle s;
+
+  for(int i=0; i < NTotal; i++)
+  {
+    if(i < NFirst)
+    {
+      inputFile.read((char*)&d, sizeof(d));
+      velocity.w        = d.eps;
+      positions.w       = d.mass;
+      positions.x       = d.pos[0];
+      positions.y       = d.pos[1];
+      positions.z       = d.pos[2];
+      velocity.x        = d.vel[0];
+      velocity.y        = d.vel[1];
+      velocity.z        = d.vel[2];
+      idummy            = d.phi;
+    }
+    else
+    {
+      inputFile.read((char*)&s, sizeof(s));
+      velocity.w        = s.eps;
+      positions.w       = s.mass;
+      positions.x       = s.pos[0];
+      positions.y       = s.pos[1];
+      positions.z       = s.pos[2];
+      velocity.x        = s.vel[0];
+      velocity.y        = s.vel[1];
+      velocity.z        = s.vel[2];
+      idummy            = s.phi;
+    }
+    
+    bodyPositions.push_back(positions);
+    bodyVelocities.push_back(velocity);
+    bodiesIDs.push_back(idummy);  
+    
+    particleCount++;
+  
+  
+    if(bodyPositions.size() > perProc && procCntr != procs)
+    { 
+      tree->ICSend(procCntr,  &bodyPositions[0], &bodyVelocities[0],  &bodiesIDs[0], bodyPositions.size());
+      procCntr++;
+      
+      bodyPositions.clear();
+      bodyVelocities.clear();
+      bodiesIDs.clear();
+    }
+  }//end while
+  
+  inputFile.close();
+  
+  //Clear the last one since its double
+//   bodyPositions.resize(bodyPositions.size()-1);  
+//   NTotal2 = particleCount-1;
+  NTotal2 = particleCount;
   cerr << "NTotal: " << NTotal << "\tper proc: " << perProc << "\tFor ourself:" << bodiesIDs.size() << endl;
 }
 
@@ -253,13 +394,10 @@ void read_dumbp_bd_file(vector<real4> &bodyPositions, vector<real4> &bodyVelocit
         >> positions.w >> positions.x >> positions.y >> positions.z
         >> velocity.x >> velocity.y >> velocity.z >> velocity.w;
 
-    //cout << cntr << "\t" <<  positions.w << "\t" << velocity.z << endl;
-
     velocity.w = sqrt(eps2);
-//     velocity.w = 0.0005;
+
     bodyPositions.push_back(positions);
     bodyVelocities.push_back(velocity);
-//    bodiesIDs.push_back(idummy);
     bodiesIDs.push_back(cntr++);
   }
 
@@ -446,8 +584,7 @@ int main(int argc, char** argv)
   NTotal = NFirst = NSecond = NThird = 0;
 
   //Creat the octree class and set the properties
-//   octree *tree = new octree(devID, theta, eps, snapshotFile, snapshotIter, timeStep, tEnd);      //device, theta, eps
-  octree *tree = new octree(devID, theta, eps, snapshotFile, snapshotIter,  timeStep, tEnd, killDistance, remoDistance, snapShotAdd);
+  octree *tree = new octree(argv, devID, theta, eps, snapshotFile, snapshotIter,  timeStep, tEnd, killDistance, (int)remoDistance, snapShotAdd);
                             
                             
   //Get parallel processing information  
@@ -468,7 +605,7 @@ int main(int argc, char** argv)
     logFileName.append("-");
     
     char buff[16];
-    sprintf(buff,"%d", procId);
+    sprintf(buff,"%d-%d", nProcs, procId);
     logFileName.append(buff);
   }
   
@@ -477,9 +614,14 @@ int main(int argc, char** argv)
   tree->set_context(logFile, false); //Do logging to file and enable timing (false = enabled)
   
   if(procId == 0)
-    read_dumbp_file_parallel(bodyPositions, bodyVelocities, bodyIDs, eps, fileName, procId, nProcs, NTotal, NFirst, NSecond, NThird, tree);
+  {
+//     read_dumbp_file_parallel(bodyPositions, bodyVelocities, bodyIDs, eps, fileName, procId, nProcs, NTotal, NFirst, NSecond, NThird, tree);
+    read_tipsy_file_parallel(bodyPositions, bodyVelocities, bodyIDs, eps, fileName, procId, nProcs, NTotal, NFirst, NSecond, NThird, tree);    
+  }
   else
+  {
     tree->ICRecv(0, bodyPositions, bodyVelocities,  bodyIDs);
+  }
   
   
   //Set the properties of the data set, it only is really used by process 0, which does the 
@@ -501,22 +643,8 @@ int main(int argc, char** argv)
   MPI_Reduce(&mass,&totalMass,1, MPI_DOUBLE, MPI_SUM,0, MPI_COMM_WORLD);
   
   if(procId == 0)   cerr << "Combined Mass: "  << totalMass << "\tNTotal: " << NTotal << std::endl;
-  
-  
-  //Decide what kind of file type to read....
-  //read_snapshot(bodyPositions, bodyVelocities, bodyIDs, eps, fileName);
-//   read_dumbp_file(bodyPositions, bodyVelocities, bodyIDs, eps, fileName);
-//   read_dumbp_bd_file(bodyPositions, bodyVelocities, bodyIDs, eps, fileName);
-  //read_bd_file(bodyPositions, bodyVelocities, eps, fileName);
-  //   read_bd_dumbp_file(bodyPositions, bodyVelocities, bodyIDs, eps, fileName, NTotal, NStars, NGas, NBH);
-  
-//   tree->write_dumbp_snapshot_parallel(&bodyPositions[0], &bodyVelocities[0], &bodyIDs[0], bodyPositions.size(), "test.ascii");
 
-  
-  //Parallel code version
-  //read_dumbp_file(bodyPositions, bodyVelocities, bodyIDs, eps, fileName, procId, nProcs, NTotal, NStars, NGas, NBH);
-  
-  
+  //Domain setup
   tree->createORB();
   
   //First distribute the initial particle distribution
@@ -532,8 +660,8 @@ int main(int argc, char** argv)
     if(tree->procId == 0)
       for(int i = 0;i< tree->nProcs;i++)     
       {      
-        cerr << i << " " << tree->xlow[i].x << " " << tree->xlow[i].y << " " << tree->xlow[i].z << " " 
-           << tree->xhigh[i].x << " " << tree->xhigh[i].y << " " << tree->xhigh[i].z <<endl;
+        cerr << "Domain: " << i << " " << tree->domainRLow[i].x << " " << tree->domainRLow[i].y << " " << tree->domainRLow[i].z << " " 
+                                       << tree->domainRHigh[i].x << " " << tree->domainRHigh[i].y << " " << tree->domainRHigh[i].z <<endl;
       }
   }
 
@@ -591,22 +719,18 @@ int main(int argc, char** argv)
   
 
   //Start construction of the tree
-  tree->sort_bodies(tree->localTree);
+  tree->sort_bodies(tree->localTree, true);
   tree->build(tree->localTree);
   tree->allocateTreePropMemory(tree->localTree);
   tree->compute_properties(tree->localTree);
-
   
   //Start the integration
   tree->iterate();
 
   printf("Finished!!! Took in total: %lg sec\n", tree->get_time()-t0);
-
-  tree->desort_bodies(tree->localTree);
-
+  
   logFile.close();
 
-  //   write_dumbp_file(&tree->localTree.bodies_pos[0], &tree->localTree.bodies_vel[0], tree->localTree.n, "outputFile.txt") ;
   MPI_Finalize();
 
   delete tree;

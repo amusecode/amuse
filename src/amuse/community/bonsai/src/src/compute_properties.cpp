@@ -129,10 +129,6 @@ exit(0);
 
 void octree::compute_properties_double(tree_structure &tree) {
 
-
-//   my_dev::dev_mem<double4> multipoleD(devContext,3*tree.n_nodes);
-
-  
   /*****************************************************          
     Assign the memory buffers, note that we check the size first
     and if needed we increase the size of the generalBuffer1
@@ -147,10 +143,10 @@ void octree::compute_properties_double(tree_structure &tree) {
     
    *****************************************************/
   
-  if(8*tree.n_nodes > 3*tree.n)
+  if(10*tree.n_nodes > 3*tree.n)
   {
     fprintf(stderr, "Resizeing the generalBuffer1 \n");
-    tree.generalBuffer1.cresize(8*tree.n_nodes*4);
+    tree.generalBuffer1.cresize(8*tree.n_nodes*4, false);
   }
   
   my_dev::dev_mem<double4> multipoleD(devContext);
@@ -160,8 +156,6 @@ void octree::compute_properties_double(tree_structure &tree) {
                           tree.generalBuffer1.get_devMem(),
                           &tree.generalBuffer1[0], 0, 
                           3*tree.n_nodes, getAllignmentOffset(0));
-                          
-                          
 
   //Offset is in uint, so: double4 = 8uint*3*n_nodes
   tree.nodeLowerBounds.cmalloc_copy(tree.generalBuffer1.get_pinned(), 
@@ -179,8 +173,7 @@ void octree::compute_properties_double(tree_structure &tree) {
                           8*3*tree.n_nodes + 4*tree.n_nodes, 
                           tree.n_nodes, 
                           prevOffsetSum + getAllignmentOffset(8*3*tree.n_nodes + 4*tree.n_nodes + prevOffsetSum));     
-                          
-  
+       
   
   //Computes the tree-properties (size, cm, monopole, quadropole, etc)
   //start the kernel for the leaf-type nodes
@@ -188,7 +181,6 @@ void octree::compute_properties_double(tree_structure &tree) {
   propsLeafD.set_arg<cl_mem>(1, tree.leafNodeIdx.p());
   propsLeafD.set_arg<cl_mem>(2, tree.node_bodies.p());
   propsLeafD.set_arg<cl_mem>(3, tree.bodies_Ppos.p());  
-//   propsLeafD.set_arg<cl_mem>(3, tree.bodies_pos.p());
   propsLeafD.set_arg<cl_mem>(4, multipoleD.p());
   propsLeafD.set_arg<cl_mem>(5, tree.nodeLowerBounds.p());
   propsLeafD.set_arg<cl_mem>(6, tree.nodeUpperBounds.p());
@@ -196,21 +188,8 @@ void octree::compute_properties_double(tree_structure &tree) {
   
   propsLeafD.setWork(tree.n_leafs, 128);
   printf("PropsLeaf: "); propsLeafD.printWorkSize();
-  propsLeafD.execute();  
-  
-//    multipoleD.d2h();    
-//   for(int i=tree.n_nodes-10; i < tree.n_nodes; i++)
-/*  for(int i=0; i < tree.n_nodes; i++)
-//   for(int i=0; i < 0; i++)
-//  for(int i=0; i < 10; i++)
-  {
-    fprintf(stderr,"%d\t%f\t%f\t%f\t%f\n", i, multipoleD[i*3+0].x, multipoleD[i*3+0].y, multipoleD[i*3+0].z, multipoleD[i*3+0].w);
-    fprintf(stderr,"%d\t%f\t%f\t%f\t%f\n", i, multipoleD[i*3+1].x, multipoleD[i*3+1].y, multipoleD[i*3+1].z, multipoleD[i*3+1].w);
-    fprintf(stderr,"%d\t%f\t%f\t%f\t%f\n", i, multipoleD[i*3+2].x, multipoleD[i*3+2].y, multipoleD[i*3+2].z, multipoleD[i*3+2].w);
-  }  
-  exit(0);
-  */
-  
+  propsLeafD.execute(); 
+   
   
   int temp = tree.n_nodes-tree.n_leafs;
   propsNonLeafD.set_arg<int>(0,    &temp);
@@ -221,7 +200,7 @@ void octree::compute_properties_double(tree_structure &tree) {
   propsNonLeafD.set_arg<cl_mem>(5, tree.nodeLowerBounds.p());
   propsNonLeafD.set_arg<cl_mem>(6, tree.nodeUpperBounds.p());
 
-
+  //Work from the bottom up
   for(int i=tree.n_levels; i >= 1; i--)
   {   
       propsNonLeafD.set_arg<int>(0,    &i);  
@@ -250,7 +229,6 @@ void octree::compute_properties_double(tree_structure &tree) {
   propsScalingD.set_arg<cl_mem>(3, tree.nodeLowerBounds.p());
   propsScalingD.set_arg<cl_mem>(4, tree.nodeUpperBounds.p());
   propsScalingD.set_arg<cl_mem>(5, tree.n_children.p());  
-//   propsScalingD.set_arg<cl_mem>(6, tree.node_data.p());  
   propsScalingD.set_arg<cl_mem>(6, tree.multipole.p());
   propsScalingD.set_arg<float >(7, &theta2);
   propsScalingD.set_arg<cl_mem>(8, tree.boxSizeInfo.p());
@@ -261,12 +239,7 @@ void octree::compute_properties_double(tree_structure &tree) {
   printf("propsScaling: \t "); propsScalingD.printWorkSize();
   propsScalingD.execute();   
 
-  //TODO testing
-//     build_key_list.execute();  
-//     my_dev::dev_mem<uint> validList(devContext, tree.n+1);
-//     my_dev::dev_mem<uint> compactList(devContext, tree.n+1);  
-//     
-  
+
   #ifdef INDSOFT
     //If we use individual softening we need to get the max softening value
     //to be broadcasted during the exchange of the LET boundaries.
@@ -276,6 +249,8 @@ void octree::compute_properties_double(tree_structure &tree) {
   #endif
 
     
+  //Set the group properties, note that it is not based on the nodes anymore
+  //but on self created groups based on particle order setPHGroupData    
   copyNodeDataToGroupData.set_arg<int>(0,    &tree.n_groups);
   copyNodeDataToGroupData.set_arg<int>(1,    &tree.n);
   copyNodeDataToGroupData.set_arg<cl_mem>(2, tree.bodies_Ppos.p());  
@@ -292,7 +267,9 @@ void octree::compute_properties_double(tree_structure &tree) {
   #else
   #endif
   
-  
+  //Get the local domain boundary based on group positions and sizes
+  real4 r_min, r_max;
+  getBoundariesGroups(tree, r_min, r_max); 
   
   #if 0
     //Write the tree structure to file
@@ -337,75 +314,5 @@ void octree::compute_properties_double(tree_structure &tree) {
 
   
   #endif
-  
-  
-  
-  
-  
-  
-  
-  #if 0
-    tree.groupCenterInfo.d2h();
-    tree.group_list_test.d2h();
-    
-    
-    float sizeSum = 0;
-    float maxSize = -999;
-    float minSize = 99999;
-    int bigCount = 0;
-    
-    for(int i=0; i < tree.n_groups; i++)
-    {
-      sizeSum += tree.groupCenterInfo[i].w;    
-      
-      maxSize = max(maxSize, tree.groupCenterInfo[i].w);
-      minSize = min(minSize, tree.groupCenterInfo[i].w);    
-      
-      if(tree.groupCenterInfo[i].w > 5)
-      {
-        fprintf(stderr, "%d %d Wow big (%d\t%d): %f\n", bigCount++, i,tree.group_list_test[i].x, tree.group_list_test[i].y, tree.groupCenterInfo[i].w);      
-        
-      }
-  //     if(tree.groupCenterInfo[i].w  == 0)
-  //     {
-  //        fprintf(stderr, "%d \t Wow ZERO (%d\t%d): %f\n", i, tree.group_list_test[i].x, tree.group_list_test[i].y, tree.groupCenterInfo[i].w);      
-  //     }
-    }
-    
-    fprintf(stderr, "Total size sum: %f Avg: %f Max: %f  Min: %f\n",
-                sizeSum, sizeSum / tree.n_groups, maxSize, minSize);
-  #endif
-//  exit(0);                
-    
-// extern "C" __global__ void copyNodeDataToGroupData2(const int n_groups,
-//                                                     const int n_particles,   
-//                                                     real4 *bodies_pos,
-//                                                     uint4 *group_data,
-//                                                     int2  *group_list,                                                
-//                                                     real4 *groupCenterInfo,
-//                                                     real4 *groupSizeInfo){  
-//   
-  /*
-
-  
-  tree.nodeLowerBounds.d2h();
-  tree.nodeUpperBounds.d2h();
-  
-  copyNodeDataToGroupData.set_arg<int>(0,    &tree.n_groups);
-  copyNodeDataToGroupData.set_arg<int>(1,    &tree.n_nodes);
-  copyNodeDataToGroupData.set_arg<cl_mem>(2, tree.node_data.p());
-  copyNodeDataToGroupData.set_arg<cl_mem>(3, tree.group_data.p());
-  copyNodeDataToGroupData.set_arg<cl_mem>(4, tree.node_bodies.p());
-  copyNodeDataToGroupData.set_arg<cl_mem>(5, tree.group_list.p());
-  copyNodeDataToGroupData.set_arg<cl_mem>(6, tree.boxCenterInfo.p());
-  copyNodeDataToGroupData.set_arg<cl_mem>(7, tree.boxSizeInfo.p());
-  copyNodeDataToGroupData.set_arg<cl_mem>(8, tree.groupCenterInfo.p());
-  copyNodeDataToGroupData.set_arg<cl_mem>(9, tree.groupSizeInfo.p());
-  copyNodeDataToGroupData.setWork(tree.n_nodes, 128);
-
-  printf("copyNodeDataToGroupData: \t "); copyNodeDataToGroupData.printWorkSize();
-  copyNodeDataToGroupData.execute();     
-
-  */
  
 }

@@ -1,25 +1,15 @@
 #include "octree.h"
 
-#define NMAXSAMPLE 20000
-
-
-
 void octree::mpiInit(int argc,char *argv[], int &procId, int &nProcs)
 {
     int  namelen;   
     char processor_name[MPI_MAX_PROCESSOR_NAME];
-
-    int bla;
-    MPI_Initialized(&bla);    
-    if(bla)
-    {
-	    cout << "Mpi al geinit\n";
-    }
-    else
-    {
-	    MPI_Init(&argc,&argv);
-    }
-
+    
+    int mpiInitialized = 0;
+    MPI_Initialized(&mpiInitialized);
+    
+    if(!mpiInitialized)
+      MPI_Init(&argc,&argv);
 
     MPI_Comm_size(MPI_COMM_WORLD, &nProcs);
     MPI_Comm_rank(MPI_COMM_WORLD, &procId);
@@ -30,19 +20,31 @@ void octree::mpiInit(int argc,char *argv[], int &procId, int &nProcs)
     #endif
 
 
-//TODO write delete functions in destructor
-    
     //Allocate memory for the used buffers
-    cur_xlow  = new double4[nProcs];
-    cur_xhigh = new double4[nProcs];  
+    domainRLow  = new double4[nProcs];
+    domainRHigh = new double4[nProcs];
+
+    domHistoryLow   = new int4[nProcs];
+    domHistoryHigh  = new int4[nProcs];
     
-    cur_xlow_xhigh = new double4[nProcs*2];
+    //Fill domainRX with constants so we can check if its initialized before
+    for(int i=0; i < nProcs; i++)
+    {
+      domainRLow[i] = domainRHigh[i] = (double4){1e10, 1e10, 1e10, 1e10};
+      
+      domHistoryLow[i] = domHistoryHigh[i] = (int4){0,0,0,0};
+    }
     
-    xlow      = new double4[nProcs];
-    xhigh     = new double4[nProcs];
+    currentRLow  = new double4[nProcs];
+    currentRHigh = new double4[nProcs];
     
-    let_xlow      = new double4[nProcs];
-    let_xhigh     = new double4[nProcs];    
+    xlowPrev  = new double4[nProcs];
+    xhighPrev = new double4[nProcs];
+    
+
+
+    nSampleAndSizeValues    = new int2[nProcs];  
+    curSysState             = new sampleRadInfo[nProcs];
 }
 
 
@@ -73,171 +75,9 @@ int octree::SumOnRootRank(int &value)
   MPI_Reduce(&value,&temp,1, MPI_INT, MPI_SUM,0, MPI_COMM_WORLD);
   return temp;
 }
+//end utility
 
-//TODO make this workable in one communication by
-//storing data one buffer
-void octree::mpiRadiusFind(real4 &rmin, real4 &rmax)
-{
-  int n = nProcs;
-  
-  //Store the real4 in double4 for communication
-  double4 rmin_d4 = (double4){rmin.x, rmin.y, rmin.z, rmin.w};
-  double4 rmax_d4 = (double4){rmax.x, rmax.y, rmax.z, rmax.w};
-  
-  double4 minmax[2];
-  minmax[0] = (double4){rmin.x, rmin.y, rmin.z, rmin.w};
-  minmax[1] = (double4){rmax.x, rmax.y, rmax.z, rmax.w};    
-  
 
-//   cur_xlow_xhigh = new double4[nProcs*2];
-//   double4 minmax[2];
-  minmax[0] = (double4){rmin.x, rmin.y, rmin.z, rmin.w};
-  minmax[1] = (double4){rmax.x, rmax.y, rmax.z, rmax.w};  
-  MPI_Allgather(&minmax, sizeof(double4)*2, MPI_BYTE,  cur_xlow_xhigh,
-                sizeof(double4)*2, MPI_BYTE, MPI_COMM_WORLD);  
-                
-                
-                
-  rmin.x = cur_xlow[0].x = cur_xlow_xhigh[0].x;
-  rmin.y = cur_xlow[0].y = cur_xlow_xhigh[0].y;
-  rmin.z = cur_xlow[0].z = cur_xlow_xhigh[0].z;
-  cur_xlow[0].w = cur_xlow_xhigh[0].w;
-  for(int i=1; i < n; i++)
-  {
-    rmin.x = fmin(rmin.x, cur_xlow_xhigh[i*2].x);
-    rmin.y = fmin(rmin.y, cur_xlow_xhigh[i*2].y);
-    rmin.z = fmin(rmin.z, cur_xlow_xhigh[i*2].z);
-    
-    cur_xlow[i].x = cur_xlow_xhigh[i*2].x;
-    cur_xlow[i].y = cur_xlow_xhigh[i*2].y;
-    cur_xlow[i].z = cur_xlow_xhigh[i*2].z;
-    cur_xlow[i].w = cur_xlow_xhigh[i*2].w;
-  }                
-          
-  rmax.x = cur_xhigh[0].x = cur_xlow_xhigh[1].x;
-  rmax.y = cur_xhigh[0].y = cur_xlow_xhigh[1].y;
-  rmax.z = cur_xhigh[0].z = cur_xlow_xhigh[1].z;
-  cur_xhigh[0].w = cur_xlow_xhigh[1].w;
-  for(int i=1; i < n; i++)
-  {
-    rmax.x = fmax(rmax.x, cur_xlow_xhigh[i*2+1].x);
-    rmax.y = fmax(rmax.y, cur_xlow_xhigh[i*2+1].y);
-    rmax.z = fmax(rmax.z, cur_xlow_xhigh[i*2+1].z);
-    
-    cur_xhigh[i].x = cur_xlow_xhigh[i*2+1].x;
-    cur_xhigh[i].y = cur_xlow_xhigh[i*2+1].y;
-    cur_xhigh[i].z = cur_xlow_xhigh[i*2+1].z;
-    cur_xhigh[i].w = cur_xlow_xhigh[i*2+1].w;
-  }                
-
-      
-  
-/*
-  MPI_Allgather(&rmin_d4, sizeof(double4), MPI_BYTE,  cur_xlow,
-                sizeof(double4), MPI_BYTE, MPI_COMM_WORLD);
-
-  rmin.x = cur_xlow[0].x;
-  rmin.y = cur_xlow[0].y;
-  rmin.z = cur_xlow[0].z;
-  for(int i=1; i < n; i++)
-  {
-    rmin.x = fmin(rmin.x, cur_xlow[i].x);
-    rmin.y = fmin(rmin.y, cur_xlow[i].y);
-    rmin.z = fmin(rmin.z, cur_xlow[i].z);
-  }
-
-  MPI_Allgather(&rmax_d4, sizeof(double4), MPI_BYTE,  cur_xhigh,
-                sizeof(double4), MPI_BYTE, MPI_COMM_WORLD);
-
-  rmax.x = cur_xhigh[0].x;
-  rmax.y = cur_xhigh[0].y;
-  rmax.z = cur_xhigh[0].z;  
-  for(int i=1; i < n; i++)
-  {
-    rmax.x = fmax(rmax.x, cur_xhigh[i].x);
-    rmax.y = fmax(rmax.y, cur_xhigh[i].y);
-    rmax.z = fmax(rmax.z, cur_xhigh[i].z);
-  }
-  
-    fprintf(stderr, "Proc: %d recv: %f %f %f %f \t %f %f %f %f \n", mpiGetRank(),
-            rmin.x, rmin.y, rmin.z, rmin.w,
-            rmax.x, rmax.y, rmax.z, rmax.w);
-            
-/*
-  minmax[0] = (double4){rmin.x, rmin.y, rmin.z, rmin.w};
-  minmax[1] = (double4){rmax.x, rmax.y, rmax.z, rmax.w}; */ 
-/*  MPI_Allgather(&minmax, sizeof(double4)*2, MPI_BYTE,  cur_xlow_xhigh,
-                sizeof(double4)*2, MPI_BYTE, MPI_COMM_WORLD);  
-          
-  for(int i=0; i < nProcs; i++)
-  {
-    fprintf(stderr, "Proc2: %d recv: %f %f %f %f \t %f %f %f %f \n", mpiGetRank(),
-            cur_xlow_xhigh[i*2].x, cur_xlow_xhigh[i*2].y, cur_xlow_xhigh[i*2].z, cur_xlow_xhigh[i*2].w,
-            cur_xlow_xhigh[i*2+1].x, cur_xlow_xhigh[i*2+1].y, cur_xlow_xhigh[i*2+1].z, cur_xlow_xhigh[i*2+1].w);
-    
-  }
-  
-  rmin.x = cur_xlow[0].x = cur_xlow_xhigh[0].x;
-  rmin.y = cur_xlow[0].y = cur_xlow_xhigh[0].y;
-  rmin.z = cur_xlow[0].z = cur_xlow_xhigh[0].z;
-  cur_xlow[0].w = cur_xlow_xhigh[0].w;
-  for(int i=1; i < n; i++)
-  {
-    rmin.x = fmin(rmin.x, cur_xlow_xhigh[i*2].x);
-    rmin.y = fmin(rmin.y, cur_xlow_xhigh[i*2].y);
-    rmin.z = fmin(rmin.z, cur_xlow_xhigh[i*2].z);
-    
-    cur_xlow[i].x = cur_xlow_xhigh[i*2].x;
-    cur_xlow[i].y = cur_xlow_xhigh[i*2].y;
-    cur_xlow[i].z = cur_xlow_xhigh[i*2].z;
-    cur_xlow[i].w = cur_xlow_xhigh[i*2].w;
-  }                
-          
-  rmax.x = cur_xhigh[0].x = cur_xlow_xhigh[1].x;
-  rmax.y = cur_xhigh[0].y = cur_xlow_xhigh[1].y;
-  rmax.z = cur_xhigh[0].z = cur_xlow_xhigh[1].z;
-  cur_xhigh[0].w = cur_xlow_xhigh[1].w;
-  for(int i=1; i < n; i++)
-  {
-    rmax.x = fmax(rmax.x, cur_xlow_xhigh[i*2+1].x);
-    rmax.y = fmax(rmax.y, cur_xlow_xhigh[i*2+1].y);
-    rmax.z = fmax(rmax.z, cur_xlow_xhigh[i*2+1].z);
-    
-    cur_xhigh[i].x = cur_xlow_xhigh[i*2+1].x;
-    cur_xhigh[i].y = cur_xlow_xhigh[i*2+1].y;
-    cur_xhigh[i].z = cur_xlow_xhigh[i*2+1].z;
-    cur_xhigh[i].w = cur_xlow_xhigh[i*2+1].w;  
-  }
-    
-    fprintf(stderr, "Proc3: %d recv: %f %f %f %f \t %f %f %f %f \n", mpiGetRank(),
-            rmin.x, rmin.y, rmin.z, rmin.w,
-            rmax.x, rmax.y, rmax.z, rmax.w);    
-
-exit(0);
-                */
-                /*
-                Finished!!! Took in total: 19.1085 sec
-Exchange_copy_h2d took: 18.682943        millisecond
-iter=15 : time= 1  Etot= -0.2455571191  Ekin= 0.242635   Epot= -0.488192 : de= -6.47833e-05 ( 6.47833e-05 ) d(de)= 2.26062e-16 ( 6.8184e-06 ) t_sim=  17.7919 sec
- Finished: 1  > 1 loop alone took: 17.792
-Finished!!! Took in total: 19.1085 sec
-*/
-//   exit(0);                
-  
-  
-  
-}
-
-/*
-  double4 tempMin;
-  tempMin.x = bMin.x; tempMin.y = bMin.y; tempMin.z = bMin.z; tempMin.w = bMin.w;
-
-  double4 tempMax;
-  tempMax.x = bMax.x; tempMax.y = bMax.y; tempMax.z = bMax.z; tempMax.w = bMax.w;
-
-  MPI_Allgather(&tempMin, sizeof(double4), MPI_BYTE,  let_xlow, sizeof(double4), MPI_BYTE, MPI_COMM_WORLD);
-  MPI_Allgather(&tempMax, sizeof(double4), MPI_BYTE,  let_xhigh, sizeof(double4), MPI_BYTE, MPI_COMM_WORLD);
-*/
 
 //Main functions
 
@@ -282,6 +122,10 @@ void octree::determine_sample_freq(int numberOfParticles)
     //Sum the number of particles on all processes
     int tmp;
     MPI_Allreduce(&numberOfParticles,&tmp,1, MPI_INT, MPI_SUM,MPI_COMM_WORLD);
+    
+    nTotalFreq = tmp;
+    
+    
 
     #ifdef PRINT_MPI_DEBUG
     if(procId == 0)
@@ -290,6 +134,146 @@ void octree::determine_sample_freq(int numberOfParticles)
    
     int maxsample = (int)(NMAXSAMPLE*0.8); // 0.8 is safety factor    
     sampleFreq = (tmp+maxsample-1)/maxsample;
+    
+    fprintf(stderr,"Sample FREQ: %d \n", sampleFreq);
+    
+    prevSampFreq = sampleFreq;
+    
+}
+
+//Uses one communication by storing data in one buffer
+//nsample can be set to zero if this call is only used
+//to get updated domain information
+//This one is used when only updating the currentbox sizes
+void octree::sendCurrentRadiusInfo(real4 &rmin, real4 &rmax)
+{
+  sampleRadInfo curProcState;
+  
+  int nsample               = 0; //Place holder to just use same datastructure
+  curProcState.nsample      = nsample;
+  curProcState.rmin         = (double4){rmin.x, rmin.y, rmin.z, rmin.w};
+  curProcState.rmax         = (double4){rmax.x, rmax.y, rmax.z, rmax.w};
+  
+  //Get the number of sample particles and the domain size information
+  MPI_Allgather(&curProcState, sizeof(sampleRadInfo), MPI_BYTE,  curSysState,
+                sizeof(sampleRadInfo), MPI_BYTE, MPI_COMM_WORLD);  
+  mpiSync();
+
+  rmin.x                 = currentRLow[0].x = curSysState[0].rmin.x;
+  rmin.y                 = currentRLow[0].y = curSysState[0].rmin.y;
+  rmin.z                 = currentRLow[0].z = curSysState[0].rmin.z;
+                           currentRLow[0].w = curSysState[0].rmin.w;
+                           
+  rmax.x                 = currentRHigh[0].x = curSysState[0].rmax.x;
+  rmax.y                 = currentRHigh[0].y = curSysState[0].rmax.y;
+  rmax.z                 = currentRHigh[0].z = curSysState[0].rmax.z;  
+                           currentRHigh[0].w = curSysState[0].rmax.w;
+
+  
+  for(int i=1; i < nProcs; i++)
+  {
+    rmin.x = fmin(rmin.x, curSysState[i].rmin.x);
+    rmin.y = fmin(rmin.y, curSysState[i].rmin.y);
+    rmin.z = fmin(rmin.z, curSysState[i].rmin.z);
+    
+    rmax.x = fmax(rmax.x, curSysState[i].rmax.x);
+    rmax.y = fmax(rmax.y, curSysState[i].rmax.y);
+    rmax.z = fmax(rmax.z, curSysState[i].rmax.z);    
+    
+    currentRLow[i].x = curSysState[i].rmin.x;
+    currentRLow[i].y = curSysState[i].rmin.y;
+    currentRLow[i].z = curSysState[i].rmin.z;
+    currentRLow[i].w = curSysState[i].rmin.w;
+    
+    currentRHigh[i].x = curSysState[i].rmax.x;
+    currentRHigh[i].y = curSysState[i].rmax.y;
+    currentRHigh[i].z = curSysState[i].rmax.z;
+    currentRHigh[i].w = curSysState[i].rmax.w;    
+  }                
+}
+
+//Uses one communication by storing data in one buffer
+//nsample can be set to zero if this call is only used
+//to get updated domain information
+void octree::sendSampleAndRadiusInfo(int nsample, real4 &rmin, real4 &rmax)
+{
+  sampleRadInfo curProcState;
+  
+  curProcState.nsample      = nsample;
+  curProcState.rmin         = (double4){rmin.x, rmin.y, rmin.z, rmin.w};
+  curProcState.rmax         = (double4){rmax.x, rmax.y, rmax.z, rmax.w};
+  
+  globalRmax            = 0;
+  totalNumberOfSamples  = 0;
+
+  //Get the number of sample particles and the domain size information
+  MPI_Allgather(&curProcState, sizeof(sampleRadInfo), MPI_BYTE,  curSysState,
+                sizeof(sampleRadInfo), MPI_BYTE, MPI_COMM_WORLD);  
+
+  rmin.x                 =  curSysState[0].rmin.x;
+  rmin.y                 =  curSysState[0].rmin.y;
+  rmin.z                 =  curSysState[0].rmin.z;
+                           
+  rmax.x                 =  curSysState[0].rmax.x;
+  rmax.y                 =  curSysState[0].rmax.y;
+  rmax.z                 =  curSysState[0].rmax.z;  
+
+  totalNumberOfSamples   = curSysState[0].nsample;
+  
+  
+  for(int i=1; i < nProcs; i++)
+  {
+    rmin.x = fmin(rmin.x, curSysState[i].rmin.x);
+    rmin.y = fmin(rmin.y, curSysState[i].rmin.y);
+    rmin.z = fmin(rmin.z, curSysState[i].rmin.z);
+    
+    rmax.x = fmax(rmax.x, curSysState[i].rmax.x);
+    rmax.y = fmax(rmax.y, curSysState[i].rmax.y);
+    rmax.z = fmax(rmax.z, curSysState[i].rmax.z);    
+    
+   
+    totalNumberOfSamples   += curSysState[i].nsample;
+  }                
+
+  if(procId == 0)
+  {
+    if(fabs(rmin.x)>globalRmax)  globalRmax=fabs(rmin.x);
+    if(fabs(rmin.y)>globalRmax)  globalRmax=fabs(rmin.y);
+    if(fabs(rmin.z)>globalRmax)  globalRmax=fabs(rmin.z);
+    if(fabs(rmax.x)>globalRmax)  globalRmax=fabs(rmax.x);
+    if(fabs(rmax.y)>globalRmax)  globalRmax=fabs(rmax.y);
+    if(fabs(rmax.z)>globalRmax)  globalRmax=fabs(rmax.z);
+    
+    if(totalNumberOfSamples > sampleArray.size())
+    {
+      sampleArray.resize(totalNumberOfSamples);
+    }
+  } 
+}
+
+void octree::gpu_collect_sample_particles(int nSample, real4 *sampleParticles)
+{
+  int *nReceiveCnts  = new int[nProcs];
+  int *nReceiveDpls  = new int[nProcs];
+  nReceiveCnts[0] = nSample*sizeof(real4);
+  nReceiveDpls[0] = 0;
+  
+  if(procId == 0)
+  {
+    for(int i=1; i < nProcs; i++)
+    {
+      nReceiveCnts[i] = curSysState[i].nsample*sizeof(real4);
+      nReceiveDpls[i] = nReceiveDpls[i-1] + nReceiveCnts[i-1];
+    } 
+  }
+
+  //Collect sample particles
+  MPI_Gatherv(&sampleParticles[0], nSample*sizeof(real4), MPI_BYTE,
+              &sampleArray[0], nReceiveCnts, nReceiveDpls, MPI_BYTE,
+              0, MPI_COMM_WORLD);
+              
+  delete[] nReceiveCnts;
+  delete[] nReceiveDpls;             
 }
 
 
@@ -311,42 +295,53 @@ void octree::collect_sample_particles(real4 *bodies,
     //Now gather the particles at process 0
     //NOTE: Im using my own implementation instead of makino's which
     //can grow out of the memory array (I think...)
-
-    //Sum the total amount of sample particles
-    unsigned int totalNumberOfSamples;
-    MPI_Reduce(&nsample,&totalNumberOfSamples,1, MPI_INT, MPI_SUM,0, MPI_COMM_WORLD);
+    
+    //Instead of using mpi-reduce but broadcast or something we can receive the 
+    //individual values,so we dont haveto send them in the part below, saves 
+    //communication time!!!  This function is only used once so no problem
+    int *nSampleValues = new int[nProcs];
+    int *nReceiveCnts  = new int[nProcs];
+    int *nReceiveDpls  = new int[nProcs];
+    MPI_Gather(&nsample, 1, MPI_INT, nSampleValues, 1, MPI_INT, 0, MPI_COMM_WORLD);
     
     //Increase the size of the result buffer if needed
     if(procId == 0)
     {
+      //Sum the total amount of sample particles
+      unsigned int totalNumberOfSamples = 0;
+      
+      for(int i=0; i < nProcs; i++)
+      {
+        totalNumberOfSamples += nSampleValues[i];
+      }
+      
       if(totalNumberOfSamples > sampleArray.size())
       {
         sampleArray.resize(totalNumberOfSamples);
       }
     }
 
-    //Send an receive the sample data
-    MPI_Status status;
-    if(procId != 0)
-    {
-        //First send the number of samples, then the actual sample data
-        MPI_Send( &nsample, 1, MPI_INT, 0, procId*2 , MPI_COMM_WORLD);
-        MPI_Send( (real*)&sampleArray[0], nsample*sizeof(real)*4, MPI_BYTE, 0, procId*2+1, MPI_COMM_WORLD);
-    }
-    else
-    {
-        for(int i=1; i<nProcs; i++)
-        {
-            int nreceive;    
-            MPI_Recv( &nreceive, 1, MPI_INT, i,i*2, MPI_COMM_WORLD,&status);            
-            MPI_Recv((real*)(&sampleArray[nsample]), sizeof(real)*4*nreceive, MPI_BYTE, i,i*2+1, MPI_COMM_WORLD,&status);
-
-            nsample+=nreceive;
-        }
-    }
+    //Compute buffer and displacements for MPI_Gatherv
+    nReceiveCnts[0] = nsample*sizeof(real4);
+    nReceiveDpls[0] = 0;
     
-    //TODO, NOTE this can be extracted after the update position / compute properties on the GPU
-    //Find the maximum particle position 
+    if(procId == 0)
+    {
+      for(int i=1; i < nProcs; i++)
+      {
+        nReceiveCnts[i] = nSampleValues[i]*sizeof(real4);
+        nReceiveDpls[i] = nReceiveDpls[i-1] + nReceiveCnts[i-1];
+      } 
+    }
+
+    //Collect sample particles, note the MPI_IN_PLACE to prevent MPI errors
+    MPI_Gatherv((procId ? &sampleArray[0] : MPI_IN_PLACE), nsample*sizeof(real4), MPI_BYTE,
+                &sampleArray[0], nReceiveCnts, nReceiveDpls, MPI_BYTE,
+                0, MPI_COMM_WORLD);
+ 
+    nsample = (nReceiveCnts[mpiGetNProcs()-1] +  nReceiveDpls[mpiGetNProcs()-1]) / sizeof(real4);
+    
+    //Find the maximum particle position
     double tmp = 0;
     for(i = 0;i<nbody; i++)
     {
@@ -359,6 +354,10 @@ void octree::collect_sample_particles(real4 *bodies,
     
     //Find the global maximum
     MPI_Allreduce(&tmp, &rmax,1, MPI_DOUBLE, MPI_MAX,MPI_COMM_WORLD);
+    
+    delete[] nSampleValues;
+    delete[] nReceiveCnts;
+    delete[] nReceiveDpls;
 }
 
 void octree::createDistribution(real4 *bodies, int n_bodies)
@@ -369,7 +368,7 @@ void octree::createDistribution(real4 *bodies, int n_bodies)
   sampleArray.reserve(NMAXSAMPLE);
 
   int     nsample;  //Number of samples for this process
-  double  rmax;     //TODO: wat doet dit precies...
+  double  rmax;     //maximum coordinate used to create a box
 
   //Get the sample particles from the other processes
   collect_sample_particles(bodies, n_bodies, sampleFreq, sampleArray, nsample, rmax);
@@ -377,52 +376,165 @@ void octree::createDistribution(real4 *bodies, int n_bodies)
   //Now that we have a sample from all proces we setup the space division
   //Processor 0 determines the division
   if(procId == 0)
-    determine_division(nsample, sampleArray,nx, ny, nz, rmax,xlow, xhigh);
+    determine_division(nsample, sampleArray,nx, ny, nz, rmax,domainRLow, domainRHigh);
   
-  if(procId == 0)
-  {
-//     xhigh[0].z = 0;
-//     xlow[1].x = 0;
-//     
-//     printf("TEST low: %f \t %f \t %f \t high: %f \t %f \t %f\n", xlow[0].x, xlow[0].y, xlow[0].z, xhigh[0].x, xhigh[0].y, xhigh[0].z);
-//     printf("TEST 2 low: %f \t %f \t %f \t high: %f \t %f \t %f\n", xlow[1].x, xlow[1].y, xlow[1].z, xhigh[1].x, xhigh[1].y, xhigh[1].z);
-  }
   //Now broadcast the results to all other processes
-  MPI_Bcast(xlow,  sizeof(double4)*nProcs,MPI_BYTE,0,MPI_COMM_WORLD);
-  MPI_Bcast(xhigh, sizeof(double4)*nProcs,MPI_BYTE,0,MPI_COMM_WORLD);
-
+  MPI_Bcast(domainRLow,  sizeof(double4)*nProcs,MPI_BYTE,0,MPI_COMM_WORLD);
+  MPI_Bcast(domainRHigh, sizeof(double4)*nProcs,MPI_BYTE,0,MPI_COMM_WORLD);
 
   return;
 }
 
-//Updates the box dimensions
-//TODO how is this different from createDistribution?
-void octree::updateDistribution(real4 *bodies, int n_bodies)
+
+/*
+  Only update the box-sizes, box-boundaries
+  of the different processes, do not do 
+  anything related to sample particles
+*/
+void octree::gpu_updateDomainOnly()
+{
+  real4 r_min, r_max;
+  //Get the current system/particle boundaries
+  this->getBoundaries(localTree, r_min, r_max);
+            
+  int nSamples = 0;
+  this->sendSampleAndRadiusInfo(nSamples, r_min, r_max);
+  rMinGlobal = r_min;
+  rMaxGlobal = r_max;  
+}
+
+/*
+Get the domain boundaries 
+Get the sample particles
+Send them to process 0
+Process 0 computes the new domain decomposition and broadcasts this
+*/
+void octree::gpu_updateDomainDistribution(double timeLocal)
 {  
-  determine_sample_freq(n_bodies);
+  my_dev::dev_stream aSyncStream;
   
-  vector<real4> sampleArray;
-  sampleArray.reserve(NMAXSAMPLE);  
+  real4 r_min, r_max;                          
+//    double t1 = get_time();
+  //Get the current system/particle boundaries
+  this->getBoundaries(localTree, r_min, r_max);
   
-  int     nsample;                                 //Number of samples for this process
-  double  rmax;                                    //TODO: wat doet dit precies...
- 
-  collect_sample_particles(bodies, n_bodies, sampleFreq, sampleArray, nsample, rmax);
- 
-  //Now that we have a sample from all proces we setup the space division
+  int finalNRate; 
+  
+  //Average the previous and current execution time to make everything smoother
+  //results in much better load-balance
+  prevDurStep = (prevDurStep <= 0) ? timeLocal : prevDurStep;
+  timeLocal   = (timeLocal + prevDurStep) / 2;
+
+  double nrate = 0;
+  #if 1
+    //Only base load balancing on the computation time 
+    double timeSum   = 0.0;
+
+    //Sum the execution times
+    MPI_Allreduce( &timeLocal, &timeSum, 1,MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);  
+    
+    nrate = timeLocal / timeSum; 
+    
+    if(1)       //Don't fluctuate particles too much
+    {
+      #define SAMPLING_LOWER_LIMIT_FACTOR  (1.9)
+
+      double nrate2 = (double)localTree.n / (double) nTotalFreq;       
+      nrate2       /= SAMPLING_LOWER_LIMIT_FACTOR;      
+      
+      if(nrate < nrate2)
+      {
+        nrate = nrate2;
+      }
+      
+      double nrate2_sum = 0.0;
+      MPI_Allreduce( &nrate, &nrate2_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+      nrate /= nrate2_sum;        
+    }
+  #else
+    //Equal number of particles
+    nrate = (double)localTree.n / (double)nTotalFreq;    
+  #endif
+   
+  int    nsamp    = (nTotalFreq *0.001) + 1;  //Total number of sample particles, global
+  int nsamp_local = (nsamp*nrate) + 1;
+  int nSamples    = nsamp_local;
+  
+  finalNRate      = localTree.n / nsamp_local;
+  
+  fprintf(stderr, "NSAMP [%d]: sample: %d nrate: %f finalrate: %d localTree.n: %d  \
+                   previous: %d timeLocal: %f prevTimeLocal: %f \n",
+                procId, nsamp_local, nrate, finalNRate, localTree.n, prevSampFreq,
+                timeLocal, prevDurStep);  
+                
+  prevDurStep  = timeLocal; 
+  prevSampFreq = finalNRate;
+                
+
+  my_dev::dev_mem<real4>  samplePositions(devContext);
+  samplePositions.cmalloc_copy(localTree.generalBuffer1.get_pinned(), 
+                          localTree.generalBuffer1.get_flags(), 
+                          localTree.generalBuffer1.get_devMem(),
+                          &localTree.generalBuffer1[0], 0,
+                          nSamples, getAllignmentOffset(0));          
+         
+
+//   double t2 = get_time();
+//   fprintf(stderr, "TIME1 (boundaries) %g \n", t2 - t1);  
+
+  //Get the sample particles from the device and only copy 
+  //the number of particles that is used
+  //Action overlaps with the communication of domain boundary
+  extractSampleParticles.set_arg<int>(0,     &localTree.n);
+  extractSampleParticles.set_arg<int>(1,     &finalNRate);
+  extractSampleParticles.set_arg<cl_mem>(2,  localTree.bodies_Ppos.p());
+  extractSampleParticles.set_arg<cl_mem>(3,  samplePositions.p());
+  extractSampleParticles.setWork(nSamples, 256);
+  extractSampleParticles.execute(aSyncStream.s());            
+  samplePositions.d2h(nSamples, false, aSyncStream.s());
+  
+
+  //Get number of sample particles per process and domain size information
+  this->sendSampleAndRadiusInfo(nSamples, r_min, r_max);
+  rMinGlobal = r_min;
+  rMaxGlobal = r_max;
+   
+//    double t3 = get_time();
+//   fprintf(stderr, "TIME2 (get and send sample info) %g \t %g \n", t3 - t2, t3-t1);            
+  aSyncStream.sync();
+  gpu_collect_sample_particles(nSamples, &samplePositions[0]);
+
+  //double t4 = get_time();
+  //fprintf(stderr, "TIME3 (get and send sample particles) %g \t %g \n", t4 - t3, t4-t1);            
 
   //Processor 0 determines the division
   if(procId == 0)
-    determine_division(nsample, sampleArray,nx, ny, nz, rmax,xlow, xhigh);
+    determine_division(totalNumberOfSamples, sampleArray,nx, ny, nz, globalRmax, domainRLow, domainRHigh);
+  
+//   double t5 = get_time();
+//   fprintf(stderr, "TIME4 (determ div ) %g \t %g \n", t5 - t4, t5-t1);
 
   //Now broadcast the results to all other processes
-  MPI_Bcast(xlow,  sizeof(double4)*nProcs,MPI_BYTE,0,MPI_COMM_WORLD);
-  MPI_Bcast(xhigh, sizeof(double4)*nProcs,MPI_BYTE,0,MPI_COMM_WORLD);
+  MPI_Bcast(domainRLow,  sizeof(double4)*nProcs,MPI_BYTE,0,MPI_COMM_WORLD);
+  MPI_Bcast(domainRHigh, sizeof(double4)*nProcs,MPI_BYTE,0,MPI_COMM_WORLD);
+  
+//   double t5 = get_time();
+//   fprintf(stderr, "TIME4 (determ div and bcast) %g \t %g \n", t5 - t4, t5-t1);
+//   fprintf(stderr, "TIME4 (Total sample part)  %g \n", t5-t1);       
+
+//   if(this->nProcs > 1)
+//   {
+//     if(this->procId == 0)
+//       for(int i = 0;i< this->nProcs;i++)     
+//       {      
+//         cerr << "Domain: " << i << " " << this->domainRLow[i].x << " " << this->domainRLow[i].y << " " << this->domainRLow[i].z << " " 
+//                                        << this->domainRHigh[i].x << " " << this->domainRHigh[i].y << " " << this->domainRHigh[i].z <<endl;
+//       }
+//   }
 
 
   return;
 }
-
 
 
 //Sort function based on Makinos function
@@ -475,6 +587,23 @@ void octree::sortCoordinates(real4 *r, int lo, int up, int cid )
     }
 }
 
+bool sortByX (real4 i,real4 j) { return (i.x<j.x); }
+bool sortByY (real4 i,real4 j) { return (i.y<j.y); }
+bool sortByZ (real4 i,real4 j) { return (i.z<j.z); }
+
+
+void octree::sortCoordinates2(real4 *r, int lo, int up, int cid )
+{
+  up += 1;
+  if(cid == 0)
+    std::sort(&r[lo], &r[up], sortByX);
+  else if(cid == 1)
+    std::sort(&r[lo], &r[up], sortByY);  
+  else
+    std::sort(&r[lo], &r[up], sortByZ);  
+  
+}
+
 
 //Calculates the dimension of the box
 //np number of sample particles
@@ -515,6 +644,41 @@ void octree::calculate_boxdim(int np, real4 pos[], int cid, int istart, int iend
     }
 }
 
+inline double computeNewCoordinate(double old, double newc, int prevChange)
+{
+
+  //return newc;
+
+  int curChange = (fabs(old) > fabs(newc));
+
+  double factor1 = 1, factor2 = 2, factor3 = 1;
+  
+  if(prevChange != curChange)
+  {
+    //Different direction take half a step                
+    factor1 = 1; factor2 = 2;
+  }
+  else
+  {
+    //Same direction, take some bigger step (3/4th)
+    factor1 = 3; factor2 = 4;
+
+   //Same direction, take full step
+//    factor3 = 0; factor1 = 1; factor2 = 1;
+  }
+
+ double temp = (factor3*old + factor1*newc) / factor2;
+ 
+ return temp;
+  
+ //Default
+ //return newc;
+//avg
+//  return (old+newc)/2;
+//3/4:
+//  return (old + 3*newc) / 4;
+
+}
 
 void octree::determine_division(int np,         // number of particles
                         vector<real4> &pos,     // positions of particles
@@ -529,19 +693,27 @@ void octree::determine_division(int np,         // number of particles
     int *istart  = new int[numberOfProcs+1];
     int *iend    = new int[numberOfProcs+1];
     int n = nx*ny*nz;
-
-    sortCoordinates(&pos[0], 0, np-1, 0);
     
+//     fprintf(stderr, "TIME4 TEST:  %d  %d \n", np-1, pos.size());
+// 
+//     double t1 = get_time();
+    sortCoordinates(&pos[0], 0, np-1, 0);
+//     sortCoordinates2(&pos[0], 0, np-1, 0);
+
+//     double t2 = get_time();
+//     fprintf(stderr, "TIME4 TEST: %g  %d \n", t2-t1, np-1);
+
     //Split the array in more or less equal parts
-    //TODO Waarom is dit precies
     for(int i = 0;i<n;i++)
     {
         istart[i] = (i*np)/n;
-         //TODO: het was, maar schrijft voor array...  if(i>=0) 
+         //NOTE: It was i>= 0, changed this otherwise it writes before begin array...  
         if(i > 0 )
          iend[i-1]=istart[i]-1;
     }
     iend[n-1] = np-1; 
+    
+//     borderCnt++;
  
     //Split the x-axis
     for(int ix = 0;ix<nx;ix++)
@@ -552,8 +724,18 @@ void octree::determine_division(int np,         // number of particles
         calculate_boxdim(np, &pos[0], 0,istart[ix0],iend[ix1-1],rmax,x0,x1);                
         for(int i=ix0; i<ix1; i++)
         {
-            xlow[i].x   = x0;
-            xhigh[i].x  = x1;
+          //Check the domain borders and set a constant
+          if(istart[ix0] == 0)
+          {
+            xlowPrev[i].x = 10e10;
+          }
+          if(iend[ix1-1] == np-1)
+          {
+            xhighPrev[i].x = 10e10;
+          }
+
+          xlow[i].x   = x0;
+          xhigh[i].x  = x1;          
         }
     }
 
@@ -572,8 +754,18 @@ void octree::determine_division(int np,         // number of particles
                              iend[iy1-1]-istart[ix0], rmax, y0,y1);
             for(int i=iy0; i<iy1; i++)
             {
-                xlow[i].y  = y0;
-                xhigh[i].y = y1;
+              //Check domain borders and set a constant
+              if(istart[iy0]-istart[ix0] == 0)
+              {
+                xlowPrev[i].y = 10e10;
+              }
+              if( iend[iy1-1]-istart[ix0] == npy-1)
+              {
+                xhighPrev[i].y = 10e10;
+              }              
+
+              xlow[i].y  = y0;
+              xhigh[i].y = y1;
             }
         }
     }
@@ -591,6 +783,17 @@ void octree::determine_division(int np,         // number of particles
                 int iz0 = iy0+iz;
                 calculate_boxdim(npz, &pos[istart[iy0]], 2,istart[iz0]-istart[iy0],
                                  iend[iz0]-istart[iy0], rmax, z0,z1);
+                                 
+                //Check the domain borders
+                if(istart[iz0]-istart[iy0] == 0)
+                {
+                  xlowPrev[iz0].z = 10e10;
+                }
+                if(iend[iz0]-istart[iy0] == npz-1)
+                {
+                  xhighPrev[iz0].z = 10e10;
+                }                                          
+                                 
                 xlow[iz0].z   = z0;
                 xhigh[iz0].z  = z1;
             }
@@ -598,7 +801,76 @@ void octree::determine_division(int np,         // number of particles
     }
 
 
-//TODO: Why do we get errors if we use this?
+  //Do the magic to get a better load balance by changing the decompositon
+  //slightly
+  static bool isFirstStep  = true;
+  
+  if(!isFirstStep)
+  {
+    double temp;
+    for(int i=0; i < nProcs; i++)
+    {
+//       fprintf(stderr,"DOMAIN LOW  %d || CUR: %f %f %f \tPREV: %f %f %f\n", i,
+//               xlow[i].x, xlow[i].y, xlow[i].z,
+//               xlowPrev[i].x, xlowPrev[i].y, xlowPrev[i].z);
+//       fprintf(stderr,"DOMAIN HIGH %d || CUR: %f %f %f \tPREV: %f %f %f\n", i,
+//               xhigh[i].x, xhigh[i].y, xhigh[i].z,
+//               xhighPrev[i].x, xhighPrev[i].y, xhighPrev[i].z);
+//               
+       //Do magic !
+       if(xlowPrev[i].x != 10e10)
+       {          
+         temp               = computeNewCoordinate(xlowPrev[i].x, xlow[i].x, domHistoryLow[i].x);
+         domHistoryLow[i].x = (abs(xlowPrev[i].x) > fabs(xlow[i].x));
+         xlow[i].x          = temp;
+       }
+       if(xhighPrev[i].x != 10e10)
+       {         
+         temp                 = computeNewCoordinate(xhighPrev[i].x, xhigh[i].x, domHistoryHigh[i].x);
+         domHistoryHigh[i].x  = (abs(xhighPrev[i].x) > fabs(xhigh[i].x));
+         xhigh[i].x           = temp;
+       }
+                         
+       if(xlowPrev[i].y != 10e10)
+       {         
+         temp               = computeNewCoordinate(xlowPrev[i].y, xlow[i].y, domHistoryLow[i].y);
+         domHistoryLow[i].y = (abs(xlowPrev[i].y) > fabs(xlow[i].y));
+         xlow[i].y          = temp;         
+       }
+       if(xhighPrev[i].y != 10e10)
+       {         
+         temp                 = computeNewCoordinate(xhighPrev[i].y, xhigh[i].y, domHistoryHigh[i].y);
+         domHistoryHigh[i].y  = (abs(xhighPrev[i].y) > fabs(xhigh[i].y));
+         xhigh[i].y           = temp;
+       }
+       
+       if(xlowPrev[i].z != 10e10)
+       {         
+         temp               = computeNewCoordinate(xlowPrev[i].z, xlow[i].z, domHistoryLow[i].z);
+         domHistoryLow[i].z = (abs(xlowPrev[i].z) > fabs(xlow[i].z));
+         xlow[i].z          = temp;         
+       }
+       if(xhighPrev[i].z != 10e10)
+       {         
+         temp                 = computeNewCoordinate(xhighPrev[i].z, xhigh[i].z, domHistoryHigh[i].z);
+         domHistoryHigh[i].z  = (abs(xhighPrev[i].z) > fabs(xhigh[i].z));
+         xhigh[i].z           = temp;
+       }
+      
+    }
+  }
+
+
+  //Copy the current decomposition to the previous for next step
+  for(int i=0; i < nProcs; i++)
+  {
+    xlowPrev[i]   = xlow[i];
+    xhighPrev[i]  = xhigh[i];
+  }
+    
+  isFirstStep = false;
+
+  //Free up memory
   delete[] istart;
   delete[] iend;
 
@@ -616,7 +888,6 @@ int octree::MP_exchange_particle_with_overflow_check(int ibox,
                                                     int &nsend,
                                                     unsigned int &recvCount)
 {
-    int iret = 0;
     MPI_Status status;
     int local_proc_id = procId;
     nsend = nparticles;
@@ -646,9 +917,11 @@ int octree::MP_exchange_particle_with_overflow_check(int ibox,
                  
     recvCount += nreceive;
 
-    int giret;
-    MPI_Allreduce(&iret, &giret,1, MPI_INT, MPI_MAX,MPI_COMM_WORLD);
-    return giret;
+//     int iret = 0;
+//     int giret;
+//     MPI_Allreduce(&iret, &giret,1, MPI_INT, MPI_MAX,MPI_COMM_WORLD);
+//     return giret;
+    return 0;
 } 
 
 
@@ -666,8 +939,7 @@ inline int isinbox(real4 pos, double4 xlow, double4 xhigh)
 }
 
 
-//TODO: UItleg
-//waarschijnlijk wordt voor elke particle bepaald naar welke processor hij gestuurd moet worden
+//Send particles to the appropriate processors
 int octree::exchange_particles_with_overflow_check(tree_structure &tree)
 {
   int myid      = procId;
@@ -683,6 +955,8 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
   real4  *bodiesAcc1      = &tree.bodies_acc1[0];
   float2 *bodiesTime      = &tree.bodies_time[0];
   int    *bodiesIds       = &tree.bodies_ids[0];
+  real4  *predictedBodiesPositions = &tree.bodies_Ppos[0];
+  real4  *predictedVelocities      = &tree.bodies_Pvel[0];    
 
   real4  tmpp; 
   float2 tmpp2;
@@ -707,7 +981,7 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
     for(int i=iloc; i<nbody;i++)
     {
       //      if(myid == 0){PRC(i); PRC(pb[i].get_pos());}
-      if(isinbox(bodiesPositions[i], xlow[ibox], xhigh[ibox]))
+      if(isinbox(predictedBodiesPositions[i], domainRLow[ibox], domainRHigh[ibox]))
       {
         //Position
         tmpp                  = bodiesPositions[iloc];
@@ -725,7 +999,15 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
         tmpp             = bodiesAcc1[iloc];
         bodiesAcc1[iloc] = bodiesAcc1[i];
         bodiesAcc1[i]    = tmpp;    
-        //Acc1
+        //Predicted position
+        tmpp                           = predictedBodiesPositions[iloc];
+        predictedBodiesPositions[iloc] = predictedBodiesPositions[i];
+        predictedBodiesPositions[i]    = tmpp;
+        //Predicted velocity
+        tmpp                  = predictedVelocities[iloc];
+        predictedVelocities[iloc] = predictedVelocities[i];
+        predictedVelocities[i]    = tmpp;                
+        //Time-step
         tmpp2            = bodiesTime[iloc];
         bodiesTime[iloc] = bodiesTime[i];
         bodiesTime[i]    = tmpp2;              
@@ -744,7 +1026,8 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
           body.acc1 = bodiesAcc1[iloc];
           body.time = bodiesTime[iloc];
           body.id   = bodiesIds[iloc];
-        
+          body.Ppos  = predictedBodiesPositions[iloc];          
+          body.Pvel  = predictedVelocities[iloc];        
           array2Send.push_back(body);
         }
 
@@ -754,27 +1037,8 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
     nparticles[ibox] = iloc-firstloc[ibox];//Number of particles that has to be send to proc: ibox
   } // for(int ib=0;ib<nproc;ib++)
   
-  printf("Benodigde zoek tijd: %lg ,proc: %d gevonden in eigen box: %d n: %d  en naar andere: %ld \n", 
+  printf("Requires search time: %lg ,proc: %d found in our own box: %d n: %d  send to others: %ld \n", 
          get_time()-t1, myid, nparticles[myid], tree.n, array2Send.size());
-  
-/*  if(procId == 0)
-  {
-    for(int i=0; i < 4; i++)
-    {
-      fprintf(stderr, "%d ->  %d = %d en in bron: %d = %d \n",  
-              procId, i, array2Send[i].id, i, bodiesIds[i]);
-    }
-  }
-  mpiSync();
-  if(procId == 1)
-  {
-    for(int i=0; i < 4; i++)
-    {
-      fprintf(stderr, "%d ->  %d = %d en in bron: %d = %d \n",  
-              procId, i, array2Send[i].id, i, bodiesIds[i]);
-    }
-  }  */
-
   
   t1 = get_time();
 
@@ -795,9 +1059,7 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
   }
     
   vector<bodyStruct> recv_buffer3(nbody- nparticles[myid]);
-  
-//   cout << myid << "ik ontvang: " << nbody- nparticles[myid] << "\t size"  << recv_buffer3.size() << endl;
-  
+
   int tempidFirst, tempRecvCount; 
   unsigned int recvCount = 0;
   
@@ -829,8 +1091,7 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
     }//end if mp exchang
   }//end for all boxes
   
-  printf("Benodigde inter-process communicatie tijd: %lg ,proc: %d\n", 
-         get_time()-t1, myid);  
+  printf("Required inter-process communication time: %lg ,proc: %d\n", get_time()-t1, myid);  
   t1 = get_time();       
   double t2= t1;
     
@@ -846,7 +1107,6 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
   }
 
   //Have to resize the bodies vector to keep the numbering correct
-  //cerr << "idfirst: " << idfirst << " nbmax " << nbmax << " iloc: " << iloc << endl;      
   tree.setN(idfirst+recvCount);    
   tree.bodies_pos.cresize (idfirst+recvCount + 1, false);  
   tree.bodies_acc0.cresize(idfirst+recvCount,     false);
@@ -855,29 +1115,28 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
   tree.bodies_time.cresize(idfirst+recvCount,     false);
   tree.bodies_ids.cresize (idfirst+recvCount + 1, false);
   tree.bodies_Ppos.cresize(idfirst+recvCount + 1, false);  
+  tree.bodies_Pvel.cresize(idfirst+recvCount + 1, false);  
   
+  //This one has to be at least the same size as the number of particles inorder to
+  //have enough space to store the other buffers 
   tree.generalBuffer1.cresize(3*(idfirst+recvCount)*4, false);
   
   printf("Benodigde gpu malloc tijd stap 1: %lg \t Size: %d \tRank: %d \t Size: %d \n", 
          get_time()-t1, idfirst+recvCount, mpiGetRank(), tree.bodies_Ppos.get_size()); 
   t1 = get_time();
-//   cerr << myid << "ik ontvang: " << nbody- nparticles[myid] << "\t size"  << recv_buffer3.size() << "\t" << recvCount << endl;
-    
+
   tempidFirst = idfirst; tempRecvCount = recvCount;
 
   //Copy data from struct into the main arrays
   for(unsigned int P=0; P < recvCount; P++)
   {
-    //  cerr << P << "\t" << recv_buffer3[P].pos.x << "\t" << recv_buffer3[P].vel.x << "\t" << recv_buffer3[P].acc1.x;
-    // cerr << "\t" << recv_buffer3[P].id << "\t" << recv_buffer3[P].acc0.z << endl;       
     tree.bodies_pos[idfirst+P]  = recv_buffer3[P].pos;        tree.bodies_vel[idfirst+P]      = recv_buffer3[P].vel;
     tree.bodies_acc0[idfirst+P] = recv_buffer3[P].acc0;       tree.bodies_acc1[idfirst+P]     = recv_buffer3[P].acc1;
     tree.bodies_time[idfirst+P] = recv_buffer3[P].time;       tree.bodies_ids[idfirst+P]      = recv_buffer3[P].id;
-
-//     tree.bodies_Ppos[idfirst+P]  = recv_buffer3[P].pos; 
+    tree.bodies_Ppos[idfirst+P] = recv_buffer3[P].Ppos;       tree.bodies_Pvel[idfirst+P]     = recv_buffer3[P].Pvel;
   }
 
-  printf("Benodigde DATA in struct copy time: %lg \n", get_time()-t1); t1 = get_time();
+  printf("Required DATA in struct copy time: %lg \n", get_time()-t1); t1 = get_time();
 
  
   if(ibend == -1){
@@ -891,8 +1150,8 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
   //Resize the arrays of the tree    
   reallocateParticleMemory(tree);   
      
-  printf("Benodigde gpu malloc tijd stap 2: %lg \n", get_time()-t1);
-  printf("Totale GPU interactie tijd: %lg \n", get_time()-t2);
+  printf("Required gpu malloc time step 2: %lg \n", get_time()-t1);
+  printf("Total GPU interaction time: %lg \n", get_time()-t2);
 
   int retValue = 0;
 
@@ -903,33 +1162,354 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
   return retValue;
 }
 
+//Function that uses the GPU to get a set of particles that have to be 
+//send to other processes
+void octree::gpuRedistributeParticles()
+{
+  //Memory buffers to hold the extracted particle information
+  my_dev::dev_mem<uint>  validList(devContext);
+  my_dev::dev_mem<uint>  compactList(devContext);
+
+  compactList.cmalloc_copy(localTree.generalBuffer1.get_pinned(), 
+                          localTree.generalBuffer1.get_flags(), 
+                          localTree.generalBuffer1.get_devMem(),
+                          &localTree.generalBuffer1[0], 0,
+                          localTree.n, getAllignmentOffset(0));
+                                    
+  validList.cmalloc_copy(localTree.generalBuffer1.get_pinned(), 
+                            localTree.generalBuffer1.get_flags(), 
+                            localTree.generalBuffer1.get_devMem(),
+                            &localTree.generalBuffer1[localTree.n], localTree.n,
+                            localTree.n, getAllignmentOffset(localTree.n));
+                            
+  double4 thisXlow  = domainRLow [this->procId];
+  double4 thisXhigh = domainRHigh[this->procId];
+                                                                          
+  domainCheck.set_arg<int>(0,     &localTree.n);
+  domainCheck.set_arg<double4>(1, &thisXlow);
+  domainCheck.set_arg<double4>(2, &thisXhigh);
+  domainCheck.set_arg<cl_mem>(3,  localTree.bodies_Ppos.p());          
+  domainCheck.set_arg<cl_mem>(4,  validList.p());
+  domainCheck.setWork(localTree.n, 128);
+  domainCheck.execute();            
+  
+  //Create a list of valid and invalid particles
+  int validCount;
+  gpuSplit(devContext, validList, compactList, localTree.n, &validCount);                 
+       
+
+  //Check if the memory size, of the generalBuffer is large enough to store the exported particles
+  int tempSize = localTree.generalBuffer1.get_size() - localTree.n;
+  int needSize = 1.01*(validCount*(sizeof(bodyStruct)/sizeof(int)));
+
+  if(tempSize < needSize)
+  {
+    int itemsNeeded = needSize + localTree.n + 4092; //Slightly larger as before for offset space
+    
+    //Copy the compact list to the host we need this list intact
+    compactList.d2h();
+    int *tempBuf = new int[localTree.n];
+    memcpy(tempBuf, &compactList[0], localTree.n*sizeof(int));
+
+    //Resize the general buffer
+    localTree.generalBuffer1.cresize(itemsNeeded, false);
+    //Reset memory
+    compactList.cmalloc_copy(localTree.generalBuffer1.get_pinned(),
+                          localTree.generalBuffer1.get_flags(),
+                          localTree.generalBuffer1.get_devMem(),
+                          &localTree.generalBuffer1[0], 0,
+                          localTree.n, getAllignmentOffset(0));
+
+    //Restore the compactList
+    memcpy(&compactList[0], tempBuf, localTree.n*sizeof(int));
+    compactList.h2d();
+
+    delete[] tempBuf;
+  }
+  
+  my_dev::dev_mem<bodyStruct>  bodyBuffer(devContext);
+  
+  bodyBuffer.cmalloc_copy(localTree.generalBuffer1.get_pinned(), 
+                  localTree.generalBuffer1.get_flags(), 
+                  localTree.generalBuffer1.get_devMem(),
+                  &localTree.generalBuffer1[localTree.n], localTree.n, 
+                  validCount, getAllignmentOffset(localTree.n));                                 
+
+  extractOutOfDomainBody.set_arg<int>(0,    &validCount);
+  extractOutOfDomainBody.set_arg<cl_mem>(1, compactList.p());          
+  extractOutOfDomainBody.set_arg<cl_mem>(2, localTree.bodies_Ppos.p());          
+  extractOutOfDomainBody.set_arg<cl_mem>(3, localTree.bodies_Pvel.p());     
+  extractOutOfDomainBody.set_arg<cl_mem>(4, localTree.bodies_pos.p());     
+  extractOutOfDomainBody.set_arg<cl_mem>(5, localTree.bodies_vel.p());     
+  extractOutOfDomainBody.set_arg<cl_mem>(6, localTree.bodies_acc0.p());
+  extractOutOfDomainBody.set_arg<cl_mem>(7, localTree.bodies_acc1.p());
+  extractOutOfDomainBody.set_arg<cl_mem>(8, localTree.bodies_time.p());
+  extractOutOfDomainBody.set_arg<cl_mem>(9, localTree.bodies_ids.p());
+  extractOutOfDomainBody.set_arg<cl_mem>(10, bodyBuffer.p());
+  extractOutOfDomainBody.setWork(validCount, 128);
+  extractOutOfDomainBody.execute();
+  
+  bodyBuffer.d2h(validCount);      
+  
+  //Now we have to move particles from the back of the array to the invalid spots
+  //this can be done in parallel with exchange operation to hide some time
+
+  //One integer for counting, true-> initialize to zero so counting starts at 0
+  my_dev::dev_mem<uint>  atomicBuff(devContext, 1, true);
+
+  //Internal particle movement
+  internalMove.set_arg<int>(0,    &validCount);
+  internalMove.set_arg<int>(1,    &localTree.n);
+  internalMove.set_arg<double4>(2,    &thisXlow);
+  internalMove.set_arg<double4>(3,    &thisXhigh);
+  internalMove.set_arg<cl_mem>(4, compactList.p());
+  internalMove.set_arg<cl_mem>(5, atomicBuff.p());               
+  internalMove.set_arg<cl_mem>(6, localTree.bodies_Ppos.p());          
+  internalMove.set_arg<cl_mem>(7, localTree.bodies_Pvel.p());     
+  internalMove.set_arg<cl_mem>(8, localTree.bodies_pos.p());     
+  internalMove.set_arg<cl_mem>(9, localTree.bodies_vel.p());     
+  internalMove.set_arg<cl_mem>(10, localTree.bodies_acc0.p());
+  internalMove.set_arg<cl_mem>(11, localTree.bodies_acc1.p());
+  internalMove.set_arg<cl_mem>(12, localTree.bodies_time.p());
+  internalMove.set_arg<cl_mem>(13, localTree.bodies_ids.p());
+  internalMove.setWork(validCount, 128);
+  internalMove.execute(execStream->s());    
+  
+  this->gpu_exchange_particles_with_overflow_check(localTree, &bodyBuffer[0], compactList, validCount);  
+
+} //End gpuRedistributeParticles
+
+
+
+//Exchange particles with other processes
+int octree::gpu_exchange_particles_with_overflow_check(tree_structure &tree, 
+                                                       bodyStruct *particlesToSend,
+                                                       my_dev::dev_mem<uint> &extractList,
+                                                       int nToSend)
+{
+  int myid      = procId;
+  int nproc     = nProcs;
+  int iloc      = 0;
+  int nbody     = nToSend;
+
+
+  bodyStruct  tmpp; 
+
+  int *firstloc   = new int[nProcs+1];
+  int *nparticles = new int[nProcs+1];
+
+  // Loop over particles and determine which particle needs to go where
+  // reorder the bodies in such a way that bodies that have to be send
+  // away are stored after each other in the array
+  double t1 = get_time();
+
+  //Array reserve some memory at forehand , 1%
+  vector<bodyStruct> array2Send;
+  array2Send.reserve((int)(nToSend*1.5));
+  
+  for(int ib=0;ib<nproc;ib++)
+  {
+    int ibox       = (ib+myid)%nproc;
+    firstloc[ibox] = iloc;      //Index of the first particle send to proc: ibox
+
+    for(int i=iloc; i<nbody;i++)
+    {
+      if(isinbox(particlesToSend[i].Ppos, domainRLow[ibox], domainRHigh[ibox]))
+      {
+        //Reorder the particle information
+        tmpp                  = particlesToSend[iloc];
+        particlesToSend[iloc] = particlesToSend[i];
+        particlesToSend[i]    = tmpp;
+
+        //Put the particle in the array of to send particles
+        array2Send.push_back(particlesToSend[iloc]);
+        
+        iloc++;
+      }// end if
+    }//for i=iloc
+    nparticles[ibox] = iloc-firstloc[ibox];//Number of particles that has to be send to proc: ibox
+  } // for(int ib=0;ib<nproc;ib++)
+
+  
+//   printf("Required search time: %lg ,proc: %d found in our own box: %d n: %d  to others: %ld \n", 
+//          get_time()-t1, myid, nparticles[myid], tree.n, array2Send.size());
+
+  
+  if(iloc < nbody)
+  {
+      cerr << procId <<" exchange_particle error: particle in no box...iloc: " << iloc 
+                     << " and nbody: " << nbody << "\n";
+      exit(0);
+  }
+             
+
+  /*totalsent = nbody - nparticles[myid];
+
+  int tmp;
+  MPI_Reduce(&totalsent,&tmp,1, MPI_INT, MPI_SUM,0,MPI_COMM_WORLD);
+  if(procId == 0)
+  {
+    totalsent = tmp;
+    cout << "Exchanged particles = " << totalsent << endl;
+  }*/
+
+  t1 = get_time();  
+  
+  //Allocate two times the amount of memory of that which we send
+  vector<bodyStruct> recv_buffer3(nbody*2);
+  unsigned int recvCount = 0;
+  
+  //Exchange the data with the other processors
+  int ibend = -1;
+  int nsend;
+  int isource = 0;
+  for(int ib=nproc-1;ib>0;ib--)
+  {
+    int ibox = (ib+myid)%nproc; //index to send...
+      
+    if (ib == nproc-1)
+    {
+      isource= (myid+1)%nproc;
+    }
+    else
+    {
+      isource = (isource+1)%nproc;
+      if (isource == myid)isource = (isource+1)%nproc;
+    }
+
+    if(MP_exchange_particle_with_overflow_check<bodyStruct>(ibox, &array2Send[0],
+                                                    recv_buffer3, firstloc[ibox] - nparticles[myid],
+                                                    nparticles[ibox], isource, 
+                                                    nsend, recvCount))
+    {
+      ibend = ibox; //Here we get if exchange failed
+      ib = 0;
+    }//end if mp exchang
+  }//end for all boxes
+  
+ 
+  if(ibend == -1){
+    
+  }else{
+      //Something went wrong
+    cerr << "ERROR in exchange_particles_with_overflow_check! \n"; exit(0);
+  }
+  
+  
+  printf("Required inter-process communication time: %lg ,proc: %d\n", 
+         get_time()-t1, myid);  
+
+  //Compute the new number of particles:
+  int newN = tree.n + recvCount - nToSend;
+  
+  execStream->sync();   //make certain that the particle movement on the device
+                        //is complete before we resize
+                        
+  //Have to resize the bodies vector to keep the numbering correct 
+  //but do not reduce the size since we need to preserve the particles
+  //in the oversized memory
+  tree.bodies_pos.cresize (newN + 1, false);  
+  tree.bodies_acc0.cresize(newN,     false);
+  tree.bodies_acc1.cresize(newN,     false);
+  tree.bodies_vel.cresize (newN,     false);
+  tree.bodies_time.cresize(newN,     false);
+  tree.bodies_ids.cresize (newN + 1, false);
+  tree.bodies_Ppos.cresize(newN + 1, false);  
+  tree.bodies_Pvel.cresize(newN + 1, false);  
+  
+  //This one has to be at least the same size as the number of particles inorder to
+  //have enough space to store the other buffers 
+  //Can only be resized after we are done since we still have
+  //parts of memory pointing to that buffer (extractList)
+  //Note that we allocate some extra memory to make everything texture/memory alligned
+  tree.generalBuffer1.cresize(3*(newN)*4 + 4096, false);  
+
+  //Now we have to copy the data in batches incase the generalBuffer1 is not large enough
+  //Amount we can store:
+  int spaceInIntSize    = 3*(newN)*4; 
+  int newParticleSpace  = spaceInIntSize / (sizeof(bodyStruct) / sizeof(int));        
+  int stepSize = newParticleSpace;
+
+  my_dev::dev_mem<bodyStruct>  bodyBuffer(devContext);
+  bodyBuffer.cmalloc_copy(localTree.generalBuffer1.get_pinned(), 
+                  localTree.generalBuffer1.get_flags(), 
+                  localTree.generalBuffer1.get_devMem(),
+                  &localTree.generalBuffer1[0], 0, 
+                  stepSize, getAllignmentOffset(0));           
+ 
+  fprintf(stderr, "Exchange, received particles: (%d): %d \tnewN: %d\tItems that can be insert in one step: %d\n", 
+                   procId, recvCount, newN, stepSize);     
+
+  int insertOffset = 0;                   
+  for(unsigned int i=0; i < recvCount; i+= stepSize)
+  {
+    int items = min(stepSize, (int)(recvCount-i));
+      
+    if(items > 0)
+    {
+      //Copy the data from the MPI receive buffers into the GPU-send buffer
+      memcpy(&bodyBuffer[0], &recv_buffer3[insertOffset], sizeof(bodyStruct)*items);
+
+      bodyBuffer.h2d(items);
+  
+//       int threads = max(nToSend, (int)recvCount);
+            
+      //Start the kernel that puts everything in place
+      insertNewParticles.set_arg<int>(0,    &nToSend);
+      insertNewParticles.set_arg<int>(1,    &items);
+      insertNewParticles.set_arg<int>(2,    &tree.n);
+      insertNewParticles.set_arg<int>(3,    &insertOffset);
+      insertNewParticles.set_arg<cl_mem>(4, localTree.bodies_Ppos.p());          
+      insertNewParticles.set_arg<cl_mem>(5, localTree.bodies_Pvel.p());     
+      insertNewParticles.set_arg<cl_mem>(6, localTree.bodies_pos.p());     
+      insertNewParticles.set_arg<cl_mem>(7, localTree.bodies_vel.p());     
+      insertNewParticles.set_arg<cl_mem>(8, localTree.bodies_acc0.p());
+      insertNewParticles.set_arg<cl_mem>(9, localTree.bodies_acc1.p());
+      insertNewParticles.set_arg<cl_mem>(10, localTree.bodies_time.p());
+      insertNewParticles.set_arg<cl_mem>(11, localTree.bodies_ids.p());
+      insertNewParticles.set_arg<cl_mem>(12, bodyBuffer.p());
+      insertNewParticles.setWork(items, 128);
+      insertNewParticles.execute(); 
+    }
+    
+    insertOffset += items;    
+  }
+
+//   printf("Benodigde gpu malloc tijd stap 1: %lg \t Size: %d \tRank: %d \t Size: %d \n", 
+//          get_time()-t1, newN, mpiGetRank(), tree.bodies_Ppos.get_size()); 
+//   t1 = get_time();
+  
+   
+  tree.setN(newN);   
+ 
+  //Resize the arrays of the tree    
+  reallocateParticleMemory(tree);   
+     
+//   printf("Benodigde gpu malloc tijd stap 2: %lg \n", get_time()-t1);
+//   printf("Totale GPU interactie tijd: %lg \n", get_time()-t2);
+
+  int retValue = 0;
+
+  delete[] firstloc;
+  delete[] nparticles;
+
+  return retValue;
+}
 
 //Local essential tree functions
 
 
-//TODO change this into one mpi all gather
-void octree::getAllLETBoxes(real4 bMin, real4 bMax)
-{
-  //Gathers the box sizes of all processors and sends them to all processors
-  //we use this since we predict particles after we set the domain sizes, so 
-  //predict can move them over the domain size
-
-  double4 tempMin;
-  tempMin.x = bMin.x; tempMin.y = bMin.y; tempMin.z = bMin.z; tempMin.w = bMin.w;
-
-  double4 tempMax;
-  tempMax.x = bMax.x; tempMax.y = bMax.y; tempMax.z = bMax.z; tempMax.w = bMax.w;
-
-  MPI_Allgather(&tempMin, sizeof(double4), MPI_BYTE,  cur_xlow, sizeof(double4), MPI_BYTE, MPI_COMM_WORLD);
-  MPI_Allgather(&tempMax, sizeof(double4), MPI_BYTE,  cur_xhigh, sizeof(double4), MPI_BYTE, MPI_COMM_WORLD);
-}
-
-
 void octree::essential_tree_exchange(vector<real4> &treeStructure, tree_structure &tree, tree_structure &remote)
 {
-  int myid = procId;
-  int nproc = nProcs;
+  int myid    = procId;
+  int nproc   = nProcs;
   int isource = 0;
+ 
+  bool mergeOwntree = false;          //Default do not include our own tree-structre, thats mainly used for testing 
+  int step          = nProcs - 1;     //Default merge all remote trees into one structure
+//   step              = 1;
+  int level_start   = 2;              //Default depth of where to start the tree-walk, default 2
+  int procTrees     = 0;              //Number of trees that we've received and processed
 
   real4  *bodies              = &tree.bodies_Ppos[0];
   real4  *velocities          = &tree.bodies_Pvel[0];
@@ -943,376 +1523,408 @@ void octree::essential_tree_exchange(vector<real4> &treeStructure, tree_structur
   vector<real4> recv_nodeCenterData;  
   
   real4 **treeBuffers;
-  
-  //   treeBuffers  = new real4*[mpiGetNProcs()-1]; //creates a new array of pointers to int objects
-  //Own tree add test
-  treeBuffers  = new real4*[mpiGetNProcs()]; //creates a new array of pointers to int objects
-  int recvTree = 0;
- 
-  //For each process
-  for(int ib=nproc-1;ib>0;ib--)
-  {
 
-    int ibox = (ib+myid)%nproc; //index to send...
-    if (ib == nproc-1){
-        isource= (myid+1)%nproc;
-    }else{
-        isource = (isource+1)%nproc;
-        if (isource == myid)isource = (isource+1)%nproc;
+  //creates a new array of pointers to int objects, with space for the local tree
+  treeBuffers  = new real4*[mpiGetNProcs()]; 
+  
+  //Timers for the LET Exchange
+  static double totalLETExTime    = 0;
+//   double thisPartLETExTime = 0;
+  thisPartLETExTime = 0;
+  double tStart = 0;
+
+//   for(int z=nproc-1; z > 0; z-=step)
+  for(int z=nproc-1; z > 0; )
+  {
+    tStart = get_time();
+    
+    step = min(step, z);
+    
+    int recvTree = 0;    
+    //For each process
+    for(int ib = z; recvTree < step; recvTree++, ib--)
+    {      
+      int ibox = (ib+myid)%nproc; //index to send...
+      if (ib == nproc-1){
+          isource= (myid+1)%nproc;
+      }else{
+          isource = (isource+1)%nproc;
+          if (isource == myid)isource = (isource+1)%nproc;
+      }
+
+    /*
+      cerr << "\nibox: " << ibox << endl;
+      cerr << "Other proc has box: low: " << let_xlow[ibox].x << "\t" <<  let_xlow[ibox].y  << "\t" <<  let_xlow[ibox].z 
+                                      << "\thigh: "  << let_xhigh[ibox].x << "\t" <<  let_xhigh[ibox].y  << "\t" <<  let_xhigh[ibox].z << endl;*/
+
+      double4 boxCenter = {     0.5*(currentRLow[ibox].x  + currentRHigh[ibox].x),
+                                0.5*(currentRLow[ibox].y  + currentRHigh[ibox].y),
+                                0.5*(currentRLow[ibox].z  + currentRHigh[ibox].z), 0};
+      double4 boxSize   = {fabs(0.5*(currentRHigh[ibox].x - currentRLow[ibox].x)),
+                           fabs(0.5*(currentRHigh[ibox].y - currentRLow[ibox].y)),
+                           fabs(0.5*(currentRHigh[ibox].z - currentRLow[ibox].z)), 0};  
+                              
+                              
+//       printf("Other proc min and max: [%f %f %f] \t [%f %f %f] \n", currentRLow[ibox].x, currentRLow[ibox].y, currentRLow[ibox].z,
+//               currentRHigh[ibox].x, currentRHigh[ibox].y, currentRHigh[ibox].z);
+    
+    //   printf("Other proc center and size: [%f %f %f] \t [%f %f %f] \n", boxCenter.x, boxCenter.y, boxCenter.z,
+    //          boxSize.x, boxSize.y, boxSize.z);
+
+      uint2 node_begend;
+      node_begend.x   = tree.level_list[level_start].x;
+      node_begend.y   = tree.level_list[level_start].y;
+      
+      int particleCount, nodeCount;
+      
+  //     double t1 = get_time();    
+      create_local_essential_tree_count(bodies, multipole, nodeSizeInfo, nodeCenterInfo,
+                                  boxCenter, boxSize, currentRLow[ibox].w, node_begend.x, node_begend.y,
+                                  particleCount, nodeCount);    
+  //     printf("LET count: %lg\n", get_time()-t1);   
+      //Buffer that will contain all the data:
+      //|real4| 2*particleCount*real4| nodes*real4 | nodes*real4 | nodes*3*real4 |
+      //1 + 2*particleCount + nodeCount + nodeCount + 3*nodeCount
+      
+
+      //Increase the number of particles and the number of nodes by the texture-offset such that these are correctly
+      //aligned in memory
+      particleCount += getTextureAllignmentOffset(particleCount, sizeof(real4));
+      nodeCount     += getTextureAllignmentOffset(nodeCount    , sizeof(real4));
+      
+      //0-1 )                               Info about #particles, #nodes, start and end of tree-walk
+      //1- Npart)                           The particle positions
+      //1+Npart-Npart )                     The particle velocities
+      //1+2*Npart-Nnode )                   The nodeSizeData
+      //1+*2Npart+Nnode - Npart+2*Nnode )   The nodeCenterData
+      //1+2*Npart+2*Nnode - Npart+5*Nnode ) The multipole data, is 3x number of nodes (mono and quadrupole data)
+      int bufferSize = 1 + 2*particleCount + 5*nodeCount;
+      real4 *letDataBuffer = new real4[bufferSize];
+          
+      create_local_essential_tree_fill(bodies, velocities, multipole, nodeSizeInfo, nodeCenterInfo,
+                                  boxCenter, boxSize, currentRLow[ibox].w, node_begend.x, node_begend.y,
+                                  particleCount, nodeCount, letDataBuffer);        
+                                  
+  /*    
+      printf("LET count&fill: %lg\n", get_time()-t1);   
+      t1 = get_time();   
+      printf("Speciaal: %lg\n", get_time()-t1);   
+                                  t1 = get_time();    
+      create_local_essential_tree(bodies, multipole, nodeSizeInfo, nodeCenterInfo,
+                                  boxCenter, boxSize, node_begend.x, node_begend.y,
+                                  particles, multipoleData, nodeSizeData, nodeCenterData);
+      printf("Gewoon: %lg\n", get_time()-t1); */                                
+                                  
+      //Set the tree properties, before we exchange the data
+      letDataBuffer[0].x = particleCount;         //Number of particles in the LET
+      letDataBuffer[0].y = nodeCount;             //Number of nodes     in the LET
+      letDataBuffer[0].z = node_begend.x;         //First node on the level that indicates the start of the tree walk
+      letDataBuffer[0].w = node_begend.y;         //last node on the level that indicates the start of the tree walk
+
+      //Exchange the data of the tree structures  between the processes
+      treeBuffers[recvTree] = MP_exchange_bhlist(ibox, isource, bufferSize, letDataBuffer);
+
+      delete[] letDataBuffer;
+
+      //This determines if we interrupt the exchange by starting a gravity kernel on the GPU
+      if(execStream->isFinished())
+      {
+        fprintf(stderr,"GRAVFINISHED %d recvTree: %d\n", procId, recvTree);
+        recvTree++;
+        break;
+      }
+    }//end for each process
+    
+
+  
+    z-=recvTree;
+  
+    //Now we have to merge the seperate tree-structures into one process
+
+//     double t1 = get_time();
+
+    int PROCS = recvTree;
+    
+    procTrees += recvTree;
+
+    if(mergeOwntree) 
+    {      
+      //Add the processors own tree to the LET tree
+      int particleCount   = tree.n;
+      int nodeCount       = tree.n_nodes;
+      
+      int realParticleCount = tree.n;
+      int realNodeCount     = tree.n_nodes;
+      
+      particleCount += getTextureAllignmentOffset(particleCount, sizeof(real4));
+      nodeCount     += getTextureAllignmentOffset(nodeCount    , sizeof(real4));
+    
+      int bufferSizeLocal = 1 + 2*particleCount + 5*nodeCount;
+      
+      treeBuffers[PROCS]  = new real4[bufferSizeLocal];
+
+      //Note that we use the real*Counts otherwise we read out of the array boundaries!!
+      int idx = 1;
+      memcpy(&treeBuffers[PROCS][idx], &bodies[0],         sizeof(real4)*realParticleCount);
+      idx += particleCount;
+      memcpy(&treeBuffers[PROCS][idx], &velocities[0],     sizeof(real4)*realParticleCount);
+      idx += particleCount;
+      memcpy(&treeBuffers[PROCS][idx], &nodeSizeInfo[0],   sizeof(real4)*realNodeCount);
+      idx += nodeCount;
+      memcpy(&treeBuffers[PROCS][idx], &nodeCenterInfo[0], sizeof(real4)*realNodeCount); 
+      idx += nodeCount;
+      memcpy(&treeBuffers[PROCS][idx], &multipole[0],      sizeof(real4)*realNodeCount*3);   
+      
+      treeBuffers[PROCS][0].x = particleCount;
+      treeBuffers[PROCS][0].y = nodeCount;
+      treeBuffers[PROCS][0].z = tree.level_list[level_start].x;
+      treeBuffers[PROCS][0].w = tree.level_list[level_start].y;  
+      PROCS                   = PROCS + 1; //Signal that we added one more tree-structure
+      mergeOwntree            = false;     //Set it to false incase we do not merge all trees at once, we only inlcude our own once
+    }
+    
+    //Arrays to store and compute the offsets
+    int *particleSumOffsets  = new int[mpiGetNProcs()+1];
+    int *nodeSumOffsets      = new int[mpiGetNProcs()+1];
+    int *startNodeSumOffsets = new int[mpiGetNProcs()+1];    
+    uint2 *nodesBegEnd       = new uint2[mpiGetNProcs()+1];
+    
+    //Offsets start at 0 and then are increased by the number of nodes of each LET tree
+    particleSumOffsets[0]           = 0;
+    nodeSumOffsets[0]               = 0;
+    startNodeSumOffsets[0]          = 0;  
+    nodesBegEnd[mpiGetNProcs()].x   = nodesBegEnd[mpiGetNProcs()].y = 0; //Make valgrind happy
+    int totalTopNodes               = 0;
+    
+
+    //Calculate the offsets
+    for(int i=0; i < PROCS ; i++)
+    {
+      int particles = (int)treeBuffers[i][0].x;
+      int nodes     = (int)treeBuffers[i][0].y;
+    
+      nodesBegEnd[i].x = (int)treeBuffers[i][0].z;
+      nodesBegEnd[i].y = (int)treeBuffers[i][0].w;
+      
+      totalTopNodes += nodesBegEnd[i].y-nodesBegEnd[i].x;
+      
+      particleSumOffsets[i+1]     = particleSumOffsets[i]  + particles;
+      nodeSumOffsets[i+1]         = nodeSumOffsets[i]      + nodes - nodesBegEnd[i].y;    //Without the top-nodes
+      startNodeSumOffsets[i+1]    = startNodeSumOffsets[i] + nodesBegEnd[i].y-nodesBegEnd[i].x;
     }
 
-  /*
-    cerr << "\nibox: " << ibox << endl;
-    cerr << "Other proc has box: low: " << let_xlow[ibox].x << "\t" <<  let_xlow[ibox].y  << "\t" <<  let_xlow[ibox].z 
-                                    << "\thigh: "  << let_xhigh[ibox].x << "\t" <<  let_xhigh[ibox].y  << "\t" <<  let_xhigh[ibox].z << endl;*/
-
-    double4 boxCenter = {     0.5*(cur_xlow[ibox].x  + cur_xhigh[ibox].x),
-                              0.5*(cur_xlow[ibox].y  + cur_xhigh[ibox].y),
-                              0.5*(cur_xlow[ibox].z  + cur_xhigh[ibox].z), 0};
-    double4 boxSize   = {fabs(0.5*(cur_xhigh[ibox].x - cur_xlow[ibox].x)),
-                         fabs(0.5*(cur_xhigh[ibox].y - cur_xlow[ibox].y)),
-                         fabs(0.5*(cur_xhigh[ibox].z - cur_xlow[ibox].z)), 0};  
-                          
-                          
-//   printf("Other proc center and size: [%f %f %f] \t [%f %f %f] \n", boxCenter.x, boxCenter.y, boxCenter.z,
-//          boxSize.x, boxSize.y, boxSize.z);
-
-    uint2 node_begend;
-    int level_start = 2;
-    node_begend.x = tree.level_list[level_start].x;
-    node_begend.y = tree.level_list[level_start].y;
+    //Compute total particles and total nodes, totalNodes is WITHOUT topNodes
+    int totalParticles    = particleSumOffsets[PROCS];
+    int totalNodes        = nodeSumOffsets[PROCS];
     
-    int particleCount, nodeCount;
+    //To bind parts of the memory to different textures, the memory start address
+    //has to be aligned with XXX bytes, so nodeInformation*sizeof(real4) has to be
+    //increased by an offset, so that the node data starts at a XXX byte boundary
+    //this is already done on the sending process, but since we modify the structure
+    //it has to be done again
+    int nodeTextOffset = getTextureAllignmentOffset(totalNodes+totalTopNodes, sizeof(real4));
     
-//     double t1 = get_time();    
-    create_local_essential_tree_count(bodies, multipole, nodeSizeInfo, nodeCenterInfo,
-                                boxCenter, boxSize, cur_xlow[ibox].w, node_begend.x, node_begend.y,
-                                particleCount, nodeCount);    
-
-    //Buffer that will contain all the data:
-    //|real4| 2*particleCount*real4| nodes*real4 | nodes*real4 | nodes*3*real4 |
-    //1 + 2*particleCount + nodeCount + nodeCount + 3*nodeCount
+    //Compute the total size of the buffer
+    int bufferSize     = 2*(totalParticles) + 5*(totalNodes+totalTopNodes + nodeTextOffset);
     
-    //0-1 )                               Info about #particles, #nodes, start and end of tree-walk
-    //1- Npart)                           The particle positions
-    //1+Npart-Npart )                     The particle velocities
-    //1+2*Npart-Nnode )                   The nodeSizeData
-    //1+*2Npart+Nnode - Npart+2*Nnode )   The nodeCenterData
-    //1+2*Npart+2*Nnode - Npart+5*Nnode ) The multipole data, is 3x number of nodes (mono and quadrupole data)
-    int bufferSize = 1 + 2*particleCount + 5*nodeCount;
-    real4 *letDataBuffer = new real4[bufferSize];
-         
-    create_local_essential_tree_fill(bodies, velocities, multipole, nodeSizeInfo, nodeCenterInfo,
-                                boxCenter, boxSize, cur_xlow[ibox].w, node_begend.x, node_begend.y,
-                                particleCount, nodeCount, letDataBuffer);        
-/*    
-    printf("Speciaal: %lg\n", get_time()-t1);   
-                                t1 = get_time();    
-    create_local_essential_tree(bodies, multipole, nodeSizeInfo, nodeCenterInfo,
-                                boxCenter, boxSize, node_begend.x, node_begend.y,
-                                particles, multipoleData, nodeSizeData, nodeCenterData);
-    printf("Gewoon: %lg\n", get_time()-t1); */                                
-                                
-    //Set the tree properties, before we exchange the data
-    letDataBuffer[0].x = particleCount;         //Number of particles in the LET
-    letDataBuffer[0].y = nodeCount;             //Number of nodes     in the LET
-    letDataBuffer[0].z = node_begend.x;         //First node on the level that indicates the start of the tree walk
-    letDataBuffer[0].w = node_begend.y;         //last node on the level that indicates the start of the tree walk
+    thisPartLETExTime += get_time() - tStart;
+    //Allocate memory on host and device to store the merged tree-structure
+    if(bufferSize > remote.fullRemoteTree.get_size())
+    {
+      //Can only resize if we are sure the LET is not running
+      if(letRunning)
+      {
+        execStream->sync();     //Wait till the LET run is finished        
+      }      
+      remote.fullRemoteTree.cresize(bufferSize, false);  //Change the size but ONLY if we need more memory  
+    }
+    tStart = get_time();
 
-    //Exchange the data of the tree structures in between the nodes
-    treeBuffers[recvTree] = MP_exchange_bhlist(ibox, isource, 
-                                               bufferSize, letDataBuffer);
-    recvTree++; //Increase the index by 1                                                
-
-    delete[] letDataBuffer;       
-  }//end for each process
-  
-  //We now have nProcs-1 partial local essential trees, we combine them into one tree
-  //TODO As extra test we could also combine them with the main tree and see 
-  //what the exectuion time would be. If we would do 1 tree-traverse instead of 2.
-  //But lets first combine the results of one tree
-  
-  //Add the processors own tree to the LET tree
-
-  int level_start   = 2;
-  int particleCount = tree.n;
-  int nodeCount = tree.n_nodes;
-  int bufferSizeLocal = 1 + 2*particleCount + 5*nodeCount;
-  
-  //Only alloc if we have NPROC set to the total number of processes
-  int PROCS = mpiGetNProcs();
- PROCS -= 1; //DO -1 when NOT including the own tree
-  
-  if(PROCS == mpiGetNProcs())
-  {
-    treeBuffers[mpiGetNProcs()-1] = new real4[bufferSizeLocal];
-
-    int idx = 1;
-    memcpy(&treeBuffers[mpiGetNProcs()-1][idx], &bodies[0], sizeof(real4)*particleCount);
-    idx += particleCount;
-    memcpy(&treeBuffers[mpiGetNProcs()-1][idx], &velocities[0], sizeof(real4)*particleCount);
-    idx += particleCount;
-    memcpy(&treeBuffers[mpiGetNProcs()-1][idx], &nodeSizeInfo[0], sizeof(real4)*nodeCount);
-    idx += nodeCount;
-    memcpy(&treeBuffers[mpiGetNProcs()-1][idx], &nodeCenterInfo[0], sizeof(real4)*nodeCount); 
-    idx += nodeCount;
-    memcpy(&treeBuffers[mpiGetNProcs()-1][idx], &multipole[0], sizeof(real4)*nodeCount*3);   
+    real4 *combinedRemoteTree = &remote.fullRemoteTree[0];
     
-    treeBuffers[mpiGetNProcs()-1][0].x = particleCount;
-    treeBuffers[mpiGetNProcs()-1][0].y = nodeCount;
-    treeBuffers[mpiGetNProcs()-1][0].z = tree.level_list[level_start].x;
-    treeBuffers[mpiGetNProcs()-1][0].w = tree.level_list[level_start].y;  
-  }
-  
-  //Arrays to store and compute the offsets
-  int *particleSumOffsets  = new int[mpiGetNProcs()+1];
-  int *nodeSumOffsets      = new int[mpiGetNProcs()+1];
-  int *startNodeSumOffsets = new int[mpiGetNProcs()+1];    
-  uint2 *nodesBegEnd       = new uint2[mpiGetNProcs()+1];
-  
-  //Offsets start at 0 and then are increased by the number of nodes of each LET tree
-  particleSumOffsets[0]           = 0;
-  nodeSumOffsets[0]               = 0;
-  startNodeSumOffsets[0]          = 0;  
-//   nodesBegEnd[mpiGetNProcs()-1].x = nodesBegEnd[mpiGetNProcs()-1].y = 0; //Make valgrind happy
-  nodesBegEnd[mpiGetNProcs()].x = nodesBegEnd[mpiGetNProcs()].y = 0; //Make valgrind happy
-  int totalTopNodes               = 0;
-  
+    //Copy all the pieces of the different trees at the correct memory offsets
+    for(int i=0; i < PROCS; i++)
+    {
+      //Get the properties of the LET
+      int remoteP = (int) treeBuffers[i][0].x;    //Number of particles
+      int remoteN = (int) treeBuffers[i][0].y;    //Number of nodes
+      int remoteB = (int) treeBuffers[i][0].z;    //Begin id of top nodes
+      int remoteE = (int) treeBuffers[i][0].w;    //End   id of top nodes
+      int remoteNstart = remoteE-remoteB;
 
-  //Calculate the offsets
-//   for(int i=0; i < mpiGetNProcs() -1; i++)
-  for(int i=0; i < PROCS ; i++) //adding own tree test
-  {
-    int particles = (int)treeBuffers[i][0].x;
-    int nodes     = (int)treeBuffers[i][0].y;
-   
-    nodesBegEnd[i].x = (int)treeBuffers[i][0].z;
-    nodesBegEnd[i].y = (int)treeBuffers[i][0].w;
-    
-    totalTopNodes += nodesBegEnd[i].y-nodesBegEnd[i].x;
-    
-    particleSumOffsets[i+1]     = particleSumOffsets[i]  + particles;
-    nodeSumOffsets[i+1]         = nodeSumOffsets[i]      + nodes - nodesBegEnd[i].y;    //Without the top-nodes
-    startNodeSumOffsets[i+1]    = startNodeSumOffsets[i] + nodesBegEnd[i].y-nodesBegEnd[i].x;
-  }
-
-  //Compute total particles and total nodes, totalNodes is WITHOUT topNodes
-//   int totalParticles    = particleSumOffsets[mpiGetNProcs()-1];
-//   int totalNodes        = nodeSumOffsets[mpiGetNProcs()-1];
-  int totalParticles    = particleSumOffsets[PROCS];
-  int totalNodes        = nodeSumOffsets[PROCS];
+      //Particles
+      memcpy(&combinedRemoteTree[particleSumOffsets[i]],   &treeBuffers[i][1], sizeof(real4)*remoteP);
+      
+      //Velocities
+      memcpy(&combinedRemoteTree[(totalParticles) + particleSumOffsets[i]],   
+            &treeBuffers[i][1+remoteP], sizeof(real4)*remoteP);
   
-  //To bind parts of the memory to different textures, the memory start address
-  //has to be aligned with XXX bytes, so totalParticles*sizeof(real4) has to be
-  //increased by an offset, so that the node data starts at a XXX byte boundary
-  //same with the node information. XXX is a architecture specific value
-  
-  const int texBoundary = 512; //Fermi
-  
-  int particleTextOffset = 0;
-  //Compute the number of bytes  
-  particleTextOffset = totalParticles*sizeof(real4); 
-  //Compute number of 256 byte blocks  
-  particleTextOffset = (particleTextOffset / texBoundary) + (((particleTextOffset % texBoundary) > 0) ? 1 : 0); 
-  //Compute the number of bytes padded / offset 
-  particleTextOffset = (particleTextOffset * texBoundary) - totalParticles*sizeof(real4); 
-  //Back to the actual number of elements
-  particleTextOffset = particleTextOffset / sizeof(real4); 
-  
-  //Same steps for the node data
-  int nodeTextOffset = 0;
-  nodeTextOffset = (totalNodes+totalTopNodes)*sizeof(real4); 
-  nodeTextOffset = (nodeTextOffset / texBoundary) + (((nodeTextOffset % texBoundary) > 0) ? 1 : 0); 
-  nodeTextOffset = (nodeTextOffset * texBoundary) - (totalNodes+totalTopNodes)*sizeof(real4); 
-  nodeTextOffset = nodeTextOffset / sizeof(real4); 
-
-//   particleTextOffset = 0;
-//   nodeTextOffset = 0;
-
-  //Compute the total size of the buffer
-  //int bufferSize      = totalParticles + 5*(totalNodes+totalTopNodes);
-  int bufferSize        = 2*(totalParticles+particleTextOffset) + 5*(totalNodes+totalTopNodes + nodeTextOffset);
-  
-  
-  //Allocate memory on host and device to store the merged tree-structure
-  remote.fullRemoteTest.cresize(bufferSize, false);  //Change the size but ONLY if we need more memory
+      //The start nodes, nodeSizeInfo
+      memcpy(&combinedRemoteTree[2*(totalParticles) + startNodeSumOffsets[i]],  
+            &treeBuffers[i][1+2*remoteP+remoteB], //From the start node onwards
+            sizeof(real4)*remoteNstart);
+      
+      //Non start nodes, nodeSizeInfo       
+      memcpy(&combinedRemoteTree[2*(totalParticles) +  totalTopNodes + nodeSumOffsets[i]],  
+            &treeBuffers[i][1+2*remoteP+remoteE], //From the last start node onwards
+            sizeof(real4)*(remoteN-remoteE));    
     
-  real4 *combinedRemoteTree = &remote.fullRemoteTest[0];
-
-  fprintf(stderr, "Total (%d): %d \t %d topNodes: %d BufferSize: %d\n", mpiGetRank(), totalParticles, totalNodes, totalTopNodes, bufferSize);
-  
-  //Copy all the pieces of the different trees at the correct memory offsets
-//   for(int i=0; i < mpiGetNProcs() -1; i++)
-  for(int i=0; i < PROCS; i++) //Adding own tree test
-  {
-    //Get the properties of the LET
-    int remoteP = (int) treeBuffers[i][0].x;    //Number of particles
-    int remoteN = (int) treeBuffers[i][0].y;    //Number of nodes
-    int remoteB = (int) treeBuffers[i][0].z;    //Begin id of top nodes
-    int remoteE = (int) treeBuffers[i][0].w;    //End   id of top nodes
-    int remoteNstart = remoteE-remoteB;
-
-    //Particles
-    memcpy(&combinedRemoteTree[particleSumOffsets[i]],   &treeBuffers[i][1], sizeof(real4)*remoteP);
-    
-    //Velocities
-    memcpy(&combinedRemoteTree[(particleTextOffset + totalParticles) + particleSumOffsets[i]],   
-           &treeBuffers[i][1+remoteP], sizeof(real4)*remoteP);
- 
-    //The start nodes, nodeSizeInfo
-    memcpy(&combinedRemoteTree[2*(particleTextOffset + totalParticles) + startNodeSumOffsets[i]],  
-           &treeBuffers[i][1+2*remoteP+remoteB], //From the start node onwards
-           sizeof(real4)*remoteNstart);
-    
-    //Non start nodes, nodeSizeInfo       
-    memcpy(&combinedRemoteTree[2*(particleTextOffset + totalParticles) +  totalTopNodes + nodeSumOffsets[i]],  
-           &treeBuffers[i][1+2*remoteP+remoteE], //From the last start node onwards
-           sizeof(real4)*(remoteN-remoteE));    
-   
-    //The start nodes, nodeCenterInfo
-    memcpy(&combinedRemoteTree[2*(particleTextOffset + totalParticles) + startNodeSumOffsets[i]
-                                + (totalNodes + totalTopNodes + nodeTextOffset)],  
-           &treeBuffers[i][1+2*remoteP+remoteB + remoteN], //From the start node onwards
-           sizeof(real4)*remoteNstart);
-    
-    //Non start nodes, nodeCenterInfo       
-    memcpy(&combinedRemoteTree[2*(particleTextOffset + totalParticles) +  totalTopNodes 
-           + nodeSumOffsets[i] + (totalNodes + totalTopNodes + nodeTextOffset)],  
-           &treeBuffers[i][1+2*remoteP+remoteE + remoteN], //From the last start node onwards
-           sizeof(real4)*(remoteN-remoteE));   
-        
-    //The start nodes, multipole       
-    memcpy(&combinedRemoteTree[2*(particleTextOffset + totalParticles) + 3*startNodeSumOffsets[i] +
-           2*(totalNodes+totalTopNodes + nodeTextOffset)],  
-           &treeBuffers[i][1+2*remoteP+2*remoteN + 3*remoteB], //From the start node onwards
-           sizeof(real4)*remoteNstart*3);  
-                     
-    //Non start nodes, multipole       
-    memcpy(&combinedRemoteTree[2*(particleTextOffset + totalParticles) +  3*totalTopNodes + 
-           3*nodeSumOffsets[i] + 2*(totalNodes+totalTopNodes+nodeTextOffset)],  
-           &treeBuffers[i][1+2*remoteP+remoteE*3 + 2*remoteN], //From the last start node onwards
-           sizeof(real4)*(remoteN-remoteE)*3);               
-    /*
-    |real4| 2*particleCount*real4| nodes*real4 | nodes*real4 | nodes*3*real4 |
-    1 + 2*particleCount + nodeCount + nodeCount + 3*nodeCount
-    
-    Info about #particles, #nodes, start and end of tree-walk
-    The particle positions
-    velocities
-    The nodeSizeData
-    The nodeCenterData
-    The multipole data, is 3x number of nodes (mono and quadrupole data)  
-    
-    Now that the data is copied, modify the offsets of the tree so that everything works
-    with the new correct locations and references. This takesp lace in two steps:
-    First  the top nodes since
-    Second the normal nodes
-    Has to be done in two steps since they are not continous in memory if NPROCS > 2
+      //The start nodes, nodeCenterInfo
+      memcpy(&combinedRemoteTree[2*(totalParticles) + startNodeSumOffsets[i]
+                                  + (totalNodes + totalTopNodes + nodeTextOffset)],  
+            &treeBuffers[i][1+2*remoteP+remoteB + remoteN], //From the start node onwards
+            sizeof(real4)*remoteNstart);
+      
+      //Non start nodes, nodeCenterInfo       
+      memcpy(&combinedRemoteTree[2*(totalParticles) +  totalTopNodes 
+            + nodeSumOffsets[i] + (totalNodes + totalTopNodes + nodeTextOffset)],  
+            &treeBuffers[i][1+2*remoteP+remoteE + remoteN], //From the last start node onwards
+            sizeof(real4)*(remoteN-remoteE));   
+          
+      //The start nodes, multipole       
+      memcpy(&combinedRemoteTree[2*(totalParticles) + 3*startNodeSumOffsets[i] +
+            2*(totalNodes+totalTopNodes + nodeTextOffset)],  
+            &treeBuffers[i][1+2*remoteP+2*remoteN + 3*remoteB], //From the start node onwards
+            sizeof(real4)*remoteNstart*3);  
+                      
+      //Non start nodes, multipole       
+      memcpy(&combinedRemoteTree[2*(totalParticles) +  3*totalTopNodes + 
+            3*nodeSumOffsets[i] + 2*(totalNodes+totalTopNodes+nodeTextOffset)],  
+            &treeBuffers[i][1+2*remoteP+remoteE*3 + 2*remoteN], //From the last start node onwards
+            sizeof(real4)*(remoteN-remoteE)*3);               
+      /*
+      |real4| 2*particleCount*real4| nodes*real4 | nodes*real4 | nodes*3*real4 |
+      1 + 2*particleCount + nodeCount + nodeCount + 3*nodeCount
+      
+      Info about #particles, #nodes, start and end of tree-walk
+      The particle positions
+      velocities
+      The nodeSizeData
+      The nodeCenterData
+      The multipole data, is 3x number of nodes (mono and quadrupole data)  
+      
+      Now that the data is copied, modify the offsets of the tree so that everything works
+      with the new correct locations and references. This takes place in two steps:
+      First  the top nodes 
+      Second the normal nodes
+      Has to be done in two steps since they are not continous in memory if NPROCS > 2
       */  
 
-    //Modify the top nodes
-    int modStart = 2*(particleTextOffset + totalParticles) + startNodeSumOffsets[i];
-    int modEnd   = modStart       + remoteNstart;
+      //Modify the top nodes
+      int modStart = 2*(totalParticles) + startNodeSumOffsets[i];
+      int modEnd   = modStart           + remoteNstart;
 
-    for(int j=modStart; j < modEnd; j++)
-    {
-      real4 nodeCenter = combinedRemoteTree[j+totalTopNodes+totalNodes+nodeTextOffset];
-      real4 nodeSize   = combinedRemoteTree[j];
-      bool leaf        = nodeCenter.w <= 0;
-
-      int childinfo = host_float_as_int(nodeSize.w);          
-      int child, nchild;
-
-      if(!leaf)
+      for(int j=modStart; j < modEnd; j++)
       {
-        //Node
-        child    =    childinfo & 0x0FFFFFFF;                  //Index to the first child of the node
-        nchild   = (((childinfo & 0xF0000000) >> 28)) ;        //The number of children this node has          
-        
-        child = child - nodesBegEnd[i].y + totalTopNodes + nodeSumOffsets[i]; //Calculate the new start (non-leaf)        
-        child = child | (nchild << 28);                                       //Merging back in one int
-        
-        if(nchild == 0) child = 0;                             //To prevent incorrect negative values
-      }else{ //Leaf        
-        child   =   childinfo & BODYMASK;                      //the first body in the leaf
-        nchild  = (((childinfo & INVBMASK) >> LEAFBIT)+1);     //number of bodies in the leaf masked with the flag    
-        
-        child   =  child + particleSumOffsets[i];               //Increasing offset
-        child   = child | ((nchild-1) << LEAFBIT);              //Merging back to one int
-        
-        if(nchild == 0) child = 0;                              //To prevent incorrect negative values
-      }//end !leaf      
-      combinedRemoteTree[j].w =  host_int_as_float(child);      //store the modified offset
-    } 
-    
-    //Now the non-top nodes for this process
-    modStart =  totalTopNodes + nodeSumOffsets[i] + 2*(particleTextOffset + totalParticles);
-    modEnd   =  modStart      + remoteN-remoteE;
-    for(int j=modStart; j < modEnd; j++)
-    {
-      real4 nodeCenter = combinedRemoteTree[j+totalTopNodes+totalNodes+nodeTextOffset];
-      real4 nodeSize   = combinedRemoteTree[j];
-      bool leaf        = nodeCenter.w <= 0;
+        real4 nodeCenter = combinedRemoteTree[j+totalTopNodes+totalNodes+nodeTextOffset];
+        real4 nodeSize   = combinedRemoteTree[j];
+        bool leaf        = nodeCenter.w <= 0;
+
+        int childinfo = host_float_as_int(nodeSize.w);          
+        int child, nchild;
+
+        if(!leaf)
+        {
+          //Node
+          child    =    childinfo & 0x0FFFFFFF;                  //Index to the first child of the node          
+          nchild   = (((childinfo & 0xF0000000) >> 28)) ;        //The number of children this node has          
           
-      int childinfo = host_float_as_int(nodeSize.w);          
-      int child, nchild;
+          child = child - nodesBegEnd[i].y + totalTopNodes + nodeSumOffsets[i]; //Calculate the new start (non-leaf)        
+          child = child | (nchild << 28);                                       //Merging back in one int
+          
+          if(nchild == 0) child = 0;                             //To prevent incorrect negative values
+        }else{ //Leaf        
+          child   =   childinfo & BODYMASK;                      //the first body in the leaf
+          nchild  = (((childinfo & INVBMASK) >> LEAFBIT)+1);     //number of bodies in the leaf masked with the flag    
+          
+          child   =  child + particleSumOffsets[i];               //Increasing offset
+          child   = child | ((nchild-1) << LEAFBIT);              //Merging back to one int
+        }//end !leaf      
+        combinedRemoteTree[j].w =  host_int_as_float(child);      //store the modified offset
+      } 
+      
+      //Now the non-top nodes for this process
+      modStart =  totalTopNodes + nodeSumOffsets[i] + 2*(totalParticles);
+      modEnd   =  modStart      + remoteN-remoteE;
+      for(int j=modStart; j < modEnd; j++)
+      {
+        real4 nodeCenter = combinedRemoteTree[j+totalTopNodes+totalNodes+nodeTextOffset];
+        real4 nodeSize   = combinedRemoteTree[j];
+        bool leaf        = nodeCenter.w <= 0;
+            
+        int childinfo = host_float_as_int(nodeSize.w);          
+        int child, nchild;
 
-      if(!leaf) {  //Node       
-        child    =    childinfo & 0x0FFFFFFF;                   //Index to the first child of the node
-        nchild   = (((childinfo & 0xF0000000) >> 28)) ;         //The number of children this node has              
+        if(!leaf) {  //Node       
+          child    =    childinfo & 0x0FFFFFFF;                   //Index to the first child of the node
+          nchild   = (((childinfo & 0xF0000000) >> 28)) ;         //The number of children this node has              
 
-        //Calculate the new start (non-leaf)
-        child = child - nodesBegEnd[i].y + totalTopNodes + nodeSumOffsets[i];  ;      
-        
-        //Combine and store
-        child = child | (nchild << 28);  
-        
-        //if(nchild == 0xFFFFFFFF) child = 0;
-        if(nchild == 0) child = 0;                              //To prevent incorrect negative values
-      }else{ //Leaf
-        child   =   childinfo & BODYMASK;                       //the first body in the leaf
-        nchild  = (((childinfo & INVBMASK) >> LEAFBIT)+1);      //number of bodies in the leaf masked with the flag    
-        
-        child =  child + particleSumOffsets[i];                 //Modify the particle offsets
-        child = child | ((nchild-1) << LEAFBIT);                //Merging the data back into one int
-        
-        //if(childinfo == 0xFFFFFFFF) child = 0;
-        if(nchild == 0) child = 0;                              //To prevent incorrect negative values
-      }//end !leaf
-      combinedRemoteTree[j].w =  host_int_as_float(child);      //Store the modified value
-    }   
+          //Calculate the new start (non-leaf)
+          child = child - nodesBegEnd[i].y + totalTopNodes + nodeSumOffsets[i];  ;      
+          
+          //Combine and store
+          child = child | (nchild << 28);  
+   
+          if(nchild == 0) child = 0;                              //To prevent incorrect negative values
+        }else{ //Leaf
+          child   =   childinfo & BODYMASK;                       //the first body in the leaf
+          nchild  = (((childinfo & INVBMASK) >> LEAFBIT)+1);      //number of bodies in the leaf masked with the flag    
+          
+          child =  child + particleSumOffsets[i];                 //Modify the particle offsets
+          child = child | ((nchild-1) << LEAFBIT);                //Merging the data back into one int
+        }//end !leaf
+        combinedRemoteTree[j].w =  host_int_as_float(child);      //Store the modified value
+      }   
+      
+      delete[] treeBuffers[i];    //Free the memory of this part of the LET
+    }
     
-     delete[] treeBuffers[i];    //Free the memory of this part of the LET
-  }
-  
-  /*  
-  The final tree structure looks as follows:
-  particlesT1, partcilesT2,...mparticlesTn |,
-  topNodeSizeT1, topNodeSizeT2,..., topNodeSizeT2 | nodeSizeT1, nodeSizeT2, ...nodeSizeT3 |,
-  topNodeCentT1, topNodeCentT2,..., topNodeCentT2 | nodeCentT1, nodeCentT2, ...nodeCentT3 |, 
-  topNodeMultT1, topNodeMultT2,..., topNodeMultT2 | nodeMultT1, nodeMultT2, ...nodeMultT3 
-  
-  NOTE that the Multipole data consists of 3 float4 values per node
+    /*  
+    The final tree structure looks as follows:
+    particlesT1, partcilesT2,...mparticlesTn |,
+    topNodeSizeT1, topNodeSizeT2,..., topNodeSizeT2 | nodeSizeT1, nodeSizeT2, ...nodeSizeT3 |,
+    topNodeCentT1, topNodeCentT2,..., topNodeCentT2 | nodeCentT1, nodeCentT2, ...nodeCentT3 |, 
+    topNodeMultT1, topNodeMultT2,..., topNodeMultT2 | nodeMultT1, nodeMultT2, ...nodeMultT3 
     
-  */
-  
-  //Combine the offsets into one int32 so we can extract it in the other
-  //part of the program
-  particleTextOffset = (particleTextOffset  << 16) | nodeTextOffset;
-  
-  //Store the tree properties (number of particles, number of nodes, start and end topnode)
-  remote.remoteTreeStruct.x = totalParticles;
-  remote.remoteTreeStruct.y = totalNodes+totalTopNodes;
-  remote.remoteTreeStruct.z = particleTextOffset;
-  remote.remoteTreeStruct.w = totalTopNodes;
+    NOTE that the Multipole data consists of 3 float4 values per node
+      
+    */  
     
-  cerr << "Aantal local bodies: " << tree.n << " aantal LET bodies: " << totalParticles << endl;
+    //Store the tree properties (number of particles, number of nodes, start and end topnode)
+    remote.remoteTreeStruct.x = totalParticles;
+    remote.remoteTreeStruct.y = totalNodes+totalTopNodes;
+    remote.remoteTreeStruct.z = nodeTextOffset;  
+    totalTopNodes             = (0 << 16) | (totalTopNodes);  //If its a merged tree we start at 0  
+    remote.remoteTreeStruct.w = totalTopNodes;
+    
+//     fprintf(stderr,"Modifying the LET took: %g \n", get_time()-t1);
+    fprintf(stderr,"Number of local bodies: %d number LET bodies: %d , number LET nodes: %d top nodes: %d Processed trees: %d (%d) \n",
+                    tree.n, totalParticles, totalNodes, totalTopNodes, PROCS, procTrees);
+
+    delete[] particleSumOffsets;
+    delete[] nodeSumOffsets;
+    delete[] startNodeSumOffsets;
+    delete[] nodesBegEnd;
+    
+    
+    thisPartLETExTime += get_time() - tStart;
+
+    
+    //Check if we need to summarize which particles are active, 
+    //only done during the last approximate_gravity_let call
+    bool doActivePart = (procTrees == mpiGetNProcs() -1);
+
+    approximate_gravity_let(this->localTree, this->remoteTree, bufferSize, doActivePart);    
+    
+ 
+    
+  } //end z
+  delete[] treeBuffers;  
   
-  delete[] particleSumOffsets;
-  delete[] nodeSumOffsets;
-  delete[] startNodeSumOffsets;
-  delete[] nodesBegEnd;
-  delete[] treeBuffers;
+  totalLETExTime += thisPartLETExTime;
+  
+  fprintf(stderr,"LETEX [%d] curStep: %g\t   Total: %g \n", procId, thisPartLETExTime, totalLETExTime);
+  
 }
 
 
@@ -1325,23 +1937,27 @@ bool split_node_grav_impbh(float4 nodeCOM, double4 boxCenter, double4 boxSize)
 #endif
 {
   //Compute the distance between the group and the cell
-  float3 dr = {fabsf(boxCenter.x - nodeCOM.x) - (boxSize.x),
-               fabsf(boxCenter.y - nodeCOM.y) - (boxSize.y),
-               fabsf(boxCenter.z - nodeCOM.z) - (boxSize.z)};
+  float3 dr = {fabs(boxCenter.x - nodeCOM.x) - (boxSize.x),
+               fabs(boxCenter.y - nodeCOM.y) - (boxSize.y),
+               fabs(boxCenter.z - nodeCOM.z) - (boxSize.z)};
 
-  dr.x += fabsf(dr.x); dr.x *= 0.5f;
-  dr.y += fabsf(dr.y); dr.y *= 0.5f;
-  dr.z += fabsf(dr.z); dr.z *= 0.5f;
+  dr.x += fabs(dr.x); dr.x *= 0.5f;
+  dr.y += fabs(dr.y); dr.y *= 0.5f;
+  dr.z += fabs(dr.z); dr.z *= 0.5f;
 
   //Distance squared, no need to do sqrt since opening criteria has been squared
   float ds2    = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z;
 
-  #ifdef INDSOFT
-    //Naar idee van Inti nu minder overbodige openingen                                                                                                       
-    if(ds2 <= ((group_eps + node_eps ) * (group_eps + node_eps) )) return true;              
+  #ifdef INDSOFT    
+    if(ds2      <= ((group_eps + node_eps ) * (group_eps + node_eps) ))           return true;
+    //Limited precision can result in round of errors. Use this as extra safe guard
+    if(fabs(ds2 -  ((group_eps + node_eps ) * (group_eps + node_eps) )) < 10e-04) return true;
   #endif
 
-  return (ds2 <= fabs(nodeCOM.w));
+   if (ds2     <= fabs(nodeCOM.w))           return true;
+   if (fabs(ds2 - fabs(nodeCOM.w)) < 10e-04) return true; //Limited precision can result in round of errors. Use this as extra safe guard
+   
+   return false;
 }
 
 //Minimal Distance version
@@ -1355,44 +1971,26 @@ bool split_node_grav_impbh(float4 nodeCOM, double4 boxCenter, double4 boxSize)
 #endif
 {
   //Compute the distance between the group and the cell
-  float3 dr = {fabsf(boxCenter.x - nodeCenter.x) - (boxSize.x + nodeSize.x),
-               fabsf(boxCenter.y - nodeCenter.y) - (boxSize.y + nodeSize.y),
-               fabsf(boxCenter.z - nodeCenter.z) - (boxSize.z + nodeSize.z)};
+  float3 dr = {fabs(boxCenter.x - nodeCenter.x) - (boxSize.x + nodeSize.x),
+               fabs(boxCenter.y - nodeCenter.y) - (boxSize.y + nodeSize.y),
+               fabs(boxCenter.z - nodeCenter.z) - (boxSize.z + nodeSize.z)};
 
-  dr.x += fabsf(dr.x); dr.x *= 0.5f;
-  dr.y += fabsf(dr.y); dr.y *= 0.5f;
-  dr.z += fabsf(dr.z); dr.z *= 0.5f;
-
-  
-  //Do the boxes overlap? TODO check if this is correct method
-//   if(dr.x == 0) return true;
-//   if(dr.y == 0) return true;
-//   if(dr.z == 0) return true;
-  
+  dr.x += fabs(dr.x); dr.x *= 0.5f;
+  dr.y += fabs(dr.y); dr.y *= 0.5f;
+  dr.z += fabs(dr.z); dr.z *= 0.5f;
 
   float ds2    = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z;
   
   #ifdef INDSOFT
-    //Naar idee van Inti nu minder overbodige openingen                                                                                                       
-    if(ds2 <= ((group_eps + node_eps ) * (group_eps + node_eps) )) return true;              
+    if(ds2 <=      ((group_eps + node_eps ) * (group_eps + node_eps) ))           return true;
+    if(fabs(ds2 -  ((group_eps + node_eps ) * (group_eps + node_eps) )) < 10e-04) return true;    
   #endif  
-  
-//   if(dr.x == 0 || dr.y == 0 || dr.z == 0)
-//   {
-//     cerr << "Test overlap! \n";
-//     fprintf(stderr, "dr: [%f, %f, %f] [ds: %f crit: %f open: %f ]\n", dr.x,dr.y,dr.z, ds2, nodeCenter.w, ds2 < fabs(nodeCenter.w));
-//     fprintf(stderr, "Node: [%f, %f, %f] en [%f, %f, %f] \n", nodeCenter.x,nodeCenter.y,nodeCenter.z,
-//                                                           nodeSize.x, nodeSize.y, nodeSize.z);
-//     fprintf(stderr, "Group: [%f, %f, %f] en [%f, %f, %f] \n", boxCenter.x,boxCenter.y,boxCenter.z,
-//                                                           boxSize.x, boxSize.y, boxSize.z);    
-//     
-//     
-//     
-//     exit(0);
-//   }  
 
-  //Cell opening magic
-  return (ds2 < fabs(nodeCenter.w));
+  if (ds2     <= fabs(nodeCenter.w))           return true;
+  if (fabs(ds2 - fabs(nodeCenter.w)) < 10e-04) return true; //Limited precision can result in round of errors. Use this as extra safe guard
+
+  return false;
+     
  }
 
 void octree::create_local_essential_tree(real4* bodies, real4* multipole, real4* nodeSizeInfo, real4* nodeCenterInfo,   
@@ -1544,10 +2142,6 @@ void octree::create_local_essential_tree(real4* bodies, real4* multipole, real4*
         if(!split)
         {          
           massSum += multipole[node*3 + 0].w;
-/*          
-          if(mpiGetRank() == 0)
-            cout << "Mass van " << node << " is: " << multipole[node*3 + 0].w << endl;
-          */
         }
 
 
@@ -1584,7 +2178,7 @@ void octree::create_local_essential_tree_fill(real4* bodies, real4* velocities, 
 
     double massSum = 0;
 
-    int particleOffset   = 1;
+    int particleOffset     = 1;
     int velParticleOffset  = particleOffset      + particleCount; 
     int nodeSizeOffset     = velParticleOffset   + particleCount;
     int nodeCenterOffset   = nodeSizeOffset      + nodeCount;
@@ -1609,20 +2203,12 @@ void octree::create_local_essential_tree_fill(real4* bodies, real4* velocities, 
       dataBuffer[nodeSizeOffset++]   = nodeSizeInfo[i];
       dataBuffer[nodeCenterOffset++] = nodeCenterInfo[i];
       
-//       //TEST CODE!!! REMOVE!!
-//       multipole[i*3 + 0].y = i;            
-//       printf("TEST: %d\t%f w: %f\n", i, multipole[i*3 + 0].x, multipole[i*3 + 0].w);
-      
       dataBuffer[multiPoleOffset++]  = multipole[i*3 + 0];
       dataBuffer[multiPoleOffset++]  = multipole[i*3 + 1];
       dataBuffer[multiPoleOffset++]  = multipole[i*3 + 2];        
     }
     
     //Start the tree-walk
- /*   printf("Start: %d end: %d \n", start, end);
-    cout << "Starting walk on: " << curLevel.size() << " items! \n"; 
-    fprintf(stderr,"Group: %f %f %f by %f %f %f \n", boxCenter.x, boxCenter.y, boxCenter.z, boxSize.x, boxSize.y, boxSize.z);
-   */ 
     //Variables to rewrite the tree-structure indices
     int childNodeOffset         = end;
     int childParticleOffset     = 0;
@@ -1641,25 +2227,21 @@ void octree::create_local_essential_tree_fill(real4* bodies, real4* velocities, 
         union{float f; int i;} u; //__float_as_int
         u.f           = nodeSize.w;      
         int childinfo = u.i;
-        
        
-        
         int child, nchild;
         if(!leaf)
         {
           //Node
-          child    =    childinfo & 0x0FFFFFFF;                         //Index to the first child of the node
+          child    =    childinfo & 0x0FFFFFFF;                   //Index to the first child of the node
           nchild   = (((childinfo & 0xF0000000) >> 28)) ;         //The number of children this node has              
         }
         else
         {
           //Leaf
-          child   =   childinfo & BODYMASK;                                     //thre first body in the leaf
+          child   =    childinfo & BODYMASK;                     //the first body in the leaf
           nchild  = (((childinfo & INVBMASK) >> LEAFBIT)+1);     //number of bodies in the leaf masked with the flag        
         }
   
-  //TODO the opening check for Individual softening
-        
         #ifdef INDSOFT
           //Very inefficient this but for testing I have to live with it...                                                                                   
           float node_eps_val = multipole[node*3 + 1].w; 
@@ -1671,14 +2253,13 @@ void octree::create_local_essential_tree_fill(real4* bodies, real4* velocities, 
           nodeCOM.w = nodeCenter.w;
           
           #ifdef INDSOFT
-             bool   split   = split_node_grav_impbh(nodeCOM, boxCenter, boxSize, group_eps, node_eps_val);
+             bool split = split_node_grav_impbh(nodeCOM, boxCenter, boxSize, group_eps, node_eps_val);
           #else
              bool split = split_node_grav_impbh(nodeCOM, boxCenter, boxSize);  
           #endif
           
         #else
-          //Minimal distance version
-          
+          //Minimal distance version          
           #ifdef INDSOFT
             bool split = split_node(nodeCenter, nodeSize, boxCenter, boxSize, group_eps, node_eps_val);  //Check if node should be split
           #else
@@ -1687,12 +2268,8 @@ void octree::create_local_essential_tree_fill(real4* bodies, real4* velocities, 
           
         #endif         
         
-//         bool split = split_node(nodeCenter, nodeSize, boxCenter, boxSize);
-       
-//         bool split = true;
-//         uint temp =childinfo;
-//         uint temp = 0xFFFFFFFF;
-        uint temp = 0;
+
+        uint temp = 0;  //A node that is not split and is not a leaf will get childinfo 0
         //if split & node add children to next lvl stack
         if(split && !leaf)
         {       
@@ -1719,51 +2296,34 @@ void octree::create_local_essential_tree_fill(real4* bodies, real4* velocities, 
           temp = childParticleOffset | ((nchild-1) << LEAFBIT);
           childParticleOffset += nchild;          
         }
+              
         
         
-        //Add the node data to the appropriate arrays
-        //and modify the node reference
+        //Add the node data to the appropriate arrays and modify the node reference
         //start ofset for its children, should be nodeCount at start of this level +numberofnodes on this level
         //plus a counter that counts the number of childs of the nodes we have tested
 
         //New childoffset:
         union{int i; float f;} itof; //__int_as_float
-        itof.i           = temp;            
+        itof.i         = temp;            
         float tempConv = itof.f;
         
         //Add node properties and update references
         real4 nodeSizeInfoTemp  = nodeSizeInfo[node];
         nodeSizeInfoTemp.w      = tempConv;             //Replace child reference
-        
-//         //TEST CODE!!! REMOVE!!
-//         multipole[node*3 + 0].y = node;      
-//         if(node < 20)
-//         printf("TEST (%d): %d cent: %f %f %f size: %f %f %f w: %f\n", mpiGetRank(), node, 
-//                nodeCenterInfo[node].x, nodeCenterInfo[node].y, nodeCenterInfo[node].z,
-//                nodeSizeInfoTemp.x, nodeSizeInfoTemp.y, nodeSizeInfoTemp.z,
-//                multipole[node*3 + 0].w);        
-//         
+
         dataBuffer[nodeSizeOffset++]   = nodeSizeInfoTemp;
         dataBuffer[nodeCenterOffset++] = nodeCenterInfo[node];
         dataBuffer[multiPoleOffset++]  = multipole[node*3 + 0];
         dataBuffer[multiPoleOffset++]  = multipole[node*3 + 1];
         dataBuffer[multiPoleOffset++]  = multipole[node*3 + 2];       
         
-   /*   dataBuffer[nodeSizeOffset-1].x = mpiGetRank()*10+1;
-      dataBuffer[nodeCenterOffset-1].x = mpiGetRank()*10+2;
-      
-      dataBuffer[multiPoleOffset-3].x = mpiGetRank()*10+3;
-      dataBuffer[multiPoleOffset-2].x = mpiGetRank()*10+4;
-      dataBuffer[multiPoleOffset-1].x = mpiGetRank()*10+5;           
-  */
-        
         if(!split)
         {          
           massSum += multipole[node*3 + 0].w;
         }
       } //end for curLevel.size
-      
-      
+            
       //Put next level stack into current level and continue
       curLevel.clear();
       
@@ -1774,9 +2334,8 @@ void octree::create_local_essential_tree_fill(real4* bodies, real4* velocities, 
     }//end while
  
 //   cout << "New offsets: "  << particleOffset << " \t" << nodeSizeOffset << " \t" << nodeCenterOffset << endl;
-   cout << "Mass sum: " << massSum  << endl;
+//    cout << "Mass sum: " << massSum  << endl;
 //   cout << "Mass sumtest: " << multipole[0*0 + 0].w << endl;
-  
 }
 
 
@@ -1861,9 +2420,6 @@ void octree::create_local_essential_tree_count(real4* bodies, real4* multipole, 
           
         #endif 
         
-//         bool split = split_node(nodeCenter, nodeSize, boxCenter, boxSize);
-
-//         split = true;
         //if split & node add children to next lvl stack
         if(split && !leaf)
         {       
@@ -1898,8 +2454,8 @@ void octree::create_local_essential_tree_count(real4* bodies, real4* multipole, 
     particles = particleCount;
     nodes = nodeCount;  
     
-    fprintf(stderr, "Count found: %d particles and %d nodes. Boxsize: (%f %f %f ) BoxCenter: (%f %f %f)\n", 
-                    particles, nodes, boxSize.x ,boxSize.y, boxSize.z, boxCenter.x, boxCenter.y, boxCenter.z );   
+/*    fprintf(stderr, "Count found: %d particles and %d nodes. Boxsize: (%f %f %f ) BoxCenter: (%f %f %f)\n", 
+                    particles, nodes, boxSize.x ,boxSize.y, boxSize.z, boxCenter.x, boxCenter.y, boxCenter.z );  */ 
 }
 
 

@@ -39,19 +39,86 @@ void octree::getBoundaries(tree_structure &tree, real4 &r_min, real4 &r_max)
   printf("min: %f\t%f\t%f\tmax: %f\t%f\t%f \n", r_min.x,r_min.y,r_min.z,r_max.x,r_max.y,r_max.z);
 }
 
-void octree::sort_bodies(tree_structure &tree) {
+void octree::getBoundariesGroups(tree_structure &tree, real4 &r_min, real4 &r_max)
+{
 
-//We assume the bodies are already onthe GPU
+  //Start reduction to get the boundary's of the system
+  boundaryReductionGroups.set_arg<int>(0, &tree.n_groups);
+  boundaryReductionGroups.set_arg<cl_mem>(1, tree.groupCenterInfo.p());
+  boundaryReductionGroups.set_arg<cl_mem>(2, tree.groupSizeInfo.p());
+  boundaryReductionGroups.set_arg<cl_mem>(3, devMemRMIN.p());
+  boundaryReductionGroups.set_arg<cl_mem>(4, devMemRMAX.p());
+
+  boundaryReductionGroups.setWork(tree.n_groups, NTHREAD_BOUNDARY, NBLOCK_BOUNDARY);  //256 threads and 120 blocks in total
+  boundaryReductionGroups.execute();
+
+   
+  devMemRMIN.d2h();     //Need to be defined and initialized somewhere outside this function
+  devMemRMAX.d2h();     //Need to be defined and initialized somewhere outside this function
+  r_min = (real4){+1e10, +1e10, +1e10, +1e10}; 
+  r_max = (real4){-1e10, -1e10, -1e10, -1e10};   
+  
+  //Reduce the blocks, done on host since its
+  //A faster and B we need the results anyway
+  for (int i = 0; i < 120; i++) {    
+    r_min.x = fmin(r_min.x, devMemRMIN[i].x);
+    r_min.y = fmin(r_min.y, devMemRMIN[i].y);
+    r_min.z = fmin(r_min.z, devMemRMIN[i].z);
+    
+    r_max.x = fmax(r_max.x, devMemRMAX[i].x);
+    r_max.y = fmax(r_max.y, devMemRMAX[i].y);
+    r_max.z = fmax(r_max.z, devMemRMAX[i].z);    
+  }
+  
+  printf("Found group boundarys before increase, number of groups %d : \n", tree.n_groups);
+  printf("min: %f\t%f\t%f\tmax: %f\t%f\t%f \n", r_min.x,r_min.y,r_min.z,r_max.x,r_max.y,r_max.z);
+  
+  //Prevent small-numerical differences by making the group/box slightly bigger
+  
+  double smallFac1 = 0.999;
+  double smallFac2 = 1.001;
+  
+  //Note that we have to check the sign to move the border in the right
+  //direction
+  r_min.x = (r_min.x < 0) ? r_min.x * smallFac2 : r_min.x * smallFac1;
+  r_min.y = (r_min.y < 0) ? r_min.y * smallFac2 : r_min.y * smallFac1;
+  r_min.z = (r_min.z < 0) ? r_min.z * smallFac2 : r_min.z * smallFac1;
+
+  r_max.x = (r_max.x < 0) ? r_max.x * smallFac1 : r_max.x * smallFac2;
+  r_max.y = (r_max.y < 0) ? r_max.y * smallFac1 : r_max.y * smallFac2;
+  r_max.z = (r_max.z < 0) ? r_max.z * smallFac1 : r_max.z * smallFac2;
+  
+
+  rMinLocalTreeGroups = r_min;
+  rMaxLocalTreeGroups = r_max;
+  
+  
+  printf("Found group boundarys after increase, number of groups %d : \n", tree.n_groups);
+  printf("min: %f\t%f\t%f\tmax: %f\t%f\t%f \n", r_min.x,r_min.y,r_min.z,r_max.x,r_max.y,r_max.z);
+}
+
+
+
+void octree::sort_bodies(tree_structure &tree, bool doDomainUpdate) {
+
+  //We assume the bodies are already onthe GPU
   devContext.startTiming();
   real4 r_min = {+1e10, +1e10, +1e10, +1e10}; 
   real4 r_max = {-1e10, -1e10, -1e10, -1e10};   
-  getBoundaries(tree, r_min, r_max);
   
-  //Sync the boundary over the various processes
-  if(this->mpiGetNProcs() > 1)
+  if(doDomainUpdate)
   {
-     this->mpiRadiusFind(r_min, r_max);
+    getBoundaries(tree, r_min, r_max);  
+    //Sync the boundary over the various processes
+    if(this->mpiGetNProcs() > 1)
+    {
+      this->sendCurrentRadiusInfo(r_min, r_max);
+    }
+    rMinGlobal = r_min;    rMaxGlobal = r_max;
   }
+  
+  r_min = rMinGlobal;
+  r_max = rMaxGlobal;
   
   //Compute the boundarys of the tree  
   real size     = 1.001*fmax(r_max.z - r_min.z,
@@ -65,7 +132,7 @@ void octree::sort_bodies(tree_structure &tree) {
   
   
   float idomain_fac = 1.0/tree.domain_fac;
-  float domain_fac = tree.domain_fac;
+  float domain_fac  = tree.domain_fac;
   
   tree.corner.w = domain_fac;  
   
@@ -76,7 +143,6 @@ void octree::sort_bodies(tree_structure &tree) {
   
   //Compute the keys
   build_key_list.set_arg<cl_mem>(0,   tree.bodies_key.p());
-//   build_key_list.set_arg<cl_mem>(1,   tree.bodies_pos.p());
   build_key_list.set_arg<cl_mem>(1,   tree.bodies_Ppos.p());
   build_key_list.set_arg<int>(2,      &tree.n);
   build_key_list.set_arg<real4>(3,    &tree.corner);
@@ -89,10 +155,8 @@ void octree::sort_bodies(tree_structure &tree) {
   //into a uint4 so we can extend the tree to 96bit key
   //we have to convert to 64bit key to a 96bit for sorting
   //and back from 96 to 64    
-   //my_dev::dev_mem<uint4>  srcValues(devContext, tree.n);
-//   my_dev::dev_mem<uint4>  output(devContext, tree.n);
-   my_dev::dev_mem<uint4>  srcValues(devContext);
-   my_dev::dev_mem<uint4>  output(devContext);
+  my_dev::dev_mem<uint4>  srcValues(devContext);
+  my_dev::dev_mem<uint4>  output(devContext);
   
   //The generalBuffer1 has size uint*4*N*3
   //this buffer gets part: 0-uint*4*N
@@ -108,35 +172,19 @@ void octree::sort_bodies(tree_structure &tree) {
                          tree.generalBuffer1.get_devMem(),
                          &tree.generalBuffer1[4*tree.n], 4*tree.n,
                          tree.n, getAllignmentOffset(4*tree.n));
-//   srcValues.cmalloc_copy(tree.generalBuffer1, 0, tree.n*4);
- 
    //Extract the keys
   convertKey64to96.set_arg<cl_mem>(0,   tree.bodies_key.p());
   convertKey64to96.set_arg<cl_mem>(1,   srcValues.p());
-  convertKey64to96.set_arg<int>(2,      &tree.n);
-  
+  convertKey64to96.set_arg<int>(2,      &tree.n);  
   convertKey64to96.setWork(tree.n, 256);
   convertKey64to96.execute();
-  
-  /*
-  tree.bodies_key.d2h();
-  for(int i=0; i < 10; i++)
-  {
-    printf("%d\t%d\t%d\t%d\n", i, tree.bodies_key[i].z, tree.bodies_key[i].y, tree.bodies_key[i].x);
-  }
-  */
-
+ 
   //Sort the keys  
   
-  //my_dev::dev_mem<uint4>  buffer(devContext, tree.n);
   // If srcValues and buffer are different, then the original values
-  // are preserved, if they are the same srcValues will be overwritten
-//   gpuSort(devContext, srcValues, output, buffer, tree.n, 32,2); 
-  //gpuSort(devContext, srcValues, output, srcValues, tree.n, 32,2, tree);
+  // are preserved, if they are the same srcValues will be overwritten  
   gpuSort(devContext, srcValues, output, srcValues, tree.n, 32, 3, tree);
  
-  
-//   my_dev::dev_mem<uint>   sortPermutation(devContext, tree.n);
   my_dev::dev_mem<uint>   sortPermutation(devContext);
   sortPermutation.cmalloc_copy(tree.generalBuffer1.get_pinned(), 
                          tree.generalBuffer1.get_flags(), 
@@ -155,23 +203,6 @@ void octree::sort_bodies(tree_structure &tree) {
   extractKeyAndPerm.setWork(tree.n, 256);
   extractKeyAndPerm.execute();  
 
-  
-//   sortPermutation.d2h();
-//   tree.bodies_key.d2h();
-// //   for(int i=1; i < tree.n; i++)
-//   for(int i=0; i < 10; i++)
-//   {
-// //    if(tree.bodies_key[i].x == tree.bodies_key[i-1].x)
-//       printf("%d\t%d\t%d\t%d\t%d \n", i, sortPermutation[i], tree.bodies_key[i].z, tree.bodies_key[i].y, tree.bodies_key[i].x);
-//   }
-// //   exit(0);
-//   
-  
-  
-  //Free and alloc memory 
-  //buffer.free_mem();
-//   output.free_mem();
-  
   //Use calloc here so valgrind does not complain about uninitialized values
   my_dev::dev_mem<real4>  real4Buffer(devContext);
 
@@ -181,10 +212,9 @@ void octree::sort_bodies(tree_structure &tree) {
                          &tree.generalBuffer1[4*tree.n], 4*tree.n, 
                          tree.n, getAllignmentOffset(4*tree.n));      
   
-//   real4Buffer.ccalloc(tree.n, false);    //ccalloc -> init to 0
   devContext.stopTiming("Sorting", 0);  
-  //Call the reorder data function
 
+  //Call the reorder data function
 
   //For the position
   dataReorderR4.set_arg<int>(0,      &tree.n);
@@ -203,7 +233,7 @@ void octree::sort_bodies(tree_structure &tree) {
   if(tree.needToReorder)
   {
     //Fill the oriParticleOrder with a continues increasing sequence
-    //
+
     //Dimensions for the kernels that shuffle and extract data
     fillSequence.set_arg<cl_mem>(0, tree.oriParticleOrder.p());
     fillSequence.set_arg<uint>(1, &tree.n);
@@ -211,9 +241,6 @@ void octree::sort_bodies(tree_structure &tree) {
     fillSequence.execute();
     tree.needToReorder = false;
   }
-
-
-
 
   //Velocity
   dataReorderR4.set_arg<cl_mem>(1,   tree.bodies_vel.p());
@@ -245,11 +272,6 @@ void octree::sort_bodies(tree_structure &tree) {
   tree.bodies_Pvel.copy(real4Buffer, real4Buffer.get_size()); 
   clFinish(devContext.get_command_queue());     
   
-  
-  //Free the buffers with which we are finished
-//   real4Buffer.free_mem();
-//   my_dev::dev_mem<float2> float2Buffer(devContext,tree.n);
-
   my_dev::dev_mem<float2> float2Buffer(devContext);
   float2Buffer.cmalloc_copy(tree.generalBuffer1.get_pinned(),   
                          tree.generalBuffer1.get_flags(), 
@@ -266,9 +288,6 @@ void octree::sort_bodies(tree_structure &tree) {
   dataReorderF2.setWork(tree.n, 256);  
   dataReorderF2.execute();  
   tree.bodies_time.copy(float2Buffer, float2Buffer.get_size()); 
-
-//   float2Buffer.free_mem();
-//   my_dev::dev_mem<int>  intBuffer(devContext,tree.n);
 
   my_dev::dev_mem<int>  intBuffer(devContext);
   intBuffer.cmalloc_copy(tree.generalBuffer1.get_pinned(),   
@@ -295,14 +314,11 @@ void octree::sort_bodies(tree_structure &tree) {
   dataReorderI1.execute();  
   tree.oriParticleOrder.copy(intBuffer, intBuffer.get_size());   
 
-  devContext.stopTiming("Data reordering", 1);    
+  devContext.stopTiming("Data-reordering", 1);    
 }
 
-
-
 void octree::desort_bodies(tree_structure &tree) {
-  
-//   my_dev::dev_mem<uint>   sortPermutation(devContext, tree.n);
+
   my_dev::dev_mem<uint>   sortPermutation(devContext);
   sortPermutation.cmalloc_copy(tree.generalBuffer1.get_pinned(), 
                          tree.generalBuffer1.get_flags(), 
@@ -376,18 +392,12 @@ void octree::desort_bodies(tree_structure &tree) {
   tree.bodies_Pvel.copy(real4Buffer, real4Buffer.get_size()); 
   clFinish(devContext.get_command_queue());     
   
-  
-  //Free the buffers with which we are finished
-//   real4Buffer.free_mem();
-//   my_dev::dev_mem<float2> float2Buffer(devContext,tree.n);
-
   my_dev::dev_mem<float2> float2Buffer(devContext);
   float2Buffer.cmalloc_copy(tree.generalBuffer1.get_pinned(),   
                          tree.generalBuffer1.get_flags(), 
                          tree.generalBuffer1.get_devMem(),
                          &tree.generalBuffer1[4*tree.n], 4*tree.n,
                          tree.n, getAllignmentOffset(4*tree.n));   
-
   
   //Integration time
   dataReorderF2.set_arg<int>(0,      &tree.n);
@@ -397,9 +407,6 @@ void octree::desort_bodies(tree_structure &tree) {
   dataReorderF2.setWork(tree.n, 256);  
   dataReorderF2.execute();  
   tree.bodies_time.copy(float2Buffer, float2Buffer.get_size()); 
-
-//   float2Buffer.free_mem();
-//   my_dev::dev_mem<int>  intBuffer(devContext,tree.n);
 
   my_dev::dev_mem<int>  intBuffer(devContext);
   intBuffer.cmalloc_copy(tree.generalBuffer1.get_pinned(),   

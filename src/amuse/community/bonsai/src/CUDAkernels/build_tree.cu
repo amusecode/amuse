@@ -91,6 +91,95 @@ extern "C" __global__ void boundaryReduction(const int n_particles,
 
 }
 
+
+//Get the domain size, by taking into account the group size
+extern "C" __global__ void boundaryReductionGroups(const int n_groups,
+                                                   real4      *positions,
+                                                   real4      *sizes,
+                                                   float3     *output_min,
+                                                   float3     *output_max)
+{
+  const uint bid = blockIdx.y * gridDim.x + blockIdx.x;
+  const uint tid = threadIdx.x;
+  //const uint idx = bid * blockDim.x + tid;
+
+  volatile __shared__ float3 shmem[512];
+  float3 r_min = (float3){+1e10f, +1e10f, +1e10f};
+  float3 r_max = (float3){-1e10f, -1e10f, -1e10f};
+
+  volatile float3 *sh_rmin = (float3*)&shmem [ 0];
+  volatile float3 *sh_rmax = (float3*)&shmem[256];
+  sh_rmin[tid].x = r_min.x; sh_rmin[tid].y = r_min.y; sh_rmin[tid].z = r_min.z;
+  sh_rmax[tid].x = r_max.x; sh_rmax[tid].y = r_max.y; sh_rmax[tid].z = r_max.z;
+
+  // perform first level of reduction,
+  // reading from global memory, writing to shared memory
+  const int blockSize   = blockDim.x;
+//   unsigned int tid      = threadIdx.x;
+  unsigned int i        = blockIdx.x*(blockSize*2) + threadIdx.x;
+  unsigned int gridSize = blockSize*2*gridDim.x;
+
+  real4 pos;
+  real4 size;
+  // we reduce multiple elements per thread.  The number is determined by the
+  // number of active thread blocks (via gridSize).  More blocks will result
+  // in a larger gridSize and therefore fewer elements per thread
+  //based on reduce6 example
+  while (i < n_groups) {
+    if (i             < n_groups)
+    {
+      pos = positions[i];
+      size = sizes[i];
+      r_min.x = fminf(pos.x-size.x, r_min.x);
+      r_min.y = fminf(pos.y-size.y, r_min.y);
+      r_min.z = fminf(pos.z-size.z, r_min.z);
+      r_max.x = fmaxf(pos.x+size.x, r_max.x);
+      r_max.y = fmaxf(pos.y+size.y, r_max.y);
+      r_max.z = fmaxf(pos.z+size.z, r_max.z);
+    }
+    if (i + blockSize < n_groups)
+    {
+      pos = positions[i + blockSize];
+      size = sizes[i + blockSize];
+      r_min.x = fminf(pos.x-size.x, r_min.x);
+      r_min.y = fminf(pos.y-size.y, r_min.y);
+      r_min.z = fminf(pos.z-size.z, r_min.z);
+      r_max.x = fmaxf(pos.x+size.x, r_max.x);
+      r_max.y = fmaxf(pos.y+size.y, r_max.y);
+      r_max.z = fmaxf(pos.z+size.z, r_max.z);
+    }
+    i += gridSize;
+  }
+
+  sh_rmin[tid].x = r_min.x; sh_rmin[tid].y = r_min.y; sh_rmin[tid].z = r_min.z;
+  sh_rmax[tid].x = r_max.x; sh_rmax[tid].y = r_max.y; sh_rmax[tid].z = r_max.z;
+
+  __syncthreads();
+  // do reduction in shared mem  
+  if(blockDim.x >= 512) if (tid < 256) {sh_MinMax(tid, tid + 256, &r_min, &r_max, sh_rmin, sh_rmax);} __syncthreads();
+  if(blockDim.x >= 256) if (tid < 128) {sh_MinMax(tid, tid + 128, &r_min, &r_max, sh_rmin, sh_rmax);} __syncthreads();
+  if(blockDim.x >= 128) if (tid < 64)  {sh_MinMax(tid, tid + 64,  &r_min, &r_max, sh_rmin, sh_rmax);} __syncthreads();
+
+  if (tid < 32) 
+  {
+    sh_MinMax(tid, tid + 32, &r_min, &r_max, sh_rmin,sh_rmax);
+    sh_MinMax(tid, tid + 16, &r_min, &r_max, sh_rmin,sh_rmax);
+    sh_MinMax(tid, tid +  8, &r_min, &r_max, sh_rmin,sh_rmax);
+    sh_MinMax(tid, tid +  4, &r_min, &r_max, sh_rmin,sh_rmax);
+    sh_MinMax(tid, tid +  2, &r_min, &r_max, sh_rmin,sh_rmax);
+    sh_MinMax(tid, tid +  1, &r_min, &r_max, sh_rmin,sh_rmax);
+  }
+
+  // write result for this block to global mem
+  if (tid == 0)
+  {
+    //Compiler doesnt allow: volatile float3 = float3
+    output_min[bid].x = sh_rmin[0].x; output_min[bid].y = sh_rmin[0].y; output_min[bid].z = sh_rmin[0].z;
+    output_max[bid].x = sh_rmax[0].x; output_max[bid].y = sh_rmax[0].y; output_max[bid].z = sh_rmax[0].z;
+  }
+
+}
+
 //#define EXACT_KEY
 
 
@@ -323,67 +412,7 @@ extern "C" __global__ void build_phkey_list(uint2  *body_key,
 
 
 #endif         
-                
-//////////////////////////////
-//////////////////////////////
-//////////////////////////////
-
-// extern "C" __global__ void cl_build_valid_list(int n_bodies,
-//                                                int level,
-//                                                uint2  *body_key,
-//                                                uint *valid_list) {
-//   
-//   const uint bid = blockIdx.y * gridDim.x + blockIdx.x;
-//   const uint tid = threadIdx.x;
-//   const uint id  = bid * blockDim.x + tid;
-//   const uint2 key_F = {0xFFFFFFFF, 0xFFFFFFFF};
-//   
-//   if (id >= n_bodies) return;   // >=   since the last particle is extra boudnary particle
-//   
-//   uint2 mask = get_mask(level);
-//   mask.x = mask.x | ((uint)1 << 30) | ((uint)1 << 31);
-// 
-//   uint2 key_m;
-// 
-//   uint2 key_c = body_key[id];
-//   uint2 key_p;
-//   if (id == 0)
-//   {
-//     key_m = key_F;
-//   }
-//   else
-//   {
-//     key_m = body_key[id-1];
-//   }
-// 
-//   if((id+1) <  n_bodies) //The last particle gets a different key to compare with
-//   {
-//     key_p = body_key[id+1];
-//   }
-//   else
-//     key_p = (uint2){0xFFFFFFFF, 0xFFFFFFFF};
-// 
-// 
-//   int valid0 = 0;
-//   int valid1 = 0;
-//   if (cmp_uint2(key_c, key_F) != 0) {
-//     key_c.x = key_c.x & mask.x;
-//     key_c.y = key_c.y & mask.y;
-// 
-//     key_p.x = key_p.x & mask.x;
-//     key_p.y = key_p.y & mask.y;
-// 
-//     key_m.x = key_m.x & mask.x;
-//     key_m.y = key_m.y & mask.y;
-// 
-//     valid0 = abs(cmp_uint2(key_c, key_m));
-//     valid1 = abs(cmp_uint2(key_c, key_p));
-//   }
-// 
-//    valid_list[id*2]   = id | ((valid0) << 31);
-//    valid_list[id*2+1] = id | ((valid1) << 31);
-// 
-// }
+  
 
 extern "C" __global__ void cl_build_valid_list(int n_bodies,
                                                int level,
@@ -412,23 +441,6 @@ extern "C" __global__ void cl_build_valid_list(int n_bodies,
 
   uint4 key_c    = body_key[id];
 
-// if(id == 0)
-// {
-//   printf("ON DEV   mask: %d %d %d\n", mask.x, mask.y, mask.z);
-// }
-
-
-
-//   uint2 test_key = test_key_data[id];
-
-//   if(cmp_uint2(test_key, key_TEST) != 0)
-//   {
-//     if (cmp_uint2(test_key, key_F) != 0)
-//     {
-//       if(cmp_uint2(key_c, key_F) != 0)
-//         key_c = test_key;
-//     }
-//   }
 
   uint4 key_p;
   if (id == 0)
@@ -446,19 +458,6 @@ extern "C" __global__ void cl_build_valid_list(int n_bodies,
   }
   else
     key_p = (uint4){0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
-
-
-// if(id == 0)
-// {
-//   printf("ON DEV ,level: %d before mask (%X, %X)  key_c (%X, %X) key_m (%X, %X) key_p (%X, %X)\n", level, mask.x, mask.y, key_c.x, key_c.y, key_m.x, key_m.y, key_p.x, key_p.y);
-// }
-
-// if(id == 0)
-// {
-//   printf("ON DEV  ,level: %d before mask (%X, %X, %X)  key_c (%X, %X, %X) key_m (%X, %X, %X) key_p (%X, %X, %X)\n", level,
-//         mask.x, mask.y, mask.z, key_c.x, key_c.y, key_c.z, key_m.x, key_m.y, key_m.z, key_p.x, key_p.y, key_p.z);
-// }
-
 
 
   int valid0 = 0;
@@ -494,13 +493,6 @@ extern "C" __global__ void cl_build_valid_list(int n_bodies,
     valid1 = abs(cmp_uint4(key_c, key_p));
   }
 
-// if(id == 0)
-// {
-//   printf("ON DEV , after mask (%X, %X, %X)  key_c (%X, %X, %X) key_m (%X, %X, %X) key_p (%X, %X, %X)\n", 
-//         mask.x, mask.y, mask.z, key_c.x, key_c.y, key_c.z, key_m.x, key_m.y, key_m.z, key_p.x, key_p.y, key_p.z);
-// }
-
-
    valid_list[id*2]   = id | ((valid0) << 31);
    valid_list[id*2+1] = id | ((valid1) << 31);
 
@@ -532,8 +524,6 @@ extern "C" __global__ void cl_build_nodes(uint level,
   uint  bi   = compact_list[id*2];
   uint  bj   = compact_list[id*2+1] + 1;
   
-  //TODO make this a setting?
-  //int level_min   = 3; 
 
   uint4 key  = bodies_key[bi];
   uint4 mask = get_mask(level);
@@ -544,24 +534,11 @@ extern "C" __global__ void cl_build_nodes(uint level,
   node_key   [offset+id] = key;
   n_children [offset+id] = 0;
   
- // if (level > level_min) 
   if ((int)level > (int)(LEVEL_MIN - 1)) 
     if (bj - bi <= NLEAF)                            //Leaf can only have NLEAF particles, if its more there will be a split
       for (int i = bi; i < bj; i++)
         bodies_key[i] = (uint4){0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF}; //sets the key to FF to indicate the body is used
 
-  
-//TEST CODE TODO remove if not used
-/*
-  uint valid = 0;
-  //Special check to see if we can add special dense tree-nodes
-  if((level > 4) && (bj - bi <= 64) && (bj - bi > NLEAF))
-  {
-   valid = (offset+id) | (uint)(1 << 31);  
-  }
-  testValidList[id] = valid;
-
-*/
 }
 
 //////////////////////////////
@@ -596,9 +573,6 @@ extern "C" __global__ void cl_link_tree(int n_nodes,
   int4 crd;
   real domain_fac = corner.w;
 
-//   crd.x = (int)((pos.x - corner.x) / domain_fac + 0.5);
-//   crd.y = (int)((pos.y - corner.y) / domain_fac + 0.5);
-//   crd.z = (int)((pos.z - corner.z) / domain_fac + 0.5);
   #ifndef EXACT_KEY
     crd.x = (int)roundf(__fdividef((pos.x - corner.x), domain_fac));
     crd.y = (int)roundf(__fdividef((pos.y - corner.y) , domain_fac));
@@ -623,9 +597,8 @@ extern "C" __global__ void cl_link_tree(int n_nodes,
   
   if(id > 0)
     cij = level_list[level-1];
-  //int ci = find_key(key, cij);
-  int ci;
 
+  int ci;
   //Jeroen, modified this since we dont use textures in find_key,
   //the function will fail because out of bound memory access when id==0
   if(id > 0)
@@ -647,17 +620,12 @@ extern "C" __global__ void cl_link_tree(int n_nodes,
 
   /********* store the 1st child *****/
 
-  //TODO make it an option?
-  //int level_min   = 3; 
-
   cij = level_list[level+1];
   int cj = -1;
 
-  //Atomic needed, since they all find the same child right?
- //-> yes since an other thread / block can be working on it
   cj = find_key(key, cij, node_keys);
 
-  atomicOr(&n_children[id], cj);
+  atomicOr(&n_children[id], cj); //Atomic since multiple threads can work on this
 
   uint valid =  id | (uint)(0 << 31); 
 
@@ -753,7 +721,6 @@ extern "C" __global__ void build_group_list(int n_nodes,
     valid_list[id] = id | (0 << 31);  //Not a group
 }
 
-#if 1
 //Finds nodes/leafs that will become groups
 //After executions valid_list contains the 
 //valid nodes/leafs that form groups
@@ -773,8 +740,6 @@ extern "C" __global__ void build_group_list2(int    n_particles,
   //Note that we do not include the final particle
   //Since there is no reason to check it
   if (idx >= n_particles) return;
-
-
 
   //Get the current 
   float4 curPos, nexPos, prevPos;
@@ -821,72 +786,6 @@ extern "C" __global__ void build_group_list2(int    n_particles,
   validList[2*idx + 1] = (idx+1) | (uint)(validEnd   << 31);    
 }
 
-#else
-
-//WITH PEANO REORDER
-//Finds nodes/leafs that will become groups
-//After executions valid_list contains the 
-//valid nodes/leafs that form groups
-extern "C" __global__ void build_group_list2(int    n_particles,
-                                             uint  *validList,
-                                             real4  *bodies_pos,
-                                             uint   *peanoOrder)
-{
-  uint bid = blockIdx.y * gridDim.x + blockIdx.x;
-  uint tid = threadIdx.x;
-  uint idx = bid * blockDim.x + tid;
-
-  //TODO use shared mem ffor the positions
-//since we use them multiple times?
-  
-  //Note that we do not include the final particle
-  //Since there is no reason to check it
-  if (idx >= n_particles) return;
-
-// 
-
-  //Get the current 
-  float4 curPos, nexPos, prevPos;
-
-  curPos  =  bodies_pos[peanoOrder[idx]];
-
-  //Have to check the first and last to prevent out of bound access
-  if(idx+1 == n_particles)
-    nexPos  =  curPos;
-  else
-    nexPos = bodies_pos[peanoOrder[idx+1]];
-
-  if(idx == 0)
-    prevPos = curPos;
-  else
-    prevPos =  bodies_pos[peanoOrder[idx-1]];
-
-  //Compute geometrical distance
-  float dsPlus = ((curPos.x-nexPos.x)*(curPos.x-nexPos.x)) + 
-                 ((curPos.y-nexPos.y)*(curPos.y-nexPos.y)) + 
-                 ((curPos.z-nexPos.z)*(curPos.z-nexPos.z));
-
-  float dsMin = ((curPos.x-prevPos.x)*(curPos.x-prevPos.x)) + 
-                ((curPos.y-prevPos.y)*(curPos.y-prevPos.y)) + 
-                ((curPos.z-prevPos.z)*(curPos.z-prevPos.z));
-
-  //Multiples of the preferred group size are _always_ valid
-  int validStart = ((idx     % NCRIT) == 0);
-  int validEnd   = (((idx+1) % NCRIT) == 0);
-
-//   const int DIST = 1;
-  const float DIST = 50;
-
-  //The extra possible split(s) if the distance between two particles is too large
-  if(dsPlus > DIST) validEnd     = 1;
-  if(dsMin  > DIST) validStart   = 1;
-
-  //Set valid
-  validList[2*idx + 0] = (idx)   | (uint)(validStart << 31);
-  validList[2*idx + 1] = (idx+1) | (uint)(validEnd   << 31);    
-}
-
-#endif
    
 extern "C" __global__ void store_group_list(int    n_particles,
                                             int n_groups,
@@ -939,40 +838,6 @@ extern "C" __global__ void expandLeafList(int n_leafs,
 }
     
 
-/*
-//Finds nodes/leafs that will become groups
-//After executions valid_list contains the 
-//valid nodes/leafs that form groups
-extern "C" __global__ void build_group_list2(int n_particles,
-                                             int n_groups,
-                                             uint  *body2group_list,
-                                             uint2 *group_list)
-{
-  uint bid = blockIdx.y * gridDim.x + blockIdx.x;
-  uint tid = threadIdx.x;
-  uint idx = bid * blockDim.x + tid;
-  
-  if (bid >= n_groups) return;
-
-  //Build the grps based on NCRIT
-  //A grp contains NCRIT particles and goes from
-  //id*NCRIT - (id+1)*NCRIT
-
-  int start = bid    *NCRIT;
-  int end   = (bid+1)*NCRIT;
-
-  end = min(end, n_particles);
-
-  group_list[bid].x = start;
-  group_list[bid].y = end;
-  
-
-  //Set the particles - grp relation
-  if(idx < n_particles)
-    body2group_list[idx] = bid;
-}
-*/
-
 //Assign a grp id to each particle of that grp to 
 //create particle -> group relation using the
 //group -> particle relation
@@ -993,7 +858,6 @@ extern "C" __global__ void  build_body2group_list(const int n_groups,
   const uint firstChild = bij.x & ILEVELMASK;
   const uint nChildren  = bij.y - (bij.x & ILEVELMASK);
 
-  //int idx = min(firstChild + tid, firstChild + nChildren);
   int idx = firstChild+tid;
 
   //Save the group id for this particle

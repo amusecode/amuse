@@ -30,6 +30,31 @@ void octree::set_context2()
 void octree::load_kernels() {
 
   if (!devContext_flag) set_context();
+  
+  //If we arive here we have aquired a device, configure parts of the code
+  
+  //Get the number of multiprocessors and compute number of 
+  //blocks to be used during the tree-walk
+  nMultiProcessors   = devContext.multiProcessorCount;
+  nBlocksForTreeWalk = nMultiProcessors*TREE_WALK_BLOCKS_PER_SM;
+  
+
+  std::string pathName;
+
+
+  //AMUSE specific
+  if(this->src_directory != NULL)
+  {
+    pathName.assign(this->src_directory);
+  }
+  else
+  {  
+    //Strip the executable name, to get the path name
+    std::string temp(execPath);
+    int idx = temp.find_last_of("/\\");
+    pathName.assign(temp.substr(0, idx+1));
+  }
+  
 
   // load scan & sort kernels
 
@@ -50,46 +75,46 @@ void octree::load_kernels() {
   
   
 #ifdef USE_CUDA
-  compactCount.load_source("scanKernels.ptx", this->src_directory);
+  compactCount.load_source("./scanKernels.ptx", pathName.c_str());
   compactCount.create("compact_count");
   
-  exScanBlock.load_source("scanKernels.ptx", this->src_directory);
+  exScanBlock.load_source("./scanKernels.ptx", pathName.c_str());
   exScanBlock.create("exclusive_scan_block");
   
-  compactMove.load_source("scanKernels.ptx", this->src_directory);
+  compactMove.load_source("./scanKernels.ptx", pathName.c_str());
   compactMove.create("compact_move");
   
-  splitMove.load_source("scanKernels.ptx", this->src_directory);
+  splitMove.load_source("./scanKernels.ptx", pathName.c_str());
   splitMove.create("split_move");
   
-  sortCount.load_source("sortKernels.ptx", this->src_directory);
+  sortCount.load_source("./sortKernels.ptx", pathName.c_str());
   sortCount.create("sort_count");
 
-  sortMove.load_source("sortKernels.ptx", this->src_directory);
+  sortMove.load_source("./sortKernels.ptx", pathName.c_str());
   sortMove.create("sort_move_stage_key_value");  
 
-  extractInt.load_source("sortKernels.ptx", this->src_directory);
+  extractInt.load_source("./sortKernels.ptx", pathName.c_str());
   extractInt.create("extractInt");  
   
-  fillSequence.load_source("sortKernels.ptx", this->src_directory);
+  fillSequence.load_source("./sortKernels.ptx", pathName.c_str());
   fillSequence.create("fillSequence");  
   
-  reOrderKeysValues.load_source("sortKernels.ptx", this->src_directory);
+  reOrderKeysValues.load_source("./sortKernels.ptx", pathName.c_str());
   reOrderKeysValues.create("reOrderKeysValues");    
   
-  extractKeyAndPerm.load_source("sortKernels.ptx", this->src_directory);
+  extractKeyAndPerm.load_source("./sortKernels.ptx", pathName.c_str());
   extractKeyAndPerm.create("extractKeyAndPerm");  
   
-  convertKey64to96.load_source("sortKernels.ptx", this->src_directory);
+  convertKey64to96.load_source("./sortKernels.ptx", pathName.c_str());
   convertKey64to96.create("convertKey64to96");
   
-  dataReorderR4.load_source("sortKernels.ptx", this->src_directory);
+  dataReorderR4.load_source("./sortKernels.ptx", pathName.c_str());
   dataReorderR4.create("dataReorderR4");  
   
-  dataReorderF2.load_source("sortKernels.ptx", this->src_directory);
+  dataReorderF2.load_source("./sortKernels.ptx", pathName.c_str());
   dataReorderF2.create("dataReorderF2");  
 
-  dataReorderI1.load_source("sortKernels.ptx", this->src_directory);
+  dataReorderI1.load_source("./sortKernels.ptx", pathName.c_str());
   dataReorderI1.create("dataReorderI1");        
   
 #else
@@ -118,6 +143,7 @@ void octree::load_kernels() {
   define_groups.setContext(devContext);
   build_level_list.setContext(devContext);
   boundaryReduction.setContext(devContext);
+  boundaryReductionGroups.setContext(devContext);  
   build_body2group_list.setContext(devContext);
   store_groups.setContext(devContext);
   expand_leaflist.setContext(devContext);
@@ -127,19 +153,19 @@ void octree::load_kernels() {
   /* load kernels tree properties */
   
 #ifdef USE_CUDA
-  build_key_list.load_source("build_tree.ptx", this->src_directory);
-  build_valid_list.load_source("build_tree.ptx", this->src_directory);
-  build_nodes.load_source("build_tree.ptx", this->src_directory);
-  link_tree.load_source("build_tree.ptx", this->src_directory);
-//  link_tree.load_source("build_tree.cubin", this->src_directory);
-  define_groups.load_source("build_tree.ptx", this->src_directory);
-  build_level_list.load_source("build_tree.ptx", this->src_directory);
-  boundaryReduction.load_source("build_tree.ptx", this->src_directory);
-  build_body2group_list.load_source("build_tree.ptx", this->src_directory);
-  store_groups.load_source("build_tree.ptx", this->src_directory);
-  expand_leaflist.load_source("build_tree.ptx", this->src_directory);
+  build_key_list.load_source("./build_tree.ptx", pathName.c_str());
+  build_valid_list.load_source("./build_tree.ptx", pathName.c_str());
+  build_nodes.load_source("./build_tree.ptx", pathName.c_str());
+  link_tree.load_source("./build_tree.ptx", pathName.c_str());
+  define_groups.load_source("./build_tree.ptx", pathName.c_str());
+  build_level_list.load_source("./build_tree.ptx", pathName.c_str());
+  boundaryReduction.load_source("./build_tree.ptx", pathName.c_str());
+  boundaryReductionGroups.load_source("./build_tree.ptx", pathName.c_str());
+  build_body2group_list.load_source("./build_tree.ptx", pathName.c_str());
+  store_groups.load_source("./build_tree.ptx", pathName.c_str());
+  expand_leaflist.load_source("./build_tree.ptx", pathName.c_str());
   
-  build_phkey_list.load_source("build_tree.ptx", this->src_directory);
+  build_phkey_list.load_source("./build_tree.ptx", pathName.c_str());
   
   /* create kernels */
 
@@ -150,6 +176,7 @@ void octree::load_kernels() {
   define_groups.create("build_group_list2");
   build_level_list.create("build_level_list");
   boundaryReduction.create("boundaryReduction");
+  boundaryReductionGroups.create("boundaryReductionGroups");
   build_body2group_list.create("build_body2group_list");
   store_groups.create("store_group_list");
   expand_leaflist.create("expandLeafList");
@@ -185,15 +212,15 @@ void octree::load_kernels() {
   /* load kernels */
   
 #ifdef USE_CUDA
-  propsNonLeaf.load_source("compute_properties.ptx", this->src_directory);
-  propsLeaf.load_source("compute_properties.ptx", this->src_directory);
-  propsScaling.load_source("compute_properties.ptx", this->src_directory);
+  propsNonLeaf.load_source("./compute_properties.ptx", pathName.c_str());
+  propsLeaf.load_source("./compute_properties.ptx", pathName.c_str());
+  propsScaling.load_source("./compute_properties.ptx", pathName.c_str());
 
-  propsNonLeafD.load_source("compute_propertiesD.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);
-  propsLeafD.load_source("compute_propertiesD.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);
-  propsScalingD.load_source("compute_propertiesD.ptx", this->src_directory, "",-1, CU_TARGET_COMPUTE_20);
+  propsNonLeafD.load_source("./compute_propertiesD.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);
+  propsLeafD.load_source("./compute_propertiesD.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);
+  propsScalingD.load_source("./compute_propertiesD.ptx", pathName.c_str(), "",-1, CU_TARGET_COMPUTE_20);
   
-  copyNodeDataToGroupData.load_source("compute_propertiesD.ptx", this->src_directory);
+  copyNodeDataToGroupData.load_source("./compute_propertiesD.ptx", pathName.c_str());
 
   /* create kernels */
 
@@ -204,9 +231,8 @@ void octree::load_kernels() {
   propsNonLeafD.create("compute_non_leaf"); 
   propsLeafD.create("compute_leaf");
   propsScalingD.create("compute_scaling");
-  
-//   copyNodeDataToGroupData.create("copyNodeDataToGroupData");
-  copyNodeDataToGroupData.create("copyNodeDataToGroupData2");
+
+  copyNodeDataToGroupData.create("setPHGroupData");
   
 #else
   propsNonLeaf.load_source("compProps.cl", "");
@@ -235,18 +261,18 @@ void octree::load_kernels() {
   approxGravLET.setContext(devContext);
 
 #ifdef USE_CUDA
-  getTNext.load_source("timestep.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);
-  predictParticles.load_source("timestep.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);
-  getNActive.load_source("timestep.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);
-  approxGrav.load_source("dev_approximate_gravity.ptx", this->src_directory, "", 64);
-//   approxGrav.load_source("dev_approximate_gravity.cubin", "", "", 64);
-  correctParticles.load_source("timestep.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);
-  computeDt.load_source("timestep.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);
-  computeEnergy.load_source("timestep.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);
-  setActiveGrps.load_source("timestep.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);
-  distanceCheck.load_source("timestep.ptx", this->src_directory, "", -1, CU_TARGET_COMPUTE_20);  
+  getTNext.load_source("./timestep.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);
+  predictParticles.load_source("./timestep.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);
+  getNActive.load_source("./timestep.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);
+  approxGrav.load_source("./dev_approximate_gravity.ptx", pathName.c_str(), "", 64);
+//   approxGrav.load_source("./dev_approximate_gravity.cubin", "", "", 64);
+  correctParticles.load_source("./timestep.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);
+  computeDt.load_source("./timestep.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);
+  computeEnergy.load_source("./timestep.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);
+  setActiveGrps.load_source("./timestep.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);
+  distanceCheck.load_source("./timestep.ptx", pathName.c_str(), "", -1, CU_TARGET_COMPUTE_20);  
   
-  approxGravLET.load_source("dev_approximate_gravity_let.ptx", this->src_directory, "", 64);  
+  approxGravLET.load_source("./dev_approximate_gravity_let.ptx", pathName.c_str(), "", 64);  
   /* create kernels */
 
   getTNext.create("get_Tnext"); 
@@ -258,12 +284,10 @@ void octree::load_kernels() {
   setActiveGrps.create("setActiveGroups");
 
   computeEnergy.create("compute_energy_double");  
-  //computeEnergy.create("compute_energy");  
   distanceCheck.create("distanceCheck");  
   
   approxGravLET.create("dev_approximate_gravity");
 
-  
 #else
   getTNext.load_source("", "");
   
@@ -273,9 +297,33 @@ void octree::load_kernels() {
   
 #endif
 
+  //Parallel kernels
+  domainCheck.setContext(devContext);  
+  extractSampleParticles.setContext(devContext);  
+  extractOutOfDomainR4.setContext(devContext);  
+  extractOutOfDomainBody.setContext(devContext);  
+  insertNewParticles.setContext(devContext);  
+  internalMove.setContext(devContext);  
+
+#ifdef USE_CUDA
+  domainCheck.load_source("./parallel.ptx", pathName.c_str());
+  extractSampleParticles.load_source("./parallel.ptx", pathName.c_str());
+  extractOutOfDomainR4.load_source("./parallel.ptx", pathName.c_str());
+  extractOutOfDomainBody.load_source("./parallel.ptx", pathName.c_str());
+  insertNewParticles.load_source("./parallel.ptx", pathName.c_str());
+  internalMove.load_source("./parallel.ptx", pathName.c_str());
+  
+  domainCheck.create("doDomainCheck");
+  extractSampleParticles.create("extractSampleParticles");
+  extractOutOfDomainR4.create("extractOutOfDomainParticlesR4");
+  extractOutOfDomainBody.create("extractOutOfDomainParticlesAdvanced");
+  insertNewParticles.create("insertNewParticles");
+  internalMove.create("internalMove");
+
+#else
 
 
-
+#endif
 
 }
 
@@ -524,13 +572,6 @@ void  octree::gpuSort(my_dev::context &devContext,
                           &tree.generalBuffer1[11*N], 11*N,
                           N, prevOffsetSum + getAllignmentOffset(11*N + prevOffsetSum));  //N elements after output32b        
 
-//   my_dev::dev_mem<int> output32b(devContext, N); //Permutation values, for sorting the int4 data
-//   my_dev::dev_mem<uint> valuesOutput(devContext, N);  //Buffers for the values which are the indexes
-  
- // my_dev::dev_mem<int> aPing32b(devContext, N); //Permutation values, for sorting the int4 data  
- // my_dev::dev_mem<uint> valuesAPing(devContext, N);  //Buffers for the values which are the indexes
-  
-
     
   //Dimensions for the kernels that shuffle and extract data
   const int blockSize = 256;
@@ -670,29 +711,18 @@ void  octree::gpuSort(my_dev::context &devContext,
 //   fprintf(stderr, "sortArray2 done in %g sec (Without memory alloc & compilation) \n", get_time() - t0);
 }
 
-// Hier gebleven, keysAping value veranderd, lijkt te werken?
 
 void octree::gpuSort_32b(my_dev::context &devContext, 
                     my_dev::dev_mem<uint> &srcKeys,     my_dev::dev_mem<uint> &srcValues,
                     my_dev::dev_mem<int>  &keysOutput,  my_dev::dev_mem<uint> &keysAPing,
-                    my_dev::dev_mem<uint> &valuesOutput,my_dev::dev_mem<uint> &valuesAPing,                         
-                    //my_dev::dev_mem<uint> &count,
+                    my_dev::dev_mem<uint> &valuesOutput,my_dev::dev_mem<uint> &valuesAPing,
                     int N, int numberOfBits)
 {
-
-// void octree::gpuSort_32b(my_dev::context &devContext, 
-//                     my_dev::dev_mem<uint> &srcKeys,     my_dev::dev_mem<uint> &srcValues,
-//                     my_dev::dev_mem<int>  &keysOutput,  my_dev::dev_mem<int> &keysAPing,
-//                     my_dev::dev_mem<uint> &valuesOutput,my_dev::dev_mem<uint> &valuesAPing,                         
-//                     my_dev::dev_mem<uint> &count, int N, int numberOfBits)
-// {
 
   int bitIdx = 0;
 
   //Step 1, do the count
-//   my_dev::dev_mem<uint> counts(devContext, 512), countx(devContext, 512);
   //Memory that should be alloced outside the function:
-  //devMemCounts and devMemCountsx 
 
   setupParams sParam;
   sParam.jobs = (N / 64) / 480  ; //64=32*2 2 items per look, 480 is 120*4, number of procs

@@ -1,9 +1,13 @@
 #include "support_kernels.cu"
 #include <stdio.h>
 
-//#define LMEM_STACK_SIZE 512
-#define LMEM_STACK_SIZE 2048
-#define ACCS(i) (i % LMEM_STACK_SIZE)
+
+template<int SHIFT>
+__forceinline__ __device__ int ACCS(const int i)
+{
+  return (i & ((LMEM_STACK_SIZE << SHIFT) - 1))*blockDim.x + threadIdx.x;
+}
+
 
 #define BTEST(x) (-(int)(x))
 
@@ -35,7 +39,6 @@ __device__ __forceinline__ T inclusive_scan_warp(volatile T *ptr, T mysum,  cons
 }
 
 
-// __device__ T inclusive_scan_warp(volatile T *ptr, T mysum,  const unsigned int idx = threadIdx.x) {
 __device__ __forceinline__ int inclusive_scan_warp(volatile int *ptr, int mysum, const unsigned int idx) {
 
   const unsigned int lane = idx & 31;
@@ -45,11 +48,6 @@ __device__ __forceinline__ int inclusive_scan_warp(volatile int *ptr, int mysum,
   if (lane >=  4) ptr[idx] = mysum = ptr[idx -  4]   + mysum;
   if (lane >=  8) ptr[idx] = mysum = ptr[idx -  8]   + mysum;
   if (lane >= 16) ptr[idx] = mysum = ptr[idx -  16]  + mysum;
-
-//   if(inclusive)
-//     return value;    //Inclusive
-//   else
-//     return(lane > 0) ? ptr[idx-1] : 0;  //Exclusive
 
   return ptr[idx];
 }
@@ -151,52 +149,64 @@ __device__ T inclusive_scan_array(volatile T *ptr_global, const int N, const uns
 }
 
 #ifdef INDSOFT
-__device__ float4 get_D04(float ds2, float epsP, float epsQ) {
+__device__ float4 get_D04(float ds2, float epsP, float epsQ, int selfGrav = 1) {
 
-
-  float eps = fmaxf(epsP, epsQ);
-
-  float dist   = sqrt(ds2);
-
-  float epseff = epsP + epsQ;
+//   float eps     = fmaxf(epsP, epsQ);
+  float epseff  = epsP + epsQ;
   float ids, ids2, ids3;
 
-  if(dist >= epseff)
+  if(ds2 >= (epseff*epseff))
   {
-     ids  = 1./dist;
+     ids  = rsqrtf(ds2);
+     //if(isnan(ids)) ids = 0; not needed if we use non-zero softening
+     ids  = ids*selfGrav;       //Prevent selfGravity, instead of using if-statement
      ids3 = ids*ids*ids;
   }
   else
   {
-    float epseffi = 1./epseff;
+    //these two lines are faster than a real sqrt
+    float dist = ds2*selfGrav*rsqrtf(ds2); //Gives NaN is ds is 0
+    if(isnan(dist)) dist = 0.0f;
+    //float    dist = sqrtf(ds2); //Slower than the two lines above
+    //assert(!isnan(dist));
+
+    float epseffi = 1.f/epseff;
     float rhinv   = dist*epseffi;
 
-    if(rhinv < 0.5)
+    if(rhinv < 0.5f)
     {
-      ids3  = 4./3. + (rhinv*rhinv)*(4.*rhinv-4.8);
-      ids   = 1.4 - (rhinv*rhinv)*(8./3.+(rhinv*rhinv)*(3.2*rhinv-4.8));
+      ids3  = 4.f/3.f + (rhinv*rhinv)*(4.f*rhinv-4.8f);
+      ids   = 1.4f - (rhinv*rhinv)*(8.f/3.f+(rhinv*rhinv)*(3.2f*rhinv-4.8f));
     }
     else
     {
-      ids3 = 8./3.-6.*rhinv+4.8*(rhinv*rhinv)-4./3.*(rhinv*rhinv*rhinv)-1./120./(rhinv*rhinv*rhinv);
-      ids  = 1.6-1/(30.*rhinv)-(rhinv*rhinv)*(16./3.+rhinv*(-8.+rhinv*(4.8-rhinv*16./15.)));
+      ids3 = 8.f/3.f-6.f*rhinv+4.8f*(rhinv*rhinv)-4.f/3.f*(rhinv*rhinv*rhinv)-1.f/120.f/(rhinv*rhinv*rhinv);
+      ids  = 1.6f-1/(30.f*rhinv)-(rhinv*rhinv)*(16.f/3.f+rhinv*(-8.f+rhinv*(4.8f-rhinv*16.f/15.f)));
     }//end if rhin < 0.5
 
-    ids  = ids*2*epseffi;
-    ids3 =  ids3*8*(epseffi*epseffi*epseffi);
-  } //end dist >= epseff
+    ids  = ids*2.f*epseffi;
+    ids3 =  ids3*8.f*(epseffi*epseffi*epseffi);
 
+    //Self gravity prevention (and NaN prevention)
+    ids  *= selfGrav;
+    ids3 *= selfGrav;
+
+  } //end dist >= epseff
+  
   ids2 = ids*ids;
   float ids5 = ids3*ids2;
   float ids7 = ids5*ids2;
   return (float4){ids, -ids3, +3.0f*ids5, -15.0f*ids7};
-}  // 9 flops
+} 
 
 #else
 
-__device__ float4 get_D04(float ds2) {
+__device__ float4 get_D04(float ds2, int selfGrav = 1) {
 #if 1
-  float ids  = rsqrtf(ds2);
+  float ids  = rsqrtf(ds2);  //Does not work with zero-softening
+  //   if(isnan(ids)) ids = 0;               //This does work with zero-softening, few percent performance drop
+  //float ids  = (1.0f / sqrtf(ds2)) * selfGrav; Slower in Pre CUDA4.1
+  ids *= selfGrav;
 #else
   const float ids = (ds2 > 0.0f) ? rsqrtf(ds2) : 0.0f;
 #endif
@@ -212,13 +222,13 @@ __device__ float4 get_D04(float ds2) {
 #ifdef INDSOFT
 __device__ float4 add_acc(float4 acc,  float4 pos,
                           float massj, float3 posj, float epsQ,
-                          float &ds2, float eps2P) {
+                          float &ds2, float eps2P, int selfGrav) {
 
 #else
 
 __device__ float4 add_acc(float4 acc,  float4 pos,
 			  float massj, float3 posj,
-			  float &ds2, float eps2) {
+			  float &ds2, float eps2, int selfGrav) {
 #endif
 
   float3 dr = {pos.x - posj.x,
@@ -227,10 +237,10 @@ __device__ float4 add_acc(float4 acc,  float4 pos,
 
   #ifdef INDSOFT
     ds2 = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z;
-    float4 D04 = get_D04(ds2, eps2P, epsQ);
+    float4 D04 = get_D04(ds2, eps2P, epsQ, selfGrav);
   #else
     ds2 = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z + eps2;
-    float4 D04 = get_D04(ds2);
+    float4 D04 = get_D04(ds2, selfGrav);
   #endif
 
   float  D0  = D04.x*massj;
@@ -305,13 +315,13 @@ __device__ float4 add_acc(float4 acc, float4 pos,
 #endif
 {
   //Compute the distance between the group and the cell
-  float3 dr = {fabsf(groupCenter.x - nodeCenter.x) - (groupSize.x + nodeSize.x),
-               fabsf(groupCenter.y - nodeCenter.y) - (groupSize.y + nodeSize.y),
-               fabsf(groupCenter.z - nodeCenter.z) - (groupSize.z + nodeSize.z)};
+  float3 dr = {fabs(groupCenter.x - nodeCenter.x) - (groupSize.x + nodeSize.x),
+               fabs(groupCenter.y - nodeCenter.y) - (groupSize.y + nodeSize.y),
+               fabs(groupCenter.z - nodeCenter.z) - (groupSize.z + nodeSize.z)};
 
-  dr.x += fabsf(dr.x); dr.x *= 0.5f;
-  dr.y += fabsf(dr.y); dr.y *= 0.5f;
-  dr.z += fabsf(dr.z); dr.z *= 0.5f;
+  dr.x += fabs(dr.x); dr.x *= 0.5f;
+  dr.y += fabs(dr.y); dr.y *= 0.5f;
+  dr.z += fabs(dr.z); dr.z *= 0.5f;
 
   //Distance squared, no need to do sqrt since opening criteria has been squared
   float ds2    = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z;
@@ -333,19 +343,19 @@ __device__ bool split_node_grav_impbh(float4 nodeCOM, float4 groupCenter, float4
 #endif
 {
   //Compute the distance between the group and the cell
-  float3 dr = {fabsf(groupCenter.x - nodeCOM.x) - (groupSize.x),
-               fabsf(groupCenter.y - nodeCOM.y) - (groupSize.y),
-               fabsf(groupCenter.z - nodeCOM.z) - (groupSize.z)};
+  float3 dr = {fabs(groupCenter.x - nodeCOM.x) - (groupSize.x),
+               fabs(groupCenter.y - nodeCOM.y) - (groupSize.y),
+               fabs(groupCenter.z - nodeCOM.z) - (groupSize.z)};
 
-  dr.x += fabsf(dr.x); dr.x *= 0.5f;
-  dr.y += fabsf(dr.y); dr.y *= 0.5f;
-  dr.z += fabsf(dr.z); dr.z *= 0.5f;
+  dr.x += fabs(dr.x); dr.x *= 0.5f;
+  dr.y += fabs(dr.y); dr.y *= 0.5f;
+  dr.z += fabs(dr.z); dr.z *= 0.5f;
 
   //Distance squared, no need to do sqrt since opening criteria has been squared
   float ds2    = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z;
 
   #ifdef INDSOFT
-    //Naar idee van Inti nu minder overbodige openingen
+    //Extra test
     if(ds2 <= ((group_eps + node_eps ) * (group_eps + node_eps) )) return true;
   #endif
 
@@ -363,18 +373,16 @@ __device__ float4 get_float4(float4 const volatile &v)
 #define DOGRAV
 
 
-template<int DIM2>
+template<int DIM2, int SHIFT>
 __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 				      int tid, int tx, int ty,
 				      int body_i, float4 pos_i,
 				      real4 group_pos,
-                                      float4 corner2,   //TODO Can be removed
-                                      float inv_theta, float eps2,
+                                      float eps2,
                                       uint2 node_begend,
                                       real4 *multipole_data,
                                       real4 *body_pos,
 				      int *shmem,
-// 				      volatile int *lmem,
                                       int *lmem,
 				      int &ngb,
                                       int &apprCount, int &direCount,
@@ -383,13 +391,11 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 				      volatile float4 *boxCenterInfo,
                                       float group_eps,
                                       real4 *body_vel) {
-//   const int DIM2x = 4;
-//   const int DIM2y = 2;
-//   const int DIM2  = DIM2x + DIM2y;
 
   float4 acc_i = {0.0f, 0.0f, 0.0f, 0.0f};
   ngb = -1;
   float ds2_min = 1.0e10f;
+
 
   /*********** set necessary thread constants **********/
 
@@ -428,14 +434,11 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
     float *sh_eps     = (float* )&sh_jid    [DIM];     //JB Partially overwrites the prefix part
     float  *node_eps  = (float*) &approx[ 2*DIM];   //JB 11*DIM, 14*DIM,  3*DIM
 
-  //   float *sh_eps   = (float*)&shmem [15*DIM];
-  //   float *node_eps = (float*)&shmem [15*DIM];
   #endif
 
 
   /*********** stack **********/
 
-//   volatile int *nstack = lmem;
   int *nstack = lmem;
 
   /*********** begin tree-walk **********/
@@ -443,19 +446,17 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
   int n_approx = 0;
   int n_direct = 0;
 
-  int level = 0;
 
   for (int root_node = node_begend.x; root_node < node_begend.y; root_node += DIM) {
     int n_nodes0 = min(node_begend.y - root_node, DIM);
     int n_stack0 = 0;
     int n_stack_pre = 0;
 
-    { nstack[ACCS(n_stack0)] = root_node + tid;   n_stack0++; }
+    { nstack[ACCS<SHIFT>(n_stack0)] = root_node + tid;   n_stack0++; }
 
     /*********** walk each level **********/
     while (n_nodes0 > 0) {
 
-      level++;
 
       int n_nodes1 = 0;
       int n_offset = 0;
@@ -470,19 +471,17 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 	**** --> fetch the list of nodes rom LMEM
 	***/
 	bool use_node = tid <  n_nodes0;
- 	{ prefix[tid] = nstack[ACCS(c_stack0)];   c_stack0++; }
+ 	{ prefix[tid] = nstack[ACCS<SHIFT>(c_stack0)];   c_stack0++; }
 	__syncthreads();
 	int node  = prefix[min(tid, n_nodes0 - 1)];
 
-        n_nodes0 -= DIM;
+        if(n_nodes0 > 0){       //Work around pre 4.1 compiler bug
+          n_nodes0 -= DIM;
+        }
 
 	/***
 	**** --> process each of the nodes in the list in parallel
 	***/
-/*	uint4  node_data  = node_data_list[node];
-	uint2  node_key   = {node_data.x, node_data.y};                    // calculating node's parameters
-	float  node_size  = __int_as_float(node_data.z);                   // size of the node
- 	float4 node_pos   = get_pos(node_key, fabsf(node_size), corner);   // pos & size of the node*/
 
         #ifndef TEXTURES
           float4 nodeSize = get_float4(boxSizeInfo[node]);                   //Fetch the size of the box. Size.w = child info
@@ -527,9 +526,11 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
         bool leaf       = node_pos.w <= 0;  //Small AND equal incase of a 1 particle cell       //Check if it is a leaf
 //         split = true;
 
+
 	uint mask    = BTEST((split && !leaf) && use_node);               // mask = #FFFFFFFF if use_node+split+not_a_leaf==true, otherwise zero
         int child    =    node_data & 0x0FFFFFFF;                         //Index to the first child of the node
         int nchild   = (((node_data & 0xF0000000) >> 28)) & mask;         //The number of children this node has
+
 
   	/***
 	**** --> calculate prefix
@@ -577,9 +578,17 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
         /*** if half of shared memory or more is filled with the the nodes, dump these into slowmem stack ***/
 	while(n_offset >= DIM) {
 	  n_offset -= DIM;
-	  nstack[ACCS(n_stack1)] = nodes[n_offset + tid];   n_stack1++;
+	  const int offs1 = ACCS<SHIFT>(n_stack1);
+	  nstack[offs1] = nodes[n_offset + tid];   n_stack1++;
 	  n_nodes1 += DIM;
+
+          if((n_stack1 - c_stack0) >= (LMEM_STACK_SIZE << SHIFT))
+          {
+            //We overwrote our current stack
+	    apprCount = -1; return acc_i;	 
+          }
 	}
+
 	__syncthreads();
 
 
@@ -763,17 +772,21 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
             #endif
 	    __syncthreads();
 #pragma unroll
-	    for (int j = 0; j < DIMx; j++) {
-	      if (body_i != sh_jid[offs + j]) {
+	    for (int j = 0; j < DIMx; j++)
+            {
+              int selfGrav = (body_i != sh_jid[offs + j]);
+// 	      if (body_i != sh_jid[offs + j]) //If statement replaced by multiplication
+              {
 		float ds2 =  1.0e10f;
                 direCount++;
 #ifdef DOGRAV
                 #ifdef INDSOFT
-                  acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], sh_eps[offs + j], ds2, eps2);
+                  acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], sh_eps[offs + j], ds2, eps2, selfGrav);
                 #else
-                  acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], ds2, eps2);
+                  acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], ds2, eps2, selfGrav);
                 #endif
 #endif
+                ds2 += selfGrav*1.0e10f;
 		if (ds2 < ds2_min) {
 		  ngb     = sh_jid[offs + j];
 		  ds2_min = ds2;
@@ -797,18 +810,25 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 
       n_nodes1 += n_offset;
       if (n_offset > 0)
-         { nstack[ACCS(n_stack1)] = nodes[tid];   n_stack1++; }
+      { 
+        nstack[ACCS<SHIFT>(n_stack1)] = nodes[tid];   n_stack1++; 
+        if((n_stack1 - c_stack0) >= (LMEM_STACK_SIZE << SHIFT))
+        {
+          //We overwrote our current stack
+	  apprCount = -1; return acc_i;	 
+	}
+      }
       __syncthreads();
+
 
       /***
       **** --> copy nodes1 to nodes0: done by reassigning the pointers
       ***/
-      n_nodes0 = n_nodes1;
+      n_nodes0    = n_nodes1;
 
       n_stack_pre = n_stack0;
-      n_stack0 = n_stack1;
+      n_stack0    = n_stack1;
 
-//        if(level >=  0) break;
     }//end while   levels
   }//end for
 
@@ -903,16 +923,18 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
     __syncthreads();
   #pragma unroll
     for (int j = 0; j < DIMx; j++) {
-      if ((body_i != sh_jid[offs + j]) && (sh_jid[offs + j] >= 0)) {
+      if ((sh_jid[offs + j] >= 0)) {
+        int selfGrav = (body_i != sh_jid[offs + j]);
         float ds2 =  1.0e10f;
         direCount++;
   #ifdef DOGRAV
         #ifdef INDSOFT
-          acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], sh_eps[offs + j], ds2, eps2);
+          acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], sh_eps[offs + j], ds2, eps2, selfGrav);
         #else
-          acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], ds2, eps2);
+          acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], ds2, eps2, selfGrav);
         #endif
   #endif
+        ds2 += selfGrav*1.0e10f;
         if (ds2 < ds2_min) {
           ngb     = sh_jid[offs + j];
           ds2_min = ds2;
@@ -951,6 +973,7 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
   //Sum the interaction counters
   sh_ds2[tid] = direCount;
   sh_ngb[tid] = apprCount;
+
   __syncthreads();
 
 
@@ -971,33 +994,29 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
 extern "C" __global__ void
 __launch_bounds__(NTHREAD)
 dev_approximate_gravity(const int n_active_groups,
-                                                   float4  corner,
-                                                   float inv_theta,
-                                                   float eps2,
-                                                   uint2 node_begend,
-                                                   int    *active_groups,
-//                                                    uint4  *node_data,
-                                                   real4  *body_pos,
-                                                   real4  *multipole_data,
-                                                   float4 *acc_out,
-                                                   int    *ngb_out,
-                                                   int    *active_inout,
-//                                                    uint4  *group_data_list,
-                                                   int2   *interactions,
-                                                   float4  *boxSizeInfo,
-                                                   float4  *groupSizeInfo,
-                                                   float4  *boxCenterInfo,
-                                                   float4  *groupCenterInfo,
-                                                   real4   *body_vel,
-                                                   int     *group_list){
-//                                                    int     *peanoOrder){
+                        int    n_bodies,
+                        float eps2,
+                        uint2 node_begend,
+                        int    *active_groups,
+                        real4  *body_pos,
+                        real4  *multipole_data,
+                        float4 *acc_out,
+                        int    *ngb_out,
+                        int    *active_inout,
+                        int2   *interactions,
+                        float4  *boxSizeInfo,
+                        float4  *groupSizeInfo,
+                        float4  *boxCenterInfo,
+                        float4  *groupCenterInfo,
+                        real4   *body_vel,
+                        int     *MEM_BUF) {
 //                                                    int     grpOffset){
-//                                                     int     *MEM_BUF) {
+
 
   const int blockDim2 = NTHREAD2;
    __shared__ int shmem[15*(1 << blockDim2)];
 //    __shared__ int shmem[24*(1 << blockDim2)]; is possible on FERMI
-   int             lmem[LMEM_STACK_SIZE];
+//    int             lmem[LMEM_STACK_SIZE];
 
 
 
@@ -1005,24 +1024,17 @@ dev_approximate_gravity(const int n_active_groups,
 
   int bid = gridDim.x * blockIdx.y + blockIdx.x;
 
-//   int memID = 0;
-
- /* while(true)
+  while(true)
   {
 
-  if(threadIdx.x == 0)
-  {
-    bid         = atomicAdd(&active_inout[1024*1024], 1);
-//     memID       = atomicAdd(&active_inout[1024*1024+1], 1);
-    shmem[0]    = bid;
-//     shmem[1]    = memID;
-  }
+    if(threadIdx.x == 0)
+    {
+      bid         = atomicAdd(&active_inout[n_bodies], 1);
+      shmem[0]    = bid;
+    }
   __syncthreads();
 
   bid   = shmem[0];
-//   memID = shmem[1];
-  */
-
 
   if (bid >= n_active_groups) return;
 
@@ -1032,6 +1044,8 @@ dev_approximate_gravity(const int n_active_groups,
   int grpOffset = 0;
 
 //   volatile int *lmem = &MEM_BUF[blockIdx.x*LMEM_STACK_SIZE*blockDim.x + threadIdx.x*LMEM_STACK_SIZE];
+//   int *lmem = &MEM_BUF[blockIdx.x*LMEM_STACK_SIZE*blockDim.x + threadIdx.x*LMEM_STACK_SIZE];
+   int *lmem = &MEM_BUF[blockIdx.x*LMEM_STACK_SIZE*blockDim.x];
 
 
   /*********** set necessary thread constants **********/
@@ -1041,7 +1055,7 @@ dev_approximate_gravity(const int n_active_groups,
   uint body_i           =   groupData & CRITMASK;
   uint nb_i             = ((groupData & INVCMASK) >> CRITBIT) + 1;
 
-  real4 group_pos = groupCenterInfo[active_groups[bid + grpOffset]];
+  real4 group_pos       = groupCenterInfo[active_groups[bid + grpOffset]];
 
 //   if(tid == 0)
 //   printf("[%f %f %f %f ] \n [%f %f %f %f ] %d %d \n",
@@ -1057,12 +1071,6 @@ dev_approximate_gravity(const int n_active_groups,
 
   int tx = tid & ((1 << DIM2x) - 1);
   int ty = tid >> DIM2x;
-
-  #ifdef __DEVICE_EMULATION__
-    if (tid == 0)
-      fprintf(stderr, "bid= %d [%d]  DIM= (%d %d) bi= %d nb= %d\n",
-              bid, n_active_groups,  1 << DIM2x, 1 << DIM2y, body_i, nb_i);
-  #endif
 
   body_i += tx%nb_i;
 
@@ -1110,25 +1118,62 @@ dev_approximate_gravity(const int n_active_groups,
   int direCount = 0;
 
 
-  int active = 1;
-
-
-  acc_i = approximate_gravity<blockDim2>( DIM2x, DIM2y, tid, tx, ty,
-                                          body_i, pos_i, group_pos, corner,
-                                          inv_theta, eps2, node_begend,
+  acc_i = approximate_gravity<blockDim2, 0>( DIM2x, DIM2y, tid, tx, ty,
+                                          body_i, pos_i, group_pos,
+                                          eps2, node_begend,
                                           multipole_data, body_pos,
                                           shmem, lmem, ngb_i, apprCount, direCount, boxSizeInfo, curGroupSize, boxCenterInfo,
+                                         group_eps, body_vel);
+  if(apprCount < 0)
+  {
+
+    //Try to get access to the big stack, only one block per time is allowed
+    if(threadIdx.x == 0)
+    {
+      int res = atomicExch(&active_inout[n_bodies+1], 1); //If the old value (res) is 0 we can go otherwise sleep
+      int waitCounter  = 0;
+      while(res != 0)
+      {
+          //Sleep
+          for(int i=0; i < (1024); i++)
+          {
+                  waitCounter += 1;
+          }
+          //Test again
+          shmem[0] = waitCounter;
+          res = atomicExch(&active_inout[n_bodies+1], 1); 
+      }
+    }
+
+    __syncthreads();
+
+    lmem = &MEM_BUF[gridDim.x*LMEM_STACK_SIZE*blockDim.x];    //Use the extra large buffer
+    apprCount = direCount = 0;
+    acc_i = approximate_gravity<blockDim2, 8>( DIM2x, DIM2y, tid, tx, ty,
+                                            body_i, pos_i, group_pos,
+                                            eps2, node_begend,
+                                            multipole_data, body_pos,
+                                            shmem, lmem, ngb_i, apprCount, direCount, boxSizeInfo, curGroupSize, boxCenterInfo,
                                           group_eps, body_vel);
+
+    lmem = &MEM_BUF[blockIdx.x*LMEM_STACK_SIZE*blockDim.x]; //Back to normal location
+
+    if(threadIdx.x == 0)
+    {
+            atomicExch(&active_inout[n_bodies+1], 0); //Release the lock
+    }
+  }//end if apprCount < 0
 
   if (tid < nb_i) {
       acc_out     [body_i] = acc_i;
       ngb_out     [body_i] = ngb_i;
-      active_inout[body_i] = active;
+      active_inout[body_i] = 1;
       interactions[body_i].x = apprCount;
       interactions[body_i].y = direCount ;
     }
 
 
-//   }     //end while
+  }     //end while
 }
+
 

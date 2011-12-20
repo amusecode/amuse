@@ -1,15 +1,12 @@
 #include "octree.h"
 
-#include "tipsydefs.h"
-
-
 /*********************************/
 /*********************************/
 /*********************************/
 
-void octree::set_src_directory(string src_dir) {
-    this->src_directory = (char*)src_dir.c_str();
-}
+void octree::set_src_directory(string src_dir) {                                                                                                                                 
+    this->src_directory = (char*)src_dir.c_str();                                                                                                                                
+}   
 
 double octree::get_time() {
   struct timeval Tvalue;
@@ -18,7 +15,6 @@ double octree::get_time() {
   gettimeofday(&Tvalue,&dummy);
   return ((double) Tvalue.tv_sec +1.e-6*((double) Tvalue.tv_usec));
 }
-
 
 
 
@@ -38,6 +34,23 @@ int octree::getAllignmentOffset(int n)
   
   return offset;
 }
+
+int octree::getTextureAllignmentOffset(int n, int size)
+{
+    const int texBoundary = TEXTURE_BOUNDARY; //Fermi
+  
+    int textOffset = 0;
+    //Compute the number of bytes  
+    textOffset = n*size; 
+    //Compute number of texBoundary byte blocks  
+    textOffset = (textOffset / texBoundary) + (((textOffset % texBoundary) > 0) ? 1 : 0); 
+    //Compute the number of bytes padded / offset 
+    textOffset = (textOffset * texBoundary) - n*size; 
+    //Back to the actual number of elements
+    textOffset = textOffset / size; 
+    
+    return textOffset;
+}   
 
 
 /*********************************/
@@ -108,116 +121,6 @@ void octree::write_dumbp_snapshot(real4 *bodyPositions, real4 *bodyVelocities, i
   fprintf(stdout, "Wrote %d bodies to dump file \n", n);
 };
 
-#if 0
-void octree::write_dumbp_snapshot_parallel_tipsy(real4 *bodyPositions, real4 *bodyVelocities, int* bodyIds, int n, string fileName,
-                                                 int NCombTotal, int NCombFirst, int NCombSecond, int NCombThird) 
-{
-  #ifdef TIPSYOUTPUT  
-  //Rank 0 does the writing
-  if(mpiGetRank() == 0)
-  {
-    ofTipsy outputFile;
-
-    TipsyHeader h;
-   // TipsyGasParticle        g;
-    TipsyDarkParticle       d;
-    TipsyStarParticle       s;
-    outputFile.open(fileName.c_str(), "native");
- 
-    if(!outputFile.is_open())
-    {
-      cout << "Can't open output file: "<< fileName << std::endl;
-      exit(0);
-    }
-      
-    //Create tipsy header
-    h.h_time = 0.0;
-    h.h_nBodies = NCombTotal;
-    h.h_nDims = 3;
-    h.h_nDark = NCombFirst;
-    h.h_nStar = NCombSecond;    //Incase of disks we have to finish this
-    h.h_nSph = 0;
-
-    outputFile << h;
-    
-    //Buffer to store complete snapshot
-    vector<real4> allPositions;
-    vector<real4> allVelocities;
-    vector<int> allIds;
-    
-    allPositions.insert(allPositions.begin(), &bodyPositions[0], &bodyPositions[n]);
-    allVelocities.insert(allVelocities.begin(), &bodyVelocities[0], &bodyVelocities[n]);
-    allIds.insert(allIds.begin(), &bodyIds[0], &bodyIds[n]);
-    
-    //Now receive the data from the other processes
-    vector<real4> extPositions;
-    vector<real4> extVelocities;
-    vector<int>   extIds;
-    
-    for(int recvFrom=1; recvFrom < mpiGetNProcs(); recvFrom++)
-    {
-      ICRecv(recvFrom, extPositions, extVelocities,  extIds);
-      
-      allPositions.insert(allPositions.end(), extPositions.begin(), extPositions.end());
-      allVelocities.insert(allVelocities.end(), &bodyVelocities[0], &bodyVelocities[n]);
-      allIds.insert(allIds.end(), &bodyIds[0], &bodyIds[n]);     
-    }
-    
-    //Frist write the dark matter particles
-    for(int i=0; i < NCombTotal ; i++)
-    {
-      if(allIds[i] >= 200000000 && allIds[i] < 300000000)
-      {
-        //Set particle properties
-        d.eps = allVelocities[i].w;
-        d.mass = allPositions[i].w;
-        d.pos[0] = allPositions[i].x;
-        d.pos[1] = allPositions[i].y;
-        d.pos[2] = allPositions[i].z;
-        d.vel[0] = allVelocities[i].x;
-        d.vel[1] = allVelocities[i].y;
-        d.vel[2] = allVelocities[i].z;
-        d.phi = 0;
-        d.density = 0;
-        outputFile << d;
-      } //end if 
-    } //end i loop
-    
-    //Next write the star particles
-    for(int i=0; i < NCombTotal ; i++)
-    {
-      if(allIds[i] >= 100000000 && allIds[i] < 200000000)
-      {
-        //Set particle properties
-        s.eps = allVelocities[i].w;
-        s.mass = allPositions[i].w;
-        s.pos[0] = allPositions[i].x;
-        s.pos[1] = allPositions[i].y;
-        s.pos[2] = allPositions[i].z;
-        s.vel[0] = allVelocities[i].x;
-        s.vel[1] = allVelocities[i].y;
-        s.vel[2] = allVelocities[i].z;
-        s.phi = 0;
-        s.density = 0;
-        s.metals = 0;
-        s.tform = 0;
-        outputFile << s;
-     } //end if
-    } //end i loop
-    
-    outputFile.close();
-
-    fprintf(stdout, "Wrote %d bodies to tipsy file \n", NCombTotal);
-  }
-  else
-  {
-    //All other ranks send their data to proess 0
-    ICSend(0,  bodyPositions, bodyVelocities,  bodyIds, n);
-  }
- #endif
-}
-#endif
-
 void octree::write_dumbp_snapshot_parallel_tipsy(real4 *bodyPositions, real4 *bodyVelocities, int* bodyIds, int n, string fileName,
                                                  int NCombTotal, int NCombFirst, int NCombSecond, int NCombThird) 
 {
@@ -229,10 +132,6 @@ void octree::write_dumbp_snapshot_parallel_tipsy(real4 *bodyPositions, real4 *bo
     outputFile.open(fileName.c_str(), ios::out | ios::binary);
 
     dump  h;
-   // TipsyGasParticle        g;
-//     TipsyDarkParticle       d;
-//     TipsyStarParticle       s;
-
  
     if(!outputFile.is_open())
     {
@@ -269,8 +168,8 @@ void octree::write_dumbp_snapshot_parallel_tipsy(real4 *bodyPositions, real4 *bo
       ICRecv(recvFrom, extPositions, extVelocities,  extIds);
       
       allPositions.insert(allPositions.end(), extPositions.begin(), extPositions.end());
-      allVelocities.insert(allVelocities.end(), &bodyVelocities[0], &bodyVelocities[n]);
-      allIds.insert(allIds.end(), &bodyIds[0], &bodyIds[n]);     
+      allVelocities.insert(allVelocities.end(), extVelocities.begin(), extVelocities.end());
+      allIds.insert(allIds.end(), extIds.begin(), extIds.end());     
     }
     
     //Frist write the dark matter particles
@@ -288,11 +187,8 @@ void octree::write_dumbp_snapshot_parallel_tipsy(real4 *bodyPositions, real4 *bo
         d.vel[0] = allVelocities[i].x;
         d.vel[1] = allVelocities[i].y;
         d.vel[2] = allVelocities[i].z;
-        d.phi = allIds[i];
+        d.phi = allIds[i];      //Custom change to tipsy format
         
-//         d.phi = 0;
-//         d.density = 0;
-//         outputFile << d;
         outputFile.write((char*)&d, sizeof(d));
       } //end if 
     } //end i loop
@@ -313,9 +209,8 @@ void octree::write_dumbp_snapshot_parallel_tipsy(real4 *bodyPositions, real4 *bo
         s.vel[0] = allVelocities[i].x;
         s.vel[1] = allVelocities[i].y;
         s.vel[2] = allVelocities[i].z;
-        s.phi = allIds[i];
-//         s.phi = 0;
-//         s.density = 0;
+        s.phi = allIds[i];      //Custom change to tipsy format
+
         s.metals = 0;
         s.tform = 0;
         outputFile.write((char*)&s, sizeof(s));
@@ -335,8 +230,6 @@ void octree::write_dumbp_snapshot_parallel_tipsy(real4 *bodyPositions, real4 *bo
  #endif
 }
 
-
-
 void octree::write_dumbp_snapshot_parallel(real4 *bodyPositions, real4 *bodyVelocities, int* bodyIds, int n, string fileName) 
 {
   
@@ -347,7 +240,7 @@ void octree::write_dumbp_snapshot_parallel(real4 *bodyPositions, real4 *bodyVelo
     
     for(int i=0; i < n; i++)
     { 
-      //Specific for Jeroens files
+      //Specific for JB his files
       if(bodyIds[i] >= 0         && bodyIds[i] < 100000000) NThird++;
       if(bodyIds[i] >= 100000000 && bodyIds[i] < 200000000) NSecond++;
       if(bodyIds[i] >= 200000000 && bodyIds[i] < 300000000) NFirst++;        
@@ -406,7 +299,7 @@ void octree::write_dumbp_snapshot_parallel(real4 *bodyPositions, real4 *bodyVelo
       for(unsigned int i=0; i < extPositions.size() ; i++)
       {
         outputFile << extIds[i] << "\t" << extPositions[i].w << "\t" << extPositions[i].x << "\t" <<
-                          extPositions[i].y       << "\t" << extPositions[i].z << "\t" <<
+                      extPositions[i].y << "\t" << extPositions[i].z << "\t" <<
                           extVelocities[i].x      << "\t" << extVelocities[i].y << "\t" <<
                           #ifdef INDSOFT
                             extVelocities[i].z      << "\t" << extVelocities[i].w << endl;
@@ -442,110 +335,11 @@ void octree::write_dumbp_snapshot_parallel(real4 *bodyPositions, real4 *bodyVelo
   }
 };
 
-/*
-void octree::write_dumbp_snapshot_parallel(real4 *bodyPositions, real4 *bodyVelocities, int* bodyIds, int n, string fileName) 
-{
-  
-  //If we use individual softening then first sync the particle types
-  #ifdef INDSOFT  
-    NTotal = n;
-    NFirst = NSecond = NThird = 0;
-    
-    for(int i=0; i < n; i++)
-    { 
-      //Specific for Jeroens files
-      if(bodyIds[i] >= 0         && bodyIds[i] < 100000000) NThird++;
-      if(bodyIds[i] >= 100000000 && bodyIds[i] < 200000000) NSecond++;
-      if(bodyIds[i] >= 200000000 && bodyIds[i] < 300000000) NFirst++;        
-    }
-    
-    //Sync them to process 0
-    int NCombTotal, NCombFirst, NCombSecond, NCombThird;
-    NCombTotal  = SumOnRootRank(NTotal);
-    NCombFirst  = SumOnRootRank(NFirst);
-    NCombSecond = SumOnRootRank(NSecond);
-    NCombThird  = SumOnRootRank(NThird);
-  #endif
-  
-  //Rank 0 does the writing
-  if(mpiGetRank() == 0)
-  {
-    char fullFileName[256];
-    sprintf(fullFileName, "%s", fileName.c_str());
-
-    cout << "Trying to write to file: " << fullFileName << endl;
-
-    ofstream outputFile(fullFileName, ios::out);
-    
-    if(!outputFile.is_open())
-    {
-      cout << "Can't open output file \n";
-      exit(0);
-    }
-    
-    outputFile.precision(16);
-    
-     #ifdef INDSOFT
-      //Write the header                                                                                                                                        
-      outputFile << NCombTotal << "\t" << NCombFirst << "\t" << NCombSecond << "\t" << NCombThird << endl;   
-    #endif
-    
-    //Now receive the data from the other processes
-    vector<real4> extPositions;
-    vector<real4> extVelocities;
-    vector<int>   extIds;
-    
-    int particleCount = 0;    
-    for(int recvFrom=1; recvFrom < mpiGetNProcs(); recvFrom++)
-    {
-      ICRecv(recvFrom, extPositions, extVelocities,  extIds);
-      
-      for(unsigned int i=0; i < extPositions.size() ; i++)
-      {
-        outputFile << extIds[i] << "\t" << extPositions[i].w << "\t" << extPositions[i].x << "\t" <<
-                          extPositions[i].y       << "\t" << extPositions[i].z << "\t" <<
-                          extVelocities[i].x      << "\t" << extVelocities[i].y << "\t" <<
-                          #ifdef INDSOFT
-                            extVelocities[i].z      << "\t" << extVelocities[i].w << endl;
-                          #else
-                            extVelocities[i].z << endl;
-                          #endif
-      }
-      particleCount += extPositions.size();
-    }
-    
-    for(int i=0; i < n ; i++)
-    {
-      outputFile << bodyIds[i] << "\t" << bodyPositions[i].w << "\t" << bodyPositions[i].x << "\t" <<
-                        bodyPositions[i].y       << "\t" << bodyPositions[i].z << "\t" <<
-                        bodyVelocities[i].x      << "\t" << bodyVelocities[i].y << "\t" <<
-                        #ifdef INDSOFT                        
-                          bodyVelocities[i].z      << "\t" << bodyVelocities[i].w << endl;
-                        #else
-                          bodyVelocities[i].z << endl;                        
-                        #endif
-    }
-    particleCount += n;
-    
-    
-    outputFile.close();
-
-    fprintf(stdout, "Wrote %d bodies to dump file \n", particleCount);
-  }
-  else
-  {
-    //All other ranks send their data to proess 0
-    ICSend(0,  bodyPositions, bodyVelocities,  bodyIds, n);
-  }
-};
-*/
-
-
 /*********************************/
 /*********************************/
 /*********************************/
 
-
+//Some old utility functions
 
 void octree::to_binary(int key) {
   char binary[128];

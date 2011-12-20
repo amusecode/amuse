@@ -10,6 +10,7 @@
   #include "my_ocl.h"
 #endif
 
+#include "tipsydefs.h"
 
 #include "node_specs.h"
 #include <cmath>
@@ -29,11 +30,11 @@ typedef float real;
 typedef unsigned int uint;
 
 #define NBLOCK_REDUCE     256
-
 #define NBLOCK_BOUNDARY   120
 #define NTHREAD_BOUNDARY  256
-
 #define NBLOCK_PREFIX     512           //At the moment only used during memory alloc
+
+#define NMAXSAMPLE 20000                //Used by first on host domain division
 
 
 struct morton_struct {
@@ -74,15 +75,26 @@ typedef struct setupParams {
 
 } setupParams;
 
+
 typedef struct bodyStruct
 {
   real4 pos;
   real4 vel;
   real4 acc0;
   real4 acc1;
+  real4 Ppos;
+  real4 Pvel;
   float2 time;
   int   id;
+  int   temp;
 } bodyStruct;
+
+typedef struct sampleRadInfo
+{
+  int     nsample;
+  double4 rmin;
+  double4 rmax;
+}sampleRadInfo;
 
 
 //Structure and properties of a tree
@@ -161,14 +173,14 @@ class tree_structure
     my_dev::dev_mem<uint> generalBuffer1;
 
 
-    my_dev::dev_mem<float4> fullRemoteTest;
+    my_dev::dev_mem<float4> fullRemoteTree;
 
     uint4 remoteTreeStruct;
 
     real4 corner;                         //Corner of tree-structure
     real  domain_fac;                     //Domain_fac of tree-structure
 
-  tree_structure(){n=0;}
+  tree_structure(){ n = 0;}
 
   tree_structure(my_dev::context &context)
   {
@@ -216,7 +228,6 @@ class tree_structure
     bodies_Pvel.setContext(*devContext);
 
     oriParticleOrder.setContext(*devContext);
-//     group_data.setContext(*devContext);
     activeGrpList.setContext(*devContext);
     active_group_list.setContext(*devContext);
     level_list.setContext(*devContext);
@@ -235,7 +246,7 @@ class tree_structure
     //General buffer
     generalBuffer1.setContext(*devContext);
 
-    fullRemoteTest.setContext(*devContext);
+    fullRemoteTree.setContext(*devContext);
   }
 
   my_dev::context getContext()
@@ -249,9 +260,14 @@ class tree_structure
 class octree {
 protected:
   int devID;
-
+  
+  char *execPath;
   char *src_directory;
   
+  //Device configuration
+  int nMultiProcessors;
+  int nBlocksForTreeWalk;
+
    //Simulation properties
   int   iter;
   float t_current, t_previous;
@@ -283,6 +299,10 @@ protected:
 
   my_dev::context devContext;
   bool devContext_flag;
+  
+  //Streams
+  my_dev::dev_stream *execStream;
+
 
   // scan & sort algorithm
 
@@ -306,6 +326,7 @@ protected:
   my_dev::kernel  expand_leaflist;
 
   my_dev::kernel  boundaryReduction;
+  my_dev::kernel  boundaryReductionGroups;
   my_dev::kernel  build_body2group_list;
 
   my_dev::kernel  build_phkey_list;
@@ -313,7 +334,6 @@ protected:
 
   // tree properties kernels
   my_dev::kernel  propsNonLeaf, propsLeaf, propsScaling;
-
   my_dev::kernel  propsNonLeafD, propsLeafD, propsScalingD;
 
   my_dev::kernel  copyNodeDataToGroupData;
@@ -330,6 +350,15 @@ protected:
 
   my_dev::kernel distanceCheck;
   my_dev::kernel approxGravLET;
+  
+  //Parallel kernels
+  my_dev::kernel domainCheck;
+  my_dev::kernel extractSampleParticles;
+  my_dev::kernel extractOutOfDomainR4;
+  my_dev::kernel extractOutOfDomainBody;
+  my_dev::kernel insertNewParticles;
+  my_dev::kernel internalMove;
+
 
   ///////////////////////
 
@@ -354,13 +383,13 @@ protected:
   ///////////
 
 public:
-   void set_src_directory(string src_dir);
-   
    double get_time();
 
    void write_dumbp_snapshot_parallel(real4 *bodyPositions, real4 *bodyVelocities, int* bodyIds, int n, string fileName) ;
    void write_dumbp_snapshot_parallel_tipsy(real4 *bodyPositions, real4 *bodyVelocities, int* bodyIds, int n, string fileName,
                                             int NCombTotal, int NCombFirst, int NCombSecond, int NCombThird);
+   
+   void set_src_directory(string src_dir);
 
    //Memory used in the whole system, not depending on a certain number of particles
    my_dev::dev_mem<float> tnext;
@@ -382,6 +411,7 @@ public:
   void set_context2();
 
   int getAllignmentOffset(int n);
+  int getTextureAllignmentOffset(int n, int size);
 
   //GPU kernels and functions
   void load_kernels();
@@ -398,18 +428,15 @@ public:
 
   void gpuSort_32b(my_dev::context &devContext,
                     my_dev::dev_mem<uint> &srcKeys,     my_dev::dev_mem<uint> &srcValues,
-//                     my_dev::dev_mem<int>  &keysOutput,  my_dev::dev_mem<int> &keysAPing,
                     my_dev::dev_mem<int>  &keysOutput,  my_dev::dev_mem<uint> &keysAPing,
                     my_dev::dev_mem<uint> &valuesOutput,my_dev::dev_mem<uint> &valuesAPing,
-                    //my_dev::dev_mem<uint> &count,
                    int N, int numberOfBits);
   //end TODO
 
-//  void compute_keys();
-//  void sort_keys();
   void desort_bodies(tree_structure &tree);
-  void sort_bodies(tree_structure &tree);
+  void sort_bodies(tree_structure &tree, bool doDomainUpdate);
   void getBoundaries(tree_structure &tree, real4 &r_min, real4 &r_max);
+  void getBoundariesGroups(tree_structure &tree, real4 &r_min, real4 &r_max);  
 
   void allocateParticleMemory(tree_structure &tree);
   void allocateTreePropMemory(tree_structure &tree);
@@ -431,32 +458,47 @@ public:
   int  checkMergingDistance(tree_structure &tree, int iter, double dE);
   void checkRemovalDistance(tree_structure &tree);
 
-
   //Parallel version functions
   //Approximate for LET
-  void approximate_gravity_let(tree_structure &tree, tree_structure &remoteTree);
+  void approximate_gravity_let(tree_structure &tree, tree_structure &remoteTree, int bufferSize, bool doActivePart);
 
   //Parallel version functions
   int procId, nProcs;   //Proccess ID in the mpi stack, number of processors in the commm world
   int nx, ny, nz;       //The division parameters, number of procs in the x,y and z axis
   int sampleFreq;       //Sample frequency for the division
+  int nTotalFreq;       //Total Number of particles over all processes
+  
+  int prevSampFreq;     //Sample frequency of the previous step
+  double prevDurStep;   //Duration of gravity time in previous step
+  double thisPartLETExTime;     //The time it took to communicate with the neighbours during the last step
 
-  double4 *xlow, *xhigh;          //Domain boundaries for each processor
-  double4 *cur_xlow, *cur_xhigh;  //The current boundaries for each processor, this can
-                                  //be different from xlow and xhigh since the domain
-                                  //is not updated during each step
-  double4 *cur_xlow_xhigh;        //Combines the values cur_xlow and cur_xhigh in one array to reduce communication
-
-  double4 *let_xlow, *let_xhigh;  //The current boundaries for each processor, this can
-                                  //be different from xlow and xhigh since the domain
-                                  //is not updated during each step
+  double4 *domainRLow, *domainRHigh;    //Contains the current domain distribution
+  double4 *currentRLow, *currentRHigh;  //Contains the actual domain distribution, to be used
+                                        //during the LET-tree generatino
+                                        
+  double4 *xlowPrev, *xhighPrev;                                        
+  
+  int4 *domHistoryLow, *domHistoryHigh;         //used to remember the domain boundaries to improve load balance
 
   real maxLocalEps;               //Contains the maximum local eps/softening value
                                   //will be stored in cur_xlow[i].w after exchange
-  real4 rMinLocalTree;
-  real4 rMaxLocalTree;
+  real4 rMinLocalTree;            //for particles
+  real4 rMaxLocalTree;            //for particles
 
+  real4 rMinLocalTreeGroups;      //for groups
+  real4 rMaxLocalTreeGroups;      //for groups
+  
+  real4 rMinGlobal;
+  real4 rMaxGlobal;
+  
+  bool letRunning;
+  
 
+  float        globalRmax;
+  unsigned int totalNumberOfSamples;
+  vector<real4> sampleArray;
+  int2 *nSampleAndSizeValues;
+  sampleRadInfo *curSysState;
 
   //Functions
   void mpiInit(int argc,char *argv[], int &procId, int &nProcs);
@@ -465,7 +507,6 @@ public:
   void mpiSync();
   int mpiGetRank();
   int mpiGetNProcs();
-  void mpiRadiusFind(real4 &rmin, real4 &rmax);
   void AllSum(double &value);
   int  SumOnRootRank(int &value);
 
@@ -481,9 +522,20 @@ public:
   void determine_division(int np, vector<real4> &pos, int nx, int ny, int nz,
                           double rmax, double4 xlow[], double4 xhigh[]);
   void sortCoordinates(real4 *r, int lo, int up, int cid );
+  void sortCoordinates2(real4 *r, int lo, int up, int cid );
+  
   void calculate_boxdim(int np, real4 pos[], int cid, int istart, int iend,
                       double rmax, double & xlow, double & xhigh);
-  void updateDistribution(real4 *bodies, int n_bodies);
+
+  void sendSampleAndRadiusInfo(int nsample, real4 &rmin, real4 &rmax);
+  void sendCurrentRadiusInfo(real4 &rmin, real4 &rmax);
+  
+  //Function for Device assisted domain division
+  void gpu_collect_sample_particles(int nSample, real4 *sampleParticles);
+  void gpu_updateDomainDistribution(double timeLocal);
+  void gpu_updateDomainOnly();
+  int  gpu_exchange_particles_with_overflow_check(tree_structure &tree, bodyStruct *particlesToSend, my_dev::dev_mem<uint> &extractList, int nToSend);
+  void gpuRedistributeParticles();
 
   int  exchange_particles_with_overflow_check(tree_structure &localTree);
 
@@ -517,15 +569,7 @@ public:
   void ICRecv(int procId, vector<real4> &bodyPositions, vector<real4> &bodyVelocities,  vector<int> &bodiesIDs);
   void ICSend(int destination, real4 *bodyPositions, real4 *bodyVelocities,  int *bodiesIDs, int size);
 
-//   void MP_exchange_bhlist(int ibox, int isource,
-//                                 vector<real4> &particles,         vector<real4> &multipoleData,
-//                                 vector<real4> &nodeSizeData,      vector<real4> &nodeCenterData,
-//                                 vector<real4> &recv_particles,    vector<real4> &recv_multipoleData,
-//                                 vector<real4> &recv_nodeSizeData, vector<real4> &recv_nodeCenterData);
-
   void makeLET();
-
-  void getAllLETBoxes(real4 bMin, real4 bMax);
 
   //End functions for parallel code
   //
@@ -543,46 +587,6 @@ public:
   float getTime();
   float getPot();
   float getKin();
-/*
-  
-  void calcGravityOnParticles(real4 *bodyPositions, real4 *bodyVelocities, int *bodyIDs);
-
-
-  void calcGravityOnParticles(real4 *bodyPositions, real4 *bodyVelocities, int *bodyIDs, int n)
-  {
-	  tree->setN(n);
-
-	  tree->allocateParticleMemory();
-
-	  memcpy(&tree->bodies_pos[0], bodyPositions,  sizeof(real4)*n);
-	  memcpy(&tree->bodies_vel[0], bodyVelocities, sizeof(real4)*n);
-	  memcpy(&tree->bodies_idsi[0], bodyIDs,  sizeof(int)*n);
-
-	  memcpy(&tree->bodies_Ppos[0], bodyPositions,  sizeof(real4)*n);
-	  memcpy(&tree->bodies_Pvel[0], bodyVelocities, sizeof(real4)*n);
-
-  tree->localTree.bodies_pos.h2d();
-  tree->localTree.bodies_vel.h2d();
-  tree->localTree.bodies_Ppos.h2d();
-  tree->localTree.bodies_Pvel.h2d();
-  tree->localTree.bodies_ids.h2d();
-  
-          
-
-  //Start construction of the tree
-  tree->sort_bodies(tree->localTree);
-  tree->build(tree->localTree);
-  tree->allocateTreePropMemory(tree->localTree);
-  tree->compute_properties(tree->localTree);
-  tree->setActiveGrpsFunc(this->localTree);
-  tree->approximate_gravity(this->localTree);
-	  //sort
-	  //build
-	  //properties
-	  //integrate, need i-particles!!, they should be sorted...??!!!!
-
-
-  }*/
 
   //End library functions
 
@@ -595,26 +599,27 @@ public:
     NThird   = NThirdT;
   }
 
-//   octree(const int device = 0, const float _theta = 0.75, const float eps = 0.05,
-//          string snapF = "", int snapI = -1, float tempTimeStep = 1.0 / 16.0, int tempTend = 10000) {
-  octree(const int device = 0, const float _theta = 0.75, const float eps = 0.05,
+  octree(char **argv, const int device = 0, const float _theta = 0.75, const float eps = 0.05,
          string snapF = "", int snapI = -1,  float tempTimeStep = 1.0 / 16.0, int tempTend = 1000,
          float killDistanceT = -1, int maxDistT = -1, int snapAdd = 0) {
 
     devContext_flag = false;
     iter = 0;
     t_current = t_previous = 0;
+    
+    src_directory = NULL;
 
+    if(argv != NULL)
+      execPath = argv[0];
     //First init mpi
     int argc = 0;
-    char **argv = NULL;
     mpiInit(argc, argv, procId, nProcs);
 
 //     devID = device;
     //devID = procId % nProcs;
 //     devID = 1;
-     devID = procId % 2;
-    //devID = 1;
+    devID = procId % getNumberOfCUDADevices();
+//      devID = 1;
     cerr << "Preset device : "  << devID << "\t" << device << "\t" << nProcs <<endl;
 
     snapshotIter = snapI;
@@ -640,10 +645,23 @@ public:
     dt_limit = int(-log(dt_max)/log(2.0f));
 
     store_energy_flag = true;
+    
+    execStream = NULL;
+    
+    prevDurStep = -1;   //Set it to negative so we know its the first step
   }
-  ~octree() {
+  ~octree() {    
+    delete[] domainRLow;
+    delete[] domainRHigh;
+    delete[] currentRLow;
+    delete[] currentRHigh;
+    delete[] nSampleAndSizeValues;
+    delete[] curSysState;
+    delete[] xlowPrev;
+    delete[] xhighPrev;
+    delete[] domHistoryLow;
+    delete[] domHistoryHigh;    
   };
-
 };
 
 

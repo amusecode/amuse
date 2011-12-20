@@ -9,6 +9,7 @@ CUDA_TK  = /usr/local/cuda
 
 # OFLAGS = -O0 -g -Wall 
 OFLAGS = -O3 -g -Wall -fopenmp 
+# OFLAGS = -O3  -Wall -fopenmp 
 CXXFLAGS =  -fPIC $(OFLAGS) -I$(CUDA_TK)/include 
 
 
@@ -44,7 +45,8 @@ CUDAKERNELS = build_tree.cu \
 	scanKernels.cu \
 	sortKernels.cu \
 	support_kernels.cu \
-	timestep.cu
+	timestep.cu \
+	parallel.cu
 CUDAPTX = $(CUDAKERNELS:%.cu=%.ptx)
 
 SRCPATH = src
@@ -55,23 +57,24 @@ PROG = main
 
 AR = ar ruv
 RANLIB = ranlib
-RM =  rm
+RM = rm
 
 CODELIB = libbonsai.a
+
+all:	  $(OBJ) $(CUDAPTX) $(PROG) $(CODELIB)
+kernels:  $(CUDAPTX)
 
 $(CODELIB): $(OBJ) $(CUDAPTX)
 	$(RM) -f $@
 	$(AR) $@ $(OBJ)
 	$(RANLIB) $@
 
-all:	  $(CODELIB) $(PROG) 
-kernels:  $(CUDAPTX)
 
 $(PROG): $(OBJ)
 	$(LD) $(LDFLAGS) $^ -o $@ 
 
 %.o: $(SRCPATH)/%.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.ptx: $(CUDAKERNELSPATH)/%.cu
 	$(NVCC) $(NVCCFLAGS) -ptx $< -o $@
@@ -89,6 +92,7 @@ dev_approximate_gravity.ptx: $(CUDAKERNELSPATH)/support_kernels.cu $(INCLUDEPATH
 dev_approximate_gravity_let.ptx: $(CUDAKERNELSPATH)/support_kernels.cu $(INCLUDEPATH)/node_specs.h
 timestep.ptx: $(CUDAKERNELSPATH)/support_kernels.cu $(INCLUDEPATH)/node_specs.h
 sortKernels.ptx: $(CUDAKERNELSPATH)/scanKernels.cu  $(CUDAKERNELSPATH)/support_kernels.cu $(INCLUDEPATH)/node_specs.h
+parallel.ptx: $(CUDAKERNELSPATH)/support_kernels.cu $(INCLUDEPATH)/node_specs.h
 
 
 

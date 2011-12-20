@@ -102,7 +102,8 @@ int initialize_code()
 
   logFile.open(logFileName.c_str());
  //Creat the octree class and set the properties
-  bonsai = new octree(devID, theta, eps, snapshotFile, snapshotIter, timeStep, tEnd);
+  char **argv = NULL;
+  bonsai = new octree(argv,devID, theta, eps, snapshotFile, snapshotIter, timeStep, tEnd);
   bonsai->set_src_directory(bonsai_source_directory);
   bonsai->set_context(logFile, false); //Do logging to file and enable timing (false = enabled)
   bonsai->load_kernels();
@@ -240,7 +241,7 @@ int commit_particles()
 
 
   //Build a tree-structure for initial initialization
-  bonsai->sort_bodies(bonsai->localTree);
+  bonsai->sort_bodies(bonsai->localTree, true);
   bonsai->build(bonsai->localTree);
   bonsai->allocateTreePropMemory(bonsai->localTree);
   bonsai->compute_properties(bonsai->localTree);
@@ -432,7 +433,7 @@ int recommit_particles(){
 
 
   //Build a tree-structure for initial initialization
-  bonsai->sort_bodies(bonsai->localTree);
+  bonsai->sort_bodies(bonsai->localTree, true);
   bonsai->build(bonsai->localTree);
   bonsai->allocateTreePropMemory(bonsai->localTree);
   bonsai->compute_properties(bonsai->localTree);
