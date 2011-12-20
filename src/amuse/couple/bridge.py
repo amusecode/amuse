@@ -196,7 +196,8 @@ class CalculateFieldForParticles(object):
     of particles can be from another code.
     """
     
-    def __init__(self, particles = datamodel.Particles(), gravity_constant = None):
+    def __init__(self, particles = datamodel.Particles(), gravity_constant = None,
+            softening_mode="shared"):
         self.particles = particles
         if gravity_constant is None:
             if len(particles) and hasattr(particles, 'mass'):
@@ -209,8 +210,22 @@ class CalculateFieldForParticles(object):
                 raise AmuseException("Particle data not yet available, so the gravity_constant must be specified")
         else:
             self.gravity_constant = gravity_constant
+        
+        if softening_mode == "individual" or softening_mode == "radius":
+            self._softening_lengths_squared = self._softening_lengths_squared_individual
+        elif softening_mode == "h_smooth":
+            self._softening_lengths_squared = self._softening_lengths_squared_h_smooth
+        else:
+            self._softening_lengths_squared = self._softening_lengths_squared_shared
         self.smoothing_length_squared = quantities.zero
-      
+    
+    def _softening_lengths_squared_individual(self):
+        return self.particles.radius**2
+    def _softening_lengths_squared_h_smooth(self):
+        return self.particles.h_smooth**2
+    def _softening_lengths_squared_shared(self):
+        return self.smoothing_length_squared#.as_vector_with_length(len(self.particles))
+    
     def cleanup_code():
         self.particles = datamodel.Particles()
         
@@ -227,7 +242,7 @@ class CalculateFieldForParticles(object):
             dy = y[i] - positions.y
             dz = z[i] - positions.z
             dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
-            dr = (dr_squared + self.smoothing_length_squared).sqrt()
+            dr = (dr_squared + self._softening_lengths_squared()).sqrt()
             energy_of_this_particle = (self.particles.mass / dr).sum()
             result.append(-self.gravity_constant * energy_of_this_particle)
         return result
@@ -244,7 +259,7 @@ class CalculateFieldForParticles(object):
             dy = y[i] - positions.y
             dz = z[i] - positions.z
             dr_squared = ((dx * dx) + (dy * dy) + (dz * dz) + 
-                self.smoothing_length_squared + radius[i]**2)
+                self._softening_lengths_squared() + radius[i]**2)
             
             ax = -self.gravity_constant * (m1*dx/dr_squared**1.5).sum()
             ay = -self.gravity_constant * (m1*dy/dr_squared**1.5).sum()
@@ -259,7 +274,7 @@ class CalculateFieldForParticles(object):
 class GravityCodeInField(object):
     
     
-    def __init__(self, code, field_codes, do_sync=True, verbose=False, radius_is_eps=False):
+    def __init__(self, code, field_codes, do_sync=True, verbose=False, radius_is_eps=False, h_smooth_is_eps=False):
         """
         verbose indicates whether to output some run info
         """  
@@ -275,6 +290,7 @@ class GravityCodeInField(object):
         self.verbose=verbose
         self.timestep=None
         self.radius_is_eps = radius_is_eps
+        self.h_smooth_is_eps = h_smooth_is_eps
     
       
     def evolve_model(self,tend,timestep=None):
@@ -408,6 +424,8 @@ class GravityCodeInField(object):
     def _softening_lengths(self, particles):
         if self.radius_is_eps:
             return particles.radius
+        elif self.h_smooth_is_eps:
+            return particles.h_smooth
         else:
             return (self.code.parameters.epsilon_squared**0.5).as_vector_with_length(len(particles))
     
@@ -447,13 +465,15 @@ class Bridge(object):
         self.use_threading = use_threading
         self.time_offsets = dict()
     
-    def add_system(self, interface, partners=set(),do_sync=True, radius_is_eps=False):
+    def add_system(self, interface, partners=set(),do_sync=True, 
+            radius_is_eps=False, h_smooth_is_eps=False):
         """
         add a system to bridge integrator  
         """
         
         if hasattr(interface, "particles"):
-            code = GravityCodeInField(interface, partners, do_sync, self.verbose, radius_is_eps)
+            code = GravityCodeInField(interface, partners, do_sync, self.verbose, 
+                radius_is_eps, h_smooth_is_eps)
             self.add_code(code)
         else:
             if len(partners):
