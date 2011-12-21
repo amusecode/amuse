@@ -13,6 +13,7 @@ long number_of_stopping_conditions_set = 0;
 double timeout_parameter = 4.0;
 double out_of_box_parameter = 0.0;
 long number_of_steps_parameter = 1;
+static int sc_mpi_size;
 
 int enable_stopping_condition(int type) {
     if(type > 32) {
@@ -282,8 +283,7 @@ int get_stopping_condition_out_of_box_parameter_(double *value) {
 #if defined( MPILIB ) && !defined(NOMPI)
 
 #include <mpi.h>
-int sc_mpi_rank;
-int sc_mpi_size;
+static int sc_mpi_rank;
 
 int mpi_setup_stopping_conditions() {
     int error;
@@ -305,70 +305,82 @@ int mpi_distribute_stopping_conditions() {
     if(!enabled_conditions) {return 0;}
 }
 
-int local_type_of_stopping_condition_set[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET];
-int local_index_of_particle_in_stopping_condition[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET*MAX_NUMBER_OF_PARTICLES_PER_INDEX];
+static int local_type_of_stopping_condition_set[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET];
+static int local_index_of_particle_in_stopping_condition[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET*MAX_NUMBER_OF_PARTICLES_PER_INDEX];
 
 int mpi_collect_stopping_conditions() {
     if(!enabled_conditions) {return 0;}
     int i;
+    int local_number_of_stopping_conditions_set;
     int counts[sc_mpi_size];
     int displs[sc_mpi_size];
     memset(counts, 0, sizeof(counts));
     memset(displs, 0, sizeof(displs));
     long set = 0;
+    
     MPI_Allreduce(&set_conditions, &set, 1, MPI_INTEGER,  MPI_BOR, MPI_COMM_WORLD);
+    
     set_conditions = set;
+    
     MPI_Gather(&number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    
     if(sc_mpi_rank == 0) {
-	number_of_stopping_conditions_set = 0;
-	for(i = 0; i < sc_mpi_size; i++) {
-	    number_of_stopping_conditions_set += counts[i];
-	}
-    }
-    if(sc_mpi_rank == 0 && number_of_stopping_conditions_set > (MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET-1) )
-    {
-	return -1;
+	    local_number_of_stopping_conditions_set = 0;
+        for(i = 0; i < sc_mpi_size; i++) {
+            local_number_of_stopping_conditions_set += counts[i];
+        }
     }
     if(sc_mpi_rank == 0) {
-	int x = 0;
-	for(i = 0; i < sc_mpi_size; i++) {
-	    displs[i] = x;
-	    x += counts[i];
-	}
+        int x = 0;
+        for(i = 0; i < sc_mpi_size; i++) {
+            displs[i] = x;
+            x += counts[i];
+        }
     }
 
     MPI_Gatherv(
-	type_of_stopping_condition_set, number_of_stopping_conditions_set, MPI_INTEGER,
-	local_type_of_stopping_condition_set, counts, displs, MPI_INTEGER,
-	0, MPI_COMM_WORLD);
+	    type_of_stopping_condition_set, 
+	    number_of_stopping_conditions_set, 
+	    MPI_INTEGER,
+	    local_type_of_stopping_condition_set, 
+	    counts, 
+	    displs, 
+	    MPI_INTEGER,
+	    0,
+	    MPI_COMM_WORLD
+	);
 
     if(sc_mpi_rank == 0) {
-	int x = 0;
-	for(i = 0; i < sc_mpi_size; i++) {
-	    displs[i] = x;
-	    counts[i] *= MAX_NUMBER_OF_PARTICLES_PER_INDEX;
-	    x += counts[i];
-	}
+        int x = 0;
+        for(i = 0; i < sc_mpi_size; i++) {
+            displs[i] = x;
+            counts[i] *= MAX_NUMBER_OF_PARTICLES_PER_INDEX;
+            x += counts[i];
+        }
     }
 
     MPI_Gatherv(
-	index_of_particle_in_stopping_condition,
-	number_of_stopping_conditions_set*MAX_NUMBER_OF_PARTICLES_PER_INDEX,
-	MPI_INTEGER,
-	local_index_of_particle_in_stopping_condition,
-	counts, displs,
-	MPI_INTEGER,
-	0, MPI_COMM_WORLD);
+	    index_of_particle_in_stopping_condition,
+        number_of_stopping_conditions_set*MAX_NUMBER_OF_PARTICLES_PER_INDEX,
+        MPI_INTEGER,
+        local_index_of_particle_in_stopping_condition,
+        counts, 
+        displs,
+        MPI_INTEGER,
+        0, 
+        MPI_COMM_WORLD
+    );
 
     if(sc_mpi_rank == 0) {
-	memcpy(index_of_particle_in_stopping_condition, local_index_of_particle_in_stopping_condition, sizeof(index_of_particle_in_stopping_condition));
-	memcpy(type_of_stopping_condition_set, local_type_of_stopping_condition_set, sizeof(type_of_stopping_condition_set));
+        number_of_stopping_conditions_set = local_number_of_stopping_conditions_set;
+	    memcpy(index_of_particle_in_stopping_condition, local_index_of_particle_in_stopping_condition, sizeof(index_of_particle_in_stopping_condition));
+	    memcpy(type_of_stopping_condition_set, local_type_of_stopping_condition_set, sizeof(type_of_stopping_condition_set));
     }
 }
 
 #else
 
-int mpi_setup_stopping_conditions() {return 0;}
+int mpi_setup_stopping_conditions() {sc_mpi_size = 1; return 0;}
 int mpi_collect_stopping_conditions() {return 0;}
 int mpi_distribute_stopping_conditions() {return 0;}
 
