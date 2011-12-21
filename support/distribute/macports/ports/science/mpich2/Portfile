@@ -1,0 +1,173 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+# $Id: Portfile 84550 2011-09-27 21:05:11Z snc@macports.org $
+
+PortSystem          1.0
+
+name                mpich2
+version             1.4.1p1
+license             BSD
+categories          science parallel net
+platforms           darwin
+maintainers         eborisch \
+                    openmaintainer
+
+description         Message Passing Interface (MPI) Library
+
+long_description    MPICH2 is an implementation of the Message-Passing \
+                    Interface (MPI). The goals of MPICH2 are to provide an \
+                    MPI implementation for important platforms, including \
+                    clusters, SMPs, and massively parallel processors. It \
+                    also provides a vehicle for MPI implementation research \
+                    and for developing new and better parallel programming \
+                    environments.
+
+homepage            http://www.mcs.anl.gov/research/projects/mpich2/
+master_sites        ${homepage}downloads/tarballs/${version}/
+
+checksums           md5     b470666749bcb4a0449a072a18e2c204 \
+                    sha1    8dcc8888fb27232eb8f76c11cc890f1c3c483804 \
+                    rmd160  1d355cc07b8675af77b1c255fd10696844447298
+
+# Don't build if lammpi is around.
+pre-configure {
+    if {[file exists ${prefix}/etc/lammpi/lam-helpfile]} {
+        ui_error "Cannot co-exist with lammpi; please deactivate lammpi before configuring."
+        return -code error
+    }
+}
+
+pre-build {
+    if {[file exists ${prefix}/etc/lammpi/lam-helpfile]} {
+        ui_error "Cannot co-exist with lammpi; please deactivate lammpi before building."
+        return -code error
+    }
+}
+
+# Puts all entries in <prefix>/share into appropriate mpich2 subdirs
+destroot.args       PACKAGE=mpich2
+patchfiles          patch-src-util-createshlib.in
+
+# the default include-dir conflicts with openmpi!
+configure.args      --with-thread-package=posix \
+                    --enable-timer-type=mach_absolute_time \
+                    --enable-cxx \
+                    --mandir=${prefix}/share/man \
+                    --docdir=${prefix}/share/doc/${name} \
+                    --htmldir=${prefix}/share/doc/${name} \
+                    --includedir=${prefix}/include/${name} \
+                    --disable-f77 --disable-fc \
+                    --with-mpe \
+                    --with-device=ch3:nemesis \
+                    --with-pm=hydra \
+                    --enable-shared \
+                    --enable-cache \
+                    --enable-smpcoll \
+                    --enable-base-cache \
+	            F90="" F90FLAGS=""
+
+build.args-append   VERBOSE=1
+
+universal_variant   no
+use_parallel_build  no
+conflicts           lammpi
+
+# Fixes for the beta DESTDIR support in 1.4.1. Should go away in 1.5 branch.
+post-patch {
+    reinplace -E "s|fix=\\\$\\\{DESTDIR\\\}|fix=|g" \
+        ${worksrcpath}/Makefile.in
+    reinplace -E "s|dir=\\\$\\\{DESTDIR\\\}|dir=|g" \
+        ${worksrcpath}/Makefile.in
+}
+
+post-destroot {
+    reinplace -E "s|${destroot}||g" ${destroot}${prefix}/bin/mpicxx \
+                                    ${destroot}${prefix}/bin/mpicc \
+                                    ${destroot}${prefix}/etc/mpicxx.conf \
+                                    ${destroot}${prefix}/etc/mpicc.conf
+
+    file delete ${destroot}${prefix}/sbin/mpeuninstall
+}
+
+# As MPICH creates compiler wrappers, there are lots of
+# variants for what compiler the user would like to wrap.
+
+variant gcc45 description {
+    Enable Fortran 77 and Fortran 90 bindings using gfortran from gcc45
+} conflicts gcc42 gcc43 gcc44 system_gcc llvm clang {
+    configure.f77         ${prefix}/bin/gfortran-mp-4.5
+    configure.fc          ${prefix}/bin/gfortran-mp-4.5
+    configure.ld_archflags
+    depends_lib-append      port:gcc45
+}
+
+variant gcc44 description {
+    Enable Fortran 77 and Fortran 90 bindings using gfortran from gcc44
+} conflicts gcc42 gcc43 gcc45 system_gcc llvm clang {
+    depends_lib-append      port:gcc44
+    configure.f77         ${prefix}/bin/gfortran-mp-4.4
+    configure.fc          ${prefix}/bin/gfortran-mp-4.4
+    configure.ld_archflags
+}
+
+variant gcc43 description {
+    Enable Fortran 77 and Fortran 90 bindings using gfortran from gcc43
+} conflicts gcc42 gcc44 gcc45 system_gcc llvm clang {
+    depends_lib-append      port:gcc43
+    configure.compiler      macports-gcc-4.3
+}
+
+variant gcc42 description {
+    Enable Fortran 77 and Fortran 90 bindings using gfortran from gcc42
+} conflicts gcc43 gcc44 gcc45 system_gcc llvm clang {
+    depends_lib-append      port:gcc42
+    configure.compiler      macports-gcc-4.2
+}
+
+if {[ variant_isset gcc42 ] ||
+    [ variant_isset gcc43 ] ||
+    [ variant_isset gcc44 ] ||
+    [ variant_isset gcc45 ]} {
+    configure.args-append   --enable-f77 --enable-fc
+    configure.args-delete   --disable-f77 --disable-fc
+}
+
+variant system_gcc description {
+    Use system gcc (no Fortran)
+} conflicts gcc42 gcc43 gcc44 gcc45 llvm clang {
+    configure.compiler      gcc-4.2
+}
+
+variant llvm description {
+    Use llvm-gcc
+} conflicts gcc42 gcc43 gcc44 gcc45 system_gcc clang {
+    configure.compiler      llvm-gcc-4.2
+}
+
+variant clang description {
+    Use clang
+} conflicts gcc42 gcc43 gcc44 gcc45 system_gcc llvm {
+    configure.compiler      clang
+    configure.cxx           clang++
+    configure.cflags-append -w
+    configure.cxxflags-append -w
+}
+
+variant gforker description {
+    Use gforker process manager instead of the default hydra
+} {
+    configure.args-append   --with-pm=gforker
+    configure.args-delete   --with-pm=hydra
+}
+
+platform darwin {
+    configure.args-append   --enable-sharedlibs=osx-gcc
+}
+
+variant default_mpi description {
+    Install as defalt MPI -- conflict with OpenMPI
+} {
+    configure.args-delete   --includedir=${prefix}/include/${name}
+    conflicts-append        openmpi
+}
+livecheck.type      regex
+livecheck.regex     ${name}-(\[0-9.p\]+)${extract.suffix}

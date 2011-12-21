@@ -1,0 +1,52 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+# $Id$
+#
+#http://www.amusecode.org/releases/nightly/amuse-20111124-r2834.tar.gz
+
+
+PortSystem          1.0
+PortGroup           python 1.0
+
+name                py-amuse
+version             20111216-r2934
+categories          python science
+platforms           darwin
+license             GPL
+maintainers         the amuse team
+description         Astrophysical Multipurpose Software Environment
+long_description    amuse is a framework to combine existing astrophysical codes
+homepage            http://www.amusecode.org/
+distname            amuse-${version}
+checksum {}
+#checksums           md5 1cd2a1d659acd3a9ac9c222a943bcd63 \
+#		   sha1  c76593f0f0aadfe28232bf2901fe20ac8a48443f 
+
+master_sites        http://www.amusecode.org/releases/nightly/packages/source/
+
+python.versions     26 27
+
+use_configure       yes
+
+configure.env-append FC=gfortran-mp-4.4 PYTHON=${python.bin}\
+                     PREFIX=${prefix}
+
+build.target        ""
+build.args          build build_codes --variant --no-inplace
+
+#destroot.cmd        ${python.bin} setup.py
+#destroot.post_args  --skip-build --prefix=${prefix} --root=${destroot} 
+
+depends_lib-append port:gcc44 \
+             port:hdf5-18 \
+             port:fftw-3\
+             port:gsl \
+             port:cmake \
+	     port:mpich2 \
+	     port:py${python.version}-numpy \
+             port:py${python.version}-h5py \
+             port:py${python.version}-mpi4py \
+             port:py${python.version}-nose \
+             port:py${python.version}-docutils \
+             port:py${python.version}-matplotlib
+
