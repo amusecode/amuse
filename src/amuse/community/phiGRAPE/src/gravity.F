@@ -157,21 +157,7 @@ C ELLO-- implement this according top stopcond lib C
                     ENDIF
             
                     IF (is_collision_detection_enabled.GT.0) THEN
-                        stopping_index = 
-     $                  next_index_for_stopping_condition()
-                        error = 
-     $                  set_stopping_condition_info(stopping_index,
-     $                          COLLISION_DETECTION)
-                    
-                        error = set_stopping_condition_particle_index(
-     $                          stopping_index,
-     $                          0,
-     $                          id1)
-                        
-                        error = set_stopping_condition_particle_index(
-     $                          stopping_index,
-     $                          1,
-     $                          id2)
+                        call amuse_handle_collisions(id1, id2)
                     ENDIF
                     IF (is_pair_detection_enabled.GT.0) THEN
                         DO k=1,NDIM
@@ -320,6 +306,29 @@ C---  and can be accessed by the global particle index
 
       RETURN
       END
+
+      subroutine amuse_handle_collisions(id1, id2)
+        implicit none
+#include "stopcond.inc"
+        integer, intent(in) :: id1, id2
+        integer :: next_index_for_stopping_condition
+        integer :: set_stopping_condition_info
+        integer :: set_stopping_condition_particle_index
+        integer :: sc_idx, err
+        
+C       Make sure each collision is reported only once:
+        if (id1.GT.id2) return
+        
+        sc_idx = next_index_for_stopping_condition()
+        err = set_stopping_condition_info(sc_idx, COLLISION_DETECTION)
+        if (err.LT.0) write(*,*) "Error in amuse_handle_collisions - 1"
+        
+        err = set_stopping_condition_particle_index(sc_idx, 0, id1)
+        if (err.LT.0) write(*,*) "Error in amuse_handle_collisions - 2"
+        
+        err = set_stopping_condition_particle_index(sc_idx, 1, id2)
+        if (err.LT.0) write(*,*) "Error in amuse_handle_collisions - 3"
+      end subroutine amuse_handle_collisions
 
 
       SUBROUTINE gravity_at_point(tnow, pointx, pointy, pointz,

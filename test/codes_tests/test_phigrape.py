@@ -524,34 +524,30 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
 
     def test11(self):
-        particles = datamodel.Particles(2)
-        particles.x = [
-            0.0,1.0, 
-            #5,7,
-            #10,12,
-            #15,17,
-            #20,22
-        ] | nbody_system.length
+        particles = datamodel.Particles(6)
+        particles.mass = 1 | nbody_system.mass
+        particles.radius = 0.01 | nbody_system.length
+        particles.x = [-101.0, -100.0, -0.5, 0.5, 100.0, 101.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
-        particles.radius = 0.75 | nbody_system.length
-        particles.vx =  0.1 | nbody_system.speed
-        particles.vy =  0 | nbody_system.speed
-        particles.vz =  0 | nbody_system.speed
-        particles.mass = 0 | nbody_system.mass
-       
+        particles.velocity = [[1, 0, 0], [-1, 0, 0]]*3 | nbody_system.speed
+        
         instance = PhiGRAPE()
         instance.initialize_code()
-        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
+        instance.parameters.epsilon_squared = 0 | nbody_system.length**2
         instance.particles.add_particles(particles) 
-        instance.stopping_conditions.collision_detection.enable()
+        collisions = instance.stopping_conditions.collision_detection
+        collisions.enable()
         instance.evolve_model(0.5 | nbody_system.time)
-        self.assertTrue(instance.stopping_conditions.collision_detection.is_set())
-        self.assertEquals(len(instance.stopping_conditions.collision_detection.particles(0)), 2 )
-        p0 =  instance.stopping_conditions.collision_detection.particles(0)[0]
-        p1 =  instance.stopping_conditions.collision_detection.particles(1)[0]
-        self.assertNotEquals(p0, p1)
-        self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
+        
+        self.assertTrue(collisions.is_set())
+        self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
+        self.assertEquals(len(collisions.particles(0)), 3)
+        self.assertEquals(len(collisions.particles(1)), 3)
+        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 0)
+        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+                (collisions.particles(0).radius + collisions.particles(1).radius),
+                [True, True, True])
         instance.stop()
 
     def test12(self):

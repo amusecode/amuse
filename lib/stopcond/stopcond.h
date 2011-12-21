@@ -24,7 +24,7 @@ int get_stopping_condition_out_of_box_parameter(double *value);
 #endif
 
 // private methods
-#define MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET 100
+#define MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET 100
 #define MAX_NUMBER_OF_PARTICLES_PER_INDEX        10
 
 #define COLLISION_DETECTION  0
