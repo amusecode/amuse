@@ -1305,7 +1305,7 @@ class SocketMessage(AbstractMessage):
         if len(array) > 0:
             buffer = numpy.array(array, dtype='b')
             socket.sendall(buffer.tostring())
-        
+
     def send_longs(self, socket, array):
         if len(array) > 0:
             buffer = numpy.array(array, dtype='int64')
@@ -1558,7 +1558,10 @@ class IbisChannel(MessageChannel):
         logging.getLogger("channel").debug("connecting to daemon")
         
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((self.daemon_host, self.daemon_port))
+        try:
+            self.socket.connect((self.daemon_host, self.daemon_port))
+        except:
+            raise exceptions.CodeException("Could not connect to Ibis Daemon at " + str(self.daemon_port))
         
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         
