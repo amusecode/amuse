@@ -158,7 +158,7 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
     def gravity_code_factory(self):
         return PhiGRAPE
         
-    def testextra0(self):
+    def slowtestextra0(self):
         factory = self.gravity_code_factory()
         instance = self.new_instance_of_an_optional_code(factory, mode='gpu')
         try:
