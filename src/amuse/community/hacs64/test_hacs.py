@@ -6,7 +6,7 @@ import random
 import sys
 import unittest
 
-from amuse.community.ph4.interface import ph4 as grav
+from amuse.community.hacs64.interface import hacs64 as grav
 from amuse.units import nbody_system
 from amuse.units import units
 
@@ -15,11 +15,13 @@ from amuse.datamodel import particle_attributes
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_sphere
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
+
+
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    Ebin = gravity.get_binary_energy()
+    Ebin = 0.0 | nbody_system.energy # gravity.get_binary_energy()
     Etop = T + U
     E = Etop + Ebin
     if E0 == 0 | nbody_system.energy: E0 = E
@@ -34,40 +36,32 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     sys.stdout.flush()
     return E
 
-def test_ph4(infile = None, number_of_stars = 40,
-             end_time = 10 | nbody_system.time,
-             delta_t = 1 | nbody_system.time,
-             n_workers = 1, use_gpu = 1, gpu_worker = 1,
-             accuracy_parameter = 0.1,
-             softening_length = -1 | nbody_system.length,
-             manage_encounters = 1):
+def test_hacs(infile = None,
+              number_of_stars = 1024,
+              nmax = 2048,
+              end_time = 10   | nbody_system.time,
+              delta_t = 0.125 | nbody_system.time,
+              dt_max  = 0.0625 | nbody_system.time,
+              n_ngb   = 16,
+              eta_irr = 0.6,
+              eta_reg = 0.1,
+              softening_length = 0.0 | nbody_system.length):
 
     if infile != None: print "input file =", infile
-    print "end_time =", end_time.number
-    print "delta_t =", delta_t.number
-    print "n_workers =", n_workers
-    print "use_gpu =", use_gpu
-    print "manage_encounters =", manage_encounters
+    print "end_time =",  end_time.number
+    print "nstars= ",    number_of_stars,
+    print "nmax= ",      nmax,
+    print "delta_t= ",   delta_t.number
+    print "dt_max= ",    dt_max.number
+    print "n_ngb= ",     n_ngb,
+    print "eta_irr= ",   eta_irr
+    print "eta_reg= ",   eta_reg
+    print "eps2=    ",   softening_length.number**2
     print "\ninitializing the gravity module"
     sys.stdout.flush()
 
-    # Note that there are actually three GPU options to test:
-    #
-    #	1. use the GPU code and allow GPU use (default)
-    #	2. use the GPU code but disable GPU use (-g)
-    #	3. use the non-GPU code (-G)
-
-    if gpu_worker == 1:
-        try:
-            gravity = grav(number_of_workers = n_workers,
-                           redirection = "none", mode = "gpu")
-        except Exception as ex:
-            gravity = grav(number_of_workers = n_workers, redirection = "none")
-    else:
-        gravity = grav(number_of_workers = n_workers, redirection = "none")
-
+    gravity = grav(number_of_workers = 1, redirection = "none")
     gravity.initialize_code()
-    gravity.parameters.set_defaults()
 
     #-----------------------------------------------------------------
 
@@ -89,7 +83,7 @@ def test_ph4(infile = None, number_of_stars = 40,
         stars.move_to_center()
         print "scaling stars to virial equilibrium"
         stars.scale_to_standard(smoothing_length_squared
-                                    = gravity.parameters.epsilon_squared)
+                                    = gravity.parameters.eps2)
 
         time = 0.0 | nbody_system.time
         sys.stdout.flush()
@@ -126,26 +120,26 @@ def test_ph4(infile = None, number_of_stars = 40,
 
         stars = datamodel.Particles(number_of_stars)
         stars.id = id | units.none
+        print len(mass), len(pos), len(vel), len(id)
         stars.mass = mass | nbody_system.mass
         stars.position = pos | nbody_system.length
         stars.velocity = vel | nbody_system.speed
         stars.radius = 0. | nbody_system.length
+        nmax = 2*len(mass)
 
     # print "IDs:", stars.id.number
     sys.stdout.flush()
 
     #-----------------------------------------------------------------
 
-    if softening_length == -1 | nbody_system.length:
-        eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
-			| nbody_system.length**2
-    else:
-        eps2 = softening_length*softening_length
+    gravity.parameters.nmax    = nmax;
+    gravity.parameters.dtmax   = dt_max;
+#    gravity.parameters.n_ngb   = n_ngb;
+    gravity.parameters.eta_irr = eta_irr;
+    gravity.parameters.eta_reg = eta_reg;
+    gravity.parameters.eps2    = softening_length**2
+    gravity.commit_parameters();
 
-    gravity.parameters.timestep_parameter = accuracy_parameter
-    gravity.parameters.epsilon_squared = eps2
-    gravity.parameters.use_gpu = use_gpu
-    gravity.parameters.manage_encounters = manage_encounters
 
     print "adding particles"
     # print stars
@@ -162,10 +156,10 @@ def test_ph4(infile = None, number_of_stars = 40,
     E0 = print_log(time, gravity)
     
     # Channel to copy values from the code to the set in memory.
-    channel = gravity.particles.new_channel_to(stars)
+#    channel = gravity.particles.new_channel_to(stars)
 
-    stopping_condition = gravity.stopping_conditions.collision_detection
-    stopping_condition.enable()
+#    stopping_condition = gravity.stopping_conditions.collision_detection
+#    stopping_condition.enable()
     
     while time < end_time:
         time += delta_t
@@ -178,43 +172,43 @@ def test_ph4(infile = None, number_of_stars = 40,
 
 	# Update the bookkeeping: synchronize stars with the module data.
 
-        try:
-            gravity.update_particle_set()
-            gravity.particles.synchronize_to(stars)
-        except:
-            pass
+#        try:
+#            gravity.update_particle_set()
+#            gravity.particles.synchronize_to(stars)
+#        except:
+#            pass
     
         # Copy values from the module to the set in memory.
 
-        channel.copy()
+#        channel.copy()
     
         # Copy the index (ID) as used in the module to the id field in
         # memory.  The index is not copied by default, as different
         # codes may have different indices for the same particle and
         # we don't want to overwrite silently.
 
-        channel.copy_attribute("index_in_code", "id")
+#        channel.copy_attribute("index_in_code", "id")
 
-        if stopping_condition.is_set():
-            star1 = stopping_condition.particles(0)[0]
-            star2 = stopping_condition.particles(1)[0]
-            print '\nstopping condition set at time', \
-                gravity.get_time().number,'for:\n'
-            print star1
-            print ''
-            print star2
-            print ''
-            raise Exception("no encounter handling")
-
-        if len(stars) != ls:
-            if 0:
-                print "stars:"
-                for s in stars:
-                    print " ", s.id.number, s.mass.number, \
-			       s.x.number, s.y.number, s.z.number
-            else:
-                print "number of stars =", len(stars)
-            sys.stdout.flush()
+#        if stopping_condition.is_set():
+#            star1 = stopping_condition.particles(0)[0]
+#            star2 = stopping_condition.particles(1)[0]
+#            print '\nstopping condition set at time', \
+#                gravity.get_time().number,'for:\n'
+#            print star1
+#            print ''
+#            print star2
+#            print ''
+#            raise Exception("no encounter handling")
+#
+#        if len(stars) != ls:
+#            if 0:
+#                print "stars:"
+#                for s in stars:
+#                    print " ", s.id.number, s.mass.number, \
+#			       s.x.number, s.y.number, s.z.number
+#            else:
+#                print "number of stars =", len(stars)
+#            sys.stdout.flush()
 
         print_log(time, gravity, E0)
         sys.stdout.flush()
@@ -226,15 +220,17 @@ if __name__ == '__main__':
 
     infile = None
     N = 1024
-    t_end = 5.0 | nbody_system.time
-    delta_t = 0.125 | nbody_system.time
-    n_workers = 2
-    use_gpu = 0
-    gpu_worker = 0
-    accuracy_parameter = 0.1
-    softening_length = 0.0  | nbody_system.length
+    dt_max  = 0.0625 | nbody_system.time
+    n_ngb = 16
+    eta_irr = 0.8
+    eta_reg = 0.14
+
+    eta_irr = 0.6
+    eta_reg = 0.1
+
+    t_end = 1.0 | nbody_system.time
+    delta_t = 0.25 | nbody_system.time
     random_seed = -1
-    manage_encounters = 1
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")
@@ -274,9 +270,18 @@ if __name__ == '__main__':
         random_seed = numpy.random.randint(1, pow(2,31)-1)
     numpy.random.seed(random_seed)
     print "random seed =", random_seed
+    
+    Nmax = N*2
+    softening_length = 0.0/N  | nbody_system.length
 
     assert is_mpd_running()
-    test_ph4(infile, N, t_end, delta_t, n_workers,
-             use_gpu, gpu_worker,
-             accuracy_parameter, softening_length,
-             manage_encounters)
+    test_hacs(infile, 
+              N,
+              Nmax,
+              t_end, 
+              delta_t, 
+              dt_max,
+              n_ngb,
+              eta_irr,
+              eta_reg,
+              softening_length)
