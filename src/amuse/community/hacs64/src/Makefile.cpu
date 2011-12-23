@@ -1,0 +1,46 @@
+.SUFFIXES: .cu 
+
+CXX  := g++
+CC   := gcc
+NVCC := nvcc
+AR   := ar ruv
+RANLIB := ranlib
+
+CUDAPATH       := /usr/local/cuda
+CUDAINCLUDE    := -I$(CUDAPATH)/include
+CUDASDKINCLUDE := -I$(HOME)/NVIDIA_GPU_Computing_SDK/C/common/inc
+
+NVCCFLAGS := -gencode arch=compute_20,code=sm_20 -O0 -g -D_DEBUG  $(CUDAINCLUDE) $(CUDASDKINCLUDE) -I./ 
+NVCCFLAGS += -Xcompiler="-Wall"
+#NVCCFLAGS := -O0 -g -D_DEBUG -deviceemu -maxrregcount=32 $(CUDAINCLUDE)
+
+
+CXXFLAGS  := -O3 -g -Wall  -I./ON_neib -I./ -fopenmp
+LDFLAGS   :=   -fopenmp
+
+OBJS = hacs6.o \
+	irrf6.o \
+	regf4.o
+
+TARGET = hacs6-4-cpu
+CODELIB = libhacs64.a
+all: $(CODELIB) $(TARGET) 
+
+$(TARGET): $(CODELIB)
+	$(CXX) -o $(TARGET) $(LDFLAGS) ./$(CODELIB) 
+
+$(CODELIB): $(OBJS)
+	/bin/rm -f $@
+	$(AR) $@ $(OBJS)
+
+.cpp.o: 
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+%.cu_o:  %.cu
+	$(NVCC) $(NVCCFLAGS) -c $< -o $@
+
+clean:
+	/bin/rm -rf *.o regf4_cu/*.cu_o $(TARGET)
+
+$(OBJS): hacs6.h irrf6.h regf4.h
+
