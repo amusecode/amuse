@@ -225,14 +225,14 @@ def test_ph4(infile = None, number_of_stars = 40,
 if __name__ == '__main__':
 
     infile = None
-    N = 1024
+    N = 100
     t_end = 5.0 | nbody_system.time
-    delta_t = 0.125 | nbody_system.time
+    delta_t = 1.0 | nbody_system.time
     n_workers = 2
-    use_gpu = 0
-    gpu_worker = 0
+    use_gpu = 1
+    gpu_worker = 1
     accuracy_parameter = 0.1
-    softening_length = 0.0  | nbody_system.length
+    softening_length = -1  | nbody_system.length
     random_seed = -1
     manage_encounters = 1
 
