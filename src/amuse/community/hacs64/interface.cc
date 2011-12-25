@@ -4,7 +4,7 @@
 // hand-coded.  SAVE A COPY (here interface.cc.1) to avoid accidental
 // overwriting!
 
-#include "src/hacs6.h"
+#include "src/hacs64.h"
 
 std::vector<particle> node::ptcl;
 std::vector<node>     node::node_heap;
@@ -35,7 +35,7 @@ void fpe_catch(void) {}
 #endif
 
 
-static hacs6_4::Nbody *nbody_ptr = NULL;
+static hacs64::Nbody *nbody_ptr = NULL;
 
 inline int get_id_from_idx(const int index_of_the_particle)
 {
@@ -49,7 +49,7 @@ int initialize_code()
 {
   assert(nbody_ptr == NULL); 
   fpe_catch();
-  nbody_ptr = new hacs6_4::Nbody;
+  nbody_ptr = new hacs64::Nbody;
 
   return 0;
 }
@@ -186,7 +186,7 @@ int new_particle(
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
   *index_of_the_particle = nbody_ptr->ptcl.size() + nbody_ptr->ptcl2add.size() + 1;
-  nbody_ptr->ptcl2add.push_back(hacs6_4::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), *index_of_the_particle));
+  nbody_ptr->ptcl2add.push_back(hacs64::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), *index_of_the_particle));
   return 0;
 }
 int delete_particle(int index_of_the_particle)
@@ -210,9 +210,9 @@ int set_state(int index_of_the_particle,
   assert(nbody_ptr->is_sane());
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
-  nbody_ptr->ptcl[id] = hacs6_4::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), index_of_the_particle);
+  nbody_ptr->ptcl[id] = hacs64::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), index_of_the_particle);
 #if 0
-  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::ALL));
+  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs64::Particle::ALL));
 #endif
   return 0;
 }
@@ -225,7 +225,7 @@ int get_state(int index_of_the_particle,
   assert(nbody_ptr->is_sane());
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
-  const hacs6_4::Particle &pi = nbody_ptr->ptcl[id];
+  const hacs64::Particle &pi = nbody_ptr->ptcl[id];
   assert(pi.id == index_of_the_particle);
   *mass   = pi.mass;
   *radius = pi.radius;
@@ -248,7 +248,7 @@ int set_mass(int index_of_the_particle, double mass)
   if (id == -1) return -1;
   nbody_ptr->ptcl[id].mass = mass;
 #if 0
-  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::MASS));
+  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs64::Particle::MASS));
 #endif
   return 0;
 }
@@ -272,7 +272,7 @@ int set_radius(int index_of_the_particle, double radius)
   if (id == -1) return -1;
   nbody_ptr->ptcl[id].radius = radius;
 #if 0
-  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::RADIUS));
+  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs64::Particle::RADIUS));
 #endif
   return 0;
 }
@@ -297,7 +297,7 @@ int set_position(int index_of_the_particle,
   if (id == -1) return -1;
   nbody_ptr->ptcl[id].pos = dvec3(x,y,z);
 #if 0
-  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::POS));
+  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs64::Particle::POS));
 #endif
   return 0;
 }
@@ -325,7 +325,7 @@ int set_velocity(int index_of_the_particle,
   if (id == -1) return -1;
   nbody_ptr->ptcl[id].vel = dvec3(vx, vy, vz);
 #if 0
-  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::VEL));
+  nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs64::Particle::VEL));
 #endif
   return 0;
 }

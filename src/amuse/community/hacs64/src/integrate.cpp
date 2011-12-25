@@ -1,5 +1,5 @@
 
-#include "hacs6.h"
+#include "hacs64.h"
 
 #ifndef __MACOSX_
 #define __LINUX__
@@ -80,7 +80,7 @@ int main(int argc, char * argv[])
 
 	read_dumbp(stdin, pos, vel, mass);
 
-	hacs6_4::Nbody nbody;
+	hacs64::Nbody nbody;
 
 	const int nbodies = pos.size();
 
@@ -112,7 +112,7 @@ int main(int argc, char * argv[])
 
 	nbody.potential();
 
-	hacs6_4::Energy E0(nbody.ptcl, nbody.eps2);
+	hacs64::Energy E0(nbody.ptcl, nbody.eps2);
   double e_prev = E0.e;
 	E0.print(stderr, "Initial E : ");
 	E0.print_mom(stderr, "Initial Momentum : ");
@@ -201,13 +201,13 @@ int main(int argc, char * argv[])
     if (nbody.t_global == t_log) 
     {
       nbody.potential();
-      E0 = hacs6_4::Energy(nbody.ptcl, nbody.eps2);
+      E0 = hacs64::Energy(nbody.ptcl, nbody.eps2);
     }
 
     if (nbody.t_global >= t_log) 
     {
       nbody.potential();
-      const hacs6_4::Energy E1(nbody.ptcl, nbody.eps2);
+      const hacs64::Energy E1(nbody.ptcl, nbody.eps2);
       de_max = std::max(de_max, std::abs((E1.e - E0.e)/E0.e));
 
       fprintf(stderr,  " t= %g  dt= %g  Tcpu= %g h: ninter= %lld %lld [ %g ] %lld  ",
