@@ -211,7 +211,9 @@ int set_state(int index_of_the_particle,
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
   nbody_ptr->ptcl[id] = hacs6_4::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), index_of_the_particle);
+#if 0
   nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::ALL));
+#endif
   return 0;
 }
 int get_state(int index_of_the_particle,
@@ -245,7 +247,9 @@ int set_mass(int index_of_the_particle, double mass)
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
   nbody_ptr->ptcl[id].mass = mass;
+#if 0
   nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::MASS));
+#endif
   return 0;
 }
 int get_mass(int index_of_the_particle, double * mass)
@@ -267,7 +271,9 @@ int set_radius(int index_of_the_particle, double radius)
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
   nbody_ptr->ptcl[id].radius = radius;
+#if 0
   nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::RADIUS));
+#endif
   return 0;
 }
 int get_radius(int index_of_the_particle, double * radius)
@@ -290,7 +296,9 @@ int set_position(int index_of_the_particle,
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
   nbody_ptr->ptcl[id].pos = dvec3(x,y,z);
+#if 0
   nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::POS));
+#endif
   return 0;
 }
 int get_position(int index_of_the_particle,
@@ -316,7 +324,9 @@ int set_velocity(int index_of_the_particle,
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
   nbody_ptr->ptcl[id].vel = dvec3(vx, vy, vz);
+#if 0
   nbody_ptr->ptcl2modify.push_back(std::make_pair(index_of_the_particle, hacs6_4::Particle::VEL));
+#endif
   return 0;
 }
 int get_velocity(int index_of_the_particle,
@@ -492,6 +502,7 @@ int get_index_of_next_particle(int id, int *index_of_the_next_particle)
   return -1;
 }
 
+#if 0
 int get_indices_of_colliding_particles(int * index_of_particle1, 
     int * index_of_particle2)
 {
@@ -499,6 +510,7 @@ int get_indices_of_colliding_particles(int * index_of_particle1,
   assert(nbody_ptr->is_sane());
   return -1;
 }
+#endif
 
 int get_number_of_particles(int * number_of_particles)
 {

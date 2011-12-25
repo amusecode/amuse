@@ -89,7 +89,7 @@ int main(int argc, char * argv[])
 	double hmax    = std::sqrt(0.5);
 	double eta_irr = 0.6;
 	double eta_reg = 0.1;
-#if 1
+#if 0
   eta_irr = 0.8;
   eta_reg = 0.14;
 //  eta_reg = 0.04;

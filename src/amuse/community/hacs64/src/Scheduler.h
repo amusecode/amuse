@@ -39,6 +39,7 @@ struct Scheduler
 		max_rung = RUNGMAX - 1;
 	}
 
+  void flush() {flush_list();}
 	void flush_list() {
 		for (int i = 0; i < RUNGMAX; i++)
 			list[i].clear();

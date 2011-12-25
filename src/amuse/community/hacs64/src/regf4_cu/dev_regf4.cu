@@ -257,7 +257,7 @@ __forceinline__ __device__ dev_force dev_regfij(
 
   const float r2 = dr*dr;
   const float r2p = fminf(r2, (dr + pi.dt*dv).norm2());
-  if (r2p < pi.h2)
+  if (r2p < (pi.h2 + pj.h2)*0.5f)
   {
     if (pj.mass > 0.0f)
     {

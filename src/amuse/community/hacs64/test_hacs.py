@@ -229,7 +229,7 @@ if __name__ == '__main__':
     eta_reg = 0.1
 
     t_end = 1.0 | nbody_system.time
-    delta_t = 0.25 | nbody_system.time
+    delta_t = 0.125 | nbody_system.time
     random_seed = -1
 
     try:
