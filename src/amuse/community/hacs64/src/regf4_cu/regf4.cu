@@ -69,8 +69,8 @@ namespace regf4
   {
     ni_max  = ((_ni_max - 1)/(NJTHREAD*NJBLOCK) + 1)*NJBLOCK*NJTHREAD;
 
-    ni_tot  = _ni_max;
-    ni_tot_round = ni_max;
+    ni_tot       = _ni_max;
+    ni_tot_round =  ni_max;
     fprintf(stderr, " ni_tot= %d   ni_tot_round= %d \n", ni_tot, ni_tot_round);
     h2max   = _h2max;
     dt_tick = (float)_dt_tick;
@@ -151,8 +151,21 @@ namespace regf4
   int regf::resize(const int _ni)
   {
     assert(_ni <= ni_max);
-    ni_tot = _ni;
-    ni_tot_round = ((_ni - 1)/NJBLOCK + 1)*NJBLOCK;
+    ni_tot        = _ni;
+    ni_tot_round  = ((_ni - 1)/(NJTHREAD*NJBLOCK) + 1)*NJBLOCK*NJTHREAD;
+    ptcl_list.d2h();
+    for (int i = ni_tot; i < ni_max; i++)
+    {
+      ptcl_list[i].pos  = dcuvec3(0.0f);
+      ptcl_list[i].vel  = fcuvec3(0.0f);
+      ptcl_list[i].acc  = fcuvec3(0.0f);
+      ptcl_list[i].jrk  = fcuvec3(0.0f);
+      ptcl_list[i].mass = 0.0;
+      ptcl_list[i].h2   = 0.0;
+      ptcl_list[i].time = 0;
+      ptcl_list[i].id   = -1;
+    }
+    ptcl_list.h2d();
     return 0;
   }
 

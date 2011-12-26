@@ -52,7 +52,7 @@ namespace irrf6
 
 	int irrf::resize(const int ni) 
 	{
-		assert(ni < ni_max);
+		assert(ni <= ni_max);
 		ptcl.resize(ni);
 		pred.resize(ni);
 		list.resize(ni);

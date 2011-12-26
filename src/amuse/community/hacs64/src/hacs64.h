@@ -357,8 +357,6 @@ namespace hacs64
     {
       local_n = nbodies;
 
-      ptcl.    resize(nbodies);
-      ngb_list.resize(nbodies);
 
       this->eps2    = eps2;
       this->h2max   = hmax*hmax;
@@ -369,10 +367,16 @@ namespace hacs64
 
       irr_ptr = new irrf6::irrf(local_n);
       reg_ptr = new regf4::regf(local_n, h2max, scheduler.dt_tick);
+      
 
 
       irrf6::irrf &irr = *irr_ptr;
       regf4::regf &reg = *reg_ptr;
+      
+      ptcl.    resize(local_n);
+      ngb_list.resize(local_n);
+      irr.resize(local_n);
+      reg.resize(local_n);
 
       nsteps_reg = nsteps_irr = nsteps = 0;
       ninter_reg = ninter_irr = 0;
