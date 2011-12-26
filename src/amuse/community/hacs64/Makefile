@@ -3,33 +3,32 @@
 # subsequent versions are hand-coded, so save a copy.  Note that
 # all compiles must use MPICXX, not CXX.
 
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 ALL	 = hacs64_worker
-OPT	  = -O4
+OPT	  = -I$(AMUSE_DIR)/lib/stopcond -O3
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += -Wall -g $(OPT) -I./src -I./src/ON_neib -fopenmp
-CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -lm $(MUSE_LD_FLAGS) -fopenmp
+CFLAGS   += -Wall -g $(OPT)
+CFLAGS   += -I./src -I./src/ON_neib -fopenmp
+CXXFLAGS += $(CFLAGS)  
+LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS) -fopenmp
 
 CUDA_TK  ?= /usr/local/cuda
-# SAPPOROLIBS ?= -L/usr/local/sapporo_v1.6 -lsapporo
-# BOOSTLIBS ?= -L/opt/local/lib -lboost_thread-mt
+
+CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
+CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
 
 LDFLAGS_GPU =	$(LDFLAGS) \
-		$(SAPPOROLIBS) \
-		-L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart \
-		$(BOOSTLIBS)
+		$(CUDA_LIBS) \
 
 OBJS = interface.o
 
 CODELIB = src/libhacs64.a
-
-# CODELIB_GPU = src/libph4gpu.a
-
-CUDA_LIBS ?= -lcudart
-
-# SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
 
 AMUSE_DIR ?= ../../../..
 
@@ -44,25 +43,20 @@ save:
 $(CODELIB):
 	make -C src all CXX=$(MPICXX)
 
-$(CODELIB_GPU):
-	make -C src gpulib CXX=$(MPICXX)
-
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py hacs64Interface -o $@
-
+	
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py hacs64Interface -o $@
+	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py hacs64Interface -o $@
 
 hacs64_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) $(LDFLAGS_GPU) -o $@
-
-# ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
-#	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU) -DGPU
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS_GPU) -DGPU
 
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
 
 clean:
-	$(RM) -r -f *.so *.dSYM *.o *.pyc worker_code.cc interface.h 
-	$(RM) -f *~ hacs64_worker worker_code.cc
+	$(RM) -r -f *.so *.dSYM *.o *.mpio *.pyc worker_code.cc interface.h 
+	$(RM) -f *~ hacs64_worker hacs64_worker_sockets worker_code.cc
+	$(RM) -f worker_code-sockets.cc
 	make -C src clean

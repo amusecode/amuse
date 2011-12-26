@@ -1,4 +1,5 @@
 #include "interface.h"
+#include <stopcond.h>
 
 // A stub of this file is machine generated, but the content is
 // hand-coded.  SAVE A COPY (here interface.cc.1) to avoid accidental
@@ -50,6 +51,15 @@ int initialize_code()
   assert(nbody_ptr == NULL); 
   fpe_catch();
   nbody_ptr = new hacs64::Nbody;
+    
+  // AMUSE STOPPING CONDITIONS SUPPORT
+  set_support_for_condition(COLLISION_DETECTION);
+#if 0
+  set_support_for_condition(PAIR_DETECTION);
+  set_support_for_condition(TIMEOUT_DETECTION);
+  set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
+  set_support_for_condition(OUT_OF_BOX_DETECTION);
+#endif
 
   return 0;
 }
@@ -399,6 +409,7 @@ int evolve_model(double time)
 {
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
+  reset_stopping_conditions();    
   nbody_ptr->evolve_model(time);
 
   return 0;	

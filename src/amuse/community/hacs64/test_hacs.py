@@ -62,7 +62,7 @@ def test_hacs(infile = None,
 
     gravity = grav(number_of_workers = 1, redirection = "none")
     gravity.initialize_code()
-
+    
     #-----------------------------------------------------------------
 
     if infile == None:
@@ -158,8 +158,8 @@ def test_hacs(infile = None,
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
 
-#    stopping_condition = gravity.stopping_conditions.collision_detection
-#    stopping_condition.enable()
+    stopping_condition = gravity.stopping_conditions.collision_detection
+    stopping_condition.enable()
     
     while time < end_time:
         time += delta_t
@@ -180,35 +180,34 @@ def test_hacs(infile = None,
     
         # Copy values from the module to the set in memory.
 
-#        channel.copy()
+        channel.copy()
     
         # Copy the index (ID) as used in the module to the id field in
         # memory.  The index is not copied by default, as different
         # codes may have different indices for the same particle and
         # we don't want to overwrite silently.
 
-#        channel.copy_attribute("index_in_code", "id")
+        channel.copy_attribute("index_in_code", "id")
 
-#        if stopping_condition.is_set():
-#            star1 = stopping_condition.particles(0)[0]
-#            star2 = stopping_condition.particles(1)[0]
-#            print '\nstopping condition set at time', \
-#                gravity.get_time().number,'for:\n'
-#            print star1
-#            print ''
-#            print star2
-#            print ''
-#            raise Exception("no encounter handling")
-#
-#        if len(stars) != ls:
-#            if 0:
-#                print "stars:"
-#                for s in stars:
-#                    print " ", s.id.number, s.mass.number, \
-#			       s.x.number, s.y.number, s.z.number
-#            else:
-#                print "number of stars =", len(stars)
-#            sys.stdout.flush()
+        if stopping_condition.is_set():
+            star1 = stopping_condition.particles(0)[0]
+            star2 = stopping_condition.particles(1)[0]
+            print '\nstopping condition set at time', \
+                gravity.get_time().number,'for:\n'
+            print star1
+            print ''
+            print star2
+            print ''
+            raise Exception("no encounter handling")
+
+        if len(stars) != ls:
+           if 0:
+                print "stars:"
+                for s in stars:
+                    print " ", s.id.number, s.mass.number, s.x.number, s.y.number, s.z.number
+           else:
+             print "number of stars =", len(stars)
+           sys.stdout.flush()
 
         print_log(time, gravity, E0)
         sys.stdout.flush()

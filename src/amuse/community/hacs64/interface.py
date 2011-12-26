@@ -8,8 +8,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 # *** interface.cc has been  hand-coded to implement the details,
 # *** MAKE SURE TO SAVE IT SOMEWHERE, as build.py can overwrite it!
 
-class hacs64Interface(CodeInterface,
-                   GravitationalDynamicsInterface):
+class hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
     HACS64, GPU-accelerated Hermite Ahmad-Cohen Scheme
     6th order irregular & 4th order regular step
@@ -17,7 +16,7 @@ class hacs64Interface(CodeInterface,
 
     # Interface specification.
 
-    include_headers = ['interface.h']
+    include_headers = ['interface.h', 'stopcond.h']
 
     def __init__(self, **options):
         CodeInterface.__init__(
@@ -154,7 +153,10 @@ class hacs64(GravitationalDynamics):
     # The actual module.
 
     def __init__(self, convert_nbody = None, **keyword_arguments):
+
         legacy_interface = hacs64Interface(**keyword_arguments)
+        
+        self.stopping_conditions = StoppingConditions(self)
 
         GravitationalDynamics.__init__(self,
                                        legacy_interface,
@@ -190,8 +192,8 @@ class hacs64(GravitationalDynamics):
             "get_h2max",                        # getter name in interface.cc
             "set_h2max",                        # setter name in interface.cc
             "h2max",                            # python parameter name
-            "maximal neighbour radius quared",  # description
-            default_value = 0.5 | units.none    # default
+            "maximal neighbour radius squared", # description
+            default_value = 0.5 | nbody_system.length*nbody_system.length   # default
         )
 
         object.add_method_parameter(
@@ -207,7 +209,7 @@ class hacs64(GravitationalDynamics):
             "set_eta_irr",                         # setter name in interface.cc
             "eta_irr",              # python parameter name
             "irregular timestep parameter",        # description
-            default_value = 0.6  | nbody_system.length * nbody_system.length
+            default_value = 0.6  | units.none
         )
 
         object.add_method_parameter(
@@ -217,6 +219,8 @@ class hacs64(GravitationalDynamics):
             "smoothing parameter for gravity calculations", 
             default_value = 0.0  | nbody_system.length * nbody_system.length
         )
+        
+        self.stopping_conditions.define_parameters(object)
 
     def update_particle_set(self):
         """
@@ -291,5 +295,12 @@ class hacs64(GravitationalDynamics):
             (nbody_system.length * nbody_system.length, object.ERROR_CODE,))
         object.add_method("set_eps2", (nbody_system.length * nbody_system.length, ),
             (object.ERROR_CODE,))
+        
+        self.stopping_conditions.define_methods(object)
+    
 
+    def define_particle_sets(self, object):
+        GravitationalDynamics.define_particle_sets(self, object)
+        
+        self.stopping_conditions.define_particle_set(object, 'particles')
 
