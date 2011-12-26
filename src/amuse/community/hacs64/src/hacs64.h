@@ -20,14 +20,14 @@ namespace hacs64
 
     Particle::Vector ptcl;
     Particle::Vector ptcl2add;
-    Predictor::Vector predicor;
+    Predictor::Vector predictor;
     std::vector<int> ptcl2remove;
     std::vector< std::pair<int, Particle::action> >  ptcl2modify;
     std::map<int, int>         index2id_map;
     std::vector<irrf6::Interpolate> ip_irr;
     std::vector<int>           irr_list, reg_list;
     std::vector<NGBlist>       ngb_list;
-    unsigned long long cyclical_idx;
+    unsigned int cyclical_idx;
     int nmax;
     double dtmax;
 
@@ -343,162 +343,139 @@ namespace hacs64
         return lhs.second < rhs.second;
       }
     };
-    
-    void initialize(
-        const int   nbodies,
-        const double mass[],
-        const dvec3  pos [],
-        const dvec3  vel [],
-        const double eps2,
-        const double hmax,
-        const double eta_irr,
-        const double eta_reg,
-        const double dt_max)
+
+
+    void init_model()
     {
-      local_n = nbodies;
-
-
-      this->eps2    = eps2;
-      this->h2max   = hmax*hmax;
-      this->eta_irr = eta_irr;
-      this->eta_reg = eta_reg;
-
-      scheduler     = Scheduler(dt_max);
-
-      irr_ptr = new irrf6::irrf(local_n);
-      reg_ptr = new regf4::regf(local_n, h2max, scheduler.dt_tick);
-      
-
-
       irrf6::irrf &irr = *irr_ptr;
       regf4::regf &reg = *reg_ptr;
-      
-      ptcl.    resize(local_n);
-      ngb_list.resize(local_n);
-      irr.resize(local_n);
-      reg.resize(local_n);
 
-      nsteps_reg = nsteps_irr = nsteps = 0;
-      ninter_reg = ninter_irr = 0;
-      t_global = dt_global = 0.0;
-      iteration = 0;
+      const int nbodies = ptcl.size();
+    
+      reg.resize     (nbodies);
+      irr.resize     (nbodies);
+      ngb_list.resize(nbodies);
 
-      for (int i = 0; i < nbodies; i++) 
-        ptcl[i] = Particle(mass[i], pos[i], vel[i]);
 
       std::vector<int> ilist(nbodies);
       for (int i = 0; i < nbodies; i++) ilist[i] = i;
 
+      {
+        /*********** search neighbours ********/
+
+        fprintf(stderr,  " hacs64::commit_particles() -- initialising neighbour lists --\n");
+
 #if 0
-      for (int i = 0 ; i < nbodies; i++) 
-      {
-#if 0 
-        std::vector< std::pair<int, float> > ingb_list(nbodies);
-
-        for (int j = 0; j < nbodies; j++) 
-          ingb_list[j] = std::pair<int, float>(j, (ptcl[j].pos - ptcl[i].pos).norm2());
-
-        std::sort(ingb_list.begin(), ingb_list.end(), cmp_dist_ngb());
-        ptcl[i].h2 = ingb_list[regf6::NGBMEAN].second;
-
-        ngb_list[i].clear();
-        for (int j = 0; j < regf6::NGBMEAN; j++)
-          if (i != ingb_list[j].first)
-            ngb_list[i].push_back(ingb_list[j].first);
-#else
-        ptcl[i].h2 = 0.0;
-        ngb_list[i].clear();
-#endif
-      }
-#else
-      {
-        fprintf(stderr,  "-- searching for neighbours --\n");
-
-        // Initialize
-
-        const int nbody = nbodies;
-
-        node::allocate(nbody, nbody);
-        std::vector<int> num_neib(nbody);
-        typedef boundary<float>  Boundary;
-
-        // Initialize
-        Boundary bound;
-        for(int i=0; i<nbody; i++)
+        for (int i = 0 ; i < nbodies; i++) 
         {
-          particle::vec ipos(ptcl[i].pos);
-          float h = 0.0f;;
-          node::ptcl.push_back(particle(i, ipos, h));
-          bound.merge(Boundary(ipos, 0.0f));
-        }
-        std::cerr << bound.max << std::endl;
-        fvec3 vmax = maxeach(bound.min.abseach(), bound.max.abseach());
-        float rmax = std::max(vmax.x, std::max(vmax.x, vmax.y));
-        float scale = 1.f;
-        while(scale < rmax) scale *= 2.f;
+#if 0          /* O(N^2) approach */
+          std::vector< std::pair<int, float> > ingb_list(nbodies);
 
-        // Setup tree
-        //
-        for(int i=0; i<nbody; i++)
-          node::ptcl[i].keygen(scale);
-        std::sort(node::ptcl.begin(), node::ptcl.end(), cmp_particle_key());
+          for (int j = 0; j < nbodies; j++) 
+            ingb_list[j] = std::pair<int, float>(j, (ptcl[j].pos - ptcl[i].pos).norm2());
 
-        node::node_heap.push_back(node());
-        node &root = node::node_heap[0];
-        for(int i=0; i<nbody; i++)
-          root.push_particle(i, 60);
-        root.make_boundary();
+          std::sort(ingb_list.begin(), ingb_list.end(), cmp_dist_ngb());
+          ptcl[i].h2 = ingb_list[regf6::NGBMEAN].second;
 
-        /**** apply range-search ****/
-
-        for (int i = 0; i < nbodies; i++)
-        {
-          particle::vec ipos(ptcl[i].pos);
-          particle pi(i, ipos, 0.1);
-          int iter = 0;
-          while(1)
-          {
-            iter++;
-            assert(iter < 1000);
-
-            pi.ngb_list.clear();
-            pi.nnb_gath = 0;
-            pi << root;
-            const int nngb = pi.ngb_list.size();
-            assert(nngb == pi.nnb_gath);
-
-            assert(nngb > 0);
-            if (nngb > regf4::NGBMAX)
-            {
-              pi.h *= 0.75; //std::max(std::pow(regf4::NGBMEAN*1.0/(nngb + 1), 1.0/3.0), 0.75);
-            }
-            else if (nngb < regf4::NGBMIN)
-            {
-              pi.h *= 1.25; //std::min(std::pow(regf4::NGBMEAN*1.0/(nngb + 1), 1.0/3.0), 1.25);
-            }
-            else
-              break;
-          }
-
-          const int nngb = pi.ngb_list.size();
           ngb_list[i].clear();
-          for (int j = 0; j < nngb; j++)
-            if (i != pi.ngb_list[j])
-              ngb_list[i].push_back(pi.ngb_list[j]);
-          ptcl[i].h2 = pi.h*pi.h;
-          if (i == 0)
+          for (int j = 0; j < regf6::NGBMEAN; j++)
+            if (i != ingb_list[j].first)
+              ngb_list[i].push_back(ingb_list[j].first);
+#else
+          ptcl[i].h2 = 0.0;
+          ngb_list[i].clear();
+#endif
+        }
+#else
+        {
+
+          /* using octree */
+
+          const int nbody = nbodies;
+
+          node::allocate(nbody, nbody);
+          std::vector<int> num_neib(nbody);
+          typedef boundary<float>  Boundary;
+
+          // Initialize
+          Boundary bound;
+          for(int i=0; i<nbody; i++)
           {
-            int nj = 0;
-            for (int j = 0; j < nbodies; j++) 
-              nj += (ptcl[j].pos - ptcl[i].pos).norm2() < ptcl[i].h2 ? 1 : 0;
-            fprintf(stderr, "i= %d  nngb= %d nj= %d h= %g \n",
-                i, nngb, nj, pi.h);
-            //            assert(0);
+            particle::vec ipos(ptcl[i].pos);
+            float h = 0.0f;;
+            node::ptcl.push_back(particle(i, ipos, h));
+            bound.merge(Boundary(ipos, 0.0f));
+          }
+          std::cerr << bound.max << std::endl;
+          fvec3 vmax = maxeach(bound.min.abseach(), bound.max.abseach());
+          float rmax = std::max(vmax.x, std::max(vmax.x, vmax.y));
+          float scale = 1.f;
+          while(scale < rmax) scale *= 2.f;
+
+          // Setup tree
+          //
+          for(int i=0; i<nbody; i++)
+            node::ptcl[i].keygen(scale);
+          std::sort(node::ptcl.begin(), node::ptcl.end(), cmp_particle_key());
+
+          node::node_heap.push_back(node());
+          node &root = node::node_heap[0];
+          for(int i=0; i<nbody; i++)
+            root.push_particle(i, 60);
+          root.make_boundary();
+
+          /**** apply range-search ****/
+
+          for (int i = 0; i < nbodies; i++)
+          {
+            particle::vec ipos(ptcl[i].pos);
+            particle pi(i, ipos, 0.1);
+            int iter = 0;
+            while(1)
+            {
+              iter++;
+              assert(iter < 1000);
+
+              pi.ngb_list.clear();
+              pi.nnb_gath = 0;
+              pi << root;
+              const int nngb = pi.ngb_list.size();
+              assert(nngb == pi.nnb_gath);
+
+              assert(nngb > 0);
+              if (nngb > regf4::NGBMAX)
+              {
+                pi.h *= 0.75; //std::max(std::pow(regf4::NGBMEAN*1.0/(nngb + 1), 1.0/3.0), 0.75);
+              }
+              else if (nngb < regf4::NGBMIN)
+              {
+                pi.h *= 1.25; //std::min(std::pow(regf4::NGBMEAN*1.0/(nngb + 1), 1.0/3.0), 1.25);
+              }
+              else
+                break;
+            }
+
+            const int nngb = pi.ngb_list.size();
+            ngb_list[i].clear();
+            for (int j = 0; j < nngb; j++)
+              if (i != pi.ngb_list[j])
+                ngb_list[i].push_back(pi.ngb_list[j]);
+            ptcl[i].h2 = pi.h*pi.h;
+            if (i == 0)
+            {
+              int nj = 0;
+              for (int j = 0; j < nbodies; j++) 
+                nj += (ptcl[j].pos - ptcl[i].pos).norm2() < ptcl[i].h2 ? 1 : 0;
+              fprintf(stderr, "i= %d  nngb= %d nj= %d h= %g \n",
+                  i, nngb, nj, pi.h);
+              //            assert(0);
+            }
           }
         }
-        fprintf(stderr, " -- done -- \n");
-      }
 #endif
+
+        fprintf(stderr,  " hacs64::commit_particles() -- done initialising neighbour lists--\n");
+      }
 
       for (int i = 0; i < nbodies; i++)
       {
@@ -537,6 +514,8 @@ namespace hacs64
         ptcl[i].firr = hacs6::Force(firr[i].acc, firr[i].jrk, firr[i].snp, dvec3(0.0));
         ptcl[i].ftot = ptcl[i].firr + ptcl[i].freg;
       }
+
+      scheduler.flush();
 
       {
         for (int i = 0; i < nbodies; i++)
@@ -608,9 +587,47 @@ namespace hacs64
           }
         }
       }
-#if 0
-      scheduler.debug_dump();
-#endif
+
+      is_synched = true;
+    }
+
+    void initialize(
+        const int   nbodies,
+        const double mass[],
+        const dvec3  pos [],
+        const dvec3  vel [],
+        const double eps2,
+        const double hmax,
+        const double eta_irr,
+        const double eta_reg,
+        const double dt_max)
+    {
+      local_n = nbodies;
+
+
+      this->eps2    = eps2;
+      this->h2max   = hmax*hmax;
+      this->eta_irr = eta_irr;
+      this->eta_reg = eta_reg;
+
+      scheduler     = Scheduler(dt_max);
+
+      irr_ptr = new irrf6::irrf(local_n);
+      reg_ptr = new regf4::regf(local_n, h2max, scheduler.dt_tick);
+
+
+
+      ptcl.    resize(local_n);
+
+      nsteps_reg = nsteps_irr = nsteps = 0;
+      ninter_reg = ninter_irr = 0;
+      t_global = dt_global = 0.0;
+      iteration = 0;
+
+      for (int i = 0; i < nbodies; i++) 
+        ptcl[i] = Particle(mass[i], pos[i], vel[i]);
+
+      init_model();
     }
 
     double potential()
@@ -668,6 +685,7 @@ namespace hacs64
         iterate();
     };
 
+    void __predictmodel();
     void __synchmodel();
 
     double get_total_mass()

@@ -185,7 +185,7 @@ int new_particle(
 {
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
-  *index_of_the_particle = nbody_ptr->ptcl.size() + nbody_ptr->ptcl2add.size() + 1;
+  *index_of_the_particle = nbody_ptr->cyclical_idx++;
   nbody_ptr->ptcl2add.push_back(hacs64::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), *index_of_the_particle));
   return 0;
 }
@@ -195,7 +195,7 @@ int delete_particle(int index_of_the_particle)
   assert(nbody_ptr->is_sane());
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
-  nbody_ptr->ptcl2remove.push_back(index_of_the_particle);
+  nbody_ptr->ptcl2remove.push_back(id);
   return 0;
 }
 
@@ -383,19 +383,6 @@ int commit_particles()
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
   nbody_ptr->commit_particles();
-#if 0
-  // Complete the initialization, after all particles have been loaded.
-
-  jd->initialize_arrays();
-  id = new idata(jd);	  // set up idata data structures (sets acc and jerk)
-  jd->set_initial_timestep();		// set timesteps (needs acc and jerk)
-  s = new scheduler(jd);
-#if 0
-  cout << "commit_particles:";
-  for (int j = 0; j < jd->nj; j++) cout << " " << jd->id[j];
-  cout << endl << flush;
-#endif
-#endif
   return 0;
 }
 int recommit_particles()
@@ -403,21 +390,6 @@ int recommit_particles()
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
   nbody_ptr->recommit_particles();
-#if 0
-  // Reinitialize/reset the system after particles have been added
-  // or removed.  The system should be synchronized at some reasonable
-  // system_time, so we just need to recompute forces and update the
-  // GPU and scheduler.  Note that we don't resize the jdata or
-  // idata arrays.  To resize idata, just delete and create a new
-  // one.  Resizing jdata is more complicated -- defer for now.
-
-  if (!jd->use_gpu)
-    jd->predict_all(jd->system_time, true);	// set pred quantities
-  else
-    jd->initialize_gpu(true);		// reload the GPU
-  id->setup();				// compute acc and jerk
-  s->initialize();				// reconstruct the scheduler
-#endif
   return 0;
 }
 
@@ -428,28 +400,8 @@ int evolve_model(double time)
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
   nbody_ptr->evolve_model(time);
-#if 0
-  // On return, system_time will be greater than or equal to the
-  // specified time.  All particles j will have time[j] <=
-  // system_time < time[j] + timestep[j].  If synchronization is
-  // needed, do it with synchronize_model().
 
-  bool status = false;
-  jd->UpdatedParticles.clear();
-  while (jd->system_time < time)
-    status = jd->advance_and_check_encounter();
-
-#if 0
-  cout << "jdata:" << endl;
-  for (int j = 0; j < jd->nj; j++) {
-    cout << jd->id[j] << " " << jd->mass[j];
-    for (int k = 0; k < 3; k++) cout << " "  << jd->pos[j][k];
-    cout << endl << flush;
-  }
-#endif
-#endif
-
-  return 0;	// status?
+  return 0;	
 }
 
 /****************/
@@ -463,10 +415,14 @@ int synchronize_model()
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
   nbody_ptr->__synchmodel();
-#if 0
-  jd->UpdatedParticles.clear();
-  jd->synchronize_all();
-#endif
+  return 0;
+}
+
+int predict_model()
+{
+  assert(nbody_ptr != NULL);
+  assert(nbody_ptr->is_sane());
+  nbody_ptr->__predictmodel();
   return 0;
 }
 

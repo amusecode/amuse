@@ -156,7 +156,7 @@ def test_hacs(infile = None,
     E0 = print_log(time, gravity)
     
     # Channel to copy values from the code to the set in memory.
-#    channel = gravity.particles.new_channel_to(stars)
+    channel = gravity.particles.new_channel_to(stars)
 
 #    stopping_condition = gravity.stopping_conditions.collision_detection
 #    stopping_condition.enable()
@@ -172,11 +172,11 @@ def test_hacs(infile = None,
 
 	# Update the bookkeeping: synchronize stars with the module data.
 
-#        try:
-#            gravity.update_particle_set()
-#            gravity.particles.synchronize_to(stars)
-#        except:
-#            pass
+        try:
+            gravity.update_particle_set()
+            gravity.particles.synchronize_to(stars)
+        except:
+            pass
     
         # Copy values from the module to the set in memory.
 
@@ -225,8 +225,8 @@ if __name__ == '__main__':
     eta_irr = 0.8
     eta_reg = 0.14
 
-    eta_irr = 0.6
-    eta_reg = 0.1
+#    eta_irr = 0.6
+#    eta_reg = 0.1
 
     t_end = 1.0 | nbody_system.time
     delta_t = 0.125 | nbody_system.time
