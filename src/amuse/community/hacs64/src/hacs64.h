@@ -140,6 +140,8 @@ namespace hacs64
               scheduler.get_dt_pred(ptcl[i].reg_rung), 
               eta_irr);
           ptcl[i].irr_rung = -1-scheduler.get_rung(dt_irr);
+          ptcl[i].jnb = firr[ix].jnb;
+          ptcl[i].jr2 = firr[ix].jr2;
 
           nsteps_irr_th++;
           nsteps_th++;
@@ -181,161 +183,161 @@ namespace hacs64
       t0 = get_wtime();
       irr.force_first      (reg_list,   firr, eps2);
       irr.interpolate_first(reg_list, ip_irr, eps2);
-//      irr.force_last();
+      irr.force_last();
       irr.interpolate_last();
-       dt_irr += get_wtime() - t0;
+      dt_irr += get_wtime() - t0;
 
-       is_synched = false;
-       if (nreg == local_n)
-       {
-         int ngb_min = local_n;
-         int ngb_max = 0;
-         int ngb_mean = 0;
-         std::vector<double> r2(local_n);
-         for (int i = 0; i < local_n; i++)
-         {
-           ngb_min = std::min(ngb_min, (int)ngb_list[i].size());
-           ngb_max = std::max(ngb_max, (int)ngb_list[i].size());
-           ngb_mean += ngb_list[i].size();
-           r2[i] = ptcl[i].pos.norm2();
-         }
-         fprintf(stderr, " *** ngb_min= %d  ngb_max= %d  ngb_mean= %g  *** r: ",
-             ngb_min, ngb_max, 1.0*ngb_mean/local_n);
+      is_synched = false;
+      if (nreg == local_n)
+      {
+        int ngb_min = local_n;
+        int ngb_max = 0;
+        int ngb_mean = 0;
+        std::vector<double> r2(local_n);
+        for (int i = 0; i < local_n; i++)
+        {
+          ngb_min = std::min(ngb_min, (int)ngb_list[i].size());
+          ngb_max = std::max(ngb_max, (int)ngb_list[i].size());
+          ngb_mean += ngb_list[i].size();
+          r2[i] = ptcl[i].pos.norm2();
+        }
+        fprintf(stderr, " *** ngb_min= %d  ngb_max= %d  ngb_mean= %g  *** r: ",
+            ngb_min, ngb_max, 1.0*ngb_mean/local_n);
 #if 0
-         std::sort(r2.begin(), r2.end());
-         for (int i = 0; i < 10; i++)
-           fprintf(stderr, "%g ", std::sqrt(r2[local_n-1-i]));
+        std::sort(r2.begin(), r2.end());
+        for (int i = 0; i < 10; i++)
+          fprintf(stderr, "%g ", std::sqrt(r2[local_n-1-i]));
 #endif
-         fprintf(stderr, "\n");
-         is_synched = true;
-       }
+        fprintf(stderr, "\n");
+        is_synched = true;
+      }
 
-       t0 = get_wtime();
-       int nsteps_reg_th = 0; 
-       nsteps_th = 0; 
-       int ninter_reg_th = 0;
+      t0 = get_wtime();
+      int nsteps_reg_th = 0; 
+      nsteps_th = 0; 
+      int ninter_reg_th = 0;
 #pragma omp parallel for reduction(+:nsteps_reg_th,nsteps_th, ninter_reg_th)
-       for (int ix = 0; ix < nreg; ix++) 
-       {
-         const int i = reg_list[ix];
-         if (ptcl[i].t_reg == t_global) 
-         {
-           ptcl[i].reg_rung = -1-ptcl[i].reg_rung;
-           continue;
-         }
+      for (int ix = 0; ix < nreg; ix++) 
+      {
+        const int i = reg_list[ix];
+        if (ptcl[i].t_reg == t_global) 
+        {
+          ptcl[i].reg_rung = -1-ptcl[i].reg_rung;
+          continue;
+        }
 
-         ptcl[i].h2  = freg[ix].h2;
+        ptcl[i].h2  = freg[ix].h2;
 
-         const hacs4::Force freg_i(freg[ix].acc, freg[ix].jrk);
-         const hacs6::Force firr_i(firr[ix].acc, firr[ix].jrk, firr[ix].snp, ip_irr[ix].crk);
+        const hacs4::Force freg_i(freg[ix].acc, freg[ix].jrk);
+        const hacs6::Force firr_i(firr[ix].acc, firr[ix].jrk, firr[ix].snp, ip_irr[ix].crk);
 
-         const double dt_reg = ptcl[i].correct_reg(
-             freg_i, firr_i,
-             scheduler.get_dt_corr(ptcl[i].irr_rung), 
-             scheduler.get_dt_corr(ptcl[i].reg_rung), 
-             eta_reg);
-         ptcl[i].reg_rung = -1-scheduler.get_rung(dt_reg);
+        const double dt_reg = ptcl[i].correct_reg(
+            freg_i, firr_i,
+            scheduler.get_dt_corr(ptcl[i].irr_rung), 
+            scheduler.get_dt_corr(ptcl[i].reg_rung), 
+            eta_reg);
+        ptcl[i].reg_rung = -1-scheduler.get_rung(dt_reg);
 
-         nsteps_reg_th++;
-         nsteps_th++;
-         ninter_reg_th += local_n; // - ngb_list[i].size();
-       }
+        nsteps_reg_th++;
+        nsteps_th++;
+        ninter_reg_th += local_n; // - ngb_list[i].size();
+      }
 
-       nsteps_reg += nsteps_reg_th;
-       nsteps     += nsteps_th;
-       ninter_reg += ninter_reg_th;
+      nsteps_reg += nsteps_reg_th;
+      nsteps     += nsteps_th;
+      ninter_reg += ninter_reg_th;
 
-       dt_corr_reg += get_wtime() - t0;
+      dt_corr_reg += get_wtime() - t0;
 
-       t0 = get_wtime();
+      t0 = get_wtime();
 #pragma omp parallel for
-       for (int ix = 0; ix < nreg; ix++)
-       {
-         const int i = reg_list[ix];
-         if (ptcl[i].t_reg == t_global) 
-         {
-           if (ngb_list[i].size() != 0) 
-           {
-             if (-1-ptcl[i].reg_rung > -1-ptcl[i].irr_rung)
-               ptcl[i].irr_rung = -1-((-1-ptcl[i].reg_rung)+1);
-           }
-           else
-             ptcl[i].irr_rung = ptcl[i].reg_rung;
-           continue;
-         }
+      for (int ix = 0; ix < nreg; ix++)
+      {
+        const int i = reg_list[ix];
+        if (ptcl[i].t_reg == t_global) 
+        {
+          if (ngb_list[i].size() != 0) 
+          {
+            if (-1-ptcl[i].reg_rung > -1-ptcl[i].irr_rung)
+              ptcl[i].irr_rung = -1-((-1-ptcl[i].reg_rung)+1);
+          }
+          else
+            ptcl[i].irr_rung = ptcl[i].reg_rung;
+          continue;
+        }
 
 
-         if (ngb_list[i].size() != 0) 
-         {
-           const double dt_irr =	
-             hacs6::aarseth_step(
-                 ptcl[i].ftot.acc,
-                 ptcl[i].firr.jrk, 
-                 ptcl[i].firr.snp,
-                 ip_irr[ix].crk, 
-                 ip_irr[ix].pop, 
-                 ip_irr[ix].d5a, 
-                 eta_irr);
+        if (ngb_list[i].size() != 0) 
+        {
+          const double dt_irr =	
+            hacs6::aarseth_step(
+                ptcl[i].ftot.acc,
+                ptcl[i].firr.jrk, 
+                ptcl[i].firr.snp,
+                ip_irr[ix].crk, 
+                ip_irr[ix].pop, 
+                ip_irr[ix].d5a, 
+                eta_irr);
 
 
-           assert(ptcl[i].irr_rung < 0);
-           assert(ptcl[i].reg_rung < 0);
-           ptcl[i].irr_rung = -1-scheduler.get_rung(dt_irr);
-           if (-1-ptcl[i].reg_rung > -1-ptcl[i].irr_rung)
-             ptcl[i].irr_rung = -1-((-1-ptcl[i].reg_rung)+1);
-         }
-         else
-           ptcl[i].irr_rung = ptcl[i].reg_rung;
-       }
+          assert(ptcl[i].irr_rung < 0);
+          assert(ptcl[i].reg_rung < 0);
+          ptcl[i].irr_rung = -1-scheduler.get_rung(dt_irr);
+          if (-1-ptcl[i].reg_rung > -1-ptcl[i].irr_rung)
+            ptcl[i].irr_rung = -1-((-1-ptcl[i].reg_rung)+1);
+        }
+        else
+          ptcl[i].irr_rung = ptcl[i].reg_rung;
+      }
 
-       for (int ix = 0; ix < nreg; ix++) 
-       {
-         const int i = reg_list[ix];
-         assert(ptcl[i].irr_rung < 0);
-         assert(ptcl[i].reg_rung < 0);
+      for (int ix = 0; ix < nreg; ix++) 
+      {
+        const int i = reg_list[ix];
+        assert(ptcl[i].irr_rung < 0);
+        assert(ptcl[i].reg_rung < 0);
 
-         ptcl[i].irr_rung = -1-ptcl[i].irr_rung;
-         ptcl[i].reg_rung = -1-ptcl[i].reg_rung;
+        ptcl[i].irr_rung = -1-ptcl[i].irr_rung;
+        ptcl[i].reg_rung = -1-ptcl[i].reg_rung;
 
-         ptcl[i].irr_rung = scheduler.push_particle(i, ptcl[i].irr_rung, false);
-         ptcl[i].reg_rung = scheduler.push_particle(i, ptcl[i].reg_rung, true);
+        ptcl[i].irr_rung = scheduler.push_particle(i, ptcl[i].irr_rung, false);
+        ptcl[i].reg_rung = scheduler.push_particle(i, ptcl[i].reg_rung, true);
 
-         const Particle &pi = ptcl[i];
-         reg.set_jp(i, regf4::Particle(
-               pi.mass, t_global, pi.h2,
-               pi.pos, pi.vel,
-               pi.ftot.acc, pi.ftot.jrk));
-         irr.set_jp(i, irrf6::Particle(
-               pi.mass, t_global,
-               pi.pos, pi.vel,
-               pi.ftot.acc, pi.ftot.jrk, pi.ftot.snp, pi.ftot.crk));
-         ptcl[i].t_reg = t_global;
-       }
+        const Particle &pi = ptcl[i];
+        reg.set_jp(i, regf4::Particle(
+              pi.mass, t_global, pi.h2,
+              pi.pos, pi.vel,
+              pi.ftot.acc, pi.ftot.jrk));
+        irr.set_jp(i, irrf6::Particle(
+              pi.mass, t_global,
+              pi.pos, pi.vel,
+              pi.ftot.acc, pi.ftot.jrk, pi.ftot.snp, pi.ftot.crk));
+        ptcl[i].t_reg = t_global;
+      }
 
-       for (int ix = 0; ix < nirr; ix++)
-       {
-         const int i = irr_list[ix];
-         if (ptcl[i].irr_rung < 0)
-         {
-           ptcl[i].irr_rung = -1-ptcl[i].irr_rung;
-           ptcl[i].irr_rung = scheduler.push_particle(i, ptcl[i].irr_rung, false);
+      for (int ix = 0; ix < nirr; ix++)
+      {
+        const int i = irr_list[ix];
+        if (ptcl[i].irr_rung < 0)
+        {
+          ptcl[i].irr_rung = -1-ptcl[i].irr_rung;
+          ptcl[i].irr_rung = scheduler.push_particle(i, ptcl[i].irr_rung, false);
 
-           const Particle &pi = ptcl[i];
-           reg.set_jp(i, regf4::Particle(
-                 pi.mass, t_global, pi.h2,
-                 pi.pos, pi.vel,
-                 pi.ftot.acc, pi.ftot.jrk));
-           irr.set_jp(i, irrf6::Particle(
-                 pi.mass, t_global,
-                 pi.pos, pi.vel,
-                 pi.ftot.acc, pi.ftot.jrk, pi.ftot.snp, pi.ftot.crk));
-         }
-         ptcl[i].t_irr = t_global;
-       }
-       dt_corr_mix += get_wtime() - t0;
+          const Particle &pi = ptcl[i];
+          reg.set_jp(i, regf4::Particle(
+                pi.mass, t_global, pi.h2,
+                pi.pos, pi.vel,
+                pi.ftot.acc, pi.ftot.jrk));
+          irr.set_jp(i, irrf6::Particle(
+                pi.mass, t_global,
+                pi.pos, pi.vel,
+                pi.ftot.acc, pi.ftot.jrk, pi.ftot.snp, pi.ftot.crk));
+        }
+        ptcl[i].t_irr = t_global;
+      }
+      dt_corr_mix += get_wtime() - t0;
 
-       const double t1_all = get_wtime();
-       dt_all += t1_all - t0_all;
+      const double t1_all = get_wtime();
+      dt_all += t1_all - t0_all;
     }
 
     struct cmp_dist_ngb {
@@ -351,7 +353,7 @@ namespace hacs64
       regf4::regf &reg = *reg_ptr;
 
       const int nbodies = ptcl.size();
-    
+
       reg.resize     (nbodies);
       irr.resize     (nbodies);
       ngb_list.resize(nbodies);
@@ -363,7 +365,7 @@ namespace hacs64
       {
         /*********** search neighbours ********/
 
-        fprintf(stderr,  " hacs64::commit_particles() -- initialising neighbour lists --\n");
+        fprintf(stderr,  " hacs64::init_model() -- initialising neighbour lists --\n");
 
 #if 0
         for (int i = 0 ; i < nbodies; i++) 
@@ -474,7 +476,7 @@ namespace hacs64
         }
 #endif
 
-        fprintf(stderr,  " hacs64::commit_particles() -- done initialising neighbour lists--\n");
+        fprintf(stderr,  " hacs64::init_model() -- done initialising neighbour lists--\n");
       }
 
       for (int i = 0; i < nbodies; i++)
@@ -679,11 +681,7 @@ namespace hacs64
     void commit_particles();
     void recommit_particles();
 
-    void evolve_model(const double t_next)
-    {
-      while (t_global < t_next)
-        iterate();
-    };
+    void evolve_model(const double t_next);
 
     void __predictmodel();
     void __synchmodel();

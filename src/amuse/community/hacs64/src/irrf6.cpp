@@ -192,6 +192,7 @@ namespace irrf6
 		for (int ix = 0; ix < ni; ix++)
 		{
 			Force &fi = force[ix];
+      fi.jr2 = HUGE;
 			const int i = ilist[ix];
 			const int nj = list[i].size();
 			const Predictor &pi = pred[i];
@@ -211,6 +212,11 @@ namespace irrf6
 
         double r2 = dr * dr;
         assert(r2 > 0.0);
+        if (r2 < fi.jr2)
+        {
+          fi.jr2 = r2;
+          fi.jnb = j;
+        }
         r2 += eps2;
         const double rv = dr * dv;
         const double v2 = dv * dv;
@@ -259,7 +265,9 @@ namespace irrf6
   {
     const std::vector<int> &ilist = iptcl_interp_list;
     std::vector<Interpolate> &interpolate = *interpolate_result;
+#if 0
     std::vector<Force> &force = *force_result;
+#endif
     const double eps2 = eps2_interpolate;
 
     const int ni = ilist.size();
@@ -271,11 +279,13 @@ namespace irrf6
     for (int ix = 0; ix < ni; ix++)
     {
       const int i = ilist[ix];
-      Force &fi = force[ix];
       Interpolate &interp = interpolate[ix];
       const int nj = list[i].size();
 
+#if 0
+      Force &fi = force[ix];
       fi.acc = fi.jrk = fi.snp = 0.0;
+#endif
       interp.crk = interp.pop = interp.d5a = dvec3(0.0);
 
       const Predictor &pi = pred[i];
@@ -317,9 +327,11 @@ namespace irrf6
         const dvec3 snp = mrinv3*da - (6.0*alpha)*jrk - (3.0*beta)*acc;
         const dvec3 crk = mrinv3*dj - (9.0*alpha)*snp - (9.0*beta)*jrk - (3.0*gamma)*acc;
 
+#if 0
         fi.acc += acc;
         fi.jrk += jrk;
         fi.snp += snp;
+#endif
 
         const double a2 = da*da;
         const double vj = dv*dj;

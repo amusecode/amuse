@@ -288,7 +288,11 @@ __forceinline__ __device__ dev_force dev_regfij(
 /********************************/
 
 template<int NTHREAD, int NJBLOCK, int NJBLOCK2, int NGB_PER_BLOCK>
-__global__ void __launch_bounds__ (NTHREAD, 1) dev_regf(
+__global__ void 
+#if 0
+__launch_bounds__ (NTHREAD, 1)  
+#endif
+  dev_regf(
     const int ni,
     const int nj_per_block,
     const int *active_list,

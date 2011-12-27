@@ -11,6 +11,8 @@ std::vector<particle> node::ptcl;
 std::vector<node>     node::node_heap;
 std::vector<std::pair<node*, node*> > node::pair_list;
 
+inline double SQR(const double x) {return x*x;}
+
 
 #ifndef __MACOSX_
 #define __LINUX__
@@ -41,7 +43,7 @@ static hacs64::Nbody *nbody_ptr = NULL;
 inline int get_id_from_idx(const int index_of_the_particle)
 {
   if (nbody_ptr->index2id_map.find(index_of_the_particle) == nbody_ptr->index2id_map.end())  
-    return -1;
+    assert(0);
   else
     return nbody_ptr->index2id_map[index_of_the_particle];
 }
@@ -191,11 +193,19 @@ int new_particle(
     int *index_of_the_particle,
     double mass, double radius, 
     double x, double y, double z,
-    double vx, double vy, double vz)
+    double vx, double vy, double vz,
+    int index_to_set)
 {
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
+  nbody_ptr->cyclical_idx++;
+  nbody_ptr->cyclical_idx &= 0x7FFFFFFF;
+#if 0
+  assert(index_to_set >= 0);
+  *index_of_the_particle = index_to_set; 
+#else
   *index_of_the_particle = nbody_ptr->cyclical_idx++;
+#endif
   nbody_ptr->ptcl2add.push_back(hacs64::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), *index_of_the_particle));
   return 0;
 }
@@ -405,18 +415,6 @@ int recommit_particles()
 
 /****************/
 
-int evolve_model(double time)
-{
-  assert(nbody_ptr != NULL);
-  assert(nbody_ptr->is_sane());
-  reset_stopping_conditions();    
-  nbody_ptr->evolve_model(time);
-
-  return 0;	
-}
-
-/****************/
-
 int synchronize_model()
 {
   // Synchronize all particles at the current system time.  The
@@ -557,4 +555,82 @@ int get_gravity_at_point(double eps, double x, double y, double z,
   assert(nbody_ptr->is_sane());
   return -1;
 }
+
+/****************/
+/****************/
+/****************/
+
+int evolve_model(double time)
+{
+  assert(nbody_ptr != NULL);
+  assert(nbody_ptr->is_sane());
+  nbody_ptr->evolve_model(time);
+  return 0;
+}
+
+namespace hacs64
+{
+  void Nbody::evolve_model(const double t_next)
+  {
+    reset_stopping_conditions();    
+
+    int is_collision_detection_enabled;
+    int is_pair_detection_enabled;
+    is_stopping_condition_enabled(COLLISION_DETECTION, 
+        &is_collision_detection_enabled);
+    is_stopping_condition_enabled(PAIR_DETECTION, 
+        &is_pair_detection_enabled);
+
+    while (t_global < t_next)
+    {
+      iterate();
+
+      const int nirr = irr_list.size();
+      int   i_close = -1;
+      float r2close = HUGE;
+
+      int   i_coll = -1;
+
+      for (int ix = 0; ix < nirr; ix++)
+      {
+        const int i = irr_list[ix];
+        if (ptcl[i].jr2 < r2close)
+        {
+          i_close = ptcl[i].jnb;
+          r2close = ptcl[i].jr2;
+        }
+        if (ptcl[i].jr2 < SQR(ptcl[i].radius + ptcl[ptcl[i].jnb].radius))
+        {
+          i_coll = ptcl[i].jnb;
+        }
+      }
+      assert(r2close > 0.0);
+
+      const float r2crit = SQR(2.0/(ptcl.size()));
+
+      if (is_collision_detection_enabled) 
+      {
+        if (ptcl[i_close].jr2 < r2crit)
+        {
+          int stopping_index = next_index_for_stopping_condition();
+          set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+          set_stopping_condition_particle_index(stopping_index, 0, ptcl[i_close].id);
+          set_stopping_condition_particle_index(stopping_index, 1, ptcl[ptcl[i_close].jnb].id);
+          break;
+        }
+      }
+
+
+      if (is_pair_detection_enabled)
+      {
+        assert(false);
+      }
+    }
+
+  }
+}
+
+
+
+
 

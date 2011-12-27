@@ -29,6 +29,8 @@ namespace irrf6
 	struct Force
 	{
 		dvec3 acc, jrk, snp;
+    int   jnb;
+    float  jr2;
 	};
 
 	struct Interpolate

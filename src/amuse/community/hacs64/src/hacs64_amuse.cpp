@@ -65,7 +65,7 @@ namespace hacs64
     
   void Nbody::recommit_particles()
   {
-    fprintf(stderr, " hacs64::commit_particles() -- \n");
+    fprintf(stderr, " hacs64::recommit_particles() -- \n");
     /***** first we remove particles ******/
 
     {
@@ -138,6 +138,7 @@ namespace hacs64
       assert(is_synched);
     }
   }
+    
 
 
 }

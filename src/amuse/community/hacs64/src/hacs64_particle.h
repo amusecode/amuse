@@ -20,6 +20,8 @@ namespace hacs64
     double pot;
     double t_reg;
     double t_irr;
+    int    jnb;
+    float  jr2;
 
     Particle() {}
     ~Particle() {}      

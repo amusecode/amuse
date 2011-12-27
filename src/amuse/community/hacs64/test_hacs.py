@@ -164,6 +164,7 @@ def test_hacs(infile = None,
     while time < end_time:
         time += delta_t
         gravity.evolve_model(time)
+        time = gravity.get_time()
 
         # Ensure that the stars list is consistent with the internal
         # data in the module.
@@ -198,7 +199,7 @@ def test_hacs(infile = None,
             print ''
             print star2
             print ''
-            raise Exception("no encounter handling")
+#            raise Exception("no encounter handling")
 
         if len(stars) != ls:
            if 0:

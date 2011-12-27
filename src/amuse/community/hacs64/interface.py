@@ -37,6 +37,52 @@ class hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingCon
     # The following functions aren't defined in the default interface:
     
     @legacy_function
+    def new_particle():
+        """
+        Define a new particle in the stellar dynamics code. The
+        particle is initialized with the provided mass, radius,
+        position and velocity. This function returns an index that
+        can be used to refer to this particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32',
+                              direction=function.OUT, description =
+            """
+            An index assigned to the newly created particle.
+            This index is supposed to be a local index for the code
+            (and not valid in other instances of the code or in other codes)
+            """
+            )
+
+        function.addParameter('mass', dtype='float64', direction=function.IN,
+                 description = "The mass of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.IN,
+                 description = "The radius of the particle")
+        function.addParameter('x', dtype='float64', direction=function.IN,
+                 description = "The initial position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN,
+                 description = "The initial position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN,
+                 description = "The initial position vector of the particle")
+        function.addParameter('vx', dtype='float64', direction=function.IN,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.IN,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.IN,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('id', dtype='int32', direction=function.IN,
+                 description = "Identifier of the particle, "
+                               +"option for restoring state after loading",
+                              default = -1)
+        function.result_type = 'int32'
+        function.result_doc = """ 0 - OK
+            particle was created and added to the model
+        -1 - ERROR
+            particle could not be created"""
+        return function
+    
+    @legacy_function
     def set_nmax():
         """
         Set the current time step parameter.
@@ -265,6 +311,25 @@ class hacs64(GravitationalDynamics):
 
         # Similarly, we can add module-specific methods, if desired.
         # See hermite0/interface.py for examples.
+        
+        object.add_method(
+            "new_particle",
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                units.none
+            ),
+            (
+                object.INDEX,
+                object.ERROR_CODE
+            )
+        )
 
         object.add_method("get_nmax", (),
             (units.none, object.ERROR_CODE,))
