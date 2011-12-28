@@ -86,11 +86,6 @@ namespace hacs64
     void iterate()
     {
 
-#if 0
-      assert(scheduler.get_nreg() == local_n);
-      assert(scheduler.get_nirr() == local_n);
-#endif
-
       dt_global = scheduler.pull_active_list(irr_list, reg_list);
       t_global += dt_global;
       
@@ -134,11 +129,21 @@ namespace hacs64
         if (ngb_list[i].size() > 0) 
         {
           const hacs6::Force firr_i(firr[ix].acc, firr[ix].jrk, firr[ix].snp, dvec3(0.0));
+#if 0
           const double dt_irr = ptcl[i].correct_irr(
               firr_i,
               scheduler.get_dt_corr(ptcl[i].irr_rung),
               scheduler.get_dt_pred(ptcl[i].reg_rung), 
               eta_irr);
+          assert(scheduler.get_dt_corr(ptcl[i].irr_rung) == t_global - ptcl[i].t_irr);
+          assert(scheduler.get_dt_pred(ptcl[i].reg_rung) == t_global - ptcl[i].t_reg);
+#else
+          const double dt_irr = ptcl[i].correct_irr(
+              firr_i,
+              t_global - ptcl[i].t_irr,
+              t_global - ptcl[i].t_reg,
+              eta_irr);
+#endif
           ptcl[i].irr_rung = -1-scheduler.get_rung(dt_irr);
           ptcl[i].jnb = firr[ix].jnb;
           ptcl[i].jr2 = firr[ix].jr2;
@@ -149,7 +154,12 @@ namespace hacs64
         } 
         else 
         { // no neighbour
+#if 0
           ptcl[i].correct_irr_zero(scheduler.get_dt_corr(ptcl[i].irr_rung));
+          assert(scheduler.get_dt_corr(ptcl[i].irr_rung) == t_global - ptcl[i].t_irr);
+#else
+          ptcl[i].correct_irr_zero(t_global - ptcl[i].t_irr);
+#endif
           ptcl[i].irr_rung = -1-scheduler.get_rung(ptcl[i].reg_rung); 
         }
       }
@@ -231,11 +241,18 @@ namespace hacs64
         const hacs4::Force freg_i(freg[ix].acc, freg[ix].jrk);
         const hacs6::Force firr_i(firr[ix].acc, firr[ix].jrk, firr[ix].snp, ip_irr[ix].crk);
 
+#if 0
         const double dt_reg = ptcl[i].correct_reg(
             freg_i, firr_i,
-            scheduler.get_dt_corr(ptcl[i].irr_rung), 
             scheduler.get_dt_corr(ptcl[i].reg_rung), 
             eta_reg);
+        assert(scheduler.get_dt_corr(ptcl[i].reg_rung) == t_global - ptcl[i].t_reg);
+#else
+        const double dt_reg = ptcl[i].correct_reg(
+            freg_i, firr_i,
+            t_global - ptcl[i].t_reg,
+            eta_reg);
+#endif
         ptcl[i].reg_rung = -1-scheduler.get_rung(dt_reg);
 
         nsteps_reg_th++;
@@ -257,12 +274,9 @@ namespace hacs64
         if (ptcl[i].t_reg == t_global) 
         {
           if (ngb_list[i].size() != 0) 
-          {
-            if (-1-ptcl[i].reg_rung > -1-ptcl[i].irr_rung)
-              ptcl[i].irr_rung = -1-((-1-ptcl[i].reg_rung)+1);
-          }
+            assert(!(-1-ptcl[i].reg_rung > -1-ptcl[i].irr_rung));
           else
-            ptcl[i].irr_rung = ptcl[i].reg_rung;
+            assert(ptcl[i].irr_rung == ptcl[i].reg_rung);
           continue;
         }
 
@@ -338,6 +352,12 @@ namespace hacs64
 
       const double t1_all = get_wtime();
       dt_all += t1_all - t0_all;
+
+#if 0
+      assert(scheduler.get_nreg() == local_n);
+      assert(scheduler.get_nirr() == local_n);
+#endif
+
     }
 
     struct cmp_dist_ngb {
@@ -349,8 +369,13 @@ namespace hacs64
 
     void init_model()
     {
+      fprintf(stderr,  " hacs64::init_model()  --- begin \n");
+
       irrf6::irrf &irr = *irr_ptr;
       regf4::regf &reg = *reg_ptr;
+
+      irr.commit_changes();
+      reg.commit_changes();
 
       const int nbodies = ptcl.size();
 
@@ -395,7 +420,9 @@ namespace hacs64
 
           const int nbody = nbodies;
 
+          node::clear();
           node::allocate(nbody, nbody);
+
           std::vector<int> num_neib(nbody);
           typedef boundary<float>  Boundary;
 
@@ -591,6 +618,7 @@ namespace hacs64
       }
 
       is_synched = true;
+      fprintf(stderr,  " hacs64::init_model()  --- done \n");
     }
 
     void initialize(

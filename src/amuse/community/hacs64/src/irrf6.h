@@ -47,6 +47,7 @@ namespace irrf6
 			
 			int resize(const int ni);
 			int set_ti(const double ti);
+      int commit_changes();
 			int set_jp(const int iaddr, const Particle &pi);
 			int set_jp(const std::vector<int>&, const std::vector<Particle>&);
 			int set_list(const int iaddr, const NGBlist &ilist);

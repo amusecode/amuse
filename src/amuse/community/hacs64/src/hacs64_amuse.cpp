@@ -56,9 +56,18 @@ namespace hacs64
     {
       ptcl[i] = ptcl2add[i];
       assert(index2id_map.find(ptcl[i].id) == index2id_map.end());
+      ptcl[i].t_reg = ptcl[i].t_irr = t_global;
       index2id_map[ptcl[i].id] = i;
     }
     ptcl2add.clear();
+    
+    local_n = ptcl.size();
+    index2id_map.clear();
+    for (Particle::Vector::iterator it = ptcl.begin(); it != ptcl.end(); it++)
+    {
+      assert(index2id_map.find(it->id) == index2id_map.end());
+      index2id_map[it->id] = it - ptcl.begin();
+    }
 
     init_model();
   }
@@ -68,6 +77,7 @@ namespace hacs64
     fprintf(stderr, " hacs64::recommit_particles() -- \n");
     /***** first we remove particles ******/
 
+#if 1
     {
       std::sort(ptcl2remove.begin(), ptcl2remove.end());
       std::vector<int> unique_id2rm;
@@ -78,7 +88,6 @@ namespace hacs64
       if (ptcl2remove.size() != unique_id2rm.size())
           fprintf(stderr, "  warrning: it appears that some particles were asked to be removed twice ...\n");
 
-      ptcl2remove.clear();
       for (std::vector<int>::iterator it = unique_id2rm.begin(); it != unique_id2rm.end(); it++)
         ptcl.erase(ptcl.begin() + *it);
     }
@@ -87,16 +96,32 @@ namespace hacs64
       const int n2add = ptcl2add.size();
       assert((int)ptcl.size() + n2add <= nmax);
       for (int i = 0; i < n2add; i++)
+      {
         ptcl.push_back(ptcl2add[i]);
-      ptcl2add.clear();
+        ptcl.back().t_reg = ptcl.back().t_irr = t_global;
+      }
     }
+#endif
+    ptcl2add.clear();
+    ptcl2remove.clear();
 
+    fprintf(stderr, " old_n= %d :: new_n= %d \n", local_n, (int)ptcl.size());
+    fprintf(stderr, " cyclical_idx= %u\n", cyclical_idx);
+    local_n = ptcl.size();
     index2id_map.clear();
     for (Particle::Vector::iterator it = ptcl.begin(); it != ptcl.end(); it++)
     {
       assert(index2id_map.find(it->id) == index2id_map.end());
       index2id_map[it->id] = it - ptcl.begin();
     }
+
+
+    for (int i = 0; i < local_n; i++)
+    {
+      assert(index2id_map.find(ptcl[i].id) != index2id_map.end());
+      assert(index2id_map[ptcl[i].id] == i);
+    }
+
 
     init_model();
 
@@ -125,15 +150,27 @@ namespace hacs64
       reg_list = irr_list;
 
 
+#if 0
       for (int i = 0; i < ni; i++)
       {
         ptcl[i].reg_rung = t_global > ptcl[i].t_reg ? scheduler.get_rung(t_global - ptcl[i].t_reg) : ptcl[i].reg_rung;
         ptcl[i].irr_rung = t_global > ptcl[i].t_irr ? scheduler.get_rung(t_global - ptcl[i].t_irr) : ptcl[i].irr_rung;
+        assert(scheduler.get_dt_pred(ptcl[i].reg_rung) == t_global - ptcl[i].t_reg);
+        assert(scheduler.get_dt_corr(ptcl[i].irr_rung) == t_global - ptcl[i].t_irr);
       }
+#endif
 
       scheduler.flush();
       iteration--;
       iterate_active();
+
+#if 0
+      for (int i = 0; i < ni; i++)
+      {
+        assert(ptcl[i].t_reg == t_global);
+        assert(ptcl[i].t_irr == t_global);
+      }
+#endif
 
       assert(is_synched);
     }

@@ -29,14 +29,20 @@ namespace hacs64
         const double _mass, 
         const dvec3 &_pos, 
         const dvec3 &_vel)
-      : id(-1), mass(_mass), pos(_pos), vel(_vel), radius(0.0), firr(0.0), freg(0.0), ftot(0.0), irr_rung(-1), reg_rung(-1) {}
+      : id(-1), mass(_mass), pos(_pos), vel(_vel), radius(0.0), firr(0.0), freg(0.0), ftot(0.0), irr_rung(-1), reg_rung(-1) 
+    {
+      t_reg = t_irr = 0.0;
+    }
     Particle(
         const double _mass, 
         const double _radius,
         const dvec3 &_pos, 
         const dvec3 &_vel,
         const int   _id)
-      : id(_id), mass(_mass), pos(_pos), vel(_vel), radius(_radius), firr(0.0), freg(0.0), ftot(0.0), irr_rung(-1), reg_rung(-1) {}
+      : id(_id), mass(_mass), pos(_pos), vel(_vel), radius(_radius), firr(0.0), freg(0.0), ftot(0.0), irr_rung(-1), reg_rung(-1) 
+    {
+      t_reg = t_irr = 0.0;
+    }
 
     double correct_irr(
         const hacs6::Force &firr_new, 
@@ -86,7 +92,6 @@ namespace hacs64
     double correct_reg(
         const hacs4::Force &freg_new, 
         const hacs6::Force &firr_new, 
-        const double dt_irr,
         const double dt_reg,
         const double eta_reg)
     {

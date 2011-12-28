@@ -37,6 +37,35 @@ class hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingCon
     # The following functions aren't defined in the default interface:
     
     @legacy_function
+    def get_number_of_particles_updated():
+        """
+        Return the number of particles added or deleted during the last evolve.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_id_of_updated_particle():
+        """
+        Return the number of particles added or deleted during the last evolve.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_update', dtype='int32',
+                              direction=function.IN, 
+                 description = 'index in the updated particles list')
+        function.addParameter('index_of_particle', dtype='int32',
+                              direction=function.OUT)
+        function.addParameter('kind_of_update', dtype='int32',
+                              direction=function.OUT,
+                 description = 'kind of update (2, addition), (1, deletion)')
+        function.can_handle_array = True
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def new_particle():
         """
         Define a new particle in the stellar dynamics code. The

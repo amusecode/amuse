@@ -81,6 +81,11 @@ namespace irrf6
 		return 0;
 	}
 
+  int irrf::commit_changes()
+  {
+    return 0;
+  }
+
 	int irrf::set_list(const int iaddr, const NGBlist &ngb)
 	{
 		assert(iaddr < ni_max);

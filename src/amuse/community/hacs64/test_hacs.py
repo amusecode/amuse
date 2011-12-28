@@ -160,46 +160,54 @@ def test_hacs(infile = None,
 
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
-    
+
+#    stopping_condition.disable()
+
     while time < end_time:
-        time += delta_t
+        if (gravity.get_time() >= time):
+          time += delta_t
+
         gravity.evolve_model(time)
-        time = gravity.get_time()
+
 
         # Ensure that the stars list is consistent with the internal
         # data in the module.
 
         ls = len(stars)
 
-	# Update the bookkeeping: synchronize stars with the module data.
+    	  # Update the bookkeeping: synchronize stars with the module data.
 
-        try:
-            gravity.update_particle_set()
-            gravity.particles.synchronize_to(stars)
-        except:
-            pass
-    
+#        channel.copy()
+  
         # Copy values from the module to the set in memory.
-
-        channel.copy()
+        
+        channel.copy_attribute("index_in_code", "id")
     
         # Copy the index (ID) as used in the module to the id field in
         # memory.  The index is not copied by default, as different
         # codes may have different indices for the same particle and
         # we don't want to overwrite silently.
 
-        channel.copy_attribute("index_in_code", "id")
-
         if stopping_condition.is_set():
             star1 = stopping_condition.particles(0)[0]
             star2 = stopping_condition.particles(1)[0]
+            gravity.synchronize_model()
             print '\nstopping condition set at time', \
                 gravity.get_time().number,'for:\n'
             print star1
             print ''
             print star2
             print ''
-#            raise Exception("no encounter handling")
+#            gravity.particles.remove_particle(star1)
+#            gravity.particles.remove_particle(star2)
+            
+#            gravity.recommit_particles();
+            
+            gravity.update_particle_set()
+            gravity.particles.synchronize_to(stars)
+            
+            
+            print 'ls=', len(stars)
 
         if len(stars) != ls:
            if 0:
@@ -210,7 +218,7 @@ def test_hacs(infile = None,
              print "number of stars =", len(stars)
            sys.stdout.flush()
 
-        print_log(time, gravity, E0)
+        print_log(gravity.get_time(), gravity, E0)
         sys.stdout.flush()
 
     print ''

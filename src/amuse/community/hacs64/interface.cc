@@ -10,6 +10,7 @@
 std::vector<particle> node::ptcl;
 std::vector<node>     node::node_heap;
 std::vector<std::pair<node*, node*> > node::pair_list;
+std::vector< std::pair<int, int> > UpdatedPtcl;
 
 inline double SQR(const double x) {return x*x;}
 
@@ -43,7 +44,10 @@ static hacs64::Nbody *nbody_ptr = NULL;
 inline int get_id_from_idx(const int index_of_the_particle)
 {
   if (nbody_ptr->index2id_map.find(index_of_the_particle) == nbody_ptr->index2id_map.end())  
+  {
+    fprintf(stderr, " attempted to get non-existend id= %d\n", index_of_the_particle);
     assert(0);
+  }
   else
     return nbody_ptr->index2id_map[index_of_the_particle];
 }
@@ -204,9 +208,11 @@ int new_particle(
   assert(index_to_set >= 0);
   *index_of_the_particle = index_to_set; 
 #else
+  assert(index_to_set < 0);
   *index_of_the_particle = nbody_ptr->cyclical_idx++;
 #endif
   nbody_ptr->ptcl2add.push_back(hacs64::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), *index_of_the_particle));
+  UpdatedPtcl.push_back(std::make_pair(*index_of_the_particle, 2));
   return 0;
 }
 int delete_particle(int index_of_the_particle)
@@ -216,6 +222,7 @@ int delete_particle(int index_of_the_particle)
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
   nbody_ptr->ptcl2remove.push_back(id);
+  UpdatedPtcl.push_back(std::make_pair(index_of_the_particle, 1));
   return 0;
 }
 
@@ -423,6 +430,7 @@ int synchronize_model()
 
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
+  UpdatedPtcl.clear();
   nbody_ptr->__synchmodel();
   return 0;
 }
@@ -557,6 +565,25 @@ int get_gravity_at_point(double eps, double x, double y, double z,
 }
 
 /****************/
+
+int get_number_of_particles_updated(int * value)
+{
+  *value = UpdatedPtcl.size();
+  return 0;
+}
+
+int get_id_of_updated_particle(int index, int * index_of_particle, int * status)
+{
+  if (index < 0 || index >= (int)UpdatedPtcl.size())
+    return -1;
+
+  *index_of_particle = UpdatedPtcl[index].first;  // id
+  *status            = UpdatedPtcl[index].second; // status  1 - remove, 2- add
+
+  return 0;
+}
+
+/****************/
 /****************/
 /****************/
 
@@ -564,6 +591,7 @@ int evolve_model(double time)
 {
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
+  UpdatedPtcl.clear();
   nbody_ptr->evolve_model(time);
   return 0;
 }
@@ -572,6 +600,9 @@ namespace hacs64
 {
   void Nbody::evolve_model(const double t_next)
   {
+    assert(ptcl2add.empty());
+    assert(ptcl2remove.empty());
+
     reset_stopping_conditions();    
 
     int is_collision_detection_enabled;
@@ -581,9 +612,16 @@ namespace hacs64
     is_stopping_condition_enabled(PAIR_DETECTION, 
         &is_pair_detection_enabled);
 
+#if 0
+    is_collision_detection_enabled = false;
+#endif
+
     while (t_global < t_next)
     {
       iterate();
+#if 0
+      if (iteration%33 == 0) break;
+#endif
 
       const int nirr = irr_list.size();
       int   i_close = -1;

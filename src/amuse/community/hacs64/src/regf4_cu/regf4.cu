@@ -203,6 +203,7 @@ namespace regf4
     }
     return 0;
   }
+  
 
   /********** NGB lists ********/
 
@@ -280,6 +281,13 @@ namespace regf4
 
     jp_ptcl_map.clear();
   }
+
+  int regf::commit_changes()
+  {
+    copy_jp_to_device();
+    return 0;
+  }
+
 
   /************************************/
 
