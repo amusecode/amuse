@@ -18,7 +18,7 @@ namespace hacs64
   {
     int local_n;
 
-    Particle::Vector ptcl;
+    Particle::Vector ptcl, ptcl_pre;
     Particle::Vector ptcl2add;
     Predictor::Vector predictor;
     std::vector<int> ptcl2remove;
@@ -26,7 +26,8 @@ namespace hacs64
     std::map<int, int>         index2id_map;
     std::vector<irrf6::Interpolate> ip_irr;
     std::vector<int>           irr_list, reg_list;
-    std::vector<NGBlist>       ngb_list;
+    std::vector<NGBlist>       ngb_list, ngb_list_pre;
+    std::vector<int>           ngb_list_id_pre;
     unsigned int cyclical_idx;
     int nmax;
     double dtmax;
@@ -85,17 +86,32 @@ namespace hacs64
 
     void iterate()
     {
-
       dt_global = scheduler.pull_active_list(irr_list, reg_list);
       t_global += dt_global;
+
+#if 0      
+      irr_list.clear();
+      for (int i = 0; i < (const int)ptcl.size(); i++)
+        irr_list.push_back(i);
+      reg_list = irr_list;
       
+      scheduler.flush();
       iterate_active();
+      assert(is_synched);
+#else
+      iterate_active();
+#endif
     }
 
     void iterate_active()
     {
       double t0;
       const double t0_all = get_wtime();
+
+      ptcl_pre.clear();
+      ngb_list_pre.clear();
+      ngb_list_id_pre.clear();
+
 
       irrf6::irrf &irr = *irr_ptr;
       regf4::regf &reg = *reg_ptr;
@@ -115,13 +131,26 @@ namespace hacs64
 
       t0 = get_wtime();
       const int nirr = irr_list.size();
+      const int nreg = reg_list.size();
+      assert(nreg <= nirr);
       int nsteps_irr_th = 0, nsteps_th = 0, ninter_irr_th = 0;
+        
+      for (int ix = 0; ix < nirr; ix++) 
+        ptcl_pre.push_back(ptcl[irr_list[ix]]);
+        
+      for (int ix = 0; ix < nreg; ix++)
+      {
+        ngb_list_id_pre.push_back(reg_list[ix]);
+        ngb_list_pre.push_back(ngb_list[reg_list[ix]]);
+      }
+
 #pragma omp parallel for reduction(+:nsteps_irr_th,nsteps_th, ninter_irr_th)
       for (int ix = 0; ix < nirr; ix++) 
       {
         const int i = irr_list[ix];
         if (ptcl[i].t_irr == t_global)
         {
+          assert(false);
           ptcl[i].irr_rung = -1-ptcl[i].irr_rung;
           continue;
         }
@@ -175,13 +204,15 @@ namespace hacs64
       dt_reg += get_wtime() - t0;
 
       t0 = get_wtime();
-      const int nreg = reg_list.size();
       {
         NGBlist list_tmp;
         for (int ix = 0; ix < nreg; ix++)
         {
           if (ptcl[reg_list[ix]].t_reg == t_global)
+          {
+            assert(false);
             continue;
+          }
 
           reg.get_list(reg_list[ix],   list_tmp);
           irr.set_list(reg_list[ix],   list_tmp);
@@ -230,8 +261,10 @@ namespace hacs64
       for (int ix = 0; ix < nreg; ix++) 
       {
         const int i = reg_list[ix];
+        assert(ptcl[i].irr_rung < 0);
         if (ptcl[i].t_reg == t_global) 
         {
+          assert(false);
           ptcl[i].reg_rung = -1-ptcl[i].reg_rung;
           continue;
         }
@@ -273,6 +306,7 @@ namespace hacs64
         const int i = reg_list[ix];
         if (ptcl[i].t_reg == t_global) 
         {
+          assert(false);
           if (ngb_list[i].size() != 0) 
             assert(!(-1-ptcl[i].reg_rung > -1-ptcl[i].irr_rung));
           else

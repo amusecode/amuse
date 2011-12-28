@@ -177,7 +177,8 @@ def test_hacs(infile = None,
 
     	  # Update the bookkeeping: synchronize stars with the module data.
 
-#        channel.copy()
+        # this breaks the code ...
+        channel.copy()
   
         # Copy values from the module to the set in memory.
         
@@ -198,10 +199,10 @@ def test_hacs(infile = None,
             print ''
             print star2
             print ''
-#            gravity.particles.remove_particle(star1)
-#            gravity.particles.remove_particle(star2)
+            gravity.particles.remove_particle(star1)
+            gravity.particles.remove_particle(star2)
             
-#            gravity.recommit_particles();
+            gravity.recommit_particles();
             
             gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)

@@ -144,6 +144,8 @@ namespace hacs64
       fprintf(stderr, "  force sync \n");
       const int ni = ptcl.size();
 
+#if 0
+
       irr_list.clear();
       for (int i = 0; i < ni; i++)
         irr_list.push_back(i);
@@ -170,6 +172,54 @@ namespace hacs64
         assert(ptcl[i].t_reg == t_global);
         assert(ptcl[i].t_irr == t_global);
       }
+#endif
+#endif
+
+#if 1
+      assert(!ptcl_pre.empty());
+      for (Particle::Vector::iterator it = ptcl_pre.begin(); it != ptcl_pre.end(); it++)
+      {
+        assert(index2id_map.find(it->id) != index2id_map.end());
+        const int i = index2id_map[it->id];
+        assert(i >= 0);
+        assert(i < ni);
+        
+        const Particle &pi = *it;
+        assert(ptcl[i].id == it->id);
+        ptcl[i] = pi;
+        
+        reg_ptr->set_jp(i, regf4::Particle(
+              pi.mass, t_global - dt_global, pi.h2,
+              pi.pos, pi.vel,
+              pi.ftot.acc, pi.ftot.jrk));
+        irr_ptr->set_jp(i, irrf6::Particle(
+              pi.mass, t_global - dt_global,
+              pi.pos, pi.vel,
+              pi.ftot.acc, pi.ftot.jrk, pi.ftot.snp, pi.ftot.crk));
+      }
+
+      assert(ngb_list_id_pre.size() == ngb_list_pre.size());
+      const int nngb = ngb_list_id_pre.size();
+      for (int ix = 0 ; ix < nngb; ix++)
+      {
+        const int i = ngb_list_id_pre[ix];
+        ngb_list[i] = ngb_list_pre   [ix];
+        irr_ptr->set_list(i, ngb_list[i]);
+      }
+
+
+      reg_ptr->commit_changes();
+      irr_ptr->commit_changes();
+
+      irr_list.clear();
+      for (int i = 0; i < ni; i++)
+        irr_list.push_back(i);
+      reg_list = irr_list;
+      
+      scheduler.flush();
+      iteration--;
+      iterate_active();
+      
 #endif
 
       assert(is_synched);
