@@ -60,7 +60,8 @@ def test_hacs(infile = None,
     print "\ninitializing the gravity module"
     sys.stdout.flush()
 
-    gravity = grav(number_of_workers = 1, redirection = "none")
+#    gravity = grav(number_of_workers = 1, redirection = "none", mode='cpu')
+    gravity = grav(number_of_workers = 1, redirection = "none", mode='gpu')
     gravity.initialize_code()
     
     #-----------------------------------------------------------------
@@ -201,7 +202,7 @@ def test_hacs(infile = None,
             print ''
             gravity.particles.remove_particle(star1)
             gravity.particles.remove_particle(star2)
-            
+           
             gravity.recommit_particles();
             
             print 'ls=', len(stars)
@@ -226,23 +227,25 @@ def test_hacs(infile = None,
         sys.stdout.flush()
 
     print ''
+    print_log(gravity.get_time(), gravity, E0)
+    sys.stdout.flush()
     gravity.stop()
 
 if __name__ == '__main__':
 
     infile = None
-    N = 1024
+    N = 4009
     dt_max  = 0.0625 | nbody_system.time
     n_ngb = 16
     eta_irr = 0.8
     eta_reg = 0.14
 
-#    eta_irr = 0.6
-#    eta_reg = 0.1
+    eta_irr = 0.6
+    eta_reg = 0.1
 
     t_end = 1.0 | nbody_system.time
     delta_t = 0.125 | nbody_system.time
-    random_seed = -1
+    random_seed = 15345
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")

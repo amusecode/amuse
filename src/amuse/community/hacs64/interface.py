@@ -18,10 +18,13 @@ class hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingCon
 
     include_headers = ['interface.h', 'stopcond.h']
 
-    def __init__(self, **options):
+    MODE_GPU = 'gpu'
+    MODE_CPU = 'cpu'
+
+    def __init__(self, mode = MODE_GPU, **options):
         CodeInterface.__init__(
             self,
-            name_of_the_worker="hacs64_worker",
+            name_of_the_worker=self.name_of_the_muse_worker(mode),
             **options
         )
         
@@ -35,6 +38,14 @@ class hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingCon
     # ph4_worker to build.
 
     # The following functions aren't defined in the default interface:
+    
+    def name_of_the_muse_worker(self, mode):
+        if mode == self.MODE_CPU:
+            return 'hacs64_worker_cpu'
+        elif mode == self.MODE_GPU:
+            return 'hacs64_worker'
+        else:
+            return 'hacs64_worker'
     
     @legacy_function
     def get_number_of_particles_updated():

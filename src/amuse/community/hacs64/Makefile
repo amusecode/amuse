@@ -8,7 +8,7 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-ALL	 = hacs64_worker
+ALL	 = hacs64_worker hacs64_worker_cpu
 OPT	  = -I$(AMUSE_DIR)/lib/stopcond -O3
 
 MPICXX   ?= mpicxx
@@ -28,7 +28,8 @@ LDFLAGS_GPU =	$(LDFLAGS) \
 
 OBJS = interface.o
 
-CODELIB = src/libhacs64.a
+CODELIB = src/libhacs64gpu.a
+CODELIBCPU = src/libhacs64cpu.a
 
 AMUSE_DIR ?= ../../../..
 
@@ -42,6 +43,7 @@ save:
 
 $(CODELIB):
 	make -C src all CXX=$(MPICXX)
+	make -C src cpu CXX=$(MPICXX)
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py hacs64Interface -o $@
@@ -52,11 +54,14 @@ interface.h: interface.py
 hacs64_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS_GPU) -DGPU
 
+hacs64_worker_cpu: worker_code.cc interface.h $(CODELIB) $(OBJS)
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIBCPU) -o $@  $(LDFLAGS)
+
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
 
 clean:
 	$(RM) -r -f *.so *.dSYM *.o *.mpio *.pyc worker_code.cc interface.h 
-	$(RM) -f *~ hacs64_worker hacs64_worker_sockets worker_code.cc
+	$(RM) -f *~ hacs64_worker hacs64_worker_cpu worker_code.cc
 	$(RM) -f worker_code-sockets.cc
 	make -C src clean

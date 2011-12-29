@@ -25,9 +25,17 @@ OBJS = hacs64_amuse.o \
        irrf6.o \
 			 regf4_cu/regf4.cu_o 
 
+OBJSCPU = hacs64_amuse.o \
+       irrf6.o \
+			 regf4.o 
+
 TARGET = integrate-gpu
-CODELIB = libhacs64.a
+CODELIB = libhacs64gpu.a
+
+TARGETCPU  = integrate-cpu
+CODELIBCPU = libhacs64cpu.a
 all: $(CODELIB) $(TARGET) 
+cpu: $(CODELIBCPU) $(TARGETCPU)
 
 $(TARGET): $(CODELIB) integrate.o
 	$(CXX) -o $(TARGET) integrate.o $(LDFLAGS) ./$(CODELIB) 
@@ -36,6 +44,13 @@ $(CODELIB): $(OBJS)
 	/bin/rm -f $@
 	$(AR) $@ $(OBJS)
 
+$(TARGETCPU): $(CODELIBCPU) integrate.o
+	$(CXX) -o $(TARGETCPU) integrate.o $(LDFLAGS) ./$(CODELIBCPU) 
+
+$(CODELIBCPU): $(OBJSCPU)
+	/bin/rm -f $@
+	$(AR) $@ $(OBJSCPU)
+
 .cpp.o: 
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
@@ -43,7 +58,7 @@ $(CODELIB): $(OBJS)
 	$(NVCC) $(NVCCFLAGS) -c $< -o $@
 
 clean:
-	/bin/rm -rf *.o regf4_cu/*.cu_o $(TARGET) $(CODELIB)
+	/bin/rm -rf *.o regf4_cu/*.cu_o $(TARGET) $(CODELIB) $(TARGETCPU) $(CODELIBCPU)
 
 $(CODELIB): hacs64.h irrf6.h regf4.h hacs4_force.h hacs6_force.h hacs64_particle.h Scheduler.h 
 $(OBJS): hacs64.h irrf6.h regf4.h hacs4_force.h hacs6_force.h hacs64_particle.h Scheduler.h 

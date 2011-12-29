@@ -58,7 +58,7 @@ namespace regf4
 
 	int regf::resize(const int ni)
 	{
-		assert(ni < ni_max);
+		assert(ni <= ni_max);
 		ptcl.resize(ni);
 		pred.resize(ni);
 		list.resize(ni);
@@ -285,6 +285,11 @@ namespace regf4
       }
       gpot[i] = -p;
     }
+    return 0;
+  }
+
+  int regf::commit_changes()
+  {
     return 0;
   }
 
