@@ -204,11 +204,14 @@ def test_hacs(infile = None,
             
             gravity.recommit_particles();
             
-            gravity.update_particle_set()
+            print 'ls=', len(stars)
+            
+#            gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)
             
             
             print 'ls=', len(stars)
+            
 
         if len(stars) != ls:
            if 0:

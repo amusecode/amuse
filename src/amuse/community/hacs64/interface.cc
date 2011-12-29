@@ -46,7 +46,7 @@ inline int get_id_from_idx(const int index_of_the_particle)
   if (nbody_ptr->index2id_map.find(index_of_the_particle) == nbody_ptr->index2id_map.end())  
   {
     fprintf(stderr, " attempted to get non-existend id= %d\n", index_of_the_particle);
-    assert(0);
+    return -1;
   }
   else
     return nbody_ptr->index2id_map[index_of_the_particle];
@@ -208,7 +208,7 @@ int new_particle(
   assert(index_to_set >= 0);
   *index_of_the_particle = index_to_set; 
 #else
-  assert(index_to_set < 0);
+//  assert(index_to_set < 0);
   *index_of_the_particle = nbody_ptr->cyclical_idx++;
 #endif
   nbody_ptr->ptcl2add.push_back(hacs64::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), *index_of_the_particle));

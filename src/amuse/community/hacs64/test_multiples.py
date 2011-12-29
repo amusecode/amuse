@@ -957,12 +957,13 @@ def test_multiples(infile = None,
 
                 E = print_log('ph4', gravity, E0)
                 print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
-                channel.copy()	# need other stars to be current in memory
+                # channel.copy()	# need other stars to be current in memory
                 # print_energies(stars)
 
                 # Synchronize everything for now.  Later we will just
                 # synchronize neighbors if gravity supports that.  TODO
                 gravity.synchronize_model()
+                gravity.particles.synchronize_to(stars)
 
                 dEmult += manage_encounter(star1, star2, stars,
                                            gravity.particles)
