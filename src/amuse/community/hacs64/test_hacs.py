@@ -206,7 +206,7 @@ def test_hacs(infile = None,
             
             print 'ls=', len(stars)
             
-#            gravity.update_particle_set()
+            gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)
             
             
