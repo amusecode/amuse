@@ -60,8 +60,8 @@ $(CODELIBCPU): $(OBJSCPU)
 clean:
 	/bin/rm -rf *.o regf4_cu/*.cu_o $(TARGET) $(CODELIB) $(TARGETCPU) $(CODELIBCPU)
 
-$(CODELIB): hacs64.h irrf6.h regf4.h hacs4_force.h hacs6_force.h hacs64_particle.h Scheduler.h 
-$(OBJS): hacs64.h irrf6.h regf4.h hacs4_force.h hacs6_force.h hacs64_particle.h Scheduler.h 
+$(CODELIB): hacs64.h irrf6.h regf4.h hacs4_force.h hacs6_force.h hacs64_particle.h Scheduler.h kdtree.h
+$(OBJS): hacs64.h irrf6.h regf4.h hacs4_force.h hacs6_force.h hacs64_particle.h Scheduler.h kdtree.h
 integrate.o: $(CODELIB)
 irrf6.o: irrf6.h
 regf4_cu/regf4.cu_o: regf4.h regf4_cu/cuda_pointer.h regf4_cu/dev_regf4.cu

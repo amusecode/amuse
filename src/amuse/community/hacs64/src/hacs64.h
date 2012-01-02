@@ -7,6 +7,7 @@
 #include "Scheduler.h"
 
 #include "node.h"
+#include "kdtree.h"
 #include "hacs4_force.h"
 #include "hacs6_force.h"
 #include "hacs64_particle.h"
@@ -447,7 +448,9 @@ namespace hacs64
           ngb_list[i].clear();
 #endif
         }
-#else
+#endif
+
+#if 0
         {
 
           /* using octree */
@@ -533,6 +536,50 @@ namespace hacs64
                   i, nngb, nj, pi.h);
               //            assert(0);
             }
+          }
+        }
+#endif
+
+#if 1
+        {
+          /* using kd-tree */
+          kdTree kd;
+
+          for (int i = 0; i < nbodies; i++)
+            kd.push_ptcl(kdTree::Particle(i, ptcl[i].pos));
+
+          kd.build();
+
+          /**** apply range-search ****/
+
+          for (int i = 0; i < nbodies; i++)
+          {
+            std::vector<int> list;
+            dvec3 ipos(ptcl[i].pos);
+            double h = 0.1;
+            int iter = 0;
+            while(1)
+            {
+              iter++;
+              assert(iter < 1000);
+              list.clear();
+
+              const int nngb = kd.range_search(list, ipos, h);
+              assert(nngb > 0);
+              if (nngb > regf4::NGBMAX)
+                h *= 0.75;
+              else if (nngb < regf4::NGBMIN)
+                h *= 1.25; 
+              else
+                break;
+            }
+
+            const int nngb = list.size();
+            ngb_list[i].clear();
+            for (int j = 0; j < nngb; j++)
+              if (i != list[j])
+                ngb_list[i].push_back(list[j]);
+            ptcl[i].h2 = h*h;
           }
         }
 #endif

@@ -245,7 +245,9 @@ if __name__ == '__main__':
 
     t_end = 1.0 | nbody_system.time
     delta_t = 0.125 | nbody_system.time
-    random_seed = 15345
+    random_seed = -1
+#    random_seed = 123
+#    random_seed = 15345
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")
