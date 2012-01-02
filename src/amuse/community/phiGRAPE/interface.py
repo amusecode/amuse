@@ -321,7 +321,3 @@ class PhiGRAPE(GravitationalDynamics):
         GravitationalDynamics.define_particle_sets(self, object)
         self.stopping_conditions.define_particle_set(object, 'particles')
         
-    def stop(self):
-        self.cleanup_code()
-        self.overridden().stop()
-        

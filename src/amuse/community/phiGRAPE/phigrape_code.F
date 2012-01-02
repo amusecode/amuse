@@ -37,6 +37,7 @@
       ind(N)   = newid
       myid(N)  = newid
       myind(newid)= N
+c      write(*,*) "Adding", id, ind(N), myid(N), myind(newid)
       m(N)     = mm
       x(1,N)   = xx
       x(2,N)   = yy
@@ -1224,18 +1225,19 @@ C---  get array address
          RETURN
       ENDIF
 
-      CALL amuse_init_grape
-      CALL update_grape(1) 
+c      CALL amuse_init_grape
+c      CALL update_grape(1) 
 
-C---  synchronize system
-      CALL selectsync(time_cur)
-C          ----------
-      CALL sync
-C          ----
-C     close grape before continuing
-      CALL amuse_close_grape
+cC---  synchronize system
+c      CALL selectsync(time_cur)
+cC          ----------
+c      CALL sync
+cC          ----
+cC     close grape before continuing
+c      CALL amuse_close_grape
 
 C---  shift particles after ip to free spot
+c      write(*,*) "Removing", id, ind(id), myid(ip), myind(id)
       DO i=ip,N-1
          m(i) = m(i+1)
          DO k=1,3

@@ -523,30 +523,57 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
 
     def test11(self):
-        particles = datamodel.Particles(6)
-        particles.mass = 1 | nbody_system.mass
+        print "Testing PhiGRAPE collision_detection"
+        particles = datamodel.Particles(7)
+        particles.mass = 0.001 | nbody_system.mass
         particles.radius = 0.01 | nbody_system.length
-        particles.x = [-101.0, -100.0, -0.5, 0.5, 100.0, 101.0] | nbody_system.length
+        particles.x = [-101.0, -100.0, -0.5, 0.5, 100.0, 101.0, 104.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
-        particles.velocity = [[1, 0, 0], [-1, 0, 0]]*3 | nbody_system.speed
+        particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
         
-        instance = PhiGRAPE(**default_test_options)
+        instance = PhiGRAPE(redirection='none', **default_test_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
-        instance.particles.add_particles(particles) 
+        instance.particles.add_particles(particles)
         collisions = instance.stopping_conditions.collision_detection
         collisions.enable()
-        instance.evolve_model(0.5 | nbody_system.time)
+        instance.evolve_model(1.0 | nbody_system.time)
         
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
         self.assertEquals(len(collisions.particles(0)), 3)
         self.assertEquals(len(collisions.particles(1)), 3)
-        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 0)
+        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
         self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True, True, True])
+        
+        sticky_merged = datamodel.Particles(len(collisions.particles(0)))
+        sticky_merged.mass = collisions.particles(0).mass + collisions.particles(1).mass
+        sticky_merged.radius = collisions.particles(0).radius
+        for p1, p2, merged in zip(collisions.particles(0), collisions.particles(1), sticky_merged):
+            merged.position = (p1 + p2).center_of_mass()
+            merged.velocity = (p1 + p2).center_of_mass_velocity()
+        
+        print instance.model_time
+        print instance.particles
+        instance.synchronize_model()
+        instance.particles.add_particles(sticky_merged)
+        instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
+        
+        instance.evolve_model(1.0 | nbody_system.time)
+        print
+        print instance.model_time
+        print instance.particles
+        self.assertTrue(collisions.is_set())
+        self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
+        self.assertEquals(len(collisions.particles(0)), 1)
+        self.assertEquals(len(collisions.particles(1)), 1)
+        self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
+        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+                (collisions.particles(0).radius + collisions.particles(1).radius),
+                [True])
         instance.stop()
 
     def test12(self):
@@ -774,5 +801,45 @@ class TestPhigrape(TestWithMPI):
         instance.cleanup_code()
         
         instance.stop()
-
+    
+    def test18(self):
+        print "Testing PhiGRAPE delete_particle"
+        number_of_particles = 15
+        delete_order = [6, 9, 3, 1, 0, 2, 5]
+        number_of_initial_deletes = 3
+        
+        particles = datamodel.Particles(number_of_particles)
+        particles.mass = range(1, number_of_particles + 1) | nbody_system.mass
+        particles.radius = 0.01 | nbody_system.length
+        particles.x = range(number_of_particles) | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.vx = range(number_of_particles) | nbody_system.speed
+        particles.vy = 0 | nbody_system.speed
+        particles.vz = 0 | nbody_system.speed
+        
+        instance = PhiGRAPE(**default_test_options)
+        instance.initialize_code()
+        instance.parameters.set_defaults()
+        initial_number_of_particles = number_of_particles - len(delete_order) + number_of_initial_deletes
+        instance.particles.add_particles(particles[:initial_number_of_particles])
+        index_new_particle = initial_number_of_particles
+        
+        self.assertEquals(len(instance.particles), initial_number_of_particles)
+        instance.evolve_model(0.01 | nbody_system.time)
+        instance.particles.remove_particles(particles[delete_order[:number_of_initial_deletes]])
+        number_of_deletes = number_of_initial_deletes
+        self.assertEquals(len(instance.particles), initial_number_of_particles - number_of_deletes)
+        
+        for i, particle_index in enumerate(delete_order[number_of_initial_deletes:]):
+            instance.evolve_model((i+1) / 10.0 | nbody_system.time)
+            instance.particles.remove_particle(particles[particle_index])
+            number_of_deletes += 1
+            instance.particles.add_particle(particles[index_new_particle])
+            index_new_particle += 1
+            self.assertEquals(len(instance.particles), initial_number_of_particles - number_of_deletes + i + 1)
+            self.assertAlmostEquals(particles[:index_new_particle].total_mass() - instance.particles.total_mass(), 
+                (delete_order[:number_of_deletes] | nbody_system.mass).sum() + (number_of_deletes | nbody_system.mass))
+        
+        instance.stop()
     
