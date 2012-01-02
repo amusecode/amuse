@@ -45,7 +45,8 @@ inline int get_id_from_idx(const int index_of_the_particle)
 {
   if (nbody_ptr->index2id_map.find(index_of_the_particle) == nbody_ptr->index2id_map.end())  
   {
-    fprintf(stderr, " attempted to get non-existend id= %d\n", index_of_the_particle);
+    fprintf(stderr, " attempted to get non-existend id= %d [ %u ]\n", 
+		    index_of_the_particle, nbody_ptr->cyclical_idx);
     return -1;
   }
   else
@@ -202,7 +203,6 @@ int new_particle(
 {
   assert(nbody_ptr != NULL);
   assert(nbody_ptr->is_sane());
-  nbody_ptr->cyclical_idx++;
   nbody_ptr->cyclical_idx &= 0x7FFFFFFF;
 #if 0
   assert(index_to_set >= 0);
@@ -210,6 +210,8 @@ int new_particle(
 #else
 //  assert(index_to_set < 0);
   *index_of_the_particle = nbody_ptr->cyclical_idx++;
+  fprintf(stderr , "--new-particle-added= %d %d \n",
+		  *index_of_the_particle, index_to_set);
 #endif
   nbody_ptr->ptcl2add.push_back(hacs64::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), *index_of_the_particle));
   UpdatedPtcl.push_back(std::make_pair(*index_of_the_particle, 2));
@@ -221,7 +223,8 @@ int delete_particle(int index_of_the_particle)
   assert(nbody_ptr->is_sane());
   const int id = get_id_from_idx(index_of_the_particle);
   if (id == -1) return -1;
-  nbody_ptr->ptcl2remove.push_back(id);
+  nbody_ptr->ptcl[id].id = -1;
+//  nbody_ptr->ptcl2remove.push_back(id);
   UpdatedPtcl.push_back(std::make_pair(index_of_the_particle, 1));
   return 0;
 }

@@ -79,6 +79,8 @@ namespace hacs64
 
 #if 1
     {
+
+#if 0
       std::sort(ptcl2remove.begin(), ptcl2remove.end());
       std::vector<int> unique_id2rm;
       unique_id2rm.push_back(ptcl2remove[0]);
@@ -88,8 +90,29 @@ namespace hacs64
       if (ptcl2remove.size() != unique_id2rm.size())
           fprintf(stderr, "  warrning: it appears that some particles were asked to be removed twice ...\n");
 
+#endif
+#if 0
+      int n_new = local_n;
       for (std::vector<int>::iterator it = unique_id2rm.begin(); it != unique_id2rm.end(); it++)
-        ptcl.erase(ptcl.begin() + *it);
+      {
+	if (ptcl[*it].id == -1)
+
+	std::swap(ptcl[n_new-1], *it);
+	n_new--;
+      }
+      ptcl.resize(n_new);
+#endif
+
+#if 1
+      assert(ptcl2remove.empty());
+      int n1 = 0;
+      for (int i = 0; i < local_n; i++)
+      {
+        ptcl[n1] = ptcl[i];
+        if(ptcl[i].id >= 0) n1++;
+      }
+      ptcl.resize(n1);
+#endif
     }
 
     {
@@ -121,6 +144,15 @@ namespace hacs64
       assert(index2id_map.find(ptcl[i].id) != index2id_map.end());
       assert(index2id_map[ptcl[i].id] == i);
     }
+
+    fprintf(stderr, " --- local_n= %d \n", local_n);
+    for (int i = 0; i < local_n; i++)
+    {
+      assert(index2id_map.find(ptcl[i].id) != index2id_map.end());
+      fprintf(stderr, " i= %d   id= %d map= %d \n",
+		      i, ptcl[i].id, index2id_map[ptcl[i].id]);
+    }
+	
 
 
     init_model();
