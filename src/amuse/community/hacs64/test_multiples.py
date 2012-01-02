@@ -706,7 +706,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     #      gravity code.  Also recompute the external potential and
     #      absorb the tidal error into the top-level nodes of the
     #      encounter list.  Fially, add the change in top-level energy
-    #      of the interacting subset into dEmult, so E(ph4) + dEmult
+    #      of the interacting subset into dEmult, so E(hacs64) + dEmult
     #      should be conserved.
 
     dEmult += scale_top_level_list(binaries, initial_scale,
@@ -929,7 +929,7 @@ def test_multiples(infile = None,
           "in steps of", delta_t.number
     sys.stdout.flush()
 
-    E0 = print_log('ph4', gravity)
+    E0 = print_log('hacs64', gravity)
     dEmult = 0.0
     
     # Channel to copy values from the code to the set in memory.
@@ -955,7 +955,7 @@ def test_multiples(infile = None,
                 print 'stopping condition set at time', \
                     gravity.get_time().number
 
-                E = print_log('ph4', gravity, E0)
+                E = print_log('hacs64', gravity, E0)
                 print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
                 # channel.copy()	# need other stars to be current in memory
                 # print_energies(stars)
@@ -974,7 +974,7 @@ def test_multiples(infile = None,
                 # it. TODO
                 gravity.recommit_particles()
 
-                E = print_log('ph4', gravity, E0)
+                E = print_log('hacs64', gravity, E0)
                 print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
                 print '\n--------------------------------------------------'
         
@@ -1000,7 +1000,7 @@ def test_multiples(infile = None,
                 print "number of stars =", len(stars)
             sys.stdout.flush()
 
-        E = print_log('ph4', gravity, E0)
+        E = print_log('hacs64', gravity, E0)
         print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
 
     print ''

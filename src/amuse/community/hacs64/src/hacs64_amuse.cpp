@@ -149,8 +149,6 @@ namespace hacs64
     for (int i = 0; i < local_n; i++)
     {
       assert(index2id_map.find(ptcl[i].id) != index2id_map.end());
-      fprintf(stderr, " i= %d   id= %d map= %d \n",
-		      i, ptcl[i].id, index2id_map[ptcl[i].id]);
     }
 	
 

@@ -60,8 +60,8 @@ def test_hacs(infile = None,
     print "\ninitializing the gravity module"
     sys.stdout.flush()
 
-    gravity = grav(number_of_workers = 1, redirection = "none", mode='cpu')
-#    gravity = grav(number_of_workers = 1, redirection = "none", mode='gpu')
+#    gravity = grav(number_of_workers = 1, redirection = "none", mode='cpu')
+    gravity = grav(number_of_workers = 1, redirection = "none", mode='gpu')
     gravity.initialize_code()
     
     #-----------------------------------------------------------------

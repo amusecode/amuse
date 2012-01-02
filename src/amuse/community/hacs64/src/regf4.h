@@ -32,7 +32,7 @@ namespace regf4
 		dvec3 acc, jrk;
 	};
 
-#if 0
+#if 1
 	enum {
 		NGBMIN  = 48, 
 		NGBMEAN = 64,
@@ -40,7 +40,7 @@ namespace regf4
 	};
 #endif
 
-#if 1
+#if 0
 	enum {
 		NGBMIN  = 16,
 		NGBMEAN = 32,

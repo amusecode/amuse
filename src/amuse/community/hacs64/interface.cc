@@ -210,8 +210,10 @@ int new_particle(
 #else
 //  assert(index_to_set < 0);
   *index_of_the_particle = nbody_ptr->cyclical_idx++;
+#if 0
   fprintf(stderr , "--new-particle-added= %d %d \n",
 		  *index_of_the_particle, index_to_set);
+#endif
 #endif
   nbody_ptr->ptcl2add.push_back(hacs64::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), *index_of_the_particle));
   UpdatedPtcl.push_back(std::make_pair(*index_of_the_particle, 2));
