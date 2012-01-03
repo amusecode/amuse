@@ -34,7 +34,7 @@
       ENDDO
       N = N + 1
       id = newid
-      ind(N)   = newid
+      ind(N)   = N
       myid(N)  = newid
       myind(newid)= N
 c      write(*,*) "Adding", id, ind(N), myid(N), myind(newid)

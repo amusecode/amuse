@@ -558,9 +558,8 @@ class TestPhigrape(TestWithMPI):
         
         print instance.model_time
         print instance.particles
-        instance.synchronize_model()
-        instance.particles.add_particles(sticky_merged)
         instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
+        instance.particles.add_particles(sticky_merged)
         
         instance.evolve_model(1.0 | nbody_system.time)
         print
