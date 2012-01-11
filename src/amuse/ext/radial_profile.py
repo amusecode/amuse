@@ -28,14 +28,17 @@ def radial_density(r,mass,N=100,dim=3):
   r_a=[]
   dens=[]
   oldrshell=0.*r[0]
-  while i < n:
-    ra=r[a[i:i+N]].sum()/min(n-i,N)
-    rshell=(r[a[min(n-1,i+N)]]+r[a[min(n-1,i+N-1)]])/2
-    da=mass[a[i:i+N]].sum()/(rshell**dim-oldrshell**dim)
+  while i != n-1:
+    i1=i+N
+    if( n-i1 < N ): i1=n-1 # if last bin smaller than N join last two bins
+    rshell=(r[a[i1]]+r[a[i1-1]])/2
+    ra=r[a[i:i1]].sum()/(i1-i)/2+(oldrshell+rshell)/4
+#    ra=r[a[i:i1]].sum()/(i1-i)
+    da=mass[a[i:i1]].sum()/(rshell**dim-oldrshell**dim)
     oldrshell=rshell
     r_a.append(ra)
     dens.append(da)
-    i=i+N
+    i=i1
   return numpy.array(r_a),numpy.array(dens)/volfac
 
 if __name__=="__main__":
@@ -52,4 +55,5 @@ if __name__=="__main__":
   dens=numpy.array(map(lambda x: x.number,dens))
   pyplot.loglog(ra,dens)
   pyplot.loglog(ra, 3./4./numpy.pi/ascl**3/(1+(ra**2/ascl**2))**(5./2))
+#  pyplot.plot(ra,(dens-3./4./numpy.pi/ascl**3/(1+(ra**2/ascl**2))**(5./2))/dens,'r.')
   pyplot.savefig('test.png')
