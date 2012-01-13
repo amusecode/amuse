@@ -36,10 +36,6 @@ PATCH_FILES = $(PYTHON) ./patch_files.py
 
 all:	mesa_worker
 
-ifeq (4.6, $(GFORTRAN_MAJOR_MINOR))
-$(MESA_DIR)/install:
-		$(error The current version of MESA in AMUSE cannot be build with gfortran 4.6)
-else
 ifdef DOWNLOAD_CODES
 $(MESA_DIR)/install:
 	make -C . download
@@ -58,7 +54,6 @@ $(MESA_DIR)/install:
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""
 		@make -s --no-print-directory -C . raise_error
-endif
 endif
 
 download:
@@ -93,6 +88,7 @@ worker_code-sockets.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py MESAInterface -o $@
 
 $(MESA_LIB):  $(MESA_DIR)/install
+	cp -f ./install $(MESA_DIR)
 	cd $(MESA_DIR); ./install
 
 MESA_code.o: MESA_code.f $(MESA_LIB)

@@ -1,0 +1,158 @@
+#!/bin/bash
+
+function check_okay {
+	if [ $? -ne 0 ]
+	then
+		exit 1
+	fi
+}
+
+function do_one {
+	cd $1
+	check_okay
+	echo
+	pwd
+	echo "building" $1 "package."
+	echo
+	./install
+	check_okay
+	cd ..
+	echo
+	echo 'mesa/'$1 'has been made, tested, and exported.'
+	echo
+	echo "************************************************"
+}
+
+
+./install_numerics_only
+check_okay
+
+
+if [ ! -r data ]
+then
+	echo
+	echo "******************************************************************"
+	echo "*                                                                *"
+	echo "*    Please setup the current mesa data before doing ./install   *"
+	echo "*    See the mesa README file for details.                       *"
+	echo "*                                                                *"
+	echo "******************************************************************"
+	echo
+	exit 1
+fi
+
+
+function do_input_data {
+	cd $1
+	check_okay
+	echo
+	pwd
+	echo "installing mesa" $1 "data."
+	echo
+	./build_data_and_export
+	check_okay
+	echo $1 "data successfully installed."
+	echo
+	echo "************************************************"
+	cd ..
+}
+
+do_one chem
+
+if [ ! -r data/colors_data ]
+then
+	do_input_data colors
+fi
+do_one colors
+
+# get rid of obsolete eos_data directory
+rm -rf data/eos_data
+
+# check that the eos data directories exist
+if [ ! -r data/eosDT_data ]
+then
+  echo 'installing eos data'
+	do_input_data eos
+elif [ ! -r data/eosPT_data ]
+then
+  echo 'installing eos data'
+	do_input_data eos
+elif [ ! -r data/eosDE_data ]
+then
+  echo 'installing eos data'
+	do_input_data eos
+elif [ ! -r data/eosDP_data ]
+then
+  echo 'installing eos data'
+	do_input_data eos
+fi
+
+# now have installed eos data, so can install the eos module
+do_one eos
+
+
+
+if [ ! -r data/kap_data ]
+then
+	do_input_data kap
+fi
+do_one kap
+
+
+
+do_one rates
+
+
+
+if [ ! -r data/weaklib_data ]
+then
+	do_input_data weaklib
+fi
+do_one weaklib
+
+
+
+do_one screen
+#do_one jina
+do_one net
+do_one neu
+
+
+
+if [ ! -r data/atm_data ]
+then
+	do_input_data atm
+fi
+do_one atm
+
+
+
+do_one mlt
+do_one ionization
+do_one diffusion
+do_one karo
+#do_one pulse
+do_one star
+
+
+echo
+echo
+echo
+echo
+echo
+echo
+echo
+echo "************************************************"
+echo "************************************************"
+echo "************************************************"
+echo
+echo 'mesa installation was successful.'
+echo
+echo "************************************************"
+echo "************************************************"
+echo "************************************************"
+echo
+echo
+echo
+echo
+
