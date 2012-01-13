@@ -807,7 +807,7 @@ class ZeroQuantity(Quantity):
         return self
 
     def __rdiv__(self, other):
-        return other/0.0
+        return other/self.number
 
     def in_base(self):
         return self
@@ -818,10 +818,10 @@ class ZeroQuantity(Quantity):
         return self
 
     def as_quantity_in(self, another_unit):
-        return new_quantity(0.0, another_unit)
+        return new_quantity(self.number, another_unit)
 
     def value_in(self, unit):
-        return 0.0
+        return self.number
 
     def __abs__(self):
         return self
@@ -829,11 +829,52 @@ class ZeroQuantity(Quantity):
     def __neg__(self):
         return self
 
-
-
+    def as_vector_with_length(self, length):
+        return ZeroVectorQuantity(length)
 
     def __reduce__(self):
         return "zero"
+
+
+class ZeroVectorQuantity(ZeroQuantity):
+
+    def __init__(self, length):
+        Quantity.__init__(self, self)
+
+        self.base = ()
+        self.factor = 1
+        self.number = numpy.zeros(length)
+
+    def is_scalar(self):
+        """
+        True for scalar quantities.
+        """
+        return False
+
+    def is_vector(self):
+        """
+        True for vector quantities.
+        """
+        return True
+    
+    def __len__(self):
+        return len(self.number)
+
+    def __getitem__(self, index):
+        new_number = self.number[index]
+        if hasattr(new_number, "__len__"):
+            return ZeroVectorQuantity(len(new_number))
+        else:
+            return zero
+    
+    def __str__(self):
+        return "[" + " zero" * len(self) + "]"
+
+    def __add__(self, other):
+        return other.as_vector_with_length(len(self))
+
+    def __sub__(self, other):
+        return -other.as_vector_with_length(len(self))
 
 
 zero = ZeroQuantity()

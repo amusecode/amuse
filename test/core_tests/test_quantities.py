@@ -231,6 +231,25 @@ class TestQuantities(amusetest.TestCase):
         two_positions.append(99 | units.m)
         self.assertEqual(two_positions, [1, 2, 3, -1, -2, -3, 4, 5, 6, 7, 8, 9, 99] | units.m)
     
+    def test21(self):
+        zero_vector = zero.as_vector_with_length(3)
+        self.assertEqual(str(zero_vector), "[ zero zero zero]")
+        
+        self.assertEqual(zero_vector + (1 | units.m), [1, 1, 1] | units.m)
+        self.assertEqual(zero_vector - (1 | units.m), [-1, -1, -1] | units.m)
+        self.assertEqual((1 | units.m) + zero_vector, [1, 1, 1] | units.m)
+        self.assertEqual((1 | units.m) - zero_vector, [1, 1, 1] | units.m)
+        
+        self.assertEqual(zero_vector + ([1, 1, 1] | units.m), [1, 1, 1] | units.m)
+        self.assertEqual(zero_vector - ([1, 1, 1] | units.m), [-1, -1, -1] | units.m)
+        self.assertEqual(([1, 1, 1] | units.m) + zero_vector, [1, 1, 1] | units.m)
+        self.assertEqual(([1, 1, 1] | units.m) - zero_vector, [1, 1, 1] | units.m)
+        
+        for one_zero in zero_vector:
+            self.assertEquals(one_zero, zero)
+        
+        self.assertEquals(zero_vector[0:2], zero.as_vector_with_length(2))
+    
 
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):
