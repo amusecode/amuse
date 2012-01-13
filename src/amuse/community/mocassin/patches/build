@@ -1,8 +1,6 @@
-Index: mocassin/src/mocassin.2.02.69/makefile
-===================================================================
---- mocassin.orig/src/mocassin.2.02.69/makefile	2010-11-03 10:24:32.000000000 +0100
-+++ mocassin/src/mocassin.2.02.69/makefile	2010-11-17 09:28:26.000000000 +0100
-@@ -1,51 +1,40 @@
+--- mocassin.orig/src/mocassin.2.02.69/makefile	2010-11-10 16:17:39.000000000 +0100
++++ mocassin/src/mocassin.2.02.69/makefile	2012-01-13 11:31:42.186514656 +0100
+@@ -1,51 +1,55 @@
 -source1  = source/infnan.f90 source/constants_mod.f90 source/vector_mod.f90 source/common_mod.f90 source/interpolation_mod.f90 \
 -	source/set_input_mod.f90 source/hydro_mod.f90 source/ph_mod.f90 source/composition_mod.f90 \
 -	source/continuum_mod.f90 source/ionization_mod.f90 source/pathIntegration_mod.f90 \
@@ -48,20 +46,35 @@ Index: mocassin/src/mocassin.2.02.69/makefile
 -mocassin:
 -	$(F90) $(OPT1) -o mocassin $(source1) $(LIBS)
 +LDFLAGS += -lm -g
-+FFLAGS  += -fno-range-check
++#FFLAGS  += -fno-range-check
  
 -mocassinWarm:
 -	$(F90) $(OPT1) -o mocassinWarm $(source2) $(LIBS) 
-+CODELIB = libmocassin.a
++# gfortran flags
++$(info  $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- ))
++$(info  $(findstring gfortran, $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- )))
++ifneq (,$(findstring gfortran, $(notdir $(FORTRAN))))
++FFLAGS += -fno-range-check -Jsource
++endif
  
 -mocassinOutput:
 -	$(F90) $(OPT2) -o mocassinOutput $(source3) $(LIBS) 
-+AR = ar ruv
-+RANLIB = ranlib
-+RM = rm
++ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
++# ifort flags
++FFLAGS+= -module source
++#GLLIB = $(GLLIB) -lguide 
++endif
  
 -mocassinPlot:
 -	$(F90) $(OPT2) -o mocassinPlot $(source4) $(LIBS) 
++
++
++CODELIB = libmocassin.a
++
++AR = ar ruv
++RANLIB = ranlib
++RM = rm
++
 +all: $(CODELIB) 
  
  clean:
@@ -76,7 +89,7 @@ Index: mocassin/src/mocassin.2.02.69/makefile
 +
  
 +%.o: %.f90
-+	$(FC) $(FFLAGS) -c $< -o $@ -Jsource
++	$(FC) $(FFLAGS) -c $< -o $@
  
   
  

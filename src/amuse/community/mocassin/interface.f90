@@ -529,6 +529,7 @@ CONTAINS
         
         call setStarPosition(grid3D(1)%xAxis,grid3D(1)%yAxis,grid3D(1)%zAxis, grid3D(1:nGrids))
         
+        commit_particles=0
         
     END FUNCTION
     
@@ -544,7 +545,8 @@ CONTAINS
            nPhotons(i) = nPhotonsTot/nStars
            deltaE(i) = Lstar(i)/nPhotons(i)
         end do
-        
+
+        recommit_particles=0
         
     END FUNCTION
     
@@ -612,6 +614,7 @@ CONTAINS
 
         end if
         setup_subgrid_references = 0
+        
     END FUNCTION
 
     FUNCTION commit_grid()
