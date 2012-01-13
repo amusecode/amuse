@@ -1,5 +1,3 @@
-
-
 import numpy
 
 from amuse.community.twobody import twobody
@@ -7,7 +5,10 @@ from amuse.community.twobody import twobody
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import units
 from amuse.units import nbody_system
+from amuse.units.quantities import zero
+from amuse.support.exceptions import AmuseException
 from amuse import datamodel
+
 class TwoBodyCodeTests(TestWithMPI):
     
     def test_stumpff(self):
@@ -213,5 +214,17 @@ class TwoBodyTests(TestWithMPI):
         zero = [0.0] | nbody_system.length
         phi = instance.get_potential_at_point(zero, 1.0 | nbody_system.length, zero, zero)
         self.assertTrue(numpy.isinf(phi[0].value_in(nbody_system.potential)))
+        instance.stop()
+    
+    def test9(self):
+        print "Test 9: TwoBody parameters"
+        instance = twobody.TwoBody()
+        
+        self.assertEqual(instance.parameters.epsilon_squared, zero)
+        
+        self.assertRaises(AmuseException, setattr, instance.parameters, "epsilon_squared", zero, 
+            expected_message = "Could not set value for parameter 'epsilon_squared' of a 'TwoBody' object, "
+                "parameter is read-only")
+        
         instance.stop()
     

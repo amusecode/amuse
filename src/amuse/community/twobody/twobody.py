@@ -577,6 +577,15 @@ class TwoBody(GravitationalDynamics):
             **options
         )     
     
+    def get_epsilon_squared(self):
+        return zero
+    
     def define_parameters(self, object):
-        pass
+        object.add_method_parameter(
+            "get_epsilon_squared",
+            None, 
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            default_value = zero
+        )
     
