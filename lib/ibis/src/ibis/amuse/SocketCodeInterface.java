@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,6 +159,12 @@ public class SocketCodeInterface extends CodeInterface {
     void end() {
         if (process != null) {
             process.destroy();
+
+            try {
+                logger.info("Process ended with result " + process.exitValue());
+            } catch (IllegalThreadStateException e) {
+                logger.error("Process not ended after process.destroy()!");
+            }
         }
 
         if (out != null) {

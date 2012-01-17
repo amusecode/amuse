@@ -12,7 +12,7 @@ CWD=`pwd`
 
 for i in `seq 1 $NR_PROCS`;
 do
-	ssh node00 " cd $CWD; $JAVA $ARGS"&
+	ssh test " cd $CWD; $JAVA $ARGS"&
 done  
 
 wait

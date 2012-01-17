@@ -136,7 +136,7 @@ public class Daemon implements RegistryEventHandler {
     }
     
     public static void printUsage() {
-        System.err.println("Usage: ibis-amuse-daemon [OPTIONS]\n"
+        System.err.println("Usage: ibis-deploy.sh [OPTIONS]\n"
                 + "Options:\n"
                 + "-p PORT | --port\tPort to listen on (default: " + DEFAULT_PORT + ")\n"
                 + "-v | --verbose\t\tBe more verbose\n"

@@ -25,30 +25,26 @@ public class Deployment {
 
     private final Deploy deploy;
 
-    private final GUI gui;
-
     private final Grid grid;
     private final ApplicationSet applications;
     private final Experiment experiment;
 
     public Deployment(boolean verbose, boolean useGui, boolean useHubs, String... logos)
             throws Exception {
-        grid = new Grid(new File("deploy.grid"));
+        grid = new Grid(new File("deploy.grid"), true);
         experiment = new Experiment("amuse");
         applications = new ApplicationSet();
 
         Workspace workspace = new Workspace(grid, applications, experiment);
 
-        deploy = new Deploy(new File("deploy"), verbose, false, useGui, 0, null, null,
+        deploy = new Deploy(null, verbose, false, useGui, true, 0, null, null,
                 true);
         if (!useHubs) {
             deploy.setHubPolicy(HubPolicy.OFF);
         }
 
         if (useGui) {
-            gui = new GUI(deploy, workspace, Mode.MONITORING_ONLY, true, logos);
-        } else {
-            gui = null;
+            new GUI(deploy, workspace, Mode.MONITORING_ONLY, true, logos);
         }
     }
 
