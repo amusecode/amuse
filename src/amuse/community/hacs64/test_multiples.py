@@ -806,9 +806,9 @@ def print_energies(stars):
     sys.stdout.flush()
 
 def test_multiples(infile = None,
-                   number_of_stars = 1024,
+                   number_of_stars = 64,
                    nmax = 2048,
-                   end_time = 10   | nbody_system.time,
+                   end_time = 0.1   | nbody_system.time,
                    delta_t = 0.125 | nbody_system.time,
                    dt_max  = 0.0625 | nbody_system.time,
                    n_ngb   = 16,
@@ -858,7 +858,7 @@ def test_multiples(infile = None,
         stars.move_to_center()
         print "scaling stars to virial equilibrium"
         stars.scale_to_standard(smoothing_length_squared
-                                    = gravity.parameters.epsilon_squared)
+                                    = 0 | nbody_system.length ** 2)
 
         time = 0.0 | nbody_system.time
         sys.stdout.flush()
@@ -936,7 +936,7 @@ def test_multiples(infile = None,
     channel = gravity.particles.new_channel_to(stars)
     
     stopping_condition = gravity.stopping_conditions.collision_detection
-    stopping_condition.enable()
+    #stopping_condition.enable()
     
     # Tree structure on the stars dataset:
 

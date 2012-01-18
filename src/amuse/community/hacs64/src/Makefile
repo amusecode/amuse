@@ -2,13 +2,13 @@
 
 CXX  := g++
 CC   := gcc
-NVCC := nvcc
+NVCC ?= nvcc
 AR   := ar ruv
 RANLIB := ranlib
 
 CUDAPATH       := /usr/local/cuda
 CUDAINCLUDE    := -I$(CUDAPATH)/include
-CUDASDKINCLUDE := -I$(HOME)/NVIDIA_GPU_Computing_SDK/C/common/inc
+CUDASDKINCLUDE := -I$(CUDASDK)/common/inc
 
 NVCCFLAGS := -arch=sm_20 -O4 -g  $(CUDAINCLUDE) $(CUDASDKINCLUDE) -I./ -Xptxas -v,-abi=no 
 # NVCCFLAGS += -maxrregcount=32
@@ -18,8 +18,9 @@ NVCCFLAGS += -Xcompiler="-Wall"
 #NVCCFLAGS := -O0 -g -D_DEBUG -deviceemu -maxrregcount=32 $(CUDAINCLUDE)
 
 
-CXXFLAGS  := -O3 -g -Wall  -I./ON_neib -I./ -fopenmp
-LDFLAGS   :=  -L/usr/local/cuda/lib64 -lcudart -fopenmp
+CXXFLAGS  += -O3 -g -Wall  -I./ON_neib -I./ -fopenmp
+LDFLAGS   +=  -fopenmp
+LDGPUGLAGS := $(LDFLAGS) $(CUDA_LIBS)
 
 OBJS = hacs64_amuse.o \
        irrf6.o \
@@ -34,7 +35,9 @@ CODELIB = libhacs64gpu.a
 
 TARGETCPU  = integrate-cpu
 CODELIBCPU = libhacs64cpu.a
+
 all: $(CODELIB) $(TARGET) 
+
 cpu: $(CODELIBCPU) $(TARGETCPU)
 
 $(TARGET): $(CODELIB) integrate.o
@@ -62,7 +65,7 @@ clean:
 
 $(CODELIB): hacs64.h irrf6.h regf4.h hacs4_force.h hacs6_force.h hacs64_particle.h Scheduler.h kdtree.h
 $(OBJS): hacs64.h irrf6.h regf4.h hacs4_force.h hacs6_force.h hacs64_particle.h Scheduler.h kdtree.h
-integrate.o: $(CODELIB)
+integrate.o:
 irrf6.o: irrf6.h
 regf4_cu/regf4.cu_o: regf4.h regf4_cu/cuda_pointer.h regf4_cu/dev_regf4.cu
 regf4_cu/regf4.ptx: regf4.h regf4_cu/cuda_pointer.h regf4_cu/dev_regf4.cu

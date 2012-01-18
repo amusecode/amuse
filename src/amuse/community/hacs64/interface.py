@@ -21,7 +21,7 @@ class hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingCon
     MODE_GPU = 'gpu'
     MODE_CPU = 'cpu'
 
-    def __init__(self, mode = MODE_GPU, **options):
+    def __init__(self, mode = MODE_CPU, **options):
         CodeInterface.__init__(
             self,
             name_of_the_worker=self.name_of_the_muse_worker(mode),
@@ -41,9 +41,9 @@ class hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingCon
     
     def name_of_the_muse_worker(self, mode):
         if mode == self.MODE_CPU:
-            return 'hacs64_worker_cpu'
-        elif mode == self.MODE_GPU:
             return 'hacs64_worker'
+        elif mode == self.MODE_GPU:
+            return 'hacs64_worker_gpu'
         else:
             return 'hacs64_worker'
     

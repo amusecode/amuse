@@ -37,9 +37,9 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     return E
 
 def test_hacs(infile = None,
-              number_of_stars = 1024,
+              number_of_stars = 128,
               nmax = 2048,
-              end_time = 10   | nbody_system.time,
+              end_time = 0.1   | nbody_system.time,
               delta_t = 0.125 | nbody_system.time,
               dt_max  = 0.0625 | nbody_system.time,
               n_ngb   = 16,
@@ -61,7 +61,7 @@ def test_hacs(infile = None,
     sys.stdout.flush()
 
 #    gravity = grav(number_of_workers = 1, redirection = "none", mode='cpu')
-    gravity = grav(number_of_workers = 1, redirection = "none", mode='gpu')
+    gravity = grav(number_of_workers = 1, redirection = "none", mode='cpu')
     gravity.initialize_code()
     
     #-----------------------------------------------------------------
