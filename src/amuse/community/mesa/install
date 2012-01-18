@@ -113,7 +113,7 @@ do_one weaklib
 
 
 do_one screen
-#do_one jina
+do_one jina
 do_one net
 do_one neu
 

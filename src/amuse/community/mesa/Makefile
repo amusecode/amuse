@@ -89,6 +89,7 @@ worker_code-sockets.f90: interface.py
 
 $(MESA_LIB):  $(MESA_DIR)/install
 	cp -f ./install $(MESA_DIR)
+	cp -f ./test_jina.f $(MESA_DIR)/jina/test/src/test_jina.f
 	cd $(MESA_DIR); ./install
 
 MESA_code.o: MESA_code.f $(MESA_LIB)
