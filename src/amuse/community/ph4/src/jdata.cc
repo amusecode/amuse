@@ -663,30 +663,35 @@ bool jdata::advance_and_check_encounter()
     advance();
 
     // Optionally manage close encounters.  AMUSE stopping conditions
-    // are enabled with manage_encounters = 4.  Return true iff an
-    // encounter has been detected (handled by the to plevel loop or
+    // are enabled with manage_encounters = 4.  Return true if an
+    // encounter has been detected (handled by the top level loop or
     // by AMUSE).
-
-    if (manage_encounters && eps2 == 0 && close1 >= 0) {
-
-	// AMUSE STOPPING CONDITIONS SUPPORT
-	if (manage_encounters == 4) {
-	    int stopping_index = next_index_for_stopping_condition();
-	    set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-	    set_stopping_condition_particle_index(stopping_index, 0, close1);
-	    set_stopping_condition_particle_index(stopping_index, 1, close2);
-	    return true;
-	}
-
-	status = resolve_encounter();
-	if (status) {
-	    if (0 && mpi_rank == 0) {
-		cout << "after resolve_encounter" << endl << flush;
-		PRL(get_energy());
-	    }
-	}
+    
+    if (!manage_encounters || eps2 != 0) {
+        return false;
     }
-
+    
+    // AMUSE STOPPING CONDITIONS SUPPORT
+    if (manage_encounters == 4) {
+        if (coll1 >= 0) {
+            int stopping_index = next_index_for_stopping_condition();
+            set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+            set_stopping_condition_particle_index(stopping_index, 0, coll1);
+            set_stopping_condition_particle_index(stopping_index, 1, coll2);
+            status = true;
+        }
+        return status;
+    }
+    
+    if (close1 >= 0) {
+        status = resolve_encounter();
+    }
+    if (status) {
+        if (0 && mpi_rank == 0) {
+            cout << "after resolve_encounter" << endl << flush;
+            PRL(get_energy());
+        }
+    }
     return status;
 }
 
