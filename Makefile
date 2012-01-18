@@ -33,6 +33,8 @@ distclean:
 	-rm -f src/amuse/config.py
 	-rm -f src/amuse/config.pyc
 	-rm -f amuse.sh
+	-rm -f iamuse.sh
+	-rm -f ibis-deploy.sh
 	-rm -f build.py
 	
 	-rm -f test/*.000 test/fort.* test/perr test/pout test/test.h5 test/*.log

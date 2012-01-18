@@ -39,16 +39,11 @@ public class Daemon implements RegistryEventHandler {
 
     public static final int DEFAULT_PORT = 61575;
 
-    public static PortType portType = new PortType(
-            PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
-            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT,
-            PortType.CONNECTION_ONE_TO_ONE);
+    public static PortType portType = new PortType(PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
+            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT, PortType.CONNECTION_ONE_TO_ONE);
 
-    public static IbisCapabilities ibisCapabilities = new IbisCapabilities(
-            IbisCapabilities.ELECTIONS_STRICT,
-            IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED,
-            IbisCapabilities.TERMINATION,
-            IbisCapabilities.SIGNALS);
+    public static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT,
+            IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED, IbisCapabilities.TERMINATION, IbisCapabilities.SIGNALS);
 
     private static final Logger logger = LoggerFactory.getLogger(Daemon.class);
 
@@ -58,8 +53,8 @@ public class Daemon implements RegistryEventHandler {
 
     private final Deployment deployment;
 
-    public Daemon(int port, boolean verbose, boolean gui, boolean hubs) throws Exception {
-        deployment = new Deployment(verbose, gui, hubs, "images/strw-logo-blue.png", "images/nova-logo.png");
+    public Daemon(int port, boolean verbose, boolean keepSandboxes, boolean gui, boolean hubs) throws Exception {
+        deployment = new Deployment(verbose, keepSandboxes, gui, hubs, "images/strw-logo-blue.png", "images/nova-logo.png");
 
         Properties properties = new Properties();
         properties.put("ibis.server.address", deployment.getServerAddress());
@@ -68,22 +63,18 @@ public class Daemon implements RegistryEventHandler {
         properties.put("ibis.managementclient", "true");
         properties.put("ibis.bytescount", "true");
 
-        		
-        ibis = IbisFactory.createIbis(ibisCapabilities, properties, true, this,
-                portType);
+        ibis = IbisFactory.createIbis(ibisCapabilities, properties, true, this, portType);
 
         loopbackServer = ServerSocketChannel.open();
         // bind to local host
-        loopbackServer.socket().bind(
-                new InetSocketAddress(InetAddress.getByName(null), port));
+        loopbackServer.socket().bind(new InetSocketAddress(InetAddress.getByName(null), port));
 
         ibis.registry().enableEvents();
 
         IbisIdentifier amuse = ibis.registry().elect("amuse");
 
         if (!ibis.identifier().equals(amuse)) {
-            throw new IOException("did not win amuse election: another daemon"
-                    + " must be present in this pool");
+            throw new IOException("did not win amuse election: another daemon" + " must be present in this pool");
         }
         logger.info("Daemon running on port " + port);
     }
@@ -134,13 +125,12 @@ public class Daemon implements RegistryEventHandler {
             logger.error("error on ending ibis", e);
         }
     }
-    
+
     public static void printUsage() {
-        System.err.println("Usage: ibis-deploy.sh [OPTIONS]\n"
-                + "Options:\n"
+        System.err.println("Usage: ibis-deploy.sh [OPTIONS]\n" + "Options:\n"
                 + "-p PORT | --port\tPort to listen on (default: " + DEFAULT_PORT + ")\n"
-                + "-v | --verbose\t\tBe more verbose\n"
-                + "-g | --gui\t\tStart a monitoring gui as well\n"
+                + "-v | --verbose\t\tBe more verbose\n" + "-g | --gui\t\tStart a monitoring gui as well\n"
+                + "-k | --keep-sandboxes\t\tKeep JavaGAT sandboxes (mostly for debugging)"
                 + "-h | --help\t\tThis message");
     }
 
@@ -149,21 +139,21 @@ public class Daemon implements RegistryEventHandler {
         boolean verbose = false;
         boolean gui = false;
         boolean hubs = true;
+        boolean keepSandboxes = false;
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-p") || arguments[i].equals("--port")) {
                 i++;
                 port = Integer.parseInt(arguments[i]);
-            } else if (arguments[i].equals("-v")
-                    || arguments[i].equals("--verbose")) {
+            } else if (arguments[i].equals("-v") || arguments[i].equals("--verbose")) {
                 verbose = true;
-            } else if (arguments[i].equals("-g")
-                    || arguments[i].equals("--gui")) {
+            } else if (arguments[i].equals("-g") || arguments[i].equals("--gui")) {
                 gui = true;
+            } else if (arguments[i].equals("-k") || arguments[i].equals("--keep-sandboxes")) {
+                keepSandboxes = true;
             } else if (arguments[i].equals("--no-hubs")) {
-                hubs=false;
-            } else if (arguments[i].equals("-h")
-                    || arguments[i].equals("--help")) {
+                hubs = false;
+            } else if (arguments[i].equals("-h") || arguments[i].equals("--help")) {
                 printUsage();
                 return;
             } else {
@@ -174,7 +164,7 @@ public class Daemon implements RegistryEventHandler {
         }
 
         try {
-            Daemon daemon = new Daemon(port, verbose, gui, hubs);
+            Daemon daemon = new Daemon(port, verbose, keepSandboxes, gui, hubs);
 
             Runtime.getRuntime().addShutdownHook(new Shutdown(daemon));
 

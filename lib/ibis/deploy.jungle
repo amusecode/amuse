@@ -1,0 +1,126 @@
+# Mandatory parameters for resources:
+# KEY                 COMMENT
+# support.uri         Contact URI used when deploying support processes (e.g. smartsockets hub)
+# job.uri             Contact URI used when deploying job
+# file.adaptors       Comma separated list of JavaGAT file adaptors used to
+#                     copy files to and from this resource(*)
+#
+# Optional parameters: 
+# KEY                 COMMENT
+# support.adaptor     JavaGAT adaptor used to deploy support processes (e.g. smartsockets hub)
+# support.system.properties system properties for the support processes (e.g. smartsocekts settings)
+# job.adaptor         JavaGAT adaptor used to deploy jobs
+# java.path           Path to java executable on this resource.
+#                     If unspecified, "java" is used
+# job.wrapper.script  If specified, the given script is copied to the resource
+#                     and run instead of java
+# user.name           User name used for authentication at resource
+# user.key            User keyfile used for authentication at resource (only when user.name is set)
+# latitude            Latitude position of this resource (double)
+# longitude           Longitude position of this resouce (double)
+# color               Color (as a HTML color string) used to represent this resource
+
+# default.user.name=ndrost
+
+#local.job.wrapper.script=multicore.script
+
+# Details of cluster "LGM"
+LGM.support.uri = ssh://fs.lgm.liacs.nl
+LGM.job.uri = ssh://fs.lgm.liacs.nl
+LGM.file.adaptors = SftpTrilead,SshTrilead,Local
+LGM.java.path = /home/niels/jdk1.6.0_27/bin/java
+LGM.job.wrapper.script = lgm.script
+LGM.latitude = 52.1686
+LGM.longitude = 4.4598
+LGM.amuse.home=/home/niels/amuse
+LGM.mpirun=/home/niels/bin/fakempirun
+LGM.color=#00FF00
+
+# Details of cluster "VU"
+VU.support.uri = ssh://fs0.das4.cs.vu.nl
+VU.job.uri = ssh://fs0.das4.cs.vu.nl/jobmanager-sge
+VU.file.adaptors = SftpTrilead,SshTrilerad,Local
+VU.java.path = java
+VU.job.wrapper.script = das4.script
+VU.latitude = 52.3328
+VU.longitude = 4.8669
+VU.amuse.home=/home/niels/amuse
+
+VU-GPU.support.uri = ssh://fs0.das4.cs.vu.nl
+VU-GPU.job.uri = ssh://fs0.das4.cs.vu.nl/jobmanager-sge
+VU-GPU.file.adaptors = SftpTrilead,SshTrilead,Local
+VU-GPU.java.path = java
+VU-GPU.job.wrapper.script = das4-gpu.script
+VU-GPU.latitude = 52.3328
+VU-GPU.longitude = 4.8669
+VU-GPU.amuse.home=/home/niels/amuse
+
+ASTRON.support.uri = ssh://fs0.das4.cs.vu.nl
+ASTRON.job.uri = ssh://fs0.das4.cs.vu.nl/jobmanager-sge
+ASTRON.file.adaptors = SftpTrilead,SshTrilead,Local
+ASTRON.java.path = java
+ASTRON.job.wrapper.script = das4-gpu.script
+ASTRON.latitude = 52.8133
+ASTRON.longitude = 6.3960
+ASTRON.amuse.home=/home/niels/amuse
+
+# Details of cluster "MultimediaN"
+MultimediaN.support.uri = ssh://fs4.das4.science.uva.nl
+MultimediaN.job.uri = ssh://fs4.das4.science.uva.nl/jobmanager-sge
+MultimediaN.file.adaptors = SftpTrilead,SshTrilead,Local
+MultimediaN.java.path = java
+MultimediaN.job.wrapper.script = das4.script
+MultimediaN.latitude = 52.3561
+MultimediaN.longitude = 4.953
+MultimediaN.amuse.home=/home/niels/amuse
+
+
+# Details of cluster "UvA"
+UvA.support.uri = ssh://fs2.das4.science.uva.nl
+UvA.job.uri = ssh://fs2.das4.science.uva.nl/jobmanager-sge
+UvA.file.adaptors = SftpTrilead,SshTrilead,Local
+UvA.java.path = java
+UvA.job.wrapper.script = das4.script
+UvA.latitude = 52.3561
+UvA.longitude = 4.953
+UvA.amuse.home=/home/niels/amuse
+
+# Details of cluster "Delft"
+Delft.support.uri = ssh://fs3.das4.tudelft.nl
+Delft.job.uri = ssh://fs3.das4.tudelft.nl/jobmanager-sge
+Delft.file.adaptors = SftpTrilead,SshTrilead,Local
+Delft.java.path = java
+Delft.job.wrapper.script = das4.script
+Delft.latitude = 51.9979
+Delft.longitude = 4.3742
+Delft.amuse.home=/home/niels/amuse
+
+Delft-GPU.support.uri = ssh://fs3.das4.tudelft.nl
+Delft-GPU.job.uri = ssh://fs3.das4.tudelft.nl/jobmanager-sge
+Delft-GPU.file.adaptors = SftpTrilead,SshTrilead,Local
+Delft-GPU.java.path = java
+Delft-GPU.job.wrapper.script = das4-gpu.script
+Delft-GPU.latitude = 51.9979
+Delft-GPU.longitude = 4.3742
+Delft-GPU.amuse.home=/home/niels/amuse
+Delft-GPU.color=#00FFFF
+
+# Details of cluster "Leiden"
+Leiden.support.uri = ssh://fs1.das4.liacs.nl
+Leiden.job.uri = ssh://fs1.das4.liacs.nl/jobmanager-sge
+Leiden.file.adaptors = SftpTrilead,SshTrilead,Local
+Leiden.java.path = java
+Leiden.job.wrapper.script = das4.script
+Leiden.latitude = 52.1686
+Leiden.longitude = 4.4598
+Leiden.amuse.home=/home/niels/amuse
+
+Para.support.uri = ssh://para1.strw.leidenuniv.nl
+Para.job.uri = sshpbs://para1.strw.leidenuniv.nl
+Para.file.adaptors = SftpTrilead,SshTrilead,Local
+Para.java.path = java
+Para.latitude = 52.1686
+Para.longitude = 4.4598
+Para.amuse.home=/home/ndrost/amuse
+Para.user.name=ndrost
+Para.mpirun=/software/mpi/bin/mpirun
