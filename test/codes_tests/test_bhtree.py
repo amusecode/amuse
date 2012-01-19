@@ -53,7 +53,7 @@ class TestBHTreeInterface(TestWithMPI):
         self.assertEquals(2, instance.get_index_of_next_particle(1)['index_of_the_next_particle']) 
         
         instance.cleanup_code()
-        del instance
+        instance.stop()
 
     def test2(self):
         instance = BHTreeInterface()
@@ -79,26 +79,8 @@ class TestBHTreeInterface(TestWithMPI):
         self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
 
         instance.cleanup_code()
-        del instance
-        
+        instance.stop()
     
-        
-    def test3(self):
-        interface = BHTreeInterface()
-        interface.eps2 = 0.101
-        self.assertEquals(0.101, interface.eps2)
-        interface.eps2 = 0.110
-        self.assertEquals(0.110, interface.eps2)
-        interface.stop()
-
-    def test4(self):
-        interface = BHTreeInterface()
-        interface.flag_collision = 1
-        self.assertEquals(1, interface.flag_collision)
-        interface.flag_collision = 0
-        self.assertEquals(0, interface.flag_collision)
-        interface.stop()
-
     def test5(self):
         interface = BHTreeInterface()
         interface.initialize_code()
@@ -115,7 +97,7 @@ class TestBHTreeInterface(TestWithMPI):
         self.assertEquals(20.0,  retrieved_state['mass'][1])
         self.assertEquals(interface.get_number_of_particles()['number_of_particles'], 2)
         interface.cleanup_code()
-        del interface
+        interface.stop()
     
     
     def test6(self):
@@ -173,6 +155,8 @@ class TestBHTreeInterface(TestWithMPI):
         potential, errorcode = instance.get_potential(id1)
         self.assertEquals(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
+        instance.cleanup_code()
+        instance.stop()
         
     
 class TestBHTree(TestWithMPI):
@@ -240,7 +224,7 @@ class TestBHTree(TestWithMPI):
         
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 1)
         instance.cleanup_code()
-        del instance
+        instance.stop()
         
     def test2(self):
         #not completed 
@@ -295,7 +279,7 @@ class TestBHTree(TestWithMPI):
             figure.savefig(output_file)    
         
         instance.cleanup_code()
-        del instance
+        instance.stop()
 
     def test3(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
@@ -332,6 +316,8 @@ class TestBHTree(TestWithMPI):
             #print stars[0].position-stars[1].position
             stars.savepoint()
             
+        instance.cleanup_code()
+        instance.stop()
     
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
@@ -348,6 +334,8 @@ class TestBHTree(TestWithMPI):
         )
         instance.commit_particles()
         self.assertEquals(instance.get_mass(index), 15.0| units.kg)
+        instance.cleanup_code()
+        instance.stop()
         
     def test5(self):
 
@@ -363,6 +351,8 @@ class TestBHTree(TestWithMPI):
         instance.commit_particles()
         self.assertEquals(instance.get_mass(index), 15.0| nbody_system.mass)
         
+        instance.cleanup_code()
+        instance.stop()
     
     def test6(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
@@ -383,8 +373,9 @@ class TestBHTree(TestWithMPI):
         
         self.assertRaises(AmuseException, instance.get_mass, [4,5], 
             expected_message = "Error when calling 'get_mass' of a 'BHTree', errorcode is -1")
-
         
+        instance.cleanup_code()
+        instance.stop()
     
     def test7(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
@@ -412,6 +403,8 @@ class TestBHTree(TestWithMPI):
         
         self.assertAlmostRelativeEquals(instance.particles.mass[1], 30.0 | units.kg)
         self.assertAlmostRelativeEquals(instance.particles.position[1][2], 60.0 | units.m)   
+        instance.cleanup_code()
+        instance.stop()
         
     def test8(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
@@ -435,6 +428,8 @@ class TestBHTree(TestWithMPI):
         
         
         self.assertEquals(instance.get_mass(1), 17.0| units.kg) 
+        instance.cleanup_code()
+        instance.stop()
         
     def test9(self):
         instance = BHTree()
@@ -471,6 +466,8 @@ class TestBHTree(TestWithMPI):
             fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
             self.assertAlmostEqual(fx, fx0, 2)
             self.assertAlmostEqual(potential0, potential1, 5)
+        instance.cleanup_code()
+        instance.stop()
             
     def test10(self):
         instance = BHTree()
@@ -513,7 +510,6 @@ class TestBHTree(TestWithMPI):
                         self.assertAlmostEqual(f0[j], -1.0 * f1[j], 5)
         
         instance.stop()
-        del instance
         
     def test11(self):
        
@@ -541,6 +537,7 @@ class TestBHTree(TestWithMPI):
         copyof.copy_values_of_all_attributes_to(instance.particles)
         
         self.assertAlmostEqual(35 | units.kg, instance.particles[1].mass, 6)
+        instance.stop()
 
     def test12(self):
        
@@ -569,6 +566,7 @@ class TestBHTree(TestWithMPI):
         curr_state =  instance.get_state(1)
         
         self.assertEquals(curr_state[0], 16|units.kg, 8)
+        instance.stop()
 
     def test13(self):
        
@@ -592,6 +590,7 @@ class TestBHTree(TestWithMPI):
         
         com = instance.center_of_mass_position
         self.assertAlmostEqual(com[0], quantities.new_quantity(0.0, units.m), constants.precision)
+        instance.stop()
     
     def test14(self):
         print "Test14: Testing BHTree parameters (I)"
@@ -645,6 +644,7 @@ class TestBHTree(TestWithMPI):
         for x in [0.1, 10.0, 100.0]:
             instance.parameters.dt_dia = x | units.yr
             self.assertAlmostEquals(x | units.yr, instance.parameters.dt_dia, in_units=units.yr)
+        instance.stop()
     
     def test15(self):
         print "Test15: Testing effect of BHTree parameter epsilon_squared"
@@ -743,6 +743,7 @@ class TestBHTree(TestWithMPI):
         print p0, p1
         print p0.x, p1.x
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
+        instance.stop()
        
     def test18(self):
         particles = datamodel.Particles(2)
@@ -794,6 +795,7 @@ class TestBHTree(TestWithMPI):
         self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
         self.assertTrue((end-start) < very_short_time_to_evolve.value_in(units.s) + 2)#2 = some overhead compensation
         instance.stop()
+    
     def test20(self):
         particles = datamodel.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length
