@@ -302,9 +302,9 @@ class GravityCodeInField(object):
             timestep = self.timestep
  
         first=True
-        while self.time < (tend-timestep/2):    
+        while self.time < (tend-timestep/2.):    
             if first:      
-                self.kick(timestep/2)
+                self.kick(timestep/2.)
                 first=False
             else:
                 self.kick(timestep)
@@ -314,7 +314,7 @@ class GravityCodeInField(object):
             self.time+=timestep
              
         if not first:
-             self.kick(timestep/2)         
+             self.kick(timestep/2.)         
         
  
     
@@ -496,9 +496,9 @@ class Bridge(object):
         if timestep is None:
             timestep = self.timestep
             
-        while self.time < (tend-timestep/2):    
+        while self.time < (tend-timestep/2.):    
              if first:      
-                 self.kick_codes(timestep/2)
+                 self.kick_codes(timestep/2.)
                  first=False
              else:
                  self.kick_codes(timestep)
@@ -508,7 +508,7 @@ class Bridge(object):
              self.time += timestep
              
         if not first:
-            self.kick_codes(timestep/2)
+            self.kick_codes(timestep/2.)
 
     def synchronize_model(self):
         """ 
