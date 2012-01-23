@@ -140,7 +140,7 @@ if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
 
     t_end = o.t_end | units.Myr
-    dt_diag = o.dt_diag | units.Myr
+    dt_diag = min(o.dt_diag, 0.1*o.t_end) | units.Myr
     size_unit = units.parsec
     mass = 1.0 | units.MSun
     pos = [o.x, o.y, o.z] | size_unit
