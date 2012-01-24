@@ -21,9 +21,9 @@ if __name__ == "__main__":
     arguments = [pythonexe, gencodepy]
     arguments.extend(sys.argv[1:])
     
-    #returncode = subprocess.call(arguments, executable = pythonexe)
-    #sys.exit(returncode)
+    returncode = subprocess.call(arguments, executable = pythonexe)
+    sys.exit(returncode)
     
-    os.execv(pythonexe, arguments)
+    #os.execv(pythonexe, arguments)
         
     

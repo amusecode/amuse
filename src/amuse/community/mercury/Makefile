@@ -3,9 +3,9 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= openmpif90
+MPIFC ?= openmpif90
 
-FC = $(MPIF90)
+FC = $(MPIFC)
 SRC=src
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
@@ -26,7 +26,6 @@ FFLAGS2= -I./src/
 
 CLASSNAME=MercuryInterface
 
-GLCLASSNAME=glMercury
 
 all: mercury_worker
 
@@ -42,11 +41,6 @@ mercury_worker: worker.f90 interface.o
 mercury_worker_sockets: worker-sockets.f90 interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(FSINC) $^ -o $@ $(LIBS) $(SCLIBS) $(FSLIBS)
 
-mercury_worker_gl: glworker.f90 interface.o
-	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(FC) $(FFLAGS) $^ -o $@  $(GLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SCLIBS)
-
 worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
@@ -54,10 +48,6 @@ worker.f90: interface.py
 worker-sockets.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 --mode=sockets $< $(CLASSNAME) -o $@
-
-glworker.f90: interface.py
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(CODE_GENERATOR) --type=f90 $< $(GLCLASSNAME) -o $@
 
 clean:
 	make -C src clean

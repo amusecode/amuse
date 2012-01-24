@@ -701,7 +701,8 @@ class TestBHTree(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
         energy_total_t0 = instance.potential_energy + instance.kinetic_energy
-        instance.evolve_model(1.0 | nbody_system.time)
+        request = instance.evolve_model.async(1.0 | nbody_system.time)
+        request.result()
         energy_total_t1 = instance.potential_energy + instance.kinetic_energy
         
         self.assertAlmostRelativeEqual(energy_total_t0, energy_total_t1, 3)
