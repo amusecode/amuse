@@ -233,7 +233,7 @@ class InstallPrerequisites(object):
           '--enable-shared',
           '--enable-sharedlibs=gcc',
           '--enable-fc', 
-          '--with-python=python2.6',
+          '--with-python='+sys.executable,
           '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
