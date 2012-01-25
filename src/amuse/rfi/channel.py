@@ -90,11 +90,16 @@ class ASyncRequest(object):
             self._set_result()
         
         return self._result
-    
-    def new_multiple(self):
-        return MultipleAsyncRequests()
+        
+    def _new_handler(self, result_handler, args = (), kwargs = {}):
+        return MPIAsyncRequestWithHandler(
+            self,
+            result_handler,
+            args,
+            kwargs
+        )
 
-class _AsyncRequestWithHandler(object):
+class MPIAsyncRequestWithHandler(object):
     
     def __init__(self, async_request,  result_handler, args = (), kwargs = {}):
         self.async_request = async_request
@@ -103,9 +108,9 @@ class _AsyncRequestWithHandler(object):
         self.kwargs = kwargs
     
     def run(self):
-        self.result_handler(*self.args, **self.kwargs)
+        self.result_handler(self, *self.args, **self.kwargs)
         
-class MultipleAsyncRequests(object):
+class AsyncRequestsPool(object):
     
     def __init__(self):
         self.requests_and_handlers = []
@@ -117,14 +122,17 @@ class MultipleAsyncRequests(object):
             
         self.registered_requests.add(async_request)
         
-        self.requests_and_handlers.append( _AsyncRequestWithHandler(
-             async_request, 
-             result_handler, 
-             args, 
-             kwargs
+        self.requests_and_handlers.append(async_request._new_handler(
+            result_handler,
+            args,
+            kwargs
         ))
         
     def wait(self):
+        # TODO need to refer to the handlers for combining and waiting
+        # on the requests so that we can have differet code
+        # per channel (it will be an error to combine requests of
+        # different channels)
         requests = [x.async_request.request for x in self.requests_and_handlers]
         
         index = MPI.Request.Waitany(requests)

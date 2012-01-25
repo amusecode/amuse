@@ -12,6 +12,8 @@ from amuse.units import units
 from amuse import datamodel
 from amuse.rfi import python_code
 from amuse.rfi.core import *
+from amuse.rfi.channel import AsyncRequestsPool
+
 class ForTestingInterface(PythonCodeInterface):
     
     def __init__(self, **options):
@@ -563,23 +565,24 @@ class TestInterface(TestWithMPI):
     
     def test22(self):
         
+        pool = AsyncRequestsPool()
+        
         x = ForTestingInterface()
         y = ForTestingInterface()
         request1 = x.sleep.async(0.5)
         request2 = y.sleep.async(1.5)
         finished_requests = []
         
-        multiple = request1.new_multiple()
-        multiple.add_request(request1, lambda x : finished_requests.append(x), [1, multiple])
-        multiple.add_request(request2, lambda x : finished_requests.append(x), [2])
+        pool.add_request(request1, lambda req, x : finished_requests.append(x), [1])
+        pool.add_request(request2, lambda req, x : finished_requests.append(x), [2])
         
-        multiple.wait()
+        pool.wait()
         self.assertEquals(len(finished_requests), 1)
-        self.assertEquals(len(multiple), 1)
+        self.assertEquals(len(pool), 1)
         
-        multiple.wait()
+        pool.wait()
         self.assertEquals(len(finished_requests), 2)
-        self.assertEquals(len(multiple), 0)
+        self.assertEquals(len(pool), 0)
         
         self.assertTrue(request1.is_result_available())
         self.assertTrue(request2.is_result_available())
