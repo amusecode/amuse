@@ -842,7 +842,7 @@ def test_multiples(infile = None,
     #	2. use the GPU code but disable GPU use (-g)
     #	3. use the non-GPU code (-G)
 
-    gravity = grav(number_of_workers = 1, debugger="ddd", redirection = "none")
+    gravity = grav(number_of_workers = 1, debugger="none", redirection = "none")
     gravity.initialize_code()
 
     #-----------------------------------------------------------------
