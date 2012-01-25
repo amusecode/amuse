@@ -512,6 +512,10 @@ class TestGadget2(TestWithMPI):
 
     def test8(self):
         print "Testing read-only Gadget parameters"
+        
+        def try_set_parameter(par, value, instance):
+            setattr(instance.parameters, par, value)
+        
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
         for par, value in [ ('no_gravity_flag', testing_isotherm_no_gravity),
@@ -523,11 +527,17 @@ class TestGadget2(TestWithMPI):
                             ('code_velocity_unit', self.default_converter.to_si(generic_unit_system.speed)),
                             ('polytropic_index_gamma', (1.0 if testing_isotherm_no_gravity else 5.0/3) | units.none)]:
             self.assertEquals(value, getattr(instance.parameters, par))
-            def try_set_parameter(par, value, instance):
-                setattr(instance.parameters, par, value)
             self.assertRaises(AmuseException, try_set_parameter, par, value, instance,
                 expected_message = "Could not set value for parameter '"+par+"' of a 'Gadget2' object, "
                     "parameter is read-only")
+        instance.stop()
+        
+        instance = Gadget2(self.default_converter, mode="nogravity", **default_options)
+        instance.initialize_code()
+        self.assertEquals(instance.parameters.no_gravity_flag, True)
+        self.assertRaises(AmuseException, try_set_parameter, 'no_gravity_flag', False, instance,
+            expected_message = "Could not set value for parameter 'no_gravity_flag' of a 'Gadget2' object, "
+                "parameter is read-only")
         instance.stop()
 
     def test9(self):
@@ -726,7 +736,8 @@ class TestGadget2(TestWithMPI):
                 instance.gas_particles.u.sum() - u_0)
         instance.stop()
     
-    def test15(self):
+    def test15a(self):
+        print "Test Gadget2 in periodic mode"
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES, 
             **few_particles_default_options)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
@@ -751,6 +762,29 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostEqual(instance.dm_particles.x, [1.5,0.,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.y, [0.,0.5,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,1.5] | units.kpc, places=6)
+        instance.stop()
+        
+    def test15b(self):
+        print "Test Gadget2 in nogravity mode"
+        instance = Gadget2(mode="nogravity", **few_particles_default_options)
+        self.assertEqual(instance.parameters.no_gravity_flag, True)
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, False)
+        instance.parameters.min_size_timestep = 1.0 | generic_unit_system.time
+        
+        instance.dm_particles.add_particles(self.three_particles_IC)
+        self.assertAlmostEqual(instance.dm_particles.x, [0.5, 0.0, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.0,-0.5, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.0, 0.0, 0.5] | units.kpc, places=6)
+        
+        instance.evolve_model(0.1 | generic_unit_system.time)
+        self.assertAlmostEqual(instance.dm_particles.x, [0.4, 0.0, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.0,-0.4, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.0, 0.0, 0.4] | units.kpc, places=6)
+        
+        instance.evolve_model(1.0 | generic_unit_system.time)
+        self.assertAlmostEqual(instance.dm_particles.x, [-0.5, 0.0, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [ 0.0, 0.5, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [ 0.0, 0.0,-0.5] | units.kpc, places=6)
         instance.stop()
         
     def test16(self):

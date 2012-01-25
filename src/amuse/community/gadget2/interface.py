@@ -29,6 +29,7 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
     
     MODE_NORMAL = 'normal'
     MODE_PERIODIC_BOUNDARIES   = 'periodic'
+    MODE_NOGRAVITY = 'nogravity'
     
     def __init__(self, mode = MODE_NORMAL,  **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
@@ -39,6 +40,8 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
             return 'gadget2_worker'
         elif mode == self.MODE_PERIODIC_BOUNDARIES:
             return 'gadget2_worker_periodic'
+        elif mode == self.MODE_NOGRAVITY:
+            return 'gadget2_worker_nogravity'
         else:
             return 'gadget2_worker'
     
