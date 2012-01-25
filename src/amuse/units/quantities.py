@@ -1022,7 +1022,18 @@ def is_unit(input):
     else:
         return False
 
-
+def as_vector_quantity(value):
+    if not is_quantity(value):
+        if hasattr(value, "__iter__"):
+            result = AdaptingVectorQuantity()
+            for subvalue in value:
+                result.append(as_vector_quantity(subvalue))
+            return result
+        else:
+            raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
+    return value
+            
+    
 def to_quantity(input):
     if is_quantity(input):
         return input

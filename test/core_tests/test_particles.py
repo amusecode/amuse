@@ -149,7 +149,7 @@ class TestParticles(amusetest.TestCase):
         self.assertAlmostRelativeEquals( particles.mass , [6., 6.,3.,4.] | units.kg)
         
         
-    def xtest11(self):
+    def test11(self):
         particles = datamodel.Particles(3)
         print range(3)| units.kg
         particles.mass = range(3)| units.kg
@@ -194,6 +194,27 @@ class TestParticles(amusetest.TestCase):
         
         self.assertTrue(hasattr(particles1, 'stellar_mass'))
         self.assertEquals(particles1.mass, [0,0] | units.kg)
+        
+    def test15(self):
+        print "Test7: Assigning a list of quantities to a set attribute should work."
+        particles = datamodel.Particles(10)
+        
+        # List of scalar quantities:
+        masses = [i | nbody_system.mass for i in range(10)]
+        particles.mass = masses
+        print particles.mass
+        self.assertEqual(particles.mass, range(10) | nbody_system.mass)
+        
+        # List of vector quantities:
+        positions = [(i, 2*i, 3*i) | units.m for i in range(10)]
+        particles.position = positions
+        self.assertEqual(particles.position, [(i, 2*i, 3*i) for i in range(10)] | units.m)
+        
+        # Even lists of tuples of quantities work:
+        positions = [(i | units.m, i | units.cm, i | units.km) for i in range(10)]
+        particles.position = positions
+        self.assertEqual(particles.position, [(i, 0.01*i, 1000*i) for i in range(10)] | units.m)
+    
 
         
 class TestStars(amusetest.TestCase):

@@ -330,8 +330,10 @@ class AbstractSet(object):
     def _convert_from_entities_or_quantities(self, x):
         if isinstance(x, Quantity):
             return x 
+        elif isinstance(x, AbstractSet):
+            return new_quantity( map(lambda y : (-1 if y is None else y.key), x), units.object_key) 
         else:
-            return new_quantity( map(lambda y : (-1 if y is None else y.key), x), units.object_key)
+            return x
         
     #
     # Particle storage interface

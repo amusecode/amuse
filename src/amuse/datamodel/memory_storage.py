@@ -2,6 +2,7 @@ import numpy
 
 from amuse.units import quantities
 from amuse.units.quantities import VectorQuantity
+from amuse.units.quantities import is_quantity
 from amuse.datamodel.base import *
 from amuse.support import exceptions
 
@@ -43,7 +44,10 @@ class InMemoryAttributeStorage(AttributeStorage):
     def setup_storage(self, keys, attributes, quantities):
         self.mapping_from_attribute_to_quantities = {}
         for attribute, quantity in zip(attributes, quantities):
-            self.mapping_from_attribute_to_quantities[attribute] = quantity.as_vector_quantity()
+            if not is_quantity(quantity):
+                self.mapping_from_attribute_to_quantities[attribute] = quantity
+            else:
+                self.mapping_from_attribute_to_quantities[attribute] = quantity.as_vector_quantity()
          
         self.particle_keys = numpy.array(keys, dtype='uint64')
 
@@ -54,13 +58,22 @@ class InMemoryAttributeStorage(AttributeStorage):
             if attribute in self.mapping_from_attribute_to_quantities:
                 attribute_values = self.mapping_from_attribute_to_quantities[attribute]
             else:
-                attribute_values = VectorQuantity.zeros(
-                    len(self.particle_keys),
-                    values_to_set.unit,
-                )
+                if not is_quantity(values_to_set):
+                    attribute_values = numpy.zeros(len(self.particle_keys))
+                else:
+                    attribute_values = VectorQuantity.zeros(
+                        len(self.particle_keys),
+                        values_to_set.unit,
+                    )
             
                 self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-            attribute_values.extend(values_to_set)
+            
+            
+            if not is_quantity(attribute_values):
+                attribute_values = numpy.concat(attribute_values,values_to_set)
+                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+            else:
+                attribute_values.extend(values_to_set)
         
         old_length = len(self.particle_keys)
         for attribute_values in self.mapping_from_attribute_to_quantities.values():
@@ -93,10 +106,15 @@ class InMemoryAttributeStorage(AttributeStorage):
             if attribute in self.mapping_from_attribute_to_quantities:
                 attribute_values = self.mapping_from_attribute_to_quantities[attribute]
             else:
-                attribute_values = VectorQuantity.zeros(
-                   len(self.particle_keys),
-                   values_to_set.unit,
-                )
+                if is_quantity(values_to_set):
+                    attribute_values = VectorQuantity.zeros(
+                        len(self.particle_keys),
+                        values_to_set.unit,
+                    )
+                else:
+                    dtype = numpy.asanyarray(values_to_set).dtype
+                    attribute_values = numpy.zeros(len(self.particle_keys), dtype = dtype)
+                    
                 self.mapping_from_attribute_to_quantities[attribute] = attribute_values
                  
             attribute_values.put(indices, values_to_set)
@@ -138,8 +156,13 @@ class InMemoryAttributeStorage(AttributeStorage):
     def remove_particles_from_store(self, keys):
         indices = self.get_indices_of(keys)
         
-        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
-            attribute_values._number = numpy.delete(attribute_values.number, indices)
+        for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.iteritems()):
+            if is_quantity(attribute_values):
+                attribute_values._number = numpy.delete(attribute_values.number, indices)
+            else:
+                attribute_values = numpy.delete(attribute_values, indices)
+                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+            
         
         self.particle_keys = numpy.delete(self.particle_keys,indices)
         self.reindex()
@@ -212,10 +235,15 @@ class InMemoryGridAttributeStorage(object):
             if attribute in self.mapping_from_attribute_to_quantities:
                 attribute_values = self.mapping_from_attribute_to_quantities[attribute]
             else:
-                attribute_values = VectorQuantity.zeros(
-                   (self.storage_shape()),
-                   values_to_set.unit,
-                )
+                if is_quantity(values_to_set):
+                    attribute_values = VectorQuantity.zeros(
+                       (self.storage_shape()),
+                       values_to_set.unit,
+                    )
+                else: 
+                    dtype = numpy.asanyarray(values_to_set).dtype
+                    attribute_values = numpy.zeros((self.storage_shape()), dtype = dtype)
+                    
                 self.mapping_from_attribute_to_quantities[attribute] = attribute_values
                  
             attribute_values[indices] = values_to_set
@@ -259,10 +287,13 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
             if attribute in self.mapping_from_attribute_to_quantities:
                 attribute_values = self.mapping_from_attribute_to_quantities[attribute]
             else:
-                attribute_values = VectorQuantity.zeros(
-                    len(self.particle_keys),
-                    values_to_set.unit,
-                )
+                if not is_quantity(values_to_set):
+                    attribute_values = numpy.zeros(len(self.particle_keys))
+                else:
+                    attribute_values = VectorQuantity.zeros(
+                        len(self.particle_keys),
+                        values_to_set.unit,
+                    )
                 self.mapping_from_attribute_to_quantities[attribute] = attribute_values
 
             attribute_values.extend(values_to_set)
@@ -340,13 +371,26 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
             if attribute in self.mapping_from_attribute_to_quantities:
                 attribute_values = self.mapping_from_attribute_to_quantities[attribute]
             else:
+                if not is_quantity(values_to_set):
+                    attribute_values = numpy.zeros(len(self.particle_keys))
+                else:
+                    attribute_values = VectorQuantity.zeros(
+                        len(self.particle_keys),
+                        values_to_set.unit,
+                    )
                 attribute_values = VectorQuantity.zeros(
                     len(self.particle_keys),
                     values_to_set.unit,
                 )
             
                 self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-            attribute_values.extend(values_to_set)
+            
+            if not is_quantity(attribute_values):
+                attribute_values = numpy.concatenate((attribute_values,values_to_set))
+                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+            else:
+                attribute_values.extend(values_to_set)
+            
         
         old_length = len(self.particle_keys)
         for attribute_values in self.mapping_from_attribute_to_quantities.values():

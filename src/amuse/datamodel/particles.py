@@ -7,6 +7,8 @@ from amuse.units import units
 from amuse.units import quantities
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import new_quantity
+from amuse.units.quantities import is_quantity
+from amuse.units.quantities import as_vector_quantity
 from amuse.units.quantities import zero
 from amuse.units.quantities import AdaptingVectorQuantity
 from amuse.units.quantities import AdaptingVectorQuantity
@@ -135,14 +137,14 @@ class AbstractParticleSet(AbstractSet):
     
     
     def check_attribute(self, value):
-        if not (isinstance(value, Quantity) or isinstance(value, Particle) or isinstance(value, AbstractParticleSet)):
-            if hasattr(value, "__iter__"):
-                result = AdaptingVectorQuantity()
-                for subvalue in value:
-                    result.append(self.check_attribute(subvalue))
-                return result
-            raise AttributeError("Can only assign quantities or other particles to an attribute.")
-        return value
+        
+        if not (is_quantity(value) or isinstance(value, Particle) or isinstance(value, AbstractParticleSet)):
+            try:
+                return as_vector_quantity(value)
+            except:
+                return value
+        else:
+            return value
             
     #
     # Particle storage interface

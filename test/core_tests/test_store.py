@@ -1,12 +1,15 @@
 from amuse.test import amusetest
 
 import os
+import numpy
+
 from amuse import io
 from amuse.io import store
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.datamodel import Particles
 from amuse.datamodel import Grid
+
 class TestStoreHDF(amusetest.TestCase):
 
     def test1(self):
@@ -71,6 +74,7 @@ class TestStoreHDF(amusetest.TestCase):
         instance = store.StoreHDF(output_file)
         loaded_particles = instance.load()
         self.assertAlmostRelativeEquals(p.mass[1], 2.0 | nbody_system.mass)
+
 
 
 
@@ -178,3 +182,22 @@ class TestStoreHDF(amusetest.TestCase):
         loaded_particles = instance.load().previous_state()
         self.assertEquals( 44 | units.kg, loaded_particles[2].mass)
         instance.close()
+        
+    def test8(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        instance = store.StoreHDF(output_file)
+        number_of_particles = 10
+        p = Particles(number_of_particles)
+        p.mass = numpy.asarray([x * 2.0 for x in range(number_of_particles)])
+
+        instance.store(p.savepoint(1 | nbody_system.time))
+        instance.close()
+
+        instance = store.StoreHDF(output_file)
+        loaded_particles = instance.load()
+        self.assertAlmostRelativeEquals(p.mass[1], 2.0)
+

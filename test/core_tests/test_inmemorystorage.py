@@ -1,10 +1,11 @@
-from amuse.test import amusetest
 import numpy
 
+from amuse.test import amusetest
 from amuse.units import units
 from amuse.datamodel.memory_storage import InMemoryGridAttributeStorage
 from amuse.datamodel.memory_storage import get_in_memory_attribute_storage_factory
 from amuse.datamodel.memory_storage import InMemoryVectorQuantityAttribute
+
 class TestInMemoryAttributeStorage(amusetest.TestCase):
     
     def test1(self):
@@ -135,6 +136,52 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertEquals(all_values[0][0], 2.0 | units.m)
         self.assertEquals(all_values[0][1], 2.0 | units.m)
         
+    def test6(self):
+        particles = [0,1,2,3]
+        attributes = "a", "b"
+        values = [
+            numpy.array([1.0,2.0,3.0,4.0]), 
+            numpy.array([4.0,5.0,6.0,7.0])
+        ]
+        
+        instance = get_in_memory_attribute_storage_factory()()
+        instance.add_particles_to_store(particles, attributes, values)
+        
+        self.assertEquals(len(instance), 4)
+        
+        particles = [4,5,6,7]
+        instance.add_particles_to_store(particles, attributes, values)
+        
+        self.assertEquals(len(instance), 8)
+        
+        all_values = instance.get_values_in_store([1,5], ["a"])
+        
+        self.assertEquals(all_values[0][0], 2.0)
+        self.assertEquals(all_values[0][1], 2.0)
+        
+        instance.remove_particles_from_store((0, 4))
+        
+        self.assertEquals(len(instance), 6)
+        
+        all_values = instance.get_values_in_store([1,5], ["a"])
+        
+        self.assertEquals(all_values[0][0], 2.0)
+        self.assertEquals(all_values[0][1], 2.0)
+        
+        instance.set_values_in_store([1,5], ["a"], [[4.0, 5.0]])
+        all_values = instance.get_values_in_store([1,5], ["a"])[0]
+        self.assertEquals(all_values[0], 4.0)
+        self.assertEquals(all_values[1], 5.0)
+        
+        instance2 = instance.copy()
+        instance2.set_values_in_store([1,5], ["a"], [[3.0, 1.0]])
+        all_values = instance2.get_values_in_store([1,5], ["a"])[0]
+        self.assertEquals(all_values[0], 3.0)
+        self.assertEquals(all_values[1], 1.0)
+        all_values = instance.get_values_in_store([1,5], ["a"])[0]
+        self.assertEquals(all_values[0], 4.0)
+        self.assertEquals(all_values[1], 5.0)
+        
 
 class TestInMemoryGridAttributeStorage(amusetest.TestCase):
     
@@ -168,7 +215,45 @@ class TestInMemoryGridAttributeStorage(amusetest.TestCase):
         self.assertEquals(b.sum(), 8.0 | units.kg)
         
         self.assertEquals(sorted(x.get_defined_attribute_names()), ["a", "b"])
+    
+    def test2(self):
+        x = InMemoryGridAttributeStorage(5,4,3)
+        i = (0,1,2,3,4)
+        j = (1,3,1,3,1)
+        k = (0,2,0,2,0)
+        x.set_values_in_store(
+            (i,j,k), 
+            ['a','b'], 
+            [2.0 , 1.0]
+        )
         
+        b, a = x.get_values_in_store(None, ['b','a'])
+        print a
+        self.assertEquals(b[0][1][0], 1.0 )
+        self.assertEquals(b[0][0][0], 0.0 )
+        self.assertEquals(a[0][1][0], 2.0 )
+        self.assertEquals(a[1][3][2], 2.0  )
+        self.assertEquals(a[1][2][2], 0.0  )
+        
+        (b,) = x.get_values_in_store((numpy.s_[0:4], numpy.s_[1:4], numpy.s_[:]), ['a'])
+        
+        self.assertEquals(b[0][0][0], 2.0  )
+        self.assertEquals(b[0][0][2], 0.0  )
+        self.assertEquals(b[1][2][2], 2.0  )
+        self.assertEquals(b[2][0][0], 2.0  )
+        self.assertEquals(b[3][2][2], 2.0  )
+        
+        self.assertEquals(b.sum(), 8.0  )
+        
+        self.assertEquals(sorted(x.get_defined_attribute_names()), ["a", "b"])
+        
+        y = x.copy()
+        
+        (b,) = y.get_values_in_store((numpy.s_[0:4], numpy.s_[1:4], numpy.s_[:]), ['a'])
+        
+        self.assertEquals(b[0][0][0], 2.0  )
+        self.assertEquals(b[0][0][2], 0.0  )
+        self.assertEquals(b[1][2][2], 2.0  )
         
         
 class TestInMemoryVectorQuantityAttribute(amusetest.TestCase):

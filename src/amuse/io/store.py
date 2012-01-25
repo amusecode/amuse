@@ -7,10 +7,12 @@ from amuse.io import base
 from amuse.units import si
 from amuse.units import units
 from amuse.units import core
+from amuse.units.quantities import is_quantity
 from amuse.support import exceptions
 
 from amuse.datamodel import Particles
 from amuse.datamodel import AttributeStorage
+
 class HDF5AttributeStorage(AttributeStorage):
 
     def __init__(self, keys, hdfgroup):
@@ -49,7 +51,11 @@ class HDF5AttributeStorage(AttributeStorage):
     
     def get_unit_of(self, attribute):
         dataset = self.attributesgroup[attribute]
-        return eval(dataset.attrs["units"], core.__dict__) 
+        units_string = dataset.attrs["units"]
+        if units_string == "none":
+            return None
+        else:
+            return eval(units_string, core.__dict__) 
         
     def get_defined_attribute_names(self):
         return self.attributesgroup.keys()
@@ -63,7 +69,12 @@ class HDF5AttributeStorage(AttributeStorage):
             bools = numpy.zeros(values_vector.shape, dtype='bool')
             bools[indices] = True
             selected_values = values_vector[bools]
-            results.append(self.get_unit_of(attribute).new_quantity(selected_values))
+            
+            unit = self.get_unit_of(attribute)
+            if unit is None:
+                results.append(selected_values)
+            else:
+                results.append(self.get_unit_of(attribute).new_quantity(selected_values))
         
         return results
         
@@ -79,12 +90,19 @@ class HDF5AttributeStorage(AttributeStorage):
             if attribute in self.attributesgroup:
                 dataset = self.attributesgroup[attribute]
             else:
-                dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.number.dtype)
-                dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
+                if is_quantity(quantity):
+                    dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.dtype)
+                    dataset["unit"] = "undefined"
+                else:
+                    dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.number.dtype)
+                    dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
              
             bools = numpy.zeros(dataset.shape, dtype='bool')
             bools[indices] = True
-            dataset[bools] = quantity.value_in(self.get_unit_of(attribute))
+            if is_quantity(quantity):
+                dataset[bools] = quantity.value_in(self.get_unit_of(attribute))
+            else:
+                dataset[bools] = quantity
 
 
 class HDF5GridAttributeStorage(AttributeStorage):
@@ -210,9 +228,14 @@ class StoreHDF(object):
         
         all_values = container.get_values_in_store(None, container.get_attribute_names_defined_in_store())
         for attribute, quantity in zip(container.get_attribute_names_defined_in_store(), all_values):
-            value = quantity.value_in(quantity.unit)
-            dataset = attributes_group.create_dataset(attribute, data=value)
-            dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
+            if is_quantity(quantity):
+                value = quantity.value_in(quantity.unit)
+                dataset = attributes_group.create_dataset(attribute, data=value)
+                dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
+            else:
+                dataset = attributes_group.create_dataset(attribute, data=quantity)
+                dataset.attrs["units"] = "none"
+                
             
     
     def store_timestamp(self, container, group):
