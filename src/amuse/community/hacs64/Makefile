@@ -9,11 +9,11 @@ AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
 ALL	 = hacs64_worker
-OPT	  = -I$(AMUSE_DIR)/lib/stopcond -O3
+OPT	  = -I$(AMUSE_DIR)/lib/stopcond 
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += -Wall -g $(OPT)
+CFLAGS   += $(OPT)
 CFLAGS   += -I./src -I./src/ON_neib -fopenmp
 CXXFLAGS += $(CFLAGS)  
 LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS) -fopenmp

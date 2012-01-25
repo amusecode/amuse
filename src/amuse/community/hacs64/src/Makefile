@@ -18,7 +18,7 @@ NVCCFLAGS += -Xcompiler="-Wall"
 #NVCCFLAGS := -O0 -g -D_DEBUG -deviceemu -maxrregcount=32 $(CUDAINCLUDE)
 
 
-CXXFLAGS  += -O3 -g -Wall  -I./ON_neib -I./ -fopenmp
+CXXFLAGS  +=  -I./ON_neib -I./ -fopenmp
 LDFLAGS   +=  -fopenmp
 LDGPUGLAGS := $(LDFLAGS) $(CUDA_LIBS)
 

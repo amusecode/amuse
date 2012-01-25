@@ -814,7 +814,8 @@ def test_multiples(infile = None,
                    n_ngb   = 16,
                    eta_irr = 0.6,
                    eta_reg = 0.1,
-                   softening_length = 0.0 | nbody_system.length):
+                   softening_length = 0.0 | nbody_system.length,
+                   random_seed = 1234):
 
     if infile != None: print "input file =", infile
     print "end_time =",  end_time.number
@@ -829,13 +830,19 @@ def test_multiples(infile = None,
     print "\ninitializing the gravity module"
     sys.stdout.flush()
 
+    if random_seed <= 0:
+        numpy.random.seed()
+        random_seed = numpy.random.randint(1, pow(2,31)-1)
+    numpy.random.seed(random_seed)
+    print "random seed =", random_seed
+    
     # Note that there are actually three GPU options to test:
     #
     #	1. use the GPU code and allow GPU use (default)
     #	2. use the GPU code but disable GPU use (-g)
     #	3. use the non-GPU code (-G)
 
-    gravity = grav(number_of_workers = 1, redirection = "none")
+    gravity = grav(number_of_workers = 1, debugger="ddd", redirection = "none")
     gravity.initialize_code()
 
     #-----------------------------------------------------------------
@@ -1057,11 +1064,6 @@ if __name__ == '__main__':
         else:
             print "unexpected argument", o
 
-    if random_seed <= 0:
-        numpy.random.seed()
-        random_seed = numpy.random.randint(1, pow(2,31)-1)
-    numpy.random.seed(random_seed)
-    print "random seed =", random_seed
     
     Nmax = N*2
     softening_length = 0.0/N  | nbody_system.length
@@ -1076,4 +1078,5 @@ if __name__ == '__main__':
                    n_ngb,
                    eta_irr,
                    eta_reg,
-                   softening_length)
+                   softening_length,
+                   random_seed)
