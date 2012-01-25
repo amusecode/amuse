@@ -570,14 +570,16 @@ class TestInterface(TestWithMPI):
         finished_requests = []
         
         multiple = request1.new_multiple()
-        multiple.add_request(request1, lambda x : finished_requests.append(x), [1])
+        multiple.add_request(request1, lambda x : finished_requests.append(x), [1, multiple])
         multiple.add_request(request2, lambda x : finished_requests.append(x), [2])
         
         multiple.wait()
         self.assertEquals(len(finished_requests), 1)
+        self.assertEquals(len(multiple), 1)
         
         multiple.wait()
         self.assertEquals(len(finished_requests), 2)
+        self.assertEquals(len(multiple), 0)
         
         self.assertTrue(request1.is_result_available())
         self.assertTrue(request2.is_result_available())
