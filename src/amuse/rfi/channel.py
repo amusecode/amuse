@@ -31,6 +31,7 @@ from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.rfi import run_command_redirected
+
 class ASyncRequest(object):
         
     def __init__(self, request, message,  comm, header):
@@ -55,7 +56,6 @@ class ASyncRequest(object):
             return True
             
         self.is_finished = self.request.Test()
-        
         return self.is_finished
         
     def add_result_handler(self, function):
@@ -90,6 +90,62 @@ class ASyncRequest(object):
             self._set_result()
         
         return self._result
+    
+    def new_multiple(self):
+        return MultipleAsyncRequests()
+
+class _AsyncRequestWithHandler(object):
+    
+    def __init__(self, async_request,  result_handler, args = (), kwargs = {}):
+        self.async_request = async_request
+        self.result_handler = result_handler
+        self.args = args
+        self.kwargs = kwargs
+    
+    def run(self):
+        self.result_handler(*self.args, **self.kwargs)
+        
+class MultipleAsyncRequests(object):
+    
+    def __init__(self):
+        self.requests_and_handlers = []
+        self.registered_requests = set([])
+        
+    def add_request(self, async_request, result_handler, args = (), kwargs = {}):
+        if async_request in self.registered_requests:
+            raise Exception("Request is already registered, cannot register a request more than once")
+            
+        self.registered_requests.add(async_request)
+        
+        self.requests_and_handlers.append( _AsyncRequestWithHandler(
+             async_request, 
+             result_handler, 
+             args, 
+             kwargs
+        ))
+        
+    def wait(self):
+        requests = [x.async_request.request for x in self.requests_and_handlers]
+        
+        index = MPI.Request.Waitany(requests)
+            
+        request_and_handler = self.requests_and_handlers[index]
+        
+        self.registered_requests.remove(request_and_handler.async_request)
+        
+        del self.requests_and_handlers[index]
+        
+        request_and_handler.async_request.wait() #will set the finished flag
+        
+        request_and_handler.run()
+    
+    def __len__(self):
+        return len(self.requests_and_handlers)
+        
+        
+        
+        
+        
         
 class AbstractMessage(object):
     
