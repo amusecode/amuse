@@ -573,8 +573,12 @@ class TestInterface(TestWithMPI):
         request2 = y.sleep.async(1.5)
         finished_requests = []
         
-        pool.add_request(request1, lambda req, x : finished_requests.append(x), [1])
-        pool.add_request(request2, lambda req, x : finished_requests.append(x), [2])
+        def handle_result(request, index):
+            self.assertTrue(request.is_result_available())
+            finished_requests.append(index)
+            
+        pool.add_request(request1, handle_result, [1])
+        pool.add_request(request2, handle_result, [2])
         
         pool.wait()
         self.assertEquals(len(finished_requests), 1)

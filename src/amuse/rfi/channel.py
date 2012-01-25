@@ -108,7 +108,7 @@ class MPIAsyncRequestWithHandler(object):
         self.kwargs = kwargs
     
     def run(self):
-        self.result_handler(self, *self.args, **self.kwargs)
+        self.result_handler(self.async_request, *self.args, **self.kwargs)
         
 class AsyncRequestsPool(object):
     
