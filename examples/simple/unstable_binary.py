@@ -1,3 +1,15 @@
+"""
+Evolve a two stars dynamically (hermit, nbody code) each star will lose mass
+during the evolution (mesa, stellar evolution code)
+
+We start with two stars, one 10 and one 1 solar mass star. These
+stars start orbiting with a stable kepler orbit. 
+After 10 million years the stars will begin to lose mass and the binary
+will become unstable.
+
+
+"""
+
 from amuse.plot import scatter, xlabel, ylabel, plot
 from matplotlib import pyplot
 from math import pi

@@ -88,6 +88,7 @@ from amuse.support.methods import AbstractCodeMethodWrapper
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units import quantities
+from amuse.units.quantities import is_quantity
 from amuse.support.core import late
 from amuse.support import exceptions
 
@@ -844,7 +845,8 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         
     def set_values_in_store(self,  indices, attributes, quantities):
         array_of_indices = self._to_arrays_of_indices(indices)
-        one_dimensional_values = [x.reshape(-1) for x in quantities]
+    
+        one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
         one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
         for setter in self.select_setters_for(attributes):
             setter.set_attribute_values(self, attributes, one_dimensional_values, *one_dimensional_array_of_indices)
