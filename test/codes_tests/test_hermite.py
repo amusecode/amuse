@@ -145,6 +145,36 @@ class TestHermiteInterface(TestWithMPI):
         
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0)
         
+    
+    def test9(self):
+        print "Test HermiteInterface evolve_model"
+        instance = HermiteInterface()
+        self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.set_dt_param(0.001))
+        self.assertEquals(0, instance.commit_parameters())
+        
+        # Set up an equal-mass binary on a circular orbit:
+        self.assertEquals([0, 0], instance.new_particle(0.5, 0.01,  0.5, 0, 0,  0, 0.5, 0).values())
+        self.assertEquals([1, 0], instance.new_particle(0.5, 0.01, -0.5, 0, 0,  0,-0.5, 0).values())
+        self.assertEquals(0, instance.commit_particles())
+        
+        self.assertEquals(0, instance.evolve_model(math.pi))
+        for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
+            self.assertAlmostEquals(result, expected, 3)
+        for result, expected in zip(instance.get_position(1).values(), [0.5, 0.0, 0.0, 0]):
+            self.assertAlmostEquals(result, expected, 3)
+        
+        self.assertEquals(0, instance.evolve_model(2 * math.pi))
+        for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
+            self.assertAlmostEquals(result, expected, 3)
+        for result, expected in zip(instance.get_position(1).values(), [-0.5, 0.0, 0.0, 0]):
+            self.assertAlmostEquals(result, expected, 3)
+        
+        self.assertEquals(0, instance.cleanup_code())
+        instance.stop()
+    
+
+
 class TestHermite(TestWithMPI):
     def new_system_of_sun_and_earth(self):
         stars = datamodel.Stars(2)
