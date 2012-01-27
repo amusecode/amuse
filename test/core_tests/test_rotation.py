@@ -95,4 +95,20 @@ class TestRotations(amusetest.TestCase):
         potential_energy1 = particles.potential_energy()
         self.assertAlmostRelativeEquals(kinetic_energy1, kinetic_energy0)
         self.assertAlmostRelativeEquals(potential_energy1, potential_energy0)
+    
+    def test08(self):
+        particles = new_plummer_sphere(100)
+        kinetic_energy0 = particles.kinetic_energy()
+        potential_energy0 = particles.potential_energy()
+        
+        particles.move_to_center()
+        particles.position += [3, 0, 2] | nbody_system.length
+        particles.rotate(numpy.pi/4, numpy.pi/2, 0.0)
+        self.assertAlmostRelativeEquals(particles.center_of_mass(), 
+            [numpy.sqrt(2), -numpy.sqrt(2), -3] | nbody_system.length)
+        
+        kinetic_energy1 = particles.kinetic_energy()
+        potential_energy1 = particles.potential_energy()
+        self.assertAlmostRelativeEquals(kinetic_energy1, kinetic_energy0)
+        self.assertAlmostRelativeEquals(potential_energy1, potential_energy0)
 

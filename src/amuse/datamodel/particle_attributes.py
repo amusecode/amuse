@@ -13,6 +13,7 @@ from amuse.units.quantities import zero
 from amuse.support import exceptions
 
 from amuse.datamodel import base
+from amuse.datamodel import rotation
 from amuse.datamodel.particles import ParticlesWithUnitsConverted
 from amuse.datamodel.particles import AbstractParticleSet
 
@@ -656,6 +657,7 @@ AbstractParticleSet.add_global_function_attribute("potential", particleset_poten
 
 AbstractParticleSet.add_global_function_attribute("move_to_center", move_to_center)
 AbstractParticleSet.add_global_function_attribute("scale_to_standard", scale_to_standard)
+AbstractParticleSet.add_global_function_attribute("rotate", rotation.rotate)
 
 AbstractParticleSet.add_global_function_attribute("binaries", get_binaries)
 
