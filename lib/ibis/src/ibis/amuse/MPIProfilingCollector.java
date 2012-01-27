@@ -15,90 +15,96 @@ import javax.management.ObjectName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MPIProfilingCollector extends Thread implements
-		MPIProfilingCollectorMBean {
+public class MPIProfilingCollector extends Thread implements MPIProfilingCollectorMBean {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(MPIProfilingCollector.class);
+    private static final Logger logger = LoggerFactory.getLogger(MPIProfilingCollector.class);
 
-	private final Map<IbisIdentifier, Long> sent;
+    private final Map<IbisIdentifier, Long> sent;
 
-	private final IbisIdentifier[] rankToIbis;
+    private IbisIdentifier[] rankToIbis = null;
 
-	// connection with codes
-	private final ServerSocketChannel serverSocket;
+    // connection with codes
+    private final ServerSocketChannel serverSocket;
 
-	public MPIProfilingCollector(IbisIdentifier[] rankToIbis) throws Exception {
-		this.rankToIbis = rankToIbis;
+    public MPIProfilingCollector() throws Exception {
+        sent = new HashMap<IbisIdentifier, Long>();
 
-		sent = new HashMap<IbisIdentifier, Long>();
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        ObjectName name = new ObjectName("ibis.amuse:type=MPIProfilingCollector");
+        mbs.registerMBean(this, name);
 
-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		ObjectName name = new ObjectName(
-				"ibis.amuse:type=MPIProfilingCollector");
-		mbs.registerMBean(this, name);
+        serverSocket = ServerSocketChannel.open();
+        serverSocket.socket().bind(null);
 
-		serverSocket = ServerSocketChannel.open();
-		serverSocket.socket().bind(null);
+        this.setDaemon(true);
+        this.setName(this.getClass().getName());
+        this.start();
+    }
 
-		this.setDaemon(true);
-		this.setName(this.getClass().getName());
-		this.start();
-	}
+    synchronized void setIbises(IbisIdentifier[] rankToIbis) {
+        this.rankToIbis = rankToIbis;
+    }
 
-	@Override
-	public synchronized Map<IbisIdentifier, Long> getSentBytesPerIbis() {
-		return new HashMap<IbisIdentifier, Long>(sent);
-	}
+    @Override
+    public synchronized Map<IbisIdentifier, Long> getSentBytesPerIbis() {
+        return new HashMap<IbisIdentifier, Long>(sent);
+    }
 
-	private synchronized void addSentBytes(IbisIdentifier ibis, long bytesSent) {
-		Long currentValue = sent.get(ibis);
-		if (currentValue == null) {
-			currentValue = 0L;
-		}
+    private synchronized void addSentBytes(IbisIdentifier ibis, long bytesSent) {
+        Long currentValue = sent.get(ibis);
+        if (currentValue == null) {
+            currentValue = 0L;
+        }
 
-		sent.put(ibis, currentValue + bytesSent);
-		
-		if (logger.isDebugEnabled()) {
-		    logger.debug("ibis " + ibis + " now has " + (currentValue + bytesSent) + " sent bytes");
-		}
-	}
+        sent.put(ibis, currentValue + bytesSent);
 
-	synchronized void addSentBytes(int rank, int size, long[] bytesSentPerRank) {
-		for(int i = 0; i < bytesSentPerRank.length; i++) {
-			addSentBytes(rankToIbis[i], bytesSentPerRank[i]);
-		}
-	}
-	
-	int getPort() {
-		return serverSocket.socket().getLocalPort();
-	}
-	
-	void close() {
-		try {
-			serverSocket.close();
-		} catch (IOException e) {
-			logger.error("Error while closing MPI profiling server socket", e);
-		}
-	}
+        if (logger.isDebugEnabled()) {
+            logger.debug("ibis " + ibis + " now has " + (currentValue + bytesSent) + " sent bytes");
+        }
+    }
 
-	public void run() {
-		while (serverSocket.isOpen()) {
-			try {
-				SocketChannel channel = serverSocket.accept();
+    synchronized void addSentBytes(int rank, int size, long[] bytesSentPerRank) {
+        if (rankToIbis == null) {
+            return;
+        }
+        for (int i = 0; i < bytesSentPerRank.length; i++) {
+            addSentBytes(rankToIbis[i], bytesSentPerRank[i]);
+        }
+    }
 
-				new MPIProfilingConnection(channel, this, rankToIbis.length);
-			} catch (IOException e) {
-				if (!serverSocket.isOpen()) {
-					return;
-				}
-				logger.error("Error in accepting connection", e);
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e1) {
-					return;
-				}
-			}
-		}
-	}
+    int getPort() {
+        return serverSocket.socket().getLocalPort();
+    }
+
+    void close() {
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            logger.error("Error while closing MPI profiling server socket", e);
+        }
+    }
+
+    public void run() {
+        while (serverSocket.isOpen()) {
+            try {
+                SocketChannel channel = serverSocket.accept();
+
+                if (rankToIbis == null) {
+                    throw new IOException("unknown pool size");
+                }
+
+                new MPIProfilingConnection(channel, this, rankToIbis.length);
+            } catch (IOException e) {
+                if (!serverSocket.isOpen()) {
+                    return;
+                }
+                logger.error("Error in accepting connection", e);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    return;
+                }
+            }
+        }
+    }
 }

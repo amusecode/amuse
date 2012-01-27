@@ -18,14 +18,12 @@ import org.slf4j.LoggerFactory;
  */
 public class SocketCodeInterface extends CodeInterface {
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(SocketCodeInterface.class);
+    private static final Logger logger = LoggerFactory.getLogger(SocketCodeInterface.class);
 
     private static final int ACCEPT_TRIES = 20;
     private static final int ACCEPT_TIMEOUT = 1000; // ms
 
-    private static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_",
-            "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_" };
+    private static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_", "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_" };
 
     private final File executable;
 
@@ -43,22 +41,19 @@ public class SocketCodeInterface extends CodeInterface {
     private final OutputPrefixForwarder out;
     private final OutputPrefixForwarder err;
 
-    SocketCodeInterface(String workerID, PoolInfo poolInfo, String codeName,
-            String codeDir, String amuseHome, String mpirun, int nrOfWorkers,
-            int mpiCollectorPort) throws Exception {
+    SocketCodeInterface(String workerID, PoolInfo poolInfo, String codeName, String codeDir, String amuseHome,
+            String mpirun, int nrOfWorkers) throws Exception {
         super(workerID, poolInfo);
 
         AmuseMessage initRequest = receiveInitRequest();
 
         try {
 
-            executable = new File(amuseHome + File.separator + codeDir
-                    + File.separator + codeName);
+            executable = new File(amuseHome + File.separator + codeDir + File.separator + codeName);
             if (!executable.isFile()) {
-                throw new IOException("Cannot find executable for code "
-                        + codeName + ": " + executable);
+                throw new IOException("Cannot find executable for code " + codeName + ": " + executable);
             }
-            
+
             if (!executable.canExecute()) {
                 throw new IOException(executable + " is not executable");
             }
@@ -66,21 +61,32 @@ public class SocketCodeInterface extends CodeInterface {
             serverSocket = ServerSocketChannel.open();
             serverSocket.socket().bind(null);
 
-            File hostFile = File.createTempFile("host", "file");
+            File hostFile = File.createTempFile("host", "file").getAbsoluteFile();
 
-            FileWriter writer = new FileWriter(hostFile);
+            FileWriter hostFileWriter = new FileWriter(hostFile);
             for (String hostname : poolInfo.getWorkerHostList(nrOfWorkers)) {
-                writer.write(hostname + "\n");
+                hostFileWriter.write(hostname + "\n");
             }
-            writer.flush();
-            writer.close();
+            hostFileWriter.flush();
+            hostFileWriter.close();
 
-            logger.info("host file = " + hostFile.getAbsolutePath());
+            logger.info("host file = " + hostFile);
+            
+
+            File portFile = File.createTempFile("port", "file").getAbsoluteFile();
+
+            FileWriter portFileWriter = new FileWriter(portFile);
+            for (int port : poolInfo.getWorkerPortList(nrOfWorkers)) {
+                portFileWriter.write(port + "\n");
+            }
+            portFileWriter.flush();
+            portFileWriter.close();
+
+            logger.info("port file = " + portFile);
 
             ProcessBuilder builder = new ProcessBuilder();
 
-            for (String key : builder.environment().keySet()
-                    .toArray(new String[0])) {
+            for (String key : builder.environment().keySet().toArray(new String[0])) {
                 for (String blacklistedKey : ENVIRONMENT_BLACKLIST) {
                     if (key.startsWith(blacklistedKey)) {
                         builder.environment().remove(key);
@@ -89,14 +95,14 @@ public class SocketCodeInterface extends CodeInterface {
                 }
             }
 
+            builder.environment().put("OMPI_IBIS_PROFILING_PORT_FILE", portFile.getAbsolutePath());
+
             if (mpirun == null) {
                 mpirun = "mpirun";
             }
 
-            builder.command(mpirun, "-machinefile", hostFile.getAbsolutePath(),
-                    executable.toString(),
-                    Integer.toString(serverSocket.socket().getLocalPort()),
-                    "--ibis-monitor-port", Integer.toString(mpiCollectorPort));
+            builder.command(mpirun, "-machinefile", hostFile.getAbsolutePath(), executable.toString(),
+                    Integer.toString(serverSocket.socket().getLocalPort()));
 
             // make sure there is an "output" directory for a code to put output
             // in
@@ -104,10 +110,8 @@ public class SocketCodeInterface extends CodeInterface {
 
             process = builder.start();
 
-            out = new OutputPrefixForwarder(process.getInputStream(),
-                    System.out, workerID);
-            err = new OutputPrefixForwarder(process.getErrorStream(),
-                    System.err, workerID);
+            out = new OutputPrefixForwarder(process.getInputStream(), System.out, workerID);
+            err = new OutputPrefixForwarder(process.getErrorStream(), System.err, workerID);
 
             logger.info("process started");
 
@@ -125,8 +129,7 @@ public class SocketCodeInterface extends CodeInterface {
         sendInitReply(initRequest.getCallID());
     }
 
-    private static SocketChannel acceptConnection(
-            ServerSocketChannel serverSocket) throws IOException {
+    private static SocketChannel acceptConnection(ServerSocketChannel serverSocket) throws IOException {
         serverSocket.configureBlocking(false);
         for (int i = 0; i < ACCEPT_TRIES; i++) {
             SocketChannel result = serverSocket.accept();
@@ -140,18 +143,15 @@ public class SocketCodeInterface extends CodeInterface {
                 // IGNORE
             }
         }
-        throw new IOException(
-                "worker not started, socket connection failed to initialize");
+        throw new IOException("worker not started, socket connection failed to initialize");
     }
 
     @Override
     void call() throws IOException {
-        logger.debug("performing call with function ID "
-                + requestMessage.getFunctionID());
+        logger.debug("performing call with function ID " + requestMessage.getFunctionID());
         requestMessage.writeTo(socket);
         resultMessage.readFrom(socket);
-        logger.debug("done performing call with function ID "
-                + requestMessage.getFunctionID() + " error = "
+        logger.debug("done performing call with function ID " + requestMessage.getFunctionID() + " error = "
                 + resultMessage.getError());
     }
 
