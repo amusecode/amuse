@@ -24,7 +24,7 @@ class TestCase(unittest.TestCase):
     def _check_comparable(self, first, second):
         if isinstance(first, Quantity) is not isinstance(second, Quantity):
             # One exception: quantity with none_unit CAN be compared with non-quantity:
-            if to_quantity(first).unit is not to_quantity(second).unit:
+            if not to_quantity(first).unit == to_quantity(second).unit:
                 raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
                     if isinstance(first, Quantity) else (second,first)))
     

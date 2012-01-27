@@ -412,25 +412,15 @@ class TestMI6(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
-    def xtest7(self):
+    def test7(self):
         print "Testing effect of MI6 parameter epsilon_squared"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        
         particles = self.new_sun_earth_system()
-#~        particles = Particles(2)
-#~        sun = particles[0]
-#~        sun.mass = 1.0 | units.MSun
-#~        sun.position = [0.0, 0.0, 0.0] | units.AU
-#~        sun.velocity = [0.0, 0.0, 0.0] | units.AU / units.yr
-#~        sun.radius = 1.0 | units.RSun
-#~        earth = particles[1]
-#~        earth.mass = 5.9736e24 | units.kg
-#~        earth.radius = 6371.0 | units.km
-#~        earth.position = [0.0, 1.0, 0.0] | units.AU
-#~        earth.velocity = [2.0*numpy.pi, -0.0001, 0.0] | units.AU / units.yr
+        particles.rotate(0.0, 0.0, -math.pi/4)
         
-        initial_direction = math.atan((particles[1].vy/particles[1].vx).value_in(units.none))
-        final_direction = []
+        tan_initial_direction = particles[1].vy/particles[1].vx
+        self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))
+        tan_final_direction = [] | units.none
         for log_eps2 in range(-9,10,2):
             instance = MI6(converter, **default_options)
             instance.initialize_code()
@@ -439,17 +429,16 @@ class TestMI6(TestWithMPI):
             instance.commit_parameters()
             instance.particles.add_particles(particles)
             instance.commit_particles()
-            instance.evolve_model(0.5 | units.yr)
-            final_direction.append(math.atan((instance.particles[1].velocity[0]/
-                instance.particles[1].velocity[1]).value_in(units.none)))
+            instance.evolve_model(0.25 | units.yr)
+            tan_final_direction.append(instance.particles[1].velocity[1]/
+                instance.particles[1].velocity[0])
             instance.cleanup_code()
             instance.stop()
-        print final_direction
-        # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 180 degrees
-        self.assertAlmostEquals(abs(final_direction[0]), abs(initial_direction+math.pi/2.0), 2)
+        # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
+        self.assertAlmostEquals(tan_final_direction[0], math.tan(3 * math.pi / 4.0), 2)
         # Large values of epsilon_squared should result in ~ no interaction
-        self.assertAlmostEquals(final_direction[-1], initial_direction, 2)
+        self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
-        delta = [abs(final_direction[i+1]-final_direction[i]) for i in range(len(final_direction)-1)]
-        self.assertEquals(delta[len(final_direction)/2 -1], max(delta))
+        delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
+        self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
     
