@@ -85,7 +85,7 @@ void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
 #define RVTIMESTEP
 #define RATIMESTEP
-#define RARVRATIO   0.25
+#define RARVRATIO   1.
 
 #define MPWORKLIMIT 100
 #define CLWORKLIMIT 10000

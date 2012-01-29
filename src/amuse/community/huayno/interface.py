@@ -142,7 +142,7 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
     
 class Huayno(GravitationalDynamics):
 
-    class inttypes:
+    class inttypes(object):
         # http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python
         SHARED2=1
         EXTRAPOLATE=5
@@ -152,11 +152,17 @@ class Huayno(GravitationalDynamics):
         HOLD_DKD=8
         PPASS_DKD=9
         BRIDGE_KDK=4
+        BRIDGE_DKD=10
         CC=11
         CC_KEPLER=12
         OK=13
-        KEPLER=14
+#        KEPLER=14
         SHARED4=15
+        
+        @classmethod
+        def _list(cls):
+              return set([x for x in cls.__dict__.keys() if not x.startswith('_')])
+    
 
     def __init__(self, convert_nbody = None, **options):
         legacy_interface = HuaynoInterface(**options)
