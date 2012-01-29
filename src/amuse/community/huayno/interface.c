@@ -1,5 +1,3 @@
-#include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include "evolve.h"
 
@@ -9,6 +7,7 @@ struct sys mainsys;
 int pcounter,pindex[NMAX];
 double t_now;
 int inttype;
+double dtime;
 
 int initialize_code()
 {
@@ -19,6 +18,7 @@ int initialize_code()
   dt_param=.03; 
   eps2=0.;
   inttype=8;
+  dtime=0.;
   init_code();
   return 0;
 }
@@ -30,6 +30,7 @@ int cleanup_code()
   free(mainsys.part);
   mainsys.last=NULL;
   dt_param=.03; 
+  dtime=0.;
   eps2=0.;
   inttype=8;
   stop_code();
@@ -271,15 +272,31 @@ int get_timestep_parameter(double *t)
   return 0;
 }
 
+int set_timestep(double t)
+{
+  dtime=t;
+  return 0;
+}
+
+int get_timestep(double *t)
+{
+  *t=dtime;
+  return 0;
+}
 
 int evolve_model(double t_end)
 {
- int p;
- do_evolve(mainsys,t_end-t_now,inttype);
- for(p=0;p<pcounter+1;p++) pindex[p]=-1;
- for(p=0;p<mainsys.n;p++) pindex[mainsys.part[p].id]=p;
- t_now=t_end;
- return 0;
+  int p; 
+  double dt=dtime;
+  if(dt==0.) dt=t_end-t_now;
+  while(t_now < t_end - dt/2) 
+  {
+    do_evolve(mainsys,dt,inttype);
+    t_now+=dt;
+  }
+  for(p=0;p<pcounter+1;p++) pindex[p]=-1;
+  for(p=0;p<mainsys.n;p++) pindex[mainsys.part[p].id]=p;
+  return 0;
 }
 
 int get_time(double *time)
@@ -296,7 +313,7 @@ int set_time(double time)
 
 int commit_particles()
 {
-  init_evolve(mainsys);
+  init_evolve(mainsys,inttype);
   return 0;
 }
 
@@ -330,7 +347,7 @@ int synchronize_model()
 
 int recommit_particles()
 {
-  init_evolve(mainsys);
+  init_evolve(mainsys,inttype);
   return 0;
 }
 
@@ -363,7 +380,7 @@ int get_center_of_mass_velocity(double *vx,double *vy,double *vz)
 
 int recommit_parameters()
 {
-  init_evolve(mainsys);
+  init_evolve(mainsys,inttype);
   return 0;
 }
 int commit_parameters()

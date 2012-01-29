@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <tgmath.h>
+#include "evolve.h"
+
 
 #define TOLERANCE  1.e-15
 #define ORDER  4
 #define MAXITER 60
-
-#define SIGN(x)  ((x)>=0? 1:-1)
 
 DOUBLE stumpff_C(DOUBLE z)
 {
@@ -123,7 +123,7 @@ int bracketroot(DOUBLE *x1, DOUBLE *x2, DOUBLE *arg,
                   ftype *f)
 {
   DOUBLE f1,f2;
-  int i,s;
+  int i; //s
   if((*x2)==(*x1))return -2;
   f1=(*f)(*x1,arg);
   f2=(*f)(*x2,arg);
@@ -225,7 +225,7 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
   DOUBLE v0=sqrt(vel0[0]*vel0[0]+vel0[1]*vel0[1]+vel0[2]*vel0[2]);
   DOUBLE vr0=(pos0[0]*vel0[0]+pos0[1]*vel0[1]+pos0[2]*vel0[2])/r0;
   DOUBLE alpha=2./r0-v0*v0/mu;
-  DOUBLE xi0,dxi0,arg[5],xi,xtol,ytol;
+  DOUBLE xi0,arg[5],xi,xtol,ytol; //dxi0
   int err;
 /*
   if(alpha > 0)

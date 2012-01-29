@@ -69,7 +69,8 @@ __kernel void timestep_kernel(
   __global FLOAT4* jvel,
   __global FLOAT* timestep,
   __local FLOAT4* pblock,
-  __local FLOAT4* vblock)
+  __local FLOAT4* vblock,
+  int dir)
 {
   int global_id = get_global_id(0);
   int local_id = get_local_id(0);
@@ -108,7 +109,7 @@ __kernel void timestep_kernel(
         
 #ifdef RATIMESTEP
         FLOAT tau=RVRARATIO*dt_param/M_SQRT2*sqrt(dr3/mu);
-        FLOAT dtau=3/2.*tau*vdotdr2;
+        FLOAT dtau=3/2.*dir*tau*vdotdr2;
         if(dtau>1.) dtau=1.;
         tau/=(1-dtau/2);
         ts=fmin(ts,tau);
@@ -118,7 +119,7 @@ __kernel void timestep_kernel(
         {
 #ifdef RVTIMESTEP
           tau=dt_param*dr/sqrt(dv2);
-          dtau=tau*vdotdr2*(1+mu/(dv2*dr));
+          dtau=dir*tau*vdotdr2*(1+mu/(dv2*dr));
           if(dtau>1.) dtau=1.;
           tau/=(1-dtau/2);
           ts=fmin(ts,tau);

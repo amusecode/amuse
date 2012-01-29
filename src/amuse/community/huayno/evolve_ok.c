@@ -4,10 +4,11 @@
  * evaluations to evolve the system.
  */
 
-#include <math.h>
+#include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "evolve.h"
+#include "evolve_ok.h"
 
 struct forces zeroforces = {0, NULL, NULL};
 
@@ -19,58 +20,13 @@ struct forces zeroforces = {0, NULL, NULL};
   } \
 };
 
-DOUBLE ok_timestep_ij_fw(struct particle *i, struct particle *j) {
-  FLOAT timestep;
-  FLOAT dx[3],dr3,dr2,dr,dv[3],dv2,mu,vdotdr2,tau,dtau;
-    timestep=HUGE_VAL;
-    dx[0]=i->pos[0]-j->pos[0];
-    dx[1]=i->pos[1]-j->pos[1];
-    dx[2]=i->pos[2]-j->pos[2];
-    dr2=dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]+eps2;
-    if(dr2>0) {
-      dr=sqrt(dr2);
-      dr3=dr*dr2;
-        dv[0]=i->vel[0] - j->vel[0];
-        dv[1]=i->vel[1] - j->vel[1];
-        dv[2]=i->vel[2] - j->vel[2];
-        vdotdr2=(dv[0]*dx[0]+dv[1]*dx[1]+dv[2]*dx[2])/dr2;
-        dv2=dv[0]*dv[0]+dv[1]*dv[1]+dv[2]*dv[2];
-        mu=i->mass+j->mass;
-#ifdef RATIMESTEP
-        tau=RARVRATIO*dt_param/M_SQRT2*sqrt(dr3/mu);
-        dtau=3/2.*tau*vdotdr2;
-        if(dtau>1.) dtau=1.;
-        tau/=(1-dtau/2);
-        if(tau < timestep) timestep=tau;
-#endif
-#ifdef RVTIMESTEP
-        if(dv2>0) {
-          tau=dt_param*dr/sqrt(dv2);
-          dtau=tau*vdotdr2*(1+mu/(dv2*dr));
-          if(dtau>1.) dtau=1.;
-          tau/=(1-dtau/2);
-          if(tau < timestep) timestep=tau;
-        }
-#endif
-    }
-    if (timestep < 0) {
-    ENDRUN("negative timestep!\n");
-  }
-  return timestep;
-}
-
 static void ok_timestep_cpu(struct forces f, DOUBLE dt) {
-  //if (dt > 0) {
-    for (UINT i = 0; i < f.n; i++) {
+  int dir=SIGN(dt);
+  for (UINT i = 0; i < f.n; i++) 
+  {
       //if (f.forc[i].timestep != HUGE_VAL) ENDRUN("timestep??");
-      f.forc[i].timestep = ok_timestep_ij_fw(f.forc[i].parti, f.forc[i].partj);
-    }
-  //} else {
-  //  for (UINT i = 0; i < f.n; i++) {
-  //    //if (f.forc[i].timestep != HUGE_VAL) ENDRUN("timestep??");
-  //    f.forc[i].timestep = ok_timestep_ij_bw(f.forc[i].parti, f.forc[i].partj);
-  //  }
-  //}
+      f.forc[i].timestep = timestep_ij(f.forc[i].parti, f.forc[i].partj,dir);
+  }
   tstep[clevel]++;
   tcount[clevel] += f.n;
 }
@@ -85,6 +41,7 @@ static void ok_split(FLOAT dt, struct forces f, struct forces *slow, struct forc
   struct force *left, *right;
   left = f.forc;
   right = f.last;
+  dt=fabs(dt);
   while (1) {
     if (i >= f.n) ENDRUN("forces split error 1\n");
     i++;
@@ -175,7 +132,7 @@ static void ok_kick(struct forces f, DOUBLE dt) {
 void evolve_ok2(struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   if (IS_ZEROFORCES(f) && clevel == -1) { f = ok_main_forces; }
   clevel++;
-  if ((etime <= stime) || (dt == 0) || (clevel >= MAXLEVEL))
+  if ((etime == stime) || (dt == 0) || (clevel >= MAXLEVEL))
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
   // all particles are drifted together
   if (f.n == 0) {

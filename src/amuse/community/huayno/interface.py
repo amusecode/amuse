@@ -100,6 +100,20 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
         return function
 
     @legacy_function      
+    def get_timestep():
+        function = LegacyFunctionSpecification()
+        function.addParameter('timestep', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function      
+    def set_timestep():
+        function = LegacyFunctionSpecification()
+        function.addParameter('timestep', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function      
     def get_number_of_particles():
         function = LegacyFunctionSpecification()
         function.addParameter('number_of_particles', dtype='i', direction=function.OUT)
@@ -158,6 +172,9 @@ class Huayno(GravitationalDynamics):
         OK=13
 #        KEPLER=14
         SHARED4=15
+        SHARED6=18
+        SHARED8=19
+        SHARED10=20
         
         @classmethod
         def _list(cls):
@@ -191,6 +208,15 @@ class Huayno(GravitationalDynamics):
             "timestep parameter for gravity calculations", 
             default_value = 0.03 | units.none
         )
+
+        object.add_method_parameter(
+            "get_timestep",
+            "set_timestep", 
+            "timestep", 
+            "timestep for evolve calls", 
+            default_value = 0.0 | nbody_system.time
+        )
+
 
         object.add_method_parameter(
             "get_inttype_parameter",
@@ -235,6 +261,19 @@ class Huayno(GravitationalDynamics):
             (units.none, ),
             (object.ERROR_CODE,)
         )
+
+        object.add_method(
+            "get_timestep",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_timestep",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+
         
         object.add_method(
             "get_inttype_parameter",

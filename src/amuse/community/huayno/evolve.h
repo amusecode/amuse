@@ -10,6 +10,7 @@
 #define SWAP(a,b,c) {c t;t=(a);(a)=(b);(b)=t;}
 
 #define ABS(X) (((X) >= 0) ? (X) : -(X))
+#define SIGN(X)   ((X>0)-(X<0))
 
 #define LOG(fmt, ...) {\
   printf("%s:%d\t", __FILE__, __LINE__);\
@@ -68,7 +69,12 @@ enum intopt
   CC_KEPLER,  // 12
   OK,         // 13
   KEPLER,     // 14
-  SHARED4     // 15
+  SHARED4,    // 15
+  FOURTH_M4,  // 16 
+  FOURTH_M5,  // 17 
+  SHARED6,    // 18
+  SHARED8,    // 19
+  SHARED10    // 20
 };
 
 extern FLOAT eps2;
@@ -76,12 +82,10 @@ extern FLOAT dt_param;
 
 void init_code();
 void stop_code();
-void init_evolve(struct sys s);
+void init_evolve(struct sys s, int inttype);
 void do_evolve(struct sys s, double dt, int inttype);
 FLOAT system_potential_energy(struct sys s);
 FLOAT system_kinetic_energy(struct sys s);
-void timestep(struct sys s1, struct sys s2);
-void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
 #define RVTIMESTEP
 #define RATIMESTEP
@@ -98,6 +102,7 @@ extern struct sys zerosys;
 
 /* diagnostics */
 extern DOUBLE simtime;
+extern DOUBLE timetrack;
 extern int clevel;
 extern unsigned long tcount[MAXLEVEL],kcount[MAXLEVEL],dcount[MAXLEVEL],deepsteps;
 extern unsigned long tstep[MAXLEVEL],kstep[MAXLEVEL],dstep[MAXLEVEL];
@@ -106,30 +111,9 @@ extern unsigned long cefail[MAXLEVEL],cecount[MAXLEVEL]; // call/fail counts of 
 extern unsigned long cpu_step,cl_step,cpu_count,cl_count;
 #endif
 
-/*static*/ void drift(struct sys s, DOUBLE etime, DOUBLE dt); /* drift sys */
-/*static*/ void kick(struct sys s1, struct sys s2, DOUBLE dt); /* =kick sys1 for interactions with sys2  */
+void drift(struct sys s, DOUBLE etime, DOUBLE dt); /* drift sys */
+void kick(struct sys s1, struct sys s2, DOUBLE dt); /* =kick sys1 for interactions with sys2  */
+void timestep(struct sys s1, struct sys s2,int dir);
+FLOAT timestep_ij(struct particle *i, struct particle *j,int dir);
 
-void evolve_shared2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep);
-void evolve_shared4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep);
-void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
-// declared in interface.c
-extern int inttype;
-
-// Optimal Kick header
-struct force {
-    struct particle *parti;
-    struct particle *partj;
-    FLOAT timestep;
-};
-struct forces {
-    UINT n;
-    struct force *forc;
-    struct force *last;
-};
-extern struct forces zeroforces;
-
-void evolve_ok_init(struct sys s);
-void evolve_ok_stop();
-void evolve_ok2(struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep);

@@ -6,14 +6,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "evolve.h"
-
-#include "evolve_kepler/universal_variable_kepler.c"
+#include "evolve_shared.h"
+#include "universal_variable_kepler.h"
 
 unsigned long cefail[MAXLEVEL],cecount[MAXLEVEL];
 
 void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
   clevel++;
-  if (etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
+  if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
   if (s.n != 2) ENDRUN("two-body solver was called with sys.n=%u\n", s.n);
   // translate coordinates original frame to 2-body frame
   DOUBLE dpos[3],dpos0[3];

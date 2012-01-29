@@ -1,7 +1,7 @@
 #include "evolve.h"
 #ifdef EVOLVE_OPENCL
 
-#include <math.h>
+#include <tgmath.h>
 #include <stdcl.h>
 #include "evolve_cl.h"
 #include "evolve_kern.clh"
@@ -92,7 +92,7 @@ void kick_cl(struct sys s1, struct sys s2, DOUBLE dt)
   clfree( acc);  
 }
 
-void timestep_cl(struct sys s1, struct sys s2)
+void timestep_cl(struct sys s1, struct sys s2,int dir)
 {
   int i;
   int groupsize,nthread,blocksize;
@@ -143,7 +143,8 @@ void timestep_cl(struct sys s1, struct sys s2)
   clarg_set_global(CLCONTEXT,timestep_krn,8, timestep);
   clarg_set_local(CLCONTEXT,timestep_krn,9,blocksize*sizeof(CLFLOAT4));
   clarg_set_local(CLCONTEXT,timestep_krn,10,blocksize*sizeof(CLFLOAT4));
-
+  clarg_set(CLCONTEXT,timestep_krn,11, dir);
+  
   clmsync(CLCONTEXT,0,ipos,CL_MEM_DEVICE|CL_EVENT_NOWAIT);
   clmsync(CLCONTEXT,0,ivel,CL_MEM_DEVICE|CL_EVENT_NOWAIT);
   clmsync(CLCONTEXT,0,jpos,CL_MEM_DEVICE|CL_EVENT_NOWAIT);

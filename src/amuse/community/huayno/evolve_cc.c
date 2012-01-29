@@ -5,10 +5,11 @@
  * to the rest system.
  */
 
-#include <math.h>
+#include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "evolve.h"
+#include "evolve_kepler.h"
 
 //#define CC_DEBUG // perform (time-consuming, but thorough) CC sanity checks
 
@@ -24,56 +25,14 @@
 #define LOGSYSp_ID(SYS) for (UINT i = 0; i < (SYS)->n; i++) { printf("%u ", (SYS)->part[i].id); } printf("\n");
 #define LOGSYSC_ID(SYS) for (struct sys *_ci = &(SYS); !IS_ZEROSYS(_ci); _ci = _ci->next_cc) {printf("{"); for (UINT i = 0; i < _ci->n; i++) {printf("%u ", _ci->part[i].id); } printf("}\t");} printf("\n");
 
-DOUBLE timestep_ij(struct sys r, UINT i, struct sys s, UINT j) {
-  /*
-   * timestep_ij: calculate timestep between particle i of sys r and particle j of sys s
-   */
-  FLOAT timestep;
-	FLOAT dx[3],dr3,dr2,dr,dv[3],dv2,mu,vdotdr2,tau,dtau;
-  timestep=HUGE_VAL;
-  dx[0]=r.part[i].pos[0]-s.part[j].pos[0];
-  dx[1]=r.part[i].pos[1]-s.part[j].pos[1];
-  dx[2]=r.part[i].pos[2]-s.part[j].pos[2];
-  dr2=dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]+eps2;
-  if(dr2>0) {
-    dr=sqrt(dr2);
-    dr3=dr*dr2;
-      dv[0]=r.part[i].vel[0]-s.part[j].vel[0];
-      dv[1]=r.part[i].vel[1]-s.part[j].vel[1];
-      dv[2]=r.part[i].vel[2]-s.part[j].vel[2];
-      vdotdr2=(dv[0]*dx[0]+dv[1]*dx[1]+dv[2]*dx[2])/dr2;
-      dv2=dv[0]*dv[0]+dv[1]*dv[1]+dv[2]*dv[2];
-      mu=r.part[i].mass+s.part[j].mass;
-#ifdef RATIMESTEP
-      tau=RARVRATIO*dt_param/M_SQRT2*sqrt(dr3/mu);
-      dtau=3/2.*tau*vdotdr2;
-      if(dtau>1.) dtau=1.;
-      tau/=(1-dtau/2);
-      if(tau < timestep) timestep=tau;
-#endif
-#ifdef RVTIMESTEP
-      if(dv2>0) {
-        tau=dt_param*dr/sqrt(dv2);
-        dtau=tau*vdotdr2*(1+mu/(dv2*dr));
-        if(dtau>1.) dtau=1.;
-        tau/=(1-dtau/2);
-        if(tau < timestep) timestep=tau;
-      }
-#endif
-  }
-  if (timestep < 0) {
-    ENDRUN("negative timestep!\n");
-  }
-  tcount[clevel]++;
-  return timestep;
-}
-
 void split_cc(struct sys s, struct sys *c, struct sys *r, DOUBLE dt) {
   /*
    * split_cc: run a connected component search on sys s with threshold dt,
    * creates a singly-linked list of connected components c and a rest system r
    * c or r is set to zerosys if no connected components/rest is found
    */
+  int dir=SIGN(dt); 
+  dt=fabs(dt); 
   tstep[clevel]++; // not directly comparable to corresponding SF-split statistics
 	struct sys *c_next;
 	c_next = c;
@@ -93,9 +52,9 @@ void split_cc(struct sys s, struct sys *c, struct sys *r, DOUBLE dt) {
 			// iterate over all unvisited elements
 			for (UINT i = stack_next; i <= rest_next; i++) {
 				// if element is connected to the first element of the stack
-				DOUBLE timestep = timestep_ij(s, comp_next, s, i);
-				if (((dt > 0) && (timestep <= dt)) ||
-				   ((dt < 0) && (timestep >= dt))) {
+				DOUBLE timestep = (DOUBLE) timestep_ij(s.part+comp_next, s.part+i,dir);
+				tcount[clevel]++;
+                                if ( timestep <= dt) {
 					// add i to the end of the stack by swapping stack_next and i
 					SWAP( s.part[ stack_next ], s.part[i], struct particle );
 					stack_next++;
@@ -220,6 +179,8 @@ void split_cc_verify(struct sys s, struct sys *c, struct sys *r) {
 void split_cc_verify_ts(struct sys *c, struct sys *r, DOUBLE dt) {
 
 	DOUBLE ts_ij;
+        int dir=SIGN(dt);
+        dt=fabs(dt);
 	// verify C-C interactions
     for (struct sys *ci = c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
     	for (UINT i = 0; i < ci->n; i++) {
@@ -228,7 +189,7 @@ void split_cc_verify_ts(struct sys *c, struct sys *r, DOUBLE dt) {
     				continue;
     			}
     	    	for (UINT j = 0; j < cj->n; j++) {
-    	    		ts_ij = timestep_ij(*ci, i, *cj, j);
+    	    		ts_ij = (DOUBLE) timestep_ij((*ci).part+i, (*cj).part+j, dir);
     	    		//LOG("comparing %d %d\n", ci->part[i].id, cj->part[j].id);
     	    		//LOG("%f %f \n", ts_ij, dt);
     	    		if (dt > ts_ij) {
@@ -244,7 +205,7 @@ void split_cc_verify_ts(struct sys *c, struct sys *r, DOUBLE dt) {
     	for (UINT i = 0; i < ci->n; i++) {
 
     		for (UINT j = 0; j < r->n; j++) {
-	    		ts_ij = timestep_ij(*ci, i, *r, j);
+	    		ts_ij = (DOUBLE) timestep_ij( (*ci).part+ i, (*r).part+ j,dir);
     	   		if (ts_ij < dt) {
     	   			ENDRUN("split_cc_verify_ts C-R timestep underflow\n");
     	   		}
@@ -256,7 +217,7 @@ void split_cc_verify_ts(struct sys *c, struct sys *r, DOUBLE dt) {
 	for (UINT i = 0; i < r->n; i++) {
     	for (UINT j = 0; j < r->n; j++) {
     		if (i == j) continue;
-    		ts_ij = timestep_ij(*r, i, *r, j);
+    		ts_ij = (DOUBLE) timestep_ij( (*r).part+ i, (*r).part+j,dir);
     		if (ts_ij < dt) {
     			ENDRUN("split_cc_verify_ts R-R timestep underflow\n");
     		}
@@ -274,13 +235,13 @@ void free_sys(struct sys * s) {
 	free(s);
 }
 
-DOUBLE sys_forces_max_timestep(struct sys s) {
+DOUBLE sys_forces_max_timestep(struct sys s,int dir) {
   DOUBLE ts = 0.0;
   DOUBLE ts_ij;
   for (UINT i = 0; i < s.n; i++) {
     for (UINT j = 0; j < s.n; j++) {
       if (i != j) {
-        ts_ij = timestep_ij(s, i, s, j);
+        ts_ij = (DOUBLE) timestep_ij(s.part+ i, s.part+j,dir);
         if (ts_ij >= ts) { ts = ts_ij; };
       }
     }
@@ -292,7 +253,7 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
 	struct sys c = zerosys, r = zerosys;
 	clevel++;
-	if (etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
+	if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
 
 #ifdef CC2_SPLIT_CONSISTENCY_CHECKS
 	if (clevel == 0) {
@@ -383,7 +344,7 @@ void evolve_cc2_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
     //LOG("evolve: regular!\n");
     struct sys c = zerosys, r = zerosys;
     clevel++;
-    if (etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
+    if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
 
 #ifdef CC2_SPLIT_CONSISTENCY_CHECKS
     if (clevel == 0) {
@@ -426,13 +387,14 @@ void evolve_cc2_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
 #ifdef CC2_SPLIT_SHORTCUTS
     if (s.n == c.n) {
-      DOUBLE initial_timestep = sys_forces_max_timestep(s);
+      int dir=SIGN(dt);
+      DOUBLE initial_timestep = sys_forces_max_timestep(s, dir);
       DOUBLE dt_step = dt;
 
-      while (dt_step > initial_timestep) dt_step = dt_step / 2;
+      while (fabs(dt_step) > initial_timestep) dt_step = dt_step / 2;
 
       LOG("CC2_SPLIT_SHORTCUTS clevel=%d dt/dt_step=%Le\n", clevel, dt / dt_step);
-      for (DOUBLE dt_now = 0; dt_now < dt; dt_now += dt_step) {
+      for (DOUBLE dt_now = 0; dir*dt_now < dir*dt; dt_now += dt_step) {
         evolve_split_cc2(s, dt_now, dt_now + dt_step,(DOUBLE) dt_step);
       }
 
