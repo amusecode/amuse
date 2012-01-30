@@ -22,6 +22,7 @@ class TestHermiteInterface(TestWithMPI):
     def test0(self):
         instance = HermiteInterface()
         self.assertTrue("Hut" in instance.all_literature_references_string())
+        instance.stop()
     
     def test1(self):
         instance = HermiteInterface()
@@ -42,7 +43,7 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEquals(10.0,  retrieved_state2['x'])
     
         instance.cleanup_code()
-        del instance
+        instance.stop()
 
     def test2(self):
         instance = HermiteInterface()
@@ -62,6 +63,7 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEquals(0, instance.get_index_of_next_particle(0)['__result'])
         self.assertEquals(-1, instance.get_index_of_next_particle(1)['__result'])
         self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
+        instance.stop()
         
     def test3(self):
         hermite = HermiteInterface()
@@ -93,6 +95,7 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEquals(20.0,  retrieved_state['mass'][1])
         self.assertEquals(hermite.get_number_of_particles()['number_of_particles'], 2)
         hermite.cleanup_code() 
+        hermite.stop()
 
     def test6(self):
         hermite = HermiteInterface()
@@ -104,6 +107,7 @@ class TestHermiteInterface(TestWithMPI):
         retr = hermite.get_potential_at_point(0.01, 0,0,0)
         self.assertEqual(retr['phi'], -20.0)
         hermite.cleanup_code()
+        hermite.stop()
        
     def test7(self):
         instance = HermiteInterface()
@@ -124,6 +128,7 @@ class TestHermiteInterface(TestWithMPI):
         
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
+        instance.stop()
         
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 10.0]) / 2.0)
         
@@ -142,6 +147,7 @@ class TestHermiteInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(potential,  -1.0 / numpy.sqrt(2.0**2), 8)
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
+        instance.stop()
         
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0)
         
@@ -270,7 +276,7 @@ class TestHermite(TestWithMPI):
         
         
         instance.cleanup_code()
-        del instance
+        instance.stop()
 
     def test3(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
@@ -301,6 +307,7 @@ class TestHermite(TestWithMPI):
             instance.particles.copy_values_of_all_attributes_to(stars)
             stars.savepoint()
         
+        instance.stop()
     
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
@@ -325,6 +332,7 @@ class TestHermite(TestWithMPI):
         
         self.assertEquals(instance.get_mass(0), 17.0| units.kg) 
         self.assertEquals(instance.get_mass(1), 33.0| units.kg)  
+        instance.stop()
 
     def test5(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
@@ -348,6 +356,7 @@ class TestHermite(TestWithMPI):
                            1.0|units.ms, 1.0|units.ms, 1.0|units.ms)
         
         curr_state =  instance.get_state(1)
+        instance.stop()
         
         self.assertEquals(curr_state[0], 16|units.kg, 8)
     
@@ -615,3 +624,5 @@ class TestHermite(TestWithMPI):
             fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
             self.assertAlmostEqual(fx, fx0, 2)
             self.assertAlmostEqual(potential0, potential1, 5)
+        instance.stop()
+    
