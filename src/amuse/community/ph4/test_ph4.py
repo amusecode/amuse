@@ -27,10 +27,10 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     Q = -T/U
     print ""
     print "time =", time.number, " energy = ", E.number, \
-	" dE/E0 = ", (E/E0 - 1).number
+	" dE/E0 = ", (E/E0 - 1)
     print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
 	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Ebin.number, Rv.number, Q.number)
+         E.number, Ebin.number, Rv.number, Q)
     sys.stdout.flush()
     return E
 

@@ -33,7 +33,7 @@ def print_log(s, gravity, E0 = 0.0 | nbody_system.energy):
     Q = -T/U
     print ""
     print "%s: time = %.10f, mass = %.10f, dE/E0 = %.5e" \
-          % (s, gravity.get_time().number, M.number, (E/E0 - 1).number)
+          % (s, gravity.get_time().number, M.number, (E/E0 - 1))
     print "%senergies = %.10f %.10f %.10f" \
           % (' '*(2+len(s)), E.number, U.number, T.number)
         
