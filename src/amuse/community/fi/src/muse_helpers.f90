@@ -427,6 +427,8 @@ subroutine muse_get_hydro_state(x,y,z,vx,vy,vz, &
 !$omp parallel private(i,ppos,pvel,rh,rhv,rhe,rhv2,h,dum,ethtoent,nneigh) &
 !$omp shared(x,y,z,vx,vy,vz,rh_out,rhvx_out,rhvy_out,rhvz_out,rhe_out,n,vdisp_included)
   h=0
+  reuseflag=1
+  searchreuse=0
 !$omp do  
   do i=1,n
     ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
