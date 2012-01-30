@@ -440,7 +440,7 @@ subroutine hsmdenspos2(ppos,h,dens,ddensdh,nneigh)
   include 'globals.h'
   integer nneigh,i,j
   real dens,ddensdh,h,ppos(3)
-  call gethsm(ppos,h,i,j,nneigh)
+  call gethsm(ppos,h,i,j)
   call cond_srch(ppos,h,root,nneigh,srlist)
   call gatterdens(nneigh,ppos,h,dens,ddensdh)
 end subroutine
