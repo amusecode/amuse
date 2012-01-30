@@ -442,12 +442,12 @@ class TestMI6(TestWithMPI):
         delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
         self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
     
-    def test8(self):
+    def xtest8(self):
         instance = MI6(**default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
         
-        particles = datamodel.Particles(2)
+        particles = Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
