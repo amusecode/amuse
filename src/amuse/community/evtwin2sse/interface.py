@@ -168,9 +168,9 @@ class EVtwin2SSE:
             rel_diff_radius = (sse_track.radius[i] - evtwin_star.radius) / evtwin_star.radius
             rel_diff_luminosity = (sse_track.luminosity[i] - evtwin_star.luminosity) / evtwin_star.luminosity
 
-            rms = ((rel_diff_mass.value_in(units.none))**2  \
-                    + (rel_diff_radius.value_in(units.none))**2  \
-                    + (rel_diff_luminosity.value_in(units.none))**2)
+            rms = ((rel_diff_mass)**2  \
+                    + (rel_diff_radius)**2  \
+                    + (rel_diff_luminosity)**2)
 
             if (rms < sse_track.RMSErrorAtSwitch):
                 sse_track.SSEIndexAtSwitch = i

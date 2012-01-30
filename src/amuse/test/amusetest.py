@@ -11,6 +11,7 @@ from amuse.support import options
 from amuse.units.si import no_unit
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import to_quantity
+from amuse.units.quantities import is_quantity
 
 class SkipTest(exceptions.AmuseException):
     pass
@@ -38,12 +39,13 @@ class TestCase(unittest.TestCase):
             return (first, second)
     
     def _convert_to_vectors(self, first, second):
-        x = numpy.array(first)
-        y = numpy.array(second)
+        x = first if is_quantity(first) else numpy.array(first)
+        y = second if is_quantity(second) else numpy.array(second)
         try:
             # Using numpy broadcasting to convert the arguments to arrays with equal length:
-            return (x+0*y).flatten(), (y+0*x).flatten()
+            return (x+(y*0)).flatten(), (y+(x*0)).flatten()
         except:
+            #raise
             raise TypeError("Arguments do not have compatible shapes for broadcasting")
         
     
@@ -125,9 +127,7 @@ class TestCase(unittest.TestCase):
     def assertIsOfOrder(self, first, second, msg=None):
         ratio = first*1.0/second
         if isinstance(ratio, Quantity):
-            if ratio.unit.base:
-                raise self.failureException,(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
-            ratio = ratio.value_in(no_unit)
+            raise self.failureException,(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
         failures = numpy.array(numpy.round(numpy.log10(ratio)) != 0).flatten()
         self._raise_exceptions_if_any(failures, first, second, '{0} is not of order {1}', msg)
     

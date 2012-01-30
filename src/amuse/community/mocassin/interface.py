@@ -610,7 +610,7 @@ class Mocassin(InCodeComponentImplementation):
         ni, nj, nk = self.get_max_indices(index_of_grid)
         nstages = self.get_number_of_ionisation_stages()
         nbins = self.get_total_number_of_points_in_frequency_mesh()
-        return (1, ni, 1, nj, 1, nk, 1, nstages.value_in(units.none), 1, nbins.value_in(units.none))
+        return (1, ni, 1, nj, 1, nk, 1, nstages, 1, nbins)
         
     def define_methods(self, object):
         

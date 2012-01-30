@@ -847,12 +847,12 @@ class InternalStellarStructure(object):
         )
         object.add_method(
             "get_mass_fraction_of_species_at_zone", 
-            (object.INDEX,units.none,units.none,), 
-            (units.none, object.ERROR_CODE,)
+            (object.INDEX, object.NO_UNIT, object.NO_UNIT,), 
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "set_mass_fraction_of_species_at_zone", 
-            (object.INDEX, units.none, units.none, units.none,), 
+            (object.INDEX, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,), 
             (object.ERROR_CODE,)
         )
     
@@ -937,8 +937,8 @@ class InternalStellarStructure(object):
         grid = numpy.indices((number_of_species, number_of_zones))
         return self.get_mass_fraction_of_species_at_zone(
             [indices_of_the_stars] * number_of_zones * number_of_species, 
-            units.none.new_quantity(grid[0].flatten()+1), 
-            units.none.new_quantity(grid[1].flatten())
+            grid[0].flatten()+1, 
+            grid[1].flatten()
         ).reshape((number_of_species, number_of_zones))
     
     def set_chemical_abundance_profiles(self, indices_of_the_stars, values, number_of_zones = None, number_of_species = None):
@@ -952,8 +952,8 @@ class InternalStellarStructure(object):
         grid = numpy.indices((number_of_species, number_of_zones))
         self.set_mass_fraction_of_species_at_zone(
             [indices_of_the_stars] * number_of_zones * number_of_species, 
-            units.none.new_quantity(grid[0].flatten()+1), 
-            units.none.new_quantity(grid[1].flatten()),
+            grid[0].flatten()+1, 
+            grid[1].flatten(),
             values.reshape((number_of_species*number_of_zones, ))
         )
         if hasattr(self, "_erase_memory"):

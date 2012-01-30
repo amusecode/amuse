@@ -79,8 +79,8 @@ class TestQuantities(amusetest.TestCase):
         
     def test9(self):
         converter = nbody_system.nbody_to_si(1 | si.kg, 2 | si.s)
-        self.assertEquals(0.0 | units.none, converter.to_nbody(zero))
-        self.assertEquals(converter.to_nbody(zero), 0.0 | units.none)
+        self.assertEquals(0.0 | nbody_system.mass, converter.to_nbody(zero))
+        self.assertEquals(converter.to_nbody(zero), 0.0 | nbody_system.mass)
     
     def test10(self):
         self.assertEquals(1 | units.m, 1 | units.m)
@@ -251,6 +251,13 @@ class TestQuantities(amusetest.TestCase):
         self.assertEquals(zero_vector[0:2], zero.as_vector_with_length(2))
     
 
+    def test22(self):
+        x = numpy.asarray([1,2,3,4])
+        y = 2 | units.m
+        self.assertTrue(is_quantity(y * x))
+        self.assertAlmostRelativeEquals(y*x, [2,4,6,8] | units.m)
+        self.assertTrue(is_quantity(x * y))
+        self.assertAlmostRelativeEquals(x*y, [2,4,6,8] | units.m)
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):
 

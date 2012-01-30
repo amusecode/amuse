@@ -44,7 +44,7 @@ class TestStellarModel2SPH(TestWithMPI):
             return ([1.0078250, 3.0160293, 4.0026032, 12.0] | units.amu)[:int(self.particles_set._private.number_of_species)]
         
         def get_mass_profile(self, number_of_zones = None):
-            return ([2.0, 14.0, 112.0, 448.0] | units.none) / sum([2.0, 14.0, 112.0, 448.0])
+            return numpy.asarray([2.0, 14.0, 112.0, 448.0]) / sum([2.0, 14.0, 112.0, 448.0])
         
         def get_density_profile(self, number_of_zones = None):
             return [2.0, 2.0, 2.0, 1.0] | units.MSun/units.RSun**3
@@ -62,19 +62,19 @@ class TestStellarModel2SPH(TestWithMPI):
             return [0.8, 0.6, 0.6, 1.3] | units.amu
         
         def get_chemical_abundance_profiles(self, number_of_zones = None, number_of_species = None):
-            return ([[0.0, 0.7, 0.7, 0.7], [0.05, 0.01, 0.01, 0.01], [0.95, 0.29, 0.29, 0.29], 
-                [0.0, 0.0, 0.0, 0.0]] | units.none)[:int(self.particles_set._private.number_of_species)]
+            return numpy.asarray([[0.0, 0.7, 0.7, 0.7], [0.05, 0.01, 0.01, 0.01], [0.95, 0.29, 0.29, 0.29], 
+                [0.0, 0.0, 0.0, 0.0]] )[:int(self.particles_set._private.number_of_species)]
     
     def test1(self):
         star = self.StarParticleWithStructure()
         number_of_zones = star.get_number_of_zones()
-        delta_mass = star.get_mass_profile() * star.mass
+        delta_mass =  star.mass * star.get_mass_profile()
         outer_radius = star.get_radius_profile()
         inner_radius = [0.0] | units.RSun
         inner_radius.extend(outer_radius[:-1])
         delta_radius_cubed = (outer_radius**3 - inner_radius**3)
         self.assertAlmostEquals(star.get_density_profile() / (delta_mass/(4./3.*numpy.pi*delta_radius_cubed)), 
-                                [1]*number_of_zones|units.none)
+                                [1]*number_of_zones)
     
     def test2(self):
         star = self.StarParticleWithStructure()
@@ -112,7 +112,10 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertAlmostEqual(sph_particles.mass.sum(), star.mass)
         self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
         self.assertIsOfOrder(max(sph_particles.x), star.radius)
-        self.assertAlmostEqual(sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles | units.none)
+        aa = sph_particles.composition.sum(axis=1) - numpy.asarray([1.0]*number_of_sph_particles)
+        print aa.dtype, aa
+        print numpy.round(aa ,7)
+        self.assertAlmostEqual(sph_particles.composition.sum(axis=1), numpy.asarray([1.0]*number_of_sph_particles) )
         self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 | units.none ))
         self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 | units.none ))
         self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 | units.none ))
@@ -914,7 +917,7 @@ class TestStellarModel2SPH(TestWithMPI):
         print "Dynamical timescale:", t_dyn.as_quantity_in(units.yr)
         stellar_evolution.stop()
         
-        print "Evolving to:", t_end, "("+str((t_end/t_dyn).value_in(units.none)), "dynamical timescales)"
+        print "Evolving to:", t_end, "("+str((t_end/t_dyn)), "dynamical timescales)"
         n_steps = 100
         
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, constants.G, t_end)
@@ -1017,9 +1020,9 @@ def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname)
     if not HAS_MATPLOTLIB:
         return
     pyplot.figure(figsize = (7, 5))
-    plot(radii_SE.as_quantity_in(units.RSun), comp_SE.value_in(units.none), 
+    plot(radii_SE.as_quantity_in(units.RSun), comp_SE, 
         label='stellar evolution model')
-    plot(radii_SPH, comp_SPH.value_in(units.none), 'go', label='SPH model')
+    plot(radii_SPH, comp_SPH, 'go', label='SPH model')
     xlabel('radius')
     ylabel('mass fraction')
     pyplot.legend()

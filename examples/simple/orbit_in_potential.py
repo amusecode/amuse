@@ -57,7 +57,7 @@ class MilkyWay_galaxy(object):
 
     def halo_potential(self, pos, Mc=5.0E+10|units.MSun, Rc=1.0|units.kpc**2):
         r = pos.length()
-        rr = (r/Rc).value_in(units.none)
+        rr = (r/Rc)
         return -constants.G * (Mc/Rc)*(0.5*log(1 +rr**2) + atan(rr)/rr)
 
     #1990ApJ...348..485P

@@ -154,7 +154,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
         u_min, u_max = u_range
     else:
         u_min, u_max = min(us), max(us)
-    log_u = numpy.log((us / u_min).value_in(units.none)) / numpy.log((u_max / u_min).value_in(units.none))
+    log_u = numpy.log((us / u_min)) / numpy.log((u_max / u_min))
     clipped_log_u = numpy.minimum(numpy.ones_like(log_u), numpy.maximum(numpy.zeros_like(log_u), log_u))
     
     red   = 1.0 - clipped_log_u**4
@@ -178,7 +178,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
         current_axes.set_aspect("equal", adjustable = "datalim")
         length_unit = _smart_length_units_for_vector_quantity(x)
         phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((max(x)-min(x))**2 + (max(y)-min(y))**2)
-    sizes = numpy.maximum((h_smooths**2 * phys_to_pix2).value_in(units.none), min_size)
+    sizes = numpy.maximum((h_smooths**2 * phys_to_pix2), min_size)
     
     x = x.as_quantity_in(length_unit)
     y = y.as_quantity_in(length_unit)

@@ -1068,6 +1068,19 @@ class DerivedSupersetAttribute(DerivedAttribute):
                 except ValueError:
                     raise AttributeError("Subsets return incompatible quantities for attribute '{0}', attribute cannot be queried from the superset".format(self.name)) 
                 offset += len(subset_result)
+            
+            elif hasattr(subset_result, 'dtype'):
+                if len(subset_result) == 0:
+                    continue
+                if result is None:
+                    shape = [len(superset),] + list(subset_result.shape[1:])
+                    result = numpy.zeros(shape, dtype=subset_result.dtype)
+                    offset = 0
+                try:
+                    result[offset:len(subset_result)+offset] = subset_result
+                except ValueError:
+                    raise AttributeError("Subsets return incompatible quantities for attribute '{0}', attribute cannot be queried from the superset".format(self.name)) 
+                offset += len(subset_result)
             else:
                 raise exceptions.AmuseException("cannot handle this type of attribute on supersets yet") 
         return result
@@ -1237,19 +1250,30 @@ class ParticlesSuperset(AbstractParticleSet):
             
         values = [None] * len(attributes)
         units = [None] * len(attributes)
+        converts = [None] * len(attributes)
         for indices, values_for_set in indices_and_values:
             for valueindex, quantity in enumerate(values_for_set):
                 resultvalue = values[valueindex]
                 if resultvalue is None:
-                    resultvalue = numpy.zeros(resultlength,dtype=quantity.number.dtype)
+                    if not is_quantity(quantity):
+                        dtype = quantity.dtype
+                        converts[valueindex] = lambda x : x
+                    else:
+                        dtype = quantity.number.dtype
+                        converts[valueindex] = quantity.unit.new_quantity
+                        units[valueindex] = quantity.unit
+                    
+                    resultvalue = numpy.zeros(resultlength,dtype=dtype)
                     values[valueindex] = resultvalue
-                    units[valueindex] = quantity.unit
                     
                 resultunit = units[valueindex]
                 
-                numpy.put(resultvalue, indices, quantity.value_in(resultunit))
+                if not resultunit is None:
+                    numpy.put(resultvalue, indices, quantity.value_in(resultunit))
+                else:
+                    numpy.put(resultvalue, indices, quantity)
             
-        return map(lambda u,v : u.new_quantity(v), units, values)
+        return map(lambda u,v : u(v), converts, values)
         
     def set_values_in_store(self, keys, attributes, values):
         split_sets, split_indices = self._split_keys_over_sets(keys)
@@ -1258,14 +1282,23 @@ class ParticlesSuperset(AbstractParticleSet):
             quantities = [None] * len(attributes)
             
             for valueindex, quantity in enumerate(values):
-                if quantity.is_scalar():
-                    numbers = [quantity.number]*len(indices_for_set)
-                elif quantity.is_vector() and len(quantity) < len(keys):
-                    numbers = numpy.take([quantity.number]*len(keys),indices_for_set)
+                if is_quantity(quantity):
+                    if quantity.is_scalar():
+                        numbers = [quantity.number]*len(indices_for_set)
+                    elif quantity.is_vector() and len(quantity) < len(keys):
+                        numbers = numpy.take([quantity.number]*len(keys),indices_for_set)
+                    else:
+                        numbers = numpy.take(quantity.number, indices_for_set)
+                    quantities[valueindex] = quantity.unit.new_quantity(numbers)
                 else:
-                    numbers = numpy.take(quantity.number, indices_for_set)
-                quantities[valueindex] = quantity.unit.new_quantity(numbers)
-            
+                    if not hasattr(quantity, 'ndim'):
+                        numbers = numpy.asarray([quantity]*len(indices_for_set))
+                    elif len(quantity) < len(keys):
+                        numbers = numpy.take([quantity]*len(keys),indices_for_set)
+                    else:
+                        numbers = numpy.take(quantity, indices_for_set)
+                    quantities[valueindex] = numbers
+                    
             set.set_values_in_store(keys_for_set, attributes, quantities)
     
     def get_attribute_names_defined_in_store(self):
@@ -1683,7 +1716,7 @@ class Particle(object):
             
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
        
-        if isinstance(new_value_for_the_attribute, quantities.Quantity):
+        if is_quantity(new_value_for_the_attribute):
             self.particles_set._set_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)
         elif isinstance(new_value_for_the_attribute, Particle):
             self.particles_set._set_value_of_attribute(
@@ -1692,8 +1725,8 @@ class Particle(object):
                 new_value_for_the_attribute.key | units.object_key
             )
         else:
-            raise AttributeError("Can only assign quantities or other particles to an attribute.")
-    
+            self.particles_set._set_unitless_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)
+            
     def __getattr__(self, name_of_the_attribute):
         if hasattr(self.particles_set._private, 'particle_sets'):
             for current_set in self.particles_set._private.particle_sets:

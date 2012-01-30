@@ -1093,21 +1093,21 @@ def hydro_plot(view, hydro_code, image_size, figname):
     max_v = 3000.0 | units.km / units.s
     min_rho = rho.amin()
     max_rho = rho.amax()
-    fade_rho = min_rho * (max_rho / min_rho).value_in(units.none)**0.1
+    fade_rho = min_rho * (max_rho / min_rho)**0.1
     min_E = 1.0e11 | units.J / units.kg
     max_E = 1.0e13 | units.J / units.kg
     
     v_sqr = (rhovx**2 + rhovy**2 + rhovz**2) / rho**2
     E = rhoe / rho
-    log_v = numpy.log((v_sqr / min_v**2).value_in(units.none)) / numpy.log((max_v**2 / min_v**2).value_in(units.none))
-    log_rho = numpy.log((rho / min_rho).value_in(units.none)) / numpy.log((max_rho / min_rho).value_in(units.none))
-    log_E = numpy.log((E / min_E).value_in(units.none)) / numpy.log((max_E / min_E).value_in(units.none))
+    log_v = numpy.log((v_sqr / min_v**2)) / numpy.log((max_v**2 / min_v**2))
+    log_rho = numpy.log((rho / min_rho)) / numpy.log((max_rho / min_rho))
+    log_E = numpy.log((E / min_E)) / numpy.log((max_E / min_E))
     
     red   = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_rho)).reshape(shape)
     green = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_v)).reshape(shape)
     blue  = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_E)).reshape(shape)
     alpha = numpy.minimum(numpy.ones_like(log_v), numpy.maximum(numpy.zeros_like(log_v), 
-        numpy.log((rho / min_rho).value_in(units.none)) / numpy.log((fade_rho / min_rho).value_in(units.none)) )).reshape(shape)
+        numpy.log((rho / min_rho)) / numpy.log((fade_rho / min_rho)) )).reshape(shape)
     
     rgba = numpy.concatenate((red, green, blue, alpha), axis = 2)
     

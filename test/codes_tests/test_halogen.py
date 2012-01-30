@@ -133,7 +133,7 @@ class HalogenInterfaceTests(TestWithMPI):
         if not os.path.exists(halogen4muse_path) or not os.access(halogen4muse_path, os.X_OK):
             return
             
-        subprocess.call([
+        process = subprocess.Popen([
             halogen4muse_path, 
             '-a', '2', 
             '-b', '5', 
@@ -141,7 +141,13 @@ class HalogenInterfaceTests(TestWithMPI):
             '-N', '1000', 
             '-name', 'test_stand_alone', 
             '-randomseed', '1'
-        ], cwd = instance.get_output_directory())
+            ]
+            , cwd = instance.get_output_directory()
+            , stdout = subprocess.PIPE
+            , stderr = subprocess.PIPE
+        )
+        process.communicate()
+        
         stdoutput = subprocess.Popen(["diff", "test.IC.ascii", "test_stand_alone.IC.ascii"], 
             cwd = instance.get_output_directory(), stdout = subprocess.PIPE).communicate()[0]
         self.assertEquals(stdoutput, "")

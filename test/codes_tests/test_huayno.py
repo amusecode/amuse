@@ -292,7 +292,7 @@ class TestHuayno(TestWithMPI):
         earth.position = [0.0, 1.0, 0.0] | units.AU
         earth.velocity = [2.0*numpy.pi, -0.0001, 0.0] | units.AU / units.yr
         
-        initial_direction = math.atan((earth.velocity[0]/earth.velocity[1]).value_in(units.none))
+        initial_direction = math.atan((earth.velocity[0]/earth.velocity[1]))
         final_direction = []
         for log_eps2 in range(-9,10,2):
             instance = Huayno(convert_nbody)
@@ -302,7 +302,7 @@ class TestHuayno(TestWithMPI):
             instance.commit_particles()
             instance.evolve_model(0.25 | units.yr)
             final_direction.append(math.atan((instance.particles[1].velocity[0]/
-                instance.particles[1].velocity[1]).value_in(units.none)))
+                instance.particles[1].velocity[1])))
             instance.stop()
         # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
         self.assertAlmostEquals(abs(final_direction[0]), abs(initial_direction+math.pi/2.0), 2)

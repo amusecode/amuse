@@ -54,6 +54,7 @@ distclean:
 
 tests:
 	$(PYTHON) setup.py tests
+	
 
 doc:
 	$(PYTHON) setup.py -q build_latex

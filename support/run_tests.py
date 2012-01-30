@@ -8,8 +8,6 @@ try:
 except ImportError:
     TestProgram = None
     
-# check if Python is called on the first line with this expression
-first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 
 class run_tests(Command):
 
@@ -26,7 +24,7 @@ class run_tests(Command):
         self.test_dir = None
 
     def finalize_options (self):
-        self.annound("test directory: {0}".format(self.test_dir), level = log.INFO)
+        self.announce("test directory: {0}".format(self.test_dir), level = log.INFO)
         if not self.test_dir:
             self.test_dir = 'test'
 

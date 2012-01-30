@@ -223,7 +223,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         # two binaries: 1 circular, 1 elliptical with periastron within roche radius
         apastron = 40.0 | units.RSun
         mass_binary = stars.mass[0] + stars.mass[1]
-        q = (stars.mass[1] / stars.mass[0]).value_in(units.none) # mass ratio
+        q = (stars.mass[1] / stars.mass[0]) # mass ratio
         Eggleton_roche_estimate = 0.49 * q**(2/3.0) / (0.6 * q**(2/3.0) + math.log(1 + q**(1/3.0))) | units.none
         periastron = 0.9 * se_stars[1].radius / Eggleton_roche_estimate
         

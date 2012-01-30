@@ -43,7 +43,7 @@ class RocheLobeOverflow(object):
         for i, (part, comp) in enumerate(zip(self.particles, self.companions)):
             dyn_particles = ParticlesSuperset([part.as_set(), comp.as_set()]).get_intersecting_subset_in(self.dynamics_code.particles)
             separation = (dyn_particles.position[0] - dyn_particles.position[1]).length()
-            cube_root_q = (part.mass / comp.mass).value_in(units.none)**(1/3.0)
+            cube_root_q = (part.mass / comp.mass)**(1/3.0)
             # Eggleton 1983:
             self.overflow_radii[i] = separation * 0.49 * cube_root_q**2 / \
                 (0.6 * cube_root_q**2 + math.log(1 + cube_root_q))

@@ -108,7 +108,7 @@ class StellarModel2SPH(object):
                 for enc_mass_i, r_cube_i, rho_i in zip(interpolator.enclosed_mass, interpolator.radii_cubed, interpolator.densities):
                     if enc_mass_i - interpolator.four_thirds_pi * r_cube_i * rho_i >= self.target_core_mass:
                         max_density = rho_i
-                        print "Estimated max_density:", max_density, "= mean_density *", (max_density/mean_density).value_in(units.none)
+                        print "Estimated max_density:", max_density, "= mean_density *", (max_density/mean_density)
                         break
             else:
                 print "Warning: target_core_mass ignored!"
@@ -153,12 +153,15 @@ class StellarModel2SPH(object):
         interpolated_energies = delta*extended[indices] + one_minus_delta*extended[indices+1]
         
         if do_composition_too:
-            comp = [] | units.none
+            comp = [] 
             for species in self.composition_profile:
-                extended = species[:1]
+                extended = list(species[:1])
                 extended.extend(species)
                 extended.append(species[-1])
+                extended = numpy.asarray(extended)
                 comp.append(delta*extended[indices] + one_minus_delta*extended[indices+1])
+            
+            comp = numpy.asarray(comp)
             return interpolated_energies, comp.transpose()
         else:
             return interpolated_energies, None
@@ -198,7 +201,7 @@ class StellarModel2SPH(object):
             previous_acc = accelerations
             internal_energies = hydro_code.gas_particles.u
             smoothing_lengths = hydro_code.gas_particles.h_smooth
-            factor = numpy.minimum((max_delta * internal_energies / (accelerations.lengths() * smoothing_lengths)).value_in(units.none), 0.5)
+            factor = numpy.minimum((max_delta * internal_energies / (accelerations.lengths() * smoothing_lengths)), 0.5)
             result.append(str(i) + ": Accelerations correlated: " + str(acc_correlated) + ", median factor: " + str(numpy.median(factor)))
             
             particles.position += accelerations * ((smoothing_lengths * smoothing_lengths * factor) / 

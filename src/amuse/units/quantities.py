@@ -61,6 +61,8 @@ class Quantity(object):
     """
     __slots__ = ['unit']
 
+    __array_priority__ = 101
+    
     def __init__(self, unit):
         self.unit = unit
 
@@ -103,7 +105,8 @@ class Quantity(object):
 
     def __mul__(self, other):
         other = to_quantity(other)
-        return new_quantity(self.number * other.number, (self.unit * other.unit).to_simple_form())
+        return new_quantity_nonone(self.number * other.number, (self.unit * other.unit).to_simple_form())
+        
     __rmul__ = __mul__
 
     def __pow__(self, other):
@@ -111,10 +114,10 @@ class Quantity(object):
 
     def __div__(self, other):
         other = to_quantity(other)
-        return new_quantity(self.number / other.number, (self.unit / other.unit).to_simple_form())
+        return new_quantity_nonone(self.number / other.number, (self.unit / other.unit).to_simple_form())
 
     def __rdiv__(self, other):
-        return new_quantity(other / self.number, (1.0 / self.unit).to_simple_form())
+        return new_quantity_nonone(other / self.number, (1.0 / self.unit).to_simple_form())
 
     def in_(self, x):
         return self.as_quantity_in(x)
@@ -382,9 +385,9 @@ class VectorQuantity(Quantity):
         quantity<[[ 6.  8.], [ 10.  12.]] m**2>
         """
         if axis == None:
-            return new_quantity(self.number.prod(axis, dtype), self.unit ** numpy.prod(self.number.shape))
+            return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** numpy.prod(self.number.shape))
         else:
-            return new_quantity(self.number.prod(axis, dtype), self.unit ** self.number.shape[axis])
+            return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** self.number.shape[axis])
 
     def length_squared(self):
         """Calculate the squared length of the vector.
@@ -703,7 +706,7 @@ class VectorQuantity(Quantity):
         Return the cross product of this vector quantity with the supplied vector (quantity).
         """
         other = to_quantity(other)
-        return new_quantity(
+        return new_quantity_nonone(
             numpy.cross(self.number, other.number, axisa=axisa, axisb=axisb, axisc=axisc, axis=axis), 
             (self.unit * other.unit).to_simple_form()
         )
@@ -1009,10 +1012,28 @@ def new_quantity(value, unit):
         return VectorQuantity(value, unit)
     if unit.is_non_numeric():
         return NonNumericQuantity(value, unit)
-#    if not unit.base:
-#        return value
     return ScalarQuantity(value, unit)
 
+def new_quantity_nonone(value, unit):
+    """Create a new Quantity object.
+
+    :argument value: numeric value of the quantity, can be
+        a number or a sequence (list or ndarray)
+    :argument unit: unit of the quantity
+    :returns: new ScalarQuantity or VectorQuantity object
+    """
+    if not unit.base:
+         return value * unit.factor
+    if isinstance(value, list):
+        return VectorQuantity(value, unit)
+    if isinstance(value, tuple):
+        return VectorQuantity(value, unit)
+    if isinstance(value, numpy.ndarray):
+        return VectorQuantity(value, unit)
+    if unit.is_non_numeric():
+        return NonNumericQuantity(value, unit)
+    return ScalarQuantity(value, unit)
+    
 def is_quantity(input):
     return hasattr(input, "is_quantity")
 

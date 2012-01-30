@@ -109,7 +109,7 @@ def head_on_stellar_merger(
     specific_internal_energy = model_2.specific_internal_energy_profile
     
     number_of_sph_particles_1 = int(round(number_of_sph_particles * 
-        (model_1.mass / (model_1.mass + model_2.mass)).value_in(units.none)))
+        (model_1.mass / (model_1.mass + model_2.mass))))
     number_of_sph_particles_2 = number_of_sph_particles - number_of_sph_particles_1
     print "Creating initial conditions from a MESA stellar evolution model:"
     print model_1.mass, "star consisting of", number_of_sph_particles_1, "particles."
@@ -210,9 +210,9 @@ def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname)
     if not HAS_MATPLOTLIB:
         return
     pyplot.figure(figsize = (7, 5))
-    plot(radii_SE.as_quantity_in(units.RSun), comp_SE.value_in(units.none), 
+    plot(radii_SE.as_quantity_in(units.RSun), comp_SE, 
         label='stellar evolution model')
-    plot(radii_SPH, comp_SPH.value_in(units.none), 'go', label='SPH model')
+    plot(radii_SPH, comp_SPH, 'go', label='SPH model')
     xlabel('radius')
     ylabel('mass fraction')
     pyplot.legend()
@@ -290,15 +290,15 @@ def hydro_plot(view, hydro_code, image_size, figname):
     
     v_sqr = (rhovx**2 + rhovy**2 + rhovz**2) / rho**2
     E = rhoe / rho
-    log_v = numpy.log((v_sqr / min_v**2).value_in(units.none)) / numpy.log((max_v**2 / min_v**2).value_in(units.none))
-    log_rho = numpy.log((rho / min_rho).value_in(units.none)) / numpy.log((max_rho / min_rho).value_in(units.none))
-    log_E = numpy.log((E / min_E).value_in(units.none)) / numpy.log((max_E / min_E).value_in(units.none))
+    log_v = numpy.log((v_sqr / min_v**2)) / numpy.log((max_v**2 / min_v**2))
+    log_rho = numpy.log((rho / min_rho)) / numpy.log((max_rho / min_rho))
+    log_E = numpy.log((E / min_E)) / numpy.log((max_E / min_E))
     
     red   = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_rho)).reshape(shape)
     green = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_v)).reshape(shape)
     blue  = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_E)).reshape(shape)
     alpha = numpy.minimum(numpy.ones_like(log_v), numpy.maximum(numpy.zeros_like(log_v), 
-        numpy.log((rho / (10*min_rho)).value_in(units.none)))).reshape(shape)
+        numpy.log((rho / (10*min_rho))))).reshape(shape)
     
     rgba = numpy.concatenate((red, green, blue, alpha), axis = 2)
     

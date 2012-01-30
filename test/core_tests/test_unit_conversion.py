@@ -77,9 +77,9 @@ class TestUnitConversions(amusetest.TestCase):
         self.assertTrue((eps0_1 - eps0_2) / eps0_1 < (1e-10 | none))
         b =((1.|e)**2)
         f = (hbar*c*4.*numpy.pi* eps0)**-1
-        fine_structure_constant_calculated = (b * f).as_quantity_in(none)
-        fine_structure_constant = 7.297352537650e-3 | none
-        self.assertAlmostEquals(fine_structure_constant_calculated.number, fine_structure_constant.number, 5)
+        fine_structure_constant_calculated = (b * f)
+        fine_structure_constant = 7.297352537650e-3
+        self.assertAlmostEquals(fine_structure_constant_calculated, fine_structure_constant, 5)
         
     
 

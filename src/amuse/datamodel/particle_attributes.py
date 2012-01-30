@@ -74,7 +74,7 @@ def scale_to_standard(particles, convert_nbody = None,
 
     kinetic_energy = particles.kinetic_energy()
     target_energy =  -0.5*potential_energy
-    scale_factor = (target_energy / kinetic_energy).sqrt()
+    scale_factor = numpy.sqrt(target_energy / kinetic_energy)
     particles.velocity *= scale_factor
 
 

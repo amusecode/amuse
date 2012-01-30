@@ -101,6 +101,7 @@ from amuse.datamodel import Particles
 from amuse.datamodel import ParticleInformationChannel
 from amuse.datamodel import Particle
 from amuse.datamodel import AttributeStorage
+
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):
         AbstractCodeMethodWrapper.__init__(self, method)

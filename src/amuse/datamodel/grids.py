@@ -252,7 +252,7 @@ class SamplePointOnCellCenter(object):
     @late
     def index(self):
         offset = self.point - self.grid.get_minimum_position()
-        indices = (offset / self.grid.cellsize()).value_in(units.none)
+        indices = (offset / self.grid.cellsize())
         return numpy.floor(indices).astype(numpy.int)
         
     @late
@@ -296,13 +296,13 @@ class SamplePointWithIntepolation(object):
     @late
     def index(self):
         offset = self.point - self.grid.get_minimum_position()
-        indices = (offset / self.grid.cellsize()).value_in(units.none)
+        indices = (offset / self.grid.cellsize())
         return numpy.floor(indices)
         
     @late
     def index_for_000_cell(self):
         offset = self.point - self.grid[0,0,0].position
-        indices = (offset / self.grid.cellsize()).value_in(units.none)
+        indices = (offset / self.grid.cellsize())
         return numpy.floor(indices).astype(numpy.int)
 
     @late
@@ -338,8 +338,7 @@ class SamplePointWithIntepolation(object):
         dy0 = (y - y0) / (y1 - y0)
         dz0 = (z - z0) / (z1 - z0)
         
-        result = quantities.AdaptingVectorQuantity()
-        result.extend([
+        result = numpy.asarray([
             dx1 * dy1 * dz1,
             dx0 * dy1 * dz1,
             dx1 * dy0 * dz1,
@@ -524,7 +523,7 @@ class NonOverlappingGridsIndexer(object):
         max_index = [0,0,0]
         
         for x in self.grids:
-            index = (x.get_maximum_position() / smallest_boxsize).value_in(units.none)
+            index = (x.get_maximum_position() / smallest_boxsize)
             index = numpy.floor(index).astype(numpy.int)
             max_index = numpy.where(index > max_index, index, max_index)
             
@@ -532,15 +531,15 @@ class NonOverlappingGridsIndexer(object):
         
         for index,x in enumerate(self.grids):
             bottom_left = x.get_minimum_position()
-            index_of_grid = (bottom_left / smallest_boxsize).value_in(units.none)
-            size = ((x.get_maximum_position() - x.get_minimum_position()) / smallest_boxsize).value_in(units.none)
+            index_of_grid = (bottom_left / smallest_boxsize)
+            size = ((x.get_maximum_position() - x.get_minimum_position()) / smallest_boxsize)
             i,j,k = numpy.floor(index_of_grid).astype(numpy.int)
             ni,nj,nk = numpy.floor(size).astype(numpy.int)
             self.grids_on_index[i:i+ni,j:j+nj,k:k+nk] = index
         
         
     def grid_for_point(self, position):
-        index = ((position - self.minimum_position) / self.smallest_boxsize).value_in(units.none)
+        index = ((position - self.minimum_position) / self.smallest_boxsize)
         index = numpy.floor(index).astype(numpy.int)
         index_of_grid = self.grids_on_index[tuple(index)]
         return self.grids[index_of_grid]

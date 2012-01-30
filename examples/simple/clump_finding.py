@@ -44,7 +44,7 @@ def plot_clumps(groups, total_mass):
 
     for group in groups:
         number_of_particles_in_group.append(len(group))
-        fraction = (group.mass.sum()/total_mass).value_in(units.none)
+        fraction = (group.mass.sum()/total_mass)
         fraction_of_mass_in_group.append(fraction)
     
     figure = pyplot.figure(figsize= (12,6))

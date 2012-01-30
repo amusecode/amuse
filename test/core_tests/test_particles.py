@@ -196,7 +196,6 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(particles1.mass, [0,0] | units.kg)
         
     def test15(self):
-        print "Test7: Assigning a list of quantities to a set attribute should work."
         particles = datamodel.Particles(10)
         
         # List of scalar quantities:
@@ -215,7 +214,34 @@ class TestParticles(amusetest.TestCase):
         particles.position = positions
         self.assertEqual(particles.position, [(i, 0.01*i, 1000*i) for i in range(10)] | units.m)
     
-
+    def test16(self):
+        particles = datamodel.Particles(2)
+        particles.add_vector_attribute('unitless', ['u1', 'u2', 'u3'])
+        particles.unitless = [[1,2,3],[4,5,6]]
+        self.assertEquals(particles[0].u1, 1)
+        self.assertEquals(particles[0].u3, 3)
+        self.assertEquals(particles[1].u2, 5)
+        self.assertEquals(particles[0].unitless, [1,2,3])
+        self.assertEquals(particles.unitless, [[1,2,3],[4,5,6]])
+        particles[0].unitless = [7,8,9]
+        self.assertEquals(particles[0].unitless, [7,8,9])
+        self.assertEquals(particles[0].u1, 7)
+        self.assertEquals(particles.unitless, [ [7,8,9],[4,5,6]])
+        
+        
+    def test17(self):
+        particles = datamodel.Particles(2)
+        particles.a = [1.0, 2.0]
+        self.assertEquals(particles[0].a, 1.0)
+        particles.b = 3.0
+        self.assertEquals(particles[0].b, 3.0)
+        self.assertEquals(particles[1].b, 3.0)
+        self.assertAlmostRelativeEquals(particles.b, [3.0, 3.0])
+        particles[0].b = 4.0
+        self.assertAlmostRelativeEquals(particles.b, [4.0, 3.0])
+        particles[1].a = 5.0
+        self.assertAlmostRelativeEquals(particles.a, [1.0, 5.0])
+        
         
 class TestStars(amusetest.TestCase):
 
@@ -874,6 +900,26 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertFalse(hasattr(superset, 'radius'))
         particles2.radius = 20 | units.m
         self.assertTrue(hasattr(superset, 'radius'))
+        
+    def test10(self):
+        
+        particles1 = datamodel.Particles(2)
+        particles1.u1 = 10 
+        particles2 = datamodel.Particles(2)
+        particles2.u1 = 20 
+        superset = datamodel.ParticlesSuperset([particles1, particles2])
+            
+        self.assertTrue(hasattr(superset, 'u1'))
+        self.assertEquals(superset.u1 , [10,10,20,20])
+        self.assertFalse(hasattr(superset, 'u2'))
+        particles1.u2 = 30
+        self.assertFalse(hasattr(superset, 'u2'))
+        particles2.u2 = 20
+        self.assertTrue(hasattr(superset, 'u2'))
+        self.assertEquals(superset.u2 , [30,30,20,20])
+        superset.u2 = 15
+        self.assertEquals(superset.u2 , [15,15,15,15])
+        
     
 class TestSliceParticles(amusetest.TestCase):
     

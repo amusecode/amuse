@@ -96,7 +96,7 @@ class CalculateExactSolutionIn1D(object):
             p4 = p41 - (p41 - p40) * f1 / (f1 - f0)
 
             error = abs (p4 - p41) / p41
-            if (error.value_in(units.none) < maxium_allowable_relative_error):
+            if (error < maxium_allowable_relative_error):
                 return p4
 
             p40 = p41

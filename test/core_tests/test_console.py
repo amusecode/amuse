@@ -7,8 +7,12 @@ from amuse.units import constants
 from amuse.support import console
 from amuse.support.console import set_printing_strategy
 from amuse.support.console import get_current_printing_strategy
+
 class TestPrintingStrategy(amusetest.TestCase):
 
+    def tearDown(self):
+        set_printing_strategy("default")
+ 
     def test1(self):
         print "Testing get/set of printing strategy"
         self.assertEqual(get_current_printing_strategy(), console.DefaultPrintingStrategy)

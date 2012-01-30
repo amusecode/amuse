@@ -420,7 +420,7 @@ class TestMI6(TestWithMPI):
         
         tan_initial_direction = particles[1].vy/particles[1].vx
         self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))
-        tan_final_direction = [] | units.none
+        tan_final_direction =  []
         for log_eps2 in range(-9,10,2):
             instance = MI6(converter, **default_options)
             instance.initialize_code()

@@ -5,6 +5,7 @@ from amuse.units import units
 from amuse.units import quantities
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import new_quantity
+from amuse.units.quantities import is_quantity
 from amuse.units.quantities import zero
 from amuse.units.quantities import AdaptingVectorQuantity
 
@@ -132,26 +133,51 @@ class VectorAttribute(DerivedAttribute):
         values = instance.get_values_in_store(instance.get_all_keys_in_store(), self.attribute_names)
           
         unit_of_the_values = None
-        results = []
+        
+        unit_of_the_values = None
+        is_a_quantity = None
         for quantity in values:
             if unit_of_the_values is None:
-                unit_of_the_values = quantity.unit
-            results.append(quantity.value_in(unit_of_the_values))
+                is_a_quantity = is_quantity(quantity)
+                if is_a_quantity:
+                    unit_of_the_values = quantity.unit
+                break
+    
+        if is_a_quantity:
+            results = []
+            for quantity in values:
+                if unit_of_the_values is None:
+                    unit_of_the_values = quantity.unit
+                results.append(quantity.value_in(unit_of_the_values))
+        else:
+            results = values
         
         results = numpy.array(results)
         for i in range(len(results.shape) - 1, 0, -1):
             results = numpy.swapaxes(results,0,i)
-        return unit_of_the_values.new_quantity(results)
+        
+        if is_a_quantity:
+            return unit_of_the_values.new_quantity(results)
+        else:
+            return results
 
     def set_values_for_entities(self, instance, value):
-        vectors = value.number
+        is_value_a_quantity = is_quantity(value)
+        if is_value_a_quantity:
+            vectors = value.number
+        else:
+            vectors = numpy.asanyarray(value)
+            
         split = numpy.split(vectors, len(self.attribute_names), axis = vectors.ndim - 1)
         split = [x.reshape(x.shape[0] if len(x.shape) <= 2 else x.shape[:-1]) for x in split]
-        
-        list_of_values = []
-        for i in range(len(self.attribute_names)):
-            values = value.unit.new_quantity(split[i])
-            list_of_values.append(values)
+       
+        if is_value_a_quantity:
+            list_of_values = []
+            for i in range(len(self.attribute_names)):
+               values = value.unit.new_quantity(split[i])
+               list_of_values.append(values)
+        else:
+            list_of_values = split
             
         instance.set_values_in_store(instance.get_all_keys_in_store(), self.attribute_names, list_of_values)
     
@@ -159,18 +185,29 @@ class VectorAttribute(DerivedAttribute):
         values = instance._get_values_for_entity(key, self.attribute_names)
           
         unit_of_the_values = None
-        results = []
+        is_a_quantity = None
         for quantity in values:
             if unit_of_the_values is None:
-                unit_of_the_values = quantity.unit
-            results.append(quantity.value_in(unit_of_the_values))
+                is_a_quantity = is_quantity(quantity)
+                if is_a_quantity:
+                    unit_of_the_values = quantity.unit
+                break
             
-        return unit_of_the_values.new_quantity(results)
-
+        if is_a_quantity:
+            results = []
+            for quantity in values:
+                results.append(quantity.value_in(unit_of_the_values))
+            return unit_of_the_values.new_quantity(results)
+        else:
+            return numpy.asarray(values)
+            
     def set_value_for_entity(self, instance, key, vector):
         list_of_values = []
         for quantity in vector:
-            list_of_values.append(quantity)
+            if is_quantity(quantity):
+                list_of_values.append(quantity.as_vector_with_length(1))
+            else:
+                list_of_values.append(quantity)
         instance._set_values_for_entity(key, self.attribute_names, list_of_values)
 
 
@@ -313,13 +350,20 @@ class AbstractSet(object):
         return [x[0] for x in self.get_values_in_store([key], attributes)]
         
     def _set_values_for_entity(self, key, attributes, values):
-        return self.set_values_in_store([key], attributes, [x.as_vector_with_length(1) for x in values])
+        return self.set_values_in_store([key], attributes, values)
     
     def _set_value_of_attribute(self, key, attribute, value):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].set_value_for_entity(self, key, value)
         else:
             return self.set_values_in_store([key], [attribute], value.as_vector_with_length(1))
+            
+            
+    def _set_unitless_value_of_attribute(self, key, attribute, value):
+        if attribute in self._derived_attributes:
+            return self._derived_attributes[attribute].set_value_for_entity(self, key, value)
+        else:
+            return self.set_values_in_store([key], [attribute], [value])
             
     def _convert_to_entities_or_quantities(self, x):
         if hasattr(x, 'unit') and x.unit.iskey():
@@ -900,8 +944,11 @@ class AbstractSet(object):
     
 
     def _convert_to_entity_or_quantity(self, x):
-        if x.unit.iskey():
-            return self._subset([x.number])[0]
+        if is_quantity(x):
+            if x.unit.iskey():
+                return self._subset([x.number])[0]
+            else:
+                return x
         else:
             return x
     

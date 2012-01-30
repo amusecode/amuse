@@ -68,7 +68,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         x.set_value(10|units.none)
         self.assertEqual(o.x, 10|units.none)
         value = x.get_value()
-        self.assertTrue(value.value_in(units.none), 10)
+        self.assertTrue(value, 10)
 
     def test4(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(

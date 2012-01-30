@@ -37,7 +37,7 @@ class Grid2SPH(object):
         shape_for_vector_multiply.append(1)
         density = self.grid.rho
         summed_density = density.sum()
-        self.cumulative_weight = numpy.cumsum((density / summed_density).value_in(units.none))
+        self.cumulative_weight = numpy.cumsum((density / summed_density))
         self.position_lookup_table = self.grid.position.reshape((-1,3))
         self.velocity_lookup_table = (self.grid.momentum / density.reshape(shape_for_vector_multiply)).reshape((-1,3))
         self.specific_internal_energy_lookup_table = (self.grid.energy / density).flatten()

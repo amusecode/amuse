@@ -5,7 +5,7 @@ from amuse.units.quantities import zero, AdaptingVectorQuantity, VectorQuantity
 from amuse.support.exceptions import AmuseException
 from amuse.datamodel import Particles
 from amuse.datamodel import parameters
-from amuse.ic.plummer import new_plummer_model
+from amuse.ic.plummer import new_plummer_sphere
 
 from amuse.test import amusetest
 from amuse.couple import bridge
@@ -48,7 +48,7 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
     
     def test2(self):
         print "CalculateFieldForParticles, nbody units, no gravity_constant exceptions"
-        stars = new_plummer_model(100)
+        stars = new_plummer_sphere(100)
         self.assertRaises(AmuseException, bridge.CalculateFieldForParticles, stars, 
             expected_message = "For generic units the gravity_constant must be specified")
         self.assertRaises(AmuseException, bridge.CalculateFieldForParticles, Particles(), 
@@ -61,7 +61,7 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
         
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
         numpy.random.seed(12345)
-        stars = new_plummer_model(100, convert_nbody=convert)
+        stars = new_plummer_sphere(100, convert_nbody=convert)
         
         cluster = ExampleGravityCodeInterface()
         cluster.parameters.epsilon_squared = epsilon**2 
@@ -86,7 +86,7 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
         
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
         numpy.random.seed(12345)
-        stars = new_plummer_model(100, convert_nbody=convert)
+        stars = new_plummer_sphere(100, convert_nbody=convert)
         
         cluster = ExampleGravityCodeInterface()
         cluster.parameters.epsilon_squared = epsilon**2 
@@ -111,7 +111,7 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
         
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
         numpy.random.seed(12345)
-        stars = new_plummer_model(100, convert_nbody=convert)
+        stars = new_plummer_sphere(100, convert_nbody=convert)
         stars.radius = epsilon * numpy.random.uniform(low=0.4, high=3.0, size=len(stars))
         
         cluster = ExampleGravityCodeInterface(softening_mode="individual")
@@ -260,7 +260,7 @@ class TestBridge(amusetest.TestWithMPI):
         test_class=ExampleGravityCodeInterface
         
         numpy.random.seed(12345)
-        stars = new_plummer_model(100, convert_nbody=convert)
+        stars = new_plummer_sphere(100, convert_nbody=convert)
         
         cluster=test_class()
         cluster.parameters.epsilon_squared = epsilon**2 
@@ -284,7 +284,7 @@ class TestBridge(amusetest.TestWithMPI):
         test_class=ExampleGravityCodeInterface
         
         numpy.random.seed(12345)
-        stars = new_plummer_model(100, convert_nbody=convert)
+        stars = new_plummer_sphere(100, convert_nbody=convert)
         stars.radius = epsilon
         
         cluster=test_class()
@@ -309,7 +309,7 @@ class TestBridge(amusetest.TestWithMPI):
         test_class=ExampleGravityCodeInterface
         
         numpy.random.seed(12345)
-        stars = new_plummer_model(100, convert_nbody=convert)
+        stars = new_plummer_sphere(100, convert_nbody=convert)
         stars.radius = epsilon
         
         cluster=test_class()
@@ -334,7 +334,7 @@ class TestBridge(amusetest.TestWithMPI):
         test_class=ExampleGravityCodeInterface
         
         numpy.random.seed(12345)
-        stars = new_plummer_model(100, convert_nbody=convert)
+        stars = new_plummer_sphere(100, convert_nbody=convert)
         
         cluster=test_class()
         cluster.initialize_code()
