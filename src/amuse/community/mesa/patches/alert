@@ -34,7 +34,7 @@ Index: mesa/src/mesa/alert/public/alert_lib.f
 +               header = 0
 +               header(1) = -2
 +               header(2) = 1
-+               call MPI_Send(header, 8, MPI_INT, 0, 999, parent, ierr)
++               call MPI_Send(header, 8, MPI_INTEGER, 0, 999, parent, ierr)
 +               call MPI_Comm_disconnect(parent, ierr)
 +               call MPI_Finalize(ierr)
                 stop 1 ! error code
