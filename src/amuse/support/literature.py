@@ -126,6 +126,10 @@ class TrackLiteratureReferences(object):
     def names_of_classes_with_references(self):
         return [x.name_of_class_with_refs for x in self.get_literature_list()]
 
+
+def literature_references():
+    return TrackLiteratureReferences.default().all_literature_references_string()
+    
 class LiteratureReferencesMixIn(object):
 
 
