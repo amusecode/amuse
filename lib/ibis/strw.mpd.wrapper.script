@@ -1,0 +1,26 @@
+#!/bin/sh
+
+source $MODULESHOME/init/sh
+module load mpich2-x86_64
+
+which mpd
+
+if [ $? -ne 0 ];then
+
+mpirun $@
+
+else
+
+ mpdtrace
+ if [ $? -ne 0 ];then
+
+ mpd --daemon 
+ mpirun $@
+ mpdallexit
+
+ else
+
+ mpirun $@
+
+ fi
+fi
