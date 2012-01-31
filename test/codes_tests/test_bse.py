@@ -210,9 +210,9 @@ class TestBSE(TestWithMPI):
     def test1(self):
         print "Testing evolution of a close binary system..."
         instance = BSE()
-        instance.parameters.metallicity = 0.001 | units.none
-        instance.parameters.common_envelope_efficiency = 3.0 | units.none
-        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
+        instance.parameters.metallicity = 0.001
+        instance.parameters.common_envelope_efficiency = 3.0
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
         stars =  Particles(1)
         
@@ -281,9 +281,9 @@ class TestBSE(TestWithMPI):
     def test2(self):
         print "Testing evolution of a wide binary system."
         instance = BSE()
-        instance.parameters.metallicity = 0.001 | units.none
-        instance.parameters.common_envelope_efficiency = 3.0 | units.none
-        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
+        instance.parameters.metallicity = 0.001
+        instance.parameters.common_envelope_efficiency = 3.0
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
         stars =  Particles(1)
         
@@ -353,8 +353,8 @@ class TestBSE(TestWithMPI):
     def test3(self):
         print "Testing standard BSE example 2..."
         instance = BSE()
-        instance.parameters.common_envelope_efficiency = 3.0 | units.none
-        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
+        instance.parameters.common_envelope_efficiency = 3.0
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
         stars =  Particles(1)
         
@@ -431,8 +431,8 @@ class TestBSE(TestWithMPI):
     def test4(self):
         print "Quick testing standard BSE example 2..."
         instance = BSE()
-        instance.parameters.common_envelope_efficiency = 3.0 | units.none
-        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
+        instance.parameters.common_envelope_efficiency = 3.0
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
         stars =  Particles(1)
         
@@ -459,8 +459,8 @@ class TestBSE(TestWithMPI):
     def test5(self):
         print "Testing stellar collision..."
         instance = BSE()
-        instance.parameters.common_envelope_efficiency = 3.0 | units.none
-        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
+        instance.parameters.common_envelope_efficiency = 3.0
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
         stars =  Particles(1)
         

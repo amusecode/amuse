@@ -90,7 +90,7 @@ def run_supernova():
         if not "parameter is read-only" in str(exc): raise
     
     hydro_code.parameters.epsilon_squared = core_radius**2
-    hydro_code.parameters.n_smooth_tol = 0.01 | units.none
+    hydro_code.parameters.n_smooth_tol = 0.01
     hydro_code.gas_particles.add_particles(gas_without_core)
     hydro_code.dm_particles.add_particles(core)
     

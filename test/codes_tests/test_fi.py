@@ -811,8 +811,8 @@ class TestFi(TestWithMPI):
         gas.h_smooth = 0.01 | nbody.length
         
         instance = Fi(convert_nbody)
-        instance.parameters.n_smooth     =   64 | units.none
-        instance.parameters.n_smooth_tol = 0.01 | units.none
+        instance.parameters.n_smooth = 64
+        instance.parameters.n_smooth_tol = 0.01
         instance.gas_particles.add_particles(gas)
         instance.synchronize_model()
         
@@ -850,8 +850,8 @@ class TestFi(TestWithMPI):
         density = (1.0e10 | units.MSun) / (4.0/3.0 * numpy.pi * (1.0 | units.kpc)**3)
         
         instance = Fi(convert_nbody)
-        instance.parameters.n_smooth     =  64 | units.none
-        instance.parameters.n_smooth_tol = 0.01 | units.none
+        instance.parameters.n_smooth = 64
+        instance.parameters.n_smooth_tol = 0.01
         instance.gas_particles.add_particles(gas)
         instance.synchronize_model()
         

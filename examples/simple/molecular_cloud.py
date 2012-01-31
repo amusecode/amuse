@@ -65,7 +65,7 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
     sph.parameters.isothermal_flag=True
     sph.parameters.integrate_entropy_flag=False
     sph.parameters.timestep=dt/2  
-    sph.parameters.verbosity=0 | units.none
+    sph.parameters.verbosity = 0
 
     sph.gas_particles.add_particles(parts)
 

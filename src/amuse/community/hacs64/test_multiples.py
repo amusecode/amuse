@@ -744,7 +744,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
 
     for root in binaries.iter_roots():
         root_in_stars = root.particle.as_particle_in_set(stars)
-        root_in_stars.id = new_root_index() | units.none
+        root_in_stars.id = new_root_index()
         # print 'root_in_stars:'
         # print root_in_stars; sys.stdout.flush(); sys.stdout.flush()
         gravity_stars.add_particle(root_in_stars)
@@ -853,7 +853,7 @@ def test_multiples(infile = None,
         stars = new_plummer_sphere(number_of_stars)
 
         id = numpy.arange(number_of_stars) 
-        stars.id = id+1 | units.none
+        stars.id = id+1
 
         print "setting particle masses and radii"
 	#stars.mass = (1.0 / number_of_stars) | nbody_system.mass
@@ -902,7 +902,7 @@ def test_multiples(infile = None,
         f.close()
 
         stars = datamodel.Particles(number_of_stars)
-        stars.id = id | units.none
+        stars.id = id
         stars.mass = mass | nbody_system.mass
         stars.position = pos | nbody_system.length
         stars.velocity = vel | nbody_system.speed

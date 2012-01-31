@@ -138,7 +138,7 @@ def head_on_stellar_merger(
     unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, constants.G, t_end)
     hydro_legacy_code = sph_code(unit_converter)
     n_steps = 100
-    hydro_legacy_code.parameters.n_smooth = 96 | units.none
+    hydro_legacy_code.parameters.n_smooth = 96
     try:
         hydro_legacy_code.parameters.timestep = t_end / n_steps
     except Exception as exc:

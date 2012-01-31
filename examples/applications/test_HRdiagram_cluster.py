@@ -112,9 +112,9 @@ class InstantiateCode(object):
     def mesa(self, number_of_stars):
         result = MESA()
         result.initialize_code()
-        if number_of_stars > (10 | units.none):
+        if number_of_stars > (10):
             warnings.warn("You're simulating a large number of stars with MESA. This may not be such a good idea...")
-        if number_of_stars > (1000| units.none):
+        if number_of_stars > (1000):
             raise Exception("You want to simulate with more than 1000 stars using MESA, this is not supported")
         return result
     
@@ -129,7 +129,7 @@ def new_code(name_of_the_code, number_of_stars):
         
 def test_simulate_short():
     assert is_mpd_running()
-    code = new_code("sse", 100 | units.none)
+    code = new_code("sse", 100)
     
     test_results_path = get_path_to_results()
     output_file = os.path.join(test_results_path, "cluster_HR_diagram.png")
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     if arguments:
         parser.error("unknown arguments '{0}'".format(arguments))
     
-    code = new_code(options.code, options.number_of_stars | units.none)
+    code = new_code(options.code, options.number_of_stars)
 
     if not (options.cacheDir is None):
         print "Using cache directory: %s" % (options.cacheDir)

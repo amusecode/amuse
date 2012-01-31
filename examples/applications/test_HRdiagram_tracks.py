@@ -176,9 +176,9 @@ class InstantiateCode(object):
     def mesa(self, number_of_stars):
         result = MESA()
         result.initialize_code()
-        if number_of_stars > (10 | units.none):
+        if number_of_stars > (10):
             warnings.warn("You're simulating a large number of stars with MESA. This may not be such a good idea...")
-        if number_of_stars > (1000| units.none):
+        if number_of_stars > (1000):
             raise Exception("You want to simulate with more than 1000 stars using MESA, this is not supported")
         return result
 
@@ -202,7 +202,7 @@ def new_code(name_of_the_code, number_of_stars):
 
 def test_simulate_one_star():
     assert is_mpd_running()
-    code = new_code("sse", 1 | units.none)
+    code = new_code("sse", 1)
     test_results_path = get_path_to_results()
     output_file = os.path.join(test_results_path, "HR_evolution_tracks.png")
     simulate_evolution_tracks(
@@ -250,7 +250,7 @@ if __name__ == '__main__':
         parser.error("unknown arguments '{0}'".format(arguments))
     mass_list = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun
     
-    code = new_code(options.code, len(mass_list) | units.none)
+    code = new_code(options.code, len(mass_list))
     if not (options.cacheDir is None):
         print "Using cache directory: %s" % (options.cacheDir)
 # As a special case, we use caching of the underlying models instead of the model output for EVtwin2SSE

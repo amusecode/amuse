@@ -247,8 +247,8 @@ class TestPhigrape(TestWithMPI):
         instance = PhiGRAPE(convert_nbody, **default_test_options)#, debugger="xterm")
         instance.initialize_code()
         instance.parameters.set_defaults()
-        instance.parameters.initial_timestep_parameter = 0.001 | units.none
-        instance.parameters.timestep_parameter = 0.001 | units.none
+        instance.parameters.initial_timestep_parameter = 0.001
+        instance.parameters.timestep_parameter = 0.001
         
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
@@ -759,8 +759,8 @@ class TestPhigrape(TestWithMPI):
         instance.initialize_code()
     
         instance.parameters.set_defaults()
-        instance.parameters.initial_timestep_parameter = 0.001 | units.none
-        instance.parameters.timestep_parameter = 0.001 | units.none
+        instance.parameters.initial_timestep_parameter = 0.001
+        instance.parameters.timestep_parameter = 0.001
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         
         stars = self.new_system_of_sun_and_earth()

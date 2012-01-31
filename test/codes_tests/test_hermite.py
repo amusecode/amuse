@@ -376,7 +376,7 @@ class TestHermite(TestWithMPI):
         self.assertEquals(0.03 | units.none, value)
         self.assertAlmostEquals(0.03 | units.none, instance.parameters.dt_param, in_units=units.none)
         for x in [0.001, 0.01, 0.1]:
-            instance.parameters.dt_param = x | units.none
+            instance.parameters.dt_param = x
             self.assertAlmostEquals(x | units.none, instance.parameters.dt_param, in_units=units.none)
         
         value = instance.get_dt_dia()
@@ -471,7 +471,7 @@ class TestHermite(TestWithMPI):
         instance = Hermite(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.parameters.pair_factor = 1e14 | units.none
+        instance.parameters.pair_factor = 1e14
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
                 

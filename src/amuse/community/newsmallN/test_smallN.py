@@ -73,7 +73,7 @@ def test_smallN(infile = None, number_of_stars = 10,
         stars = new_plummer_sphere(number_of_stars)
 
         id = numpy.arange(number_of_stars)
-        stars.id = id+1 | units.none
+        stars.id = id+1
 
         print "setting particle masses and radii"
 	#stars.mass = (1.0 / number_of_stars) | nbody_system.mass
@@ -121,7 +121,7 @@ def test_smallN(infile = None, number_of_stars = 10,
         f.close()
 
         stars = datamodel.Particles(number_of_stars)
-        stars.id = id | units.none
+        stars.id = id
         stars.mass = mass | nbody_system.mass
         stars.position = pos | nbody_system.length
         stars.velocity = vel | nbody_system.speed

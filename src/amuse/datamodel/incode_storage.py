@@ -519,7 +519,7 @@ class ParticleGetIndexMethod(object):
     
     def get_attribute_values(self, storage, attributes_to_return, *indices):
         
-        return {self.ATTRIBUTE_NAME : indices[0] | units.none}
+        return {self.ATTRIBUTE_NAME : indices[0]}
 
 class AbstractInCodeAttributeStorage(base.AttributeStorage):
     """

@@ -788,10 +788,10 @@ class TestAthena(TestWithMPI):
         instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
         self.assertAlmostRelativeEquals(instance.parameters.isothermal_sound_speed, 0.1 | generic_unit_system.speed)
         self.assertAlmostRelativeEquals(instance.parameters.gamma, 1.66666666666666667 | units.none)
-        instance.parameters.gamma = 0.1 | units.none
+        instance.parameters.gamma = 0.1
         self.assertAlmostRelativeEquals(instance.parameters.gamma, 0.1 | units.none)
         self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.3 | units.none)
-        instance.parameters.courant_number = 0.1 | units.none
+        instance.parameters.courant_number = 0.1
         self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.1 | units.none)
         
         print instance.parameters
@@ -833,8 +833,8 @@ class TestAthena(TestWithMPI):
         instance=self.new_instance(Athena)
         instance.initialize_code()
         instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
-        instance.parameters.gamma = 0.1 | units.none
-        instance.parameters.courant_number = 0.1 | units.none
+        instance.parameters.gamma = 0.1
+        instance.parameters.courant_number = 0.1
        
         instance.parameters.nx = 10
         instance.parameters.ny = 20

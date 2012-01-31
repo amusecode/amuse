@@ -293,7 +293,7 @@ class TestMI6(TestWithMPI):
             instance.unit_converter.to_si(0.1 | nbody_system.length**2))
         # timestep_parameter is an alias for timestep_parameter_stars, so timestep_parameter also has become 3:
         self.assertEquals(instance.parameters.timestep_parameter, 3.0 | units.none)
-        instance.parameters.timestep_parameter = 0.01 | units.none
+        instance.parameters.timestep_parameter = 0.01
         self.assertEquals(instance.parameters.timestep_parameter, 0.01 | units.none)
         
         self.assertEquals(instance.parameters.drink, "Vodka martini. Shaken, not stirred." | units.string)

@@ -47,7 +47,7 @@ def print_log(s, gravity, E0 = zero):
     Q = -T/U
     print ""
     print "%s: time = %.10f, mass = %.10f, dE/E0 = %.5e" \
-          % (s, gravity.get_time().number, M.number, (E/E0 - 1).number)
+          % (s, gravity.get_time().number, M.number, (E/E0 - 1))
     print "%senergies = %.10f %.10f %.10f" \
           % (' '*(2+len(s)), E.number, U.number, T.number)
         
@@ -406,7 +406,7 @@ class Multiples(object):
         
         # 5e. Add the roots to the gravity code
         for tree in binaries.iter_binary_trees():
-            tree.particle.id = new_root_index() | units.none
+            tree.particle.id = new_root_index()
             gravity_stars.add_particle(tree.particle)
             
         # 5f. Store all trees in memory for later reference
@@ -482,10 +482,10 @@ def find_nnn(star1, star2, stars):	# print next nearest neighbor
     top_level = stars
 
     min_dr = 1.e10
-    id1 = star1.id.number
-    id2 = star2.id.number
+    id1 = star1.id
+    id2 = star2.id
     for t in top_level:
-        tid = t.id.number
+        tid = t.id
         if tid != id1 and tid != id2:
             dr2 = sep2(t, star1)
             if dr2 > 0 and dr2 < min_dr:
@@ -493,7 +493,7 @@ def find_nnn(star1, star2, stars):	# print next nearest neighbor
                 nnn = t
     min_dr = math.sqrt(min_dr)
     print 'star =', int(id1), ' min_dr =', min_dr, \
-          ' nnn =', int(nnn.id.number), '(', nnn.mass.number, ')'
+          ' nnn =', int(nnn.id), '(', nnn.mass.number, ')'
     print '    phi_tidal =', phi_tidal(star1, star2, nnn)
     print '    nnn pos:', nnn.x.number, nnn.y.number, nnn.z.number
     sys.stdout.flush()
@@ -549,7 +549,7 @@ def offset_particle_tree(particle, dpos, dvel):
         offset_particle_tree(particle.child2, dpos, dvel)
     particle.position += dpos
     particle.velocity += dvel
-    # print 'offset', int(particle.id.number), 'by', dpos; sys.stdout.flush()
+    # print 'offset', int(particle.id), 'by', dpos; sys.stdout.flush()
 
 def compress_binary_components(comp1, comp2, scale):
 
@@ -561,8 +561,8 @@ def compress_binary_components(comp1, comp2, scale):
     sep12 = ((pos2-pos1)**2).sum()
 
     if sep12 > scale*scale:
-        print '\ncompressing components', int(comp1.id.number), \
-              'and', int(comp2.id.number), 'to separation', scale.number
+        print '\ncompressing components', int(comp1.id), \
+              'and', int(comp2.id), 'to separation', scale.number
         sys.stdout.flush()
         mass1 = comp1.mass
         mass2 = comp2.mass
@@ -668,7 +668,7 @@ def print_multiple(m, level=0):
     # Recursively print the structure of (multipe) node m.
 
     print "m=", m.key
-    print '    '*level, int(m.id.number), ' mass =', m.mass.number
+    print '    '*level, int(m.id), ' mass =', m.mass.number
     print '    '*level, 'pos =', m.position.number
     print '    '*level, 'vel =', m.velocity.number
     if not m.child1 is None and not m.child2 is None:

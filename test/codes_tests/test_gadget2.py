@@ -392,7 +392,7 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.parameters.code_time_unit, 3.085678e16 | units.s, 7)
         self.assertAlmostRelativeEquals(instance.parameters.code_length_unit, self.UnitLength, 7)
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2
-        instance.parameters.opening_angle = 0.4 | units.none
+        instance.parameters.opening_angle = 0.4
         instance.commit_parameters()
         self.assertAlmostEquals(instance.parameters.epsilon_squared, 0.01 | units.kpc**2)
         self.assertAlmostEquals(instance.parameters.opening_angle, 0.4 | units.none)
@@ -636,8 +636,8 @@ class TestGadget2(TestWithMPI):
         number_sph_particles = 100
         gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
-        instance.parameters.n_smooth     =   64 | units.none
-        instance.parameters.n_smooth_tol = 1.56250e-2 | units.none
+        instance.parameters.n_smooth = 64
+        instance.parameters.n_smooth_tol = 1.56250e-2
         instance.gas_particles.add_particles(gas)
         
         coords = [0.0 | units.kpc]*3
@@ -675,8 +675,8 @@ class TestGadget2(TestWithMPI):
         density = (1.0e10 | units.MSun) / (4.0/3.0 * numpy.pi * (1.0 | units.kpc)**3)
         
         instance = Gadget2(self.default_converter, **default_options)
-        instance.parameters.n_smooth     =   64 | units.none
-        instance.parameters.n_smooth_tol = 0.01 | units.none
+        instance.parameters.n_smooth = 64
+        instance.parameters.n_smooth_tol = 0.01
         instance.gas_particles.add_particles(gas)
         
         coords = [0.0 | units.kpc]*3

@@ -393,10 +393,16 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
             
         
         old_length = len(self.particle_keys)
-        for attribute_values in self.mapping_from_attribute_to_quantities.values():
+        for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.iteritems()):
             if len(attribute_values) == old_length:
-                zeros_for_concatenation = VectorQuantity.zeros(len(keys), attribute_values.unit)
-                attribute_values.extend(zeros_for_concatenation)
+                
+                if not is_quantity(attribute_values):
+                    zeros_for_concatenation = numpy.zeros(len(keys), dtype=attribute_values.dtype)
+                    attribute_values = numpy.concatenate((attribute_values,zeros_for_concatenation))
+                    self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+                else:
+                    zeros_for_concatenation = VectorQuantity.zeros(len(keys), attribute_values.unit)
+                    attribute_values.extend(zeros_for_concatenation)
                 
         self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
         self.reindex()

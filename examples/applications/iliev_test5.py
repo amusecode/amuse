@@ -102,8 +102,8 @@ def glass(N, target_rms=0.05):
   sph.parameters.timestep=dt  
   sph.parameters.verbosity=0
   sph.parameters.pboxsize=2*L
-  sph.parameters.artificial_viscosity_alpha=1.| units.none
-  sph.parameters.beta=2. | units.none
+  sph.parameters.artificial_viscosity_alpha = 1.
+  sph.parameters.beta = 2.
   sph.commit_parameters()
   sph.gas_particles.add_particles(p)
   sph.commit_particles()

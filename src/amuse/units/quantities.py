@@ -452,7 +452,13 @@ class VectorQuantity(Quantity):
         return VectorQuantity(self._number.take(indices), self.unit)
 
     def put(self, indices, vector):
-        self._number.put(indices, vector.value_in(self.unit))
+        try:
+            self._number.put(indices, vector.value_in(self.unit))
+        except AttributeError:
+            if not is_quantity(vector):
+                raise TypeError("Tried to put a non quantity value in a quantity")
+            else:
+                raise
 
     def __setitem__(self, index, quantity):
         """Update the "index" component to the specified quantity.

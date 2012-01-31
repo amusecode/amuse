@@ -251,100 +251,100 @@ class BSE(common.CommonCode):
     def define_parameters(self, object):
     
         object.add_caching_parameter(
-            "initialize",
-            "z_in",
-            "metallicity",
-            "Metallicity of all stars",
-            0.02 | units.none
-        )
+        "initialize",
+        "z_in",
+        "metallicity",
+        "Metallicity of all stars",
+        0.02
+    )
                 
         object.add_caching_parameter(
-            "initialize",
-            "neta_in",
-            "reimers_mass_loss_coefficient",
-            "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
-            0.5 | units.none
-        )
+        "initialize",
+        "neta_in",
+        "reimers_mass_loss_coefficient",
+        "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
+        0.5
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "bwind_in",
-            "binary_enhanced_mass_loss_parameter",
-            "The binary enhanced mass loss parameter (inactive for single).",
-            0.0 | units.none
-        )
+        "initialize",
+        "bwind_in",
+        "binary_enhanced_mass_loss_parameter",
+        "The binary enhanced mass loss parameter (inactive for single).",
+        0.0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "hewind_in",
-            "helium_star_mass_loss_factor",
-            "Helium star mass loss factor",
-            1.0 | units.none
-        )
+        "initialize",
+        "hewind_in",
+        "helium_star_mass_loss_factor",
+        "Helium star mass loss factor",
+        1.0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "alpha1_in",
-            "common_envelope_efficiency",
-            "The common-envelope efficiency parameter",
-            1.0 | units.none
-        )
+        "initialize",
+        "alpha1_in",
+        "common_envelope_efficiency",
+        "The common-envelope efficiency parameter",
+        1.0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "CElambda_in",
-            "common_envelope_binding_energy_factor",
-            "The binding energy factor for common envelope evolution",
-            0.5 | units.none
-        )
+        "initialize",
+        "CElambda_in",
+        "common_envelope_binding_energy_factor",
+        "The binding energy factor for common envelope evolution",
+        0.5
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "ceflag_in",
-            "common_envelope_model_flag", 
-            "ceflag > 0 activates spin-energy correction in common-envelope. ceflag = 3 activates de Kool common-envelope model (0).",
-            0 | units.none
-        )
+        "initialize",
+        "ceflag_in",
+        "common_envelope_model_flag",
+        "ceflag > 0 activates spin-energy correction in common-envelope. ceflag = 3 activates de Kool common-envelope model (0).",
+        0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "tflag_in",
-            "tidal_circularisation_flag", 
-            "tflag > 0 activates tidal circularisation (1).",
-            1 | units.none
-        )
+        "initialize",
+        "tflag_in",
+        "tidal_circularisation_flag",
+        "tflag > 0 activates tidal circularisation (1).",
+        1
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "ifflag_in",
-            "white_dwarf_IFMR_flag", 
-            "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
-            0 | units.none
-        )
+        "initialize",
+        "ifflag_in",
+        "white_dwarf_IFMR_flag",
+        "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
+        0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "wdflag_in",
-            "white_dwarf_cooling_flag", 
-            "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
-            1 | units.none
-        )
+        "initialize",
+        "wdflag_in",
+        "white_dwarf_cooling_flag",
+        "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
+        1
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "bhflag_in",
-            "black_hole_kick_flag",
-            "bhflag > 0 allows velocity kick at BH formation (0).",
-            0 | units.none
-        )
+        "initialize",
+        "bhflag_in",
+        "black_hole_kick_flag",
+        "bhflag > 0 allows velocity kick at BH formation (0).",
+        0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "nsflag_in",
-            "neutron_star_mass_flag",
-            "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
-            1 | units.none
-        )
+        "initialize",
+        "nsflag_in",
+        "neutron_star_mass_flag",
+        "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
+        1
+    )
         
         object.add_caching_parameter(
             "initialize",
@@ -355,36 +355,36 @@ class BSE(common.CommonCode):
         )
         
         object.add_caching_parameter(
-            "initialize",
-            "idum_in",
-            "SN_kick_random_seed", 
-            "The random number seed used in the kick routine.",
-            29769 | units.none
-        )
+        "initialize",
+        "idum_in",
+        "SN_kick_random_seed",
+        "The random number seed used in the kick routine.",
+        29769
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "pts1_in",
-            "fractional_time_step_1", 
-            "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
-            0.05 | units.none
-        )
+        "initialize",
+        "pts1_in",
+        "fractional_time_step_1",
+        "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
+        0.05
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "pts2_in",
-            "fractional_time_step_2", 
-            "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
-            0.01 | units.none
-        )
+        "initialize",
+        "pts2_in",
+        "fractional_time_step_2",
+        "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
+        0.01
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "pts3_in",
-            "fractional_time_step_3", 
-            "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
-            0.02 | units.none
-        )
+        "initialize",
+        "pts3_in",
+        "fractional_time_step_3",
+        "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
+        0.02
+    )
         
         object.add_caching_parameter(
             "initialize",
@@ -395,52 +395,52 @@ class BSE(common.CommonCode):
         )
         
         object.add_caching_parameter(
-            "initialize",
-            "beta_in",
-            "wind_velocity_factor",
-            "The wind velocity factor: proportional to vwind**2 (1/8).",
-            0.125 | units.none
-        )
+        "initialize",
+        "beta_in",
+        "wind_velocity_factor",
+        "The wind velocity factor: proportional to vwind**2 (1/8).",
+        0.125
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "xi_in",
-            "wind_accretion_efficiency",
-            "The wind accretion efficiency factor (1.0).",
-            1.0 | units.none
-        )
+        "initialize",
+        "xi_in",
+        "wind_accretion_efficiency",
+        "The wind accretion efficiency factor (1.0).",
+        1.0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "acc2_in",
-            "wind_accretion_factor",
-            "The Bondi-Hoyle wind accretion factor (3/2).",
-            1.5 | units.none
-        )
+        "initialize",
+        "acc2_in",
+        "wind_accretion_factor",
+        "The Bondi-Hoyle wind accretion factor (3/2).",
+        1.5
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "epsnov_in",
-            "nova_retained_accreted_matter_fraction",
-            "The fraction of accreted matter retained in nova eruption (0.001).",
-            0.001 | units.none
-        )
+        "initialize",
+        "epsnov_in",
+        "nova_retained_accreted_matter_fraction",
+        "The fraction of accreted matter retained in nova eruption (0.001).",
+        0.001
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "eddfac_in",
-            "Eddington_mass_transfer_limit_factor",
-            "The Eddington limit factor for mass transfer (1.0).",
-            1.0 | units.none
-        )
+        "initialize",
+        "eddfac_in",
+        "Eddington_mass_transfer_limit_factor",
+        "The Eddington limit factor for mass transfer (1.0).",
+        1.0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "gamma_in",
-            "Roche_angular_momentum_factor",
-            "The angular momentum factor for mass lost during Roche (-1.0). ",
-            -1.0 | units.none
-        )
+        "initialize",
+        "gamma_in",
+        "Roche_angular_momentum_factor",
+        "The angular momentum factor for mass lost during Roche (-1.0). ",
+        -1.0
+    )
     
     
     def define_state(self, object):

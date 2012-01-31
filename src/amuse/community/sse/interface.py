@@ -169,36 +169,36 @@ class SSE(common.CommonCode):
     def define_parameters(self, object):
     
         object.add_caching_parameter(
-            "initialize",
-            "z_in",
-            "metallicity",
-            "Metallicity of all stars",
-            0.02 | units.none
-        )
+        "initialize",
+        "z_in",
+        "metallicity",
+        "Metallicity of all stars",
+        0.02
+    )
                 
         object.add_caching_parameter(
-            "initialize",
-            "neta_in",
-            "reimers_mass_loss_coefficient",
-            "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
-            0.5 | units.none
-        )
+        "initialize",
+        "neta_in",
+        "reimers_mass_loss_coefficient",
+        "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
+        0.5
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "bwind_in",
-            "binary_enhanced_mass_loss_parameter",
-            "The binary enhanced mass loss parameter (inactive for single).",
-            0.0 | units.none
-        )
+        "initialize",
+        "bwind_in",
+        "binary_enhanced_mass_loss_parameter",
+        "The binary enhanced mass loss parameter (inactive for single).",
+        0.0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "hewind_in",
-            "helium_star_mass_loss_factor",
-            "Helium star mass loss factor",
-            1.0 | units.none
-        )
+        "initialize",
+        "hewind_in",
+        "helium_star_mass_loss_factor",
+        "Helium star mass loss factor",
+        1.0
+    )
         
         object.add_caching_parameter(
             "initialize",
@@ -209,36 +209,36 @@ class SSE(common.CommonCode):
         )
         
         object.add_caching_parameter(
-            "initialize",
-            "ifflag_in",
-            "white_dwarf_IFMR_flag", 
-            "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
-            0 | units.none
-        )
+        "initialize",
+        "ifflag_in",
+        "white_dwarf_IFMR_flag",
+        "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
+        0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "wdflag_in",
-            "white_dwarf_cooling_flag", 
-            "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
-            1 | units.none
-        )
+        "initialize",
+        "wdflag_in",
+        "white_dwarf_cooling_flag",
+        "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
+        1
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "bhflag_in",
-            "black_hole_kick_flag",
-            "bhflag > 0 allows velocity kick at BH formation (0).",
-            0 | units.none
-        )
+        "initialize",
+        "bhflag_in",
+        "black_hole_kick_flag",
+        "bhflag > 0 allows velocity kick at BH formation (0).",
+        0
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "nsflag_in",
-            "neutron_star_mass_flag",
-            "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
-            1 | units.none
-        )
+        "initialize",
+        "nsflag_in",
+        "neutron_star_mass_flag",
+        "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
+        1
+    )
         
         object.add_caching_parameter(
             "initialize",
@@ -249,28 +249,28 @@ class SSE(common.CommonCode):
         )
         
         object.add_caching_parameter(
-            "initialize",
-            "pts1_in",
-            "fractional_time_step_1", 
-            "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
-            0.05 | units.none
-        )
+        "initialize",
+        "pts1_in",
+        "fractional_time_step_1",
+        "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
+        0.05
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "pts2_in",
-            "fractional_time_step_2", 
-            "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
-            0.01 | units.none
-        )
+        "initialize",
+        "pts2_in",
+        "fractional_time_step_2",
+        "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
+        0.01
+    )
         
         object.add_caching_parameter(
-            "initialize",
-            "pts3_in",
-            "fractional_time_step_3", 
-            "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
-            0.02 | units.none
-        )
+        "initialize",
+        "pts3_in",
+        "fractional_time_step_3",
+        "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
+        0.02
+    )
     
     def define_state(self, object):
         common.CommonCode.define_state(self, object)

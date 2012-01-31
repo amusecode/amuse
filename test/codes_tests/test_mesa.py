@@ -511,7 +511,7 @@ class TestMESA(TestWithMPI):
             print "MESA was not built. Skipping test."
             return
         instance.initialize_code()
-        instance.parameters.metallicity = 0.0 | units.none
+        instance.parameters.metallicity = 0.0
         instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()

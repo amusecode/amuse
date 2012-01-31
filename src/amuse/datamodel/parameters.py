@@ -3,6 +3,7 @@ import weakref
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
 from amuse.units import quantities
+from amuse.units.quantities import is_quantity
 from amuse.support import exceptions
 
 import warnings
@@ -206,7 +207,7 @@ class ParametersWithUnitsConverted(object):
             warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
             return
         default_value = self._original.get_default_value_for(name)
-        if not isinstance(default_value,bool) and generic_unit_system.is_generic_unit(default_value.unit):
+        if not isinstance(default_value, bool) and (is_quantity(default_value) and generic_unit_system.is_generic_unit(default_value.unit)):
             setattr(self._original, name, self._converter.from_source_to_target(value))
         else:
             setattr(self._original, name, value)
@@ -397,11 +398,12 @@ class ModuleCachingParameterDefinition(ParameterDefinition):
 
     def set_value(self, parameter, object, quantity):
         
-        unit = self.default_value.unit
-        if unit.is_non_numeric() or len(unit.base) == 0:
-            if not isinstance(quantity, quantities.Quantity):
-                quantity = quantity | unit
-        
+        if is_quantity(self.default_value):
+            unit = self.default_value.unit
+            if unit.is_non_numeric() or len(unit.base) == 0:
+                if not is_quantity(quantity):
+                    quantity = quantity | unit
+            
         parameter.cached_value = quantity
         
         parameter.is_set = True

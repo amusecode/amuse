@@ -323,7 +323,7 @@ class TestStellarModel2SPH(TestWithMPI):
         hydro_code = Fi(unit_converter)
         hydro_code.parameters.timestep = t_end / n_steps
         hydro_code.parameters.isothermal_flag = True
-        hydro_code.parameters.gamma = 1.0 | units.none
+        hydro_code.parameters.gamma = 1.0
         hydro_code.gas_particles.add_particles(gas)
         
         times = [] | units.Myr

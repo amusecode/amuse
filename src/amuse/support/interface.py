@@ -1,6 +1,7 @@
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
 from amuse.units import quantities
+from amuse.units.quantities import is_quantity
 from amuse.units.core import unit
 from amuse.support.options import OptionalAttributes
 
@@ -392,20 +393,38 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
         for index, parameter in enumerate(input_parameters):
             if parameter in keyword_arguments:
-                if self.units[index] == self.NO_UNIT or self.units[index] == self.INDEX:
+                if self.units[index] == self.NO_UNIT:
+                    arg = keyword_arguments[parameter]
+                    if is_quantity(arg):
+                        result[parameter] = arg.value_in(unit.none)
+                    else:
+                        result[parameter] = arg
+                elif self.units[index] == self.INDEX:
                     result[parameter] = keyword_arguments[parameter]
                 else:
-                    result[parameter] = keyword_arguments[parameter].value_in(self.units[index])
+                    if not self.units[index].base and not is_quantity(keyword_arguments[parameter]):
+                        result[parameter] = keyword_arguments[parameter]
+                    else:
+                        result[parameter] = keyword_arguments[parameter].value_in(self.units[index])
 
         for index, argument in enumerate(list_arguments):
             parameter = input_parameters[index]
-            if self.units[index] == self.NO_UNIT or self.units[index] == self.INDEX:
+            if self.units[index] == self.NO_UNIT:
+                arg = argument
+                if is_quantity(arg):
+                    result[parameter] = arg.value_in(unit.none)
+                else:
+                    result[parameter] = arg
+            elif self.units[index] == self.INDEX:
                 result[parameter] = argument
             else:
                 if self.units[index].is_none() and not hasattr(argument,'unit'):
                     result[parameter] = argument
                 else:
-                    result[parameter] = argument.value_in(self.units[index])
+                    if not self.units[index].base and not is_quantity(argument):
+                        result[parameter] = argument
+                    else:
+                        result[parameter] = argument.value_in(self.units[index])
 
         return (), result
 
