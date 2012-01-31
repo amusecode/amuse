@@ -22,6 +22,8 @@ public class Deployment {
 
     private static final Logger logger = LoggerFactory.getLogger(Deployment.class);
 
+    public static final String[] logos = { "images/strw-logo-blue.png", "images/nova-logo.png" };
+
     private final Deploy deploy;
 
     private final Jungle jungle;
@@ -31,9 +33,21 @@ public class Deployment {
     private final File amuseHome;
     private final File ibisDir;
 
-    public Deployment(boolean verbose, boolean keepSandboxes, boolean useGui, boolean useHubs, String... logos)
+    public Deployment(boolean verbose, boolean keepSandboxes, boolean useGui, boolean useHubs, File jungleFile)
             throws Exception {
-        jungle = new Jungle(new File("deploy.jungle"), true);
+        if (jungleFile == null) {
+            System.err.println("No Jungle file specified, only local resource available");
+            jungle = new Jungle();
+        } else {
+            if (!jungleFile.exists()) {
+                throw new Exception("jungle description file " + jungleFile.getAbsolutePath() + " does not exist.");
+            }
+            if (!jungleFile.isFile() && !jungleFile.canRead()) {
+                throw new Exception("cannot read jungle description file " + jungleFile.getAbsolutePath());
+            }
+
+            jungle = new Jungle(jungleFile);
+        }
 
         experiment = new Experiment("amuse");
         applications = new ApplicationSet();
@@ -41,7 +55,7 @@ public class Deployment {
         // location of AMUSE
         String amuseHomeProperty = System.getProperty("amuse.home");
         if (amuseHomeProperty == null) {
-            throw new Exception("amuse.home propertyy not specified");
+            throw new Exception("amuse.home property not specified");
         }
 
         amuseHome = new File(amuseHomeProperty).getAbsoluteFile();
@@ -77,8 +91,9 @@ public class Deployment {
 
                 if (!deployHomeLocation.exists() && !ibisDirLocation.exists()) {
                     throw new Exception(resource.getJobWrapperScript().getName() + " not found in "
-                            + resource.getJobWrapperScript().getAbsolutePath() + ", " + ibisDirLocation + ", or " + deployHomeLocation
-                            + ", Specified in resource \"" + resource.getName() + "\" of deploy.jungle");
+                            + resource.getJobWrapperScript().getAbsolutePath() + ", " + ibisDirLocation + ", or "
+                            + deployHomeLocation + ", Specified in resource \"" + resource.getName()
+                            + "\"");
                 } else if (ibisDirLocation.exists()) {
                     resource.setJobWrapperScript(ibisDirLocation);
                 } else if (deployHomeLocation.exists()) {
@@ -111,7 +126,7 @@ public class Deployment {
 
         if (resource == null) {
             throw new Exception("Resource \"" + resourceName
-                    + "\"not found in jungle description file \"deploy.jungle\"");
+                    + "\" not found in jungle description");
         }
 
         String remoteAmuseHome = resource.getProperties().getProperty("amuse.home");
@@ -122,7 +137,7 @@ public class Deployment {
 
         if (remoteAmuseHome == null) {
             throw new Exception("amuse.home property not set for resource \"" + resourceName
-                    + "\" in jungle description file deploy.jungle");
+                    + "\" in jungle description");
         }
 
         String mpiexec = resource.getProperties().getProperty("mpiexec");
@@ -130,11 +145,11 @@ public class Deployment {
         if (mpiexec == null) {
             if (!resourceName.equals("local")) {
                 logger.warn("mpiexec property not set for resource \"" + resourceName
-                        + "\" in jungle description file deploy.jungle");
+                        + "\" in jungle description");
             }
             mpiexec = "mpiexec";
         }
-        
+
         String mpdboot = resource.getProperties().getProperty("mpdboot");
 
         // get or create Application for worker
@@ -187,15 +202,17 @@ public class Deployment {
         jobDescription.getApplication().setSystemProperty("java.library.path", absCodeDir);
 
         if (mpdboot == null) {
-        jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID, "--amuse-home",
-                remoteAmuseHome, "--code-dir", codeDir, "--number-of-workers", Integer.toString(nrOfWorkers),
-                "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec", mpiexec);
+            jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID,
+                    "--amuse-home", remoteAmuseHome, "--code-dir", codeDir, "--number-of-workers",
+                    Integer.toString(nrOfWorkers), "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec",
+                    mpiexec);
         } else {
-            jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID, "--amuse-home",
-                    remoteAmuseHome, "--code-dir", codeDir, "--number-of-workers", Integer.toString(nrOfWorkers),
-                    "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec", mpiexec, "--mpdboot", mpdboot);
-        }        	
-                
+            jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID,
+                    "--amuse-home", remoteAmuseHome, "--code-dir", codeDir, "--number-of-workers",
+                    Integer.toString(nrOfWorkers), "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec",
+                    mpiexec, "--mpdboot", mpdboot);
+        }
+
         Job result = deploy.submitJob(jobDescription, application, resource, null, null);
 
         result.waitUntilDeployed();

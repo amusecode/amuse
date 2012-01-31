@@ -22,6 +22,15 @@
 
 # default.user.name=ndrost
 
+koppoel.support.uri = ssh://koppoel.strw.leidenuniv.nl
+koppoel.job.uri = ssh://koppoel.strw.leidenuniv.nl
+koppoel.latitude = 52.1686
+koppoel.longitude = 4.4598
+koppoel.file.adaptors = SftpTrilead,SshTrilead,Local
+koppoel.java.path = /data2/ndrost/jdk1.7.0_02/bin/java
+koppoel.amuse.home=/data2/ndrost/amuse-svn
+koppoel.user.name=ndrost
+#
 # Details of cluster "LGM"
 LGM.support.uri = ssh://fs.lgm.liacs.nl
 LGM.job.uri = ssh://fs.lgm.liacs.nl
