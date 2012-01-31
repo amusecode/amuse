@@ -49,14 +49,16 @@ public class PoolInfo {
     private final String[] hostnames;
     private final int[] ports;
     private final int rank;
+    private final int nrOfNodes;
 
     public static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT,
             IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED, IbisCapabilities.TERMINATION, IbisCapabilities.SIGNALS,
             IbisCapabilities.CLOSED_WORLD);
 
     PoolInfo(String poolID, int poolSize, int localMonitoringPort) throws Exception {
+    	this.nrOfNodes = poolSize;
+    	
         Properties properties = new Properties();
-
         properties.setProperty(IbisProperties.POOL_NAME, poolID);
         properties.setProperty(IbisProperties.POOL_SIZE, Integer.toString(poolSize));
 
@@ -97,6 +99,10 @@ public class PoolInfo {
 
     public String[] getHostnames() {
         return hostnames;
+    }
+    
+    public int getNrOfNodes() {
+    	return nrOfNodes;
     }
 
     public int[] getWorkerPortList(int nrOfWorkers) {

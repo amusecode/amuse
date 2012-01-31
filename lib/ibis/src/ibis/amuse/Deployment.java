@@ -125,15 +125,17 @@ public class Deployment {
                     + "\" in jungle description file deploy.jungle");
         }
 
-        String mpirun = resource.getProperties().getProperty("mpirun");
+        String mpiexec = resource.getProperties().getProperty("mpiexec");
 
-        if (mpirun == null) {
+        if (mpiexec == null) {
             if (!resourceName.equals("local")) {
-                logger.warn("mpirun property not set for resource \"" + resourceName
-                        + "\" in jungle description file deploy.jungle, using default (mpirun)");
+                logger.warn("mpiexec property not set for resource \"" + resourceName
+                        + "\" in jungle description file deploy.jungle");
             }
-            mpirun = "mpirun";
+            mpiexec = "mpiexec";
         }
+        
+        String mpdboot = resource.getProperties().getProperty("mpdboot");
 
         // get or create Application for worker
         Application application = applications.getApplication(codeName);
@@ -184,10 +186,16 @@ public class Deployment {
 
         jobDescription.getApplication().setSystemProperty("java.library.path", absCodeDir);
 
+        if (mpdboot == null) {
         jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID, "--amuse-home",
                 remoteAmuseHome, "--code-dir", codeDir, "--number-of-workers", Integer.toString(nrOfWorkers),
-                "--number-of-nodes", Integer.toString(nrOfNodes), "--mpirun", mpirun);
-
+                "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec", mpiexec);
+        } else {
+            jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID, "--amuse-home",
+                    remoteAmuseHome, "--code-dir", codeDir, "--number-of-workers", Integer.toString(nrOfWorkers),
+                    "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec", mpiexec, "--mpdboot", mpdboot);
+        }        	
+                
         Job result = deploy.submitJob(jobDescription, application, resource, null, null);
 
         result.waitUntilDeployed();

@@ -22,8 +22,6 @@
 
 # default.user.name=ndrost
 
-#local.job.wrapper.script=multicore.script
-
 # Details of cluster "LGM"
 LGM.support.uri = ssh://fs.lgm.liacs.nl
 LGM.job.uri = ssh://fs.lgm.liacs.nl
@@ -33,7 +31,8 @@ LGM.job.wrapper.script = lgm.script
 LGM.latitude = 52.1686
 LGM.longitude = 4.4598
 LGM.amuse.home=/home/niels/amuse
-LGM.mpirun=/home/niels/bin/fakempirun
+#turn off mpiexec for the LGM
+LGM.mpiexec=none
 LGM.color=#00FF00
 
 # Details of cluster "VU"
@@ -123,4 +122,4 @@ Para.latitude = 52.1686
 Para.longitude = 4.4598
 Para.amuse.home=/home/ndrost/amuse
 Para.user.name=ndrost
-Para.mpirun=/software/mpi/bin/mpirun
+Para.mpiexec=/software/mpi/bin/mpiexec
