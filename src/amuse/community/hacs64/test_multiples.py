@@ -805,7 +805,7 @@ def print_energies(stars):
     print 'energy =', kinetic+potential
     sys.stdout.flush()
 
-def test_multiples(infile = None,
+def xtest_multiples(infile = None,
                    number_of_stars = 64,
                    nmax = 2048,
                    end_time = 0.1   | nbody_system.time,
