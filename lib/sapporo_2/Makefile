@@ -44,7 +44,8 @@ OBJ = $(SRC:%.cpp=%.o)
 PROG = 
 #PROG = main
 
-LIBOBJ = sapporohostclass.o sapporoG6lib.o sapporoYeblib.o sapporoG5lib.o
+#LIBOBJ = sapporohostclass.o sapporoG6lib.o sapporoYeblib.o sapporoG5lib.o
+LIBOBJ = sapporohostclass.o sapporoG6lib.o sapporoG5lib.o sapporo6thlib.o
 TARGET = libsapporo.a
 
 

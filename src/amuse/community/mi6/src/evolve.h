@@ -5,8 +5,13 @@
 #include"merge.h"
 #include"schedule.h"
 #include"mpi_interface.h"
-#include "6thorder.h"
 #include"external_field.h"
+
+#ifdef SAP
+#include "6thorder.h"
+#else
+#include "6thorder_dummy.h"
+#endif
 
 extern int EX_FLAG;
 
