@@ -140,7 +140,7 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
         
     def evolve_particle(self, particle, time_end):
         t = particle.current_time
-        if particle.type.value_in(units.none) == 15:
+        if particle.type == 15:
             return
         while t < time_end:
             t0 = t
@@ -154,7 +154,7 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
             if dt.value_in(units.Myr) == 0.0:
                 print t, t0, t1, dt, "BREAK BREAK BREAK!"
                 return
-            if particle.type.value_in(units.none) == 15:
+            if particle.type == 15:
                 return
     
     def initialize_code(self):
