@@ -1,5 +1,3 @@
-#include <cutil.h>
-#include <multithreading.h>
 #include <stdio.h>
 #include "sapporo_defs.h"
 

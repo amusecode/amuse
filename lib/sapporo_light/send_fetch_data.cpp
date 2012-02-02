@@ -1,6 +1,4 @@
 #include "sapporo.h"
-#include <cutil.h>
-
 
 void sapporo::free_cuda_memory(int ignore) {
     dev_struct &dev = device;

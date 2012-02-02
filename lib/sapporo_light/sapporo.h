@@ -24,8 +24,10 @@
 #include <math.h>
 using namespace std;
 
-// #include <cutil.h>
 #include <cuda_runtime.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 
 
 #define INT_AS_FLOAT(x) (*((float*)&(x)))
