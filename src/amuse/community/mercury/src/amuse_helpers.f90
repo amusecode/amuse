@@ -469,21 +469,21 @@ subroutine energy_angular_momentum(mode,ek,ep,l)
   if(mode.NE.0) then
     call kin_pot_ang_mom(jcen,nbod,nbig,m,xh,vh,s)
   endif
-  if(present(ek)) ek=kinetic_energy
-  if(present(ep)) ep=potential_energy
-  if(present(l)) l=angular_momentum
+  if(present(ek)) ek=kinetic_energy/K2
+  if(present(ep)) ep=potential_energy/K2
+  if(present(l)) l=angular_momentum/K2
 end subroutine
 
 subroutine total_energy_angular_momentum(e_tot,am_tot)
   real*8,optional :: e_tot,am_tot
-  if(present(e_tot)) e_tot=en(2)
-  if(present(am_tot)) am_tot=am(2)  
+  if(present(e_tot)) e_tot=en(2)/K2
+  if(present(am_tot)) am_tot=am(2)/K2  
 end subroutine
 
 subroutine energy_angular_momentum_deviation(delta_e,delta_am)
   real*8,optional :: delta_e,delta_am
-  if(present(delta_e)) delta_e=en(3)
-  if(present(delta_am)) delta_am=am(3)  
+  if(present(delta_e)) delta_e=en(3)/K2
+  if(present(delta_am)) delta_am=am(3)/K2  
 end subroutine
 
 function find_particle(id_) result(index)

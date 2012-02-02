@@ -3,8 +3,8 @@ import sys
 import numpy as np
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.community.mercury.interface import MercuryInterface, MercuryWayWard
-from amuse.ext.solarsystem import new_solar_system_for_mercury
+from amuse.community.mercury.interface import MercuryInterface, MercuryWayWard,Mercury
+from amuse.ext.solarsystem import new_solar_system_for_mercury,new_solar_system
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
@@ -345,3 +345,18 @@ class TestMercury(TestWithMPI):
         mercury.evolve_model(16.|units.day)
         self.assertEqual(mercury.get_time(),16.|units.day)
         mercury.stop()
+
+    def test3(self):
+        solsys = new_solar_system()
+
+        mercury = Mercury()
+        mercury.initialize_code()
+
+        mercury.particles.add_particles(solsys)
+        mercury.commit_particles()
+
+        start_pos = mercury.orbiters[2].position
+        mercury.evolve_model(365.14|units.day)
+        self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
+        mercury.stop()
+
