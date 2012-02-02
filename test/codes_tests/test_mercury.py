@@ -330,3 +330,18 @@ class TestMercury(TestWithMPI):
         mercury.evolve_model(365.14|units.day)
         self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
         mercury.stop()
+
+    def test2(self):
+        centre, orbiters = new_solar_system_for_mercury()
+
+        mercury = MercuryWayWard()
+        mercury.initialize_code()
+
+        mercury.central_particle.add_particles(centre)
+        mercury.orbiters.add_particles(orbiters)
+        mercury.commit_particles()
+
+        start_pos = mercury.orbiters[2].position
+        mercury.evolve_model(16.|units.day)
+        self.assertEqual(mercury.get_time(),16.|units.day)
+        mercury.stop()
