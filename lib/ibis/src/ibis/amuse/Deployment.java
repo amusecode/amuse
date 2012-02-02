@@ -1,6 +1,7 @@
 package ibis.amuse;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,20 +34,33 @@ public class Deployment {
     private final File amuseHome;
     private final File ibisDir;
 
-    public Deployment(boolean verbose, boolean keepSandboxes, boolean useGui, boolean useHubs, File jungleFile)
+    public Deployment(boolean verbose, boolean keepSandboxes, boolean useGui, boolean useHubs, File[] jungleFiles)
             throws Exception {
-        if (jungleFile == null) {
-            System.err.println("No Jungle file specified, only local resource available");
-            jungle = new Jungle();
+        jungle = new Jungle();
+        if (jungleFiles.length == 0) {
+            System.err.println("No Jungle files specified, only local resource available");
         } else {
-            if (!jungleFile.exists()) {
-                throw new Exception("jungle description file " + jungleFile.getAbsolutePath() + " does not exist.");
+            for (File file : jungleFiles) {
+                if (!file.exists()) {
+                    throw new Exception("jungle description file " + file.getAbsolutePath() + " does not exist.");
+                }
+                if (!file.isFile() && !file.canRead()) {
+                    throw new Exception("cannot read jungle description file " + file.getAbsolutePath());
+                }
+
+                jungle.load(file, false);
+
             }
-            if (!jungleFile.isFile() && !jungleFile.canRead()) {
-                throw new Exception("cannot read jungle description file " + jungleFile.getAbsolutePath());
+        }
+
+        if (logger.isInfoEnabled()) {
+            Resource[] resources = jungle.getResources();
+            String[] names = new String[resources.length];
+            for (int i = 0; i< resources.length;i++) {
+                names[i] = resources[i].getName();
             }
 
-            jungle = new Jungle(jungleFile);
+            logger.info("loaded " + jungleFiles.length + " files, resources available: " + Arrays.toString(names));
         }
 
         experiment = new Experiment("amuse");
@@ -75,7 +89,7 @@ public class Deployment {
             throw new Exception("ibis library dir (" + ibisDir + ") is not a directory");
         }
 
-        deploy = new Deploy(null, verbose, keepSandboxes, useGui, true, 0, null, null, true);
+        deploy = new Deploy(null, verbose, keepSandboxes, useGui, false, 0, null, null, true);
         if (!useHubs) {
             deploy.setHubPolicy(HubPolicy.OFF);
         }
@@ -92,8 +106,7 @@ public class Deployment {
                 if (!deployHomeLocation.exists() && !ibisDirLocation.exists()) {
                     throw new Exception(resource.getJobWrapperScript().getName() + " not found in "
                             + resource.getJobWrapperScript().getAbsolutePath() + ", " + ibisDirLocation + ", or "
-                            + deployHomeLocation + ", Specified in resource \"" + resource.getName()
-                            + "\"");
+                            + deployHomeLocation + ", Specified in resource \"" + resource.getName() + "\"");
                 } else if (ibisDirLocation.exists()) {
                     resource.setJobWrapperScript(ibisDirLocation);
                 } else if (deployHomeLocation.exists()) {
@@ -125,8 +138,7 @@ public class Deployment {
         Resource resource = jungle.getResource(resourceName);
 
         if (resource == null) {
-            throw new Exception("Resource \"" + resourceName
-                    + "\" not found in jungle description");
+            throw new Exception("Resource \"" + resourceName + "\" not found in jungle description");
         }
 
         String remoteAmuseHome = resource.getProperties().getProperty("amuse.home");
@@ -144,8 +156,7 @@ public class Deployment {
 
         if (mpiexec == null) {
             if (!resourceName.equals("local")) {
-                logger.warn("mpiexec property not set for resource \"" + resourceName
-                        + "\" in jungle description");
+                logger.warn("mpiexec property not set for resource \"" + resourceName + "\" in jungle description");
             }
             mpiexec = "mpiexec";
         }

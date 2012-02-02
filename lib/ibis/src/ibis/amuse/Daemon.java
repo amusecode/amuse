@@ -13,6 +13,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -54,9 +55,9 @@ public class Daemon implements RegistryEventHandler {
 
     private final Deployment deployment;
 
-    public Daemon(int port, boolean verbose, boolean keepSandboxes, boolean gui, boolean hubs, File jungle)
+    public Daemon(int port, boolean verbose, boolean keepSandboxes, boolean gui, boolean hubs, File[] jungleFiles)
             throws Exception {
-        deployment = new Deployment(verbose, keepSandboxes, gui, hubs, jungle);
+        deployment = new Deployment(verbose, keepSandboxes, gui, hubs, jungleFiles);
 
         Properties properties = new Properties();
         properties.put("ibis.server.address", deployment.getServerAddress());
@@ -90,16 +91,16 @@ public class Daemon implements RegistryEventHandler {
 
                 new RemoteCodeInterface(socket, ibis, deployment);
             } catch (Exception e) {
-                // report error to amuse
-                AmuseMessage errormessage = new AmuseMessage(0, AmuseMessage.FUNCTION_ID_INIT, 1, e.getMessage());
-                try {
-                    errormessage.writeTo(socket);
-                } catch (Exception e2) {
-                    // IGNORE
-                }
-                logger.error("error on starting remote code", e);
-                
                 if (socket != null) {
+                    // report error to amuse
+                    AmuseMessage errormessage = new AmuseMessage(0, AmuseMessage.FUNCTION_ID_INIT, 1, e.getMessage());
+                    try {
+                        errormessage.writeTo(socket);
+                    } catch (Exception e2) {
+                        // IGNORE
+                    }
+                    logger.error("error on starting remote code", e);
+
                     try {
                         socket.close();
                     } catch (Exception e2) {
@@ -150,7 +151,7 @@ public class Daemon implements RegistryEventHandler {
         boolean gui = false;
         boolean hubs = true;
         boolean keepSandboxes = false;
-        File jungle = null;
+        ArrayList<File> jungleFiles = new ArrayList<File>();
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-p") || arguments[i].equals("--port")) {
@@ -166,7 +167,7 @@ public class Daemon implements RegistryEventHandler {
                 hubs = false;
             } else if (arguments[i].equals("-j") || arguments[i].equals("--jungle-file")) {
                 i++;
-                jungle = new File(arguments[i]);
+                jungleFiles.add(new File(arguments[i]));
             } else if (arguments[i].equals("-h") || arguments[i].equals("--help")) {
                 printUsage();
                 return;
@@ -178,7 +179,7 @@ public class Daemon implements RegistryEventHandler {
         }
 
         try {
-            Daemon daemon = new Daemon(port, verbose, keepSandboxes, gui, hubs, jungle);
+            Daemon daemon = new Daemon(port, verbose, keepSandboxes, gui, hubs, jungleFiles.toArray(new File[0]));
 
             Runtime.getRuntime().addShutdownHook(new Shutdown(daemon));
 

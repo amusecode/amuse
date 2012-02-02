@@ -1,0 +1,88 @@
+# Mandatory parameters for resources:
+# KEY                 COMMENT
+# support.uri         Contact URI used when deploying support processes (e.g. smartsockets hub)
+# job.uri             Contact URI used when deploying job
+# file.adaptors       Comma separated list of JavaGAT file adaptors used to
+#                     copy files to and from this resource(*)
+#
+# Optional parameters: 
+# KEY                 COMMENT
+# support.adaptor     JavaGAT adaptor used to deploy support processes (e.g. smartsockets hub)
+# support.system.properties system properties for the support processes (e.g. smartsocekts settings)
+# job.adaptor         JavaGAT adaptor used to deploy jobs
+# java.path           Path to java executable on this resource.
+#                     If unspecified, "java" is used
+# job.wrapper.script  If specified, the given script is copied to the resource
+#                     and run instead of java
+# user.name           User name used for authentication at resource
+# user.key            User keyfile used for authentication at resource (only when user.name is set)
+# latitude            Latitude position of this resource (double)
+# longitude           Longitude position of this resouce (double)
+# color               Color (as a HTML color string) used to represent this resource
+
+default.file.adaptors = SftpTrilead,SshTrilerad,Local
+default.java.path = java
+default.amuse.home=/home/niels/amuse
+default.mpiexec=/cm/shared/apps/openmpi/gcc/64/1.4.4/bin/mpiexec
+
+VU.support.uri = ssh://fs0.das4.cs.vu.nl
+VU.job.uri = sshsge://fs0.das4.cs.vu.nl
+VU.latitude = 52.3328
+VU.longitude = 4.8669
+
+VU-GPU.support.uri = ssh://fs0.das4.cs.vu.nl
+VU-GPU.job.uri = sshsge://fs0.das4.cs.vu.nl
+VU-GPU.job.options = sshsge.native.flags = -l num_gpu=1
+VU-GPU.latitude = 52.3328
+VU-GPU.longitude = 4.8669
+
+Leiden.support.uri = ssh://fs1.das4.liacs.nl
+Leiden.job.uri = sshsge://fs1.das4.liacs.nl
+Leiden.latitude = 52.1686
+Leiden.longitude = 4.4598
+
+UvA.support.uri = ssh://fs2.das4.science.uva.nl
+UvA.job.uri = sshsge://fs2.das4.science.uva.nl
+UvA.latitude = 52.3561
+UvA.longitude = 4.953
+
+UvA-GPU.support.uri = ssh://fs2.das4.science.uva.nl
+UvA-GPU.job.uri = sshsge://fs2.das4.science.uva.nl
+UvA-GPU.job.options = sshsge.native.flags = -l num_gpu=1
+UvA-GPU.latitude = 52.3561
+UvA-GPU.longitude = 4.953
+
+# Details of cluster "Delft"
+Delft.support.uri = ssh://fs3.das4.tudelft.nl
+Delft.job.uri = sshsge://fs3.das4.tudelft.nl
+Delft.latitude = 51.9979
+Delft.longitude = 4.3742
+
+Delft-GPU.support.uri = ssh://fs3.das4.tudelft.nl
+Delft-GPU.job.uri = sshsge://fs3.das4.tudelft.nl
+Delft-GPU.job.options = sshsge.native.flags = -l num_gpu=1
+Delft-GPU.latitude = 51.9979
+Delft-GPU.longitude = 4.3742
+
+# Details of cluster "MultimediaN"
+MultimediaN.support.uri = ssh://fs4.das4.science.uva.nl
+MultimediaN.job.uri = sshsge://fs4.das4.science.uva.nl
+MultimediaN.latitude = 52.3561
+MultimediaN.longitude = 4.953
+
+MultimediaN-GPU.support.uri = ssh://fs4.das4.science.uva.nl
+MultimediaN-GPU.job.uri = sshsge://fs4.das4.science.uva.nl
+MultimediaN-GPU.job.options = sshsge.native.flags = -l num_gpu=1
+MultimediaN-GPU.latitude = 52.3561
+MultimediaN-GPU.longitude = 4.953
+
+ASTRON.support.uri = ssh://fs5.das4.astron.nl
+ASTRON.job.uri = sshsge://fs5.das4.astron.nl
+ASTRON.latitude = 52.8133
+ASTRON.longitude = 6.3960
+
+ASTRON-GPU.support.uri = ssh://fs5.das4.astron.nl
+ASTRON-GPU.job.uri = sshsge://fs5.das4.astron.nl
+ASTRON-GPU.job.options = sshsge.native.flags = -l num_gpu=1
+ASTRON-GPU.latitude = 52.8133
+ASTRON-GPU.longitude = 6.3960

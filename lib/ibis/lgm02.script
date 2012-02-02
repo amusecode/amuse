@@ -1,0 +1,18 @@
+#!/bin/sh
+
+NR_NODES=$1
+shift
+NR_PROCS=$1
+shift
+JAVA=$1
+shift
+ARGS=$*
+
+CWD=`pwd`
+
+for i in `seq 1 $NR_PROCS`;
+do
+	ssh node02 " cd $CWD; $JAVA $ARGS"&
+done  
+
+wait

@@ -1,4 +1,4 @@
-VERSION = -20120130-snapshot
+VERSION = -20120202-snapshot
 
 CODEDIR = deploy
 DOWNLOAD_FROM_WEB = ./downloadhttp.py
