@@ -3,7 +3,6 @@ CC  ?= gcc
 
 .SUFFIXES: .o .f90 .cpp .cu
 
-CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
 CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
 
 OFLAGS = -O0 -g -Wall 
@@ -14,7 +13,8 @@ CXXFLAGS ?= $(CFLAGS)
 NVCC      ?= $(CUDA_TK)/bin/nvcc
 
 NVCCFLAGS ?= -D_DEBUG --compiler-options -fno-inline \
-		--maxrregcount=32 -O0 -g -I$(CUDA_SDK)/common/inc
+		--maxrregcount=32 -O0 -g 
+
 
 #device emulation version:
 #NVCCFLAGS = -D_DEBUG --device-emulation --compiler-options -fno-inline \
@@ -41,7 +41,7 @@ OBJS = $(PROG).o
 
 CUOBJS = host_evaluate_gravity.cu_o
 
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 
+CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib64 -L$(CUDA_TK)/lib
 CUDA_LIBS ?= -lcudart
 
 LIBS = $(CUDA_LIBDIRS) $(CUDA_LIBS)

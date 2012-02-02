@@ -1,4 +1,4 @@
-#include <cutil.h>
+//#include <cutil.h>
 #include <stdio.h>
 #include "dev_evaluate_gravity.cu"
 
