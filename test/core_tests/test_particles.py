@@ -242,6 +242,27 @@ class TestParticles(amusetest.TestCase):
         particles[1].a = 5.0
         self.assertAlmostRelativeEquals(particles.a, [1.0, 5.0])
         
+    def test18(self):
+        particles = datamodel.Particles(3)
+        particles.mass = [1.0, 2.0, 3.0] | units.kg
+        self.assertTrue(particles[1] in particles)
+        self.assertFalse(datamodel.Particle in particles)
+        
+    def test19(self):
+        particles = datamodel.Particles(mass = [1.0,2.0,3.0] | units.kg, radius = 1 | units.m)
+        self.assertEquals(len(particles), 3)
+        self.assertAlmostRelativeEquals(particles.mass,  [1.0,2.0,3.0] | units.kg)
+        self.assertAlmostRelativeEquals(particles.radius,  [1.0,1.0,1.0] | units.m)
+        particles = datamodel.Particles(b = 1, a = [1.0,2.0,3.0] )
+        self.assertEquals(len(particles), 3)
+        self.assertAlmostRelativeEquals(particles.a,  [1.0,2.0,3.0])
+        self.assertAlmostRelativeEquals(particles.b,  [1.0,1.0,1.0])
+        particles = datamodel.Particles(size = 3,b = 1, a = [1.0,2.0,3.0] )
+        self.assertEquals(len(particles), 3)
+        self.assertAlmostRelativeEquals(particles.a,  [1.0,2.0,3.0])
+        self.assertAlmostRelativeEquals(particles.b,  [1.0,1.0,1.0])
+        
+        
         
 class TestStars(amusetest.TestCase):
 

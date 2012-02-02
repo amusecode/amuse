@@ -841,6 +841,24 @@ class AbstractParticleSet(AbstractSet):
         return result
 
     
+    def __contains__(self, particle):
+        """
+        Check if a particle is part of a set
+        
+        >>> particles = Particles(3)
+        >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
+        >>> p1 = partcile[1]
+        >>> print p1 in particles
+        True
+        >>> p4 = Particle()
+        >>> print p4 in particles
+        False
+        
+        """
+        keys = set(self.get_all_keys_in_store())
+        return particle.key in keys
+        
+            
     def _attributes_for_dir(self):
         result = []
         result.extend(self.get_attribute_names_defined_in_store())
@@ -873,7 +891,7 @@ class Particles(AbstractParticleSet):
     
     
     """
-    def __init__(self, size = 0, storage = None, keys = None, keys_generator = None, particles = None):
+    def __init__(self, size = 0, storage = None, keys = None, keys_generator = None, particles = None, **attributes):
         AbstractParticleSet.__init__(self)
         
         if storage is None:
@@ -881,21 +899,56 @@ class Particles(AbstractParticleSet):
         else:
             self._private.attribute_storage = storage
     
+        if keys_generator is None:
+            keys_generator = UniqueKeyGenerator
+
         if not particles is None:
             if isinstance(particles,AbstractParticleSet):
                 self.add_particles(particles)
             else:
                 for x in iter(particles):
                     self.add_particle(x)
-        elif size > 0 or not keys is None:
-            if keys is None:
-                if keys_generator is None:
-                    keys_generator = UniqueKeyGenerator
-                    
-                particle_keys = keys_generator.next_set_of_keys(size)
+        elif size > 0:
+            if not keys is None:
+                if len(keys) != size:
+                    raise Exception('keys and size was specified in the creation of a particle set, but the length of the keys is not equal to the size')
+                else:
+                    particle_keys = keys
             else:
-                particle_keys = keys
+                particle_keys = keys_generator.next_set_of_keys(size)
+                
             self.add_particles_to_store(particle_keys)
+        elif not keys is None:
+            self.add_particles_to_store(keys)
+        elif len(attributes) > 0:
+            number_of_attributes = 0
+            for attributevalue in attributes.values():
+                if is_quantity(attributevalue):
+                    if attributevalue.is_scalar():
+                        number_of_attributes = max(number_of_attributes, 1)
+                    else:
+                        number_of_attributes = max(number_of_attributes, len(attributevalue))
+                else:
+                    try:
+                        if isinstance(attributevalue, basestring):
+                            number_of_attributes = max(number_of_attributes,1)
+                        else:
+                            number_of_attributes = max(number_of_attributes, len(attributevalue))
+                    except: #fails for numbers
+                        number_of_attributes = max(number_of_attributes,1)
+            
+            particle_keys = keys_generator.next_set_of_keys(number_of_attributes)
+            self.add_particles_to_store(particle_keys)
+                        
+        
+        if len(attributes) > 0:
+            attributenames = []
+            attributevalues = []
+            for attributename, attributevalue in attributes.iteritems():
+                attributenames.append(attributename)
+                attributevalues.append(attributevalue)
+                
+            self.set_values_in_store(None, attributenames, attributevalues)
             
         self._private.previous = None
         self._private.timestamp = None
@@ -1617,6 +1670,12 @@ class ParticleInformationChannel(object):
         #self.from_indices = self.from_particles._get_indices_of(self.keys)
         #self.to_indices = self.to_particles._get_indices_of(self.keys)
     
+    def reverse(self):
+        return ParticleInformationChannel(
+            self.to_particles,
+            self.from_particles
+        )
+          
     def intersecting_keys(self):
         from_keys = self.from_particles.get_all_keys_in_store()
         to_keys = self.to_particles.get_all_keys_in_store()
