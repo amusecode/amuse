@@ -26,6 +26,9 @@ CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
 LDFLAGS_GPU =	$(LDFLAGS) \
 		$(CUDA_LIBS) \
 
+CXXFLAGS += -I $(CUDA_TK)/include
+
+
 OBJS = interface.o
 SRCDIR = src
 BUILDDIRCPU = build_cpu
@@ -59,20 +62,6 @@ $(CUDA_TK):
 	@echo ""
 	@make -s --no-print-directory -C . raise_error
 
-$(CUDA_SDK):
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "hacs64 code"
-	@echo "------------"
-	@echo "CUDA_SDK variable is not set to a valid path,"
-	@echo "please set the CUDA_SDK variable to the directory"
-	@echo "where you installed the CUDA SDK"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
-
 
 $(CODELIB):
 	make -C src all CXX=$(MPICXX)
@@ -94,7 +83,7 @@ interface.h: interface.py
 hacs64_worker: worker_code.cc interface.h $(CODELIBCPU) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIBCPU) -o $@  $(LDFLAGS)
 
-hacs64_worker_gpu:  $(CUDA_TK) $(CUDA_SDK) worker_code.cc interface.h $(CODELIB) $(OBJS)
+hacs64_worker_gpu:  $(CUDA_TK) worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS_GPU) -DGPU
 
 %.o: %.cc

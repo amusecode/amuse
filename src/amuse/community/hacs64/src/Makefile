@@ -8,18 +8,19 @@ RANLIB := ranlib
 
 CUDAPATH       := /usr/local/cuda
 CUDAINCLUDE    := -I$(CUDAPATH)/include
-CUDASDKINCLUDE := -I$(CUDASDK)/common/inc
+#CUDASDKINCLUDE := -I$(CUDASDK)/common/inc
 
-NVCCFLAGS := -arch=sm_20 -O4 -g  $(CUDAINCLUDE) $(CUDASDKINCLUDE) -I./ -Xptxas -v,-abi=no 
+#NVCCFLAGS := -arch=sm_20 -O4 -g  $(CUDAINCLUDE) $(CUDASDKINCLUDE) -I./ -Xptxas -v,-abi=no 
+NVCCFLAGS := -arch=sm_20 -O4 -g  $(CUDAINCLUDE)  -I./ -Xptxas -v,-abi=no 
 # NVCCFLAGS += -maxrregcount=32
 NVCCFLAGS += -Xcompiler="-Wall"
 #NVCCFLAGS += -Xopencc="-O0"
 #NVCCFLAGS += -G
 #NVCCFLAGS := -O0 -g -D_DEBUG -deviceemu -maxrregcount=32 $(CUDAINCLUDE)
+CUDA_LIBS = -lcudart  -L $(CUDAPATH)/lib -L $(CUDAPATH)/lib64
 
-
-CXXFLAGS  +=  -I./ON_neib -I./ -fopenmp
-LDFLAGS   +=  -fopenmp
+CXXFLAGS  +=  -I./ON_neib -I./ -fopenmp $(CUDAINCLUDE)
+LDFLAGS   +=  -fopenmp $(CUDA_LIBS)
 LDGPUGLAGS := $(LDFLAGS) $(CUDA_LIBS)
 
 OBJS = hacs64_amuse.o \

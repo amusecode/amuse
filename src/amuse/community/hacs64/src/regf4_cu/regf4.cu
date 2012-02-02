@@ -6,7 +6,7 @@
 
 
 #include "cuda_pointer.h"
-#include "cutil_inline.h"
+//#include "cutil_inline.h"
 
 namespace regf4
 {

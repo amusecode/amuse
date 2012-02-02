@@ -1,6 +1,7 @@
 #ifndef __HACS6_H__
 #define __HACS6_H__
 
+#include <stdlib.h>
 #include <map>
 #include "irrf6.h"
 #include "regf4.h"
