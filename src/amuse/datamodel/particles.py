@@ -847,7 +847,7 @@ class AbstractParticleSet(AbstractSet):
         
         >>> particles = Particles(3)
         >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
-        >>> p1 = partcile[1]
+        >>> p1 = particles[1]
         >>> print p1 in particles
         True
         >>> p4 = Particle()

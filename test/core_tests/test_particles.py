@@ -261,8 +261,10 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(len(particles), 3)
         self.assertAlmostRelativeEquals(particles.a,  [1.0,2.0,3.0])
         self.assertAlmostRelativeEquals(particles.b,  [1.0,1.0,1.0])
-        
-        
+        particles = datamodel.Particles(size = 3,b = 1, a = 2 )
+        self.assertEquals(len(particles), 3)
+        self.assertAlmostRelativeEquals(particles.a,  [2,2,2])
+        self.assertAlmostRelativeEquals(particles.b,  [1.0,1.0,1.0])
         
 class TestStars(amusetest.TestCase):
 
