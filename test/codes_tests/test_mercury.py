@@ -224,6 +224,22 @@ class TestMercuryInterface(TestWithMPI):
         self.assertAlmostEqual(etot1,etot2,7)
         instance.stop()
 
+    def test14(self):
+        instance=MercuryInterface(redirection='none')
+        instance.initialize_code()  
+        instance.set_central_particle_state(DUMMYID, 1.,2.,3.,4.,5.,6.,7.,8.)
+        mass,radius,j2,j4,j6,lx,ly,lz,err=instance.get_central_particle_state(DUMMYID)
+        self.assertEqual(mass, 1.0)
+        self.assertEqual(radius, 2.0)
+        self.assertEqual(j2, 3.0)
+        self.assertEqual(j4, 4.0)
+        self.assertEqual(j6, 5.0)
+        self.assertEqual(lx, 6.0)
+        self.assertEqual(ly, 7.0)
+        self.assertEqual(lz, 8.0)
+        instance.stop()
+
+
 class TestMercury(TestWithMPI):
     
     def is_fortan_version_up_to_date(self):
