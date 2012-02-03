@@ -1720,5 +1720,6 @@ class IbisChannel(MessageChannel):
             raise exceptions.CodeException("Error in worker: " + message.strings[0])
         
         return message.to_result(handle_as_array)
-
-
+    
+    def nonblocking_recv_message(self, tag, handle_as_array):
+        raise exceptions.CodeException("Nonblocking receive not supported by IbisChannel")
