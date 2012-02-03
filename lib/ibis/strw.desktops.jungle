@@ -56,13 +56,6 @@ angstel.memory = 5964
 angstel.latitude = 52.1708
 angstel.longitude = 4.45694
 
-beemster.support.uri = ssh://beemster.strw.leidenuniv.nl
-beemster.job.uri = ssh://beemster.strw.leidenuniv.nl
-beemster.cores = 2
-beemster.memory = 3888
-beemster.latitude = 52.1707
-beemster.longitude = 4.45671
-
 beilerstroom.support.uri = ssh://beilerstroom.strw.leidenuniv.nl
 beilerstroom.job.uri = ssh://beilerstroom.strw.leidenuniv.nl
 beilerstroom.cores = 4
@@ -98,13 +91,6 @@ biesbosch.memory = 5954
 biesbosch.latitude = 52.1668
 biesbosch.longitude = 4.45881
 
-bonke.support.uri = ssh://bonke.strw.leidenuniv.nl
-bonke.job.uri = ssh://bonke.strw.leidenuniv.nl
-bonke.cores = 2
-bonke.memory = 3888
-bonke.latitude = 52.1663
-bonke.longitude = 4.45921
-
 boorne.support.uri = ssh://boorne.strw.leidenuniv.nl
 boorne.job.uri = ssh://boorne.strw.leidenuniv.nl
 boorne.cores = 4
@@ -133,13 +119,6 @@ braassemermeer.memory = 5964
 braassemermeer.latitude = 52.1698
 braassemermeer.longitude = 4.46015
 
-bree.support.uri = ssh://bree.strw.leidenuniv.nl
-bree.job.uri = ssh://bree.strw.leidenuniv.nl
-bree.cores = 2
-bree.memory = 3889
-bree.latitude = 52.1709
-bree.longitude = 4.4575
-
 bullewijk.support.uri = ssh://bullewijk.strw.leidenuniv.nl
 bullewijk.job.uri = ssh://bullewijk.strw.leidenuniv.nl
 bullewijk.cores = 8
@@ -160,13 +139,6 @@ chlorine.cores = 4
 chlorine.memory = 3938
 chlorine.latitude = 52.1712
 chlorine.longitude = 4.45642
-
-deuterium.support.uri = ssh://deuterium.strw.leidenuniv.nl
-deuterium.job.uri = ssh://deuterium.strw.leidenuniv.nl
-deuterium.cores = 2
-deuterium.memory = 2001
-deuterium.latitude = 52.1698
-deuterium.longitude = 4.45812
 
 diem.support.uri = ssh://diem.strw.leidenuniv.nl
 diem.job.uri = ssh://diem.strw.leidenuniv.nl
@@ -224,13 +196,6 @@ dollard.memory = 5964
 dollard.latitude = 52.1666
 dollard.longitude = 4.4558
 
-dommel.support.uri = ssh://dommel.strw.leidenuniv.nl
-dommel.job.uri = ssh://dommel.strw.leidenuniv.nl
-dommel.cores = 2
-dommel.memory = 3888
-dommel.latitude = 52.167
-dommel.longitude = 4.4576
-
 dordtsekil.support.uri = ssh://dordtsekil.strw.leidenuniv.nl
 dordtsekil.job.uri = ssh://dordtsekil.strw.leidenuniv.nl
 dordtsekil.cores = 4
@@ -251,13 +216,6 @@ eemmeer.cores = 4
 eemmeer.memory = 3938
 eemmeer.latitude = 52.1686
 eemmeer.longitude = 4.45699
-
-eendracht.support.uri = ssh://eendracht.strw.leidenuniv.nl
-eendracht.job.uri = ssh://eendracht.strw.leidenuniv.nl
-eendracht.cores = 2
-eendracht.memory = 2001
-eendracht.latitude = 52.1685
-eendracht.longitude = 4.46029
 
 engh.support.uri = ssh://engh.strw.leidenuniv.nl
 engh.job.uri = ssh://engh.strw.leidenuniv.nl
@@ -315,33 +273,12 @@ geeserstroom.memory = 5961
 geeserstroom.latitude = 52.1704
 geeserstroom.longitude = 4.46034
 
-geeuw.support.uri = ssh://geeuw.strw.leidenuniv.nl
-geeuw.job.uri = ssh://geeuw.strw.leidenuniv.nl
-geeuw.cores = 2
-geeuw.memory = 3888
-geeuw.latitude = 52.1692
-geeuw.longitude = 4.45861
-
-geleen.support.uri = ssh://geleen.strw.leidenuniv.nl
-geleen.job.uri = ssh://geleen.strw.leidenuniv.nl
-geleen.cores = 2
-geleen.memory = 2002
-geleen.latitude = 52.1678
-geleen.longitude = 4.45772
-
 gerelingsplas.support.uri = ssh://gerelingsplas.strw.leidenuniv.nl
 gerelingsplas.job.uri = ssh://gerelingsplas.strw.leidenuniv.nl
 gerelingsplas.cores = 8
 gerelingsplas.memory = 5962
 gerelingsplas.latitude = 52.1708
 gerelingsplas.longitude = 4.4564
-
-geul.support.uri = ssh://geul.strw.leidenuniv.nl
-geul.job.uri = ssh://geul.strw.leidenuniv.nl
-geul.cores = 2
-geul.memory = 3888
-geul.latitude = 52.1704
-geul.longitude = 4.45927
 
 giessen.support.uri = ssh://giessen.strw.leidenuniv.nl
 giessen.job.uri = ssh://giessen.strw.leidenuniv.nl
@@ -378,26 +315,12 @@ graafstroom.memory = 5960
 graafstroom.latitude = 52.1693
 graafstroom.longitude = 4.4587
 
-grebbe.support.uri = ssh://grebbe.strw.leidenuniv.nl
-grebbe.job.uri = ssh://grebbe.strw.leidenuniv.nl
-grebbe.cores = 2
-grebbe.memory = 3888
-grebbe.latitude = 52.1701
-grebbe.longitude = 4.45805
-
 grecht.support.uri = ssh://grecht.strw.leidenuniv.nl
 grecht.job.uri = ssh://grecht.strw.leidenuniv.nl
 grecht.cores = 4
 grecht.memory = 3938
 grecht.latitude = 52.1712
 grecht.longitude = 4.46024
-
-grevelingen.support.uri = ssh://grevelingen.strw.leidenuniv.nl
-grevelingen.job.uri = ssh://grevelingen.strw.leidenuniv.nl
-grevelingen.cores = 2
-grevelingen.memory = 3889
-grevelingen.latitude = 52.1694
-grevelingen.longitude = 4.45935
 
 grift.support.uri = ssh://grift.strw.leidenuniv.nl
 grift.job.uri = ssh://grift.strw.leidenuniv.nl
@@ -455,20 +378,6 @@ ij.memory = 32161
 ij.latitude = 52.169
 ij.longitude = 4.4568
 
-iodine.support.uri = ssh://iodine.strw.leidenuniv.nl
-iodine.job.uri = ssh://iodine.strw.leidenuniv.nl
-iodine.cores = 2
-iodine.memory = 2001
-iodine.latitude = 52.1701
-iodine.longitude = 4.4579
-
-joppe.support.uri = ssh://joppe.strw.leidenuniv.nl
-joppe.job.uri = ssh://joppe.strw.leidenuniv.nl
-joppe.cores = 2
-joppe.memory = 3888
-joppe.latitude = 52.1699
-joppe.longitude = 4.4566
-
 kattendiep.support.uri = ssh://kattendiep.strw.leidenuniv.nl
 kattendiep.job.uri = ssh://kattendiep.strw.leidenuniv.nl
 kattendiep.cores = 8
@@ -497,13 +406,6 @@ kingbeek.memory = 12010
 kingbeek.latitude = 52.1672
 kingbeek.longitude = 4.45722
 
-kleipoel.support.uri = ssh://kleipoel.strw.leidenuniv.nl
-kleipoel.job.uri = ssh://kleipoel.strw.leidenuniv.nl
-kleipoel.cores = 2
-kleipoel.memory = 3888
-kleipoel.latitude = 52.1679
-kleipoel.longitude = 4.45846
-
 koppoel.support.uri = ssh://koppoel.strw.leidenuniv.nl
 koppoel.job.uri = ssh://koppoel.strw.leidenuniv.nl
 koppoel.cores = 4
@@ -517,13 +419,6 @@ krammer.cores = 8
 krammer.memory = 5954
 krammer.latitude = 52.1694
 krammer.longitude = 4.4582
-
-krommeaa.support.uri = ssh://krommeaa.strw.leidenuniv.nl
-krommeaa.job.uri = ssh://krommeaa.strw.leidenuniv.nl
-krommeaa.cores = 2
-krommeaa.memory = 1977
-krommeaa.latitude = 52.1707
-krommeaa.longitude = 4.45981
 
 kuinder.support.uri = ssh://kuinder.strw.leidenuniv.nl
 kuinder.job.uri = ssh://kuinder.strw.leidenuniv.nl
@@ -567,13 +462,6 @@ linge.memory = 3938
 linge.latitude = 52.1711
 linge.longitude = 4.45796
 
-luts.support.uri = ssh://luts.strw.leidenuniv.nl
-luts.job.uri = ssh://luts.strw.leidenuniv.nl
-luts.cores = 2
-luts.memory = 7920
-luts.latitude = 52.1696
-luts.longitude = 4.45962
-
 magnesium.support.uri = ssh://magnesium.strw.leidenuniv.nl
 magnesium.job.uri = ssh://magnesium.strw.leidenuniv.nl
 magnesium.cores = 4
@@ -601,13 +489,6 @@ merwede.cores = 4
 merwede.memory = 3938
 merwede.latitude = 52.1681
 merwede.longitude = 4.4564
-
-niers.support.uri = ssh://niers.strw.leidenuniv.nl
-niers.job.uri = ssh://niers.strw.leidenuniv.nl
-niers.cores = 2
-niers.memory = 3888
-niers.latitude = 52.1695
-niers.longitude = 4.45879
 
 noord.support.uri = ssh://noord.strw.leidenuniv.nl
 noord.job.uri = ssh://noord.strw.leidenuniv.nl
@@ -672,13 +553,6 @@ ramsgeul.memory = 3938
 ramsgeul.latitude = 52.1697
 ramsgeul.longitude = 4.45686
 
-redshift.support.uri = ssh://redshift.strw.leidenuniv.nl
-redshift.job.uri = ssh://redshift.strw.leidenuniv.nl
-redshift.cores = 2
-redshift.memory = 7921
-redshift.latitude = 52.1687
-redshift.longitude = 4.45691
-
 regge.support.uri = ssh://regge.strw.leidenuniv.nl
 regge.job.uri = ssh://regge.strw.leidenuniv.nl
 regge.cores = 4
@@ -714,26 +588,12 @@ runde.memory = 5964
 runde.latitude = 52.1692
 runde.longitude = 4.45959
 
-scandium.support.uri = ssh://scandium.strw.leidenuniv.nl
-scandium.job.uri = ssh://scandium.strw.leidenuniv.nl
-scandium.cores = 2
-scandium.memory = 3889
-scandium.latitude = 52.1668
-scandium.longitude = 4.45788
-
 schelde.support.uri = ssh://schelde.strw.leidenuniv.nl
 schelde.job.uri = ssh://schelde.strw.leidenuniv.nl
 schelde.cores = 4
 schelde.memory = 3938
 schelde.latitude = 52.1664
 schelde.longitude = 4.45792
-
-scheur.support.uri = ssh://scheur.strw.leidenuniv.nl
-scheur.job.uri = ssh://scheur.strw.leidenuniv.nl
-scheur.cores = 2
-scheur.memory = 3889
-scheur.latitude = 52.1679
-scheur.longitude = 4.46051
 
 schie.support.uri = ssh://schie.strw.leidenuniv.nl
 schie.job.uri = ssh://schie.strw.leidenuniv.nl
@@ -742,40 +602,12 @@ schie.memory = 3938
 schie.latitude = 52.1687
 schie.longitude = 4.45757
 
-schinkel.support.uri = ssh://schinkel.strw.leidenuniv.nl
-schinkel.job.uri = ssh://schinkel.strw.leidenuniv.nl
-schinkel.cores = 2
-schinkel.memory = 3888
-schinkel.latitude = 52.1674
-schinkel.longitude = 4.45996
-
 schipbeek.support.uri = ssh://schipbeek.strw.leidenuniv.nl
 schipbeek.job.uri = ssh://schipbeek.strw.leidenuniv.nl
 schipbeek.cores = 4
 schipbeek.memory = 5954
 schipbeek.latitude = 52.168
 schipbeek.longitude = 4.45945
-
-shelob.support.uri = ssh://shelob.strw.leidenuniv.nl
-shelob.job.uri = ssh://shelob.strw.leidenuniv.nl
-shelob.cores = 1
-shelob.memory = 3703
-shelob.latitude = 52.1701
-shelob.longitude = 4.45754
-
-silicon.support.uri = ssh://silicon.strw.leidenuniv.nl
-silicon.job.uri = ssh://silicon.strw.leidenuniv.nl
-silicon.cores = 2
-silicon.memory = 1933
-silicon.latitude = 52.1678
-silicon.longitude = 4.45892
-
-slinge.support.uri = ssh://slinge.strw.leidenuniv.nl
-slinge.job.uri = ssh://slinge.strw.leidenuniv.nl
-slinge.cores = 2
-slinge.memory = 3888
-slinge.latitude = 52.1708
-slinge.longitude = 4.45724
 
 sloe.support.uri = ssh://sloe.strw.leidenuniv.nl
 sloe.job.uri = ssh://sloe.strw.leidenuniv.nl
@@ -798,20 +630,6 @@ spaarne.memory = 5964
 spaarne.latitude = 52.1688
 spaarne.longitude = 4.45739
 
-spriet.support.uri = ssh://spriet.strw.leidenuniv.nl
-spriet.job.uri = ssh://spriet.strw.leidenuniv.nl
-spriet.cores = 2
-spriet.memory = 3889
-spriet.latitude = 52.1694
-spriet.longitude = 4.45678
-
-ssh.support.uri = ssh://ssh.strw.leidenuniv.nl
-ssh.job.uri = ssh://ssh.strw.leidenuniv.nl
-ssh.cores = 1
-ssh.memory = 996
-ssh.latitude = 52.1709
-ssh.longitude = 4.456
-
 striene.support.uri = ssh://striene.strw.leidenuniv.nl
 striene.job.uri = ssh://striene.strw.leidenuniv.nl
 striene.cores = 4
@@ -819,75 +637,12 @@ striene.memory = 3938
 striene.latitude = 52.1704
 striene.longitude = 4.45668
 
-student1.support.uri = ssh://student1.strw.leidenuniv.nl
-student1.job.uri = ssh://student1.strw.leidenuniv.nl
-student1.cores = 2
-student1.memory = 1977
-student1.latitude = 52.1681
-student1.longitude = 4.4557
-
-student2.support.uri = ssh://student2.strw.leidenuniv.nl
-student2.job.uri = ssh://student2.strw.leidenuniv.nl
-student2.cores = 2
-student2.memory = 1977
-student2.latitude = 52.1695
-student2.longitude = 4.45668
-
-student3.support.uri = ssh://student3.strw.leidenuniv.nl
-student3.job.uri = ssh://student3.strw.leidenuniv.nl
-student3.cores = 2
-student3.memory = 1977
-student3.latitude = 52.1683
-student3.longitude = 4.45745
-
-student4.support.uri = ssh://student4.strw.leidenuniv.nl
-student4.job.uri = ssh://student4.strw.leidenuniv.nl
-student4.cores = 2
-student4.memory = 1977
-student4.latitude = 52.1676
-student4.longitude = 4.4591
-
-student5.support.uri = ssh://student5.strw.leidenuniv.nl
-student5.job.uri = ssh://student5.strw.leidenuniv.nl
-student5.cores = 2
-student5.memory = 1977
-student5.latitude = 52.1679
-student5.longitude = 4.45705
-
-student6.support.uri = ssh://student6.strw.leidenuniv.nl
-student6.job.uri = ssh://student6.strw.leidenuniv.nl
-student6.cores = 2
-student6.memory = 1977
-student6.latitude = 52.1664
-student6.longitude = 4.45962
-
-student7.support.uri = ssh://student7.strw.leidenuniv.nl
-student7.job.uri = ssh://student7.strw.leidenuniv.nl
-student7.cores = 2
-student7.memory = 1977
-student7.latitude = 52.1704
-student7.longitude = 4.45963
-
-student8.support.uri = ssh://student8.strw.leidenuniv.nl
-student8.job.uri = ssh://student8.strw.leidenuniv.nl
-student8.cores = 2
-student8.memory = 1933
-student8.latitude = 52.1669
-student8.longitude = 4.45995
-
 sun.support.uri = ssh://sun.strw.leidenuniv.nl
 sun.job.uri = ssh://sun.strw.leidenuniv.nl
 sun.cores = 4
 sun.memory = 3938
 sun.latitude = 52.1686
 sun.longitude = 4.4558
-
-thorbeckegracht.support.uri = ssh://thorbeckegracht.strw.leidenuniv.nl
-thorbeckegracht.job.uri = ssh://thorbeckegracht.strw.leidenuniv.nl
-thorbeckegracht.cores = 2
-thorbeckegracht.memory = 2003
-thorbeckegracht.latitude = 52.1692
-thorbeckegracht.longitude = 4.45708
 
 titanium.support.uri = ssh://titanium.strw.leidenuniv.nl
 titanium.job.uri = ssh://titanium.strw.leidenuniv.nl
@@ -952,26 +707,12 @@ wad.memory = 5964
 wad.latitude = 52.1698
 wad.longitude = 4.45589
 
-watering.support.uri = ssh://watering.strw.leidenuniv.nl
-watering.job.uri = ssh://watering.strw.leidenuniv.nl
-watering.cores = 2
-watering.memory = 3888
-watering.latitude = 52.1664
-watering.longitude = 4.45827
-
 westerschelde.support.uri = ssh://westerschelde.strw.leidenuniv.nl
 westerschelde.job.uri = ssh://westerschelde.strw.leidenuniv.nl
 westerschelde.cores = 4
 westerschelde.memory = 3938
 westerschelde.latitude = 52.1709
 westerschelde.longitude = 4.45639
-
-wijd.support.uri = ssh://wijd.strw.leidenuniv.nl
-wijd.job.uri = ssh://wijd.strw.leidenuniv.nl
-wijd.cores = 2
-wijd.memory = 3889
-wijd.latitude = 52.1664
-wijd.longitude = 4.45746
 
 wijmerts.support.uri = ssh://wijmerts.strw.leidenuniv.nl
 wijmerts.job.uri = ssh://wijmerts.strw.leidenuniv.nl
@@ -986,13 +727,6 @@ zaan.cores = 4
 zaan.memory = 5954
 zaan.latitude = 52.1677
 zaan.longitude = 4.45868
-
-zegge.support.uri = ssh://zegge.strw.leidenuniv.nl
-zegge.job.uri = ssh://zegge.strw.leidenuniv.nl
-zegge.cores = 1
-zegge.memory = 3263
-zegge.latitude = 52.1676
-zegge.longitude = 4.45657
 
 zenne.support.uri = ssh://zenne.strw.leidenuniv.nl
 zenne.job.uri = ssh://zenne.strw.leidenuniv.nl
@@ -1015,13 +749,6 @@ zijpe.memory = 3938
 zijpe.latitude = 52.1681
 zijpe.longitude = 4.45996
 
-zoom.support.uri = ssh://zoom.strw.leidenuniv.nl
-zoom.job.uri = ssh://zoom.strw.leidenuniv.nl
-zoom.cores = 2
-zoom.memory = 3889
-zoom.latitude = 52.1674
-zoom.longitude = 4.45991
-
 zwalm.support.uri = ssh://zwalm.strw.leidenuniv.nl
 zwalm.job.uri = ssh://zwalm.strw.leidenuniv.nl
 zwalm.cores = 4
@@ -1036,24 +763,9 @@ zwartewater.memory = 3938
 zwartewater.latitude = 52.1668
 zwartewater.longitude = 4.46036
 
-zweiland.support.uri = ssh://zweiland.strw.leidenuniv.nl
-zweiland.job.uri = ssh://zweiland.strw.leidenuniv.nl
-zweiland.cores = 2
-zweiland.memory = 3888
-zweiland.latitude = 52.167
-zweiland.longitude = 4.45829
-
 zwette.support.uri = ssh://zwette.strw.leidenuniv.nl
 zwette.job.uri = ssh://zwette.strw.leidenuniv.nl
 zwette.cores = 4
 zwette.memory = 5964
 zwette.latitude = 52.169
 zwette.longitude = 4.45664
-
-zwin.support.uri = ssh://zwin.strw.leidenuniv.nl
-zwin.job.uri = ssh://zwin.strw.leidenuniv.nl
-zwin.cores = 2
-zwin.memory = 3888
-zwin.latitude = 52.1683
-zwin.longitude = 4.45979
-
