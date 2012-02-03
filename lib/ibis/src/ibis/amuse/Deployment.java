@@ -188,7 +188,7 @@ public class Deployment {
             // File("libibis-amuse-bhtree_worker.so"));
             application.setMainClass("ibis.amuse.CodeInterface");
             application.setMemorySize(1000);
-            // application.setLog4jFile(new File("log4j.properties"));
+            application.setLog4jFile(new File(ibisDir, "log4j.properties"));
 
             application.setSystemProperty("ibis.managementclient", "true");
             application.setSystemProperty("ibis.bytescount", "true");

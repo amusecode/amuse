@@ -32,85 +32,27 @@ default.mpiexec=none
 default.color=#00FF00
 default.support.uri = ssh://fs.lgm.liacs.nl
 default.job.uri = ssh://fs.lgm.liacs.nl
+default.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
 
-ygmtest.job.uri = ssh://test
-lgmtest.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
+lgmtest.job.uri = ssh://test
 lgmtesla.job.uri = ssh://tesla
-lgmtesla.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm00.job.uri = ssh://node00
-lgm00.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm01.job.uri = ssh://node01
-lgm01.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm02.job.uri = ssh://node02
-lgm02.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm03.job.uri = ssh://node03
-lgm03.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm04.job.uri = ssh://node04
-lgm04.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm05.job.uri = ssh://node05
-lgm05.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm06.job.uri = ssh://node06
-lgm06.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm07.job.uri = ssh://node07
-lgm07.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm08.job.uri = ssh://node08
-lgm08.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm09.job.uri = ssh://node09
-lgm09.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm10.job.uri = ssh://node10
-lgm10.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm11.job.uri = ssh://node11
-lgm11.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm12.job.uri = ssh://node12
-lgm12.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm13.job.uri = ssh://node13
-lgm13.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm14.job.uri = ssh://node14
-lgm14.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm15.job.uri = ssh://node15
-lgm15.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm16.job.uri = ssh://node16
-lgm16.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm17.job.uri = ssh://node17
-lgm17.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm18.job.uri = ssh://node18
-lgm18.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
 lgm19.job.uri = ssh://node19
-lgm19.job.options = ssh.gateway.uri=ssh://fs.lgm.liacs.nl
-
-
-
-
-#lgmtest.job.wrapper.script = lib/ibis/lgmtest.script
-#lgm00.job.wrapper.script = lib/ibis/lgmtest.script
-#lgm02.job.wrapper.script = lib/ibis/lgmtest.script
-
-Para.support.uri = ssh://para1.strw.leidenuniv.nl
-Para.job.uri = sshpbs://para1.strw.leidenuniv.nl
-Para.file.adaptors = SftpTrilead,SshTrilead,Local
-Para.java.path = java
-Para.latitude = 52.1686
-Para.longitude = 4.4598
-Para.amuse.home=/home/ndrost/amuse
-Para.mpiexec=/software/mpi/bin/mpiexec
