@@ -9,13 +9,12 @@ CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
-CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
 CUDA_TK ?= /usr/local/cuda/
 CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 
 #CXXFLAGS += -I$(CUDA_TK)/include
 LIBS = -lcuda -lOpenCL $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia
-INCLUDES = -I$(CUDA_SDK)/common/inc -I$(CUDA_TK)/include 
+INCLUDES = -I$(CUDA_TK)/include 
 
 OBJS = libraryInterface.o
 
@@ -40,21 +39,8 @@ $(CUDA_TK):
 	@echo ""
 	@make -s --no-print-directory -C . raise_error
 
-$(CUDA_SDK):
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "bonsai code"
-	@echo "------------"
-	@echo "CUDA_SDK variable is not set to a valid path,"
-	@echo "please set the CUDA_SDK variable to the directory"
-	@echo "where you installed the CUDA SDK"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
 
-compile: $(CUDA_TK) $(CUDA_SDK) $(CODELIB) 
+compile: $(CUDA_TK) $(CODELIB) 
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 

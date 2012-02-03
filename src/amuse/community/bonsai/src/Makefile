@@ -5,7 +5,7 @@ F90  = ifort
 
 .SUFFIXES: .o .cpp .ptx .cu
 
-CUDA_TK  = /usr/local/cuda
+CUDA_TK  ?= /usr/local/cuda
 
 # OFLAGS = -O0 -g -Wall 
 OFLAGS = -O3 -g -Wall -fopenmp 
@@ -26,7 +26,7 @@ NVCCFLAGS = -arch sm_20
 # Use with Mac OS X
 # NVCCFLAGS = -arch sm_12 -Xcompiler="-Duint=unsigned\ int"
 
-LDFLAGS = -lcuda -lOpenCL  
+LDFLAGS = -lcuda 
 
 #For tipsy support uncomment the following line
 CXXFLAGS += -DTIPSYOUTPUT
