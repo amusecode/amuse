@@ -140,9 +140,12 @@ public class Daemon implements RegistryEventHandler {
     public static void printUsage() {
         System.err.println("Usage: ibis-deploy.sh [OPTIONS]\n" + "Options:\n"
                 + "-p | --port [PORT]\t\tPort to listen on (default: " + DEFAULT_PORT + ")\n"
-                + "-v | --verbose\t\t\tBe more verbose\n" + "-g | --gui\t\t\tStart a monitoring gui as well\n"
+                + "-v | --verbose\t\t\tBe more verbose\n" 
+                + "-g | --gui\t\t\tStart a monitoring gui as well\n"
                 + "-k | --keep-sandboxes\t\tKeep JavaGAT sandboxes (mostly for debugging)\n"
-                + "-j | --jungle-file [FILE]\tName of jungle configuration file\n" + "-h | --help\t\t\tThis message");
+                + "-j | --jungle-file [FILE]\tName of jungle configuration file\n"
+                + "-n | --no-hubs\t\t\tDo not start any hubs\n" 
+                + "-h | --help\t\t\tThis message");
     }
 
     public static void main(String[] arguments) throws IOException {
@@ -163,7 +166,7 @@ public class Daemon implements RegistryEventHandler {
                 gui = true;
             } else if (arguments[i].equals("-k") || arguments[i].equals("--keep-sandboxes")) {
                 keepSandboxes = true;
-            } else if (arguments[i].equals("--no-hubs")) {
+            } else if (arguments[i].equals("-n") || arguments[i].equals("--no-hubs")) {
                 hubs = false;
             } else if (arguments[i].equals("-j") || arguments[i].equals("--jungle-file")) {
                 i++;

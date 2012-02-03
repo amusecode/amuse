@@ -25,6 +25,8 @@ public class Deployment {
 
     public static final String[] logos = { "images/strw-logo-blue.png", "images/nova-logo.png" };
 
+    private int nextMachine = 0;
+    
     private final Deploy deploy;
 
     private final Jungle jungle;
@@ -122,6 +124,30 @@ public class Deployment {
             new GUI(deploy, workspace, Mode.MONITORING_ONLY, true, logos);
         }
     }
+    
+    /** Return next RoundRobin machine. Skips local unless there is only one machine
+     *
+     * @return the next machine, selected round-robin
+     */
+    private synchronized Resource getNextMachine() {
+        Resource[] resources = jungle.getResources();
+        
+        if (resources.length == 0) {
+            return null;
+        } else if (resources.length == 1) {
+            return resources[0];
+        }
+
+        if (nextMachine < 1 || nextMachine > resources.length) {
+            nextMachine = 1;
+        }
+        
+        Resource result = resources[nextMachine++];
+        
+        return result;
+    }
+
+
 
     public String getServerAddress() throws Exception {
         return deploy.getServerAddress();
@@ -129,14 +155,29 @@ public class Deployment {
 
     public Job deploy(String codeName, String codeDir, String resourceName, String workerID, int nrOfWorkers,
             int nrOfNodes) throws Exception {
+        Resource resource = null;
         logger.info("Deploying worker \"" + workerID + "\" running \"" + codeName + "\" on host " + resourceName
                 + " with " + nrOfWorkers + " workers on " + nrOfNodes + " nodes");
 
         if (resourceName.equalsIgnoreCase("localhost")) {
             resourceName = "local";
         }
-        Resource resource = jungle.getResource(resourceName);
-
+        if (resourceName.equals("random")) {
+            Resource[] resources = jungle.getResources();
+            int selected = (int) (Math.random() * resources.length);
+            resource = resources[selected];
+            resourceName = resource.getName();
+            logger.info("Randomly selected resource " + resourceName);
+        } else if (resourceName.equals("roundrobin")) {
+            resource = getNextMachine();
+            
+            resourceName = resource.getName();
+            logger.info("Round-Robin selected resource " + resourceName);
+        
+        } else {
+            resource = jungle.getResource(resourceName);
+        }
+        
         if (resource == null) {
             throw new Exception("Resource \"" + resourceName + "\" not found in jungle description");
         }
