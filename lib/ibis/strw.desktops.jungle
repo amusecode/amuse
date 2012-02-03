@@ -1,55 +1,55 @@
 default.file.adaptors = SftpTrilead,SshTrilead,Local
 default.java.path = java
-default.user.name = ndrost
+#default.user.name = ndrost
 default.latitude = 52.1686
 default.longitude = 4.4598
 default.amuse.home= /disks/koppoel2/ndrost/amuse-svn
 default.mpiexec=mpiexec.hydra
 default.support.uri=ssh://koppoel.strw.leidenuniv.nl
 
-#ade.support.uri = ssh://ade.strw.leidenuniv.nl
+ade.support.uri = ssh://ade.strw.leidenuniv.nl
 ade.job.uri = ssh://ade.strw.leidenuniv.nl
 ade.cores = 4
 ade.memory = 3939
 ade.latitude = 52.1674
 ade.longitude = 4.45707
 
-#akkersloot.support.uri = ssh://akkersloot.strw.leidenuniv.nl
+akkersloot.support.uri = ssh://akkersloot.strw.leidenuniv.nl
 akkersloot.job.uri = ssh://akkersloot.strw.leidenuniv.nl
 akkersloot.cores = 4
 akkersloot.memory = 3938
 akkersloot.latitude = 52.1705
 akkersloot.longitude = 4.45637
 
-#alblas.support.uri = ssh://alblas.strw.leidenuniv.nl
+alblas.support.uri = ssh://alblas.strw.leidenuniv.nl
 alblas.job.uri = ssh://alblas.strw.leidenuniv.nl
 alblas.cores = 4
 alblas.memory = 3938
 alblas.latitude = 52.1692
 alblas.longitude = 4.45658
 
-#alm.support.uri = ssh://alm.strw.leidenuniv.nl
+alm.support.uri = ssh://alm.strw.leidenuniv.nl
 alm.job.uri = ssh://alm.strw.leidenuniv.nl
 alm.cores = 4
 alm.memory = 3939
 alm.latitude = 52.1703
 alm.longitude = 4.45648
 
-#aluminium.support.uri = ssh://aluminium.strw.leidenuniv.nl
+aluminium.support.uri = ssh://aluminium.strw.leidenuniv.nl
 aluminium.job.uri = ssh://aluminium.strw.leidenuniv.nl
 aluminium.cores = 4
 aluminium.memory = 5964
 aluminium.latitude = 52.1687
 aluminium.longitude = 4.45637
 
-#amer.support.uri = ssh://amer.strw.leidenuniv.nl
+amer.support.uri = ssh://amer.strw.leidenuniv.nl
 amer.job.uri = ssh://amer.strw.leidenuniv.nl
 amer.cores = 4
 amer.memory = 5964
 amer.latitude = 52.1681
 amer.longitude = 4.45807
 
-#angstel.support.uri = ssh://angstel.strw.leidenuniv.nl
+angstel.support.uri = ssh://angstel.strw.leidenuniv.nl
 angstel.job.uri = ssh://angstel.strw.leidenuniv.nl
 angstel.cores = 4
 angstel.memory = 5964
