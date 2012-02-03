@@ -13,7 +13,7 @@ CUDA_TK ?= /usr/local/cuda/
 CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 
 #CXXFLAGS += -I$(CUDA_TK)/include
-LIBS = -lcuda -lOpenCL $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia
+LIBS = -lcuda  $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia
 INCLUDES = -I$(CUDA_TK)/include 
 
 OBJS = libraryInterface.o
@@ -53,10 +53,16 @@ $(CODELIB):
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BonsaiInterface -o $@
 
+worker_code-sockets.cc: interface.py
+	$(CODE_GENERATOR) --type=c --mode=sockets interface.py BonsaiInterface -o $@
+
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py BonsaiInterface -o $@
 
 bonsai_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
+	$(MPICXX) $(CXXFLAGS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS) -o $@
+
+bonsai_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS) -o $@
 
 .cpp.o: $<

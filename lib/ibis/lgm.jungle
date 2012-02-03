@@ -20,7 +20,7 @@
 # longitude           Longitude position of this resouce (double)
 # color               Color (as a HTML color string) used to represent this resource
 
-default.user.name=niels
+#default.user.name=niels
 
 default.file.adaptors = SftpTrilead,SshTrilead,Local
 default.java.path = /home/niels/jdk1.6.0_27/bin/java
