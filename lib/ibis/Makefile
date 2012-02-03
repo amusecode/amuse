@@ -37,7 +37,7 @@ lib/ibis-amuse.jar: src/*/*/*.java
 	mkdir lib
 	$(JDK)/bin/javac -classpath $(CLASSPATH) -d tmp src/*/*/*.java
 	$(JDK)/bin/java -classpath $(CLASSPATH) ibis.compile.Ibisc tmp
-	$(JDK)/bin/javah -classpath tmp -d include ibis.amuse.JNICodeInterface
+	$(JDK)/bin/javah -classpath $(CLASSPATH) -d include ibis.amuse.JNICodeInterface
 	@echo Building jar file
 	$(JDK)/bin/jar -cf lib/ibis-amuse.jar -C tmp .
 	$(JDK)/bin/jar -uf lib/ibis-amuse.jar images/*
