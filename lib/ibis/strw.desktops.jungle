@@ -3,7 +3,7 @@ default.java.path = java
 #default.user.name = ndrost
 default.latitude = 52.1686
 default.longitude = 4.4598
-default.amuse.home= /disks/koppoel2/ndrost/amuse-svn
+default.amuse.home= /net/koppoel/data2/ndrost/amuse-svn
 default.mpiexec=mpiexec.hydra
 default.support.uri=ssh://koppoel.strw.leidenuniv.nl
 
