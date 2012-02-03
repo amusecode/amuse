@@ -30,7 +30,7 @@ stoffel.amuse.home=/home/spz/Instantaneous/AMUSE/amuse
 stoffel.mpiexec=mpiexec.hydra
 #stoffel.mpdboot=mpdboot
 
-Para.user.name = ndrost
+#Para.user.name = ndrost
 Para.support.uri = ssh://para1.strw.leidenuniv.nl
 Para.job.uri = sshpbs://para1.strw.leidenuniv.nl
 Para.file.adaptors = SftpTrilead,SshTrilead,Local
