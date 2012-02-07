@@ -20,7 +20,7 @@ NVCCFLAGS += -Xcompiler="-Wall"
 CUDA_LIBS = -lcudart  -L $(CUDAPATH)/lib -L $(CUDAPATH)/lib64
 
 CXXFLAGS  +=  -I./ON_neib -I./ -fopenmp $(CUDAINCLUDE)
-LDFLAGS   +=  -fopenmp $(CUDA_LIBS)
+LDFLAGS   +=  -fopenmp
 LDGPUGLAGS := $(LDFLAGS) $(CUDA_LIBS)
 
 OBJS = hacs64_amuse.o \
@@ -42,7 +42,7 @@ all: $(CODELIB) $(TARGET)
 cpu: $(CODELIBCPU) $(TARGETCPU)
 
 $(TARGET): $(CODELIB) integrate.o
-	$(CXX) -o $(TARGET) integrate.o $(LDFLAGS) ./$(CODELIB) 
+	$(CXX) -o $(TARGET) integrate.o $(LDFLAGS)  $(CUDA_LIBS) ./$(CODELIB) 
 
 $(CODELIB): $(OBJS)
 	/bin/rm -f $@
