@@ -326,4 +326,24 @@ class TestHuayno(TestWithMPI):
         expected_positions = instance.particles.position
         instance.stop()
     
+    def test14(self):
+        import hashlib
+
+        numpy.random.seed(123456)
+        particles = plummer.new_plummer_sphere(64)
+        sha=hashlib.sha1()
+
+        for itype in sorted(Huayno.inttypes._list()):
+            if itype in ("KEPLER"): continue
+            instance = Huayno()
+            instance.parameters.inttype_parameter=getattr(Huayno.inttypes,itype)
+            instance.particles.add_particles(particles)
+            instance.evolve_model(0.125 | nbody_system.time)
+            part_out= instance.particles.copy()
+            sha.update(part_out.position.number.data)
+            instance.stop()
+        
+        # this result is probably dependent on system architecture hence no good for assert
+        print sha.hexdigest()
+        print "9714521156a4d4befc1e414f75aa650e1f8836ae"
     
