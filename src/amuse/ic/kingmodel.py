@@ -467,6 +467,7 @@ class MakeKingModel(object):
         result.mass = nbody_system.mass.new_quantity(masses)
         result.position = nbody_system.length.new_quantity(positions)
         result.velocity = nbody_system.speed.new_quantity(velocities)
+        result.radius = 0 | nbody_system.length
         result.move_to_center()
         if self.do_scale:
             result.scale_to_standard()
