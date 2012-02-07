@@ -24,4 +24,3 @@ void evolve_sf_4m5(struct sys s, DOUBLE stime, DOUBLE etime,
                          DOUBLE dt, int calc_timestep);
 
                          
-void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);

@@ -7,6 +7,7 @@
 #include "evolve_cc.h"
 #include "evolve_kepler.h"
 #include "evolve_ok.h"
+#include "evolve_bs.h"
 
 #ifdef EVOLVE_OPENCL
 #include "evolve_cl.h"
@@ -28,6 +29,10 @@ unsigned long cpu_step,cl_step,cpu_count,cl_count;
 
 static void potential(struct sys s1, struct sys s2);
 static void report(struct sys s,DOUBLE etime, int inttype);
+
+#ifndef M_SQRT2
+#define M_SQRT2 1.41421356237309504880168872420969808L
+#endif
 
 FLOAT system_kinetic_energy(struct sys s)
 {
@@ -72,6 +77,12 @@ void init_evolve(struct sys s,int inttype)
     s.part[i].pot=0.;
     s.part[i].level=0;
     s.part[i].timestep=HUGE_VAL;
+#ifdef COMPENSATED_SUMMP
+    s.part[i].pos_e[0]=0.;s.part[i].pos_e[1]=0.;s.part[i].pos_e[2]=0.;
+#endif
+#ifdef COMPENSATED_SUMMV
+    s.part[i].vel_e[0]=0.;s.part[i].vel_e[1]=0.;s.part[i].vel_e[2]=0.;
+#endif
   }
   potential(s,s);
   
@@ -95,6 +106,7 @@ void do_evolve(struct sys s, double dt, int inttype)
     tstep[i]=0;tcount[i]=0;
     kstep[i]=0;kcount[i]=0;
     dstep[i]=0;dcount[i]=0;
+    bsstep[i]=0;jcount[i]=0;
   }
   switch (inttype)
   {
@@ -112,6 +124,9 @@ void do_evolve(struct sys s, double dt, int inttype)
       break;
     case SHARED10:
       evolve_shared10(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      break;
+    case SHAREDBS:
+      evolve_bs_adaptive(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case PASS:
       evolve_split_pass(s, zerosys,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
@@ -164,15 +179,39 @@ void do_evolve(struct sys s, double dt, int inttype)
   report(s,(DOUBLE) dt, inttype);
 }
 
+#define COMPSUM(sum,err,delta) \
+  { \
+    DOUBLE a; \
+    a=sum; \
+    err=err+delta; \
+    sum=a+err; \
+    err=err+(a-sum); \
+  }
+
+#define COMPSUM1(sum,err,delta) \
+  { \
+    DOUBLE t,y; \
+    y=(delta)-err; \
+    t=sum+y; \
+    err=(t-sum)-y; \
+    sum=t; \
+  }
+
 
 void drift(struct sys s, DOUBLE etime, DOUBLE dt)
 {
   UINT i;
   for(i=0;i<s.n;i++)
   {
+#ifndef COMPENSATED_SUMMP
     s.part[i].pos[0]+=dt*s.part[i].vel[0];
     s.part[i].pos[1]+=dt*s.part[i].vel[1];
     s.part[i].pos[2]+=dt*s.part[i].vel[2];
+#else
+    COMPSUM(s.part[i].pos[0],s.part[i].pos_e[0],dt*s.part[i].vel[0])
+    COMPSUM(s.part[i].pos[1],s.part[i].pos_e[1],dt*s.part[i].vel[1])
+    COMPSUM(s.part[i].pos[2],s.part[i].pos_e[2],dt*s.part[i].vel[2])
+#endif
     s.part[i].postime=etime;
     s.part[i].timestep=HUGE_VAL;
   }
@@ -212,9 +251,15 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
         acc[2]-=dx[2]*acci;  
       }
     }
+#ifndef COMPENSATED_SUMMV
     s1.part[i].vel[0]+=dt*acc[0];
     s1.part[i].vel[1]+=dt*acc[1];
     s1.part[i].vel[2]+=dt*acc[2];
+#else
+    COMPSUM(s1.part[i].vel[0],s1.part[i].vel_e[0],dt*acc[0]);
+    COMPSUM(s1.part[i].vel[1],s1.part[i].vel_e[1],dt*acc[1]);
+    COMPSUM(s1.part[i].vel[2],s1.part[i].vel_e[2],dt*acc[2]);
+#endif
   }
 }
 
@@ -407,5 +452,69 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   printf("cpu step,count: %12li,%18li\n",cpu_step,cpu_count);
   printf("cl step,count:  %12li,%18li\n",cl_step,cl_count);
 #endif
+  if(inttype==SHAREDBS)
+  {
+    unsigned long totalbs,totalj;
+    printf("bs counts:\n");
+    for(i=0;i<MAXLEVEL;i++) 
+    { 
+      totalbs+=bsstep[i];
+      totalj+=jcount[i];
+      printf("%d: %18li %18li %f\n",i,bsstep[i],jcount[i],jcount[i]/(1.*bsstep[i]+1.e-20));
+    }
+    printf(" total, total j, mean j: %18li %18li %f",totalbs,totalj,totalj/(1.*totalbs));
+  }
   fflush(stdout);
+}
+
+struct sys join(struct sys s1,struct sys s2)
+{
+  struct sys s=zerosys;
+  if(s1.n == 0) return s2;
+  if(s2.n == 0) return s1;  
+  s.n=s1.n+s2.n;
+  if(s1.part+s1.n == s2.part)
+  {
+    s.part=s1.part;
+    s.last=s2.last;
+  } else
+  {
+    if(s2.part+s2.n == s1.part)
+    {
+      s.part=s2.part;
+      s.last=s1.last;
+    } else
+      ENDRUN("join error 1");
+  }   
+  if(s.last-s.part + 1 != s.n) ENDRUN("join error 2");
+  return s;
+}
+
+FLOAT global_timestep(struct sys s)
+{
+  UINT i;
+  FLOAT mindt;
+  mindt=HUGE_VAL;
+  for(i=0;i<s.n;i++)
+  {
+    if(mindt>s.part[i].timestep) mindt=s.part[i].timestep;
+  }
+  return mindt;
+}
+
+void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  if(s2.n>0) kick(s2, s1, dt/2);
+  kick(s1,join(s1,s2),dt/2);
+  drift(s1,etime, dt);
+  kick(s1,join(s1,s2),dt/2);
+  if(s2.n>0) kick(s2, s1, dt/2);
+}
+
+void dkd(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  drift(s1,stime+dt/2, dt/2);
+  kick(s1,join(s1,s2),dt);
+  if(s2.n>0) kick(s2, s1, dt);
+  drift(s1,etime, dt/2);
 }

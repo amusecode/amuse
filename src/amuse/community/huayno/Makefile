@@ -1,15 +1,8 @@
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 
-# (ugly) fix for MacPorts+OpenMPI compilers
-ifneq (,$(shell type -P openmpicxx))
-	MPICXX = openmpicxx
-	MPICC = openmpicc
-endif
-
-# -D_GNU_SOURCE is needed to define M_SQRT2 when compiling on certain machines (e.g. gpu-1.strw); may not be necessary anymore
-CCFLAGS += -O2 -Wall -std=gnu99 -D_GNU_SOURCE
-CXXFLAGS += -O2 -Wall -D_GNU_SOURCE
+CCFLAGS += -g -O2 -Wall -std=c99
+CXXFLAGS += -O2 -Wall 
 LIBS += -lm
 INCLUDE =
 
@@ -20,7 +13,7 @@ STDCL = /home/inti/libraries/coprthr_old
 #---------------------------------------------
 
 OBJS = interface.o evolve.o evolve_shared.o evolve_sf.o evolve_cc.o \
-  evolve_ok.o evolve_kepler.o universal_variable_kepler.o
+  evolve_ok.o evolve_kepler.o universal_variable_kepler.o evolve_bs.o
 
 AMUSE_DIR?=../../../..
 

@@ -5,10 +5,6 @@
 
 static void drift_naive(struct sys s, DOUBLE etime); /* drift/extrap sys to itime*/
 static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast);
-void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void dkd(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static struct sys join(struct sys s1,struct sys s2);
-
 
 void evolve_split_pass(struct sys sys1,struct sys sys2, 
                          DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
@@ -380,42 +376,3 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
   for(i=0;i<s.n;i++) s.part[i].level=clevel;
 }
 
-static struct sys join(struct sys s1,struct sys s2)
-{
-  struct sys s=zerosys;
-  if(s1.n == 0) return s2;
-  if(s2.n == 0) return s1;  
-  s.n=s1.n+s2.n;
-  if(s1.part+s1.n == s2.part)
-  {
-    s.part=s1.part;
-    s.last=s2.last;
-  } else
-  {
-    if(s2.part+s2.n == s1.part)
-    {
-      s.part=s2.part;
-      s.last=s1.last;
-    } else
-      ENDRUN("join error 1");
-  }   
-  if(s.last-s.part + 1 != s.n) ENDRUN("join error 2");
-  return s;
-}
-
-void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
-{
-  if(s2.n>0) kick(s2, s1, dt/2);
-  kick(s1,join(s1,s2),dt/2);
-  drift(s1,etime, dt);
-  kick(s1,join(s1,s2),dt/2);
-  if(s2.n>0) kick(s2, s1, dt/2);
-}
-
-static void dkd(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
-{
-  drift(s1,stime+dt/2, dt/2);
-  kick(s1,join(s1,s2),dt);
-  if(s2.n>0) kick(s2, s1, dt);
-  drift(s1,etime, dt/2);
-}

@@ -7,22 +7,17 @@
 #define LONG long
 #define ULONG unsigned long
 
-#define SWAP(a,b,c) {c t;t=(a);(a)=(b);(b)=t;}
+#define RVTIMESTEP
+#define RATIMESTEP
+#define RARVRATIO   1.
 
-#define ABS(X) (((X) >= 0) ? (X) : -(X))
-#define SIGN(X)   ((X>0)-(X<0))
+#define MPWORKLIMIT 100
+#define CLWORKLIMIT 10000
 
-#define LOG(fmt, ...) {\
-  printf("%s:%d\t", __FILE__, __LINE__);\
-  printf(fmt, ## __VA_ARGS__);\
-}
+#define MAXLEVEL  64
 
-#define ENDRUN(fmt, ...) { \
-  printf("ENDRUN at %s:%d ", __FILE__, __LINE__);\
-  printf(fmt, ## __VA_ARGS__);\
-  fflush(stdout);\
-  exit(-1);\
-}
+#define COMPENSATED_SUMMP
+//#define COMPENSATED_SUMMV  
 
 struct particle
 {
@@ -31,6 +26,12 @@ struct particle
   FLOAT radius; /*not used*/
   DOUBLE pos[3];
   DOUBLE vel[3];
+#ifdef COMPENSATED_SUMMP
+  DOUBLE pos_e[3];
+#endif
+#ifdef COMPENSATED_SUMMV
+  DOUBLE vel_e[3];
+#endif
   DOUBLE pot;
   DOUBLE postime;
   FLOAT timestep;
@@ -74,31 +75,16 @@ enum intopt
   FOURTH_M5,  // 17 
   SHARED6,    // 18
   SHARED8,    // 19
-  SHARED10    // 20
+  SHARED10,   // 20
+  SHAREDBS    // 21
 };
 
 extern FLOAT eps2;
 extern FLOAT dt_param;
-
-void init_code();
-void stop_code();
-void init_evolve(struct sys s, int inttype);
-void do_evolve(struct sys s, double dt, int inttype);
-FLOAT system_potential_energy(struct sys s);
-FLOAT system_kinetic_energy(struct sys s);
-
-#define RVTIMESTEP
-#define RATIMESTEP
-#define RARVRATIO   1.
-
-#define MPWORKLIMIT 100
-#define CLWORKLIMIT 10000
-
-#define MAXLEVEL  64
-
-extern FLOAT eps2;
-extern FLOAT dt_param;
 extern struct sys zerosys;
+
+extern int fixed_j;
+extern DOUBLE bs_target_error;
 
 /* diagnostics */
 extern DOUBLE simtime;
@@ -110,10 +96,41 @@ extern unsigned long cefail[MAXLEVEL],cecount[MAXLEVEL]; // call/fail counts of 
 #ifdef EVOLVE_OPENCL
 extern unsigned long cpu_step,cl_step,cpu_count,cl_count;
 #endif
+extern unsigned long bsstep[MAXLEVEL],jcount[MAXLEVEL]; /* count + jcount of BS evolve */
+
+void init_code();
+void stop_code();
+void init_evolve(struct sys s, int inttype);
+void do_evolve(struct sys s, double dt, int inttype);
+
+FLOAT system_potential_energy(struct sys s);
+FLOAT system_kinetic_energy(struct sys s);
 
 void drift(struct sys s, DOUBLE etime, DOUBLE dt); /* drift sys */
 void kick(struct sys s1, struct sys s2, DOUBLE dt); /* =kick sys1 for interactions with sys2  */
+
+void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+void dkd(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+
 void timestep(struct sys s1, struct sys s2,int dir);
 FLOAT timestep_ij(struct particle *i, struct particle *j,int dir);
+FLOAT global_timestep(struct sys s);
 
+struct sys join(struct sys s1,struct sys s2);
 
+#define SWAP(a,b,c) {c t;t=(a);(a)=(b);(b)=t;}
+
+#define ABS(X) (((X) >= 0) ? (X) : -(X))
+#define SIGN(X)   ((X>0)-(X<0))
+
+#define LOG(fmt, ...) {\
+  printf("%s:%d\t", __FILE__, __LINE__);\
+  printf(fmt, ## __VA_ARGS__);\
+}
+
+#define ENDRUN(fmt, ...) { \
+  printf("ENDRUN at %s:%d ", __FILE__, __LINE__);\
+  printf(fmt, ## __VA_ARGS__);\
+  fflush(stdout);\
+  exit(-1);\
+}

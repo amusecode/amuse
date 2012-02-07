@@ -175,6 +175,7 @@ class Huayno(GravitationalDynamics):
         SHARED6=18
         SHARED8=19
         SHARED10=20
+        SHAREDBS=21
         
         @classmethod
         def _list(cls):
