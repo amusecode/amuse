@@ -16,7 +16,7 @@ $(LIBNAME): $(OBJS)
 	$(MPICC) $(CFLAGS) -Wall -c -o $@ $<
 	
 %.o: %.f90
-	$(MPIF90) -c -o $@ $<
+	$(MPIF90) $(FCFLAGS) -c -o $@ $<
 
 clean:
 	rm -Rf *.o *.lo *.a *.mo *.mod

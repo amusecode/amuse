@@ -42,17 +42,17 @@ PIC=#-fPIC
 $(info  $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- ))
 $(info  $(findstring gfortran, $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- )))
 ifneq (,$(findstring gfortran, $(notdir $(FORTRAN))))
-FFLAGS = -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
+FFLAGS = $(FCFLAGS) -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
 endif
 
 
 ifeq ($(findstring f95, $(notdir $(FORTRAN))), f95)
-FFLAGS = -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
+FFLAGS = $(FCFLAGS) -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
 endif
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
 # ifort flags
-FFLAGS= -r8 -O2 -ip -u $(PIC)
+FFLAGS= $(FCFLAGS) -r8 -O2 -ip -u $(PIC)
 #GLLIB = $(GLLIB) -lguide 
 endif
 
