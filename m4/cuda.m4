@@ -22,16 +22,14 @@ AC_DEFUN([AX_CUDA],[
         ])
         ],
         [WITH_CUDA=no
-	CUDA_TK=/NOCUDACONFIGURED
-	CUDA_SDK=/NOCUDACONFIGURED
-        CUDA_LIBS="-L$CUDA_SDK cuda cudart"	
+        CUDA_TK=/NOCUDACONFIGURED
+        CUDA_LIBS="-L$CUDA_TK cuda cudart"	
 	]
     )
     AC_ARG_WITH(
         cuda-libdir, [  --with-cuda-libdir=PFX   Directory where libcuda.so is installed (optional)],
             cuda_libdir="$withval", cuda_libdir=".")
             
-    AC_ARG_VAR([CUDA_SDK], [CUDA sdk directory])
     AC_ARG_VAR([CUDA_TK], [CUDA toolkit directory])
 
     AS_IF([test x"$WITH_CUDA" != xno],[
@@ -56,16 +54,12 @@ AC_DEFUN([AX_CUDA],[
         ]
         )
         
-        AS_IF([test x"$CUDA_SDK" = xno],
-        [AC_MSG_ERROR([CUDA_SDK path is not set, please set the CUDA_SDK variable first or disable CUDA])]
-        )
+        
         AC_CHECK_FILE([$CUDA_TK/lib], [],
         [AC_MSG_ERROR([cuda toolkit path is incorrect, must have lib directory])], 
         [])
         
-        AC_CHECK_FILE([$CUDA_SDK/common/inc/cutil.h], [],
-        [AC_MSG_ERROR([cuda sdk path is incorrect, must have common/inc/cutil.h in the CUDA_SDK path])], 
-        [])
+        
         
         
         save_LIBS="$LIBS"
@@ -95,7 +89,6 @@ AC_DEFUN([AX_CUDA],[
 
     AC_SUBST(WITH_CUDA)
     
-    AC_SUBST(CUDA_SDK)
     AC_SUBST(CUDA_TK)
     
     AC_SUBST(CUDA_LIBS)
