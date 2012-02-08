@@ -5,18 +5,13 @@ J-paralel
 #include<fstream>
 #include<cmath>
 #include<unistd.h>
+#include"6thorder.h"
 #include"IO.h"
 #include"mpi_interface.h"
 #include"evolve.h"
 #include"energy.h"
 #include"merge.h"
 #include"external_field.h"
-
-#ifdef SAP
-#include "6thorder.h"
-#else
-#include "6thorder_dummy.h"
-#endif
 
 using namespace std;
 

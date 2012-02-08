@@ -19,10 +19,51 @@ class MI6Interface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefe
     coincide with the origin.
     """
     include_headers = ['worker_code.h', 'stopcond.h', 'interface.h']
-
-    def __init__(self, **options):
-        CodeInterface.__init__(self, name_of_the_worker="mi6_worker", **options)
+    
+    MODE_GPU = 'gpu'
+    MODE_CPU = 'cpu'
+    
+    def __init__(self, mode = MODE_CPU, **options):
+        CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
         LiteratureReferencesMixIn.__init__(self)
+    
+    def name_of_the_worker(self, mode):
+        if mode == self.MODE_CPU:
+            return 'mi6_worker'
+        elif mode == self.MODE_GPU:
+            return 'mi6_worker_gpu'
+        else:
+            print "Warning: unknown mode: '{0}' - using default ('{1}').".format(mode, self.MODE_CPU)
+            return 'mi6_worker'
+
+    @legacy_function
+    def get_gravity_at_point():
+        """
+        Determine the gravitational force at a given point
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for par in ['eps', 'x', 'y', 'z']:
+            function.addParameter(par, dtype='float64', direction=function.IN)
+        for par in ['ax', 'ay', 'az']:
+            function.addParameter(par, dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_potential_at_point():
+        """
+        Determine the potential at a given point
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for par in ['eps', 'x', 'y', 'z']:
+            function.addParameter(par, dtype='float64', direction=function.IN)
+        function.addParameter('phi', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        return function
     
     @legacy_function
     def get_eps2_fs_fs():

@@ -1,6 +1,6 @@
 //#include"sapporo2.h"
 //#include "/disks/botlek1/iwasawa/work/code/others/sapporo2/libheaders/6thorder.h"
-#include "6thorder_dummy.h"
+#include "6thorder.h"
 #include<iostream>
 #include<cmath>
 

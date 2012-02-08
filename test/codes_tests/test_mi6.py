@@ -242,16 +242,6 @@ class TestMI6(TestWithMPI):
         particles[1].vy = (constants.G * particles.total_mass() / (1.0 | units.AU)).sqrt()
         return particles
     
-    def new_binary_system(self):
-        particles = Particles(2)
-        particles.mass = 1.0 | units.MSun
-        particles.radius = 1.0 | units.RSun
-        particles.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU
-        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.km / units.s
-        particles[1].vy = (constants.G * particles.total_mass() / (1.0 | units.AU)).sqrt()
-        particles.move_to_center()
-        return particles
-    
     def test1(self):
         print "Testing MI6 initialization"
         instance = MI6(self.default_converter, **default_options)
@@ -442,23 +432,25 @@ class TestMI6(TestWithMPI):
         delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
         self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
     
-    def xtest8(self):
+    def test8(self):
+        print "Testing MI6 get_gravity_at_point and get_potential_at_point"
         instance = MI6(**default_options)
         instance.initialize_code()
-        instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.parameters.smbh_mass = 0.0 | nbody_system.mass
         
         particles = Particles(2)
-        particles.mass = [1.0, 1.0] | nbody_system.mass
-        particles.radius =  [0.0001, 0.0001] | nbody_system.length
+        particles.mass = 1.0 | nbody_system.mass
+        particles.radius =  0.0 | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
         
         zero = 0.0 | nbody_system.length
         fx, fy, fz = instance.get_gravity_at_point(zero, 1.0 | nbody_system.length, zero, zero)
-        self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration, 6)
-        self.assertAlmostEqual(fy, 0.0 | nbody_system.acceleration, 6)
-        self.assertAlmostEqual(fz, 0.0 | nbody_system.acceleration, 6)
+        self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration)
+        self.assertAlmostEqual(fy, 0.0 | nbody_system.acceleration)
+        self.assertAlmostEqual(fz, 0.0 | nbody_system.acceleration)
 
         for x in (0.25, 0.5, 0.75):
             x0 = x | nbody_system.length
@@ -468,15 +460,15 @@ class TestMI6(TestWithMPI):
             fx0, fy0, fz0 = instance.get_gravity_at_point(zero, x0, zero, zero)
             fx1, fy1, fz1 = instance.get_gravity_at_point(zero, x1, zero, zero)
             
-            self.assertAlmostEqual(fy0, 0.0 | nbody_system.acceleration, 6)
-            self.assertAlmostEqual(fz0, 0.0 | nbody_system.acceleration, 6)
-            self.assertAlmostEqual(fy1, 0.0 | nbody_system.acceleration, 6)
-            self.assertAlmostEqual(fz1, 0.0 | nbody_system.acceleration, 6)
+            self.assertAlmostEqual(fy0, 0.0 | nbody_system.acceleration)
+            self.assertAlmostEqual(fz0, 0.0 | nbody_system.acceleration)
+            self.assertAlmostEqual(fy1, 0.0 | nbody_system.acceleration)
+            self.assertAlmostEqual(fz1, 0.0 | nbody_system.acceleration)
             
-            self.assertAlmostEqual(fx0, -1.0 * fx1, 5)
+            self.assertAlmostEqual(fx0, -1.0 * fx1)
             fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
-            self.assertAlmostEqual(fx, fx0, 2)
-            self.assertAlmostEqual(potential0, potential1, 5)
+            self.assertAlmostEqual(fx, fx0)
+            self.assertAlmostEqual(potential0, potential1)
         
         instance.stop()
     

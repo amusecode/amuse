@@ -787,6 +787,9 @@ int get_acceleration(int particle_identifier, double *ax, double *ay, double *az
     }
     return -3; // Not found!
 }
+int get_potential(double x, double y, double z, double *V){
+    return -2; // Not implemented
+}
 
 
 
@@ -883,7 +886,6 @@ int get_smbh_mass(double *smbh_mass) {
     Vector3 pos=0.0;
     Vector3 vel=0.0;
     get_SMBH(*smbh_mass, pos, vel);
-    //*smbh_mass = dt_max;
     return 0;
 }
 int commit_parameters() {
@@ -897,55 +899,180 @@ int recommit_parameters() {
 
 
 //energy and gravity values
-int get_potential_at_point(double eps, double x, double y, double z, 
-  double * phi)
-{/*
-  if (mpi_rank == 0)
-    { // calculate only on the root mpi process, not on others
-      double r,rx,ry,rz;
-      *V = 0.0;
-      for (int i = 0; i < Ntot; i++)
-        {
-          rx = prt[i].pos[0]-x;
-          ry = prt[i].pos[1]-y;
-          rz = prt[i].pos[2]-z;
-          r = sqrt(rx*rx+ry*ry+rz*rz + eps2);
-          *phi -= prt[i].mass/r;
+int get_potential_at_point(double *eps, double *x, double *y, double *z, double *phi, int length) {
+    //~if (myrank == 0) { // calculate only on the root mpi process, not on others
+        //~double r,rx,ry,rz;
+        //~*phi = 0.0;
+        //~for (int i = 0; i < Ntot; i++) {
+            //~rx = prt[i].pos[0] - x;
+            //~ry = prt[i].pos[1] - y;
+            //~rz = prt[i].pos[2] - z;
+            //~r = sqrt(rx*rx + ry*ry + rz*rz + eps*eps + eps2_fs_fs);
+            //~*phi -= prt[i].mass/r;
+        //~}
+    //~}
+    // Create "ghost"-particles to measure potential at their locations
+    int* tmp_index = new int[length];
+    double* tmp_mass_in = new double[length];
+    double* tmp_eps2_in = new double[length];
+    double (*tmp_pos_in)[3] = new double[length][3];
+    double (*tmp_vel_in)[3] = new double[length][3];
+    double (*tmp_acc_in)[3] = new double[length][3];
+    double (*tmp_acc_out)[3] = new double[length][3];
+    double (*tmp_jrk_out)[3] = new double[length][3];
+    double (*tmp_snp_out)[3] = new double[length][3];
+    double (*tmp_crk_out)[3] = new double[length][3];
+    double *tmp_phi_out = new double[length];
+    int *tmp_nnb_out = new int[length];
+    double *tmp_nnb_r2_out = new double[length];
+    
+    for (int i=0; i<length; i++) {
+        // Make sure there is no particle in the code with the same index, 
+        // since the code would think it is calculating force on itself, and ignore it.
+        tmp_index[i] = -1;
+        tmp_mass_in[i] = 0.0;
+        tmp_eps2_in[i] = eps[i]*eps[i] + eps2_fs_fs;
+        tmp_pos_in[i][0] = x[i];
+        tmp_pos_in[i][1] = y[i];
+        tmp_pos_in[i][2] = z[i];
+        
+        for (int j=0; j<3; j++) {
+            tmp_vel_in[i][j] = 0.0;
+            tmp_acc_in[i][j] = 0.0;
+            tmp_acc_out[i][j] = 0.0;
+            tmp_jrk_out[i][j] = 0.0;
+            tmp_snp_out[i][j] = 0.0;
+            tmp_crk_out[i][j] = 0.0;
         }
-        }*/
-    return -2; // Not implemented
-}
-
-int get_potential(double x, double y, double z, double * V)
-{
-    return -2; // Not implemented
-}
-
-int get_gravity_at_point(double eps, double x, double y, double z, 
-  double * forcex, double * forcey, double * forcez)
-{/*
-  if(mpi_rank == 0)   
-  { // calculate only on the root mpi process, not on others
-    double rx, ry, rz, r3, r2, r, F;
-
-    *forcex = 0;*forcey = 0;*forcez = 0;
-
-    for (int i = 0; i<Ntot; i++)
-    {
-        rx = prt[i].pos[0] - x;
-        ry = prt[i].pos[1] - y;
-        rz = prt[i].pos[2] - z;
-        r2 = (rx*rx+ry*ry+rz*rz + eps2);//do I need to make cases for each of eps2_fs_smbh, eps2_fs_imbh, eps2_bh,
-        r = sqrt(r2);
-        r3 = r2*r;
-        F = prt[i].mass/r3;
-        *forcex += F * rx;
-        *forcey += F * ry;
-        *forcez += F * rz;
+        tmp_phi_out[i] = 0.0;
+        tmp_nnb_out[i] = 0;
+        tmp_nnb_r2_out[i] = 0.0;
     }
+    calc_force_on_predictors(length, Njp,
+        tmp_index, tmp_pos_in, 
+        tmp_vel_in, tmp_acc_in, 
+        tmp_mass_in, tmp_eps2_in,
+        tmp_acc_out, tmp_jrk_out,
+        tmp_snp_out, tmp_crk_out, tmp_phi_out,
+        tmp_nnb_out, tmp_nnb_r2_out);
+    
+    MPI_Allreduce(tmp_phi_out, phi,
+        length, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    
+    if (EX_FLAG == 1) {
+        // use function from external_field.cc to get the current properties of the SMBH
+        double smbh_mass;
+        Vector3 smbh_pos, smbh_vel;
+        double r2;
+        get_SMBH(smbh_mass, smbh_pos, smbh_vel);
+        for (int i=0; i<length; i++) {
+            Vector3 rij = ((Vector3) (x[i], y[i], z[i])) - smbh_pos[0];
+            phi[i] -= smbh_mass * sqrt(rij*rij); //+ eps2_fs_smbh) ???
+            
+            // PN ???
+        }
+    }
+    delete[] tmp_index;
+    delete[] tmp_mass_in;
+    delete[] tmp_eps2_in;
+    delete[] tmp_pos_in;
+    delete[] tmp_vel_in;
+    delete[] tmp_acc_in;
+    delete[] tmp_acc_out;
+    delete[] tmp_jrk_out;
+    delete[] tmp_snp_out;
+    delete[] tmp_crk_out;
+    delete[] tmp_phi_out;
+    delete[] tmp_nnb_out;
+    delete[] tmp_nnb_r2_out;
     return 0;
-    }*/
-    return -2; // Not implemented
+}
+int get_gravity_at_point(double *eps, double *x, double *y, double *z, 
+        double *forcex, double *forcey, double *forcez, int length){
+    // Create "ghost"-particles to measure gravity at their locations
+    int* tmp_index = new int[length];
+    double* tmp_mass_in = new double[length];
+    double* tmp_eps2_in = new double[length];
+    double (*tmp_pos_in)[3] = new double[length][3];
+    double (*tmp_vel_in)[3] = new double[length][3];
+    double (*acc)[3] = new double[length][3];
+    double (*tmp_acc_out)[3] = new double[length][3];
+    double (*tmp_jrk_out)[3] = new double[length][3];
+    double (*tmp_snp_out)[3] = new double[length][3];
+    double (*tmp_crk_out)[3] = new double[length][3];
+    double *tmp_phi_out = new double[length];
+    int *tmp_nnb_out = new int[length];
+    double *tmp_nnb_r2_out = new double[length];
+    
+    for (int i=0; i<length; i++) {
+        // Make sure there is no particle in the code with the same index, 
+        // since the code would think it is calculating force on itself, and ignore it.
+        tmp_index[i] = -1;
+        tmp_mass_in[i] = 0.0;
+        tmp_eps2_in[i] = eps[i]*eps[i] + eps2_fs_fs;
+        tmp_pos_in[i][0] = x[i];
+        tmp_pos_in[i][1] = y[i];
+        tmp_pos_in[i][2] = z[i];
+        
+        for (int j=0; j<3; j++) {
+            tmp_vel_in[i][j] = 0.0;
+            acc[i][j] = 0.0;
+            tmp_acc_out[i][j] = 0.0;
+            tmp_jrk_out[i][j] = 0.0;
+            tmp_snp_out[i][j] = 0.0;
+            tmp_crk_out[i][j] = 0.0;
+        }
+        tmp_phi_out[i] = 0.0;
+        tmp_nnb_out[i] = 0;
+        tmp_nnb_r2_out[i] = 0.0;
+    }
+    calc_force_on_predictors(length, Njp,
+        tmp_index, tmp_pos_in, 
+        tmp_vel_in, acc, 
+        tmp_mass_in, tmp_eps2_in,
+        tmp_acc_out, tmp_jrk_out,
+        tmp_snp_out, tmp_crk_out, tmp_phi_out,
+        tmp_nnb_out, tmp_nnb_r2_out);
+    
+    MPI_Allreduce(tmp_acc_out, acc,
+        3*length, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    
+    if (EX_FLAG == 1) {
+        // use function from external_field.cc to get the current properties of the SMBH
+        double smbh_mass;
+        Vector3 smbh_pos, smbh_vel;
+        double r2;
+        get_SMBH(smbh_mass, smbh_pos, smbh_vel);
+        for (int i=0; i<length; i++) {
+            Vector3 rij = ((Vector3) (x[i], y[i], z[i])) - smbh_pos[0];
+            double mjR3 = smbh_mass * pow(rij*rij, 1.5); //+ eps2_fs_smbh) ???
+            for (int j=0; j<3; j++) {
+                acc[i][j] += -mjR3 * rij[j];
+            }
+            
+            // PN ???
+        }
+    }
+    delete[] tmp_index;
+    delete[] tmp_mass_in;
+    delete[] tmp_eps2_in;
+    delete[] tmp_pos_in;
+    delete[] tmp_vel_in;
+    delete[] tmp_acc_out;
+    delete[] tmp_jrk_out;
+    delete[] tmp_snp_out;
+    delete[] tmp_crk_out;
+    delete[] tmp_phi_out;
+    delete[] tmp_nnb_out;
+    delete[] tmp_nnb_r2_out;
+    
+    for (int i=0; i<length; i++) {
+        forcex[i] = acc[i][0];
+        forcey[i] = acc[i][1];
+        forcez[i] = acc[i][2];
+    }
+    delete[] acc;
+    return 0;
 }
 
 //misc
