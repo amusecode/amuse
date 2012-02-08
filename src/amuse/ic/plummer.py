@@ -8,10 +8,8 @@ rho = c * (1 + r**2)**(-5/2)
 
 import numpy
 import numpy.random
-import random
 
-from math import pi
-from math import sqrt
+from math import pi, sqrt
 
 from amuse.units import nbody_system
 from amuse import datamodel

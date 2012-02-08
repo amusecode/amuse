@@ -6,11 +6,9 @@ from amuse.units import nbody_system, units, constants
 from amuse.datamodel import Particles
 from amuse.community.mi6.interface import MI6Interface, MI6
 
-#~from amuse.ic import plummer
+from amuse.ic.plummer import new_plummer_sphere
 
 
-#~default_options = dict(number_of_workers=2)
-#~default_options = dict(redirection='none')
 default_options = dict()
 
 class TestMI6Interface(TestWithMPI):
@@ -470,5 +468,33 @@ class TestMI6(TestWithMPI):
             self.assertAlmostEqual(fx, fx0)
             self.assertAlmostEqual(potential0, potential1)
         
+        instance.stop()
+    
+    def test9(self):
+        print "Testing MI6 evolve_model and getters energy, plummer sphere, no SMBH"
+        converter = nbody_system.nbody_to_si(1.0e2 | units.MSun, 1.0 | units.parsec)
+        instance = MI6(converter, **default_options)
+        instance.initialize_code()
+        instance.parameters.smbh_mass = 0.0 | units.MSun
+        instance.commit_parameters()
+        numpy.random.seed(987654321)
+        instance.particles.add_particles(new_plummer_sphere(100, convert_nbody=converter))
+        instance.commit_particles()
+        
+        kinetic_energy = instance.kinetic_energy
+        potential_energy = instance.potential_energy
+        self.assertAlmostRelativeEqual(kinetic_energy, 2.12292810174e+37 | units.J, 10)
+        self.assertAlmostRelativeEqual(potential_energy, -4.33511391248e+37 | units.J, 10)
+        
+        initial_total_energy = kinetic_energy + potential_energy
+        instance.evolve_model(0.1 | nbody_system.time)
+        kinetic_energy = instance.kinetic_energy
+        potential_energy = instance.potential_energy
+        self.assertAlmostRelativeEqual(kinetic_energy, 2.1362368884e+37 | units.J, 10)
+        self.assertAlmostRelativeEqual(potential_energy, -4.34842269914e+37 | units.J, 10)
+        
+        self.assertAlmostRelativeEqual(potential_energy + kinetic_energy, initial_total_energy, 10)
+        
+        instance.cleanup_code()
         instance.stop()
     
