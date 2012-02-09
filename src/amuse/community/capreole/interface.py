@@ -350,7 +350,7 @@ class Capreole(InCodeComponentImplementation):
         )
         object.add_method(
             'set_boundary',
-            (units.string, units.string, units.string, units.string, units.string, units.string,),
+            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
@@ -448,7 +448,7 @@ class Capreole(InCodeComponentImplementation):
             "xbound1",
             "xbound1", 
             "boundary conditions on first (inner, left) X boundary",
-            "reflective" | units.string,
+            "reflective",
         )
         
         
@@ -457,7 +457,7 @@ class Capreole(InCodeComponentImplementation):
             "xbound2",
             "xbound2", 
             "boundary conditions on second (outer, right) X boundary",
-            "reflective" | units.string,
+            "reflective",
         )
         
         object.add_caching_parameter(
@@ -465,7 +465,7 @@ class Capreole(InCodeComponentImplementation):
             "ybound1",
             "ybound1", 
             "boundary conditions on first (inner, front) Y boundary",
-            "reflective" | units.string,
+            "reflective",
         )
         
         
@@ -474,7 +474,7 @@ class Capreole(InCodeComponentImplementation):
             "ybound2",
             "ybound2", 
             "boundary conditions on second (outer, back) Y boundary",
-            "reflective" | units.string,
+            "reflective",
         )
         
         object.add_caching_parameter(
@@ -482,7 +482,7 @@ class Capreole(InCodeComponentImplementation):
             "zbound1",
             "zbound1", 
             "boundary conditions on first (inner, bottom) Z boundary",
-            "reflective" | units.string,
+            "reflective",
         )
         
         
@@ -491,7 +491,7 @@ class Capreole(InCodeComponentImplementation):
             "zbound2",
             "zbound2", 
             "boundary conditions on second (outer, top) Z boundary",
-            "reflective" | units.string,
+            "reflective",
         )
         
         

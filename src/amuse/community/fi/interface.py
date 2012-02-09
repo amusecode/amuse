@@ -2119,7 +2119,7 @@ class Fi(GravitationalDynamics):
             "set_halofile",
             "halofile", 
             "Path to initial halo model file, relative to the Fi data directory (none)", 
-            default_value = "none" | units.string
+            default_value = "none"
         )
         
         object.add_method_parameter(
@@ -2127,7 +2127,7 @@ class Fi(GravitationalDynamics):
             "set_feedback",
             "feedback", 
             "feedback model (fuv, pres, kine, solo, solh)", 
-            default_value = "fuv" | units.string
+            default_value = "fuv"
         )
         
         object.add_method_parameter(
@@ -2135,7 +2135,7 @@ class Fi(GravitationalDynamics):
             "set_sfmode",
             "star_formation_mode", 
             "star formation model (gerritsen, nieuw)", 
-            default_value = "gerritsen" | units.string
+            default_value = "gerritsen"
         )
         
         object.add_method_parameter(
@@ -2143,7 +2143,7 @@ class Fi(GravitationalDynamics):
             "set_hupdatemethod",
             "h_update_method", 
             "SPH smoothing length criterion (at the moment always 'mass')", 
-            default_value = "mass" | units.string
+            default_value = "mass"
         )
         
         object.add_method_parameter(
@@ -2151,7 +2151,7 @@ class Fi(GravitationalDynamics):
             "set_sph_visc",
             "sph_viscosity", 
             "SPH viscosity (sph,sphv, bulk). Note: not all may work.", 
-            default_value = "sph" | units.string
+            default_value = "sph"
         )
         
         object.add_method_parameter(
@@ -2159,7 +2159,7 @@ class Fi(GravitationalDynamics):
             "set_fi_data_directory",
             "fi_data_directory", 
             "Name of the Fi data directory", 
-            default_value = "" | units.string
+            default_value = ""
         )
 
         object.add_boolean_parameter(
@@ -2999,72 +2999,72 @@ class Fi(GravitationalDynamics):
         object.add_method(
             "get_halofile",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_halofile",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_feedback",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_feedback",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_sfmode",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_sfmode",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_hupdatemethod",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_hupdatemethod",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_sph_visc",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_sph_visc",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_fi_data_directory",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_fi_data_directory",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         

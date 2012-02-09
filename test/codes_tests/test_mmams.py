@@ -252,7 +252,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         
         stars = Particles(4)
         stars.usm_file = [os.path.join(instance.data_directory, filename) for 
-            filename in ['primary.usm', 'secondary.usm', '', '']] | units.string
+            filename in ['primary.usm', 'secondary.usm', '', '']]
         stars[2:].mass = [3.0, 4.0] | units.MSun
         instance.imported_stars.add_particles(stars[:2])
         
@@ -282,7 +282,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         
         stars = Particles(2)
         stars.usm_file = [os.path.join(instance.data_directory, filename) for 
-            filename in ['primary.usm', 'secondary.usm']] | units.string
+            filename in ['primary.usm', 'secondary.usm']]
         instance.imported_stars.add_particles(stars)
         
         merge_product = Particle()

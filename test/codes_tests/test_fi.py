@@ -452,9 +452,10 @@ class TestFi(TestWithMPI):
         instance.initialize_code()
         
         par_names=['halofile','feedback','star_formation_mode','h_update_method','sph_viscosity','fi_data_directory']
-        defaults=['none','fuv','gerritsen','mass','sph',instance.get_data_directory()+'/'] | units.string
-        new_values=['bct_02_10.halo','pres','nieuw','test','sphv','test'] | units.string
+        defaults=['none','fuv','gerritsen','mass','sph',instance.get_data_directory()+'/']
+        new_values=['bct_02_10.halo','pres','nieuw','test','sphv','test']
         for string_par, value, new_value in zip(par_names, defaults, new_values):
+            print instance.get_halofile(), getattr(instance.parameters, string_par), 
             self.assertEquals(getattr(instance.parameters, string_par), value)
             setattr(instance.parameters, string_par, new_value)
             self.assertEquals(getattr(instance.parameters, string_par), new_value)

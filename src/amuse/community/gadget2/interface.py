@@ -1161,7 +1161,7 @@ class Gadget2(GravitationalDynamics):
             
         ensure_data_directory_exists(self.get_output_directory())
         
-        self.parameters.gadget_output_directory = self.get_output_directory() | units.string
+        self.parameters.gadget_output_directory = self.get_output_directory()
         # The code's units are read-only, and set here to ensure they always match with the unit_converter
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))
         self.set_unit_length(self.unit_converter.to_si(generic_unit_system.length).value_in(units.cm))
@@ -1368,7 +1368,7 @@ class Gadget2(GravitationalDynamics):
             "set_gadget_output_directory",
             "gadget_output_directory", 
             "Name of the Gadget-2 OutputDir", 
-            default_value = "" | units.string
+            default_value = ""
         )
         
         object.add_method_parameter(
@@ -1376,7 +1376,7 @@ class Gadget2(GravitationalDynamics):
             "set_energy_file",
             "energy_file", 
             "The path to the Gadget-2 energy statistics output file.", 
-            default_value = "energy.txt" | units.string
+            default_value = "energy.txt"
         )
         
         object.add_method_parameter(
@@ -1384,7 +1384,7 @@ class Gadget2(GravitationalDynamics):
             "set_info_file",
             "info_file", 
             "The path to the Gadget-2 info output file.", 
-            default_value = "info.txt" | units.string
+            default_value = "info.txt"
         )
         
         object.add_method_parameter(
@@ -1392,7 +1392,7 @@ class Gadget2(GravitationalDynamics):
             "set_timings_file",
             "timings_file", 
             "The path to the Gadget-2 timings output file.", 
-            default_value = "timings.txt" | units.string
+            default_value = "timings.txt"
         )
         
         object.add_method_parameter(
@@ -1400,7 +1400,7 @@ class Gadget2(GravitationalDynamics):
             "set_cpu_file",
             "cpu_file", 
             "The path to the Gadget-2 cpu statistics output file.", 
-            default_value = "cpu.txt" | units.string
+            default_value = "cpu.txt"
         )
         
         object.add_method_parameter(
@@ -2068,60 +2068,60 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_gadget_output_directory",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_gadget_output_directory",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_energy_file",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_energy_file",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_info_file",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_info_file",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_timings_file",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_timings_file",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_cpu_file",
             (),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_cpu_file",
-            (units.string, ),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         

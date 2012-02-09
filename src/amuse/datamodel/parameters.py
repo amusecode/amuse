@@ -1,5 +1,5 @@
 import weakref
-
+import numpy
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
 from amuse.units import quantities
@@ -456,11 +456,19 @@ class VectorParameterDefinition(AbstractParameterDefinition):
         for name in self.names_of_parameters:
             parameter = all_parameters.get_parameter(name)
             element = parameter.get_value()
-            if unit is None and hasattr(element, 'unit'):
-                unit = element.unit
-                
-            result.append(element.value_in(unit))
-        return unit.new_quantity(result)
+            if unit is None:
+                if is_quantity(element):
+                    unit = element.unit
+            
+            if not unit is None:
+                result.append(element.value_in(unit))
+            else:
+                result.append(element)
+               
+        if not unit is None: 
+            return unit.new_quantity(result)
+        else:
+            return numpy.asarray(result)
         
     def set_value(self, parameter, object, quantity):
         all_parameters = parameter.parameter_set

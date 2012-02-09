@@ -513,7 +513,7 @@ class GalactICs(CommonCode):
         result = self.overridden().initialize_code()
         self.parameters.set_defaults()
         ensure_data_directory_exists(self.get_output_directory())
-        self.parameters.output_directory = self.get_output_directory() | units.string
+        self.parameters.output_directory = self.get_output_directory()
     
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -521,7 +521,7 @@ class GalactICs(CommonCode):
             "set_output_path",
             "output_directory", 
             "The path to the output directory", 
-            default_value = "./" | units.string
+            default_value = "./"
         )
         
         # boolean parameters
@@ -764,8 +764,8 @@ class GalactICs(CommonCode):
             (nbody_system.speed, nbody_system.speed, nbody_system.speed, object.ERROR_CODE)
         )
         
-        object.add_method("get_output_path", (), (units.string, object.ERROR_CODE,))
-        object.add_method("set_output_path", (units.string, ), (object.ERROR_CODE,))
+        object.add_method("get_output_path", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_output_path", (object.NO_UNIT,), (object.ERROR_CODE,))
         
         for par in ["_number_of_grid_intervals", "_order_of_multipole_expansion", 
                 "_number_of_radial_steps_correction_fns", "_number_of_iterations", 

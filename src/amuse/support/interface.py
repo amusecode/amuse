@@ -12,6 +12,7 @@ from amuse.support import exceptions
 from amuse.support import state
 
 import inspect
+import numpy
 
 from amuse import datamodel
 from amuse.datamodel import parameters
@@ -102,7 +103,10 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
 
     def convert_and_iterate(self, iterable):
         for x in iterable:
-            yield self.converter.from_target_to_source(x)
+            if isinstance(x, quantities.Quantity):
+                yield self.converter.from_target_to_source(x)
+            else:
+                yield x
 
 
     def set_converter(self, converter):
@@ -140,11 +144,12 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
                 return x
             else:
                 return self.converter.from_target_to_source(x)
+        elif isinstance(x, basestring):
+            return x
+        elif isinstance(x, numpy.ndarray):
+            return x
         elif hasattr(x, '__len__'):
-            if len(x) > 200:
-                return x
-            else:
-                return list(self.convert_and_iterate(x))
+            return list(self.convert_and_iterate(x))
         elif hasattr(x, '__iter__'):
             return list(self.convert_and_iterate(x))
         else:
@@ -372,7 +377,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             if not hasattr(return_value, '__iter__'):
                 return_value = [return_value]
             result = []
-            for value, unit in zip(return_value, self.return_units):
+            for value, unit in zip(list(return_value), self.return_units):
                 if unit == self.ERROR_CODE:
                     self.handle_as_errorcode(value)
                 elif unit == self.NO_UNIT:
@@ -381,7 +386,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                     result.append(value)
                 else:
                     result.append(unit.new_quantity(value))
-            if len(result) == 1:
+            if len(result) == 1:                
                 return result[0]
             else:
                 return result
@@ -699,10 +704,15 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
 
 
     def add_vector_parameter(self, name, description, parameter_names):
-        default_value = quantities.AdaptingVectorQuantity()
+        default_value = None
         for parameter_name in parameter_names:
             for defined_parameter in self.definitions:
                 if defined_parameter.name == parameter_name:
+                    if default_value is None:
+                        if not is_quantity(defined_parameter.default_value):
+                            default_value  = []
+                        else:
+                            default_value = quantities.AdaptingVectorQuantity()
                     default_value.append(defined_parameter.default_value)
         definition = parameters.VectorParameterDefinition(
             name,

@@ -284,7 +284,7 @@ class TestMI6(TestWithMPI):
         instance.parameters.timestep_parameter = 0.01
         self.assertEquals(instance.parameters.timestep_parameter, 0.01 | units.none)
         
-        self.assertEquals(instance.parameters.drink, "Vodka martini. Shaken, not stirred." | units.string)
+        self.assertEquals(instance.parameters.drink, "Vodka martini. Shaken, not stirred.")
         
         instance.stop()
     

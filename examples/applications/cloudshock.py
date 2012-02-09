@@ -68,9 +68,9 @@ class CalculateCloudShock(object):
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         result.parameters.maximum_number_of_grid_levels = 1
-        result.parameters.spatial_discretization_method = 'tvdmu' | units.string
-        result.parameters.predictor_step_discretization_method = 'tvdmu' | units.string
-        result.parameters.entropy_type = 'powell' | units.string
+        result.parameters.spatial_discretization_method = 'tvdmu'
+        result.parameters.predictor_step_discretization_method = 'tvdmu'
+        result.parameters.entropy_type = 'powell'
         result.parameters.courant_number = 0.8
         
         result.parameters.x_boundary_conditions = ("cont","cont")

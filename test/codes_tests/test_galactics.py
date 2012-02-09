@@ -208,9 +208,9 @@ class GalactICsTests(TestWithMPI):
             self.assertEquals(instance.unit_converter.to_si(3.0 | value.unit),
                 getattr(instance.parameters, par))
         
-        self.assertEquals(os.path.join(instance.get_output_directory()) | units.string, instance.parameters.output_directory)
-        instance.parameters.output_directory = 'test' | units.string
-        self.assertEquals("test" | units.string, instance.parameters.output_directory)
+        self.assertEquals(os.path.join(instance.get_output_directory()), instance.parameters.output_directory)
+        instance.parameters.output_directory = 'test'
+        self.assertEquals("test", instance.parameters.output_directory)
         
         instance.cleanup_code()
         instance.stop()

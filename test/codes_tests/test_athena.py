@@ -555,7 +555,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_x = 1 | generic_unit_system.length
         instance.parameters.length_y = 2 | generic_unit_system.length
         instance.parameters.length_z = 3 | generic_unit_system.length
-        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         
         result = instance.commit_parameters()
         
@@ -620,7 +620,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
-        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         
         result = instance.commit_parameters()
         
@@ -668,7 +668,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
-        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         instance.set_has_external_gravitational_potential(1)
         
         result = instance.commit_parameters()
@@ -720,7 +720,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
-        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         instance.set_has_external_gravitational_potential(1)
         
         result = instance.commit_parameters()
@@ -805,7 +805,7 @@ class TestAthena(TestWithMPI):
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         instance.setup_mesh(10 | units.none , 20 | units.none, 40 | units.none, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length)
-        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
@@ -879,7 +879,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.x_boundary_conditions = "periodic","periodic"
         instance.parameters.y_boundary_conditions = "periodic","periodic"
         instance.parameters.z_boundary_conditions = "periodic","periodic"
-        self.assertEquals(instance.parameters.xbound1, "periodic" | units.string)
+        self.assertEquals(instance.parameters.xbound1, "periodic")
         instance.stop()
 
     def xtest10(self):

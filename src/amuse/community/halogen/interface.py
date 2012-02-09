@@ -324,7 +324,7 @@ class Halogen(CommonCode):
         result = self.overridden().initialize_code()
         self.parameters.set_defaults()
         ensure_data_directory_exists(self.get_output_directory())
-        self.parameters.output_directory = self.get_output_directory() | units.string
+        self.parameters.output_directory = self.get_output_directory()
     
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -436,7 +436,7 @@ class Halogen(CommonCode):
             "set_output_path",
             "output_directory", 
             "The path to the output directory", 
-            default_value = "./" | units.string
+            default_value = "./"
         )
         
         object.add_method_parameter(
@@ -444,7 +444,7 @@ class Halogen(CommonCode):
             "set_output_basename",
             "output_basename", 
             "The basename of output files", 
-            default_value = "halogen" | units.string
+            default_value = "halogen"
         )
     
     def define_errorcodes(self, object):
@@ -493,11 +493,11 @@ class Halogen(CommonCode):
         object.add_method("get_random_seed", (), (units.none, object.ERROR_CODE,))
         object.add_method("set_random_seed", (units.none, ), (object.ERROR_CODE,))
         
-        object.add_method("get_output_path", (), (units.string, object.ERROR_CODE,))
-        object.add_method("set_output_path", (units.string, ), (object.ERROR_CODE,))
+        object.add_method("get_output_path", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_output_path", (object.NO_UNIT,), (object.ERROR_CODE,))
         
-        object.add_method("get_output_basename", (), (units.string, object.ERROR_CODE,))
-        object.add_method("set_output_basename", (units.string, ), (object.ERROR_CODE,))
+        object.add_method("get_output_basename", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_output_basename", (object.NO_UNIT,), (object.ERROR_CODE,))
 
     def define_converter(self, object):
         if not self.unit_converter is None:

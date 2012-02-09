@@ -202,9 +202,9 @@ class HalogenTests(TestWithMPI):
         
         for par, value in [('output_directory', os.path.join(instance.get_output_directory(), "")), 
                 ('output_basename', "halogen")]:
-            self.assertEquals(value | units.string, getattr(instance.parameters, par))
-            setattr(instance.parameters, par, 'test/' | units.string)
-            self.assertEquals("test/" | units.string, getattr(instance.parameters, par))
+            self.assertEquals(value, getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 'test/')
+            self.assertEquals("test/", getattr(instance.parameters, par))
         
         instance.cleanup_code()
         instance.stop()

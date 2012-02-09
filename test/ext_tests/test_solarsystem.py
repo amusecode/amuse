@@ -28,7 +28,7 @@ class TestSolarSystem(TestCase):
         self.assertAlmostEqual(particles.center_of_mass(), [0, 0, 0] | units.m, in_units = units.AU)
         self.assertAlmostEqual(particles.center_of_mass_velocity(), [0, 0, 0] | units.m/units.s, in_units = units.AUd)
         # Particles are in center-of-mass(-velocity) coordinates, move them to heliocentric coordinates:
-        self.assertTrue(particles[0].name == "SUN" | units.string)
+        self.assertTrue(particles[0].name == "SUN")
         particles.position -= particles[0].position
         particles.velocity -= particles[0].velocity
         

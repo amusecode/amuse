@@ -709,12 +709,12 @@ class Mocassin(InCodeComponentImplementation):
         object.add_method(
             "get_abundancies_filename",
             (object.NO_UNIT,  ),
-            (units.string, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_abundancies_filename",
-            (units.string, object.NO_UNIT,),
+            (object.NO_UNIT, object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
@@ -923,7 +923,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_abundancies_filename", 
             "abundancies_filename", 
             "<fill>", 
-            default_value = "" | units.string
+            default_value = ""
         )
     
     

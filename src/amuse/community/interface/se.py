@@ -832,7 +832,7 @@ class InternalStellarStructure(object):
         )
         object.add_method(
             "get_mu_at_zone", 
-            (object.INDEX,units.none,), 
+            (object.INDEX, units.none,), 
             (units.amu, object.ERROR_CODE,)
         )
         object.add_method(
@@ -842,8 +842,8 @@ class InternalStellarStructure(object):
         )
         object.add_method(
             "get_name_of_species", 
-            (object.INDEX,units.none,), 
-            (units.string, object.ERROR_CODE,)
+            (object.INDEX, units.none,), 
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "get_mass_fraction_of_species_at_zone", 
@@ -926,7 +926,7 @@ class InternalStellarStructure(object):
         return list(self.get_name_of_species(
             [indices_of_the_stars]*number_of_species, 
             range(1,number_of_species+1) | units.none
-        ).value_in(units.string))
+        ))
 
     def get_chemical_abundance_profiles(self, indices_of_the_stars, number_of_zones = None, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance profiles")

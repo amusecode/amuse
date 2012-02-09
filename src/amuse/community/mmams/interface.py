@@ -317,7 +317,7 @@ class MakeMeAMassiveStar(CommonCode):
         )
         object.add_method(
             "read_usm",
-            (units.string,),
+            (object.NO_UNIT,),
             (object.INDEX, object.ERROR_CODE,)
         )
         object.add_method(

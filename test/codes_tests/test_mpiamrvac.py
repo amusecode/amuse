@@ -246,7 +246,7 @@ class TestMpiAmrVac(TestWithMPI):
         error = instance.initialize_code()
         self.assertEquals(error, 0)
         instance.setup_mesh(20 | units.none,20 | units.none,20 | units.none, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length)
-        error = instance.set_boundary("periodic" | units.string, "periodic" | units.string, "periodic" | units.string, "periodic" | units.string, "periodic" | units.string, "periodic" | units.string)
+        error = instance.set_boundary("periodic", "periodic", "periodic", "periodic", "periodic", "periodic")
         error = instance.commit_parameters()
         
         rhovx, rhovy, rhovz = instance.get_grid_momentum_density(1,1,1, 1)
@@ -267,7 +267,7 @@ class TestMpiAmrVac(TestWithMPI):
         instance.parameters.mesh_size = (20, 20, 20) 
         
         #instance.setup_mesh(20,20,20, 20.0, 20.0, 20.0)
-        error = instance.set_boundary("periodic" | units.string, "periodic" | units.string, "periodic" | units.string, "periodic" | units.string, "periodic" | units.string, "periodic" | units.string)
+        error = instance.set_boundary("periodic", "periodic", "periodic", "periodic", "periodic", "periodic")
         error = instance.commit_parameters()
 
         grids = list(instance.itergrids())
@@ -446,31 +446,31 @@ class TestMpiAmrVac(TestWithMPI):
         instance.parameters.maximum_number_of_grid_levels = 2
         self.assertEquals(instance.parameters.maximum_number_of_grid_levels, 2)
         
-        self.assertEquals(instance.parameters.entropy_type , 'nul' | units.string)
-        instance.parameters.entropy_type = 'powell' | units.string
-        self.assertEquals(instance.parameters.entropy_type , 'powell' | units.string)
+        self.assertEquals(instance.parameters.entropy_type , 'nul')
+        instance.parameters.entropy_type = 'powell'
+        self.assertEquals(instance.parameters.entropy_type , 'powell')
         
-        self.assertEquals(instance.parameters.time_integration_procedure , 'twostep' | units.string)
-        instance.parameters.time_integration_procedure = 'onestep' | units.string
-        self.assertEquals(instance.parameters.time_integration_procedure , 'onestep' | units.string)
+        self.assertEquals(instance.parameters.time_integration_procedure , 'twostep')
+        instance.parameters.time_integration_procedure = 'onestep'
+        self.assertEquals(instance.parameters.time_integration_procedure , 'onestep')
         
-        self.assertEquals(instance.parameters.spatial_discretization_method , 'tvdmu' | units.string)
-        instance.parameters.spatial_discretization_method = 'tvdlf' | units.string
-        self.assertEquals(instance.parameters.spatial_discretization_method , 'tvdlf' | units.string)
+        self.assertEquals(instance.parameters.spatial_discretization_method , 'tvdmu')
+        instance.parameters.spatial_discretization_method = 'tvdlf'
+        self.assertEquals(instance.parameters.spatial_discretization_method , 'tvdlf')
         
         
         
-        self.assertEquals(instance.parameters.predictor_step_discretization_method , 'tvdmu' | units.string)
-        instance.parameters.predictor_step_discretization_method = 'hancock' | units.string
-        self.assertEquals(instance.parameters.predictor_step_discretization_method , 'hancock' | units.string)
+        self.assertEquals(instance.parameters.predictor_step_discretization_method , 'tvdmu')
+        instance.parameters.predictor_step_discretization_method = 'hancock'
+        self.assertEquals(instance.parameters.predictor_step_discretization_method , 'hancock')
         
         instance.commit_parameters()
         
-        self.assertEquals(instance.parameters.entropy_type , 'powell' | units.string)
+        self.assertEquals(instance.parameters.entropy_type , 'powell')
         self.assertEquals(instance.parameters.maximum_number_of_grid_levels, 2)
-        self.assertEquals(instance.parameters.time_integration_procedure , 'onestep' | units.string)
-        self.assertEquals(instance.parameters.spatial_discretization_method , 'tvdlf' | units.string)
-        self.assertEquals(instance.parameters.predictor_step_discretization_method , 'hancock' | units.string)
+        self.assertEquals(instance.parameters.time_integration_procedure , 'onestep')
+        self.assertEquals(instance.parameters.spatial_discretization_method , 'tvdlf')
+        self.assertEquals(instance.parameters.predictor_step_discretization_method , 'hancock')
         
     def test7(self):
         instance=self.new_instance(MpiAmrVac)

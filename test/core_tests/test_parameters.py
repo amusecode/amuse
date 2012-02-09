@@ -149,7 +149,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "set_test",
             "test_name",
             "a test parameter",
-            "bla" | units.string
+            "bla"
         )
 
         class TestModule(object):
@@ -172,12 +172,12 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         instance = TestInterface()
 
 
-        instance.parameters.test_name = "bla" | units.string
+        instance.parameters.test_name = "bla"
 
-        self.assertEquals("bla"  | units.string, instance.x)
+        self.assertEquals("bla", instance.x)
 
-        instance.parameters.test_name = "bla"| units.string
-        self.assertEquals("bla"  | units.string, instance.x )
+        instance.parameters.test_name = "bla"
+        self.assertEquals("bla", instance.x )
 
   
     def test8(self):
@@ -546,7 +546,7 @@ class TestParameters(amusetest.TestCase):
             None,
             "string_par_name",
             "a test parameter with string units",
-            "test string" | units.string
+            "test string"
         )
 
         class TestModule(object):
@@ -555,7 +555,7 @@ class TestParameters(amusetest.TestCase):
             def get_nbody(self):
                 return self.x
             def get_string(self):
-                return str(10 * self.x.number ) | units.string
+                return str(10 * self.x.number )
 
         o = TestModule()
         x = parameters.Parameters([string_parameter_definition, nbody_parameter_definition], o)
@@ -570,7 +570,7 @@ class TestParameters(amusetest.TestCase):
                 x,
                 convert_nbody.as_converter_from_si_to_nbody()
             )
-        self.assertEquals(getattr(y,"string_par_name"), "1230.0" | units.string)
+        self.assertEquals(getattr(y,"string_par_name"), "1230.0")
         self.assertAlmostEquals(getattr(y,"nbody_par_name"), 246.0 | units.m)
 
     def test7(self):

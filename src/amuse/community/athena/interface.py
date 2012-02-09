@@ -648,7 +648,7 @@ class Athena(InCodeComponentImplementation):
         )
         object.add_method(
             'set_boundary',
-            (units.string, units.string, units.string, units.string, units.string, units.string,),
+            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         self.stopping_conditions.define_methods(object)
@@ -817,7 +817,7 @@ class Athena(InCodeComponentImplementation):
             "xbound1",
             "xbound1", 
             "boundary conditions on first (inner, left) X boundary", 
-            "reflective" | units.string,
+            "reflective",
         )
         
         
@@ -826,7 +826,7 @@ class Athena(InCodeComponentImplementation):
             "xbound2",
             "xbound2", 
             "boundary conditions on second (outer, right) X boundary",
-            "reflective" | units.string,
+            "reflective",
         )
         
         object.add_caching_parameter(
@@ -834,7 +834,7 @@ class Athena(InCodeComponentImplementation):
             "ybound1",
             "ybound1", 
             "boundary conditions on first (inner, front) Y boundary", 
-            "reflective" | units.string,
+            "reflective",
         )
         
         
@@ -843,7 +843,7 @@ class Athena(InCodeComponentImplementation):
             "ybound2",
             "ybound2", 
             "boundary conditions on second (outer, back) Y boundary",
-            "reflective" | units.string,
+            "reflective",
         )
         
         object.add_caching_parameter(
@@ -851,7 +851,7 @@ class Athena(InCodeComponentImplementation):
             "zbound1",
             "zbound1", 
             "boundary conditions on first (inner, bottom) Z boundary", 
-            "reflective" | units.string,
+            "reflective",
         )
         
         
@@ -860,7 +860,7 @@ class Athena(InCodeComponentImplementation):
             "zbound2",
             "zbound2", 
             "boundary conditions on second (outer, top) Z boundary", 
-            "reflective" | units.string,
+            "reflective",
         )
         
         

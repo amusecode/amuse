@@ -503,9 +503,9 @@ class TestGadget2(TestWithMPI):
         
         for par, value in [('energy_file',"energy.txt"),('info_file',"info.txt"),
                 ('timings_file',"timings.txt"),('cpu_file',"cpu.txt")]:
-            self.assertEquals(value | units.string, getattr(instance.parameters, par))
-            setattr(instance.parameters, par, 'test.txt' | units.string)
-            self.assertEquals("test.txt" | units.string, getattr(instance.parameters, par))
+            self.assertEquals(value, getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 'test.txt')
+            self.assertEquals("test.txt", getattr(instance.parameters, par))
         
         
         instance.stop()

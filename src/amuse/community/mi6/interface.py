@@ -306,7 +306,7 @@ class MI6(GravitationalDynamics):
             None, 
             "drink", 
             "Order a drink at MI6", 
-            default_value = "" | units.string
+            default_value = ""
         )
         object.add_method_parameter(
             "get_max_relative_energy_error",
@@ -331,7 +331,7 @@ class MI6(GravitationalDynamics):
         )
     
     def get_drink(self):
-        return "Vodka martini. Shaken, not stirred." | units.string
+        return "Vodka martini. Shaken, not stirred."
     
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)

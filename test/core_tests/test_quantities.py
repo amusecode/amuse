@@ -130,19 +130,19 @@ class TestQuantities(amusetest.TestCase):
         self.assertTrue (zero == 0 | units.m)
     
     def test13(self):
-        self.assertEquals('a' | units.string, 'a' | units.string)
-        self.assertTrue ('a' | units.string == 'a' | units.string)
-        self.assertFalse('a' | units.string == 'ab' | units.string)
-        self.assertTrue ('a' | units.string != 'A' | units.string)
-        self.assertFalse('a' | units.string != 'a' | units.string)
-        self.assertTrue ('b' | units.string >= 'a' | units.string)
-        self.assertFalse('B' | units.string >= 'a' | units.string)
-        self.assertTrue ('a' | units.string <= 'ab' | units.string)
-        self.assertFalse('a' | units.string <= 'A' | units.string)
-        self.assertTrue ('a' | units.string >  'A' | units.string)
-        self.assertFalse('a' | units.string >  'a' | units.string)
-        self.assertTrue ('a' | units.string <  'b' | units.string)
-        self.assertFalse('a' | units.string <  'B' | units.string)
+        self.assertEquals('a', 'a')
+        self.assertTrue ('a' == 'a')
+        self.assertFalse('a' == 'ab')
+        self.assertTrue ('a' != 'A')
+        self.assertFalse('a' != 'a')
+        self.assertTrue ('b' >= 'a')
+        self.assertFalse('B' >= 'a')
+        self.assertTrue ('a' <= 'ab')
+        self.assertFalse('a' <= 'A')
+        self.assertTrue ('a' >  'A')
+        self.assertFalse('a' >  'a')
+        self.assertTrue ('a' <  'b')
+        self.assertFalse('a' <  'B')
     
     def test14(self):
         # Tests for 'is_quantity'
@@ -196,10 +196,10 @@ class TestQuantities(amusetest.TestCase):
             expected_message = "Cannot express none in m, the units do not have the same bases")
     
     def test18(self):
-        quantity = 'string' | units.string
-        self.assertEquals(quantity ,  'string' | units.string)
-        quantity = u'string' | units.string
-        self.assertEquals(quantity , u'string' | units.string)
+        quantity = 'string'
+        self.assertEquals(quantity ,  'string')
+        quantity = u'string'
+        self.assertEquals(quantity , u'string')
 
     def test19(self):
         x = 1.0 | si.kg
