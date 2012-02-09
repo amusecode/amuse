@@ -13,6 +13,7 @@ using namespace std;
 // get the HF5 datatype for a given var name (passed as a string)
 int get_h5_datatype(const char *name)
 {
+  
   if (strcmp(name,"int")==0)
     return H5T_NATIVE_INT;
   if (strcmp(name,"char")==0)
@@ -32,6 +33,8 @@ int get_h5_datatype(const char *name)
     return H5T_NATIVE_ULONG;
   if (strcmp(name,"long long")==0)
     return H5T_NATIVE_LLONG;
+  if(strcmp(name,"unsigned long long int")==0)  
+    return H5T_NATIVE_ULLONG;
   if (strcmp(name,"float")==0)
     return H5T_NATIVE_FLOAT;
   if (strcmp(name,"double")==0)
@@ -43,7 +46,7 @@ int get_h5_datatype(const char *name)
   if (strcmp(name,"unsigned long long")==0)
     return H5T_NATIVE_ULLONG;
 
-  cout << "Datatype string not recognized! Exiting..." << endl;
+  cout << "get_h5_datatype(): Datatype string: " << name << " not recognized! Exiting..." << endl;
   exit(-1);
 }
 
@@ -143,6 +146,45 @@ void h5w::open(char fname[])
 
 }
 
+// Open with the file name and mode - will do what the mode says...
+void h5w::open(char fname[], const char mode)
+{
+  // do not call HDF5 error stream by default...
+  H5Eset_auto(NULL, NULL);
+  
+  strcpy(filename, fname);
+  // open
+  if (mode == 'o')
+    {
+      //cerr << "Opening file: " << filename << endl;
+      file = H5Fopen(filename,H5F_ACC_RDWR, H5P_DEFAULT);  
+      if (file < 0)
+        {
+          cout << "Could not open file: " << filename << endl;
+          cout << "Exiting!" << endl << endl;
+          exit(-1);
+        }
+    }
+  else if (mode =='n') 
+    {
+      //cout << "Creating file: " << filename << endl;
+
+      file = H5Fcreate(filename,H5F_ACC_TRUNC, H5P_DEFAULT,H5P_DEFAULT); // this will overwrite the file ...
+      if (file < 0)
+        {
+          cout << "Could not create file: " << filename << endl;
+          cout << "Exiting!" << endl;
+          exit(-1);
+        }
+    }
+  else 
+    {
+      cout << "Mode for h5w object constructor not known!" << endl << "Exiting!" << endl;
+      exit(-1);
+    }
+  
+  //cout << "File " << filename << " ready for use" << endl;
+}
 
 void h5w::close(void)
 {
@@ -157,7 +199,7 @@ void h5w::close(void)
 }
 
 // makes a dataset on atomic data
-void h5w::make_dataset(const char *name, const char *type, const int rank, int *dims)
+void h5w::make_dataset(const char *name, const char *type, const int rank, unsigned long long int *dims)
 {
   /*
     name - full name of dataset
@@ -433,8 +475,9 @@ void h5w::read_attr(const char *dataset_name, const char *attr_name, char *data)
 
   if (H5Tequal(datatype_in, attr_datatype) <= 0)   // compare datatypes 
     {
-      cout << "Type of variable passed not the same as type of data to be read in attribute: " << attr_name << endl;
-      cout << "Exiting!" << endl;
+      cerr << "Type of variable passed not the same as type of data to be read in attribute: " << attr_name << endl;
+      cerr << " Datatype in: " << datatype_in << " datatype of attribute: " << attr_datatype << endl;
+      cerr << "Exiting!" << endl;
       exit(-1);
     }
   
@@ -505,7 +548,7 @@ string h5w::get_data_type(char *dataset_name)
 // (used for generalizing data input...)
 //
 
-void h5w::read_data_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_data_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   string dtype;
 
@@ -583,7 +626,7 @@ void h5w::read_data_as_double(char *dataset_name, int *offset, arr_1D<double>* d
 /*
   Dummy routines to reading different types of data...
 */
-void h5w::read_int_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_int_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<int> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
@@ -598,136 +641,153 @@ void h5w::read_int_as_double(char *dataset_name, int *offset, arr_1D<double>* db
 }
 
 
-void h5w::read_uint_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_uint_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<unsigned int> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
 
-void h5w::read_long_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_long_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<long> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
 
-void h5w::read_ulong_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_ulong_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<unsigned long> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
-void h5w::read_ullong_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_ullong_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<unsigned long long> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
 
-void h5w::read_float_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_float_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<float> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
   
 
 
-void h5w::read_short_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_short_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<short> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
   
 
-void h5w::read_ushort_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_ushort_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<unsigned short> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
 
-void h5w::read_char_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_char_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<char> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
   
 
-void h5w::read_uchar_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_uchar_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<unsigned char> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
   
-void h5w::read_llong_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr)
+void h5w::read_llong_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr)
 {
   arr_1D<long long> data;
   data.reinit(dbl_arr->get_rank(), dbl_arr->get_dims());
   
-  int total_len=1;
+  unsigned long long int total_len=1;
   read_data(dataset_name, offset, &data);
-  for (int i=0; i <dbl_arr->get_rank(); i++)
+  for (unsigned long long int i=0; i <dbl_arr->get_rank(); i++)
     total_len *=dbl_arr->get_dims()[i];
-  for (int i=0; i < total_len; i++)
+  for (unsigned long long int i=0; i < total_len; i++)
     dbl_arr->get_arr()[i] = (double) data.get_arr()[i];
 }
+
+unsigned long long int h5w::getArraySize(const char* datasetPath){
+  
+  hid_t dataset = H5Dopen(file, datasetPath);
+  hid_t dataspace = H5Dget_space(dataset);
+  unsigned long long int rank = H5Sget_simple_extent_ndims(dataspace);
+
+  hsize_t* dim;
+  dim = new hsize_t[rank];
+  herr_t status = H5Sget_simple_extent_dims(dataspace, dim, NULL);
+
+  unsigned long long int size = dim[0]; 
+
+  return size;
+  
+}
+
 

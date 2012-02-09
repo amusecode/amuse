@@ -25,6 +25,7 @@ This file contains the header file for the main routine
 
 #include "Common.h"
 #include "SimpleX.h"
+
 #include "mpi.h"
 
 using namespace std;

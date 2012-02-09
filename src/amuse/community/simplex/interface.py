@@ -6,11 +6,13 @@ from amuse.support.options import option
 
 class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
-    SimpleX(2) is a method for radiative transfer on an unstructured Delaunay 
+    SimpleX(2.5) is a method for radiative transfer on an unstructured Delaunay 
     grid. The grid samples the medium through which photons are transported in 
     an optimal way for fast radiative transfer calculations.
     
     The relevant references are:
+        .. [#] Kruip, C.J.H., Ph. D. thesis, University of Leiden (2011)
+        .. [#] Paardekooper, J.-P., Ph. D. thesis, University of Leiden (2010)
         .. [#] Paardekooper, J.-P., Kruip, C.J.H., Icke, V. 2010, A&A, 515, A79 (SimpleX2)
         .. [#] Ritzerveld, J., & Icke, V. 2006, Phys. Rev. E, 74, 26704 (SimpleX)
     """
@@ -20,28 +22,13 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         CodeInterface.__init__(self, name_of_the_worker = "simplex_worker", **kwargs)
         LiteratureReferencesMixIn.__init__(self)
     
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
     @option(type="string")
     def data_directory(self):
         """
         The root name of the directory for the SimpleX
         application data files.
         """
-        return os.path.join(self.input_data_root_directory, 'simplex', 'input')
+        return os.path.join(get_amuse_root_dir(), 'data', 'simplex', 'input')
     
     @option(type="string")
     def output_directory(self):
@@ -49,7 +36,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         The root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(self.output_data_root_directory, 'simplex', 'output')
+        return os.path.join(get_amuse_root_dir(), 'data', 'simplex', 'output')
     
     @legacy_function
     def set_output_directory():
@@ -88,7 +75,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT)
-        for x in ['x','y','z','rho','flux','xion']:
+        for x in ['x','y','z','rho','flux','xion','u']:
             function.addParameter(x, dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
@@ -106,7 +93,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        for x in ['x','y','z','rho','flux','xion']:
+        for x in ['x','y','z','rho','flux','xion','u']:
             function.addParameter(x, dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -160,6 +147,40 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
             particle could not be found
         """
         return function
+
+    @legacy_function
+    def get_internal_energy():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the internal energy from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('u', dtype='float64', direction=function.OUT, description = "The current internal energy of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+
+    @legacy_function
+    def get_dinternal_energy_dt():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the d/dt internal energy from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('du_dt', dtype='float64', direction=function.OUT, description = "The current d/dt internal energy of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
     
     @legacy_function
     def get_ionisation():
@@ -182,7 +203,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        for x in ['x','y','z','rho','flux','xion']:
+        for x in ['x','y','z','rho','flux','xion','u']:
             function.addParameter(x, dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
@@ -236,6 +257,40 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
             particle could not be found
         """
         return function
+
+    @legacy_function
+    def set_internal_energy():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the internal energy for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('u', dtype='float64', direction=function.IN, description = "The new internal energy of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+
+    @legacy_function
+    def set_dinternal_energy_dt():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the d/dt internal energy for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('du_dt', dtype='float64', direction=function.IN, description = "The new d/dt internal energy of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
     
     @legacy_function
     def set_ionisation():
@@ -260,38 +315,38 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
 #        function.addParameter('synchronize', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
-    
+   
     
     @legacy_function
-    def set_box_size_parameter():
+    def set_box_size():
         function = LegacyFunctionSpecification()
         function.addParameter('box_size', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def get_box_size_parameter():
+    def get_box_size():
         function = LegacyFunctionSpecification()
         function.addParameter('box_size', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def set_hilbert_order_parameter():
+    def set_hilbert_order():
         function = LegacyFunctionSpecification()
         function.addParameter('hilbert_order', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def get_hilbert_order_parameter():
+    def get_hilbert_order():
         function = LegacyFunctionSpecification()
         function.addParameter('hilbert_order', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def set_timestep_parameter():
+    def set_timestep():
         function = LegacyFunctionSpecification()
         function.addParameter('timestep', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
@@ -299,13 +354,113 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
 
     
     @legacy_function
-    def get_timestep_parameter():
+    def get_timestep():
         function = LegacyFunctionSpecification()
         function.addParameter('timestep', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
+    @legacy_function
+    def set_time():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
 
+    @legacy_function
+    def get_time():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+
+
+    @legacy_function
+    def set_source_Teff():
+        function = LegacyFunctionSpecification()
+        function.addParameter('sourceTeff', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_source_Teff():
+        function = LegacyFunctionSpecification()
+        function.addParameter('sourceTeff', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_number_frequency_bins():
+        function = LegacyFunctionSpecification()
+        function.addParameter('number_of_freq_bins', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_number_frequency_bins():
+        function = LegacyFunctionSpecification()
+        function.addParameter('number_of_freq_bins', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_thermal_evolution():
+        function = LegacyFunctionSpecification()
+        function.addParameter('thermal_evolution_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_thermal_evolution():
+        function = LegacyFunctionSpecification()
+        function.addParameter('thermal_evolution_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_blackbody_spectrum():
+        function = LegacyFunctionSpecification()
+        function.addParameter('blackbody_spectrum_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_blackbody_spectrum():
+        function = LegacyFunctionSpecification()
+        function.addParameter('blackbody_spectrum_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+
+    @legacy_function
+    def set_metal_cooling():
+        function = LegacyFunctionSpecification()
+        function.addParameter('metal_cooling_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_metal_cooling():
+        function = LegacyFunctionSpecification()
+        function.addParameter('metal_cooling_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_collisional_ionization():
+        function = LegacyFunctionSpecification()
+        function.addParameter('collisional_ionisation_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_collisional_ionization():
+        function = LegacyFunctionSpecification()
+        function.addParameter('collisional_ionisation_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
     def invoke_state_change2(self):
         pass
     
@@ -346,29 +501,82 @@ class SimpleX(CommonCode):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, SimpleXInterface(**options))
-        ensure_data_directory_exists(self.output_directory)
         self.set_output_directory(self.output_directory)
+
+    def define_properties(self, object):
+        object.add_property('get_time', public_name = "model_time")
     
     def define_parameters(self, object):
         object.add_method_parameter(
-            "get_timestep_parameter",
-            "set_timestep_parameter", 
+            "get_timestep",
+            "set_timestep", 
             "timestep", 
             "timestep for radiative transfer sweeps", 
             default_value = 0.05 | units.Myr
         )
 
         object.add_method_parameter(
-            "get_hilbert_order_parameter",
-            "set_hilbert_order_parameter", 
+            "get_source_Teff",
+            "set_source_Teff", 
+            "source_effective_T", 
+            "effective temperature for sources", 
+            default_value = 1.e5 | units.K
+        )
+
+
+        object.add_method_parameter(
+            "get_hilbert_order",
+            "set_hilbert_order", 
             "hilbert_order", 
             "hilbert_order for domain decomposition", 
             default_value = 1 | units.none
         )
 
         object.add_method_parameter(
-            "get_box_size_parameter",
-            "set_box_size_parameter", 
+            "get_number_frequency_bins",
+            "set_number_frequency_bins", 
+            "number_of_freq_bins", 
+            "the number of bins of frequency", 
+            default_value = 1 | units.none
+        )
+
+        object.add_method_parameter(
+            "get_thermal_evolution",
+            "set_thermal_evolution", 
+            "thermal_evolution_flag", 
+            "solve full thermal evolution if 1", 
+            default_value = 0 | units.none
+        )
+
+        object.add_method_parameter(
+            "get_metal_cooling",
+            "set_metal_cooling", 
+            "metal_cooling_flag", 
+            "include cooling from metals if 1, not if zero", 
+            default_value = 0 | units.none
+        )
+
+
+
+        object.add_method_parameter(
+            "get_blackbody_spectrum",
+            "set_blackbody_spectrum", 
+            "blackbody_spectrum_flag", 
+            "monochromatic if 1, blackbody_spectrum if 1", 
+            default_value = 0 | units.none
+        )
+
+        object.add_method_parameter(
+            "get_collisional_ionization",
+            "set_collisional_ionization", 
+            "collisional_ionization_flag", 
+            "not use collisional ionization if 0, do if 1", 
+            default_value = 0 | units.none
+        )
+
+        object.add_method_parameter(
+            "get_box_size",
+            "set_box_size", 
             "box_size", 
             "boxsize for radiative transfer particle distribution", 
             default_value = 13200. | units.parsec
@@ -386,27 +594,29 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
-                units.none
-            ),
+                units.none,
+                units.cm**2 / units.s**2
+                ),
             (
                 object.INDEX,
                 object.ERROR_CODE,
+                )
             )
-        )
+        
         object.add_method(
             "delete_particle",
             (
                 object.NO_UNIT,
-            ),
+                ),
             (
                 object.ERROR_CODE,
+                )
             )
-        )
         object.add_method(
             "get_state",
             (
                 object.NO_UNIT,
-            ),
+                ),
             (
                 units.parsec,
                 units.parsec,
@@ -414,9 +624,10 @@ class SimpleX(CommonCode):
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
                 units.none,
+                units.cm**2 / units.s**2,
                 object.ERROR_CODE
+                )
             )
-        )
         object.add_method(
             "set_state",
             (
@@ -426,12 +637,53 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
-                units.none
-            ),
+                units.none,
+                units.cm**2 / units.s**2,
+                ),
             (
                 object.ERROR_CODE
+                )
             )
-        )
+        object.add_method(
+            "get_internal_energy",
+            (
+                object.NO_UNIT,
+                ),
+            (
+                units.cm**2 / units.s**2,
+                object.ERROR_CODE
+                )
+            )
+        object.add_method(
+            "set_internal_energy",
+            (
+                object.NO_UNIT,
+                units.cm**2 / units.s**2,
+                ),
+            (
+                object.ERROR_CODE
+                )
+            )
+        object.add_method(
+            "get_dinternal_energy_dt",
+            (
+                object.NO_UNIT,
+                ),
+            (
+                units.cm**2 / units.s**3,
+                object.ERROR_CODE
+                )
+            )
+        object.add_method(
+            "set_dinternal_energy_dt",
+            (
+                object.NO_UNIT,
+                units.cm**2 / units.s**3,
+                ),
+            (
+                object.ERROR_CODE
+                )
+            )
         object.add_method(
             "set_position",
             (
@@ -439,23 +691,23 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.parsec,
                 units.parsec,
-            ),
+                ),
             (
                 object.ERROR_CODE
+                )
             )
-        )
         object.add_method(
             "get_position",
             (
                 object.NO_UNIT,
-            ),
+                ),
             (
                 units.parsec,
                 units.parsec,
                 units.parsec,
                 object.ERROR_CODE
+                )
             )
-        )
         object.add_method(
             "set_density",
             (
@@ -528,40 +780,131 @@ class SimpleX(CommonCode):
         )
     
         object.add_method(
-            "get_timestep_parameter",
+            "get_timestep",
             (),
             (units.Myr, object.ERROR_CODE,)
         )
     
         object.add_method(
-            "set_timestep_parameter",
+            "set_timestep",
             (units.Myr, ),
             (object.ERROR_CODE,)
         )
+
+        object.add_method(
+            "get_source_Teff",
+            (),
+            (units.K, object.ERROR_CODE,)
+        )
     
         object.add_method(
-            "get_hilbert_order_parameter",
+            "set_source_Teff",
+            (units.K, ),
+            (object.ERROR_CODE,)
+        )
+
+    
+        object.add_method(
+            "get_hilbert_order",
             (),
             (units.none, object.ERROR_CODE,)
         )
     
         object.add_method(
-            "set_hilbert_order_parameter",
+            "set_hilbert_order",
             (units.none, ),
             (object.ERROR_CODE,)
         )
     
         object.add_method(
-            "get_box_size_parameter",
+            "set_blackbody_spectrum",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_blackbody_spectrum",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_thermal_evolution",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_thermal_evolution",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_collisional_ionization",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_collisional_ionization",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+
+
+        object.add_method(
+            "get_number_frequency_bins",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_number_frequency_bins",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_metal_cooling",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_metal_cooling",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+
+    
+        object.add_method(
+            "get_box_size",
             (),
             (units.parsec, object.ERROR_CODE,)
         )
     
         object.add_method(
-            "set_box_size_parameter",
+            "set_box_size",
             (units.parsec, ),
             (object.ERROR_CODE,)
         )
+
+        object.add_method(
+            'get_time',
+            (),
+            (units.s,object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_time',
+            (units.s,),
+            (object.ERROR_CODE,)
+        )
+
     
     def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_particle')
@@ -577,6 +920,11 @@ class SimpleX(CommonCode):
         object.add_getter('particles', 'get_flux')
         object.add_setter('particles', 'set_ionisation')
         object.add_getter('particles', 'get_ionisation')
+        object.add_setter('particles', 'set_internal_energy')
+        object.add_getter('particles', 'get_internal_energy')
+        object.add_setter('particles', 'set_dinternal_energy_dt')
+        object.add_getter('particles', 'get_dinternal_energy_dt')
+
     
     def define_state(self, object):
         CommonCode.define_state(self, object)
@@ -600,6 +948,22 @@ class SimpleX(CommonCode):
         object.add_method('RUN', 'get_position')
         object.add_method('RUN', 'get_flux')
         object.add_method('RUN', 'get_ionisation')
+        object.add_method('RUN', 'get_internal_energy')
+        object.add_method('RUN', 'set_dinternal_energy_dt')
+        object.add_method('RUN', 'get_dinternal_energy_dt')
+        object.add_method('UPDATE', 'set_dinternal_energy_dt')
+        object.add_method('UPDATE', 'get_dinternal_energy_dt')
+
+        object.add_method('INITIALIZED', 'set_hilbert_order')
+        object.add_method('INITIALIZED', 'set_box_size')
+        object.add_method('INITIALIZED', 'set_timestep')
+        object.add_method('INITIALIZED', 'set_source_Teff')
+        object.add_method('INITIALIZED', 'set_number_frequency_bins')
+        object.add_method('INITIALIZED', 'set_thermal_evolution')
+        object.add_method('INITIALIZED', 'set_blackbody_spectrum')
+        object.add_method('INITIALIZED', 'set_metal_cooling')
+        object.add_method('INITIALIZED', 'set_collisional_ionization')
+
 
     
 

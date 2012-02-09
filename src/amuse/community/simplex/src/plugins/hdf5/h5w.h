@@ -36,7 +36,8 @@ public:
 
   void open(char fname[]); 
   void close(void); 
-  void make_dataset(const char *name, const char *type, int rank, int *dims);  // makes a dataset on atomic data
+  void make_dataset(const char *name, const char *type, int rank, unsigned long int *dims);  // makes a dataset on atomic data
+  void make_dataset(const char *name, const char *type, int rank, unsigned long long int *dims);  // makes a dataset on atomic data
   void make_group(const char *name);                        // makes a group with absolute pathname "name"
   void make_group(const char *name, int size_hint);         // makes a group with absolute pathname "name"
   template<typename T> void write_attr(const char *dataset_name, const char *attr_name, T *data);  // all single values by reference

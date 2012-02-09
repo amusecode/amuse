@@ -14,8 +14,9 @@ APP		 = $(SRCDIR)/bin/SimpleX
 PLUGINS = $(SRCDIR)/plugins
 
 OBJS = $(OBJDIR)/amuse_interface.o $(OBJDIR)/SimpleX.o \
-       $(OBJDIR)/Structs.o $(OBJDIR)/Common.o $(OBJDIR)/h5w_serial.o \
+       $(OBJDIR)/Structs.o $(OBJDIR)/rates.o $(OBJDIR)/Common.o $(OBJDIR)/h5w_serial.o \
        $(OBJDIR)/keyValue.o $(OBJDIR)/tree_structures.o $(OBJDIR)/hilbert.o 
+
 GLOBJS = $(OBJDIR)/amuse_interface_gl.o
 
 HEALPIX_PATH = $(PLUGINS)/HEALPix/
@@ -46,7 +47,7 @@ compile: $(APP)
 
 $(APP):
 	cd $(SRCDIR) && $(MAKE)
-	
+
 clean:
 	$(RM) *.so *.o *.pyc worker.cc worker.h worker_gl.cc worker_gl.h
 	$(RM) simplex_worker simplex_worker_gl *~
@@ -70,10 +71,11 @@ worker_gl.h: interface.py
 simplex_worker: worker.cc worker.h $(OBJS)
 	$(MPICXX) $^ -o $@ $(LIBS)
 
-simplex_worker_gl: worker_gl.cc worker_gl.h $(OBJS) $(GLOBJS)
-	$(MPICXX) $^ -o $@ $(LIBS) $(GLLIBS)
+#simplex_worker_gl: worker_gl.cc worker_gl.h $(OBJS) $(GLOBJS)
+#	$(MPICXX) $^ -o $@ $(LIBS) $(GLLIBS)
 
 $(OBJDIR)/amuse_interface.o: $(SRCDIR)/src/amuse_interface.cpp $(SRCDIR)/src/amuse_interface.h
 	cd $(SRCDIR) && $(MAKE) amuse_interface
+	
 $(OBJDIR)/amuse_interface_gl.o: $(SRCDIR)/src/amuse_interface_gl.cpp
 	cd $(SRCDIR) && $(MAKE) amuse_interface_gl

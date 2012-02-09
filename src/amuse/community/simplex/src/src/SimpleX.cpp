@@ -1,52 +1,28 @@
 /*************************************************************************
-file:         SimpleX.cpp
-author:       Jan-Pieter Paardekooper
-mail:         jppaarde@strw.leidenuniv.nl
-version:      0.1
-last change:  15.01.2009
----------------------------------------------------------------------
 description:
 This file contains the implementation of the SimpleX class that does
 the radiative transfer calculations
+
+Copyright Jan-Pieter Paardekooper and Chael Kruip October 2011
+
+This file is part of SimpleX.
+
+SimpleX is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SimpleX is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
+
 **************************************************************************/
-/*
-* Date: Name
-* Put additional comments here
-*
-* 22.03.2009: JPP
-* Added opportunity to preserve directions during grid updates (although memory
-* consuming). Grid updates are now possible. Fixed bug in redistribute_photons(), 
-* intensity is now thrown away when cell is flash ionised.
-*
-* 18.03.2009: JPP
-* Changed the SimpleX algorithm so that directions are preserved. A tesselation
-* of the unit sphere is superimposed on every site in which the intensities are
-* stored. Currently the tesselation of the sphere is given by HEALPix.  
-* 
-*/
-
-/***** Bugs ********
-*
-* In parallel hdf5 writing, chunk_size has to be as big as total number of simplices
-*
-* 
-*******************/
-
-/***** To Do *******
-*
-* In send_sites_marked_for_removal() sites need only be send to master,
-* instead of to all procs. Same for send_sites_to_remove().
-*
-* In update routine
-*  * If more than half of points flagged need to be removed, turn around criterium (faster)
-*  * Let number of bins be a function of number of points to be deleted
-*  
-*
-*******************/
-
 
 #include "SimpleX.h"
-
 #include "Map16.h"
 #include "Map21.h"
 #include "Map32.h"
@@ -55,6 +31,7 @@ the radiative transfer calculations
 #include "Map84.h"
 
 #include <algorithm>
+#include <valarray>
 
 using namespace std;
 
@@ -65,24 +42,18 @@ SimpleX::SimpleX(const string& output_path){
   COMM_RANK = MPI::COMM_WORLD.Get_rank();    
   COMM_SIZE = MPI::COMM_WORLD.Get_size();    
 
-  //cross section and fraction of photons that is capable of ionising
-  cross_H = 0.0;
-  cross_dust = 0.0;
+  //dimension of the simulation (only 3D is currently supported)
+  dimension = 3;
 
   //conversion factors between numerical and physical units
   UNIT_T = 0.0;
-  UNIT_T_MYR = 0.0;
   UNIT_L = 0.0;
 
   //total volume, total number of atoms and maximal resolution of/in simulation domain
   totalVolume = 0.0;
   totalAtoms = 0.0;
-  maxRes = 0;
-
+  localMaxRes = 0;
   time_conversion = 1.0;
-
-  dust_to_gas_ratio = 0.0;
-  cross_dust = 0.0;
 
   //euler angles
   euler_phi = 0.0;
@@ -95,11 +66,17 @@ SimpleX::SimpleX(const string& output_path){
   //orientation of the unit sphere tesselation
   orientation_index = 0;
 
-  //only 3D at the moment, this gotta change at one point!
-  dimension = 3;
-
   // Random number generator
   ran = gsl_rng_alloc (gsl_rng_taus);
+
+  // Method for RT
+  ballisticTransport = 0;
+  dirConsTransport = 0;
+  combinedTransport = 0;
+  diffuseTransport = 0;
+  
+  // Value for effective temperature of source (should be read from HDF5)
+  sourceTeff = 1e5;
 
   //output to log file
   if (output_path.size() < 1) 
@@ -124,9 +101,7 @@ SimpleX::~SimpleX(){
   sites.clear();
   simplices.clear();
 
-
 }
-
 
 
 /****************************************************************************************/
@@ -152,16 +127,11 @@ void SimpleX::init_triangulation(char* inputName){
 
   //calculate the total number of sweeps from the total simulation time
   //and the time step
-  unsigned int total_numSweeps = simTime/UNIT_T;
+  unsigned int total_numSweeps = (unsigned int) floor(simTime/UNIT_T);
 
-  if( updates ){
-    //number of runs is the minumum of the output
-    //and the grid dynamics
-    numRuns = max( numGridDyn, numOutputs);
-  }else{
-    numRuns = numOutputs;
-  }
-
+  //set the number of run
+  numRuns = numOutputs;
+  
   //convert time for nice output
   time_conversion = 1.0;
   while( time_conversion*simTime/numOutputs < 1.0 ){
@@ -178,32 +148,20 @@ void SimpleX::init_triangulation(char* inputName){
   set_direction_bins();
 
   //read the input file with vertex positions 
-  if(fillChoice != AUTOMATIC){
-    read_vertex_list();
-  }
+  read_vertex_list();
 
-  //only the master proc creates the point distribution (in case of automatic filling) and
-  //the boundary around the domain (always)
+  //only the master proc creates the boundary around the domain
   if(COMM_RANK == 0){
 
-    //create homogeneous Poisson distribution of points
-    if(fillChoice == AUTOMATIC){
-      poisson_square();
-    }
-
-    //set boundary around unity domain
-    if(periodic){
-      create_periodic_boundary();
-    }else{
-      create_boundary();
-    }
-
+    //create boundary
+    create_boundary();
+    
     //create octree on master proc
     create_vertex_tree();
 
     //decompose the domain
     decompose_domain();
-
+    
     //assign process to vertices
     assign_process();
 
@@ -230,15 +188,9 @@ void SimpleX::init_triangulation(char* inputName){
   //from the triangulation functions, containing the physical parameters
   create_sites();
 
-  if(periodic){
-    //set_periodic_sites_to_send();
-    remove_periodic_sites();
-  }
-  
   //the list of sites was obtained from list of simplices, and therefore 
   //have an order which might lead to problems when using the dynamic update routines
   //shuffle_sites();
-  
   assign_site_ids();  
 
   //determine which sites are ballistic and which direction conserving
@@ -254,171 +206,135 @@ void SimpleX::init_triangulation(char* inputName){
 
 
 /**** read in parameter file  ****/
-void SimpleX::read_parameters( char* inputName ){
+void SimpleX::read_parameters( char* initFileName ){
 
   //create the keyvalue variable
-  string strFilename = inputName;
+  string strFilename = initFileName;
   ConfigFile KeyValueFile(strFilename);
 
   //strings needed for reading in strings
-  string fill, bbChoice, recChoice, diffChoice, upd, 
-    mov, movVirt, keep_dir, cycl, hp, phot_cons, dust;
+  int freq_choice;
 
-  //read in fill choice
-  KeyValueFile.readInto(fill, "fillChoice", string("AUTOMATIC"));
-  if(fill == "AUTOMATIC"){
-    fillChoice = AUTOMATIC;
-  }else if(fill == "READ"){
-    fillChoice = READ;
-  }else{
-    fillChoice = AUTOMATIC;
-  }
   //read in input files
-  KeyValueFile.readInto(inputDensityFile, "inputName", string("./points.pnt") );
+  KeyValueFile.readInto(inputFileName, "inputFile", string("./Input.hdf5") );
   //random seed to be used
   KeyValueFile.readInto(randomSeed, "randomSeed");
-  //dimension
-  KeyValueFile.readInto(dimension, "dimension", (short) 3 );
-  //Number of points in case of automatic filling
-  KeyValueFile.readInto(numSites, "numSites", (unsigned long long int) 262144 );
-  //Periodic boundary conditions?
-  KeyValueFile.readInto(periodic, "periodic", (bool) 0 );
   //Number of points in boundary
-  KeyValueFile.readInto(borderSites, "borderPoints", (unsigned) 25000 );
+  KeyValueFile.readInto(borderSites, "borderPoints", (unsigned) 20000 );
   //Buffer around unity domain in which extra points are placed
   KeyValueFile.readInto(borderBox, "padding", (float) 0.1 );
   //hilbert order to determine domain decomposition
-  KeyValueFile.readInto(hilbert_order, "hilbert_order", (unsigned int) 2 );
+  KeyValueFile.readInto(hilbert_order, "hilbert_order", (unsigned int) 1 );
   //Buffer around subbox in which extra points are triangulated
-  KeyValueFile.readInto(padding_subbox, "padding_subbox", (float) 0.25 );
-
-  //Number of sweeps per run
+  KeyValueFile.readInto(padding_subbox, "padding_subbox", (float) 0.15 );
+  //Physical timestep per sweep
   KeyValueFile.readInto( UNIT_T, "time_step", (double) 0.05 );
-  //Number density in homogeneous case
-  KeyValueFile.readInto(homDens, "homDens", (float) 0.01 );
-  //Size of simulation domain
-  KeyValueFile.readInto(sizeBox, "sizeBox", (double) 13200.0 );
   //Simulation time
   KeyValueFile.readInto(simTime, "simTime", (double) 500.0 );
-  //Black body spectrum for source?
-  KeyValueFile.readInto( blackBody, "bbSpectrum", (bool) 0);
-  //Effective temperature for source
-  KeyValueFile.readInto(sourceTeff, "sourceTeff", (double) 0.0 );
-  //Temperature of ionized gas
-  KeyValueFile.readInto(gasIonTemp, "gasIonTemp", (double) 1.0e4 );
+  //number of frequencies
+  KeyValueFile.readInto(numFreq, "number_of_frequencies", (short int) 1 );
+  //frequency bin spacing
+  KeyValueFile.readInto(freq_choice, "frequency_spacing", 0 );
 
-  //Include dust?
-  KeyValueFile.readInto(dust, "dust_model", string("NO_DUST") );
-  if(dust == "SMC"){
-    dust_model = SMC;
-  }else if(dust == "LMC"){
-    dust_model = LMC;
-  }else if(dust == "MW"){
-    dust_model = MW;
-  }else{
-    dust_model = NO_DUST;
+  switch (freq_choice){
+
+  case 0:
+    freq_spacing = NO_WEIGHTS;
+    break;
+  case 1:
+    freq_spacing = LOG_WEIGHTS;
+    break;
+  case 2:
+    freq_spacing = ENERGY_WEIGHTS;
+    break;
+  case 3:
+    freq_spacing = IONISATION_WEIGHTS;
+    break;
+  default: 
+    freq_spacing = IONISATION_WEIGHTS;
+
   }
 
-  //metallicity
-  KeyValueFile.readInto(metallicity, "metallicity", (double) 0.2 );
-
-  KeyValueFile.readInto(dust_sublimation, "dust_sublimation", (bool) 0 );
-
-  //Source strength (number of ionising photons)
-  KeyValueFile.readInto(source_strength, "sourceStrength", (float) 5.0 );
+  //Temperature of ionized gas
+  KeyValueFile.readInto(gasIonTemp, "gasIonTemp", (double) 1.0e4 );
+  //Temperature of neutral gas
+  KeyValueFile.readInto(gasNeutralTemp, "gasNeutralTemp", (double) 10.0 );
   //Units of source
   KeyValueFile.readInto(UNIT_I, "sourceUnits", (double) 1.0e48 );
-  //source radius
-  KeyValueFile.readInto(source_radius, "sourceRadius", (float) 0.02 );
-  //number of points in source
-  KeyValueFile.readInto(source_points, "sourcePoints", (unsigned) 25 );
-  //x-position
-  KeyValueFile.readInto(source_x, "sourceX", (float) 0.5 );
-  //y-position
-  KeyValueFile.readInto(source_y, "sourceY", (float) 0.5 );
-  //z-position
-  KeyValueFile.readInto(source_z, "sourceZ", (float) 0.5 );
-
-  //source resides in cell or is entire cell
-  KeyValueFile.readInto(source_inside_cell, "source_inside_cell", (bool) 0);
-
   //Include recombination?
   KeyValueFile.readInto( recombination, "recombination", (bool) 1 );
-
-  //Only ballistic transport?
-  KeyValueFile.readInto( ballisticTransport, "onlyBallistic", (bool) 0 );
-  //Only direction_conserving transport?
-  KeyValueFile.readInto( dirConsTransport, "onlyDirCons", (bool) 0 );
-  //Combined transport?
-  KeyValueFile.readInto( combinedTransport, "combinedTransport", (bool) 1 );
+  //Only ballistic transport, DCT or combined?
+  KeyValueFile.readInto( RTmethod, "RTmethod", (short) 2 );
+  
+  switch(RTmethod){
+  case 0:
+    ballisticTransport = 1;
+    break;
+  case 1:
+    dirConsTransport = 1;
+    break;
+  case 2:
+    combinedTransport = 1;
+    break;
+  case 3:
+    diffuseTransport = 1;
+    break;
+  default:
+    if(COMM_RANK == 0)
+      cerr << " (" << COMM_RANK << ") WARNING: No correct input for the RT method chosen. Defaulting to combined transport." << endl;
+    combinedTransport = 1;
+    break;
+  }
 
   //Number of directions
   KeyValueFile.readInto( number_of_directions, "number_of_directions", (unsigned) 42 );
   //Number of orientations
   KeyValueFile.readInto( number_of_orientations, "number_of_orientations", (unsigned) 100 );
-
   //Number of outputs
   KeyValueFile.readInto(numOutputs, "outputs", (unsigned) 50 );
-
-  //output IFront for source in centre?
+  //Output IFront for source in centre?
   KeyValueFile.readInto(give_IFront, "IFront", (bool) 0 );
-  //calculate escape fraction?
-  KeyValueFile.readInto(give_escape_fraction, "escape_fraction", (bool) 0 );
-
-
   //Chunk size for hdf5 writing
   KeyValueFile.readInto( chunk_size, "chunkSize", (unsigned) 100000 );
-
   //Maximum number of messages to send in MPI routines
   KeyValueFile.readInto( max_msg_to_send, "max_msg_to_send", (unsigned) 100000 );
-
-  //number of reference pixels in the case HEAL_PIX is used
+  //Number of reference pixels in the case HEAL_PIX is used
   KeyValueFile.readInto( num_ref_pix_HP, "number_of_reference_pixels_HealPix", 5);
-
-  //Use dynamical updates?
-  KeyValueFile.readInto( updates, "remove_vertices", (bool) 0 );
-  KeyValueFile.readInto( numGridDyn, "number_of_grid_dyn", (unsigned) 100 );
-
-  // Maximal angle between straightforward direction and Delaunay lines (second and third)
+  //Maximal angle between straightforward direction and Delaunay lines (second and third)
   KeyValueFile.readInto( straightAngle, "straight_angle", (float) 90.0 );
   straightAngle *= M_PI/180.0;
-
+  //Calculate the straightest directions from the tessellation or not? 
   KeyValueFile.readInto(straight_from_tess, "straight_from_tess", (bool) 1 );
-
-  // Do cyclic check?
-  KeyValueFile.readInto( cyclic_check, "cyclic_check", (bool) 0 );
-
   //Vertex deletion criterium
   KeyValueFile.readInto(switchTau, "maxRatioDiff");
-  //Maximum number of neighbours that can be deleted
-  KeyValueFile.readInto(minResolution, "minResolution");
-  //number of bins in update routine
-  KeyValueFile.readInto(nbins, "nbins", (unsigned int) 100 );
-
   //Use temporal photon conservation?
   KeyValueFile.readInto( photon_conservation, "temporal_photon_conservation", (bool) 1 );
+  //Fraction of characteristic time scale at which subcycling is done
+  KeyValueFile.readInto( subcycle_frac, "subcycle_fraction", (double) 0.05 );
+  //include collisional ionisations?
+  KeyValueFile.readInto( coll_ion, "coll_ion", (bool) 1 );
+  
+  //include heating and cooling?
+  KeyValueFile.readInto( heat_cool, "heat_cool", (bool) 0 );
+  if(COMM_RANK == 0)
+    if(heat_cool&& (!blackBody)){
+      cerr << "ERROR: Heating needs spectral information (e.g. bbSpectrum = 1)." << endl;
+      MPI::COMM_WORLD.Abort(-1);
+    }
+  //include metal line cooling?
+  KeyValueFile.readInto( metal_cooling, "metal_cooling", (bool) 0 );
+  if(COMM_RANK == 0)
+    if(metal_cooling&& (!heat_cool)){
+      cerr << "ERROR: Metal cooling needs heat_cool as well." << endl;
+      MPI::COMM_WORLD.Abort(-1);
+    }
+  
 
   //write all information to logfile
   if(COMM_RANK == 0){
-    simpleXlog << endl <<" *****  This is SimpleX version 2.4  ***** " << endl << endl;
+    simpleXlog << endl <<" *****  This is SimpleX version 2.5  ***** " << endl << endl;
     simpleXlog << "  Number of processors: " << COMM_SIZE << endl;
-    if(fillChoice == AUTOMATIC){
-      simpleXlog << "  Fill Choice: AUTOMATIC" << endl;
-      simpleXlog << "  Point process : Poisson" << endl;
-      simpleXlog << "  Homogeneous density: " << homDens << " cm^-1" << endl;
-      simpleXlog << "  Size of the simulation domain: " << sizeBox << " pc" << endl;
-      simpleXlog << "  Source strength: " << source_strength*UNIT_I << endl;
-      simpleXlog << "  Number of source points: " << source_points << endl;
-      simpleXlog << "  Source radius: " << source_radius << endl;
-      simpleXlog << "  Source position: (" << source_x << ", " << source_y << ", " 
-        << source_z << ")" << endl;
-    } else{ 
-      simpleXlog << "  Fill Choice: Read file" << endl;
-      simpleXlog << "  Input file: " << inputDensityFile << endl;
-    }
-    if(periodic){
-      simpleXlog << "  Boundaries are periodic" << endl;
-    } 
+    simpleXlog << "  Input file: " << inputFileName << endl;
     simpleXlog << "  Number of boundary points    : " << borderSites << endl;
     simpleXlog << "  Buffer around unity domain in which boundary points are placed: " << borderBox << endl;
     simpleXlog << "  Hilbert order                : " << hilbert_order << endl;
@@ -428,54 +344,24 @@ void SimpleX::read_parameters( char* inputName ){
     simpleXlog << "  Total simulation time        : " << simTime << " Myr" << endl;
     if(blackBody){ 
       simpleXlog << "  Source has black body spectrum of " << sourceTeff << " K" << endl 
-        << "  Resulting temperature of the ionized gas is " << gasIonTemp << " K" << endl;
+		 << "  Resulting temperature of the ionized gas is " << gasIonTemp << " K" << endl;
     }
-    if(source_inside_cell){
-      simpleXlog << " Source is inside the cell and ionises the gas in its own cell " << endl;
-    }else{
-      simpleXlog << " Source is made up of entire cell and does not ionise its own cell " << endl;
-    }
-
-    if(dust_model == SMC){
-      simpleXlog << " SMC dust model";
-      if(dust_sublimation){
-        simpleXlog << " with total dust sublimation  " << endl;
-      }else{
-        simpleXlog << ", no dust sublimation " << endl;
-      }
-    }else if(dust_model == LMC){
-      simpleXlog << " LMC dust model";
-      if(dust_sublimation){
-        simpleXlog << " with total dust sublimation  " << endl;
-      }else{
-        simpleXlog << ", no dust sublimation " << endl;
-      }
-    }else if(dust_model == MW){
-      simpleXlog << " Milky Way dust model";
-      if(dust_sublimation){
-        simpleXlog << " with total dust sublimation  " << endl;
-      }else{
-        simpleXlog << ", no dust sublimation " << endl;
-      }
-    }else{
-      simpleXlog << "  No dust" << endl;
-    }
-
 
     if(recombination){
       simpleXlog << "  Recombination is included" << endl;
-    }else{
-      simpleXlog << "  Recombination is not included" << endl;
     }
 
     if(ballisticTransport){
       simpleXlog << endl << "  Mode of transport: ballistic transport " << endl << endl;
     }
     if(dirConsTransport){
-      simpleXlog << endl << "  Mode of transport: direction conserving transport " << endl;
+      simpleXlog << endl << "  Mode of transport: direction conserving transport " << endl << endl;
     }
     if(combinedTransport){
-      simpleXlog << endl << "  Mode of transport: combined transport " << endl;
+      simpleXlog << endl << "  Mode of transport: combined transport " << endl << endl;
+    }
+    if(diffuseTransport){
+      simpleXlog << endl << "  Mode of transport: diffuse transport " << endl << endl;
     }
 
     if(dirConsTransport || combinedTransport){
@@ -483,37 +369,24 @@ void SimpleX::read_parameters( char* inputName ){
       simpleXlog << "  Number of orientations in header file: " << number_of_orientations << endl << endl;
     }
 
-    if(updates){
-      simpleXlog << "  Vertex removal is included  " << endl;
-      simpleXlog << "  Vertices removed " << numGridDyn << " times" << endl;
-    }
 
 #ifdef HEALPIX
     simpleXlog << "  Healpix sphere with " << num_ref_pix_HP 
-      << " pixels is used for quick referencing in compute_solid_angles()" << endl;
+	       << " pixels is used for quick referencing in compute_solid_angles()" << endl;
 #endif
 
     simpleXlog << "  Switch between ballistic and dirCons transport: " << switchTau << endl;
-    simpleXlog << "  Minimum resolution                            : " << minResolution << endl;
-
     simpleXlog << "  Maximal angle between forward direction and real Delaunay direction: " 
-      << straightAngle << " degrees. " << endl;
+	       << straightAngle << " degrees. " << endl;
 
-    simpleXlog << "  Check for (and repair) cyclic connections in the grid? " << cyclic_check << endl << endl;
   }
-
 
   if(give_IFront){
     //output to IFront file
     IFront_output.open( "IFront.dat" );
   }
-  if(give_escape_fraction){
-    //output to escape fraction file
-    f_esc_output.open( "escape_fraction.dat" );
-  }
-
-
 }
+
 
 /**** Set the  direction bins with the correct number of directions  ****/
 void SimpleX::set_direction_bins(){
@@ -531,49 +404,49 @@ void SimpleX::set_direction_bins(){
   if(number_of_directions == 16){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_directions; j++){
-        for(short int k=0; k<dimension; k++){
-          orient[i][j][k] = orient_16[i][j][k];
-        }
+	for(short int k=0; k<dimension; k++){
+	  orient[i][j][k] = orient_16[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 21){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_directions; j++){
-        for(short int k=0; k<dimension; k++){
-          orient[i][j][k] = orient_21[i][j][k];
-        }
+	for(short int k=0; k<dimension; k++){
+	  orient[i][j][k] = orient_21[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 32){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_directions; j++){
-        for(short int k=0; k<dimension; k++){
-          orient[i][j][k] = orient_32[i][j][k];
-        }
+	for(short int k=0; k<dimension; k++){
+	  orient[i][j][k] = orient_32[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 42){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_directions; j++){
-        for(short int k=0; k<dimension; k++){
-          orient[i][j][k] = orient_42[i][j][k];
-        }
+	for(short int k=0; k<dimension; k++){
+	  orient[i][j][k] = orient_42[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 64){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_directions; j++){
-        for(short int k=0; k<dimension; k++){
-          orient[i][j][k] = orient_64[i][j][k];
-        }
+	for(short int k=0; k<dimension; k++){
+	  orient[i][j][k] = orient_64[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 84){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_directions; j++){
-        for(short int k=0; k<dimension; k++){
-          orient[i][j][k] = orient_84[i][j][k];
-        }
+	for(short int k=0; k<dimension; k++){
+	  orient[i][j][k] = orient_84[i][j][k];
+	}
       }
     }
   }else{
@@ -595,202 +468,70 @@ void SimpleX::set_direction_bins(){
   if(number_of_directions == 16){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_orientations; j++){
-        for(unsigned int k=0; k<number_of_directions; k++){
-          maps[i][j][k] = maps_16[i][j][k];
-        }
+	for(unsigned int k=0; k<number_of_directions; k++){
+	  maps[i][j][k] = maps_16[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 21){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_orientations; j++){
-        for(unsigned int k=0; k<number_of_directions; k++){
-          maps[i][j][k] = maps_21[i][j][k];
-        }
+	for(unsigned int k=0; k<number_of_directions; k++){
+	  maps[i][j][k] = maps_21[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 32){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_orientations; j++){
-        for(unsigned int k=0; k<number_of_directions; k++){
-          maps[i][j][k] = maps_32[i][j][k];
-        }
+	for(unsigned int k=0; k<number_of_directions; k++){
+	  maps[i][j][k] = maps_32[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 42){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_orientations; j++){
-        for(unsigned int k=0; k<number_of_directions; k++){
-          maps[i][j][k] = maps_42[i][j][k];
-        }
+	for(unsigned int k=0; k<number_of_directions; k++){
+	  maps[i][j][k] = maps_42[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 64){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_orientations; j++){
-        for(unsigned int k=0; k<number_of_directions; k++){
-          maps[i][j][k] = maps_64[i][j][k];
-        }
+	for(unsigned int k=0; k<number_of_directions; k++){
+	  maps[i][j][k] = maps_64[i][j][k];
+	}
       }
     }
   }else if(number_of_directions == 84){
     for(unsigned int i=0; i<number_of_orientations; i++){
       for(unsigned int j=0; j<number_of_orientations; j++){
-        for(unsigned int k=0; k<number_of_directions; k++){
-          maps[i][j][k] = maps_84[i][j][k];
-        }
+	for(unsigned int k=0; k<number_of_directions; k++){
+	  maps[i][j][k] = maps_84[i][j][k];
+	}
       }
     }
   }else{
     cerr << " (" << COMM_RANK << ") Incorrect header, mappings not found " << endl;
     MPI::COMM_WORLD.Abort(-1);
   }
-
-  // double total = sizeof(orient_16) + sizeof(maps_16) +
-  //   sizeof(orient_21) + sizeof(maps_21) +
-  //   sizeof(orient_32) + sizeof(maps_32) +
-  //   sizeof(orient_42) + sizeof(maps_42) +
-  //   sizeof(orient_64) + sizeof(maps_64) +
-  //   sizeof(orient_84) + sizeof(maps_84);
-
-  // cerr << " Total spurious memory consumption is " << total/1.e6 << " Mb " << endl;
-
-  // //clear the mappings
-  // for(unsigned int i=0; i<number_of_orientations; i++){
-
-  //   for(unsigned int j=0; j<16; j++){
-  //     delete [] orient_16[i][j];
-  //   }
-  //   for(unsigned int j=0; j<21; j++){
-  //     delete [] orient_21[i][j];
-  //   }
-  //   for(unsigned int j=0; j<32; j++){
-  //     delete [] orient_32[i][j];
-  //   }
-  //   for(unsigned int j=0; j<42; j++){
-  //     delete [] orient_42[i][j];
-  //   }
-  //   for(unsigned int j=0; j<64; j++){
-  //     delete [] orient_64[i][j];
-  //   }
-  //   for(unsigned int j=0; j<84; j++){
-  //     delete [] orient_84[i][j];
-  //   }
-
-  //   delete [] orient_16[i];
-  //   delete [] orient_21[i];
-  //   delete [] orient_32[i];
-  //   delete [] orient_42[i];
-  //   delete [] orient_64[i];
-  //   delete [] orient_84[i];
-
-  // }
-
-  // delete [] orient_16;
-  // delete [] orient_21;
-  // delete [] orient_32;
-  // delete [] orient_42;
-  // delete [] orient_64;
-  // delete [] orient_84;
-
 }
 
-/**** Create a simple homogeneous point distribution using the gsl random number generator  ****/
-void SimpleX::poisson_square() {
-
-  //create temporary structure to store vertex
-  Vertex tempVert; 
-  //make sure the vertices vector is completely empty
-  vertices.clear();
-  vector< Vertex >().swap( vertices );
-
-  //first create a source at the user specified position
-  //first source point is at the exact source position
-  tempVert.set_x( (float) source_x );
-  tempVert.set_y( (float) source_y );
-  tempVert.set_z( (float) source_z );
-  tempVert.set_vertex_id( (unsigned long long int) 0 );
-  tempVert.set_border( 0 );
-  tempVert.set_process( 0 );
-
-  vertices.push_back( tempVert );
-
-  //in the case of more than one source point, the rest is placed in sphere around this point,
-  //at user-specified radius
-  for(unsigned int i=1;i<source_points;i++){
-
-    //draw random positions
-    double x = gsl_rng_uniform( ran );
-    double y = gsl_rng_uniform( ran );
-    double z = gsl_rng_uniform( ran );
-
-    //check if this position is inside the specified radius, if so, at to vertex list
-    double radius = sqrt( pow( x - source_x , 2 ) + pow( y - source_y, 2 ) + pow( z - source_z, 2 ) );  
-    if( radius <= source_radius ){
-
-      tempVert.set_x( (float) x );
-      tempVert.set_y( (float) y );
-      tempVert.set_z( (float) z );
-      tempVert.set_vertex_id( (unsigned long long int) i );
-      tempVert.set_border( 0 );
-      tempVert.set_process( 0 );
-
-      vertices.push_back( tempVert );
-
-    }else{
-      i--;
-    }
-
-  }
-
-  //now continue with the 'non-source' points
-  for( unsigned long long int i=source_points; i<numSites; i++ ){
-
-    //positions are random between 0 and 1
-    double x = gsl_rng_uniform( ran );
-    double y = gsl_rng_uniform( ran );
-    double z = gsl_rng_uniform( ran );
-
-    tempVert.set_x( (float) x );
-    tempVert.set_y( (float) y );
-    tempVert.set_z( (float) z );
-    tempVert.set_vertex_id( (unsigned long long int) i );
-    tempVert.set_border( 0 );
-    tempVert.set_process( 0 );
-
-    vertices.push_back( tempVert );
-
-  }
-
-  // ofstream vertex_output;
-  // vertex_output.open( "vertices.txt" );
-  // vertex_output << "id    x    y   z   n_H   flux   x_ion" << endl;
-  // vector<Vertex>::iterator it=vertices.begin();
-  // vertex_output << it->get_vertex_id() << " " << it->get_x() << " " << it->get_y() << " " << it->get_z() << " " << 1.0 << " " << 1.0 << " " << 0.0 << endl;
-  // it++; 
-  // while( it!=vertices.end() ){
-  //   vertex_output << it->get_vertex_id() << " " << it->get_x() << " " << it->get_y() << " " << it->get_z() << " " << 1.0 << " " << 0.0 << " " << 0.0 << endl;
-  //   it++;
-  // }
-
-
-  if( COMM_RANK == 0 ){
-    simpleXlog << "  Homogeneous point distribution created " << endl;
-  }
-
-}
 
 /****  Read in vertices from hdf5 file  ****/
 void SimpleX::read_vertex_list(){
 
   //open hdf5 file
   char fileName[200];
-  sprintf(fileName, inputDensityFile.c_str());
+  sprintf(fileName, "%s", inputFileName.c_str());
   h5w file(fileName,'o');        // open file for reading
 
   //read in total number of sites
   unsigned int temp;
   file.read_attr("/Header","number_of_sites", &temp); 
-  numSites = (unsigned long long int) temp;  
+  numSites = (unsigned long int) temp;  
 
   //read in conversion factors for dimensionless units 
   file.read_attr("/Header","UNIT_D",&UNIT_D);
@@ -802,6 +543,15 @@ void SimpleX::read_vertex_list(){
 
   //read in the size of the simulation box
   file.read_attr("/Header","box_size", &sizeBox);
+  short int dummy;
+  file.read_attr("/Header","sourceType", &dummy);
+  blackBody = (bool)dummy;
+  file.read_attr("/Header","sourceTemperature", &sourceTeff);
+
+  //read if clumping factor is included
+  // short int read_clumping;
+  // file.read_attr("/Header","clumping", &read_clumping);
+  // cerr << read_clumping << endl;
 
   //create vector containing the vertices, and the temporary lists containing fluxes and masses
   //the last two are necessary because they are needed in check_undersampled()
@@ -809,13 +559,16 @@ void SimpleX::read_vertex_list(){
   temp_n_HI_list.resize(numSites);
   temp_flux_list.resize(numSites);
   temp_n_HII_list.resize(numSites);
-
+  temp_u_list.resize(numSites);
+  temp_dudt_list.resize(numSites);
+  temp_clumping_list.resize(numSites);
+  
   //structures needed for reading in the values from hdf5
   arr_1D<float> double_arr;
   arr_1D<unsigned int> int_arr;
 
   //arrays holding the dimensions of the data and the offset in case the data is read in in chunks
-  int dims[2], offset[2];
+  unsigned long long int  dims[2], offset[2];
 
   unsigned int chunk_size_read = chunk_size;  
   if (chunk_size_read > numSites){
@@ -824,7 +577,7 @@ void SimpleX::read_vertex_list(){
 
   // do the reading !!!
   offset[1] = 0;
-  for( unsigned long long int i=0; i<numSites; i+=chunk_size_read ){
+  for( unsigned long int i=0; i<numSites; i+=chunk_size_read ){
 
     offset[0] = i;
     if (i+chunk_size_read >= numSites) // make sure not to write outside of data range
@@ -836,40 +589,55 @@ void SimpleX::read_vertex_list(){
     dims[1] = 3; 
     double_arr.reinit(2,dims);
     file.read_data("/Vertices/coordinates",offset, &double_arr);
-    for(int j=0; j<dims[0]; j++){
+    for(unsigned int j=0; j<dims[0]; j++){
       vertices[ j + i ].set_x( double_arr(j,0) ); // coordinates
       vertices[ j + i ].set_y( double_arr(j,1) ); 
-      vertices[ j + i ].set_z( double_arr(j,2) );   
+      vertices[ j + i ].set_z( double_arr(j,2) );    
     }
-
+    
     dims[1]=1;
     //number density
     double_arr.reinit(1,dims);
     file.read_data("Vertices/n_HI",offset, &double_arr);
-    for( int j=0; j<dims[0]; j++ ){
+    for(unsigned int j=0; j<dims[0]; j++ ){
       temp_n_HI_list[ j + i ] = double_arr(j);
     }
 
     //ionised fraction
     double_arr.reinit(1,dims);
     file.read_data("Vertices/n_HII",offset, &double_arr);
-    for( int j=0; j<dims[0]; j++ ){
+    for(unsigned int j=0; j<dims[0]; j++ ){
       temp_n_HII_list[ j + i ] = double_arr(j);
     }
 
     //flux
     double_arr.reinit(1,dims);
-    file.read_data("Vertices/flux",offset, &double_arr);
-    for( int j=0; j<dims[0]; j++ ){
+    file.read_data("Vertices/sourceNIon",offset, &double_arr);
+    for(unsigned int j=0; j<dims[0]; j++ ){
       temp_flux_list[ j + i ] = double_arr(j);
     }
 
+    //temperature
+    double_arr.reinit(1,dims);
+    file.read_data("Vertices/temperature",offset, &double_arr);
+    for(unsigned int j=0; j<dims[0]; j++ ){
+      temp_u_list[ j + i ] = T_to_u(double_arr(j),
+       ( temp_n_HI_list[ j + i ] + temp_n_HII_list[ j + i ] )/
+         (temp_n_HI_list[ j + i ] + 2*temp_n_HII_list[ j + i ]));
+      temp_dudt_list[ j + i ] = 0.0;
+    }
 
+    //clumping
+    double_arr.reinit(1,dims);
+    file.read_data("Vertices/clumpingFactor",offset, &double_arr);
+    for(unsigned int j=0; j<dims[0]; j++ ){
+      temp_clumping_list[ j + i ] = double_arr(j);
+    }
   }//for all sites to read
 
   //set the vertex id
   //perhaps in the future this should be read in as well?
-  unsigned long long int i=0;
+  unsigned long int i=0;
   for( VERTEX_ITERATOR it=vertices.begin(); it!=vertices.end(); it++, i++ ){
     it->set_vertex_id( i );
   }
@@ -882,8 +650,9 @@ void SimpleX::read_vertex_list(){
   if(COMM_RANK == 0){
     simpleXlog << "  Read " << numSites << " sites from file " << endl;
     simpleXlog << "  Size of the simulation domain: " << sizeBox << " pc" << endl;
+    cerr << " (" <<COMM_RANK <<") Read " << numSites << " sites from file " << endl;
+    cerr << " (" <<COMM_RANK <<") Size of the simulation domain: " << sizeBox << " pc" << endl;
   }
-
 }
 
 
@@ -900,7 +669,7 @@ void SimpleX::create_boundary(){
 
   //loop over the extra sites
   bool stop;
-  for( unsigned long long int i=0; i<borderSites; i++) {
+  for( unsigned long int i=0; i<borderSites; i++) {
     stop=0;
     //loop until one point in border is found
     while(!stop) {
@@ -919,7 +688,7 @@ void SimpleX::create_boundary(){
       //if the point is not in de domain itself (so in border), stop
       //and use this point
       if(x1<0.0||x1>1.0||x2<0.0||x2>1.0||x3<0.0||x3>1.0) {
-        stop=1;
+	stop=1;
       }
     }
 
@@ -929,7 +698,7 @@ void SimpleX::create_boundary(){
     tempVert.set_x( x1 );
     tempVert.set_y( x2 );
     tempVert.set_z( x3 );
-    tempVert.set_vertex_id( (unsigned long long int ) origNumSites+i );
+    tempVert.set_vertex_id( (unsigned long int ) origNumSites+i );
     tempVert.set_border(1);
 
     vertices.push_back( tempVert );
@@ -941,55 +710,6 @@ void SimpleX::create_boundary(){
 
 }
 
-/**** Create periodic boundary around simulation domain ****/
-// Width of the boundary in which periodicity
-// is determined is variable borderBox
-void SimpleX::create_periodic_boundary(){
-
-  unsigned int count = 0;
-
-  //loop over permutations of -1 0 and 1 in 3 dimensions
-  for( short int i=-1; i<=1; i++ ) {
-    for( short int j=-1; j<=1; j++ ) {
-      for( short int k=-1; k<=1; k++ ) {
-        for( unsigned int v = 0; v < numSites; v++ ) {
-          //exclude the case i=j=k=0, that's the simulation domain itself
-          if( (i||j||k) &&
-            ( vertices[v].get_x() + 1.0*i ) >= -borderBox && ( vertices[v].get_x() + 1.0*i ) <= ( 1.0 + borderBox ) &&
-            ( vertices[v].get_y() + 1.0*j ) >= -borderBox && ( vertices[v].get_y() + 1.0*j ) <= ( 1.0 + borderBox ) &&
-            ( vertices[v].get_z() + 1.0*k ) >= -borderBox && ( vertices[v].get_z() + 1.0*k ) <= ( 1.0 + borderBox ) ){
-
-            Vertex tempVert;
-            tempVert = vertices[v];
-
-            tempVert.set_x( vertices[v].get_x() + 1.0*i );       
-            tempVert.set_y( vertices[v].get_y() + 1.0*j );       
-            tempVert.set_z( vertices[v].get_z() + 1.0*k );       
-
-            //make sure the vertex id is not 0!
-            tempVert.set_border( vertices[v].get_vertex_id() + 1 );
-
-            tempVert.set_vertex_id( numSites + count );
-
-            vertices.push_back(tempVert);
-
-            count++;
-          }     
-
-        }
-      }
-    }
-  }
-
-  //set the correct vertex_id_max
-  vertex_id_max = numSites + count;
-  numSites += count;
-
-  if( COMM_RANK == 0 ){
-    simpleXlog << "  Created periodic boundary around unity domain" << endl;
-  }
-
-}
 
 
 /****  Create octree of vertices  ****/
@@ -1001,7 +721,9 @@ void SimpleX::create_vertex_tree(){
   vert_tree.delete_octree();
 
   //number of subboxes in one dimension
-  unsigned int hilbert_resolution = pow( 2, hilbert_order );
+  unsigned int base = 2;
+  int power = (int) hilbert_order;
+  unsigned int hilbert_resolution = pow( base, power );
   //tree size is 4*number of subboxes (in one dimension) to make search for boundary vertices most efficient
   unsigned int tree_size = 4*hilbert_resolution;
 
@@ -1010,7 +732,7 @@ void SimpleX::create_vertex_tree(){
   vert_tree.init_octree( tree_size, temp_borderBox );
 
   //put the vertices in the tree
-  for( unsigned long long int i=0; i<vertices.size(); i++ ){
+  for( unsigned long int i=0; i<vertices.size(); i++ ){
     Vertex temp = vertices[i];
     //it is essential that the vertex_id of the vertex in teh tree points
     //to the place in the vertices vector, which is not the case after
@@ -1047,7 +769,7 @@ void SimpleX::decompose_domain(){
   dom_dec.resize(number_of_subboxes);
 
   //work load is approximately equal for every site, so divide approx equal number of points over procs
-  unsigned int numSites_per_proc = unsigned( ceil(  (double) vertices.size()/(COMM_SIZE)  ));
+  unsigned int numSites_per_proc = unsigned( ceil( (double) vertices.size()/(COMM_SIZE) ));
 
   //current proc
   unsigned int proc = 0;
@@ -1061,7 +783,7 @@ void SimpleX::decompose_domain(){
     //coordinates of the hilbert cell
     unsigned long long int coord[dimension];
     //hilbert number (place on hilbert curve)
-    unsigned long long r = (unsigned long long) i;
+    unsigned long r = (unsigned long) i;
 
     //find coordinates of subbox number r
     hilbert_i2c( dimension, hilbert_order, r, coord );
@@ -1097,7 +819,7 @@ void SimpleX::decompose_domain(){
       proc++;
       //if this is already the last proc, stay on this proc
       if( proc >= COMM_SIZE ){
-        proc = COMM_SIZE - 1;
+	proc = COMM_SIZE - 1;
       }
     }  
 
@@ -1147,7 +869,7 @@ void SimpleX::assign_process(){
     //coordinates of the hilbert cell
     unsigned long long int coord[dimension];
     //hilbert number (place on hilbert curve)
-    unsigned long long r = (unsigned long long) i;
+    unsigned long r = (unsigned long) i;
 
     //find coordinates of subbox number r
     hilbert_i2c( dimension, hilbert_order, r, coord );
@@ -1172,10 +894,10 @@ void SimpleX::assign_process(){
     //assign all vertices in this subbox to this proc
     for( vector< unsigned long long int >::iterator it=in_box.begin(); it!=in_box.end(); it++ ){
       if( *it > vertices.size() ){
-        cerr << " in_box gives: " << *it << " number of vertices: " << vertices.size() << endl;
-        MPI::COMM_WORLD.Abort( -1 );
+	cerr << " in_box gives: " << *it << " number of vertices: " << vertices.size() << endl;
+	MPI::COMM_WORLD.Abort( -1 );
       }else{
-        vertices[ *it ].set_process( dom_dec[i] ); 
+	vertices[ *it ].set_process( dom_dec[i] ); 
       }
     }
 
@@ -1226,16 +948,14 @@ bool SimpleX::inDomain(const float& x, const float& y, const float& z, const uns
   }
 
   return in_domain;
-
 }
+
 
 /****  Compute triangulation  ****/
 //compute triangulation of every subbox separately and check whether the
 //triangulation is valid, i.e. whether the boundaries around the subbox
 //are sufficiently large
 void SimpleX::compute_triangulation(){
-
-
 
 
   // ---------- define subboxes  ---------------//
@@ -1268,7 +988,7 @@ void SimpleX::compute_triangulation(){
   start_number -= subboxes_on_proc-1;
 
   //hilbert number of subbox
-  unsigned long long this_subbox = (unsigned long long) start_number;
+  unsigned long this_subbox = (unsigned long) start_number;
 
   simplices.clear();
 
@@ -1328,19 +1048,15 @@ void SimpleX::compute_triangulation(){
       //check whether there's enough points in subbox to do triangulation.
       unsigned int in_subbox = 0;
       for( unsigned int q=0; q<in_box.size(); q++){
-        if( !vertices[ in_box[q] ].get_border() ){
-          in_subbox++;
-        }
+	if( !vertices[ in_box[q] ].get_border() ){
+	  in_subbox++;
+	}
       }
-
-      // cerr << " (" << COMM_RANK << ") Subbox " << i << " contains " << in_subbox << " points" << endl
-      // 	   << " Coordinates: (" << x_min << "," << x_max << ") (" << y_min << "," << y_max << ") (" << z_min << "," << z_max << ")";
-
       //change the abort to extension of the borders!
       //if( in_box.size() <= (unsigned int) dimension ){ 
       if( in_subbox <= (unsigned int) dimension ){ 
-        cerr << "Too few points in subbox " << i << " to do tessellation." << endl;
-        MPI::COMM_WORLD.Abort( -1 );
+	cerr << "Too few points in subbox to do tessellation." << endl;
+	MPI::COMM_WORLD.Abort( -1 );
       }
 
       //minimum and maximum coordinates of subbox without the boundary
@@ -1349,16 +1065,16 @@ void SimpleX::compute_triangulation(){
       double x_min_subbox_check = (double) coord[0]/hilbert_resolution;
       //if x_min is equal to or smaller than 0.0, take into account outer boundary
       if( x_min_subbox <= 0.0 ){
-        x_min_subbox = x_min ; 
-        x_min_subbox_check = 0.0;
+	x_min_subbox = x_min ; 
+	x_min_subbox_check = 0.0;
       }
       //maximum x-coordinate of subbox for check
       double x_max_subbox = (double) coord[0]/hilbert_resolution + subbox_width;
       double x_max_subbox_check = (double) coord[0]/hilbert_resolution + subbox_width;
       //if x_max is larger than or equal to 1.0, it's in the outer boundary, so take into account
       if( x_max_subbox >= 1.0 ){
-        x_max_subbox = x_max;
-        x_max_subbox_check = 1.0;
+	x_max_subbox = x_max;
+	x_max_subbox_check = 1.0;
       }
 
       //minimum y-coordinate of the subbox for check
@@ -1366,16 +1082,16 @@ void SimpleX::compute_triangulation(){
       double y_min_subbox_check = (double) coord[1]/hilbert_resolution;
       //if y_min is equal to or smaller than 0.0, take into account outer boundary
       if( y_min_subbox <= 0.0 ){
-        y_min_subbox = y_min;
-        y_min_subbox_check = 0.0;;
+	y_min_subbox = y_min;
+	y_min_subbox_check = 0.0;;
       }
       //maximum y-coordinate of subbox for check
       double y_max_subbox = (double) coord[1]/hilbert_resolution + subbox_width;
       double y_max_subbox_check = (double) coord[1]/hilbert_resolution + subbox_width;
       //if y_max is larger than or equal to 1.0, it's in the outer boundary, so take into account
       if( y_max_subbox >= 1.0 ){
-        y_max_subbox = y_max;
-        y_max_subbox_check = 1.0;
+	y_max_subbox = y_max;
+	y_max_subbox_check = 1.0;
       }
 
       //minimum z-coordinate of the subbox for check
@@ -1383,16 +1099,16 @@ void SimpleX::compute_triangulation(){
       double z_min_subbox = (double) coord[2]/hilbert_resolution;
       double z_min_subbox_check = (double) coord[2]/hilbert_resolution;
       if( z_min_subbox <= 0.0 ){
-        z_min_subbox = z_min;
-        z_min_subbox_check = 0.0;
+	z_min_subbox = z_min;
+	z_min_subbox_check = 0.0;
       }
       //maximum z-coordinate of subbox for check
       double z_max_subbox = (double) coord[2]/hilbert_resolution + subbox_width;
       double z_max_subbox_check = (double) coord[2]/hilbert_resolution + subbox_width;
-     //if z_max is larger than or equal to 1.0, it's in the outer boundary, so take into account
+      //if z_max is larger than or equal to 1.0, it's in the outer boundary, so take into account
       if( z_max_subbox >= 1.0 ){
-        z_max_subbox = z_max;
-        z_max_subbox_check = 1.0;
+	z_max_subbox = z_max;
+	z_max_subbox_check = 1.0;
       }
 
       // ---------- triangulate this subbox  ---------------//
@@ -1415,12 +1131,13 @@ void SimpleX::compute_triangulation(){
 
       //fill arrays with coordinates and id's
       for( unsigned int q=0; q<in_box.size(); q++ ){
-        //id's
-        idList[q]=q;
-        //coordinates
-        pt_array[q*dimension]   = vertices[ in_box[q] ].get_x();
-        pt_array[q*dimension+1] = vertices[ in_box[q] ].get_y();
-        pt_array[q*dimension+2] = vertices[ in_box[q] ].get_z();
+	//id's
+	idList[q]=q;
+	//coordinates
+	pt_array[q*dimension]   = vertices[ in_box[q] ].get_x();
+	pt_array[q*dimension+1] = vertices[ in_box[q] ].get_y();
+	pt_array[q*dimension+2] = vertices[ in_box[q] ].get_z();
+
       }
 
       //assume for now the triangulation will be correct, check will follow
@@ -1428,286 +1145,263 @@ void SimpleX::compute_triangulation(){
 
       //call to qhull to do triangulation
       if (!qh_new_qhull(dimension, in_box.size(), pt_array, ismalloc, flags, NULL, errfile)) {
-        //loop over all facets
-        FORALLfacets {
-          if (!facet->upperdelaunay) {
+	//loop over all facets
+	FORALLfacets {
+	  if (!facet->upperdelaunay) {
 
-            //store the simplex in simplices vector
-            unsigned int r=0;
-            Simpl tempSimpl;
-            tempSimpl.set_volume( qh_facetarea(facet) );
+	    //store the simplex in simplices vector
+	    unsigned int r=0;
+	    Simpl tempSimpl;
+	    tempSimpl.set_volume( qh_facetarea(facet) );
 
-            FOREACHvertex_ (facet->vertices) {
-              //store the indices of each simplex
-              ids[r++]=idList[qh_pointid(vertex->point)];
-            }//for each facet
+	    FOREACHvertex_ (facet->vertices) {
+	      //store the indices of each simplex
+	      ids[r++]=idList[qh_pointid(vertex->point)];
+	    }//for each facet
 
-            tempSimpl.set_id1( in_box[ ids[0] ] );
-            tempSimpl.set_id2( in_box[ ids[1] ] );
-            tempSimpl.set_id3( in_box[ ids[2] ] );
-            tempSimpl.set_id4( in_box[ ids[3] ] );
-
-
-      // ---------- check if simplex is in this subbox  ---------------//
+	    tempSimpl.set_id1( in_box[ ids[0] ] );
+	    tempSimpl.set_id2( in_box[ ids[1] ] );
+	    tempSimpl.set_id3( in_box[ ids[2] ] );
+	    tempSimpl.set_id4( in_box[ ids[3] ] );
 
 
-            //coordinates of tetrahedron, to be used to calculate circumsphere
-            double xTet[4][3];
-
-            //store the coordinates of the 4 vertices that make 
-            //up this simplex in xTet
-            for(short int p=0; p<dimension+1; p++) {
-              xTet[p][0] = (double) vertices[ in_box[ids[p]] ].get_x();
-              xTet[p][1] = (double) vertices[ in_box[ids[p]] ].get_y();
-              xTet[p][2] = (double) vertices[ in_box[ids[p]] ].get_z();
-            }
-
-            //coordinates of the centre of the circumsphere
-            double xCC, yCC, zCC;
-
-            //calculate the centers of the circumsphere
-            CalcCircumCenter(xTet, xCC, yCC, zCC);
-
-      //check if the centre of the circumsphere is inside this subbox
-      //in that case, the simplex belongs to this subbox and will be
-      //added to the list of simplices. The boundary around the unity domain 
-      //has to be take into account, while the subbox boundaries inside the 
-      //domain have to be discarded
-
-            bool xOK=0;
-            bool yOK=0;
-            bool zOK=0;
+	    // ---------- check if simplex is in this subbox  ---------------//
 
 
-           //check whether centre of circumsphere is inside the boundaries defined above
-            if( xCC >= (x_min_subbox) && xCC < (x_max_subbox) ){
-              xOK = 1;
-            }
-            if( yCC >= (y_min_subbox) && yCC < (y_max_subbox) ){
-              yOK = 1;
-            }
-            if( zCC >= (z_min_subbox) && zCC < (z_max_subbox) ){
-              zOK = 1;
-            }
+	    //coordinates of tetrahedron, to be used to calculate circumsphere
+	    double xTet[4][3];
 
-            //if all coordinates are inside subbox, add simplex to list if it's not in boundary
-            if( xOK && yOK && zOK){
+	    //store the coordinates of the 4 vertices that make 
+	    //up this simplex in xTet
+	    for(short int p=0; p<dimension+1; p++) {
+	      xTet[p][0] = (double) vertices[ in_box[ids[p]] ].get_x();
+	      xTet[p][1] = (double) vertices[ in_box[ids[p]] ].get_y();
+	      xTet[p][2] = (double) vertices[ in_box[ids[p]] ].get_z();
+	    }
 
-              //exclude simplices that are entirely inside the boundary
-              if( !vertices[ in_box[ids[0]] ].get_border() || !vertices[ in_box[ids[1]] ].get_border() ||
-              !vertices[ in_box[ids[2]] ].get_border() || !vertices[ in_box[ids[3]] ].get_border() ){
+	    //coordinates of the centre of the circumsphere
+	    double xCC, yCC, zCC;
 
-                //add simplex to list
-                simplices_subbox.push_back(tempSimpl);
+	    //calculate the centers of the circumsphere
+	    CalcCircumCenter(xTet, xCC, yCC, zCC);
 
-              } //if one vertex not in border
+	    //check if the centre of the circumsphere is inside this subbox
+	    //in that case, the simplex belongs to this subbox and will be
+	    //added to the list of simplices. The boundary around the unity domain 
+	    //has to be take into account, while the subbox boundaries inside the 
+	    //domain have to be discarded
 
-            }else{ 
-
-        //if simplex is not in subbox it might have to be taken into account if
-        //the simplex is on another proc, but only if it has not already been added
-        //by another subbox on this proc
+	    bool xOK=0;
+	    bool yOK=0;
+	    bool zOK=0;
 
 
-        //determine subbox the simplex is in, by calculating the hilbert number 
-        //of the subbox the circumcentre of this simplex is in
+	    //check whether centre of circumsphere is inside the boundaries defined above
+	    if( xCC >= (x_min_subbox) && xCC < (x_max_subbox) ){
+	      xOK = 1;
+	    }
+	    if( yCC >= (y_min_subbox) && yCC < (y_max_subbox) ){
+	      yOK = 1;
+	    }
+	    if( zCC >= (z_min_subbox) && zCC < (z_max_subbox) ){
+	      zOK = 1;
+	    }
 
-              //first find the hilbert coordinates of the circumcentre of the simplex
-              int x_hilbert = (int) floor(xCC*hilbert_resolution);
-              if( x_hilbert < 0 ){
-                x_hilbert = 0;
-              }else if( x_hilbert >= (int) hilbert_resolution ){
-                x_hilbert = hilbert_resolution - 1;
-              }
-              int y_hilbert = (int) floor(yCC*hilbert_resolution); 
-              if( y_hilbert < 0 ){
-                y_hilbert = 0;
-              }else if( y_hilbert >= (int) hilbert_resolution ){
-                y_hilbert = hilbert_resolution - 1;
-              }
-              int z_hilbert = (int) floor(zCC*hilbert_resolution);
-              if( z_hilbert < 0 ){
-                z_hilbert = 0;
-              }else if( z_hilbert >= (int) hilbert_resolution ){
-                z_hilbert = hilbert_resolution - 1;
-              }
+	    //if all coordinates are inside subbox, add simplex to list if it's not in boundary
+	    if( xOK && yOK && zOK){
 
-              unsigned long long int coord_CC[dimension];
-              coord_CC[0] = (unsigned long long) x_hilbert;
-              coord_CC[1] = (unsigned long long) y_hilbert;
-              coord_CC[2] = (unsigned long long) z_hilbert;
+	      //exclude simplices that are entirely inside the boundary
+	      if( !vertices[ in_box[ids[0]] ].get_border() || !vertices[ in_box[ids[1]] ].get_border() ||
+		  !vertices[ in_box[ids[2]] ].get_border() || !vertices[ in_box[ids[3]] ].get_border() ){
 
-              //determine the hilbert number of the subbox the circumcentre is in
-              unsigned long long r_CC = hilbert_c2i( dimension, hilbert_order, coord_CC );
+		//add simplex to list
+		simplices_subbox.push_back(tempSimpl);
 
-              //if this simplex belongs to other proc, determine the lowest hilbert number
-              //of the vertices that are on this proc
-              if( dom_dec[ r_CC ] != COMM_RANK ){
+	      } //if one vertex not in border
 
-                short int hilbert_number[dimension+1];
-    //calculate the hilbert number of subboxes the vertices that live on this proc are in
-                for(short int p=0; p<dimension+1; p++) {
-      //the vertex should be on this proc
-                  if( vertices[ in_box[ids[p]] ].get_process() == COMM_RANK ){
+	    }else{ 
 
-        //calculate coordinates in units of the hilbert resolution
-                    int x_vert = (int) floor( vertices[ in_box[ids[p]] ].get_x()*hilbert_resolution);
-                    if( x_vert < 0 ){
-                      x_vert = 0;
-                    }else if( x_vert >= (int) hilbert_resolution ){
-                      x_vert = hilbert_resolution - 1;
-                    }
-                    int y_vert = (int) floor( vertices[ in_box[ids[p]] ].get_y()*hilbert_resolution);
-                    if( y_vert < 0 ){
-                      y_vert = 0;
-                    }else if( y_vert >= (int) hilbert_resolution ){
-                      y_vert = hilbert_resolution - 1;
-                    }
-                    int z_vert = (int) floor( vertices[ in_box[ids[p]] ].get_z()*hilbert_resolution);
-                    if( z_vert < 0 ){
-                      z_vert = 0;
-                    }else if( z_vert >= (int) hilbert_resolution ){
-                      z_vert = hilbert_resolution - 1;
-                    }
-
-                    unsigned long long int coord_vert[dimension];
-                    coord_vert[0] = (unsigned long long) x_vert;
-                    coord_vert[1] = (unsigned long long) y_vert;
-                    coord_vert[2] = (unsigned long long) z_vert;
-
-        //calculate the hilbert number of the subbox the vertex is in
-                    unsigned long long r_vert = hilbert_c2i( dimension, hilbert_order, coord_vert );
-
-                    //store the hilbert number
-                    hilbert_number[p] = r_vert;
-
-                  }else{
-                    //if the vertex is not on this proc, it shouldn't be the minimum
-                    hilbert_number[p] = number_of_subboxes+1;
-                  }
-
-                }//for all vertices in this simplex
-
-                //determine the minimum hilbert number of vertices on this proc
-                unsigned int min = *min_element( hilbert_number, hilbert_number + 4);
+	      //if simplex is not in subbox it might have to be taken into account if
+	      //the simplex is on another proc, but only if it has not already been added
+	      //by another subbox on this proc
 
 
-                //if this subbox has the lowest hilbert number that contains a vertex on this
-                //proc, include the simplex 
-                if( min == this_subbox ){
-                 //exclude simplices that are entirely inside the boundary
-                  if( !vertices[ in_box[ids[0]] ].get_border() || !vertices[ in_box[ids[1]] ].get_border() ||
-                  !vertices[ in_box[ids[2]] ].get_border() || !vertices[ in_box[ids[3]] ].get_border() ){
+	      //determine subbox the simplex is in, by calculating the hilbert number 
+	      //of the subbox the circumcentre of this simplex is in
 
-                    simplices_subbox.push_back(tempSimpl);
-                  }
-                }
+	      //first find the hilbert coordinates of the circumcentre of the simplex
+	      int x_hilbert = (int) floor(xCC*hilbert_resolution);
+	      if( x_hilbert < 0 ){
+		x_hilbert = 0;
+	      }else if( x_hilbert >= (int) hilbert_resolution ){
+		x_hilbert = hilbert_resolution - 1;
+	      }
+	      int y_hilbert = (int) floor(yCC*hilbert_resolution); 
+	      if( y_hilbert < 0 ){
+		y_hilbert = 0;
+	      }else if( y_hilbert >= (int) hilbert_resolution ){
+		y_hilbert = hilbert_resolution - 1;
+	      }
+	      int z_hilbert = (int) floor(zCC*hilbert_resolution);
+	      if( z_hilbert < 0 ){
+		z_hilbert = 0;
+	      }else if( z_hilbert >= (int) hilbert_resolution ){
+		z_hilbert = hilbert_resolution - 1;
+	      }
 
-              }//if simplex not on this proc
+	      unsigned long long int coord_CC[dimension];
+	      coord_CC[0] = (unsigned long) x_hilbert;
+	      coord_CC[1] = (unsigned long) y_hilbert;
+	      coord_CC[2] = (unsigned long) z_hilbert;
 
-            }//if simplex in this subbox
+	      //determine the hilbert number of the subbox the circumcentre is in
+	      unsigned long long r_CC = hilbert_c2i( dimension, hilbert_order, coord_CC );
 
-      //check if boundary is sufficiently large
-      //if at least one of the vertices is in subbox, check the boundary
-            bool vertex_in_subbox = 0;
-            for(short int p=0; !vertex_in_subbox && p<dimension+1; p++) {
+	      //if this simplex belongs to other proc, determine the lowest hilbert number
+	      //of the vertices that are on this proc
+	      if( dom_dec[ r_CC ] != COMM_RANK ){
 
-              bool x_in = 0;
-              bool y_in = 0;
-              bool z_in = 0;
+		short int hilbert_number[dimension+1];
+		//calculate the hilbert number of subboxes the vertices that live on this proc are in
+		for(short int p=0; p<dimension+1; p++) {
+		  //the vertex should be on this proc
+		  if( vertices[ in_box[ids[p]] ].get_process() == COMM_RANK ){
 
-        //check whether vertex coordinates are inside the subbox
-              if( xTet[p][0] >= (x_min_subbox_check) && xTet[p][0] < (x_max_subbox_check) ){
-                x_in = 1;
-              }
-              if( xTet[p][1] >= (y_min_subbox_check) && xTet[p][1] < (y_max_subbox_check) ){
-                y_in = 1;
-              }
-              if( xTet[p][2] >= (z_min_subbox_check) && xTet[p][2] < (z_max_subbox_check) ){
-                z_in = 1;
-              }
+		    //calculate coordinates in units of the hilbert resolution
+		    int x_vert = (int) floor( vertices[ in_box[ids[p]] ].get_x()*hilbert_resolution);
+		    if( x_vert < 0 ){
+		      x_vert = 0;
+		    }else if( x_vert >= (int) hilbert_resolution ){
+		      x_vert = hilbert_resolution - 1;
+		    }
+		    int y_vert = (int) floor( vertices[ in_box[ids[p]] ].get_y()*hilbert_resolution);
+		    if( y_vert < 0 ){
+		      y_vert = 0;
+		    }else if( y_vert >= (int) hilbert_resolution ){
+		      y_vert = hilbert_resolution - 1;
+		    }
+		    int z_vert = (int) floor( vertices[ in_box[ids[p]] ].get_z()*hilbert_resolution);
+		    if( z_vert < 0 ){
+		      z_vert = 0;
+		    }else if( z_vert >= (int) hilbert_resolution ){
+		      z_vert = hilbert_resolution - 1;
+		    }
 
-              if( x_in && y_in && z_in ){
-                vertex_in_subbox = 1;
-              }
-            }
+		    unsigned long long int coord_vert[dimension];
+		    coord_vert[0] = (unsigned long) x_vert;
+		    coord_vert[1] = (unsigned long) y_vert;
+		    coord_vert[2] = (unsigned long) z_vert;
 
-      //if one of the vertices is inside the subbox, check the boundary
-            if(vertex_in_subbox){
-    // ---------- check whether the boundaries are sufficiently large ---------------//
+		    //calculate the hilbert number of the subbox the vertex is in
+		    unsigned long r_vert = hilbert_c2i( dimension, hilbert_order, coord_vert );
 
-    //calculate the radius of the circumsphere
-              double radiusCC = sqrt( pow( xCC - (double) vertices[ in_box[ ids[0] ] ].get_x(), 2) +
-                pow( yCC - (double) vertices[ in_box[ ids[0] ] ].get_y(), 2) + 
-                pow( zCC - (double) vertices[ in_box[ ids[0] ] ].get_z(), 2) );
+		    //store the hilbert number
+		    hilbert_number[p] = r_vert;
 
-    //the radius of the circumsphere should be inside the boundaries on all sides
-    //if not, extend x_min and x_max
-			  
-			  if( (xCC - radiusCC) < x_min ){
-                x_min = xCC - (1.001 * radiusCC);
-                correct = 0;
-              }
-              if( (xCC + radiusCC) > x_max ){
-                x_max = xCC + (1.001 * radiusCC);
-                correct = 0;
-              }
-              if( (yCC - radiusCC) < y_min ){
-                y_min = yCC - (1.001 * radiusCC);
-                correct = 0;
-              }
-              if( (yCC + radiusCC) > y_max ){
-                y_max = yCC + (1.001 * radiusCC);
-                correct = 0;
-              }
-              if( (zCC - radiusCC) < z_min ){
-                z_min = zCC - (1.001 * radiusCC);
-                correct = 0;
-              }
-              if( (zCC + radiusCC) > z_max ){
-                z_max = zCC + (1.001 * radiusCC);
-                correct = 0;
-              }
+		  }else{
+		    //if the vertex is not on this proc, it shouldn't be the minimum
+		    hilbert_number[p] = number_of_subboxes+1;
+		  }
 
-              if( x_min < (0.0 - borderBox) || x_max > (1.0 + borderBox) || 
-                y_min < (0.0 - borderBox) || y_max > (1.0 + borderBox) || 
-              z_min < (0.0 - borderBox) || z_max > (1.0 + borderBox) ){
+		}//for all vertices in this simplex
 
-      // cerr << " (" << COMM_RANK << ") Simplex: (" 
-      //      << vertices[ in_box[ids[0]] ].get_x() << "," 
-      //      << vertices[ in_box[ids[0]] ].get_y() << "," 
-      //      << vertices[ in_box[ids[0]] ].get_z() << ")" << endl << " (" 
-      //      << vertices[ in_box[ids[1]] ].get_x() << "," 
-      //      << vertices[ in_box[ids[1]] ].get_y() << "," 
-      //      << vertices[ in_box[ids[1]] ].get_z() << ")" << endl << " (" 
-      //      << vertices[ in_box[ids[2]] ].get_x() << "," 
-      //      << vertices[ in_box[ids[2]] ].get_y() << "," 
-      //      << vertices[ in_box[ids[2]] ].get_z() << ")" << endl << " (" 
-      //      << vertices[ in_box[ids[3]] ].get_x() << "," 
-      //      << vertices[ in_box[ids[3]] ].get_y() << "," 
-      //      << vertices[ in_box[ids[3]] ].get_z() << ")" << endl 
-      //      << " r_cc: " << radiusCC << endl;
+		//determine the minimum hilbert number of vertices on this proc
+		unsigned int min = *min_element( hilbert_number, hilbert_number + 4);
 
-      //MPI::COMM_WORLD.Abort(-1);
-              }
 
-            }//if at least one vertex is in subbox
+		//if this subbox has the lowest hilbert number that contains a vertex on this
+		//proc, include the simplex 
+		if( min == this_subbox ){
+		  //exclude simplices that are entirely inside the boundary
+		  if( !vertices[ in_box[ids[0]] ].get_border() || !vertices[ in_box[ids[1]] ].get_border() ||
+		      !vertices[ in_box[ids[2]] ].get_border() || !vertices[ in_box[ids[3]] ].get_border() ){
 
-          }//if upper delaunay
-        }//for all facets
+		    simplices_subbox.push_back(tempSimpl);
+		  }
+		}
+
+	      }//if simplex not on this proc
+
+	    }//if simplex in this subbox
+
+	    //check if boundary is sufficiently large
+	    //if at least one of the vertices is in subbox, check the boundary
+	    bool vertex_in_subbox = 0;
+	    for(short int p=0; !vertex_in_subbox && p<dimension+1; p++) {
+
+	      bool x_in = 0;
+	      bool y_in = 0;
+	      bool z_in = 0;
+
+	      //check whether vertex coordinates are inside the subbox
+	      if( xTet[p][0] >= (x_min_subbox_check) && xTet[p][0] < (x_max_subbox_check) ){
+		x_in = 1;
+	      }
+	      if( xTet[p][1] >= (y_min_subbox_check) && xTet[p][1] < (y_max_subbox_check) ){
+		y_in = 1;
+	      }
+	      if( xTet[p][2] >= (z_min_subbox_check) && xTet[p][2] < (z_max_subbox_check) ){
+		z_in = 1;
+	      }
+
+	      if( x_in && y_in && z_in ){
+		vertex_in_subbox = 1;
+	      }
+	    }
+
+	    //if one of the vertices is inside the subbox, check the boundary
+	    if(vertex_in_subbox){
+	      // ---------- check whether the boundaries are sufficiently large ---------------//
+
+	      //calculate the radius of the circumsphere
+	      double radiusCC = sqrt( pow( xCC - (double) vertices[ in_box[ ids[0] ] ].get_x(), 2) +
+				      pow( yCC - (double) vertices[ in_box[ ids[0] ] ].get_y(), 2) + 
+				      pow( zCC - (double) vertices[ in_box[ ids[0] ] ].get_z(), 2) );
+
+	      //the radius of the circumsphere should be inside the boundaries on all sides
+	      //if not, extend x_min and x_max
+	      if( (xCC - radiusCC) < x_min ){
+		x_min = xCC - 1.001*radiusCC;
+		correct = 0;
+	      }
+	      if( (xCC + radiusCC) > x_max ){
+		x_max = xCC + 1.001*radiusCC;
+		correct = 0;
+	      }
+	      if( (yCC - radiusCC) < y_min ){
+		y_min = yCC - 1.001*radiusCC;
+		correct = 0;
+	      }
+	      if( (yCC + radiusCC) > y_max ){
+		y_max = yCC + 1.001*radiusCC;
+		correct = 0;
+	      }
+	      if( (zCC - radiusCC) < z_min ){
+		z_min = zCC - 1.001*radiusCC;
+		correct = 0;
+	      }
+	      if( (zCC + radiusCC) > z_max ){
+		z_max = zCC + 1.001*radiusCC;
+		correct = 0;
+	      }
+
+	    }//if at least one vertex is in subbox
+
+	  }//if upper delaunay
+	}//for all facets
       }//if no qhull error    
 
 
       //check if boundaries aren't outside domain
       if( x_min < (0.0 - borderBox) || x_max > (1.0 + borderBox) || 
-        y_min < (0.0 - borderBox) || y_max > (1.0 + borderBox) || 
-      z_min < (0.0 - borderBox) || z_max > (1.0 + borderBox) ){
+          y_min < (0.0 - borderBox) || y_max > (1.0 + borderBox) || 
+	  z_min < (0.0 - borderBox) || z_max > (1.0 + borderBox) ){
 
-        cerr << endl << "  (" << COMM_RANK << ") Boundary chosen around unity domain does not contain enough points, exiting" << endl;
-        cerr << "  (" << COMM_RANK << ")   box: (" << x_min << ", " << x_max << ")  (" 
-          << y_min << ", " << y_max << ")  (" << z_min << ", " << z_max << ")" << endl;
+	cerr << endl << "  (" << COMM_RANK << ") Boundary chosen around unity domain does not contain enough points, exiting" << endl;
+	cerr << "  (" << COMM_RANK << ")   box: (" << x_min << ", " << x_max << ")  (" 
+	     << y_min << ", " << y_max << ")  (" << z_min << ", " << z_max << ")" << endl;
 
-        MPI::COMM_WORLD.Abort( -1 );
+	MPI::COMM_WORLD.Abort( -1 );
 
       }
 
@@ -1717,24 +1411,24 @@ void SimpleX::compute_triangulation(){
       //free short memory and memory allocator
       qh_memfreeshort (&curlong, &totlong);
       if (curlong || totlong) {
-        fprintf(errfile, "QHull: did not free %d bytes of long memory (%d pieces)", totlong, curlong);
+	fprintf(errfile, "QHull: did not free %d bytes of long memory (%d pieces)", totlong, curlong);
       }
 
       //free dynamically allocated arrays
       if(pt_array) {
-        delete [] pt_array;
-        pt_array=NULL;
+	delete [] pt_array;
+	pt_array=NULL;
       }
 
       if(idList) {
-        delete [] idList;
-        idList=NULL;
+	delete [] idList;
+	idList=NULL;
       }
 
-      if(!correct){
-        cerr << " (" << COMM_RANK << ") Subbox " << i << " boundaries too small, retriangulating with subbox: (" << x_min << "," << x_max << ") (" 
-          << y_min << "," << y_max << ") (" << z_min << "," << z_max << ")" << endl;
-      }
+      // if(!correct){
+      //   cerr << " (" << COMM_RANK << ") Subbox " << i << " boundaries too small, retriangulating with subbox: (" << x_min << "," << x_max << ") (" 
+      //     << y_min << "," << y_max << ") (" << z_min << "," << z_max << ")" << endl;
+      // }
 
     }//while triangulation is not correct
 
@@ -1756,6 +1450,9 @@ void SimpleX::compute_triangulation(){
 /****  Create the sites array  ****/
 //create a list of sites from the list of simplices that was created 
 //during the triangulation stage
+//since we count every site_index once. This is possible since duplicate
+//sites outside the simulation domain point with their site_index to 
+//the site that is in the simulation domain
 void SimpleX::create_sites(){
 
   //make sure the sites vector is empty before filling it
@@ -1769,7 +1466,7 @@ void SimpleX::create_sites(){
   //temporary Site structure
   Site tempSite;
 
-    //loop over all simplices to extract the sites
+  //loop over all simplices to extract the sites
   for( vector< Simpl >::iterator it=simplices.begin(); it!=simplices.end(); it++ ){
 
     //id's of the vertices, place in vertices vector
@@ -1837,28 +1534,13 @@ void SimpleX::create_sites(){
   MPI::COMM_WORLD.Allreduce( &local_numSites, &numSites, 1, MPI::UNSIGNED, MPI::SUM );
 
   if( COMM_RANK == 0 ){
-    cerr << " (" << COMM_RANK << ") Number of sites in triangulation is " << numSites << endl;
+    //cerr << " (" << COMM_RANK << ") Number of sites in triangulation is " << numSites << endl;
     simpleXlog << "  Final triangulation contains " << numSites << " sites " << endl;
   }
 
-//   if( COMM_RANK == 0 ){
-//     cerr << " (" << COMM_RANK << ") Number of simplices in triangulation is " << simplices.size() << endl;
-//   }
-
-  //if periodic boundaries are applied, keep track of the site id of the corresponding vertex
-  //do this only for sites on the same proc, others are kept for communication
-  // if(periodic){
-  //   for(SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
-  //     if(it->get_border()){
-  // 	unsigned int vert_id = it->get_border() - 1;
-  // 	if( vert_id < sites.size() ){
-  // 	  if(it->get_process() == sites[ indices[ vert_id ] ].get_process()){
-  // 	    it->set_border( indices[ vert_id ] + 1 );
-  // 	  }
-  // 	}
-  //     }
+  //   if( COMM_RANK == 0 ){
+  //     cerr << " (" << COMM_RANK << ") Number of simplices in triangulation is " << simplices.size() << endl;
   //   }
-  // }
 
   //vertices vector no longer needed
   vertices.clear();
@@ -1874,376 +1556,25 @@ void SimpleX::create_sites(){
 
 }
 
-/****  Remove periodic boundary sites  ****/
-void SimpleX::remove_periodic_sites(){
-  
-  //if multiple procs are used, use periodic sites to communicate between procs
-  if(COMM_SIZE > 1){
-
-    //store the boundaries of the domains
-    vector< vector<double> > dom_bounds( dom_dec.size(), vector<double>(6,0.0) );
-
-    //hilbert resolution is the number of cells in one direction
-    unsigned int hilbert_resolution = pow( 2, hilbert_order );
-
-    //width of the subbox is 1/number of cells in one dimension
-    double subbox_width = 1.0/hilbert_resolution;
-
-    //loop over all subboxes
-    for( unsigned int i=0; i<dom_dec.size(); i++ ){
-
-      //coordinates of the hilbert cell
-      unsigned long long int coord[dimension];
-      //hilbert number (place on hilbert curve)
-      unsigned long long r = (unsigned long long) i;
-
-      //find coordinates of subbox number r
-      hilbert_i2c( dimension, hilbert_order, r, coord );
-
-      //calculate minimum and maximum coordinates of subbox and boundary around it
-      //minimum coordinates of subbox should not be bigger than boundary around unity domain
-      double x_min = ( coord[0] == 0 ) ? 0.0  : (double) coord[0]/hilbert_resolution;
-      double x_max = ( (double) coord[0]/hilbert_resolution + subbox_width  >= 1.0  ) ? 
-        1.0  : (double) coord[0]/hilbert_resolution + subbox_width;
-
-      double y_min = ( coord[1] == 0 ) ? 0.0 : (double) coord[1]/hilbert_resolution;
-      double y_max = ( (double) coord[1]/hilbert_resolution + subbox_width  >= 1.0  ) ? 
-        1.0  : (double) coord[1]/hilbert_resolution + subbox_width;
-
-      double z_min = ( coord[2] == 0 ) ? 0.0  : (double) coord[2]/hilbert_resolution;
-      double z_max = ( (double) coord[2]/hilbert_resolution + subbox_width  >= 1.0  ) ? 
-        1.0  : (double) coord[2]/hilbert_resolution + subbox_width;
-
-      dom_bounds[i][0] = x_min;
-      dom_bounds[i][1] = x_max;
-      dom_bounds[i][2] = y_min;
-      dom_bounds[i][3] = y_max;
-      dom_bounds[i][4] = z_min;
-      dom_bounds[i][5] = z_max;
-
-    }
-
-    //point sites on other proc towards correct process
-    unsigned int border_point = 0;
-    unsigned int total_border_points = 0;
-    for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-      if( it->get_border() ){
-      //if( it->get_border() && it->get_process() == COMM_RANK){
-        //do reverse permutations
-        for( short int i=-1; i<=1; i++ ) {
-          for( short int j=-1; j<=1; j++ ) {
-            for( short int k=-1; k<=1; k++ ) {
-              if( (i||j||k) &&
-                ( it->get_x() + 1.0*i ) >= 0.0 && ( it->get_x() + 1.0*i ) <= 1.0  &&
-                ( it->get_y() + 1.0*j ) >= 0.0 && ( it->get_y() + 1.0*j ) <= 1.0  &&
-                ( it->get_z() + 1.0*k ) >= 0.0 && ( it->get_z() + 1.0*k ) <= 1.0 ){
-
-                double x = it->get_x() + 1.0*i;
-                double y = it->get_y() + 1.0*j;
-                double z = it->get_z() + 1.0*k;
-
-                //determine process
-                unsigned int process = COMM_SIZE;
-                int found = 0;
-                for(unsigned int p=0; p<dom_dec.size(); p++){
-                  if( x >= dom_bounds[p][0] && x < dom_bounds[p][1] &&
-                      y >= dom_bounds[p][2] && y < dom_bounds[p][3] &&
-                      z >= dom_bounds[p][4] && z < dom_bounds[p][5] ){
-
-                    process = dom_dec[p];
-                    found++;
-                  }
-                }
-
-                //check if found
-                if(process == COMM_SIZE){
-                  cerr << " (" << COMM_RANK << ") Error in assignment of periodic sites to processes!" << endl;
-                  MPI::COMM_WORLD.Abort(-1);
-                }
-
-                if(found > 1){
-                  cerr << " (" << COMM_RANK << ") Error in assignment of periodic sites to processes, found multiple processes!" << endl;
-                  MPI::COMM_WORLD.Abort(-1);
-                }
-
-                //if(process != it->get_process() ){
-                if(process != COMM_RANK){
-                  it->set_vertex_id( it->get_border() - 1 );
-                  it->set_border( 0 );
-                  it->set_process( process );
-
-                  border_point++;
-                }
-
-                total_border_points++;
-
-              } //if    
-            }//k
-          }//j
-        }//i
-
-      }//if in border
-    }//for all sites
-
-    cerr << " (" << COMM_RANK << ") number of border points that changed process: " << border_point << " out of " << total_border_points << endl;
-
-    dom_bounds.clear();
-  }
-  
-  //it could be that sites from other proc are twice in the list, so remove double sites
-  
-  //set current site id
-  unsigned int i=0;
-  for(SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++, i++){
-    it->set_site_id(i);
-  }
-    
-  //sort on vertex id
-  //sort the sites on vertex id
-  sort( sites.begin(), sites.end(), compare_vertex_id_site );
-
-  //vector to keep track of the indices
-  vector<unsigned long long int> indices( sites.size(), 0 );
-
-  //store the new place of the sites in the indices array at the place of their 
-  //former index
-  for( unsigned long long int i=0; i<sites.size(); i++ ){
-    indices[ sites[i].get_site_id() ] = i;
-  }
-  
-  vector<Site> temp_sites = sites;
-  sites.clear();
-  
-  //make sure the first site is accepted
-  unsigned int vert_id = sites[0].get_vertex_id()+1;
-  //number of rejected sites
-  unsigned int rejected = 0;
-  
-  //vector to keep track of the indices
-  vector<unsigned long long int> indices2( temp_sites.size(), 0 );
-  
-  i=0;
-  unsigned int j=0;
-  for(SITE_ITERATOR it=temp_sites.begin(); it!=temp_sites.end(); it++, i++){
-    if(it->get_vertex_id() != vert_id){
-      sites.push_back(*it);
-      vert_id = it->get_vertex_id();
-      j++;
-    }else{
-      rejected++;
-    } 
-    //place of temp_site in new sites vector
-    indices2[i]=j-1;   
-  }
-
-  cerr << " (" << COMM_RANK << ") rejected " << rejected << " double sites" << endl;
-  
-  
-  // if(COMM_RANK == 0){
-  //   unsigned int k=100;
-  //   cerr << " (" << COMM_RANK << ") " << sites[k].get_vertex_id() << " " << sites[indices2[ indices[sites[k].get_site_id()] ]].get_vertex_id() << endl;
-  // }
-  
-  // if(COMM_RANK == 0){
-  //   unsigned int k = 0;
-  //   cerr << " (" << COMM_RANK << ") simplex " << k << ": " << compare_sites[simplices[k].get_id1()].get_vertex_id() << " " << compare_sites[simplices[k].get_id2()].get_vertex_id() << " "
-  //        << compare_sites[simplices[k].get_id3()].get_vertex_id() << " " << compare_sites[simplices[k].get_id4()].get_vertex_id() << " " << endl;    
-  // }
-  
-  //update the simplices
-  for( SIMPL_ITERATOR it=simplices.begin(); it!=simplices.end(); it++ ){
-
-     //former place of the sites in sites array
-    unsigned int id1 = it->get_id1();
-    unsigned int id2 = it->get_id2();
-    unsigned int id3 = it->get_id3();
-    unsigned int id4 = it->get_id4();
-
-     //set the id to the new id of the sites
-    it->set_id1(  indices2[ indices[id1] ] );
-    it->set_id2(  indices2[ indices[id2] ] );
-    it->set_id3(  indices2[ indices[id3] ] );
-    it->set_id4(  indices2[ indices[id4] ] );
-
-  }
-
-  // if(COMM_RANK == 0){
-  //   unsigned int k = 0;
-  //   cerr << " (" << COMM_RANK << ") simplex " << k << ": " << sites[simplices[k].get_id1()].get_vertex_id() << " " << sites[simplices[k].get_id2()].get_vertex_id() << " "
-  //        << sites[simplices[k].get_id3()].get_vertex_id() << " " << sites[simplices[k].get_id4()].get_vertex_id() << " " << endl;    
-  // }
-
-  //remove the indices vector
-  indices.clear();
-  indices2.clear();
-  
-  //set correct site id
-  i=0;
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++, i++ ){
-    it->set_site_id(i);
-  }  
-  
-  
-  //-----------------
-  //the only sites that are now in the border are double sites on this proc
-  
-  //find all the correct site ids
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-    if(it->get_border() ){
-      for( unsigned int i=0; i<sites.size(); i++ ){
-        if( (it->get_border()-1) == sites[i].get_vertex_id() ){
-          it->set_border( sites[i].get_site_id() + 1 );
-        }
-      }
-    }
-  }
-
-  // //update the simplices to point to the correct sites
-  for( SIMPL_ITERATOR it=simplices.begin(); it!=simplices.end(); it++ ){
-  
-     //place of the sites in sites array
-     unsigned long long int id1 = it->get_id1();
-     //if the site is in the border, point towards correct site
-     if(sites[id1].get_border()){
-       it->set_id1( sites[id1].get_border() - 1 );
-     }
-  
-     //place of the sites in sites array
-     unsigned long long int id2 = it->get_id2();
-     //if the site is in the border, point towards correct site
-     if(sites[id2].get_border()){
-       it->set_id2( sites[id2].get_border() - 1 );
-     }
-     
-     //place of the sites in sites array
-     unsigned long long int id3 = it->get_id3();
-     //if the site is in the border, point towards correct site
-     if(sites[id3].get_border()){
-       it->set_id3( sites[id3].get_border() - 1 );
-     }
-     
-     //place of the sites in sites array
-     unsigned long long int id4 = it->get_id4();
-     //if the site is in the border, point towards correct site
-     if(sites[id4].get_border()){
-       it->set_id4( sites[id4].get_border() - 1 );
-     }
-  
-   }
-  
-   //-- remove remaining border sites --//
-  
-     
-    //vector to keep track of the indices
-    indices.resize( sites.size(), 0 );
-      
-    //remove border sites
-    temp_sites = sites;
-    sites.clear();
-    for( SITE_ITERATOR it=temp_sites.begin(); it!=temp_sites.end(); it++ ){
-      if(!it->get_border()){
-        sites.push_back( *it );
-      }
-    }
-      
-    temp_sites.clear();
-      
-    //store the new place of the sites in the indices array at the place of their 
-    //former index
-    for( unsigned long long int i=0; i<sites.size(); i++ ){
-      indices[ sites[i].get_site_id() ] = i;
-    }   
-      
-    //correct the indices of the simplices
-    for( SIMPL_ITERATOR it=simplices.begin(); it!=simplices.end(); it++ ){
-      
-      //former place of the sites in sites array
-      unsigned long long int id1 = it->get_id1();
-      unsigned long long int id2 = it->get_id2();
-      unsigned long long int id3 = it->get_id3();
-      unsigned long long int id4 = it->get_id4();
-      
-      //set the id to the new id of the sites
-      it->set_id1( (unsigned long long int) indices[id1] );
-      it->set_id2( (unsigned long long int) indices[id2] );
-      it->set_id3( (unsigned long long int) indices[id3] );
-      it->set_id4( (unsigned long long int) indices[id4] );
-      
-    }
-    //remove the indices vector
-    indices.clear();
-      
-    //set correct site id
-    i=0;
-    for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++, i++ ){
-      it->set_site_id(i);
-    }
-      
-    //It could be that not all border sites are taken into account, so 
-    //the numSites might have changed
-    unsigned int local_numSites = 0;
-    for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
-      if( it->get_process() == COMM_RANK ){
-        local_numSites++;
-      }
-    }
-      
-    MPI::COMM_WORLD.Allreduce( &local_numSites, &numSites, 1, MPI::UNSIGNED, MPI::SUM );
-      
-    if( COMM_RANK == 0 ){
-      cerr << " (" << COMM_RANK << ") Number of sites in triangulation after periodic border has been removed is " << numSites << endl;
-      simpleXlog << "  Final triangulation after periodic border has been removed contains " << numSites << " sites " << endl;
-    }
-   
-  
-  
-  
-}
 
 /****  Assign id's to sites  ****/
 void SimpleX::assign_site_ids(){
 
-  //if periodic boundaries are applied, give sites the correct vertex index again
-  //this makes sure that the sites are in the correct order
-  // if(periodic){
-  //   for(SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
-  //     if(it->get_border()){
-  //       unsigned int real_vert_id = it->get_border() - 1;
-  //       unsigned int temp_vert_id = it->get_vertex_id();
-  //       it->set_vertex_id(real_vert_id);
-  //       it->set_border(temp_vert_id);
-  //     }
-  //   }
-  // }
-
-  //set current site id
-  unsigned long long int i=0;
+  //set correct site id
+  unsigned long int i=0;
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++, i++ ){
     it->set_site_id(i);
   }
 
-  //sort the sites on vertex id
+  //sort the sites
   sort( sites.begin(), sites.end(), compare_vertex_id_site );
 
-  //change back
-  // if(periodic){
-  //   for(SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
-  //     if(it->get_border()){
-  //       unsigned int real_vert_id = it->get_vertex_id();
-  //       unsigned int temp_vert_id = it->get_border();
-  //       it->set_vertex_id(temp_vert_id);
-  //       it->set_border(real_vert_id+1);
-  //     }
-  //   }
-  // }
-
-
   //vector to keep track of the indices
-  vector<unsigned long long int> indices( sites.size(), 0 );
+  vector<unsigned long int> indices( sites.size(), 0 );
 
   //store the new place of the sites in the indices array at the place of their 
   //former index
-  for( unsigned long long int i=0; i<sites.size(); i++ ){
+  for( unsigned long int i=0; i<sites.size(); i++ ){
     indices[ sites[i].get_site_id() ] = i;
   }   
 
@@ -2251,31 +1582,19 @@ void SimpleX::assign_site_ids(){
   for( SIMPL_ITERATOR it=simplices.begin(); it!=simplices.end(); it++ ){
 
     //former place of the sites in sites array
-    unsigned long long int id1 = it->get_id1();
-    unsigned long long int id2 = it->get_id2();
-    unsigned long long int id3 = it->get_id3();
-    unsigned long long int id4 = it->get_id4();
+    unsigned long int id1 = it->get_id1();
+    unsigned long int id2 = it->get_id2();
+    unsigned long int id3 = it->get_id3();
+    unsigned long int id4 = it->get_id4();
 
     //set the id to the new id of the sites
-    it->set_id1( (unsigned long long int) indices[id1] );
-    it->set_id2( (unsigned long long int) indices[id2] );
-    it->set_id3( (unsigned long long int) indices[id3] );
-    it->set_id4( (unsigned long long int) indices[id4] );
+    it->set_id1( (unsigned long int) indices[id1] );
+    it->set_id2( (unsigned long int) indices[id2] );
+    it->set_id3( (unsigned long int) indices[id3] );
+    it->set_id4( (unsigned long int) indices[id4] );
+
 
   }
-
-  //in case of periodic boundaries update site id of corresponding vertex
-  //do this only for sites on same proc
-  // if(periodic){
-  //   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-  //     if(it->get_border() ){
-  // 	unsigned int site_id = it->get_border() - 1;
-  // 	if(it->get_process() == sites[ indices[site_id] ].get_process()){
-  // 	  it->set_border( indices[site_id] + 1 );
-  // 	}
-  //     }
-  //   }
-  // }
 
   //remove the indices vector
   indices.clear();
@@ -2296,53 +1615,35 @@ void SimpleX::initiate_ballistic_sites(){
 
 
   if( ballisticTransport ){
-     //if only ballistic transport is done, set ballistic to one at every site
+    //if only ballistic transport is done, set ballistic to one at every site
     for( SITE_ITERATOR it=sites.begin();it!=sites.end();it++ ){
       it->set_ballistic( 1 );
     }
   }else if( dirConsTransport ){
-     //direction conserving transport
+    //direction conserving transport
     for( SITE_ITERATOR it=sites.begin();it!=sites.end();it++ ){
       it->set_ballistic( 0 );
     }
   }else if ( combinedTransport ){
-     //in case of combined transport, all sites start ballistic, except for
-     //the source
-    if(fillChoice == AUTOMATIC){
-       //loop over all sites
-      for(SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
-   //sources are put first in vertex list so have
-   //lowest id's
-        if( it->get_vertex_id() < source_points ){
-     //source is always direction conserving
-          it->set_ballistic(0);
-        }else{
-     //non-source points start out ballistic
-          it->set_ballistic(1);
-        }//if source
-      }//for all sites
 
-    }else{
-       //in case of properties read from file, fluxes are in
-       //flux_list
-       //loop over all sites
-      for(SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
-   //non-source points start out ballistic
-        it->set_ballistic(1);
+    //in case of properties read from file, fluxes are in
+    //flux_list
+    //loop over all sites
+    for(SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
+      //non-source points start out ballistic
+      it->set_ballistic(1);
 
-   //if flux is bigger than 0.0, we have a source
+      //if flux is bigger than 0.0, we have a source
 
-   //exclude boundary points
-        if( it->get_vertex_id() < temp_flux_list.size() ){
-          if( temp_flux_list[ it->get_vertex_id() ] > 0.0){
-       //source is always direction conserving
-            it->set_ballistic(0);
-          } //if flux
-        }//if valid id
-      }//for all sites
-    }//if automatic filling
+      //exclude boundary points
+      if( it->get_vertex_id() < temp_flux_list.size() ){
+	if( temp_flux_list[ it->get_vertex_id() ] > 0.0){
+	  //source is always direction conserving
+	  it->set_ballistic(0);
+	} //if flux
+      }//if valid id
+    }//for all sites
   }//if combined transport
-
 }
 
 
@@ -2434,13 +1735,9 @@ void SimpleX::compute_site_properties(){
   compute_neighbours();
   compute_volumes();
 
-  //calculate the mean Delaunay length of every site
-  calculate_line_lengths();
-
-  //periodic sites that are shared over procs are needed for communication
-  if(periodic){
-    remove_periodic_simplices();
-  }
+  //testing, simplices no longer needed here
+  //simplices.clear();
+  //vector< Simpl >().swap(simplices);
 
   //create a list of sites existing on this proc but with a virtual copy on another proc
   fill_send_list();
@@ -2454,24 +1751,16 @@ void SimpleX::compute_site_properties(){
 
   //match the local neighbour id's of ballistic sites
   match_neighbours();
-  
+
   //compute the solid angles of the direction conserving sites
   //the argument 1 means that the sphere will be rotated
-  if(!ballisticTransport){
-    compute_solid_angles(1);
-  }
+  compute_solid_angles(1);
 
-  //check for cyclic connections in the grid
-  if( cyclic_check ){
-    check_cyclic_connections();
-  }
-     
   //send the properties of neighbours needed for ballistic transport to other procs
   send_neighbour_properties();
 
-  // if(periodic){
-  //   remove_periodic_sites_2();
-  // }
+  //calculate the mean Delaunay length of every site
+  calculate_line_lengths();
 
   //create the intensity arrays, in the case of diffuse transport just one value, in the case of 
   //ballistic transport the number of HEALPIX directions
@@ -2483,8 +1772,8 @@ void SimpleX::compute_site_properties(){
     numPixels = ( it->get_ballistic() ) ? it->get_numNeigh() : number_of_directions;
 
     //create the intensity arrays
-    it->create_intensityIn( numPixels );
-    it->create_intensityOut( numPixels );
+    it->create_intensityIn( numFreq, numPixels );
+    it->create_intensityOut( numFreq, numPixels );
 
   }
 
@@ -2522,15 +1811,15 @@ void SimpleX::compute_neighbours(){
     for( ItrT = neighVec[ it->get_id1() ].begin(); ItrT!=neighVec[ it->get_id1() ].end(); ItrT++){
       //check if the second vertex of this simplex is already in neighbour list
       if( *ItrT == it->get_id2() ){
-        found1 = 1;
+	found1 = 1;
       }
       //check if the third vertex of this simplex is already in neighbour list
       if( *ItrT == it->get_id3() ){
-        found2 = 1;
+	found2 = 1;
       }
       //check if the third vertex of this simplex is already in neighbour list
       if( *ItrT == it->get_id4() ){
-        found3 = 1; 
+	found3 = 1; 
       }
     }
 
@@ -2553,13 +1842,13 @@ void SimpleX::compute_neighbours(){
     for(ItrT = neighVec[ it->get_id2() ].begin(); ItrT!=neighVec[ it->get_id2() ].end(); ItrT++){
 
       if( *ItrT == it->get_id1() ){
-        found1 = 1;
+	found1 = 1;
       }
       if( *ItrT == it->get_id3() ){
-        found2 = 1;
+	found2 = 1;
       }
       if( *ItrT == it->get_id4() ){
-        found3 = 1;
+	found3 = 1;
       }
 
     }
@@ -2582,13 +1871,13 @@ void SimpleX::compute_neighbours(){
     for( ItrT = neighVec[ it->get_id3() ].begin(); ItrT!=neighVec[ it->get_id3() ].end(); ItrT++){
 
       if( *ItrT == it->get_id1() ){
-        found1 = 1;
+	found1 = 1;
       }
       if( *ItrT == it->get_id2() ){
-        found2 = 1;
+	found2 = 1;
       }
       if( *ItrT == it->get_id4() ){
-        found3 = 1;
+	found3 = 1;
       }
 
     }
@@ -2612,13 +1901,13 @@ void SimpleX::compute_neighbours(){
     for(ItrT = neighVec[ it->get_id4() ].begin(); ItrT!=neighVec[ it->get_id4() ].end(); ItrT++){
 
       if( *ItrT == it->get_id1() ){
-        found1=1;
+	found1=1;
       }
       if( *ItrT == it->get_id2() ){
-        found2=1;
+	found2=1;
       }
       if( *ItrT == it->get_id3() ){
-        found3=1;
+	found3=1;
       }
 
     }
@@ -2710,218 +1999,6 @@ void SimpleX::compute_volumes(){
 
 }
 
-void SimpleX::remove_periodic_simplices(){
-    
-  //create simplex list with only real simplices for plotting
-  vector< Simpl > temp_simplices;
-  Simpl tempSimpl;
-  temp_simplices = simplices;
-  simplices.clear();
-  for( SIMPL_ITERATOR it = temp_simplices.begin(); it!=temp_simplices.end(); it++ ) {
-    
-    //calculate radius of circumcircle
-    unsigned int simpl[4];
-    simpl[0] = it->get_id1();
-    simpl[1] = it->get_id2();
-    simpl[2] = it->get_id3();
-    simpl[3] = it->get_id4();
-
-    //coordinates of tetrahedron, to be used to calculate circumsphere
-    double xTet[4][3];
-
-    //store the coordinates of the 4 vertices that make 
-    //up this simplex in xTet
-    for(short int p=0; p<dimension+1; p++) {
-      xTet[p][0] = (double) sites[ simpl[p]  ].get_x();
-      xTet[p][1] = (double) sites[ simpl[p]  ].get_y();
-      xTet[p][2] = (double) sites[ simpl[p]  ].get_z();
-    }
-
-    // //coordinates of the centre of the circumsphere
-    // double xCC, yCC, zCC;
-    // 
-    // //calculate the centers of the circumsphere
-    // CalcCircumCenter(xTet, xCC, yCC, zCC);
-    // 
-    // //radius of circle
-    // double r_CC = sqrt( pow(xCC - xTet[0][0],2) + pow(yCC - xTet[0][1],2) + pow(zCC - xTet[0][2],2) );
-    
-    //hilbert resolution is the number of cells in one direction
-    unsigned int hilbert_resolution = pow( 2, hilbert_order );
-
-    //width of the subbox is 1/number of cells in one dimension
-    double subbox_width = 1.0/hilbert_resolution;
-    
-    vector<double> dist(6,0.0);
-    dist[0] = sqrt( pow(xTet[0][0] - xTet[1][0],2) + pow(xTet[0][1] - xTet[1][1],2) + pow(xTet[0][2] - xTet[1][2],2) );
-    dist[1] = sqrt( pow(xTet[0][0] - xTet[2][0],2) + pow(xTet[0][1] - xTet[2][1],2) + pow(xTet[0][2] - xTet[2][2],2) );
-    dist[2] = sqrt( pow(xTet[0][0] - xTet[3][0],2) + pow(xTet[0][1] - xTet[3][1],2) + pow(xTet[0][2] - xTet[3][2],2) );
-    dist[3] = sqrt( pow(xTet[1][0] - xTet[2][0],2) + pow(xTet[1][1] - xTet[2][1],2) + pow(xTet[1][2] - xTet[2][2],2) );
-    dist[4] = sqrt( pow(xTet[1][0] - xTet[3][0],2) + pow(xTet[1][1] - xTet[3][1],2) + pow(xTet[1][2] - xTet[3][2],2) );
-    dist[5] = sqrt( pow(xTet[2][0] - xTet[3][0],2) + pow(xTet[2][1] - xTet[3][1],2) + pow(xTet[2][2] - xTet[3][2],2) );
-    
-    double max=0.0;
-    for(unsigned int k=0;k<6;k++){
-      if(dist[k] > max){
-        max = dist[k];
-      }
-    }
-    
-    if( max < 0.5*subbox_width){
-
-      simplices.push_back( *it );
-    }
-  }
-  temp_simplices.clear();
-  
-}
-
-void SimpleX::set_periodic_sites_to_send(){
-
-  // if(COMM_RANK == 1){
-  //   for(SITE_ITERATOR it=sites.begin();it!=sites.end();it++){
-  //     if(it->get_vertex_id() == 47){
-  //       cerr << "  (" << COMM_RANK << ") site " << it->get_vertex_id() << ": (" << it->get_process() << ": " << it->get_x() << "," << it->get_y() << "," << it->get_z() << ") " 
-  //            << it->get_border() << endl;
-  //     }
-  //   }
-  // }
-
-  //if multiple procs are used, use periodic sites to communicate between procs
-  if(COMM_SIZE > 1){
-
-    //store the boundaries of the domains
-    vector< vector<double> > dom_bounds( dom_dec.size(), vector<double>(6,0.0) );
-
-    //hilbert resolution is the number of cells in one direction
-    unsigned int hilbert_resolution = pow( 2, hilbert_order );
-
-    //width of the subbox is 1/number of cells in one dimension
-    double subbox_width = 1.0/hilbert_resolution;
-
-    //loop over all subboxes
-    for( unsigned int i=0; i<dom_dec.size(); i++ ){
-
-      //coordinates of the hilbert cell
-      unsigned long long int coord[dimension];
-      //hilbert number (place on hilbert curve)
-      unsigned long long r = (unsigned long long) i;
-
-      //find coordinates of subbox number r
-      hilbert_i2c( dimension, hilbert_order, r, coord );
-
-      //calculate minimum and maximum coordinates of subbox and boundary around it
-      //minimum coordinates of subbox should not be bigger than boundary around unity domain
-      double x_min = ( coord[0] == 0 ) ? 0.0  : (double) coord[0]/hilbert_resolution;
-      double x_max = ( (double) coord[0]/hilbert_resolution + subbox_width  >= 1.0  ) ? 
-        1.0  : (double) coord[0]/hilbert_resolution + subbox_width;
-
-      double y_min = ( coord[1] == 0 ) ? 0.0 : (double) coord[1]/hilbert_resolution;
-      double y_max = ( (double) coord[1]/hilbert_resolution + subbox_width  >= 1.0  ) ? 
-        1.0  : (double) coord[1]/hilbert_resolution + subbox_width;
-
-      double z_min = ( coord[2] == 0 ) ? 0.0  : (double) coord[2]/hilbert_resolution;
-      double z_max = ( (double) coord[2]/hilbert_resolution + subbox_width  >= 1.0  ) ? 
-        1.0  : (double) coord[2]/hilbert_resolution + subbox_width;
-
-      dom_bounds[i][0] = x_min;
-      dom_bounds[i][1] = x_max;
-      dom_bounds[i][2] = y_min;
-      dom_bounds[i][3] = y_max;
-      dom_bounds[i][4] = z_min;
-      dom_bounds[i][5] = z_max;
-
-    }
-
-    //point sites on other proc towards correct process
-    unsigned int border_point = 0;
-    unsigned int total_border_points = 0;
-    for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-      if( it->get_border() ){
-      //if( it->get_border() && it->get_process() == COMM_RANK){
-        //do reverse permutations
-        for( short int i=-1; i<=1; i++ ) {
-          for( short int j=-1; j<=1; j++ ) {
-            for( short int k=-1; k<=1; k++ ) {
-              if( (i||j||k) &&
-                ( it->get_x() + 1.0*i ) >= 0.0 && ( it->get_x() + 1.0*i ) <= 1.0  &&
-                ( it->get_y() + 1.0*j ) >= 0.0 && ( it->get_y() + 1.0*j ) <= 1.0  &&
-                ( it->get_z() + 1.0*k ) >= 0.0 && ( it->get_z() + 1.0*k ) <= 1.0 ){
-
-                double x = it->get_x() + 1.0*i;
-                double y = it->get_y() + 1.0*j;
-                double z = it->get_z() + 1.0*k;
-
-                //determine process
-                unsigned int process = COMM_SIZE;
-                int found = 0;
-                for(unsigned int p=0; p<dom_dec.size(); p++){
-                  if( x >= dom_bounds[p][0] && x < dom_bounds[p][1] &&
-                      y >= dom_bounds[p][2] && y < dom_bounds[p][3] &&
-                      z >= dom_bounds[p][4] && z < dom_bounds[p][5] ){
-
-                    process = dom_dec[p];
-                    found++;
-                  }
-                }
-
-                //check if found
-                if(process == COMM_SIZE){
-                  cerr << " (" << COMM_RANK << ") Error in assignment of periodic sites to processes!" << endl;
-                  MPI::COMM_WORLD.Abort(-1);
-                }
-
-                if(found > 1){
-                  cerr << " (" << COMM_RANK << ") Error in assignment of periodic sites to processes, found multiple processes!" << endl;
-                  MPI::COMM_WORLD.Abort(-1);
-                }
-
-                //if(process != it->get_process() ){
-                if(process != COMM_RANK){
-                  it->set_vertex_id( it->get_border() - 1 );
-                  it->set_border( 0 );
-                  it->set_process( process );
-
-                  border_point++;
-                }
-
-                total_border_points++;
-
-              } //if    
-            }//k
-          }//j
-        }//i
-
-      }//if in border
-    }//for all sites
-
-    cerr << " (" << COMM_RANK << ") number of border points that changed process: " << border_point << " out of " << total_border_points << endl;
-
-    // if(COMM_RANK == 0){
-    //   cerr << " Domain decomposition: " << endl;
-    //   for(unsigned int p=0; p<dom_dec.size(); p++){
-    // 	cerr << " (" << dom_dec[p] << ") : (" << dom_bounds[p][0] << "," << dom_bounds[p][1] << ") (" 
-    // 	     << dom_bounds[p][2] << "," << dom_bounds[p][3] << ") (" 
-    // 	     << dom_bounds[p][4] << "," << dom_bounds[p][5] << ")" << endl;
-    //   }
-    // }
-
-    dom_bounds.clear();
-  }
-
-  // if(COMM_RANK == 1){
-  //   cerr << "---" << endl;
-  //   for(SITE_ITERATOR it=sites.begin();it!=sites.end();it++){
-  //     if(it->get_vertex_id() == 47){
-  //       cerr << "  (" << COMM_RANK << ") site " << it->get_vertex_id() << ": (" << it->get_process() << ": " << it->get_x() << "," << it->get_y() << "," << it->get_z() << ") " 
-  //            << it->get_border() << endl;
-  //     }
-  //   }
-  // }
-
-}
-
-
 /****  Calculate most straight forward neighbours  ****/
 // Calculate the d most straight paths for every incoming direction,
 // but exclude neighbours that deviate straightAngle degrees (input
@@ -2948,96 +2025,96 @@ void SimpleX::calculate_straight(){
       //loop over all neighbours to calculate the d most straightforward
       for( unsigned int j=0; j<it->get_numNeigh(); j++ ){
 
-  // Calculate the inproduct of all Delaunay-line combo's
+	// Calculate the inproduct of all Delaunay-line combo's
 
-  //site id of this neighbour
-        unsigned int neighId = it->get_neighId(j);
+	//site id of this neighbour
+	unsigned int neighId = it->get_neighId(j);
 
-  //arrays to hold the neighbour vector 
-  //and the maximum inner product
-        double max[3], vector1[3];
-  //array to hold the indices of the most straight forward neighbours
-        unsigned int index[3];
+	//arrays to hold the neighbour vector 
+	//and the maximum inner product
+	double max[3], vector1[3];
+	//array to hold the indices of the most straight forward neighbours
+	unsigned int index[3];
 
-  //initialise the max and index arrays
-        for( short int q=0; q<dimension; q++ ){
-          max[q] = -FLT_MAX; 
-          index[q] = -1;
-        }//for q
+	//initialise the max and index arrays
+	for( short int q=0; q<dimension; q++ ){
+	  max[q] = -FLT_MAX; 
+	  index[q] = -1;
+	}//for q
 
-  //fill vector1 with neighbour vector
-        vector1[0] = (double) it->get_x() - sites[ neighId ].get_x();
-        vector1[1] = (double) it->get_y() - sites[ neighId ].get_y();
-        vector1[2] = (double) it->get_z() - sites[ neighId ].get_z();
+	//fill vector1 with neighbour vector
+	vector1[0] = (double) it->get_x() - sites[ neighId ].get_x();
+	vector1[1] = (double) it->get_y() - sites[ neighId ].get_y();
+	vector1[2] = (double) it->get_z() - sites[ neighId ].get_z();
 
-  //loop over all neighbours except the jth neighbour to calculate 
-  //the most straight forward ones with respect to neighbour j
-        for( unsigned int k=0; k<it->get_numNeigh(); k++ ){
+	//loop over all neighbours except the jth neighbour to calculate 
+	//the most straight forward ones with respect to neighbour j
+	for( unsigned int k=0; k<it->get_numNeigh(); k++ ){
 
-    //site id of this neighbour
-          neighId = it->get_neighId(k);
+	  //site id of this neighbour
+	  neighId = it->get_neighId(k);
 
-    //if the neighbour is not the neighbour we are looking at
-          if( k != j ) {
+	  //if the neighbour is not the neighbour we are looking at
+	  if( k != j ) {
 
-      //arrays to hold the neighbour vector of this neighbour
-            double vector2[3];
+	    //arrays to hold the neighbour vector of this neighbour
+	    double vector2[3];
 
-      //fill vector2 with neighbour vector
-            vector2[0] = (double) sites[ neighId ].get_x() - it->get_x();
-            vector2[1] = (double) sites[ neighId ].get_y() - it->get_y();
-            vector2[2] = (double) sites[ neighId ].get_z() - it->get_z();
+	    //fill vector2 with neighbour vector
+	    vector2[0] = (double) sites[ neighId ].get_x() - it->get_x();
+	    vector2[1] = (double) sites[ neighId ].get_y() - it->get_y();
+	    vector2[2] = (double) sites[ neighId ].get_z() - it->get_z();
 
-      //calculate inner product of both vectors
-            double inprod = inproduct(vector1, vector2, dimension);
+	    //calculate inner product of both vectors
+	    double inprod = inproduct(vector1, vector2, dimension);
 
-      //store d largest inner products in max array
-      //store the according neighbour indices in index
-            if( inprod > max[0] ) {
-              max[2] = max[1];
-              max[1] = max[0]; 
-              max[0] = inprod;
-              index[2] = index[1];
-              index[1] = index[0];
-              index[0] = k;
-            } else if ( inprod > max[1]) {
-              max[2] = max[1];
-              max[1] = inprod;
-              index[2] = index[1];
-              index[1] = k;
-        // Third most straigthforward only needed in 3D case
-            } else if ( dimension == 3 && inprod > max[2] ) { 
-              max[2] = inprod;
-              index[2] = k;
-            }
-          }
-        }//for k 
+	    //store d largest inner products in max array
+	    //store the according neighbour indices in index
+	    if( inprod > max[0] ) {
+	      max[2] = max[1];
+	      max[1] = max[0]; 
+	      max[0] = inprod;
+	      index[2] = index[1];
+	      index[1] = index[0];
+	      index[0] = k;
+	    } else if ( inprod > max[1]) {
+	      max[2] = max[1];
+	      max[1] = inprod;
+	      index[2] = index[1];
+	      index[1] = k;
+	      // Third most straigthforward only needed in 3D case
+	    } else if ( dimension == 3 && inprod > max[2] ) { 
+	      max[2] = inprod;
+	      index[2] = k;
+	    }
+	  }
+	}//for k 
 
 
-  //------ Check if one of the neighbours lies outside cone specified by straight_angle ------//
-      //------ Calculate the deviation from a straight line for correction factor ------//
+	//------ Check if one of the neighbours lies outside cone specified by straight_angle ------//
+	//------ Calculate the deviation from a straight line for correction factor ------//
 
-  // Always accept the first line
-        it->add_straight( j, index[0] );
-  // Second and third depending on angle
-        for(int l=1; l < dimension; l++) {
-    //add the neighbour if the maximum inner product
-    //is larger than the cosine of the largest angle
-          if( max[l] > cosStraightAngle ){
+	// Always accept the first line
+	it->add_straight( j, index[0] );
+	// Second and third depending on angle
+	for(int l=1; l < dimension; l++) {
+	  //add the neighbour if the maximum inner product
+	  //is larger than the cosine of the largest angle
+	  if( max[l] > cosStraightAngle ){
 
-            it->add_straight( j, index[l] );
+	    it->add_straight( j, index[l] );
 
-      // Count total number of outgoing lines
-            outgoingCount++;
+	    // Count total number of outgoing lines
+	    outgoingCount++;
 
-      // Sum of the cosine of the angles
-            cosineSum += max[l];
-          }
-          else{
-      //sum of all straight neighbours not included
-            backPointing++;
-          }
-        }//for l
+	    // Sum of the cosine of the angles
+	    cosineSum += max[l];
+	  }
+	  else{
+	    //sum of all straight neighbours not included
+	    backPointing++;
+	  }
+	}//for l
 
       }//for all neighbours
     }//if on this proc
@@ -3054,7 +2131,7 @@ void SimpleX::calculate_straight(){
     simpleXlog << "  Most straight forward neighbours computed " << endl; 
     simpleXlog << "    straight_correction_factor = " << straight_correction_factor << endl;
     simpleXlog << "    number of straight neighbours that were outside cone of " 
-      << straightAngle*180/M_PI << " degrees: " << total_backPointing << endl;
+	       << straightAngle*180/M_PI << " degrees: " << total_backPointing << endl;
   }
 
 }
@@ -3076,29 +2153,29 @@ void SimpleX::match_neighbours(){
 
       //loop over all neighbours of this site
       for(unsigned int j=0; j<it->get_numNeigh(); j++){
-        //check if site has bee nfound
-        bool found=0;
-        //neighbour id of this site in neighbour array of neighbour
-        unsigned int localID;
-        //site id of this neighbour
-        unsigned int neigh = it->get_neighId(j);
-        //loop over all neighbours of neighbouring site
-        for(unsigned int k=0; !found && k<sites[neigh].get_numNeigh(); k++) {
-          //check if current site is in neighbour array
-          if( sites[neigh].get_neighId(k) == it->get_site_id() ) {
-            //if found, store the place in neighbour array
-            found=1;
-            localID=k;
-          }	  
-        }//for k
+	//check if site has bee nfound
+	bool found=0;
+	//neighbour id of this site in neighbour array of neighbour
+	unsigned int localID;
+	//site id of this neighbour
+	unsigned int neigh = it->get_neighId(j);
+	//loop over all neighbours of neighbouring site
+	for(unsigned int k=0; !found && k<sites[neigh].get_numNeigh(); k++) {
+	  //check if current site is in neighbour array
+	  if( sites[neigh].get_neighId(k) == it->get_site_id() ) {
+	    //if found, store the place in neighbour array
+	    found=1;
+	    localID=k;
+	  }	  
+	}//for k
 
-        if(!found) {
-          tellerNotFound++;
-        } else {
-    //store the place of this site in neighbour 
-    //array of neighbour site in outgoing
-          it->set_outgoing( j, localID );
-        }
+	if(!found) {
+	  tellerNotFound++;
+	} else {
+	  //store the place of this site in neighbour 
+	  //array of neighbour site in outgoing
+	  it->set_outgoing( j, localID );
+	}
       }//for all neighbours
     }
   }
@@ -3106,8 +2183,8 @@ void SimpleX::match_neighbours(){
   //if some neighbours not matched, issue warning
   if(tellerNotFound) {
     cerr << endl << endl
-      << "      WARNING: " << tellerNotFound << " neighbours not matched!" << endl
-      << endl;
+	 << "      WARNING: " << tellerNotFound << " neighbours not matched!" << endl
+	 << endl;
   }
 
   if( COMM_RANK == 0 ){
@@ -3142,19 +2219,20 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
 
   //if the straight neighbours used are from the Delauany edge, associate every line with direction bins
   //if(straight_from_tess){
-    // Assign memory to the refVector
+  // Assign memory to the refVector
   refVector = new float*[numPixels];
   for( unsigned int m=0; m<numPixels; m++ ){
     refVector[m]=new float[3];
   }
 
-    //assign the first orientation to refVector
+  //assign the first orientation to refVector
   for( unsigned int m=0; m<numPixels; m++ ){
     refVector[m][0] = (float) orient[orientation_index][m][0];
     refVector[m][1] = (float) orient[orientation_index][m][1];
     refVector[m][2] = (float) orient[orientation_index][m][2];
   }
-  
+
+
   // Determine for every site which outgoing Delaunay line 
   //must be associated with a solid angle
 
@@ -3162,20 +2240,20 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
   Healpix_Base healpix_base_ref(num_ref_pix_HP,RING);
   unsigned int numPixels_ref = healpix_base_ref.Npix();
 
-    //store all directions of the healpix sphere in refVector_ref
+  //store all directions of the healpix sphere in refVector_ref
   float **refVector_ref;
   refVector_ref = new float*[numPixels_ref];
   for( unsigned int m=0; m<numPixels_ref; m++ ){
     refVector_ref[m]=new float[3];
   }
-  
+
   //associate this high res healpix sphere with the directions 
   //of the intensities using inner products
 
   //store the mapping between the directions vector and the 
   //healpix sphere
-  unsigned int mapping_pixels[numPixels][numPixels_ref];
-    //loop over all directions of the intensities
+  vector< vector<unsigned int> > mapping_pixels(numPixels, vector<unsigned int>(numPixels_ref,0));
+  //loop over all directions of the intensities
   for( unsigned int m=0; m<numPixels; m++ ){
 
     //storage for the maximum inner product and 
@@ -3183,11 +2261,10 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
     vector< float > max( numPixels_ref, -1.0 );
     vector< int > index( numPixels_ref, -1 );
 
-
     //fill max and index with inner products
 
     //loop over all pixels of the high res healpix sphere
-    for( unsigned int p=0; p<numPixels_ref; p++ ){
+    for(unsigned int p=0; p<numPixels_ref; p++ ){
 
       //use healpix function to find x-,y- and z-direction
       //of reference sphere
@@ -3198,21 +2275,20 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
 
       //take inner product with the intensity directions
       float tempInprod=inproduct(refVector[m], refVector_ref[p], 3);
-      
       //store the inner products and indices
       max[p] = tempInprod ;
       index[p] = p;
 
     }    
 
-      //sort the inner products and according indices 
+    //sort the inner products and according indices with highest first
     quickSortPerm( max, index, 0, numPixels_ref-1 );
 
     //loop over all pixels of healpix sphere
-    for( unsigned int p=0; p<numPixels_ref; p++ ){
+    for(unsigned int p=0; p<numPixels_ref; p++ ){
       //make sure the index value is in correct interval
-      if( index[p] >=0 && index[p] < (int) numPixels_ref){
-        //fill the mapping
+      if( (index[p] >=0) && (index[p] < (int) numPixels_ref) ){
+  //fill the mapping
         mapping_pixels[m][p] = index[p];
       }else{
         cerr << " (" << COMM_RANK << ") ERROR: in compute_solid_angles, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
@@ -3226,7 +2302,7 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
     index.clear();
 
   }//for numPixels
- 
+
   // Determine for every site which outgoing direction must be associated with a solid angle
   // using the calculated mapping
 
@@ -3241,7 +2317,7 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
 
       //fill the outgoing vector with temporary values
       for(unsigned int m = 0; m<numPixels; m++){
-        it->set_outgoing( m, numPixels_ref+1);
+	it->set_outgoing( m, numPixels_ref+1);
       }
 
       // Create the vector that points from the site to the neighbour
@@ -3249,41 +2325,41 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
       int reference_sphere[ numPixels_ref ];
       //fill the vector with temporary values
       for( unsigned int p=0; p<numPixels_ref; p++ ){
-        reference_sphere[p]=-1;
+	reference_sphere[p]=-1;
       }
 
       //loop over all neighbours of the site
       for(unsigned int j=0; j<it->get_numNeigh(); j++) { 
 
-        //calculate the vector of this Delaunay line
-        pixpt.x = sites[it->get_neighId(j)].get_x()-it->get_x();
-        pixpt.y = sites[it->get_neighId(j)].get_y()-it->get_y();
-        pixpt.z = sites[it->get_neighId(j)].get_z()-it->get_z();
+	//calculate the vector of this Delaunay line
+	pixpt.x = sites[it->get_neighId(j)].get_x()-it->get_x();
+	pixpt.y = sites[it->get_neighId(j)].get_y()-it->get_y();
+	pixpt.z = sites[it->get_neighId(j)].get_z()-it->get_z();
 
-        //calculate pixel on high res HEALPix sphere in which this vector resides
-        int pixel_ref = healpix_base_ref.vec2pix( pixpt );
-        //using previously calculated mapping, associate this with outgoing direction
-        reference_sphere[ pixel_ref ] = j;
+	//calculate pixel on high res HEALPix sphere in which this vector resides
+	int pixel_ref = healpix_base_ref.vec2pix( pixpt );
+	//using previously calculated mapping, associate this with outgoing direction
+	reference_sphere[ pixel_ref ] = j;
       }
 
       //loop over all intensity directions
       for( unsigned int m = 0; m<numPixels; m++ ){
-        bool found = 0;
-        //loop over all pixels of reference healpix sphere
-        for( unsigned int p=0; !found && p<numPixels_ref; p++ ){
-          //if the value in the mapping is fiducial
-          if( reference_sphere[ mapping_pixels[m][p] ] >= 0 ){
-            // associate the closest neighbour with this reference direction
-            it->set_outgoing( m, reference_sphere[ mapping_pixels[m][p] ] );
-            found = 1;
-          }
-        }
-        //check if every direction is found
-        if(!found){
-          cerr << " Outgoing direction not found! " << endl;
-          MPI::COMM_WORLD.Abort( -1 );
+	bool found = 0;
+	//loop over all pixels of reference healpix sphere
+	for( unsigned int p=0; !found && p<numPixels_ref; p++ ){
+	  //if the value in the mapping is fiducial
+	  if( reference_sphere[ mapping_pixels[m][p] ] >= 0 ){
+	    // associate the closest neighbour with this reference direction
+	    it->set_outgoing( m, reference_sphere[ mapping_pixels[m][p] ] );
+	    found = 1;
+	  }
+	}
+	//check if every direction is found
+	if(!found){
+	  cerr << " Outgoing direction not found! " << endl;
+	  MPI::COMM_WORLD.Abort( -1 );
 
-        }
+	}
 
       }//for all intensity directions
 
@@ -3296,13 +2372,13 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
   }
   delete [] refVector_ref;
 
-    // free memory of the refVector
+  // free memory of the refVector
   for(unsigned int m=0; m<numPixels; m++){
     delete [] refVector[m];
   }
   delete [] refVector;
 
-    //}//if straight_from_tess
+  //}//if straight_from_tess
 }
 
 
@@ -3333,63 +2409,63 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
   //if the straight neighbours used are from the Delauany edge, associate every line with direction bins
   //if(straight_from_tess){
 
-    // Assign memory to the refVector
+  // Assign memory to the refVector
   refVector = new float*[numPixels];
   for( unsigned int m=0; m<numPixels; m++ ){
     refVector[m]=new float[3];
   }
 
-    //assign the first orientation to refVector
+  //assign the first orientation to refVector
   for( unsigned int m=0; m<numPixels; m++ ){
     refVector[m][0] = (float) orient[orientation_index][m][0];
     refVector[m][1] = (float) orient[orientation_index][m][1];
     refVector[m][2] = (float) orient[orientation_index][m][2];
   }
 
-    // Determine for every site which outgoing Delaunay line 
-    //must be associated with a solid angle
+  // Determine for every site which outgoing Delaunay line 
+  //must be associated with a solid angle
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
-      //only consider sites on this proc and inside simulation domain
+    //only consider sites on this proc and inside simulation domain
     if( it->get_process() == COMM_RANK && !it->get_border() && !it->get_ballistic() ){
 
-  //make sure outgoing is empty
+      //make sure outgoing is empty
       it->delete_outgoing();
-  //create the outgoing vector with numPixels entries
+      //create the outgoing vector with numPixels entries
       it->create_outgoing(numPixels);
 
-  //array to store neighbour vectors
+      //array to store neighbour vectors
       float **vectorNeigh;
-  //array to store the length of the neighbour vectors
+      //array to store the length of the neighbour vectors
       float *vectorNeighLength;
 
-  //assign memory to vectorNeigh and vectorNeighLength
+      //assign memory to vectorNeigh and vectorNeighLength
       vectorNeigh = new float*[it->get_numNeigh()];
       for(unsigned int j=0; j<it->get_numNeigh(); j++){
         vectorNeigh[j]= new float[3];
       }
       vectorNeighLength = new float[it->get_numNeigh()];
 
-  // Create the vector that points from the site to the neighbour
+      // Create the vector that points from the site to the neighbour
       for( unsigned int j=0; j<it->get_numNeigh(); j++ ){ 
         vectorNeigh[j][0] = sites[ it->get_neighId(j) ].get_x() - it->get_x();
         vectorNeigh[j][1] = sites[ it->get_neighId(j) ].get_y() - it->get_y();
         vectorNeigh[j][2] = sites[ it->get_neighId(j) ].get_z() - it->get_z();
       }
 
-  // Find the neighVec that is closest (in angle) to the refVec
+      // Find the neighVec that is closest (in angle) to the refVec
       for(unsigned int m=0; m<numPixels; m++) {
         float highestInprod=-FLT_MAX;
         int highestInprodNumber=-1;// to check later if a neighbour is found
         for( unsigned int j=0; j<it->get_numNeigh(); j++ ){
-      //calculate inner product between the refVector and the current neighbour
+    //calculate inner product between the refVector and the current neighbour
           float tempInprod = inproduct(vectorNeigh[j], refVector[m], 3);
-      //store the highest inner product and its id
+    //store the highest inner product and its id
           if( tempInprod > highestInprod ){
             highestInprod = tempInprod;
             highestInprodNumber = j;
           }
         }
-    //check if inner products have been calculated correctly
+  //check if inner products have been calculated correctly
         if( highestInprodNumber == -1 ){
           cerr << "Number of neighbours of site " << it->get_site_id() << " is: " 
             << int(it->get_numNeigh()) << endl;
@@ -3397,11 +2473,11 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
           MPI::COMM_WORLD.Abort( -1 );
 
         }
-    // associate the closest neighbour with this reference direction
+  // associate the closest neighbour with this reference direction
         it->set_outgoing(m, highestInprodNumber);
       }  //for all pixels
 
-  //free memory of neighbour vectors
+      //free memory of neighbour vectors
       for (unsigned int j=0;j<it->get_numNeigh();j++) {
         delete [] vectorNeigh[j]; 
       }
@@ -3411,125 +2487,32 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
     }
   }// for sites 
 
-    // free memory of the refVector
+  // free memory of the refVector
   for(unsigned int m=0; m<numPixels; m++){
     delete [] refVector[m];
   }
   delete [] refVector;
-    //}
+  //}
 }
 
 #endif
 
-//check whether there are cyclic connections in the grid and remove them if possible
-void SimpleX::check_cyclic_connections(){
-
-
-  // Check if cyclic connections exist and remove them
-  unsigned int cyclic=0, noncyclic=0;
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
-    if( it->get_process() == COMM_RANK && !it->get_border() ){
-      for(unsigned int m=0; m<numPixels; m++) {
-
-  // For every MSN (most straightforward neighbour) check if it points to the original site
-        unsigned int out = (unsigned) it->get_outgoing( m );
-        for(short int k=0; k < it->get_numStraight( it->get_outgoing( m ) ); k++){
-
-          unsigned int straight = it->get_straight( out, k );
-          unsigned int msn = it->get_neighId( straight );
-
-          unsigned int out2 = (unsigned) sites[msn].get_outgoing( m );
-          for(short int l=0; l< sites[msn].get_numStraight(sites[msn].get_outgoing( m )); l++){
-
-            unsigned int straight2 = sites[msn].get_straight( out2, l );
-            unsigned int receiving = sites[msn].get_neighId( straight2 );
-
-            if( receiving == it->get_site_id() ){ 
-              cyclic++;
-
-        // Remove the connection
-              sites[msn].remove_straight( sites[msn].get_outgoing( m ), l );
-
-        // Check if this direction has at least one outgoing edge left
-              bool cycFlag = 1;
-              if( !sites[msn].get_numStraight(sites[msn].get_outgoing( m )) ){
-
-    // If not: Send radiation to a neighbouring site (other than i)
-                unsigned int j=0;
-                while( ( j<sites[msn].get_numNeigh() ) && cycFlag ){
-
-                  if(j != it->get_site_id() ){
-
-        // id of this site
-                    unsigned int neighId = sites[msn].get_neighId( j );
-
-        // Check if the connection is non-cyclic
-                    cycFlag = 0;
-                    unsigned int out3 = (unsigned) sites[neighId].get_outgoing( m );
-                    for(short int k=0; k< sites[neighId].get_numStraight( sites[neighId].get_outgoing( m ) ); k++){
-
-                      unsigned int straight3 = sites[neighId].get_straight( out3, l );
-                      unsigned int receiving3 = sites[neighId].get_neighId( straight3 );
-
-                      if(receiving3==msn){ 
-
-      // Cyclic connection
-                        cycFlag = 1;
-                      }
-                    }
-                  }
-                  j++;
-                }
-
-    // Add as connection
-                sites[msn].add_straight( sites[msn].get_outgoing( m ), j );
-              }
-
-        // Check if a new connection has been found
-              if( cycFlag ){ cerr << "WARNING: No noncyclic connection could be established for direction " << m <<  " of site " << msn << "." << endl;}
-
-            }
-            else{
-              noncyclic++;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  if( COMM_RANK == 0 ){
-    simpleXlog << "  (" << COMM_RANK << ") Removed " << cyclic << " cyclic connections, which is " << 100*double(cyclic)/double(noncyclic) << "% of total." << endl;
-  }
-
-}
-
 
 void SimpleX::calculate_line_lengths(){
 
-  vector<double> neigh_dist;
-  //  double total_min_source_dist = 0.0;
-  //unsigned int count = 0;
+  double minDist = 666.;
+  //vector<double> neigh_dist;
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
 
     double totalLength=0.0;
-    //double min_source_dist=FLT_MAX;
-    //unsigned int cnt = 0;
     for( unsigned int j=0; j<it->get_numNeigh(); j++ ){    
 
       double length=0.0;
-      double tmp = 0.0;
 
       double x1 = (double) it->get_x();
       double x2 = (double) sites[ it->get_neighId(j) ].get_x();
-      tmp = x1-x2;
-      if(tmp < 0.8){
-        length += pow( x1 - x2, 2);
-      }else{
-        length += pow( x1 - x2 - 1.0, 2);
-      }
-      //length += pow( x1 - x2, 2);
-      
+      length += pow( x1 - x2, 2);
+
       double y1 = (double) it->get_y();
       double y2 = (double) sites[ it->get_neighId(j) ].get_y();
       length += pow( y1 - y2, 2);
@@ -3540,171 +2523,20 @@ void SimpleX::calculate_line_lengths(){
 
       totalLength+=sqrt(length);
 
-      // double source_dist=sqrt(length);
-      // if(source_dist < min_source_dist && !sites[it->get_neighId(j)].get_border() ){
-      // 	min_source_dist=source_dist;
-      // 	cnt++;
-      // }
-
     }
 
     it->set_neigh_dist( totalLength/it->get_numNeigh() );
-    //it->set_neigh_dist( 1.0/32. );
 
-    //to calculate a mean smallest neighbour distance
-    if( !it->get_border() && it->get_process() == COMM_RANK ){// &&  cnt > 0 ){
-      neigh_dist.push_back(it->get_neigh_dist());
-    //   total_min_source_dist += min_source_dist;
-    //   count++;
+    if( it->get_neigh_dist() < minDist && !it->get_border() && it->get_process() == COMM_RANK){
+      minDist = it->get_neigh_dist();
     }
-
 
   }//for all vertices
 
-
-  //sort the distance
-  sort( neigh_dist.begin(), neigh_dist.end());
-
-  //Send the first N_mean vertices to master
-  unsigned int N_mean = 0.005*origNumSites;
-
-  vector<double> minDist_proc(N_mean*COMM_SIZE, 0);
-  for(unsigned int i=0; i<N_mean; i++){
-    minDist_proc[COMM_RANK*N_mean + i] = neigh_dist[i];
-  }
-
-  vector<double> minDist_total(COMM_SIZE*N_mean, 0.0);
-
-  MPI::COMM_WORLD.Reduce(&minDist_proc[0], &minDist_total[0], N_mean*COMM_SIZE, MPI::DOUBLE, MPI::SUM, 0);
-
-  if(COMM_RANK == 0){
-
-    sort(minDist_total.begin(), minDist_total.end() );
-
-    double minDist_mean = 0.0;
-    for(unsigned int i=0; i<N_mean; i++){
-      minDist_mean+=minDist_total[i];
-    }
-
-    minDist_mean /= (double) N_mean;
-
-    //not yet known here...
-     // UNIT_L = sizeBox * parsecToCm; 
-     // cerr << " Mean minimum neighbour distance averaged over " << N_mean << " vertices is: " << minDist_mean << endl
-     // 	  << " Corresponding maximum resolution: " << (int) ceil( 1.0/minDist_mean ) << endl
-     // 	  << " Minimum physical scale resolved : " << minDist_mean*UNIT_L/parsecToCm << " pc" << endl
-     // 	  << " Averge minimum distance between particles: " << total_min_source_dist/(double) count << endl;
-
-    maxRes = (int) ceil( 1.0/minDist_mean );
-  }
+  localMaxRes = (int) ceil( 1.0/minDist );
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Delaunay line lengths computed " << endl;
-  }
-
-}
-
-
-//remove periodic sites
-void SimpleX::remove_periodic_sites_2(){
-
-
-  // if(COMM_RANK == 1){
-  //   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-  //     if(it->get_vertex_id() == 47){
-  //       cerr << " (" << COMM_RANK << ") site " << it->get_vertex_id() << " (" << it->get_process() 
-  //            << ":" << it->get_x() << "," << it->get_y() << "," << it->get_z() << ") " << it->get_border() << endl;
-  //     }
-  //   }
-  // }
-
-  //find all the correct site ids
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-    if(it->get_border() && it->get_process() == COMM_RANK){
-    //if(it->get_border() ){
-      for( unsigned int i=0; i<sites.size(); i++ ){
-        if( (it->get_border()-1) == sites[i].get_vertex_id() ){
-          it->set_border( sites[i].get_site_id() + 1 );
-        }
-      }
-    }
-  }
-
-  //update sites and all neighbours on this proc
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-    for(unsigned int j=0; j<it->get_numNeigh(); j++){
-      if(sites[ it->get_neighId(j)].get_border() && sites[ it->get_neighId(j)].get_process() == COMM_RANK ){
-      //if(sites[ it->get_neighId(j)].get_border() ){
-        it->set_neighId( j, sites[ it->get_neighId(j)].get_border() - 1 );
-      }
-    }    
-  }
-
-
-  //-- remove remaining border sites --//
-
-  //this only works if the vertex ids of the border sites are larger than those of the other vertices
-  //otherwise neighbours need to matched again
-
-  //vector to keep track of the indices
-  vector<unsigned long long int> indices( sites.size(), 0 );
-
-  //remove border sites
-  vector<Site> temp_sites = sites;
-  sites.clear();
-  for( SITE_ITERATOR it=temp_sites.begin(); it!=temp_sites.end(); it++ ){
-    if(!it->get_border()){
-      sites.push_back( *it );
-    }
-  }
-
-  temp_sites.clear();
-
-  //store the new place of the sites in the indices array at the place of their 
-  //former index
-  for( unsigned long long int i=0; i<sites.size(); i++ ){
-    indices[ sites[i].get_site_id() ] = i;
-  }   
-
-  //correct the indices of the simplices
-  for( SIMPL_ITERATOR it=simplices.begin(); it!=simplices.end(); it++ ){
-
-    //former place of the sites in sites array
-    unsigned long long int id1 = it->get_id1();
-    unsigned long long int id2 = it->get_id2();
-    unsigned long long int id3 = it->get_id3();
-    unsigned long long int id4 = it->get_id4();
-
-    //set the id to the new id of the sites
-    it->set_id1( (unsigned long long int) indices[id1] );
-    it->set_id2( (unsigned long long int) indices[id2] );
-    it->set_id3( (unsigned long long int) indices[id3] );
-    it->set_id4( (unsigned long long int) indices[id4] );
-
-  }
-  //remove the indices vector
-  indices.clear();
-
-  //set correct site id
-  unsigned int i=0;
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++, i++ ){
-    it->set_site_id(i);
-  }
-
-  //It could be that not all border sites are taken into account, so 
-  //the numSites might have changed
-  unsigned int local_numSites = 0;
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
-    if( it->get_process() == COMM_RANK ){
-      local_numSites++;
-    }
-  }
-
-  MPI::COMM_WORLD.Allreduce( &local_numSites, &numSites, 1, MPI::UNSIGNED, MPI::SUM );
-
-  if( COMM_RANK == 0 ){
-    cerr << " (" << COMM_RANK << ") Number of sites in triangulation after periodic border has been removed is " << numSites << endl;
-    simpleXlog << "  Final triangulation after periodic border has been removed contains " << numSites << " sites " << endl;
   }
 
 }
@@ -3776,9 +2608,9 @@ void SimpleX::remove_border_simplices(){
     }
 
     unsigned long long int coord_CC[dimension];
-    coord_CC[0] = (unsigned long long) x_hilbert;
-    coord_CC[1] = (unsigned long long) y_hilbert;
-    coord_CC[2] = (unsigned long long) z_hilbert;
+    coord_CC[0] = (unsigned long) x_hilbert;
+    coord_CC[1] = (unsigned long) y_hilbert;
+    coord_CC[2] = (unsigned long) z_hilbert;
 
     //determine the hilbert number of the subbox the circumcentre is in
     unsigned long long r_CC = hilbert_c2i( dimension, hilbert_order, coord_CC );
@@ -3786,19 +2618,18 @@ void SimpleX::remove_border_simplices(){
     //if this simplex belongs to this proc, we can add it
     if( dom_dec[ r_CC ] == COMM_RANK ){
 
-      // if( !sites[ one ].get_border() && !sites[ two ].get_border() &&
-      // 	  !sites[ three ].get_border() && !sites[ four ].get_border() ){
+      if( !sites[ one ].get_border() && !sites[ two ].get_border() &&
+       	  !sites[ three ].get_border() && !sites[ four ].get_border() ){
+      //if( !sites[ one ].get_border() || !sites[ two ].get_border() ||
+      //	  !sites[ three ].get_border() || !sites[ four ].get_border() ){
 
-      if( !sites[ one ].get_border() || !sites[ two ].get_border() ||
-      !sites[ three ].get_border() || !sites[ four ].get_border() ){
+	tempSimpl.set_id1( sites[ one ].get_vertex_id() );
+	tempSimpl.set_id2( sites[ two ].get_vertex_id() );
+	tempSimpl.set_id3( sites[ three ].get_vertex_id() );
+	tempSimpl.set_id4( sites[ four ].get_vertex_id() );
+	tempSimpl.set_volume( it->get_volume() );
 
-        tempSimpl.set_id1( sites[ one ].get_vertex_id() );
-        tempSimpl.set_id2( sites[ two ].get_vertex_id() );
-        tempSimpl.set_id3( sites[ three ].get_vertex_id() );
-        tempSimpl.set_id4( sites[ four ].get_vertex_id() );
-        tempSimpl.set_volume( it->get_volume() );
-
-        simplices.push_back( tempSimpl );
+	simplices.push_back( tempSimpl );
 
       }
     }//if on this proc
@@ -3808,10 +2639,10 @@ void SimpleX::remove_border_simplices(){
   temp_simplices.clear();
   vector< Simpl >().swap(temp_simplices);
 
-//   unsigned int numSimplLocal = simplices.size();
-//   unsigned int numSimpl = 0;
+  //   unsigned int numSimplLocal = simplices.size();
+  //   unsigned int numSimpl = 0;
 
-//   MPI::COMM_WORLD.Allreduce(&numSimplLocal, &numSimpl, 1, MPI::UNSIGNED, MPI::SUM);
+  //   MPI::COMM_WORLD.Allreduce(&numSimplLocal, &numSimpl, 1, MPI::UNSIGNED, MPI::SUM);
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Created vector with only local simplices " << endl;
@@ -3865,7 +2696,7 @@ void SimpleX::rotate_solid_angles(){
 
     //to completely empty site_intensities, swap it with an empty vector
     vector< float >().swap( site_intensities );
-    vector< unsigned  long long int >().swap( intens_ids );
+    vector< unsigned  long int >().swap( intens_ids );
 
   }//if rotation needed
 
@@ -3905,30 +2736,35 @@ void SimpleX::store_intensities(){
       //store at the place in site_intensities vector
       //the vertex id
       intens_ids.push_back( it->get_vertex_id() );
+
       //resize the site_intensities vector
-      site_intensities.insert( site_intensities.end(), numPixels, 0.0 );
+      site_intensities.insert( site_intensities.end(), numFreq*numPixels, 0.0 );
 
       //loop over directions
       for( unsigned int j=0; j<numPixels; j++ ){
-  //position of this direction in array
-        unsigned int pos = j + site_intensities.size() - numPixels;
+  //loop over frequencies
+        for(short int f=0; f<numFreq; f++){
 
-  //add all intensity to site_intensities in correct place
-        site_intensities[pos] += it->get_intensityIn(j) + it->get_intensityOut(j);
+    //position of this direction in array
+          unsigned int pos = f + j*numFreq + site_intensities.size() - numFreq*numPixels;
 
-  //now that they are stored, set them to zero
-        it->set_intensityOut(j,0.0);
-        it->set_intensityIn(j,0.0);
+    //add all intensity to site_intensities in correct place
+          site_intensities[pos] += it->get_intensityIn(f,j) + it->get_intensityOut(f,j);
 
+    //now that they are stored, set them to zero
+          it->set_intensityOut(f,j,0.0);
+          it->set_intensityIn(f,j,0.0);
+
+        }//for all freq
       }//for all pixels
     }//if
   }//for all sites
 
 }
 
-const vector<unsigned long long int> SimpleX::get_ballistic_sites_to_store(){
+const vector<unsigned long int> SimpleX::get_ballistic_sites_to_store(){
 
-  vector<unsigned long long int> sites_to_store;
+  vector<unsigned long int> sites_to_store;
 
   //loop over all sites
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++){
@@ -3936,13 +2772,15 @@ const vector<unsigned long long int> SimpleX::get_ballistic_sites_to_store(){
     if( it->get_process() == COMM_RANK && !it->get_border() && it->get_ballistic() ){
       //loop over all neighbours to see if they have intensities
       bool use = 0;
-      for( unsigned int j=0; !use && j<it->get_numNeigh(); j++ ){
-        if( it->get_intensityIn(j) > 0.0 || it->get_intensityOut(j) > 0.0 ){
-          use = 1;
-        }//if there is intensity in this site
-      }//for all neighbours
+      for(short int f=0; f<numFreq;f++){
+	for( unsigned int j=0; !use && j<it->get_numNeigh(); j++ ){
+	  if( it->get_intensityIn(f,j) > 0.0 || it->get_intensityOut(f,j) > 0.0 ){
+	    use = 1;
+	  }//if there is intensity in this site
+	}//for all neighbours
+      }//for all freq
       if(use){
-        sites_to_store.push_back( it->get_site_id() );
+	sites_to_store.push_back( it->get_site_id() );
       }
     }//if
   }//for all sites
@@ -3956,7 +2794,7 @@ const vector<unsigned long long int> SimpleX::get_ballistic_sites_to_store(){
 //Ballistic intensities are interpolated to the fixed unit sphere
 //tesselation, the same that the direction conserving transport uses
 //Use faster healpix referencing
-void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>& sites_to_store ){
+void SimpleX::store_ballistic_intensities( const vector<unsigned long int>& sites_to_store ){
 
   //directions are stored in header
   float **refVector;
@@ -4033,12 +2871,12 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
     for( unsigned int p=0; p<numPixels_ref; p++ ){
       //make sure the index value is in correct interval
       if( index[p] >=0 && index[p] < (int) numPixels_ref){
-  //fill the mapping
-        mapping_pixels[m][p] = index[p];
+	//fill the mapping
+	mapping_pixels[m][p] = index[p];
       }else{
-        cerr << " (" << COMM_RANK << ") ERROR: in store_ballisitc_intensities, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
-        cerr << " (" << COMM_RANK << ") index[p]: " << index[p] << endl;
-        MPI::COMM_WORLD.Abort( -1 );
+	cerr << " (" << COMM_RANK << ") ERROR: in store_ballisitc_intensities, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
+	cerr << " (" << COMM_RANK << ") index[p]: " << index[p] << endl;
+	MPI::COMM_WORLD.Abort( -1 );
 
       }
     }
@@ -4053,9 +2891,9 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
   // using the calculated mapping
 
   //loop over all sites to store
-  for( unsigned long long int i=0; i<sites_to_store.size(); i++ ){
+  for( unsigned long int i=0; i<sites_to_store.size(); i++ ){
 
-    unsigned long long int site_id = sites_to_store[i];
+    unsigned long int site_id = sites_to_store[i];
 
     // Create the vector that points from the site to the neighbour
     vec3 pixpt;
@@ -4085,17 +2923,17 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
       bool found = 0;
       //loop over all pixels of reference healpix sphere
       for( unsigned int p=0; !found && p<numPixels_ref; p++ ){
-  //if the value in the mapping is fiducial
-        if( reference_sphere[ mapping_pixels[m][p] ] >= 0 ){
-    // associate the closest neighbour with this reference direction
-          directions[m] = reference_sphere[ mapping_pixels[m][p] ];
-          found = 1;
-        }
+	//if the value in the mapping is fiducial
+	if( reference_sphere[ mapping_pixels[m][p] ] >= 0 ){
+	  // associate the closest neighbour with this reference direction
+	  directions[m] = reference_sphere[ mapping_pixels[m][p] ];
+	  found = 1;
+	}
       }
       //check if every direction is found
       if(!found){
-        cerr << " Outgoing direction not found! " << endl;
-        MPI::COMM_WORLD.Abort( -1 );
+	cerr << " Outgoing direction not found! " << endl;
+	MPI::COMM_WORLD.Abort( -1 );
       }
 
     }//for all intensity directions
@@ -4104,7 +2942,7 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
     //in site_intensities vector
     intens_ids.push_back( sites[ site_id ].get_vertex_id() );
     //resize the site_intensities vector
-    site_intensities.insert( site_intensities.end(), numPixels, 0.0 );
+    site_intensities.insert( site_intensities.end(), numFreq*numPixels, 0.0 );
 
     //loop over all neighbours
     for( unsigned int j=0; j<sites[ site_id ].get_numNeigh(); j++ ){
@@ -4112,51 +2950,56 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
       //see how many directions are associated with this neighbour
       unsigned int count = 0;
       for(unsigned int m=0; m<numPixels; m++) {
-        if( directions[m] == j ){
-          count++;
-        }
+	if( directions[m] == j ){
+	  count++;
+	}
       }
       //check if this neighbour belongs to pixels in unit sphere tesselation
       if( count > 0 ){
-  //give intensities to big array
-        for(unsigned int m=0; m<numPixels; m++) {
-          if( directions[m] == j ){
-            unsigned int pos = m + site_intensities.size() - numPixels;
-
-            double inten = ( (double) sites[ site_id ].get_intensityIn(j) + (double) sites[ site_id ].get_intensityOut(j) )/count;
-            site_intensities[pos] += (float) inten;
-
-          }
-        }
-  //now that they are stored, set them to zero
-        sites[ site_id ].set_intensityOut(j,0.0);
-        sites[ site_id ].set_intensityIn(j,0.0);
+	//give intensities to big array
+	for(unsigned int m=0; m<numPixels; m++) {
+	  if( directions[m] == j ){
+	    for(short int f=0; f<numFreq; f++){
+	      unsigned int pos = f + m*numFreq + site_intensities.size() - numFreq*numPixels;
+	      double inten = ( (double) sites[ site_id ].get_intensityIn(f,j) + (double) sites[ site_id ].get_intensityOut(f,j) )/count;
+	      site_intensities[pos] += (float) inten;
+	    }//for all freq
+	  }
+	}
+	//now that they are stored, set them to zero
+	for(short int f=0; f<numFreq;f++){
+	  sites[ site_id ].set_intensityOut(f,j,0.0);
+	  sites[ site_id ].set_intensityIn(f,j,0.0);
+	}
       }else{
-  //if not, calculate the closest refVector entry
+	//if not, calculate the closest refVector entry
 
-        float vectorNeigh[3];
-        vectorNeigh[0] = sites[ sites[ site_id ].get_neighId(j) ].get_x() - sites[ site_id ].get_x();
-        vectorNeigh[1] = sites[ sites[ site_id ].get_neighId(j) ].get_y() - sites[ site_id ].get_y();
-        vectorNeigh[2] = sites[ sites[ site_id ].get_neighId(j) ].get_z() - sites[ site_id ].get_z();
+	float vectorNeigh[3];
+	vectorNeigh[0] = sites[ sites[ site_id ].get_neighId(j) ].get_x() - sites[ site_id ].get_x();
+	vectorNeigh[1] = sites[ sites[ site_id ].get_neighId(j) ].get_y() - sites[ site_id ].get_y();
+	vectorNeigh[2] = sites[ sites[ site_id ].get_neighId(j) ].get_z() - sites[ site_id ].get_z();
 
-        float highestInprod=-FLT_MAX;
-        int highestInprodNumber=-1;
-        for(unsigned int m=0; m<numPixels; m++) {
-          float tempInprod = inproduct(vectorNeigh, refVector[m], 3);
-          if( tempInprod > highestInprod ){
-            highestInprod = tempInprod;
-            highestInprodNumber = m;
-          }
-        }
-        unsigned long long int pos = highestInprodNumber + site_intensities.size() - numPixels;
+	float highestInprod=-FLT_MAX;
+	int highestInprodNumber=-1;
+	for(unsigned int m=0; m<numPixels; m++) {
+	  float tempInprod = inproduct(vectorNeigh, refVector[m], 3);
+	  if( tempInprod > highestInprod ){
+	    highestInprod = tempInprod;
+	    highestInprodNumber = m;
+	  }
+	}
+	for(short int f=0;f<numFreq; f++){
 
-        double inten = ( (double) sites[ site_id ].get_intensityIn(j) + (double) sites[ site_id ].get_intensityOut(j) );
-        site_intensities[pos] += (float) inten;
+	  unsigned long int pos = f + highestInprodNumber*numFreq + site_intensities.size() - numFreq*numPixels;
 
-  //now that they are stored, set them to zero
-        sites[ site_id ].set_intensityOut(j,0.0);
-        sites[ site_id ].set_intensityIn(j,0.0);
+	  double inten = ( (double) sites[ site_id ].get_intensityIn(f,j) + (double) sites[ site_id ].get_intensityOut(f,j) );
+	  site_intensities[pos] += (float) inten;
 
+	  //now that they are stored, set them to zero
+	  sites[ site_id ].set_intensityOut(f,j,0.0);
+	  sites[ site_id ].set_intensityIn(f,j,0.0);
+
+	}//for all freq
       }//if count
 
     }//for all neighbours
@@ -4183,10 +3026,10 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
 //use inner products for referencing
 //This routine may seem to do redundant calculations, but the reason for this 
 //is that we want to fill every pixel in the unit sphere tesselation
-void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>& sites_to_store ){
+void SimpleX::store_ballistic_intensities( const vector<unsigned long int>& sites_to_store ){
 
 
-   //directions are stored in header
+  //directions are stored in header
   float **refVector;
 
   //get number of pixels from the value in the header of the unit sphere tesselation
@@ -4206,10 +3049,10 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
   }
 
   //loop over all sites to store
-  for( unsigned long long int i=0; i<sites_to_store.size(); i++ ){
+  for( unsigned long int i=0; i<sites_to_store.size(); i++ ){
 
     //place in sites vector of this site
-    unsigned long long int site_id = sites_to_store[i];
+    unsigned long int site_id = sites_to_store[i];
 
 
     //first associate every direction with a Delaunay line
@@ -4236,20 +3079,20 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
       float highestInprod=-FLT_MAX;
       int highestInprodNumber=-1;// to check later if a neighbour is found
       for( unsigned int j=0; j<sites[ site_id ].get_numNeigh(); j++ ){
-  //calculate inner product between the refVector and the current neighbour
-        float tempInprod = inproduct(vectorNeigh[j], refVector[m], 3);
-  //store the highest inner product and its id
-        if( tempInprod > highestInprod ){
-          highestInprod = tempInprod;
-          highestInprodNumber = j;
-        }
+	//calculate inner product between the refVector and the current neighbour
+	float tempInprod = inproduct(vectorNeigh[j], refVector[m], 3);
+	//store the highest inner product and its id
+	if( tempInprod > highestInprod ){
+	  highestInprod = tempInprod;
+	  highestInprodNumber = j;
+	}
       }
       //check if inner products have been calculated correctly
       if( highestInprodNumber == -1 ){
-        cerr << "Number of neighbours of site " << sites[ site_id ].get_site_id() << " is: " 
-          << int(sites[ site_id ].get_numNeigh()) << endl;
-        cerr << "In routine compute_solid_angles: there is no highest inproduct." << endl;
-        MPI::COMM_WORLD.Abort( -1 );
+	cerr << "Number of neighbours of site " << sites[ site_id ].get_site_id() << " is: " 
+	     << int(sites[ site_id ].get_numNeigh()) << endl;
+	cerr << "In routine compute_solid_angles: there is no highest inproduct." << endl;
+	MPI::COMM_WORLD.Abort( -1 );
       }
 
       // associate the closest neighbour with this reference direction
@@ -4261,7 +3104,7 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
     //in site_intensities vector
     intens_ids.push_back( sites[ site_id ].get_vertex_id() );
     //resize the site_intensities vector
-    site_intensities.insert( site_intensities.end(), numPixels, 0.0 );
+    site_intensities.insert( site_intensities.end(), numFreq*numPixels, 0.0 );
 
     //loop over all neighbours
     for( unsigned int j=0; j<sites[ site_id ].get_numNeigh(); j++ ){
@@ -4269,47 +3112,57 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long long int>&
       //see how many directions are associated with this neighbour
       unsigned int count = 0;
       for(unsigned int m=0; m<numPixels; m++) {
-        if( directions[m] == j ){
-          count++;
-        }
+	if( directions[m] == j ){
+	  count++;
+	}
       }
 
       //check if this neighbour is associated with any refVector entries
       if( count > 0 ){
-  //give intensities to big array
-        for(unsigned int m=0; m<numPixels; m++) {
-          if( directions[m] == j ){
-            unsigned long long int pos = m + site_intensities.size() - numPixels;
+	//give intensities to big array
+	for(unsigned int m=0; m<numPixels; m++) {
+	  if( directions[m] == j ){
+	    //loop over frequencies
+	    for(short int f=0; f<numFreq;f++){
 
-            double inten = ( (double) sites[ site_id ].get_intensityIn(j) + (double) sites[ site_id ].get_intensityOut(j) )/(double) count;
-            site_intensities[pos] += (float) inten;
+	      unsigned long int pos = f + m*numFreq + site_intensities.size() - numFreq*numPixels;
 
-          }
-        }
-  //now that they are stored, set them to zero
-        sites[ site_id ].set_intensityOut(j,0.0);
-        sites[ site_id ].set_intensityIn(j,0.0);
+	      double inten = ( (double) sites[ site_id ].get_intensityIn(f,j) + (double) sites[ site_id ].get_intensityOut(f,j) )/(double) count;
+	      site_intensities[pos] += (float) inten;
+
+	      //now that they are stored, set them to zero
+	      sites[ site_id ].set_intensityOut(f,j,0.0);
+	      sites[ site_id ].set_intensityIn(f,j,0.0);
+	      
+	    }//for all freq
+	  }
+	}
 
       }else{
-  //if not, calculate the closest refVector entry
-        float highestInprod=-FLT_MAX;
-        int highestInprodNumber=-1;
-        for(unsigned int m=0; m<numPixels; m++) {
-          float tempInprod = inproduct(vectorNeigh[j], refVector[m], 3);
-          if( tempInprod > highestInprod ){
-            highestInprod = tempInprod;
-            highestInprodNumber = m;
-          }
-        }
-        unsigned long long int pos = highestInprodNumber + site_intensities.size() - numPixels;
+	//if not, calculate the closest refVector entry
+	float highestInprod=-FLT_MAX;
+	int highestInprodNumber=-1;
+	for(unsigned int m=0; m<numPixels; m++) {
+	  float tempInprod = inproduct(vectorNeigh[j], refVector[m], 3);
+	  if( tempInprod > highestInprod ){
+	    highestInprod = tempInprod;
+	    highestInprodNumber = m;
+	  }
+	}
 
-        double inten = ( (double) sites[ site_id ].get_intensityIn(j) + (double) sites[ site_id ].get_intensityOut(j) );
-        site_intensities[pos] += (float) inten;
+	//loop over frequencies
+	for(short int f=0; f<numFreq; f++){
 
-  //now that they are stored, set them to zero
-        sites[ site_id ].set_intensityOut(j,0.0);
-        sites[ site_id ].set_intensityIn(j,0.0);
+	  unsigned long int pos = f + highestInprodNumber*numFreq + site_intensities.size() - numFreq*numPixels;
 
+	  double inten = ( (double) sites[ site_id ].get_intensityIn(f,j) + (double) sites[ site_id ].get_intensityOut(f,j) );
+	  site_intensities[pos] += (float) inten;
+
+	  //now that they are stored, set them to zero
+	  sites[ site_id ].set_intensityOut(f,j,0.0);
+	  sites[ site_id ].set_intensityIn(f,j,0.0);
+
+	}//for all freq
       }
 
     }//for all neighbours
@@ -4360,20 +3213,20 @@ void SimpleX::return_intensities(){
     }
 
     //mapping from vertex id to site id
-    vector< unsigned long long int > mapping_sites(this_chunk_size,vertex_id_max+1);
+    vector< unsigned long int > mapping_sites(this_chunk_size,vertex_id_max+1);
     bool stop = 0;
     while( it != sites.end() && !stop ){ 
       //only include direction conserving sites on this proc not in border
       if( it->get_process() == COMM_RANK && !it->get_border() && !it->get_ballistic() ){  
-  //associate every vertex id with its place in the array 
-        if( ( (long long int) it->get_vertex_id() - (long long int) start_vertex_id) >= 0 && 
-        (it->get_vertex_id() - start_vertex_id) < this_chunk_size ){
-          mapping_sites[ it->get_vertex_id() - start_vertex_id ] = it->get_site_id();
-        }
+	//associate every vertex id with its place in the array 
+	if( ( (long int) it->get_vertex_id() - (long int) start_vertex_id) >= 0 && 
+	    (it->get_vertex_id() - start_vertex_id) < this_chunk_size ){
+	  mapping_sites[ it->get_vertex_id() - start_vertex_id ] = it->get_site_id();
+	}
       }           
       it++;
       if(it->get_vertex_id() >= (start_vertex_id + this_chunk_size) ){
-        stop = 1;
+	stop = 1;
       }
     }  
 
@@ -4381,33 +3234,37 @@ void SimpleX::return_intensities(){
     for( unsigned int i=0; i<intens_ids.size(); i++ ){
       //only include vertex ids in current chunk
       if(intens_ids[i] >= start_vertex_id && intens_ids[i] < (start_vertex_id+this_chunk_size) ){
-  //get site id from vertex id using pre-calculated mapping
-        unsigned int site_id = mapping_sites[ intens_ids[i] - start_vertex_id ];
-  //only take into account if site id is valid, otherwise the
-  //intensities should not be given back at this point
-        if( site_id < sites.size() ){
+	//get site id from vertex id using pre-calculated mapping
+	unsigned int site_id = mapping_sites[ intens_ids[i] - start_vertex_id ];
+	//only take into account if site id is valid, otherwise the
+	//intensities should not be given back at this point
+	if( site_id < sites.size() ){
 
-    //loop over all directions
-    //be careful, j is the position of the direction in the orientation of the PREVIOUS run!!!
-          for( unsigned int j=0; j<numPixels; j++ ){
+	  //loop over all directions
+	  //be careful, j is the position of the direction in the orientation of the PREVIOUS run!!!
+	  for( unsigned int j=0; j<numPixels; j++ ){
 
-      //get the intensity that belongs to this site
-            double inten = (double) site_intensities[ numPixels*i + j ];
+	    //get the closest associate with this neighbour from the mapping 
+	    //stored in the header file
+	    unsigned int pos = maps[orientation_index][orientation_index_old][j];
 
-      //get the closest associate with this neighbour from the mapping 
-      //stored in the header file
-            unsigned int pos = maps[orientation_index][orientation_index_old][j];
+	    //loop over frequencies
+	    for(short int f=0; f<numFreq;f++){
 
-      //in case there is already intensity in this direction
-      //obsolete with the new header file
-            inten += (double) sites[site_id].get_intensityOut(pos);
+	      //get the intensity that belongs to this site
+	      double inten = (double) site_intensities[ i*numPixels*numFreq + j*numFreq + f ];
 
-      //assign the intensity to the site
-            sites[site_id].set_intensityOut( pos, (float) inten );
-            sites[site_id].set_intensityIn( pos, 0.0 );
+	      //in case there is already intensity in this direction
+	      //obsolete with the new header file
+	      inten += (double) sites[site_id].get_intensityOut(f, pos);
 
-          }//for all directions
-        }//if valid id
+	      //assign the intensity to the site
+	      sites[site_id].set_intensityOut( f, pos, (float) inten );
+	      sites[site_id].set_intensityIn( f, pos, 0.0 );
+
+	    }//for all freqs
+	  }//for all directions
+	}//if valid id
       }
     } //for all intens_ids
 
@@ -4502,12 +3359,12 @@ void SimpleX::return_ballistic_intensities(){
     for( unsigned int p=0; p<numPixels_ref; p++ ){
       //make sure the index value is in correct interval
       if( index[p] >=0 && index[p] < (int) numPixels_ref){
-  //fill the mapping
-        mapping_pixels[m][p] = index[p];
+	//fill the mapping
+	mapping_pixels[m][p] = index[p];
       }else{
-        cerr << " (" << COMM_RANK << ") ERROR: in return_ballisitc_intensities, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
-        cerr << " (" << COMM_RANK << ") index[p]: " << index[p] << endl;
-        MPI::COMM_WORLD.Abort( -1 );
+	cerr << " (" << COMM_RANK << ") ERROR: in return_ballisitc_intensities, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
+	cerr << " (" << COMM_RANK << ") index[p]: " << index[p] << endl;
+	MPI::COMM_WORLD.Abort( -1 );
       }
     }
 
@@ -4531,95 +3388,97 @@ void SimpleX::return_ballistic_intensities(){
     //size of the chunk to send
     unsigned int this_chunk_size = max_msg_to_send;
     //start id of current chunk
-    unsigned long long int start_vertex_id = q*max_msg_to_send; 
+    unsigned long int start_vertex_id = q*max_msg_to_send; 
     //make sure the final chunk has correct size
     if( start_vertex_id + this_chunk_size >= vertex_id_max ){
       this_chunk_size = vertex_id_max - start_vertex_id;
     }
 
-   //mapping from vertex id to site id
-    vector< unsigned long long int > mapping_sites(this_chunk_size,vertex_id_max+1);
+    //mapping from vertex id to site id
+    vector< unsigned long int > mapping_sites(this_chunk_size,vertex_id_max+1);
     bool stop = 0;
     while( it != sites.end() && !stop ){ 
       //only include direction conserving sites on this proc not in border                                                                                      
       if( it->get_process() == COMM_RANK && !it->get_border() && it->get_ballistic() ){  
-  //associate every vertex id with its place in the array                                                                                                 
-        if( ( (long long int) it->get_vertex_id() - (long long int) start_vertex_id ) >= 0 && 
-        (it->get_vertex_id() - start_vertex_id) < this_chunk_size ){
-          mapping_sites[ it->get_vertex_id() - start_vertex_id ] = it->get_site_id();
-        }
+	//associate every vertex id with its place in the array                                                                                                 
+	if( ( (long int) it->get_vertex_id() - (long int) start_vertex_id ) >= 0 && 
+	    (it->get_vertex_id() - start_vertex_id) < this_chunk_size ){
+	  mapping_sites[ it->get_vertex_id() - start_vertex_id ] = it->get_site_id();
+	}
       }           
       it++;
       if(it->get_vertex_id() >= (start_vertex_id + this_chunk_size) ){
-        stop = 1;
+	stop = 1;
       }
     }  
 
     //loop over site_intensities to return the intensities to sites in this chunk
-    for( unsigned long long int i=0; i<intens_ids.size(); i++ ){
+    for( unsigned long int i=0; i<intens_ids.size(); i++ ){
       //only include vertex ids in current chunk
       if(intens_ids[i] >= start_vertex_id && intens_ids[i] < (start_vertex_id+this_chunk_size) ){
-  //get site id from vertex id using pre-calculated mapping
-        unsigned long long int site_id = mapping_sites[ intens_ids[i] - start_vertex_id ];
-  //only take into account if site id is valid, otherwise the
-  //intensities should not be given back at this point
-        if( site_id < sites.size() ){
+	//get site id from vertex id using pre-calculated mapping
+	unsigned long int site_id = mapping_sites[ intens_ids[i] - start_vertex_id ];
+	//only take into account if site id is valid, otherwise the
+	//intensities should not be given back at this point
+	if( site_id < sites.size() ){
 
-    // Create the vector that points from the site to the neighbour
-          vec3 pixpt;
-          int reference_sphere[ numPixels_ref ];
-    //fill the vector with temporary values
-          for( unsigned int p=0; p<numPixels_ref; p++ ){
-            reference_sphere[p]=-1;
-          }
+	  // Create the vector that points from the site to the neighbour
+	  vec3 pixpt;
+	  int reference_sphere[ numPixels_ref ];
+	  //fill the vector with temporary values
+	  for( unsigned int p=0; p<numPixels_ref; p++ ){
+	    reference_sphere[p]=-1;
+	  }
 
-    //loop over all neighbours of the site
-          for( unsigned int j=0; j<sites[site_id].get_numNeigh(); j++ ){ 
+	  //loop over all neighbours of the site
+	  for( unsigned int j=0; j<sites[site_id].get_numNeigh(); j++ ){ 
 
-      //calculate the vector of this Delaunay line
-            pixpt.x = sites[ sites[site_id].get_neighId(j) ].get_x() - sites[site_id].get_x();
-            pixpt.y = sites[ sites[site_id].get_neighId(j) ].get_y() - sites[site_id].get_y();
-            pixpt.z = sites[ sites[site_id].get_neighId(j) ].get_z() - sites[site_id].get_z();
+	    //calculate the vector of this Delaunay line
+	    pixpt.x = sites[ sites[site_id].get_neighId(j) ].get_x() - sites[site_id].get_x();
+	    pixpt.y = sites[ sites[site_id].get_neighId(j) ].get_y() - sites[site_id].get_y();
+	    pixpt.z = sites[ sites[site_id].get_neighId(j) ].get_z() - sites[site_id].get_z();
 
-      //calculate pixel on high res HEALPix sphere in which this vector resides
-            int pixel_ref = healpix_base_ref.vec2pix( pixpt );
-      //using previously calculated mapping, associate this with outgoing direction
-            reference_sphere[ pixel_ref ] = j;
-          }
+	    //calculate pixel on high res HEALPix sphere in which this vector resides
+	    int pixel_ref = healpix_base_ref.vec2pix( pixpt );
+	    //using previously calculated mapping, associate this with outgoing direction
+	    reference_sphere[ pixel_ref ] = j;
+	  }
 
-    //loop over all intensity directions
-          for( unsigned int m = 0; m<numPixels; m++ ){
-            bool found = 0;
-      //loop over all pixels of reference healpix sphere
-            for( unsigned int p=0; !found && p<numPixels_ref; p++ ){
-        //if the value in the mapping is fiducial
-              if( reference_sphere[ mapping_pixels[m][p] ] >= 0 ){
+	  //loop over all intensity directions
+	  for( unsigned int m = 0; m<numPixels; m++ ){
+	    bool found = 0;
+	    //loop over all pixels of reference healpix sphere
+	    for( unsigned int p=0; !found && p<numPixels_ref; p++ ){
+	      //if the value in the mapping is fiducial
+	      if( reference_sphere[ mapping_pixels[m][p] ] >= 0 ){
+
+		// associate the closest neighbour with this reference direction
+		unsigned int j = reference_sphere[ mapping_pixels[m][p] ];
+		found = 1;
+
+		for(short int f=0; f<numFreq; f++){
+
+		  //give this neighbour the intensity in site_intensities
+		  double inten = site_intensities[ i*numPixels*numFreq + m*numFreq + f ];
+		  inten += (double) sites[site_id].get_intensityOut(f,j);
+
+		  sites[site_id].set_intensityOut(f,j, (float) inten);
+		  sites[site_id].set_intensityIn(f,j,0.0);
+
+		}//for all freq
+	      }
+	    }
+	    //check if every direction is found
+	    if(!found){
+	      cerr << " Outgoing direction not found! " << endl;
+	      MPI::COMM_WORLD.Abort( -1 );
+	    }
+
+	  }//for all intensity directions
 
 
-    // associate the closest neighbour with this reference direction
-                unsigned int j = reference_sphere[ mapping_pixels[m][p] ];
-                found = 1;
 
-    //give this neighbour the intensity in site_intensities
-                double inten = site_intensities[ i*numPixels + m ];
-                inten += (double) sites[site_id].get_intensityOut(j);
-
-                sites[site_id].set_intensityOut(j,inten);
-                sites[site_id].set_intensityIn(j,0.0);
-
-              }
-            }
-      //check if every direction is found
-            if(!found){
-              cerr << " Outgoing direction not found! " << endl;
-              MPI::COMM_WORLD.Abort( -1 );
-            }
-
-          }//for all intensity directions
-
-
-
-        }//if valid id
+	}//if valid id
       }//if vertex id in range
     }//for all intens_ids
     mapping_sites.clear();
@@ -4683,100 +3542,101 @@ void SimpleX::return_ballistic_intensities(){
     //size of the chunk to send
     unsigned int this_chunk_size = max_msg_to_send;
     //start id of current chunk
-    unsigned long long int start_vertex_id = q*max_msg_to_send; 
+    unsigned long int start_vertex_id = q*max_msg_to_send; 
     //make sure the final chunk has correct size
     if( start_vertex_id + this_chunk_size >= vertex_id_max ){
       this_chunk_size = vertex_id_max - start_vertex_id;
     }
 
-   //mapping from vertex id to site id
-    vector< unsigned long long int > mapping_sites(this_chunk_size,vertex_id_max+1);
+    //mapping from vertex id to site id
+    vector< unsigned long int > mapping_sites(this_chunk_size,vertex_id_max+1);
     bool stop = 0;
     while( it != sites.end() && !stop ){ 
       //only include direction conserving sites on this proc not in border                                                                                      
       if( it->get_process() == COMM_RANK && !it->get_border() && it->get_ballistic() ){  
-  //associate every vertex id with its place in the array                                                                                                 
-        if( (it->get_vertex_id() - start_vertex_id) >= 0 && (it->get_vertex_id() - start_vertex_id) < this_chunk_size ){
-          mapping_sites[ it->get_vertex_id() - start_vertex_id ] = it->get_site_id();
-        }
+	//associate every vertex id with its place in the array                                                                                                 
+	if( (it->get_vertex_id() - start_vertex_id) >= 0 && (it->get_vertex_id() - start_vertex_id) < this_chunk_size ){
+	  mapping_sites[ it->get_vertex_id() - start_vertex_id ] = it->get_site_id();
+	}
       }           
       it++;
       if(it->get_vertex_id() >= (start_vertex_id + this_chunk_size) ){
-        stop = 1;
+	stop = 1;
       }
     }  
 
     //loop over site_intensities to return the intensities to sites in this chunk
-    for( unsigned long long int i=0; i<intens_ids.size(); i++ ){
+    for( unsigned long int i=0; i<intens_ids.size(); i++ ){
       //only include vertex ids in current chunk
       if(intens_ids[i] >= start_vertex_id && intens_ids[i] < (start_vertex_id+this_chunk_size) ){
-  //get site id from vertex id using pre-calculated mapping
-        unsigned long long int site_id = mapping_sites[ intens_ids[i] - start_vertex_id ];
-  //only take into account if site id is valid, otherwise the
-  //intensities should not be given back at this point
-        if( site_id < sites.size() ){
+	//get site id from vertex id using pre-calculated mapping
+	unsigned long int site_id = mapping_sites[ intens_ids[i] - start_vertex_id ];
+	//only take into account if site id is valid, otherwise the
+	//intensities should not be given back at this point
+	if( site_id < sites.size() ){
 
-    //array to store neighbour vectors
-          float **vectorNeigh;
+	  //array to store neighbour vectors
+	  float **vectorNeigh;
 
-    //assign memory to vectorNeigh and vectorNeighLength
-          vectorNeigh = new float*[sites[site_id].get_numNeigh()];
-          for(unsigned int j=0; j<sites[site_id].get_numNeigh(); j++){
-            vectorNeigh[j]= new float[3];
-          }
-    // Create the vector that points from the site to the neighbour
-          for( unsigned int j=0; j<sites[site_id].get_numNeigh(); j++ ){ 
-            vectorNeigh[j][0] = sites[ sites[site_id].get_neighId(j) ].get_x() - sites[site_id].get_x();
-            vectorNeigh[j][1] = sites[ sites[site_id].get_neighId(j) ].get_y() - sites[site_id].get_y();
-            vectorNeigh[j][2] = sites[ sites[site_id].get_neighId(j) ].get_z() - sites[site_id].get_z();
-          }
+	  //assign memory to vectorNeigh and vectorNeighLength
+	  vectorNeigh = new float*[sites[site_id].get_numNeigh()];
+	  for(unsigned int j=0; j<sites[site_id].get_numNeigh(); j++){
+	    vectorNeigh[j]= new float[3];
+	  }
+	  // Create the vector that points from the site to the neighbour
+	  for( unsigned int j=0; j<sites[site_id].get_numNeigh(); j++ ){ 
+	    vectorNeigh[j][0] = sites[ sites[site_id].get_neighId(j) ].get_x() - sites[site_id].get_x();
+	    vectorNeigh[j][1] = sites[ sites[site_id].get_neighId(j) ].get_y() - sites[site_id].get_y();
+	    vectorNeigh[j][2] = sites[ sites[site_id].get_neighId(j) ].get_z() - sites[site_id].get_z();
+	  }
 
-    // Find the neighVec that is closest (in angle) to the refVec
-          for(unsigned int m=0; m<numPixels; m++) {
-            float highestInprod=-FLT_MAX;
-            int highestInprodNumber=-1;// to check later if a neighbour is found
-            for( unsigned int j=0; j<sites[site_id].get_numNeigh(); j++ ){
-        //calculate inner product between the refVector and the current neighbour
-              float tempInprod = inproduct(vectorNeigh[j], refVector[m], 3);
-        //store the highest inner product and its id
-              if( tempInprod > highestInprod ){
-                highestInprod = tempInprod;
-                highestInprodNumber = j;
-              }
-            }
+	  // Find the neighVec that is closest (in angle) to the refVec
+	  for(unsigned int m=0; m<numPixels; m++) {
+	    float highestInprod=-FLT_MAX;
+	    int highestInprodNumber=-1;// to check later if a neighbour is found
+	    for( unsigned int j=0; j<sites[site_id].get_numNeigh(); j++ ){
+	      //calculate inner product between the refVector and the current neighbour
+	      float tempInprod = inproduct(vectorNeigh[j], refVector[m], 3);
+	      //store the highest inner product and its id
+	      if( tempInprod > highestInprod ){
+		highestInprod = tempInprod;
+		highestInprodNumber = j;
+	      }
+	    }
 
-      //check if inner products have been calculated correctly
-            if( highestInprodNumber == -1 ){
-              cerr << "Number of neighbours of site " << site_id << " is: " 
-                << int(sites[site_id].get_numNeigh()) << endl;
-              cerr << "In routine return_ballistic_intensities: there is no highest inproduct." << endl;
-              MPI::COMM_WORLD.Abort( -1 );
-            }
+	    //check if inner products have been calculated correctly
+	    if( highestInprodNumber == -1 ){
+	      cerr << "Number of neighbours of site " << site_id << " is: " 
+		   << int(sites[site_id].get_numNeigh()) << endl;
+	      cerr << "In routine return_ballistic_intensities: there is no highest inproduct." << endl;
+	      MPI::COMM_WORLD.Abort( -1 );
+	    }
 
-            unsigned int j = highestInprodNumber;
+	    unsigned int j = highestInprodNumber;
 
-      //give intensity of this pixel to Delaunay line with highest inner product
-            double inten = site_intensities[ i*numPixels + m ];
+	    //loop over frequencies
+	    for(short int f=0; f<numFreq; f++){
 
-            inten += (double) sites[site_id].get_intensityOut(j);
+	      //give intensity of this pixel to Delaunay line with highest inner product
+	      double inten = site_intensities[ i*numPixels*numFreq + m*numFreq + f ];
 
-            sites[site_id].set_intensityOut(j,inten);
-            sites[site_id].set_intensityIn(j,0.0);
+	      inten += (double) sites[site_id].get_intensityOut(f,j);
 
-            total_inten += site_intensities[ numPixels*i + m ];
+	      sites[site_id].set_intensityOut(f,j,(float) inten);
+	      sites[site_id].set_intensityIn(f,j,0.0);
 
-          }  //for all pixels
+	    } //for all freqs
+	  }  //for all pixels
+
+	  //free memory of neighbour vectors
+	  for (unsigned int j=0;j<sites[site_id].get_numNeigh();j++) {
+	    delete [] vectorNeigh[j]; 
+	  }
+	  delete [] vectorNeigh;
 
 
-    //free memory of neighbour vectors
-          for (unsigned int j=0;j<sites[site_id].get_numNeigh();j++) {
-            delete [] vectorNeigh[j]; 
-          }
-          delete [] vectorNeigh;
 
-
-
-        }//if valid id
+	}//if valid id
       }//if vertex id in range
     }//for all intens_ids
     mapping_sites.clear();
@@ -4792,10 +3652,10 @@ void SimpleX::return_ballistic_intensities(){
 void SimpleX::check_ballistic_sites(){
 
   //vector to hold ballistic sites that need to be stored
-  vector< unsigned long long int > sites_to_store;
+  vector< unsigned long int > sites_to_store;
   //vector to hold all sites in internal boundary that have
   //been changed
-  vector< unsigned long long int > sites_to_send;
+  vector< unsigned long int > sites_to_send;
 
   //loop over sites
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
@@ -4806,128 +3666,139 @@ void SimpleX::check_ballistic_sites(){
       //or the density is 0.0
       bool is_ionised = 0;
       if( it->get_n_HII() > 0.0 || ( it->get_n_HI() + it->get_n_HII() ) == 0.0 ){
-        is_ionised = 1;
+	is_ionised = 1;
       }
-      //calculate the optical depth
-      double tau = it->get_n_HI() * UNIT_D * it->get_neigh_dist() * UNIT_L * cross_H * straight_correction_factor;
+
+      //calculate the mean optical depth over frequencies
+      double tau = 0.0;
+      for(short int f=0; f<numFreq; f++){
+	tau += it->get_n_HI() * UNIT_D * it->get_neigh_dist() * UNIT_L * cross_H[f] * straight_correction_factor;
+      }
+      tau /= numFreq;
+
       //if optical depth is smaller than the switch set by user, switch from
-      //ballistic to direction conserving if the site has seen ionising radiation
-      if( tau < switchTau && is_ionised  ){
-  //check if site already was direction conserving
-  //if not, change
-        if( it->get_ballistic() == 1 ){
+      //ballistic to direction conserving
+      //perhaps do this only if radiation has travelled through this site?
+      if( tau < switchTau && is_ionised ){
+	//check if site already was direction conserving
+	//if not, change
+	if( it->get_ballistic() == 1 ){
 
-          it->set_ballistic( 0 );
+	  it->set_ballistic( 0 );
 
-    //store the id of this site in sites_to store so 
-    //intensity of this site will be stored in site_intensities
-          sites_to_store.push_back( it->get_site_id() );
+	  //store the id of this site in sites_to store so 
+	  //intensity of this site will be stored in site_intensities
+	  sites_to_store.push_back( it->get_site_id() );
 
-    //if this site has incarnation on other proc, 
-    //put it in the list to send
-          bool flag = 0;
-    //loop over all neighbours to check whether this site has at least
-    //one neighbour on another proc
-          for( unsigned int j=0; !flag && j<it->get_numNeigh(); j++ ) {
-            unsigned long long int neigh = it->get_neighId(j);
-      //check if neighbour belongs to other proc
-            if( sites[neigh].get_process() != COMM_RANK ){
-        //if so, set flag
-              flag = 1;	
-              sites_to_send.push_back( it->get_site_id() );
-            }
-          }//for all neighbours
-        }//if switch from ballistic to dirCons
+	  //if this site has incarnation on other proc, 
+	  //put it in the list to send
+	  bool flag = 0;
+	  //loop over all neighbours to check whether this site has at least
+	  //one neighbour on another proc
+	  for( unsigned int j=0; !flag && j<it->get_numNeigh(); j++ ) {
+	    unsigned long int neigh = it->get_neighId(j);
+	    //check if neighbour belongs to other proc
+	    if( sites[neigh].get_process() != COMM_RANK ){
+	      //if so, set flag
+	      flag = 1;	
+	      sites_to_send.push_back( it->get_site_id() );
+	    }
+	  }//for all neighbours
+	}//if switch from ballistic to dirCons
 
       }else{
-  //check if site already was ballistic
-  //if not, change
-        if( it->get_ballistic() == 0 && it->get_flux() == 0.0 ){
+	//check if site already was ballistic
+	//if not, change
+	if( it->get_ballistic() == 0 && !it->get_source() ){
 
-          it->set_ballistic( 1 );
+	  it->set_ballistic( 1 );
 
-    //if this site has incarnation on other proc, 
-    //put it in the list to send
-          bool flag = 0;
-    //loop over all neighbours to check whether this site has at least
-    //one neighbour on another proc
-          for( unsigned int j=0; !flag && j<it->get_numNeigh(); j++ ) {
-            unsigned long long int neigh = it->get_neighId(j);
-      //check if neighbour belongs to other proc
-            if( sites[neigh].get_process() != COMM_RANK ){
-        //if so, set flag
-              flag = 1;	
-              sites_to_send.push_back( it->get_site_id() );
-            }
-          }//for all neighbours
+	  //if this site has incarnation on other proc, 
+	  //put it in the list to send
+	  bool flag = 0;
+	  //loop over all neighbours to check whether this site has at least
+	  //one neighbour on another proc
+	  for( unsigned int j=0; !flag && j<it->get_numNeigh(); j++ ) {
+	    unsigned long int neigh = it->get_neighId(j);
+	    //check if neighbour belongs to other proc
+	    if( sites[neigh].get_process() != COMM_RANK ){
+	      //if so, set flag
+	      flag = 1;	
+	      sites_to_send.push_back( it->get_site_id() );
+	    }
+	  }//for all neighbours
 
-    //put the intensities in site_intensities
-          numPixels = number_of_directions;
+	  //put the intensities in site_intensities
+	  numPixels = number_of_directions;
 
-    //store at the place in site_intensities vector
-    //the vertex id
-          intens_ids.push_back( it->get_vertex_id() );
-    //resize the site_intensities vector
-          site_intensities.insert( site_intensities.end(), numPixels, 0.0 );
-    //loop over directions
-          for( unsigned int j=0; j<numPixels; j++ ){
-      //position of this direction in array
-            unsigned long long int pos = j + site_intensities.size() - numPixels;
+	  //store at the place in site_intensities vector
+	  //the vertex id
+	  intens_ids.push_back( it->get_vertex_id() );
+	  //resize the site_intensities vector
+	  site_intensities.insert( site_intensities.end(), numPixels*numFreq, 0.0 );
+	  //loop over directions
+	  for( unsigned int j=0; j<numPixels; j++ ){
+	    //loop over frequencies
+	    for(short int f=0; f<numFreq; f++){
 
-      //add all intensity to site_intensities in correct place
-            site_intensities[pos] += it->get_intensityIn(j) + it->get_intensityOut(j);
+	      //position of this direction in array
+	      unsigned long int pos = f + j*numFreq + site_intensities.size() - numPixels*numFreq;
 
-      //now that they are stored, set them to zero
-            it->set_intensityOut(j,0.0);
-            it->set_intensityIn(j,0.0);
+	      //add all intensity to site_intensities in correct place
+	      site_intensities[pos] += it->get_intensityIn(f,j) + it->get_intensityOut(f,j);
 
-          }//for all pixels
+	      //now that they are stored, set them to zero
+	      it->set_intensityOut(f,j,0.0);
+	      it->set_intensityIn(f,j,0.0);
 
-    //delete the intensity arrays
-          it->delete_intensityOut();
-          it->delete_intensityIn();
+	    }//for all freq
+	  }//for all pixels
 
-    //create new intensity arrays with correct size
-          it->create_intensityIn( it->get_numNeigh() );
-          it->create_intensityOut( it->get_numNeigh() );
+	  //delete the intensity arrays
+	  it->delete_intensityOut(numFreq);
+	  it->delete_intensityIn(numFreq);
+
+	  //create new intensity arrays with correct size
+	  it->create_intensityIn( numFreq, it->get_numNeigh() );
+	  it->create_intensityOut( numFreq, it->get_numNeigh() );
 
 
-    //match the neighbours of this site
+	  //match the neighbours of this site
 
-    //make sure outgoing is empty before creating it
-          it->delete_outgoing();
-          it->create_outgoing( it->get_numNeigh() );
+	  //make sure outgoing is empty before creating it
+	  it->delete_outgoing();
+	  it->create_outgoing( it->get_numNeigh() );
 
-    //loop over all neighbours of this site
-          for(unsigned int j=0; j<it->get_numNeigh(); j++){
-      //check if site has bee nfound
-            bool found=0;
-      //neighbour id of this site in neighbour array of neighbour
-            unsigned int localID = INT_MAX;
-      //site id of this neighbour
-            unsigned long long int neigh = it->get_neighId(j);
-      //loop over all neighbours of neighbouring site
-            for(unsigned int k=0; !found && k<sites[neigh].get_numNeigh(); k++) {
-        //check if current site is in neighbour array
-              if( sites[neigh].get_neighId(k) == it->get_site_id() ) {
-    //if found, store the place in neighbour array
-                found=1;
-                localID=k;
-              }	  
-            }//for k
+	  //loop over all neighbours of this site
+	  for(unsigned int j=0; j<it->get_numNeigh(); j++){
+	    //check if site has bee nfound
+	    bool found=0;
+	    //neighbour id of this site in neighbour array of neighbour
+	    unsigned int localID = INT_MAX;
+	    //site id of this neighbour
+	    unsigned long int neigh = it->get_neighId(j);
+	    //loop over all neighbours of neighbouring site
+	    for(unsigned int k=0; !found && k<sites[neigh].get_numNeigh(); k++) {
+	      //check if current site is in neighbour array
+	      if( sites[neigh].get_neighId(k) == it->get_site_id() ) {
+		//if found, store the place in neighbour array
+		found=1;
+		localID=k;
+	      }	  
+	    }//for k
 
-      //store the place of this site in neighbour 
-      //array of neighbour site in outgoing
-            if( localID < INT_MAX ){
-              it->set_outgoing( j, localID );
-            }else{
-              cerr << " (" << COMM_RANK << ") Error in check_ballistic_sites(): Neighbour not matched " << endl;
-              MPI::COMM_WORLD.Abort( -1 );
-            }
+	    //store the place of this site in neighbour 
+	    //array of neighbour site in outgoing
+	    if( localID < INT_MAX ){
+	      it->set_outgoing( j, localID );
+	    }else{
+	      cerr << " (" << COMM_RANK << ") Error in check_ballistic_sites(): Neighbour not matched " << endl;
+	      MPI::COMM_WORLD.Abort( -1 );
+	    }
 
-          }//for all neighbours
+	  }//for all neighbours
 
-        }//if switch from dirCons to ballistic
+	}//if switch from dirCons to ballistic
       }//if tau smaller than switch
 
     }//if
@@ -4942,15 +3813,15 @@ void SimpleX::check_ballistic_sites(){
 
   //give the sites that were switched from ballistic
   //to direction conserving correct intensity arrays
-  for(unsigned long long int i=0; i<sites_to_store.size(); i++ ){
+  for(unsigned long int i=0; i<sites_to_store.size(); i++ ){
 
-    unsigned long long int site_id = sites_to_store[i];
+    unsigned long int site_id = sites_to_store[i];
 
-    sites[ site_id ].delete_intensityOut();
-    sites[ site_id ].delete_intensityIn();
+    sites[ site_id ].delete_intensityOut(numFreq);
+    sites[ site_id ].delete_intensityIn(numFreq);
 
-    sites[ site_id ].create_intensityOut( number_of_directions );
-    sites[ site_id ].create_intensityIn( number_of_directions );
+    sites[ site_id ].create_intensityOut( numFreq, number_of_directions );
+    sites[ site_id ].create_intensityIn( numFreq, number_of_directions );
 
   }
 
@@ -4964,182 +3835,12 @@ void SimpleX::check_ballistic_sites(){
 }
 
 
-
-/****  Do grid dynamics  ****/
-//Vertices can be removed according to the new situation in the simulation,
-//or vertices can be moved around to avoid Poisson noise
-bool SimpleX::grid_dynamics(){
-
-  double t0 = MPI::Wtime();
-
-  //bool to check whether grid has changed
-  bool didUpdate = 0;
-
-  //number of sites that was removed from simulation
-  unsigned int numSites_to_remove = 0;
-
-  //removal of points in low opacity regions
-  if(updates){
-    numSites_to_remove = mark_sites_for_removal();
-    if( numSites_to_remove > 0 ){
-      didUpdate = 1;
-    }
-  }
-
-  //only recalculate grid if something has changed
-  if(didUpdate){
-
-
-    //make sure that photons have left all ghost vertices 
-    //before calculating local intensities
-    send_intensities();
-
-     //if dynamic updates are done, sites need to be removed
-    if( numSites_to_remove > 0 ){
-
-      //compute relevant update properties and send them to master
-      //total_sites_marked_for_removal vector is filled here for master
-      send_sites_marked_for_removal();
-
-      //master proc calculates which sites will be removed
-      if( COMM_RANK == 0 ){
-        get_sites_to_remove(numSites_to_remove);
-      }
-
-      //send the properties of sites to be removed to other procs
-      //total_sites_marked_for_removal vector is filled 
-      //here for other procs
-      send_sites_to_remove();
-
-      //redistribute the properties of sites that are removed
-      //to their neighbours
-      redistribute_site_properties();
-
-    }
-
-   //make sure that the vectors that will be filled are empty 
-    site_intensities.clear();
-    intens_ids.clear();
-
-    //store the intensities in big array
-    store_intensities();
-
-    //in this case, also store the ballistic intensities
-    vector< unsigned long long int > sites_to_store = get_ballistic_sites_to_store();
-
-    store_ballistic_intensities( sites_to_store );
-    sites_to_store.clear();
-
-    //remember the orientation index with which the intensities were stored
-    orientation_index_old = orientation_index;
-
-
-    //store the relevant properties of the sites to be used 
-    //in the coming run
-    store_site_properties();
-
-    //create a list of vertices to be triangulated
-    create_new_vertex_list();
-
-//     for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-//       it->delete_intensityIn();
-//     }
-
-
-    //clear temporary structures in the sites 
-    //and completely clear the sites vector
-    clear_temporary();
-    sites.clear();
-    vector< Site >().swap(sites);
-
-    simplices.clear();
-    vector< Simpl >().swap(simplices);
-
-    //send the list to master proc
-    send_new_vertex_list();
-
-
-    if( COMM_RANK == 0 ){
-      cerr << " (" << COMM_RANK << ") Computing triangulation" << endl;
-    }
-
-    if(COMM_RANK == 0){
-
-      //set boundary around unity domain
-      if(periodic){
-        create_periodic_boundary();
-      }else{
-        create_boundary();
-      }
-
-      //create octree
-      create_vertex_tree();
-
-
-      //for now, don't do a new domain decomposition
-      //decompose the domain
-      //decompose_domain();
-
-      //assign process to vertices
-      //this is necessary to include boundary sites
-      assign_process();
-
-    }else{
-      //clear vertices on other procs
-      vertices.clear();
-      vector< Vertex >().swap(vertices);
-    }
-
-    //send the vertex positions round to all procs, so every proc (temporary!) has its own copy
-    send_vertices();
-
-    //for now, don't do a new domain decomposition
-    //send the domain decomposition to other procs
-    //send_dom_dec();
-
-    //now that all procs have a list of vertices, create octree
-    if( COMM_RANK != 0 ){
-      create_vertex_tree();
-    }
-
-    //compute the triangulation
-    compute_triangulation();
-
-    //create the sites vector from the vertex list
-    create_sites();
-
-    //the list of sites was obtained from list of simplices, and therefore have an order which might lead 
-    //to problems when using the dynamic update routines
-    //shuffle_sites();
-
-    //assign the correct site ids to the sites
-    assign_site_ids();  
-
-    //since no new domain decomposition is done, no need to send site_properties
-    //send the properties of the sites to other procs
-    //send_site_physics();
-
-
-    //return the physical properties to the sites
-    return_physics();
-
-  }
-
-  double t1 = MPI::Wtime();
-  if( COMM_RANK == 0 ){
-    simpleXlog << endl << "  Calculating updates took " << t1-t0 << " seconds" << endl << endl;
-  }
-
-  return didUpdate;
-
-}
-
-
 /****  Store the relevant properties of the sites  ****/
 // stored are:  vertex_id
 //              site_id
-//              n_HI
-//              n_HII  
+//              numberDensity
+//              ion_frac  
+//              localIntensity
 //              flux
 //              ballistic          
 void SimpleX::store_site_properties(){
@@ -5167,16 +3868,23 @@ void SimpleX::store_site_properties(){
   //use the volume to find average neighbour distance, since the 
   //triangulation hasn't been updated yet after sites were removed
         double aver_neigh_dist = 3*pow( (double) it->get_volume(), 1.0/3.0 )/(4.0*M_PI);
-        double tau = it->get_n_HI() * UNIT_D * aver_neigh_dist * UNIT_L * cross_H * straight_correction_factor;
+
+  //calculate the mean optical depth over frequencies
+        double tau = 0.0;
+        for(short int f=0; f<numFreq; f++){
+          tau += it->get_n_HI() * UNIT_D * aver_neigh_dist * UNIT_L * cross_H[f] * straight_correction_factor;
+        }
+        tau /= numFreq;
+
   //if optical depth is smaller than the switch set by user, switch from
   //ballistic to direction conserving
-        if( tau < switchTau && is_ionised){
+        if( tau < switchTau && is_ionised ){
           it->set_ballistic( 0 );
         }else{
           it->set_ballistic( 1 );
         }
   //sources are always direction conserving
-        if( it->get_flux() > 0.0 ){
+        if( it->get_source() ){
           it->set_ballistic( 0 );
         }
       }
@@ -5192,6 +3900,18 @@ void SimpleX::store_site_properties(){
       Site_Update temp;
       //assign the relevant properties
       temp = *it;
+
+      if( it->get_source() ){
+  //loop over frequency bins to get total flux
+        double total_flux = 0.0;
+        for(short int f=0; f<numFreq; f++){
+          total_flux += (double) it->get_flux(f);
+        }
+        temp.set_flux( (float) total_flux );
+
+      }else{
+        temp.set_flux( 0.0 );
+      }
 
       //test whether it's better to send atoms instead 
       //double N_H = (double) it->get_number_density() * (double) it->get_volume();
@@ -5236,715 +3956,13 @@ void SimpleX::create_new_vertex_list(){
     }
   }
 
-  cerr << " (" << COMM_RANK << ") number of vertices: " << vertices.size() << endl;
+  //cerr << " (" << COMM_RANK << ") number of vertices: " << vertices.size() << endl;
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Created new vertex list" << endl;
   }
-
 }
 
-
-/**** Calculate the number of sites to be removed from simulation  ****/
-//Number of sites that can be removed from simulation depends on optical 
-//depth of sites and the minimum resolution set by the user
-unsigned int SimpleX::mark_sites_for_removal(){
-
-  //keep track of the volume that sites marked for removal represent
-  double local_volume = 0.0;
-
-  //vector to hold teh indices of sites marked for removal must be empty
-  sites_marked_for_removal.clear();
-
-  //loop over all sites
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-    //only consider sites on this proc inside simulation domain
-    if( it->get_process() == COMM_RANK && !it->get_border() ){
-
-      bool is_ionised = 0;
-      if( it->get_n_HII() > 0.0 || (it->get_n_HII() + it->get_n_HI()) == 0.0 ){
-        is_ionised = 1;
-      }
-
-      //if the neutral fraction of the cell has changed, 
-      //the minimum resolution is not exceeded and the 
-      //site is not a source, mark it for possible removal
-      double tau = it->get_n_HI() * UNIT_D * (double) it->get_neigh_dist() * UNIT_L * cross_H * straight_correction_factor;
-      if( is_ionised && 
-        tau < switchTau && 
-        it->get_neigh_dist() < 1.0/minResolution && 
-      it->get_flux() == 0.0 ){
-
-  //put the site id of the site in vector
-        sites_marked_for_removal.push_back( it->get_site_id() );
-  //add the volume of the site to the total volume
-  //occupied by the sites marked for removal
-        local_volume += it->get_volume();
-
-      }//if update criterium is satisfied
-    }//if inside simulation domain
-  }//for all sites
-
-  //add up the number of sites marked for removal of all procs
-  unsigned int local_numSites_to_remove = sites_marked_for_removal.size();
-  unsigned int numSites_to_remove;
-  MPI::COMM_WORLD.Allreduce( &local_numSites_to_remove, &numSites_to_remove, 1, MPI::UNSIGNED, MPI::SUM );
-
-  //add up the occupied volume of these sites of all procs
-  double totalVolume;
-  MPI::COMM_WORLD.Allreduce( &local_volume, &totalVolume, 1, MPI::DOUBLE, MPI::SUM );
-
-
-  if( COMM_RANK == 0){
-    simpleXlog << "  Number of candidates to remove: " << numSites_to_remove << endl;
-  }
-
-  //maximum number of sites to avoid numerical diffusion
-  //Assume the ionised region is spherical and the source sits in the centre.
-  //maximum number of steps to I-Front is minResolution
-  //Number of steps relates to number of points in volume as:
-  // (ksi * S)^3 = (3 * N)/(4 * M_PI)
-  //with ksi = 1.237 this gives N = 7.93 * S^3
-  //  double max_numSteps = minResolution;
-  //unsigned int max_numSites = 8 * (unsigned int)pow( max_numSteps, 3 );
-
-  //minimum number of sites to retain minimum resolution
-  unsigned int min_numSites = (unsigned int) ceil( totalVolume*( (double) pow( minResolution, 3 ) ) );
-
-  //calculate the number of sites that need to be removed if the minimum 
-  //number of sites in the optically thin volume is min_numSites
-  if( numSites_to_remove > min_numSites ){
-    numSites_to_remove -= min_numSites;
-  }else{
-    numSites_to_remove = 0;
-    sites_marked_for_removal.clear();
-    vector< unsigned long long int >().swap(sites_marked_for_removal);
-  }
-
-  if( COMM_RANK == 0){
-    simpleXlog << "  Total number of sites to remove: " << numSites_to_remove << endl;
-  }
-
-  return numSites_to_remove;
-
-}
-
-
-/****  Calculate the sites that are to be removed from simulation  ****/
-void SimpleX::get_sites_to_remove( const unsigned int& numSites_to_remove ){
-
-  // Create a vector of vectors of ints to be used as a histogram.
-  //number of bins is user specified variable
-  vector< vector<Site_Remove> > sites_marked_for_removal_hist;
-  sites_marked_for_removal_hist.assign( nbins, vector<Site_Remove>() );
-
-  //shuffle the total_sites_marked_for_removal so there is 
-  //no preference for the processor that communicated last
-  for( unsigned int i=0; i<total_sites_marked_for_removal.size(); i++ ){
-
-    unsigned int swapIndex = (int)floor( total_sites_marked_for_removal.size() * gsl_rng_uniform( ran ) );
-    if( swapIndex == total_sites_marked_for_removal.size() ) swapIndex--;
-
-    Site_Remove tempSite1 = total_sites_marked_for_removal[ i ];
-    Site_Remove tempSite2 = total_sites_marked_for_removal[ swapIndex ];
-
-    total_sites_marked_for_removal[ i ] = tempSite2;
-    total_sites_marked_for_removal[ swapIndex ] = tempSite1;
-
-  }
-
-  // Create the 'histogram' based on the min and max of the point density found above.
-  // A given bin of the histogram contains integers that correspond to candidates with 
-  // point densities appropriate for that bin.
-  for( unsigned int i=0; i<total_sites_marked_for_removal.size(); i++ ){
-    double delta_y = total_sites_marked_for_removal[i].get_update_property();
-    sites_marked_for_removal_hist[ unsigned( floor( delta_y * double( nbins - 1.0 )  )) ].push_back( total_sites_marked_for_removal[i] );
-  }
-
-  //total_sites_to_update can now be cleared for later use
-  total_sites_marked_for_removal.clear();
-  vector<Site_Remove>().swap( total_sites_marked_for_removal );
-
-  // Create a cumulative distribution from the cumulativeDist to be used as the
-  // integral up to a given density of the probability distribution.
-  vector<unsigned int> cumulative_dist( nbins, 0 );
-  cumulative_dist[0] = sites_marked_for_removal_hist[0].size();
-
-  for( unsigned int i=1; i<nbins; i++ ){
-    cumulative_dist[i] = sites_marked_for_removal_hist[i].size() + cumulative_dist[i-1];
-  }
-
-  // Make an array based on the cumulative distribution containing the
-  // iDs of the flagged points in the original cumulative_dist.  Note
-  // that the iDs of several bins of the original cumulative_dist can
-  // be grouped in one bin of the new array.
-
-  // The array has the same number of entries as the distribution but this
-  // need not be.
-  vector< vector<Site_Remove> >  draw_array;
-  draw_array.assign( nbins, vector<Site_Remove>() );
-
-  // Use the min and max for mapping
-  unsigned int min_dist = cumulative_dist[0];
-  unsigned int max_dist = cumulative_dist[ cumulative_dist.size() - 1 ];
-  unsigned int delta_dist = max_dist - min_dist;
-
-  //fill draw_array with sites marked for removal according to cumulative distribution
-  for( unsigned int i=0; i<nbins; i++ ){
-    unsigned int pos = (unsigned int) floor( ( ( cumulative_dist[i] - min_dist ) / double( delta_dist) ) * double( nbins - 1 ) );
-    draw_array[pos].insert( draw_array[pos].end(), sites_marked_for_removal_hist[i].begin(), sites_marked_for_removal_hist[i].end() );
-  }
-
-
-  // From this array, the points are drawn at random.
-  for( unsigned int i=0; i<numSites_to_remove; i++ ){
-
-    unsigned int pos = (unsigned int) floor( gsl_rng_uniform( ran ) * double( nbins - 1 ) ) ;
-
-    // If an empty bin is struck, the next non-empty bin higher up is used.
-    // This makes sure that points at high point density are removed preferentially.
-
-    // One could think of a smarter way of doing this...
-    while( draw_array[pos].empty() ){
-      pos++;
-      if( pos > nbins )
-        break;
-    }
-
-     //total_sites_to_update contains now the sites drawn from the histogram
-    if( pos < nbins ){ //make sure that if all bins above are empty, point is ignored
-      total_sites_marked_for_removal.push_back( draw_array[pos].back() );
-      draw_array[pos].pop_back();// This works only is the sites have no order, otherwise, another random number should be used
-    }else{
-      i--;
-    }
-
-  }//for all sites to remove
-
-  //free memory
-  draw_array.clear();
-  cumulative_dist.clear();
-  sites_marked_for_removal_hist.clear();
-
-  if( COMM_RANK == 0 ){
-    simpleXlog << "  Total number of sites selected for removal: " << total_sites_marked_for_removal.size() << endl;
-  }
-
-}
-
-/****  Redistribute the porperties of the removed sites  ****/
-//Give the relevant properties of sites that are to be removed from
-//the simulation to the still existing neighbours of the site
-//If sites are deleted, tau is set to zero
-void SimpleX::redistribute_site_properties(){
-
-  //determine which of the sites is on this proc
-  vector<Site_Remove> sites_to_remove;
-  for( unsigned long long int i=0; i<total_sites_marked_for_removal.size(); i++ ){
-    if( total_sites_marked_for_removal[i].get_process() == COMM_RANK ){
-      sites_to_remove.push_back( total_sites_marked_for_removal[i] );
-    }
-  }
-
-  cerr << " (" << COMM_RANK << ") Total number of sites to remove: " << sites_to_remove.size() 
-    << " out of " << total_sites_marked_for_removal.size() << endl;
-
-  //clear the vector for use in next run
-  total_sites_marked_for_removal.clear();
-  vector<Site_Remove>().swap(total_sites_marked_for_removal);
-
-  //make sure numPixels has the correct value
-  numPixels = number_of_directions;
-
-  //keep track of sites for which the redistribution failed
-  unsigned int give_up=0;
-  //now give  the properties of deleted vertices to existing neighbours on this proc
-  for( unsigned long long int i=0; i<sites_to_remove.size(); i++ ){
-
-    //site id of the site
-    unsigned long long int id = sites_to_remove[i].get_site_id();
-
-    //check if the id is valid
-    if( id > sites.size() ){
-      cerr << " (" << COMM_RANK << ") id bigger than sites.size(): " << id << " " << sites.size() << endl;
-    } 
-
-    //site properties are only distributed to neighbours that 
-    //live on this site, to avoid communications
-    unsigned int on_proc = 0;
-    //first make sure there are neighbours on this proc
-    for(unsigned int j=0; j<sites[ id ].get_numNeigh(); j++){
-
-      //site id of the neighbour
-      unsigned int neighId = sites[ id ].get_neighId(j);
-
-      //check if the neighbour is on this proc, not in border and
-      //not already deleted
-      if( sites[ neighId ].get_process() == COMM_RANK && 
-        !sites[ neighId ].get_border() &&               
-      sites[ neighId ].get_neigh_dist() >= 0.0 ){
-
-        on_proc++;
-
-      }
-    }//for all neighbours
-
-    //if there are neighbours that are allowed to receive the information
-    //redistribute the properties
-    if( on_proc > 0 ){
-      //loop over all neighbours
-      for(unsigned int j=0; j<sites[ id ].get_numNeigh(); j++){
-
-  //site id of the neighbour
-        unsigned int neighId = sites[ id ].get_neighId(j);
-
-  //check if the neighbour is on this proc, not in border and
-  //not already deleted
-        if( sites[ neighId ].get_process() == COMM_RANK && 
-          !sites[ neighId ].get_border() &&               
-        sites[ neighId ].get_neigh_dist() >= 0.0 ){
-
-    //total volume of the new site
-          double volume = (double) sites[neighId].get_volume() + (double) sites[id].get_volume()/on_proc;
-
-    //number of neutral atoms in combined cell
-          double N_HI = (double) sites[id].get_n_HI() * (double) sites[id].get_volume();
-          N_HI /= on_proc;
-          N_HI += (double) sites[neighId].get_n_HI() * (double) sites[neighId].get_volume();
-
-    //number of ionised atoms in combined cell
-          double N_HII = (double) sites[id].get_n_HII() * (double) sites[id].get_volume();
-          N_HII /= on_proc;
-          N_HII += (double) sites[neighId].get_n_HII() * (double) sites[neighId].get_volume();
-
-    //number density and ionised fraction in combined cell
-          double n_HI = N_HI/volume;
-          double n_HII = N_HII/volume;
-
-    //assign properties of combined cell to neighbour
-          sites[neighId].set_volume( (float) volume );
-          sites[neighId].set_n_HI( (float) n_HI );
-          sites[neighId].set_n_HII( (float) n_HII );
-
-          unsigned int num = sites[id].get_ballistic() ? sites[id].get_numNeigh() : number_of_directions;
-          for(unsigned int q=0;q<num;q++){
-
-            double inten = ( sites[id].get_intensityIn(q) + sites[id].get_intensityOut(q) )/on_proc; 
-
-      //assign intensities
-            if( sites[id].get_ballistic()){
-              if( sites[ neighId ].get_ballistic() ){
-                unsigned int neighIdLoc = (unsigned) sites[id].get_outgoing(j);
-                sites[ neighId ].addRadiationDiffOut( neighIdLoc, (float) inten );
-              }else{
-                unsigned int neighIdLoc = (unsigned) sites[id].get_outgoing(j);
-
-    //if the neighbour is not ballistic, find out in which direction 
-    //bins the photons should go
-                vector< unsigned int > dir_to_use;
-    //this trick only works for neighbours on this proc,
-    //otherwise outgoing array does not exist
-                for( unsigned int n=0; n<number_of_directions; n++ ){
-                  if( sites[ neighId ].get_outgoing(n) == neighIdLoc ){
-                    dir_to_use.push_back( n );
-                  }
-                }//for all directions
-
-    //if no direction is associated with this neighbour, find one
-                if(dir_to_use.size() == 0){
-
-      //find closest associated direction for this Delaunay line
-
-      //directions are stored in header
-                  float **refVector;
-      // Assign memory to the refVector
-                  refVector = new float*[number_of_directions];
-                  for( unsigned int n=0; n<number_of_directions; n++ ){
-                    refVector[n]=new float[3];
-                  }
-      //assign the first orientation to refVector
-                  for( unsigned int n=0; n<number_of_directions; n++ ){
-                    refVector[n][0] = (float) orient[orientation_index][n][0];
-                    refVector[n][1] = (float) orient[orientation_index][n][1];
-                    refVector[n][2] = (float) orient[orientation_index][n][2];
-                  }
-
-                  float vectorNeigh[3];
-                  vectorNeigh[0] = sites[id].get_x() - sites[ neighId ].get_x();
-                  vectorNeigh[1] = sites[id].get_y() - sites[ neighId ].get_y();
-                  vectorNeigh[2] = sites[id].get_z() - sites[ neighId ].get_z();
-
-      // Find the neighVec that is closest (in angle) to the refVec
-                  float highestInprod=-FLT_MAX;
-                  int highestInprodNumber=-1;
-                  for(unsigned int n=0; n<number_of_directions; n++) {
-                    float tempInprod = inproduct(vectorNeigh, refVector[n], 3);
-                    if( tempInprod > highestInprod ){
-                      highestInprod = tempInprod;
-                      highestInprodNumber = n;
-                    }
-                  }
-                  dir_to_use.push_back( highestInprodNumber );
-
-      // free memory of the refVector
-                  for(unsigned int n=0; n<number_of_directions; n++){
-                    delete [] refVector[n];
-                  }
-                  delete [] refVector;
-
-                }//if no direction associated with this linw
-
-                for(unsigned int n=0; n<dir_to_use.size() ; n++ ){
-                  sites[ neighId ].addRadiationDiffOut( dir_to_use[n], (float) inten/dir_to_use.size() );
-                }//for all neighbours to use
-                dir_to_use.clear();
-
-
-              }//if neighbour is ballistic
-
-            }else{ //if site itself is not ballistic
-
-              if(sites[ neighId ].get_ballistic() ){
-    //if the neighbour is ballistic, find out which 
-    //Delaunay line is associated with this direction
-                bool found = 0;
-                for( unsigned int n=0; !found && n<sites[ neighId ].get_numNeigh(); n++ ){
-                  if( sites[neighId].get_neighId(n) == sites[id].get_site_id() ){
-                    found = 1;
-                    sites[neighId].addRadiationDiffOut( n, (float) inten );
-                  } 
-                }
-                if(!found){
-                  cerr << " Error in redistribute_site_properties(): neighbour not found! " << endl;
-                }
-              }else{
-    //if not ballistic,
-    //send the photons to the neighbour in the same direction bin
-                sites[ neighId ].addRadiationDiffOut( q , (float) inten );
-
-              }//if neighbour is ballistic
-
-            }//if site is ballistic
-          }//for all neighbours/pixels
-
-    //	  for(unsigned int j=0; j<numPixels; j++ ){
-
-// 	    double intensityOut = 0.0; 
-
-// 	    //get the intensities of this site from site_intensities
-// 	    unsigned int intens_id_site = mapping_intens[ sites[id].get_vertex_id() ];
-// 	    //check if there were intensities stored for this site
-// 	    if( intens_id_site < intens_ids.size() ){
-// 	      intensityOut = (double) site_intensities[ intens_id_site + j ]/on_proc;
-// 	    }
-
-// 	    //only add the intensity if it is bigger than 0.0
-// 	    if( intensityOut > 0.0 ){
-
-// 	      //get the position in the site_intensities array
-// 	      unsigned int intens_id_neigh = mapping_intens[ sites[neighId].get_vertex_id() ];
-// 	      //it is possible that this site didn't have any intensities yet and so is not stored
-// 	      //in that case, create an entry
-// 	      if( intens_id_neigh >= intens_ids.size() ){
-// 		//keep mapping up to date
-// 		mapping_intens[ sites[neighId].get_vertex_id() ] = intens_ids.size();
-// 		//add to intens_ids
-// 		intens_ids.push_back( sites[neighId].get_vertex_id() );
-// 		//give site_intensities extra entries for the new intensities
-// 		site_intensities.insert( site_intensities.end(), numPixels, 0.0 );
-// 	      }
-
-// 	      //now the entry in the mapping surely exists
-// 	      intens_id_neigh = mapping_intens[ sites[neighId].get_vertex_id() ];
-
-// 	      site_intensities[ intens_id_neigh + j ] += (float) intensityOut;
-
-//	    }
-
-    //}//for all pixels
-
-
-        }//if
-      }//for all neighbours
-
-      //set the properties of the site to zero after they
-      //have been assigned to neighbour
-      //a negative neigh_dist means the site has been removed
-      sites[id].set_neigh_dist( -1.0 );
-      sites[id].set_volume( 0.0 );
-      sites[id].set_n_HI( 0.0 );
-      sites[id].set_n_HII( 0.0 );
-      unsigned int num = sites[id].get_ballistic() ? sites[id].get_numNeigh() : number_of_directions;
-      for(unsigned int j=0; j<num; j++){
-        sites[id].set_intensityIn(j,0.0);
-        sites[id].set_intensityOut(j,0.0);
-      }
-
-    }else{
-
-       //if all neighbours are already deleted, or on another proc, 
-       //try neighbours neighbours, otherwise give up
-
-       //loop over all neighbours
-      for(unsigned int j=0; j<sites[ id ].get_numNeigh(); j++){
-
-  //site id of the neighbour
-        unsigned int neighId = sites[ id ].get_neighId(j);
-  //check if site id is valid
-        if( neighId > sites.size() ){
-          cerr << " (" << COMM_RANK << ") neighId bigger than sites.size(): " << neighId << " " << sites.size() << endl;
-        }
-
-  //loop over neighbours neighbours
-        for( unsigned int k=0; k<sites[neighId].get_numNeigh(); k++ ){
-    //site id of neighbour
-          unsigned int neighNeighId = sites[ neighId ].get_neighId(k);
-
-    //check if the neighbour's neighbour is not the site itself
-          if( neighNeighId != id){
-      //check if the neighbour's neighbour is on this proc, not in border and
-      //not already deleted
-            if( sites[ neighNeighId ].get_process() == COMM_RANK && 
-              !sites[ neighNeighId ].get_border() &&               
-              sites[ neighNeighId ].get_neigh_dist() >= 0.0 )             
-            {
-              on_proc++;
-            }
-          }
-        }//for all neighbours neighbours
-      } //for all neighbours
-
-      //if there are valid neighbour's neighbours
-      if(on_proc){
-  //loop over all neighbours
-        for(unsigned int j=0; j<sites[ id ].get_numNeigh(); j++){
-
-    //site id of the neighbour
-          unsigned int neighId = sites[ id ].get_neighId(j);
-    //check if site id is valid
-          if( neighId > sites.size() ){
-            cerr << " (" << COMM_RANK << ") neighId bigger than sites.size(): " << neighId << " " << sites.size() << endl;
-          }
-
-    //loop over neighbours neighbours
-          for( unsigned int k=0; k<sites[neighId].get_numNeigh(); k++ ){
-      //site id of neighbour
-            unsigned int neighNeighId = sites[ neighId ].get_neighId(k);
-
-      //check if the neighbour's neighbour is not the site itself
-            if( neighNeighId != id){
-        //check if the neighbour's neighbour is on this proc, not in border and
-        //not already deleted
-              if( sites[ neighNeighId ].get_process() == COMM_RANK && 
-                !sites[ neighNeighId ].get_border() &&               
-              sites[ neighNeighId ].get_neigh_dist() >= 0.0 ){
-
-    //total volume of the new site
-                double volume = (double) sites[neighNeighId].get_volume() + (double) sites[id].get_volume()/on_proc;
-
-    //number of neutral atoms in combined cell
-                double N_HI = (double) sites[id].get_n_HI() * (double) sites[id].get_volume();
-                N_HI /= on_proc;
-                N_HI += (double) sites[neighNeighId].get_n_HI() * (double) sites[neighNeighId].get_volume();
-
-    //number of ionised atoms in combined cell
-                double N_HII = (double) sites[id].get_n_HII() * (double) sites[id].get_volume();
-                N_HII /= on_proc;
-                N_HII += (double) sites[neighNeighId].get_n_HII() * (double) sites[neighNeighId].get_volume();
-
-    //number density and ionised fraction in combined cell
-                double n_HI = N_HI/volume;
-                double n_HII = N_HII/volume;
-
-    //assign properties of combined cell to neighbour
-                sites[neighNeighId].set_volume( (float) volume );
-                sites[neighNeighId].set_n_HI( (float) n_HI );
-                sites[neighNeighId].set_n_HII( (float) n_HII );
-
-                unsigned int num = sites[id].get_ballistic() ? sites[id].get_numNeigh() : number_of_directions;
-                for(unsigned int q=0;q<num;q++){
-
-                  double inten = ( sites[id].get_intensityIn(q) + sites[id].get_intensityOut(q) )/on_proc; 
-
-      //assign intensities
-                  if( sites[id].get_ballistic()){
-                    if( sites[ neighNeighId ].get_ballistic() ){
-                      bool found = 0;
-                      for( unsigned int n=0; !found && n<sites[ neighNeighId ].get_numNeigh(); n++ ){
-                        if( sites[neighNeighId].get_neighId(n) == sites[id].get_site_id() ){
-                          found = 1;
-                          sites[ neighNeighId ].addRadiationDiffOut( n, (float) inten );
-                        }
-                      }
-          //unsigned int neighIdLoc = (unsigned) sites[neighId].get_outgoing(k);
-          //sites[ neighNeighId ].addRadiationDiffOut( neighIdLoc, (float) inten );
-                    }else{
-                      unsigned int neighIdLoc = (unsigned) sites[neighId].get_outgoing(k);
-          //if the neighbour is not ballistic, find out in which direction 
-          //bins the photons should go
-                      vector< unsigned int > dir_to_use;
-          //this trick only works for neighbours on this proc,
-          //otherwise outgoing array does not exist
-                      for( unsigned int n=0; n<number_of_directions; n++ ){
-                        if( sites[ neighNeighId ].get_outgoing(n) == neighIdLoc ){
-                          dir_to_use.push_back( n );
-                        }
-                      }//for all directions
-
-          //if no direction is associated with this neighbour, find one
-                      if(dir_to_use.size() == 0){
-
-      //find closest associated direction for this Delaunay line
-
-      //directions are stored in header
-                        float **refVector;
-      // Assign memory to the refVector
-                        refVector = new float*[number_of_directions];
-                        for( unsigned int n=0; n<number_of_directions; n++ ){
-                          refVector[n]=new float[3];
-                        }
-      //assign the first orientation to refVector
-                        for( unsigned int n=0; n<number_of_directions; n++ ){
-                          refVector[n][0] = (float) orient[orientation_index][n][0];
-                          refVector[n][1] = (float) orient[orientation_index][n][1];
-                          refVector[n][2] = (float) orient[orientation_index][n][2];
-                        }
-
-                        float vectorNeigh[3];
-                        vectorNeigh[0] = sites[id].get_x() - sites[ neighNeighId ].get_x();
-                        vectorNeigh[1] = sites[id].get_y() - sites[ neighNeighId ].get_y();
-                        vectorNeigh[2] = sites[id].get_z() - sites[ neighNeighId ].get_z();
-
-      // Find the neighVec that is closest (in angle) to the refVec
-                        float highestInprod=-FLT_MAX;
-                        int highestInprodNumber=-1;
-                        for(unsigned int n=0; n<number_of_directions; n++) {
-                          float tempInprod = inproduct(vectorNeigh, refVector[n], 3);
-                          if( tempInprod > highestInprod ){
-                            highestInprod = tempInprod;
-                            highestInprodNumber = n;
-                          }
-                        }
-                        dir_to_use.push_back( highestInprodNumber );
-
-      // free memory of the refVector
-                        for(unsigned int n=0; n<number_of_directions; n++){
-                          delete [] refVector[n];
-                        }
-                        delete [] refVector;
-
-                      }//if no direction associated with this linw
-
-                      for(unsigned int n=0; n<dir_to_use.size() ; n++ ){
-                        sites[ neighNeighId ].addRadiationDiffOut( dir_to_use[n], (float) inten/dir_to_use.size() );
-                      }//for all neighbours to use
-                      dir_to_use.clear();
-
-
-                    }//if neighbour is ballistic
-
-                  }else{
-                    if(sites[ neighNeighId ].get_ballistic() ){
-          //if the neighbour is ballistic, find out which 
-          //Delaunay line is associated with this direction
-                      bool found = 0;
-                      for( unsigned int n=0; !found && n<sites[ neighNeighId ].get_numNeigh(); n++ ){
-                        if( sites[neighNeighId].get_neighId(n) == sites[neighId].get_site_id() ){
-                          found = 1;
-                          sites[neighNeighId].addRadiationDiffOut( n, (float) inten );
-                        } 
-                      }
-                      if(!found){
-                        cerr << " Error in redistribute_site_properties(): neighbour not found! " << endl;
-                      }
-                    }else{
-          //if not ballistic,
-          //send the photons to the neighbour in the same direction bin
-                      sites[ neighNeighId ].addRadiationDiffOut( q , (float) inten );
-
-                    }//if neighbour is ballistic
-
-                  }//if site is ballistic
-                }//for all neighbours/pixels
-
-
-
-// 		//assign intensities
-// 		for(unsigned int j=0; j<numPixels; j++ ){
-
-// 		  double intensityOut = 0.0; 
-
-// 		  //get the intensities of this site from site_intensities
-// 		  unsigned int intens_id_site = mapping_intens[ sites[id].get_vertex_id() ];
-// 		  //check if there were intensities stored for this site
-// 		  if( intens_id_site < intens_ids.size() ){
-// 		    intensityOut = (double) site_intensities[ intens_id_site + j ]/on_proc;
-// 		  }
-
-// 		  //only add the intensity if it is bigger than 0.0
-// 		  if( intensityOut > 0.0 ){
-// 		    //get the position in the site_intensities array
-// 		    unsigned int intens_id_neigh = mapping_intens[ sites[neighNeighId].get_vertex_id() ];
-// 		    //it is possible that this site didn't have any intensities yet and so is not stored
-// 		    //in that case, create an entry
-// 		    if( intens_id_neigh >= intens_ids.size() ){
-// 		      //keep mapping up to date
-// 		      mapping_intens[ sites[neighNeighId].get_vertex_id() ] = intens_ids.size();
-// 		      //add to intens_ids
-// 		      intens_ids.push_back( sites[neighNeighId].get_vertex_id() );
-// 		      //give site_intensities extra entries for the new intensities
-// 		      site_intensities.insert( site_intensities.end(), numPixels, 0.0 );
-// 		    }
-
-// 		    //now the entry in the mapping surely exists
-// 		    intens_id_neigh = mapping_intens[ sites[neighNeighId].get_vertex_id() ];
-
-// 		    site_intensities[ intens_id_neigh + j ] += (float) intensityOut;
-
-// 		  }
-
-//		}//for all pixels
-
-              }//if valid site
-            }//if not this site
-          }//for all neighbour's neighbours
-        }//for all neighbours
-
-  //set the properties of teh site to zero after they
-  //have been assigned to neighbour
-  //a negative tau means the site has been removed
-        sites[id].set_neigh_dist( -1.0 );
-        sites[id].set_volume( 0.0 );
-        sites[id].set_n_HI( 0.0 );
-        sites[id].set_n_HII( 0.0 );
-        unsigned int num = sites[id].get_ballistic() ? sites[id].get_numNeigh() : number_of_directions;
-        for(unsigned int j=0; j<num; j++){
-          sites[id].set_intensityIn(j,0.0);
-          sites[id].set_intensityOut(j,0.0);
-        }
-
-      }else{
-  //if not neighbour's neighbours are valid, give up
-  //and do not remove site
-        give_up++;
-      }      
-
-
-    }//if on_proc 
-  }//for all sites to delete
-
-  //free memory
-  sites_to_remove.clear();
-
-  if(give_up){
-    cerr << "  (" << COMM_RANK << ") Gave up on updating " << give_up << " vertices" << endl;
-  }
-
-  if( COMM_RANK == 0 ){
-    simpleXlog << "  Sites to be removed redistributed " << endl;
-  }
-
-}
 
 
 /****************************************************************************************/
@@ -5990,7 +4008,7 @@ void SimpleX::send_dom_dec(){
     //master fills temp
     if(COMM_RANK == 0){
       for(unsigned int j = start_id; j<(start_id+this_chunk_size); j++){
-        temp.push_back( dom_dec[j] );
+	temp.push_back( dom_dec[j] );
       }
       //other procs resize to correct sizw  
     }else{
@@ -6065,7 +4083,7 @@ void SimpleX::send_vertices(){
     //master fills temp
     if(COMM_RANK == 0){
       for(unsigned int j = start_vertex_id; j<(start_vertex_id+this_chunk_size); j++){
-        temp[ j - start_vertex_id ] = vertices[j];
+	temp[ j - start_vertex_id ] = vertices[j];
       }
     }
 
@@ -6143,36 +4161,36 @@ void SimpleX::send_site_properties(){
       //only include sites on this proc not in boundary
       if( it->get_process() == COMM_RANK && !it->get_border() ){
 
-  //keep track of the procs the site has already been sent to
-        vector< bool > proc(COMM_SIZE,0);
-  //loop over all neighbours to check whether 
-  //this site has neighbours on another proc
-        for( unsigned int j=0; j<it->get_numNeigh(); j++ ){
+	//keep track of the procs the site has already been sent to
+	vector< bool > proc(COMM_SIZE,0);
+	//loop over all neighbours to check whether 
+	//this site has neighbours on another proc
+	for( unsigned int j=0; j<it->get_numNeigh(); j++ ){
 
-    //place in sites array of this neighbour
-          unsigned int neigh = it->get_neighId(j);
-    //check if neighbour belongs to other proc and if the site is not already sent there
-          if( sites[neigh].get_process() != COMM_RANK && !proc[sites[neigh].get_process()] ){
+	  //place in sites array of this neighbour
+	  unsigned int neigh = it->get_neighId(j);
+	  //check if neighbour belongs to other proc and if the site is not already sent there
+	  if( sites[neigh].get_process() != COMM_RANK && !proc[sites[neigh].get_process()] ){
 
-      //put neighbour in list to send
-            tempSend.set_vertex_id( it->get_vertex_id() );
-      //watch out, this is the process the site will be send to,
-      //not the process the site belongs to!
-            tempSend.set_process( sites[neigh].get_process() );
-            tempSend.set_site_id( it->get_site_id() );
-            tempSend.set_ballistic( (unsigned int) it->get_ballistic() );
+	    //put neighbour in list to send
+	    tempSend.set_vertex_id( it->get_vertex_id() );
+	    //watch out, this is the process the site will be send to,
+	    //not the process the site belongs to!
+	    tempSend.set_process( sites[neigh].get_process() );
+	    tempSend.set_site_id( it->get_site_id() );
+	    tempSend.set_ballistic( (unsigned int) it->get_ballistic() );
 
-      //store properties in vector
-            sites_to_send.push_back( tempSend );
-      //keep track of the number of sites to send to
-      //which proc
-            nsend_local[ sites[neigh].get_process() ]++;
-      //set bool at the proc the site will be send to
-            proc[ sites[neigh].get_process() ] = 1;
+	    //store properties in vector
+	    sites_to_send.push_back( tempSend );
+	    //keep track of the number of sites to send to
+	    //which proc
+	    nsend_local[ sites[neigh].get_process() ]++;
+	    //set bool at the proc the site will be send to
+	    proc[ sites[neigh].get_process() ] = 1;
 
-          }//if neighbour is on other proc
-        }//for all neighbours
-        proc.clear();
+	  }//if neighbour is on other proc
+	}//for all neighbours
+	proc.clear();
       }//if on this proc in domain
       it++;
     }//while sites to send is not too big
@@ -6194,7 +4212,7 @@ void SimpleX::send_site_properties(){
     unsigned int num_sites_to_receive = 0;
     for( unsigned int p=0; p<COMM_SIZE; p++){
       if( p != COMM_RANK ){
-        num_sites_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
+	num_sites_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
       }
     }
 
@@ -6216,32 +4234,31 @@ void SimpleX::send_site_properties(){
       int ngrp;
       for(ngrp = level; ngrp < (1 << PTask); ngrp++){
 
-        recvTask = ThisTask ^ ngrp;
+	recvTask = ThisTask ^ ngrp;
 
-        if(recvTask < NTask){
-    //check if there's sites to receive or to send
-          if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
+	if(recvTask < NTask){
+	  //check if there's sites to receive or to send
+	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
-      //do the sending
-            MPI::COMM_WORLD.Sendrecv(&sites_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Site),
-              MPI::BYTE, recvTask, 0, 
-              &sites_to_update[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Site),
-              MPI::BYTE, recvTask, 0);
+	    //do the sending and receiving
+	    MPI::COMM_WORLD.Sendrecv(&sites_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Site),
+				     MPI::BYTE, recvTask, 0, 
+				     &sites_to_update[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Site),
+				     MPI::BYTE, recvTask, 0);
 
-          }//if there's sites to send or receive
+	  }//if there's sites to send or receive
+	}//if receiving task is smaller than COMM_SIZE
 
-        }//if receiving task is smaller than COMM_SIZE
-
-  //update the buffer size
-        for( int p = 0; p < NTask; p++){
-          if( (p ^ ngrp) < NTask ){
-            nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
-          }
-        }
+	//update the buffer size
+	for( int p = 0; p < NTask; p++){
+	  if( (p ^ ngrp) < NTask ){
+	    nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
+	  }
+	}
 
       }
-      //why is this? It has to be there...
-      level = ngrp - 1;
+
+      level = ngrp - 1;// Keep the level loop from duplicate operations
       nbuffer.clear();
     } //for all levels
 
@@ -6263,17 +4280,17 @@ void SimpleX::send_site_properties(){
       //as long as the site has not been found on this proc, 
       //loop through the send_list
       for( unsigned int i=0; !found && i<send_list.size(); i++ ){ 
-  //index of the site in the sites array
-        unsigned int index = send_list[i];
-  //if the vertex id of this site agrees with that of the site
-  //on the other proc, assign relevant information
-        if( sites[index].get_vertex_id() == sit->get_vertex_id() ){
-          found = 1;
-    //the site now knows the place of this site in the 
-    //sites list on the proc the site belongs to!
-          sites[index].set_site_id( sit->get_site_id() );
-          sites[index].set_ballistic( (bool) sit->get_ballistic() );
-        }
+	//index of the site in the sites array
+	unsigned int index = send_list[i];
+	//if the vertex id of this site agrees with that of the site
+	//on the other proc, assign relevant information
+	if( sites[index].get_vertex_id() == sit->get_vertex_id() ){
+	  found = 1;
+	  //the site now knows the place of this site in the 
+	  //sites list on the proc the site belongs to!
+	  sites[index].set_site_id( sit->get_site_id() );
+	  sites[index].set_ballistic( (bool) sit->get_ballistic() );
+	}
 
       }//for all sites to update
     }//for all updates
@@ -6297,6 +4314,7 @@ void SimpleX::send_site_properties(){
     simpleXlog << "  Site properties sent " << endl;
   }
 
+  return;
 }
 
 
@@ -6308,66 +4326,6 @@ void SimpleX::send_neighbour_properties(){
   if( COMM_RANK == 0 ){
     simpleXlog << "  Sending neighbour properties" << endl;
   }
-
-  if(COMM_RANK == 0){
-    for(SITE_ITERATOR it=sites.begin();it!=sites.end();it++){
-      SITE_ITERATOR tmp = it;
-      tmp++;
-      if( tmp->get_vertex_id() == it->get_vertex_id() ){
-        cerr << " (" << COMM_RANK << ") double vertex: (" << tmp->get_process() << "|" << tmp->get_vertex_id() << " and (" << it->get_process() << "|" << it->get_vertex_id() << ")" << endl; 
-      }      
-    }
-  }
-  MPI::COMM_WORLD.Barrier();
-  if(COMM_RANK == 1){
-    for(SITE_ITERATOR it=sites.begin();it!=sites.end();it++){
-      SITE_ITERATOR tmp = it;
-      tmp++;
-      if(tmp->get_vertex_id() == it->get_vertex_id()){
-        cerr << " (" << COMM_RANK << ") double vertex: (" << tmp->get_process() << "|" << tmp->get_vertex_id() << " and (" << it->get_process() << "|" << it->get_vertex_id() << ")" << endl; 
-      }
-    }
-  }
-  
-  
-// if(COMM_RANK == 0){
-//   for(SITE_ITERATOR it=sites.begin();it!=sites.end();it++){
-//     if(it->get_vertex_id() == 47){
-//       cerr << "  (" << COMM_RANK << ") site " << it->get_vertex_id() << ": (" << it->get_process() << ": " << it->get_x() << "," << it->get_y() << "," << it->get_z() << ") " 
-//            << it->get_border() << endl;
-//          for(unsigned int j=0; j<it->get_numNeigh();j++){
-//            cerr << sites[it->get_neighId(j)].get_vertex_id() << " (" << sites[it->get_neighId(j)].get_process() << ": " 
-//            << sites[it->get_neighId(j)].get_x() << "," << sites[it->get_neighId(j)].get_y() << "," << sites[it->get_neighId(j)].get_z() << ") " << endl;
-//          }
-//          cerr << endl;
-//            
-//     }
-//     if(it->get_vertex_id() == 13119){
-//       cerr << "  (" << COMM_RANK << ") site " << it->get_vertex_id() << ": (" << it->get_process() << ": " << it->get_x() << "," << it->get_y() << "," << it->get_z() << ") " 
-//            << it->get_border() << endl;
-//     }
-//   }
-// }
-
-MPI::COMM_WORLD.Barrier();
-
-// if(COMM_RANK == 1){
-//   for(SITE_ITERATOR it=sites.begin();it!=sites.end();it++){
-//     if(it->get_vertex_id() == 47){
-//       cerr << "  (" << COMM_RANK << ") site " << it->get_vertex_id() << ": (" << it->get_process() << ": " << it->get_x() << "," << it->get_y() << "," << it->get_z() << ") " 
-//            << it->get_border() << endl;
-//            for(unsigned int j=0; j<it->get_numNeigh();j++){
-//              cerr << sites[it->get_neighId(j)].get_vertex_id() << " (" << sites[it->get_neighId(j)].get_process() 
-//                << ": " << sites[it->get_neighId(j)].get_x() << "," << sites[it->get_neighId(j)].get_y() << "," << sites[it->get_neighId(j)].get_z() << ")" << endl;
-//            }
-//            cerr << endl;
-//     }
-//     if(it->get_vertex_id() == 13119){
-//       cerr << "  (" << COMM_RANK << ") site " << it->get_vertex_id() << ": (" << it->get_process() << ": " << it->get_x() << "," << it->get_y() << "," << it->get_z() << ") " 
-//            << it->get_border() << endl;
-//     }
-//   }
-// }
 
   //first create the straight array for all sites on other proc
   //that are ballistic
@@ -6409,49 +4367,49 @@ MPI::COMM_WORLD.Barrier();
       //only include sites on this proc not in boundary
       if( it->get_process() == COMM_RANK && !it->get_border() && it->get_ballistic() ){
 
-        //keep track of the procs the site has already been sent to
-        vector< bool > proc(COMM_SIZE,0);
+	//keep track of the procs the site has already been sent to
+	vector< bool > proc(COMM_SIZE,0);
 
-        //loop over all neighbours to check whether 
-        //this site has neighbours on another proc
-        for( unsigned int j=0; j<it->get_numNeigh(); j++ ){
-          //place in sites array of this neighbour
-          unsigned long long int neigh = it->get_neighId(j);
-          //check if neighbour belongs to other proc and if the site is not already sent there
-          if( sites[neigh].get_process() != COMM_RANK && !proc[sites[neigh].get_process()] ){
+	//loop over all neighbours to check whether 
+	//this site has neighbours on another proc
+	for( unsigned int j=0; j<it->get_numNeigh(); j++ ){
+	  //place in sites array of this neighbour
+	  unsigned long int neigh = it->get_neighId(j);
+	  //check if neighbour belongs to other proc and if the site is not already sent there
+	  if( sites[neigh].get_process() != COMM_RANK && !proc[sites[neigh].get_process()] ){
 
-            //in this case we have to send all neighbours that belong to other proc
-            for( unsigned int k=0; k<it->get_numNeigh(); k++ ){
-              //check if this neighbour belongs to other proc as well
-              if( sites[ it->get_neighId(k) ].get_process() == sites[neigh].get_process() ){
-              //store the needed properties of the neighbours of this site
+	    //in this case we have to send all neighbours that belong to other proc
+	    for( unsigned int k=0; k<it->get_numNeigh(); k++ ){
+	      //check if this neighbour belongs to other proc as well
+	      if( sites[ it->get_neighId(k) ].get_process() == sites[neigh].get_process() ){
+		//store the needed properties of the neighbours of this site
 
-                //watch out, this is the process the site will be send to,
-                //not the process the site belongs to!
-                tempNeigh.set_process( sites[neigh].get_process() );
+		//watch out, this is the process the site will be send to,
+		//not the process the site belongs to!
+		tempNeigh.set_process( sites[neigh].get_process() );
 
-                //global id of this site
-                tempNeigh.set_vertex_id( it->get_vertex_id() );
-                //process of this site
-                tempNeigh.set_ballistic( (unsigned int) it->get_ballistic() );
-                //global id of neighbour
-                tempNeigh.set_neighId( sites[ it->get_neighId(k) ].get_vertex_id() );
-                //local place of neighbour in neighbour array of this site
-                tempNeigh.set_neighIdLoc( k );
+		//global id of this site
+		tempNeigh.set_vertex_id( it->get_vertex_id() );
+		//process of this site
+		tempNeigh.set_ballistic( (unsigned int) it->get_ballistic() );
+		//global id of neighbour
+		tempNeigh.set_neighId( sites[ it->get_neighId(k) ].get_vertex_id() );
+		//local place of neighbour in neighbour array of this site
+		tempNeigh.set_neighIdLoc( k );
 
-                //put the neighbour information in the structure to be send
-                neigh_to_send.push_back( tempNeigh );
+		//put the neighbour information in the structure to be send
+		neigh_to_send.push_back( tempNeigh );
 
-                //keep track of the number of sites to send to
-                //which proc
-                nsend_local[ sites[neigh].get_process() ]++;
+		//keep track of the number of sites to send to
+		//which proc
+		nsend_local[ sites[neigh].get_process() ]++;
 
-                //set bool at the proc the site will be send to
-                proc[ sites[neigh].get_process() ] = 1;
-              }
-            }//for all neighbours
-          }//if neighbour not on this proc
-        }//for all neighbours
+		//set bool at the proc the site will be send to
+		proc[ sites[neigh].get_process() ] = 1;
+	      }
+	    }//for all neighbours
+	  }//if neighbour not on this proc
+	}//for all neighbours
       }//if ballistic on this proc and not in border
       it++;
     }//while neigh to send is not too big
@@ -6473,7 +4431,7 @@ MPI::COMM_WORLD.Barrier();
     unsigned int num_neigh_to_receive = 0;
     for( unsigned int p=0; p<COMM_SIZE; p++){
       if( p != COMM_RANK ){
-        num_neigh_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
+	num_neigh_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
       }
     }
 
@@ -6495,28 +4453,28 @@ MPI::COMM_WORLD.Barrier();
       int ngrp;
       for(ngrp = level; ngrp < (1 << PTask); ngrp++){
 
-        recvTask = ThisTask ^ ngrp;
+	recvTask = ThisTask ^ ngrp;
 
-        if(recvTask < NTask){
-    //check if there's sites to receive or to send
-          if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
+	if(recvTask < NTask){
+	  //check if there's sites to receive or to send
+	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
-      //do the sending
-            MPI::COMM_WORLD.Sendrecv(&neigh_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Neigh),
-              MPI::BYTE, recvTask, 0, 
-              &neigh_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Neigh),
-              MPI::BYTE, recvTask, 0);
+	    //do the sending
+	    MPI::COMM_WORLD.Sendrecv(&neigh_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Neigh),
+				     MPI::BYTE, recvTask, 0, 
+				     &neigh_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Neigh),
+				     MPI::BYTE, recvTask, 0);
 
-          }//if there's sites to send or receive
+	  }//if there's sites to send or receive
 
-        }//if receiving task is smaller than COMM_SIZE
+	}//if receiving task is smaller than COMM_SIZE
 
-  //update the buffer size
-        for( int p = 0; p < NTask; p++){
-          if( (p ^ ngrp) < NTask ){
-            nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
-          }
-        }
+	//update the buffer size
+	for( int p = 0; p < NTask; p++){
+	  if( (p ^ ngrp) < NTask ){
+	    nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
+	  }
+	}
 
       }
       //why is this? It has to be there...
@@ -6540,53 +4498,35 @@ MPI::COMM_WORLD.Barrier();
     while( sit != neigh_recv.end() ){
       bool found = 0;
       if( site_it == sites.end()){
-        cerr << " (" << COMM_RANK << ") Error in send_neighbour_properties: vertex " << sit->get_vertex_id() << " not found " << endl;
-        MPI::COMM_WORLD.Abort( -1 );
+	cerr << " (" << COMM_RANK << ") Error in send_neighbour_properties: vertex " << sit->get_vertex_id() << " not found " << endl;
+	MPI::COMM_WORLD.Abort( -1 );
       }
       //check if we have the correct site
       bool found_site = 0;
       if( site_it->get_vertex_id() == sit->get_vertex_id() ){
-        found_site = 1;
-        for( unsigned int j=0; !found && j<site_it->get_numNeigh(); j++ ){
-    //check if we have the correct neighbour
-          if( sit->get_neighId() == sites[ site_it->get_neighId( j ) ].get_vertex_id() ){
-      //add the local id of this neighbour on proc it belongs to to the straight array
-      //of the site on this proc
-            site_it->add_straight( j, sit->get_neighIdLoc() );
-            found = 1;
-          }
-        }
+	found_site = 1;
+	for( unsigned int j=0; !found && j<site_it->get_numNeigh(); j++ ){
+	  //check if we have the correct neighbour
+	  if( sit->get_neighId() == sites[ site_it->get_neighId( j ) ].get_vertex_id() ){
+	    //add the local id of this neighbour on proc it belongs to to the straight array
+	    //of the site on this proc
+	    site_it->add_straight( j, sit->get_neighIdLoc() );
+	    found = 1;
+	  }
+	}
       }
 
       if(found_site && !found){
-
-        if(sit->get_neighId() < origNumSites){
-          cerr << " (" << COMM_RANK << ") Error in send_neighbour_properties: found site " << site_it->get_vertex_id() 
-               //<< " (" << site_it->get_x() << "," << site_it->get_y() << "," << site_it->get_z() << ")"
-            << " but not neighbour " << sit->get_neighId() << endl;
-          bool present = 0;
-          for( vector<Send_Neigh>::iterator sit2 = neigh_recv.begin(); sit2!=neigh_recv.end(); sit2++ ){
-            if (sit->get_neighId() == sit2->get_neighId() ) present = 1;
-            break;
-          }
-          if(present)
-            cerr << " (" << COMM_RANK << ") neighbour is in list but was not found"  << endl;
-          else
-            cerr << " (" << COMM_RANK << ") neighbour is not in list"  << endl;
-
-          MPI::COMM_WORLD.Abort( -1 );
-        }else{
-          cerr << " (" << COMM_RANK << ") Warning, in send_neighbour_properties: found site " << site_it->get_vertex_id() 
-            << " but not neighbour " << sit->get_neighId() << ". This neighbour is in boundary. " << endl;
-        }
+	cerr << " (" << COMM_RANK << ") Error in send_neighbour_properties: found site " << site_it->get_vertex_id() << " but not neighbour " << sit->get_neighId() << endl;
+	MPI::COMM_WORLD.Abort( -1 );
       }
 
       //if the neighbour has been found, go the next
       //else, the neighbour belongs to other site
       if(found_site){
-        sit++;
+	sit++;
       }else{
-        site_it++;
+	site_it++;
       }
 
     }//for neighbours received
@@ -6658,56 +4598,59 @@ void SimpleX::send_intensities(){
 
 
       for( unsigned int j=0; j<numPixels; j++ ){
+	//loop over frequencies
+	for(short int f=0; f<numFreq;f++){
+	  //if the site holds intensity, it needs to be send 
+	  if( sites[index].get_intensityIn( f,j ) > 0.0 || sites[index].get_intensityOut( f,j ) > 0.0  ){
 
-  //if the site holds intensity, it needs to be send 
-        if( sites[index].get_intensityIn( j ) > 0.0 || sites[index].get_intensityOut( j ) > 0.0  ){
+	    //assign the relevant properties that need to be send 
+	    //to ensure fast communication
 
-    //assign the relevant properties that need to be send 
-    //to ensure fast communication
+	    //the process the information is meant for
+	    temp.set_process( sites[index].get_process() );
+	    //the neighbour that the intensity is coming from
+	    unsigned int neighId = 0;
+	    if( sites[index].get_ballistic() ){
+	      //in case of ballistic transport, the local position
+	      //of the neighbour on teh other proc is stored in
+	      //the straight vector, that is not used for sites
+	      //that belong to other proc
+	      short int l=0;
+	      neighId = sites[index].get_straight(j,l);
+	    }else{
+	      neighId = j;
+	    }
 
-    //the process the information is meant for
-          temp.set_process( sites[index].get_process() );
-    //the neighbour that the intensity is coming from
-          unsigned int neighId = 0;
-          if( sites[index].get_ballistic() ){
-      //in case of ballistic transport, the local position
-      //of the neighbour on teh other proc is stored in
-      //the straight vector, that is not used for sites
-      //that belong to other proc
-            short int l=0;
-            neighId = sites[index].get_straight(j,l);
-          }else{
-            neighId = j;
-          }
+	    temp.set_neighId( neighId );
+	    //the place of the site in the sites vector 
+	    //(note that this is the place in the sites vector 
+	    //on the proc the site belongs to!)
+	    temp.set_id( sites[index].get_site_id() );
+	    //frequency bin
+	    temp.set_freq_bin(f);
+	    //incoming intensity
+	    temp.set_intensityIn( sites[index].get_intensityIn( f,j ) );
+	    //ougoing intensity
+	    temp.set_intensityOut( sites[index].get_intensityOut( f,j ) );
 
-          temp.set_neighId( neighId );
-    //the place of the site in the sites vector 
-    //(note that this is the place in the sites vector 
-    //on the proc the site belongs to!)
-          temp.set_id( sites[index].get_site_id() );
-    //incoming intensity
-          temp.set_intensityIn( sites[index].get_intensityIn( j ) );
-    //ougoing intensity
-          temp.set_intensityOut( sites[index].get_intensityOut( j ) );
+	    //store the information in vector
+	    sites_to_send.push_back(temp);
 
-    //store the information in vector
-          sites_to_send.push_back(temp);
+	    //photons will be on other proc, so remove them here 
+	    //to conserve photons
+	    sites[index].set_intensityIn( f,j, 0.0 ); 
+	    sites[index].set_intensityOut( f,j, 0.0 );
 
-    //photons will be on other proc, so remove them here 
-    //to conserve photons
-          sites[index].set_intensityIn( j, 0.0 ); 
-          sites[index].set_intensityOut( j, 0.0 );
+	    //keep track of the number of sites to send to
+	    //which proc
+	    nsend_local[ sites[index].get_process() ]++;
 
-    //keep track of the number of sites to send to
-    //which proc
-          nsend_local[ sites[index].get_process() ]++;
-
-        }//if site holds intensity
-
+	  }//if site holds intensity
+	}//for all freq
       }//for all pixels/neighbours
 
-
       i++;
+
     }//while there's sites to send and maximum msg size has not been reached
 
 
@@ -6727,7 +4670,7 @@ void SimpleX::send_intensities(){
     unsigned int num_sites_to_receive = 0;
     for( unsigned int p=0; p<COMM_SIZE; p++){
       if( p != COMM_RANK ){
-        num_sites_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
+	num_sites_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
       }
     }
 
@@ -6754,27 +4697,27 @@ void SimpleX::send_intensities(){
       int ngrp;
       for(ngrp = level; ngrp < (1 << PTask); ngrp++){   
 
-        recvTask = ThisTask ^ ngrp;                       
+	recvTask = ThisTask ^ ngrp;                       
 
-        if(recvTask < NTask){                            
-    //check if there's sites to receive or to send
-          if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
+	if(recvTask < NTask){                            
+	  //check if there's sites to receive or to send
+	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
-      //send the intensity information and receive it from other procs in sites_recv
-            MPI::COMM_WORLD.Sendrecv(&sites_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Intensity),
-              MPI::BYTE, recvTask, 0, 
-              &sites_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Intensity),
-              MPI::BYTE, recvTask, 0);
+	    //send the intensity information and receive it from other procs in sites_recv
+	    MPI::COMM_WORLD.Sendrecv(&sites_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Intensity),
+				     MPI::BYTE, recvTask, 0, 
+				     &sites_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Intensity),
+				     MPI::BYTE, recvTask, 0);
 
-          }//if there's sites to send or receive
-        }//if receiving task is smaller than COMM_SIZE
+	  }//if there's sites to send or receive
+	}//if receiving task is smaller than COMM_SIZE
 
-  //update the buffer size
-        for( int p = 0; p < NTask; p++){
-          if( (p ^ ngrp) < NTask ){
-            nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
-          }
-        }
+	//update the buffer size
+	for( int p = 0; p < NTask; p++){
+	  if( (p ^ ngrp) < NTask ){
+	    nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
+	  }
+	}
       }
       //why is this? It has to be there...
       level = ngrp - 1;
@@ -6800,12 +4743,12 @@ void SimpleX::send_intensities(){
 
       //incoming intensities
       if( it->get_intensityIn() ){
-        sites[ it->get_id() ].addRadiationDiffIn( it->get_neighId(), it->get_intensityIn() );
+	sites[ it->get_id() ].addRadiationDiffIn( it->get_freq_bin(), it->get_neighId(), it->get_intensityIn() );
       }
 
       //outgoing intensities
       if( it->get_intensityOut() ){
-        sites[ it->get_id() ].addRadiationDiffOut( it->get_neighId(), it->get_intensityOut() );
+	sites[ it->get_id() ].addRadiationDiffOut( it->get_freq_bin(), it->get_neighId(), it->get_intensityOut() );
       }
 
     }//for all updates
@@ -6828,343 +4771,11 @@ void SimpleX::send_intensities(){
 
 }
 
-/**** Send the sites marked for removal to master ****/
-//To do: send only to master
-void SimpleX::send_sites_marked_for_removal(){
-
-  //first determine the relevant properties of the sites
-  //marked for removal. This is done by every proc for the 
-  //sites that live on that proc
-
-  // the minimum and maximum line length
-  double local_min_length = FLT_MAX, local_max_length = -FLT_MAX; 
-  //the minimum and maximum gradient of the ionised fraction
-  double local_min_frac_grad = FLT_MAX, local_max_frac_grad = -FLT_MAX;
-
-  //loop over all sites marked for removal
-  for( unsigned int i=0; i<sites_marked_for_removal.size(); i++ ){
-
-    //site index of the site marked for removal 
-    unsigned int index = sites_marked_for_removal[i];
-
-    //-- line lengths --//
-    // Determine the maximum and minimum cell size (approx. by line length) on this proc. 
-    double line_length = sites[index].get_neigh_dist();
-    if( line_length > local_max_length ){
-      local_max_length = line_length;
-    }
-    if( line_length < local_min_length ){
-      local_min_length = line_length;
-    }
-
-    // -- gradient of ionised fractions --//
-    // Determine the maximum difference in log(ionised fraction) between this cell and its neighbours
-    double min_frac_neigh = FLT_MAX, max_frac_neigh = -FLT_MAX;
-    //loop over all neighbours 
-    for( unsigned int j=0; j< sites[index].get_numNeigh(); j++ ){
-
-      unsigned int neigh = sites[index].get_neighId( j );
-      double ion_frac_neigh = (double) sites[ neigh ].get_n_HII()/( (double) sites[ neigh ].get_n_HI() + (double) sites[ neigh ].get_n_HII() );
-
-      //store the maximum and minimum ionised fraction of all neighbours
-      if( ion_frac_neigh > max_frac_neigh )
-        max_frac_neigh = ion_frac_neigh;
-      if( ion_frac_neigh < min_frac_neigh )
-        min_frac_neigh = ion_frac_neigh;
-    }
-
-    //ionised fraction of this site
-    double ion_frac = (double) sites[ index ].get_n_HII()/( (double) sites[ index ].get_n_HI() + (double) sites[ index ].get_n_HII() );
-    //maximum gradient in ionised fraction between this site and its neighbours
-    double frac_grad = max( log10( max_frac_neigh ) - log10( ion_frac ), log10( ion_frac ) - log10( min_frac_neigh ) );
-
-    //store the maximum gradient of all sites on this proc
-    if( frac_grad > local_max_frac_grad ){
-      local_max_frac_grad = frac_grad;
-    }
-    if( frac_grad < local_min_frac_grad ){
-      local_min_frac_grad = frac_grad;
-    }
-
-  }//for all sites marked for removal
-
-  //determine minimum and maximum line length among processors
-  double min_length, max_length;
-  MPI::COMM_WORLD.Allreduce(&local_min_length,&min_length,1,MPI::DOUBLE,MPI::MIN);
-  MPI::COMM_WORLD.Allreduce(&local_max_length,&max_length,1,MPI::DOUBLE,MPI::MAX);
-
-  //determine the minimum and maximum gradient of ionised fraction between processors
-  double min_frac_grad, max_frac_grad;
-  MPI::COMM_WORLD.Allreduce(&local_min_frac_grad,&min_frac_grad,1,MPI::DOUBLE,MPI::MIN);
-  MPI::COMM_WORLD.Allreduce(&local_max_frac_grad,&max_frac_grad,1,MPI::DOUBLE,MPI::MAX);
-
-  //vector to hold the sites that are to be removed
-  vector< Site_Remove > sites_marked_for_removal_to_send;
-  Site_Remove tempRemove;
-
-  //structure that will receive the sites (only filled on master)
-  total_sites_marked_for_removal.clear();                                                                                                                    
-
-  //temporary structure to which the sites are sent
-  vector< Site_Remove > sites_recv;
-
-  bool total_sites_to_send = 1;
-
-  //loop while there's still sites to send
-  unsigned int i = 0;
-  while( total_sites_to_send ){
-
-    //vector to hold the sites that should be send 
-    //from this proc to every other proc
-    vector<unsigned int> nsend_local( COMM_SIZE, 0 );
-
-    //while the maximum number of sites to send is not yet reached, 
-    //search for sites that need to be send
-    //note that if a site should be send to more than one proc,
-    //the chunk will be slightly bigger than the maximum size,
-    //but never more than COMM_SIZE
-    while( sites_marked_for_removal_to_send.size() < max_msg_to_send && i < sites_marked_for_removal.size() ){
-
-      //site index of the site marked for removal 
-      unsigned int index = sites_marked_for_removal[i];
-
-      //difference between size of this cell and the maximum and minumum cell size
-      double line_length = sites[index].get_neigh_dist();
-      double delta_x = (max_length - line_length)/(max_length - min_length);
-
-      //difference between gradient in ionised fraction of this cell 
-      //and the maximum and minumum of all cells
-      //first determine the gradient of this cell
-      double min_frac_neigh = FLT_MAX, max_frac_neigh = -FLT_MAX; 
-      //loop over all neighbours
-      for( unsigned int j=0; j< sites[index].get_numNeigh(); j++ ){
-
-        unsigned int neigh = sites[index].get_neighId( j );
-        double ion_frac_neigh = (double) sites[ neigh ].get_n_HII()/( (double) sites[ neigh ].get_n_HI() + (double) sites[ neigh ].get_n_HII() );
-
-  //store the maximum and minimum ionised fraction of all neighbours
-        if( ion_frac_neigh > max_frac_neigh ){
-          max_frac_neigh = ion_frac_neigh;
-        }
-        if( ion_frac_neigh < min_frac_neigh ){
-          min_frac_neigh = ion_frac_neigh;
-        }
-
-      }//for all neighbours
-
-      //uncomment if removal criterion is gradient in ionised fraction instead of cell size
-
-      //double ion_frac = sites[ index ].get_ionised_fraction();
-      //double frac_grad = max( log10( max_frac_neigh ) - log10( ion_frac ), log10( ion_frac ) - log10( min_frac_neigh ) );//log10( max_frac_neigh ) - log10( min_frac_neigh );
-
-      //update according to gradient of fractions in cell and size of cell. The line length cancels out of the equations
-      //double delta_y = ( max_frac_grad - frac_grad )/delta_frac_grad;
-
-      //put the relevant properties of sites marked for removal in vector
-      tempRemove.set_process( sites[index].get_process() );
-      tempRemove.set_vertex_id( sites[index].get_vertex_id() );
-      tempRemove.set_site_id( sites[index].get_site_id() );
-      tempRemove.set_update_property( delta_x );
-
-
-      if(COMM_RANK == 0){
-        total_sites_marked_for_removal.push_back( tempRemove );
-      }else{
-
-        sites_marked_for_removal_to_send.push_back( tempRemove );
-  //keep track of the number of sites to send to
-  //which proc
-        nsend_local[ 0 ]++;
-      }
-
-      i++;
-
-    }//while there's sites to send and maximum msg size has not been reached
-
-    //sort the sites to send 
-    //sort( sites_marked_for_removal_to_send.begin(), sites_marked_for_removal_to_send.end());
-    //define the offset of different procs
-    vector< unsigned int > offset( COMM_SIZE, 0 );
-    for( unsigned int p=1; p<COMM_SIZE; p++ ){
-      offset[p] = offset[p - 1] + nsend_local[p - 1];
-    }
-
-    //gather all the local numbers of sites to send to all procs
-    vector< unsigned int > nsend( COMM_SIZE * COMM_SIZE, 0 );
-    MPI::COMM_WORLD.Allgather(&nsend_local[0], COMM_SIZE, MPI::UNSIGNED, &nsend[0], COMM_SIZE, MPI::UNSIGNED );
-
-    //calculate number of sites to receive
-    unsigned int num_sites_to_receive = 0;
-    for( unsigned int p=0; p<COMM_SIZE; p++){
-      if( p != COMM_RANK ){
-        num_sites_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
-      }
-    }
-
-    //give the vector correct size
-    sites_recv.resize( num_sites_to_receive );
-
-
-    //================ Send the properties of sites marked for removal to master =====================//
-
-    int PTask, recvTask;
-    int ThisTask = COMM_RANK;
-    int NTask = COMM_SIZE;
-
-    //Determine PTask, the smallest integer that satisfies NTask <=2^PTask
-    for(PTask = 0; NTask > (1 << PTask); PTask++) ; 
-
-    //loop over all tasks
-    for(int level = 1; level < (1 << PTask); level++){
-
-      //vector to hold buffer with number of sites
-      //already send to that proc
-      vector< unsigned int > nbuffer( COMM_SIZE, 0 );
-
-      int ngrp;
-      for(ngrp = level; ngrp < (1 << PTask); ngrp++){   
-
-        recvTask = ThisTask ^ ngrp;                       
-
-        if(recvTask < NTask){                            
-    //check if there's sites to receive or to send
-          if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
-
-      //send the intensity information and receive it from other procs in sites_recv
-            MPI::COMM_WORLD.Sendrecv(&sites_marked_for_removal_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Site_Remove),
-              MPI::BYTE, recvTask, 0, 
-              &sites_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Site_Remove),
-              MPI::BYTE, recvTask, 0);
-
-          }//if there's sites to send or receive
-        }//if receiving task is smaller than COMM_SIZE
-
-  //update the buffer size
-        for( int p = 0; p < NTask; p++){
-          if( (p ^ ngrp) < NTask ){
-            nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
-          }
-        }
-      }
-      //why is this? It has to be there...
-      level = ngrp - 1;
-      //clear buffer
-      nbuffer.clear();
-
-    }//for all levels
-
-    sites_marked_for_removal_to_send.clear();
-    nsend_local.clear();
-    nsend.clear();
-    offset.clear();
-
-    //only the master selects the vertices to remove                                                                                                           
-    if(COMM_RANK == 0){                                                                                                                                        
-      //first add sites on this proc to list                                                                                                                   
-      //total_sites_marked_for_removal.insert( total_sites_marked_for_removal.end(), 
-      //					     sites_marked_for_removal_to_send.begin(),  sites_marked_for_removal_to_send.end() );
-      //now add the sites that were send here 
-      total_sites_marked_for_removal.insert( total_sites_marked_for_removal.end(), sites_recv.begin(), sites_recv.end() ); 
-
-    }  
-
-    //clear vector
-    sites_recv.clear();
-
-    //check if a proc still has sites to send left
-    //bool local_sites_to_send = ( i >= sites_marked_for_removal.size() ) ? 0 : 1;
-    //MPI::COMM_WORLD.Allreduce(&local_sites_to_send, &total_sites_to_send, 1, MPI::BOOL, MPI::LOR );
-
-    int local_sites_to_send = ( i >= sites_marked_for_removal.size() ) ? 0 : 1;
-    int sum;
-    //MPI::LOR doesn't work on paracluster :S
-    MPI::COMM_WORLD.Allreduce(&local_sites_to_send, &sum, 1, MPI::INT, MPI::SUM );
-    if(sum == 0){
-      total_sites_to_send = 0;
-    }
-
-  }//while there's sites to send  
-
-
-  if( COMM_RANK == 0 ){
-    simpleXlog << "  Total number of sites marked for removal: " << total_sites_marked_for_removal.size() << endl;
-  }
-
-}
-
-
-/****  Send the sites to be removed to all procs  ****/
-void SimpleX::send_sites_to_remove(){
-
-  //master proc has sites that need to be removed
-  unsigned long long int numSites_marked_for_removal = total_sites_marked_for_removal.size();
-
-  //broadcast it to other procs
-  MPI::COMM_WORLD.Bcast(&numSites_marked_for_removal,1,MPI::UNSIGNED_LONG_LONG,0);
-
-  //if there's a lot of sites, send in chunks
-  unsigned int num_chunks = 1;
-  if( numSites_marked_for_removal > max_msg_to_send ){
-    num_chunks = (unsigned int) ceil( (double) numSites_marked_for_removal/max_msg_to_send);
-  }
-
-  //make sure receiving vector is empty on all procs except master
-  //and give correct size
-  if(COMM_RANK != 0){
-    total_sites_marked_for_removal.clear();
-    vector<Site_Remove>().swap(total_sites_marked_for_removal);
-  }
-
-  //send to other procs in chunks
-  for(unsigned int i=0; i<num_chunks; i++ ){
-
-    //temporary vector to hold the vertices
-    vector< Site_Remove > temp;
-    //size of the chunk to send
-    unsigned int this_chunk_size = max_msg_to_send;
-    //start id of current chunk
-    unsigned int start_id = i*max_msg_to_send; 
-    //make sure the final chunk has correct size
-    if( start_id + this_chunk_size >= numSites_marked_for_removal ){
-      this_chunk_size = numSites_marked_for_removal - start_id;
-    }
-
-    //master fills temp
-    if(COMM_RANK == 0){
-      for(unsigned int j = start_id; j<(start_id+this_chunk_size); j++){
-        temp.push_back( total_sites_marked_for_removal[j] );
-      }
-      //other procs resize to correct sizw  
-    }else{
-      temp.resize( this_chunk_size );  
-    }
-
-    //broadcast this chunk
-    MPI::COMM_WORLD.Bcast(&temp[0],this_chunk_size*sizeof(Site_Remove),MPI::BYTE,0);
-
-    //procs not master fill vector from temp vector
-    if( COMM_RANK != 0 ){
-      total_sites_marked_for_removal.insert( total_sites_marked_for_removal.end(), temp.begin(), temp.end() );
-    }
-
-    //clear temp for next use
-    temp.clear();
-
-  }
-
-
-  if( COMM_RANK == 0 ){
-    simpleXlog << "  Sites to be removed sent to all procs " << endl;
-  }
-
-}
-
 
 /****  Send the updates list of vertices to master  ****/
 //vertices no longer exist only on master proc as when the grid
 //was first created, so every proc has to send its own list to
 //master
-//to do: send only to master in a better way
 void SimpleX::send_new_vertex_list(){
 
   //vector that holds the vertices that will be send
@@ -7189,13 +4800,12 @@ void SimpleX::send_new_vertex_list(){
     while( vertices_to_send.size() < max_msg_to_send && it!=temp_vertices.end() ){
 
       if(COMM_RANK != 0){
-        vertices_to_send.push_back( *it );
-  //keep track of the number of sites to send to
-  //which proc
-  //send only to master in this case
-        nsend_local[ 0 ]++;
+	vertices_to_send.push_back( *it );
+	//keep track of the number of sites to send to
+	//which proc
+	nsend_local[ 0 ]++;
       }else{
-        vertices.push_back( *it );
+	vertices.push_back( *it );
       }
 
       it++;
@@ -7215,14 +4825,14 @@ void SimpleX::send_new_vertex_list(){
     unsigned int num_vertices_to_receive = 0;
     for( unsigned int p=0; p<COMM_SIZE; p++){
       if( p != COMM_RANK ){
-        num_vertices_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
+	num_vertices_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
       }
     }
 
     //give the vector correct size
     vertices_recv.resize( num_vertices_to_receive );
 
-   //================ Send the vertices to master =====================//
+    //================ Send the vertices to master =====================//
 
     int PTask, recvTask;
     int ThisTask = COMM_RANK;
@@ -7241,27 +4851,27 @@ void SimpleX::send_new_vertex_list(){
       int ngrp;
       for(ngrp = level; ngrp < (1 << PTask); ngrp++){   
 
-        recvTask = ThisTask ^ ngrp;                       
+	recvTask = ThisTask ^ ngrp;                       
 
-        if(recvTask < NTask){                            
-    //check if there's sites to receive or to send
-          if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
+	if(recvTask < NTask){                            
+	  //check if there's sites to receive or to send
+	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
-      //send the intensity information and receive it from other procs in sites_recv
-            MPI::COMM_WORLD.Sendrecv(&vertices_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Vertex),
-              MPI::BYTE, recvTask, 0, 
-              &vertices_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Vertex),
-              MPI::BYTE, recvTask, 0);
+	    //send the intensity information and receive it from other procs in sites_recv
+	    MPI::COMM_WORLD.Sendrecv(&vertices_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Vertex),
+				     MPI::BYTE, recvTask, 0, 
+				     &vertices_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Vertex),
+				     MPI::BYTE, recvTask, 0);
 
-          }//if there's sites to send or receive
-        }//if receiving task is smaller than COMM_SIZE
+	  }//if there's sites to send or receive
+	}//if receiving task is smaller than COMM_SIZE
 
-  //update the buffer size
-        for( int p = 0; p < NTask; p++){
-          if( (p ^ ngrp) < NTask ){
-            nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
-          }
-        }
+	//update the buffer size
+	for( int p = 0; p < NTask; p++){
+	  if( (p ^ ngrp) < NTask ){
+	    nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
+	  }
+	}
       }
       //why is this? It has to be there...
       level = ngrp - 1;
@@ -7300,182 +4910,6 @@ void SimpleX::send_new_vertex_list(){
   if( COMM_RANK == 0 ){
     simpleXlog << "  Created new list of vertices " << endl;
     simpleXlog << "  New number of sites: " << numSites << endl;
-  }
-
-}
-
-
-/****  Send the physical params of the sites to procs that need them ****/
-//During vertex movement sites might have been migrated to 
-//another proc, so the properties of these sites have
-//to be send
-void SimpleX::send_site_physics(){
-
-//   //temporary structure to hold site information
-//   Site_Update tempUpdate;
-//   //vector to hold the site properties that need to be send
-//   vector< Site_Update > sites_to_send;
-//   //vector to temporarily store the sites that were on this proc
-//   vector< Site_Update > temp_site_properties = site_properties;
-
-//   //clear site_properties to later fill it with sites that belong to this proc
-//   site_properties.clear();
-
-//   bool total_sites_to_send = 1;
-
-//   //loop while there's sites to send 
-//   vector< Site_Update >::iterator it=temp_site_properties.begin(); 
-//   while( total_sites_to_send ){
-
-//     //vector to hold the sites that should be send 
-//     //from this proc to other proc
-//     vector<unsigned int> nsend_local( COMM_SIZE, 0 );
-
-//     //while the maximum number of sites to send is not yet reached, 
-//     //search for sites that need to be send
-//     //note that if a site should be send to more than one proc,
-//     //the chunk will be slightly bigger than the maximum size,
-//     //but never more than COMM_SIZE
-//     while( sites_to_send.size() < max_msg_to_send && it!=temp_site_properties.end() ){
-
-
-//     }//while message not too big
-
-//   }//while total_site_to_send
-
-//   //determine which sites have moved from this proc, and need
-//   //to be send
-
-//   //create mapping from vertex id to place in sites vector
-//   vector< unsigned int > mapping_sites( vertex_id_max, vertex_id_max+1);
-//   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-//     if( it->get_process() == COMM_RANK && !it->get_border() ){
-//       mapping_sites[ it->get_vertex_id() ] = it->get_site_id();
-//     }
-//   }
-
-//   //fill the sites_to_send vector with the properties the other proc needs
-//   vector<Site_Update> sites_to_send;
-//   Site_Update temp;
-
-//   //loop over all sites
-//   for( unsigned int i=0; i<site_properties.size(); i++ ){
-
-//     //get place in sites array from mapping
-//     unsigned int site_id = mapping_sites[ site_properties[i].get_vertex_id() ];
-//     //if site not on this proc, site_id is larger than numSites 
-//     //and properties have to be send
-
-//    if( site_id > vertex_id_max ){
-
-//       //assign site_properties to temp
-//       temp = site_properties[i];
-//       //put it in array to be send
-//       sites_to_send.push_back(temp);
-
-//     }//if no valid id ont his proc
-//   }//for all site_properties
-
-
-//   //first send the number of sites that will be sent
-//   unsigned int number_of_sites_send = sites_to_send.size();
-//   vector< unsigned int > number_of_sites_recv( COMM_SIZE, 0);
-
-//   int PTask, recvTask;
-//   int ThisTask = COMM_RANK;
-//   int NTask = COMM_SIZE;
-
-//   //determine PTask, the smallest integer that satisfies NTask <=2^PTask
-//   for(PTask = 0; NTask > (1 << PTask); PTask++) ;
-
-//   //loop over all tasks
-//   for(int level = 1; level < (1 << PTask); level++){
-//     for(int ngrp = level; ngrp < (1 << PTask); ngrp++){  
-
-//       recvTask = ThisTask ^ ngrp;                       
-
-//       if(recvTask < NTask){                             
-
-// 	//send and receive number of sites to be send
-// 	MPI::COMM_WORLD.Sendrecv(&number_of_sites_send, 1,
-// 				 MPI::UNSIGNED, recvTask, 0, 
-// 				 &number_of_sites_recv[recvTask], 1,
-// 				 MPI::UNSIGNED, recvTask ,0);
-
-//       }
-//     }
-//   }
-
-
-//   //Now site information can be send, since every proc know its size
-
-//   //vector to hold the intensities
-//   vector<Site_Update>* properties_recv;
-
-//   //give vector correct size
-//   properties_recv = new vector<Site_Update>[COMM_SIZE];
-//   for( unsigned int i=0; i<COMM_SIZE; i++ ){
-//     properties_recv[i].resize( number_of_sites_recv[i] );
-//   }
-
-//   //loop over all tasks
-//   for(int level = 1; level < (1 << PTask); level++){
-//     for(int ngrp = level; ngrp < (1 << PTask); ngrp++){   
-
-//       recvTask = ThisTask ^ ngrp;                       
-
-//       if(recvTask < NTask){                            
-
-// 	//send and receive the site intensities
-// 	MPI::COMM_WORLD.Sendrecv(&sites_to_send[0], number_of_sites_send*sizeof(Site_Update),
-// 				 MPI::BYTE, recvTask, 0, 
-// 				 &properties_recv[recvTask][0], number_of_sites_recv[recvTask]*sizeof(Site_Update),
-// 				 MPI::BYTE, recvTask ,0);
-
-//       }
-//     }
-//   }
-
-//   //free memory
-//   number_of_sites_recv.clear();
-//   sites_to_send.clear();
-
-//   //Update the sites with the received intensities
-
-
-//   //loop over all received properties and add properties
-//   //to the vector on this proc if site is here
-//   vector<Site_Update>::iterator it;
-//   //loop over all procs
-//   for( unsigned int p=0; p<COMM_SIZE; p++){
-//     //exclude this proc
-//     if(p!=COMM_RANK){
-//       //loop over all intensities that were send to this proc
-//       for( it=properties_recv[p].begin(); it!=properties_recv[p].end(); it++ ){
-// 	unsigned int site_id = mapping_sites[ it->get_vertex_id() ];
-// 	//if site with this vertex id is on this proc, site_id 
-// 	//is smaller than number of sites
-// 	if( site_id < sites.size() ){
-
-// 	  site_properties.push_back( *it );
-
-
-// 	}//if site on this proc
-//       }//for all received props from p
-//       properties_recv[p].clear();
-//     }//if not this proc
-//   }//for all procs
-
-//   //free memory
-//   if(properties_recv){
-//     delete [] properties_recv;
-//     properties_recv = NULL;
-//   }
-
-//   mapping_sites.clear();
-
-  if( COMM_RANK == 0 ){
-    simpleXlog << "  Site physics sent " << endl;
   }
 
 }
@@ -7521,15 +4955,15 @@ void SimpleX::send_stored_intensities(){
       unsigned int index = number_of_directions*i;
       //loop over all directions
       for( unsigned int j=0; j<numPixels; j++ ){
-  //give relevant properties to temp
-        temp.set_process( COMM_RANK );
-        temp.set_neighId( j );
-        temp.set_id( intens_ids[i] );
-        temp.set_intensityIn( 0.0 );
-        temp.set_intensityOut( site_intensities[ index + j ] );
+	//give relevant properties to temp
+	temp.set_process( COMM_RANK );
+	temp.set_neighId( j );
+	temp.set_id( intens_ids[i] );
+	temp.set_intensityIn( 0.0 );
+	temp.set_intensityOut( site_intensities[ index + j ] );
 
-  //put it in array to be send
-        sites_to_send.push_back(temp);
+	//put it in array to be send
+	sites_to_send.push_back(temp);
 
       }//for all directions
     }//if site has moved from this proc
@@ -7556,11 +4990,11 @@ void SimpleX::send_stored_intensities(){
 
       if(recvTask < NTask){                             
 
-  //send and receive number of sites to be send
-        MPI::COMM_WORLD.Sendrecv(&number_of_sites_send, 1,
-          MPI::UNSIGNED, recvTask, 0, 
-          &number_of_sites_recv[recvTask], 1,
-          MPI::UNSIGNED, recvTask ,0);
+	//send and receive number of sites to be send
+	MPI::COMM_WORLD.Sendrecv(&number_of_sites_send, 1,
+				 MPI::UNSIGNED, recvTask, 0, 
+				 &number_of_sites_recv[recvTask], 1,
+				 MPI::UNSIGNED, recvTask ,0);
 
       }
     }
@@ -7586,11 +5020,11 @@ void SimpleX::send_stored_intensities(){
 
       if(recvTask < NTask){                            
 
-  //send and receive the site intensities
-        MPI::COMM_WORLD.Sendrecv(&sites_to_send[0], number_of_sites_send*sizeof(Send_Intensity),
-          MPI::BYTE, recvTask, 0, 
-          &intensities_recv[recvTask][0], number_of_sites_recv[recvTask]*sizeof(Send_Intensity),
-          MPI::BYTE, recvTask ,0);
+	//send and receive the site intensities
+	MPI::COMM_WORLD.Sendrecv(&sites_to_send[0], number_of_sites_send*sizeof(Send_Intensity),
+				 MPI::BYTE, recvTask, 0, 
+				 &intensities_recv[recvTask][0], number_of_sites_recv[recvTask]*sizeof(Send_Intensity),
+				 MPI::BYTE, recvTask ,0);
 
       }
     }
@@ -7617,31 +5051,31 @@ void SimpleX::send_stored_intensities(){
     if(p!=COMM_RANK){
       //loop over all intensities that were send to this proc
       for( it=intensities_recv[p].begin(); it!=intensities_recv[p].end(); it++ ){
-        unsigned int site_id = mapping_sites[ it->get_id() ];
-  //if site with this vertex id is on this proc, site_id 
-  //is smaller than number of sites
-        if( site_id < sites.size() ){
+	unsigned int site_id = mapping_sites[ it->get_id() ];
+	//if site with this vertex id is on this proc, site_id 
+	//is smaller than number of sites
+	if( site_id < sites.size() ){
 
-    //check if the site intensities are already created
-          if( mapping_intens[ it->get_id() ] > intens_ids.size() ){
-      //if not, add the site before filling
+	  //check if the site intensities are already created
+	  if( mapping_intens[ it->get_id() ] > intens_ids.size() ){
+	    //if not, add the site before filling
 
-      //keep mapping up to date
-            mapping_intens[ it->get_id() ] = intens_ids.size();
-            intens_ids.push_back( it->get_id() );
-      //give site_intensities extra entries for the new intensities
-            site_intensities.insert( site_intensities.end(), numPixels, 0.0 );
-          }
-    //put the intensity in correct place
+	    //keep mapping up to date
+	    mapping_intens[ it->get_id() ] = intens_ids.size();
+	    intens_ids.push_back( it->get_id() );
+	    //give site_intensities extra entries for the new intensities
+	    site_intensities.insert( site_intensities.end(), numPixels, 0.0 );
+	  }
+	  //put the intensity in correct place
 
-    //neighId is place in intensityOut/In array
-          unsigned int pos = it->get_neighId();
-    //get correct place in site_intensities array
-          pos += mapping_intens[it->get_id()]*numPixels;
-    //add intensity to vector
-          site_intensities[pos] += it->get_intensityOut();
+	  //neighId is place in intensityOut/In array
+	  unsigned int pos = it->get_neighId();
+	  //get correct place in site_intensities array
+	  pos += mapping_intens[it->get_id()]*numPixels;
+	  //add intensity to vector
+	  site_intensities[pos] += it->get_intensityOut();
 
-        }
+	}
 
       }//for intensities received from proc p
 
@@ -7663,9 +5097,9 @@ void SimpleX::send_stored_intensities(){
 }
 
 /****  Send the ballistic properties of the changed sites to other proc  ****/
-void SimpleX::send_site_ballistics( const vector< unsigned long long int >& sites_to_send ){
+void SimpleX::send_site_ballistics( const vector< unsigned long int >& sites_to_send ){
 
-   //send the properties of the vertex on this proc to other proc
+  //send the properties of the vertex on this proc to other proc
   Send_Neigh tempNeigh;
   vector< Send_Neigh > neigh_to_send;
   //vector to hold received neighbours
@@ -7675,7 +5109,7 @@ void SimpleX::send_site_ballistics( const vector< unsigned long long int >& site
   bool total_neigh_to_send = 1;
 
   //loop over all sites
-  unsigned long long int i=0;
+  unsigned long int i=0;
   while( total_neigh_to_send ){
 
     //vector to hold the sites that should be send 
@@ -7690,7 +5124,7 @@ void SimpleX::send_site_ballistics( const vector< unsigned long long int >& site
     while( neigh_to_send.size() < max_msg_to_send && i<sites_to_send.size() ){
 
       //site id of the site to be send
-      unsigned long long int site_id = sites_to_send[i];
+      unsigned long int site_id = sites_to_send[i];
 
       //keep track of the procs the site has already been sent to
       vector< bool > proc(COMM_SIZE,0);
@@ -7698,74 +5132,74 @@ void SimpleX::send_site_ballistics( const vector< unsigned long long int >& site
       //procs this site has to be send
       for( unsigned int j=0; j<sites[site_id].get_numNeigh(); j++ ){
 
-  //place in sites array of this neighbour
-        unsigned long long int neigh = sites[site_id].get_neighId(j);
-  //check if neighbour belongs to other proc and if the site is not already sent there
-        if( sites[neigh].get_process() != COMM_RANK && !proc[sites[neigh].get_process()] ){
+	//place in sites array of this neighbour
+	unsigned long int neigh = sites[site_id].get_neighId(j);
+	//check if neighbour belongs to other proc and if the site is not already sent there
+	if( sites[neigh].get_process() != COMM_RANK && !proc[sites[neigh].get_process()] ){
 
-    //check if the site to be send is ballistic
-          if( sites[site_id].get_ballistic() ){
-      //if the site is now ballistic, all neighbours need to be send
+	  //check if the site to be send is ballistic
+	  if( sites[site_id].get_ballistic() ){
+	    //if the site is now ballistic, all neighbours need to be send
 
-      //loop over all neighbours
-            for( unsigned int k=0; k<sites[site_id].get_numNeigh(); k++ ){
-              if( sites[ sites[site_id].get_neighId(k) ].get_process() == sites[neigh].get_process() ){
-    //store the needed properties of the neighbours of this site
+	    //loop over all neighbours
+	    for( unsigned int k=0; k<sites[site_id].get_numNeigh(); k++ ){
+	      if( sites[ sites[site_id].get_neighId(k) ].get_process() == sites[neigh].get_process() ){
+		//store the needed properties of the neighbours of this site
 
-    //watch out, this is the process the site will be send to,
-    //not the process the site belongs to!
-                tempNeigh.set_process( sites[neigh].get_process() );
+		//watch out, this is the process the site will be send to,
+		//not the process the site belongs to!
+		tempNeigh.set_process( sites[neigh].get_process() );
 
-    //global id of this site
-                tempNeigh.set_vertex_id( sites[site_id].get_vertex_id() );
-    //process of this site
-                tempNeigh.set_ballistic( 1 );
-    //global id of neighbour
-                tempNeigh.set_neighId( sites[ sites[site_id].get_neighId(k) ].get_vertex_id() );
-    //local place of neighbour in neighbour array of this site
-                tempNeigh.set_neighIdLoc( k );
+		//global id of this site
+		tempNeigh.set_vertex_id( sites[site_id].get_vertex_id() );
+		//process of this site
+		tempNeigh.set_ballistic( 1 );
+		//global id of neighbour
+		tempNeigh.set_neighId( sites[ sites[site_id].get_neighId(k) ].get_vertex_id() );
+		//local place of neighbour in neighbour array of this site
+		tempNeigh.set_neighIdLoc( k );
 
-    //put the neighbour information in the structure to be send
-                neigh_to_send.push_back( tempNeigh );
+		//put the neighbour information in the structure to be send
+		neigh_to_send.push_back( tempNeigh );
 
-    //keep track of the number of sites to send to
-    //which proc
-                nsend_local[ sites[neigh].get_process() ]++;
+		//keep track of the number of sites to send to
+		//which proc
+		nsend_local[ sites[neigh].get_process() ]++;
 
-    //set bool at the proc the site will be send to
-                proc[ sites[neigh].get_process() ] = 1;
-              }
-            }//for all neighbours
+		//set bool at the proc the site will be send to
+		proc[ sites[neigh].get_process() ] = 1;
+	      }
+	    }//for all neighbours
 
-          }else{
+	  }else{
 
-      //if the site to be send is not ballistic, only ballistic() needs
-      //to be send
-            tempNeigh.set_ballistic( 0 );
-      //global id of this site
-            tempNeigh.set_vertex_id( sites[site_id].get_vertex_id() );
+	    //if the site to be send is not ballistic, only ballistic() needs
+	    //to be send
+	    tempNeigh.set_ballistic( 0 );
+	    //global id of this site
+	    tempNeigh.set_vertex_id( sites[site_id].get_vertex_id() );
 
-      //watch out, this is the process the site will be send to,
-      //not the process the site belongs to!
-            tempNeigh.set_process( sites[neigh].get_process() );
+	    //watch out, this is the process the site will be send to,
+	    //not the process the site belongs to!
+	    tempNeigh.set_process( sites[neigh].get_process() );
 
-      //global id of neighbour
-            tempNeigh.set_neighId( sites[ neigh ].get_vertex_id() );
-      //local place of neighbour in neighbour array of this site
-            tempNeigh.set_neighIdLoc( 0 );
+	    //global id of neighbour
+	    tempNeigh.set_neighId( sites[ neigh ].get_vertex_id() );
+	    //local place of neighbour in neighbour array of this site
+	    tempNeigh.set_neighIdLoc( 0 );
 
-      //put the neighbour information in the structure to be send
-            neigh_to_send.push_back( tempNeigh );
+	    //put the neighbour information in the structure to be send
+	    neigh_to_send.push_back( tempNeigh );
 
-      //keep track of the number of sites to send to
-      //which proc
-            nsend_local[ sites[neigh].get_process() ]++;
+	    //keep track of the number of sites to send to
+	    //which proc
+	    nsend_local[ sites[neigh].get_process() ]++;
 
-      //set bool at the proc the site will be send to
-            proc[ sites[neigh].get_process() ] = 1;
+	    //set bool at the proc the site will be send to
+	    proc[ sites[neigh].get_process() ] = 1;
 
-          }//if ballistic
-        }//if neighbour is on other proc and site is not send there yet
+	  }//if ballistic
+	}//if neighbour is on other proc and site is not send there yet
       }//for all neighbours
 
       i++;
@@ -7788,7 +5222,7 @@ void SimpleX::send_site_ballistics( const vector< unsigned long long int >& site
     unsigned int num_neigh_to_receive = 0;
     for( unsigned int p=0; p<COMM_SIZE; p++){
       if( p != COMM_RANK ){
-        num_neigh_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
+	num_neigh_to_receive += nsend[ p*COMM_SIZE + COMM_RANK ];
       }
     }
 
@@ -7802,7 +5236,7 @@ void SimpleX::send_site_ballistics( const vector< unsigned long long int >& site
     // calculate PTask,  the smallest integer that satisfies COMM_SIZE<=2^PTask
     for(PTask = 0; NTask > (1 << PTask); PTask++) ;
 
-     //loop over all tasks
+    //loop over all tasks
     for(int level = 1; level < (1 << PTask); level++){
       //vector to hold buffer with number of sites
       //already send to that proc
@@ -7811,28 +5245,28 @@ void SimpleX::send_site_ballistics( const vector< unsigned long long int >& site
       int ngrp;
       for(ngrp = level; ngrp < (1 << PTask); ngrp++){
 
-        recvTask = ThisTask ^ ngrp;
+	recvTask = ThisTask ^ ngrp;
 
-        if(recvTask < NTask){
-    //check if there's sites to receive or to send
-          if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
+	if(recvTask < NTask){
+	  //check if there's sites to receive or to send
+	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
-      //do the sending
-            MPI::COMM_WORLD.Sendrecv(&neigh_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Neigh),
-              MPI::BYTE, recvTask, 0, 
-              &neigh_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Neigh),
-              MPI::BYTE, recvTask, 0);
+	    //do the sending
+	    MPI::COMM_WORLD.Sendrecv(&neigh_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Neigh),
+				     MPI::BYTE, recvTask, 0, 
+				     &neigh_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Neigh),
+				     MPI::BYTE, recvTask, 0);
 
-          }//if there's sites to send or receive
+	  }//if there's sites to send or receive
 
-        }//if receiving task is smaller than COMM_SIZE
+	}//if receiving task is smaller than COMM_SIZE
 
-  //update the buffer size
-        for( int p = 0; p < NTask; p++){
-          if( (p ^ ngrp) < NTask ){
-            nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
-          }
-        }
+	//update the buffer size
+	for( int p = 0; p < NTask; p++){
+	  if( (p ^ ngrp) < NTask ){
+	    nbuffer[p] += nsend[(p ^ ngrp) * NTask + p];
+	  }
+	}
 
       }
       //why is this? It has to be there...
@@ -7857,70 +5291,70 @@ void SimpleX::send_site_ballistics( const vector< unsigned long long int >& site
       //check if we have the correct site
       if( site_it->get_vertex_id() == sit->get_vertex_id() ){
 
-  //check if received site is ballistic
-        if( sit->get_ballistic() ){
+	//check if received site is ballistic
+	if( sit->get_ballistic() ){
 
-    //if site is not yet set to ballistic, this means it has
-    //not been visited yet, so create arrays
-          if( site_it->get_ballistic() == 0 ){
+	  //if site is not yet set to ballistic, this means it has
+	  //not been visited yet, so create arrays
+	  if( site_it->get_ballistic() == 0 ){
 
-            site_it->set_ballistic(1);
+	    site_it->set_ballistic(1);
 
-      //delete the intensity arrays
-            site_it->delete_intensityOut();
-            site_it->delete_intensityIn();
+	    //delete the intensity arrays
+	    site_it->delete_intensityOut(numFreq);
+	    site_it->delete_intensityIn(numFreq);
 
-      //create new intensity arrays with correct size
-            site_it->create_intensityIn( site_it->get_numNeigh() );
-            site_it->create_intensityOut( site_it->get_numNeigh() );
+	    //create new intensity arrays with correct size
+	    site_it->create_intensityIn( numFreq, site_it->get_numNeigh() );
+	    site_it->create_intensityOut( numFreq, site_it->get_numNeigh() );
 
-      //create new straight array
-            site_it->delete_straight();
-            site_it->create_straight();
-
-
-          }//if site not visited yet
-
-    //check if neighbour has been found
-          for( unsigned int j=0; !found && j<site_it->get_numNeigh(); j++ ){
-      //check if we have the correct neighbour
-            if( sit->get_neighId() == sites[ site_it->get_neighId( j ) ].get_vertex_id() ){
-              found = 1;
-        //add the local id of this neighbour on proc it belongs to to the straight array
-        //of the site on this proc
-              site_it->add_straight( j, sit->get_neighIdLoc() );
-
-            }//if right neighbour
-          }//for all neighbours
+	    //create new straight array
+	    site_it->delete_straight();
+	    site_it->create_straight();
 
 
-        }else{
+	  }//if site not visited yet
 
-    //if received site is not ballistic, change size of intensity vector
-          site_it->set_ballistic( 0 );
+	  //check if neighbour has been found
+	  for( unsigned int j=0; !found && j<site_it->get_numNeigh(); j++ ){
+	    //check if we have the correct neighbour
+	    if( sit->get_neighId() == sites[ site_it->get_neighId( j ) ].get_vertex_id() ){
+	      found = 1;
+	      //add the local id of this neighbour on proc it belongs to to the straight array
+	      //of the site on this proc
+	      site_it->add_straight( j, sit->get_neighIdLoc() );
 
-    //delete the intensity arrays
-          site_it->delete_intensityOut();
-          site_it->delete_intensityIn();
+	    }//if right neighbour
+	  }//for all neighbours
 
-    //create new intensity arrays with correct size
-          site_it->create_intensityIn( number_of_directions );
-          site_it->create_intensityOut( number_of_directions );
 
-    //straight array no longer needed
-    //site_it->delete_straight();
+	}else{
 
-          found = 1;
+	  //if received site is not ballistic, change size of intensity vector
+	  site_it->set_ballistic( 0 );
 
-        }//if ballistic
+	  //delete the intensity arrays
+	  site_it->delete_intensityOut(numFreq);
+	  site_it->delete_intensityIn(numFreq);
+
+	  //create new intensity arrays with correct size
+	  site_it->create_intensityIn( numFreq, number_of_directions );
+	  site_it->create_intensityOut( numFreq, number_of_directions );
+
+	  //straight array no longer needed
+	  //site_it->delete_straight();
+
+	  found = 1;
+
+	}//if ballistic
       }//if vertex ids match
 
       //if the neighbour has been found, go the next
       //else, the neighbour belongs to other site
       if(found){
-        sit++;
+	sit++;
       }else{
-        site_it++;
+	site_it++;
       }
 
     }//for neighbours received
@@ -7928,8 +5362,8 @@ void SimpleX::send_site_ballistics( const vector< unsigned long long int >& site
     neigh_recv.clear();
 
     //check if a proc still has sites to send left
-//     bool local_neigh_to_send = ( i >= sites_to_send.size() ) ? 0 : 1;
-//     MPI::COMM_WORLD.Allreduce(&local_neigh_to_send, &total_neigh_to_send, 1, MPI::BOOL, MPI::LOR );
+    //     bool local_neigh_to_send = ( i >= sites_to_send.size() ) ? 0 : 1;
+    //     MPI::COMM_WORLD.Allreduce(&local_neigh_to_send, &total_neigh_to_send, 1, MPI::BOOL, MPI::LOR );
 
     //check if a proc still has sites to send left
     int local_neigh_to_send = ( i >= sites_to_send.size() ) ? 0 : 1;
@@ -7942,8 +5376,373 @@ void SimpleX::send_site_ballistics( const vector< unsigned long long int >& site
 
   }//while still neighbours to send
 
+  return;
 }
 
+// Send physical quantities to sites that have moved to another processor
+void SimpleX::send_site_physics( ){
+  
+  //sort the site_properties on vertex id
+  sort( site_properties.begin(), site_properties.end(), compare_vertex_id_site_update );
+  
+  vector<Vertex>::iterator it=vertices.begin();
+  vector<Site_Update>::iterator it2=site_properties.begin();
+  
+  //determine whether there are still sites to be sent
+  bool isSitesToSend = 1;
+  
+  vector<Site_Update> site_properties_recv;
+
+
+
+  while( isSitesToSend ){
+
+    //vector to hold site updates to send
+    vector<Site_Update> sitesToSend;
+
+    //vector to hold the sites that should be send 
+    //from this proc to other proc
+    vector<unsigned long long int> nSendLocal( COMM_SIZE, 0 );
+
+    //while the maximum number of sites to send is not yet reached, 
+    //search for sites that need to be send
+    //note that if a site should be send to more than one proc,
+    //the chunk will be slightly bigger than the maximum size,
+    //but never more than COMM_SIZE    
+    while( sitesToSend.size() < max_msg_to_send && it2!=site_properties.end() ){
+
+      if( it->get_vertex_id() < it2->get_vertex_id() ){
+
+        it++;
+
+      }else if( it->get_vertex_id() == it2->get_vertex_id() ){
+
+        if( it->get_process() != COMM_RANK ){
+          it2->set_process( it->get_process() );
+          sitesToSend.push_back( *it2 );
+          nSendLocal[ it->get_process() ]++;
+        }
+
+        it++;
+        it2++;
+
+      }else if( it->get_vertex_id() > it2->get_vertex_id() ){
+        cerr << " (" << COMM_RANK << ") Warning: Vertex " << it2->get_vertex_id() << " has disappeared from the computational domain " << endl;
+        //MPI::COMM_WORLD.Abort(-1);
+      }
+
+    }
+
+    //sort the site updates on process
+    sort( sitesToSend.begin(), sitesToSend.end(), compare_process_site_update );
+        
+    //define the offset of different procs
+    vector< unsigned long long int > offset( COMM_SIZE, 0 );
+    for( unsigned int p=1; p<COMM_SIZE; p++ ){
+      offset[p] = offset[p - 1] + nSendLocal[p - 1];
+    }
+
+    //gather all the local numbers of sites to send to all procs
+    vector< unsigned long long int > nSend( COMM_SIZE * COMM_SIZE, 0 );
+    MPI::COMM_WORLD.Allgather(&nSendLocal[0], COMM_SIZE, MPI::UNSIGNED_LONG_LONG, &nSend[0], COMM_SIZE, MPI::UNSIGNED_LONG_LONG );
+
+    //calculate number of sites to receive
+    unsigned long long int nSitesToReceive = 0;
+    for( unsigned int p=0; p<COMM_SIZE; p++){
+      if( p != COMM_RANK ){
+        nSitesToReceive += nSend[ p*COMM_SIZE + COMM_RANK ];
+      }
+    }
+
+    //vector to hold received sites
+    vector< Site_Update > sitePropertiesReceived( nSitesToReceive );
+
+    int PTask,recvTask;
+    int NTask = static_cast<int>( COMM_SIZE );
+    int ThisTask = static_cast<int>( COMM_RANK );
+
+    // calculate PTask,  the smallest integer that satisfies COMM_SIZE<=2^PTask
+    for(PTask = 0; NTask > (1 << PTask); PTask++) ;
+
+    //vector to hold buffer with number of sites
+    //already send to that proc
+    vector< unsigned long long int > nBuffer( COMM_SIZE, 0 );
+
+      //loop over all tasks
+    for( int ngrp = 1; ngrp < (1 << PTask); ngrp++ ){
+
+      recvTask = ThisTask ^ ngrp;
+
+      if(recvTask < NTask){
+
+        //check if there's sites to receive or to send
+        if(nSend[ ThisTask * NTask + recvTask ] > 0 || nSend[ recvTask * NTask + ThisTask ] > 0){
+
+          //do the sending
+          MPI::COMM_WORLD.Sendrecv(&sitesToSend[ offset[recvTask] ], nSendLocal[recvTask] * sizeof(Site_Update),
+            MPI::BYTE, recvTask, 0, 
+            &sitePropertiesReceived[ nBuffer[ThisTask] ], nSend[recvTask * NTask + ThisTask] * sizeof(Site_Update),
+            MPI::BYTE, recvTask, 0);
+
+        }//if there's sites to send or receive
+
+      }//if receiving task is smaller than COMM_SIZE
+
+      //update the buffer size
+      for( int p = 0; p < NTask; p++){
+        if( (p ^ ngrp) < NTask ){
+          nBuffer[p] += nSend[(p ^ ngrp) * NTask + p];
+        }
+      }
+
+    }//for ngrp
+
+    nBuffer.clear();
+    sitesToSend.clear();
+    nSendLocal.clear();
+    nSend.clear();
+    offset.clear();
+
+    site_properties_recv.insert( site_properties_recv.end(), sitePropertiesReceived.begin(), sitePropertiesReceived.end() );
+        
+    //clear memory
+    sitePropertiesReceived.clear();
+
+    //check if a proc still has sites to send left
+    int nSitesToSendLocal = ( it2 == site_properties.end() ) ? 0 : 1;
+    int nSitesToSend;
+
+    MPI::COMM_WORLD.Allreduce(&nSitesToSendLocal, &nSitesToSend, 1, MPI::INT, MPI::SUM );
+    if(nSitesToSend == 0){
+      isSitesToSend = 0;
+    }
+
+  }//while there are sites to send
+  
+  //insert in vector
+  site_properties.insert( site_properties.end(), site_properties_recv.begin(), site_properties_recv.end() );
+  
+  site_properties_recv.clear();
+  
+  //remove entries not on this proc
+  vector<Site_Update> tmp = site_properties;
+  site_properties.clear();
+  for( vector<Site_Update>::iterator it=tmp.begin(); it!=tmp.end(); it++ ){
+    if(it->get_process() == COMM_RANK){
+      site_properties.push_back( *it );
+    }
+  }
+  
+  return;
+}
+
+//send the intensities from sites that changed process
+void SimpleX::send_site_intensities(){
+  
+  //create permutations vector
+  vector<unsigned long int> permutation( intens_ids.size(), 0 );
+  for( unsigned int i=0; i<permutation.size(); i++ ){
+    permutation[i] = i;
+  }
+  
+  if( intens_ids.size() > 0 ){  
+    //sort the intensity ids on vertex id
+    quickSortPerm( intens_ids, permutation, 0, intens_ids.size()-1 );
+  }
+    
+  //update the intensities for the new ordering
+  vector<float> tmp = site_intensities;
+    
+  for( unsigned int i=0; i<permutation.size(); i++ ){
+    unsigned int posOld = i*numFreq*numPixels;
+    unsigned int posNew = permutation[i]*numFreq*numPixels;
+    for( unsigned short int j=0; j<numFreq*numPixels; j++ ){
+      site_intensities[ posOld + j ] = tmp[ posNew + j ];
+    }
+  } 
+   
+  //loop over all vertices and check if intensities need to be sent   
+  vector<Vertex>::iterator it=vertices.begin();
+  unsigned long long int intensityIndex = 0;
+  
+  //determine whether there are still sites to be sent
+  bool isSitesToSend = 1;
+  
+  vector<Send_Intensity> intensities_recv;
+
+  while( isSitesToSend ){
+
+    //vector to hold site updates to send
+    vector<Send_Intensity> intensitiesToSend;
+
+    //vector to hold the sites that should be send 
+    //from this proc to other proc
+    vector<unsigned long long int> nSendLocal( COMM_SIZE, 0 );
+
+    //while the maximum number of sites to send is not yet reached, 
+    //search for sites that need to be send
+    //note that if a site should be send to more than one proc,
+    //the chunk will be slightly bigger than the maximum size,
+    //but never more than COMM_SIZE    
+    while( intensitiesToSend.size() < max_msg_to_send && intensityIndex < intens_ids.size() ){
+
+      if( it->get_vertex_id() < intens_ids[intensityIndex] ){
+
+        it++;
+
+      }else if( it->get_vertex_id() == intens_ids[intensityIndex] ){
+        //check whether vertex is on other proc. If so, it needs to be send
+        if( it->get_process() != COMM_RANK ){
+          //loop over directions
+          for( unsigned int j=0; j<numPixels; j++ ){
+            //loop over frequencies
+            for(short int f=0; f<numFreq; f++){
+              Send_Intensity tmpSend;
+              tmpSend.set_process( it->get_process() );
+              tmpSend.set_neighId( j );
+              tmpSend.set_freq_bin( f );
+              tmpSend.set_id( intens_ids[intensityIndex] );
+              unsigned int pos = intensityIndex*numPixels*numFreq + j*numFreq + f;
+              tmpSend.set_intensityIn( site_intensities[ pos ] );
+
+              intensitiesToSend.push_back( tmpSend );
+              nSendLocal[ it->get_process() ]++;
+            }
+          }
+        }
+
+        it++;
+        intensityIndex++;
+
+      }else if( it->get_vertex_id() > intens_ids[intensityIndex] ){
+        cerr << " (" << COMM_RANK << ") Warning: Vertex " << intens_ids[intensityIndex] << " has disappeared from the computational domain " << endl;
+        MPI::COMM_WORLD.Abort(-1);
+      }
+
+    }
+           
+    //sort the site updates on process
+    sort( intensitiesToSend.begin(), intensitiesToSend.end(), compare_process_send_intensity );
+        
+    //define the offset of different procs
+    vector< unsigned long long int > offset( COMM_SIZE, 0 );
+    for( unsigned int p=1; p<COMM_SIZE; p++ ){
+      offset[p] = offset[p - 1] + nSendLocal[p - 1];
+    }
+
+    //gather all the local numbers of sites to send to all procs
+    vector< unsigned long long int > nSend( COMM_SIZE * COMM_SIZE, 0 );
+    MPI::COMM_WORLD.Allgather(&nSendLocal[0], COMM_SIZE, MPI::UNSIGNED_LONG_LONG, &nSend[0], COMM_SIZE, MPI::UNSIGNED_LONG_LONG );
+
+    //calculate number of sites to receive
+    unsigned long long int nSitesToReceive = 0;
+    for( unsigned int p=0; p<COMM_SIZE; p++){
+      if( p != COMM_RANK ){
+        nSitesToReceive += nSend[ p*COMM_SIZE + COMM_RANK ];
+      }
+    }
+
+    //vector to hold received intensities
+    vector< Send_Intensity > intensitiesReceived( nSitesToReceive );
+
+    int PTask,recvTask;
+    int NTask = static_cast<int>( COMM_SIZE );
+    int ThisTask = static_cast<int>( COMM_RANK );
+
+    // calculate PTask,  the smallest integer that satisfies COMM_SIZE<=2^PTask
+    for(PTask = 0; NTask > (1 << PTask); PTask++) ;
+
+    //vector to hold buffer with number of sites
+    //already send to that proc
+    vector< unsigned long long int > nBuffer( COMM_SIZE, 0 );
+
+      //loop over all tasks
+    for( int ngrp = 1; ngrp < (1 << PTask); ngrp++ ){
+
+      recvTask = ThisTask ^ ngrp;
+
+      if(recvTask < NTask){
+
+        //check if there's sites to receive or to send
+        if(nSend[ ThisTask * NTask + recvTask ] > 0 || nSend[ recvTask * NTask + ThisTask ] > 0){
+
+          //do the sending
+          MPI::COMM_WORLD.Sendrecv(&intensitiesToSend[ offset[recvTask] ], nSendLocal[recvTask] * sizeof(Send_Intensity),
+            MPI::BYTE, recvTask, 0, 
+            &intensitiesReceived[ nBuffer[ThisTask] ], nSend[recvTask * NTask + ThisTask] * sizeof(Send_Intensity),
+            MPI::BYTE, recvTask, 0);
+
+        }//if there's sites to send or receive
+
+      }//if receiving task is smaller than COMM_SIZE
+
+      //update the buffer size
+      for( int p = 0; p < NTask; p++){
+        if( (p ^ ngrp) < NTask ){
+          nBuffer[p] += nSend[(p ^ ngrp) * NTask + p];
+        }
+      }
+
+    }//for ngrp
+
+    nBuffer.clear();
+    intensitiesToSend.clear();
+    nSendLocal.clear();
+    nSend.clear();
+    offset.clear();
+
+    intensities_recv.insert( intensities_recv.end(), intensitiesReceived.begin(), intensitiesReceived.end() );
+        
+    //clear memory
+    intensitiesReceived.clear();
+
+    //check if a proc still has sites to send left
+    int nSitesToSendLocal = ( intensityIndex == intens_ids.size() ) ? 0 : 1;
+    int nSitesToSend;
+
+    MPI::COMM_WORLD.Allreduce(&nSitesToSendLocal, &nSitesToSend, 1, MPI::INT, MPI::SUM );
+    if(nSitesToSend == 0){
+      isSitesToSend = 0;
+    }
+
+  }//while there are sites to send
+  
+  //sort the received intensities on vertex id
+  sort( intensities_recv.begin(), intensities_recv.end(), compare_index_send_intensity );
+  
+  //insert in vectors
+  vector<Send_Intensity>::iterator it2=intensities_recv.begin(); 
+  while(it2!=intensities_recv.end() ){
+
+    unsigned long long int index =  it2->get_id();
+    intens_ids.push_back( index );
+
+    //create space for the frequencies
+    site_intensities.insert( site_intensities.end(), numFreq*numPixels, 0.0 );
+
+    for(unsigned int j=0; j<numPixels*numFreq; j++){
+
+      unsigned int pos = it2->get_freq_bin() + it2->get_neighId()*numFreq + site_intensities.size() - numFreq*numPixels;
+          
+      //check to be sure
+      if( it2->get_id() != index ){
+        cerr << " (" << COMM_RANK << ") Error in sendSiteIntensities(): Not all bins have been received " << endl;
+        cerr << "     Direction bin: " << it2->get_neighId() << " Frequency bin: " << it2->get_freq_bin() << endl;
+        cerr << "     Index: " << index << endl;
+        cerr << "     Total number of intensities received: " << intensities_recv.size() << endl;
+        MPI::COMM_WORLD.Abort(-1);
+      }
+
+      site_intensities[pos] =  it2->get_intensityIn();
+      it2++;
+    }
+  }
+  
+  //remove entries not on this proc
+  //probably not necessary :)
+  return;
+  
+}
 
 
 /****************************************************************************************/
@@ -7958,10 +5757,13 @@ void SimpleX::compute_physics( const unsigned int& run ){
 
     initialise_physics_params();
 
-    if(fillChoice==AUTOMATIC){
-      set_homogeneous_number_density( homDens );
-    }else{ //fillChoice == READ
-      assign_read_properties();
+    assign_read_properties();
+
+    if(blackBody) {   // -> Blackbody spectrum
+      black_body_source( sourceTeff );
+    } else {             // -> Monochromatic spectrum
+    
+      cross_H.resize(1, cross_HI( nu0HI, nu0HI ) );
     }
 
   }else{
@@ -7982,7 +5784,7 @@ void SimpleX::compute_physics( const unsigned int& run ){
 
     //to completely empty site_intensities, swap it with an empty vector
     vector< float >().swap( site_intensities );
-    vector< unsigned long long int >().swap( intens_ids );
+    vector< unsigned long int >().swap( intens_ids );
 
   }
 
@@ -8000,43 +5802,79 @@ void SimpleX::compute_physics( const unsigned int& run ){
 void SimpleX::initialise_physics_params() {  
 
   //physical units
-  simTime *= secondsPerMyr;  
+  simTime *= secondsPerMyr;
   UNIT_T = UNIT_T_MYR * secondsPerMyr;  
+//  UNIT_T *= secondsPerMyr;  
   UNIT_L = sizeBox * parsecToCm; 
   UNIT_V = pow(UNIT_L, 3.0);
 
-  if(blackBody) {   // -> Blackbody spectrum
-    black_body_source( sourceTeff );
-  } else {             // -> Monochromatic spectrum
-    cross_H = 6.3e-18;
-  }
-
+  //read in metal line cooling data 
+  if(metal_cooling)
+    read_metals();
+  
   if( COMM_RANK == 0 )
     simpleXlog << "  Essential physical parameters calculated " << endl;
 
 }
 
-//Set the homogeneous number density.
-//Only used in case of automatic filling
-void SimpleX::set_homogeneous_number_density(const float& nH){
+/****  Read metal line cooling data  ****/
+void SimpleX::read_metals(){
 
-  //unit mass is average number density * unit volume
-  UNIT_D = nH; 
+  // Read the curves
+  cooling_curve hydrogen("/data2/kruip/amuse/trunk/data/fi/input/H.cool");
+  cooling_curve helium("/data2/kruip/amuse/trunk/data/fi/input/He.cool");
+  cooling_curve carbon("/data2/kruip/amuse/trunk/data/fi/input/C.cool");
+  cooling_curve carbonH("/data2/kruip/amuse/trunk/data/fi/input/C.Hcool");
+  cooling_curve nitrogen("/data2/kruip/amuse/trunk/data/fi/input/N.cool");
+  cooling_curve oxigen("/data2/kruip/amuse/trunk/data/fi/input/O.cool");
+  cooling_curve oxigenH("/data2/kruip/amuse/trunk/data/fi/input/O.Hcool");
+  cooling_curve neon("/data2/kruip/amuse/trunk/data/fi/input/Ne.cool");
+  cooling_curve silicon("/data2/kruip/amuse/trunk/data/fi/input/Si.cool");
+  cooling_curve siliconH("/data2/kruip/amuse/trunk/data/fi/input/Si.Hcool");
+  cooling_curve iron("/data2/kruip/amuse/trunk/data/fi/input/Fe.cool");
+  cooling_curve ironH("/data2/kruip/amuse/trunk/data/fi/input/Fe.Hcool");
 
-  UNIT_M = UNIT_D * UNIT_V;
+  // Place them in the cooling curve vector
+  curves.push_back(hydrogen);
+  curves.push_back(helium);
+  curves.push_back(carbon);
+  curves.push_back(carbonH);
+  curves.push_back(nitrogen);
+  curves.push_back(oxigen);
+  curves.push_back(oxigenH);
+  curves.push_back(neon);
+  curves.push_back(silicon);
+  curves.push_back(siliconH);
+  curves.push_back(iron);
+  curves.push_back(ironH);
 
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-    if( it->get_process() == COMM_RANK){
-      it->set_n_HI( 1.0 );
-      it->set_n_HII( 0.0 );
-    }
-  }//for all sites
+  
+  // Solar abundances (by number)
+  // (/"H   ","He  ","C   ","N   ","O   ","Ne  ","Si  ","Fe  "/) 
+  // 1., .085, 3.31e-4, 8.3e-5, 6.76e-4, 1.2e-4, 3.55e-5, 3.2e-5
+
+  // Initialize the abundances relative to the total number density of atoms
+  abundances.push_back(1.0);//H
+  abundances.push_back(0.085);//He
+  abundances.push_back(3.31e-4);//C
+  abundances.push_back(3.31e-4);//C
+  abundances.push_back(8.3e-5);//N
+  abundances.push_back(6.76e-4);//O
+  abundances.push_back(6.76e-4);//O
+  abundances.push_back(1.2e-4);//Ne
+  abundances.push_back(3.55e-5);//Si
+  abundances.push_back(3.55e-5);//Si
+  abundances.push_back(3.2e-5);//Fe
+  abundances.push_back(3.2e-5);//Fe
 
   if( COMM_RANK == 0 ){
-    simpleXlog << "  Homogeneous number density created " << endl;
+    simpleXlog << "  Metal line cooling curves initialized " << endl;
+    cerr << "  Metal line cooling curves initialized " << endl;
   }
 
+  return;
 }
+
 
 /****  Assign the number densities and fluxes from read in to sites  ****/
 void SimpleX::assign_read_properties(){
@@ -8048,20 +5886,49 @@ void SimpleX::assign_read_properties(){
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
     if( it->get_process() == COMM_RANK){
       if( !it->get_border() ){
-  //get the number density and flux from list that was 
-  //created when reading the input
-        it->set_n_HI( temp_n_HI_list[ it->get_vertex_id() ] );
-  //set ionised fraction
-        it->set_n_HII( temp_n_HII_list[ it->get_vertex_id() ] );
-  //change if there's more than one freq!
-        it->set_flux( temp_flux_list[ it->get_vertex_id() ] );
+	//get the number density and flux from list that was 
+	//created when reading the input
+	it->set_n_HI( temp_n_HI_list[ it->get_vertex_id() ] );
+	//set ionised fraction
+	it->set_n_HII( temp_n_HII_list[ it->get_vertex_id() ] );
+	//set internal energy
+	it->set_internalEnergy( temp_u_list[ it->get_vertex_id() ] );
+	//set dudt
+	it->set_dinternalEnergydt( temp_dudt_list[ it->get_vertex_id() ] );
+
+	//set number of ionising photons
+	if(temp_flux_list[ it->get_vertex_id() ] > 0.0){
+
+	  //site is source
+	  it->set_source(1);
+
+	  //create flux array
+	  it->create_flux(numFreq);
+	  //put total number of ionsing photons in first bin
+	  it->set_flux( 0, temp_flux_list[ it->get_vertex_id() ] );
+	}else{
+	  //site is no source
+	  it->set_source(0);
+	}
+
       }else{
-        it->set_n_HI( 0.0 );
-        it->set_n_HII( 0.0 );
-        it->set_flux( 0.0 );
+	it->set_n_HI( 0.0 );
+	it->set_n_HII( 0.0 );
+	it->set_source( 0 );
+	it->set_internalEnergy( 0.0 );
       }
     }
   }
+
+  //if clumping factor is included, add to sites
+  if(temp_clumping_list.size() > 0){
+    for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+      if( it->get_process() == COMM_RANK && !it->get_border()){
+	it->set_clumping( temp_clumping_list[ it->get_vertex_id() ] );
+      }
+    }
+  }
+
 
   //clear the lists
   temp_n_HI_list.clear();
@@ -8070,6 +5937,12 @@ void SimpleX::assign_read_properties(){
   vector< float >().swap( temp_n_HII_list );
   temp_flux_list.clear();
   vector< float >().swap( temp_flux_list );
+  temp_u_list.clear();
+  vector< float >().swap( temp_u_list );
+  temp_dudt_list.clear();
+  vector< float >().swap( temp_dudt_list );
+  temp_clumping_list.clear();
+  vector< float >().swap( temp_clumping_list );
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Assigned number density and flux to sites " << endl;
@@ -8086,21 +5959,30 @@ void SimpleX::return_physics(){
   sort( site_properties.begin(), site_properties.end(), compare_vertex_id_site_update );
 
   //loop over all sites
-  unsigned long long int i=0;
+  unsigned long int i=0;
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
     //only include sites on this proc that are not in border
-    if( it->get_process() == COMM_RANK ){ 
+    if( it->get_process() == COMM_RANK ){
       if( !it->get_border() ) {
-  //check if the vertex ids match
+        //check if the vertex ids match
         if(it->get_vertex_id() == site_properties[i].get_vertex_id() ){
 
-    //assign properties
-          it->set_n_HI( site_properties[ i ].get_n_HI() );
-          it->set_n_HII( site_properties[ i ].get_n_HII() ); 
-          it->set_flux( site_properties[ i ].get_flux() );
-          it->set_ballistic( site_properties[ i ].get_ballistic() );
+	  //assign properties
+	  it->set_n_HI( site_properties[ i ].get_n_HI() );
+	  it->set_n_HII( site_properties[ i ].get_n_HII() ); 
+	  it->set_ballistic( site_properties[ i ].get_ballistic() );
+	  it->set_internalEnergy( site_properties[ i ].get_internalEnergy() );
+	  //if site is source, put flux in first bin
+	  if( site_properties[ i ].get_flux() > 0.0 ){
+	    it->set_source(1);
+	    it->create_flux(numFreq);
+	    it->set_flux( 0, site_properties[ i ].get_flux() );
+	  }else{
+	    it->set_source(0);
+	  }
 
           i++;
+          
         }else{
           cerr << " (" << COMM_RANK << ") Error in return_physics(): site not mapped" << endl;
           cerr << it->get_vertex_id() << " " << i << endl;
@@ -8120,108 +6002,284 @@ void SimpleX::return_physics(){
     }//if on this proc 
   }//for all sites
 
+  //fill the source bins correctly
+  //upper and lower bounds of integration in terms of the ionisation frequency for hydrogen
+  //tweak the upper bound in case of evenly spaced bins
+  const double upperBound = 1e2;
+  const double lowerBound = 1.0;
+
+  //calculate the frequency bounds
+  vector<double> freq_bounds = calc_freq_bounds(lowerBound, upperBound);
+
+  //Planck curve divided by h * nu over entire domain
+  double normBB = qromb(PlanckDivNu, lowerBound, upperBound, sourceTeff);
+
+  //loop over all sites
+  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+    //if site is source
+    if( it->get_source() ){
+      double total_flux = it->get_flux(0);
+      //loop over frequencies
+      for(short int f=0; f<numFreq; f++){
+
+	// Integrated number of photons for this bin
+	double bbOverNu = qromb(PlanckDivNu, freq_bounds[f], freq_bounds[f+1], sourceTeff);
+
+	// Normalise to the source strength
+	double flux = total_flux * bbOverNu/normBB;
+	it->set_flux( f, (float) flux);
+
+      }//for all freqs
+    }//if source
+  }//for all sites
+
 
   if( COMM_RANK == 0 ){
     simpleXlog << " Returned physics to proper sites" << endl;
   }
-
 }
 
+
+//calculate the bounds of the frequency bins
+vector<double> SimpleX::calc_freq_bounds( const double& lowerBound, const double& upperBound ){
+
+  //tolerance in calculation
+  double TOL = 1e-8;
+  //total of the quantity that determines the bin spacing
+  double total = 0.0;
+
+  //vector that holds the spacing of the frequency bins
+  vector<double> freq_bounds(numFreq+1, 0.0);
+
+  //in case of energy and ionisation weigths, calculate the total quantity within the range 
+  switch(freq_spacing){
+
+  case ENERGY_WEIGHTS:
+
+    // Use the energy of the radiation field to choose bins such that they carry equal energy
+    total = qromb(Planck, lowerBound, upperBound, sourceTeff);
+    break;
+
+  case IONISATION_WEIGHTS:
+
+    // Use the enrgy times the cross section to choose bins
+    total = crossIntHI( upperBound, sourceTeff );
+
+    break;
+
+  }
+
+  // Cross section per bin
+  double perBin = total/double(numFreq);
+
+  /*  
+  // Use minimisation routine to find the bounding frequencies for the bins
+  */
+  double deviation = FLT_MAX;
+
+  // Store the lower and upper bound
+  freq_bounds[0] = lowerBound;
+  freq_bounds[numFreq] = upperBound;
+
+
+  //determine the spacing of the rest of the bins    
+  switch(freq_spacing){
+
+  case ENERGY_WEIGHTS:
+
+    for(short int f=1; f<numFreq; f++){
+      double bound = zbrent(PlanckInt, upperBound, TOL, sourceTeff, f*perBin);
+      freq_bounds[f] = bound;
+    }
+
+
+    // Check whether the last bin contains the correct number of ionisations per unit time 
+    if(numFreq>1){
+      deviation = ( qromb(Planck, freq_bounds[freq_bounds.size()-2], upperBound, sourceTeff) - 
+		    perBin)/perBin;
+    }else{
+      deviation = 0.0;
+    }
+
+    break;
+
+  case IONISATION_WEIGHTS:
+
+    // Loop over bins
+    for(short int f=1; f<numFreq; f++){
+      double bound =  zbrent(crossIntHI, upperBound, TOL, sourceTeff, f*perBin);
+      freq_bounds[f] = bound;
+    }
+
+
+    if(numFreq>1){
+      // Check whether the last bin contains the correct number of ionisations per unit time 
+      double total = qromb(fHI, freq_bounds[freq_bounds.size()-2], upperBound, sourceTeff);
+      deviation = ( total - perBin)/perBin;
+    } else {
+      deviation = 0.0;
+    }
+
+    break;
+
+  case LOG_WEIGHTS:
+
+    // logarithmic bins
+    double logLowerBound;
+    logLowerBound = log10(lowerBound);
+    double logUpperBound;
+    logUpperBound = log10(upperBound);
+
+    deviation = 0.0;
+    break;
+
+  case NO_WEIGHTS:
+
+    //upperBound = 3;// This is not entirely correct but if spacing linearly to 100 everything happens in the first bin.
+
+    if(numFreq>1){    
+      for(short int f=1; f<numFreq; f++){
+	freq_bounds[f] = f*(upperBound-lowerBound)/numFreq + lowerBound;
+      }
+    }
+
+    deviation = 0.0;
+    break;
+
+  }
+
+  if(deviation > TOL){
+    cerr << "WARNING: Integration over last bin deviates more than TOL " << TOL << " from perBin by: " << deviation << endl;
+    cerr << "This may signal inaccurate cross sections." << endl;
+    MPI::COMM_WORLD.Abort(-1);
+  }
+
+  return freq_bounds;
+
+}
 
 //calculate effective cross section and spectrum of black body source
 void SimpleX::black_body_source(const double& tempSource) {
 
-//   double frac = 0.0;
-//   double redTemp = tempSource/1e4;
-
-//   //BBeval values are located in Commmon.cpp
-//   if( redTemp > (double) BBevalNum ) 
-//     redTemp = (double) BBevalNum;
-//   else if( redTemp < 1.0) 
-//     redTemp = 1.0;
-
-//   int indTemp = (int) floor( redTemp );
-//   double ratio = redTemp - (double) indTemp;
-
-//   frac = ratio * BBevalEffAbs[ indTemp-2 ] + (1.0 - ratio ) * BBevalEffAbs[ indTemp-1 ];
-
-//   cross = frac * A0;
 
   //Determine the frequency integrated cross section of hydrogen for a black bosy source of temperature tempSource
   //Units are scaled to close to 1
 
   //upper and lower bounds of integration in terms of the ionisation frequency for hydrogen
+  //tweak the upper bound in case of evenly spaced bins
   const double upperBound = 1e2;
   const double lowerBound = 1.0;
 
-  //integral of hydrogen cross section times Planck curve
-  double intHI = qromb(fHI, lowerBound, upperBound, tempSource ) ;
-  //integral over Planck curve divided by nu
-  double bbOverNu = qromb(PlanckDivNu, lowerBound, upperBound, tempSource);
-  //integral over Planck curve
-  double bb = qromb(Planck, lowerBound, upperBound, tempSource);
+  //calculate the frequency bounds
+  vector<double> freq_bounds = calc_freq_bounds(lowerBound, upperBound);
 
-  //divide the two to get the desired effective cross section
-  intHI /= bbOverNu;
+ 
+  // cerr << " Frequency bounds: ";
+  // for(int i=0; i<freq_bounds.size(); i++){
+  //   cerr << freq_bounds[i] << " ";
+  // }
+  // cerr << endl;
 
+  //***** Fill the source bins *****//
 
-  //back to physical units
-  cross_H = intHI*crossFactor;
+  //Planck curve divided by h * nu over entire domain
+  double normBB = qromb(PlanckDivNu, lowerBound, upperBound, tempSource);
 
-  //In case dust is included, calculate effective cross section
-  if(dust_model == SMC){
+  //cerr << " Flux: ";
 
-    double intDust = qromb(f_dust_SMC,lowerBound,upperBound,tempSource);
-    intDust /= bb;
+  //loop over all sites
+  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+    //if site is source
+    if( it->get_source() ){
+      double total_flux = it->get_flux(0);
+      //loop over frequencies
+      for(short int f=0; f<numFreq; f++){
 
-    cross_dust = intDust * sigma_dust_SMC;
+	// Integrated number of photons for this bin
+	double bbOverNu = qromb(PlanckDivNu, freq_bounds[f], freq_bounds[f+1], tempSource);
 
-    //cerr << " Old cross section: " << intDust*sigma_dust_SMC*bb/bbOverNu << "; updated cross section: " << cross_dust << endl;
+	// Normalise to the source strength
+	double flux = total_flux * bbOverNu/normBB;
+	it->set_flux( f, (float) flux);
 
-  }else if(dust_model == LMC){
+	//cerr << flux << " ";
 
-    double intDust = qromb(f_dust_LMC,lowerBound,upperBound,tempSource);
-    intDust /= bb;
+      }//for all freqs
+    }//if source
+  }//for all sites
 
-    cross_dust = intDust * sigma_dust_LMC;
+  //cerr << endl;
 
+  //***** Determine cross sections ******//
 
-  }else if(dust_model == MW){
+  //give cross sections vector the correct size
+  cross_H.resize(numFreq, 0.0);
 
-    double intDust = qromb(f_dust_MW,lowerBound,upperBound,tempSource);
-    intDust /= bb;
+  //store integral over cross section times source spectrum
+  //vector<double> intHI(numFreq, 0.0);
+  //loop over frequencies
+  // for(short int f=0; f<numFreq; f++){
+  //   //integral of hydrogen cross section times Planck curve
+  //   intHI[f] = qromb(fHI, lowerBound, freqBounds[f+1], tempSource ) ;
+  // }
+  // // Take the differences of the entries computed above to obtain the integrals over the bins
+  // for(short int f=numFreq-1; f>0; --f){
+  //   intHI[f] -= intHI[f-1];
+  // }
+  // //loop over frequencies and normalise the cross sections
+  // for(short int f=0; f<numFreq; f++){
+  //   //PLanck curve divided by h*nu
+  //   double bbOverNu = qromb(PlanckDivNu, freqBounds[f], freqBounds[f+1], tempSource);
+  //   intHI[f] /= bbOverNu;
+  //   //back to physical units
+  //   cross_H[f] = intHI[f]*crossFactor;
+  // }
 
-    cross_dust = intDust * sigma_dust_MW;
+  //loop over frequencies
+  for(short int f=0; f<numFreq; f++){
 
-  }else{
-    cross_dust = 0.0;
+    //integral of hydrogen cross section times Planck curve
+    double intHI = qromb(fHI, freq_bounds[f], freq_bounds[f+1], tempSource ) ;
+
+    //Planck curve divided by h*nu
+    double bbOverNu = qromb(PlanckDivNu, freq_bounds[f], freq_bounds[f+1], tempSource);
+
+    //cross section in physical units
+    cross_H[f] = crossFactor * intHI/bbOverNu;
+
+    //cerr << " Cross section: " << cross_H[f] << " crossFactor: " << crossFactor << " intHI: " << intHI << " bbOverNu: " << bbOverNu << endl;
+
   }
 
+ 
+  //***** Determine excess energy of the photons ******//
 
-  //Determine dust to gas ratio
-  //reference metallicity
-  double Z_ref=1.0;
-  switch(dust_model){
+  //give photon excess energy vector correct size
+  photon_excess_energy.resize(numFreq, 0.0);
 
-    //values for metallicity MCs from Welty et al. 1997 and 1999
-    case SMC:
-      //assuming overall metallicity -0.6 dex relative to solar
-    Z_ref = 0.25;
-    break;
-    case LMC:
-      //assuming overall metallicity -0.3 dex relative to solar
-    Z_ref = 0.5;
-    break;
-    case MW:
-      //assume solar metallicity
-    Z_ref = 1.0;
-    break;
+  //loop over frequencies
+  for(short int f=0; f<numFreq; f++){
+
+    //photoheating coefficient
+    double photo_heat_coeff = qromb(enerfHI, freq_bounds[f], freq_bounds[f+1], tempSource );
+
+    //photo-ionisation rate
+    double Gamma_H = qromb(fHI, freq_bounds[f], freq_bounds[f+1], tempSource );
+
+    //set the photon excess energy (convert units)
+    photon_excess_energy[f] = (Gamma_H > 0.0) ? planckConstant * nu0HI * photo_heat_coeff/Gamma_H : 0.0;
+
   }
 
-  dust_to_gas_ratio = metallicity/Z_ref;
+ 
+  // cerr << " Heating: ";
+  // for(int i=0; i<photon_excess_energy.size(); i++){
+  //   cerr << photon_excess_energy[i] << " ";
+  // }
+  // cerr << endl;
 
   if( COMM_RANK == 0 ){
-    simpleXlog << "  Calculated effective cross sections for black body source" << endl;
+    simpleXlog << "  Calculated effective cross sections and photon excess energy for black body source" << endl;
   }
 
 }
@@ -8250,17 +6308,23 @@ void SimpleX::output_number_of_atoms() {
 //compute the mean optical depth on this proc, used for output
 double SimpleX::output_optical_depth() {  
 
-  double tau=0.0; 
+  double tau_tot=0.0; 
   unsigned int count = 0; 
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
     if( !it->get_border() && it->get_process() == COMM_RANK ){ 
-      tau += it->get_n_HI() * UNIT_D * (double) it->get_neigh_dist() * UNIT_L * cross_H * straight_correction_factor;
+      //calculate the mean optical depth over frequencies
+      double tau=0.0;
+      for(short int f=0; f<numFreq; f++){
+	tau += it->get_n_HI() * UNIT_D * it->get_neigh_dist() * UNIT_L * cross_H[f] * straight_correction_factor;
+      }
+      tau /= numFreq;
+      tau_tot += tau;
       count++;  
     }
   }  
 
   double totalTau;
-  MPI::COMM_WORLD.Allreduce(&tau,&totalTau,1,MPI::DOUBLE,MPI::SUM);
+  MPI::COMM_WORLD.Allreduce(&tau_tot,&totalTau,1,MPI::DOUBLE,MPI::SUM);
   unsigned int totalCount;
   MPI::COMM_WORLD.Allreduce(&count,&totalCount,1,MPI::UNSIGNED,MPI::SUM);
 
@@ -8276,109 +6340,54 @@ double SimpleX::output_optical_depth() {
 //output relevant physical quantities to screen
 void SimpleX::parameter_output( const unsigned int& run ){
 
-  // int maxRes;
+  int maxRes;
 
-  // MPI::COMM_WORLD.Reduce(&localMaxRes,&maxRes,1,MPI::INT,MPI::MIN,0);
+  MPI::COMM_WORLD.Reduce(&localMaxRes,&maxRes,1,MPI::INT,MPI::MIN,0);
 
   double mean_tau = output_optical_depth();
 
   if(COMM_RANK == 0){
 
     cerr << endl << endl
-      << "  Total volume: " << totalVolume << " (should be close to " << 1.0 << ")." << endl
-      << "  Max resolution: " << maxRes << "^3, smallest scale resolved is " << UNIT_L/(maxRes*parsecToCm) << " pc" << endl
-      << endl         
-      << "  Effective Photo-Ionization Cross Section     : " << cross_H << " cm^2" << endl;
-    if( dust_model != NO_DUST){
-      cerr << "  Effective dust cross section                 : " << cross_dust << " cm^2 "<< endl;
-    }  
+	 << "  Total volume: " << totalVolume << " (should be close to " << 1.0 << ")." << endl
+	 << "  Max resolution: " << maxRes << "^3 effective (adaptive grid)." << endl
+	 << endl;
+    cerr << "  Effective Photo-Ionization Cross Section     : ";
+    for(short int f=0; f<numFreq-1; f++){         
+      cerr << cross_H[f] << " | ";
+    }
+    cerr << cross_H[numFreq-1] << " cm^2" << endl;
+
     cerr << endl
-      << "  Size of Simulation Domain                    : " << sizeBox << " pc" << endl  
-      << "  Time elapsed                                 : " << run*simTime/( numRuns*secondsPerMyr ) << " Myr" << endl
-      << "  This run                                     : " << simTime/( numRuns*secondsPerMyr ) << " Myr" << endl
-      << "  Total Simulation Time                        : " << simTime/secondsPerMyr << " Myr" << endl  
-      << endl  
-      << "  Average density SimpleX grid                 : " << totalAtoms/pow( UNIT_L, 3 ) << " cm^-3" << endl  
-      << "  Total number of atoms within SimpleX grid    : " << totalAtoms << endl  
-      << endl
-      << "  Average optical depth                        : " << mean_tau << endl
-      << endl;
+	 << "  Size of Simulation Domain                    : " << sizeBox << " pc" << endl  
+	 << "  Time elapsed                                 : " << run*simTime/( numRuns*secondsPerMyr ) << " Myr" << endl
+	 << "  This run                                     : " << simTime/( numRuns*secondsPerMyr ) << " Myr" << endl
+	 << "  Total Simulation Time                        : " << simTime/secondsPerMyr << " Myr" << endl  
+	 << endl  
+	 << "  Average density SimpleX grid                 : " << totalAtoms/pow( UNIT_L, 3 ) << " cm^-3" << endl  
+	 << "  Total number of atoms within SimpleX grid    : " << totalAtoms << endl  
+	 << endl
+	 << "  Average optical depth                        : " << mean_tau << endl
+	 << endl;
 
     simpleXlog << endl << endl
-      << "  Total volume: " << totalVolume << " (should be close to " << 1.0 << ")." << endl
-      << "  Max resolution: " << maxRes << "^3, smallest scale resolved is " << UNIT_L/(maxRes*parsecToCm) << " pc" << endl
-      << endl         
-      << "  Effective Photo-Ionization Cross Section     : " << cross_H << " cm^2" << endl;
-    if( dust_model != NO_DUST){
-      simpleXlog << "  Effective dust cross section                 : " << cross_dust << " cm^2 "<< endl;
-    }  
+	       << "  Total volume: " << totalVolume << " (should be close to " << 1.0 << ")." << endl
+	       << "  Max resolution: " << maxRes << "^3 effective (adaptive grid)." << endl
+	       << endl;         
+    simpleXlog << "  Effective Photo-Ionization Cross Section     : ";
+    for(short int f=0; f<numFreq-1; f++){         
+      simpleXlog << cross_H[f] << " | ";
+    }
+    simpleXlog << cross_H[numFreq-1] << " cm^2" << endl;
     simpleXlog << endl  
-      << "  Average density SimpleX grid                 : " << totalAtoms/pow( UNIT_L, 3 ) << " cm^-3" << endl  
-      << "  Total number of atoms within SimpleX grid    : " << totalAtoms << endl  
-      << endl
-      << "  Average optical depth                        : " << mean_tau << endl
-      << endl;
+	       << "  Average density SimpleX grid                 : " << totalAtoms/pow( UNIT_L, 3 ) << " cm^-3" << endl  
+	       << "  Total number of atoms within SimpleX grid    : " << totalAtoms << endl  
+	       << endl
+	       << "  Average optical depth                        : " << mean_tau << endl
+	       << endl;
 
   }
 
-
-}
-
-//Put source in the centre of domain
-void SimpleX::set_source_in_centre(){
-
-
-  if( COMM_RANK == 0 )
-    cerr << " (" << COMM_RANK << ") Placing a source with flux " << source_strength*UNIT_I << " in centre of domain, ";  
-
-  double temp;  
-  int tellerLocal=0;
-  int tellerGlobal;
-
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-    if( it->get_process() == COMM_RANK && !it->get_border() ){
-      temp = sqrt( pow( it->get_x() - source_x , 2 ) + pow( it->get_y() - source_y, 2 ) + pow( it->get_z() - source_z, 2 ) );  
-      if( temp<=source_radius ) tellerLocal++;  
-    }
-  }
-
-  MPI::COMM_WORLD.Allreduce(&tellerLocal, &tellerGlobal, 1, MPI::INT, MPI::SUM );
-
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-    if( it->get_process() == COMM_RANK  && !it->get_border() ){
-      temp = sqrt( pow( it->get_x() - source_x , 2 ) + pow( it->get_y() - source_y, 2 ) + pow( it->get_z() - source_z, 2 ) );  
-      if( temp<=source_radius ){
-        double flux = (double) source_strength/tellerGlobal;
-        it->set_flux( (float) flux );  
-      }
-    } 
-  }  
-
-  if( COMM_RANK == 0 ){
-    cerr << "consisting of " << tellerGlobal; 
-    simpleXlog << "  Source in centre contains " << tellerGlobal;
-    if(tellerGlobal == 1){
-      cerr << " point." << endl;
-      simpleXlog << " point." << endl;
-    }else{
-      cerr << " points." << endl;
-      simpleXlog << " points." << endl;
-    }
-  }
-
-}
-
-
-//return recombination coefficient
-double SimpleX::recombCoeff( const double& tempGas) {  
-
-  //double recomb_coefficient_old = alpha_B * pow( tempIonGas/tempGas, recombCoefficient);  
-
-  //recombination coefficient from Hui&Gnedin, 1998
-  double lambda_HI = 2.0 * 1.57807e5/tempGas;
-  double recomb_coefficient = 2.753e-14 * pow( lambda_HI, 1.5 ) / pow( ( 1.0 + pow( 0.364963503 * lambda_HI, 0.407 )), 2.242 );  
-
-  return recomb_coefficient;
 
 }
 
@@ -8395,29 +6404,215 @@ double SimpleX::recombine(){
 
       double N_HI = (double) it->get_n_HI() * UNIT_D * (double) it->get_volume() * UNIT_V;
       double N_HII = (double) it->get_n_HII() * UNIT_D * (double) it->get_volume() * UNIT_V;
-      double t_rec_inv = (double) it->get_n_HII() * UNIT_D * recombCoeff( gasIonTemp );  //ion_frac*dens = number of available protons in the volume
-      double dxBYdt = N_HII * t_rec_inv;  //number of recombinations per second
-      double dx = dxBYdt * UNIT_T;  
 
-      if( dx > N_HII ) {
-        dx = N_HII;  
-      }
+      //number of recombinations is this factor times recombination coefficient
+      double num_rec_factor = (double) it->get_clumping() * N_HII * (double) it->get_n_HII() * UNIT_D * UNIT_T;
 
-      N_HI += dx;
-      N_HII -= dx;
+      //number of recombinations
+      double num_rec = num_rec_factor*recomb_coeff_HII_caseB( it->get_temperature() );
+
+      //make sure there are no more recombinations than ionised atoms
+      if( num_rec > N_HII ) {
+	num_rec = N_HII;  
+      } 
+
+      totalRecombs += num_rec;
+
+      //add the recombinations to the sites
+      N_HI += num_rec;
+      N_HII -= num_rec;
       double tmp = N_HI/(UNIT_D * (double) it->get_volume() * UNIT_V);
       it->set_n_HI( (float) tmp );
       tmp = N_HII/(UNIT_D * (double) it->get_volume() * UNIT_V);
       it->set_n_HII( (float) tmp );
 
-      totalRecombs += dx;  
-
     }
   } //for all vertices 
+
 
   return totalRecombs;
 
 }
+
+//rate of energy loss inside cell
+double SimpleX::cooling_rate( Site& site ){
+
+  //normalised cooling function
+  double C = 0.0;
+  //neutral hydrogen density
+  double n_HI = site.get_n_HI() * UNIT_D;
+  //ionised hydrogen density
+  double n_HII = site.get_n_HII() * UNIT_D;
+  //total number density
+  double n_H = n_HI + n_HII;
+
+  //electron density is the same in case of hydrogen only
+  double n_e = n_HII;
+
+  //recombination cooling
+  C += recomb_cooling_coeff_HII_caseB( site.get_temperature() ) * n_e * n_HII * site.get_clumping();
+
+  //collisional ionisation cooling
+  C += coll_ion_cooling_coeff_HI( site.get_temperature() ) * n_e * n_HI;
+
+  //collisional de-excitation cooling
+  C += coll_excit_cooling_coeff_HI( site.get_temperature() ) * n_e * n_HI;
+
+  //free-free cooling
+  C += ff_cooling_coeff( site.get_temperature() ) * n_e * n_HII;
+
+  //metal cooling (including helium for the moment)
+  if(metal_cooling){
+    
+    //loop over metal line cooling curves
+    for(unsigned int j=1; j<curves.size();j++){// j=1 because hydrogen is not taken into account here (but explicitly above)
+      
+      // abundance*cooling/rate
+      if(withH[j])
+	C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * n_H;
+      else
+	C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_e * n_H;
+    }
+  }
+  
+
+  //total cooling rate in cell
+  double cooling = C * site.get_volume() * UNIT_V;
+
+  return cooling;
+
+}
+
+//rate of energy gain inside cell
+double SimpleX::heating_rate( const vector<double>& N_ion, const double& t_end ){
+
+  //normalised heating function H = n_HI * Gamma * E/n_H^2
+  //total heating in this cell is heating = n_H^2 * V * H,
+  //which is given here
+
+  //energy gain
+  double heating = 0.0;
+
+  //loop over frequencies
+  for( short int f=0; f<numFreq; f++ ){
+
+    //number of photons per second
+    double N_ion_sec = N_ion[f]/t_end;
+
+    //heating due to these photons
+    heating += N_ion_sec * photon_excess_energy[f];
+  }
+
+  return heating;
+
+}
+
+//convert internal energy to temperature using ideal gas law
+double SimpleX::u_to_T( const double& u, const double& mu ){
+
+  //temperature
+  double T = (mu * m_H * u)/(1.5 * k_B);
+
+  return T;
+
+}
+
+//convert temperature to internal energy using ideal gas law
+double SimpleX::T_to_u( const double& T, const double& mu ){
+
+  //internal energy
+  double u = (1.5 * k_B * T)/(mu * m_H);
+
+  return u;
+
+}
+
+//update the temperature state of the gas
+// function returns the heating/cooling time
+double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, const double& t_end ){
+
+
+  //range of temperatures between which the rates are valid
+  double T_min = 10.;
+  double T_max = 1.e9;
+
+  //time passed in heating cycling
+  double t = 0.0;
+
+  //heating/cooling time scale
+  double t_heat = t_end;
+
+  //mean molecular weight
+  double mu = ( site.get_n_HI() + site.get_n_HII() )/(site.get_n_HI() + 2*site.get_n_HII() );
+
+  double u_min = T_to_u( T_min, mu);
+  double u_max = T_to_u( T_max, mu);
+
+  //number of hydrogen atoms
+  double N_H = ( site.get_n_HI() + site.get_n_HII() ) * UNIT_D * site.get_volume() * UNIT_V;
+
+  //inclusion of adiabatic cooling term from hydro
+  double duDtAdiabatic = site.get_dinternalEnergydt();
+  
+  //divide this by the internal energy to obtain a constant quantity
+  double u_0 = site.get_internalEnergy();
+
+  // not a good idea (shock heating terms)
+  // duDtAdiabatic = (u_0 > 0.0)? duDtAdiabatic/u_0 : 0.0;
+  
+  //loop until end time is reached 
+  while( t < t_end ){
+
+    //current internal energy of the cell per unit mass
+    double u = site.get_internalEnergy();
+
+    //total heating inside this cell per second
+    double H = heating_rate( N_ion, t_end );
+
+    //total cooling inside this cell per second
+    double C = cooling_rate( site ); 
+    
+    //change in internal energy per second per unit mass
+    double du = duDtAdiabatic + (H - C)/(N_H * m_H);
+    // removed *u
+
+    //determine heating time scale
+    t_heat = ( fabs(du) > 0.0 ) ?  u/fabs(du) : 1.e5*UNIT_T; 
+
+    //take time step fraction of the heating time
+    double dt = subcycle_frac*t_heat;
+
+    //check that we stay within the total time
+    if( (t+dt) > t_end ){
+      dt = t_end - t;
+    }
+
+    //change in internal energy in total time 
+    du *= dt;
+
+    //make sure internalEnergy is in range where rates are valid
+    u = u+du;
+
+    if(u > u_max){
+      u = u_max;
+    }else if(u < u_min){
+      u = u_min;
+    }
+
+    //set new internal energy
+    site.set_internalEnergy( (float) u );
+
+    //add time step to total time
+    t += dt; 
+
+  }
+
+  return t_heat;
+
+}
+
+
+
 
 /****************************************************************************************/
 /*                       Radiative Transport Functions                                  */
@@ -8425,43 +6620,31 @@ double SimpleX::recombine(){
 
 
 
-//Calculate the ionisations and recombination
-double SimpleX::solve_rate_equation( Site& site ){
+//Calculate the 
+vector<double> SimpleX::solve_rate_equation( Site& site ){
 
-  //calculate ionised fraction, neutral fraction, number density, optical depth 
-  double n_H = ( (double) site.get_n_HI() + (double) site.get_n_HII() );
+  static int count = 0;
 
-  double initial_ionised_fraction = (double) site.get_n_HII()/n_H;
-  //double initial_neutral_fraction = (double) site.get_n_HI()/n_H;
+  //calculate number density and optical depth at beginning of time step
+  double n_H = ( (double) site.get_n_HI() + (double) site.get_n_HII() ) * UNIT_D;
 
-  double initial_tau = (double) site.get_n_HI() * UNIT_D * (double) site.get_neigh_dist() * UNIT_L * cross_H * straight_correction_factor;
+  vector<double> initial_tau(numFreq,0.0); 
+  for(short int f=0; f<numFreq;f++){
+    initial_tau[f] = (double) site.get_n_HI() * UNIT_D * (double) site.get_neigh_dist() * UNIT_L * cross_H[f] * straight_correction_factor;
 
-  //dirty hack to avoid nans
-  if(initial_tau == 0.0 && n_H > 0.0){
-    initial_tau = FLT_MIN;//1.e-15;
-  }
-
-  double tau_dust = 0.0;
-  if(dust_model != NO_DUST){
-    if(dust_sublimation){
-      //dust scales with only neutral gas column density, dust is destroyed by radiation
-      tau_dust = dust_to_gas_ratio * (double) site.get_n_HI() * UNIT_D * (double) site.get_neigh_dist() * UNIT_L * cross_dust * straight_correction_factor;
-    }else{
-      //dust scales with total gas column density, no dust is destroyed
-      tau_dust = dust_to_gas_ratio * n_H * UNIT_D * (double) site.get_neigh_dist() * UNIT_L * cross_dust * straight_correction_factor;
+    //dirty hack to avoid nans
+    if(initial_tau[f] == 0.0 && n_H > 0.0){
+      initial_tau[f] = 1.e-15;
     }
   }
 
-  double tau_eff = initial_tau + tau_dust;
-
   //total number of incoming and outgoing photons
-  double N_in_total = 0.0;
-  double N_out_total = 0.0;
+  vector<double> N_in_total(numFreq, 0.0);
+  vector<double> N_out_total(numFreq, 0.0);
 
   //number of neutral and ionised atoms in the cell
   double initial_N_HI = (double) site.get_n_HI() * UNIT_D * (double) site.get_volume() * UNIT_V;
   double initial_N_HII = (double) site.get_n_HII() * UNIT_D * (double) site.get_volume() * UNIT_V;
-
 
   //in case of ballistic transport, intensity has size of number of neighbours;
   //in case of direction conserving transport, intensity has 
@@ -8470,388 +6653,506 @@ double SimpleX::solve_rate_equation( Site& site ){
 
 
   for( unsigned int j=0; j < numPixels; j++) {
-    if( site.get_intensityOut( j ) > 0.0 ) { 
-      N_in_total += (double) site.get_intensityOut( j );
-    } //if intensityOut
+    for(short int f=0; f<numFreq;f++){
+      //incoming intensity in physical units
+      N_in_total[f] += (double) site.get_intensityOut( f,j ) * UNIT_I;
+    } //for all freqs
   } //for all neighbours
 
   //if rho is zero, no need to go into loop
   if(n_H == 0.0){
-    N_in_total *= UNIT_I;
-    N_out_total = N_in_total;
-  }
-
-
-  if(n_H > 0.0){
-
-    //transform the number of photons to physical units
-    N_in_total *= UNIT_I;
-  
+    for(short int f=0; f<numFreq;f++){
+      N_out_total[f] = N_in_total[f];
+    }
+  } else {//this loop is only useful if there is gas in the cell
     
+    // NOTE: if there are no collisional ionizations, this loop is only useful if there is radiation!
+
     //calculate the number of absorptions and ionisations if N_HI and N_HII were constant during RT time step
     //double initial_N_retained_total = (1.0 - exp(-initial_tau)) * N_in_total;
     //double initial_numIonised = ( initial_N_retained_total >= N_HI ) ? N_HI : initial_N_retained_total;
 
-    //absorptions by gas and dust
-    double initial_N_retained_total = (1.0 - exp(-tau_eff)) * N_in_total;
-    //fraction available for H
-    double initial_N_retained_H = initial_N_retained_total*initial_tau/tau_eff;
+    //absorptions by hydrogen
+    vector<double> initial_N_retained_H(numFreq, 0.0);
+    //total number of photoionisations in this time step
+    double initial_photo_ionisations = 0.0;
+    for(short int f=0; f<numFreq;f++){
+      initial_N_retained_H[f] = (1.0 - exp( -initial_tau[f] )) * N_in_total[f];
+      initial_photo_ionisations += initial_N_retained_H[f];
 
-    double initial_numIonised = ( initial_N_retained_H >= initial_N_HI ) ? initial_N_HI : initial_N_retained_H;
+      if(initial_photo_ionisations != initial_photo_ionisations ){
+	cerr << initial_photo_ionisations << " " << initial_N_retained_H[f] << " " << initial_tau[f] << " " << N_in_total[f] << endl;
+      }
+
+    }
+
+    //total number of collisional ionisations in this time step
+    double initial_coll_ionisations = 0.0;
+    if(coll_ion){
+      double n_e = (double) site.get_n_HII() * UNIT_D;
+      //number of coll ionisations is coll ion coeff * n_e * number of atoms * time step
+      initial_coll_ionisations = coll_ion_coeff_HI( site.get_temperature() ) * n_e * initial_N_HI * UNIT_T;
+    }
+
+    //the initial ionisations without accounting for the number of neutral atoms
+    double initial_numIonised = initial_photo_ionisations + initial_coll_ionisations;
 
     //use temporal photon condervation or not?
+    unsigned long int Nsteps = 1;
     if(photon_conservation){
-      //calculate relevant time scales to see whether assumption of constant N_HI and N_HII is correct
-      //double t_ion = UNIT_T * N_HI/initial_N_retained_total; //ionisation time scale
-      //double t_ion = UNIT_T * initial_N_HI/initial_N_retained_H; //ionisation time scale
-      //double t_rec = ( site.get_volume() * pow( UNIT_L, 3.0 ) )/( ( initial_N_HII + initial_numIonised ) * recombCoeff( gasIonTemp ) ); //recombination time scale
-      //double t_eq = t_ion*t_rec/(t_ion + t_rec); //'equality' time scale
 
+      //calculate relevant time scales to see whether assumption of constant N_HI and N_HII is correct
 
       //ionisation time scale, if no ionisations it is taken to be much larger than time step
-      double t_ion = ( initial_N_retained_H > 0.0) ? UNIT_T * initial_N_HI/initial_N_retained_H : 1.e5*UNIT_T; 
+      double t_ion = (initial_numIonised > 1.e-20) ? UNIT_T * initial_N_HI/(initial_numIonised) : 1.e5 * UNIT_T; 
 
       //total #ions available for recombinations
       double tot_ions = initial_N_HII + initial_numIonised;
+
       //recombination time scale, if no recombinations it is taken to be much larger than time step
       double t_rec = (tot_ions > 0.0 ) ? ( site.get_volume() * pow( UNIT_L, 3.0 ) )/
-        ( tot_ions * recombCoeff( gasIonTemp ) ) : 1.e5*UNIT_T;
+	( tot_ions * site.get_clumping() * recomb_coeff_HII_caseB( site.get_temperature() ) ) : 1.e5 * UNIT_T;
 
-      double t_eq = t_ion*t_rec/(t_ion + t_rec); //'equality' time scale
-
+      //'equality' time scale
+      double t_eq = t_ion*t_rec/(t_ion + t_rec);
 
       if(t_eq != t_eq){
-        simpleXlog << endl << " (" << COMM_RANK << ") NAN detected! t_eq: " << t_eq << " " << t_ion << " " << t_rec << endl;
-        simpleXlog << "    initial_N_retained_total: " << initial_N_retained_total 
-          << "  initial_tau: " << initial_tau << " initial_ionised_fraction: " << initial_ionised_fraction 
-          << " n_H: " << n_H << endl;
-        exit(-1);
+	cerr << endl << " (" << COMM_RANK << ") NAN detected! t_eq: " << t_eq << " t_ion: " << t_ion << " t_rec: " << t_rec << endl;
+	cerr << "  initial_N_retained_H[0]: " << initial_N_retained_H[0]
+	     << "  initial_tau[0]: " << initial_tau[0] << endl;
+	cerr << "  initial_N_HI " << initial_N_HI << " initial_N_HII " << initial_N_HII << endl;
+	cerr << "  initial_neutral_fraction: " << initial_N_HI/(initial_N_HI+initial_N_HII)
+	     << " N_in_total[0]: " << N_in_total[0]
+	     << " n_H: " << n_H << endl;
+
+	cerr << "  initial_N_retained_total[0] = (1.0 - exp(-"<<initial_tau[0]<<")) * "<< N_in_total[0] <<" " << endl;
+	cerr << "  volume " << site.get_volume() * UNIT_V << " N_HII + initial_numIonised " 
+	     << + initial_numIonised << " fclump " 
+	     << site.get_clumping() << " alpha " << recomb_coeff_HII_caseB( site.get_temperature() ) << endl;
+	cerr << "  coll_ion " <<  initial_coll_ionisations << endl; 
+	cerr << "  tot_ions " <<  tot_ions << endl;
+	cerr << " UNIT_T " << UNIT_T << endl;
+	exit(1);
+
       }
-
-      // photoionisation rate
-
-      //double Gamma = initial_N_retained_total/(UNIT_T * N_HI); 
-      //double Gamma = initial_N_retained_H/(UNIT_T * initial_N_HI); 
-
-
+       
       //subcycling is necessary when the RT time step is larger than 
       //some factor times ionisation time scale or recombination time scale 
-      unsigned long long int Nsteps = 1;
-      double factor = 0.01;
-      if( UNIT_T > factor*t_eq ){
-        Nsteps = (unsigned long long int) ceil( UNIT_T/(factor*t_eq));
+      if( UNIT_T > subcycle_frac*t_eq ){
+	Nsteps = (unsigned long int) ceil( UNIT_T/(subcycle_frac*t_eq));
       }
 
-      // if(Nsteps > 5){
-      // 	cerr << " (" << COMM_RANK << ") Nsteps: " << Nsteps << endl;
-      // }
+      //keep track of the total number of photo-ionisations
+      vector<double> number_of_photo_ionisations(numFreq, 0.0);
+      double number_of_recombinations = 0.0;
 
-//       unsigned long long int max_Nsteps = 100000;
-//       if( Nsteps > max_Nsteps ){
-// 	Nsteps = max_Nsteps;
-//       } 
-
-
-//       cerr << " t_eq: " << t_eq << " t_ion: " << t_ion << " t_rec: " << t_rec 
-// 	   << " Nsteps: " << Nsteps << " N_ret: " << initial_N_retained_total 
-// 	   << " N_HI: " << N_HI << endl;//" (" << site.get_x() << "," << site.get_y() << "," << site.get_z() << ")" << endl;
-
-      //keep track of number of recombinations and ionisations
-      double number_of_ionisations = 0.0;
-      double number_of_recombinations= 0.0;
-
-      //neutral fraction and ionised fraction during subcycle step
-      //double neutral_fraction_step = initial_neutral_fraction;
-      //double ionised_fraction_step = initial_ionised_fraction;
-
+      //number of neutral and ionised atoms during subcycle step
       double N_HI_step = initial_N_HI;
       double N_HII_step = initial_N_HII;
 
-      //time step during subcycle
-      double dt = UNIT_T/Nsteps;
+      //time step during subcycle step
+      double dt_ss = UNIT_T/(double) Nsteps;
 
-      //speed up computation time:
+      //number of ionisation in subcycle step
+      double numIonised_step = initial_numIonised;
 
       //effective time step in calculations of ionised atoms
-      double dt_eff = dt/UNIT_T;
+      double dt_eff = dt_ss/UNIT_T;
       //one over the initial neuatral atoms
       double one_over_initial_N_HI = (initial_N_HI > 0.0 ) ? 1.0/initial_N_HI : 1.0;
       //one over the physical volume
       double one_over_volume = 1.0/( site.get_volume() * UNIT_V );
+      //convert number of atoms to number density in code units
+      double num_to_dens = 1.0/( UNIT_D * site.get_volume() * UNIT_V ); 
+
+      //optical depth in time step
+      vector<double> tau_step(numFreq,0.0);
+      //number of ionisations in time step
+      vector<double> photo_ionisations_step(numFreq,0.0);
 
       //-------------------------  Loop over subcycle steps  ---------------------------------//
+      double time_passed = 0.0;
       for( unsigned int i=0; i<Nsteps; i++ ){
 
-  //time step, optical depth and photoionisation rate during subcycle step
-  //double tau_step = (initial_tau/tau_eff)*( neutral_fraction_step )/( initial_neutral_fraction );
-  //double Gamma_step = Gamma * ( 1.0 - exp(-tau_step) ) * ( initial_neutral_fraction )/( ( 1.0 - exp(-initial_tau) ) * ( neutral_fraction_step ) );
+	//make sure we're not too long in subcycling
+	if( (time_passed+dt_ss) > UNIT_T ){
+	  dt_ss = UNIT_T - time_passed;
+	  dt_eff = dt_ss/UNIT_T;
+	}
 
-  //double tau_step = tau_eff*( neutral_fraction_step )/( initial_neutral_fraction );
-  //double Gamma_step = Gamma * ( 1.0 - exp(-tau_step) ) * ( initial_neutral_fraction )/( ( 1.0 - exp(-tau_eff) ) * ( neutral_fraction_step ) );
+	time_passed += dt_ss;
+	
+	double total_photo_ionisations_step = 0.0;
+	for(short int f=0; f<numFreq; f++){
 
-  //number of ionisations during subcylce step
-  //double numIonised = Gamma_step*dt*N_HI;
-  //double numIonised = Gamma_step*dt*N_HI_step*initial_tau/tau_eff;
+	  //optical depth in this step
+	  tau_step[f] = initial_tau[f]*N_HI_step*one_over_initial_N_HI;
+	  //number of ionisations in this step
+	  photo_ionisations_step[f] = N_in_total[f] * ( 1.0 - exp(-tau_step[f]) ) * dt_eff;//dt_ss/UNIT_T;
 
-        double tau_step = tau_eff*N_HI_step*one_over_initial_N_HI;
-        double numIonised = N_in_total * ( 1.0 - exp(-tau_step) ) * dt_eff;
+	  //keep track of all photo-ionisations
+	  number_of_photo_ionisations[f] += photo_ionisations_step[f];
 
+	  //total number of photoionisations in this step
+	  total_photo_ionisations_step += photo_ionisations_step[f];
 
-  //check for unphysical values
-        if( N_HI_step < 0 ||  numIonised < 0){
-          simpleXlog << " (" << COMM_RANK << ") ERROR: negative quantity; numIonised: " <<  numIonised << ", N_HI: " << N_HI_step << " " << i << endl;
-          simpleXlog << site.get_vertex_id();
-          MPI::COMM_WORLD.Abort(-1);
-        }
+	  if( tau_step[f] != tau_step[f] ){
+	    cerr << tau_step[f] << " " << initial_tau[f] << " " << N_HI_step << " " << i << endl;
+	    cerr << (double) site.get_n_HI() << " " << UNIT_D << " " << (double) site.get_neigh_dist() << " " 
+		 << UNIT_L << " " << " " << straight_correction_factor << endl;
+	    MPI::COMM_WORLD.Abort(-1);
+	  }
+	}
+	
+	//number of collisional ionisations in this step
+	double coll_ionisations_step = 0.0;
+	if(coll_ion){
+	  //number of coll ionisations is coll ion coeff * n_e * number of atoms * time step
+	  coll_ionisations_step = coll_ion_coeff_HI( site.get_temperature() ) * N_HII_step * one_over_volume * N_HI_step * dt_ss;
+	}
 
-  //make sure number of ionisations is less than number of neutral atoms. Only necessary if subcycle step is too large
-        if( numIonised > N_HI_step){
-          simpleXlog << " Warning, subcycle step too large: numIonised: " << numIonised << " N_HI_step: " << N_HI_step << endl;
-          numIonised = N_HI_step;
-        }
+	numIonised_step = total_photo_ionisations_step + coll_ionisations_step;
 
-  //keep track of ionisations
-        number_of_ionisations += numIonised;
+	if( numIonised_step > N_HI_step){
+	  cerr << " Warning, subcycle step too large: numIonised: " << numIonised_step << " N_HI_step: " << N_HI_step << endl;
+	  numIonised_step = N_HI_step;
+	}
 
-  //adjust number of neutrals and ioniseds accordingly
-        N_HI_step  -= numIonised;
-        N_HII_step += numIonised;
+	//adjust number of neutrals and ioniseds accordingly
+	N_HI_step  -= numIonised_step;
+	N_HII_step += numIonised_step;
 
-  //calculate new ionised fraction
-  //ionised_fraction_step = N_HII_step/(N_HI_step + N_HII_step);
+	//number of recombinations is this factor times recombination coefficient
+	double num_rec_factor = N_HII_step * N_HII_step * one_over_volume * site.get_clumping() * dt_ss;
 
-  //calculate number of recombinations  
-        double t_rec_inv = N_HII_step * recombCoeff( gasIonTemp )*one_over_volume ;  //ion_frac*dens = number of available protons in the volume
-        double dxBYdt = N_HII_step * t_rec_inv;  //number of recombinations per second
-        double dx = dxBYdt * dt;  
+	//if flag for recombinations is not set, set dx to zero
+	if(!recombination){
+	  num_rec_factor = 0;
+	}
 
-  //if flag for recombinations is not set, set dx to zero
-        if(!recombination){
-          dx = 0;
-        }
+	//number of recombinations
+	double num_rec = num_rec_factor*recomb_coeff_HII_caseB( site.get_temperature() );
+	if( num_rec > N_HII_step){
+	  num_rec = N_HII_step;
+	  cerr << " Warning, subcycle step too large: dx: " << num_rec << " N_HII_step: " << N_HII_step << endl;
+	}
 
-  //actual recombinations
-        if( dx > N_HII_step){
-          dx = N_HII_step;
-          cerr << " Warning, subcycle step too large: dx: " << dx << " N_HII_step: " << N_HII_step << endl;
-        }
+	number_of_recombinations += num_rec;
 
-        number_of_recombinations += dx;
+	//check to be sure
+	if( numIonised_step > N_HI_step || num_rec > N_HII_step || num_rec < 0.0 ){
 
-        N_HI_step += dx;
-        N_HII_step -= dx;
+	  cerr << " (" << COMM_RANK << ") Warning: time step in subcycle step " << i << " too big! " << endl
+		 << " numIonised_step: " << numIonised_step << " N_HI_step: " << N_HI_step << endl
+		 << " num_rec: " << num_rec << " N_HII_step: " << N_HII_step << endl
+		 << " total_photo_ionisations_step: " << total_photo_ionisations_step << endl;
 
-  //if photoionisation equilibrium is reached, no need to recalculate these
-        if( fabs(numIonised - dx)/dx < 1e-5 && (int) i < (int) (Nsteps-2) ){
+	    cerr << " photo_ionisations_step: ";
+	    for(short int f=0; f<numFreq; f++){
+	      cerr << " " << photo_ionisations_step[f];
+	    }
+	    cerr << endl;
+	    cerr << " N_in_total: ";
+	    for(short int f=0; f<numFreq; f++){
+	      cerr << " " << N_in_total[f];
+	    }
+	    cerr << endl;
 
-    //number of steps left to take
-          unsigned int Nleft = Nsteps - i - 1;
+	    //MPI::COMM_WORLD.Abort(-1);
+	    N_HI_step = 0.0;
+	    N_HII_step = n_H/one_over_volume;
 
-          number_of_ionisations += numIonised*Nleft;
-          number_of_recombinations += dx*Nleft;
+	}
 
-          i = Nsteps-1;
+	N_HI_step += num_rec;
+	N_HII_step -= num_rec;
 
-        }//if photoionsation equilibrium
+	//update the site for temperature calculation
+	double tmp = N_HI_step * num_to_dens;
+	site.set_n_HI( (float) tmp );
+	tmp = N_HII_step * num_to_dens;
+	site.set_n_HII( (float) tmp );
 
+	//update temperature	
+	double t_heat = 0.0;
+	if(heat_cool){
+	  
+	  t_heat = update_temperature( site, photo_ionisations_step, dt_ss);
+
+	}else{
+	  //if gas gets ionised set temperature to gasIonTemp
+	  if( (double) site.get_n_HII()/n_H > 0.1){
+	    site.set_temperature( gasIonTemp );
+	  } else {
+	    site.set_temperature( gasNeutralTemp );
+	  }
+	}
+
+	//if photoionisation equilibrium is reached, no need to recalculate these
+	if( fabs(numIonised_step - num_rec)/num_rec < 1e-5 && (int) i < (int) (Nsteps-2) ){
+
+	  //number of steps left to take
+	  unsigned int Nleft = Nsteps - i - 1;
+
+	  //in case of heating and cooling subcycle on heating time scale
+	  if(heat_cool){
+
+	    //time counter
+	    double t2 = 0.0;
+	    double t_left = Nleft * dt_ss;//t_end - t_ss;
+
+	    //while( t2 < t_end2 ){
+	    while( t2 < t_left ){
+	      //time scale is heating time scale
+	      double dt2 = subcycle_frac*t_heat;
+	      //make sure time is not too big
+	      if( (t2+dt2) > t_left ){
+		dt2 = t_left - t2;
+	      }
+
+	      //set equilibrium fractions at this temperature
+	      //assume photoionisation rate is constant
+
+	      //total number of atoms
+	      double N_H = n_H * site.get_volume() * UNIT_V;
+	      //photo-ionisation rate
+	      double Gamma_H = total_photo_ionisations_step/(dt_ss * N_HI_step);
+	      //collisional ionisation rate
+	      double Gamma_c = 0.0;
+	      if(coll_ion){
+		Gamma_c = coll_ion_coeff_HI( site.get_temperature() ) * (double) site.get_n_HII() * UNIT_D;
+	      }
+	      //total ionisation rate
+	      double Gamma = Gamma_H + Gamma_c;
+	      //electron density times recombination coefficient
+	      double n_e_times_alpha=0.0;
+  
+	      n_e_times_alpha = site.get_clumping()*recomb_coeff_HII_caseB( site.get_temperature() ) * site.get_n_HII() * UNIT_D;
+                
+	      //equilibrium number of neutral and ionised atoms
+	      N_HI_step = n_e_times_alpha * N_H/( n_e_times_alpha + Gamma);
+	      N_HII_step = N_H - N_HI_step;
+
+	      //update the site for temperature calculation
+	      double tmp = N_HI_step * num_to_dens;
+	      site.set_n_HI( (float) tmp );
+	      tmp = N_HII_step * num_to_dens;
+	      site.set_n_HII( (float) tmp );
+
+	      //keep track of photoionisations
+	      //photo_ionisations_step needs to stay constant, so make new vector
+	      vector<double> photo_ionisations_heating_step(numFreq,0.0);
+	      for(short int f=0; f<numFreq; f++){
+		photo_ionisations_heating_step[f] = photo_ionisations_step[f]*dt2/dt_ss;
+		//total number of photo-ionisations
+		number_of_photo_ionisations[f] += photo_ionisations_heating_step[f];
+	      }
+
+	      //calculate new temperature	    
+	      t_heat = update_temperature( site, photo_ionisations_step, dt2);
+
+	      //this is no longer needed, so clear it
+	      photo_ionisations_heating_step.clear();
+
+	      t2 += dt2;
+	    }
+	  }else{
+
+	    //keep track of photoionisations
+	    for(short int f=0; f<numFreq; f++){
+	      number_of_photo_ionisations[f] += photo_ionisations_step[f]*Nleft;//*t_left/dt_ss;//*Nleft;
+	    }
+	  }
+
+	  i = Nsteps-1;
+
+	}//if photoionsation equilibrium
       }//for all steps
 
-      // if(site.get_vertex_id() == 6466){
-      // 	cerr << " (" << COMM_RANK << ") Number of recombinations: " << number_of_recombinations 
-      // 	     << " number of ionisations: " << number_of_ionisations << " ratio: " << number_of_ionisations/number_of_recombinations << endl;
-      // }
-
-      //set the new number_densities
-      double tmp = N_HI_step/( UNIT_D * site.get_volume() * UNIT_V );
-      site.set_n_HI( (float) tmp );
-      tmp = N_HII_step/( UNIT_D * site.get_volume() * UNIT_V );
-      site.set_n_HII( (float) tmp );
-
-      if( site.get_n_HI() != site.get_n_HI() ){
-        simpleXlog << " Nan detected! " << endl;
-        simpleXlog << N_HI_step << " " << UNIT_D << " " << site.get_volume() << " " << UNIT_V << endl;
-        exit(-1);
-        
-      }
-
+      count++;
 
       //calculate the number of outgoing photons after the subcycling
-      N_out_total = (N_in_total - number_of_ionisations);
+      for(short int f=0; f<numFreq; f++){
 
+	//make sure N_out is bigger than zero, when subcycle time step is small this might 
+	//not be the case due to numerical errors
+	N_out_total[f] = ( (N_in_total[f] - number_of_photo_ionisations[f]) > 0.0 ) ? 
+	  (N_in_total[f] - number_of_photo_ionisations[f]) : 0.0;
 
-      if(N_out_total != N_out_total){
-        simpleXlog << endl << " (" << COMM_RANK << ") NAN detected! N_out_total: " << N_out_total << " " << N_in_total << " " << number_of_ionisations << endl;
-        exit(-1);
+	//check for NANs
+	if(N_out_total[f] != N_out_total[f] ){
+	  cerr << endl << " (" << COMM_RANK << ") NAN detected! N_out_total: " << N_out_total[f] << " " 
+	       << N_in_total[f] << " " << number_of_photo_ionisations[f] << endl;
+	  MPI::COMM_WORLD.Abort(-1);
+	}
       }
+
 
     }else{ //don't use temporal photon conservation scheme
 
-      //make sure number of ionisations is less than number of neutral atoms. Only necessary if time step is too large
-      // if( initial_numIonised > initial_N_HI){
-      // 	initial_numIonised = initial_N_HI;
-      // }
+      //make sure number of ionisations is less than number of neutral atoms. Only necessary if subcycle step is too large
+      if( initial_numIonised > initial_N_HI){
+        initial_numIonised = initial_N_HI;
+      }
 
       //adjust number of neutrals and ioniseds accordingly
-    initial_N_HI  -= initial_numIonised;
-    initial_N_HII += initial_numIonised;
+      initial_N_HI  -= initial_numIonised;
+      initial_N_HII += initial_numIonised;
 
-    double tmp = initial_N_HI/( UNIT_D * site.get_volume() * UNIT_V );
-    site.set_n_HI( (float) tmp );
-    tmp = initial_N_HII/( UNIT_D * site.get_volume() * UNIT_V );
-    site.set_n_HII( (float) tmp );
+      double tmp = initial_N_HI/( UNIT_D * site.get_volume() * UNIT_V );
+      site.set_n_HI( (float) tmp );
+      tmp = initial_N_HII/( UNIT_D * site.get_volume() * UNIT_V );
+      site.set_n_HII( (float) tmp );
 
-    N_out_total = N_in_total - initial_numIonised;
+      //total ionisations
+      double tot_ion = initial_photo_ionisations + initial_coll_ionisations;
+      //fraction of ionisations caused by photo-ionisations
+      double phot_ion_frac = (tot_ion > 0.0) ? initial_photo_ionisations /tot_ion : 0.0;
+      double one_over_init_phot_ion = (initial_photo_ionisations > 0.0) ? 1.0/initial_photo_ionisations : 0.0;
+      for(short int f=0; f<numFreq; f++){
+        N_out_total[f] = N_in_total[f] - (initial_numIonised * phot_ion_frac * initial_N_retained_H[f] * one_over_init_phot_ion);
 
+        if(N_out_total[f] != N_out_total[f] ){
+          cerr << endl << " (" << COMM_RANK << ") NAN detected! N_out_total: " << N_out_total[f] << " " << N_in_total[f] << " " << initial_N_retained_H[f] << endl
+	       << initial_numIonised << " " << phot_ion_frac << " " << one_over_init_phot_ion << endl;
+          MPI::COMM_WORLD.Abort(-1);
+        }
+      }
+
+      //set the correct temperature of the gas
+      double t_heat = 0.0;
+      if(heat_cool){
+        t_heat = update_temperature( site, initial_N_retained_H, UNIT_T);
+	//if(site.get_temperature() > 100)
+	//cerr << " New temperature is: " << site.get_temperature() << " K" << endl;
+      }else{
+	//if gas gets ionised set temperature to gasIonTemp
+        if( (double) site.get_n_HII()/n_H > 0.1){
+          site.set_temperature( gasIonTemp );
+	} else {
+	  site.set_temperature( gasNeutralTemp );
+	}
+      }
+    }
   }
 
-}
-
   //convert back to numerical units
-N_in_total /= UNIT_I;
-N_out_total /= UNIT_I;
+  for(short int f=0; f<numFreq; f++){
+    N_in_total[f] /= UNIT_I;
+    N_out_total[f] /= UNIT_I;
+  }
 
-return N_out_total;
+  return N_out_total;
 
 }
-
 
 
 void SimpleX::source_transport( Site& site ){
 
-  //flux to send
-  double flux_to_send = (double) site.get_flux() * UNIT_T;
+  //Before transporting, source should ionise its own cell!
 
-
-  if(source_inside_cell){
-
-    //source ionises its own cell, so put the radiation in the insitensity bins belonging to this site
-    //technically this is not entirely correct because if the source is in the centre of the cell radiation
-    //would see half the optical depth it does now, but only the source radiation...
-
-    if( site.get_ballistic() ){
-      for( unsigned int j=0; j<site.get_numNeigh(); j++ ){
-        double inten = flux_to_send/site.get_numNeigh();
-        site.addRadiationDiffOut( j, (float) inten ); 
-      }
-    }else{
-      for( unsigned int m=0; m<number_of_directions; m++ ){
-        double inten = flux_to_send/number_of_directions;
-        site.addRadiationDiffOut( m, (float) inten ); 
+  //in case of ballistic transport, intensity has size of number of neighbours
+  if( site.get_ballistic() ){
+    for( unsigned int j=0; j<site.get_numNeigh(); j++ ){
+      //loop over frequencies
+      for(short int f=0; f<numFreq; f++){
+        double inten = (double) site.get_flux(f) * UNIT_T/site.get_numNeigh();
+        sites[ site.get_neighId(j) ].addRadiationDiffOut( f, site.get_outgoing(j), (float) inten ); 
       }
     }
-
-    //wat je eigenlijk zou moeten doen is de neighDist op 0.5 zetten en solve_rate_eq aanroepen,maar
-    //let er daarbij op dat je de intensityOut die er al is eerst op moet slaan en later terug moet geven!
+    //total_inten += (double) it->get_flux() * UNIT_T * UNIT_I;
 
   }else{
+    //in case of direction conserving transport and combined transport, intensity has 
+    //the size of the tesselation of the unit sphere
+    numPixels = number_of_directions;
+    for( unsigned int m=0; m<numPixels; m++ ){
+      //unsigned int m = 0;
+      //double inten = (double) it->get_flux()* UNIT_T;
 
-    //source doesn't ionise its own cell, so give radiation to neighbours
+      unsigned int dir = (unsigned) site.get_outgoing(m);
+      unsigned int neigh = site.get_neighId( dir );
 
-
-    //in case of ballistic transport, intensity has size of number of neighbours
-    if( site.get_ballistic() ){
-      for( unsigned int j=0; j<site.get_numNeigh(); j++ ){
-        double inten = flux_to_send/site.get_numNeigh();        
-        sites[ site.get_neighId(j) ].addRadiationDiffOut( site.get_outgoing(j), (float) inten ); 
-      }
-      //total_inten += (double) it->get_flux() * UNIT_T * UNIT_I;
-
-    }else{
-            
-      //in case of direction conserving transport and combined transport, intensity has 
-      //the size of the tesselation of the unit sphere
-      numPixels = number_of_directions;
-      for( unsigned int m=0; m<numPixels; m++ ){
-        //photons to send
-        double inten = flux_to_send/numPixels;
-
-        unsigned int dir = (unsigned) site.get_outgoing(m);
-        unsigned int neigh = site.get_neighId( dir );
-
-        //check if the neighbour that gets the radiation is ballistic
-        if(sites[ neigh ].get_ballistic() ){
-          //if the neighbour is ballistic, find out which 
-          //Delaunay line is associated with this direction
-          bool found = 0;
-          for( unsigned int j=0; !found && j<sites[ neigh ].get_numNeigh(); j++ ){
-            if( sites[neigh].get_neighId(j) == site.get_site_id() ){
-              found = 1;
-              sites[neigh].addRadiationDiffOut( j, (float) inten );
-            } 
-          }
-          if(!found){
-            cerr << " error in source radiation" << endl;
-            MPI::COMM_WORLD.Abort(-1);
-          }
-        }else{
-    //if the neighbour is not ballistic, simply 
-    //add the radiation in the same direction bin
-          sites[ neigh ].addRadiationDiffOut( m, (float) inten ); 
+      //check if the neighbour that gets the radiation is ballistic
+      if(sites[ neigh ].get_ballistic() ){
+	//if the neighbour is ballistic, find out which 
+	//Delaunay line is associated with this direction
+        bool found = 0;
+        for( unsigned int j=0; !found && j<sites[ neigh ].get_numNeigh(); j++ ){
+          if( sites[neigh].get_neighId(j) == site.get_site_id() ){
+            found = 1;
+	    //loop over frequencies
+            for(short int f=0; f<numFreq; f++){
+              double inten = (double) site.get_flux(f) * UNIT_T/numPixels;
+              sites[neigh].addRadiationDiffOut( f, j, (float) inten );
+            }
+          } 
         }
+        if(!found){
+          cerr << " error in source radiation" << endl;
+          MPI::COMM_WORLD.Abort(-1);
+        }
+      }else{
+	//if the neighbour is not ballistic, simply 
+	//add the radiation in the same direction bin
+        for(short int f=0; f<numFreq; f++){
+          double inten = (double) site.get_flux(f) * UNIT_T/numPixels;
+          sites[ neigh ].addRadiationDiffOut( f, m, (float) inten ); 
+        }
+      }
 
-      }//for all pixels
+    }//for all pixels
 
-    }//if ballistic
-
-  }//if source ionised its own cell
-
+  }//if ballistic
 }
 
 
-void SimpleX::diffuse_transport( Site& site, double& N_out_total ) {
+void SimpleX::diffuse_transport( Site& site, vector<double>& N_out_total ){
 
-  //redistribute the photons to all neighbours
-
-  //in case of ballistic transport, intensity has size of number of neighbours;
-  //in case of direction conserving transport, intensity has 
-  //the size of the tesselation of the unit sphere
-  //numPixels = ( site.get_ballistic() ) ? site.get_numNeigh() : number_of_directions;
-
-
+  //in case of ballistic transport, intensity has size of number of neighbours
   if( site.get_ballistic() ){
 
-    //if site is ballistic, divide intensity over all neighbours
-    double inten = N_out_total/site.get_numNeigh();
+    //loop over all neighbours
+    for( unsigned int j=0; j<site.get_numNeigh(); j++ ){
 
-    for(unsigned int j=0; j<site.get_numNeigh(); j++){
-
-      //local id of the connection in neighbour's neighbour array
-      unsigned int neighIdLoc = (unsigned) site.get_outgoing(j);
-      //site id of the neighbour that will receive the photons
+      //neighbour id
       unsigned int neigh = site.get_neighId( j );
+      if( sites[ neigh ].get_ballistic() ){
 
-      if( sites[neigh].get_ballistic() ){
-
-        sites[ neigh ].addRadiationDiffIn( neighIdLoc, (float) inten ); 
+	//loop over frequencies
+        for(short int f=0; f<numFreq; f++){
+          double inten = N_out_total[f]/site.get_numNeigh();
+          sites[ neigh ].addRadiationDiffIn( f, site.get_outgoing(j), (float) inten ); 
+        }
 
       }else{
 
-  //if the neighbour is not ballistic, find out in which direction 
-  //bins the photons should go
+	//if the neighbour is not ballistic, find out in which direction 
+	//bins the photons should go
         vector< unsigned int > dir_to_use;
-  //this trick only works for neighbours on this proc,
-  //otherwise outgoing array does not exist
+	//this trick only works for neighbours on this proc,
+	//otherwise outgoing array does not exist
         if( sites[ neigh ].get_process() == COMM_RANK ){
           for( unsigned int n=0; n<number_of_directions; n++ ){
-            if( sites[ neigh ].get_outgoing(n) == neighIdLoc ){
+            if( sites[ neigh ].get_outgoing(n) == site.get_outgoing(j) ){
               dir_to_use.push_back( n );
             }
           }//for all directions
         }//if neigh on this proc
 
-  //if no direction is associated with this neighbour, find one
+	//if no direction is associated with this neighbour, find one
         if(dir_to_use.size() == 0){
 
-    //find closest associated direction for this Delaunay line
+	  //find closest associated direction for this Delaunay line
 
-    //directions are stored in header
+	  //directions are stored in header
           float **refVector;
-    // Assign memory to the refVector
+	  // Assign memory to the refVector
           refVector = new float*[number_of_directions];
           for( unsigned int n=0; n<number_of_directions; n++ ){
             refVector[n]=new float[3];
           }
-    //assign the first orientation to refVector
+	  //assign the first orientation to refVector
           for( unsigned int n=0; n<number_of_directions; n++ ){
             refVector[n][0] = (float) orient[orientation_index][n][0];
             refVector[n][1] = (float) orient[orientation_index][n][1];
@@ -8863,7 +7164,7 @@ void SimpleX::diffuse_transport( Site& site, double& N_out_total ) {
           vectorNeigh[1] = site.get_y() - sites[ neigh ].get_y();
           vectorNeigh[2] = site.get_z() - sites[ neigh ].get_z();
 
-    // Find the neighVec that is closest (in angle) to the refVec
+	  // Find the neighVec that is closest (in angle) to the refVec
           float highestInprod=-FLT_MAX;
           int highestInprodNumber=-1;
           for(unsigned int n=0; n<number_of_directions; n++) {
@@ -8875,7 +7176,7 @@ void SimpleX::diffuse_transport( Site& site, double& N_out_total ) {
           }
           dir_to_use.push_back( highestInprodNumber );
 
-    // free memory of the refVector
+	  // free memory of the refVector
           for(unsigned int n=0; n<number_of_directions; n++){
             delete [] refVector[n];
           }
@@ -8884,38 +7185,43 @@ void SimpleX::diffuse_transport( Site& site, double& N_out_total ) {
         }//if no direction associated with this linw
 
         for(unsigned int n=0; n<dir_to_use.size() ; n++ ){
-          sites[ neigh ].addRadiationDiffIn( dir_to_use[n], (float) inten/dir_to_use.size() );
+          for(short int f=0; f<numFreq;f++){
+	    //intensity to send out
+            double inten = N_out_total[f]/site.get_numNeigh();
+            sites[ neigh ].addRadiationDiffIn( f,  dir_to_use[n], (float) inten/dir_to_use.size() );
+          }
         }//for all neighbours to use
-
         dir_to_use.clear();
 
-      }//if neighbour is ballistic
+      }
 
-    }//for all neighbours
-
+    }
 
   }else{
-
     //in case of direction conserving transport and combined transport, intensity has 
     //the size of the tesselation of the unit sphere
     numPixels = number_of_directions;
     for( unsigned int m=0; m<numPixels; m++ ){
-
-      //photons to send
-      double inten = N_out_total/numPixels;
+      //unsigned int m = 0;
+      //double inten = (double) it->get_flux()* UNIT_T;
 
       unsigned int dir = (unsigned) site.get_outgoing(m);
       unsigned int neigh = site.get_neighId( dir );
 
       //check if the neighbour that gets the radiation is ballistic
       if(sites[ neigh ].get_ballistic() ){
-  //if the neighbour is ballistic, find out which 
-  //Delaunay line is associated with this direction
+	//if the neighbour is ballistic, find out which 
+	//Delaunay line is associated with this direction
         bool found = 0;
         for( unsigned int j=0; !found && j<sites[ neigh ].get_numNeigh(); j++ ){
           if( sites[neigh].get_neighId(j) == site.get_site_id() ){
             found = 1;
-            sites[neigh].addRadiationDiffIn( j, (float) inten );
+	    //loop over frequencies
+            for(short int f=0; f<numFreq; f++){
+	      //double inten = (double) site.get_flux(f) * UNIT_T/numPixels;
+              double inten = (double) N_out_total[f]/numPixels;
+              sites[neigh].addRadiationDiffIn( f, j, (float) inten );
+            }
           } 
         }
         if(!found){
@@ -8923,75 +7229,79 @@ void SimpleX::diffuse_transport( Site& site, double& N_out_total ) {
           MPI::COMM_WORLD.Abort(-1);
         }
       }else{
-  //if the neighbour is not ballistic, simply 
-  //add the radiation in the same direction bin
-        sites[ neigh ].addRadiationDiffIn( m, (float) inten ); 
+	//if the neighbour is not ballistic, simply 
+	//add the radiation in the same direction bin
+        for(short int f=0; f<numFreq; f++){
+	  //double inten = (double) site.get_flux(f) * UNIT_T/numPixels;
+          double inten = (double) N_out_total[f]/numPixels;
+          sites[ neigh ].addRadiationDiffIn( f, m, (float) inten ); 
+        }
       }
 
     }//for all pixels
-
   }//if ballistic
 
 }
 
 
-void SimpleX::ballistic_transport( Site& site, double& N_out_total ) { 
-
-
-  //redistribute the photons to the d most straightforward neighbours
+//redistribute the photons to the d most straightforward neighbours
+void SimpleX::non_diffuse_transport( Site& site, vector<double>& N_out_total ) { 
 
   //in case of ballistic transport, intensity has size of number of neighbours;
   //in case of direction conserving transport, intensity has 
   //the size of the tesselation of the unit sphere
-  numPixels = ( site.get_ballistic() ) ? site.get_numNeigh() : number_of_directions;
+  numPixels = ( site.get_ballistic() )? site.get_numNeigh() : number_of_directions;
 
   //determine N_in_total
-  double N_in_total = 0.0;
+  vector<double> N_in_total(numFreq, 0.0);
+  vector<bool> inten_to_send(numPixels, 0);
   for( unsigned int j=0; j < numPixels; j++) {
-    if( site.get_intensityOut( j ) > 0.0 ) { 
-      N_in_total += (double) site.get_intensityOut( j );
+    for(short int f=0; f<numFreq;f++){
+      if( site.get_intensityOut( f,j ) > 0.0 ) { 
+        N_in_total[f] += (double) site.get_intensityOut( f,j );
+        inten_to_send[j] = 1;
+      }
     } //if intensityOut
   } //for all neighbours
-
 
   //loop over all neighbours/directions
   for( unsigned int j=0; j < numPixels; j++) {
     //only include directions/neighbours that have intensity to send
-    if( site.get_intensityOut( j ) > 0.0 ) { 
-
-      //intensity to send out, get correct part from all added intensities
-      double N_out = N_out_total * ( (double) site.get_intensityOut( j ) / N_in_total );
+    if( inten_to_send[j] ) { 
 
       if( site.get_ballistic() ){
 
-  //in ballistic case, send intensity to d most straightforward Delaunay lines,
-  //if they are not pointing backwards
-  //in outgoing is the local id of this site in neighbour's neighbour array
+	//in ballistic case, send intensity to d most straightforward Delaunay lines,
+	//if they are not pointing backwards
+	//in outgoing is the local id of this site in neighbour's neighbour array
         for( short int l=0; l<site.get_numStraight( j ); l++ ){
-    //most straighforward neighbour of this direction of this site
+	  //most straighforward neighbour of this direction of this site
           unsigned int straight = site.get_straight( j, l );
-    //local id of the straightest connection in neighbour's neighbour array
+	  //local id of the straightest connection in neighbour's neighbour array
           unsigned int neighIdLoc = (unsigned) site.get_outgoing(straight);
-    //site id of the neighbour that will receive the photons
+	  //site id of the neighbour that will receive the photons
           unsigned int neigh = site.get_neighId( straight );
-    //photons to send
-          double inten = N_out/double(site.get_numStraight( j ));
 
-    //if(!sites[ neigh ].get_border() ){
-      //check if neighbour is ballistic
+	  //if(!sites[ neigh ].get_border() ){
+	  //check if neighbour is ballistic
           if( sites[ neigh ].get_ballistic() ){
 
-        //send the photons to the neighbour in the place in the neighbour vector
-        //pointing to this site
-            sites[ neigh ].addRadiationDiffIn(  neighIdLoc, (float) inten );
+	    //send the photons to the neighbour in the place in the neighbour vector
+	    //pointing to this site
+            for(short int f=0; f<numFreq;f++){
+	      //intensity to send out, get correct part from all added intensities
+              double inten = (N_in_total[f] > 0.0) ? N_out_total[f] * ( (double) site.get_intensityOut( f,j ) / N_in_total[f] ) : 0.0;
+              inten /= double(site.get_numStraight( j ));
+              sites[ neigh ].addRadiationDiffIn( f, neighIdLoc, (float) inten );
+            }
 
           }else{
 
-        //if the neighbour is not ballistic, find out in which direction 
-        //bins the photons should go
+	    //if the neighbour is not ballistic, find out in which direction 
+	    //bins the photons should go
             vector< unsigned int > dir_to_use;
-        //this trick only works for neighbours on this proc,
-        //otherwise outgoing array does not exist
+	    //this trick only works for neighbours on this proc,
+	    //otherwise outgoing array does not exist
             if( sites[ neigh ].get_process() == COMM_RANK ){
               for( unsigned int n=0; n<number_of_directions; n++ ){
                 if( sites[ neigh ].get_outgoing(n) == neighIdLoc ){
@@ -9000,19 +7310,19 @@ void SimpleX::ballistic_transport( Site& site, double& N_out_total ) {
               }//for all directions
             }//if neigh on this proc
 
-        //if no direction is associated with this neighbour, find one
+	    //if no direction is associated with this neighbour, find one
             if(dir_to_use.size() == 0){
 
-    //find closest associated direction for this Delaunay line
+	      //find closest associated direction for this Delaunay line
 
-    //directions are stored in header
+	      //directions are stored in header
               float **refVector;
-    // Assign memory to the refVector
+	      // Assign memory to the refVector
               refVector = new float*[number_of_directions];
               for( unsigned int n=0; n<number_of_directions; n++ ){
                 refVector[n]=new float[3];
               }
-    //assign the first orientation to refVector
+	      //assign the first orientation to refVector
               for( unsigned int n=0; n<number_of_directions; n++ ){
                 refVector[n][0] = (float) orient[orientation_index][n][0];
                 refVector[n][1] = (float) orient[orientation_index][n][1];
@@ -9024,7 +7334,7 @@ void SimpleX::ballistic_transport( Site& site, double& N_out_total ) {
               vectorNeigh[1] = site.get_y() - sites[ neigh ].get_y();
               vectorNeigh[2] = site.get_z() - sites[ neigh ].get_z();
 
-    // Find the neighVec that is closest (in angle) to the refVec
+	      // Find the neighVec that is closest (in angle) to the refVec
               float highestInprod=-FLT_MAX;
               int highestInprodNumber=-1;
               for(unsigned int n=0; n<number_of_directions; n++) {
@@ -9036,7 +7346,7 @@ void SimpleX::ballistic_transport( Site& site, double& N_out_total ) {
               }
               dir_to_use.push_back( highestInprodNumber );
 
-    // free memory of the refVector
+	      // free memory of the refVector
               for(unsigned int n=0; n<number_of_directions; n++){
                 delete [] refVector[n];
               }
@@ -9045,42 +7355,50 @@ void SimpleX::ballistic_transport( Site& site, double& N_out_total ) {
             }//if no direction associated with this linw
 
             for(unsigned int n=0; n<dir_to_use.size() ; n++ ){
-              sites[ neigh ].addRadiationDiffIn( dir_to_use[n], (float) inten/dir_to_use.size() );
+              for(short int f=0; f<numFreq;f++){
+		//intensity to send out, get correct part from all added intensities
+                double inten = (N_in_total[f] > 0.0) ? N_out_total[f] * ( (double) site.get_intensityOut( f,j ) / N_in_total[f] ) : 0.0;
+                inten /= double(site.get_numStraight( j ));
+                sites[ neigh ].addRadiationDiffIn( f,  dir_to_use[n], (float) inten/dir_to_use.size() );
+              }
             }//for all neighbours to use
             dir_to_use.clear();
 
           }//if neighbour is ballistic
-      // }//if neighbour not in border
+	  // }//if neighbour not in border
         }//for all straight
 
       }else{
-  //DCT
+	//DCT
         if(straight_from_tess){
-    //the most straightforward neighbours are taken from the Delaunay edge with which 
-    //this direction bin is associated
 
-    //in direction conserving transport, send to the same direction bin
-    //in outgoing is the neighbour that is associated with current direction bin
+	  //the most straightforward neighbours are taken from the Delaunay edge with which 
+	  //this direction bin is associated
+
+	  //in direction conserving transport, send to the same direction bin
+	  //in outgoing is the neighbour that is associated with current direction bin
           for( short int l=0; l<site.get_numStraight( site.get_outgoing(j) ); l++ ){
-      //neighbour associated with this direction bin
+	    //neighbour associated with this direction bin
             unsigned int dir = (unsigned) site.get_outgoing(j);
-      //straightest neighbour for this line
+	    //straightest neighbour for this line
             unsigned int straight = site.get_straight( dir, l );
-      //site id of the neighbour that will receive the photons
+	    //site id of the neighbour that will receive the photons
             unsigned int neigh = site.get_neighId( straight );
-      //photons to send
-            double inten = N_out/double(site.get_numStraight( site.get_outgoing(j) ));
 
-      //check if neighbour is ballistic
+	    //check if neighbour is ballistic
             if(sites[ neigh ].get_ballistic() ){
 
-        //if the neighbour is ballistic, find out which 
-        //Delaunay line is associated with this direction
+	      //if the neighbour is ballistic, find out which 
+	      //Delaunay line is associated with this direction
               bool found = 0;
               for( unsigned int n=0; !found && n<sites[ neigh ].get_numNeigh(); n++ ){
                 if( sites[neigh].get_neighId(n) == site.get_site_id() ){
                   found = 1;
-                  sites[neigh].addRadiationDiffIn( n, (float) inten );
+                  for(short int f=0; f<numFreq;f++){
+                    double inten = (N_in_total[f] > 0.0) ? N_out_total[f] * ( (double) site.get_intensityOut( f,j ) / N_in_total[f] ) : 0.0;
+                    inten /= double(site.get_numStraight( site.get_outgoing(j) ));
+                    sites[neigh].addRadiationDiffIn( f, n, (float) inten );
+                  }//for all freq
                 } 
               }
               if(!found){
@@ -9088,53 +7406,58 @@ void SimpleX::ballistic_transport( Site& site, double& N_out_total ) {
               }
             }else{
 
-        //if not ballistic,
-        //send the photons to the neighbour in the same direction bin
-              sites[ neigh ].addRadiationDiffIn( j , (float) inten );
+	      //if not ballistic,
+	      //send the photons to the neighbour in the same direction bin
+              for(short int f=0; f<numFreq;f++){
+                double inten = (N_in_total[f] > 0.0) ? N_out_total[f] * ( (double) site.get_intensityOut( f,j ) / N_in_total[f] ) : 0.0;
+                inten /= double(site.get_numStraight( site.get_outgoing(j) ));
+                sites[neigh].addRadiationDiffIn( f, j, (float) inten );
+              }//for all freq
+
             }//if neighbour is ballistic
           }//for all straight
 
         }else{
-    //calculate the straightest neigbours with respect to the current direction bin
+	  //calculate the straightest neigbours with respect to the current direction bin
 
-    //arrays to hold the neighbour vector 
-    //and the maximum inner product
+	  //arrays to hold the neighbour vector 
+	  //and the maximum inner product
           double max[3], vector1[3];
-    //array to hold the indices of the most straight forward neighbours
+	  //array to hold the indices of the most straight forward neighbours
           unsigned int index[3];
           double cosStraightAngle = cos( straightAngle );
 
-    //initialise the max and index arrays
+	  //initialise the max and index arrays
           for( short int q=0; q<dimension; q++ ){
             max[q] = -FLT_MAX; 
             index[q] = -1;
           }//for q
 
-    //fill vector1 with jth direction bin vector 
+	  //fill vector1 with jth direction bin vector 
           vector1[0] = orient[orientation_index][j][0];//(double) it->get_x() - sites[ neighId ].get_x();
           vector1[1] = orient[orientation_index][j][1];//(double) it->get_y() - sites[ neighId ].get_y();
           vector1[2] = orient[orientation_index][j][2];//(double) it->get_z() - sites[ neighId ].get_z();
 
-    //loop over all neighbours except the jth neighbour to calculate 
-    //the most straight forward ones with respect to neighbour j
+	  //loop over all neighbours except the jth neighbour to calculate 
+	  //the most straight forward ones with respect to neighbour j
           for( unsigned int k=0; k<site.get_numNeigh(); k++ ){
 
-      //site id of this neighbour
+	    //site id of this neighbour
             unsigned int neighId = site.get_neighId(k);
 
-      //arrays to hold the neighbour vector of this neighbour
+	    //arrays to hold the neighbour vector of this neighbour
             double vector2[3];
 
-      //fill vector2 with neighbour vector
+	    //fill vector2 with neighbour vector
             vector2[0] = (double) sites[ neighId ].get_x() - site.get_x();
             vector2[1] = (double) sites[ neighId ].get_y() - site.get_y();
             vector2[2] = (double) sites[ neighId ].get_z() - site.get_z();
 
-      //calculate inner product of both vectors
+	    //calculate inner product of both vectors
             double inprod = inproduct(vector1, vector2, dimension);
 
-      //store d largest inner products in max array
-      //store the according neighbour indices in index
+	    //store d largest inner products in max array
+	    //store the according neighbour indices in index
             if( inprod > max[0] ) {
               max[2] = max[1];
               max[1] = max[0]; 
@@ -9147,7 +7470,7 @@ void SimpleX::ballistic_transport( Site& site, double& N_out_total ) {
               max[1] = inprod;
               index[2] = index[1];
               index[1] = k;
-        // Third most straigthforward only needed in 3D case
+	      // Third most straigthforward only needed in 3D case
             } else if ( dimension == 3 && inprod > max[2] ) { 
               max[2] = inprod;
               index[2] = k;
@@ -9157,30 +7480,32 @@ void SimpleX::ballistic_transport( Site& site, double& N_out_total ) {
 
 
           short int num_straight = 1;
-    // Second and third depending on angle
+	  // Second and third depending on angle
           for(int l=1; l < dimension; l++) {
-      //add the neighbour if the maximum inner product
-      //is larger than the cosine of the largest angle
+	    //add the neighbour if the maximum inner product
+	    //is larger than the cosine of the largest angle
             if( max[l] > cosStraightAngle ){
               num_straight++;
             }	
           }	      
 
-    //photons to send
-          double inten = N_out/double(num_straight);
 
           for(short int l =0;l<num_straight;l++){
-      //neighbour id of straightest neighbour
+	    //neighbour id of straightest neighbour
             unsigned int neigh = site.get_neighId( index[l] );
-      //check if neighbour is ballistic
+	    //check if neighbour is ballistic
             if(sites[ neigh ].get_ballistic() ){
-        //if the neighbour is ballistic, find out which 
-        //Delaunay line is associated with this direction
+	      //if the neighbour is ballistic, find out which 
+	      //Delaunay line is associated with this direction
               bool found = 0;
               for( unsigned int n=0; !found && n<sites[ neigh ].get_numNeigh(); n++ ){
                 if( sites[neigh].get_neighId(n) == site.get_site_id() ){
                   found = 1;
-                  sites[neigh].addRadiationDiffIn( n, (float) inten );
+                  for(short int f=0; f<numFreq;f++){
+                    double inten = (N_in_total[f] > 0.0) ? N_out_total[f] * ( (double) site.get_intensityOut( f,j ) / N_in_total[f] ) : 0.0;
+                    inten /= double(num_straight);
+                    sites[neigh].addRadiationDiffIn( f, n, (float) inten );
+                  }
                 } 
               }
               if(!found){
@@ -9188,24 +7513,38 @@ void SimpleX::ballistic_transport( Site& site, double& N_out_total ) {
               }
             }else{
 
-        //if not ballistic,
-        //send the photons to the neighbour in the same direction bin
-              sites[ neigh ].addRadiationDiffIn( j , (float) inten );
+	      //if not ballistic,
+	      //send the photons to the neighbour in the same direction bin
+              for(short int f=0; f<numFreq;f++){
+                double inten = (N_in_total[f] > 0.0) ? N_out_total[f] * ( (double) site.get_intensityOut( f,j ) / N_in_total[f] ) : 0.0;
+                inten /= double(num_straight);
+                sites[neigh].addRadiationDiffIn( f, j, (float) inten );
+              }
             }//if neighbour is ballistic
-
           }//for all straight
-
         }//if straight from tesselation
-
       }//if this site ballistic
     } //if intensityOut
   } //for all neighbours
 
   //loop over all neighbours/directions
   for( unsigned int j=0; j < numPixels; j++) {
-    //intensity has been send away, so delete it
-    site.set_intensityOut(j,0.0);
+    for(short int f=0; f<numFreq;f++){
+      //intensity has been send away, so delete it
+      site.set_intensityOut(f,j,0.0);
+    }
   }
+
+  numPixels = ( site.get_ballistic() ) ? site.get_numNeigh() : number_of_directions;
+  for( unsigned int j=0; j<numPixels; j++ ) { 
+    for(short int f=0; f<numFreq; f++){
+      if( site.get_intensityIn( f, j ) != site.get_intensityIn( f, j )){
+        cerr << " NAN detected in intensityIn " << site.get_vertex_id() << " " << f << endl;
+        MPI::COMM_WORLD.Abort(-1);
+      }
+    }
+  }
+
 
 } 
 
@@ -9214,8 +7553,7 @@ void SimpleX::ballistic_transport( Site& site, double& N_out_total ) {
 void SimpleX::radiation_transport( const unsigned int& run ){
 
   double t0 = MPI::Wtime();
-
-  int dummy=0;
+  //int dummy=0;
   double numRecombs = 0.0, allRecombs = 0.0; 
   double totalNumRecombs;
 
@@ -9229,36 +7567,37 @@ void SimpleX::radiation_transport( const unsigned int& run ){
       numPixels = ( it->get_ballistic() ) ? it->get_numNeigh() : number_of_directions;
 
       for( unsigned int j=0; j<numPixels; j++ ) { 
-        it->set_intensityOut( j, 0.0 );
-        it->set_intensityIn( j, 0.0 );
+        for(short int f=0; f<numFreq; f++){
+          it->set_intensityOut( f, j, 0.0 );
+          it->set_intensityIn( f, j, 0.0 );
+        }
       }
     }
   }//if run
 
-  if(run==0 && fillChoice == AUTOMATIC){
-    //set_source_in_centre();
-  }  
-
-  if( COMM_RANK == 0)
-    cerr << endl; 
+  // if( COMM_RANK == 0)
+  //   cerr << endl; 
 
   for( unsigned int times=0; times<numSweeps; times++ ) { 
 
-    if( COMM_RANK == 0 ){
-      if( (int)floor( ( 100.0*times)/numSweeps ) > dummy ) { 
-        dummy = (int) floor((100.0*times)/numSweeps); 
-        cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\t" << dummy+1 << "% completed..." << flush; 
-      } 
-    }
+    // if( COMM_RANK == 0 ){
+    //   if( (int)floor( ( 100.0*times)/numSweeps ) > dummy ) { 
+    //     dummy = (int) floor((100.0*times)/numSweeps); 
+    //     cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\t" << dummy+1 << "% completed..." << flush; 
+    //   } 
+    // }
 
     //Do all sources
     //double total_inten = 0.0;
     for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
-      if( it->get_flux() > 0.0){
+      if( it->get_source() ){
         source_transport( *it );
       }//if flux
     }//for all sites
-    
+
+    //double source_flux;
+    //MPI::COMM_WORLD.Allreduce(&total_inten,&source_flux,1,MPI::DOUBLE,MPI::SUM);
+
     send_intensities();
 
     //Compute the recombinations
@@ -9272,21 +7611,29 @@ void SimpleX::radiation_transport( const unsigned int& run ){
       allRecombs += totalNumRecombs;
     } 
 
+    // if( COMM_RANK == 0 ){
+    //   cerr << " (" << COMM_RANK << ") Total number of photons sent: " << source_flux << " total recombinations: " << recombinations << endl;
+    // }
 
     //redistribute the photons
     for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
       if( !it->get_border() && it->get_process() == COMM_RANK ) {
 
-        //solve the rate equation to determine ionisations and recombinations
-        double N_out = solve_rate_equation( *it );
-        //if there is intensity to send, do so
-        if(N_out > 0.0){
-          ballistic_transport( *it, N_out );
-        }
+	//solve the rate equation to determine ionisations and recombinations
+        vector<double> N_out = solve_rate_equation( *it );
+
+	if(!diffuseTransport){
+	  //transport photons with ballistic transport or DCT
+	  non_diffuse_transport( *it, N_out );
+	} else {
+	  //transport photons diffusely
+	  diffuse_transport( *it, N_out );
+	}
+
       }//if not in border   
     }//for all sites
 
-
+    double total_diffuse_proc=0.0;
     for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
 
       //in case of ballistic transport, intensity has size of number of neighbours;
@@ -9295,18 +7642,30 @@ void SimpleX::radiation_transport( const unsigned int& run ){
       numPixels = ( it->get_ballistic() ) ? it->get_numNeigh() : number_of_directions;
 
       for( unsigned int j=0; j<numPixels; j++ ) { 
-        //double inten = (double) it->get_intensityIn(j) + (double) it->get_intensityOut(j);
-        it->set_intensityOut( j, it->get_intensityIn(j) );
-        it->set_intensityIn( j, 0.0 );
-      }
+        for(short int f=0; f<numFreq; f++){
+	  //double inten = (double) it->get_intensityIn(j) + (double) it->get_intensityOut(j);
+	  //float inten = it->get_intensityIn(f,j);
+          it->set_intensityOut( f, j, it->get_intensityIn(f,j) );
+          it->set_intensityIn( f, j, 0.0 );
 
+        }
+        total_diffuse_proc += (double) it->get_intensityOut(0,j);
+      }//for all pixels
     }//for all sites
+
+    double total_diffuse;
+    MPI::COMM_WORLD.Allreduce(&total_diffuse_proc,&total_diffuse,1,MPI::DOUBLE,MPI::SUM);
+
+    if(COMM_RANK == 0){
+      //cerr << " Number of diffuse photons: " << total_diffuse << endl;
+    }
 
     //if direction conserving transport is possible, rotate solid angles or
     //do virtual vertex movement if set
     if( dirConsTransport || combinedTransport ){
       rotate_solid_angles();
     }//if direction conserving transport
+
 
   } //for all sweeps
 
@@ -9337,6 +7696,11 @@ void SimpleX::generate_output( const unsigned int& run ){
       cerr << endl << endl << " (" << COMM_RANK << ") Generating output" << endl;
     }
 
+    double IFront_pos = 0.0;
+    if(give_IFront){
+      IFront_pos = calc_IFront( run );
+    }
+
     float time = (run+1)*simTime*time_conversion/(numRuns*secondsPerMyr);
 
     char fileName[100][256];
@@ -9346,11 +7710,8 @@ void SimpleX::generate_output( const unsigned int& run ){
     for(unsigned int i=0; i<COMM_SIZE; i++){
       if(COMM_RANK == i){
 
-#ifdef HDF5_PARALLEL
-        sprintf(fileName[0], "%s_%f.hdf5", outputBaseName1, time);
-#else
+
         sprintf(fileName[0], "%s_%f_%d.hdf5", outputBaseName1, time, COMM_RANK);
-#endif
 
         write_hdf5_output(fileName[0], run);
       }
@@ -9364,14 +7725,22 @@ void SimpleX::generate_output( const unsigned int& run ){
 
     if( COMM_RANK == 0 ){
 
- 
+      if(give_IFront){
+        cerr << "  Position of the I-Front            : " << IFront_pos << " cm" << endl;
+        cerr << endl; 
+      }
+
+
       simpleXlog << endl << endl << " END OF RUN " << run+1 << endl << endl;
+      if(give_IFront){
+        simpleXlog << "  Position of the I-Front            : " << IFront_pos << " cm"<< endl;
+      }
       simpleXlog << "  Output written to: " << fileName[0] << endl;
 
     }
-
   }//if output in this run
 
+  return;
 }
 
 
@@ -9379,71 +7748,24 @@ void SimpleX::generate_output( const unsigned int& run ){
 //of the offset
 void SimpleX::write_hdf5_output(char *name, const unsigned int& run){
 
-
   //determine sites local to proc
-  //using size_type is safer than using (unsigned) ints
-  vector< unsigned long long int > local_sites;
-  for( unsigned long long int i=0; i<sites.size(); i++ ){
+  vector< unsigned long int > local_sites;
+  //vector< unsigned long int > indices(vertex_id_max,vertex_id_max);
+  for( unsigned long int i=0; i<sites.size(); i++ ){
     if( sites[i].get_process() == COMM_RANK ){
       local_sites.push_back( i );
+      //indices[sites[i].get_vertex_id()]=i;
     }
   }
 
+
   //simplices are local always, determine total number of simplices
   //across procs
-  //size_type can't be send by mpi, so convert to double and then convert back
-
-#ifdef HDF5_PARALLEL
-  //get total number of simplices
-  double numSimplLocal = (double) simplices.size();
-  double temp;
-  MPI::COMM_WORLD.Allreduce(&numSimplLocal, &temp, 1, MPI::DOUBLE, MPI::SUM);
-  unsigned long long int numSimpl = (unsigned long long int) temp;
-
-  //let every proc know the number of vertices and simplices on other procs
-  vector< unsigned int > number_of_vertices( COMM_SIZE+1, 0 );
-  vector< unsigned int > number_of_simplices( COMM_SIZE+1, 0 );
-  vector< double > temp_number_of_vertices( COMM_SIZE+1, 0 );
-  vector< double > temp_number_of_simplices( COMM_SIZE+1, 0 );
-  vector< double > IDX( COMM_SIZE+1, 0 );
-  vector< double > IDXX( COMM_SIZE+1, 0 );
-
-  IDX[ COMM_RANK ] = (double) local_sites.size();
-  IDXX[ COMM_RANK ] = (double) simplices.size();
-
-  MPI::COMM_WORLD.Allreduce(&IDX[0], &temp_number_of_vertices[0], COMM_SIZE+1, MPI::DOUBLE, MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&IDXX[0], &temp_number_of_simplices[0], COMM_SIZE+1, MPI::DOUBLE, MPI::SUM);
-
-  IDX.clear();
-  IDXX.clear();
-
-  unsigned int sum = 0;
-  unsigned int buffer = (unsigned int) temp_number_of_vertices[0];
-  temp_number_of_vertices[0] = 0;
-  for(unsigned int i=1;i<COMM_SIZE+1;++i){
-    sum = (unsigned int) temp_number_of_vertices[i-1] + buffer;
-    buffer = (unsigned int) temp_number_of_vertices[i];
-    number_of_vertices[i] = sum;
-  }
-
-  unsigned int sum2 = 0;
-  unsigned int buffer2 = (unsigned int) temp_number_of_simplices[0];
-  temp_number_of_simplices[0] = 0;
-  for(unsigned int i=1;i<COMM_SIZE+1;++i){
-    sum2 = (unsigned int) temp_number_of_simplices[i-1] + buffer2;
-    buffer2 = (unsigned int) temp_number_of_simplices[i];
-    number_of_simplices[i] = sum2;
-  }
-
-  temp_number_of_vertices.clear();
-  temp_number_of_simplices.clear();
-
-#endif
 
   arr_1D<double> double_arr;
   arr_1D<unsigned int> int_arr;
 
-  int dims[2];
+  unsigned long long int dims[2];
   unsigned long long int offset[2];
 
   //open file  
@@ -9456,11 +7778,7 @@ void SimpleX::write_hdf5_output(char *name, const unsigned int& run){
 
 
   //Vertex attributes
-#ifdef HDF5_PARALLEL
-  dims[0] = numSites;
-#else
-  dims[0] = sites.size();
-#endif
+  dims[0] = local_sites.size();
 
   dims[1] = 3;                              // only write 3D data for now...
   file.make_dataset("/Vertices/coordinates","double",2,dims);
@@ -9478,13 +7796,11 @@ void SimpleX::write_hdf5_output(char *name, const unsigned int& run){
   file.write_attr("/Vertices/volume","var_name","vol");
   file.make_dataset("/Vertices/luminosity","double",1,dims);
   file.write_attr("/Vertices/luminosity","var_name","lum");
+  file.make_dataset("/Vertices/temperature","double",1,dims);
+  file.write_attr("/Vertices/temperature","var_name","temperature");
 
   //Simplex attributes
-#ifdef HDF5_PARALLEL
-  dims[0] = numSimpl;
-#else
   dims[0] = simplices.size();
-#endif
 
   dims[1] = 4;                              
   file.make_dataset("/Simplices/indices","unsigned int",2,dims);
@@ -9497,17 +7813,13 @@ void SimpleX::write_hdf5_output(char *name, const unsigned int& run){
 
   //=============== write header ======================================//
 
-#ifdef HDF5_PARALLEL
-  file.write_attr("/Header","number_of_sites", (unsigned int) numSites);
-  file.write_attr("/Header","number_of_simplices", (unsigned int) numSimpl);
-#else
-  unsigned int numSitesLoc = local_sites.size();
-  file.write_attr("/Header","local_number_of_sites", numSitesLoc );
-  unsigned int numSimplLoc = simplices.size();
-  file.write_attr("/Header","local_number_of_simplices", numSimplLoc );
-  file.write_attr("/Header","number_of_sites", (unsigned int) numSitesLoc);
-  file.write_attr("/Header","number_of_simplices", (unsigned int) numSimplLoc);
-#endif
+
+  file.write_attr("/Header","local_number_of_sites",(unsigned int) local_sites.size() );
+  file.write_attr("/Header","local_number_of_simplices", (unsigned int) simplices.size() );
+  //file.write_attr("/Header","number_of_sites", (unsigned int) sites.size());
+  file.write_attr("/Header","number_of_sites", (unsigned int)numSites);
+  file.write_attr("/Header","number_of_simplices", (unsigned int) simplices.size());
+
 
   file.write_attr("/Header","number_of_sweeps", numSweeps);
   file.write_attr("/Header","box_size_in_pc", sizeBox);
@@ -9517,10 +7829,13 @@ void SimpleX::write_hdf5_output(char *name, const unsigned int& run){
   double total_time = simTime/secondsPerMyr;
   file.write_attr("/Header","total_simulation_time_in_Myr", total_time);
 
-  if (recombination)
+
+  if (recombination){
     file.write_attr("/Header","recombination_on","true");
-  else
+  }else{
     file.write_attr("/Header","recombination_on","false");
+  }
+
 
   //======================= Write Vertices ===========================//
 
@@ -9530,35 +7845,28 @@ void SimpleX::write_hdf5_output(char *name, const unsigned int& run){
   unsigned int chunk_size_vert;
 
   //writing in chunks isn't implemented in parallel
-#ifdef HDF5_PARALLEL
-  chunk_size_vert = local_sites.size();
-#else
   chunk_size_vert = chunk_size;
   if (chunk_size_vert > local_sites.size())
     chunk_size_vert = local_sites.size();
-#endif  
 
   // do the writing !!!
   offset[1] = 0;
-  for( unsigned long long int i=0; i<local_sites.size(); i+=chunk_size_vert ){
+  for( unsigned long int i=0; i<local_sites.size(); i+=chunk_size_vert ){
 
-#ifdef HDF5_PARALLEL
-    offset[0] = (int) i + number_of_vertices[COMM_RANK];
-#else
+
     offset[0] = i;
-#endif
 
     if (i+chunk_size_vert >= local_sites.size()) // make sure not to write outside of data range
       dims[0] = (int) local_sites.size()-i;
     else
       dims[0] = chunk_size_vert;
 
-      // writing coordinates
+    // writing coordinates
     dims[1] = 3; 
 
     double_arr.reinit(2,dims);
-    for( int j=0; j<dims[0]; j++ ){
-      unsigned long long int index = local_sites[i+j];
+    for(unsigned int j=0; j<dims[0]; j++ ){
+      unsigned long int index = local_sites[i+j];
       double_arr(j,0) = sites[index].get_x();
       double_arr(j,1) = sites[index].get_y();
       double_arr(j,2) = sites[index].get_z();
@@ -9568,44 +7876,57 @@ void SimpleX::write_hdf5_output(char *name, const unsigned int& run){
 
 
     dims[1]=1;
-      //write id
+    //write id
     int_arr.reinit(1,dims);
-    for( int j=0; j<dims[0]; j++ )
+    for(unsigned int j=0; j<dims[0]; j++ )
       int_arr(j) = sites[ local_sites[i+j] ].get_vertex_id();
     file.write_data("/Vertices/vertex_index",offset, &int_arr);
 
-      //write border
+    //write border
     int_arr.reinit(1,dims);
-    for( int j=0; j<dims[0]; j++ )
+    for(unsigned int j=0; j<dims[0]; j++ )
       int_arr(j) = (unsigned int) sites[ local_sites[i+j] ].get_border();
     file.write_data("/Vertices/border",offset, &int_arr);
 
-      // writing neutral fraction      
+    // writing neutral fraction      
     double_arr.reinit(1,dims);
-    for( int j=0; j<dims[0]; j++ ){
+    for(unsigned int j=0; j<dims[0]; j++ ){
       double neutr_frac = (double) sites[ local_sites[i+j] ].get_n_HI()/( (double) sites[ local_sites[i+j] ].get_n_HI() + (double) sites[ local_sites[i+j] ].get_n_HII() );
       double_arr(j) = neutr_frac;
     }
     file.write_data("/Vertices/H_neutral_fraction",offset, &double_arr);
 
-      // writing number density of gas
+    // writing number density of gas
 
     double_arr.reinit(1,dims);
-    for( int j=0; j<dims[0]; j++ )
+    for(unsigned int j=0; j<dims[0]; j++ )
       double_arr(j) = ( (double) sites[ local_sites[i+j] ].get_n_HI() + (double) sites[ local_sites[i+j] ].get_n_HII() ) * UNIT_D;
     file.write_data("/Vertices/number_density",offset, &double_arr);
 
-      // writing cell volumes
+    // writing cell volumes
     double_arr.reinit(1,dims);
-    for( int j=0; j<dims[0]; j++ ) 
+    for(unsigned int j=0; j<dims[0]; j++ ) 
       double_arr(j) = (double) sites[ local_sites[i+j] ].get_volume() * UNIT_V;
     file.write_data("/Vertices/volume",offset, &double_arr);
 
-      // writing Luminositites
+    // writing Luminositites
     double_arr.reinit(1,dims);
-    for( int j=0; j<dims[0]; j++ )
-      double_arr(j) = (double) sites[ local_sites[i+j] ].get_flux() * UNIT_I;
+    for(unsigned int j=0; j<dims[0]; j++ ){
+      double flux = 0.0;
+      if(sites[ local_sites[i+j] ].get_source()){
+        for(short int f=0; f<numFreq; f++){
+          flux += (double) sites[ local_sites[i+j] ].get_flux(f) * UNIT_I;
+        }
+      }
+      double_arr(j) = flux;
+    }
     file.write_data("/Vertices/luminosity",offset, &double_arr);
+
+    // writing temperature
+    double_arr.reinit(1,dims);
+    for(unsigned int j=0; j<dims[0]; j++ )
+      double_arr(j) = (double) sites[ local_sites[i+j] ].get_temperature();
+    file.write_data("/Vertices/temperature",offset, &double_arr);
 
   }//for all local sites
 
@@ -9617,47 +7938,40 @@ void SimpleX::write_hdf5_output(char *name, const unsigned int& run){
   unsigned int chunk_size_simpl = chunk_size;
 
   //writing in chunks isn't implemented in parallel
-#ifdef HDF5_PARALLEL
-  chunk_size_simpl = simplices.size();
-#else
+
   chunk_size_simpl = chunk_size;
   if (chunk_size_simpl > simplices.size())
     chunk_size_simpl = simplices.size();
-#endif
 
 
   // do the writing !!!
   offset[1] = 0;
-  for (unsigned long long int i=0; i<simplices.size(); i+=chunk_size_simpl){
+  for (unsigned long int i=0; i<simplices.size(); i+=chunk_size_simpl){
 
-#ifdef HDF5_PARALLEL
-    offset[0] = (int) i + number_of_simplices[COMM_RANK];
-#else
     offset[0] = (int) i;
-#endif
 
     if ( (i + chunk_size_simpl) >= simplices.size() ) // make sure not to write outside of data range
       dims[0] = (int) simplices.size() - i;
     else
       dims[0] = chunk_size_simpl;
 
-      // writing indices
+    // writing indices
     dims[1] = 4; 
 
     int_arr.reinit(2,dims);
-    for( int j=0; j<dims[0]; j++ ){
-      int_arr(j,0) = simplices[i+j].get_id1();//sites[simplices[i+j].get_id1()].get_vertex_id();
-      int_arr(j,1) = simplices[i+j].get_id2();//sites[simplices[i+j].get_id2()].get_vertex_id();
-      int_arr(j,2) = simplices[i+j].get_id3();//sites[simplices[i+j].get_id3()].get_vertex_id();
-      int_arr(j,3) = simplices[i+j].get_id4();//sites[simplices[i+j].get_id4()].get_vertex_id();
+    for(unsigned int j=0; j<dims[0]; j++ ){
+      int_arr(j,0) = simplices[i+j].get_id1();
+      int_arr(j,1) = simplices[i+j].get_id2();
+      int_arr(j,2) = simplices[i+j].get_id3();
+      int_arr(j,3) = simplices[i+j].get_id4();
     }
     file.write_data("/Simplices/indices",offset, &int_arr);
 
     dims[1]=1;
 
-      // writing simplex volumes
+    // writing simplex volumes
     double_arr.reinit(1,dims);
-    for( int j=0; j<dims[0]; j++ ) 
+    for(unsigned int j=0; j<dims[0]; j++ ) 
       double_arr(j) = simplices[i+j].get_volume();
 
     file.write_data("/Simplices/volume",offset, &double_arr);
@@ -9669,12 +7983,138 @@ void SimpleX::write_hdf5_output(char *name, const unsigned int& run){
 
   file.close();
 
-#ifdef HDF5_PARALLEL
-  number_of_vertices.clear();
-  number_of_simplices.clear();
-#endif
+}
+
+//write position of the IFront to file
+double SimpleX::calc_IFront( const unsigned int& run ){
+
+  int teller=0; 
+  int tellerTotal;
+  double averDist=0.0; 
+  double averDistTotal;
+  double source_x = 0.5;
+  double source_y = 0.5;
+  double source_z = 0.5;
+
+  //first update the local copies of the objects
+  //update_sites();
+
+  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+
+    if( !it->get_border() && it->get_process() == COMM_RANK ){
+
+      double frac1 = (double) it->get_n_HII()/( (double) it->get_n_HI() + (double) it->get_n_HII() );
+
+      //if( frac1 >= 0.49 && frac1 <= 0.51 ){  
+      if( frac1 >= 0.45 && frac1 <= 0.55 ){  
+
+        averDist += sqrt( pow( (double) it->get_x() - (double) source_x, 2 ) + 
+			  pow( (double) it->get_y() - (double) source_y, 2 ) + 
+			  pow( (double) it->get_z() - (double) source_z, 2 ) );
+        teller++;  
+
+      } //if 
+    }  //if
+  }  //for all vertices
+
+  MPI::COMM_WORLD.Allreduce(&averDist,&averDistTotal,1,MPI::DOUBLE,MPI::SUM);
+  MPI::COMM_WORLD.Allreduce(&teller,&tellerTotal,1,MPI::INT,MPI::SUM);
+
+  if( COMM_RANK == 0 ){
+    float time = (run+1)*simTime/(numRuns*secondsPerMyr);
+    if( tellerTotal ){ 
+      IFront_output << time << " " << ( averDistTotal/tellerTotal ) * UNIT_L << endl; 
+    } else { 
+      IFront_output << time << " " << 0.0 << endl; 
+    }
+  }
+
+  if(tellerTotal) { 
+    return (averDistTotal/tellerTotal) * UNIT_L; 
+  } else { 
+    return -1.0;
+  }
+
+  return -1.0;
 
 }
+
+double SimpleX::calc_escape_fraction( const unsigned int& run, const unsigned int& times ){
+
+
+  double numPhotons = 0.0;
+  double flux=0.0;
+  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+
+    if( it->get_source() ){
+      for(short int f=0; f<numFreq; f++){
+        flux += it->get_flux(f)*UNIT_I;
+      }
+    }
+
+    //in case of ballistic transport, intensity has size of number of neighbours;
+    //in case of direction conserving transport, intensity has 
+    //the size of the tesselation of the unit sphere
+    numPixels = ( it->get_ballistic() ) ? it->get_numNeigh() : number_of_directions;
+
+    //if( it->get_process() == COMM_RANK && it->get_border() ){
+    if(it->get_border()){
+      for( unsigned int j=0; j<numPixels; j++ ){
+        for(short int f=0; f<numFreq; f++){
+
+	  // if( ((double) it->get_intensityOut(j) * UNIT_I) != ((double) it->get_intensityOut(j) * UNIT_I)){
+	  //   cerr << endl << " (" << COMM_RANK << ") intensityOut NAN!" << (double) it->get_intensityOut(j) << endl;
+	  // }
+	  // if( ((double) it->get_intensityIn(j) * UNIT_I) != ((double) it->get_intensityIn(j) * UNIT_I)){
+	  //   cerr << endl << " (" << COMM_RANK << ") intensityIn NAN! " << (double) it->get_intensityIn(j) << endl;
+	  // }
+          numPhotons += (double) it->get_intensityOut(f,j) * UNIT_I;
+          numPhotons += (double) it->get_intensityIn(f,j) * UNIT_I;
+          it->set_intensityOut(f,j, 0.0);
+          it->set_intensityIn(f,j, 0.0);
+        }
+      }
+    }
+  }//for all sites
+
+  //MPI::COMM_WORLD.Barrier();
+
+  if(numPhotons != numPhotons){
+    cerr << " (" << COMM_RANK << ") numPhotons NAN!" << endl;
+  }
+
+  double total_numPhotons=0.0;
+  //MPI::COMM_WORLD.Allreduce(&numPhotons,&total_numPhotons,1,MPI::DOUBLE,MPI::SUM);
+  MPI::COMM_WORLD.Reduce(&numPhotons,&total_numPhotons,1,MPI::DOUBLE,MPI::SUM,0);
+  double total_flux;
+  //MPI::COMM_WORLD.Allreduce(&flux,&total_flux,1,MPI::DOUBLE,MPI::SUM);
+  MPI::COMM_WORLD.Reduce(&flux,&total_flux,1,MPI::DOUBLE,MPI::SUM,0);
+
+  double f_esc = total_numPhotons/(UNIT_T);
+  if(total_flux > 0.0){
+    f_esc /= total_flux;
+  }else{
+    f_esc = -1.0;    
+  }
+
+
+
+
+  // if( COMM_RANK == 0 ){
+  //   cerr << " (" << COMM_RANK << ") escape fraction: " << f_esc << " total photons: " << total_numPhotons << " total flux: " << total_flux << endl;
+  // }
+
+  if( COMM_RANK == 0 ){
+
+    double time = UNIT_T * times;
+    time += (run)*simTime/numRuns;
+  }
+
+  return f_esc;
+
+}
+
+
 
 /********************************************************************************/
 /*                             Generic Routines                                  */
@@ -9686,10 +8126,11 @@ void SimpleX::clear_temporary(){
   //delete temporary
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
 
+    it->delete_flux();
     it->delete_straight();
     it->delete_neighId();
-    it->delete_intensityIn();
-    it->delete_intensityOut();
+    it->delete_intensityIn(numFreq);
+    it->delete_intensityOut(numFreq);
     it->delete_outgoing();
 
   }//for all sites
@@ -9699,3 +8140,67 @@ void SimpleX::clear_temporary(){
 
 }
 
+double SimpleX::count_photons(){
+
+  //send_intensities();
+
+  double total_numPhotons;
+  double numPhotons = 0.0;
+  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+
+    //in case of ballistic transport, intensity has size of number of neighbours;
+    //in case of direction conserving transport, intensity has 
+    //the size of the tesselation of the unit sphere
+    numPixels = ( it->get_ballistic() ) ? it->get_numNeigh() : number_of_directions;
+
+    if( it->get_process() == COMM_RANK ){
+      for( unsigned int j=0; j<numPixels; j++ ){
+        for(short int f=0; f<numFreq; f++){
+          numPhotons += (double) it->get_intensityOut(f,j) * UNIT_I;
+          numPhotons += (double) it->get_intensityIn(f,j) * UNIT_I;
+        }
+      }
+
+    }else if( it->get_border() ){
+      for( unsigned int j=0; j<numPixels; j++ ){
+        for(short int f=0; f<numFreq; f++){
+          numPhotons += (double) it->get_intensityOut(f,j) * UNIT_I;
+          numPhotons += (double) it->get_intensityIn(f,j) * UNIT_I;
+        }
+      }
+    }
+  }
+
+  MPI::COMM_WORLD.Reduce(&numPhotons,&total_numPhotons,1,MPI::DOUBLE,MPI::SUM,0);
+
+  //   if( COMM_RANK == 0 ){
+  //     cerr << " (" << COMM_RANK << ") Total number of photons: " << total_numPhotons << endl;
+  //   }
+
+  double total_numPhotons_in_domain = 0.0;
+  numPhotons = 0.0;
+  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+    if( it->get_process() == COMM_RANK && !it->get_border() ){
+
+      //in case of ballistic transport, intensity has size of number of neighbours;
+      //in case of direction conserving transport, intensity has 
+      //the size of the tesselation of the unit sphere
+      numPixels = ( it->get_ballistic() ) ? it->get_numNeigh() : number_of_directions;
+
+      for( unsigned int j=0; j<numPixels; j++ ){
+        for(short int f=0; f<numFreq; f++){
+          numPhotons += (double) it->get_intensityOut(f,j) * UNIT_I;
+          numPhotons += (double) it->get_intensityIn(f,j) * UNIT_I;
+        }
+      }
+    }
+  }
+
+  MPI::COMM_WORLD.Reduce(&numPhotons,&total_numPhotons_in_domain,1,MPI::DOUBLE,MPI::SUM,0);
+
+  //   if( COMM_RANK == 0 )
+  //     cerr << " (" << COMM_RANK << ") Total number of photons in simulation domain: " << total_numPhotons_in_domain << endl;
+
+  return total_numPhotons_in_domain;
+
+}

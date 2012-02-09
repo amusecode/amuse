@@ -24,30 +24,9 @@ messages and random number generators
 #include "Common.h"
 #include "Structs.h"
 
+
 using namespace std;
 
-double rec_rad_escape(const double& tau){
-
-  //  double tmp1 = 1.0 - 2.*pow(tau, 2);
-  //double tmp2 = 1.0 + 2.*tau;
-  //double tmp3 = exp(-2.*tau);
-  //double tmp4 = 3./(8.*tau);
-
-  //double f_esc = tmp4*( tmp3*tmp2 - tmp1 );
- 
-  //double f_esc = (tau > 0.0 ) ? 3.*( exp(-tau) * (1.0 + tau) + 2.*pow(0.5*tau, 2) - 1.0 )/(8.*pow(0.5*tau,3)) : 1.0;
-
-  //for very small tau solution is unstable
-  double f_esc = (tau > 1.e-3) ? 3.*( exp(-tau) * (1.0 + tau) + 2.*pow(0.5*tau, 2.) - 1.0 )/(8.*pow(0.5*tau,3.)) : 1.0;
-
-
-  // if(f_esc < 0.0){
-  //   f_esc = 1.0;
-  // }
-
-  return f_esc;
-
-}
 
 double inproduct(double v1[], double v2[], int dimension) {
 						// Omgeschreven tot generiek d dimensionaal inproduct...
@@ -190,15 +169,16 @@ void quickSortPerm(vector<float>& inVec, vector<int>& permVec, const int& left, 
 }
 
 /*******************************************************************/
-void quickSortPerm(vector<unsigned long long int>& inVec, vector<unsigned long long int>& permVec, const int& left, const int& right) {
+//sorts ascending!!!!
+void quickSortPerm(vector<unsigned long int>& inVec, vector<unsigned long int>& permVec, const int& left, const int& right) {
 
   int i = left, j = right;
   int intBuff;
-  unsigned long long int buff;
-  unsigned long long int pivot = inVec[(left+right)/2];
+  unsigned long int buff;
+  unsigned long int pivot = inVec[(left+right)/2];
   while(i <= j){
-    while (inVec[i]>pivot) i++;
-    while (inVec[j]<pivot) j--;
+    while (inVec[i]<pivot) i++;
+    while (inVec[j]>pivot) j--;
     if (i<=j){
       // swap vector elements
       buff = inVec[i];
@@ -218,6 +198,7 @@ void quickSortPerm(vector<unsigned long long int>& inVec, vector<unsigned long l
 }
 
 /*******************************************************************/
+//sorts descending!!!!!
 void quickSort(vector<float>& inVec, vector<int>& permVec, const int& left, const int& right) {
 
   int i = left, j = right;
@@ -332,115 +313,102 @@ double qromb(double func(const double, const double), double a, double b, double
   return 0.0;
 }
 
-/*******************************************************************/
-// Planck curve times cross sections and divided by nu
-// The Planck curve and cross section have been scaled for stable numerics
-// Constants in Planck curve do not matter as they are divided out by normalisation
-// Multiply any cross section with 1e-18 to obtain physical values
-// x = nu/nu_0
+//find the zero of function func
+double zbrent(double func( double,  double),  double x2,  double tol,  double Temp,  double perBin){
 
-//hydrogen
-double fHI( double x, double T ){
-  return 6.3 * pow( x, -1.0 ) / ( exp( planckConstant * x * nu0HI  / ( k * T ) ) - 1.0 );
-}
+   int ITMAX=100;
+   double EPS=numeric_limits<double>::epsilon();
+  int iter;
+  double a=1.0,b=x2,c=x2,d=0.0,e=0.0,min1,min2;
+  double fa=func(a, Temp)-perBin, fb=func(b, Temp)-perBin,fc,p,q,r,s,tol1,xm;
 
-//dust
-double f_dust_SMC( double x, double T ){
-
-  double ksi = ksi_dust( x, SMC );
-  double planck = pow( x, 3.0 ) / ( exp( planckConstant * x * nu0HI  / ( k * T ) ) - 1.0 );
-
-  return ksi*planck;
-
-}
-double f_dust_LMC( double x, double T ){
-
-  double ksi = ksi_dust( x, LMC );
-  double planck = pow( x, 3.0 ) / ( exp( planckConstant * x * nu0HI  / ( k * T ) ) - 1.0 );
-
-  return ksi*planck;
-
-}
-double f_dust_MW( double x, double T ){
-
-  double ksi = ksi_dust( x, MW );
-  double planck = pow( x, 3.0 ) / ( exp( planckConstant * x * nu0HI  / ( k * T ) ) - 1.0 );
-
-  return ksi*planck;
-
-}
-// Planck curve divided by nu
-double PlanckDivNu( double x, double T ){
-  return pow( x, 2.0 ) / ( exp( planckConstant * x * nu0HI  / ( k * T ) ) - 1.0 );
-}
-
-//Planck curve
-double Planck( double x, double T ){
-  return pow( x, 3.0 ) / ( exp( planckConstant * x * nu0HI  / ( k * T ) ) - 1.0 );
-}
-
-//fitting function for dust extinction from Pei 1992 and Gnedin et al. 2008
-double fitting_function( const double& x, const double& a, const double& b, const double& p, const double& q ){
-
-  double denom = pow( x, p ) + pow( x, -1.0*q ) + b;
-
-  return a/denom;
-
-}
-
-//determine dust extinction for scaled frequency x
-double ksi_dust( double x, short int dust_model ){
-
-  //change to real frequency
-  double nu = x*nu0HI;
-
-  double lambda = speed_of_light/nu; //wavelength in cm
-  lambda *= 1e4; //in micrometer
-
-  //values from gnedin et al. 2008 and Pei et al. 1992
-  vector <float> a_arr, b_arr, p_arr, q_arr, l_arr;
-
-  //short int dust_model = 1;
-  short int n_param = 0;
-  if(dust_model == SMC){
-    n_param = 7;
-    a_arr.resize(n_param);b_arr.resize(n_param);p_arr.resize(n_param);q_arr.resize(n_param);l_arr.resize(n_param);
-    //SMC
-    a_arr[0]=185.;a_arr[1]=27.;a_arr[2]=0.005;a_arr[3]=0.01;a_arr[4]=0.012;a_arr[5]=0.03;a_arr[6]=10.;
-    b_arr[0]=90.;b_arr[1]=15.5;b_arr[2]=-1.95;b_arr[3]=-1.95;b_arr[4]=-1.8;b_arr[5]=0.;b_arr[6]=1.9;
-    p_arr[0]=2.; p_arr[1]=4.; p_arr[2]=2.; p_arr[3]=2.; p_arr[4]=2.; p_arr[5]=2.; p_arr[6]=4.;
-    q_arr[0]=2.; q_arr[1]=4.; q_arr[2]=2.; q_arr[3]=2.; q_arr[4]=2.; q_arr[5]=2.; q_arr[6]=15.;
-    l_arr[0]=0.042; l_arr[1]=0.08; l_arr[2]=0.22; l_arr[3]=9.7; l_arr[4]=18.; l_arr[5]=25.; l_arr[6]=0.067;
-  }else if(dust_model == LMC){
-    n_param = 7;
-    a_arr.resize(n_param);b_arr.resize(n_param);p_arr.resize(n_param);q_arr.resize(n_param);l_arr.resize(n_param);
-    //LMC
-    a_arr[0]=90.;a_arr[1]=19.;a_arr[2]=0.0023;a_arr[3]=0.005;a_arr[4]=0.006;a_arr[5]=0.02;a_arr[6]=10.;
-    b_arr[0]=90.;b_arr[1]=21.;b_arr[2]=-1.95;b_arr[3]=-1.95;b_arr[4]=-1.8;b_arr[5]=0.;b_arr[6]=1.9;
-    p_arr[0]=2.; p_arr[1]=4.5; p_arr[2]=2.; p_arr[3]=2.; p_arr[4]=2.; p_arr[5]=2.; p_arr[6]=4.;
-    q_arr[0]=2.; q_arr[1]=4.5; q_arr[2]=2.; q_arr[3]=2.; q_arr[4]=2.; q_arr[5]=2.; q_arr[6]=15.;
-    l_arr[0]=0.046; l_arr[1]=0.08; l_arr[2]=0.22; l_arr[3]=9.7; l_arr[4]=18.; l_arr[5]=25.; l_arr[6]=0.067;
-  }else if(dust_model == MW){
-    n_param = 6;
-    a_arr.resize(n_param);b_arr.resize(n_param);p_arr.resize(n_param);q_arr.resize(n_param);l_arr.resize(n_param);
-    //MW
-    a_arr[0]=165.;a_arr[1]=14.;a_arr[2]=0.045;a_arr[3]=0.002;a_arr[4]=0.002;a_arr[5]=0.012;
-    b_arr[0]=90.;b_arr[1]=4.;b_arr[2]=-1.95;b_arr[3]=-1.95;b_arr[4]=-1.8;b_arr[5]=0.;
-    p_arr[0]=2.; p_arr[1]=6.5; p_arr[2]=2.; p_arr[3]=2.; p_arr[4]=2.; p_arr[5]=2.; 
-    q_arr[0]=2.; q_arr[1]=6.5; q_arr[2]=2.; q_arr[3]=2.; q_arr[4]=2.; q_arr[5]=2.; 
-    l_arr[0]=0.047; l_arr[1]=0.08; l_arr[2]=0.22; l_arr[3]=9.7; l_arr[4]=18.; l_arr[5]=25.;
-  }else{
-    cerr << " Error, no dust model, exiting!" << endl;
-    exit(-1);
+  if ((fa > 0.0 && fb > 0.0) || (fa < 0.0 && fb < 0.0)){
+    cerr << "Root must be bracketed in zbrent" << endl;
+    exit(1);
   }
-
-  double dust_extinction = 0.0;
-  for(short int i=0; i<n_param; i++){
-    double l = lambda/l_arr[i];
-    dust_extinction += fitting_function(l, a_arr[i], b_arr[i], p_arr[i], q_arr[i] );
+  fc=fb;
+  for (iter=0;iter<ITMAX;iter++) {
+    if ((fb > 0.0 && fc > 0.0) || (fb < 0.0 && fc < 0.0)) {
+      c=a;
+      fc=fa;
+      e=d=b-a;
+    }
+    if (fabs(fc) < fabs(fb)) {
+      a=b;
+      b=c;
+      c=a;
+      fa=fb;
+      fb=fc;
+      fc=fa;
+    }
+    tol1=2.0*EPS*fabs(b)+0.5*tol;
+    xm=0.5*(c-b);
+    if (fabs(xm) <= tol1 || fb == 0.0) return b;
+    if (fabs(e) >= tol1 && fabs(fa) > fabs(fb)) {
+      s=fb/fa;
+      if (a == c) {
+	p=2.0*xm*s;
+	q=1.0-s;
+      } else {
+	q=fa/fc;
+	r=fb/fc;
+	p=s*(2.0*xm*q*(q-r)-(b-a)*(r-1.0));
+	q=(q-1.0)*(r-1.0)*(s-1.0);
+      }
+      if (p > 0.0) q = -q;
+      p=fabs(p);
+      min1=3.0*xm*q-fabs(tol1*q);
+      min2=fabs(e*q);
+      if (2.0*p < (min1 < min2 ? min1 : min2)) {
+	e=d;
+	d=p/q;
+      } else {
+	d=xm;
+	e=d;
+      }
+    } else {
+      d=xm;
+      e=d;
+    }
+    a=b;
+    fa=fb;
+    if (fabs(d) > tol1)
+      b += d;
+    else
+      b += SIGN(tol1,xm);
+    fb=func(b, Temp)-perBin;
   }
+  cerr<< "Maximum number of iterations exceeded in zbrent" << endl;
+  return 0.0;
+}
 
-  return dust_extinction;
+inline float SIGN( const float &a, const double &b)
+{
+  return b >= 0 ? (a >= 0 ? a : -a) : (a >= 0 ? -a : a);
+}
+
+
+
+double rec_rad_escape(const double& tau){
+
+  //  double tmp1 = 1.0 - 2.*pow(tau, 2.);
+  //double tmp2 = 1.0 + 2.*tau;
+  //double tmp3 = exp(-2.*tau);
+  //double tmp4 = 3./(8.*tau);
+
+  //double f_esc = tmp4*( tmp3*tmp2 - tmp1 );
+ 
+  //double f_esc = (tau > 0.0 ) ? 3.*( exp(-tau) * (1.0 + tau) + 2.*pow(0.5*tau, 2.) - 1.0 )/(8.*pow(0.5*tau,3.)) : 1.0;
+
+  //for very small tau solution is unstable
+  double f_esc = (tau > 1.e-3) ? 3.*( exp(-tau) * (1.0 + tau) + 2.*pow(0.5*tau, 2.) - 1.0 )/(8.*pow(0.5*tau,3.)) : 1.0;
+
+
+  // if(f_esc < 0.0){
+  //   f_esc = 1.0;
+  // }
+
+  return f_esc;
 
 }
 
@@ -458,6 +426,7 @@ int site_compare_key(const void *a, const void *b)
 
   return 0;
 }
+
 
 unsigned int pow(const unsigned int& a, const int& b){
 

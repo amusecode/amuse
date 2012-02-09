@@ -113,7 +113,8 @@ void h5w::close(void)
 }
 
 // makes a dataset on atomic data
-void h5w::make_dataset(const char *name, const char *type, const int rank, int *dims)
+void h5w::make_dataset(const char *name, const char *type, const int rank, unsigned long int *dims)
+//void h5w::make_dataset(const char *name, const char *type, const int rank, unsigned long long int *dims)
 {
   /*
     name - full name of dataset
@@ -156,6 +157,52 @@ void h5w::make_dataset(const char *name, const char *type, const int rank, int *
   H5Sclose(dataspace);
 
 }
+
+// makes a dataset on atomic data
+void h5w::make_dataset(const char *name, const char *type, const int rank, unsigned long long int *dims)
+{
+  /*
+    name - full name of dataset
+    type - datatype of dataset  (see get_h5_datatype for string names of HDF5 datatypes
+    rank - number of dimensions of dataset
+    dims - dimensions of dataset
+  */
+
+  hid_t datatype, dataset, dataspace;
+  hsize_t *dim_set;
+  herr_t status;
+
+  int i;
+
+  dim_set = new hsize_t [rank];
+
+  for (i=0;i<rank;i++)
+    dim_set[i] = dims[i];
+  
+  dataspace = H5Screate_simple(rank, dim_set, NULL);
+  datatype = get_h5_datatype(type);
+  status = H5Tset_order(datatype, H5T_ORDER_LE);      // order is little endian by default
+  
+  dataset = H5Dcreate(file, name, datatype, dataspace, H5P_DEFAULT);
+  if (dataset < 0)
+    {
+      cout << "Dataset " << name << " could not be created in file " << filename <<endl;
+      cout << "Exiting!" << endl;
+      exit(-1);
+    }
+      
+  if(dim_set){
+    delete [] dim_set;
+    dim_set = NULL;
+  }
+
+
+  H5Tclose(datatype);
+  H5Dclose(dataset);
+  H5Sclose(dataspace);
+
+}
+
 // makes a group with absolute pathname "name"  
 void h5w::make_group(const char *name)
 {

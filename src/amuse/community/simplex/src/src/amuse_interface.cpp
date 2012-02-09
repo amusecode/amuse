@@ -30,19 +30,26 @@ void AMUSE_SimpleX::read_parameters(){
   //units of source
   UNIT_I = 1.e48;
   
+  //number of frequencies
+  numFreq = 1;
+  
+  //include collisional ionisations?
+  coll_ion = 0;
 
+  //include heating and cooling?
+  heat_cool = 0;
+
+  //include metal line cooling?
+  metal_cooling = 0;
+  
 //----------- Don't change these unless you know what you're doing -------------------------//
 
-  //fill choice should always be read
-  fillChoice = READ;
-  //dimension should always be 3
+ //dimension should always be 3
   dimension = 3;
-  //periodic boundaries don't work in parallel
-  periodic = 0;
   
-  //number of points in border, st this as you like
+  //number of points in border, set this as you like
   borderSites = 25000;
-  //region in which border points are places
+  //region in which border points are placed
   borderBox = 0.1;
   //size of border around subbox
   padding_subbox = 0.25;
@@ -50,11 +57,13 @@ void AMUSE_SimpleX::read_parameters(){
   //temperature of the ionised gas
   gasIonTemp = 1.e4;
   
-  //source ionises its own cell or not
-  source_inside_cell = 0;
-  
+  //temperature of neutral gas
+  gasNeutralTemp = 100.0;
+
   //include recombinations?
   recombination = 1;
+
+  subcycle_frac=0.05;
 
   //type of transport
   ballisticTransport = 0;
@@ -74,22 +83,11 @@ void AMUSE_SimpleX::read_parameters(){
   //convert to radians
   straightAngle *= M_PI/180.0;
 
-  // Do cyclic check?
-  cyclic_check = 0;
-  
-  //Use dynamical updates?
-  updates = 0;
-  //Number of updates
-  numGridDyn = 100;
   //Switch between dct and ballistic transport
   switchTau = 0.5;
-  //minimum resolution 
-  minResolution = 32;
-  //number of bins in update routine
-  nbins = 100;  
   
   //Use temporal photon conservation?
-  photon_conservation = 1; 
+  photon_conservation = 1;
 
   //Number of directions
   number_of_directions = 42;
@@ -100,6 +98,7 @@ void AMUSE_SimpleX::read_parameters(){
   //is faster in postprocessing, but less precise
   straight_from_tess = 1;
 
+  freq_spacing = ENERGY_WEIGHTS;
 //----------------------------------------------------------------------//
 
 
@@ -107,7 +106,7 @@ void AMUSE_SimpleX::read_parameters(){
 
 //add one vertex to the list of vertices that needs to be triangulated
 int AMUSE_SimpleX::add_vertex(long *id, double x,double y,double z,double rho,
-                                           double flux,double xion){
+                                           double flux,double xion,double uInt){
 
   Vertex tempVert;
   if( COMM_RANK ==0){
@@ -128,7 +127,8 @@ int AMUSE_SimpleX::add_vertex(long *id, double x,double y,double z,double rho,
   temp_n_HI_list.push_back( (float) n_HI);
   temp_n_HII_list.push_back( (float) n_HII );
   temp_flux_list.push_back(flux);
-
+  temp_u_list.push_back(uInt);
+  temp_dudt_list.push_back(0.0);
 
   return 0;
 
@@ -136,7 +136,7 @@ int AMUSE_SimpleX::add_vertex(long *id, double x,double y,double z,double rho,
 
 //add a site to the sites list
 int AMUSE_SimpleX::add_site(long *id, double x,double y,double z,double rho,
-                                           double flux,double xion){
+                                           double flux,double xion, double uInt){
 
   Site tempSite;
 
@@ -152,8 +152,17 @@ int AMUSE_SimpleX::add_site(long *id, double x,double y,double z,double rho,
     tempSite.set_process( COMM_RANK );
     tempSite.set_n_HI( (float) n_HI );
     tempSite.set_n_HI( (float) n_HII );
-    tempSite.set_flux( flux );
+    if(flux > 0.0){
+      tempSite.set_source(1);
+      tempSite.create_flux(numFreq);
+      tempSite.set_flux( 0, flux );
+    }else{
+      tempSite.set_source(0);
+    }
     tempSite.set_neigh_dist(1.);
+    tempSite.set_internalEnergy(uInt);
+    tempSite.set_dinternalEnergydt(0.0);
+    
     sites.push_back( tempSite );
     numSites++;
     return 0;
@@ -217,6 +226,10 @@ void AMUSE_SimpleX::convert_units(){
 // compute the physical properties of the sites
 int AMUSE_SimpleX::initialize(double current_time) {
   
+  if(COMM_RANK == 0){
+    cerr << "AMUSE_SimpleX: initialising...";
+  }
+
   // initialise random number generator with random seed
   gsl_rng_set ( ran , randomSeed );
 
@@ -244,12 +257,8 @@ int AMUSE_SimpleX::initialize(double current_time) {
   if(COMM_RANK == 0){
 
     //set boundary around unity domain
-    if(periodic){
-      create_periodic_boundary();
-    }else{
-      create_boundary();
-    }
-
+    create_boundary();
+    
     //create octree on master proc
     create_vertex_tree();
 
@@ -286,12 +295,16 @@ int AMUSE_SimpleX::initialize(double current_time) {
   //determine which sites are ballistic and which direction conserving
   initiate_ballistic_sites();
   MPI::COMM_WORLD.Barrier();
-// from main:
+  // from main:
   compute_site_properties();
   compute_physics( 0 );
   remove_border_simplices();
   syncflag=0;
-  
+ 
+  if(COMM_RANK == 0){
+    cerr << " Done" << endl;
+  }
+ 
   return 0;
   
 }
@@ -307,26 +320,43 @@ int AMUSE_SimpleX::setup_simplex(){
 
 //evolve the radiative transfer over time t_target
 int AMUSE_SimpleX::evolve(double t_target, int sync) {
+  
+
     
   double dt= t_target*secondsPerMyr - total_time;
+  
+  //cout << "time: " << t_target << " " << dt << "\n"; 
     
   if(syncflag==1){
     reinitialize();
   }
-    
-  simpleXlog << endl << "  start sweeping" << endl;  
-    
-  if(dt > 0){
-    numSweeps=dt/UNIT_T+1;
-    printf("proc %d working\n",COMM_RANK);
-    radiation_transport(1);
-    total_time+=numSweeps*UNIT_T;
-  }
   
-  simpleXlog << endl << "  done sweeping" << endl;
+  if(COMM_RANK == 0){
+    cerr << "AMUSE_SimpleX: performing radiation transport...";
+  }
+    
+  if(COMM_RANK == 0){
+    //cerr << "start sweeping" << endl;
+    simpleXlog << endl << "  start sweeping till " << t_target << endl;  
+  }
+
+  numSweeps=1;
+  while(total_time < t_target*secondsPerMyr - UNIT_T/2)
+  {
+  radiation_transport(1);
+  total_time+=UNIT_T;
+  }
+
+  if(COMM_RANK == 0){
+    simpleXlog << "   did " << numSweeps << ") sweeps"<< endl;
+  }
   
   if(sync == 1) {
     syncflag=1;     
+  }
+  
+  if(COMM_RANK == 0){
+    cerr << " Done" << endl;
   }
   
   return 0;
@@ -336,6 +366,9 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
 //store everything in the simulation and recompute triangulation and physics
 int AMUSE_SimpleX::reinitialize(){
 
+  if(COMM_RANK == 0){
+    cerr << "AMUSE_SimpleX: recomputing triangulation...";
+  }
    //make sure that the vectors that will be filled are empty 
     site_intensities.clear();
     intens_ids.clear();
@@ -348,7 +381,7 @@ int AMUSE_SimpleX::reinitialize(){
     store_intensities();
 
     //in this case, also store the ballistic intensities
-    vector< unsigned long long int > sites_to_store = get_ballistic_sites_to_store();
+    vector< unsigned long int > sites_to_store = get_ballistic_sites_to_store();
 
     store_ballistic_intensities( sites_to_store );
     sites_to_store.clear();
@@ -375,18 +408,17 @@ int AMUSE_SimpleX::reinitialize(){
     //send the list to master proc
     send_new_vertex_list();
  
-    if( COMM_RANK == 0 ){
-      cerr << " (" << COMM_RANK << ") Computing triangulation" << endl;
-    }
+    // if( COMM_RANK == 0 ){
+    //   cerr << " (" << COMM_RANK << ") Computing triangulation" << endl;
+    // }
      
     if(COMM_RANK == 0){
 
       //set boundary around unity domain
-      if(periodic){
-	      create_periodic_boundary();
-      }else{
-      	create_boundary();
-      }
+      create_boundary();
+      
+      // Sort the vertices
+      sort( vertices.begin(), vertices.end(), compare_vertex_id_vertex );
 
       //create octree
       create_vertex_tree();
@@ -406,9 +438,20 @@ int AMUSE_SimpleX::reinitialize(){
 
     //now that all procs have a list of vertices, create octree
     if( COMM_RANK != 0 ){
+      // Sort the vertices
+      sort( vertices.begin(), vertices.end(), compare_vertex_id_vertex );
+
+      // Create the tree
       create_vertex_tree();
     }
 
+    //check if vertices have moved to different process and send the
+    //info accordingly
+    if(COMM_SIZE > 1){
+      send_site_physics();  
+      send_site_intensities();
+    }
+        
     //compute the triangulation
     compute_triangulation();
 
@@ -426,6 +469,10 @@ int AMUSE_SimpleX::reinitialize(){
     compute_physics( 1 );
     
     remove_border_simplices();
+  
+    if(COMM_RANK == 0){
+      cerr << " Done" << endl;
+    }
     
   syncflag=0;
   return 0;
@@ -433,7 +480,7 @@ int AMUSE_SimpleX::reinitialize(){
 
 //return properties of specified site
 int AMUSE_SimpleX::get_site(int id, double *x,double *y,double *z,double *rho,
-                                              double *flux,double *xion){
+                                              double *flux,double *xion, double *uInt){
    SITE_ITERATOR p;
    Site tmp;
    
@@ -446,8 +493,16 @@ int AMUSE_SimpleX::get_site(int id, double *x,double *y,double *z,double *rho,
        *z=p->get_z();
        double tmp = (double) p->get_n_HI() + (double) p->get_n_HII();
        *rho = tmp;
-       *flux = p->get_flux();
+       double totalFlux = 0.0;
+       if( p->get_source() ){
+         for(short int f=0; f<numFreq;f++){
+           totalFlux += p->get_flux(f);
+         }
+       }
+       *flux = totalFlux;
        *xion = (double) p->get_n_HII()/tmp;
+       *uInt = p->get_internalEnergy();
+       
        return 1;
      }
    }
@@ -494,7 +549,13 @@ int AMUSE_SimpleX::get_flux(int id, double *flux){
     p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
     if(p->get_vertex_id() == (unsigned long long int)id){
         if (p->get_process() == COMM_RANK){
-            *flux = p->get_flux();
+          double totalFlux = 0.0;
+          if( p->get_source() ){
+            for(short int f=0; f<numFreq;f++){
+              totalFlux += p->get_flux(f);
+            }
+          }
+          *flux = totalFlux;
             return 1;
         }
     }
@@ -515,9 +576,47 @@ int AMUSE_SimpleX::get_ionisation(int id, double *xion){
     return 0;
 }
 
+int AMUSE_SimpleX::get_internalEnergy(int id, double *uInt){
+
+  SITE_ITERATOR p;
+  Site tmp;
+
+  tmp.set_vertex_id((unsigned long long) id);
+  p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+  if(p->get_vertex_id() == (unsigned long long int)id){
+    if (p->get_process() == COMM_RANK){
+      *uInt = p->get_internalEnergy();
+      return 1;
+
+    }
+  }
+  return 0;
+
+  
+}
+
+int AMUSE_SimpleX::get_dinternalEnergydt(int id, double *uInt){
+
+  SITE_ITERATOR p;
+  Site tmp;
+
+  tmp.set_vertex_id((unsigned long long) id);
+  p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+  if(p->get_vertex_id() == (unsigned long long int)id){
+    if (p->get_process() == COMM_RANK){
+      *uInt = p->get_dinternalEnergydt();
+      return 1;
+
+    }
+  }
+  return 0;
+
+  
+}
+
 //set properties of specified site
 int AMUSE_SimpleX::set_site(int id, double x, double y, double z, double rho,
-                                              double flux, double xion){
+                                              double flux, double xion, double uInt){
     SITE_ITERATOR p;
     Site tmp;
     
@@ -527,9 +626,19 @@ int AMUSE_SimpleX::set_site(int id, double x, double y, double z, double rho,
         p->set_x(x);
         p->set_y(y);
         p->set_z(z);
-        p->set_flux(flux);
+        //set number of ionising photons
+        if(flux > 0.0){
+          if(p->get_source()==0) p->create_flux(numFreq);
+          p->set_source(1);
+          p->set_flux( 0, flux );
+        }else{
+          if(p->get_source()==1) p->delete_flux();
+          p->set_source(0);
+        }
         p->set_n_HI((1-xion)*rho);
         p->set_n_HII(xion*rho);
+	p->set_internalEnergy( uInt );
+        
         return 1;
     }
     return 0;
@@ -572,7 +681,14 @@ int AMUSE_SimpleX::set_flux(int id, double flux){
     tmp.set_vertex_id((unsigned long long) id);
     p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
     if(p->get_vertex_id() == (unsigned long long int)id){
-        p->set_flux(flux);
+        if(flux > 0.0){
+          if(p->get_source()==0) p->create_flux(numFreq);
+          p->set_source(1);
+          p->set_flux( 0, flux );
+        }else{
+          if(p->get_source()==1) p->delete_flux();
+          p->set_source(0);
+        }
         return 1;
     }
     return 0;
@@ -591,6 +707,33 @@ int AMUSE_SimpleX::set_ionisation(int id, double xion){
     }
     return 0;
 }
+
+int AMUSE_SimpleX::set_internalEnergy(int id, double uInt){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+      p->set_internalEnergy( uInt );
+      return 1;
+    }
+    return 0;
+}
+
+int AMUSE_SimpleX::set_dinternalEnergydt(int id, double uInt){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+      p->set_dinternalEnergydt( uInt );
+      return 1;
+    }
+    return 0;
+}
+
 
 //relevant global parameters for run
 AMUSE_SimpleX *SimpleXGrid;
@@ -618,7 +761,7 @@ int recommit_particles() {
 }
 
 int new_particle(int *id, double x,double y,double z,double rho,
-                                        double flux,double xion){
+                                        double flux,double xion, double uInt){
     long tmp_id;
     double bs;
     
@@ -627,16 +770,19 @@ int new_particle(int *id, double x,double y,double z,double rho,
     x=(x/bs)+0.5;y=y/bs+0.5;z=z/bs+0.5;
     if (x<0 || x>1 || 
         y<0 || y>1 ||
-        z<0 || z>1 ) return -3;
-    
+        z<0 || z>1 ) 
+        {
+	  cerr<<"fip:"<<bs<<" "<<x<<" "<<" "<<y<<" "<<z<<std::endl;
+	  return -3;
+        }
     if((*SimpleXGrid).get_syncflag() == 0)
         return -1;
     *id = lastid++;
     tmp_id = *id;
     if((*SimpleXGrid).get_syncflag() == -1)
-        return (*SimpleXGrid).add_vertex(&tmp_id, x, y, z, rho, flux, xion);
+        return (*SimpleXGrid).add_vertex(&tmp_id, x, y, z, rho, flux, xion, uInt);
     if((*SimpleXGrid).get_syncflag() == 1)
-        return (*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion);
+        return (*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion, uInt);
     return -1;
 }
 
@@ -656,24 +802,39 @@ int evolve_model(double t_target) {
  return (*SimpleXGrid).evolve(t_target, 1);
 }
 
+int get_time(double *t){
+    return (*SimpleXGrid).get_time(t);
+}
+
+int set_time(double t){
+    return (*SimpleXGrid).set_time(t);
+}
+
 int get_state(int id, double *x, double *y, double *z, double *rho,
-                                           double *flux, double *xion){
-    double fx=0.0, fy=0.0, fz=0.0, frho=0.0, fflux=0.0, fxion=0.0;
-    double send[6], recv[6];
+                                           double *flux, double *xion, double *uInt){
+    double fx=0.0, fy=0.0, fz=0.0, frho=0.0, fflux=0.0, fxion=0.0, fuInt=0.0;
+    double send[7], recv[7];
     int ret, totalret=0;
     double bs;
     
     (*SimpleXGrid).get_sizeBox(&bs);
     if(bs==0) return -2;  
     
-    ret=(*SimpleXGrid).get_site(id, &fx, &fy, &fz, &frho, &fflux, &fxion);
+    ret=(*SimpleXGrid).get_site(id, &fx, &fy, &fz, &frho, &fflux, &fxion, &fuInt);
     MPI::COMM_WORLD.Reduce(&ret,&totalret,1,MPI::INT,MPI::SUM,0); 
-    send[0]=fx;send[1]=fy;send[2]=fz;send[3]=frho;send[4]=fflux;send[5]=fxion;
-    MPI::COMM_WORLD.Reduce(&send[0],&recv[0],6,MPI::DOUBLE,MPI::SUM,0); 
+    send[0]=fx;send[1]=fy;send[2]=fz;send[3]=frho;send[4]=fflux;send[5]=fxion;send[6]=fuInt;
+    MPI::COMM_WORLD.Reduce(&send[0],&recv[0],7,MPI::DOUBLE,MPI::SUM,0); 
     MPI::COMM_WORLD.Barrier();
-    fx=recv[0];fy=recv[1];fz=recv[2];frho=recv[3];fflux=recv[4];fxion=recv[5];
-    *x=(fx-0.5)*bs;*y=(fy-0.5)*bs;*z=(fz-0.5)*bs;*rho=frho;*flux=fflux;*xion=fxion;
-    
+    fx=recv[0];fy=recv[1];fz=recv[2];
+    frho=recv[3];
+    fflux=recv[4];
+    fxion=recv[5];
+    fuInt=recv[6];
+    *x=(fx-0.5)*bs;*y=(fy-0.5)*bs;*z=(fz-0.5)*bs;
+    *rho=frho;
+    *flux=fflux;
+    *xion=fxion;
+    *uInt=fuInt;
     return totalret-1;
 }
 
@@ -741,19 +902,48 @@ int get_ionisation(int id, double *xion){
     return totalret-1;
 }
 
+int get_internal_energy(int id, double *uInt){
+  double fuInt=0.0;
+  double send, recv;
+  int ret, totalret;
+  
+  ret = (*SimpleXGrid).get_internalEnergy(id, &fuInt);
+  MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+  send = fuInt;
+  MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
+  MPI::COMM_WORLD.Barrier();
+  *uInt= recv;
+  return totalret-1;
+}
+
+int get_dinternal_energy_dt(int id, double *dudt){
+  double fdudt=0.0;
+  double send, recv;
+  int ret, totalret;
+  
+  ret = (*SimpleXGrid).get_dinternalEnergydt(id, &fdudt);
+  MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+  send = fdudt;
+  MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
+  MPI::COMM_WORLD.Barrier();
+  *dudt= recv;
+  return totalret-1;
+}
+
+
 int set_state(int id, double x, double y, double z, double rho,
-                                           double flux, double xion){
+                                           double flux, double xion, double uInt){
     int ret,totalret;
     double bs;
     
     (*SimpleXGrid).get_sizeBox(&bs);
     if(bs==0) return -2;
-    x=x/bs+0.5;y=y/bs+0.5;z=z/bs+0.5;
+    x=(x/bs)+0.5;y=y/bs+0.5;z=z/bs+0.5;
     if (x<0 || x>1 || 
         y<0 || y>1 ||
         z<0 || z>1 ) return -3;
           
-    ret = (*SimpleXGrid).set_site(id, x, y, z, rho, flux, xion);
+    ret = (*SimpleXGrid).set_site(id, x, y, z, rho, flux, xion, uInt);
     MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
     MPI::COMM_WORLD.Barrier();
     return totalret-1;
@@ -765,7 +955,7 @@ int set_position(int id, double x, double y, double z){
     
     (*SimpleXGrid).get_sizeBox(&bs);    
     if(bs==0) return -2;
-    x=x/bs+0.5;y=y/bs+0.5;z=z/bs+0.5;
+    x=(x/bs)+0.5;y=y/bs+0.5;z=z/bs+0.5;
     if (x<0 || x>1 || 
         y<0 || y>1 ||
         z<0 || z>1 ) return -3;
@@ -803,34 +993,105 @@ int set_ionisation(int id, double xion){
     return totalret-1;
 }
 
+int set_internal_energy(int id, double uInt){
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).set_internalEnergy(id, uInt);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    return totalret-1;
+}
+
+int set_dinternal_energy_dt(int id, double dut){
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).set_dinternalEnergydt(id, dut);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    return totalret-1;
+}
+
+
 int cleanup_code(void){
  (*SimpleXGrid).clear_temporary();
  return 0;
 }
 
-int set_box_size_parameter(double bs){
+int set_box_size(double bs){
   return (*SimpleXGrid).set_sizeBox(bs);
 }
 
-int get_box_size_parameter(double *bs){
+int get_box_size(double *bs){
   return (*SimpleXGrid).get_sizeBox(bs);
 }
 
-int set_timestep_parameter(double ts){
+int set_timestep(double ts){
   return (*SimpleXGrid).set_UNIT_T(ts);
 }
 
-int get_timestep_parameter(double *ts){
+int get_timestep(double *ts){
   return (*SimpleXGrid).get_UNIT_T(ts);
 }
 
-int set_hilbert_order_parameter(int ho){
+int set_hilbert_order(int ho){
   return (*SimpleXGrid).set_hilbert_order(ho);
 }
 
-int get_hilbert_order_parameter(int *ho){
+int get_hilbert_order(int *ho){
   return (*SimpleXGrid).get_hilbert_order(ho);
 }
+
+
+int set_number_frequency_bins(int ts){
+  return (*SimpleXGrid).set_numFreq(ts);
+}
+
+int get_number_frequency_bins(int *ts){
+  return (*SimpleXGrid).get_numFreq(ts);
+}
+
+int set_thermal_evolution(int ts){
+  return (*SimpleXGrid).set_heat_cool(ts);
+}
+
+int get_thermal_evolution(int *ts){
+  return (*SimpleXGrid).get_heat_cool(ts);
+}
+
+int set_metal_cooling(int ts){
+  return (*SimpleXGrid).set_metal_cooling(ts);
+}
+
+int get_metal_cooling(int *ts){
+  return (*SimpleXGrid).get_metal_cooling(ts);
+}
+
+
+int set_source_Teff(double ts){
+  return (*SimpleXGrid).set_sourceTeff(ts);
+}
+
+int get_source_Teff(double *ts){
+  return (*SimpleXGrid).get_sourceTeff(ts);
+}
+
+int set_collisional_ionization(int ts){
+  return (*SimpleXGrid).set_coll_ion(ts);
+}
+
+int get_collisional_ionization(int *ts){
+  return (*SimpleXGrid).get_coll_ion(ts);
+}
+
+int set_blackbody_spectrum(int ts){
+  return (*SimpleXGrid).set_blackBody(ts);
+}
+
+int get_blackbody_spectrum(int *ts){
+  return (*SimpleXGrid).get_blackBody(ts);
+}
+
+
 
 
 int commit_parameters(){

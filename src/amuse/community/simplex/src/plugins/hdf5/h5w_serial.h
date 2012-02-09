@@ -35,9 +35,10 @@ class h5w{
     h5w(char fname[]);
     h5w(char fname[],char mode);
 
-    void open(char fname[]); 
+    void open(char fname[]);
+    void open(char fname[], const char mode); 
     void close(void); 
-    void make_dataset(const char *name, const char *type, int rank, int *dims);  // makes a dataset on atomic data
+    void make_dataset(const char *name, const char *type, int rank, unsigned long long int *dims);  // makes a dataset on atomic data
     void make_group(const char *name);                        // makes a group with absolute pathname "name"
     void make_group(const char *name, int size_hint);         // makes a group with absolute pathname "name"
 
@@ -53,28 +54,30 @@ class h5w{
 
     /* Warning! Reading and writing of data is done through the arr_1D container class! */
     template<typename T> void write_data(const char *dataset_path, unsigned long long int *offset, arr_1D<T>* data);
-    template<typename T> void read_data(const char *dataset_path, int *offset, arr_1D<T>* data);
+    template<typename T> void read_data(const char *dataset_path, unsigned long long int *offset, arr_1D<T>* data);
+
+    unsigned long long int getArraySize(const char* datasetPath);
 
     string get_data_type(char *dataset_name);
     // this routine calls a set of dummy routines and will read any type of numberic data to a
     // double container
-    void read_data_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
+    void read_data_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
 
   
   private:
 
     // wrapper routines for reading any type of numeric data to a double type container
-    void read_int_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_uint_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_long_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_llong_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_ulong_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_ullong_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_float_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_short_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_ushort_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_char_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
-    void read_uchar_as_double(char *dataset_name, int *offset, arr_1D<double>* dbl_arr);
+    void read_int_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_uint_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_long_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_llong_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_ulong_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_ullong_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_float_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_short_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_ushort_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_char_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
+    void read_uchar_as_double(char *dataset_name, unsigned long long int *offset, arr_1D<double>* dbl_arr);
 
     hid_t file;
     char filename[250];
@@ -252,9 +255,10 @@ template<typename T> void h5w::read_attr(const char *dataset_name, const char *a
     }
   if (H5Tequal(datatype_in, attr_datatype) <= 0)   // compare datatypes 
     {
-      cout << "Type of variable passed not the same as type of data to be read in attribute: " << attr_name << endl;
-      cout << "Exiting!" << endl;
-      exit(-1);
+      // cerr << "Type of variable passed not the same as type of data to be read in attribute: " << attr_name << endl;
+      // cerr << " Datatype in: " << datatype_in << " datatype of attribute: " << attr_datatype << endl;
+      // cerr << "Exiting!" << endl;
+      // exit(-1);
     }
  
 
@@ -318,8 +322,9 @@ template<typename T> void h5w::read_attr(const char *dataset_name, const char *a
     }
   if (H5Tequal(datatype_in, attr_datatype) <= 0)   // compare datatypes 
     {
-      cout << "Type of variable passed not the same as type of data to be read in attribute: " << attr_name << endl;
-      cout << "Exiting!" << endl;
+      cerr << "Type of variable passed not the same as type of data to be read in attribute: " << attr_name << endl;
+      cerr << " Datatype in: " << datatype_in << " datatype of attribute: " << attr_datatype << endl;
+      cerr << "Exiting!" << endl;
       exit(-1);
     }
   
@@ -372,12 +377,12 @@ template<typename T> void h5w::write_data(const char *dataset_path, unsigned lon
 
   // general
   herr_t status;
-  int i;
+  unsigned long long int i;
  
   // variables of the set already in file
   hid_t dataspace, datatype, dataset;
   hsize_t *dim, *wr_count, *wr_offset;
-  int rank;
+  unsigned long long int rank;
   
   // dataspace and other variables for data to be written
   hid_t chunk_dataspace, chunk_datatype;
@@ -400,7 +405,7 @@ template<typename T> void h5w::write_data(const char *dataset_path, unsigned lon
   
   if (rank < data->get_rank())
     {
-      cout << "write_data(): Rank of dataset smaller than rank of input data for dataset: " << dataset_path << endl;
+      cout << "h5w::write_data(): Rank of dataset smaller than rank of input data for dataset: " << dataset_path << endl;
       cout << "Exiting!" << endl;
       exit(-1);
     }
@@ -408,9 +413,9 @@ template<typename T> void h5w::write_data(const char *dataset_path, unsigned lon
   status = H5Sget_simple_extent_dims(dataspace, dim, NULL);
  
   for (i=0; i<rank; i++)
-    if ( (int) dim[i] < data->get_dims()[i])
+    if ( dim[i] < data->get_dims()[i])
       {
-        cout << "write_data(): Size of input data chunk larger than the size of dataset along one or more dimensions" << endl;
+        cout << "h5w::write_data(): Size of input data chunk larger than the size of dataset along one or more dimensions for dataset: " << dataset_path << endl;
         cout << i << " " << dim[i] << " " << data->get_dims()[i] << endl;
         cout << "Exiting!" << endl;
         exit(-1);
@@ -492,7 +497,7 @@ template<typename T> void h5w::write_data(const char *dataset_path, unsigned lon
 /*
   Read data chunk from a chosen dataset
  */
-template<typename T> void h5w::read_data(const char *dataset_path, int *offset, arr_1D<T>* data)
+template<typename T> void h5w::read_data(const char *dataset_path, unsigned long long int *offset, arr_1D<T>* data)
 {
 /*
   dataset_path - absolute path of the dataset to which to write to
@@ -503,12 +508,12 @@ template<typename T> void h5w::read_data(const char *dataset_path, int *offset, 
 
   // general
   herr_t status;
-  int i;
+  unsigned long long int i;
  
   // variables of the set already in file
   hid_t dataspace, datatype, dataset;
   hsize_t *dim, *wr_count, *wr_offset;
-  int rank;
+  unsigned long long int rank;
   
   // dataspace and other variables for data to be written
   hid_t chunk_dataspace, chunk_datatype;
@@ -524,9 +529,9 @@ template<typename T> void h5w::read_data(const char *dataset_path, int *offset, 
   
   if (H5Tequal(datatype, chunk_datatype) <= 0)   // compare datatypes
     {
-      cout << "Wrong input datatype for writing to dataset: " << dataset_path << endl;
-      cout << "Exiting!" << endl;
-      exit(-1);
+      // cout << "read_data(): Wrong input datatype for reading dataset: " << dataset_path << " expected " << datatype << " instead of "<< chunk_datatype << endl;
+      // cout << "Exiting!" << endl;
+      // exit(-1);
     }
   
   
@@ -540,9 +545,10 @@ template<typename T> void h5w::read_data(const char *dataset_path, int *offset, 
   status = H5Sget_simple_extent_dims(dataspace, dim, NULL);
  
   for (i=0; i<rank; i++)
-    if ( (int) dim[i] < data->get_dims()[i])
+    if ( (unsigned long long int) dim[i] < data->get_dims()[i])
       {
         cout << "read_data(): Size of input data chunk larger than the size of dataset along one or more dimensions" << endl;
+        cout << dataset_path << endl;
         cout << i << " " << dim[i] << " " << data->get_dims()[i] << endl;
         cout << "Exiting!" << endl;
         exit(-1);

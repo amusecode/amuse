@@ -1,31 +1,32 @@
 /*************************************************************************
-file:         SimpleX.h
-author:       Jan-Pieter Paardekooper
-mail:         jppaarde@strw.leidenuniv.nl
-version:      0.1
-last change:  04.04.2008
----------------------------------------------------------------------
+
 description:
 This file contains the class that can do the actual radiative transport, 
 including routines for grid calculation, physics and the actual transport
-**************************************************************************/
-/*
- * Date: Name
- * Put additional comments here
- *
- * 04.04.08 Jan-Pieter Paardekooper
- * Put comments suitable for doxygen in the relevant places
- *
-*/
 
-/***** TO DO *****
- *
- *
- *****************/
+Copyright Jan-Pieter Paardekooper and Chael Kruip October 2011
+
+This file is part of SimpleX.
+
+SimpleX is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SimpleX is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
+
+**************************************************************************/
 
 #ifndef SIMPLEX_H
 #define SIMPLEX_H
 
+#include "rates.h"
 #include "Common.h"
 #include "Structs.h"
 #include "mpi.h"
@@ -40,11 +41,8 @@ including routines for grid calculation, physics and the actual transport
 #include "tree_structures.h" //octree
 #include "hilbert.h"         //hilbert curve
 
-#ifdef HDF5_PARALLEL
-  #include "h5w_parallel.h"          //hdf5 header
-#else
-  #include "h5w_serial.h"          //hdf5 header
-#endif
+#include "h5w_serial.h"      //hdf5 header
+
 
 #include <algorithm>
 
@@ -92,6 +90,11 @@ class SimpleX{
     void init_triangulation(char* inputName);
 
 
+    //TEST
+    void reinit_triangulation();
+    //END TEST
+
+
     //! Read in parameter file
     void read_parameters( char* inputName );
 
@@ -103,10 +106,8 @@ class SimpleX{
     //! Points are placed using the gsl randoom number generator
     void poisson_square();
 
-
     //! Read in hdf5 file with site information
     void read_vertex_list();
-
   
     //! Create boundary around computational domain
 
@@ -115,18 +116,11 @@ class SimpleX{
     void create_boundary();
 
 
-    //! Create periodic boundary around computational domain
-
-    //! Width of the boundary is variable borderBox. 
-    void create_periodic_boundary();
-
-
     //!Create octree containing all vertices
 
     //!Size of the tree depends on the number of subboxes used, which
     //!is determined by the hilbert order m
     void create_vertex_tree();
-
 
     //! Decompose the domain
 
@@ -137,9 +131,8 @@ class SimpleX{
     //! Assign the correct process to vertices
     void assign_process();
 
-    //! Check if vertex is in this domain
+    //! Check if site is in unit domain
     bool inDomain(const float& x, const float& y, const float& z, const unsigned int& rank);
-    //bool inDomain(float x, float y, float z, unsigned int rank);
 
     //! Compute the triangulation
 
@@ -151,15 +144,11 @@ class SimpleX{
     //! to avoid memory issues when this number would be increased
     void compute_triangulation();
 
-
     //! Create the sites array on which radiative transfer is performed
 
     //! From the list of simplices the vertices relevant for this proc are selected and
     //! put in the sites vector
     void create_sites();
-
-    //! Remove the sites in the periodic boundary
-    void remove_periodic_sites();
 
     //! Give each site an id corresponding to place in local sites vector
     void assign_site_ids();
@@ -168,7 +157,6 @@ class SimpleX{
     //! should use direction conserving transport at the start of the
     //! simulation. 
     void initiate_ballistic_sites();
-
 
     //! Shuffle list of sites
 
@@ -179,13 +167,11 @@ class SimpleX{
 
   //================ Site Properties Functions ==================================//
 
-
     //! Compute properties of the sites from the triangulation
 
     //! Important properties like the neighbours, the volumes and 
     //! the most straight paths are computed
     void compute_site_properties();
-
 
     //! Compute the neighbours of vertex
 
@@ -201,12 +187,6 @@ class SimpleX{
     //! Use the volumes of the simplices that the vertex is part of to compute
     //! the volume of the Voronoi cell around the vertex
     void compute_volumes();
-
-    //! Remove the simplices that are periodic
-    void remove_periodic_simplices();
-    
-    //! Periodic sites that are shared over processes are to be kept for communication
-    void set_periodic_sites_to_send();
 
 
     //! Calculate the most straight paths for every incoming direction
@@ -229,8 +209,6 @@ class SimpleX{
     //! Calculate mean distance to neighbours
     void calculate_line_lengths();
 
-    //! Remove oeriodic sites in case of periodic boundary conditions
-    void remove_periodic_sites_2();
 
     //! Create list without border simplicesc
     void remove_border_simplices();
@@ -242,18 +220,17 @@ class SimpleX{
     //! to avoid preferential directions
     void rotate_solid_angles();
 
-
-    //calculate normal distributed random numbers
+    //! calculate normal distributed random numbers using the Box-Muller transformation
     void randGauss( float& y1, float& y2 );
 
     //! Store the intensities for use in later run, directions are kept.
     void store_intensities();
 
     //! Get the ballistic sites that have intensity to be stored
-    const vector< unsigned long long int > get_ballistic_sites_to_store();
+    const vector< unsigned long int > get_ballistic_sites_to_store();
 
     //! Store ballistic intensities in unit sphere tesselation
-    void store_ballistic_intensities( const vector< unsigned long long int >& sites_to_store );
+    void store_ballistic_intensities( const vector< unsigned long int >& sites_to_store );
 
     //! Return the intensities from the previous run
     void return_intensities();
@@ -267,33 +244,11 @@ class SimpleX{
     //! Only used is case of combined transport
     void check_ballistic_sites();
 
-    //! Calculate new grid according to new conditions in simulation
-    bool grid_dynamics();
-
-    //! Calculate which points are allowed to be removed due to change in optical depth
-    unsigned int mark_sites_for_removal();
-
-    //! send sites that can be removed to master processor
-    void send_sites_marked_for_removal();
-
-    //! calculate which points can be removed according to local Delaunay length
-    void get_sites_to_remove( const unsigned int& numSites_to_remove );
-
-    //! send the sites that are removed from master to all procs
-    void send_sites_to_remove();
-
-    //! redistribute the properties from removed sites to neighbours
-    void redistribute_site_properties();
-
     //! Create new sites array without the removed sites
     void store_site_properties();
 
-    //! Chael's routine to select vertices to delete
-    void select_vertices_for_deletion( const unsigned int& numSites_to_delete );
-
     //! Create updated vertex list from site_properties vector
     void create_new_vertex_list();
-
 
 
     //================ Send Routines ===================================//
@@ -319,16 +274,18 @@ class SimpleX{
     void send_neighbour_properties();
 
     //! Send teh updated ballistic sites to all procs
-    void send_site_ballistics( const vector< unsigned long long int >& sites_to_send );
+    void send_site_ballistics( const vector< unsigned long int >& sites_to_send );
 
      //! Send the intensities among procs
     void send_intensities();
 
-
     //! Send site physics to all procs
 
-    //! In case sites change from proc
+    //! In case sites change from proc send physics
     void send_site_physics();
+
+    //! In case sites change from proc send intensities
+    void send_site_intensities();
 
     //! Send stored intensities among procs
     void send_stored_intensities();
@@ -346,6 +303,8 @@ class SimpleX{
     //! Initialize physical parameters
     void initialise_physics_params();
 
+    //! Read metal line cooling data and initialize vectors
+    void read_metals();
 
     //! set homogeneous number density. 
 
@@ -361,6 +320,9 @@ class SimpleX{
     //! Give the updates sites their correct physical quantities from stored values
     void return_physics();
 
+    //! Calculate the bounds of the frequency bins
+    vector<double> calc_freq_bounds( const double& lowerBound, const double& upperBound );
+
     //! calculate effective cross section and spectrum of black body source
     void black_body_source( const double& tempSource );
 
@@ -373,33 +335,41 @@ class SimpleX{
     //! output relevant physical parameters to screen 
     void parameter_output( const unsigned int& run );
     
-    //! set source in centre of domain
-    void set_source_in_centre();
-  
-    //! create a more isotropic source
-
     //! Add more neighbours to vertices that have a flux, by adding the neighbours
     //! of neighbours.
     void make_source_isotropic();
 
-    //! calculate recombination coefficient
-    double recombCoeff( const double& tempGas );
     //! calculate recombination
     double recombine();
+
+    //! Rate of energy loss in cell
+    double cooling_rate( Site& site );
+
+    //! Rate of energy gain in cell
+    double heating_rate( const vector<double>& N_ion, const double& t_end );
+
+    //!Convert internal energy to temperature
+    double u_to_T( const double& u, const double& mu );
+
+    //!Convert temperature to internal energy
+    double T_to_u( const double& T, const double& mu );
+
+    //! update the temperature by including heating and cooling processes
+    double update_temperature( Site& site, const vector<double>& N_ion, const double& t_end );
 
  //================= Radiative Transfer Functions ======================//
     
     //! Solve the rate equation to determine ionisations and recombinations
-    double solve_rate_equation( Site& site );
+    vector<double> solve_rate_equation( Site& site );
 
-    //! Transport source photons
+    //! Send source photons
     void source_transport( Site& site );
 
-    //! Redistribute intensity to all neighbours
-    void diffuse_transport( Site& site, double& N_out_total );
+    //! Transport photons diffusely
+    void diffuse_transport( Site& site, vector<double>& N_out_total );
 
     //! Redistribute intensity: actual radiative transport
-    void ballistic_transport( Site& site, double& N_out_total );
+    void non_diffuse_transport( Site& site, vector<double>& N_out_total );
 
     //! Call to do radiative transfer
     void radiation_transport( const unsigned int& run );
@@ -407,31 +377,32 @@ class SimpleX{
   //================== Output Functions ================================//
 
 
-    void write_hdf5_output(char* name, const unsigned int& run);
-    
-    //! Write simplices file
-    void write_simplices(char* name);
-    //! Write point information to file
-    void write_data(char* name);
-
     //! Call the output routines
     void generate_output( const unsigned int& run );    
+
+    //! Write hdf5 output file
+    void write_hdf5_output(char* name, const unsigned int& run);
+    
+    //! calculate position of the I-Front for source in centre
+    double calc_IFront( const unsigned int& run );
+
+    //! calculate escape fraction
+    double calc_escape_fraction( const unsigned int& run, const unsigned int& times );
 
 
     //================ Generic Functions ==============================//
    
     //! clear all temporary structures for the next run
     void clear_temporary();
-
+    
+    //! Function to give diagnostic output about total number of photons in simulation
+    double count_photons();
 
     //! return number of runs
     const unsigned int& get_numRuns() const{ return numRuns; }
   
     //! Return number of outputs
     const unsigned int& get_numOutputs() const{ return numOutputs; }
-
-    //! Return whether updates are done 
-    const bool& get_updates() const{ return updates; }
 
     // ================ Public lists and variables ===================//
 
@@ -448,15 +419,15 @@ class SimpleX{
     vector< Site_Update > site_properties;
 
     //! List of entries in site_intensities array of every site
-    vector<unsigned long long int> intens_ids;
+    vector<unsigned long int> intens_ids;
     //! List of site intensities from previous run, that are still needed
     vector<float> site_intensities;
 
     //! List of indices of sites needed for transport along procs
-    vector< unsigned long long int > send_list;
+    vector< unsigned long int > send_list;
 
     //! List of site indices that might be removed
-    vector< unsigned long long int > sites_marked_for_removal;
+    vector< unsigned long int > sites_marked_for_removal;
     //! List of sites and properties to be updated
     vector< Site_Remove > total_sites_marked_for_removal;
 
@@ -468,99 +439,80 @@ class SimpleX{
     vector< float > temp_n_HII_list;
     //! Temporary list of fluxes that are read in
     vector< float > temp_flux_list;
+    //! Temporary list of internalEnergies that are read in
+    vector< float > temp_u_list;
+    //! Temporary list of dudt that are read in
+    vector< float > temp_dudt_list;
+    //! Temporary list of clumping factors that are read in
+    vector< float > temp_clumping_list;
+    //! Cross section of hydrogen
+    vector<double> cross_H;
+    //! The photon excess energy used to heat the gas
+    vector<double> photon_excess_energy;  
+    //! The elemental abundances of metals (and Helium)
+    vector<double> abundances;
+    //! Vector of cooling curves
+    vector< cooling_curve > curves;
+
     //! Variable used by random number generator
     gsl_rng * ran;
     //! Output to logfile
     ofstream simpleXlog; 
-
     
   protected:
 
-    short int dimension;           //!< Dimension of the simulation
-    short int fillChoice;          //!< Variables to decide which way the nuclei are filled
-    short int dust_model;          //!< Variable to decide which dust model to use 
-    unsigned long long int numSites;            //!< Total number of sites in the simulation
-    unsigned long long int origNumSites;        //!< Original number of sites
+    unsigned long int numSites;            //!< Total number of sites in the simulation
+    unsigned long int origNumSites;        //!< Original number of sites
     unsigned int borderSites;      //!< Number of sites in the boundary around computational domain
     unsigned int hilbert_order;    //!< Hilbert order that determines the number of subboxes
-    //  unsigned int inputResolution;  //!< Resolution of the input file
     unsigned int numSweeps;        //!< Number of grid sweeps during simulation
     unsigned int numRuns;          //!< Number of runs of the simulation
     unsigned int numOutputs;       //!< Number of outputs of the simulation
-    unsigned int minResolution;    //!< Minimum resolution of the grid, to stop updating
-    unsigned int nbins;            //!< Number of bins in update routine
     unsigned int numPixels;        //!< Number of pixels in HEALPix calculation
     unsigned int numStraight;      //!< Number of straight directions
-
-    unsigned int number_of_directions;   //!< Number of direction bins to be used in DCT
-    unsigned int number_of_orientations; //!< Number of orientations in the header file
-
     int randomSeed;                //!< Seed for random number generator
-    string inputDensityFile;       //!< File which holds densities and fluxes to be read in
-    bool periodic;                 //!< Periodic boundary conditions or not
-    bool blackBody;                //!< Black body spectrum for source or not
+    short dimension;               //!< Dimension of the simulation (default = 3)
+    string inputFileName;          //!< File which holds densities and fluxes to be read in
+    bool blackBody;                //!< Use blackbody for source spectrum?
     bool recombination;            //!< Include recombination or not
-
-    bool diffuseTransport;         //!< Set this to 1 to do only diffuse transport
+    bool coll_ion;                 //!< Include collisional ionisations?
+    bool heat_cool;                //!< Include heating and cooling?
+    bool metal_cooling;            //!< Include metal line cooling?
+    short int numFreq;             //!< Number of frequencies
+    short int freq_spacing;        //!< Spacing of the frequency bins
+    short RTmethod;                //!< Method for RT
+    bool diffuseTransport;       //!< Set this to 1 to do only ballistic transport
     bool ballisticTransport;       //!< Set this to 1 to do only ballistic transport
     bool dirConsTransport;         //!< Set this to 1 to do only direction conserving transport
     bool combinedTransport;        //!< Set this to 1 to do combined transport
-
-    bool updates;                  //!< Do dynamic updates of the grid or not?
     bool photon_conservation;      //!< Use temporal photon conservation scheme or not?
-
-    bool dust_sublimation;         //!< Dust sublimation or not?
-
+    double subcycle_frac;          //!< Fraction of the characteristic time scale at which subcycling is done
+    double sizeBox;                //!< Size of the box in parsec
     float borderBox;               //!< Size of boundary around computational domain
     float padding_subbox;          //!< Subbox boundary in which extra points are triangulated
-    float homDens;                 //!< Density in case of homogeneous, used with AUTOMATIC filling
-    double sizeBox;                //!< Size of the box in parsec
     double simTime;                //!< Total simulation time in Myr
     double time_conversion;        //!< Time conversion for output
     double sourceTeff;             //!< Effective temperature of the sources in K
     double gasIonTemp;             //!< Temperature of the ionised gas in K
+    double gasNeutralTemp;         //!< Temperature of the neutral gas in K
     double switchTau;              //!< Optical depth below which ballistic transport is no longer trusted
-    unsigned int numGridDyn;       //!< Number of grid dynamics during simulation
-
     double totalVolume;            //!< Total volume of all Voronoi cells added up
-    double cross_H;                  //!< Cross section of hydrogen
-    double cross_dust;             //!< Effective cross section of dust (if present)
-    double metallicity;            //!< Metallicityin solar units
-    double dust_to_gas_ratio;      //!< Dust to gas ratio
     double totalAtoms;             //!< Total number of atoms in the simulation domain
-    int maxRes;                    //!< Maximum resolution of simulation
-
+    int localMaxRes;               //!< Maximum resolution on the local processor
     unsigned int COMM_RANK;        //!< Rank of this proc
     unsigned int COMM_SIZE;        //!< Total number of procs
-
     unsigned int chunk_size;       //!< Maximum size of chunks written in one piece to hdf5 file
     unsigned int max_msg_to_send;  //!< Maximum number of messages to send in MPI call
-    unsigned long long int vertex_id_max;    //!< Maximum vertex index
-
-    unsigned int source_points;    //!< Number of points for source (only used in AUTOMATIC case)
-    float source_radius;          //!< Radius of source (only used in AUTOMATIC case)
-    float source_strength;        //!< Strength of the source, in case of AUTOMATIC filling
-    float source_x;               //!< x-position of the source
-    float source_y;               //!< y-position of the source
-    float source_z;               //!< z-position of the source
-
-    bool source_inside_cell;      //!< source is capable of ionsing own cell or not
-
+    unsigned long int vertex_id_max;    //!< Maximum vertex index
     short int orientation_index;      //!< Orientation of the unit sphere tesselation
     short int orientation_index_old;  //!< Orientation of the unit sphere tesselation in previous run
-
     float euler_phi;               //!< Euler angle phi for random rotation of coordinate system
     float euler_theta;             //!< Euler angle theta for random rotation of coordinate system
     float euler_psi;               //!< Euler angle psi for random rotation of coordinate system
-
-    unsigned int numSweeps_per_VVM; //!< Number of sweeps after which VVM is done
     bool heal_pix;                 //!< Use heal_pix for associating directions and neighbours or not?
     int num_ref_pix_HP;            //!< Number of pixels to use for associating neighbours in compute_solid_angles()
-    bool cyclic_check;
-
     float straightAngle;           //!< Maximum angle allowed between straight direction and Delaunay direction.
     bool straight_from_tess;       //!< In DCT, calculate straightest neighbours wrt Delaunay edge or direction bin?
-
     double UNIT_L;                 //!< Unit length in box
     double UNIT_M;                 //!< Unit mass in box, converts number density into number of atoms
     double UNIT_I;                 //!< Unit number of ionising photons in box
@@ -568,18 +520,14 @@ class SimpleX{
     double UNIT_T_MYR;             //!< Time of 1 sweep in Myr
     double UNIT_D;                 //!< Unit number density
     double UNIT_V;                 //!< Unit volume
- 
     float straight_correction_factor; //!< Correction factor to correct for the fact that no straight lines exist on the grid
     vertex_tree vert_tree;         //!< Octree that will contain the vertices
-
     bool give_IFront;                   //!< Calculate IFront position for a source in centre?
     ofstream IFront_output;        //!< Output of IFront data to file
-    bool give_escape_fraction;          //!< Calculate escape fraction?
-    ofstream f_esc_output;         //!< Output of escape fraction to file
-
     float*** orient;               //!< Array to hold the direction bins
     unsigned int*** maps;          //!< Array to hold the mappings between direction bins
-
+    unsigned int number_of_directions; //!< Number of discretizations of the unit sphere for DCT
+    unsigned int number_of_orientations;//!< Number of random rotations of the DCT discretization
 };
 
 #endif

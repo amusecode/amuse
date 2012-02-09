@@ -20,33 +20,33 @@ template<typename T> class arr_1D
 {
 public:
   arr_1D() {arr=NULL; rank=0; dims=NULL;};
-  arr_1D(int r, int *d);
+  arr_1D(unsigned long long int r, unsigned long long int *d);
   ~arr_1D();
   
   // initializes the object again, deleting previous data and shape
-  void reinit(int r, int *d);
+  void reinit(unsigned long long int r, unsigned long long int *d);
 
   // Indexing operators
-  T& operator() ( int i );
-  T& operator() ( int i, int j );
-  T& operator() ( int i, int j, int k );
+  T& operator() ( unsigned long long int i );
+  T& operator() ( unsigned long long int i, unsigned long long int j );
+  T& operator() ( unsigned long long int i, unsigned long long int j, unsigned long long int k );
   // add more for arrays with n>3
 
   T* get_arr() {return arr;};  // returns a pointer to the 1D array - pass this to HDF5 reading/writing routines
   char* get_dtype() {return type;};
-  int* get_dims() {return dims;};
-  int get_rank() {return rank;};
+  unsigned long long int* get_dims() {return dims;};
+  unsigned long long int get_rank() {return rank;};
   
 private:
   T *arr;
-  int *dims;
-  int rank;
+  unsigned long long int *dims;
+  unsigned long long int rank;
   char type[20];
   
 };
 
 // Constructor
-template <typename T> arr_1D<T>::arr_1D (int r, int *d)
+template <typename T> arr_1D<T>::arr_1D (unsigned long long int r, unsigned long long int *d)
 {
   int i;
   int tot_length;
@@ -81,17 +81,17 @@ template <typename T> arr_1D<T>::~arr_1D ()
 }
 
 // Reinitialize the instance...
-template <typename T> void arr_1D<T>::reinit (int r, int *d)
+template <typename T> void arr_1D<T>::reinit (unsigned long long int r, unsigned long long int *d)
 {
-  int i;
-  int tot_length;
+  unsigned long long int i;
+  unsigned long long int tot_length;
   
   rank = r;
   if (dims){
     delete [] dims;
     dims = NULL;
   }
-  dims = new int[rank];
+  dims = new unsigned long long int[rank];
   for (i=0; i<rank; i++)
     dims[i] = d[i];
   
@@ -112,12 +112,12 @@ template <typename T> void arr_1D<T>::reinit (int r, int *d)
 // Overloading () operator - one for every dimesnion of array...
 // 1D
 template <typename T>
-T& arr_1D<T>::operator() ( int i )
+T& arr_1D<T>::operator() ( unsigned long long int i )
 {
   if (rank == 1)
     {
       // check boundaries
-      assert(i>=0 && i<dims[0]);
+      assert(i<dims[0]);
       return arr[i];
     }
   else
@@ -129,12 +129,12 @@ T& arr_1D<T>::operator() ( int i )
 
 // 2D
 template <typename T>
-T& arr_1D<T>::operator() ( int i , int j)
+T& arr_1D<T>::operator() ( unsigned long long int i , unsigned long long int j)
 {
   if (rank == 2)
     {
-      assert(i>=0 && i<dims[0]);
-      assert(j>=0 && j<dims[1]);
+      assert(i<dims[0]);
+      assert(j<dims[1]);
 
       int count;
       
@@ -143,7 +143,7 @@ T& arr_1D<T>::operator() ( int i , int j)
     }
   else
     {
-      cout << "This array has " << rank << " dimenstions!" << endl;
+      cout << "This array has " << rank << " dimensions!" << endl;
       exit(-1);
     }
 
@@ -151,13 +151,13 @@ T& arr_1D<T>::operator() ( int i , int j)
 
 // 3D
 template <typename T>
-T& arr_1D<T>::operator() ( int i , int j, int k)
+T& arr_1D<T>::operator() ( unsigned long long int i , unsigned long long int j, unsigned long long int k)
 {
   if (rank == 3)
     {
-      assert(i>=0 && i<dims[0]);
-      assert(j>=0 && j<dims[1]);
-      assert(k>=0 && k<dims[2]);
+      assert(i<dims[0]);
+      assert(j<dims[1]);
+      assert(k<dims[2]);
 
       int count;
 
@@ -166,7 +166,7 @@ T& arr_1D<T>::operator() ( int i , int j, int k)
     }
   else
     {
-      cout << "This array has " << rank << " dimenstions!" << endl;
+      cout << "This array has " << rank << " dimensions!" << endl;
       exit(-1);
     }
 

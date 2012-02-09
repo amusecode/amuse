@@ -78,6 +78,75 @@ void Vertex::construct_datatype(){
 
 }
 
+//! constructor for cooling_curve object
+cooling_curve::~cooling_curve(){
+  
+  Cooling.clear();
+
+  return;
+}
+
+cooling_curve::cooling_curve(string fileName){
+
+  // Open file
+  ifstream ifs(fileName.c_str(),ifstream::in);
+  if(ifs.is_open()){
+
+    // Read first line (number of elements)
+    ifs >> elements;
+
+    // Temporary variables
+    double T,C;
+
+    // Fill vectors
+    while(ifs.good()){
+      ifs >> T >> C;
+      Temperature.push_back(T);
+      Cooling.push_back(C);
+    }
+    ifs.close();
+
+    // Last entry is repetition
+    Temperature.pop_back();
+    Cooling.pop_back();
+
+  } else {
+    
+    cerr << "Error reading file " << fileName << endl;
+  }
+
+  // Set the min/max and delta values
+  max = Temperature.back();
+  min = Temperature.front();
+  delta = max - min;
+
+  // Clear the temperature vector
+  Temperature.clear();
+
+  return;
+
+}
+
+double cooling_curve::get_value(double T){
+
+  double logT = log10(T);
+
+  if(logT>max)
+    return pow(10.0, Cooling.back());// return the last entry
+
+  if(logT<min)
+    return pow(10.0, Cooling.front());// return the first entry
+
+  double pos = ((logT-min)/delta)*double(elements-1);
+  int posInt = floor(pos);
+  double diff = pos - double(posInt);
+  double value = Cooling[posInt]*(1-diff)+diff*Cooling[posInt+1];
+  
+  return pow(10.0,value);
+
+}
+
+
 
 //! constructor for Simpl array
 Simpl::Simpl(){
@@ -99,10 +168,13 @@ Site::Site(){
     neigh_dist = 0.0;   
     n_HI = 0.0;
     n_HII = 0.0;
-    flux = 0.0; 
     ballistic = 1;
+    internalEnergy = 0.0;
+    dinternalEnergydt = 0.0;
+    clumping = 1.0;
+    source = 0;
 
-
+    flux = NULL; 
     neighId = NULL;
     intensityIn = NULL;
     intensityOut = NULL;
@@ -122,7 +194,9 @@ Site_Update::Site_Update(){
     site_id = 0;   
     n_HI = 0.0;   
     n_HII = 0.0; 
-    flux = 0.0;            
+    internalEnergy = 0.0;
+    dinternalEnergydt = 0.0;
+    //flux = 0.0;            
     ballistic = 0;
   
 }
@@ -145,28 +219,31 @@ Site& Site::operator=(const Site_Update& p2){
 
   vertex_id      = p2.vertex_id;
   site_id        = p2.site_id;
+  process        = p2.process;
   n_HI           = p2.n_HI;
   n_HII          = p2.n_HII;
-  flux           = p2.flux;
+  internalEnergy = p2.internalEnergy;
+  dinternalEnergydt = p2.dinternalEnergydt;
+  //flux         = p2.flux;
   ballistic      = (bool) p2.ballistic;
 
   return *this;
 
 }
 
-void Site::addRadiationDiffIn(const unsigned int& id, const double& intensity) {
+void Site::addRadiationDiffIn(const short int& f, const unsigned int& id, const double& intensity) {
 
-  double intensity_old = (double) intensityIn[id];
+  double intensity_old = (double) intensityIn[f][id];
   double intensity_new = intensity_old + intensity;
-  intensityIn[id] = (float) intensity_new;
+  intensityIn[f][id] = (float) intensity_new;
 
 }
 
-void Site::addRadiationDiffOut(const unsigned int& id, const double& intensity) {
+void Site::addRadiationDiffOut(const short int& f, const unsigned int& id, const double& intensity) {
 
-  double intensity_old = (double) intensityOut[id];
+  double intensity_old = (double) intensityOut[f][id];
   double intensity_new = intensity_old + intensity;
-  intensityOut[id] = (float) intensity_new;
+  intensityOut[f][id] = (float) intensity_new;
 
 }
 
@@ -182,15 +259,23 @@ Send_Intensity::Send_Intensity(){
 
 Site_Update& Site_Update::operator=(const Site& p2){
 
+  process        = p2.process;
   vertex_id      = p2.vertex_id;
   site_id        = p2.site_id;
   n_HI           = p2.n_HI;
   n_HII          = p2.n_HII;
-  flux           = p2.flux;
+  internalEnergy = p2.internalEnergy;
+  dinternalEnergydt = p2.dinternalEnergydt;
+  //flux           = p2.flux;
   ballistic      = (unsigned int) p2.ballistic;
 
   return *this;
 
+}
+
+//!compare Vertex class by vertex id for sort routine
+bool compare_vertex_id_vertex( const Vertex& x, const Vertex& y){
+  return x.get_vertex_id() < y.get_vertex_id();
 }
 
 bool compare_vertex_id_site(const Site& x, const Site& y){
@@ -216,6 +301,10 @@ bool compare_vertex_id_send_neigh(const Send_Neigh& x, const Send_Neigh& y){
 bool compare_process_send_intensity(const Send_Intensity& x, const Send_Intensity& y){
   return x.get_process() < y.get_process();
 }
+//overload < operator to use sort function
+bool compare_index_send_intensity(const Send_Intensity& x, const Send_Intensity& y){
+  return x.get_id() < y.get_id();
+}
 
 //overload < operator to use sort function
 bool compare_process_site_remove(const Site_Remove& x, const Site_Remove& y){
@@ -225,4 +314,9 @@ bool compare_process_site_remove(const Site_Remove& x, const Site_Remove& y){
 
 bool compare_vertex_id_site_update( const Site_Update& x, const Site_Update& y){
   return x.get_vertex_id() < y.get_vertex_id();
+}
+
+//overload < operator to use sort function
+bool compare_process_site_update( const Site_Update& x, const Site_Update& y){
+  return x.get_process() < y.get_process();
 }
