@@ -265,6 +265,21 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(len(particles), 3)
         self.assertAlmostRelativeEquals(particles.a,  [2,2,2])
         self.assertAlmostRelativeEquals(particles.b,  [1.0,1.0,1.0])
+    
+    def test20(self):
+        
+        particles = datamodel.Particles(3)
+        particles.a = [1.0, 2.0, 3,0]
+        self.assertEquals(particles[0].a, 1.0)
+        # should be able to set the attribute with a unitless array
+        # this code will be obsoleted when units.none is completely gone
+        particles.a = [4.0, 5.0, 6,0] | units.none 
+        self.assertEquals(particles[0].a, 4.0)
+        particles.b = [1, 2, 3] | units.none 
+        self.assertEquals(particles[0].b, 1 | units.none)
+        particles.b = [4, 5, 6]
+        self.assertEquals(particles[0].b, 4 | units.none)
+        
         
 class TestStars(amusetest.TestCase):
 

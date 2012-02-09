@@ -456,7 +456,7 @@ class VectorQuantity(Quantity):
             self._number.put(indices, vector.value_in(self.unit))
         except AttributeError:
             if not is_quantity(vector):
-                raise TypeError("Tried to put a non quantity value in a quantity")
+                raise ValueError("Tried to put a non quantity value in a quantity")
             else:
                 raise
 

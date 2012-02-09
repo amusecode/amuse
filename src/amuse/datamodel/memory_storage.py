@@ -116,9 +116,27 @@ class InMemoryAttributeStorage(AttributeStorage):
                     attribute_values = numpy.zeros(len(self.particle_keys), dtype = dtype)
                     
                 self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-                 
-            attribute_values.put(indices, values_to_set)
             
+            try:
+                attribute_values.put(indices, values_to_set)
+            except ValueError as ex:
+                # hack to set values between 
+                # with quanities with units.none
+                # and when values are stored without units
+                # need to be removed when units.none is completely gone
+                if is_quantity(values_to_set) and not is_quantity(attribute_values):
+                    if not values_to_set.unit.base:
+                        attribute_values.put(indices, values_to_set.value_in(units.none))
+                    else:
+                        raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
+                elif not is_quantity(values_to_set) and is_quantity(attribute_values):
+                    if not attribute_values.unit.base:
+                        attribute_values.put(indices, units.none.new_quantity(values_to_set))
+                    else:
+                        raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
+                else:
+                    raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
+                
     def has_key_in_store(self, key):
         return key in self.keys_set
         
