@@ -405,6 +405,7 @@ class TestMI6(TestWithMPI):
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         particles = self.new_sun_earth_system()
         particles.rotate(0.0, 0.0, -math.pi/4)
+        particles.move_to_center()
         
         tan_initial_direction = particles[1].vy/particles[1].vx
         self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))

@@ -70,6 +70,8 @@ class TestRocheLobeOverflow(TestWithMPI):
             self.assertEqual(star.mass, current_mass - d_mass)
             print current_mass, "MESA star succesfully recovered after ripping off", expected
             print "Number of backup steps taken by MESA:", star.get_number_of_backups_in_a_row()
+        
+        stellar_evolution.stop()
     
     def test2(self):
         print "Testing the RocheLobeOverflow class"
@@ -103,6 +105,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         self.assertEqual(rlof.overflow_radii, [100.0, 200.0] | units.RSun)
         self.assertRaises(AmuseException, rlof.set_roche_radii, [third], [30.0] | units.RSun, 
             expected_message="A particle (key: {0}) wasn't found.".format(third.key))
+        stellar_evolution.stop()
         
     
     def test3(self):
@@ -128,6 +131,7 @@ class TestRocheLobeOverflow(TestWithMPI):
             self.assertAlmostEqual(stellar_evolution.particles.mass, stars.mass - mass_lost)
             print stars.mass, "MESA stars succesfully recovered after ripping off", mass_lost
             print "Number of backup steps taken by MESA:", stellar_evolution.particles.get_number_of_backups_in_a_row()
+        stellar_evolution.stop()
     
     def test4(self):
         print "Testing RocheLobeOverflow with companions"
@@ -161,6 +165,7 @@ class TestRocheLobeOverflow(TestWithMPI):
             print primaries.mass, "MESA stars succesfully recovered after ripping off", mass_lost
             print companions.mass, "MESA stars succesfully recovered after accreting", mass_lost * accretion_efficiency
             print "Number of backup steps taken by MESA:", stellar_evolution.particles.get_number_of_backups_in_a_row()
+        stellar_evolution.stop()
     
     def test5(self):
         print "Testing RocheLobeOverflow with variable roche-radii"
@@ -205,6 +210,7 @@ class TestRocheLobeOverflow(TestWithMPI):
             self.assertAlmostEqual(se_stars.mass, stars.mass - mass_lost - mass_lost_2)
             print stars.mass, "MESA stars succesfully recovered after ripping off", mass_lost + mass_lost_2
             print "Number of backup steps taken by MESA:", [star.get_number_of_backups_in_a_row() for star in se_stars]
+        stellar_evolution.stop()
     
     def test6(self):
         print "Testing RocheLobeOverflow with companions in a dynamics code"
@@ -261,6 +267,8 @@ class TestRocheLobeOverflow(TestWithMPI):
         self.assertAlmostEqual(rlof.overflow_radii, Eggleton_roche_estimate * separations)
         mass_lost = rlof.do_roche_lobe_overflow()
         self.assertAlmostEqual(mass_lost, [0.00004012, 0.0] | units.MSun)
+        stellar_evolution.stop()
+        dynamics.stop()
 
 
 def mass_profile_plot(star, figname):
