@@ -251,7 +251,7 @@ def system_from_particles(base_class, kwargs, particles, eps=None):
     interface.commit_particles()
     return interface
 
-class TestBridge(amusetest.TestWithMPI):
+class TestBridge(amusetest.TestCase):
     
     def test1(self):
         print "Bridge potential energy with code's epsilon_squared as softening length"
