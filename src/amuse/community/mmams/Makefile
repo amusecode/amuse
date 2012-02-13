@@ -14,10 +14,11 @@ MMAS_DIR  = src/mmas2/src/mmas
 EOS_DIR   = src/mmas2/src/eos
 USM_DIR   = src/mmas2/src/usm
 STD_SRCMMAS_DIRDIR   = src/mmas2/src/std
+GSL_LIBS ?= -lgsl -lgslcblas -lm
 
 #INCLUDES = -I/opt/local/include -Isrc/mmas2/src
-INCLUDES = -Isrc/mmas2/src
-LIBS = $(GSLFLAGS) -lgsl -lgslcblas \
+INCLUDES = $(GSL_FLAGS)  -Isrc/mmas2/src
+LIBS = $(GSL_LIBS) \
 	-L$(BUILDDIR)/src/mmas -l_mmas2 \
 	-L$(BUILDDIR)/src/eos -leos \
 	-L$(BUILDDIR)/src/usm -lusm \
