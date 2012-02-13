@@ -27,11 +27,16 @@ class GlobalOptions(object):
                 finally:
                     install_ini_file.close()
         
+        rootrc = os.path.join(self.amuse_rootdirectory, self.rcfilename)
+        homedirrc = os.path.join(self.homedirectory, '.' + self.rcfilename)
+        
+        self.config.read(rootrc)  
+         
         if not preloadfp is None:
             self.config.readfp(preloadfp, "<amuserc>")
             
-        if not self.rcfilepath is None:
-            self.config.read(self.rcfilepath)   
+        self.config.read(homedirrc)  
+        self.config.read(self.rcfilepath)
         
         
     @late
@@ -49,19 +54,7 @@ class GlobalOptions(object):
     
     @late
     def rcfilepath(self):
-        result = os.path.join(os.getcwd(), self.rcfilename)
-        if os.path.exists(result): 
-            return result
-        
-        result = os.path.join(self.homedirectory, '.' + self.rcfilename)
-        if os.path.exists(result): 
-            return result
-        
-        result = os.path.join(self.amuse_rootdirectory, self.rcfilename)
-        if os.path.exists(result): 
-            return result
-        else:
-            return None
+        return os.path.join(os.getcwd(), self.rcfilename)
     
     @late
     def rcfilename(self):

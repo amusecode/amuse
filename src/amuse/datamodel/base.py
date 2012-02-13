@@ -274,12 +274,13 @@ class CollectionAttributes(object):
     as a timestamp or a 
     """
     
-    def __init__(self, attributes = None):
+    def __init__(self, collection = None, attributes = None):
         if attributes is None:
             attributes = {}
         else:
             attributes = attributes.copy()    
         
+        object.__setattr__(self, '_collection', collection)
         object.__setattr__(self, '_attributes', attributes)
     
     def __getattr__(self, name):
@@ -331,7 +332,7 @@ class AbstractSet(object):
         object.__setattr__(self, "_derived_attributes", CompositeDictionary(derived_attributes))
         object.__setattr__(self, "_private", self.PrivateProperties())
         
-        #self._private.collection_attributes = CollectionAttributes(self)
+        self._private.collection_attributes = CollectionAttributes(self)
     
     
     def __getattr__(self, name_of_the_attribute):
