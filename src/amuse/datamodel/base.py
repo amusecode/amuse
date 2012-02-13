@@ -331,7 +331,7 @@ class AbstractSet(object):
         object.__setattr__(self, "_derived_attributes", CompositeDictionary(derived_attributes))
         object.__setattr__(self, "_private", self.PrivateProperties())
         
-        self._private.collection_attributes = CollectionAttributes(self)
+        #self._private.collection_attributes = CollectionAttributes(self)
     
     
     def __getattr__(self, name_of_the_attribute):
