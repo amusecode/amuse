@@ -40,7 +40,7 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('adaptb_output_directory', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
-        
+    
     @legacy_function
     def set_adaptb_output_directory():
         function = LegacyFunctionSpecification()
@@ -87,16 +87,27 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
             return self.new_particle_float64(mass, radius, x,y,z, vx,vy,vz)
 
     @legacy_function
-    def get_bs_tolerance():
+    def get_bs_tolerance_string():
         function = LegacyFunctionSpecification()
         function.addParameter('bs_tolerance', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
-
     @legacy_function
-    def set_bs_tolerance():
+    def set_bs_tolerance_string():
         function = LegacyFunctionSpecification()
         function.addParameter('bs_tolerance', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_bs_tolerance_float64():
+        function = LegacyFunctionSpecification()
+        function.addParameter('bs_tolerance', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_bs_tolerance_float64():
+        function = LegacyFunctionSpecification()
+        function.addParameter('bs_tolerance', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
@@ -106,7 +117,6 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('word_length', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
-
     @legacy_function
     def set_word_length():
         function = LegacyFunctionSpecification()
@@ -115,53 +125,32 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         return function
 
     @legacy_function
-    def get_eps2():
-        function = LegacyFunctionSpecification()
-        function.addParameter('eps2', dtype='string', direction=function.OUT)
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def set_eps2():
-        function = LegacyFunctionSpecification()
-        function.addParameter('eps2', dtype='string', direction=function.IN)
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
     def get_dt_print():
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_print', dtype='string', direction=function.OUT)
+        function.addParameter('dt_print', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
-
     @legacy_function
     def set_dt_print():
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_print', dtype='string', direction=function.IN)
+        function.addParameter('dt_print', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_max_cpu_time():
         function = LegacyFunctionSpecification()
-        function.addParameter('max_cpu_time', dtype='string', direction=function.OUT)
+        function.addParameter('max_cpu_time', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
-
     @legacy_function
     def set_max_cpu_time():
         function = LegacyFunctionSpecification()
-        function.addParameter('max_cpu_time', dtype='string', direction=function.IN)
+        function.addParameter('max_cpu_time', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
+    
 
-    #@legacy_function
-    #def evolve_model():
-        #function = LegacyFunctionSpecification()
-        #function.addParameter('t', dtype='string', direction=function.IN)
-        #function.result_type = 'int32'
-        #return function
 
 class Adaptb(GravitationalDynamics):
 
@@ -177,14 +166,86 @@ class Adaptb(GravitationalDynamics):
             convert_nbody,
             **options
         )
-
+    
+    def initialize_code(self):
+        result = self.overridden().initialize_code()
+        ensure_data_directory_exists(self.output_directory)
+        self.parameters.adaptb_output_directory = self.output_directory
+        return result
+    
     def define_parameters(self, object):
         GravitationalDynamics.define_parameters(self, object)
         self.stopping_conditions.define_parameters(object)
+        
+        object.add_method_parameter(
+            "get_bs_tolerance_float64", 
+            "set_bs_tolerance_float64",
+            "bs_tolerance", 
+            "Error tolerance of the Bulirsch-Stoer integrator", 
+            default_value = 1.0e-6
+        )
+        
+        object.add_method_parameter(
+            "get_eps2", 
+            "set_eps2",
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations, usage is not recommended for Adaptb", 
+            default_value = 0.0 | nbody_system.length**2
+        )
+        
+        object.add_method_parameter(
+            "get_dt_print", 
+            "set_dt_print",
+            "dt_print", 
+            "dt_print, regular print interval to show status (% complete) of evolve_model", 
+            default_value = 0.1 | nbody_system.time
+        )
     
+        object.add_method_parameter(
+            "get_word_length", 
+            "set_word_length",
+            "word_length", 
+            "The word length, or number of bits, used for the arbitrary precision calculations", 
+            default_value = 64
+        )
+        
+        object.add_method_parameter(
+            "get_adaptb_output_directory", 
+            "set_adaptb_output_directory",
+            "adaptb_output_directory", 
+            "Path to the directory where Adaptb stores its output", 
+            default_value = "./"
+        )
+        
+        object.add_method_parameter(
+            "get_max_cpu_time", 
+            "set_max_cpu_time",
+            "time_limit_cpu", 
+            "The cpu-time limit, the maximum amount of time Adaptb is allowed to run for.", 
+            default_value = 3600.0 | units.s
+        )
+        
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
         self.stopping_conditions.define_methods(object)
+        
+        object.add_method("get_bs_tolerance_float64", (), (units.none, object.ERROR_CODE,))
+        object.add_method("set_bs_tolerance_float64", (units.none, ), (object.ERROR_CODE,))
+        
+        object.add_method("get_eps2", (), (nbody_system.length**2, object.ERROR_CODE,))
+        object.add_method("set_eps2", (nbody_system.length**2, ), (object.ERROR_CODE,))
+    
+        object.add_method("get_dt_print", (), (nbody_system.time, object.ERROR_CODE,))
+        object.add_method("set_dt_print", (nbody_system.time, ), (object.ERROR_CODE,))
+    
+        object.add_method("get_word_length", (), (units.none, object.ERROR_CODE,))
+        object.add_method("set_word_length", (units.none, ), (object.ERROR_CODE,))
+        
+        object.add_method("get_adaptb_output_directory", (), (units.none, object.ERROR_CODE,))
+        object.add_method("set_adaptb_output_directory", (units.none, ), (object.ERROR_CODE,))
+        
+        object.add_method("get_max_cpu_time", (), (units.s, object.ERROR_CODE,))
+        object.add_method("set_max_cpu_time", (units.s, ), (object.ERROR_CODE,))
     
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)

@@ -1,15 +1,18 @@
+import os
 import os.path
 import math
 
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
+from amuse.units import units, nbody_system, constants
+from amuse.datamodel import Particles
 
 from amuse.community.adaptb.interface import AdaptbInterface, Adaptb
 from amuse.community.adaptb.functions import read_log, read_out, read_xy
 
 default_options = dict() #redirection='none')
 
-class AdaptbInterfaceTests(TestWithMPI):
+class TestAdaptbInterface(TestWithMPI):
     
     def test1(self):
         print "Test AdaptbInterface initialization"
@@ -90,31 +93,34 @@ class AdaptbInterfaceTests(TestWithMPI):
         instance = AdaptbInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
         
-        # bs tolerance
-        self.assertEquals(["1e-6", 0], instance.get_bs_tolerance().values())
-        self.assertEquals(0, instance.set_bs_tolerance("1e-8"))
-        #self.assertEquals(["1e-8", 0], instance.get_bs_tolerance().values())
-        self.assertEquals(1e-8, eval(instance.get_bs_tolerance()["bs_tolerance"]))
-        
         # word length
         self.assertEquals([64, 0], instance.get_word_length().values())
         self.assertEquals(0, instance.set_word_length(80))
         self.assertEquals([80, 0], instance.get_word_length().values())
 
+        # bs tolerance, default (double) implementation
+        self.assertEquals([1.0e-6, 0], instance.get_bs_tolerance_float64().values())
+        self.assertEquals(0, instance.set_bs_tolerance_float64(1.0e-8))
+        self.assertEquals([1.0e-8, 0], instance.get_bs_tolerance_float64().values())
+        # bs tolerance, string implementation for values requiring higher precision (note: actual accuracy depends on word_length)
+        self.assertEquals(1e-8, eval(instance.get_bs_tolerance_string()["bs_tolerance"]))
+        self.assertEquals(0, instance.set_bs_tolerance_string("1e-10"))
+        self.assertEquals(["1e-10", 0], instance.get_bs_tolerance_string().values())
+        
         # softening
-        self.assertEquals(["0", 0], instance.get_eps2().values())
-        self.assertEquals(0, instance.set_eps2("2e-1"))
-        self.assertEquals(2.0e-1, eval(instance.get_eps2()["eps2"]))
+        self.assertEquals([0.0, 0], instance.get_eps2().values())
+        self.assertEquals(0, instance.set_eps2(2e-1))
+        self.assertEquals([0.2, 0], instance.get_eps2().values())
         
         # print intervals
-        self.assertEquals(1e-1, eval(instance.get_dt_print()["dt_print"]))
-        self.assertEquals(0, instance.set_dt_print("1e-2"))
-        self.assertEquals(1e-2, eval(instance.get_dt_print()["dt_print"]))
+        self.assertEquals([1e-1, 0], instance.get_dt_print().values())
+        self.assertEquals(0, instance.set_dt_print(1e-2))
+        self.assertEquals([1e-2, 0], instance.get_dt_print().values())
 
         # max cpu time
-        self.assertEquals(["3600", 0], instance.get_max_cpu_time().values())
-        self.assertEquals(0, instance.set_max_cpu_time("120"))
-        self.assertEquals(["120", 0], instance.get_max_cpu_time().values())
+        self.assertEquals([3600, 0], instance.get_max_cpu_time().values())
+        self.assertEquals(0, instance.set_max_cpu_time(120))
+        self.assertEquals([120, 0], instance.get_max_cpu_time().values())
         
         # output dir
         self.assertEquals(["./", 0], instance.get_adaptb_output_directory().values())
@@ -131,9 +137,9 @@ class AdaptbInterfaceTests(TestWithMPI):
         print "Test AdaptbInterface evolve_model, equal-mass binary"
         instance = AdaptbInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_dt_print("1e-1"))
+        self.assertEquals(0, instance.set_dt_print(1e-1))
         self.assertEquals(0, instance.set_word_length(64))
-        self.assertEquals(0, instance.set_bs_tolerance("1e-8"))
+        self.assertEquals(0, instance.set_bs_tolerance_float64(1.0e-8))
         self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEquals(0, instance.commit_parameters())
         
@@ -156,8 +162,8 @@ class AdaptbInterfaceTests(TestWithMPI):
         print "Test AdaptbInterface evolve_model, pythagorean problem"
         instance = AdaptbInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_dt_print("10.0"))
-        self.assertEquals(0, instance.set_bs_tolerance("1e-2"))
+        self.assertEquals(0, instance.set_dt_print(10.0))
+        self.assertEquals(0, instance.set_bs_tolerance_float64(1.0e-2))
         self.assertEquals(0, instance.set_word_length(64))
         self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEquals(0, instance.commit_parameters())
@@ -173,14 +179,14 @@ class AdaptbInterfaceTests(TestWithMPI):
 
     def slowtest8(self):
         print "Test AdaptbInterface evolve_model, pythagorean problem, show convergence"
-        tolerance = ["1e-0", "1e-2", "1e-4", "1e-6", "1e-8", "1e-10", "1e-12", "1e-14", "1e-16", "1e-18", "1e-20", "1e-22", "1e-24"]
+        tolerance = [1e-0, 1e-2, 1e-4, 1e-6, 1e-8, 1e-10, 1e-12, 1e-14, 1e-16, 1e-18, 1e-20, 1e-22, 1e-24]
         word_length = [64,    64,     64   ,     64,     64,     64,      80,      80,      96,      96,      112,    112,     128]
         
         for tol, word_len in zip(tolerance, word_length):
             instance = AdaptbInterface(**default_options)
             self.assertEquals(0, instance.initialize_code())
-            self.assertEquals(0, instance.set_dt_print("0.1"))
-            self.assertEquals(0, instance.set_bs_tolerance(tol))
+            self.assertEquals(0, instance.set_dt_print(0.1))
+            self.assertEquals(0, instance.set_bs_tolerance_float64(tol))
             self.assertEquals(0, instance.set_word_length(word_len))
             self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
             self.assertEquals(0, instance.commit_parameters())
@@ -220,7 +226,7 @@ class AdaptbInterfaceTests(TestWithMPI):
         while i<len(tolerance):
             instance = AdaptbInterface(**default_options)
             self.assertEquals(0, instance.initialize_code())
-            self.assertEquals(0, instance.set_dt_print("1e-1"))
+            self.assertEquals(0, instance.set_dt_print(1e-1))
             self.assertEquals(0, instance.set_bs_tolerance(tolerance[i]))
             self.assertEquals(0, instance.set_word_length(word_length[i]))
             self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
@@ -249,5 +255,115 @@ class AdaptbInterfaceTests(TestWithMPI):
             i += 1
         
         print x1
+    
 
+class TestAdaptb(TestWithMPI):
+    
+    def new_sun_earth_system(self):
+        particles = Particles(2)
+        particles.mass = [1.0, 3.0037e-6] | units.MSun
+        particles.radius = 1.0 | units.RSun
+        particles.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.km / units.s
+        particles[1].vy = (constants.G * particles.total_mass() / (1.0 | units.AU)).sqrt()
+        return particles
+    
+    def test1(self):
+        print "Testing Adaptb initialization"
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        instance = Adaptb(convert_nbody, **default_options)
+        instance.initialize_code()
+        instance.commit_parameters()
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test2(self):
+        print "Testing Adaptb parameters"
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        instance = Adaptb(convert_nbody, **default_options)
+        instance.initialize_code()
+        
+#~        print instance.parameters
+        self.assertEquals(instance.parameters.bs_tolerance, 1.0e-6)
+        instance.parameters.bs_tolerance = 1.0e-9
+        self.assertEquals(instance.parameters.bs_tolerance, 1.0e-9)
+        
+        self.assertEquals(instance.parameters.epsilon_squared, 0.0 | units.m**2)
+        instance.parameters.epsilon_squared = 1.0e-4 | nbody_system.length**2
+        self.assertEquals(instance.parameters.epsilon_squared, convert_nbody.to_si(1.0e-4 | nbody_system.length**2))
+        
+        self.assertEquals(instance.parameters.word_length, 64)
+        instance.parameters.word_length = 128
+        self.assertEquals(instance.parameters.word_length, 128)
+        
+        self.assertEquals(instance.parameters.dt_print, convert_nbody.to_si(0.1 | nbody_system.time))
+        instance.parameters.dt_print = 1.0e-4 | nbody_system.time
+        self.assertEquals(instance.parameters.dt_print, convert_nbody.to_si(1.0e-4 | nbody_system.time))
+        
+        self.assertEquals(instance.parameters.adaptb_output_directory, instance.output_directory + os.sep)
+        instance.parameters.adaptb_output_directory = "./out"
+        self.assertEquals(instance.parameters.adaptb_output_directory, "./out/")
+        instance.parameters.adaptb_output_directory = instance.output_directory
+        self.assertEquals(instance.parameters.adaptb_output_directory, instance.output_directory + os.sep)
+        
+        self.assertEquals(instance.parameters.time_limit_cpu, 3600.0 | units.s)
+        instance.parameters.time_limit_cpu = 7200.0 | units.s
+        self.assertEquals(instance.parameters.time_limit_cpu, 7200.0 | units.s)
+        
+        instance.stop()
+    
+    def test3(self):
+        print "Testing Adaptb particles"
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        instance = Adaptb(convert_nbody, **default_options)
+        instance.initialize_code()
+        instance.commit_parameters()
+        instance.particles.add_particles(self.new_sun_earth_system())
+        instance.commit_particles()
+        
+        self.assertAlmostEquals(instance.particles.mass, [1.0, 3.0037e-6] | units.MSun)
+        self.assertAlmostEquals(instance.particles.radius, 1.0 | units.RSun)
+        self.assertAlmostEquals(instance.particles.position, 
+            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU)
+        self.assertAlmostEquals(instance.particles.velocity, 
+            [[0.0, 0.0, 0.0], [0.0, 29.7885, 0.0]] | units.km / units.s, 3)
+        
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test4(self):
+        print "Testing Adaptb evolve_model, 2 particles"
+        particles = Particles(2)
+        particles.mass = 0.5 | units.MSun
+        particles.radius = 1.0 | units.RSun
+        particles.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.km / units.s
+        particles[1].vy = (constants.G * (1.0 | units.MSun) / (1.0 | units.AU)).sqrt()
+        particles.move_to_center()
+        
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        instance = Adaptb(convert_nbody, **default_options)
+        instance.initialize_code()
+        instance.parameters.dt_print = 0.1 | units.yr
+        instance.parameters.bs_tolerance = 1.0e-8
+        instance.commit_parameters()
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
+        primary = instance.particles[0]
+        
+        P = 2 * math.pi * primary.x / primary.vy
+        
+        position_at_start = primary.position.x
+        instance.evolve_model(P / 4.0)
+        self.assertAlmostRelativeEqual(position_at_start, primary.position.y, 6)
+        
+        instance.evolve_model(P / 2.0)
+        self.assertAlmostRelativeEqual(position_at_start, -primary.position.x, 6)
+        
+        instance.evolve_model(P)
+        self.assertAlmostRelativeEqual(position_at_start, primary.position.x, 6)
+        
+        instance.cleanup_code()
+        instance.stop()
+    
 
