@@ -28,7 +28,7 @@ class GlobalOptions(object):
                     install_ini_file.close()
         
         if not preloadfp is None:
-            self.config.readfp(install_ini_file, "<amuserc>")
+            self.config.readfp(preloadfp, "<amuserc>")
             
         if not self.rcfilepath is None:
             self.config.read(self.rcfilepath)   
