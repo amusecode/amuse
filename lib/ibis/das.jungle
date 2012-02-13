@@ -77,11 +77,13 @@ MultimediaN-GPU.latitude = 52.3561
 MultimediaN-GPU.longitude = 4.953
 
 ASTRON.support.uri = ssh://fs5.das4.astron.nl
+ASTRON.support.system.properties = smartsockets.external.manual=192.87.1.34
 ASTRON.job.uri = sshsge://fs5.das4.astron.nl
 ASTRON.latitude = 52.8133
 ASTRON.longitude = 6.3960
 
 ASTRON-GPU.support.uri = ssh://fs5.das4.astron.nl
+ASTRON-GPU.support.system.properties = smartsockets.external.manual=192.87.1.34
 ASTRON-GPU.job.uri = sshsge://fs5.das4.astron.nl
 ASTRON-GPU.job.options = sshsge.native.flags = -l num_gpu=1
 ASTRON-GPU.latitude = 52.8133
