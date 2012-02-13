@@ -22,13 +22,28 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         CodeInterface.__init__(self, name_of_the_worker = "simplex_worker", **kwargs)
         LiteratureReferencesMixIn.__init__(self)
     
+    @option(type="string", sections=('data',))
+    def input_data_root_directory(self):
+        """
+        The root directory of the input data, read only directories
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(get_amuse_root_dir(), 'data')
+        
     @option(type="string")
     def data_directory(self):
         """
         The root name of the directory for the SimpleX
         application data files.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'simplex', 'input')
+        return os.path.join(self.input_data_root_directory, 'simplex', 'input')
     
     @option(type="string")
     def output_directory(self):
@@ -36,7 +51,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         The root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'simplex', 'output')
+        return os.path.join(self.output_data_root_directory, 'simplex', 'output')
     
     @legacy_function
     def set_output_directory():
