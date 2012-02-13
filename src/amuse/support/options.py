@@ -18,7 +18,7 @@ class GlobalOptions(object):
         self.config=ConfigParser.RawConfigParser()
         self.overriden_options = {}
     
-    def load(self):
+    def load(self, preloadfp = None):
         if not pkg_resources is None:
             if pkg_resources.resource_exists('amuse', 'amuserc'):
                 install_ini_file = pkg_resources.resource_stream('amuse', 'amuserc') 
@@ -26,6 +26,9 @@ class GlobalOptions(object):
                     self.config.readfp(install_ini_file)   
                 finally:
                     install_ini_file.close()
+        
+        if not preloadfp is None:
+            self.config.readfp(install_ini_file, "<amuserc>")
             
         if not self.rcfilepath is None:
             self.config.read(self.rcfilepath)   
@@ -84,10 +87,10 @@ class GlobalOptions(object):
             raise RuntimeError('please define environment variable $HOME')
             
     @classmethod
-    def instance(cls):
+    def instance(cls, preloadfp = None):
         if cls.INSTANCE is None:
             cls.INSTANCE = cls()
-            cls.INSTANCE.load()
+            cls.INSTANCE.load(preloadfp)
         return cls.INSTANCE
         
     def get_value_for_option(self, option, instance):

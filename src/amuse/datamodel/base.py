@@ -264,6 +264,32 @@ class FunctionAttribute(DerivedAttribute):
     def get_value_for_entity(self, particles, key):
         return self.BoundParticleFunctionAttribute(self.particle_function, particles, key)
 
+
+class CollectionAttributes(object):
+    """
+    Objects of this class store attributes for
+    an particles collection or a grid.
+    
+    These attributes are user set "meta" information such
+    as a timestamp or a 
+    """
+    
+    def __init__(self, attributes = None):
+        if attributes is None:
+            attributes = {}
+        else:
+            attributes = attributes.copy()    
+        
+        object.__setattr__(self, '_attributes', attributes)
+    
+    def __getattr__(self, name):
+        return self._attributes[name]
+        
+        
+    def __setattr__(self, name, value):
+        self._attributes[name] = value
+        
+        
         
 class AbstractSet(object):
     """
@@ -304,6 +330,8 @@ class AbstractSet(object):
             
         object.__setattr__(self, "_derived_attributes", CompositeDictionary(derived_attributes))
         object.__setattr__(self, "_private", self.PrivateProperties())
+        
+        self._private.collection_attributes = CollectionAttributes(self)
     
     
     def __getattr__(self, name_of_the_attribute):
