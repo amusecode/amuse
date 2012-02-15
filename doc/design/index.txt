@@ -8,6 +8,7 @@ Design documentation
    
    introduction
    architecture
+   coupling
    packages
    sets
    mpi

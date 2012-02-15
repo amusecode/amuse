@@ -35,7 +35,7 @@ use to the previous layer:
             color=azure2;
             labeljust="l";
             label="Layer 2";
-            level2 [label = "AMUSE Code"];
+            level2 [label = "AMUSE Library"];
       }
     
       subgraph cluster2 {
@@ -44,7 +44,7 @@ use to the previous layer:
             color=azure2;
             labeljust="l";
             label="Layer 3";
-            level3 [label = "Legacy Codes"];
+            level3 [label = "Community Codes"];
       }
       level1 -> level2 -> level3
     }
@@ -58,42 +58,43 @@ use to the previous layer:
 Each layer has a different role in the AMUSE architecture:
 
 1. **User Script layer**. The code in this layer implements a specific 
-   physical problem or sets of problems. This layer contains the 
+   physical problem or set of problems. This layer contains the 
    example scripts and scripts written by the user. This layer is 
    conceptually comparable to a User Interface layer in applications 
    with a GUI. Coupling two or more codes happens in this layer (with
-   the help of support classes from the *Code Layer*.
+   the help of support classes from the *AMUSE Library Layer*.
 
-2. **AMUSE Code layer**. This layer provides an object oriented 
+2. **AMUSE Library layer**. This layer provides an object oriented 
    interface on top of the legacy codes. It also provides a library
    of functionalities, such as unit handling and data conversion.
    The role of this layer is very generic, it is not specific 
    for one problem or for one physical domain.
    
-3. **Legacy Codes layer**.  This layer defines the interfaces
-   to the legacy codes and contains the existing codes. It provides 
-   process management for the legacy codes and functional
-   interfaces to the codes. The code in this layer is generic in 
+3. **Community Codes layer**.  This layer defines the interfaces
+   to the community codes and contains the actual codes. It provides 
+   process management for the community codes and functional
+   interfaces to these. The code in this layer is generic in 
    respect to problems, but specific for different physical domains.
 
 The following sections contain a detailed explanation of the layers,
 starting with the lowest layer to the highest. Some details are further
 worked out in other chapters or in the reference manual.
 
-Legacy codes layer
-******************
+Community codes layer
+*********************
 
-The **Legacy Codes layer** contains the existing applications and 
-the functionality to interface with these applications. This
-layer exposes every legacy code as a set of functions. These 
+The **Community Codes layer** contains the actual applications and 
+the functionality to communicate with these applications. This
+layer exposes every community code as a set of functions. These 
 functions are grouped in one class per code.
 
-The AMUSE framework code and the legacy codes are designed to be run 
+The AMUSE framework code and the community codes are designed to be run 
 as separate applications. The AMUSE framework code consists of a python
-script and the AMUSE library. The legacy codes consists of 
-the original code-base extended with a new main application that
-handles messages send to it from the python library. 
-Function calls into the legacy codes are send via a *message passing framework* 
+script and the AMUSE library. The community codes consist of 
+the original code-base of a scientific code extended with a 
+new main application that handles messages send to it from 
+the python library. 
+Function calls into the community codes are send via a *message passing framework* 
 to the actual running codes. 
 
 .. raw:: latex
@@ -118,18 +119,19 @@ to the actual running codes.
             style=filled;
             color=azure2;
             label="Application";
-            "Legacy Code";
+            "Community Code";
         }
         "Python Interfaces" -> "Message Passing Framework";
-        "Legacy Code" -> "Message Passing Framework";
+        "Community Code" -> "Message Passing Framework";
         
-        "Message Passing Framework" -> "Legacy Code";
+        "Message Passing Framework" -> "Community Code";
         "Message Passing Framework" -> "Python Interfaces";
     }
 
 .. raw:: latex
 
-   \caption{The AMUSE script and legacy codes are separate applications.}
+   \caption{The AMUSE script and community codes are separate applications. The application
+   communicate using a message passing framework}
    \end{figure} 
 
 The number of applications started and the machines on which these
@@ -137,10 +139,9 @@ run can all be set dynamically in AMUSE. Depending on the problem
 a researcher can run all of AMUSE on a single desktop computer
 or in a mixed environment with clusters of computers. Every AMUSE run
 starts with one python script. This script can in turn start
-a number of different legacy codes (as separate applications). The
-legacy codes run on 1 single computer or on a cluster of computers.
+a number of different community codes (as separate applications).
 A complete run can consist of multiple applications running in parallel
-or sequence and managed by one python script. 
+or in sequence and managed by one python script. 
 
 
 .. graphviz::
@@ -213,8 +214,8 @@ Message passing
 ~~~~~~~~~~~~~~~
 The amuse framework interacts with legacy codes via a message passing
 framework. Function calls in the python scripts are translated
-to messages and these messages are send to the legacy codes 
-using the message passing framework . The legacy codes wait 
+to messages and these messages are send to the community codes 
+using the message passing framework . The community codes wait 
 for message events and will decode the message upon arrival and 
 perform the requested function. The results will be send back 
 using a similar message.
@@ -222,16 +223,16 @@ using a similar message.
 .. image:: message_passing.png
 
 
-AMUSE Code layer
-****************
+AMUSE Library layer
+*******************
 
-The **Code layer** is responsible for providing an object
-oriented interface to the legacy codes. It also provides extra 
+The **Library layer** is responsible for providing an object
+oriented interface to the community codes. It also provides extra 
 functionality to help write a user script, such as file input 
 and output of common file formats and unit conversions. These
-extra functionalities can be used independent of the legacy codes.
+extra functionalities can be used independent of the community codes.
 
-Every legacy code has a *low-level* interface (defined in the legacy
+Every community code has a *low-level* interface (defined in the community
 interface layer) and an *object-oriented* interface. The *low-level*
 interface is defined as as set of functions. The *object-oriented* interface
 uses these functions and combines these with models for state-transitions,
@@ -264,7 +265,7 @@ prone) and easier to couple with other codes.
             "Grid Points";
         }
         "Legacy Interface";
-        "Code Interface" -> "Legacy Interface"[ ltail=cluster0];
+        "Code Interface" -> "Community Code Interface"[ ltail=cluster0];
         subgraph cluster2 {
             style=filled;
             color=azure2;
@@ -278,15 +279,15 @@ prone) and easier to couple with other codes.
         "Code Interface" -> "Units"[lhead=cluster2, ltail=cluster0]; 
     }
 
-Model of a legacy code
+Model of a community code
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The legacy codes of every module in all physical domains are modelled using
+The community codes of every module in all physical domains are modelled using
 the same template. The template consists of attributes and wrappers. **Attributes**
 provide a common interface for sub-parts of the code, for example the *particles*
 attribute provides an interface to add, update and remove the particles in
 a code. Attributes combine several functions in a legacy interface into
-one object.  **Wrappers** are defined on top of the legacy functions and
+one object.  **Wrappers** are defined on top of the community functions and
 add functionality to existing methods. For example for every method 
 the units of the arguments and return values can be defined in a filter.
 Wrappers add functionality to individual methods.
@@ -336,15 +337,16 @@ units and error code
     
 state
     The state of a code determines which functions are valid to call
-    and how the code can transfer from one state into another. A code
-    might give incorrect answers if the potential energy is requested before
-    the particles are entered into the code.
+    and how the code can transfer from one state into another. For example, 
+    a code might give incorrect answers if the potential energy is requested before
+    the particles are entered into the code, the state model will rais an error to
+    inform the script writer of this problem.
     
 Implementation
 ++++++++++++++
 
 The implementation of the *object-oriented* interface is based on the adaptor 
-pattern. A *Legacy interface* class is adapted to create a
+pattern. A *Community Code Interface* class is adapted to create a
 class which provides *"parameters"*, *"particle sets/gridpoints"* , 
 *"methods with units"* , *"properties with units"* , 
 *"state control"* and *"Unit conversions for incompatible unit systems"*. 
@@ -375,8 +377,8 @@ Each functionality has the same interface for all codes in the system.
             "State control"
             "Unit conversions for incompatible unit systems"
         }
-        "Legacy Interface"
-        "Legacy Interface"->"Particles or Gridpoints"[lhead=cluster1];
+        "Community Code Interface"
+        "Community Code Interface"->"Particles or Gridpoints"[lhead=cluster1];
     }
 
 
