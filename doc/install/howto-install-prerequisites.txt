@@ -21,6 +21,8 @@ These are the packages AMUSE needs:
 * FFTW (version >= 3.0)
 * GSL
 * CMake (version >= 2.4)
+* GMP (version >= 4.2.1)
+* MPFR (version >= 2.3.1)
 
 In the first two sections (compilers_ and installation_scripts_) we explain how to use the two
 installation scripts to install AMUSE. In the last section (manual_) 
@@ -304,6 +306,61 @@ To check whether you have CMake installed on your system:
 
 You can download CMake from http://www.cmake.org/cmake/resources/software.html. 
 
+GMP
+-------
+GNU MP is a library for arbitrary precision arithmetic (ie, a bignum package). 
+It can operate on signed integer, rational, and floating point numeric types.
+GMP is required for Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda 
+Boekholt). 
+The best way to check whether you have the right version of GMP installed on your 
+system depends on the package manager you use, but this should always work (note 
+that the library numbers do not match the release version):
+
+.. code-block:: sh
+
+   > locate libgmp
+   /usr/lib64/libgmp.so
+   /usr/lib64/libgmp.so.10
+   /usr/lib64/libgmp.so.10.0.3
+   
+   > locate gmp.h
+   /usr/include/gmp.h
+   
+   > grep GNU_MP_VERSION /usr/include/gmp.h
+   #define __GNU_MP_VERSION 5
+   #define __GNU_MP_VERSION_MINOR 0
+   #define __GNU_MP_VERSION_PATCHLEVEL 3
+
+
+You can download GMP from http://gmplib.org. 
+
+MPFR
+-------
+The MPFR library is a C library for multiple-precision floating-point 
+computations with correct rounding.
+MPFR is required for Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda 
+Boekholt). 
+The best way to check whether you have the right version of MPFR installed on your 
+system depends on the package manager you use, but this should always work (note 
+that the library numbers do not match the release version):
+
+.. code-block:: sh
+
+   > locate libmpfr
+   /usr/lib64/libmpfr.so
+   /usr/lib64/libmpfr.so.4
+   /usr/lib64/libmpfr.so.4.1.0
+   
+   > locate mpfr.h
+   /usr/include/mpfr.h
+   
+   > grep MPFR_VERSION /usr/include/mpfr.h
+   #define MPFR_VERSION_MAJOR 3
+   #define MPFR_VERSION_MINOR 1
+   #define MPFR_VERSION_PATCHLEVEL 0
+
+You can download MPFR from http://www.mpfr.org. 
+
 
 Installing on Ubuntu 9.04
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -375,6 +432,18 @@ CMake is used to build EVTwin. On Ubuntu, CMake can be installed with::
 
     > sudo apt-get install cmake
 
+GMP
+-------
+GMP is required for Adaptb. On Ubuntu, GMP can be installed with::
+
+    > sudo apt-get install libgmp3 libgmp3-dev
+
+MPFR
+-------
+MPFR is required for Adaptb. On Ubuntu, MPFR can be installed with::
+
+    > sudo apt-get install libmpfr4 libmpfr-dev
+
 Python packages in Ubuntu
 -------------------------
 Ubuntu comes with python packages for nose and numpy. You also need 
@@ -426,6 +495,7 @@ For openmpi do::
 	> sudo apt-get install build-essential gfortran python-dev \
 	  libopenmpi-dev openmpi-bin \
 	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
+      libgmp3 libgmp3-dev libmpfr4 libmpfr-dev \
 	  libhdf5-serial-dev hdf5-tools \
 	  python-nose python-numpy python-setuptools python-docutils \
 	  python-h5py python-setuptools
@@ -437,6 +507,7 @@ For mpich2 do::
 	> sudo apt-get install build-essential gfortran python-dev \
 	  mpich2 libmpich2-dev \
 	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
+      libgmp3 libgmp3-dev libmpfr4 libmpfr-dev \
 	  libhdf5-serial-dev hdf5-tools \
 	  python-nose python-numpy python-setuptools python-docutils \
 	  python-h5py python-setuptools
@@ -471,7 +542,7 @@ Install python and dependencies::
     > sudo pacman -Syu python2 python2-numpy \
 	hdf5 docutils openmpi
 	python2-mpi4py python2-nose\
-	fftw gsl cmake
+	fftw gsl cmake gmp mpfr
 
 To install h5py, first install distribute and then run easy_install::
 
@@ -495,7 +566,7 @@ To install the prerequisites do (for base-devel select *all* members)::
 	cmake zlib-devel\
 	openmpi openmpi-devel \
 	fftw fftw-devel \
-	gsl gsl-devel
+	gsl gsl-devel gmp
 	
 After installing openmpi, you need to activate it using the 'module'
 command::
@@ -609,6 +680,19 @@ CMake
 CMake is used to build EVTwin. On Fedora, CMake can be installed with::
 
     > sudo yum install cmake
+
+GMP
+-------
+GMP is required for Adaptb. On Fedora, GMP can be installed with::
+
+    > sudo yum install gmp
+
+MPFR
+-------
+MPFR is required for Adaptb. On Fedora, MPFR is currently included in the gmp 
+package. So, if you have not already done so, MPFR can be installed with::
+
+    > sudo yum install gmp
 
 Python packages in Fedora
 -------------------------
@@ -753,6 +837,18 @@ CMake is used to build EVTwin. On OpenSuse, CMake can be installed with::
 
     > sudo zypper install cmake
 
+GMP
+-------
+GMP is required for Adaptb. On OpenSuse, GMP can be installed with::
+
+    > sudo zypper install gmp-devel
+
+MPFR
+-------
+MPFR is required for Adaptb. On OpenSuse, MPFR can be installed with::
+
+    > sudo zypper install libmpfr4 mpfr-devel
+
 Python packages in Fedora
 -------------------------
 Fedora comes with python packages for numpy. You also need 
@@ -815,7 +911,7 @@ You can install all the packages described below in one go with::
     > sudo port install gcc44
     
     > sudo port install python26 openmpi \
-    hdf5-18 fftw-3 gsl cmake \
+    hdf5-18 fftw-3 gsl cmake gmp mpfr \
     py26-numpy py26-h5py py26-nose py26-docutils +gcc44
     
     > sudo port install py26-mpi4py +openmpi
@@ -891,7 +987,19 @@ CMake
 CMake is used to build EVTwin, CMake can be installed with::
 
     > sudo port install cmake
-    
+
+GMP
+-------
+GMP is required for Adaptb. With MacPorts, GMP can be installed with::
+
+    > sudo port install gmp
+
+MPFR
+-------
+MPFR is required for Adaptb. With MacPorts, MPFR can be installed with::
+
+    > sudo port install mpfr
+
 
 Python packages
 ---------------

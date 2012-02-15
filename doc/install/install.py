@@ -121,6 +121,22 @@ class InstallPrerequisites(object):
             'http://www.cmake.org/files/v2.8/', #download url, filename is appended
             self.fftw_build             #method to use for building - same as for FFTW should work
           ) ,
+          (
+            'gmp',                      #name to refer by
+            [],                         #names of prerequisites (unused)
+            '5.0.3' ,                   #version string
+            'gmp-', '.tar.xz',        #pre- and postfix for filename
+            'ftp://ftp.gmplib.org/pub/gmp-5.0.3/', #download url, filename is appended
+            self.gmp_build             #method to use for building
+          ) ,
+          ( # NOTE: When library version is changed, url to 'allpatches' in self.mpfr_build must be changed too!
+            'mpfr' ,                    #name to refer by
+            ['gmp'],                    #names of prerequisites
+            '3.1.0' ,                   #version string
+            'mpfr-', '.tar.gz',         #pre- and postfix for filename
+            'http://mpfr.loria.fr/mpfr-current/', #download url, filename is appended
+            self.mpfr_build             #method to use for building
+          ) ,
         ]
         
     @late
@@ -266,7 +282,46 @@ class InstallPrerequisites(object):
         
         for x in commands:
             self.run_application(x, path)
+    
+    def gmp_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'check'])
+        commands.append(['make', 'install'])
         
+        for x in commands:
+            self.run_application(x, path)
+    
+    def mpfr_build(self, path):
+        temp_patch_file = os.path.join(self.temp_dir, "mpfr-allpatches")
+        if not os.path.exists(temp_patch_file):
+            print "Downloading mpfr-allpatches"
+            urllib.urlretrieve("http://www.mpfr.org/mpfr-3.1.0/allpatches", temp_patch_file)
+            print "...Finished"
+        
+        commands = []
+        commands.append(['patch', '-N', '-Z', '-p1', '-i', temp_patch_file])
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--with-gmp='+self.prefix,
+          '--enable-shared',
+          '--enable-thread-safe'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'check'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
+    
     def check_mpich2_install(self, commands, path):
         bin_directory = os.path.join(self.prefix, 'bin')
         mpif90_filename = os.path.join(bin_directory, 'mpif90')
