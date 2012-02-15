@@ -46,12 +46,6 @@ UvA.job.uri = sshsge://fs2.das4.science.uva.nl
 UvA.latitude = 52.3561
 UvA.longitude = 4.953
 
-UvA-GPU.support.uri = ssh://fs2.das4.science.uva.nl
-UvA-GPU.job.uri = sshsge://fs2.das4.science.uva.nl
-UvA-GPU.job.options = sshsge.native.flags = -l num_gpu=1
-UvA-GPU.latitude = 52.3561
-UvA-GPU.longitude = 4.953
-
 # Details of cluster "Delft"
 Delft.support.uri = ssh://fs3.das4.tudelft.nl
 Delft.job.uri = sshsge://fs3.das4.tudelft.nl
