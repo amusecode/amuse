@@ -19,6 +19,7 @@ bool global_quantities_of_system_up_to_date = false;
 bool potential_energy_also_up_to_date = false;
 bool density_up_to_date = false;
 bool particle_map_up_to_date = false;
+bool interpret_kicks_as_feedback = false;
 long long particle_id_counter = 0;
 long long dm_particles_in_buffer = 0;
 long long sph_particles_in_buffer = 0;
@@ -1083,6 +1084,19 @@ int set_periodic_boundaries_flag(int value)
     return 0;
 }
 
+int get_interpret_kicks_as_feedback_flag(int *value)
+{
+    if (ThisTask) {return 0;}
+    *value = interpret_kicks_as_feedback;
+    return 0;
+}
+
+int set_interpret_kicks_as_feedback_flag(int value)
+{
+    interpret_kicks_as_feedback = value;
+    return 0;
+}
+
 
 // particle property getters/setters: (will only work after commit_particles() is called)
 
@@ -1210,13 +1224,6 @@ int set_mass(int *index, double *mass, int length){
         if(found_particle(index[i], &local_index)){
             P[local_index].Mass = mass[i];
             count[i] = 1;
-#ifdef TIMESTEP_UPDATE
-            if (P[local_index].Type == 0) SphP[local_index].FeedbackFlag = 2;
-#endif
-#ifdef TIMESTEP_LIMITER
-            if(P[local_index].Type == 0 && P[local_index].Ti_endstep != All.Ti_Current)
-                make_it_active(local_index);
-#endif
         } else count[i] = 0;
     }
     global_quantities_of_system_up_to_date = false;
@@ -1286,13 +1293,6 @@ int set_position(int *index, double *x, double *y, double *z, int length){
             P[local_index].Pos[1] = y[i];
             P[local_index].Pos[2] = z[i];
             count[i] = 1;
-#ifdef TIMESTEP_UPDATE
-            if (P[local_index].Type == 0) SphP[local_index].FeedbackFlag = 2;
-#endif
-#ifdef TIMESTEP_LIMITER
-            if(P[local_index].Type == 0 && P[local_index].Ti_endstep != All.Ti_Current)
-                make_it_active(local_index);
-#endif
         } else count[i] = 0;
     }
     global_quantities_of_system_up_to_date = false;
@@ -1355,11 +1355,14 @@ int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
             P[local_index].Vel[2] = vz[i];
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
-            if (P[local_index].Type == 0) SphP[local_index].FeedbackFlag = 2;
+            if (interpret_kicks_as_feedback && P[local_index].Type == 0) {
+                SphP[local_index].FeedbackFlag = 2;
+            }
 #endif
 #ifdef TIMESTEP_LIMITER
-            if(P[local_index].Type == 0 && P[local_index].Ti_endstep != All.Ti_Current)
+            if(interpret_kicks_as_feedback && P[local_index].Type == 0 && P[local_index].Ti_endstep != All.Ti_Current) {
                 make_it_active(local_index);
+            }
 #endif
         } else count[i] = 0;
     }
@@ -1443,11 +1446,14 @@ int set_state(int *index, double *mass, double *x, double *y, double *z, double 
             P[local_index].Vel[2] = vz[i];
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
-            if (P[local_index].Type == 0) SphP[local_index].FeedbackFlag = 2;
+            if (interpret_kicks_as_feedback && P[local_index].Type == 0) {
+                SphP[local_index].FeedbackFlag = 2;
+            }
 #endif
 #ifdef TIMESTEP_LIMITER
-            if(P[local_index].Type == 0 && P[local_index].Ti_endstep != All.Ti_Current)
+            if(interpret_kicks_as_feedback && P[local_index].Type == 0 && P[local_index].Ti_endstep != All.Ti_Current) {
                 make_it_active(local_index);
+            }
 #endif
         } else count[i] = 0;
     }
