@@ -10,13 +10,12 @@ from amuse.datamodel import Particles
 from amuse.community.adaptb.interface import AdaptbInterface, Adaptb
 from amuse.community.adaptb.functions import read_log, read_out, read_xy
 
-default_options = dict() #redirection='none')
 
 class TestAdaptbInterface(TestWithMPI):
     
     def test1(self):
         print "Test AdaptbInterface initialization"
-        instance = AdaptbInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(AdaptbInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEquals(0, instance.commit_parameters())
@@ -25,7 +24,7 @@ class TestAdaptbInterface(TestWithMPI):
 
     def test2(self):
         print "Test AdaptbInterface new_particle / get_state"
-        instance = AdaptbInterface(**default_options)
+        instance =  self.new_instance_of_an_optional_code(AdaptbInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEquals(0, instance.commit_parameters())
@@ -52,7 +51,7 @@ class TestAdaptbInterface(TestWithMPI):
     
     def test4(self):
         print "Test AdaptbInterface particle property getters/setters"
-        instance = AdaptbInterface(**default_options)
+        instance =  self.new_instance_of_an_optional_code(AdaptbInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEquals(0, instance.commit_parameters())
@@ -90,7 +89,7 @@ class TestAdaptbInterface(TestWithMPI):
 
     def test5(self):
         print "Test AdaptbInterface parameters"
-        instance = AdaptbInterface(**default_options)
+        instance =  self.new_instance_of_an_optional_code(AdaptbInterface)
         self.assertEquals(0, instance.initialize_code())
         
         # word length
@@ -135,7 +134,7 @@ class TestAdaptbInterface(TestWithMPI):
     
     def test6(self):
         print "Test AdaptbInterface evolve_model, equal-mass binary"
-        instance = AdaptbInterface(**default_options)
+        instance =  self.new_instance_of_an_optional_code(AdaptbInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_dt_print(1e-1))
         self.assertEquals(0, instance.set_word_length(64))
@@ -160,7 +159,7 @@ class TestAdaptbInterface(TestWithMPI):
 
     def test7(self):
         print "Test AdaptbInterface evolve_model, pythagorean problem"
-        instance = AdaptbInterface(**default_options)
+        instance =  self.new_instance_of_an_optional_code(AdaptbInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_dt_print(10.0))
         self.assertEquals(0, instance.set_bs_tolerance_float64(1.0e-2))
@@ -183,7 +182,7 @@ class TestAdaptbInterface(TestWithMPI):
         word_length = [64,    64,     64   ,     64,     64,     64,      80,      80,      96,      96,      112,    112,     128]
         
         for tol, word_len in zip(tolerance, word_length):
-            instance = AdaptbInterface(**default_options)
+            instance =  self.new_instance_of_an_optional_code(AdaptbInterface)
             self.assertEquals(0, instance.initialize_code())
             self.assertEquals(0, instance.set_dt_print(0.1))
             self.assertEquals(0, instance.set_bs_tolerance_float64(tol))
@@ -224,7 +223,7 @@ class TestAdaptbInterface(TestWithMPI):
         
         i=0
         while i<len(tolerance):
-            instance = AdaptbInterface(**default_options)
+            instance =  self.new_instance_of_an_optional_code(AdaptbInterface)
             self.assertEquals(0, instance.initialize_code())
             self.assertEquals(0, instance.set_dt_print(1e-1))
             self.assertEquals(0, instance.set_bs_tolerance(tolerance[i]))
@@ -271,7 +270,7 @@ class TestAdaptb(TestWithMPI):
     def test1(self):
         print "Testing Adaptb initialization"
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Adaptb(convert_nbody, **default_options)
+        instance =  self.new_instance_of_an_optional_code(Adaptb, convert_nbody)
         instance.initialize_code()
         instance.commit_parameters()
         instance.cleanup_code()
@@ -280,7 +279,7 @@ class TestAdaptb(TestWithMPI):
     def test2(self):
         print "Testing Adaptb parameters"
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Adaptb(convert_nbody, **default_options)
+        instance = self.new_instance_of_an_optional_code(Adaptb,convert_nbody)
         instance.initialize_code()
         
 #~        print instance.parameters
@@ -315,7 +314,7 @@ class TestAdaptb(TestWithMPI):
     def test3(self):
         print "Testing Adaptb particles"
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Adaptb(convert_nbody, **default_options)
+        instance = self.new_instance_of_an_optional_code(Adaptb,convert_nbody)
         instance.initialize_code()
         instance.commit_parameters()
         instance.particles.add_particles(self.new_sun_earth_system())
@@ -342,7 +341,7 @@ class TestAdaptb(TestWithMPI):
         particles.move_to_center()
         
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Adaptb(convert_nbody, **default_options)
+        instance = self.new_instance_of_an_optional_code(Adaptb, convert_nbody)
         instance.initialize_code()
         instance.parameters.dt_print = 0.1 | units.yr
         instance.parameters.bs_tolerance = 1.0e-8
