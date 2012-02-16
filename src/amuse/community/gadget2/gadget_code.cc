@@ -20,6 +20,7 @@ bool potential_energy_also_up_to_date = false;
 bool density_up_to_date = false;
 bool particle_map_up_to_date = false;
 bool interpret_kicks_as_feedback = false;
+bool interpret_heat_as_feedback = true;
 long long particle_id_counter = 0;
 long long dm_particles_in_buffer = 0;
 long long sph_particles_in_buffer = 0;
@@ -1097,6 +1098,17 @@ int set_interpret_kicks_as_feedback_flag(int value)
     return 0;
 }
 
+int get_interpret_heat_as_feedback_flag(int *value) {
+    if (ThisTask) {return 0;}
+    *value = interpret_heat_as_feedback;
+    return 0;
+}
+
+int set_interpret_heat_as_feedback_flag(int value) {
+    interpret_heat_as_feedback = value;
+    return 0;
+}
+
 
 // particle property getters/setters: (will only work after commit_particles() is called)
 
@@ -1569,11 +1581,15 @@ int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
 #endif
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
-            SphP[local_index].FeedbackFlag = 2;
+            if (interpret_heat_as_feedback || interpret_kicks_as_feedback) {
+                SphP[local_index].FeedbackFlag = 2;
+            }
 #endif
 #ifdef TIMESTEP_LIMITER
-            if(P[local_index].Ti_endstep != All.Ti_Current)
+            if ((interpret_heat_as_feedback || interpret_kicks_as_feedback) && 
+                    P[local_index].Ti_endstep != All.Ti_Current) {
                 make_it_active(local_index);
+            }
 #endif
         } else count[i] = 0;
     }
@@ -1706,11 +1722,14 @@ int set_internal_energy(int *index, double *internal_energy, int length){
 #endif
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
-            SphP[local_index].FeedbackFlag = 2;
+            if (interpret_heat_as_feedback) {
+                SphP[local_index].FeedbackFlag = 2;
+            }
 #endif
 #ifdef TIMESTEP_LIMITER
-            if(P[local_index].Ti_endstep != All.Ti_Current)
+            if(interpret_heat_as_feedback && P[local_index].Ti_endstep != All.Ti_Current) {
                 make_it_active(local_index);
+            }
 #endif
         } else count[i] = 0;
     }

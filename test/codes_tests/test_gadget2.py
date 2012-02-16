@@ -466,7 +466,8 @@ class TestGadget2(TestWithMPI):
         for par, value in [('gadget_cell_opening_flag', True), 
                 ('comoving_integration_flag', False), 
                 ('periodic_boundaries_flag', False),
-                ('interpret_kicks_as_feedback', False)]:
+                ('interpret_kicks_as_feedback', False),
+                ('interpret_heat_as_feedback', True)]:
             self.assertTrue(value is getattr(instance.parameters, par))
             setattr(instance.parameters, par, not value)
             self.assertFalse(value is getattr(instance.parameters, par))

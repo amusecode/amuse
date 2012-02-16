@@ -1115,6 +1115,20 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         return function
     
     @legacy_function
+    def set_interpret_heat_as_feedback_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_interpret_heat_as_feedback_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
     def set_box_size():
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype='float64', direction=function.IN)
@@ -1583,6 +1597,14 @@ class Gadget2(GravitationalDynamics):
             "interpret_kicks_as_feedback",
             "Flag telling Gadget2 whether to interpret external changes to particles' velocities as feedback (for timestepping).",
             False
+        )
+        
+        object.add_boolean_parameter(
+            "get_interpret_heat_as_feedback_flag",
+            "set_interpret_heat_as_feedback_flag",
+            "interpret_heat_as_feedback",
+            "Flag telling Gadget2 whether to interpret external changes to particles' internal energy as feedback (for timestepping).",
+            True
         )
         
         self.stopping_conditions.define_parameters(object)        
