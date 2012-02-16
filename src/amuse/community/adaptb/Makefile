@@ -5,6 +5,7 @@ AMUSE_DIR?=../../../..
 
 GMP_LIBS ?= -L/home/boekholt/Packages/ -lgmp
 MPFR_LIBS ?= -L/home/boekholt/Packages/ -lmpfr
+MPFR_FLAGS ?= -I/home/boekholt/Packages/
 LIBS = $(MPFR_LIBS) $(GMP_LIBS)
 
 MPICXX   ?= mpicxx
@@ -40,5 +41,5 @@ adaptb_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) -I./src $^ -o $@  -L./src -ladaptb $(SCLIBS) $(LIBS)
 
 interface.o: interface.cc
-	$(CXX) $(CXXFLAGS) $(SCINC) -I./src -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS)  $(SCINC) -I./src -c -o $@ $< 
 

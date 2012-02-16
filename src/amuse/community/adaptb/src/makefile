@@ -13,6 +13,7 @@ CFLAGS ?= -Wall -g -O2
 
 GMP_LIBS ?= -L/home/boekholt/Packages/ -lgmp
 MPFR_LIBS ?= -L/home/boekholt/Packages/ -lmpfr
+MPFR_FLAGS ?= -I/home/boekholt/Packages/
 LIBS = $(MPFR_LIBS) $(GMP_LIBS)
 
 ###################################################################
@@ -35,28 +36,28 @@ libadaptb.a: $(OBJS)
 ###################################################################
 
 integrator_MS.o: integrator_MS.cpp Bs_integrator.o
-	$(CXX) $(CXXFLAGS) -c integrator_MS.cpp
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c integrator_MS.cpp
 
 Bs_integrator.o: Bs_integrator.cpp Bs_integrator.h Cluster.o
-	$(CXX) $(CXXFLAGS) -c Bs_integrator.cpp
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Bs_integrator.cpp
 
 Cluster.o: Cluster.cpp Cluster.h Star.o Force.o Dynamics.o
-	$(CXX) $(CXXFLAGS) -c Cluster.cpp
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Cluster.cpp
 
 Clock.o: Clock.cpp Clock.h mpreal.o dlmalloc.o
-	$(CXX) $(CXXFLAGS) -c Clock.cpp
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Clock.cpp
 
 Dynamics.o: Dynamics.cpp Dynamics.h Star.o
-	$(CXX) $(CXXFLAGS) -c Dynamics.cpp
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Dynamics.cpp
 
 Force.o: Force.cpp Force.h Star.o
-	$(CXX) $(CXXFLAGS) -c Force.cpp
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Force.cpp
 
 Star.o: Star.cpp Star.h mpreal.o dlmalloc.o
-	$(CXX) $(CXXFLAGS) -c Star.cpp
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Star.cpp
 
 mpreal.o: mpreal.cpp mpreal.h
-	$(CXX) $(CXXFLAGS) -c mpreal.cpp
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c mpreal.cpp
 
 dlmalloc.o: dlmalloc.c dlmalloc.h
 	$(CC) $(CFLAGS) -c dlmalloc.c

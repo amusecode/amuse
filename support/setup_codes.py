@@ -405,7 +405,7 @@ class CodeCommand(Command):
                     else:
                         self.announce("will not copy executable: {0}, it does not match the worker pattern".format(name), level = log.WARN)
             
-            have_downloaded_codes = False
+            have_downloaded_codes = True
             if have_downloaded_codes:
                 #
                 # HACK FOR MESA
@@ -684,7 +684,7 @@ class BuildCodes(CodeCommand):
             self.copy_codes_to_build_dir()
         
         if not self.inplace:
-            #self.environment["DOWNLOAD_CODES"] = "1"
+            self.environment["DOWNLOAD_CODES"] = "1"
             pass
                   
         for x in self.makefile_libpaths():
