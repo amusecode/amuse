@@ -716,6 +716,18 @@ class BuildCodes(CodeCommand):
         for x in makefile_paths:
             shortname = x[len(self.codes_dir) + 1:].lower()
             starttime = datetime.datetime.now()
+            
+            # For binary builds we do not want
+            # to distribute mesa, it will make the
+            # download size from about 100mb size 
+            # to > 1Gb size.
+            #
+            # Could we remove some of the data files from mesa?
+            #
+            if not self.inplace and shortname == 'mesa':
+                self.announce("[{1:%H:%M:%S}] skipping {0}".format(shortname, starttime), level =  log.INFO)
+                continue 
+                
             self.announce("[{1:%H:%M:%S}] building {0}".format(shortname, starttime), level =  log.INFO)
             returncode, outputlog = self.run_make_on_directory(shortname, x, 'all', environment)
             endtime = datetime.datetime.now()
