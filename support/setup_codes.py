@@ -413,7 +413,9 @@ class CodeCommand(Command):
                 # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
                 # MAKEFILE
                 #
-                if shortname == 'mesa':
+                # TURNED OFF MESA COPY, AS THE DATA DIR IS TOO LARGE
+                #
+                if False and shortname == 'mesa':
                     output_path = os.path.join(lib_builddir, 'src', 'mesa', 'data')
                     input_path = os.path.join(temp_builddir, 'src', 'mesa', 'data')
                     self.mkpath(output_path)
