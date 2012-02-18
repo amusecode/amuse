@@ -29,6 +29,11 @@ int merge_check(Particle prt[],
     int addj = prti->ngb_index;
     Particle *prtj = prt + addj;
     if(prti->mass == 0.0 || prtj->mass == 0.0){continue;}
+    if(addj == addi){continue; } 
+    // ^ AVE 17 feb 2012, same particle can happen for 1 body around the central black hole
+    // ngb_index is 0 be default and the first particle also
+    // has 0 as it's index
+    
     prtj->predict(Tsys);
     Vector3 rij = (prti->pos_pre - prtj->pos_pre);
     double rij2 = rij*rij;
@@ -128,6 +133,11 @@ void merge(Particle *prt0,
   if(prt1->mass < prt0->mass){
     prt_light = prt1;
     prt_heavy = prt0;
+  }
+  if(prt0->index == prt1->index)
+  {
+        cerr<<"merge particles have the same index, will not merge"<<endl;
+        return;
   }
   double newmass = prt0->mass + prt1->mass; 
   prt_heavy->mass = newmass;
