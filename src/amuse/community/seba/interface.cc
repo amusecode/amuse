@@ -26,7 +26,7 @@ local void evolve_star_until_next_time(node* bi, const real out_time, const int 
     starev.close();
 }
 
-int evolve_star(double mass, double endtime, double metal, double * resulttime, double * end_mass, double * end_radius){
+int evolve_star(double mass, double endtime, double metal, double * resulttime, double * end_mass, double * end_radius, double * end_luminosity, double * end_temperature){
     stellar_type type = Main_Sequence;
     char * star_type_string;
     int  c;
@@ -54,13 +54,11 @@ int evolve_star(double mass, double endtime, double metal, double * resulttime, 
     *resulttime = 0.0;
     *end_mass = 0.0 ;
     *end_radius = 0.0;
-    if (mass >= 100.0) {
-        return -3; 
-    }
-    if (metal < 0.0001 || metal > 0.03) {
+    *end_luminosity = 0.0;
+    *end_temperature = 0.0;
+    if (metal < 0.00001) {
         return -4;
     }
-    
     
     m_tot = mass;
     t_end = endtime;
@@ -90,6 +88,9 @@ int evolve_star(double mass, double endtime, double metal, double * resulttime, 
        *resulttime = bi->get_starbase()->get_current_time();
        *end_mass = bi->get_starbase()->get_total_mass() ;
        *end_radius = bi->get_starbase()->get_effective_radius(); 
+       *end_luminosity = bi->get_starbase()->get_luminosity();
+       *end_temperature = bi->get_starbase()->temperature();
+
         //    << "   " << type_string(bi->get_starbase()->get_element_type())
     }
     
