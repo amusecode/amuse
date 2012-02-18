@@ -29,7 +29,13 @@ int merge_check(Particle prt[],
     int addj = prti->ngb_index;
     Particle *prtj = prt + addj;
     if(prti->mass == 0.0 || prtj->mass == 0.0){continue;}
-    if(addj == addi){continue; } 
+    if(prti->index == prtj->index){
+        
+        cerr<<"merge particles have the same index, will not merge"<<endl;
+        cerr<<"addi: "<<addi<<", prti->index: "<<prti->index <<endl;
+        cerr<<"addj: "<<addi<<", prtj->index: "<<prtj->index <<endl;
+        continue;
+    } 
     // ^ AVE 17 feb 2012, same particle can happen for 1 body around the central black hole
     // ngb_index is 0 be default and the first particle also
     // has 0 as it's index
