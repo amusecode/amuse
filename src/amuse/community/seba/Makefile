@@ -9,6 +9,8 @@ CFLAGS   += -Isrc/include -Isrc/include/star
 CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -Lsrc/node -lnode -Lsrc/std -lstd -lm
 
+unexport CFLAGS CXXFLAGS LDFLAGS
+
 AMUSE_OBJS = interface.o
 
 CODELIB = src/sstar/libsstar.a
@@ -21,17 +23,13 @@ all: seba_worker
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) *~ worker_code
-
-SEBAclean: clean
 	@-make -C src clean
 
 distclean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) *~ worker_code
-	$(RM) -Rf src
 
 $(CODELIB): src
-	cd src; make Makefile.inc
 	cd src; make all
 
 worker_code.cc: interface.py

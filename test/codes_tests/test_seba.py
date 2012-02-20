@@ -4,13 +4,11 @@ from amuse.community.seba.interface import SeBaInterface, SeBa
 
 from amuse.units import units
 from amuse.datamodel import Particle
-class TestMPIInterface(TestWithMPI):
+
+class TestSeBaInterface(TestWithMPI):
 
     def test1(self):
-        try:
-            instance = SeBaInterface()
-        except Exception:
-            return
+        instance = self.new_instance_of_an_optional_code(SeBaInterface)
             
         endtime, mass, radius, luminosity, temperature, error = instance.evolve_star(1, 4600, 0.02)
         self.assertEquals(error, 0)
@@ -20,13 +18,12 @@ class TestMPIInterface(TestWithMPI):
         self.assertAlmostRelativeEqual(luminosity, 0.9585, 4)
         self.assertAlmostRelativeEqual(temperature, 5751, 4)
         
-class TestOOInterface(TestWithMPI):
+class TestSeBa(TestWithMPI):
 
     def test1(self):
-        try:
-            instance = SeBa()
-        except Exception:
-            return
+        
+        instance = self.new_instance_of_an_optional_code(SeBa)
+            
         endtime, mass, radius, luminosity, temperature = instance.evolve_star(1 | units.MSun, 4600 | units.Myr, 0.02 | units.none)
         
         self.assertTrue( endtime <= 4600 | units.Myr)
@@ -37,10 +34,8 @@ class TestOOInterface(TestWithMPI):
 
         
     def test2(self):
-        try:
-            instance = SeBa()
-        except Exception:
-            return
+        instance = self.new_instance_of_an_optional_code(SeBa)
+        
         p = Particle()
         p.mass = 5 | units.MSun
         p.metallicity = 0.02 | units.none
