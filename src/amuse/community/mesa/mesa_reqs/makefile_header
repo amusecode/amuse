@@ -271,7 +271,8 @@ FCfree = -free
 #FCopt = -O3
 FCopt = -O2
 FCdebug = -g
-FCopenmp = -openmp -threads
+OPENMP_FCFLAGS ?= -openmp
+FCopenmp = $(OPENMP_FCFLAGS) -threads
 #FCopenmp = 
 FC_fixed_preprocess = -fpp
 FC_free_preprocess = -fpp
@@ -293,7 +294,8 @@ FCopt = -O2
 FCdebug = -g
 FCstatic =
 
-FCopenmp = -fopenmp
+OPENMP_FCFLAGS ?= -fopenmp
+FCopenmp = $(OPENMP_FCFLAGS)
 #FCopenmp = 
 FC_fixed_preprocess = -x f77-cpp-input
 FC_free_preprocess = -x f95-cpp-input
@@ -308,7 +310,7 @@ FCfixed =
 FCfree =
 FCopt = 
 FCdebug = 
-FCopenmp = 
+FCopenmp = $(OPENMP_FCFLAGS)
 
 endif
 endif
