@@ -401,11 +401,11 @@ class MakeMeAMassiveStar(CommonCode):
     
     def _key_to_index_in_code(self, key):
         if self.native_stars.has_key_in_store(key):
-            return self.native_stars._subset([key]).index_in_code[0].number
+            return self.native_stars._subset([key]).index_in_code[0]
         elif self.imported_stars.has_key_in_store(key):
-            return self.imported_stars._subset([key]).index_in_code[0].number
+            return self.imported_stars._subset([key]).index_in_code[0]
         else:
-            return self.merge_products._subset([key]).index_in_code[0].number
+            return self.merge_products._subset([key]).index_in_code[0]
     
     def merge_stars(self, primary, secondary):
         indices_of_primaries = [self._key_to_index_in_code(one_key) for one_key in primary.number]
