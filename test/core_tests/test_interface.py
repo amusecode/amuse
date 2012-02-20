@@ -22,6 +22,9 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
             
         def add_to_length(self, length):
             return length + 10.0
+            
+        def return_an_errorcode(self, error):
+            return error
     
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
@@ -70,6 +73,19 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         handler.add_method('add_to_length', (units.m,), units.m, public_name = 'add_10')
            
         self.assertFalse(instance.add_10.is_async_supported)
+        
+        
+    def test4(self):
+        original = self.TestClass()
+        instance = interface.InCodeComponentImplementation(original)
+
+        handler = instance.get_handler('METHOD')
+        handler.add_method('return_an_errorcode', (handler.NO_UNIT,), handler.ERROR_CODE)
+           
+        self.assertEquals(instance.return_an_errorcode(0), None)
+        self.assertRaises(Exception, lambda : instance.return_an_errorcode(-1),
+            expected_message="Error when calling 'return_an_errorcode' of a 'InCodeComponentImplementation', errorcode is -1"
+        )
 
 class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     class TestClass(object):
@@ -1038,3 +1054,19 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
             "the number of inputs do not match, expected 2, actual 1.")
     
     
+    def test3(self):
+        class TestClass(object):
+           
+            @legacy_function
+            def echo_inputs():
+                function = LegacyFunctionSpecification()
+                function.addParameter('input1', dtype='d', direction=function.OUT)
+                function.addParameter('input2', dtype='d', direction=function.OUT)
+                function.addParameter('output1', dtype='d', direction=function.IN)
+                function.addParameter('output2', dtype='d', direction=function.IN)
+                function.result_type = 'i'
+                return function
+            
+        original = TestClass()
+        self.assertRaises(exceptions.CodeException, original.echo_inputs, 1, 2,
+            expected_message = "Exception when calling legacy code 'echo_inputs', of legacy class 'TestClass', exception was ''TestClass' object has no attribute 'channel''")

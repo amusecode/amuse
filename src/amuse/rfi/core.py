@@ -84,13 +84,13 @@ class CodeFunction(object):
         if not self.owner is None:
             logging.getLogger("code").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
             
-        self.interface.channel.send_message(self.specification.id, dtype_to_arguments = dtype_to_values)
-        
         
         try:
+            self.interface.channel.send_message(self.specification.id, dtype_to_arguments = dtype_to_values)
+            
             dtype_to_result = self.interface.channel.recv_message(self.specification.id, handle_as_array)
         except Exception, ex:
-            raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
+            raise exceptions.CodeException("Exception when calling legacy code '{0}', of legacy class '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
         result = self.converted_results(dtype_to_result, handle_as_array)
         
