@@ -135,16 +135,16 @@ class TestMakeMeAMassiveStarInterface(TestWithMPI):
         
         number_of_shells, error = instance.get_number_of_zones([0, 1, 2])
         self.assertEqual(error, [0, 0, 0])
-        self.assertEqual(number_of_shells, [187, 181, 17602])
+        self.assertEqual(number_of_shells, [187, 181, 12289])
         
         d_mass, mass, radius, density, pressure, entropy, temperature, luminosity, \
             molecular_weight, H1, He4, C12, N14, O16, Ne20, Mg24, Si28, Fe56, \
-            error = instance.get_stellar_model_element([0, 10000, 17601], [2, 2, 2])
+            error = instance.get_stellar_model_element([0, 10000, 12288], [2, 2, 2])
         self.assertEqual(error, [0, 0, 0])
-        self.assertAlmostEqual(mass,  [0.0, 21.8369, 25.675], 3)
-        self.assertAlmostEqual(radius, [0.0, 6.456, 19.458], 3)
-        self.assertAlmostEqual(temperature, [39054497.9, 6788317.3, 11.8], 0)
-        self.assertAlmostEqual(H1, [0.61566, 0.69942, 0.70002], 4)
+        self.assertAlmostEqual(mass,  [0.0, 24.5169, 25.6762], 3)
+        self.assertAlmostEqual(radius, [0.0, 10.3786, 19.3713], 3)
+        self.assertAlmostEqual(temperature, [38998355.9, 3478242.6, 49264.9], 0)
+        self.assertAlmostEqual(H1, [0.61562, 0.69999, 0.70000], 4)
         instance.stop()
     
     def test5(self):
@@ -290,13 +290,13 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         merge_product.secondary = instance.imported_stars[1]
         instance.merge_products.add_particle(merge_product)
         self.assertEqual(instance.number_of_particles, 3)
-        self.assertEqual(instance.particles.number_of_zones, [187, 181, 17602])
+        self.assertEqual(instance.particles.number_of_zones, [187, 181, 12289])
         
         stellar_model = instance.merge_products[0].internal_structure()
-        self.assertAlmostEqual(stellar_model.mass[[0, 10000, 17601]],  [0.0, 21.8369, 25.675] | units.MSun, 3)
-        self.assertAlmostEqual(stellar_model.radius[[0, 10000, 17601]], [0.0, 6.456, 19.458] | units.RSun, 3)
-        self.assertAlmostEqual(stellar_model.temperature[[0, 10000, 17601]], [39054497.9, 6788317.3, 11.8] | units.K, 0)
-        self.assertAlmostEqual(stellar_model.X_H[[0, 10000, 17601]], [0.61566, 0.69942, 0.70002] | units.none, 4)
+        self.assertAlmostEqual(stellar_model.mass[[0, 10000, 12288]],  [0.0, 24.5169, 25.6762] | units.MSun, 3)
+        self.assertAlmostEqual(stellar_model.radius[[0, 10000, 12288]], [0.0, 10.3786, 19.3713] | units.RSun, 3)
+        self.assertAlmostEqual(stellar_model.temperature[[0, 10000, 12288]], [38998355.9, 3478242.6, 49264.9] | units.K, 0)
+        self.assertAlmostEqual(stellar_model.X_H[[0, 10000, 12288]], [0.61562, 0.69999, 0.70000] | units.none, 4)
         instance.stop()
     
     def test5(self):
