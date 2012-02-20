@@ -87,6 +87,14 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         """
         return True
         
+    @base.format_option
+    def ids_are_keys(self):
+        """Set to True if the file contains
+        correct keys. Set to False to generate
+        the keys in amuse and prove an id attribute for 
+        the id's in the gadget file"""
+        return True
+        
     @late
     def header_size(self):
         return struct.calcsize(self.header_format)
@@ -141,7 +149,8 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         self.positions = self.read_fortran_block_float_vectors(file)
         self.velocities = self.read_fortran_block_float_vectors(file)
         self.ids = self.read_fortran_block_uints(file)
-    
+        
+        
         if self.total_number_of_particles_with_variable_masses > 0:
             self.masses = self.read_fortran_block_floats(file)
         else:
@@ -194,14 +203,21 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         for x in self.header_struct.Npart:
             ids_per_set.append(self.ids[offset:offset+x])
             offset += x
-            
-        sets = [datamodel.Particles(len(x), keys=x) for x in ids_per_set]
+        
+        if self.ids_are_keys:
+            sets = [datamodel.Particles(len(x), keys=x) for x in ids_per_set]
+        else:
+            sets = [datamodel.Particles(len(x)) for x in ids_per_set]
+            for set, x in zip(sets, ids_per_set):
+                if len(set) > 0:
+                    set.id = x
+                
         offset = 0
         for x in sets:
             length = len(x)
             if length == 0:
                 continue
-            print offset,offset+length, self.positions[offset:(offset+length)]
+                
             x.position = nbody_system.length.new_quantity(self.positions[offset:offset+length])
             x.velocity = nbody_system.speed.new_quantity(self.velocities[offset:offset+length])
             if not self.pot is None:

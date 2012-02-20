@@ -84,7 +84,67 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
                 found_has_acceleration = True   
         
         self.assertTrue(found_has_acceleration)
-
+        
+    def test6(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'gassphere_littleendian.dat')
+        x = gadget.GadgetFileFormatProcessor()
+        gas, halo, disk, bulge, stars, bndry =  io.read_set_from_file(filename, format='gadget')
+        self.assertEquals(len(gas), 1472)
+        self.assertEquals(len(halo), 0)
+        self.assertEquals(gas[0].key,1)
+        self.assertEquals(gas[1].key,2)
+        self.assertEquals(gas[2].key,3)
+        self.assertEquals(gas[1471].key,1472)
+        
+    def test7(self):
+        """test returned ids from gadget file
+        for ticket #245.
+        All the 'uneven' particles have key "1", and identical velocities/positions. This is incorrect
+        upon further inspection, the test file is incorrect
+        """
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'ticket245.dat')
+        gas, halo, disk, bulge, stars, bndry = io.read_set_from_file(filename, format='gadget')
+        
+        self.assertEquals(len(gas), 0)
+        self.assertEquals(len(halo),1324)
+        self.assertEquals(len(disk), 0)
+        self.assertEquals(len(bulge), 0)
+        self.assertEquals(len(stars), 0)
+        self.assertEquals(len(bndry), 0)
+        self.assertEquals(halo[0].key,544418538)
+        self.assertEquals(halo[1].key,0)
+        self.assertEquals(halo[2].key,544511335)
+        self.assertAlmostRelativeEquals(halo[0].velocity[0], -24.785614 |  nbody_system.speed, 7)
+        print halo[1].velocity
+        self.assertAlmostRelativeEquals(halo[1].velocity[0], -26.2435913086 |  nbody_system.speed, 7)
+        self.assertAlmostRelativeEquals(halo[2].velocity[0], -25.394440 |  nbody_system.speed, 7)
+        
+    def test8(self):
+        """test returned ids from gadget file
+        for ticket #245.
+        added option to not use the ids as a key, should fix the problem
+        for incorrect id's
+        """
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'ticket245.dat')
+        gas, halo, disk, bulge, stars, bndry = io.read_set_from_file(filename, format='gadget', ids_are_keys = False)
+        
+        self.assertEquals(len(gas), 0)
+        self.assertEquals(len(halo),1324)
+        self.assertEquals(len(disk), 0)
+        self.assertEquals(len(bulge), 0)
+        self.assertEquals(len(stars), 0)
+        self.assertEquals(len(bndry), 0)
+        self.assertEquals(halo[0].id,544418538)
+        self.assertEquals(halo[1].id,0)
+        self.assertEquals(halo[2].id,544511335)
+        self.assertAlmostRelativeEquals(halo[0].velocity[0], -24.785614 |  nbody_system.speed, 7)
+        print halo[1].velocity
+        self.assertAlmostRelativeEquals(halo[1].velocity[0], -26.2435913086 |  nbody_system.speed, 7)
+        self.assertAlmostRelativeEquals(halo[2].velocity[0], -25.394440 |  nbody_system.speed, 7)
+        
 class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
     
     
@@ -221,6 +281,3 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         self.assertAlmostRelativeEquals(set.kinetic_energy(), 0.230214395174 | nbody_system.energy, 8)
         self.assertAlmostRelativeEquals(set.potential_energy(G=nbody_system.G), -0.473503040144  | nbody_system.energy, 8)        
 
-
-
-        
