@@ -292,10 +292,8 @@ class MPIMessage(AbstractMessage):
             begin = 0
             
             for end in offsets:
-                bytes_of_string = bytes[begin:end]
-                string = ''.join(map(chr, bytes_of_string))
+                strings.append(str(bytearray(bytes[begin:end])))
                 begin = end + 1
-                strings.append(string)
             return strings
         else:
             return []
@@ -347,11 +345,11 @@ class MPIMessage(AbstractMessage):
         offsets = self.string_offsets(array)
         self.mpi_send(comm, [offsets, MPI.INT])
         
-        bytes = []
+        bytes=bytearray()
         for string in array:
-            bytes.extend([ord(ch) for ch in string])
+            bytes.extend(bytearray(string))
             bytes.append(0)
-          
+
         chars = numpy.array(bytes, dtype=numpy.uint8)
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
