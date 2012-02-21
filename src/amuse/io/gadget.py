@@ -148,7 +148,12 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
     def load_body(self, file):
         self.positions = self.read_fortran_block_float_vectors(file)
         self.velocities = self.read_fortran_block_float_vectors(file)
-        self.ids = self.read_fortran_block_uints(file)
+        
+        id_bytes = self.read_fortran_block(file)
+        if len(id_bytes) == 4*self.total_number_of_particles:
+            self.ids = numpy.frombuffer(id_bytes, dtype=self.uint_type)
+        else:
+            self.ids = numpy.frombuffer(id_bytes, dtype=self.ulong_type)
         
         
         if self.total_number_of_particles_with_variable_masses > 0:

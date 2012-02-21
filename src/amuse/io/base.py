@@ -336,6 +336,14 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
             return result.newbyteorder(self.endianness)
     
     @late
+    def ulong_type(self):
+        result = numpy.dtype(numpy.uint64)
+        if self.endianness == '@':
+            return result
+        else:
+            return result.newbyteorder(self.endianness)
+    
+    @late
     def int_type(self):
         result = numpy.dtype(numpy.int32)
         if self.endianness == '@':
@@ -370,6 +378,10 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
     def read_fortran_block_uints(self, file):
         bytes = self.read_fortran_block(file)
         return numpy.frombuffer(bytes, dtype=self.uint_type)
+        
+    def read_fortran_block_ulongs(self, file):
+        bytes = self.read_fortran_block(file)
+        return numpy.frombuffer(bytes, dtype=self.ulong_type)
         
     def read_fortran_block_ints(self, file):
         bytes = self.read_fortran_block(file)

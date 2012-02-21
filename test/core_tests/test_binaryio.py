@@ -114,11 +114,11 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(len(stars), 0)
         self.assertEquals(len(bndry), 0)
         self.assertEquals(halo[0].key,544418538)
-        self.assertEquals(halo[1].key,0)
-        self.assertEquals(halo[2].key,544511335)
+        self.assertEquals(halo[1].key,544511335)
+        self.assertEquals(halo[2].key,544511457)
         self.assertAlmostRelativeEquals(halo[0].velocity[0], -24.785614 |  nbody_system.speed, 7)
         print halo[1].velocity
-        self.assertAlmostRelativeEquals(halo[1].velocity[0], -26.2435913086 |  nbody_system.speed, 7)
+        self.assertAlmostRelativeEquals(halo[1].velocity[0], -25.346375 |  nbody_system.speed, 7)
         self.assertAlmostRelativeEquals(halo[2].velocity[0], -25.394440 |  nbody_system.speed, 7)
         
     def test8(self):
@@ -138,11 +138,10 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(len(stars), 0)
         self.assertEquals(len(bndry), 0)
         self.assertEquals(halo[0].id,544418538)
-        self.assertEquals(halo[1].id,0)
-        self.assertEquals(halo[2].id,544511335)
+        self.assertEquals(halo[1].id,544511335)
+        self.assertEquals(halo[2].id,544511457)
         self.assertAlmostRelativeEquals(halo[0].velocity[0], -24.785614 |  nbody_system.speed, 7)
-        print halo[1].velocity
-        self.assertAlmostRelativeEquals(halo[1].velocity[0], -26.2435913086 |  nbody_system.speed, 7)
+        self.assertAlmostRelativeEquals(halo[1].velocity[0], -25.346375 |  nbody_system.speed, 7)
         self.assertAlmostRelativeEquals(halo[2].velocity[0], -25.394440 |  nbody_system.speed, 7)
         
 class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
