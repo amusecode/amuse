@@ -1,0 +1,168 @@
+Installing on OS X
+******************
+
+Installing on MAC OS X with MacPorts 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this section we asume a clean MacPorts installation. The MacPorts
+build system will build every package from source so installation 
+will be slow. The packages in MacPorts support different *variants*, each
+*variant* is build differently. The default *variant* of most packages
+does not support fortran and AMUSE needs fortran and fortran enabled
+packages. Below, with all installation commands we will specify the variant.
+AMUSE is tested with the gcc44 variant, gcc43 is known to work also, below,
+we will use gcc44.
+
+.. note::
+    
+    If you want to use a different fortran compiler (ifort), you are better 
+    of using the **install.py** script in the **doc/install** directory.
+
+.. note::
+
+    Make sure you have a recent MacPorts installation. You need at least
+    an up to date MacPorts 1.8.6 or later. 
+    
+.. note::
+    
+    If you are unsure of your installation you can uninstall and clear the 
+    packages with::
+    
+        port uninstall py26-docutils py26-nose py26-mpi4py py26-h5py py26-numpy hdf5-18 fftw-3 gsl openmpi python26
+    
+    To make a clean install of MacPorts, please read the guide at:
+    http://guide.macports.org/
+    
+All in one
+----------
+
+You can install all the packages described below in one go with::
+
+    > sudo port install gcc44
+    
+    > sudo port install python26 openmpi \
+    hdf5-18 fftw-3 gsl cmake gmp mpfr \
+    py26-numpy py26-h5py py26-nose py26-docutils +gcc44
+    
+    > sudo port install py26-mpi4py +openmpi
+    
+    > sudo port install py26-matplotlib +gcc44
+    
+After installing you will need to configure the code with the following line::
+
+    > ./configure --with-fftw=/opt/local \
+                  MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90 \
+                  FC=gfortran-mp-4.4 PYTHON=python2.6 
+    
+
+GCC
+---
+By default MacPorts uses the XCode compilers, these compilers have no support
+for fortran, a MacPorts gcc compiler set needs to be installed. We suggest
+installing gcc 4.4:
+
+.. code-block:: sh
+    
+    > sudo port install gcc44
+    
+.. note::
+    
+    If you have installed a different version of gcc, you need to select
+    a different variant of the packages below. To select a different variant
+    replace **+gcc44** with **+gcc43**, **+gcc42** or any other version
+    matching your gcc installation. Note, apple-gcc versions will not work,
+    these do not support fortran.
+
+Python
+------
+MacPorts supports several python versions in different variants, we will install
+the python26 versions
+
+.. code-block:: sh
+
+    > sudo port install python26 +gcc44
+   
+MPI2
+----
+MacPorts provides packages for mpich2 and openmpi. Although you can
+probably install both, this is not recommended. We suggest you install
+openmpi.
+
+To install openmpi, do::
+
+     > sudo port install openmpi +gcc44
+
+HDF5
+----
+Amuse can work with HDF5 versions 1.6.* and 1.8.3. MacPorts comes
+with HDF5 version 1.8.*. To install it, do::
+
+    > sudo port install hdf5-18 +gcc44 
+
+FFTW-3
+------
+MacPorts comes with a FFTW and FFTW-3 package, for AMUSE we need FFTW-3.
+FFTW-3 can be installed with::
+
+    > sudo port install fftw-3 +gcc44
+
+GSL
+---
+GSL is used to build Gadget2, GSL can be installed with::
+
+    > sudo port install gsl +gcc44
+
+CMake
+-----
+CMake is used to build EVTwin, CMake can be installed with::
+
+    > sudo port install cmake
+
+GMP
+-------
+GMP is required for Adaptb. With MacPorts, GMP can be installed with::
+
+    > sudo port install gmp
+
+MPFR
+-------
+MPFR is required for Adaptb. With MacPorts, MPFR can be installed with::
+
+    > sudo port install mpfr
+
+
+Python packages
+---------------
+By this point all libraries and frameworks are installed. We can now
+install python packages (some depend on the installed libraries)::
+
+    > sudo port install py26-numpy py26-h5py py26-nose py26-docutils +gcc44
+
+If you installed openmpi in the MPI2 step you need to set the
+"openmpi" variant for "py26-mpi4py"::
+
+    > sudo port install py26-mpi4py +openmpi
+
+
+Matplotlib
+----------
+Matplotlib is not required but is very useful for creating graphics, 
+you can install it with::
+
+    > sudo port install py26-matplotlib +gcc44
+    
+
+.. note::
+
+    Macports will install the compilers under non standard names. To
+    use the right compilers you need to specify these during the
+    configure stage of AMUSE.
+    
+    See the output for ```configure --help``` for a list of all 
+    environment variables you can set.
+    
+    If you installed openmpi you need to specify the mpi compilers 
+    like so::
+    
+        ./configure MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90
+
