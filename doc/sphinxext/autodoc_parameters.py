@@ -35,9 +35,9 @@ class ParametersAttributeDocumenter(AttributeDocumenter):
         try:
             
             cls = self.object
-            instance = cls()
+            instance = cls(must_start_worker = False, must_handle_state = False)
             try:
-                instance.initialize_code()
+                #instance.initialize_code()
                 parameter_documentation = self.get_sphinx_doc_for_parameters(instance.parameters)
             finally:
                 instance.stop()

@@ -3,7 +3,7 @@ from amuse.units import generic_unit_system
 from amuse.units import quantities
 from amuse.units.quantities import is_quantity
 from amuse.units.core import unit
-from amuse.support.options import OptionalAttributes
+from amuse.support.options import OptionalAttributes, option
 
 from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition, IncorrectWrappedMethodException
 
@@ -1118,12 +1118,17 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
         self._handlers.append(HandlePropertiesWithUnits(self))
         self._handlers.append(HandleParameters(self))
         self._handlers.append(HandleParticles(self))
-        self._handlers.append(HandleState(self))
+        if self.must_handle_state:
+            self._handlers.append(HandleState(self))
         self._handlers.append(HandleConvertUnits(self))
         self._handlers.append(HandleErrorCodes(self))
 
         self.setup()
 
+    @option(type='boolean', sections=("code",))
+    def must_handle_state(self):
+        return True
+    
     def setup(self):
         for x in self._handlers:
             x.setup(self)
@@ -1152,7 +1157,7 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
     def get_handler(self, name):
         for x in self._handlers:
             if x.has_name(name):
-                return x
+                return xstate_machine
         return None
 
     def __getattr__(self, name):

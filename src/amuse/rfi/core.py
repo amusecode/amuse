@@ -588,14 +588,7 @@ class CodeInterface(OptionalAttributes):
         """
         OptionalAttributes.__init__(self, **options)
            
-        self.channel = self.channel_factory(name_of_the_worker, type(self), **options)
-        
-        self._check_if_worker_is_up_to_date()
-        
-        self.channel.redirect_stdout_file = self.redirection_filenames[0]
-        self.channel.redirect_stderr_file = self.redirection_filenames[1]
-        
-        self.channel.start()
+       
         self.instances.append(weakref.ref(self))
         #
         #ave: no more redirection in the code
@@ -606,10 +599,8 @@ class CodeInterface(OptionalAttributes):
         #    self._redirect_outputs(*self.redirection_filenames)
         #
         
-        # must register stop interfaces after channel start
-        # if done before, the mpi atexit will be registered 
-        # incorrectly
-        self.ensure_stop_interface_at_exit()
+        if self.must_start_worker:
+            self._start(name_of_the_worker = name_of_the_worker, **options)
         
     def __del__(self):
         self._stop()
@@ -618,6 +609,21 @@ class CodeInterface(OptionalAttributes):
         self.channel.check_if_worker_is_up_to_date(self)
         
     
+    def _start(self, name_of_the_worker = 'worker_code', **options):
+        self.channel = self.channel_factory(name_of_the_worker, type(self), **options)
+        
+        self._check_if_worker_is_up_to_date()
+        
+        self.channel.redirect_stdout_file = self.redirection_filenames[0]
+        self.channel.redirect_stderr_file = self.redirection_filenames[1]
+        
+        self.channel.start()
+        
+        # must register stop interfaces after channel start
+        # if done before, the mpi atexit will be registered 
+        # incorrectly
+        self.ensure_stop_interface_at_exit()
+        
     @classmethod
     def ensure_stop_interface_at_exit(cls):
         if not cls.is_stop_interfaces_registered:
@@ -699,7 +705,12 @@ class CodeInterface(OptionalAttributes):
     def redirect_file(self):
         return "code.out"
         
-
+    
+    @option(type='boolean', sections=("channel",))
+    def must_start_worker(self):
+        return True
+    
+        
     @late
     def channel_factory(self):
         if self.channel_type == 'mpi':
