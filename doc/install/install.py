@@ -59,8 +59,7 @@ class InstallPrerequisites(object):
             [],  
             '1.8.8',
             'hdf5-' , '.tar.gz' , 
-            #'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.4-patch1/src/', 
-            'http://www.hdfgroup.org/ftp/HDF5/current/src/',
+            'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.8/src/',
             self.hdf5_build
           ) ,
           (
@@ -81,9 +80,9 @@ class InstallPrerequisites(object):
           (
             'mpich2', 
             [], 
-            '1.3.2p1', 
+            '1.4.1p1', 
             'mpich2-', '.tar.gz', 
-            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.2p1/', 
+            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.4.1p1/', 
             self.mpich2_build
           ) ,
           (
@@ -175,6 +174,10 @@ class InstallPrerequisites(object):
     @late
     def use_hydra_process_manager(self):
         return False
+           
+    @late
+    def use_gforker_process_manager(self):
+        return False
         
     def setup_temp_dir(self):
         if not os.path.exists(self.temp_dir):
@@ -254,6 +257,8 @@ class InstallPrerequisites(object):
         ]
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
+        elif self.use_gforker_process_manager:
+            command.append('--with-pm=gforker:hydra:mpd')
         else:
             command.append('--with-pm=mpd:hydra:gforker')
         if not self.fortran90_compiler is None:
@@ -475,6 +480,8 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         ]
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
+        elif self.use_gforker_process_manager:
+            command.append('--with-pm=gforker:hydra:mpd')
         else:
             command.append('--with-pm=mpd:hydra:gforker')
             
@@ -550,6 +557,8 @@ setenv F77 gfortran
         else:
             if x == '--hydra':
                 INSTALL.use_hydra_process_manager = True
+            if x == '--gforker':
+                INSTALL.use_gforker_process_manager = True
             if flag:
                 if x.startswith('no-'):
                     skip.append(x[3:])
@@ -575,9 +584,17 @@ setenv F77 gfortran
         print ""
         print "./install.py list"
         print ""
+        print "hydra is a modern process manager with more options and"
+        print "faster distributed process start-up"
         print "to install mpich2 with the hydra process manager do:"
         print ""
         print "./install.py --hydra install"
+        print ""
+        print "the gforker process manager is easier to run (no daemon)"
+        print "but only works on the local machine" 
+        print "to install mpich2 with the gforker process manager do:"
+        print ""
+        print "./install.py --gforker install"
         print ""
         
         
