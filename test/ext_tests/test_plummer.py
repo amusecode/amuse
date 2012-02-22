@@ -3,7 +3,7 @@ import numpy
 from amuse.test import amusetest
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.ic.plummer import new_plummer_sphere, MakePlummerModel
+from amuse.ic.plummer import new_plummer_model, MakePlummerModel
 
 class TestData(amusetest.TestCase):
     pass
