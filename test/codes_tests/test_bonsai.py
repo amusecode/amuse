@@ -11,7 +11,7 @@ from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi import channel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.support.exceptions import AmuseException
 
 default_options = dict()
@@ -26,7 +26,7 @@ class TestBonsaiInterface(TestWithMPI):
     
     def test1(self):
         plummer_size = 500
-        plummer =  new_plummer_sphere(plummer_size)
+        plummer =  new_plummer_model(plummer_size)
         mass=plummer.mass.number
         radius=plummer.radius.number
         x=plummer.x.number
@@ -86,7 +86,7 @@ class TestBonsai(TestWithMPI):
         print "Testing Bonsai, N-body units"
         instance = self.new_instance_of_an_optional_code(Bonsai, **default_options)
         instance.initialize_code()
-        plummer = new_plummer_sphere(500)
+        plummer = new_plummer_model(500)
         instance.particles.add_particles(plummer)
         self.assertAlmostEquals(instance.particles.mass, 0.002 | nbody_system.mass)
         instance.evolve_model(1.0 | nbody_system.time)
@@ -98,7 +98,7 @@ class TestBonsai(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(100.0 | units.MSun, 1.0 | units.parsec)
         instance = self.new_instance_of_an_optional_code(Bonsai, convert_nbody, **default_options)
         instance.initialize_code()
-        plummer = new_plummer_sphere(500, convert_nbody = convert_nbody)
+        plummer = new_plummer_model(500, convert_nbody = convert_nbody)
         instance.particles.add_particles(plummer)
         instance.commit_particles()
         instance.evolve_model(1 | nbody_system.time)
@@ -109,7 +109,7 @@ class TestBonsai(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(100.0 | units.MSun, 1.0 | units.parsec)
         instance = self.new_instance_of_an_optional_code(Bonsai, convert_nbody, **default_options)
         instance.initialize_code()
-        plummer = new_plummer_sphere(500, convert_nbody = convert_nbody)
+        plummer = new_plummer_model(500, convert_nbody = convert_nbody)
         instance.particles.add_particles(plummer)
         instance.commit_particles()
         instance.particles.remove_particle(plummer[0])
@@ -120,7 +120,7 @@ class TestBonsai(TestWithMPI):
     
     def test6(self):
         print "Testing Bonsai states"
-        plummer = new_plummer_sphere(500)
+        plummer = new_plummer_model(500)
         
         print "First do everything manually:"
         instance = self.new_instance_of_an_optional_code(Bonsai, **default_options)
@@ -157,7 +157,7 @@ class TestBonsai(TestWithMPI):
     def test7(self):
         print "Testing Bonsai properties"
         numpy.random.seed(12345)
-        plummer = new_plummer_sphere(500)
+        plummer = new_plummer_model(500)
         instance = self.new_instance_of_an_optional_code(Bonsai, **default_options)
         instance.particles.add_particles(plummer)
         

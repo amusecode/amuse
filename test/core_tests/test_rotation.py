@@ -5,7 +5,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import quantities
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.datamodel import rotation
 from amuse.datamodel import particles
 
@@ -71,7 +71,7 @@ class TestRotations(amusetest.TestCase):
         self.assertAlmostRelativeEquals(rotated, [ [1.0, -3.0, 2.0 ], [4.0, -6.0, 5.0] ] | units.m)
 
     def test06(self):
-        particles = new_plummer_sphere(100)
+        particles = new_plummer_model(100)
         kinetic_energy0 = particles.kinetic_energy()
         potential_energy0 = particles.potential_energy()
         particles.position = rotation.rotated(particles.position,  numpy.pi/2, 0.0, 0.0)
@@ -84,7 +84,7 @@ class TestRotations(amusetest.TestCase):
         self.assertAlmostRelativeEquals(potential_energy1, potential_energy0)
 
     def test07(self):
-        particles = new_plummer_sphere(100)
+        particles = new_plummer_model(100)
         kinetic_energy0 = particles.kinetic_energy()
         potential_energy0 = particles.potential_energy()
         particles.position = rotation.rotated(particles.position,  numpy.pi/3, numpy.pi/2, 0.0)
@@ -97,7 +97,7 @@ class TestRotations(amusetest.TestCase):
         self.assertAlmostRelativeEquals(potential_energy1, potential_energy0)
     
     def test08(self):
-        particles = new_plummer_sphere(100)
+        particles = new_plummer_model(100)
         kinetic_energy0 = particles.kinetic_energy()
         potential_energy0 = particles.potential_energy()
         

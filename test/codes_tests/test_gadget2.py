@@ -12,7 +12,7 @@ from amuse.units import generic_unit_system
 from amuse.units import units
 from amuse.datamodel import Particles, Grid
 from amuse.rfi import channel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.gasplummer import new_plummer_gas_model
 
 try:
@@ -423,7 +423,7 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
         convert_nbody = nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
-        dark = new_plummer_sphere(100, convert_nbody)
+        dark = new_plummer_model(100, convert_nbody)
         instance.dm_particles.add_particles(dark)
         instance.evolve_model(1.0 | units.Myr)
         copied = instance.dm_particles.copy()
@@ -845,7 +845,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test19(self):
-        particles = new_plummer_sphere(31)
+        particles = new_plummer_model(31)
        
         instance = Gadget2(self.default_converter, number_of_workers=1)
         instance.initialize_code()

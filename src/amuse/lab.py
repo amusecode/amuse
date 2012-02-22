@@ -62,7 +62,7 @@ from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSuperset
 from amuse.datamodel import Grid
 
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.ic.kingmodel import new_king_model

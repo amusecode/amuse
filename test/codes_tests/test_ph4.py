@@ -9,7 +9,7 @@ import numpy
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -509,7 +509,7 @@ class TestPH4(TestWithMPI):
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
         instance.parameters.timestep_parameter = 0.01
         
-        stars = new_plummer_sphere(100)
+        stars = new_plummer_model(100)
         
         instance.particles.add_particles(stars)
         channel = stars.new_channel_to(instance.particles)
@@ -724,7 +724,7 @@ class TestPH4(TestWithMPI):
     
     def test16(self):
         print "Testing ph4 states"
-        stars = new_plummer_sphere(100)
+        stars = new_plummer_model(100)
         black_hole = datamodel.Particle()
         black_hole.mass = 1.0 | nbody_system.mass
         black_hole.radius =  0.0 | nbody_system.length

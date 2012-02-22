@@ -21,7 +21,7 @@ def new_cluster(number_of_stars = 1000, radius = None):
     if radius == None:
         radius = (0.5 / number_of_stars) | nbody_system.length
         
-    particles = new_plummer_sphere(number_of_stars)
+    particles = new_plummer_model(number_of_stars)
     particles.mass = new_salpeter_mass_distribution_nbody(number_of_stars)
     particles.radius = radius
     particles.move_to_center()

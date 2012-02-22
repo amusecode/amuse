@@ -687,7 +687,7 @@ class TestBHTree(TestWithMPI):
     def test16(self):
         numpy.random.seed(0)
         number_of_stars = 2
-        stars = plummer.new_plummer_sphere(number_of_stars)
+        stars = plummer.new_plummer_model(number_of_stars)
         stars.radius = 0.00001 | nbody_system.length
         stars.scale_to_standard()
         

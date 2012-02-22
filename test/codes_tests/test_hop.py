@@ -14,7 +14,7 @@ from amuse.units import units
 from amuse.units import nbody_system
 from amuse.datamodel.particles import Particles
 from amuse.rfi.core import is_mpd_running
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 
 class TestHopInterface(amusetest.TestCase):
     def test1(self):
@@ -52,7 +52,7 @@ class TestHopInterface(amusetest.TestCase):
         
         hop = HopInterface()
         
-        particles = new_plummer_sphere(1000)
+        particles = new_plummer_model(1000)
         ids, errors = hop.new_particle(
             particles.mass.value_in(nbody_system.mass),
             particles.x.value_in(nbody_system.length),
@@ -84,9 +84,9 @@ class TestHopInterface(amusetest.TestCase):
                 
         hop = HopInterface()
         
-        particles1 = new_plummer_sphere(10)
-        particles2 = new_plummer_sphere(10)
-        particles3 = new_plummer_sphere(10)
+        particles1 = new_plummer_model(10)
+        particles2 = new_plummer_model(10)
+        particles3 = new_plummer_model(10)
         
         particles2.position += (10,0,0) | nbody_system.length
         
@@ -196,7 +196,7 @@ class TestHop(amusetest.TestCase):
         hop.parameters.number_of_neighbors_for_local_density = 7
         hop.commit_parameters()
         
-        particles = new_plummer_sphere(1000)
+        particles = new_plummer_model(1000)
         hop.particles.add_particles(particles)
         
         
@@ -221,9 +221,9 @@ class TestHop(amusetest.TestCase):
         hop = Hop()
         hop.parameters.number_of_neighbors_for_local_density = 5
         
-        particles1 = new_plummer_sphere(10)
-        particles2 = new_plummer_sphere(10)
-        particles3 = new_plummer_sphere(10)
+        particles1 = new_plummer_model(10)
+        particles2 = new_plummer_model(10)
+        particles3 = new_plummer_model(10)
         
         particles2.position += (10,0,0) | nbody_system.length
         

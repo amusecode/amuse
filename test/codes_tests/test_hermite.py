@@ -562,7 +562,7 @@ class TestHermite(TestWithMPI):
         instance.stop()
 
     def test13(self):
-        particles = plummer.new_plummer_sphere(31)
+        particles = plummer.new_plummer_model(31)
        
         instance = Hermite(number_of_workers=1)#, debugger="xterm")
         instance.initialize_code()

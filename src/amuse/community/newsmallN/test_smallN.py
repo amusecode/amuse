@@ -15,7 +15,7 @@ from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
 from amuse.rfi.core import is_mpd_running
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
@@ -70,7 +70,7 @@ def test_smallN(infile = None, number_of_stars = 10,
     if infile == None:
 
         print "making a Plummer model"
-        stars = new_plummer_sphere(number_of_stars)
+        stars = new_plummer_model(number_of_stars)
 
         id = numpy.arange(number_of_stars)
         stars.id = id+1

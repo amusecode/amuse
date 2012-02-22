@@ -673,6 +673,14 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             must_set_before_get = must_set_before_get
         )
         self.definitions.append(definition)
+        
+    def add_alias_parameter(self, name, aliased_name, description):
+        definition = parameters.AliasParameterDefinition(
+            name,
+            aliased_name,
+            description
+        )
+        self.definitions.append(definition)
 
 
     def add_caching_parameter(self, function_name, parameter_name, name, description, default_value = None):

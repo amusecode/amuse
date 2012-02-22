@@ -314,7 +314,7 @@ class TestHuayno(TestWithMPI):
         
         
     def test13(self):
-        particles = plummer.new_plummer_sphere(31)
+        particles = plummer.new_plummer_model(31)
        
         instance = Huayno(number_of_workers=1)#, debugger="xterm")
         instance.initialize_code()
@@ -330,7 +330,7 @@ class TestHuayno(TestWithMPI):
         import hashlib
 
         numpy.random.seed(123456)
-        particles = plummer.new_plummer_sphere(64)
+        particles = plummer.new_plummer_model(64)
         sha=hashlib.sha1()
 
         for itype in sorted(Huayno.inttypes._list()):

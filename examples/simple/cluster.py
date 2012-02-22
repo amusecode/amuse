@@ -6,7 +6,7 @@ from amuse.units import nbody_system
 from amuse.community.hermite0.interface import Hermite
 import logging
 
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 #logging.basicConfig(level=logging.DEBUG)
 
 smoothing_length = 0.0 | nbody_system.length ** 2
@@ -25,7 +25,7 @@ def simulate_small_cluster(
         end_time = 40 | nbody_system.time,
         number_of_workers = 1
     ):
-    particles = new_plummer_sphere(number_of_stars)
+    particles = new_plummer_model(number_of_stars)
     particles.scale_to_standard()
    
     gravity = Hermite(number_of_workers = number_of_workers)

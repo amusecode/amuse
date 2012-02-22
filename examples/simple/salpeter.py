@@ -2,7 +2,7 @@ import numpy
 from matplotlib import pyplot
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 def new_cluster(number_of_stars = 1000):
     masses = new_salpeter_mass_distribution(
@@ -12,7 +12,7 @@ def new_cluster(number_of_stars = 1000):
         alpha = -2.35
     )
     nbody_converter = nbody_system.nbody_to_si(masses.sum(), 1 | units.parsec)
-    particles = new_plummer_sphere(number_of_stars, nbody_converter)
+    particles = new_plummer_model(number_of_stars, nbody_converter)
     particles.mass = masses
     particles.move_to_center()
     return particles

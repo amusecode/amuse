@@ -858,7 +858,8 @@ int get_eta_imbh(double *eta_imbh_out) {
     return 0;
 }
 int get_time_step(double *time_step) {
-    return -2; // Not implemented
+    *time_step = -1;
+    return 0; // Not implemented
 }
 int set_max_relative_energy_error(double max_relative_energy_error) {
     dEcrit = max_relative_energy_error;

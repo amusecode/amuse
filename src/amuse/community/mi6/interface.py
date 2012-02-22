@@ -238,12 +238,10 @@ class MI6(GravitationalDynamics):
     def define_parameters(self, object):
         GravitationalDynamics.define_parameters(self, object)
         self.stopping_conditions.define_parameters(object)
-        object.add_method_parameter(
-            "get_eps2_fs_fs",
-            "set_eps2_fs_fs", 
+        object.add_alias_parameter(
             "epsilon_squared", 
-            "smoothing parameter for gravity calculations - star-star interactions only (alias for epsilon_squared_star_star)", 
-            default_value = 0.0 | nbody_system.length * nbody_system.length
+            "epsilon_squared_star_star", 
+            "smoothing parameter for gravity calculations - star-star interactions only (alias for epsilon_squared_star_star)"
         )
         object.add_method_parameter(
             "get_eps2_fs_fs",

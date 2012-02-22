@@ -15,7 +15,7 @@ from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
 from amuse.rfi.core import is_mpd_running
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.units.quantities import zero
 from amuse.units import constants

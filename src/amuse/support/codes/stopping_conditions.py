@@ -380,7 +380,7 @@ class StoppingConditions(object):
             "set_stopping_condition_out_of_box_parameter", 
             "stopping_conditions_out_of_box_size", 
             "size of cube", 
-            default_value = 1.0 |  nbody.length
+            default_value = 0.0 |  nbody.length
         )
         
     def define_methods(self, object):

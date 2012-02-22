@@ -147,7 +147,7 @@ class RunSpeedTests(object):
     def speed_make_plummer_sphere(self):
         """plummer sphere"""
         self.start_measurement()
-        new_plummer_sphere(self.total_number_of_points)
+        new_plummer_model(self.total_number_of_points)
         self.end_measurement()
         
     def speed_make_salpeter_mass_distribution(self):
@@ -163,7 +163,7 @@ class RunSpeedTests(object):
         self.end_measurement()
         
     def speed_scale_plummer_sphere(self):
-        input = new_plummer_sphere(self.total_number_of_points)
+        input = new_plummer_model(self.total_number_of_points)
         if self.total_number_of_points > 20000:
             raise SkipException("too many points")
         self.start_measurement()
@@ -176,14 +176,14 @@ class RunSpeedTests(object):
         if self.total_number_of_points > 20000:
             raise SkipException("too many points")
     
-        input = new_plummer_sphere(self.total_number_of_points)
+        input = new_plummer_model(self.total_number_of_points)
         self.start_measurement()
         input.potential_energy()
         self.end_measurement()
         
         
     def speed_calculate_kinetic_energy(self):
-        input = new_plummer_sphere(self.total_number_of_points)
+        input = new_plummer_model(self.total_number_of_points)
         self.start_measurement()
         input.kinetic_energy()
         self.end_measurement()
@@ -197,7 +197,7 @@ class RunSpeedTests(object):
     
     def speed_add_particles_to_code(self):
         code = BHTree()
-        particles = new_plummer_sphere(self.total_number_of_points)
+        particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
         self.start_measurement()
         code.particles.add_particles(particles)
@@ -209,7 +209,7 @@ class RunSpeedTests(object):
         """plummer sphere"""
         converter = nbody.nbody_to_si(1 | units.parsec, self.total_number_of_points | units.MSun)
         code = BHTree(converter)
-        particles = new_plummer_sphere(self.total_number_of_points, converter)
+        particles = new_plummer_model(self.total_number_of_points, converter)
         particles.radius = 0| units.RSun
         self.start_measurement()
         code.particles.add_particles(particles)
@@ -219,7 +219,7 @@ class RunSpeedTests(object):
     
     def speed_copy_particles_from_code(self):
         code = BHTree()
-        particles = new_plummer_sphere(self.total_number_of_points)
+        particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
         code.particles.add_particles(particles)
         channel = code.particles.new_channel_to(particles)
@@ -235,7 +235,7 @@ class RunSpeedTests(object):
             raise SkipException("too many points")
     
         code = BHTree()
-        particles = new_plummer_sphere(self.total_number_of_points)
+        particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
         code.particles.add_particles(particles)
         self.start_measurement()
@@ -250,7 +250,7 @@ class RunSpeedTests(object):
             raise SkipException("too many points")
     
         code = Hermite()
-        particles = new_plummer_sphere(self.total_number_of_points)
+        particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
         code.particles.add_particles(particles)
         self.start_measurement()
@@ -324,7 +324,7 @@ class RunSpeedTests(object):
     
     def speed_copy_attributes_from_code(self):
         code = BHTree()
-        particles = new_plummer_sphere(self.total_number_of_points)
+        particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
         code.particles.add_particles(particles)
         channel = code.particles.new_channel_to(particles)
@@ -335,7 +335,7 @@ class RunSpeedTests(object):
         
     def speed_copy_attributes_from_code_to_empty(self):
         code = BHTree()
-        particles = new_plummer_sphere(self.total_number_of_points)
+        particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
         empty_particles = particles.empty_copy()
         
@@ -348,7 +348,7 @@ class RunSpeedTests(object):
         
     def speed_copy_mass_attribute_from_code_to_empty(self):
         code = BHTree()
-        particles = new_plummer_sphere(self.total_number_of_points)
+        particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
         empty_particles = particles.empty_copy()
         
@@ -361,7 +361,7 @@ class RunSpeedTests(object):
     
     def speed_copy_position_and_velocity_attributes_from_code_to_empty(self):
         code = BHTree()
-        particles = new_plummer_sphere(self.total_number_of_points)
+        particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
         empty_particles = particles.empty_copy()
         
@@ -376,8 +376,8 @@ class RunSpeedTests(object):
         
     
     def speed_copy_to_superset(self):
-        particles1 = new_plummer_sphere(self.total_number_of_points)
-        particles2 = new_plummer_sphere(self.total_number_of_points)
+        particles1 = new_plummer_model(self.total_number_of_points)
+        particles2 = new_plummer_model(self.total_number_of_points)
         particles_all = ParticlesSuperset([particles1, particles2])
         
         empty_particles = particles_all.empty_copy()
@@ -390,7 +390,7 @@ class RunSpeedTests(object):
         self.end_measurement()
     
     def speed_copy_to_set(self):
-        particles_all = new_plummer_sphere(self.total_number_of_points * 2)
+        particles_all = new_plummer_model(self.total_number_of_points * 2)
         empty_particles = particles_all.empty_copy()
         
         channel1 = particles_all.new_channel_to(empty_particles)

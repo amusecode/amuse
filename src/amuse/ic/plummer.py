@@ -111,7 +111,7 @@ class MakePlummerModel(object):
 
         return result
 
-def new_plummer_sphere(number_of_particles, *list_arguments, **keyword_arguments):
+def new_plummer_model(number_of_particles, *list_arguments, **keyword_arguments):
     """
     Create a plummer sphere with the given number of particles. Returns
     a set of stars with equal mass and positions and velocities distributed
@@ -128,4 +128,4 @@ def new_plummer_sphere(number_of_particles, *list_arguments, **keyword_arguments
     uc = MakePlummerModel(number_of_particles, *list_arguments, **keyword_arguments)
     return uc.result
 
-new_plummer_model = new_plummer_sphere
+new_plummer_sphere = new_plummer_model

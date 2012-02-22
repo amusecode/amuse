@@ -9,11 +9,11 @@ available to read and write to a variety of formats.
 from amuse.units import nbody_system
 from amuse.io import write_set_to_file
 
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 if __name__ in ('__main__', '__plot__'):
 
 # generate a particle set
-  plummer=new_plummer_sphere(128)
+  plummer=new_plummer_model(128)
 
 #write the set to file 'testfile'
 # the third argument is the file format, 'amuse' is an hdf5 based format

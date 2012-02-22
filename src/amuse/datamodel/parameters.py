@@ -3,6 +3,7 @@ import numpy
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
 from amuse.units import quantities
+from amuse.units.core import IncompatibleUnitsException
 from amuse.units.quantities import is_quantity
 from amuse.support import exceptions
 
@@ -72,7 +73,8 @@ class Parameters(object):
             raise exceptions.CoreException("tried to get default value of unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
     
         definition = self._mapping_from_name_to_definition[name]
-        return definition.default_value
+        return definition.get_default_value(self)
+
 
     def __str__(self):
         output = ""
@@ -130,6 +132,19 @@ class Parameters(object):
         parameters = [x for x in self.iter_parameters() if x.must_set_to_default()]
         for x in parameters:
             x.set_default_value()
+            
+    def check_defaults(self):
+        for x in self.iter_parameters():
+            default_value = self.get_default_value_for(x.definition.name)
+            try:
+                value = x.get_value()
+            except:
+                print "could not get value for:", x.definition.name, default_value
+                continue
+            print x.definition.name, value, default_value
+            if not value == default_value:
+               print "!default value is not equal to value in code: {0}".format(x.definition.name)
+            
     
 
 def new_parameters_instance_with_docs(definitions, instance):
@@ -206,10 +221,9 @@ class ParametersWithUnitsConverted(object):
         if not name in self._original._mapping_from_name_to_definition:
             warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
             return
-        default_value = self._original.get_default_value_for(name)
-        if not isinstance(default_value, bool) and (is_quantity(default_value) and generic_unit_system.is_generic_unit(default_value.unit)):
+        try:
             setattr(self._original, name, self._converter.from_source_to_target(value))
-        else:
+        except IncompatibleUnitsException as ex:
             setattr(self._original, name, value)
 
     def names(self):
@@ -235,15 +249,34 @@ class ParametersWithUnitsConverted(object):
 
         for name in self.names():
             output += name + ": "
-            output += str(getattr(self, name))+"\n"
+            output += str(getattr(self, name))
+            output += " default: " + str(self.get_default_value_for(name)) + " will set:" + str(self.get_parameter(name).must_set_to_default())
+            output +="\n"
 
         return output
+        
+    
+    def check_defaults(self):
+        for x in self.iter_parameters():
+            default_value = self.get_default_value_for(x.definition.name)
+            try:
+                value = x.get_value()
+            except:
+                print "could not get value for:", x.definition.name, default_value
+                continue
+            print x.definition.name, value, default_value
+            if not value == default_value:
+                print "default value is not equal to value in code: {0}".format(x.definition.name)
+            
 
 class AbstractParameterDefinition(object):
     def __init__(self, name, description):
         self.name = name
         self.description = description
-
+    
+    def get_default_value(self, parameterset):
+        return self.default_value
+        
     def get_value(self, parameter, object):
         raise exceptions.AmuseException("not implemented")
 
@@ -261,6 +294,34 @@ class AbstractParameterDefinition(object):
 
     def must_set_to_default_if_not_set(self):
         return True
+
+class AliasParameterDefinition(AbstractParameterDefinition):
+    
+    def __init__(self, name, aliased_name, description):
+        AbstractParameterDefinition.__init__(self, name, description)
+        self.aliased_name = aliased_name
+        self.default_value = None
+    
+    def get_default_value(self, parameter_set):
+        return parameter_set.get_parameter(self.aliased_name).definition.get_default_value(parameter_set)
+        
+    def get_value(self, parameter, object):
+        return getattr(parameter.parameter_set, self.aliased_name)
+
+    def set_value(self, parameter, object, quantity):
+        return setattr(parameter.parameter_set, self.aliased_name, quantity)
+
+    def set_default_value(self, parameter, object):
+        pass
+
+    def is_readonly(self):
+        return False
+        
+    def is_cached(self):
+        return False
+
+    def must_set_to_default_if_not_set(self):
+        return False
     
     
 class ParameterDefinition(AbstractParameterDefinition):

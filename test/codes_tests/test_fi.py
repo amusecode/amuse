@@ -11,7 +11,8 @@ from amuse.units import nbody_system as nbody
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi import channel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
+
 class TestFiInterface(TestWithMPI):
 
     def test1(self):
@@ -369,6 +370,7 @@ class TestFi(TestWithMPI):
         instance.parameters.star_formation_flag = True
         self.assertEquals(True, instance.parameters.star_formation_flag)
         
+        instance.commit_parameters()
         stars = datamodel.Particles(2)
         stars.mass = [1.0, 3.0e-6] | units.MSun
         stars.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.AU
@@ -882,8 +884,8 @@ class TestFi(TestWithMPI):
     def test16(self):
         instance = self.new_instance_of_an_optional_code(Fi)
         try:
-            particles = new_plummer_sphere(100)
-            more_particles = new_plummer_sphere(50)
+            particles = new_plummer_model(100)
+            more_particles = new_plummer_model(50)
           
             particles.h_smooth = 0.1 | nbody.length 
             particles.u = 0.1 | nbody.speed**2

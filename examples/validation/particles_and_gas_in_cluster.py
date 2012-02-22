@@ -170,7 +170,7 @@ class AbstractStarAndGasPlummerCode(object):
             pylab.draw()
     
     def new_particles_cluster(self):
-        particles=plummer.new_plummer_sphere(self.nstars,convert_nbody=self.converter)
+        particles=plummer.new_plummer_model(self.nstars,convert_nbody=self.converter)
         particles.radius= self.star_epsilon
         particles.mass = (1.0/self.nstars) * self.star_mass
         return particles
@@ -182,7 +182,7 @@ class AbstractStarAndGasPlummerCode(object):
         return particles
         
     def new_particles_cluster_as_gas(self):
-        particles=plummer.new_plummer_sphere(self.ngas,convert_nbody=self.converter)
+        particles=plummer.new_plummer_model(self.ngas,convert_nbody=self.converter)
         particles.radius= self.gas_epsilon
         particles.mass = (1.0/self.ngas) * self.gas_mass
         return particles

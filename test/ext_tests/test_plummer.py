@@ -23,17 +23,17 @@ class TestPlummer(TestData):
         
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(6|units.kg, 7 | units.m) 
-        stars =  new_plummer_sphere(2, convert_nbody)
+        stars =  new_plummer_model(2, convert_nbody)
         self.assertEquals(stars[0].mass.value_in(units.kg), 3.0)
         self.assertEquals(stars[1].mass.value_in(units.kg), 3.0)
         
     def test3(self):
-        stars =  new_plummer_sphere(2, None)
+        stars =  new_plummer_model(2, None)
         self.assertEquals(stars[0].mass.value_in(nbody_system.mass), 0.5)
         self.assertEquals(stars[1].mass.value_in(nbody_system.mass), 0.5)
         
     def test4(self):
-        stars = new_plummer_sphere(2, do_scale = True)
+        stars = new_plummer_model(2, do_scale = True)
         self.assertAlmostEqual(stars.kinetic_energy(),             0.25 | nbody_system.energy)
         self.assertAlmostEqual(stars.potential_energy(G=nbody_system.G), -0.50 | nbody_system.energy)
         self.assertAlmostEqual(stars.center_of_mass(),          [0,0,0] | nbody_system.length)

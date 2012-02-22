@@ -11,7 +11,7 @@ import time
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse import datamodel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 class _TestGravityCodes(TestWithMPI):
     length_unit = nbody_system.length
     speed_unit = nbody_system.speed
@@ -28,7 +28,7 @@ class _TestGravityCodes(TestWithMPI):
     def test1(self):
         factory = self.gravity_code_factory()
         instance = self.new_instance_of_an_optional_code(factory)
-        particles = new_plummer_sphere(100, convert_nbody = self.nbody_converter)
+        particles = new_plummer_model(100, convert_nbody = self.nbody_converter)
         particles.radius = 0 | self.length_unit
         particles.move_to_center()
         instance.particles.add_particles(particles)
@@ -51,7 +51,7 @@ class _TestGravityCodes(TestWithMPI):
         factory = self.gravity_code_factory()
         instance = self.new_instance_of_an_optional_code(factory)
         try:
-            particles = new_plummer_sphere(100)
+            particles = new_plummer_model(100)
             particles.move_to_center()
             particles.radius = 0.0 | nbody_system.length
             instance.particles.add_particles(particles)
@@ -82,8 +82,8 @@ class _TestGravityCodes(TestWithMPI):
         factory = self.gravity_code_factory()
         instance = self.new_instance_of_an_optional_code(factory)
         try:
-            particles = new_plummer_sphere(100, convert_nbody = self.nbody_converter)
-            more_particles = new_plummer_sphere(50, convert_nbody = self.nbody_converter)
+            particles = new_plummer_model(100, convert_nbody = self.nbody_converter)
+            more_particles = new_plummer_model(50, convert_nbody = self.nbody_converter)
             particles.radius = 0 | self.length_unit
             more_particles.radius = 1.0 | self.length_unit
             particles.move_to_center()
@@ -114,8 +114,8 @@ class _TestGravityCodes(TestWithMPI):
         factory = self.gravity_code_factory()
         instance = self.new_instance_of_an_optional_code(factory)
         try:
-            particles = new_plummer_sphere(100, convert_nbody = self.nbody_converter)
-            new_particles = new_plummer_sphere(50, convert_nbody = self.nbody_converter)
+            particles = new_plummer_model(100, convert_nbody = self.nbody_converter)
+            new_particles = new_plummer_model(50, convert_nbody = self.nbody_converter)
             instance.particles.add_particles(particles)
             instance.commit_particles()
             
@@ -168,7 +168,7 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
             instance.parameters.initialize_gpu_once=1
             sc.enable()
             
-            particles = new_plummer_sphere(n, convert_nbody = self.nbody_converter)
+            particles = new_plummer_model(n, convert_nbody = self.nbody_converter)
             particles.radius = 1.0 / n | self.length_unit
             particles.move_to_center()
             

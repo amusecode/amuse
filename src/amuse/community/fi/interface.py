@@ -1558,13 +1558,14 @@ class Fi(GravitationalDynamics):
     def initialize_code(self):
         result = self.overridden().initialize_code()
         
-        self.legacy_interface.set_fi_data_directory(self.legacy_interface.get_data_directory()+'/')
+        self.parameters.fi_data_directory = self.legacy_interface.get_data_directory()+'/'
         
         if not self.unit_converter is None:
-            value=self.unit_converter.to_si(nbody_system.length).in_(units.kpc).number 
-            self.legacy_interface.set_unitl_in_kpc(value)
-            value=self.unit_converter.to_si(nbody_system.mass).in_(units.MSun).number 
-            self.legacy_interface.set_unitm_in_msun(value)
+            value=self.unit_converter.to_si(nbody_system.length)
+            self.parameters._original.code_length_unit = value
+            
+            value=self.unit_converter.to_si(nbody_system.mass)
+            self.parameters._original.code_mass_unit = value
         
         return result
 

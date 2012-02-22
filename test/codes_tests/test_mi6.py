@@ -6,7 +6,7 @@ from amuse.units import nbody_system, units, constants
 from amuse.datamodel import Particles
 from amuse.community.mi6.interface import MI6Interface, MI6
 
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 
 
 default_options = dict()
@@ -412,7 +412,7 @@ class TestMI6(TestWithMPI):
         tan_final_direction =  []
         for log_eps2 in range(-9,10,2):
             instance = MI6(converter, **default_options)
-            instance.initialize_code()
+            instance.initialize_code()       
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
             instance.parameters.smbh_mass = 0.0 | units.MSun
             instance.commit_parameters()
@@ -479,7 +479,7 @@ class TestMI6(TestWithMPI):
         instance.parameters.smbh_mass = 0.0 | units.MSun
         instance.commit_parameters()
         numpy.random.seed(987654321)
-        instance.particles.add_particles(new_plummer_sphere(100, convert_nbody=converter))
+        instance.particles.add_particles(new_plummer_model(100, convert_nbody=converter))
         instance.commit_particles()
         
         kinetic_energy = instance.kinetic_energy

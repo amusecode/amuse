@@ -9,7 +9,7 @@ import numpy
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 try:
     import matplotlib
     matplotlib.use("Agg")
@@ -499,7 +499,7 @@ class TestPhigrape(TestWithMPI):
         instance.initialize_code()
         instance.parameters.set_defaults()
         
-        stars = new_plummer_sphere(100)
+        stars = new_plummer_model(100)
         stars.radius = 0 | nbody_system.length
         
         instance.particles.add_particles(stars)
