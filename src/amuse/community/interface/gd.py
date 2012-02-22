@@ -1113,6 +1113,12 @@ class GravitationalDynamics(common.CommonCode):
     def define_converter(self, object):
         if not self.unit_converter is None:
             object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            
+    def commit_parameters(self):
+        self.parameters.send_not_set_parameters_to_code()
+        self.parameters.send_cached_parameters_to_code()
+        self.overridden().commit_parameters()
+        
     def cleanup_code(self):
         self.overridden().cleanup_code()
     

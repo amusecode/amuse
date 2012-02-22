@@ -486,13 +486,13 @@ int get_potential_at_point(double eps,
 			   double x, double y, double z, 
 			   double * phi)
 {
-    return -1;
+    return -2;
 }
 
 int get_gravity_at_point(double eps, double x, double y, double z, 
 			 double * forcex, double * forcey, double * forcez)
 {
-    return -1;
+    return -2;
 }
 
 //----------------------------------------------------------------------

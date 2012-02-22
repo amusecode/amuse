@@ -29,6 +29,7 @@ class TestMPIInterface(TestWithMPI):
         instance = ph4Interface()
         instance.initialize_code()
         instance.set_eta(0.01)
+        
         index, error = instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
         self.assertEquals(error, 0)
         self.assertEquals(index, 1)
@@ -233,7 +234,7 @@ class TestPH4(TestWithMPI):
         instance.initialize_code()
     
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.set_eta(0.01)
+        instance.parameters.timestep_parameter = 0.01
         
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
@@ -271,7 +272,7 @@ class TestPH4(TestWithMPI):
         
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.set_eta(0.01)
+        instance.parameters.timestep_parameter = 0.01
         instance.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -359,6 +360,7 @@ class TestPH4(TestWithMPI):
         instance = ph4()
         instance.initialize_code()
         instance.parameters.manage_encounters = 2
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length ** 2
         particles = datamodel.Particles(6)
         particles.mass =  [0.01, 0.1,  0.1, 0.1, 0.1, 0.1] | nbody_system.mass
         particles.radius =   0.1 | nbody_system.length
@@ -399,11 +401,10 @@ class TestPH4(TestWithMPI):
         
         self.assertEquals(binary_energy2.value_in(nbody_system.energy), binary_energy1)
         
-    def xtest5(self):
+    def xtest6(self):
         instance = ph4()
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
-        instance.set_eta(0.01,0.02)
 
         
         particles = datamodel.Particles(2)
@@ -780,3 +781,24 @@ class TestPH4(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'END')
     
 
+
+    def test17(self):
+        print "Testing parameter defaults"
+       
+        instance = ph4()
+        instance.parameters.epsilon_squared = 0.5  | nbody_system.length * nbody_system.length
+        
+        
+        
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius =  [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+        
+        self.assertAlmostRelativeEquals( instance.parameters.epsilon_squared ,  0.5  | nbody_system.length * nbody_system.length)
+        self.assertAlmostRelativeEquals( instance.parameters.timestep_parameter ,  0.14)
+        self.assertAlmostRelativeEquals( instance.parameters.use_gpu , 0)
+        self.assertAlmostRelativeEquals( instance.parameters.manage_encounters , 4)
+        
