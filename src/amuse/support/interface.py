@@ -1157,7 +1157,7 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
     def get_handler(self, name):
         for x in self._handlers:
             if x.has_name(name):
-                return xstate_machine
+                return x
         return None
 
     def __getattr__(self, name):
