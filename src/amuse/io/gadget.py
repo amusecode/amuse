@@ -51,7 +51,7 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
             ('HubbleParam', 1, 'd'),
             ('FlagAge', 1, 'd'),
             ('FlagMetals', 1, 'd'),
-            ('NallHW', 6, 'd'),
+            ('NallHW', 6, 'i'),
             ('flag_entr_ics', 1, 'i'),
         )
         
@@ -93,6 +93,19 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         correct keys. Set to False to generate
         the keys in amuse and prove an id attribute for 
         the id's in the gadget file"""
+        return True
+        
+    
+    @base.format_option
+    def equal_mass_array(self):
+        """If filled with an array with masses > 0.0
+        assume equal mass for the corresponding set"""
+        return ([0.0] * 6) | nbody_system.mass
+    
+    @base.format_option
+    def ids_are_long(self):
+        """Set to true the ids will be written
+        as longs in the gadget file"""
         return True
         
     @late
@@ -252,7 +265,7 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
             if not self.density is None:
                 gas_set.rho = unit.new_quantity(self.density)
             if not self.hsml is None:
-                gas_set.smoothing_length = nbody_system.length.new_quantity(self.hsml)
+                gas_set.h_smooth = nbody_system.length.new_quantity(self.hsml)
             
         
         return sets
@@ -265,6 +278,153 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         return self.new_sets_from_arrays()
         
     
+    @late
+    def sets_to_save(self):
+        if isinstance(self.set, (tuple, list)):
+            sets_to_save = self.set
+        elif hasattr(self.set, 'key'):
+            sets_to_save = (self.set, )
+        else:
+            raise Exception("The Gadget binary file writer can write a particle set or a list of sets but nothing else")
+        
+        if len(sets_to_save) < 6:
+            sets_to_save = list(sets_to_save)
+            sets_to_save.extend([()] * (6 - len(sets_to_save)))
+        
+        return sets_to_save
+        
+    def store_file(self, file):
+        self.store_header(file)
+        self.store_body(file)
+        
+    def store_header(self, file):
+        self.header_struct = self.struct_class(
+            Npart = [len(x) for x in self.sets_to_save],
+            Massarr = list(self.equal_mass_array.value_in(nbody_system.mass)),
+            Time = 0.0,
+            Redshift = 0.0,
+            FlagSfr = 0,
+            FlagFeedback = 0,
+            Nall =  [len(x) for x in self.sets_to_save],
+            FlagCooling = 0,
+            NumFiles = 1,
+            BoxSize = 0,
+            Omega0 = 0,
+            OmegaLambda = 0,
+            HubbleParam = 0,
+            FlagAge = 0.0,
+            FlagMetals = 0.0,
+            NallHW = [0]*6,
+            flag_entr_ics = 0
+        )
+        
+        bytes = bytearray(256)
+        parts = list()
+        for x in list(self.header_struct):
+            if isinstance(x, list):
+                parts.extend(x)
+            else:
+                parts.append(x)
+                
+        struct.pack_into(self.header_format, bytes, 0,  *parts)
+        self.write_fortran_block(file, bytes)
+    
+    
+    def _pack_sets(self, attributename, unit = None):
+        result = []
+        for x in self.sets_to_save:
+            if len(x) > 0:
+                if unit is None:
+                    result.extend(getattr(x,attributename))
+                else:
+                    result.extend(getattr(x,attributename).value_in(unit))
+        return result
+    
+    
+    def store_body(self, file):
+        self.positions = self._pack_sets('position', nbody_system.length)
+        self.velocities = self._pack_sets('velocity', nbody_system.speed)
+        
+        if self.ids_are_keys:
+            self.ids = self._pack_sets('key')
+        else:
+            self.ids = self._pack_sets('id')
+            
+        self.masses = []
+        for equal_mass, x in zip(self.equal_mass_array, self.sets_to_save):
+            if len(x) > 0 and not equal_mass > (0.0 | nbody_system.mass):
+                self.masses.extend(x.mass.value_in(nbody_system.mass)) 
+        if len(self.masses) == 0:
+            self.masses = None
+            
+        
+        number_of_gas_particles = len(self.sets_to_save[self.GAS])
+        if number_of_gas_particles > 0:
+            self.u = self.sets_to_save[0].u.value_in(nbody_system.potential)
+        else:
+            self.u = None
+        
+            
+        self.write_fortran_block_float_vectors(file, self.positions)
+        self.write_fortran_block_float_vectors(file, self.velocities)
+        
+        if self.ids_are_long:
+            self.write_fortran_block_ulongs(file, self.ids)
+        else:
+            self.write_fortran_block_uints(file, self.ids)
+        
+        if not self.masses is None:
+            self.write_fortran_block_floats(file, self.masses)
+        
+        if not self.u is None:
+            self.write_fortran_block_floats(file, self.u)
+            
+        if self.is_initial_conditions_format:
+            return
+        
+        if number_of_gas_particles > 0:
+            self.density =  self.sets_to_save[0].rho.value_in(nbody_system.density)
+            self.hsml = self.sets_to_save[0].h_smooth.value_in(nbody_system.length)
+        else:
+            self.density  = None
+            self.hsml = None
+        
+        if self.has_potential_energy:
+            self.pot = self._pack_sets('potential_energy', nbody_system.energy)
+        else:
+            self.pot = None
+            
+        if self.has_acceleration:
+            self.acc = self._pack_sets('acceleration', nbody_system.acceleration)
+        else:
+            self.acc = None
+            
+        if self.has_rate_of_entropy_production:
+            self.da_dt = None
+        else:
+            self.da_dt = None
+            
+        if self.has_timestep:
+            self.dt = self._pack_sets('timestep', nbody_system.time)
+        else:
+            self.dt = None
         
         
+        if not self.density is None:
+            self.write_fortran_block_floats(file, self.density)
         
+        if not self.hsml is None:
+            self.write_fortran_block_floats(file, self.hsml)
+            
+        if not self.pot is None:
+            self.write_fortran_block_floats(file, self.pot)
+            
+        if not self.acc is None:
+            self.write_fortran_block_floats(file, self.acc)
+            
+        if not self.da_dt is None:
+            self.write_fortran_block_floats(file, self.da_dt)
+            
+        if not self.dt is None:
+            self.write_fortran_block_floats(file, self.dt)
+            

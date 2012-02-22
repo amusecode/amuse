@@ -397,5 +397,32 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
         file.write(struct.pack(format, length_of_block))
         file.write(bytes)
         file.write(struct.pack(format, length_of_block))
+        
+    
+    def write_fortran_block_floats(self, file, values):
+        array = numpy.asarray(values, dtype=self.float_type)
+        self.write_fortran_block(file, array.data)
+       
+
+    def write_fortran_block_doubles(self, file, values):
+        array = numpy.asarray(values, dtype=self.double_type)
+        self.write_fortran_block(file, array.data)
+        
+    def write_fortran_block_uints(self, file, values):
+        array = numpy.asarray(values, dtype=self.uint_type)
+        self.write_fortran_block(file, array.data)
+        
+    def write_fortran_block_ulongs(self, file, values):
+        array = numpy.asarray(values, dtype=self.ulong_type)
+        self.write_fortran_block(file, array.data)
+        
+    def write_fortran_block_ints(self, file, values):
+        array = numpy.asarray(values, dtype=self.int_type)
+        self.write_fortran_block(file, array.data)
+        
+    def write_fortran_block_float_vectors(self, file, values, size = 3):
+        array = numpy.asarray(values, dtype=self.float_type)
+        array = array.reshape(len(array) * size)
+        self.write_fortran_block(file, array.data)
     
     

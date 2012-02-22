@@ -6,6 +6,7 @@ from amuse import io
 from amuse.io import gadget
 from amuse.io import nemobin
 from amuse.units import nbody_system
+from amuse.datamodel import Particles
 
 class GadgetFileFormatProcessorTests(amusetest.TestCase):
     header_parts = ( 
@@ -38,7 +39,9 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(x.header_struct.Npart[0], 20000)
         self.assertEquals(x.header_struct.Npart[1], 500000)
         self.assertEquals(x.header_struct.Npart[2], 20000)
-        
+        self.assertEquals(x.header_struct.Npart[3], 0)
+        self.assertEquals(x.header_struct.Npart[4], 0)
+        self.assertEquals(x.header_struct.Npart[5], 0)
         
         self.assertEquals(x.header_struct.Massarr[0], 0.0)
         self.assertAlmostRelativeEqual(x.header_struct.Massarr[1], 4.2911501e-07, 8)
@@ -143,6 +146,89 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         self.assertAlmostRelativeEquals(halo[0].velocity[0], -24.785614 |  nbody_system.speed, 7)
         self.assertAlmostRelativeEquals(halo[1].velocity[0], -25.346375 |  nbody_system.speed, 7)
         self.assertAlmostRelativeEquals(halo[2].velocity[0], -25.394440 |  nbody_system.speed, 7)
+        
+    
+    def test9(self):
+        class FakeList(object):
+            def __init__(self, _len):
+                self._len = _len
+            def __len__(self):
+                return self._len
+                
+        set = (FakeList(20000), FakeList(500000), FakeList(20000), (), (), ())
+        x = gadget.GadgetFileFormatProcessor(set = set)
+        x.equal_mass_array=(0.0,4.291150104743886e-07, 2.5e-07,0.0,0.0,0.0) |nbody_system.mass
+        file = StringIO()
+        x.store_header(file)
+        print x.header_struct
+        self.assertEquals(x.header_struct.Npart[0], 20000)
+        self.assertEquals(x.header_struct.Npart[1], 500000)
+        self.assertEquals(x.header_struct.Npart[2], 20000)
+        self.assertEquals(x.header_struct.Npart[3], 0)
+        self.assertEquals(x.header_struct.Npart[4], 0)
+        self.assertEquals(x.header_struct.Npart[5], 0)
+        
+        print repr(file.getvalue())
+        print repr(''.join(self.header_parts))
+        self.assertEquals(repr(file.getvalue()[0:30]), repr(''.join(self.header_parts)[0:30]))
+    
+    def test10(self):
+        p = Particles(2)
+        p[0].position = [1.0, 2.0, 3.0] | nbody_system.length
+        p[1].position = [4.0, 5.0, 6.0] | nbody_system.length
+        p[0].velocity = [7.0, 8.0, 10.0] | nbody_system.length / nbody_system.time
+        p[1].velocity = [11.0, 12.0, 13.0] | nbody_system.length / nbody_system.time
+        p.u = [3,4] | nbody_system.potential
+        p.rho = [5,6] | nbody_system.density
+        p.mass = [5,6] | nbody_system.mass
+        x = gadget.GadgetFileFormatProcessor(set = p)
+        file = StringIO()
+        x.store_body(file)
+        input = StringIO(file.getvalue())
+        positions = x.read_fortran_block_float_vectors(input)
+        self.assertEquals(positions[0] , [1.0, 2.0, 3.0])
+        self.assertEquals(positions[1] , [4.0, 5.0, 6.0])
+        velocities = x.read_fortran_block_float_vectors(input)
+        self.assertEquals(velocities[0] , [7.0, 8.0, 10.0])
+        self.assertEquals(velocities[1] , [11.0, 12.0, 13.0])
+        ids = x.read_fortran_block_ulongs(input)
+        self.assertEquals(ids[0], p[0].key)
+        self.assertEquals(ids[1], p[1].key)
+        masses = x.read_fortran_block_floats(input)
+        self.assertEquals(masses[0], 5)
+        self.assertEquals(masses[1], 6)
+        u = x.read_fortran_block_floats(input)
+        self.assertEquals(u[0], 3)
+        self.assertEquals(u[1], 4)
+        
+    def test11(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'gassphere_littleendian.dat')
+        gas, halo, disk, bulge, stars, bndry = io.read_set_from_file(filename, format='gadget')
+        self.assertEquals(len(gas), 1472)
+        self.assertEquals(len(halo), 0)
+        self.assertEquals(gas[0].key,1)
+        self.assertEquals(gas[1].key,2)
+        self.assertEquals(gas[2].key,3)
+        self.assertEquals(gas[1471].key,1472)
+        self.assertAlmostRelativeEquals(gas[0:5].x,[-0.0713372901082, 0.0713372901082, -0.21178227663, -0.0698266476393, 0.0698266476393] | nbody_system.length, 7)
+        self.assertAlmostRelativeEquals(gas[0:5].u, [0.0500000007451, 0.0500000007451, 0.0500000007451, 0.0500000007451, 0.0500000007451] | (nbody_system.length / nbody_system.time)**2, 7 )
+       
+        outputfilename = 'gadgettest.output'
+        try:
+            io.write_set_to_file((gas, halo, disk, bulge, stars, bndry), outputfilename, format='gadget', ids_are_long = False)
+        
+            gas, halo, disk, bulge, stars, bndry = io.read_set_from_file(filename, format='gadget')
+            self.assertEquals(len(gas), 1472)
+            self.assertEquals(len(halo), 0)
+            self.assertEquals(gas[0].key,1)
+            self.assertEquals(gas[1].key,2)
+            self.assertEquals(gas[2].key,3)
+            self.assertEquals(gas[1471].key,1472)
+        finally:
+            if os.path.exists(outputfilename):
+                os.remove(outputfilename)
+        
         
 class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
     
@@ -279,4 +365,4 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(len(set), 128)
         self.assertAlmostRelativeEquals(set.kinetic_energy(), 0.230214395174 | nbody_system.energy, 8)
         self.assertAlmostRelativeEquals(set.potential_energy(G=nbody_system.G), -0.473503040144  | nbody_system.energy, 8)        
-
+ 

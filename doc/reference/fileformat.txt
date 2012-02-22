@@ -110,7 +110,7 @@ Supported File Formats
     
     
     NEMO
-    -------
+    ----
     
     AMUSE has support for reading and writing nemo (``.tsf``) files.
     You can specify the starlab format by entering "nemo" or "tsf"
@@ -120,7 +120,7 @@ Supported File Formats
         >>> particles = io.read_set_from_file('plummer.tsf','nemo')
         >>> io.write_set_to_file(particles, 'output.tsf', 'tsf')
         
-    The nemo format support sevaral options, listed below. You can
+    The nemo format support several options, listed below. You can
     use these options by adding additional keyword arguments to
     the :func:`read_set_from_file` or :func:`write_set_to_file` functions. 
     For example::
@@ -131,4 +131,32 @@ Supported File Formats
         >>> particles = io.read_set_from_file('plummer.nemo','tsf', nbody_to_si_converter = converter)
         
     .. iooptions:: nemo
+        
+        
+    Gadget
+    ------
+    
+    AMUSE has support for reading and writing gadget 2 files.
+    You can specify the gadget format by entering "gadget"
+    as the format::
+    
+        >>> from amuse.support import io
+        >>> gas, halo, disk, bulge, stars, bndry = io.read_set_from_file('plummer.dat','gadget')
+        >>> io.write_set_to_file(particles, 'output.dat', 'gadget')
+    
+    The gadget file format reader will return a tuple of gas, halo, disk, 
+    bulge, stars and boundary particles. This is different form other
+    readers which only return one set. The write_set_to_file can take
+    a particles set (will be saved as halo particles) or a tuple of 
+    gas, halo, disk, bulge, stars and boundary particles.
+    
+    The gadget format support several options, listed below. You can
+    use these options by adding additional keyword arguments to
+    the :func:`read_set_from_file` or :func:`write_set_to_file` functions. 
+    For example (will read a gadget file with timestep information)::
+    
+        >>> from amuse.support import io
+        >>> particles = io.read_set_from_file('plummer.nemo','gadget', has_timestep = True)
+        
+    .. iooptions:: gadget
         
