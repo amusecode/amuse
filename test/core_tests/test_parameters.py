@@ -361,7 +361,7 @@ class TestParameters(amusetest.TestCase):
 
         y = parameters.ParametersWithUnitsConverted(
                 x,
-                convert_nbody.as_converter_from_si_to_nbody()
+                convert_nbody.as_converter_from_si_to_generic()
             )
 
         self.assertAlmostEquals(y.test_name.value_in(units.m), 246.0, 6)
@@ -402,7 +402,7 @@ class TestParameters(amusetest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
         y = parameters.new_parameters_with_units_converted_instance_with_docs(
                 x,
-                convert_nbody.as_converter_from_si_to_nbody()
+                convert_nbody.as_converter_from_si_to_generic()
             )
 
         self.assertTrue("test_name" in y.__doc__)
@@ -440,7 +440,7 @@ class TestParameters(amusetest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
         y = parameters.new_parameters_with_units_converted_instance_with_docs(
                 x,
-                convert_nbody.as_converter_from_si_to_nbody()
+                convert_nbody.as_converter_from_si_to_generic()
             )
 
         self.assertTrue("test_name" in y.__class__.__doc__)
@@ -475,7 +475,7 @@ class TestParameters(amusetest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
         y = parameters.ParametersWithUnitsConverted(
                 x,
-                convert_nbody.as_converter_from_si_to_nbody()
+                convert_nbody.as_converter_from_si_to_generic()
             )
         self.assertTrue("test_name" in str(y))
         self.assertTrue("246.0 m" in str(y))
@@ -521,7 +521,7 @@ class TestParameters(amusetest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
         y = parameters.ParametersWithUnitsConverted(
                 x,
-                convert_nbody.as_converter_from_si_to_nbody()
+                convert_nbody.as_converter_from_si_to_generic()
             )
         self.assertEquals(getattr(y,"phys_test_name"), 123.0 | units.m)
         self.assertAlmostEquals(getattr(y,"nbody_test_name"), 246.0 | units.m)
@@ -568,7 +568,7 @@ class TestParameters(amusetest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
         y = parameters.ParametersWithUnitsConverted(
                 x,
-                convert_nbody.as_converter_from_si_to_nbody()
+                convert_nbody.as_converter_from_si_to_generic()
             )
         self.assertEquals(getattr(y,"string_par_name"), "1230.0")
         self.assertAlmostEquals(getattr(y,"nbody_par_name"), 246.0 | units.m)

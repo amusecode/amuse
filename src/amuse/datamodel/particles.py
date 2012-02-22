@@ -1654,6 +1654,8 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
             self._private.converter
         )
     
+    def get_unit_converter(self):
+        return self._private.converter.generic_to_si
 
 
     

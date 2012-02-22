@@ -33,7 +33,7 @@ class Particles2Tsf(object):
         if not converter is None:
             particles=datamodel.ParticlesWithUnitsConverted(
                 particles,
-                converter.as_converter_from_nbody_to_si()
+                converter.as_converter_from_generic_to_si()
             )
             
         self.time = (particles.get_timestamp() or (0.0|nbody_system.time)).value_in(nbody_system.time)
@@ -118,7 +118,7 @@ class Tsf2Particles(object):
         if not converter is None:
             result=datamodel.ParticlesWithUnitsConverted(
                 result,
-                converter.as_converter_from_si_to_nbody()
+                converter.as_converter_from_si_to_generic()
             )
         
         return result

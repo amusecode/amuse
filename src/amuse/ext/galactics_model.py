@@ -16,7 +16,7 @@ def _new_galactics_model(halo_number_of_particles, unit_converter = None, do_sca
         result.scale_to_standard()
     
     if not unit_converter is None:
-        result = ParticlesWithUnitsConverted(result, unit_converter.as_converter_from_si_to_nbody())
+        result = ParticlesWithUnitsConverted(result, unit_converter.as_converter_from_si_to_generic())
         result = result.copy_to_memory()
     return result
 

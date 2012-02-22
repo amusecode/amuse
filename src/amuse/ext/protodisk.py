@@ -141,7 +141,7 @@ class ProtoPlanetaryDisk(object):
         result.u = nbody_system.specific_energy.new_quantity(internal_energies)
                 
         if not self.convert_nbody is None:
-            result = ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_generic())
             result = result.copy_to_memory()
             
         return result

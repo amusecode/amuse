@@ -118,45 +118,10 @@ class nbody_to_si(generic_unit_converter.ConvertBetweenGenericAndSiUnits):
         return factor * new_unit
         
     def as_converter_from_si_to_nbody(self):
-        class SiToNBodyConverter(object):
-            def __init__(self, nbody_to_si):
-                self.nbody_to_si = nbody_to_si
-            
-            def from_source_to_target(self, quantity):
-                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-                    return self.nbody_to_si.to_nbody(quantity) 
-                else:
-                    return quantity
-                
-            def from_target_to_source(self, quantity):
-                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-                    return self.nbody_to_si.to_si(quantity)
-                else:
-                    return quantity
-                    
-                
-        return SiToNBodyConverter(self)
+        return self.as_converter_from_si_to_generic()
         
     def as_converter_from_nbody_to_si(self):
-        
-        class NBodyToSiConverter(object):
-            def __init__(self, nbody_to_si):
-                self.nbody_to_si = nbody_to_si
-            
-            def from_source_to_target(self, quantity):
-                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-                    return self.nbody_to_si.to_si(quantity) 
-                else:
-                    return quantity
-                
-            def from_target_to_source(self, quantity):
-                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-                    return self.nbody_to_si.to_nbody(quantity)
-                else:
-                    return quantity
-                    
-                
-        return NBodyToSiConverter(self)
+        return self.as_converter_from_generic_to_si()
 
 
     def as_converter_from_si_to_generic(self):

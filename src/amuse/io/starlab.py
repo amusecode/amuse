@@ -285,7 +285,7 @@ class ParticlesFromDyn(object):
             self.convert_nbody = convert_nbody
             self.Particles = datamodel.ParticlesWithUnitsConverted(
                 xml2particles.system,
-                self.convert_nbody.as_converter_from_si_to_nbody()
+                self.convert_nbody.as_converter_from_si_to_generic()
             )
         
         
@@ -352,7 +352,7 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         xml2particles.parse_xml(xml_string)
         unit_converter = None
         if not self.nbody_to_si_converter is None:
-            unit_converter = self.nbody_to_si_converter.as_converter_from_si_to_nbody()
+            unit_converter = self.nbody_to_si_converter
         elif self.must_scale:
             if not self._is_valid_scaling_factor(xml2particles.mass_scale):
                 unit_converter = None
@@ -360,32 +360,38 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
                 unit_converter = nbody_system.nbody_to_si(
                     (1.0 / xml2particles.mass_scale) | units.MSun,
                     (1.0 / xml2particles.size_scale) | units.RSun,
-                ).as_converter_from_si_to_nbody()
+                )
             else:
                 unit_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
                     (1.0 / xml2particles.mass_scale) | units.MSun,
                     (1.0 / xml2particles.size_scale) | units.RSun,
                     (1.0 / xml2particles.time_scale) | units.Myr,
-                ).as_converter_from_si_to_generic()
+                )
                 
         if unit_converter is None:
             result = xml2particles.system
         else:
             result = datamodel.ParticlesWithUnitsConverted(
                 xml2particles.system,
-                unit_converter
+                unit_converter.as_converter_from_si_to_generic()
             )
 
         if self.return_children:
-            return result[0].children()
+            if self.return_converter:
+                return result[0].children(), unit_converter
+            else:
+                return result[0].children()
         else:
-            return result[0]
+            if self.return_converter:
+                return result[0], unit_converter
+            else:
+                return result[0]
         
     def store_string(self):
         if not self.nbody_to_si_converter is None:
             particles = datamodel.ParticlesWithUnitsConverted(
                 self.set,
-                self.nbody_to_si_converter.as_converter_from_nbody_to_si()
+                self.nbody_to_si_converter.as_converter_from_generic_to_si()
             )
         else:
             particles = self.set
@@ -437,4 +443,10 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         Only used when no nbody to si converter has been set.
         """
         return True
+        
+    @base.format_option
+    def return_converter(self):
+        """If True also return the converter when reading a set using read_set_from_file
+        """
+        return False
         

@@ -44,7 +44,7 @@ def scale_to_standard(particles, convert_nbody = None,
         the potential energy correctly.
     """
     if not convert_nbody is None:
-        particles = ParticlesWithUnitsConverted(particles, convert_nbody.as_converter_from_nbody_to_si())
+        particles = ParticlesWithUnitsConverted(particles, convert_nbody.as_converter_from_generic_to_si())
         if not smoothing_length_squared is zero:
             smoothing_length_squared = convert_nbody.to_nbody(smoothing_length_squared)
 

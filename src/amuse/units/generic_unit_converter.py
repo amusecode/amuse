@@ -159,6 +159,9 @@ class ConvertBetweenGenericAndSiUnits(object):
                 new_unit *= (unit ** n)
         return new_quantity(number * factor, new_unit)
 
+    def to_nbody(self, value):
+        return self.to_generic(value)
+        
     def to_generic(self, value):
         """
         Convert a quantity in S.I units to a quantity in

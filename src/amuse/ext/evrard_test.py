@@ -231,7 +231,7 @@ class MakeEvrardModel(object):
             result.position *= scale_factor
         
         if not self.convert_nbody is None:
-            result = ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_generic())
             result = result.copy_to_memory()
             
         return result

@@ -113,7 +113,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
         self.converter = converter
 
     def set_nbody_converter(self, nbody_converter):
-        self.set_converter(nbody_converter.as_converter_from_si_to_nbody())
+        self.set_converter(nbody_converter.as_converter_from_si_to_generic())
 
     def has_name(self, name):
         return name == 'UNIT'

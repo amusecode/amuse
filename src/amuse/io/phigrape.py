@@ -106,4 +106,4 @@ class Inp2Particles(object):
         self.Particles = self.read_to_ram(inputfile)
         if not converter==None:
             self.Particles=datamodel.ParticlesWithUnitsConverted(self.Particles,
-                                                            converter.as_converter_from_si_to_nbody())
+                                                            converter.as_converter_from_si_to_generic())

@@ -289,7 +289,14 @@ class Test(amusetest.TestCase):
         main_sequence_stars = set.select(lambda stellar_type : stellar_type ==  units.stellar_type("Main Sequence star"), ["stellar_type"])
         self.assertAlmostRelativeEquals(main_sequence_stars.mass, main_sequence_stars.relative_mass, 10)
         carbon_dwarfs = set.select(lambda stellar_type : stellar_type ==   units.stellar_type("Carbon/Oxygen White Dwarf") , ["stellar_type"])
-        self.assertAlmostRelativeEquals(carbon_dwarfs.mass, carbon_dwarfs.core_mass, 10)\
+        self.assertAlmostRelativeEquals(carbon_dwarfs.mass, carbon_dwarfs.core_mass, 10)
+    
+    def test7(self):
+        directory = os.path.dirname(__file__)
+        set, converter = io.read_set_from_file(os.path.join(directory, 'evolved.dyn'), 'starlab', return_converter = True)
+        self.assertEquals(len(set), 20)
         
-        
+        unconverted_set = io.read_set_from_file(os.path.join(directory, 'evolved.dyn'), 'starlab', must_scale = False)
+        self.assertEquals(len(unconverted_set), 20)
+        self.assertAlmostRelativeEquals(converter.to_nbody(set.x), unconverted_set.x)
         

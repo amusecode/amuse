@@ -619,7 +619,7 @@ class TestParticlesWithUnitsConverted(amusetest.TestCase):
         
         converted_stars = datamodel.ParticlesWithUnitsConverted(
             stars, 
-            convert_nbody.as_converter_from_si_to_nbody())
+            convert_nbody.as_converter_from_si_to_generic())
         
         self.assertEquals(stars[0].mass, 10 | nbody_system.mass)
         self.assertAlmostEqual(converted_stars[0].mass, 100.0 | units.kg, 5)

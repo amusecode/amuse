@@ -49,7 +49,7 @@ class MakePlummerGasModel(object):
         result.u = (nbody_system.speed**2).new_quantity(u)
 
         if not self.convert_nbody is None:
-            result = datamodel.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = datamodel.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_generic())
             result = result.copy_to_memory()
             
         return result
