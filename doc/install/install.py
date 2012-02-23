@@ -124,7 +124,7 @@ class InstallPrerequisites(object):
             'gmp',                      #name to refer by
             [],                         #names of prerequisites (unused)
             '5.0.3' ,                   #version string
-            'gmp-', '.tar.xz',        #pre- and postfix for filename
+            'gmp-', '.tar.bz2',        #pre- and postfix for filename
             'ftp://ftp.gmplib.org/pub/gmp-5.0.3/', #download url, filename is appended
             self.gmp_build             #method to use for building
           ) ,
