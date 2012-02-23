@@ -124,6 +124,10 @@ class Multiples(object):
     def parameters(self):
         return self.gravity_code.parameters
         
+    @property 
+    def model_time(self):
+        return self.gravity_code.model_time
+        
     #Add?: def gravity.commit_particles()
     def get_gravity_at_point(self,radius, x, y, z):
         return self.gravity_code.get_gravity_at_point(radius, x, y, z)
@@ -153,7 +157,7 @@ class Multiples(object):
         start_energy = self.get_total_energy(self.gravity_code)
         
         time = self.gravity_code.model_time
-        print "Evolve model to:", end_time, " starting at time:", time
+        #print "Evolve model to:", end_time, " starting at time:", time
         
         while time < end_time:
             self.gravity_code.evolve_model(end_time)
@@ -172,8 +176,8 @@ class Multiples(object):
                 
 
                 energy = self.get_total_energy(self.gravity_code)
-                print start_energy, energy
-                print "deltaE multiples:", self.multiples_energy_correction, 'dE =', (energy - start_energy)-self.multiples_energy_correction
+                #print start_energy, energy
+                #print "deltaE multiples:", self.multiples_energy_correction, 'dE =', (energy - start_energy)-self.multiples_energy_correction
 
                 # Synchronize everything for now.  Later we will just
                 # synchronize neighbors if gravity supports that.
@@ -202,9 +206,8 @@ class Multiples(object):
                 self.gravity_code.particles.synchronize_to(self._immemory_particles) #star will be the same as gravity_stars
 
                 energy = self.get_total_energy(self.gravity_code)
-                print "deltaE multiples:", self.multiples_energy_correction, 'dE =', (energy - start_energy)-self.multiples_energy_correction
-                
-                print '\n--------------------------------------------------'
+                #print "deltaE multiples:", self.multiples_energy_correction, 'dE =', (energy - start_energy)-self.multiples_energy_correction
+                #print '\n--------------------------------------------------'
             
             
         self.gravity_code.synchronize_model()
@@ -226,16 +229,16 @@ class Multiples(object):
 
         resolve_collision_code = self.resolve_collision_code_creation_function()
         time = 0 | nbody_system.time
-        print "\nadding particles to smallN"
+        #print "\nadding particles to smallN"
         sys.stdout.flush()
         resolve_collision_code.set_time(time);
         resolve_collision_code.particles.add_particles(particles)
-        print "committing particles to smallN"
+        #print "committing particles to smallN"
         resolve_collision_code.commit_particles()
 
-        print "smallN: number_of_stars =", len(particles)
-        print "smallN: evolving to time =", end_time, 
-        print "in steps of", delta_t
+        #print "smallN: number_of_stars =", len(particles)
+        #print "smallN: evolving to time =", end_time, 
+        #print "in steps of", delta_t
         sys.stdout.flush()
     
         stored_radius = particles[0].radius
@@ -247,12 +250,12 @@ class Multiples(object):
 
         while time < end_time:
             time += delta_t
-            print 'evolving to time', time
+            #print 'evolving to time', time
             resolve_collision_code.evolve_model(time)
             energy = self.get_total_energy(resolve_collision_code)
             over = resolve_collision_code.is_over().value_in(units.none)
             if over:
-                print 'interaction is over at:', time
+                #print 'interaction is over at:', time
                 
                 # Create a tree in the module representing the binary structure.
                 resolve_collision_code.update_particle_tree()
@@ -263,12 +266,12 @@ class Multiples(object):
 
                 resolve_collision_code.update_particle_set()
                 resolve_collision_code.particles.synchronize_to(particles)
-                print "resolve_collision_code.particles.radius", resolve_collision_code.particles.radius
+                #print "resolve_collision_code.particles.radius", resolve_collision_code.particles.radius
                 channel.copy()
                 resolve_collision_code.stop()
 
                 particles[particles.radius < (0.0 | stored_radius.unit)].radius = stored_radius
-                print "particles.radius", particles.radius, stored_radius, len(particles[particles.radius < (0.0 | stored_radius.unit)])
+                #print "particles.radius", particles.radius, stored_radius, len(particles[particles.radius < (0.0 | stored_radius.unit)])
                 return start_energy, energy
     
         
@@ -332,9 +335,9 @@ class Multiples(object):
         else:
             particles_in_encounter.add_particle(star2)
 
-        print '\nparticles in encounter (flat tree):'
-        for p in particles_in_encounter:
-            print_multiple(p)
+        #print '\nparticles in encounter (flat tree):'
+        #for p in particles_in_encounter:
+        #    print_multiple(p)
         
         initial_scale = (star1.position - star2.position).length()
 
@@ -415,8 +418,11 @@ class Multiples(object):
             
         self.multiples_energy_correction += (total_energy_of_stars_to_add - total_energy_of_stars_to_remove) + phi_correction
 
-        print "NUMBER OF TREES:", len(self.root_to_tree)
-            
+        #print "NUMBER OF TREES:", len(self.root_to_tree)
+    
+    def print_trees_summary(self):
+        if len(self.root_to_tree) > 0:
+            print "number of multiples: ", len(self.root_to_tree)
     
     
 def openup_tree(star, tree, particles_in_encounter):
@@ -442,7 +448,7 @@ def openup_tree(star, tree, particles_in_encounter):
     dvy = star.vy - original_star.vy
     dvz = star.vz - original_star.vz
     
-    print "delta positions:", dx, dy, dz
+    #print "delta positions:", dx, dy, dz
     
     leaves.x += dx
     leaves.y += dy
@@ -492,11 +498,11 @@ def find_nnn(star1, star2, stars):	# print next nearest neighbor
                 min_dr = dr2
                 nnn = t
     min_dr = math.sqrt(min_dr)
-    print 'star =', int(id1), ' min_dr =', min_dr, \
-          ' nnn =', int(nnn.id), '(', nnn.mass.number, ')'
-    print '    phi_tidal =', phi_tidal(star1, star2, nnn)
-    print '    nnn pos:', nnn.x.number, nnn.y.number, nnn.z.number
-    sys.stdout.flush()
+    #print 'star =', int(id1), ' min_dr =', min_dr, \
+    #      ' nnn =', int(nnn.id), '(', nnn.mass.number, ')'
+    #print '    phi_tidal =', phi_tidal(star1, star2, nnn)
+    #print '    nnn pos:', nnn.x.number, nnn.y.number, nnn.z.number
+    #sys.stdout.flush()
 
     return nnn
 
@@ -561,8 +567,8 @@ def compress_binary_components(comp1, comp2, scale):
     sep12 = ((pos2-pos1)**2).sum()
 
     if sep12 > scale*scale:
-        print '\ncompressing components', int(comp1.id), \
-              'and', int(comp2.id), 'to separation', scale.number
+        #print '\ncompressing components', int(comp1.id), \
+        #      'and', int(comp2.id), 'to separation', scale.number
         sys.stdout.flush()
         mass1 = comp1.mass
         mass2 = comp2.mass
@@ -734,13 +740,13 @@ def scale_top_level_list(
 
             root = multiples[0]
             
-            print '\nunscaled binary node:'
-            print_multiple(root)
+            #print '\nunscaled binary node:'
+            #print_multiple(root)
             comp1 = root.child1
             comp2 = root.child2
             compress_binary_components(comp1, comp2, scale)
-            print '\nscaled binary node:'
-            print_multiple(root)
+            #print '\nscaled binary node:'
+            #print_multiple(root)
             
             dr = (root.child1.position - root.child2.position).length()
             root.radius = dr
@@ -758,11 +764,11 @@ def scale_top_level_list(
 
         comp1 = top_level_nodes[0]
         comp2 = top_level_nodes[1]
-        print '\nunscaled top-level pair:'
-        print_pair_of_stars('pair', comp1, comp2)
+        #print '\nunscaled top-level pair:'
+        #print_pair_of_stars('pair', comp1, comp2)
         compress_binary_components(comp1, comp2, scale)
-        print '\nscaled top-level pair:'
-        print_pair_of_stars('pair', comp1, comp2)
+        #print '\nscaled top-level pair:'
+        #print_pair_of_stars('pair', comp1, comp2)
 
     else:
 
@@ -787,10 +793,10 @@ def scale_top_level_list(
         G = gravity_constant
     )
     
-    print 'phi_external_final_before =', phi_in_field_of_stars_to_remove
-    print 'phi_external_final_after =', phi_in_field_of_stars_to_add
+    #print 'phi_external_final_before =', phi_in_field_of_stars_to_remove
+    #print 'phi_external_final_after =', phi_in_field_of_stars_to_add
     dphi = phi_in_field_of_stars_to_add - phi_in_field_of_stars_to_remove
-    print 'dphi =', dphi
+    #print 'dphi =', dphi
 
     # Correction code parallels that above, but we must repeat it
     # here, since we have to complete the rescaling before the
@@ -818,7 +824,7 @@ def scale_top_level_list(
         # simply by scaling their velocities.  Need to improve this.
         # TODO  Alternatively, add dphi to dEmult.
 
-        print lt, 'top-level nodes'; sys.stdout.flush()
+        #print lt, 'top-level nodes'; sys.stdout.flush()
         phi_correction = dphi
 
     # Finally, include the internal top-level energy in dEmult.
@@ -826,7 +832,7 @@ def scale_top_level_list(
     total_energy_of_stars_to_add = top_level_nodes.kinetic_energy()
     total_energy_of_stars_to_add += top_level_nodes.potential_energy(G=gravity_constant)
     
-    print 'final etot =', total_energy_of_stars_to_add
+    #print 'final etot =', total_energy_of_stars_to_add
 
     return total_energy_of_stars_to_add, phi_correction
 
