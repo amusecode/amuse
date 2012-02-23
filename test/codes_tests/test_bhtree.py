@@ -708,44 +708,66 @@ class TestBHTree(TestWithMPI):
         self.assertAlmostRelativeEqual(energy_total_t0, energy_total_t1, 3)
         instance.stop()
         numpy.random.seed()
-        
     
     def test17(self):
-        particles = datamodel.Particles(2)
-        particles.x = [
-            0.0,1.0, 
-            #5,7,
-            #10,12,
-            #15,17,
-            #20,22
-        ] | nbody_system.length
+        print "Testing BHTree collision_detection"
+        particles = datamodel.Particles(7)
+        particles.mass = 0.001 | nbody_system.mass
+        particles.radius = 0.01 | nbody_system.length
+        particles.x = [-101.0, -100.0, -0.5, 0.5, 100.0, 101.0, 104.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
-        particles.radius = 0.75 | nbody_system.length
-        particles.vx =  0.1 | nbody_system.speed
-        particles.vy =  0 | nbody_system.speed
-        particles.vz =  0 | nbody_system.speed
-        particles.mass = 0 | nbody_system.mass
-       
-        instance = BHTree()
+        particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
+        
+        instance = BHTree(redirection='none')
         instance.initialize_code()
-        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
-        instance.particles.add_particles(particles) 
-        instance.stopping_conditions.collision_detection.enable()
-        instance.evolve_model(0.1 | nbody_system.time)
+        instance.parameters.set_defaults()
+        
+        # Uncommenting any of the following two lines will suppress collision detection
+#~        instance.parameters.use_self_gravity = 0
+#~        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        
+        instance.parameters.opening_angle = 0.1
+        instance.particles.add_particles(particles)
+        collisions = instance.stopping_conditions.collision_detection
+        collisions.enable()
+        instance.evolve_model(1.0 | nbody_system.time)
+        
+        self.assertTrue(collisions.is_set())
+        self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
+        self.assertEquals(len(collisions.particles(0)), 3)
+        self.assertEquals(len(collisions.particles(1)), 3)
+        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
+        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+                (collisions.particles(0).radius + collisions.particles(1).radius),
+                [True, True, True])
+        
+        sticky_merged = datamodel.Particles(len(collisions.particles(0)))
+        sticky_merged.mass = collisions.particles(0).mass + collisions.particles(1).mass
+        sticky_merged.radius = collisions.particles(0).radius
+        for p1, p2, merged in zip(collisions.particles(0), collisions.particles(1), sticky_merged):
+            merged.position = (p1 + p2).center_of_mass()
+            merged.velocity = (p1 + p2).center_of_mass_velocity()
+        
         print instance.model_time
-        self.assertTrue(instance.stopping_conditions.collision_detection.is_set())
-        print instance.stopping_conditions.collision_detection.particles(0).key
-        print instance.stopping_conditions.collision_detection.particles(1).key
-        self.assertEquals(len(instance.stopping_conditions.collision_detection.particles(0)), 2 )
-        p0 =  instance.stopping_conditions.collision_detection.particles(0)[0]
-        p1 =  instance.stopping_conditions.collision_detection.particles(1)[0]
-        self.assertNotEquals(p0, p1)
-        print p0, p1
-        print p0.x, p1.x
-        self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
+        print instance.particles
+        instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
+        instance.particles.add_particles(sticky_merged)
+        
+        instance.evolve_model(1.0 | nbody_system.time)
+        print
+        print instance.model_time
+        print instance.particles
+        self.assertTrue(collisions.is_set())
+        self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
+        self.assertEquals(len(collisions.particles(0)), 1)
+        self.assertEquals(len(collisions.particles(1)), 1)
+        self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
+        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+                (collisions.particles(0).radius + collisions.particles(1).radius),
+                [True])
         instance.stop()
-       
+    
     def test18(self):
         particles = datamodel.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length

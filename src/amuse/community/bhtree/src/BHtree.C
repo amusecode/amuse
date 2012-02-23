@@ -814,7 +814,8 @@ void real_particle::calculate_gravity_using_tree(real eps2, real theta2)
 
     
 // AMUSE STOPPING CONDITIONS SUPPORT (AVE May 2010)
-    if(nn_index >= 0 && (COLLISION_DETECTION_BITMAP & enabled_conditions) ) {
+    //if(nn_index >= 0 && (COLLISION_DETECTION_BITMAP & enabled_conditions) ) { // compare indices to prevent two detections for one collision: (NdV Feb 2012)
+    if(nn_index > my_index && (COLLISION_DETECTION_BITMAP & enabled_conditions) ) {
         real rad1 = radius;
         real rad2 = nn_ptr->get_radius();
         if (r_nn_2 <= pow(rad1+rad2, 2))
