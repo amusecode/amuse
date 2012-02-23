@@ -18,6 +18,7 @@ static double inv_c5 = inv_c2*inv_c2/speed_of_light;
 
 static double EPS_SQ = 0.0;
 
+static int calculate_postnewtonian = 1;
 /////////////////////////////
 ///// forces from SMBH //////
 /////////////////////////////
@@ -56,7 +57,8 @@ void calc_force_from_point_mass(Particle &prti,
 		    prti.acc_ex, prti.jrk_ex, prti.acc2_ex, prti.phi_ex, r2);
   */
 
-  calc_acc_jrk_acc2_acc3(posi, veli, acci, jrki, 
+  if (!calculate_postnewtonian){
+      calc_acc_jrk_acc2_acc3(posi, veli, acci, jrki, 
 			 SMBH_MASS, SMBH_POS, SMBH_VEL, SMBH_ACC, SMBH_JRK,
 			 eps2,
 			 prti.acc_ex, prti.jrk_ex, prti.acc2_ex, prti.acc3_ex,  prti.phi_ex,
@@ -64,8 +66,8 @@ void calc_force_from_point_mass(Particle &prti,
 
 
 
-  /*
-  calc_acc0_jrk_acc2_acc3_PN0_PN1_PN25(prti.mass,
+  } else {
+      calc_acc0_jrk_acc2_acc3_PN0_PN1_PN25(prti.mass,
 				       posi, veli, acci, jrki,
 				       SMBH_MASS, SMBH_POS, SMBH_VEL, SMBH_ACC, SMBH_JRK,
 				       prti.phi_ex,
@@ -73,7 +75,7 @@ void calc_force_from_point_mass(Particle &prti,
 				       prti.acc_PN_ex, prti.jrk_PN_ex, prti.acc2_PN_ex,
 				       prti.acc_PN_ex, prti.jrk_PN_ex, prti.acc2_PN_ex,
 				       inv_c2, inv_c5, EPS_SQ);
-  */
+  }
 }
 
 void calc_force_from_point_mass_to_array(Particle prt[],
@@ -130,4 +132,13 @@ void copy_SMBH_NEW_TO_OLD(){
 void set_speed_of_light(const double &_c){
   speed_of_light = _c;
 
+}
+
+int get_calculate_postnewtonian(int *value){
+    *value = calculate_postnewtonian;
+    return 0;
+}
+int set_calculate_postnewtonian(int value){
+    calculate_postnewtonian = value;
+    return 0;
 }

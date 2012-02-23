@@ -215,6 +215,36 @@ class MI6Interface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefe
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def get_include_smbh_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_smbh_flag', dtype='int32', direction=function.OUT,
+            description = "Flag to control whether MI6 includes a supermassive black hole at the center.")
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_include_smbh_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_smbh_flag', dtype='int32', direction=function.IN,
+            description = "Flag to control whether MI6 includes a supermassive black hole at the center.")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_calculate_postnewtonian():
+        function = LegacyFunctionSpecification()
+        function.addParameter('calculate_postnewtonian_flag', dtype='int32', direction=function.OUT,
+            description = "Flag to control whether post-newtonian corrections are calculated for the supermassive black hole at the center.")
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_calculate_postnewtonian():
+        function = LegacyFunctionSpecification()
+        function.addParameter('calculate_postnewtonian_flag', dtype='int32', direction=function.IN,
+            description = "Flag to control whether post-newtonian corrections are calculated for the supermassive black hole at the center.")
+        function.result_type = 'int32'
+        return function
+    
 
 
 
@@ -326,6 +356,21 @@ class MI6(GravitationalDynamics):
             "smbh_mass", 
             "the mass of the supermassive black hole at the center", 
             default_value = 1.0 | nbody_system.mass
+        )
+        object.add_boolean_parameter(
+            "get_include_smbh_flag",
+            "set_include_smbh_flag",
+            "include_smbh",
+            "Flag that specifies whether to include a supermassive black hole at the center",
+            False
+        )
+        object.add_boolean_parameter(
+            "get_calculate_postnewtonian",
+            "set_calculate_postnewtonian",
+            "calculate_postnewtonian",
+            "Flag that specifies whether post-newtonian corrections are calculated for the "
+                "supermassive black hole at the center (has no effect when include_smbh is False)",
+            True
         )
     
     def get_drink(self):

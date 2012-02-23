@@ -91,7 +91,7 @@ double Tcal_fix1 = 0.0;
 double Tcal_tot0 = 0.0;
 double Tcal_tot1 = 0.0;
 double Tcal_all = 0.0;
-int EX_FLAG = 1;
+int EX_FLAG = 0;
 int *address = NULL;
 int *address_old = NULL;
 //~Particle **prt_merged = NULL;
@@ -887,6 +887,14 @@ int get_smbh_mass(double *smbh_mass) {
     Vector3 pos=0.0;
     Vector3 vel=0.0;
     get_SMBH(*smbh_mass, pos, vel);
+    return 0;
+}
+int set_include_smbh_flag(int value){
+    EX_FLAG = value;
+    return 0;
+}
+int get_include_smbh_flag(int *value){
+    *value = EX_FLAG;
     return 0;
 }
 int commit_parameters() {

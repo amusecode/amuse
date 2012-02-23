@@ -152,6 +152,13 @@ class TestMI6Interface(TestWithMPI):
         self.assertEquals(0, instance.set_smbh_mass(0.1))
         self.assertEquals([0.1, 0], instance.get_smbh_mass().values())
         
+        self.assertEquals([0, 0], instance.get_include_smbh_flag().values())
+        self.assertEquals(0, instance.set_include_smbh_flag(1))
+        self.assertEquals([1, 0], instance.get_include_smbh_flag().values())
+        self.assertEquals([1, 0], instance.get_calculate_postnewtonian().values())
+        self.assertEquals(0, instance.set_calculate_postnewtonian(0))
+        self.assertEquals([0, 0], instance.get_calculate_postnewtonian().values())
+        
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
@@ -160,10 +167,7 @@ class TestMI6Interface(TestWithMPI):
         print "Test MI6Interface evolve_model, single particle (+SMBH)"
         instance = MI6Interface(**default_options)
         self.assertEquals(0, instance.initialize_code())
-#~        self.assertEquals(0, instance.set_eta_s(1.0e-4))
-#~        self.assertEquals(0, instance.set_eta_fs(1.0e-3))
-#~        self.assertEquals(0, instance.set_eta_smbh(4.0e-3))
-#~        self.assertEquals(0, instance.set_eta_imbh(4.0e-3))
+        self.assertEquals(0, instance.set_include_smbh_flag(1))
         self.assertEquals(0, instance.commit_parameters())
         
         # Set up a light particle on a circular orbit around the SMBH:
@@ -185,6 +189,7 @@ class TestMI6Interface(TestWithMPI):
         print "Test MI6Interface evolve_model, 2 particles orbiting the SMBH"
         instance = MI6Interface(**default_options)
         self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.set_include_smbh_flag(1))
         self.assertEquals(0, instance.commit_parameters())
         # Set up a light binary on circular orbits around the SMBH:
         mass = 1.0e-4
@@ -209,6 +214,7 @@ class TestMI6Interface(TestWithMPI):
         print "Test MI6Interface evolve_model, binary (+SMBH) --> accretion!?"
         instance = MI6Interface(**default_options)
         self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.set_include_smbh_flag(1))
         self.assertEquals(0, instance.commit_parameters())
         # Set up a light binary on circular orbits around the SMBH:
         mass = 1.0e-6
@@ -284,6 +290,13 @@ class TestMI6(TestWithMPI):
         instance.parameters.timestep_parameter = 0.01
         self.assertEquals(instance.parameters.timestep_parameter, 0.01 | units.none)
         
+        self.assertEquals(instance.parameters.include_smbh, False)
+        instance.parameters.include_smbh = True
+        self.assertEquals(instance.parameters.include_smbh, True)
+        self.assertEquals(instance.parameters.calculate_postnewtonian, True)
+        instance.parameters.calculate_postnewtonian = False
+        self.assertEquals(instance.parameters.calculate_postnewtonian, False)
+        
         self.assertEquals(instance.parameters.drink, "Vodka martini. Shaken, not stirred.")
         
         instance.stop()
@@ -320,6 +333,7 @@ class TestMI6(TestWithMPI):
         
         instance = MI6(self.default_converter, **default_options)
         instance.initialize_code()
+        instance.parameters.include_smbh = True
         instance.commit_parameters()
         instance.particles.add_particles(particles)
         instance.commit_particles()
