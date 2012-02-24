@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <map>
+#include "localassert.h"
 #include "irrf6.h"
 #include "regf4.h"
 #include "Scheduler.h"

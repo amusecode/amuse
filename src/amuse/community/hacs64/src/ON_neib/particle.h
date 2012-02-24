@@ -1,4 +1,4 @@
-#include <cassert>
+#include "localassert.h"
 #include <vector>
 #include "vector3.h"
 #include "morton_key.h"

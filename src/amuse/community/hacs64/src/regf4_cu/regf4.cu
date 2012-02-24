@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <map>
+#include "localassert.h"
 #include "regf4.h"
-#include <cassert>
 #include "Timer.h"
 
 

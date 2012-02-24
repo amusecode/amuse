@@ -2,7 +2,7 @@
 #define __NGBlist_H__
 
 #include <cstdio>
-#include <cassert>
+#include "localassert.h"
 #include <vector>
 
 struct NGBlist

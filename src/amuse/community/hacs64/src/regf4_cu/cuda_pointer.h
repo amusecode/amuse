@@ -1,4 +1,4 @@
-#include <assert.h>
+#include <localassert.h>
 #include "cutil.h"
 //
 

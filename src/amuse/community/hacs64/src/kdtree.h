@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <stack>
-#include <cassert>
+#include "localassert.h"
 #include <algorithm>
 #include "vector3.h"
 

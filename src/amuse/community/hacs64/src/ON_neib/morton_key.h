@@ -1,4 +1,4 @@
-#include <assert.h>
+#include "localassert.h"
 
 template <typename VEC, typename REAL>
 struct morton_key{
