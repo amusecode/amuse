@@ -6,7 +6,7 @@ import random
 import sys
 import unittest
 
-from amuse.community.hacs64.interface import hacs64 as grav
+from amuse.community.hacs64.interface import Hacs64 as grav
 from amuse.units import nbody_system
 from amuse.units import units
 

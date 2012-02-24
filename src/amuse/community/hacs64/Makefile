@@ -14,9 +14,9 @@ OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 MPICXX   ?= mpicxx
 
 CFLAGS   += $(OPT)
-CFLAGS   += -I./src -I./src/ON_neib -fopenmp
+CFLAGS   += -I./src -I./src/ON_neib
 CXXFLAGS += $(CFLAGS)  
-LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS) -fopenmp
+LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS)
 
 CUDA_TK  ?= /usr/local/cuda
 
@@ -75,10 +75,10 @@ $(CODELIBCPU): $(BUILDDIRCPU)/Makefile
 	make -C $(BUILDDIRCPU) cpu CXX=$(MPICXX) VPATH=../src
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py hacs64Interface -o $@
+	$(CODE_GENERATOR) --type=c interface.py Hacs64Interface -o $@
 	
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py hacs64Interface -o $@
+	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py Hacs64Interface -o $@
 
 hacs64_worker: worker_code.cc interface.h $(CODELIBCPU) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIBCPU) -o $@  $(LDFLAGS)

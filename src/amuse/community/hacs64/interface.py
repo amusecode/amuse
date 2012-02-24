@@ -8,7 +8,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 # *** interface.cc has been  hand-coded to implement the details,
 # *** MAKE SURE TO SAVE IT SOMEWHERE, as build.py can overwrite it!
 
-class hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingConditionInterface):
+class Hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
     HACS64, GPU-accelerated Hermite Ahmad-Cohen Scheme
     6th order irregular & 4th order regular step
@@ -234,13 +234,13 @@ class hacs64Interface(CodeInterface, GravitationalDynamicsInterface, StoppingCon
 
         
 
-class hacs64(GravitationalDynamics):
+class Hacs64(GravitationalDynamics):
 
     # The actual module.
 
     def __init__(self, convert_nbody = None, **keyword_arguments):
 
-        legacy_interface = hacs64Interface(**keyword_arguments)
+        legacy_interface = Hacs64Interface(**keyword_arguments)
         
         self.stopping_conditions = StoppingConditions(self)
 

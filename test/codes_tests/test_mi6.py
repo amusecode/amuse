@@ -168,6 +168,7 @@ class TestMI6Interface(TestWithMPI):
         instance = MI6Interface(**default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_include_smbh_flag(1))
+        self.assertEquals(0, instance.set_calculate_postnewtonian(0))
         self.assertEquals(0, instance.commit_parameters())
         
         # Set up a light particle on a circular orbit around the SMBH:
@@ -190,6 +191,7 @@ class TestMI6Interface(TestWithMPI):
         instance = MI6Interface(**default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_include_smbh_flag(1))
+        self.assertEquals(0, instance.set_calculate_postnewtonian(0))
         self.assertEquals(0, instance.commit_parameters())
         # Set up a light binary on circular orbits around the SMBH:
         mass = 1.0e-4
@@ -215,6 +217,7 @@ class TestMI6Interface(TestWithMPI):
         instance = MI6Interface(**default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_include_smbh_flag(1))
+        self.assertEquals(0, instance.set_calculate_postnewtonian(0))
         self.assertEquals(0, instance.commit_parameters())
         # Set up a light binary on circular orbits around the SMBH:
         mass = 1.0e-6

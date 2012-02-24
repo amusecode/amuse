@@ -40,8 +40,8 @@ crap
 void fpe_catch(void) {}
 #endif
 
-
 static hacs64::Nbody *nbody_ptr = NULL;
+static bool is_commited = false;
 
 inline int get_id_from_idx(const int index_of_the_particle)
 {
@@ -72,7 +72,8 @@ int initialize_code()
         nbody_ptr = new hacs64::Nbody;
 
         // set default parameters to sane values
-
+        is_commited = false;
+        
         nbody_ptr->nmax = 10000; // will be enough for small calculations but will fail for bigger
         nbody_ptr->dtmax = 1;    // dtmax will influence timestep scaling, for now take 1 nbody time unit
     // AMUSE STOPPING CONDITIONS SUPPORT
@@ -115,7 +116,7 @@ int set_nmax(int nmax)
     try
     {
         assert(nbody_ptr != NULL);
-        if (nbody_ptr->nmax > 0) return -1;
+        if (is_commited) return -1;
 
         nbody_ptr->nmax = nmax;
         return 0;
@@ -146,7 +147,7 @@ int set_dtmax(double dtmax)
     try
     {
         assert(nbody_ptr != NULL);
-        if (nbody_ptr->dtmax > 0.0) return -1;
+        if (is_commited) return -1;
         nbody_ptr->dtmax = dtmax;
         return 0;
     }
@@ -294,8 +295,9 @@ int commit_parameters()
         assert(nbody_ptr != NULL);
         assert(nbody_ptr->irr_ptr == NULL);
         assert(nbody_ptr->reg_ptr == NULL);
+        assert(!is_commited);
         nbody_ptr->commit_parameters();
-
+        is_commited = true;
         return 0;
     }
     catch(assert_failed ex)
@@ -650,6 +652,8 @@ int commit_particles()
         assert(nbody_ptr != NULL);
         assert(nbody_ptr->is_sane());
         nbody_ptr->commit_particles();
+        std::cerr<<"HALLO!"<<std::endl;
+        nbody_ptr->get_epot();
         return 0;
     }
     catch(assert_failed ex)
@@ -664,6 +668,7 @@ int recommit_particles()
         assert(nbody_ptr != NULL);
         assert(nbody_ptr->is_sane());
         nbody_ptr->recommit_particles();
+        nbody_ptr->get_epot();
         return 0;
     }
     catch(assert_failed ex)
@@ -755,13 +760,25 @@ int get_index_of_first_particle(int * index_of_the_particle)
         return handle_assert_failed(ex);
     }    
 }
-int get_index_of_next_particle(int id, int *index_of_the_next_particle)
+
+int get_index_of_next_particle(int index, int *index_of_the_next_particle)
 {
     try
     {
         assert(nbody_ptr != NULL);
         assert(nbody_ptr->is_sane());
-        return -1;
+        const int id = get_id_from_idx(index);
+        if (id == -1) return -1;
+        if (id+1 < nbody_ptr->ptcl.size())
+        {
+            *index_of_the_next_particle = nbody_ptr->ptcl[id+1].id;
+            return 0;
+        }
+        else
+        {
+            *index_of_the_next_particle = -1;
+            return 1;
+        }
     }
     catch(assert_failed ex)
     {
