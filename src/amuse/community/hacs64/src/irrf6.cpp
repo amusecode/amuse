@@ -190,7 +190,6 @@ namespace irrf6
 
 		const int ni = ilist.size();
 		force.resize(ni);
-
 		const double t0 = get_wtime();
 		unsigned long long nint = 0;
 #pragma omp parallel for reduction(+: nint)
@@ -203,7 +202,7 @@ namespace irrf6
 			const Predictor &pi = pred[i];
 
 			fi.acc = fi.jrk = fi.snp = 0.0;
-
+			
 			for (int jx = 0; jx < nj; jx++) 
 			{
 				const int j = list[i][jx];

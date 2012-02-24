@@ -114,7 +114,7 @@ class kdTree
       const Particle pm = ptcl[nleft + median];
       const int n_left  = median;
       const int n_right = n - median - 1;
-
+      
       Node &node = tree[n_node];  
       node.split = split;
       node.ptcl  = pm;
@@ -141,7 +141,7 @@ class kdTree
       assert(!ptcl.empty());
       tree.resize(ptcl.size()*2);
       build_left_balanced_tree(1, 0, ptcl.size(), 0);
-      fprintf(stderr, "<tree info: max_depth= %d  max_nodes= %d> ... ", max_depth, max_nodes);
+      fprintf(stderr, "<tree info: max_depth= %d  max_nodes= %d> ... \n", max_depth, max_nodes);
     }
 
     int range_search(std::vector<int> &id_list, const dvec3 &pos, const double h) const
@@ -153,25 +153,25 @@ class kdTree
       {
         const int node_id = stack.top();
         stack.pop();
-
+       
         const Node &node = tree[node_id];
         const int   next = node_id << 1;
-
+        
         if (next <= max_nodes)
         {
           switch(node.split)
           {
             case 0:
               if (pos.x - h < node.ptcl.pos.x) stack.push(next);
-              if (pos.x + h > node.ptcl.pos.x) stack.push(next+1);
+              if (next + 1 <= max_nodes && (pos.x + h > node.ptcl.pos.x)) stack.push(next+1);
               break;
             case 1:
               if (pos.y - h < node.ptcl.pos.y) stack.push(next);
-              if (pos.y + h > node.ptcl.pos.y) stack.push(next+1);
+              if (next + 1 <= max_nodes && (pos.y + h > node.ptcl.pos.y)) stack.push(next+1);
               break;
             case 2:
               if (pos.z - h < node.ptcl.pos.z) stack.push(next);
-              if (pos.z + h > node.ptcl.pos.z) stack.push(next+1);
+              if (next + 1 <= max_nodes && (pos.z + h > node.ptcl.pos.z)) stack.push(next+1);
               break;
             default:
               assert(false);
@@ -179,7 +179,9 @@ class kdTree
         }
 
         if ((node.ptcl.pos - pos).norm2() < h*h)
-          id_list.push_back(node.ptcl.id);
+        {
+                id_list.push_back(node.ptcl.id);
+        }
       }
 
       return id_list.size();

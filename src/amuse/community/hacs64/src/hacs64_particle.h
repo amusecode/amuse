@@ -119,7 +119,8 @@ namespace hacs64
       const double dt_reg_new = 
 				hacs4::aarseth_step(freg.acc, freg.jrk, ip1.snp, ip1.crk, eta_reg);
       
-      return dt_reg_new;
+      if(dt_reg_new > 0.0) {return dt_reg_new;}
+      else {return  dt_reg;}
     }	
   }; // 64 words * sizeof(int)
 	

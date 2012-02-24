@@ -157,7 +157,7 @@ namespace regf4
 		const int ni = ilist.size();
 		const int nj = pred.size();
 		force.resize(ni);
-
+		
 		const double t0 = get_wtime();
 // #pragma omp parallel 
 		for (int ix = 0; ix < ni; ix++)
@@ -189,7 +189,7 @@ namespace regf4
 					const dvec3 dr = pj.pos - pi.pos;
 					const dvec3 dv = pj.vel - pi.vel;
 					double r2 = dr.norm2();
-
+					
 					if (std::min(r2, (dr+dv*dt_reg).norm2()) < h2) 
 //					if (r2 < h2)
 					{

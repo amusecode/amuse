@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <map>
+#include <algorithm>
 #include "localassert.h"
 #include "irrf6.h"
 #include "regf4.h"
@@ -333,6 +334,7 @@ namespace hacs64
 
           assert(ptcl[i].irr_rung < 0);
           assert(ptcl[i].reg_rung < 0);
+          
           ptcl[i].irr_rung = -1-scheduler.get_rung(dt_irr);
           if (-1-ptcl[i].reg_rung > -1-ptcl[i].irr_rung)
             ptcl[i].irr_rung = -1-((-1-ptcl[i].reg_rung)+1);
@@ -548,8 +550,10 @@ namespace hacs64
           kdTree kd;
 
           for (int i = 0; i < nbodies; i++)
+          {
             kd.push_ptcl(kdTree::Particle(i, ptcl[i].pos));
-
+          }
+          
           kd.build();
 
           /**** apply range-search ****/
@@ -570,13 +574,14 @@ namespace hacs64
               assert(nngb > 0);
               if (nngb > regf4::NGBMAX)
                 h *= 0.75;
-              else if (nngb < regf4::NGBMIN)
+              else if (nngb < std::min((const int) regf4::NGBMIN, nbodies))
                 h *= 1.25; 
               else
                 break;
             }
 
             const int nngb = list.size();
+            
             ngb_list[i].clear();
             for (int j = 0; j < nngb; j++)
               if (i != list[j])
@@ -666,8 +671,13 @@ namespace hacs64
 
             const double u = s1;
             const double l = s0;
-            assert(l > 0.0);
-            dt_irr = dt_reg = 0.001*eta_reg*std::sqrt(u/l);
+            
+            // AVE removed assert for l > 0
+            // if all neighbors are close, only irr forces
+            // and no reg forces, so l will be 0.0
+            if(l > 0.0) {
+                dt_irr = dt_reg = 0.001*eta_reg*std::sqrt(u/l);
+            }
           }
           if (ngb_list[i].size() > 0)
           {
@@ -675,17 +685,17 @@ namespace hacs64
             const dvec3 jrk = ptcl[i].firr.jrk;
             const dvec3 snp = ptcl[i].firr.snp;
             const dvec3 crk = ptcl[i].firr.crk;
+            
             const double s0 = acc.norm2();
             const double s1 = jrk.norm2();
             const double s2 = snp.norm2();
             const double s3 = crk.norm2();
-
             const double u = std::sqrt(s0*s2) + s1;
             const double l = std::sqrt(s1*s3) + s2;
             assert(l > 0.0);
             dt_irr = dt_reg = fac*eta_irr*std::sqrt(u/l);
           }
-
+          assert(dt_irr > 0.0); // AVE added assert
           ptcl[i].reg_rung = scheduler.push_particle(i, dt_reg, true);
           if (ngb_list[i].size() == 0)
             ptcl[i].irr_rung = scheduler.push_particle(i, dt_reg, false);

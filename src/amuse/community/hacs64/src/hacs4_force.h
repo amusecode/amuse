@@ -68,8 +68,8 @@ namespace hacs4
     const double s3 = crk.norm2();
     const double u = std::sqrt(s0*s2) + s1;
     const double l = std::sqrt(s1*s3) + s2;
-    assert(l > 0.0);
-    return eta*std::sqrt(u/l);
+    if(l>0.0) {eta*std::sqrt(u/l);}
+    else {return 0.0;}
   }
 }
 
