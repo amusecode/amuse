@@ -344,13 +344,11 @@ class MPIMessage(AbstractMessage):
             
         offsets = self.string_offsets(array)
         self.mpi_send(comm, [offsets, MPI.INT])
-        
-        bytes=bytearray()
+        asbytes=bytearray()
         for string in array:
-            bytes.extend(bytearray(string))
-            bytes.append(0)
-
-        chars = numpy.array(bytes, dtype=numpy.uint8)
+            asbytes.extend(bytearray(string))
+            asbytes.append(0)
+        chars = numpy.asarray(list(asbytes), dtype=numpy.uint8)
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
     def send_booleans(self, comm, array):
