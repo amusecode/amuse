@@ -60,8 +60,11 @@ class HDF5AttributeStorage(AttributeStorage):
     def get_defined_attribute_names(self):
         return self.attributesgroup.keys()
     
-    def get_values_in_store(self, particles, attributes):
-        indices = self.get_indices_of(particles)
+    def get_values_in_store(self, particles, attributes, by_key = True):
+        if by_key:
+            indices = self.get_indices_of(particles)
+        else:
+            indices = particles
             
         results = []
         for attribute in attributes:
@@ -84,8 +87,12 @@ class HDF5AttributeStorage(AttributeStorage):
     def get_all_keys_in_store(self):
         return self.particle_keys
         
-    def set_values_in_store(self, particles, attributes, quantities):
-        indices = self.get_indices_of(particles)        
+    def set_values_in_store(self, particles, attributes, quantities, by_key = True):
+        if by_key:
+            indices = self.get_indices_of(particles)
+        else:
+            indices = particles
+            
         for attribute, quantity in zip(attributes, quantities):
             if attribute in self.attributesgroup:
                 dataset = self.attributesgroup[attribute]

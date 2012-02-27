@@ -8,6 +8,8 @@ from amuse.datamodel.incode_storage import *
 
 
 import numpy
+import time
+
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
@@ -538,6 +540,80 @@ class TestParticles(amusetest.TestCase):
         x,y,mass = storage.get_values_in_store([2,3],["x","y","mass"])
         self.assertEquals(mass[1], 50 )
         self.assertEquals(mass[0], 40 )
+
+    def test8(self):
+        n = 100000
+        keys = numpy.arange(0, n)
+        attributes = ["mass"]
+        values = [numpy.ones(n) | units.kg,]
+       
+        
+        class Code(object):
+            def __init__(self):
+                # mass
+                self.data = None
+                self.number_of_particles = 0
+                
+            def get_number_of_particles(self):
+                return  self.number_of_particles
+                
+            def get_mass(self,index):
+                data_to_return = self.data[index]
+                return units.kg(data_to_return)
+                
+            def set_mass(self,index,mass):
+                self.data[index] = mass.value_in(units.kg)
+                
+            def new_particle(self, mass):
+                self.data = mass.value_in(units.kg)
+                self.number_of_particles = len(self.data)
+                return numpy.arange(len(mass))
+                
+        code = Code()
+        instance = InCodeAttributeStorage(
+            code,
+            NewParticleMethod(code.new_particle,("mass",)),
+            None,
+            code.get_number_of_particles,
+            [
+                
+                ParticleSetAttributesMethod(code.set_mass,("mass",)),
+            ],
+            [
+                ParticleGetAttributesMethod(code.get_mass,("mass",)),
+            ],
+            name_of_the_index = "index"
+        )
+        
+        instance.add_particles_to_store(keys, attributes, values)
+        
+        self.assertEquals(len(instance), n)
+        
+        t0 = time.time()
+        all_values = instance.get_values_in_store(keys, ["mass"], by_key = True)
+        t1 = time.time()
+        dt_by_key = t1 - t0
+        
+        t0 = time.time()
+        all_values = instance.get_values_in_store(keys, ["mass"], by_key = False)
+        t1 = time.time()
+        dt_by_index = t1 - t0
+        print dt_by_index, dt_by_key
+        self.assertTrue(dt_by_index < dt_by_key)
+        
+        
+        t0 = time.time()
+        all_values = instance.set_values_in_store(keys, ["mass"], [values[0]],by_key = True)
+        t1 = time.time()
+        dt_by_key = t1 - t0
+        
+        t0 = time.time()
+        all_values = instance.set_values_in_store(keys, ["mass"], [values[0]], by_key = False)
+        t1 = time.time()
+        dt_by_index = t1 - t0
+        print dt_by_index, dt_by_key
+        self.assertTrue(dt_by_index < dt_by_key)
+        
         
 
 class TestGrids(amusetest.TestCase):

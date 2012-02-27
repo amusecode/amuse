@@ -632,6 +632,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         self.mapping_from_particle_key_to_index_in_the_code = {}
         self.mapping_from_index_in_the_code_to_particle_key = {}
         self.particle_keys = []
+        self.code_indices = []
         
         self._get_number_of_particles = number_of_particles_method
         self.delete_particle_method = delete_particle_method
@@ -651,9 +652,11 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         
         if len(self.particle_keys) > 0:
             self.particle_keys = numpy.concatenate((self.particle_keys, numpy.array(list(keys))))
+            self.code_indices =  numpy.concatenate((self.code_indices, numpy.array(indices)))
         else:
             self.particle_keys = numpy.array(keys)
-
+            self.code_indices = numpy.array(indices)
+            
         index = 0
         for key in keys:
             self.mapping_from_particle_key_to_index_in_the_code[key] = indices[index]
@@ -684,9 +687,13 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
           
         return result
          
-    def get_values_in_store(self, keys, attributes):
-        indices_in_the_code = self.get_indices_of(keys)
-        
+    def get_values_in_store(self, keys, attributes, by_key = True):
+        if by_key:
+            indices_in_the_code = self.get_indices_of(keys)
+        else:
+            indices_in_the_code = self.code_indices[keys]
+            
+            
         if len(indices_in_the_code) == 0:
             return [[] for attribute in attributes]
              
@@ -701,8 +708,11 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             results.append(mapping_from_attribute_to_result[attribute])
         return results
         
-    def set_values_in_store(self, keys, attributes, values):
-        indices_in_the_code = self.get_indices_of(keys)
+    def set_values_in_store(self, keys, attributes, values,  by_key = True):
+        if by_key:
+            indices_in_the_code = self.get_indices_of(keys)
+        else:
+            indices_in_the_code = self.code_indices[keys]
         
         if len(indices_in_the_code) == 0:
             return
@@ -728,6 +738,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
          
         indices_to_delete = self.get_key_indices_of(keys)
         self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
+        self.code_indices =  numpy.delete(self.code_indices, indices_to_delete)
             
         
     def get_all_keys_in_store(self):
@@ -753,6 +764,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
                 
         indices_to_delete = self.get_key_indices_of(keys)
         self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
+        self.code_indices =  numpy.delete(self.code_indices, indices_to_delete)
         
     
     def _add_indices(self, indices):
@@ -768,8 +780,11 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         if len(self.particle_keys) > 0:
             self.particle_keys = numpy.concatenate((self.particle_keys, 
                 numpy.asarray(list(keys), dtype=self.particle_keys.dtype)))
+            self.code_indices =  numpy.concatenate((self.code_indices, 
+                numpy.asarray(list(indices), dtype=self.code_indices.dtype)))
         else:
             self.particle_keys = numpy.array(keys)
+            self.code_indices = numpy.array(indices)
                 
 
 class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):

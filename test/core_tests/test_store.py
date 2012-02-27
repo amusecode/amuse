@@ -200,4 +200,6 @@ class TestStoreHDF(amusetest.TestCase):
         instance = store.StoreHDF(output_file)
         loaded_particles = instance.load()
         self.assertAlmostRelativeEquals(p.mass[1], 2.0)
+        
+    
 

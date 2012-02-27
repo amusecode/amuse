@@ -81,10 +81,10 @@ class AttributeStorage(object):
     def remove_particles_from_store(self, keys):
         pass
         
-    def get_values_in_store(self, particles, attributes):
+    def get_values_in_store(self, particles, attributes, by_key = True):
         pass
         
-    def set_values_in_store(self, particles, attributes, list_of_values_to_set):
+    def set_values_in_store(self, particles, attributes, list_of_values_to_set, by_key = True):
         pass
         
     def get_attribute_names_defined_in_store(self):
@@ -101,7 +101,7 @@ class AttributeStorage(object):
 
 
 
-    def get_value_in_store(self, particle, attribute):
+    def get_value_in_store(self, particle, attribute, by_key = True):
         return self.get_values_in_store([particle],[attribute])[0][0]
     
     

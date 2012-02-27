@@ -84,8 +84,11 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
         self.reindex()
             
-    def get_values_in_store(self, particles, attributes):
-        indices = self.get_indices_of(particles)
+    def get_values_in_store(self, particles, attributes, by_key = True):
+        if by_key:
+            indices = self.get_indices_of(particles)
+        else:
+            indices = particles
             
         results = []
         for attribute in attributes:
@@ -99,8 +102,11 @@ class InMemoryAttributeStorage(AttributeStorage):
         
         return results
         
-    def set_values_in_store(self, particles, attributes, list_of_values_to_set):
-        indices = self.get_indices_of(particles)
+    def set_values_in_store(self, particles, attributes, list_of_values_to_set, by_key = True):
+        if by_key:
+            indices = self.get_indices_of(particles)
+        else:
+            indices = particles
         
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
             if attribute in self.mapping_from_attribute_to_quantities:
@@ -213,9 +219,12 @@ class InMemoryAttributeStorage(AttributeStorage):
     
     
 
-    def get_value_in_store(self, particle_key, attribute):
+    def get_value_in_store(self, particle_key, attribute, by_key = True):
         attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-        index = self.get_indices_of(particle_key)
+        if by_key:
+            indices = self.get_indices_of(particle_key)
+        else:
+            indices = particle_key
         return attribute_values[index]
     
     
@@ -464,9 +473,12 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         
 
         
-    def get_value_in_store(self, particle_key, attribute):
+    def get_value_in_store(self, particle_key, attribute, by_key = True):
         attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-        index = self.get_indices_of(particle_key)
+        if by_key:
+            index = self.get_indices_of(particle_key)
+        else:
+            index = particles
         return attribute_values[index]
 
 

@@ -1,4 +1,5 @@
 import numpy
+import time
 
 from amuse.test import amusetest
 from amuse.units import units
@@ -183,6 +184,44 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertEquals(all_values[1], 5.0)
         
 
+    def test7(self):
+        n = 1000000
+        keys = numpy.arange(0, n)
+        attributes = "a", "b"
+        values = [
+            numpy.ones(n),
+            numpy.ones(n) * 2,
+        ]
+        
+        instance = get_in_memory_attribute_storage_factory()()
+        instance.add_particles_to_store(keys, attributes, values)
+        
+        self.assertEquals(len(instance), n)
+        
+        t0 = time.time()
+        all_values = instance.get_values_in_store(keys, ["a"], by_key = True)
+        t1 = time.time()
+        dt_by_key = t1 - t0
+        
+        t0 = time.time()
+        all_values = instance.get_values_in_store(keys, ["a"], by_key = False)
+        t1 = time.time()
+        dt_by_index = t1 - t0
+        self.assertTrue(dt_by_index < dt_by_key)
+        
+        
+        t0 = time.time()
+        all_values = instance.set_values_in_store(keys, ["a"], [values[1]],by_key = True)
+        t1 = time.time()
+        dt_by_key = t1 - t0
+        
+        t0 = time.time()
+        all_values = instance.set_values_in_store(keys, ["a"], [values[1]], by_key = False)
+        t1 = time.time()
+        dt_by_index = t1 - t0
+        print dt_by_index, dt_by_key
+        self.assertTrue(dt_by_index < dt_by_key)
+        
 class TestInMemoryGridAttributeStorage(amusetest.TestCase):
     
     def test1(self):
@@ -254,6 +293,7 @@ class TestInMemoryGridAttributeStorage(amusetest.TestCase):
         self.assertEquals(b[0][0][0], 2.0  )
         self.assertEquals(b[0][0][2], 0.0  )
         self.assertEquals(b[1][2][2], 2.0  )
+        
         
         
 class TestInMemoryVectorQuantityAttribute(amusetest.TestCase):
