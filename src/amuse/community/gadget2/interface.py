@@ -359,6 +359,7 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def set_state_sph():
         function = LegacyFunctionSpecification()

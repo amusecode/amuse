@@ -41,6 +41,8 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEquals(21.0,  retrieved_state2['mass'])
         self.assertEquals(0.0,  retrieved_state1['x'])
         self.assertEquals(10.0,  retrieved_state2['x'])
+        self.assertEquals(2.0,  retrieved_state1['radius'])
+        self.assertEquals(5.0,  retrieved_state2['radius'])
     
         instance.cleanup_code()
         instance.stop()
@@ -85,7 +87,7 @@ class TestHermiteInterface(TestWithMPI):
         hermite = HermiteInterface()
         hermite.initialize_code()
         
-        hermite.new_particle([10,20],[1,1],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0])
+        hermite.new_particle([10,20],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         retrieved_state = hermite.get_state(0)
         
         self.assertEquals(10.0,  retrieved_state['mass'])
@@ -101,7 +103,7 @@ class TestHermiteInterface(TestWithMPI):
         hermite = HermiteInterface()
         hermite.initialize_code()
         
-        hermite.new_particle([10,10],[1,1],[-1,1],[0,0], [0,0], [0,0], [0,0], [0,0])
+        hermite.new_particle([10,10],[-1,1],[0,0], [0,0], [0,0], [0,0], [0,0], [1,1])
         retrieved_state = hermite.get_state(0)
         
         retr = hermite.get_potential_at_point(0.01, 0,0,0)
@@ -160,8 +162,8 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEquals(0, instance.commit_parameters())
         
         # Set up an equal-mass binary on a circular orbit:
-        self.assertEquals([0, 0], instance.new_particle(0.5, 0.01,  0.5, 0, 0,  0, 0.5, 0).values())
-        self.assertEquals([1, 0], instance.new_particle(0.5, 0.01, -0.5, 0, 0,  0,-0.5, 0).values())
+        self.assertEquals([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values())
+        self.assertEquals([1, 0], instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
         self.assertEquals(0, instance.commit_particles())
         
         self.assertEquals(0, instance.evolve_model(math.pi))
@@ -351,11 +353,17 @@ class TestHermite(TestWithMPI):
         
         instance.particles.add_particles(particles)
         self.assertEquals(len(instance.particles), 2)
-        instance.set_state(1, 16|units.kg, 20.0|units.m, 
+        instance.set_state(1, 16|units.kg, 
                            20.0|units.m, 40.0|units.m, 60.0|units.m, 
-                           1.0|units.ms, 1.0|units.ms, 1.0|units.ms)
+                           1.0|units.ms, 1.0|units.ms, 1.0|units.ms , 
+                           20.0|units.m)
         
         curr_state =  instance.get_state(1)
+        for expected, actual in zip([16|units.kg, 
+                           20.0|units.m, 40.0|units.m, 60.0|units.m, 
+                           1.0|units.ms, 1.0|units.ms, 1.0|units.ms , 
+                           20.0|units.m], curr_state):
+            self.assertAlmostRelativeEquals(expected, actual)
         instance.stop()
         
         self.assertEquals(curr_state[0], 16|units.kg, 8)
@@ -645,3 +653,33 @@ class TestHermite(TestWithMPI):
             self.assertAlmostEqual(potential0, potential1, 5)
         instance.stop()
     
+    def test15(self):
+        particles = datamodel.Particles(2)
+        particles.x = [0.0,10.0] | nbody_system.length
+        particles.y = 0.0 | nbody_system.length
+        particles.z = 0.0 | nbody_system.length
+        particles.vx =  0.0 | nbody_system.speed
+        particles.vy =  0.0 | nbody_system.speed
+        particles.vz =  0.0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+
+        instance = Hermite()
+        instance.particles.add_particles(particles) 
+        instance.commit_particles()
+        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
+        p = datamodel.Particle(
+            x = 1.0  | nbody_system.length,
+            y = 2.0 | nbody_system.length,
+            z = 3.0 | nbody_system.length,
+            vx = 1.0  | nbody_system.speed,
+            vy = 2.0 | nbody_system.speed,
+            vz = 3.0 | nbody_system.speed,
+            mass = 1.0 | nbody_system.mass,
+            radius = 4.0 | nbody_system.length,
+        )
+        instance.particles.add_particle(p) 
+        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
+        self.assertEquals(instance.particles[1].radius, 0.0 | nbody_system.length)
+        self.assertEquals(instance.particles[2].radius, 4.0 | nbody_system.length)
+        
+        instance.stop()

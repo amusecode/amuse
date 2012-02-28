@@ -18,7 +18,7 @@
       get_total_radius = 0
       END
 
-      FUNCTION new_particle(id, mm, rad, xx, yy, zz, vx, vy, vz)
+      FUNCTION new_particle(id, mm, xx, yy, zz, vx, vy, vz, rad)
       IMPLICIT NONE
 #include "src/general.inc"
       INTEGER new_particle
@@ -78,7 +78,7 @@ c      write(*,*) "Adding", id, ind(N), myid(N), myind(newid)
       get_index_of_next_particle = 0
       END
 
-      FUNCTION set_state(id, mm, rad, xx, yy, zz, vx, vy, vz)
+      FUNCTION set_state(id, mm, xx, yy, zz, vx, vy, vz, rad)
       IMPLICIT NONE
 #include "src/general.inc"
    
@@ -88,7 +88,7 @@ c      write(*,*) "Adding", id, ind(N), myid(N), myind(newid)
 C---  get array address
       ip = myind(id)
       IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
-         PRINT*, 'get_state: No such particle exists!'
+         PRINT*, 'set_state: No such particle exists!'
          set_state = -1
          RETURN 
       ENDIF
@@ -1178,7 +1178,7 @@ C---  local vars
       RETURN
       END
 
-      FUNCTION get_state(id,mm,rad,xx,yy,zz,vx,vy,vz)
+      FUNCTION get_state(id,mm,xx,yy,zz,vx,vy,vz,rad)
       IMPLICIT NONE 
 #include "src/general.inc"
       

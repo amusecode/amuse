@@ -346,7 +346,7 @@ int testme(int *id)
   return 0;
 }
 
-int new_particle(int *id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz) 
+int new_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double radius) 
 {
   dynamics_state state;
   //state.id = id; do this if _new_particle if needed?
@@ -478,7 +478,7 @@ int get_potential(int index_of_the_particle, double *value)
 	return 0;
 }
 
-int set_state(int index_of_the_particle, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)
+int set_state(int index_of_the_particle, double mass, double x, double y, double z, double vx, double vy, double vz, double radius)
 {
   //Assumes initialization (initialized TRUE)
   int i = get_index_from_identity(index_of_the_particle);
@@ -498,7 +498,7 @@ int set_state(int index_of_the_particle, double mass, double radius, double x, d
     }
 }
 
-int get_state(int id, double *mass, double *radius, double *x, double *y, double *z, double *vx, double *vy, double *vz) 
+int get_state(int id, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *radius) 
 {
     int i = get_index_from_identity(id);
 

@@ -121,7 +121,7 @@ int set_src_directory(char * src_dir)
 
 
 // Interface functions:
-int new_particle(int *id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)
+int new_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double radius)
 {
   *id = id_counter;
 
@@ -260,7 +260,7 @@ int commit_parameters()
 }
 
 
-int get_state(int id, double *mass, double *radius, double *x, double *y, double *z, double *vx, double *vy, double *vz)
+int get_state(int id, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *radius)
 {
   assert(initialized == true);
 
@@ -583,8 +583,8 @@ int set_velocity(int *id, double *vx, double *vy, double *vz, int length){
 }
 
 
-int set_state(int *index, double *radius, double *mass, double *x, double *y, double *z, 
-              double *vx, double *vy, double *vz, int length){
+int set_state(int *index, double *mass, double *x, double *y, double *z, 
+              double *vx, double *vy, double *vz, int length, double *radius){
   getCurrentStateToHost();
   
   for (int i = 0; i < length; i++)    

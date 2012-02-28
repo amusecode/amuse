@@ -55,8 +55,8 @@ class TestAdaptbInterface(TestWithMPI):
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals([0, 0], instance.new_particle(0.01, 0.1,  1, 0, 0,  0, 1, 0).values())
-        self.assertEquals([1, 0], instance.new_particle(0.02, 0.1, -1, 0, 0,  0,-1, 0).values())
+        self.assertEquals([0, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
+        self.assertEquals([1, 0], instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values())
         self.assertEquals(0, instance.commit_particles())
         
         # getters
@@ -73,16 +73,16 @@ class TestAdaptbInterface(TestWithMPI):
         self.assertEquals([ 0,-1, 0,  0], instance.get_velocity(1).values())
         
         # setters
-        self.assertEquals(0, instance.set_state(0, 0.01, 0.1, 1,2,3, 4,5,6))
-        self.assertEquals([0.01, 0.1, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], instance.get_state(0).values())
+        self.assertEquals(0, instance.set_state(0, 0.01, 1,2,3, 4,5,6, 0.1))
+        self.assertEquals([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
         self.assertEquals(0, instance.set_mass(0, 0.02))
-        self.assertEquals([0.02, 0.1, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], instance.get_state(0).values())
+        self.assertEquals([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
         self.assertEquals(0, instance.set_radius(0, 0.2))
-        self.assertEquals([0.02, 0.2, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], instance.get_state(0).values())
+        self.assertEquals([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
         self.assertEquals(0, instance.set_position(0, 10,20,30))
-        self.assertEquals([0.02, 0.2, 10.0,20.0,30.0, 4.0,5.0,6.0, 0], instance.get_state(0).values())
+        self.assertEquals([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
         self.assertEquals(0, instance.set_velocity(0, 40,50,60))
-        self.assertEquals([0.02, 0.2, 10.0,20.0,30.0, 40.0,50.0,60.0, 0], instance.get_state(0).values())
+        self.assertEquals([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], instance.get_state(0).values())
 
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
@@ -142,8 +142,8 @@ class TestAdaptbInterface(TestWithMPI):
         self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEquals(0, instance.commit_parameters())
         
-        self.assertEquals([0, 0], instance.new_particle(0.5, 0.0,  0.5, 0, 0,  0, 0.5, 0).values())
-        self.assertEquals([1, 0], instance.new_particle(0.5, 0.0, -0.5, 0, 0,  0,-0.5, 0).values())
+        self.assertEquals([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0).values())
+        self.assertEquals([1, 0], instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0).values())
         self.assertEquals(0, instance.commit_particles())
         
         self.assertEquals(0, instance.evolve_model(math.pi)) # half an orbit
@@ -167,9 +167,9 @@ class TestAdaptbInterface(TestWithMPI):
         self.assertEquals(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEquals(0, instance.commit_parameters())
 
-        self.assertEquals([0, 0], instance.new_particle("3", "0",  "1",  "3", "0", "0", "0", "0").values())
-        self.assertEquals([1, 0], instance.new_particle("4", "0", "-2", "-1", "0", "0", "0", "0").values())
-        self.assertEquals([2, 0], instance.new_particle("5", "0",  "1", "-1", "0", "0", "0", "0").values())
+        self.assertEquals([0, 0], instance.new_particle("3",  "1",  "3", "0", "0", "0", "0").values())
+        self.assertEquals([1, 0], instance.new_particle("4", "-2", "-1", "0", "0", "0", "0").values())
+        self.assertEquals([2, 0], instance.new_particle("5",  "1", "-1", "0", "0", "0", "0").values())
         self.assertEquals(0, instance.commit_particles())
         self.assertEquals(0, instance.evolve_model(100))
         

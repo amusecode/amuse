@@ -178,10 +178,10 @@ int cleanup_code()
 // Setters and getters for individual particles.
 
 int new_particle(int * index_of_the_particle,
-		 double mass, double radius, 
+		 double mass, 
 		 double x, double y, double z,
-		 double vx, double vy, double vz,
-		 int index_to_set)
+		 double vx, double vy, double vz, 
+         double radius, int index_to_set)
 {
     // Add a particle to the system.  Let the module set the id, or
     // force the index to index_to_set if >= 0 and allowed.
@@ -213,9 +213,9 @@ int get_index_of_next_particle(int index_of_the_particle,
 }
 
 int set_state(int index_of_the_particle,
-	      double mass, double radius, 
+	      double mass, 
 	      double x, double y, double z,
-	      double vx, double vy, double vz)
+	      double vx, double vy, double vz, double radius)
 {
     int j = jd->get_inverse_id(index_of_the_particle);
     if (j < 0) return -1;
@@ -231,9 +231,9 @@ int set_state(int index_of_the_particle,
 }
 
 int get_state(int index_of_the_particle,
-	      double * mass, double * radius, 
+	      double * mass, 
 	      double * x, double * y, double * z,
-	      double * vx, double * vy, double * vz)
+	      double * vx, double * vy, double * vz, double * radius)
 {
     int j = jd->get_inverse_id(index_of_the_particle);
     if (j < 0) return -1;

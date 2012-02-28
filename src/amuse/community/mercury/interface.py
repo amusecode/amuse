@@ -108,8 +108,11 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.OUT)
-        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
+        for x in ['mass','density','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='float64', direction=function.IN)
+        for x,default in zip(['Lx','Ly','Lz','celimit'], [0,0,0,3]):
+            function.addParameter(x, dtype='float64', direction=function.IN, default = default)
+            
         function.result_type = 'int32'
         return function
 
@@ -118,8 +121,13 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['mass','radius','j2','j4','j6','Lx','Ly','Lz']:
+        
+        for x in ['mass']:
             function.addParameter(x, dtype='d', direction=function.IN)
+            
+        for x in ['radius','j2','j4','j6','Lx','Ly','Lz']:
+            function.addParameter(x, dtype='d', direction=function.IN, default = 0)
+            
         function.result_type = 'i'
         return function
 
@@ -955,21 +963,9 @@ class Mercury(MercuryWayWard):
           print "orbiters too massive"
           return -12
                         
-        if not hasattr(centre,'j2'):
-          centre.j2 = 0.0|units.AU**2
-        if not hasattr(centre,'j4'):
-          centre.j4 = 0.0|units.AU**4
-        if not hasattr(centre,'j6'):
-          centre.j6 = 0.0|units.AU**6
-        if not hasattr(centre,'angularmomentum'):
-          centre.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
 
         if not hasattr(orbiters,'density'):
           orbiters.density=orbiters.mass*3/(4*numpy.pi)/orbiters.radius**3
-        if not hasattr(orbiters,'angularmomentum'):
-          orbiters.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
-        if not hasattr(orbiters,'celimit'):
-          orbiters.celimit=3.0 | units.none
   
         self.overridden().central_particle.add_particles(centre)
                 

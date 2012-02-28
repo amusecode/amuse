@@ -78,16 +78,18 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         
     
        
-    def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
-        return self.new_dm_particle(mass, radius, x, y, z, vx, vy, vz)
+    def new_particle(self, mass, x, y, z, vx, vy, vz, radius = 0.0):
+        return self.new_dm_particle(mass, x, y, z, vx, vy, vz, radius)
     
     @legacy_function    
     def new_dm_particle():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
+        for x in ['mass','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('radius', dtype='d', direction=function.IN, default = 0)
+            
         function.result_type = 'i'
         return function
 
@@ -96,8 +98,9 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['mass','h_smooth','x','y','z','vx','vy','vz','u']:
+        for x in ['mass','x','y','z','vx','vy','vz','u']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('h_smooth', dtype='d', direction=function.IN, default = 0)
         function.result_type = 'i'
         return function
 
@@ -106,8 +109,10 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','tform']:
+        for x in ['mass','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('tform', dtype='d', direction=function.IN, default = 0)
+        function.addParameter('radius', dtype='d', direction=function.IN, default = 0)
         function.result_type = 'i'
         return function
              
@@ -116,7 +121,7 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
+        for x in ['mass','x','y','z','vx','vy','vz','radius']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -126,7 +131,7 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','h_smooth','x','y','z','vx','vy','vz','u']:
+        for x in ['mass','x','y','z','vx','vy','vz','u','h_smooth']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -136,7 +141,7 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','tform']:
+        for x in ['mass','x','y','z','vx','vy','vz','tform','radius']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -146,8 +151,10 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
+        for x in ['mass','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('radius', dtype='d', direction=function.IN, default = 0)
+            
         function.result_type = 'i'
         return function
 
@@ -156,8 +163,11 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','tform']:
+        for x in ['mass','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        
+        function.addParameter('tform', dtype='d', direction=function.IN, default = 0)
+        function.addParameter('radius', dtype='d', direction=function.IN, default = 0)
         function.result_type = 'i'
         return function
     
@@ -166,8 +176,9 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','h_smooth','x','y','z','vx','vy','vz','u']:
+        for x in ['mass','x','y','z','vx','vy','vz','u',]:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('h_smooth', dtype='d', direction=function.IN, default = 0)
         function.result_type = 'i'
         return function
     
@@ -2264,10 +2275,10 @@ class Fi(GravitationalDynamics):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
                 nbody_system.length,
-                nbody_system.speed,
-                nbody_system.speed,
-                nbody_system.speed,
             ),
             (
                 object.INDEX,
@@ -2281,11 +2292,11 @@ class Fi(GravitationalDynamics):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
-                nbody_system.length,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.specific_energy,
+                nbody_system.length,
             ),
             (
                 object.INDEX,
@@ -2302,11 +2313,11 @@ class Fi(GravitationalDynamics):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
-                nbody_system.length,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.specific_energy,
+                nbody_system.length,
                 object.ERROR_CODE
             )
         )
@@ -2318,11 +2329,11 @@ class Fi(GravitationalDynamics):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
-                nbody_system.length,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.specific_energy,
+                nbody_system.length,
             ),
             (
                 object.ERROR_CODE,
@@ -2381,11 +2392,11 @@ class Fi(GravitationalDynamics):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
-                nbody_system.length,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.time,
+                nbody_system.length,
             ),
             (
                 object.INDEX,
@@ -2402,11 +2413,11 @@ class Fi(GravitationalDynamics):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
-                nbody_system.length,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.time,
+                nbody_system.length,
                 object.ERROR_CODE
             )
         )
@@ -2418,11 +2429,11 @@ class Fi(GravitationalDynamics):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
-                nbody_system.length,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.time,
+                nbody_system.length,
             ),
             (
                 object.ERROR_CODE,

@@ -29,13 +29,13 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
             )
 
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The mass of the particle")
-        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
         function.addParameter('vx', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The radius of the particle", default = 0)
         function.result_type = 'int32'
         function.result_doc = """ 0 - OK
             particle was created and added to the model
@@ -76,13 +76,13 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
-        function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
         function.addParameter('vx', dtype='float64', direction=function.OUT, description = "The current velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.OUT, description = "The current velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.OUT, description = "The current velocity vector of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -103,13 +103,13 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
-        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
         function.addParameter('vx', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle", default = 0)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -851,10 +851,10 @@ class GravitationalDynamics(common.CommonCode):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
                 nbody_system.length,
-                nbody_system.speed,
-                nbody_system.speed,
-                nbody_system.speed,
             ),
             (
                 object.INDEX,
@@ -880,10 +880,10 @@ class GravitationalDynamics(common.CommonCode):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
                 nbody_system.length,
-                nbody_system.speed,
-                nbody_system.speed,
-                nbody_system.speed,
                 object.ERROR_CODE
             )
         )
@@ -895,10 +895,10 @@ class GravitationalDynamics(common.CommonCode):
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
                 nbody_system.length,
-                nbody_system.speed,
-                nbody_system.speed,
-                nbody_system.speed,
             ),
             (
                 object.ERROR_CODE

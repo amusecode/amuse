@@ -54,13 +54,13 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.can_handle_array = True
         function.addParameter('identity_of_the_particle', dtype='int32', direction=function.OUT)
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The mass of the particle")
-        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
         function.addParameter('vx', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The radius of the particle", default = 0)
         function.result_type = 'int32'
         return function
 
@@ -70,21 +70,21 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.can_handle_array = True
         function.addParameter('identity_of_the_particle', dtype='int32', direction=function.OUT)
         function.addParameter('mass', dtype='string', direction=function.IN, description = "The mass of the particle")
-        function.addParameter('radius', dtype='string', direction=function.IN, description = "The radius of the particle")
         function.addParameter('x', dtype='string', direction=function.IN, description = "The initial position vector of the particle")
         function.addParameter('y', dtype='string', direction=function.IN, description = "The initial position vector of the particle")
         function.addParameter('z', dtype='string', direction=function.IN, description = "The initial position vector of the particle")
         function.addParameter('vx', dtype='string', direction=function.IN, description = "The initial velocity vector of the particle")
         function.addParameter('vy', dtype='string', direction=function.IN, description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='string', direction=function.IN, description = "The initial velocity vector of the particle")
+        function.addParameter('radius', dtype='string', direction=function.IN, description = "The radius of the particle", default='0')
         function.result_type = 'int32'
         return function
 
-    def new_particle(self, mass, radius, x,y,z, vx,vy,vz):
+    def new_particle(self, mass, x,y,z, vx,vy,vz, radius = 0):
         if isinstance(mass, str):
-            return self.new_particle_string(mass, radius, x,y,z, vx,vy,vz)
+            return self.new_particle_string(mass, x,y,z, vx,vy,vz, radius = str(radius))
         else:
-            return self.new_particle_float64(mass, radius, x,y,z, vx,vy,vz)
+            return self.new_particle_float64(mass, x,y,z, vx,vy,vz, radius = radius)
 
     @legacy_function
     def get_bs_tolerance_string():

@@ -111,7 +111,7 @@ function get_total_energy(e) result(ret)
 end function
 
 
-function new_dm_particle(ids,mass,eps,x,y,z,vx,vy,vz) result(ret)
+function new_dm_particle(ids,mass,x,y,z,vx,vy,vz,eps) result(ret)
   integer :: ids,ret,oldnp,muse_get_nbodies
   integer :: new_id, add_dm_particle
   real*8 :: mass,eps,x,y,z,vx,vy,vz
@@ -125,7 +125,7 @@ function new_dm_particle(ids,mass,eps,x,y,z,vx,vy,vz) result(ret)
   endif 
 end function
 
-function new_sph_particle(ids,mass,eps,x,y,z,vx,vy,vz,u) result(ret)
+function new_sph_particle(ids,mass,x,y,z,vx,vy,vz,u,eps) result(ret)
   integer :: ids,ret,oldnp,muse_get_nsph
   integer :: new_id, add_sph_particle
   real*8 :: mass,eps,x,y,z,vx,vy,vz,u
@@ -139,7 +139,7 @@ function new_sph_particle(ids,mass,eps,x,y,z,vx,vy,vz,u) result(ret)
   endif 
 end function
 
-function new_star_particle(ids,mass,eps,x,y,z,vx,vy,vz,tf) result(ret)
+function new_star_particle(ids,mass,x,y,z,vx,vy,vz,tf,eps) result(ret)
   integer :: ids,ret,oldnp,muse_get_nstar
   integer :: new_id, add_star_particle
   real*8 :: mass,eps,x,y,z,vx,vy,vz,tf
@@ -180,37 +180,37 @@ function add_sph_particle(ids,mass,x,y,z,vx,vy,vz,eps,u,npart) result(n)
   n=muse_get_nsph()
 end function
 
-function set_state(id,mass,eps,x,y,z,vx,vy,vz) result(ret)
+function set_state(id,mass,x,y,z,vx,vy,vz,eps) result(ret)
   integer id,ret,amuse_set_state
   real*8 mass,eps,x,y,z,vx,vy,vz 
   ret=amuse_set_state(id,mass,x,y,z,vx,vy,vz,eps)
 end function
 
-function set_state_sph(id,mass,eps,x,y,z,vx,vy,vz,u) result(ret)
+function set_state_sph(id,mass,x,y,z,vx,vy,vz,u,eps) result(ret)
   integer id,ret,amuse_set_state_sph
   real*8 mass,eps,x,y,z,vx,vy,vz,u 
   ret=amuse_set_state_sph(id,mass,x,y,z,vx,vy,vz,eps,u)
 end function
 
-function set_state_star(id,mass,eps,x,y,z,vx,vy,vz,tf) result(ret)
+function set_state_star(id,mass,x,y,z,vx,vy,vz,tf,eps) result(ret)
   integer id,ret,amuse_set_state_star
   real*8 mass,eps,x,y,z,vx,vy,vz,tf 
   ret=amuse_set_state_star(id,mass,x,y,z,vx,vy,vz,eps,tf)
 end function
 
-function get_state(id,mass,eps,x,y,z,vx,vy,vz) result(ret)
+function get_state(id,mass,x,y,z,vx,vy,vz,eps) result(ret)
   integer :: id,ret,amuse_get_state
   real*8 :: mass,x,y,z,vx,vy,vz,eps
   ret=amuse_get_state(id,mass,x,y,z,vx,vy,vz,eps)
 end function
 
-function get_state_sph(id,mass,eps,x,y,z,vx,vy,vz,u) result(ret)
+function get_state_sph(id,mass,x,y,z,vx,vy,vz,u,eps) result(ret)
   integer :: id,ret,amuse_get_state_sph
   real*8 :: mass,x,y,z,vx,vy,vz,eps,u
   ret=amuse_get_state_sph(id,mass,x,y,z,vx,vy,vz,eps,u)
 end function
 
-function get_state_star(id,mass,eps,x,y,z,vx,vy,vz,tf) result(ret)
+function get_state_star(id,mass,x,y,z,vx,vy,vz,tf,eps) result(ret)
   integer :: id,ret,amuse_get_state_star
   real*8 :: mass,x,y,z,vx,vy,vz,eps,tf
   ret=amuse_get_state_star(id,mass,x,y,z,vx,vy,vz,eps,tf)

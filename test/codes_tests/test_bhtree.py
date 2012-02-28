@@ -86,7 +86,7 @@ class TestBHTreeInterface(TestWithMPI):
         interface.initialize_code()
         
         interface.commit_parameters()
-        interface.new_particle([10,20],[1,1],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0])
+        interface.new_particle([10,20],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         interface.commit_particles()
         retrieved_state = interface.get_state(1)
         
@@ -130,7 +130,7 @@ class TestBHTreeInterface(TestWithMPI):
         interface.initialize_code()
         
         interface.commit_parameters()
-        interface.new_particle([10,20],[1,1],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0])
+        interface.new_particle([10,20],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         interface.commit_particles()
         retrieved_state = interface.get_state(1)
         
@@ -252,6 +252,7 @@ class TestBHTree(TestWithMPI):
 
         instance.particles.add_particles(stars)
         instance.commit_particles()
+        self.assertAlmostRelativeEquals(sun.radius, instance.particles[0].radius)
     
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
@@ -327,13 +328,14 @@ class TestBHTree(TestWithMPI):
         
         index = instance.new_particle(
             15.0 | units.kg,
-            10.0 | units.m,
             10.0 | units.m, 20.0 | units.m, 30.0 | units.m,
             #1.0 | units.m/units.s, 1.0 | units.m/units.s, 3.0 | units.m/units.s
-            0.0 | units.m/units.s, 0.0 | units.m/units.s, 0.0 | units.m/units.s
+            0.0 | units.m/units.s, 0.0 | units.m/units.s, 0.0 | units.m/units.s,
+            10.0 | units.m
         )
         instance.commit_particles()
         self.assertEquals(instance.get_mass(index), 15.0| units.kg)
+        self.assertEquals(instance.get_radius(index), 10.0| units.m)
         instance.cleanup_code()
         instance.stop()
         
@@ -344,12 +346,13 @@ class TestBHTree(TestWithMPI):
         
         index = instance.new_particle(
             15.0 | nbody_system.mass,
-            10.0 | nbody_system.length,
             10.0 | nbody_system.length, 20.0 | nbody_system.length, 30.0 | nbody_system.length,
-            1.0 | nbody_system.speed, 1.0 | nbody_system.speed, 3.0 | nbody_system.speed
+            1.0 | nbody_system.speed, 1.0 | nbody_system.speed, 3.0 | nbody_system.speed,
+            10.0 | nbody_system.length
         )
         instance.commit_particles()
         self.assertEquals(instance.get_mass(index), 15.0| nbody_system.mass)
+        self.assertEquals(instance.get_radius(index), 10.0| nbody_system.length)
         
         instance.cleanup_code()
         instance.stop()
@@ -361,10 +364,10 @@ class TestBHTree(TestWithMPI):
         
         indices = instance.new_particle(
             [15.0, 30.0] | units.kg,
-            [10.0, 20.0] | units.m,
             [10.0, 20.0] | units.m, [20.0, 40.0] | units.m, [30.0, 50.0] | units.m,
             #1.0 | units.m/units.s, 1.0 | units.m/units.s, 3.0 | units.m/units.s
-            [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s
+            [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s,
+            [10.0, 20.0] | units.m
         )
         instance.commit_particles()
         
@@ -560,12 +563,22 @@ class TestBHTree(TestWithMPI):
         
         copyof =  instance.particles.copy()
         
-        instance.set_state(1, 16|units.kg, 20.0|units.m, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+        instance.set_state(1, 16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
                                  1.0|units.ms, 1.0|units.ms, 1.0|units.ms)
         
         curr_state =  instance.get_state(1)
+        for expected, actural in zip((16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+                                 1.0|units.ms, 1.0|units.ms, 1.0|units.ms, 0 | units.m), curr_state):
+            self.assertAlmostRelativeEquals(actural,expected)
         
-        self.assertEquals(curr_state[0], 16|units.kg, 8)
+        instance.set_state(1, 16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+                                 1.0|units.ms, 1.0|units.ms, 1.0|units.ms , 20.0|units.m)
+        
+        curr_state =  instance.get_state(1)
+        for expected, actural in zip((16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+                                 1.0|units.ms, 1.0|units.ms, 1.0|units.ms, 20 | units.m), curr_state):
+            self.assertAlmostRelativeEquals(actural,expected)
+        
         instance.stop()
 
     def test13(self):
@@ -874,5 +887,37 @@ class TestBHTree(TestWithMPI):
         instance.particles.add_particles(particles) 
         instance.commit_particles()
         self.assertAlmostRelativeEquals(instance.potential_energy, -0.1 | nbody_system.energy, 5)
+        instance.stop()
+
+    
+    def test22(self):
+        particles = datamodel.Particles(2)
+        particles.x = [0.0,10.0] | nbody_system.length
+        particles.y = 0.0 | nbody_system.length
+        particles.z = 0.0 | nbody_system.length
+        particles.vx =  0.0 | nbody_system.speed
+        particles.vy =  0.0 | nbody_system.speed
+        particles.vz =  0.0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+
+        instance = BHTree()
+        instance.particles.add_particles(particles) 
+        instance.commit_particles()
+        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
+        p = datamodel.Particle(
+            x = 1.0  | nbody_system.length,
+            y = 2.0 | nbody_system.length,
+            z = 3.0 | nbody_system.length,
+            vx = 1.0  | nbody_system.speed,
+            vy = 2.0 | nbody_system.speed,
+            vz = 3.0 | nbody_system.speed,
+            mass = 1.0 | nbody_system.mass,
+            radius = 4.0 | nbody_system.length,
+        )
+        instance.particles.add_particle(p) 
+        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
+        self.assertEquals(instance.particles[1].radius, 0.0 | nbody_system.length)
+        self.assertEquals(instance.particles[2].radius, 4.0 | nbody_system.length)
+        
         instance.stop()
 

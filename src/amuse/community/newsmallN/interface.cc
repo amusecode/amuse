@@ -39,7 +39,11 @@ int initialize_code()
 
     b = new hdyn;
     b_copy = NULL;
-
+    b->set_eta(0.14);
+    b->set_gamma(1e-6);
+    b->set_system_time(0.0);
+    b->set_allow_full_unperturbed(1);
+    b->set_cm_index(100000);
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
     mpi_setup_stopping_conditions();
@@ -161,10 +165,10 @@ int cleanup_code()
 // Setters and getters for individual particles.
 
 int new_particle(int * index_of_the_particle,
-		 double mass, double radius, 
+		 double mass, 
 		 double x, double y, double z,
 		 double vx, double vy, double vz,
-		 int index_to_set)
+         double radius, int index_to_set)
 {
     // Add a particle to the system.  Let the module set the id, or
     // force the index to index_to_set if >= 0 and allowed.
@@ -200,9 +204,10 @@ int get_index_of_next_particle(int index_of_the_particle,
 }
 
 int set_state(int index_of_the_particle,
-	      double mass, double radius, 
+	      double mass, 
 	      double x, double y, double z,
-	      double vx, double vy, double vz)
+	      double vx, double vy, double vz,
+          double radius)
 {
     hdyn *bb = particle_with_index(b, index_of_the_particle);
     if (!bb) return -1;
@@ -214,9 +219,10 @@ int set_state(int index_of_the_particle,
 }
 
 int get_state(int index_of_the_particle,
-	      double * mass, double * radius, 
+	      double * mass, 
 	      double * x, double * y, double * z,
-	      double * vx, double * vy, double * vz)
+	      double * vx, double * vy, double * vz,
+          double * radius)
 {
     hdyn *bb = particle_with_index(b, index_of_the_particle);
     if (!bb) return -1;

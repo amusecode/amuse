@@ -38,9 +38,10 @@ int cleanup_code()
 }
 
 
-int new_particle(int *id, double mass, double radius,
+int new_particle(int *id, double mass,
                  double x, double y, double z,
-                 double vx, double vy, double vz)
+                 double vx, double vy, double vz,
+                 double radius)
 {
  int p;
  p=mainsys.n;
@@ -87,8 +88,10 @@ int delete_particle(int id)
   return 0; 
 }
                  
-int get_state(int id, double *mass, double *radius, double *x, double *y, double *z,
-              double *vx, double *vy, double *vz)
+int get_state(int id, double *mass,
+        double *x, double *y, double *z,
+        double *vx, double *vy, double *vz,
+        double *radius)
 {
   int p=0;
  if(id<0 || id > pcounter) return -1;
@@ -149,8 +152,10 @@ int get_velocity(int id, double *vx, double *vy, double *vz)
  return 0;
 }
 
-int set_state(int id, double mass, double radius, double x, double y, double z,
-              double vx, double vy, double vz)
+int set_state(int id, double mass, 
+        double x, double y, double z,
+        double vx, double vy, double vz, 
+        double radius)
 {
   int p=0;
   if(id<0 || id > pcounter) return -1;

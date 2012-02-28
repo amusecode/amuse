@@ -326,26 +326,21 @@ int recommit_parameters()
 
 int new_particle(
     int *index_of_the_particle,
-    double mass, double radius, 
+    double mass, 
     double x, double y, double z,
     double vx, double vy, double vz,
-    int index_to_set)
+    double radius)
 {
     try
     {
         assert(nbody_ptr != NULL);
         assert(nbody_ptr->is_sane());
         nbody_ptr->cyclical_idx &= 0x7FFFFFFF;
-#if 0
-        assert(index_to_set >= 0);
-        *index_of_the_particle = index_to_set; 
-#else
-//      assert(index_to_set < 0);
+        
         *index_of_the_particle = nbody_ptr->cyclical_idx++;
 #if 0
         fprintf(stderr , "--new-particle-added= %d %d \n",
 		  *index_of_the_particle, index_to_set);
-#endif
 #endif
         nbody_ptr->ptcl2add.push_back(hacs64::Particle(mass, radius, dvec3(x,y,z), dvec3(vx,vy,vz), *index_of_the_particle));
         UpdatedPtcl.push_back(std::make_pair(*index_of_the_particle, 2));
@@ -378,9 +373,10 @@ int delete_particle(int index_of_the_particle)
 /****************/
 
 int set_state(int index_of_the_particle,
-    double mass, double radius, 
+    double mass, 
     double x, double y, double z,
-    double vx, double vy, double vz)
+    double vx, double vy, double vz,
+    double radius)
 {
     try
     {
@@ -400,9 +396,10 @@ int set_state(int index_of_the_particle,
     }    
 }
 int get_state(int index_of_the_particle,
-    double * mass, double * radius, 
+    double * mass,
     double * x, double * y, double * z,
-    double * vx, double * vy, double * vz)
+    double * vx, double * vy, double * vz,
+    double * radius)
 {
     try
     {

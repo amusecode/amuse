@@ -40,7 +40,7 @@ class TestBonsaiInterface(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(BonsaiInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals([0, 0], instance.get_number_of_particles().values())
-        ids, errors = instance.new_particle(mass,radius,x,y,z,vx,vy,vz)
+        ids, errors = instance.new_particle(mass,x,y,z,vx,vy,vz,radius)
         self.assertEquals(0, errors)
         self.assertEquals(range(plummer_size), ids)
         self.assertEquals(0, instance.commit_particles())
@@ -49,7 +49,7 @@ class TestBonsaiInterface(TestWithMPI):
         masses, errors = instance.get_mass(range(500))
         self.assertEquals(0, errors)
         self.assertAlmostEquals(0.002, masses)
-        masses,radii,xs,ys,zs,vxs,vys,vzs, errors = instance.get_state(range(500))
+        masses,xs,ys,zs,vxs,vys,vzs,radii, errors = instance.get_state(range(500))
         self.assertEquals(0, errors)
         self.assertAlmostRelativeEquals(xs, x, 6)
         

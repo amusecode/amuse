@@ -281,6 +281,7 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
                 list_arguments[index] = quantity
         
         default_argument_found = False
+        dict_arguments = {}
         for index, x in enumerate(list_arguments):
             if x is not_set_marker:
                 name_of_attribute = self.attribute_names[index]
@@ -289,14 +290,14 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
                     raise exceptions.AmuseException("To add particles to this code you need to specify the {0!r} attribute".format(self.attribute_names[index]))
             elif default_argument_found:
                 name_of_attribute = self.attribute_names[index]
-                if name_of_attribute in self.optional_attribute_names:
-                    raise exceptions.AmuseException("Add particles method as mutliple default arguments, some are set and some are not, this is not handled yet")
-                else:
+                if not name_of_attribute in self.optional_attribute_names:
                     raise exceptions.AmuseException("Optional before required arguments")
+                dict_arguments[name_of_attribute] = x
+                list_arguments[index] = not_set_marker
                     
         list_arguments = [x for x in list_arguments if not x is not_set_marker]
-        
-        return list_arguments, {}
+        print list_arguments, dict_arguments
+        return list_arguments, dict_arguments
 
 
 class NewParticleMethod(ParticleSetAttributesMethod):

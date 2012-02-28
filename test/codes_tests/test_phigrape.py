@@ -32,7 +32,7 @@ class TestMPIInterface(TestWithMPI):
     def test1(self):
         instance = PhiGRAPEInterface(**default_test_options)
         instance.initialize_code()
-        instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        instance.new_particle(11.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0)
         retrieved_state = instance.get_state(1)
         self.assertEquals(11.0,  retrieved_state['mass'])
         self.assertEquals(2.0, retrieved_state['radius'])
@@ -56,13 +56,13 @@ class TestMPIInterface(TestWithMPI):
         instance.initialize_code()
         
         instance.new_particle([11.0,12.0,13.0,14.0]
-            , [2.0,3.0,4.0,5.0]
             , [2.1,3.1,4.1,5.1]
             , [2.2,3.2,4.2,5.2]
             , [2.3,3.3,4.3,5.3]
             , [2.4,3.4,4.4,5.4]
             , [2.5,3.5,4.5,5.5]
-            , [2.6,3.6,4.6,5.6])
+            , [2.6,3.6,4.6,5.6]
+            , [2.0,3.0,4.0,5.0])
         retrieved_state = instance.get_state(1)
         self.assertEquals(11.0,  retrieved_state['mass'])
         retrieved_state = instance.get_state([2,3,4])
@@ -79,7 +79,6 @@ class TestMPIInterface(TestWithMPI):
         values = [1.0 * i for i in range(1,n)]
         instance.new_particle(
               values
-            , values
             , values
             , values
             , values
@@ -105,7 +104,6 @@ class TestMPIInterface(TestWithMPI):
                 , values[i]
                 , values[i]
                 , values[i]
-                , values[i]
                 , values[i])
                 
         retrieved_state = instance.get_state(1)
@@ -123,7 +121,6 @@ class TestMPIInterface(TestWithMPI):
 
         instance.new_particle( 
             [1.0,1.0,1.0],
-            [0.0,0.0,0.0],
             [1.0,0.0,-1.0],
             [0.0,0.0,0.0],
             [0.0,0.0,0.0],
@@ -155,13 +152,13 @@ class TestMPIInterface(TestWithMPI):
         instance.set_eta(0.01,0.02)
         instance.new_particle( 
             [0.01,0.01],
-            [0.1,0.1],
             [10.,-10.],
             [0.0,0.0],
             [0.0,0.0],
             [-5.0,5.0],
             [0.0,0.0],
-            [0.0,0.0] )
+            [0.0,0.0],
+            [0.1,0.1])
         instance.commit_particles() 
         #HAS NO RESULT...
         result = instance.evolve_model(3.14159)  

@@ -78,8 +78,8 @@ class TestMI6Interface(TestWithMPI):
         instance = MI6Interface(**default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals([1, 0], instance.new_particle(0.01, 0.1,  1, 0, 0,  0, 1, 0).values())
-        self.assertEquals([2, 0], instance.new_particle(0.02, 0.1, -1, 0, 0,  0,-1, 0).values())
+        self.assertEquals([1, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
+        self.assertEquals([2, 0], instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values())
         self.assertEquals(-3, instance.get_mass(1)['__result']) # Have to commit first
         self.assertEquals(0, instance.commit_particles())
         
@@ -97,16 +97,16 @@ class TestMI6Interface(TestWithMPI):
         self.assertEquals([ 0,-1, 0,  0], instance.get_velocity(2).values())
         
         # setters
-        self.assertEquals(0, instance.set_state(1, 0.01, 0.1, 1,2,3, 4,5,6))
-        self.assertEquals([0.01, 0.1, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], instance.get_state(1).values())
+        self.assertEquals(0, instance.set_state(1, 0.01, 1,2,3, 4,5,6, 0.1))
+        self.assertEquals([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(1).values())
         self.assertEquals(0, instance.set_mass(1, 0.02))
-        self.assertEquals([0.02, 0.1, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], instance.get_state(1).values())
+        self.assertEquals([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(1).values())
         self.assertEquals(0, instance.set_radius(1, 0.2))
-        self.assertEquals([0.02, 0.2, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], instance.get_state(1).values())
+        self.assertEquals([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(1).values())
         self.assertEquals(0, instance.set_position(1, 10,20,30))
-        self.assertEquals([0.02, 0.2, 10.0,20.0,30.0, 4.0,5.0,6.0, 0], instance.get_state(1).values())
+        self.assertEquals([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(1).values())
         self.assertEquals(0, instance.set_velocity(1, 40,50,60))
-        self.assertEquals([0.02, 0.2, 10.0,20.0,30.0, 40.0,50.0,60.0, 0], instance.get_state(1).values())
+        self.assertEquals([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], instance.get_state(1).values())
 
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
@@ -172,7 +172,7 @@ class TestMI6Interface(TestWithMPI):
         self.assertEquals(0, instance.commit_parameters())
         
         # Set up a light particle on a circular orbit around the SMBH:
-        self.assertEquals([1, 0], instance.new_particle(1.0e-4, 0.01,  1.0, 0, 0,  0, 1.0, 0).values())
+        self.assertEquals([1, 0], instance.new_particle(1.0e-4,  1.0, 0, 0,  0, 1.0, 0, 0.001).values())
         self.assertEquals(0, instance.commit_particles())
         
         self.assertEquals(0, instance.evolve_model(math.pi)) # half an orbit
@@ -196,8 +196,8 @@ class TestMI6Interface(TestWithMPI):
         # Set up a light binary on circular orbits around the SMBH:
         mass = 1.0e-4
         dv = 0.5 * (math.sqrt(1.0 + 0.5*mass) - 1.0)
-        self.assertEquals([1, 0], instance.new_particle(mass, 0.01,  1.0, 0, 0,  0, 1.0+dv, 0).values())
-        self.assertEquals([2, 0], instance.new_particle(mass, 0.01, -1.0, 0, 0,  0,-1.0-dv, 0).values())
+        self.assertEquals([1, 0], instance.new_particle(mass,  1.0, 0, 0,  0, 1.0+dv, 0, 0.001).values())
+        self.assertEquals([2, 0], instance.new_particle(mass, -1.0, 0, 0,  0,-1.0-dv, 0, 0.001).values())
         self.assertEquals(0, instance.commit_particles())
         
         P = 2 * math.pi / (1 + dv)
@@ -221,8 +221,8 @@ class TestMI6Interface(TestWithMPI):
         self.assertEquals(0, instance.commit_parameters())
         # Set up a light binary on circular orbits around the SMBH:
         mass = 1.0e-6
-        self.assertEquals([1, 0], instance.new_particle(mass, 0.01,  1.0, 0, 0,  0, 1.0, 0).values())
-        self.assertEquals([2, 0], instance.new_particle(mass, 0.01, -1.0, 0, 0,  0,-1.0, 0).values())
+        self.assertEquals([1, 0], instance.new_particle(mass,  1.0, 0, 0,  0, 1.0, 0, 0.001).values())
+        self.assertEquals([2, 0], instance.new_particle(mass, -1.0, 0, 0,  0,-1.0, 0, 0.001).values())
         self.assertEquals(0, instance.commit_particles())
         
         self.assertEquals(0, instance.evolve_model(0.00001))

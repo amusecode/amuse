@@ -71,15 +71,15 @@ int initialize_code() {
     return 0;
 }
 
-int new_particle_string(int *particle_identifier, char* mass, char* radius, 
-        char* x, char* y, char* z, char* vx, char* vy, char* vz) {
+int new_particle_string(int *particle_identifier, char* mass, 
+        char* x, char* y, char* z, char* vx, char* vy, char* vz, char* radius) {
     cluster->add_star(particle_id_counter, mass, radius, x, y, z, vx, vy, vz);
     *particle_identifier = particle_id_counter;
     particle_id_counter++;
     return 0;
 }
-int new_particle_float64(int *particle_identifier, double mass, double radius, 
-        double x, double y, double z, double vx, double vy, double vz) {
+int new_particle_float64(int *particle_identifier, double mass, 
+        double x, double y, double z, double vx, double vy, double vz, double radius) {
     cluster->add_star(particle_id_counter, mass, radius, x, y, z, vx, vy, vz);
     *particle_identifier = particle_id_counter;
     particle_id_counter++;
@@ -245,7 +245,7 @@ int set_velocity(int id, double vx, double vy, double vz) {
   cluster->get_pointer_to_star(id)->vz = vz;
   return 0;
 }
-int get_state(int id, double* m, double* radius, double* x, double* y, double* z, double* vx, double* vy, double* vz) {
+int get_state(int id, double* m, double* x, double* y, double* z, double* vx, double* vy, double* vz, double* radius) {
   if (id < 0 || id >= particle_id_counter){
     return -3;
   }
@@ -259,7 +259,7 @@ int get_state(int id, double* m, double* radius, double* x, double* y, double* z
   *vz = cluster->get_pointer_to_star(id)->vz.toDouble();
   return 0;
 }
-int set_state(int id, double m, double radius, double x, double y, double z, double vx, double vy, double vz) {
+int set_state(int id, double m, double x, double y, double z, double vx, double vy, double vz, double radius) {
   if (id < 0 || id >= particle_id_counter){
     return -3;
   }

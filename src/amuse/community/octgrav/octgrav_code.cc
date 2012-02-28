@@ -45,7 +45,7 @@ int get_index_from_identity(int id)
 }
 
 // Interface functions:
-int new_particle(int *id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)
+int new_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double radius)
 {
   // Add the new particle and reinitialize immediately.
 
@@ -284,7 +284,7 @@ double get_time_dynamics()
   return t_now;
 }
 
-int get_state(int id, double *mass, double *radius, double *x, double *y, double *z, double *vx, double *vy, double *vz)
+int get_state(int id, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *radius)
 {
   int i = get_index_from_identity(id);
   if (i >= 0 && i < n_bodies)
@@ -661,7 +661,7 @@ int set_mass(int id, double mass)
   return -1;
 }
 
-int set_state(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)
+int set_state(int id, double mass, double x, double y, double z, double vx, double vy, double vz, double radius)
 {
   int i = get_index_from_identity(id);
   if (i >= 0 && i < n_bodies)

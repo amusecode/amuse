@@ -26,8 +26,8 @@ class TestHuaynoInterface(TestWithMPI):
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
         
-        self.assertEquals(0, res1['id'])
-        self.assertEquals(1, res2['id'])
+        self.assertEquals(0, res1['index_of_the_particle'])
+        self.assertEquals(1, res2['index_of_the_particle'])
     
         retrieved_state1 = instance.get_state(0)
         retrieved_state2 = instance.get_state(1)
@@ -46,7 +46,7 @@ class TestHuaynoInterface(TestWithMPI):
 
         for i in [0, 1, 2]:
             temp_particle = instance.new_particle(mass = i, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-            self.assertEquals(i, temp_particle['id'])
+            self.assertEquals(i, temp_particle['index_of_the_particle'])
             
         instance.delete_particle(1)
       
@@ -71,7 +71,7 @@ class TestHuaynoInterface(TestWithMPI):
         huayno = HuaynoInterface()
         huayno.initialize_code()
         
-        huayno.new_particle([10,20],[1,1],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0])
+        huayno.new_particle([10,20],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         retrieved_state = huayno.get_state(0)
         
         self.assertEquals(10.0,  retrieved_state['mass'])
@@ -245,13 +245,24 @@ class TestHuayno(TestWithMPI):
         
         instance.particles.add_particles(particles)
         self.assertEquals(len(instance.particles), 2)
-        instance.set_state(1, 16|units.kg, 20.0|units.m, 
-                           20.0|units.m, 40.0|units.m, 60.0|units.m, 
-                           1.0|units.ms, 1.0|units.ms, 1.0|units.ms)
+        
+        instance.set_state(1, 16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+                                 1.0|units.ms, 1.0|units.ms, 1.0|units.ms)
         
         curr_state =  instance.get_state(1)
+        for expected, actural in zip((16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+                                 1.0|units.ms, 1.0|units.ms, 1.0|units.ms, 0 | units.m), curr_state):
+            self.assertAlmostRelativeEquals(actural,expected)
         
-        self.assertEquals(curr_state[0], 16|units.kg, 8)
+        instance.set_state(1, 16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+                                 1.0|units.ms, 1.0|units.ms, 1.0|units.ms , 20.0|units.m)
+        
+        curr_state =  instance.get_state(1)
+        for expected, actural in zip((16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+                                 1.0|units.ms, 1.0|units.ms, 1.0|units.ms, 20 | units.m), curr_state):
+            self.assertAlmostRelativeEquals(actural,expected)
+        
+        
     
     def test6(self):
         print "Test6: Testing Huayno parameters"

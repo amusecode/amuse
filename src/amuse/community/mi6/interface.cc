@@ -120,8 +120,8 @@ int initialize_code() {
     return 0;
 }
 
-int new_particle(int *particle_identifier, double mass, double radius, 
-        double x, double y, double z, double vx, double vy, double vz) {
+int new_particle(int *particle_identifier, double mass, 
+        double x, double y, double z, double vx, double vy, double vz, double radius) {
     dynamics_state new_p;
     
     // Particle is stored in the buffer until (re)commit_particles is called
@@ -139,8 +139,8 @@ int new_particle(int *particle_identifier, double mass, double radius,
     return 0;
 }
 
-int new_black_hole(int *particle_identifier, double mass, double radius, 
-        double x, double y, double z, double vx, double vy, double vz) {
+int new_black_hole(int *particle_identifier, double mass, 
+        double x, double y, double z, double vx, double vy, double vz, double radius) {
     dynamics_state new_p;
     
     // Particle is stored in the buffer until (re)commit_particles is called
@@ -744,8 +744,10 @@ int get_velocity(int particle_identifier, double *vx, double *vy, double *vz) {
     }
     return -3; // Not found!
 }
-int set_state(int particle_identifier, double mass, double radius, 
-        double x, double y, double z, double vx, double vy, double vz) {
+int set_state(int particle_identifier, double mass, 
+        double x, double y, double z, 
+        double vx, double vy, double vz,
+        double radius) {
     int index;
     if (found_particle(particle_identifier, &index)){
         prt[index].mass = mass;
@@ -756,8 +758,10 @@ int set_state(int particle_identifier, double mass, double radius,
     }
     return -3; // Not found!
 }
-int get_state(int particle_identifier, double *mass, double *radius, 
-        double *x, double *y, double *z, double *vx, double *vy, double *vz) {
+int get_state(int particle_identifier, double *mass, 
+        double *x, double *y, double *z,
+        double *vx, double *vy, double *vz,
+        double *radius) {
     int index;
     if (found_particle(particle_identifier, &index)){
         *mass = prt[index].mass;

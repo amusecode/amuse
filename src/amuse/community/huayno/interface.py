@@ -17,16 +17,6 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
       
     def __init__(self, mode=None, **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_worker(mode), **options) 
-        
-    @legacy_function    
-    def new_particle():
-        function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function
 
     @legacy_function      
     def get_time():
@@ -65,16 +55,6 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
     @legacy_function      
     def initialize_code():
         function = LegacyFunctionSpecification()
-        function.result_type = 'i'
-        return function
-
-    @legacy_function    
-    def get_state():
-        function = LegacyFunctionSpecification()   
-        function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
 

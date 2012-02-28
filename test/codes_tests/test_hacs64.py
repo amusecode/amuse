@@ -44,6 +44,7 @@ class TestHacs64Interface(TestWithMPI):
         self.assertEquals(21.0,  retrieved_state2['mass'])
         self.assertEquals(0.0,  retrieved_state1['x'])
         self.assertEquals(10.0,  retrieved_state2['x'])
+        self.assertEquals(5.0,  retrieved_state2['radius'])
     
         instance.cleanup_code()
         instance.stop()
@@ -117,7 +118,7 @@ class TestHacs64Interface(TestWithMPI):
         instance.initialize_code()
         instance.commit_parameters()
         
-        instance.new_particle([10,20],[1,1],[0,1],[0,0], [0,0], [0,0], [0,0], [0,0])
+        instance.new_particle([10,20],[0,1],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         instance.commit_particles()
         retrieved_state = instance.get_state(0)
         
@@ -135,7 +136,7 @@ class TestHacs64Interface(TestWithMPI):
         instance.initialize_code()
         instance.commit_parameters()
         
-        instance.new_particle([10,10],[1,1],[-1,1],[0,0], [0,0], [0,0], [0,0], [0,0])
+        instance.new_particle([10,10],[-1,1],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         instance.commit_particles()
         
         retr, error = instance.get_potential_at_point(0.01, 0,0,0)
@@ -198,8 +199,8 @@ class TestHacs64Interface(TestWithMPI):
         self.assertEquals(0, instance.commit_parameters())
         
         # Set up an equal-mass binary on a circular orbit:
-        self.assertEquals([0, 0], instance.new_particle(0.5, 0.01,  0.5, 0, 0,  0, 0.5, 0).values())
-        self.assertEquals([1, 0], instance.new_particle(0.5, 0.01, -0.5, 0, 0,  0,-0.5, 0).values())
+        self.assertEquals([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values())
+        self.assertEquals([1, 0], instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
         self.assertEquals(0, instance.commit_particles())
         self.assertEquals(0, instance.evolve_model(math.pi))
         for result, expected in zip(instance.get_position(0).values(), [-0.5, -0.007, 0.0, 0]):

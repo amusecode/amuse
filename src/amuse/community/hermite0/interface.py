@@ -24,20 +24,6 @@ class HermiteInterface(CodeInterface,
 
     def reinitialize_particles(self):
         self.recommit_particles()
-
-    @legacy_function
-    def delete_particle():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_particle', dtype='int32',
-                              direction=function.IN,
-            description = "Index of particle to delete")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-           The particle was deleted
-        """
-        return function
     
     @legacy_function
     def get_dt_dia():

@@ -895,9 +895,9 @@ int cleanup_code()
 
 static int max_identifier = 0;
 
-int new_particle(int *id, double _mass, double _radius,
+int new_particle(int *id, double _mass,
                  double x, double y, double z,
-                 double vx, double vy, double vz)
+                 double vx, double vy, double vz, double _radius)
 // add d to the dynamical system
 // cello, proj 1
 // make test, not done yet
@@ -975,8 +975,8 @@ int remove_particle(int id)                // remove id from the dynamical syste
 }
 */
 
-int get_state(int id, double *_mass, double *_radius, double *x, double *y, double *z,
-              double *vx, double *vy, double *vz)
+int get_state(int id, double *_mass, double *x, double *y, double *z,
+              double *vx, double *vy, double *vz, double *_radius)
 // cello, proj1 changed return type void-->int, only OK no errors yet?
 // todo: replace find fction.
 {
@@ -1007,8 +1007,8 @@ int get_state(int id, double *_mass, double *_radius, double *x, double *y, doub
     }
 }
 
-int set_state(int id, double _mass, double _radius, double x, double y, double z,
-              double vx, double vy, double vz)
+int set_state(int id, double _mass, double x, double y, double z,
+              double vx, double vy, double vz, double _radius)
 //cello, proj1,
 {
   if(mpi_rank) {return 0;}
