@@ -386,9 +386,8 @@ class MPIMessage(AbstractMessage):
             
             strings = []
             begin = 0
-            
             for end in offsets:
-                strings.append(str(bytearray(bytes[begin:end])))
+                strings.append(bytes[begin:end].tostring())
                 begin = end + 1
             return strings
         else:
@@ -440,11 +439,10 @@ class MPIMessage(AbstractMessage):
             
         offsets = self.string_offsets(array)
         self.mpi_send(comm, [offsets, MPI.INT])
-        asbytes=bytearray()
+        chars=""
         for string in array:
-            asbytes.extend(bytearray(string))
-            asbytes.append(0)
-        chars = numpy.asarray(list(asbytes), dtype=numpy.uint8)
+          chars=string.join((chars,chr(0)))
+        chars=numpy.fromstring(chars,dtype='uint8')
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
     def send_booleans(self, comm, array):
