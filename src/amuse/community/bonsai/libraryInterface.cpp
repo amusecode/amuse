@@ -584,7 +584,7 @@ int set_velocity(int *id, double *vx, double *vy, double *vz, int length){
 
 
 int set_state(int *index, double *mass, double *x, double *y, double *z, 
-              double *vx, double *vy, double *vz, int length, double *radius){
+              double *vx, double *vy, double *vz, double * radius, int length){
   getCurrentStateToHost();
   
   for (int i = 0; i < length; i++)    
