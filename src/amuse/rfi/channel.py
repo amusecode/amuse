@@ -13,6 +13,7 @@ import tempfile
 import atexit
 import time
 
+import select
 import socket
 import array
 
@@ -99,6 +100,80 @@ class ASyncRequest(object):
             kwargs
         )
 
+
+class ASyncSocketRequest(object):
+        
+    def __init__(self, message,  socket):
+        self.message = message
+        self.socket = socket
+        
+        self.is_finished = False
+        self.is_set = False
+        self._result = None
+        self.result_handlers = []
+
+    def wait(self):
+        if self.is_finished:
+            return
+    
+        while True:
+            readables, _r, _x = select.select([self.socket],[],[])
+            if len(readables) == 1:
+                break
+        
+        self.is_finished = True
+    
+    def is_result_available(self):
+        if self.is_finished:
+            return True
+            
+        readables, _r, _x = select.select([self.socket],[],[], 0.001)
+        
+        self.is_finished = len(readables) == 1
+        return self.is_finished
+        
+    def add_result_handler(self, function):
+        self.result_handlers.append(function)
+    
+    def get_message(self):
+        return self.message
+        
+    def _set_result(self):
+        class CallingChain(object):
+            def __init__(self, outer, inner):
+                self.outer = outer
+                self.inner = inner
+                
+            def __call__(self):
+                return self.outer(self.inner)
+                
+        self.message.receive(self.socket)
+        
+        current = self.get_message
+        for x in self.result_handlers:
+            current = CallingChain(x, current)
+        
+        self._result = current()
+        
+        self.is_set = True
+        
+    def result(self):
+        self.wait()
+        
+        if not self.is_set:
+            self._set_result()
+        
+        return self._result
+        
+    def _new_handler(self, result_handler, args = (), kwargs = {}):
+        #return MPIAsyncRequestWithHandler(
+        #    self,
+        #    result_handler,
+        #    args,
+        #    kwargs
+        #)
+        raise NotImplementedError("need to do multples")
+        
 class MPIAsyncRequestWithHandler(object):
     
     def __init__(self, async_request,  result_handler, args = (), kwargs = {}):
@@ -1300,6 +1375,10 @@ class SocketMessage(AbstractMessage):
             return strings
         else:
             return []
+            
+    def nonblocking_receive(self, socket):
+        return ASyncSocketRequest(self, socket)
+    
     
     def send(self, socket):
         
@@ -1543,6 +1622,25 @@ class SocketChannel(MessageChannel):
         #logging.getLogger("channel").info("received message for function %d", tag)
 
         return message.to_result(handle_as_array)
+        
+    
+    
+    def nonblocking_recv_message(self, comm):
+        request = SocketMessage().nonblocking_receive(self.intercomm)
+        
+        def handle_result(function):
+            self._is_inuse = False
+        
+            message = function()
+            
+            if message.tag < 0:
+                raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
+                
+            return message.to_result(handle_as_array)
+    
+        request.add_result_handler(handle_result)
+        
+        return request
 
 class IbisChannel(MessageChannel):
     

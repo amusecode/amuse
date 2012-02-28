@@ -591,6 +591,7 @@ class RunTests(object):
                 if message is None:
                     break;
                 if message[0] == 'unit-report':
+                    print message[1]
                     self.report_info = message[2]
                     if(message[1]['failed'] or message[1]['errored']):
                         self.report_queue.put(message[1])
