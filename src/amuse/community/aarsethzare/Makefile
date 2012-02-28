@@ -39,7 +39,7 @@ aarsethzare_worker: worker_code.f90 $(CODELIB) $(OBJS)
 	$(MPIFC) $(FCFLAGS) worker_code.f90 $(OBJS) $(CODELIB) -o $@
 	
 aarsethzare_worker_sockets: worker_code-sockets.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) $(FSOPTS) worker_code-sockets.f90 $(OBJS) $(CODELIB) -o $@ 
+	$(MPIFC) $(FCFLAGS) $(FSOPTS) worker_code-sockets.f90 $(OBJS) $(CODELIB) $(FSOPTS) -o $@ 
 	
 
 %.o: %.f90

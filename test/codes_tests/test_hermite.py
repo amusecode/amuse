@@ -249,8 +249,8 @@ class TestHermite(TestWithMPI):
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
         instance.particles.add_particles(stars)
-    
-        for x in range(1,2000,10):
+        
+        for x in range(1, 500, 10):
             instance.evolve_model(x | units.day)
             instance.particles.copy_values_of_all_attributes_to(stars)
             stars.savepoint()

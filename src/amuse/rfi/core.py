@@ -751,7 +751,7 @@ class PythonCodeInterface(CodeInterface):
         import inspect
         import stat
         
-        string = self.new_executable_script_string_for(implementation_factory)
+        string = self.new_executable_script_string_for(implementation_factory, self.channel_type)
         
         filename = os.path.basename(inspect.getfile(implementation_factory))
         filename = filename.split('.')[0]
@@ -759,20 +759,28 @@ class PythonCodeInterface(CodeInterface):
         path = os.path.abspath(os.path.curdir)
         path = os.path.join(path, filename)
         
-        with open(path, 'w') as f:
+        executable_path = path
+        if self.channel_type in ('sockets', 'ibis'):
+            executable_path += '_sockets'
+            
+        with open(executable_path, 'w') as f:
             f.write(string)
         
-        os.chmod(path, 0777)
+        os.chmod(executable_path, 0777)
         
         return path
         
     @classmethod
-    def new_executable_script_string_for(cls, implementation_factory):
+    def new_executable_script_string_for(cls, implementation_factory, channel_type = 'mpi'):
         import inspect
         import sys
         
         path = os.path.dirname(__file__)
-        path = os.path.join(path, 'python_code_script.template')
+        if channel_type in ('sockets', 'ibis'):
+            path = os.path.join(path, 'python_socket_code_script.template')
+        else:
+            path = os.path.join(path, 'python_code_script.template')
+            
         with open(path, "r") as f:
             template_string = f.read()
         

@@ -93,12 +93,10 @@ class ASyncRequest(object):
         return self._result
         
     def _new_handler(self, result_handler, args = (), kwargs = {}):
-        return MPIAsyncRequestWithHandler(
-            self,
-            result_handler,
-            args,
-            kwargs
-        )
+        return
+        
+    def is_mpi_request(self):
+        return True
 
 
 class ASyncSocketRequest(object):
@@ -164,17 +162,13 @@ class ASyncSocketRequest(object):
             self._set_result()
         
         return self._result
+    
+    def is_mpi_request(self):
+        return False
+
         
-    def _new_handler(self, result_handler, args = (), kwargs = {}):
-        #return MPIAsyncRequestWithHandler(
-        #    self,
-        #    result_handler,
-        #    args,
-        #    kwargs
-        #)
-        raise NotImplementedError("need to do multples")
         
-class MPIAsyncRequestWithHandler(object):
+class AsyncRequestWithHandler(object):
     
     def __init__(self, async_request,  result_handler, args = (), kwargs = {}):
         self.async_request = async_request
@@ -197,31 +191,58 @@ class AsyncRequestsPool(object):
             
         self.registered_requests.add(async_request)
         
-        self.requests_and_handlers.append(async_request._new_handler(
-            result_handler,
-            args,
-            kwargs
-        ))
+        self.requests_and_handlers.append( 
+            AsyncRequestWithHandler(
+                async_request,
+                result_handler,
+                args,
+                kwargs
+            )
+        )
+    
         
     def wait(self):
-        # TODO need to refer to the handlers for combining and waiting
-        # on the requests so that we can have differet code
-        # per channel (it will be an error to combine requests of
-        # different channels)
-        requests = [x.async_request.request for x in self.requests_and_handlers]
+        # TODO need to cleanup this code
+        #
+        requests = [x.async_request.request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
+        indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
         
-        index = MPI.Request.Waitany(requests)
+        if len(requests) > 0:
+            index = MPI.Request.Waitany(requests)
+              
+            index = indices[index]
             
-        request_and_handler = self.requests_and_handlers[index]
+            request_and_handler = self.requests_and_handlers[index]
+            
+            self.registered_requests.remove(request_and_handler.async_request)
+            
+            del self.requests_and_handlers[index]
+            
+            request_and_handler.async_request.wait() #will set the finished flag
+            
+            request_and_handler.run()
+            
         
-        self.registered_requests.remove(request_and_handler.async_request)
-        
-        del self.requests_and_handlers[index]
-        
-        request_and_handler.async_request.wait() #will set the finished flag
-        
-        request_and_handler.run()
-    
+        sockets = [x.async_request.socket for x in self.requests_and_handlers if not x.async_request.is_mpi_request()]
+        indices = [i for i, x in enumerate(self.requests_and_handlers) if not x.async_request.is_mpi_request()]
+        if len(sockets) > 0:
+            readable, w_, x_ = select.select(sockets, [], [])
+            for read_socket in readable:
+                
+                index = sockets.index(read_socket)
+                
+                index = indices[index]
+                
+                request_and_handler = self.requests_and_handlers[index]
+                
+                self.registered_requests.remove(request_and_handler.async_request)
+                
+                del self.requests_and_handlers[index]
+                
+                request_and_handler.async_request.wait() #will set the finished flag
+                
+                request_and_handler.run()
+            
     def __len__(self):
         return len(self.requests_and_handlers)
         
@@ -1625,8 +1646,8 @@ class SocketChannel(MessageChannel):
         
     
     
-    def nonblocking_recv_message(self, comm):
-        request = SocketMessage().nonblocking_receive(self.intercomm)
+    def nonblocking_recv_message(self, tag, handle_as_array):
+        request = SocketMessage().nonblocking_receive(self.socket)
         
         def handle_result(function):
             self._is_inuse = False

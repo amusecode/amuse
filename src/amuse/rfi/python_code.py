@@ -5,9 +5,12 @@ from mpi4py import MPI
 import numpy
 import sys
 import os
+import socket
 
 
 from amuse.rfi.channel import ClientSideMPIMessage
+from amuse.rfi.channel import SocketMessage
+
 from amuse.rfi.channel import pack_array
 from amuse.rfi.channel import unpack_array
 from amuse.rfi.core import legacy_function
@@ -70,6 +73,34 @@ class PythonImplementation(object):
                 result_message.send(parent)
         
         parent.Disconnect()
+        
+    
+    def start_socket(self, port):
+        client_socket = socket.create_connection(('localhost', port,))
+        
+        self.must_run = True
+        while self.must_run:
+            
+            message = SocketMessage()
+            message.receive(client_socket)
+                
+            result_message = SocketMessage(message.tag, message.length)
+            
+            if message.tag == 0:
+                self.must_run = False
+            else:
+                if message.tag in self.mapping_from_tag_to_legacy_function:
+                    try:
+                        self.handle_message(message, result_message)
+                    except Exception as ex:
+                        print ex
+                        result_message.tag = -1
+                else:
+                    result_message.tag = -1
+            
+            result_message.send(client_socket)
+        
+        client_socket.close()
         
     def handle_message(self, input_message, output_message):
         legacy_function = self.mapping_from_tag_to_legacy_function[input_message.tag]
