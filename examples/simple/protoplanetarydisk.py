@@ -76,7 +76,6 @@ if __name__ in ("__main__","__plot__"):
     sph.evolve_model(tend)    
             
     L=50
-    print "1"
     rho=make_map(sph,N=200,L=L)
     sph.stop()
     pyplot.figure(figsize=(8,8))
