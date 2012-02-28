@@ -42,13 +42,14 @@ def make_map(sph,N=100,L=1):
 if __name__ in ("__main__","__plot__"):
 
     N=20000
-    tend=50. | units.yr
+    tend=1. | units.yr
     Mstar=1. | units.MSun
         
     convert=nbody_system.nbody_to_si(Mstar, 1. | units.AU)
     proto=ProtoPlanetaryDisk(N,convert_nbody=convert,densitypower=1.5,Rmin=4,Rmax=20,q_out=1.)
     gas=proto.result
-         
+    gas.h_smooth=0.06 | units.AU 
+             
     sun=Particles(1)
     sun.mass=Mstar
     sun.radius=2. | units.AU
@@ -75,6 +76,7 @@ if __name__ in ("__main__","__plot__"):
     sph.evolve_model(tend)    
             
     L=50
+    print "1"
     rho=make_map(sph,N=200,L=L)
     sph.stop()
     pyplot.figure(figsize=(8,8))
