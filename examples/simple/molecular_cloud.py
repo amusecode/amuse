@@ -54,7 +54,6 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
 
     parts=molecular_cloud(targetN=N,convert_nbody=conv,
             base_grid=body_centered_grid_unit_cube).result
-    parts.h_smooth=0. | units.parsec
 
     sph=Fi(conv)
 
