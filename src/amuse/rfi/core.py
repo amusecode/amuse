@@ -737,12 +737,18 @@ class PythonCodeInterface(CodeInterface):
     """
     
     def __init__(self, implementation_factory = None, name_of_the_worker = None, **options):
-        if name_of_the_worker is None:
-            if implementation_factory is None:
-                raise exceptions.CodeException("Must provide the name of a worker script or the implementation_factory class")
-            name_of_the_worker = self.make_executable_script_for(implementation_factory)
+        self.implementation_factory = implementation_factory
         
         CodeInterface.__init__(self, name_of_the_worker, **options)
+        
+    
+    def _start(self, name_of_the_worker = 'worker_code', **options):
+        if name_of_the_worker is None:
+            if self.implementation_factory is None:
+                raise exceptions.CodeException("Must provide the name of a worker script or the implementation_factory class")
+            name_of_the_worker = self.make_executable_script_for(self.implementation_factory)
+            
+        CodeInterface._start(self, name_of_the_worker = name_of_the_worker, **options)
         
     def _check_if_worker_is_up_to_date(self):
         pass
@@ -751,6 +757,7 @@ class PythonCodeInterface(CodeInterface):
         import inspect
         import stat
         
+        print "self.channel_type", self.channel_type
         string = self.new_executable_script_string_for(implementation_factory, self.channel_type)
         
         filename = os.path.basename(inspect.getfile(implementation_factory))
