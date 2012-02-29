@@ -227,6 +227,7 @@ class AsyncRequestsPool(object):
         indices = [i for i, x in enumerate(self.requests_and_handlers) if not x.async_request.is_mpi_request()]
         if len(sockets) > 0:
             readable, w_, x_ = select.select(sockets, [], [])
+            indices_to_delete = []
             for read_socket in readable:
                 
                 index = sockets.index(read_socket)
@@ -237,11 +238,16 @@ class AsyncRequestsPool(object):
                 
                 self.registered_requests.remove(request_and_handler.async_request)
                 
-                del self.requests_and_handlers[index]
+                indices_to_delete.append(index)
+                
                 
                 request_and_handler.async_request.wait() #will set the finished flag
                 
                 request_and_handler.run()
+            
+            for x in reversed(list(sorted(indices_to_delete))):
+                
+                del self.requests_and_handlers[x]
             
     def __len__(self):
         return len(self.requests_and_handlers)

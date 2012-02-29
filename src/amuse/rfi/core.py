@@ -757,7 +757,6 @@ class PythonCodeInterface(CodeInterface):
         import inspect
         import stat
         
-        print "self.channel_type", self.channel_type
         string = self.new_executable_script_string_for(implementation_factory, self.channel_type)
         
         filename = os.path.basename(inspect.getfile(implementation_factory))

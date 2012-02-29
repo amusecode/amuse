@@ -503,8 +503,8 @@ class TestInterface(TestWithMPI):
         
         pool = AsyncRequestsPool()
         
-        x = ForTestingInterface()
-        y = ForTestingInterface()
+        x = ForTestingInterface(channel_type = 'sockets')
+        y = ForTestingInterface(channel_type = 'sockets')
         request1 = x.sleep.async(0.5)
         request2 = y.sleep.async(1.5)
         finished_requests = []
@@ -530,6 +530,42 @@ class TestInterface(TestWithMPI):
         self.assertEquals(request1.result(), 0)
         self.assertEquals(request2.result(), 0)
         
+        y.stop()
+        x.stop()
+
+    def test23(self):
+        
+        pool = AsyncRequestsPool()
+        
+        x = ForTestingInterface(channel_type = 'sockets')
+        y = ForTestingInterface(channel_type = 'sockets')
+        request1 = x.sleep.async(0.2)
+        request2 = y.sleep.async(0.2)
+        finished_requests = []
+        
+        def handle_result(request, index):
+            self.assertTrue(request.is_result_available())
+            finished_requests.append(index)
+            
+        pool.add_request(request1, handle_result, [1])
+        pool.add_request(request2, handle_result, [2])
+        
+        time.sleep(1.0)
+
+        pool.wait()
+
+        self.assertEquals(len(finished_requests), 2)
+        self.assertEquals(len(pool), 0)
+        
+        self.assertTrue(request1.is_result_available())
+        self.assertTrue(request2.is_result_available())
+        
+        self.assertEquals(request1.result(), 0)
+        self.assertEquals(request2.result(), 0)
+        
+        pool.wait()
+        self.assertEquals(len(pool), 0)
+
         y.stop()
         x.stop()
 
