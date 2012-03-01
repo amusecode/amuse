@@ -52,12 +52,21 @@ class RandomNumberUniqueKeyGenerator(KeyGenerator):
         self.number_of_bits = number_of_bits
         
     def next(self):
-        return numpy.array([random.getrandbits(self.number_of_bits)], dtype='uint64')[0]
+        return numpy.array([random.getrandbits(self.number_of_bits)], dtype=numpy.uint64)[0]
         
     def next_set_of_keys(self, length):
         if length == 0:
             return  []
         return numpy.array([random.getrandbits(self.number_of_bits) for i in range(length)], dtype='uint64')
+        
+        # enabling this is faster
+        # but will crash the hop tests!
+        
+        #minint = -2** ((self.number_of_bits // 2) - 1)
+        #maxint = 2** ((self.number_of_bits // 2) - 1)
+        #low = numpy.random.random_integers(minint,maxint,length)
+        #high = numpy.random.random_integers(minint,maxint,length)
+        #return numpy.array(low + (high << 32), dtype=numpy.uint64)
         
 UniqueKeyGenerator = RandomNumberUniqueKeyGenerator()
 
@@ -102,7 +111,7 @@ class AttributeStorage(object):
     def __len__(self):
         return 0
         
-    def get_value_in_store(self, particle, attribute, by_key = True):
+    def get_value_in_store(self, particle, attribute):
         return self.get_values_in_store([particle],[attribute])[0][0]
     
     
@@ -370,12 +379,12 @@ class AbstractSet(object):
         else:
             self.set_values_in_store(self.get_all_keys_in_store(), [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
     
-    def _get_value_of_attribute(self, key, attribute, index = None, version = None):
+    def _get_value_of_attribute(self, key, attribute):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].get_value_for_entity(self, key)
         else:
             return self._convert_to_entity_or_quantity(self.get_value_in_store(key, attribute))
-    
+            
     def _get_values_for_entity(self, key, attributes):
         return [x[0] for x in self.get_values_in_store([key], attributes)]
         

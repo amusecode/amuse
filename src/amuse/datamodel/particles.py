@@ -192,13 +192,6 @@ class AbstractParticleSet(AbstractSet):
         for key in self.get_all_keys_in_store():
             yield Particle(key,original_set)
 
-    def __getitem__(self, index):
-        keys = self.get_all_keys_in_store()[index]
-        
-        if hasattr(keys, '__iter__'):
-            return self._subset(keys)
-        else:
-            return Particle(self.get_all_keys_in_store()[index], self._original_set())
     
     def get_all_particles_at(self, *indices):
         all_keys = self.get_all_keys_in_store()
@@ -327,6 +320,9 @@ class AbstractParticleSet(AbstractSet):
             return Particle(key, self._original_set())
         else:
             return None
+            
+    def _get_particle_unsave(self, key):
+        return Particle(key, self._original_set())
             
     def can_extend_attributes(self):
         return self._original_set().can_extend_attributes()
@@ -664,6 +660,7 @@ class AbstractParticleSet(AbstractSet):
         keys = self.get_all_keys_in_store()
         #values = self._get_values(keys, attributes) #fast but no vectors
         values = map(lambda x: getattr(self, x), attributes)
+        
         selected_keys = []
         for index in range(len(keys)):
             key = keys[index]
@@ -958,7 +955,16 @@ class Particles(AbstractParticleSet):
         self._private.previous = None
         self._private.timestamp = None
         
+    
+    def __getitem__(self, index):
         
+        keys = self.get_all_keys_in_store()[index]
+        
+        if hasattr(keys, '__iter__'):
+            return self._subset(keys)
+        else:
+            return Particle(keys, self)
+                
     def _get_version(self):
         return self._private.version
         
@@ -1161,14 +1167,10 @@ class DerivedSupersetAttribute(DerivedAttribute):
         raise exceptions.AmuseException("cannot set value of attribute '{0}'")
 
     def get_value_for_entity(self, superset, key):
-        #subset = superset._get_subset_for_key(key)
-        #return getattr(subset, self.name)
-        raise exceptions.AmuseException("cannot get value of entity for superset")
+        raise exceptions.AmuseException("Internal AMUSE error, a single entity (Particle) should always be bound to the subset and not the superset")
 
     def set_value_for_entity(self, superset, key, value):
-        #subset = superset._get_subset_for_key(key)
-        #return setattr(subset, self.name)
-        raise exceptions.AmuseException("cannot get value of entity for superset")
+        raise exceptions.AmuseException("Internal AMUSE error, a single entity (Particle) should always be bound to the subset and not the superset")
 
 class ParticlesSuperset(AbstractParticleSet):
     """A superset of particles. Attribute values are not
@@ -1276,7 +1278,6 @@ class ParticlesSuperset(AbstractParticleSet):
         offset = 0
         
         keys = self.get_all_keys_in_store()[index]
-        
         if hasattr(keys, '__iter__'):
             return self._subset(keys)
         else:
@@ -1287,6 +1288,8 @@ class ParticlesSuperset(AbstractParticleSet):
                 offset += length
             raise Exception('index not found on superset')
     
+    def _get_particle_unsave(self, key):
+        return self._get_subset_for_key(key)._get_particle_unsave(key)
         
     def _split_keys_over_sets(self, keys):
         split_sets = [ [] for x in self._private.particle_sets ]
@@ -1518,24 +1521,23 @@ class ParticlesSubset(AbstractParticleSet):
         self._private.version = -1
         self._private.indices = None
         
+    def __getitem__(self, index):
+        keys = self.get_all_keys_in_store()[index]
+
+        if hasattr(keys, '__iter__'):
+            return self._subset(keys)
+        else:
+            key = keys
+            if key > 0 and key < 18446744073709551615L: #2**64 - 1
+                return self._original_set()._get_particle_unsave(key)
+            else:
+                return None
     
     def _get_version(self):
         return self._private.particles._get_version()
     
     def unconverted_set(self):
         return ParticlesSubset(self._private.particles.unconverted_set(), self._private.keys)
-        
-        
-    def __getitem__(self, index):
-        keys = self.get_all_keys_in_store()[index]
-        if hasattr(keys, '__iter__'):
-            return self._subset(keys)
-        else:
-            key = keys
-            if key == 0 or key >= (2**64 - 1):
-                return None
-            else:
-                return Particle(self.get_all_keys_in_store()[index], self._original_set())
             
     def add_particles_to_store(self, keys, attributes = [], values = []):
         """
@@ -1694,6 +1696,15 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         self._private.particles = particles
         self._private.converter = converter
         
+    def __getitem__(self, index):
+        
+        keys = self.get_all_keys_in_store()[index]
+        
+        if hasattr(keys, '__iter__'):
+            return self._subset(keys)
+        else:
+            return Particle(keys, self)
+            
     def _get_version(self):
         return self._private.particles._get_version()
               
@@ -1902,20 +1913,10 @@ class Particle(object):
             self.particles_set._set_unitless_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)
             
     def __getattr__(self, name_of_the_attribute):
-        if hasattr(self.particles_set._private, 'particle_sets'):
-            for current_set in self.particles_set._private.particle_sets:
-                if current_set.has_key_in_store(self.key):
-                    break
-        else:
-            current_set = self.particles_set
         try:
-            return current_set._get_value_of_attribute(self.key, name_of_the_attribute)
+            return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
         except Exception as ex:
-            if ((name_of_the_attribute in current_set.get_attribute_names_defined_in_store()) or 
-            (name_of_the_attribute in current_set._derived_attributes)):
-                raise
-            else:
-                raise AttributeError("You tried to access attribute '{0}' but this attribute is not defined for this set.".format(name_of_the_attribute))
+            raise AttributeError("You tried to access attribute '{0}' but this attribute is not defined for this set.".format(name_of_the_attribute, ex))
     
     def children(self):
         return self.particles_set.select(lambda x : x == self, ["parent"])

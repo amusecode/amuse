@@ -180,7 +180,6 @@ class InMemoryAttributeStorage(AttributeStorage):
         if particles is None:
             return numpy.arange(0,len(self.particle_keys))
         
-        
         indices = numpy.searchsorted(self.sorted_keys, particles)
         return self.sorted_indices[indices]
         
@@ -489,7 +488,7 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         if by_key:
             index = self.get_indices_of(particle_key)
         else:
-            index = particles
+            index = particle_key
         return attribute_values[index]
 
 

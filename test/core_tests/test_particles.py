@@ -653,6 +653,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         
         
         self.assertEquals(child1.parent.key, parent.key)
+        self.assertEquals(child2.parent.key, parent.key)
         
         children = parent.children()
         
@@ -672,10 +673,11 @@ class TestParticlesWithChildren(amusetest.TestCase):
         
         parent.add_child(child1)
         parent.add_child(child2)
-        
+        print all
         code1.particles.add_particles(parent.as_set())
         code2.particles.add_particles(parent.children())
         
+        self.assertEquals(len(parent.children()), 2)
         self.assertEquals(len(code1.particles), 1)
         self.assertEquals(len(code2.particles), 2)
         
@@ -786,6 +788,8 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertTrue(isinstance(superset, datamodel.ParticlesSuperset))
         self.assertEqual(len(superset),6)
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]|units.m))
+        self.assertEqual(superset[1].x,  2.0 |units.m)
+        self.assertEqual(superset[0:2][1].x,  2.0 |units.m)
         # Check whether it returns the right value for the right key when the key order is 'random'
         dictionary = dict(zip(superset.key, superset.x))
         sorted_keys = sorted(superset.get_all_keys_in_store())
@@ -839,13 +843,15 @@ class TestParticlesSuperset(amusetest.TestCase):
         set1.y = [3.0 , 4.0] | units.m
         set2.x = [5.0 , 6.0, 7.0] | units.m 
         set2.y = [1.0 , 2.0, 3.0] | units.m
-        set1.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y - o)
-        set2.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y + o)
+        set1.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y - o, lambda ap, p, o : p.x * p.y - o)
+        set2.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y + o, lambda ap, p, o : p.x * p.y - o)
         superset = datamodel.ParticlesSuperset([set1, set2])
         self.assertEquals(len(superset), 5)
         self.assertEquals(superset.x, ([1.0, 2.0, 5.0, 6.0, 7.0] | units.m))
         self.assertEquals(superset.xtimesypluso(0.0 | units.m ** 2), ([3.0, 8.0, 5.0, 12.0, 21.0] | units.m ** 2))
         self.assertEquals(superset.xtimesypluso(2.0 | units.m ** 2), ([1.0, 6.0, 7.0, 14.0, 23.0] | units.m ** 2))
+        self.assertEquals(superset[0].xtimesypluso(0.0 | units.m ** 2), 3.0 | units.m ** 2)
+        self.assertEquals(superset[3].xtimesypluso(0.0 | units.m ** 2), 12.0 | units.m ** 2)
         
     def test5(self):
         set1 = datamodel.Particles(2)
@@ -1209,7 +1215,7 @@ class TestIterateOverParticles(amusetest.TestCase):
         t1 = time.time()
         dt1 = t1 - t0
         
-        print dt1, dt0, dt1 / dt0
+        print dt0, dt1,  dt1 / dt0
     
         self.assertTrue((dt1 / dt0) < 20)
 
@@ -1246,7 +1252,7 @@ class TestIterateOverParticles(amusetest.TestCase):
         t1 = time.time()
         dt1 = t1 - t0
         
-        print dt1, dt0, dt1 / dt0
+        print  dt0, dt1, dt1 / dt0
     
         self.assertTrue((dt1 / dt0) < 400)   
              
@@ -1357,6 +1363,7 @@ class TestParticlesIndexing(amusetest.TestCase):
         particles = datamodel.ParticlesSuperset([set1, set2])
 
         
+        self.assertAlmostRelativeEquals(particles[5:][0].mass,  5 | units.kg)
         self.assertAlmostRelativeEquals(particles[5:][:2].mass,  [5,6] | units.kg)
         self.assertAlmostRelativeEquals(particles[1:3][:1].mass,  1 | units.kg)
         self.assertAlmostRelativeEquals(particles[:5][2:].mass,  [2,3,4] | units.kg)
@@ -1636,6 +1643,7 @@ class TestParticlesIndexingWithBinding(amusetest.TestCase):
         particles = datamodel.ParticlesSuperset([set1, set2])
 
         
+        self.assertAlmostRelativeEquals(particles[5:][0].mass,  5 | units.kg)
         self.assertAlmostRelativeEquals(particles[5:][:2].mass,  [5,6] | units.kg)
         self.assertAlmostRelativeEquals(particles[1:3][:1].mass,  1 | units.kg)
         self.assertAlmostRelativeEquals(particles[:5][2:].mass,  [2,3,4] | units.kg)

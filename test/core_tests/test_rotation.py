@@ -105,7 +105,7 @@ class TestRotations(amusetest.TestCase):
         particles.position += [3, 0, 2] | nbody_system.length
         particles.rotate(numpy.pi/4, numpy.pi/2, 0.0)
         self.assertAlmostRelativeEquals(particles.center_of_mass(), 
-            [numpy.sqrt(2), -numpy.sqrt(2), -3] | nbody_system.length)
+            [numpy.sqrt(2), -numpy.sqrt(2), -3] | nbody_system.length, 7)
         
         kinetic_energy1 = particles.kinetic_energy()
         potential_energy1 = particles.potential_energy()
