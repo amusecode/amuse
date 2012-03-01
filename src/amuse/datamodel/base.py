@@ -96,11 +96,12 @@ class AttributeStorage(object):
     def get_all_keys_in_store(self):
         return []
         
+    def get_all_indices_in_store(self):
+        return []
+        
     def __len__(self):
         return 0
-
-
-
+        
     def get_value_in_store(self, particle, attribute, by_key = True):
         return self.get_values_in_store([particle],[attribute])[0][0]
     
@@ -130,7 +131,7 @@ class VectorAttribute(DerivedAttribute):
         self.attribute_names = attribute_names
     
     def get_values_for_entities(self, instance):
-        values = instance.get_values_in_store(instance.get_all_keys_in_store(), self.attribute_names)
+        values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names, by_key = False)
           
         unit_of_the_values = None
         
@@ -226,7 +227,7 @@ class CalculatedAttribute(DerivedAttribute):
             self.attribute_names = attribute_names
     
     def get_values_for_entities(self, instance):
-        values = instance.get_values_in_store(instance.get_all_keys_in_store(), self.attribute_names)
+        values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names, by_key = False)
         return self.function(*values)
     
     def get_value_for_entity(self, instance,  key):
@@ -343,7 +344,7 @@ class AbstractSet(object):
         else:
             try:
                 return self._convert_to_entities_or_quantities(
-                    self.get_values_in_store(self.get_all_keys_in_store(), [name_of_the_attribute])[0]
+                    self.get_all_values_of_attribute_in_store(name_of_the_attribute)
                 )
             except Exception as ex:
                 if name_of_the_attribute in self.get_attribute_names_defined_in_store():
@@ -412,7 +413,11 @@ class AbstractSet(object):
     # Particle storage interface
     #
     
-    def get_values_in_store(self, keys, attributes):
+    def get_all_values_of_attribute_in_store(self, attribute):
+        return self.get_values_in_store(self.get_all_indices_in_store(), [attribute], by_key = False)[0]
+        #return self.get_values_in_store(self.get_all_keys_in_store(), [attribute], by_key = True)[0]
+        
+    def get_values_in_store(self, keys, attributes, by_key = True):
         pass
     
     def set_values_in_store(self, keys, attributes, values):
@@ -425,6 +430,9 @@ class AbstractSet(object):
         pass
     
     def get_all_keys_in_store(self):
+        return []
+        
+    def get_all_indices_in_store(self):
         return []
         
     def has_key_in_store(self):

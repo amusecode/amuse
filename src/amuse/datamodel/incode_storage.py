@@ -344,6 +344,8 @@ class ParticleQueryMethod(object):
     def apply(self, particles, *args, **kwargs):
         indices = self.method(*args, **kwargs)
         keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)
+        #print "keys:", keys  , indices
+        #print particles.x
         return particles._subset(keys)
         
 
@@ -631,8 +633,8 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
     
         self.mapping_from_particle_key_to_index_in_the_code = {}
         self.mapping_from_index_in_the_code_to_particle_key = {}
-        self.particle_keys = []
-        self.code_indices = []
+        self.particle_keys = numpy.zeros(0)
+        self.code_indices = numpy.zeros(0)
         
         self._get_number_of_particles = number_of_particles_method
         self.delete_particle_method = delete_particle_method
@@ -641,7 +643,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         self.getters.append(ParticleGetIndexMethod())
 
     def __len__(self):
-        return self._get_number_of_particles()
+        return len(self.mapping_from_particle_key_to_index_in_the_code)
 
     def can_extend_attributes(self):
         return False
@@ -691,7 +693,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         if by_key:
             indices_in_the_code = self.get_indices_of(keys)
         else:
-            indices_in_the_code = self.code_indices[keys]
+            indices_in_the_code = keys
             
             
         if len(indices_in_the_code) == 0:
@@ -712,7 +714,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         if by_key:
             indices_in_the_code = self.get_indices_of(keys)
         else:
-            indices_in_the_code = self.code_indices[keys]
+            indices_in_the_code = keys
         
         if len(indices_in_the_code) == 0:
             return
@@ -744,6 +746,9 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
     def get_all_keys_in_store(self):
         return self.particle_keys
 
+    def get_all_indices_in_store(self):
+        return self.code_indices
+        
     def has_key_in_store(self, key):
         return key in self.mapping_from_particle_key_to_index_in_the_code
         

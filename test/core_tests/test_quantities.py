@@ -42,7 +42,7 @@ class TestQuantities(amusetest.TestCase):
         
     def test5(self):
         number_of_stars = 10
-        stars = datamodel.Stars(number_of_stars)
+        stars = datamodel.Particles(number_of_stars)
         stars.position = [0,0,0] | units.km
         for i, star in enumerate(stars):
             star.position = units.km.new_quantity([float(i+1), float((i+1)*2), float(-1 * (i+1))])

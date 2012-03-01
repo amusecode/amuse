@@ -111,6 +111,8 @@ class HDF5AttributeStorage(AttributeStorage):
             else:
                 dataset[bools] = quantity
 
+    def get_all_indices_in_store(self):
+        return numpy.arange(len(self.particle_keys))
 
 class HDF5GridAttributeStorage(AttributeStorage):
 

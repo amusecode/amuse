@@ -10,11 +10,12 @@ class InMemoryAttributeStorage(AttributeStorage):
     
     def __init__(self):
         self.mapping_from_attribute_to_quantities = {}
-        self.particle_keys = []
+        self.particle_keys = numpy.zeros(0)
         self.__version__ = 0
         
-        self.sorted_keys = []
-        self.sorted_indices = []
+        self.sorted_keys = numpy.zeros(0, dtype=numpy.int32)
+        self.sorted_indices = numpy.zeros(0)
+        self.index_array = numpy.zeros(0, dtype=numpy.int32)
         self.keys_set = set([])
     
     def can_extend_attributes(self):
@@ -40,6 +41,8 @@ class InMemoryAttributeStorage(AttributeStorage):
             self.setup_storage(keys, attributes, quantities)
     
         self.__version__ = self.__version__ + 1
+        
+        self.index_array = numpy.arange(len(self))
             
     def setup_storage(self, keys, attributes, quantities):
         self.mapping_from_attribute_to_quantities = {}
@@ -149,6 +152,9 @@ class InMemoryAttributeStorage(AttributeStorage):
     def get_all_keys_in_store(self):
         return self.particle_keys
         
+    def get_all_indices_in_store(self):
+        return self.index_array
+        
     def __len__(self):
         return len(self.particle_keys)
         
@@ -158,6 +164,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         copy.sorted_indices = self.sorted_indices.copy()
         copy.keys_set = self.keys_set.copy()
         copy.particle_keys = self.particle_keys.copy()
+        copy.index_array = self.index_array.copy()
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
@@ -192,11 +199,13 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.reindex()
     
         self.__version__ = self.__version__ + 1
+        self.index_array = numpy.arange(len(self))
         
     def reindex(self):
         self.sorted_indices = numpy.argsort(self.particle_keys, kind='mergesort')
         self.sorted_keys = self.particle_keys[self.sorted_indices]       
         self.keys_set = set(self.particle_keys)
+        self.index_array = numpy.arange(len(self))
         
 
     def get_defined_attribute_names(self):
@@ -352,6 +361,7 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
         copy = type(self)()
         copy.mapping_from_particle_to_index = self.mapping_from_particle_to_index.copy()
         copy.particle_keys = self.particle_keys.copy()
+        copy.index_array = self.index_array.copy()
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
@@ -444,6 +454,7 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         copy.sorted_indices = self.sorted_indices.copy()
         copy.keys_set = self.keys_set.copy()
         copy.particle_keys = self.particle_keys.copy()
+        copy.index_array = self.index_array.copy()
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy

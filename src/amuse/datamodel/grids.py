@@ -82,6 +82,9 @@ class AbstractGrid(AbstractSet):
     def __iter__(self):
         for i in range(self.shape[0]):
             yield self[i]
+            
+    def get_all_indices_in_store(self):
+        return self.get_all_keys_in_store()
         
 class Grid(AbstractGrid):
     def __init__(self, *args, **kwargs):
@@ -108,11 +111,11 @@ class Grid(AbstractGrid):
         
         return result
             
-    def get_values_in_store(self, indices, attributes):
+    def get_values_in_store(self, indices, attributes, by_key = True):
         result = self._private.attribute_storage.get_values_in_store(indices, attributes)
         return result
         
-    def set_values_in_store(self, indices, attributes, values):
+    def set_values_in_store(self, indices, attributes, values, by_key = True):
         self._private.attribute_storage.set_values_in_store(indices, attributes, values)
 
     def get_attribute_names_defined_in_store(self):
@@ -159,12 +162,12 @@ class SubGrid(AbstractGrid):
     def _original_set(self):
         return self._private.grid
         
-    def get_values_in_store(self, indices, attributes):
+    def get_values_in_store(self, indices, attributes, by_key = True):
         combined_index = indexing.combine_indices(self._private.indices, indices)
         result = self._private.grid.get_values_in_store(combined_index, attributes)
         return result
     
-    def set_values_in_store(self, indices, attributes, values):
+    def set_values_in_store(self, indices, attributes, values, by_key = True):
         combined_index = indexing.combine_indices(self._private.indices, indices)
         self._private.grid.set_values_in_store(combined_index, attributes, values)
             
