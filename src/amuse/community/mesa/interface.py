@@ -882,7 +882,11 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
             object.add_method(particle_set_name, 'evolve_one_step')
             object.add_method(particle_set_name, 'evolve_for')
-            InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
+            InternalStellarStructure.define_particle_sets(
+                self, 
+                object, 
+                set_name = particle_set_name
+            )
             object.add_method(particle_set_name, 'get_mass_profile')
             object.add_method(particle_set_name, 'set_mass_profile')
             object.add_method(particle_set_name, 'get_cumulative_mass_profile')
@@ -893,6 +897,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_method(particle_set_name, 'get_masses_of_species')
             object.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
             object.add_method(particle_set_name, 'reset_number_of_backups_in_a_row')
+            
     
     def define_errorcodes(self, object):
         InternalStellarStructure.define_errorcodes(self, object)

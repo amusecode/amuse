@@ -190,7 +190,7 @@ class AbstractParticleSet(AbstractSet):
     def __iter__(self):
         original_set = self._original_set()
         for key in self.get_all_keys_in_store():
-            yield Particle(key,original_set)
+            yield original_set._get_particle_unsave(key)
 
     
     def get_all_particles_at(self, *indices):

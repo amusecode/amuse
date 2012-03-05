@@ -1725,3 +1725,717 @@ class TestParticlesIndexingWithBinding(amusetest.TestCase):
         self.assertAlmostRelativeEquals(converted[:5][2:].mass,  [0.2,0.3,0.4] | nbody_system.mass)
         self.assertAlmostRelativeEquals(converted[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass,  [0,0.2] | nbody_system.mass)
     
+
+
+class TestParticlesIndexingWithSet(amusetest.TestCase):
+
+    #
+    # normal set
+    #
+    def test1(self):
+        particles = datamodel.Particles(10)
+        particles.mass = numpy.arange(10) | units.kg
+        
+        self.assertAlmostRelativeEquals(particles.mass, numpy.arange(10) | units.kg)
+        particles[5].mass = 15 | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,6,7,8,9) | units.kg )
+        particles.mass = numpy.arange(10) | units.kg
+        particles[[1,3,2,6]].mass = (11, 13, 12, 16) | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,12,13,4,5,16,7,8,9) | units.kg )
+        particles.mass = numpy.arange(10) | units.kg
+        particles[numpy.array([True,False,True,False,True,False,True,False,True,False])].mass = [10,12,14,16,18] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,1,12,3,14,5,16,7,18,9) | units.kg )
+
+    def test2(self):
+        particles = datamodel.Particles(10)
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:].mass = [15,16,17,18,19] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,16,17,18,19) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[1:3].mass = [11,12] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,12,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[:5].mass = [10,11,12,13,14] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,11,12,13,14,5,6,7,8,9) | units.kg )
+
+    def test3(self):
+        particles = datamodel.Particles(10)
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:][:2].mass = [15,16] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,16,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[1:3][:1].mass =  11 | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,2,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[:5][2:].mass = [12,13,14] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,12,13,14,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass = [10,12] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,1,12,3,4,5,6,7,8,9) | units.kg )
+    
+    
+    #
+    # Converted unit sets
+    #
+    def test4(self):
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+        
+        particles = datamodel.Particles(10)
+        particles.mass = numpy.arange(10) | units.kg
+        
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        self.assertAlmostRelativeEquals(particles.mass, numpy.arange(10) | units.kg)
+        converted[5].mass = 15 | nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[[1,3,2,6]].mass = (11, 13, 12, 16) | nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,120,130,4,5,160,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[numpy.array([True,False,True,False,True,False,True,False,True,False])].mass = [10,12,14,16,18] | nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,1,120,3,140,5,160,7,180,9) | units.kg )
+
+
+    def test5(self):
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+         
+        particles = datamodel.Particles(10)
+        particles.mass = numpy.arange(10) | units.kg
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:].mass = [15,16,17,18,19] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,160,170,180,190) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[1:3].mass = [11,12] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,120,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[:5].mass = [10,11,12,13,14] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,110,120,130,140,5,6,7,8,9) | units.kg )
+        
+    def test6(self):
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+         
+        particles = datamodel.Particles(10)
+        particles.mass = numpy.arange(10) | units.kg
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:][:2].mass = [15,16] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,160,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[1:3][:1].mass =  11 |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,2,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[:5][2:].mass = [12,13,14] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,120,130,140,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass = [10,12] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,1,120,3,4,5,6,7,8,9) | units.kg )
+        
+        
+    
+    #
+    # Particles super sets
+    #
+    def test7(self):
+        
+        set1 = datamodel.Particles(5)
+        set1.mass = numpy.arange(5) | units.kg
+        set2 = datamodel.Particles(5)
+        set2.mass = numpy.arange(5) + 5 | units.kg
+        particles = datamodel.ParticlesSuperset([set1, set2])
+        
+        particles[5].mass = 15 | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[[1,3,2,6]].mass = (11, 13, 12, 16) | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,12,13,4,5,16,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[numpy.array([True,False,True,False,True,False,True,False,True,False])].mass = [10,12,14,16,18] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,1,12,3,14,5,16,7,18,9) | units.kg )
+
+    def test8(self):
+        
+        set1 = datamodel.Particles(5)
+        set1.mass = numpy.arange(5) | units.kg
+        set2 = datamodel.Particles(5)
+        set2.mass = numpy.arange(5) + 5 | units.kg
+        particles = datamodel.ParticlesSuperset([set1, set2])
+
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:].mass = [15,16,17,18,19] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,16,17,18,19) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[1:3].mass = [11,12] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,12,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[:5].mass = [10,11,12,13,14] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,11,12,13,14,5,6,7,8,9) | units.kg )
+
+
+    def test9(self):
+        set1 = datamodel.Particles(5)
+        set1.mass = numpy.arange(5) | units.kg
+        set2 = datamodel.Particles(5)
+        set2.mass = numpy.arange(5) + 5 | units.kg
+        particles = datamodel.ParticlesSuperset([set1, set2])
+
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:][0].mass = [15] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:][:2].mass = [15,16] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,16,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[1:3][:1].mass =  11 | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,2,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[:5][2:].mass = [12,13,14] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,12,13,14,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass = [10,12] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,1,12,3,4,5,6,7,8,9) | units.kg )
+          
+    def test10(self):
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+        
+        set1 = datamodel.Particles(5)
+        set1.mass = numpy.arange(5) | units.kg
+        set2 = datamodel.Particles(5)
+        set2.mass = numpy.arange(5) + 5 | units.kg
+        particles = datamodel.ParticlesSuperset([set1, set2])
+        
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        self.assertAlmostRelativeEquals(converted.mass, numpy.arange(10) * 0.1 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(converted[5].mass, 0.5 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(converted[[1,2,3]].mass, [0.1,0.2,0.3] | nbody_system.mass)
+        self.assertAlmostRelativeEquals(converted[numpy.array([True,False,True,False,True,False,True,False,True,False])].mass, [0,.2,.4,.6,.8] | nbody_system.mass)
+ 
+    #
+    # superset with conversion
+    #
+    def test11(self):
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+         
+        set1 = datamodel.Particles(5)
+        set1.mass = numpy.arange(5) | units.kg
+        set2 = datamodel.Particles(5)
+        set2.mass = numpy.arange(5) + 5 | units.kg
+        particles = datamodel.ParticlesSuperset([set1, set2])
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:].mass = [15,16,17,18,19] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,160,170,180,190) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[1:3].mass = [11,12] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,120,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[:5].mass = [10,11,12,13,14] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,110,120,130,140,5,6,7,8,9) | units.kg )
+
+    def test12(self):
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+         
+        particles = datamodel.Particles(10)
+        particles.mass = numpy.arange(10) | units.kg
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:][0].mass = [15] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:][:2].mass = [15,16] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,160,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[1:3][:1].mass =  11 |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,2,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[:5][2:].mass = [12,13,14] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,120,130,140,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass = [10,12] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,1,120,3,4,5,6,7,8,9) | units.kg )
+        
+class TestParticlesIndexingWithBindingAndSet(amusetest.TestCase):
+    class TestLegacyCode(object):
+            
+        def __init__(self, offset=2):
+            self.masses = {}
+            self.offset = offset
+            
+        def get_mass(self, id):
+            masses = []
+            errors = []
+            
+            for x in id:
+                masses.append(self.masses[x-self.offset])
+                errors.append(0)
+            return ( masses, errors, )
+        
+        def set_mass(self, id, mass):
+            try:
+                
+                for i,m in zip(id,mass):
+                    self.masses[i-self.offset] = m
+            except:
+                if len(id) == 1:
+                    self.masses[id[0]-self.offset] = mass
+                    
+            return ( [0] * len(id),)
+            
+        def new_particle(self, mass):
+            ids = []
+            errors = []
+            
+            for x in mass:
+                id = len(self.masses)
+                self.masses[len(self.masses)]  = x
+                ids.append(id + self.offset)
+                errors.append(0)
+            return (ids, errors)
+        
+        def delete_particle(self, ids):
+            errors = []
+            for x in ids:
+                del self.masses[x]
+                errors.append(0)
+            return errors
+            
+        def get_number_of_particles(self):
+            return (len(self.masses), 0)
+            
+        set_state = set_mass
+        get_state = get_mass
+        
+    class TestInterface(InCodeComponentImplementation):
+        
+        def __init__(self, offset = 2):
+            InCodeComponentImplementation.__init__(self, TestParticlesIndexingWithBindingAndSet.TestLegacyCode(offset=offset))
+        
+        def define_methods(self, handler):
+            handler.add_method('get_mass',(handler.NO_UNIT,), (units.g, handler.ERROR_CODE))
+            handler.add_method('set_mass',(handler.NO_UNIT, units.g,), (handler.ERROR_CODE,))
+            handler.add_method('new_particle',(units.g,), (handler.INDEX, handler.ERROR_CODE))
+            handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+            handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+        
+        def define_particle_sets(self, handler):
+            handler.define_set('particles', 'id')
+            handler.set_new('particles', 'new_particle')
+            handler.set_delete('particles', 'delete_particle')
+            handler.add_setter('particles', 'set_mass')
+            handler.add_getter('particles', 'get_mass', names = ('mass',))
+        
+    #
+    # normal set
+    #
+    def test1(self):
+        particles = self.TestInterface().particles
+        particles.add_particles_to_store(
+             numpy.arange(10),
+            ["mass"],
+            [ numpy.arange(10) | units.kg]
+        )
+        
+        
+        self.assertAlmostRelativeEquals(particles.mass, numpy.arange(10) | units.kg)
+        particles[5].mass = 15 | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,6,7,8,9) | units.kg )
+        particles.mass = numpy.arange(10) | units.kg
+        particles[[1,3,2,6]].mass = (11, 13, 12, 16) | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,12,13,4,5,16,7,8,9) | units.kg )
+        particles.mass = numpy.arange(10) | units.kg
+        particles[numpy.array([True,False,True,False,True,False,True,False,True,False])].mass = [10,12,14,16,18] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,1,12,3,14,5,16,7,18,9) | units.kg )
+
+    def test2(self):
+        particles = self.TestInterface().particles
+        particles.add_particles_to_store(
+             numpy.arange(10),
+            ["mass"],
+            [ numpy.arange(10) | units.kg]
+        )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:].mass = [15,16,17,18,19] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,16,17,18,19) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[1:3].mass = [11,12] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,12,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[:5].mass = [10,11,12,13,14] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,11,12,13,14,5,6,7,8,9) | units.kg )
+
+    def test3(self):
+        particles = self.TestInterface().particles
+        particles.add_particles_to_store(
+             numpy.arange(10),
+            ["mass"],
+            [ numpy.arange(10) | units.kg]
+        )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:][:2].mass = [15,16] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,16,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[1:3][:1].mass =  11 | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,2,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[:5][2:].mass = [12,13,14] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,12,13,14,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass = [10,12] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,1,12,3,4,5,6,7,8,9) | units.kg )
+    
+    #
+    # units converted
+    #
+    def test4(self):
+        
+        particles = self.TestInterface().particles
+        particles.add_particles_to_store(
+             numpy.arange(10),
+            ["mass"],
+            [ numpy.arange(10) | units.kg]
+        )
+        
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+        
+        
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        self.assertAlmostRelativeEquals(particles.mass, numpy.arange(10) | units.kg)
+        converted[5].mass = 15 | nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[[1,3,2,6]].mass = (11, 13, 12, 16) | nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,120,130,4,5,160,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[numpy.array([True,False,True,False,True,False,True,False,True,False])].mass = [10,12,14,16,18] | nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,1,120,3,140,5,160,7,180,9) | units.kg )
+
+    def test5(self):
+        
+        particles = self.TestInterface().particles
+        particles.add_particles_to_store(
+             numpy.arange(10),
+            ["mass"],
+            [ numpy.arange(10) | units.kg]
+        )
+        
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+         
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:].mass = [15,16,17,18,19] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,160,170,180,190) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[1:3].mass = [11,12] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,120,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[:5].mass = [10,11,12,13,14] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,110,120,130,140,5,6,7,8,9) | units.kg )
+        
+    def test6(self):
+        particles = self.TestInterface().particles
+        particles.add_particles_to_store(
+             numpy.arange(10),
+            ["mass"],
+            [ numpy.arange(10) | units.kg]
+        )
+        
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+        
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:][0].mass = [15] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:][:2].mass = [15,16] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,160,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[1:3][:1].mass =  11 |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,2,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[:5][2:].mass = [12,13,14] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,120,130,140,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass = [10,12] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,1,120,3,4,5,6,7,8,9) | units.kg )
+    
+    #
+    # supersets
+    #
+    def test7(self):
+        set1 = self.TestInterface().particles
+        set1.add_particles_to_store(
+             numpy.arange(5),
+            ["mass"],
+            [ numpy.arange(5) | units.kg]
+        )
+        set2 = self.TestInterface().particles
+        set2.add_particles_to_store(
+             numpy.arange(5)+5,
+            ["mass"],
+            [ numpy.arange(5) +5 | units.kg]
+        )
+        particles = datamodel.ParticlesSuperset([set1, set2])
+        
+        
+        particles[5].mass = 15 | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[[1,3,2,6]].mass = (11, 13, 12, 16) | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,12,13,4,5,16,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[numpy.array([True,False,True,False,True,False,True,False,True,False])].mass = [10,12,14,16,18] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,1,12,3,14,5,16,7,18,9) | units.kg )
+
+    def test8(self):
+        
+        set1 = self.TestInterface().particles
+        set1.add_particles_to_store(
+             numpy.arange(5),
+            ["mass"],
+            [ numpy.arange(5) | units.kg]
+        )
+        set2 = self.TestInterface().particles
+        set2.add_particles_to_store(
+             numpy.arange(5)+5,
+            ["mass"],
+            [ numpy.arange(5) +5 | units.kg]
+        )
+        particles = datamodel.ParticlesSuperset([set1, set2])
+
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:].mass = [15,16,17,18,19] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,16,17,18,19) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[1:3].mass = [11,12] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,12,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[:5].mass = [10,11,12,13,14] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,11,12,13,14,5,6,7,8,9) | units.kg )
+
+    def test9(self):
+        set1 = self.TestInterface().particles
+        set1.add_particles_to_store(
+             numpy.arange(5),
+            ["mass"],
+            [ numpy.arange(5) | units.kg]
+        )
+        set2 = self.TestInterface().particles
+        set2.add_particles_to_store(
+             numpy.arange(5)+5,
+            ["mass"],
+            [ numpy.arange(5) +5 | units.kg]
+        )
+        particles = datamodel.ParticlesSuperset([set1, set2])
+
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:][0].mass = [15] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[5:][:2].mass = [15,16] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,16,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[1:3][:1].mass =  11 | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,11,2,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[:5][2:].mass = [12,13,14] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,12,13,14,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        particles[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass = [10,12] | units.kg
+        self.assertAlmostRelativeEquals(particles.mass, (10,1,12,3,4,5,6,7,8,9) | units.kg )
+        
+    #
+    # superset and unit conversion
+    #
+    def test10(self):
+        set1 = self.TestInterface().particles
+        set1.add_particles_to_store(
+             numpy.arange(5),
+            ["mass"],
+            [ numpy.arange(5) | units.kg]
+        )
+        set2 = self.TestInterface().particles
+        set2.add_particles_to_store(
+             numpy.arange(5)+5,
+            ["mass"],
+            [ numpy.arange(5) +5 | units.kg]
+        )
+        particles = datamodel.ParticlesSuperset([set1, set2])
+        
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        
+        self.assertAlmostRelativeEquals(particles.mass, numpy.arange(10) | units.kg)
+        converted[5].mass = 15 | nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[[1,3,2,6]].mass = (11, 13, 12, 16) | nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,120,130,4,5,160,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[numpy.array([True,False,True,False,True,False,True,False,True,False])].mass = [10,12,14,16,18] | nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,1,120,3,140,5,160,7,180,9) | units.kg )
+ 
+    def test11(self):
+        set1 = self.TestInterface().particles
+        set1.add_particles_to_store(
+             numpy.arange(5),
+            ["mass"],
+            [ numpy.arange(5) | units.kg]
+        )
+        set2 = self.TestInterface().particles
+        set2.add_particles_to_store(
+             numpy.arange(5)+5,
+            ["mass"],
+            [ numpy.arange(5) +5 | units.kg]
+        )
+        particles = datamodel.ParticlesSuperset([set1, set2])
+        
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:].mass = [15,16,17,18,19] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,160,170,180,190) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[1:3].mass = [11,12] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,120,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[:5].mass = [10,11,12,13,14] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,110,120,130,140,5,6,7,8,9) | units.kg )
+
+    def test12(self):
+        set1 = self.TestInterface().particles
+        set1.add_particles_to_store(
+             numpy.arange(5),
+            ["mass"],
+            [ numpy.arange(5) | units.kg]
+        )
+        set2 = self.TestInterface().particles
+        set2.add_particles_to_store(
+             numpy.arange(5)+5,
+            ["mass"],
+            [ numpy.arange(5) +5 | units.kg]
+        )
+        particles = datamodel.ParticlesSuperset([set1, set2])
+        
+        converter = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+        converted = datamodel.ParticlesWithUnitsConverted(
+                particles,
+                converter.as_converter_from_generic_to_si()
+        )
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:][0].mass = [15] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[5:][:2].mass = [15,16] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,150,160,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[1:3][:1].mass =  11 |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,110,2,3,4,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[:5][2:].mass = [12,13,14] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (0,1,120,130,140,5,6,7,8,9) | units.kg )
+        
+        particles.mass = numpy.arange(10) | units.kg
+        converted[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass = [10,12] |  nbody_system.mass
+        self.assertAlmostRelativeEquals(particles.mass, (100,1,120,3,4,5,6,7,8,9) | units.kg )
