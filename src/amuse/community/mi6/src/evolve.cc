@@ -149,7 +149,7 @@ void calc_force_using_sapporo(Particle prt[],
       SNP_OUT[i][k] = 0.0;
     }
     PHI_OUT[i] = 0.0;
-    NNB_OUT[i] = 0;
+    NNB_OUT[i] = -1;
     NNB_R2_OUT[i] = 0.0;
   }
 

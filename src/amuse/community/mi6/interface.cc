@@ -60,8 +60,8 @@ int first_address = 0;
 int Ndead = 0; // Nmerge + Naccrete (every node have same number)
 int NSMBH = 0;
 int NIMBH = 0;
-Particle *prt = NULL;
-Particle *prt_old = NULL;
+Particle *prt = 0;
+Particle *prt_old = 0;
 //const double dEcrit = 1e-10;
 double dEcrit = 5e-5;
 //const double dEcrit = 1e30;
@@ -186,7 +186,6 @@ int commit_particles() {
     Nip = Ntot; 
     prt = new Particle[Ntot];
     prt_old = new Particle[Ntot];
-    cout << "a" << endl << flush;
     int i = 0;
     for (map<int, dynamics_state>::iterator iter = black_hole_buffer.begin();
             iter != black_hole_buffer.end(); iter++, i++){
@@ -213,11 +212,11 @@ int commit_particles() {
         prt[i].address = i;
     }
     particle_buffer.clear();
-    cout << "a" << endl << flush;
     
     Nip_tot = Ntot - Ndead;
     divide_proc(Ntot, Njp_org, first_address);
     
+    cout << "Ntot" << Ntot << endl << flush;
     address = new int[Ntot];
     address_old = new int[Ntot];
     for(int i=0; i<Ntot; i++){
@@ -234,22 +233,19 @@ int commit_particles() {
         }
     }
     
-    cout << address[0] << " " << address[1] << endl;
-    cout << prt[0].address << " " << prt[1].address << endl;
     cout << Ntot << " " << NBH << endl;
     cout << Njp << " " << Tsys << endl;
-    prt[0].dump();
-    prt[1].dump();
+    //prt[0].dump();
+    //prt[1].dump();
     evolve_initialize(prt, address, Ntot, NBH, Njp, Tsys);
-    prt[0].dump();
-    prt[1].dump();
+    //prt[0].dump();
+    //prt[1].dump();
     
     for(int i=0; i<Ntot; i++){
         prt_old[i] = prt[i];
         address_old[i] = address[i];
     }
     
-    cout << address[0] << " " << address[1] << " " << Nip_tot << endl;
     E0, Ek0, Ep0;
     calc_energy(prt, address, Nip_tot, E0, Ek0, Ep0, 0);
     E1 = E0;
@@ -301,6 +297,7 @@ int recommit_particles() {
 
 int cleanup_code() {
     if (particles_initialized) {
+	particles_initialized = false;
         delete[] prt;
         delete[] prt_old;
         delete[] address;
