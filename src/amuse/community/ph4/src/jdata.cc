@@ -667,7 +667,7 @@ bool jdata::advance_and_check_encounter()
     // encounter has been detected (handled by the top level loop or
     // by AMUSE).
     
-    if (!manage_encounters || eps2 != 0) {
+    if (!manage_encounters || eps2 > 1.0e-99) {
         return false;
     }
     
