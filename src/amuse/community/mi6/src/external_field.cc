@@ -1,5 +1,7 @@
 #include"external_field.h"
 
+extern int  EX_FLAG;
+
 static double SMBH_MASS = 1.0; 
 static Vector3 SMBH_POS = 0.0;
 static Vector3 SMBH_VEL = 0.0; 
@@ -94,10 +96,12 @@ void accrete_mass(const double &mass){
   SMBH_MASS += mass;
 }
 
-double calc_rtide_cu(const double &mass,
-		     const double &radius){
-		       
-  return radius*radius*radius*(SMBH_MASS/mass);
+double calc_rtide_cu(const double &mass, const double &radius){
+    if(EX_FLAG == 1){
+        return radius*radius*radius*(SMBH_MASS/mass);
+    } else {
+        return 0;
+    }
 }
 
 

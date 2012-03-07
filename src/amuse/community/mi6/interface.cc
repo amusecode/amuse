@@ -19,11 +19,13 @@
 
 #include "interface.h"
 #include "worker_code.h"
-//#include "../lib/stopcond/stopcond.h"
 #include "Vector3.h"
 #include "Particle.h"
 #include "evolve.h"
 #include "energy.h"
+
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
 
 using namespace std;
 
@@ -47,8 +49,10 @@ int Nproc;
 map<int, dynamics_state> particle_buffer;        // for initialization only
 map<int, dynamics_state> black_hole_buffer;      // for initialization only
 map<int, int> local_index_map;
+map<int, int> reverse_index_map;
 int particle_id_counter = 0;
 bool particles_initialized = false;
+
 int Ntot = 0;
 int Nip_tot = 0; // Ntot - Ndead     (every node have same number)
 int Nip = 0; // Nip  (every node have same number)
@@ -115,8 +119,11 @@ int initialize_code() {
     cout << setprecision(15);
     cerr << setprecision(15);
     
-    MPI_Comm_rank (MPI_COMM_WORLD, &myrank); 
-    MPI_Comm_size (MPI_COMM_WORLD, &Nproc); 
+    MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
+    MPI_Comm_size (MPI_COMM_WORLD, &Nproc);
+    
+    // AMUSE STOPPING CONDITIONS SUPPORT
+    set_support_for_condition(COLLISION_DETECTION);
     return 0;
 }
 
@@ -190,6 +197,7 @@ int commit_particles() {
     for (map<int, dynamics_state>::iterator iter = black_hole_buffer.begin();
             iter != black_hole_buffer.end(); iter++, i++){
         local_index_map.insert(pair<int, int>((*iter).first, i));
+        reverse_index_map.insert(pair<int, int>(i, (*iter).first));
         prt[i].mass = (*iter).second.mass;
         prt[i].radius = (*iter).second.radius;
         prt[i].pos = Vector3((*iter).second.x, (*iter).second.y, (*iter).second.z);
@@ -199,11 +207,11 @@ int commit_particles() {
         prt[i].type = SMBH;
     }
     black_hole_buffer.clear();
-    cout << "a" << endl << flush;
     i = NBH; // Just to be sure...
     for (map<int, dynamics_state>::iterator iter = particle_buffer.begin();
             iter != particle_buffer.end(); iter++, i++){
-        local_index_map.insert(pair<int, int>((*iter).first, i));
+        local_index_map.insert(pair<int, int>((*iter).first, i)); // identifier -> index
+        reverse_index_map.insert(pair<int, int>(i, (*iter).first)); // index -> identifier
         prt[i].mass = (*iter).second.mass;
         prt[i].radius = (*iter).second.radius;
         prt[i].pos = Vector3((*iter).second.x, (*iter).second.y, (*iter).second.z);
@@ -222,7 +230,7 @@ int commit_particles() {
     for(int i=0; i<Ntot; i++){
         address[i] = i;
     }
-    cout << Ntot << " " << Njp_org << " " << first_address << " " << prt[0].address << " " << prt[1].address << endl;
+//    cout << Ntot << " " << Njp_org << " " << first_address << " " << prt[0].address << " " << prt[1].address << endl;
     Njp = 0;
     for(int j=0; j<Ntot; j++){
         if(first_address <= j && j < first_address+Njp_org && prt[j].mass != 0.0){
@@ -233,13 +241,7 @@ int commit_particles() {
         }
     }
     
-    cout << Ntot << " " << NBH << endl;
-    cout << Njp << " " << Tsys << endl;
-    //prt[0].dump();
-    //prt[1].dump();
     evolve_initialize(prt, address, Ntot, NBH, Njp, Tsys);
-    //prt[0].dump();
-    //prt[1].dump();
     
     for(int i=0; i<Ntot; i++){
         prt_old[i] = prt[i];
@@ -358,6 +360,11 @@ void iteration(Particle prt[], Particle prt_old[], int address[], int address_ol
 }
 
 int evolve_model(double time) {
+    // AMUSE STOPPING CONDITIONS SUPPORT
+    int is_collision_detection_enabled = 0;
+    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
+    reset_stopping_conditions();
+    
     while (Tsys < time) {
         if (Nloop % 1000 == 0) {
             cerr << "Tsys=" << Tsys << ",  Nloop=" << Nloop << ",  Nstep=" << get_NSTEP() << endl;
@@ -373,83 +380,66 @@ int evolve_model(double time) {
         
         first_loop = 0;
         if (state == 1) {
-            double E1_tmp = 0.0; 
-            double Ek1_tmp = 0.0;
-            double Ep1_tmp = 0.0;
-            calc_energy(prt, Ntot, E1_tmp, Ek1_tmp, Ep1_tmp, 0);
-            
-            merge_prt();
-            Tmerge = Tsys;
-            Njp = 0;
-            
-            for (int j=first_address; j<first_address+Njp_org; j++) {
-                if (prt[j].address == -1) {
-                    continue;
+            // AMUSE STOPPING CONDITIONS SUPPORT
+            if (is_collision_detection_enabled) {
+                Particle *coll1, *coll2;
+                int n_coll = 0;
+                while (get_merge_candidates(n_coll, &coll1, &coll2) == 1) {
+                    n_coll++;
+                    int stopping_index  = next_index_for_stopping_condition();
+                    if (stopping_index >= 0) {
+                        int particle_id;
+                        set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+                        get_identifier_of_particle_with_index(coll1->index, &particle_id);
+                        set_stopping_condition_particle_index(stopping_index, 0, particle_id);
+                        get_identifier_of_particle_with_index(coll2->index, &particle_id);
+                        set_stopping_condition_particle_index(stopping_index, 1, particle_id);
+                    }
                 }
-                prt[j].address = Njp;
-                Njp++;
+                return 0;
+            } else {
+                double E1_tmp = 0.0; 
+                double Ek1_tmp = 0.0;
+                double Ep1_tmp = 0.0;
+                calc_energy(prt, Ntot, E1_tmp, Ek1_tmp, Ep1_tmp, 0);
+                
+                merge_prt();
+                Tmerge = Tsys;
+                Njp = 0;
+                
+                for (int j=first_address; j<first_address+Njp_org; j++) {
+                    if (prt[j].address == -1) {
+                        continue;
+                    }
+                    prt[j].address = Njp;
+                    Njp++;
+                }
+                
+                // do somthing to evolve merged stars using SSE
+                get_merged_prt(prt_merged, Nmerge_loop);
+                Nmerge += Nmerge_loop;
+                get_accreted_prt(prt_accreted, Naccrete_loop);
+                Naccrete += Naccrete_loop;
+                Ndead += Nmerge_loop + Naccrete_loop;
+                Nip_tot = Ntot - Ndead;
+                
+                sort_time_all(prt, address, Ntot);
+                
+                for (int i=0; i<Ntot; i++) {
+                    prt[i].clear();
+                    prt[i].acc4 = 0.0;
+                    prt[i].acc5 = 0.0;
+                }
+                evolve_initialize(prt,  address,  Ntot,  NBH,  Njp,  Tsys);
+                calc_energy(prt, Ntot, E1, Ek1, Ep1, 0);
+                
+                // accumulate dissipation energy through merger
+                Emerge += E1 - E1_tmp;
+                Nip = Nip_tot;
+                Tmerge = Tsys;
             }
-            
-            // do somthing to evolve merged stars using SSE
-            get_merged_prt(prt_merged, Nmerge_loop);
-            Nmerge += Nmerge_loop;
-            get_accreted_prt(prt_accreted, Naccrete_loop);
-            Naccrete += Naccrete_loop;
-            Ndead += Nmerge_loop + Naccrete_loop;
-            Nip_tot = Ntot - Ndead;
-            
-            sort_time_all(prt, address, Ntot);
-            
-            //~if (myrank == 0) {
-                //~fout_merge<<"--------------------------"<<endl;
-                //~fout_merge<<"Tsys="<<Tsys<<endl;
-                //~fout_merge<<"Ndead="<<Ndead<<endl;
-                //~fout_merge<<"merged particles"<<endl;
-                //~fout_merge<<"Nmerge_loop="<<Nmerge_loop<<endl;
-                //~fout_merge<<"Nmerge="<<Nmerge<<endl;
-                //~for(int i=0; i<Nmerge_loop; i++){
-                    //~fout_merge<<"index="<<prt_merged[i]->index<<endl;
-                    //~fout_merge<<"mass="<<prt_merged[i]->mass<<endl;
-                    //~fout_merge<<"pos="<<prt_merged[i]->pos<<endl;
-                    //~fout_merge<<"vel="<<prt_merged[i]->vel<<endl;
-                    //~fout_merge<<"phi="<<prt_merged[i]->phi<<endl;
-                    //~fout_merge<<endl;
-                //~}
-                //~fout_merge<<endl;
-                //~fout_merge<<"accreted particles"<<endl;
-                //~fout_merge<<"Naccrete_loop="<<Naccrete_loop<<endl;
-                //~fout_merge<<"Naccrete="<<Naccrete<<endl;
-                //~for(int i=0; i<Naccrete_loop; i++){
-                    //~fout_merge<<"index="<<prt_accreted[i]->index<<endl;
-                    //~fout_merge<<"mass="<<prt_accreted[i]->mass<<endl;
-                    //~fout_merge<<"pos="<<prt_accreted[i]->pos<<endl;
-                    //~fout_merge<<"vel="<<prt_accreted[i]->vel<<endl;
-                    //~fout_merge<<"phi="<<prt_accreted[i]->phi<<endl;
-                    //~fout_merge<<endl;
-                //~}
-                //~fout_merge<<endl;
-            //~}
-            
-            for (int i=0; i<Ntot; i++) {
-                prt[i].clear();
-                prt[i].acc4 = 0.0;
-                prt[i].acc5 = 0.0;
-            }
-            evolve_initialize(prt,  address,  Ntot,  NBH,  Njp,  Tsys);
-            calc_energy(prt, Ntot, E1, Ek1, Ep1, 0);
-            
-            // accumulate dissipation energy through merger
-            Emerge += E1 - E1_tmp;
-            Nip = Nip_tot;
-            Tmerge = Tsys;
         }
         
-        //~if(Tsnp <= Tsys){
-            //~write0(prt, Ntot, NBH, Ndead, Tsys, Tmerge, Egr, dirname, snpid, EX_FLAG);
-            //~Tsnp += dt_snp;
-        //~}
-        
-        //if( fmod(Tsys-Tmerge, dt_max) == 0.0 || state == 1){
         if (fmod(Tsys-Tmerge, dt_max) == 0.0 && state == 0) {
             Tcal_tot1 = MPI_Wtime() - Tcal_tot0;
             //calc_energy(prt, address, Nip_tot, E1, Ek1, Ep1, 0);
@@ -587,6 +577,15 @@ bool found_particle(int particle_identifier, int *index){
     }
     return false;
 }
+void get_identifier_of_particle_with_index(int index, int *particle_identifier){
+    map<int, int>::iterator iter = reverse_index_map.find(index);
+    if (iter == reverse_index_map.end()){
+        cerr << "Error: Could not determine the identifier for particle at index: " << index << endl;
+        *particle_identifier = -1;
+    } else {
+        *particle_identifier = (*iter).second;
+    }
+}
 
 int get_index_of_first_particle(int *particle_identifier) {
     //*index_of_the_particle = prt.front();
@@ -610,7 +609,8 @@ int get_total_radius(double *total_radius) {
     return -2; // Not implemented
 }
 int get_time(double *time) {
-    return -2; // Not implemented
+    *time = Tsys;
+    return 0;
 }
 int get_center_of_mass_position(double *x, double *y, double *z){
   //~if (mpi_rank == 0)
@@ -1100,105 +1100,17 @@ int get_pair_detect_factor(double * pair_detect_factor)
 
 
 
-//get various stopping condition information
-int get_stopping_condition_info(int index, int * type, 
-  int * number_of_particles)
-{
-  return 0;
-}
-
-int get_stopping_condition_particle_index(int index, 
-  int index_of_the_column, int * index_of_particle)
-{
-  return 0;
-}
-
-int set_stopping_condition_out_of_box_parameter(double value)
-{
-  return 0;
-}
-
-int get_stopping_condition_out_of_box_parameter(double * value)
-{
-  return 0;
-}
-
-int get_stopping_condition_number_of_steps_parameter(int * value)
-{
-  return 0;
-}
-
-int set_stopping_condition_number_of_steps_parameter(int value)
-{
-  return 0;
-}
-
-int get_stopping_condition_timeout_parameter(double * value)
-{
-  return 0;
-}
-
-int get_number_of_stopping_conditions_set(int * result)
-{
-  return 0;
-}
-
-int set_stopping_condition_timeout_parameter(double value)
-{
-  return 0;
-}
-
-//~//non-set/get interactions
-//~int evolve(double time)
-//~{
-  //~return 0;
-//~}
 
 int get_potential(int id, double *phi)
 {
   return -1;
 }
 
-int get_smoothing(int id1, int id2, double *eps)
-{
-  return 0;
-}
-
-int set_smoothing(int id1, int id2, double eps)
-{
-  return 0;
-}
-
-
 int synchronize_model()
 {
   return 0;
 }
 
-int enable_stopping_condition(int type)
-{
-  return 0;
-}
-
-int is_stopping_condition_set(int type, int * result)
-{
-  return 0;
-}
-
-int is_stopping_condition_enabled(int type, int * result)
-{
-  return 0;
-}
-
-int disable_stopping_condition(int type)
-{
-  return 0;
-}
-
-int has_stopping_condition(int type, int * result)
-{
-  return 0;
-}
 
 
 

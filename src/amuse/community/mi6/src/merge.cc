@@ -58,7 +58,8 @@ int merge_check(Particle prt[],
       rcol6 *= (prtj->mass*prtj->mass)/(prti->mass*prti->mass);
     }
     else{
-      rcol2 = 2.0*(prti->radius + prtj->radius);
+      //~rcol2 = 2.0*(prti->radius + prtj->radius);
+      rcol2 = (prti->radius + prtj->radius);
       rcol2 *= rcol2; 
       rcol6 = rcol2*rcol2*rcol2;
     }
@@ -88,6 +89,16 @@ int merge_check(Particle prt[],
     }
   }
   return merge_flag;
+}
+
+int get_merge_candidates(int index, Particle **candidate1, Particle **candidate2){
+    if (index >= Nmerge_loop) {
+        return -1; // No more merging pairs
+    } else {
+        *candidate1 = merge_candidate[index].prt0;
+        *candidate2 = merge_candidate[index].prt1;
+        return 1; // Success
+    }
 }
 
 void merge_prt(){

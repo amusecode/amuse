@@ -6,3 +6,4 @@ typedef struct {
 } dynamics_state;
 
 bool found_particle(int particle_identifier, int *index);
+void get_identifier_of_particle_with_index(int index, int *particle_identifier);

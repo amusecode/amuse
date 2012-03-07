@@ -516,3 +516,56 @@ class TestMI6(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
+    def test10(self):
+        print "Testing MI6 collision_detection"
+        particles = Particles(7)
+        particles.mass = 0.00000001 | nbody_system.mass
+        particles.radius = 0.01 | nbody_system.length
+        particles.x = [-101.0, -100.0, -0.5, 0.5, 100.0, 101.0, 104.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
+        
+        instance = MI6()#**default_options)
+        instance.initialize_code()
+        instance.parameters.set_defaults()
+        instance.particles.add_particles(particles)
+        collisions = instance.stopping_conditions.collision_detection
+        collisions.enable()
+        instance.evolve_model(1.0 | nbody_system.time)
+        
+        self.assertTrue(collisions.is_set())
+        self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
+        self.assertEquals(len(collisions.particles(0)), 3)
+        self.assertEquals(len(collisions.particles(1)), 3)
+        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
+        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+                (collisions.particles(0).radius + collisions.particles(1).radius),
+                [True, True, True])
+        
+        sticky_merged = Particles(len(collisions.particles(0)))
+        sticky_merged.mass = collisions.particles(0).mass + collisions.particles(1).mass
+        sticky_merged.radius = collisions.particles(0).radius
+        for p1, p2, merged in zip(collisions.particles(0), collisions.particles(1), sticky_merged):
+            merged.position = (p1 + p2).center_of_mass()
+            merged.velocity = (p1 + p2).center_of_mass_velocity()
+        
+        print instance.model_time
+        print instance.particles
+#~        instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
+#~        instance.particles.add_particles(sticky_merged)
+#~        
+#~        instance.evolve_model(1.0 | nbody_system.time)
+#~        print
+#~        print instance.model_time
+#~        print instance.particles
+#~        self.assertTrue(collisions.is_set())
+#~        self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
+#~        self.assertEquals(len(collisions.particles(0)), 1)
+#~        self.assertEquals(len(collisions.particles(1)), 1)
+#~        self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
+#~        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+#~                (collisions.particles(0).radius + collisions.particles(1).radius),
+#~                [True])
+        instance.stop()
+    

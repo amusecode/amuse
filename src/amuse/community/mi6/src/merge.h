@@ -8,6 +8,10 @@ int merge_check(Particle prt[],
 		int address[],
 		const int &Nip,
 		const int &Nmerge);
+
+
+int get_merge_candidates(int index, Particle **candidate1, Particle **candidate2);
+
 void merge_prt();
 
 void merge(Particle *prt0,
