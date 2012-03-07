@@ -591,11 +591,14 @@ class MessageChannel(OptionalAttributes):
         
 
     @classmethod
-    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname, **options):
+    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname, command = None, **options):
         
         fname = run_command_redirected.__file__                
         arguments = [fname , stdoutname, stderrname, full_name_of_the_worker]
-        command = sys.executable
+
+	if not command:
+       	    command = sys.executable
+
         
         return command, arguments
     
@@ -756,6 +759,8 @@ class MpiChannel(MessageChannel):
     """
     _mpi_is_broken_after_possible_code_crash = False
     _intercomms_to_disconnect = []
+    _is_registered = False
+
     
     def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
         MessageChannel.__init__(self, **options)
@@ -794,7 +799,13 @@ class MpiChannel(MessageChannel):
                 MPI.Init_thread()
             else:
                 MPI.Init()
-            atexit.register(self.finialize_mpi_atexit)
+        self.register_finalize_code()
+
+    @classmethod
+    def register_finalize_code(cls):
+        if not cls._is_registered:
+            atexit.register(cls.finialize_mpi_atexit)
+            cls._is_registered = True
     
     @classmethod
     def finialize_mpi_atexit(cls):
@@ -830,6 +841,10 @@ class MpiChannel(MessageChannel):
     def debugger_port(self):
         return 4343
         
+    @option(sections=("channel",))
+    def python_exe_for_redirection(self):
+        return None
+        
     @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
@@ -861,7 +876,7 @@ class MpiChannel(MessageChannel):
     def is_supported(cls):
         return not MPI is None
     
-    @late
+    @option(type="boolean", sections=("channel",))
     def can_redirect_output(self):
         name_of_the_vendor, version = MPI.get_vendor()
         if name_of_the_vendor == 'MPICH2':
@@ -886,9 +901,8 @@ class MpiChannel(MessageChannel):
                 arguments = None
                 command = self.full_name_of_the_worker
             else:
-                command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file)
+                command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command = self.python_exe_for_redirection)
                 
-
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
     
     
