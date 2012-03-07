@@ -855,12 +855,29 @@ class MpiChannel(MessageChannel):
     @classmethod
     def is_supported(cls):
         return not MPI is None
+    
+    @late
+    def can_redirect_output(self):
+        name_of_the_vendor, version = MPI.get_vendor()
+        if name_of_the_vendor == 'MPICH2':
+            if 'MPISPAWN_ARGV_0' in os.environ:
+                return False
+        return True
+        
+    
+    @option(sections=("channel",))
+    def must_disconnect_on_stop(self):
+        name_of_the_vendor, version = MPI.get_vendor()
+        if name_of_the_vendor == 'MPICH2':
+            if 'MPISPAWN_ARGV_0' in os.environ:
+                return False
+        return True
         
     def start(self):
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self)
         else:
-            if self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none':
+            if not self.can_redirect_output or (self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none'):
                 arguments = None
                 command = self.full_name_of_the_worker
             else:
@@ -908,7 +925,8 @@ class MpiChannel(MessageChannel):
     def stop(self):
         if not self.intercomm is None:
             try:
-                self.intercomm.Disconnect()
+                if self.must_disconnect_on_stop:
+                    self.intercomm.Disconnect()
             except MPI.Exception as ex:
                 if ex.error_class == MPI.ERR_OTHER:
                     type(self)._mpi_is_broken_after_possible_code_crash = True
