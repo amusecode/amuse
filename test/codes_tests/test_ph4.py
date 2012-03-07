@@ -6,8 +6,9 @@ from amuse.community.ph4.interface import ph4Interface, ph4
 from amuse.test.amusetest import TestWithMPI
 
 import numpy
+import math
 from amuse.units import nbody_system
-from amuse.units import units
+from amuse.units import units, constants
 from amuse import datamodel
 from amuse.ic.plummer import new_plummer_model
 try:
@@ -800,4 +801,40 @@ class TestPH4(TestWithMPI):
         self.assertAlmostRelativeEquals( instance.parameters.timestep_parameter ,  0.14)
         self.assertAlmostRelativeEquals( instance.parameters.use_gpu , 0)
         self.assertAlmostRelativeEquals( instance.parameters.manage_encounters , 4)
+    
+    def test18(self):
+        print "Testing effect of ph4 parameter epsilon_squared"
+        converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 3.0037e-6] | units.MSun
+        particles.radius = 1.0 | units.RSun
+        particles.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.km / units.s
+        particles[1].vy = (constants.G * particles.total_mass() / (1.0 | units.AU)).sqrt()
+        particles.rotate(0.0, 0.0, math.pi/4)
+        particles.move_to_center()
         
+        tan_initial_direction = particles[1].vy/particles[1].vx
+        self.assertAlmostEquals(tan_initial_direction, math.tan(-math.pi/4))
+        tan_final_direction =  []
+        for log_eps2 in range(-5,6,2):
+            instance = ph4(converter)
+            instance.initialize_code()
+            instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
+            instance.parameters.timestep_parameter = 0.001
+            instance.commit_parameters()
+            instance.particles.add_particles(particles)
+            instance.commit_particles()
+            instance.evolve_model(0.25 | units.yr)
+            tan_final_direction.append(instance.particles[1].velocity[1]/
+                instance.particles[1].velocity[0])
+            instance.cleanup_code()
+            instance.stop()
+        # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
+        self.assertAlmostEquals(tan_final_direction[0], math.tan(math.pi / 4.0), 2)
+        # Large values of epsilon_squared should result in ~ no interaction
+        self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
+        # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
+        delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
+        self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
+    
