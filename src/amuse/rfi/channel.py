@@ -755,6 +755,7 @@ class MpiChannel(MessageChannel):
     :argument hostname: Name of the node to run the application on
     """
     _mpi_is_broken_after_possible_code_crash = False
+    _intercomms_to_disconnect = []
     
     def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
         MessageChannel.__init__(self, **options)
@@ -794,13 +795,17 @@ class MpiChannel(MessageChannel):
             else:
                 MPI.Init()
             atexit.register(self.finialize_mpi_atexit)
-            
-    def finialize_mpi_atexit(self):
+    
+    @classmethod
+    def finialize_mpi_atexit(cls):
         if not MPI.Is_initialized():
             return
         if MPI.Is_finalized():
             return
         try:
+            for x in cls._intercomms_to_disconnect:
+                x.Disconnect()
+                
             MPI.Finalize()
         except MPI.Exception as ex:
             return
@@ -865,7 +870,7 @@ class MpiChannel(MessageChannel):
         return True
         
     
-    @option(sections=("channel",))
+    @option(type="boolean", sections=("channel",))
     def must_disconnect_on_stop(self):
         name_of_the_vendor, version = MPI.get_vendor()
         if name_of_the_vendor == 'MPICH2':
@@ -927,6 +932,8 @@ class MpiChannel(MessageChannel):
             try:
                 if self.must_disconnect_on_stop:
                     self.intercomm.Disconnect()
+                else:
+                    self._intercomms_to_disconnect.append(self.intercomm)
             except MPI.Exception as ex:
                 if ex.error_class == MPI.ERR_OTHER:
                     type(self)._mpi_is_broken_after_possible_code_crash = True
