@@ -74,6 +74,7 @@ subroutine find_ionisation_levels(nelem,  Zmax, t, dv, x,   com, kzn, amu, chi, 
    n = 1
    kzi = 0
    xai = 0
+   n_last = 0
    do i = 1, nelem
       ! Record the first ionisation state for this element
       n_first = n

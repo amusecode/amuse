@@ -50,7 +50,11 @@ subroutine lnsrch(n,xold,fold,g,p,x,y,f,stpmax,check,func, fvec, fjac)
    ! USES func
    integer :: i
    real(double) :: a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam
-   
+  
+   fold2=0.d0
+   alam2=0.d0
+   f2=0.d0
+ 
    check=.false.
    sum=0.d0
    do i=1,n

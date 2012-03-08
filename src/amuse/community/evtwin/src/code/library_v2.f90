@@ -719,6 +719,7 @@ contains
       target_age = age + delta_t
       if (verbose) write (*,*) "target_age: ", target_age, age, delta_t
       timestep_old = dt
+      timestep_older = timestep_old
       evolve_for = 0
       evolve_loop: do while(evolve_for == 0 .and. (age + uc(12)/csy) < target_age) ! evolve one step per loop
          if (verbose) write (*,*) "timestep: ", dt/csy
