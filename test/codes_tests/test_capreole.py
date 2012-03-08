@@ -188,6 +188,49 @@ class TestMPIInterface(TestWithMPI):
         self.assertEqual(err,0)
         instance.stop()
 
+    def test9(self):
+        instance=CapreoleInterface(number_of_workers=2,debugger='xterm')
+        instance.initialize_code()
+        instance.setup_mesh(50,50,50,1.,1.,1.)
+        instance.commit_parameters()
+        instance.set_grid_state(1,1,1,1.,0.1,0.1,0.1,1.)
+        instance.set_grid_state(50,50,50,2.,0.2,0.2,0.2,2.)
+
+        rho, err=instance.get_grid_density(1,1,1)
+        self.assertEqual(rho,1.)
+        rhovx,rhovy,rhovz,err=instance.get_grid_momentum_density(1,1,1)
+        self.assertEqual(rhovx,0.1)
+        self.assertEqual(rhovy,0.1)
+        self.assertEqual(rhovz,0.1)
+        en,err=instance.get_grid_energy_density(1,1,1)
+        self.assertEqual(en,1.)
+        rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(1,1,1)
+        self.assertEqual(rho,1.)
+        self.assertEqual(rhovx,0.1)
+        self.assertEqual(rhovy,0.1)
+        self.assertEqual(rhovz,0.1)
+        self.assertEqual(en,1.)
+
+        rho, err=instance.get_grid_density(50,50,50)
+        self.assertEqual(err,0)
+        self.assertEqual(rho,2.)
+        rhovx,rhovy,rhovz,err=instance.get_grid_momentum_density(50,50,50)
+        self.assertEqual(rhovx,0.2)
+        self.assertEqual(rhovy,0.2)
+        self.assertEqual(rhovz,0.2)
+        en,err=instance.get_grid_energy_density(50,50,50)
+        self.assertEqual(en,2.)
+        rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(50,50,50)
+        self.assertEqual(rho,2.)
+        self.assertEqual(rhovx,0.2)
+        self.assertEqual(rhovy,0.2)
+        self.assertEqual(rhovz,0.2)
+        self.assertEqual(en,2.)
+
+
+        instance.stop()
+
+
 class TestSodShocktube(TestWithMPI):
     
     def test0(self):
