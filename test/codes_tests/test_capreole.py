@@ -189,7 +189,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
 
     def test9(self):
-        instance=CapreoleInterface(number_of_workers=2,debugger='xterm')
+        instance=CapreoleInterface(number_of_workers=2)
         instance.initialize_code()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         instance.commit_parameters()
