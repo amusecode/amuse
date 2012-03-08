@@ -958,4 +958,55 @@ class InternalStellarStructure(object):
         )
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
+    
+    def merge_colliding(self, primaries, secondaries, 
+            collision_code, code_options, code_parameters, do_gd_merge_products=True):
+        primaries = primaries.as_set()
+        secondaries = secondaries.as_set()
+        star_collider = collision_code(**code_options)
+        for (par_name, value) in code_parameters.iteritems():
+            setattr(star_collider.parameters, par_name, value)
+        star_collider.particles.add_particles(primaries)
+        star_collider.particles.add_particles(secondaries)
+        se_colliders = star_collider.particles.get_intersecting_subset_in(self.particles)
+        for col_particle, se_particle in zip(star_collider.particles, se_colliders):
+            number_of_zones     = se_particle.get_number_of_zones()
+            mm1                 = se_particle.get_mass_profile(number_of_zones = number_of_zones)* se_particle.mass
+            mass_profile        = se_particle.get_cumulative_mass_profile(number_of_zones = number_of_zones) * se_particle.mass
+            density_profile     = se_particle.get_density_profile(number_of_zones = number_of_zones)
+            radius_profile      = se_particle.get_radius_profile(number_of_zones = number_of_zones)
+            temperature_profile = se_particle.get_temperature_profile(number_of_zones = number_of_zones)
+            lum                 = se_particle.get_luminosity_profile(number_of_zones = number_of_zones)
+            pressure_profile    = se_particle.get_pressure_profile(number_of_zones = number_of_zones)
+            mu_profile          = se_particle.get_mu_profile(number_of_zones = number_of_zones)
+            composition_profile = se_particle.get_chemical_abundance_profiles(number_of_zones = number_of_zones)
+            col_particle.add_shell(mm1,mass_profile, radius_profile, density_profile, 
+                pressure_profile, temperature_profile,lum, mu_profile, composition_profile[0], 
+                composition_profile[1]+composition_profile[2], composition_profile[3], 
+                composition_profile[4], composition_profile[5], composition_profile[6], 
+                composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
+        
+        gd_merge_products = Particles()
+        for primary, secondary in zip(primaries, secondaries):
+            merge_product = Particle()
+            merge_product.primary = primary
+            merge_product.secondary = secondary
+            new_particle = star_collider.merge_products.add_particle(merge_product)
+            stellar_model = new_particle.internal_structure()
+            self.new_particle_from_model(stellar_model, 0.0|units.Myr, key=merge_product.key)
+            
+            if do_gd_merge_products:
+                merge_product = Particle(key=merge_product.key)
+                merge_product.mass = stellar_model.mass[-1] 
+                merge_product.radius= stellar_model.radius[-1]
+                gd_colliders = (primary + secondary)
+                merge_product.position = gd_colliders.center_of_mass()
+                merge_product.velocity = gd_colliders.center_of_mass_velocity()
+                gd_merge_products.add_particle(merge_product)
+            
+        self.particles.remove_particles(star_collider.native_stars)
+        star_collider.stop()
+        
+        if do_gd_merge_products:
+            return gd_merge_products
 
