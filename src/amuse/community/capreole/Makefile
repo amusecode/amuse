@@ -46,7 +46,7 @@ MPI_FLAGS = -DMPI #
 
 FFLAGS+= $(OMPFLAGS) 
 
-FFLAGS2= -I$(BUILDDIR)
+FFLAGS2= 
 
 CLASSNAME=CapreoleInterface
 
@@ -57,17 +57,12 @@ FSINC = -I$(AMUSE_DIR)/lib/forsockets
 
 all: capreole_worker
 
-%.o: %.f90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC)  -c -o $@ $< 
-
-%.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) -c -o $@ $< 
-
 $(BUILDDIR)/%.o: %.F90 Makefile
 	$(FC) $(FFLAGS) $(FFLAGS2) -I$(BUILDDIR) $(SCINC) -c -o $@ $< 
 	
+
 $(MPI_BUILDDIR)/%.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) -I$(MPI_BUILDDIR) $(SCINC) -c -o $@ $< 
+	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SCINC) -c -o $@ $< 
 
 $(BUILDDIR)/Makefile:
 	-mkdir $(BUILDDIR)
@@ -84,14 +79,13 @@ $(MPILIBS): $(MPI_BUILDDIR)/Makefile
 	make -C $(MPI_BUILDDIR) amuse_interface_mpi  VPATH=../src F90FLAGS1="$(FFLAGS)" FC="$(FC)"
 	
 capreole_worker: $(NOMPILIBS) worker.f90 $(BUILDDIR)/interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2)  -I$(BUILDDIR) $(SCINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS)
 	
 capreole_worker_sockets: $(NOMPILIBS) worker-sockets.F90 $(BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $(FSINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS) $(FSLIB)
 
-capreole_worker_mpi: FFLAGS2+=$(MPI_FLAGS)
 capreole_worker_mpi: $(MPILIBS) worker_mpi.f90 $(MPI_BUILDDIR)/interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(MPILIBS) $(SCLIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SCINC) $^ -o $@ $(MPILIBS) $(SCLIBS)
 
 capreole_worker_gl: $(NOMPILIBS) glworker.f90 $(MPI_BUILDDIR)/interface.o
 #	make -C src clean
