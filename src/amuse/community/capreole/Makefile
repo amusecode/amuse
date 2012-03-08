@@ -18,12 +18,12 @@ MPILIBS=$(MPI_BUILDDIR)/libcapreole_mpi.a
 
 GLOBJECTS=$(SRC)/fthread.o $(SRC)/viewer.o $(SRC)/libpt.a
 
-GLINCLUDE = -I/usr/include/GL -I/data/pelupes/libraries/f90gl-1.2.11/include/GL/
+GLINCLUDE = -I/usr/include/GL -I/home/inti/libraries/f90gl-1.2.11/include/GL/
 
-GLLIB = -L/data/pelupes/libraries/f90gl-1.2.11/lib \
--lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  -lguide 
+GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
+-lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  
 
-X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
+X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
 THREADLIB = -L. -lpthread src/libpt.a
 
@@ -64,10 +64,10 @@ all: capreole_worker
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) -c -o $@ $< 
 
 $(BUILDDIR)/%.o: %.F90 Makefile
-	$(FC) $(FFLAGS) -I$(BUILDDIR) $(SCINC) -c -o $@ $< 
+	$(FC) $(FFLAGS) $(FFLAGS2) -I$(BUILDDIR) $(SCINC) -c -o $@ $< 
 	
 $(MPI_BUILDDIR)/%.o: %.F90 Makefile
-	$(FC) $(FFLAGS) -I$(MPI_BUILDDIR) $(SCINC) -c -o $@ $< 
+	$(FC) $(FFLAGS) $(FFLAGS2) -I$(MPI_BUILDDIR) $(SCINC) -c -o $@ $< 
 
 $(BUILDDIR)/Makefile:
 	-mkdir $(BUILDDIR)
@@ -94,7 +94,7 @@ capreole_worker_mpi: $(MPILIBS) worker_mpi.f90 $(MPI_BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(MPILIBS) $(SCLIBS)
 
 capreole_worker_gl: $(NOMPILIBS) glworker.f90 $(MPI_BUILDDIR)/interface.o
-	make -C src clean
+#	make -C src clean
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(FC) $(FFLAGS) $(SCINC) $^ -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(NOMPILIBS) $(SCLIBS)

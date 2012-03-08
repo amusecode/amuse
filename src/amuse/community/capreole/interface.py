@@ -21,7 +21,7 @@ class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferen
     
     
     def __init__(self, number_of_workers = 1, **options):
-        CodeInterface.__init__(self, self.name_of_the_worker(number_of_workers),**options)
+        CodeInterface.__init__(self, self.name_of_the_worker(number_of_workers),number_of_workers = number_of_workers, **options)
         LiteratureReferencesMixIn.__init__(self)
     
     def name_of_the_worker(self, number_of_workers):
@@ -251,7 +251,7 @@ class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferen
     
 class GLCapreoleInterface(CapreoleInterface):
     def __init__(self, **options):
-        CodeInterface.__init__(self,name_of_the_worker = 'glworker', **options)
+        CodeInterface.__init__(self,name_of_the_worker = 'capreole_worker_gl', **options)
         
     @legacy_function
     def viewer():

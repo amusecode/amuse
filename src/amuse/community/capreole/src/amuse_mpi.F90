@@ -56,7 +56,7 @@ module my_mpi
   integer,public :: npr             !< number of processors
   integer,public :: MPI_COMM_NEW    !< the (new) communicator
 
-  integer,dimension(NPDIM),public :: dims !< number of processors in each dimension
+  integer,dimension(NPDIM),public :: dims=(/0,0,0/) !< number of processors in each dimension
   integer,dimension(NPDIM),public :: grid_struct !< coordinates of the processors in the grid
   
   integer,public ::  nbrleft,nbrright  !< left and right neighbours
@@ -79,6 +79,17 @@ contains
     logical,dimension(NPDIM) :: period_out
     period_out=periods
   end subroutine
+  
+  subroutine set_dims(indims)
+    integer,dimension(NPDIM) :: indims
+    dims=indims
+  end subroutine
+
+  subroutine get_dims(outdims)
+    integer,dimension(NPDIM) :: outdims
+    outdims=dims
+  end subroutine
+  
   !----------------------------------------------------------------------------
   subroutine mpi_setup
 
@@ -133,11 +144,12 @@ contains
     integer          :: mpi_ierror=0
 
     ! Make a new topology
-    dims(:)=0
+    ! dims(:)=0
     ! For plane parallel radiative transport:
     !dims(1)=1
 
     call MPI_Dims_create(npr,NPDIM,dims,mpi_ierror)
+
     reorder=.TRUE.
     ! makes MPI_COMM_NEW    
     call MPI_Cart_create(MPI_COMM_WORLD,NPDIM,dims,periods,reorder, &
