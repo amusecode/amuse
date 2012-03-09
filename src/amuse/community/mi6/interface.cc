@@ -47,11 +47,12 @@ double Emerge = 0.0;
 int myrank;
 int Nproc;
 map<int, dynamics_state> particle_buffer;        // for initialization only
-map<int, dynamics_state> black_hole_buffer;      // for initialization only
+//~map<int, dynamics_state> black_hole_buffer;      // for initialization only
 map<int, int> local_index_map;
 map<int, int> reverse_index_map;
 int particle_id_counter = 0;
 bool particles_initialized = false;
+bool debug = false;
 
 int Ntot = 0;
 int Nip_tot = 0; // Ntot - Ndead     (every node have same number)
@@ -146,68 +147,65 @@ int new_particle(int *particle_identifier, double mass,
     return 0;
 }
 
-int new_black_hole(int *particle_identifier, double mass, 
-        double x, double y, double z, double vx, double vy, double vz, double radius) {
-    dynamics_state new_p;
-    
-    // Particle is stored in the buffer until (re)commit_particles is called
-    particle_id_counter++;
-    *particle_identifier = particle_id_counter;
-    new_p.mass = mass;
-    new_p.radius = radius;
-    new_p.x = x;
-    new_p.y = y;
-    new_p.z = z;
-    new_p.vx = vx;
-    new_p.vy = vy;
-    new_p.vz = vz;
-    black_hole_buffer.insert(pair<int, dynamics_state>(*particle_identifier, new_p));
-    return 0;
-}
+//~int new_black_hole(int *particle_identifier, double mass, 
+        //~double x, double y, double z, double vx, double vy, double vz, double radius) {
+    //~dynamics_state new_p;
+    //~
+    //~// Particle is stored in the buffer until (re)commit_particles is called
+    //~particle_id_counter++;
+    //~*particle_identifier = particle_id_counter;
+    //~new_p.mass = mass;
+    //~new_p.radius = radius;
+    //~new_p.x = x;
+    //~new_p.y = y;
+    //~new_p.z = z;
+    //~new_p.vx = vx;
+    //~new_p.vy = vy;
+    //~new_p.vz = vz;
+    //~black_hole_buffer.insert(pair<int, dynamics_state>(*particle_identifier, new_p));
+    //~return 0;
+//~}
 
 int delete_particle(int particle_identifier) {
-    // First try deleting it from prt Particle array
+    map<int, int>::iterator particle_iter = local_index_map.find(particle_identifier);
+    if (particle_iter != local_index_map.end()){
+        int index = particle_iter->second;
+        local_index_map.erase(particle_iter);
+        particle_iter = reverse_index_map.find(index);
+        reverse_index_map.erase(particle_iter);
+        return 0;
+    }
     
-    // ...
-    
-    // Then try deleting it from particle_buffer (maybe (re)commit_particles wasn't called yet)
-    map<int, dynamics_state>::iterator buffer_iter;
-    buffer_iter = particle_buffer.find(particle_identifier);
+    map<int, dynamics_state>::iterator buffer_iter = particle_buffer.find(particle_identifier);
     if (buffer_iter != particle_buffer.end()){
         particle_buffer.erase(buffer_iter);
         return 0;
     }
-    buffer_iter = black_hole_buffer.find(particle_identifier);
-    if (buffer_iter != black_hole_buffer.end()){
-        black_hole_buffer.erase(buffer_iter);
-        return 0;
-    }
-    
     return -3; // Not found!
 }
 
 int commit_particles() {
     NFS = particle_buffer.size();
-    NBH = black_hole_buffer.size();
+    NBH = 0;//black_hole_buffer.size();
     Ntot = NFS + NBH;
     Nip = Ntot; 
     prt = new Particle[Ntot];
     prt_old = new Particle[Ntot];
     int i = 0;
-    for (map<int, dynamics_state>::iterator iter = black_hole_buffer.begin();
-            iter != black_hole_buffer.end(); iter++, i++){
-        local_index_map.insert(pair<int, int>((*iter).first, i));
-        reverse_index_map.insert(pair<int, int>(i, (*iter).first));
-        prt[i].mass = (*iter).second.mass;
-        prt[i].radius = (*iter).second.radius;
-        prt[i].pos = Vector3((*iter).second.x, (*iter).second.y, (*iter).second.z);
-        prt[i].vel = Vector3((*iter).second.vx, (*iter).second.vy, (*iter).second.vz);
-        prt[i].index = i;
-        prt[i].address = i;
-        prt[i].type = SMBH;
-    }
-    black_hole_buffer.clear();
-    i = NBH; // Just to be sure...
+    //~for (map<int, dynamics_state>::iterator iter = black_hole_buffer.begin();
+            //~iter != black_hole_buffer.end(); iter++, i++){
+        //~local_index_map.insert(pair<int, int>((*iter).first, i));
+        //~reverse_index_map.insert(pair<int, int>(i, (*iter).first));
+        //~prt[i].mass = (*iter).second.mass;
+        //~prt[i].radius = (*iter).second.radius;
+        //~prt[i].pos = Vector3((*iter).second.x, (*iter).second.y, (*iter).second.z);
+        //~prt[i].vel = Vector3((*iter).second.vx, (*iter).second.vy, (*iter).second.vz);
+        //~prt[i].index = i;
+        //~prt[i].address = i;
+        //~prt[i].type = SMBH;
+    //~}
+    //~black_hole_buffer.clear();
+    //~i = NBH; // Just to be sure...
     for (map<int, dynamics_state>::iterator iter = particle_buffer.begin();
             iter != particle_buffer.end(); iter++, i++){
         local_index_map.insert(pair<int, int>((*iter).first, i)); // identifier -> index
@@ -224,7 +222,7 @@ int commit_particles() {
     Nip_tot = Ntot - Ndead;
     divide_proc(Ntot, Njp_org, first_address);
     
-    cout << "Ntot" << Ntot << endl << flush;
+    cout << "Ntot: " << Ntot << endl << flush;
     address = new int[Ntot];
     address_old = new int[Ntot];
     for(int i=0; i<Ntot; i++){
@@ -270,7 +268,7 @@ int commit_particles() {
     
     copy_SMBH_NEW_TO_OLD();
     
-    if(myrank == 0){
+    if(debug && myrank == 0){
         cerr<<"E0="<<E0<<endl;
         cerr<<"Ek0="<<Ek0<<endl;
         cerr<<"Ep0="<<Ep0<<endl;
@@ -293,13 +291,36 @@ int commit_particles() {
     return 0;
 }
 
+void push_particle_data_back_to_buffer(){
+    map<int, int>::iterator iter;
+    int i;
+    for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
+        i = iter->second;
+        dynamics_state state;
+        state.mass = prt[i].mass;
+        state.radius = prt[i].radius;
+        state.x = prt[i].pos[0];
+        state.y = prt[i].pos[1];
+        state.z = prt[i].pos[2];
+        state.vx = prt[i].vel[0];
+        state.vy = prt[i].vel[1];
+        state.vz = prt[i].vel[2];
+        particle_buffer.insert(pair<int, dynamics_state>(iter->first, state));
+    }
+    local_index_map.clear();
+    reverse_index_map.clear();
+}
+
 int recommit_particles() {
-    return -2;
+    push_particle_data_back_to_buffer();
+    cleanup_code();
+    //~if (particles_initialized){
+    return commit_particles();
 }
 
 int cleanup_code() {
     if (particles_initialized) {
-	particles_initialized = false;
+        particles_initialized = false;
         delete[] prt;
         delete[] prt_old;
         delete[] address;
@@ -444,7 +465,7 @@ int evolve_model(double time) {
             Tcal_tot1 = MPI_Wtime() - Tcal_tot0;
             //calc_energy(prt, address, Nip_tot, E1, Ek1, Ep1, 0);
             calc_energy(prt, Ntot, E1, Ek1, Ep1, 0);
-            if(myrank == 0){
+            if(debug && myrank == 0){
                 cerr<<endl;
                 cerr<<"Tsys="<<Tsys<<endl;
                 cerr<<"E1="<<E1<<endl;
@@ -478,13 +499,13 @@ int evolve_model(double time) {
                 
                 goto ITERATION;
             } else {
-                if(myrank == 0){
+                if(debug && myrank == 0){
                     cerr<<"no iteration"<<endl;
                     cerr<<endl;
                 }
             }
             
-            if (myrank == 0) {
+            if (debug && myrank == 0) {
                 Nstep = get_NSTEP();
                 cerr<<"Tsys="<<Tsys<<" ( = "<<Tsys*7.45e3<<"[yr] = "<<Tsys*7.45e3*365<<"[day]"<<endl;
                 cerr<<"Tcal_tot="<<Tcal_tot1<<"[sec]"<<endl;
@@ -566,9 +587,6 @@ int evolve_model(double time) {
 
 bool found_particle(int particle_identifier, int *index){
     if (particles_initialized) {
-        //~if (!particle_map_up_to_date)
-            //~update_particle_map();
-        
         map<int, int>::iterator iter = local_index_map.find(particle_identifier);
         if (iter != local_index_map.end()){
             *index = (*iter).second;
@@ -910,17 +928,6 @@ int recommit_parameters() {
 
 //energy and gravity values
 int get_potential_at_point(double *eps, double *x, double *y, double *z, double *phi, int length) {
-    //~if (myrank == 0) { // calculate only on the root mpi process, not on others
-        //~double r,rx,ry,rz;
-        //~*phi = 0.0;
-        //~for (int i = 0; i < Ntot; i++) {
-            //~rx = prt[i].pos[0] - x;
-            //~ry = prt[i].pos[1] - y;
-            //~rz = prt[i].pos[2] - z;
-            //~r = sqrt(rx*rx + ry*ry + rz*rz + eps*eps + eps2_fs_fs);
-            //~*phi -= prt[i].mass/r;
-        //~}
-    //~}
     // Create "ghost"-particles to measure potential at their locations
     int* tmp_index = new int[length];
     double* tmp_mass_in = new double[length];

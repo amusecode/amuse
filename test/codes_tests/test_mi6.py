@@ -526,7 +526,7 @@ class TestMI6(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
         
-        instance = MI6()#**default_options)
+        instance = MI6()
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.particles.add_particles(particles)
@@ -552,20 +552,20 @@ class TestMI6(TestWithMPI):
         
         print instance.model_time
         print instance.particles
-#~        instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
-#~        instance.particles.add_particles(sticky_merged)
-#~        
-#~        instance.evolve_model(1.0 | nbody_system.time)
-#~        print
-#~        print instance.model_time
-#~        print instance.particles
-#~        self.assertTrue(collisions.is_set())
-#~        self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
-#~        self.assertEquals(len(collisions.particles(0)), 1)
-#~        self.assertEquals(len(collisions.particles(1)), 1)
-#~        self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
-#~        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
-#~                (collisions.particles(0).radius + collisions.particles(1).radius),
-#~                [True])
+        instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
+        instance.particles.add_particles(sticky_merged)
+        
+        instance.evolve_model(1.0 | nbody_system.time)
+        print
+        print instance.model_time
+        print instance.particles
+        self.assertTrue(collisions.is_set())
+        self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
+        self.assertEquals(len(collisions.particles(0)), 1)
+        self.assertEquals(len(collisions.particles(1)), 1)
+        self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
+        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+                (collisions.particles(0).radius + collisions.particles(1).radius),
+                [True])
         instance.stop()
     
