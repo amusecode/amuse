@@ -1175,8 +1175,8 @@ int found_particle(int index_of_the_particle, int *local_index){
 
 int get_mass(int *index, double *mass, int length){
     int errors = 0;
-    double buffer[length];
-    int count[length];
+    double *buffer = new double[length];
+    int *count = new int[length];
     int local_index;
 
     for (int i = 0; i < length; i++){
@@ -1229,7 +1229,7 @@ int check_counts(int *count, int length){
 }
 
 int set_mass(int *index, double *mass, int length){
-    int count[length];
+    int *count = new int[length];
     int local_index;
 
     for (int i = 0; i < length; i++){
@@ -1252,8 +1252,8 @@ int set_radius(int index, double radius){
 
 int get_position(int *index, double *x, double *y, double *z, int length){
     int errors = 0;
-    double buffer[length*3];
-    int count[length];
+    double *buffer = new double[length*3];
+    int *count = new int[length];
     int local_index;
 
     for (int i = 0; i < length; i++){
@@ -1296,7 +1296,7 @@ int get_position(int *index, double *x, double *y, double *z, int length){
 }
 
 int set_position(int *index, double *x, double *y, double *z, int length){
-    int count[length];
+    int *count = new int[length];
     int local_index;
 
     for (int i = 0; i < length; i++){
@@ -1313,8 +1313,8 @@ int set_position(int *index, double *x, double *y, double *z, int length){
 
 int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
     int errors = 0;
-    double buffer[length*3];
-    int count[length];
+    double *buffer = new double[length*3];
+    int *count = new int[length];
     int local_index;
 
     for (int i = 0; i < length; i++){
@@ -1357,7 +1357,7 @@ int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
 }
 
 int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
-    int count[length];
+    int *count = new int[length];
     int local_index;
 
     for (int i = 0; i < length; i++){
@@ -1384,8 +1384,8 @@ int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
 
 int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
     int errors = 0;
-    double buffer[length*7];
-    int count[length];
+    double *buffer = new double[length*7];
+    int *count = new int[length];
     int local_index;
 
     for (int i = 0; i < length; i++){
@@ -1444,7 +1444,7 @@ int get_state(int *index, double *mass, double *x, double *y, double *z, double 
 }
 
 int set_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
-    int count[length];
+    int *count = new int[length];
     int local_index;
 
     for (int i = 0; i < length; i++){
@@ -1475,8 +1475,8 @@ int set_state(int *index, double *mass, double *x, double *y, double *z, double 
 
 int get_state_sph(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy, int length) {
     int errors = 0;
-    double buffer[length*8];
-    int count[length];
+    double *buffer = new double[length*8];
+    int *count = new int[length];
     int local_index;
 #ifndef ISOTHERM_EQS
     double a3;
@@ -1553,7 +1553,7 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
 
 int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
         double *vx, double *vy, double *vz, double *internal_energy, int length){
-    int count[length];
+    int *count = new int[length];
     int local_index;
 #ifndef ISOTHERM_EQS
     double a3;
@@ -1599,8 +1599,8 @@ int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
 
 int get_acceleration(int *index, double * ax, double * ay, double * az, int length){
     int errors = 0;
-    double buffer[length*3];
-    int count[length];
+    double *buffer = new double[length*3];
+    int *count = new int[length];
     int local_index;
 
     for (int i = 0; i < length; i++){
@@ -1653,8 +1653,8 @@ int set_acceleration(int index, double ax, double ay, double az){
 
 int get_internal_energy(int *index, double *internal_energy, int length){
     int errors = 0;
-    double buffer[length];
-    int count[length];
+    double *buffer = new double[length];
+    int *count = new int[length];
     int local_index;
 #ifndef ISOTHERM_EQS
     double a3;
@@ -1701,7 +1701,7 @@ int get_internal_energy(int *index, double *internal_energy, int length){
 }
 
 int set_internal_energy(int *index, double *internal_energy, int length){
-    int count[length];
+    int *count = new int[length];
     int local_index;
 #ifndef ISOTHERM_EQS
     double a3;
@@ -1739,8 +1739,8 @@ int set_internal_energy(int *index, double *internal_energy, int length){
 
 int get_smoothing_length(int *index, double *smoothing_length, int length){
     int errors = 0;
-    double buffer[length];
-    int count[length];
+    double *buffer = new double[length];
+    int *count = new int[length];
     int local_index;
 
     if (!density_up_to_date){
@@ -1780,8 +1780,8 @@ int get_smoothing_length(int *index, double *smoothing_length, int length){
 
 int get_density(int *index, double *density_out, int length){
     int errors = 0;
-    double buffer[length];
-    int count[length];
+    double *buffer = new double[length];
+    int *count = new int[length];
     int local_index;
 
     if (!density_up_to_date){
@@ -1820,8 +1820,8 @@ int get_density(int *index, double *density_out, int length){
 }
 int get_pressure(int *index, double *pressure_out, int length){
     int errors = 0;
-    double buffer[length];
-    int count[length];
+    double *buffer = new double[length];
+    int *count = new int[length];
     int local_index;
 
     if (!density_up_to_date){
@@ -1860,8 +1860,8 @@ int get_pressure(int *index, double *pressure_out, int length){
 }
 int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int length){
     int errors = 0;
-    double buffer[length];
-    int count[length];
+    double *buffer = new double[length];
+    int *count = new int[length];
     int local_index;
 #ifndef ISOTHERM_EQS
     double a3;
@@ -1908,8 +1908,8 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
 }
 int get_n_neighbours(int *index, double *n_neighbours, int length){
     int errors = 0;
-    double buffer[length];
-    int count[length];
+    double *buffer = new double[length];
+    int *count = new int[length];
     int local_index;
 
     if (!density_up_to_date){
@@ -2012,11 +2012,10 @@ int get_total_mass(double *mass){
     return 0;
 }
 
-int get_potential(int *index, double *potential, int length)
-{
+int get_potential(int *index, double *potential, int length) {
     int errors = 0;
-    double buffer[length];
-    int count[length];
+    double *buffer = new double[length];
+    int *count = new int[length];
     int local_index;
 
     if (!potential_energy_also_up_to_date) {
