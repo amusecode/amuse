@@ -6036,6 +6036,7 @@ fi
 
                     $as_unset $cache_var
                     if test x$FOUND_FFTW != xyes; then
+                        LIBS="$ac_FFTW_LDOPTS -lfftw3 -lfftw3_threads -lm $save_LIBS"
                         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
 $as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
 if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
@@ -6080,7 +6081,7 @@ $as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_
 
 fi
 
-                        as_unset $cache_var
+                        $as_unset $cache_var
                     fi
                     LIBS="$save_LIBS"
 	fi
@@ -6224,7 +6225,9 @@ fi
                     $as_unset $cache_var
 
                     if test x$FOUND_FFTW != xyes; then
-                        LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads -lm $save_LIBS"
+
+                        save_LIBS="$LIBS"
+                        LIBS="-lfftw3_threads -lm $save_LIBS"
                         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
 $as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
 if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
@@ -6262,7 +6265,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
 $as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
 if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
-  FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads  -lm"
+  FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads -lm"
 else
   FOUND_FFTW="no"
                                 { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&5
@@ -6270,6 +6273,7 @@ $as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_
 
 fi
 
+                        LIBS="$save_LIBS"
                     fi
     fi
 
