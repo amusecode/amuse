@@ -49,14 +49,32 @@ AC_DEFUN([AX_FFTW],[
                     CFLAGS="$save_CFLAGS"
                     CPPFLAGS="$save_CPPFLAGS"
                     
-                     save_LIBS="$LIBS"
+                    save_LIBS="$LIBS"
                     LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads $save_LIBS"
                     AC_CHECK_LIB([fftw3], [fftw_plan_dft_r2c],
                             [FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads"],
-                            [AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct])]
-                            )
+                            [
+                                LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads -lm $save_LIBS"
+                                AC_CHECK_LIB([fftw3], [fftw_plan_dft_r2c],
+                                        [FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads  -lm"],
+                                        [AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct])]
+                                )
+                            ]
+                    )
                     LIBS="$save_LIBS"
 	fi
+    
+	if test x$FOUND_FFTW != xyes; then
+        PKG_CHECK_MODULES([FFTW],[fftw3 >= 3.2],
+            [
+            FFTW_FLAGS="$FFTW_CFLAGS"
+            FFTW_LIBS="$FFTW_LIBS -lfftw3_threads"
+            FOUND_FFTW=yes
+            ],
+            []
+        )
+    fi
+    
 	if test x$FOUND_FFTW != xyes; then
                     AC_CHECK_HEADER(
                         [fftw3.h],
@@ -69,8 +87,15 @@ AC_DEFUN([AX_FFTW],[
                         [fftw_plan_dft_r2c],
                         [FFTW_LIBS="-lfftw3 -lfftw3_threads"],
                         [
-                        FOUND_FFTW="no"
-                        AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c). Check if libfftw3 is installed and if the version is correct])]
+                            LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads -lm $save_LIBS"
+                            AC_CHECK_LIB([fftw3], [fftw_plan_dft_r2c],
+                                    [FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads  -lm"],
+                                    [
+                                    FOUND_FFTW="no"
+                                    AC_MSG_WARN([libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct])]
+                            )
+                        ]
+                        
                     )
 		fi
                 

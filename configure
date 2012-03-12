@@ -693,14 +693,14 @@ GMP_LIBS
 GMP_CFLAGS
 FFTW_FLAGS
 FOUND_FFTW
-EGREP
-GREP
-CPP
 FFTW_LIBS
 FFTW_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
+EGREP
+GREP
+CPP
 SAPPORO_LIBS
 SAPPORO_VERSION
 WITH_SAPPORO
@@ -815,12 +815,12 @@ MPICXX
 MPICC
 MPIFC
 CUDA_TK
+CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 FFTW_CFLAGS
 FFTW_LIBS
-CPP
 GMP_CFLAGS
 GMP_LIBS
 MPFR_CFLAGS
@@ -1479,6 +1479,7 @@ Some influential environment variables:
   MPICC       MPI C compiler command
   MPIFC       MPI Fortran compiler command
   CUDA_TK     CUDA toolkit directory
+  CPP         C preprocessor
   PKG_CONFIG  path to pkg-config utility
   PKG_CONFIG_PATH
               directories to add to pkg-config's search path
@@ -1486,7 +1487,6 @@ Some influential environment variables:
               path overriding pkg-config's built-in search path
   FFTW_CFLAGS C compiler flags for FFTW, overriding pkg-config
   FFTW_LIBS   linker flags for FFTW, overriding pkg-config
-  CPP         C preprocessor
   GMP_CFLAGS  C compiler flags for GMP, overriding pkg-config
   GMP_LIBS    linker flags for GMP, overriding pkg-config
   MPFR_CFLAGS C compiler flags for MPFR, overriding pkg-config
@@ -5412,125 +5412,6 @@ fi
 
 
 
-
-
-
-
-
-
-if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
-	if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-$as_echo "$PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-$as_echo "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
-fi
-
-fi
-if test -n "$PKG_CONFIG"; then
-	_pkg_min_version=0.9.0
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
-$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
-	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	else
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-		PKG_CONFIG=""
-	fi
-fi
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -5929,6 +5810,279 @@ done
 
 
 
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
+
+
+# Check whether --with-fftw was given.
+if test "${with_fftw+set}" = set; then :
+  withval=$with_fftw;
+                test "$withval" = no && { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: fftw is a required package for some modules" >&5
+$as_echo "$as_me: WARNING: fftw is a required package for some modules" >&2;}
+                test "$withval" = yes || fftw_prefix="$withval"
+                with_fftw=yes
+else
+   with_fftw=yes
+
+fi
+
+
+        if test "x$with_fftw" != xno ; then :
+
+            #user override
+            if test "x$FFTW_LIBS" != x && test "x$FFTW_FLAGS" != x ; then :
+
+                have_fftw=yes
+                FOUND_FFTW="yes"
+
+else
+
+                saved_LIBS="$LIBS"
+                saved_CXXFLAGS="$CXXFLAGS"
+                FFTW_LIBS=""
+                FFTW_FLAGS=""
+                FOUND_FFTW="no"
+                if test x$fftw_prefix == x; then
+                   if test x$PREFIX != x; then
+		      fftw_prefix=$PREFIX
+                   fi
+                fi
+                if test x$fftw_prefix != x; then
+                    ac_FFTW_CFLAGS="-I$fftw_prefix/include"
+                    ac_FFTW_LDOPTS="-L$fftw_prefix/lib"
+
+
+                    save_CFLAGS="$CFLAGS"
+                    save_CPPFLAGS="$CPPFLAGS"
+                    CFLAGS="$ac_FFTW_CFLAGS $save_CFLAGS"
+                    CPPFLAGS="$ac_FFTW_CFLAGS $save_CPPFLAGS"
+                    ac_fn_c_check_header_mongrel "$LINENO" "fftw3.h" "ac_cv_header_fftw3_h" "$ac_includes_default"
+if test "x$ac_cv_header_fftw3_h" = xyes; then :
+  FFTW_FLAGS="$ac_FFTW_CFLAGS"
+                        FOUND_FFTW="yes"
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&5
+$as_echo "$as_me: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&2;}
+
+fi
+
+
+                    CFLAGS="$save_CFLAGS"
+                    CPPFLAGS="$save_CPPFLAGS"
+
+                    save_LIBS="$LIBS"
+                    LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads $save_LIBS"
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
+$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
+if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfftw3  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fftw_plan_dft_r2c ();
+int
+main ()
+{
+return fftw_plan_dft_r2c ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
+else
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
+$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
+if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
+  FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads"
+else
+
+                                LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads -lm $save_LIBS"
+                                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
+$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
+if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfftw3  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fftw_plan_dft_r2c ();
+int
+main ()
+{
+return fftw_plan_dft_r2c ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
+else
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
+$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
+if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
+  FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads  -lm"
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&5
+$as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&2;}
+
+fi
+
+
+
+fi
+
+                    LIBS="$save_LIBS"
+	fi
+
+	if test x$FOUND_FFTW != xyes; then
+
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FFTW" >&5
 $as_echo_n "checking for FFTW... " >&6; }
@@ -5989,361 +6143,9 @@ fi
 
 
 
-# Check whether --with-fftw was given.
-if test "${with_fftw+set}" = set; then :
-  withval=$with_fftw;
-                test "$withval" = no && { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: fftw is a required package for some modules" >&5
-$as_echo "$as_me: WARNING: fftw is a required package for some modules" >&2;}
-                test "$withval" = yes || fftw_prefix="$withval"
-                with_fftw=yes
-else
-   with_fftw=yes
-
-fi
-
-
-        if test "x$with_fftw" != xno ; then :
-
-            #user override
-            if test "x$FFTW_LIBS" != x && test "x$FFTW_FLAGS" != x ; then :
-
-                have_fftw=yes
-                FOUND_FFTW="yes"
-
-else
-
-                saved_LIBS="$LIBS"
-                saved_CXXFLAGS="$CXXFLAGS"
-                FFTW_LIBS=""
-                FFTW_FLAGS=""
-                FOUND_FFTW="no"
-                if test x$fftw_prefix == x; then
-                   if test x$PREFIX != x; then
-		      fftw_prefix=$PREFIX
-                   fi
-                fi
-                if test x$fftw_prefix != x; then
-                    ac_FFTW_CFLAGS="-I$fftw_prefix/include"
-                    ac_FFTW_LDOPTS="-L$fftw_prefix/lib"
-
-
-                    save_CFLAGS="$CFLAGS"
-                    save_CPPFLAGS="$CPPFLAGS"
-                    CFLAGS="$ac_FFTW_CFLAGS $save_CFLAGS"
-                    CPPFLAGS="$ac_FFTW_CFLAGS $save_CPPFLAGS"
-                    ac_fn_c_check_header_mongrel "$LINENO" "fftw3.h" "ac_cv_header_fftw3_h" "$ac_includes_default"
-if test "x$ac_cv_header_fftw3_h" = xyes; then :
-  FFTW_FLAGS="$ac_FFTW_CFLAGS"
-                        FOUND_FFTW="yes"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&5
-$as_echo "$as_me: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&2;}
-
-fi
-
-
-                    CFLAGS="$save_CFLAGS"
-                    CPPFLAGS="$save_CPPFLAGS"
-
-                     save_LIBS="$LIBS"
-                    LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads $save_LIBS"
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
-$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
-if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lfftw3  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char fftw_plan_dft_r2c ();
-int
-main ()
-{
-return fftw_plan_dft_r2c ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
-else
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
-$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
-if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
-  FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&5
-$as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&2;}
-
-fi
-
-                    LIBS="$save_LIBS"
-	fi
-	if test x$FOUND_FFTW != xyes; then
-                    ac_fn_c_check_header_mongrel "$LINENO" "fftw3.h" "ac_cv_header_fftw3_h" "$ac_includes_default"
-if test "x$ac_cv_header_fftw3_h" = xyes; then :
-  FFTW_FLAGS=""
-                        FOUND_FFTW="yes"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&5
-$as_echo "$as_me: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&2;}
-
-fi
-
-
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
-$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
-if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lfftw3  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char fftw_plan_dft_r2c ();
-int
-main ()
-{
-return fftw_plan_dft_r2c ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
-else
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
-$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
-if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
-  FFTW_LIBS="-lfftw3 -lfftw3_threads"
-else
-
-                        FOUND_FFTW="no"
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c). Check if libfftw3 is installed and if the version is correct" >&5
-$as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c). Check if libfftw3 is installed and if the version is correct" >&2;}
-
-fi
-
-		fi
-
-
-
-fi
-
-fi
-
-
-
-
-
-
-
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-
-
-# Check whether --with-fftw was given.
-if test "${with_fftw+set}" = set; then :
-  withval=$with_fftw;
-                test "$withval" = no && { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: fftw is a required package for some modules" >&5
-$as_echo "$as_me: WARNING: fftw is a required package for some modules" >&2;}
-                test "$withval" = yes || fftw_prefix="$withval"
-                with_fftw=yes
-else
-   with_fftw=yes
-
-fi
-
-
-        if test "x$with_fftw" != xno ; then :
-
-            #user override
-            if test "x$FFTW_LIBS" != x && test "x$FFTW_FLAGS" != x ; then :
-
-                have_fftw=yes
-                FOUND_FFTW="yes"
-
-else
-
-                saved_LIBS="$LIBS"
-                saved_CXXFLAGS="$CXXFLAGS"
-                FFTW_LIBS=""
-                FFTW_FLAGS=""
-                FOUND_FFTW="no"
-                if test x$fftw_prefix == x; then
-                   if test x$PREFIX != x; then
-		      fftw_prefix=$PREFIX
-                   fi
-                fi
-                if test x$fftw_prefix != x; then
-                    ac_FFTW_CFLAGS="-I$fftw_prefix/include"
-                    ac_FFTW_LDOPTS="-L$fftw_prefix/lib"
-
-
-                    save_CFLAGS="$CFLAGS"
-                    save_CPPFLAGS="$CPPFLAGS"
-                    CFLAGS="$ac_FFTW_CFLAGS $save_CFLAGS"
-                    CPPFLAGS="$ac_FFTW_CFLAGS $save_CPPFLAGS"
-                    ac_fn_c_check_header_mongrel "$LINENO" "fftw3.h" "ac_cv_header_fftw3_h" "$ac_includes_default"
-if test "x$ac_cv_header_fftw3_h" = xyes; then :
-  FFTW_FLAGS="$ac_FFTW_CFLAGS"
-                        FOUND_FFTW="yes"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&5
-$as_echo "$as_me: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&2;}
-
-fi
-
-
-                    CFLAGS="$save_CFLAGS"
-                    CPPFLAGS="$save_CPPFLAGS"
-
-                     save_LIBS="$LIBS"
-                    LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads $save_LIBS"
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
-$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
-if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lfftw3  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char fftw_plan_dft_r2c ();
-int
-main ()
-{
-return fftw_plan_dft_r2c ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
-else
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
-$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
-if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
-  FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&5
-$as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&2;}
-
-fi
-
-                    LIBS="$save_LIBS"
-	fi
-	if test x$FOUND_FFTW != xyes; then
-                    ac_fn_c_check_header_mongrel "$LINENO" "fftw3.h" "ac_cv_header_fftw3_h" "$ac_includes_default"
-if test "x$ac_cv_header_fftw3_h" = xyes; then :
-  FFTW_FLAGS=""
-                        FOUND_FFTW="yes"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&5
-$as_echo "$as_me: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&2;}
-
-fi
-
-
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
-$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
-if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lfftw3  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char fftw_plan_dft_r2c ();
-int
-main ()
-{
-return fftw_plan_dft_r2c ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
-else
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
-$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
-if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
-  FFTW_LIBS="-lfftw3 -lfftw3_threads"
-else
-
-                        FOUND_FFTW="no"
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c). Check if libfftw3 is installed and if the version is correct" >&5
-$as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c). Check if libfftw3 is installed and if the version is correct" >&2;}
-
-fi
-
-		fi
-
-
-
-fi
-
-fi
-
-
-
-
-
 
 
 else
@@ -6352,13 +6154,128 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
-    FFTW_FLAGS="$FFTW_CFLAGS"
-    FFTW_LIBS="$FFTW_LIBS -lfftw3_threads"
-    FOUND_FFTW=yes
+            FFTW_FLAGS="$FFTW_CFLAGS"
+            FFTW_LIBS="$FFTW_LIBS -lfftw3_threads"
+            FOUND_FFTW=yes
+
+fi
+    fi
+
+	if test x$FOUND_FFTW != xyes; then
+                    ac_fn_c_check_header_mongrel "$LINENO" "fftw3.h" "ac_cv_header_fftw3_h" "$ac_includes_default"
+if test "x$ac_cv_header_fftw3_h" = xyes; then :
+  FFTW_FLAGS=""
+                        FOUND_FFTW="yes"
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&5
+$as_echo "$as_me: WARNING: Cannot find headers (fftw3.h) of the library FFTW in $fftw_prefix/include." >&2;}
+
+fi
+
+
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
+$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
+if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfftw3  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fftw_plan_dft_r2c ();
+int
+main ()
+{
+return fftw_plan_dft_r2c ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
+else
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
+$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
+if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
+  FFTW_LIBS="-lfftw3 -lfftw3_threads"
+else
+
+                            LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads -lm $save_LIBS"
+                            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
+$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
+if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfftw3  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fftw_plan_dft_r2c ();
+int
+main ()
+{
+return fftw_plan_dft_r2c ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
+else
+  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
+$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
+if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
+  FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads  -lm"
+else
+
+                                    FOUND_FFTW="no"
+                                    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&5
+$as_echo "$as_me: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&2;}
+
+fi
+
 
 
 
 fi
+
+		fi
+
+
+
+fi
+
+fi
+
+
+
+
 
 
 
