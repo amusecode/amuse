@@ -94,7 +94,7 @@ module twin_library_v2
    integer, parameter, private :: switch_iterations = 5
 
    ! Print verbose output to stdout yes or no.
-   logical, private :: verbose = .false.
+   logical, private :: verbose = .true.
 
    ! Name of the init.dat input file, if not otherwise specified
    character(len=500), private :: init_dat_name = 'init.dat'

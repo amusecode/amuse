@@ -129,8 +129,8 @@ fi
 export PYTHONHOME="${BASEDIR}/py_install"
 export PATH=${PYTHONHOME}/bin:$PATH
 export PYTHON=${PYTHONHOME}/bin/python
-export LD_LIBRARY_PATH=${PYTHONHOME}/lib/pkgconfig/
-export PKG_CONFIG_PATH=${PYTHONHOME}/lib/
+export LD_LIBRARY_PATH=${PYTHONHOME}/lib/
+export PKG_CONFIG_PATH=${PYTHONHOME}/lib/pkgconfig/
 export FC=gfortran
 export F77=gfortran
 export
