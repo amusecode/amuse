@@ -526,7 +526,7 @@ class TestMI6(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
         
-        instance = MI6()
+        instance = MI6(**default_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.particles.add_particles(particles)
@@ -567,5 +567,42 @@ class TestMI6(TestWithMPI):
         self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
+        instance.stop()
+    
+    def test11(self):
+        print "Testing MI6 properties"
+        numpy.random.seed(12345)
+        particles = new_plummer_model(100, do_scale=True)
+        particles.position += [1, 2, 3] | nbody_system.length
+        cluster_velocity = [4, 5, 6] | nbody_system.speed
+        particles.velocity += cluster_velocity
+        external_kinetic_energy = (0.5 | nbody_system.mass) * cluster_velocity.length_squared()
+        
+        instance = MI6(**default_options)
+        instance.particles.add_particles(particles)
+        
+        kinetic_energy = instance.kinetic_energy - external_kinetic_energy
+        potential_energy = instance.potential_energy
+        self.assertAlmostRelativeEqual(kinetic_energy, 0.25 | nbody_system.energy, 10)
+        self.assertAlmostRelativeEqual(potential_energy, -0.5 | nbody_system.energy, 10)
+        self.assertAlmostRelativeEqual(instance.total_mass, 1.0 | nbody_system.mass, 10)
+        self.assertAlmostRelativeEqual(instance.center_of_mass_position, 
+            [1, 2, 3] | nbody_system.length, 10)
+        self.assertAlmostRelativeEqual(instance.center_of_mass_velocity, 
+            [4, 5, 6] | nbody_system.speed, 10)
+        initial_total_energy = kinetic_energy + potential_energy
+        
+        instance.evolve_model(0.1 | nbody_system.time)
+        self.assertAlmostRelativeEqual(instance.model_time, 0.1 | nbody_system.time)
+        kinetic_energy = instance.kinetic_energy - external_kinetic_energy
+        potential_energy = instance.potential_energy
+        self.assertAlmostRelativeEqual(kinetic_energy+potential_energy, -0.25 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(instance.total_mass, 1.0 | nbody_system.mass, 3)
+        self.assertAlmostRelativeEqual(instance.center_of_mass_position, 
+            [1.4, 2.5, 3.6] | nbody_system.length, 3)
+        self.assertAlmostRelativeEqual(instance.center_of_mass_velocity, 
+            [4, 5, 6] | nbody_system.speed, 3)
+        
+        instance.cleanup_code()
         instance.stop()
     

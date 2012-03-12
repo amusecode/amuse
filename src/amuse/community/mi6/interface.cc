@@ -40,6 +40,7 @@ double eta_fs = 0.1;
 double eta_smbh = 0.4;
 double eta_imbh = 0.4;
 double Tsys = 0.0;
+double current_time = 0.0;
 double Tmerge = 0.0;
 //~double Tend = 0.0;
 double Egr = 0.0;
@@ -225,7 +226,7 @@ int commit_particles() {
     cout << "Ntot: " << Ntot << endl << flush;
     address = new int[Ntot];
     address_old = new int[Ntot];
-    for(int i=0; i<Ntot; i++){
+    for(i=0; i<Ntot; i++){
         address[i] = i;
     }
 //    cout << Ntot << " " << Njp_org << " " << first_address << " " << prt[0].address << " " << prt[1].address << endl;
@@ -287,6 +288,9 @@ int commit_particles() {
     Tcal_tot0 = MPI_Wtime();
     itr = 0;
     
+    for(i=0; i<Ntot; i++){
+       prt[i].predict(current_time);
+    }
     particles_initialized = true;
     return 0;
 }
@@ -417,6 +421,7 @@ int evolve_model(double time) {
                         set_stopping_condition_particle_index(stopping_index, 1, particle_id);
                     }
                 }
+                current_time = Tsys;
                 return 0;
             } else {
                 double E1_tmp = 0.0; 
@@ -580,6 +585,11 @@ int evolve_model(double time) {
         }
         ITERATION: ;
     }
+    for(int i=0; i<Ntot; i++){
+        prt[i].predict(time);
+    }
+    current_time = time;
+    
     return 0;
 }
 
@@ -621,58 +631,55 @@ int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_pa
 
 // simulation property getters:
 int get_total_mass(double *total_mass) {
-    return -2; // Not implemented
+    // calculate only on the root mpi process, not on others
+    if (myrank == 0) {
+        *total_mass = 0.0;
+        for (int i=0; i<Ntot; i++) {
+            *total_mass += prt[i].mass;
+        }
+    }
+    return 0;
 }
 int get_total_radius(double *total_radius) {
     return -2; // Not implemented
 }
 int get_time(double *time) {
-    *time = Tsys;
+    *time = current_time;
     return 0;
 }
 int get_center_of_mass_position(double *x, double *y, double *z){
-  //~if (mpi_rank == 0)
-    //~{ // calculate only on the root mpi process, not on others
-      //~*x=0; *y=0; *z=0;
-      //~double m = 0.0;
-      //~get_total_mass(&m)
-  //~
-//~
-      //~for (int i = 0; i<Ntot; i++)
-      //~{
-         //~*x += prt[i].mass*prt[i].pos[0];
-         //~*y += prt[i].mass*prt[i].pos[1];
-         //~*z += prt[i].mass*prt[i].pos[2];
-      //~}
-//~
-      //~*x /= m;
-      //~*y /= m;
-      //~*z /= m;
-      //~return 0;
-      //~}
-    return -2; // Not implemented
+    // calculate only on the root mpi process, not on others
+    if (myrank == 0) {
+        *x = *y = *z = 0.0;
+        double m = 0.0;
+        get_total_mass(&m);
+        for (int i=0; i<Ntot; i++) {
+            *x += prt[i].mass * prt[i].pos[0];
+            *y += prt[i].mass * prt[i].pos[1];
+            *z += prt[i].mass * prt[i].pos[2];
+        }
+        *x /= m;
+        *y /= m;
+        *z /= m;
+    }
+    return 0;
 }
 int get_center_of_mass_velocity(double *vx, double *vy, double *vz) {
-  //~if (mpi_rank == 0)
-    //~{ // calculate only on the root mpi process, not on others
-      //~*vx=0; *vy=0; *vz=0;
-      //~double m = 0.0;
-      //~get_total_mass(&m)
-  //~
-//~
-      //~for (int i = 0; i<Ntot; i++)
-      //~{
-         //~*x += prt[i].mass*prt[i].veli[0];
-         //~*y += prt[i].mass*prt[i].veli[1];
-         //~*z += prt[i].mass*prt[i].veli[2];
-      //~}
-//~
-      //~*vx /= m;
-      //~*vy /= m;
-      //~*vz /= m;
-      //~return 0;
-      //~}
-    return -2; // Not implemented
+    // calculate only on the root mpi process, not on others
+    if (myrank == 0) {
+        *vx = *vy = *vz = 0.0;
+        double m = 0.0;
+        get_total_mass(&m);
+        for (int i=0; i<Ntot; i++) {
+            *vx += prt[i].mass * prt[i].vel[0];
+            *vy += prt[i].mass * prt[i].vel[1];
+            *vz += prt[i].mass * prt[i].vel[2];
+        }
+        *vx /= m;
+        *vy /= m;
+        *vz /= m;
+    }
+    return 0;
 }
 int get_kinetic_energy(double *kinetic_energy) {
     *kinetic_energy = Ek1;
@@ -727,6 +734,7 @@ int set_position(int particle_identifier, double x, double y, double z) {
     int index;
     if (found_particle(particle_identifier, &index)){
         prt[index].pos = Vector3(x, y, z);
+        prt[index].pos_pre = Vector3(x, y, z);
         return 0;
     }
     return -3; // Not found!
@@ -734,9 +742,9 @@ int set_position(int particle_identifier, double x, double y, double z) {
 int get_position(int particle_identifier, double *x, double *y, double *z) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        *x = prt[index].pos[0];
-        *y = prt[index].pos[1];
-        *z = prt[index].pos[2];
+        *x = prt[index].pos_pre[0];
+        *y = prt[index].pos_pre[1];
+        *z = prt[index].pos_pre[2];
         return 0;
     }
     return -3; // Not found!
@@ -745,6 +753,7 @@ int set_velocity(int particle_identifier, double vx, double vy, double vz) {
     int index;
     if (found_particle(particle_identifier, &index)){
         prt[index].vel = Vector3(vx, vy, vz);
+        prt[index].vel_pre = Vector3(vx, vy, vz);
         return 0;
     }
     return -3; // Not found!
@@ -752,9 +761,9 @@ int set_velocity(int particle_identifier, double vx, double vy, double vz) {
 int get_velocity(int particle_identifier, double *vx, double *vy, double *vz) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        *vx = prt[index].vel[0];
-        *vy = prt[index].vel[1];
-        *vz = prt[index].vel[2];
+        *vx = prt[index].vel_pre[0];
+        *vy = prt[index].vel_pre[1];
+        *vz = prt[index].vel_pre[2];
         return 0;
     }
     return -3; // Not found!
@@ -769,6 +778,8 @@ int set_state(int particle_identifier, double mass,
         prt[index].radius = radius;
         prt[index].pos = Vector3(x, y, z);
         prt[index].vel = Vector3(vx, vy, vz);
+        prt[index].pos_pre = Vector3(x, y, z);
+        prt[index].vel_pre = Vector3(vx, vy, vz);
         return 0;
     }
     return -3; // Not found!
@@ -781,12 +792,12 @@ int get_state(int particle_identifier, double *mass,
     if (found_particle(particle_identifier, &index)){
         *mass = prt[index].mass;
         *radius = prt[index].radius;
-        *x = prt[index].pos[0];
-        *y = prt[index].pos[1];
-        *z = prt[index].pos[2];
-        *vx = prt[index].vel[0];
-        *vy = prt[index].vel[1];
-        *vz = prt[index].vel[2];
+        *x = prt[index].pos_pre[0];
+        *y = prt[index].pos_pre[1];
+        *z = prt[index].pos_pre[2];
+        *vx = prt[index].vel_pre[0];
+        *vy = prt[index].vel_pre[1];
+        *vz = prt[index].vel_pre[2];
         return 0;
     }
     return -3; // Not found!
@@ -799,9 +810,9 @@ int set_acceleration(int particle_identifier, double ax, double ay, double az) {
 int get_acceleration(int particle_identifier, double *ax, double *ay, double *az) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        *ax = prt[index].acc[0];
-        *ay = prt[index].acc[1];
-        *az = prt[index].acc[2];
+        *ax = prt[index].acc_pre[0];
+        *ay = prt[index].acc_pre[1];
+        *az = prt[index].acc_pre[2];
         return 0;
     }
     return -3; // Not found!
@@ -1091,19 +1102,6 @@ int get_gravity_at_point(double *eps, double *x, double *y, double *z,
     delete[] acc;
     return 0;
 }
-
-//misc
-int set_pair_detect_factor(double pair_detect_factor)
-{
-  return 0;
-}
-
-int get_pair_detect_factor(double * pair_detect_factor)
-{
-  return 0;
-}
-
-
 
 
 
