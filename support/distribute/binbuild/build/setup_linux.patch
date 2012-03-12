@@ -1,0 +1,28 @@
+--- setup_orig.py	2012-02-29 11:59:09.278060791 +0100
++++ setup.py	2012-02-29 11:59:43.662307630 +0100
+@@ -703,10 +703,9 @@
+                                depends = ['socketmodule.h']) )
+         # Detect SSL support for the socket module (via _ssl)
+         search_for_ssl_incs_in = [
+-                              '/usr/local/ssl/include',
+-                              '/usr/contrib/ssl/include/'
++                                os.path.join(sys.prefix, 'include')
+                              ]
+-        ssl_incs = find_file('openssl/ssl.h', inc_dirs,
++        ssl_incs = find_file('openssl/ssl.h', [],
+                              search_for_ssl_incs_in
+                              )
+         if ssl_incs is not None:
+@@ -714,9 +713,9 @@
+                                ['/usr/kerberos/include'])
+             if krb5_h:
+                 ssl_incs += krb5_h
+-        ssl_libs = find_library_file(self.compiler, 'ssl',lib_dirs,
+-                                     ['/usr/local/ssl/lib',
+-                                      '/usr/contrib/ssl/lib/'
++        ssl_libs = find_library_file(self.compiler, 'ssl',[],
++                                     [
++                                os.path.join(sys.prefix, 'lib')
+                                      ] )
+ 
+         if (ssl_incs is not None and

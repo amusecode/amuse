@@ -1,0 +1,14 @@
+#!/bin/bash
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+export PYTHONHOME=${DIR}
+export PATH=${PYTHONHOME}/bin:${PATH}
+export PYTHONPATH=${PYTHONHOME}/customize
+export PYTHON=${PYTHONHOME}/python
+
+exec python -m amuse_admin "$@" 
+
+
