@@ -154,6 +154,22 @@ class InstallPrerequisites(object):
             'http://downloads.sourceforge.net/project/libpng/libpng15/1.5.9/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
+          (
+            'tcl' ,                   #name to refer by
+            [],                         #names of prerequisites (unused)
+            '8.5.11' ,                   #version string
+            'tcl', '-src.tar.gz',        #pre- and postfix for filename
+            'http://downloads.sourceforge.net/project/tcl/Tcl/8.5.11/', #download url, filename is appended
+            self.tcl_build             #method to use for building - same as for FFTW should work
+          ) ,
+          (
+            'tk' ,                   #name to refer by
+            [],                         #names of prerequisites (unused)
+            '8.5.11' ,                   #version string
+            'tk', '-src.tar.gz',        #pre- and postfix for filename
+            'http://downloads.sourceforge.net/project/tcl/Tcl/8.5.11/', #download url, filename is appended
+            self.tcl_build             #method to use for building - same as for FFTW should work
+          ) ,
         ]
         
     @late
@@ -315,6 +331,23 @@ class InstallPrerequisites(object):
         
         for x in commands:
             self.run_application(x, path)
+            
+    def tcl_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared',
+          '--enable-threads'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        path = os.path.join(path, 'unix')
+        for x in commands:
+            self.run_application(x, path)
+            
         
     def check_mpich2_install(self, commands, path):
         bin_directory = os.path.join(self.prefix, 'bin')

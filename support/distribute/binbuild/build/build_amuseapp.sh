@@ -119,6 +119,7 @@ if [ ! -e "installed" ]; then
     cd ${BASEDIR}
     rm -Rf libsinstalled || exit $?
     rm -Rf pipsinstalled || exit $?
+    rm -Rf ytinstalled || exit $?
     rm -Rf amuseinstalled || exit $?
     touch "installed" || exit $?
 fi
@@ -128,26 +129,71 @@ fi
 export PYTHONHOME="${BASEDIR}/py_install"
 export PATH=${PYTHONHOME}/bin:$PATH
 export PYTHON=${PYTHONHOME}/bin/python
-export LD_LIBRARY_PATH=${PYTHONHOME}/lib
+export LD_LIBRARY_PATH=${PYTHONHOME}/lib/pkgconfig/
+export PKG_CONFIG_PATH=${PYTHONHOME}/lib/
 export FC=gfortran
 export F77=gfortran
 export
 
 if [ ! -e "libsinstalled" ]; then
     ${PYTHON} build_libraries.py install  || exit $?
-    ${PYTHONHOME}/bin/easy_install pip
+    
+    #rebuild python
+    
+    cd Python-${PYTHONVERSION}
+    
+    make clean || exit $?
+    
+    ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --enable-shared LD_LIBRARY_PATH=${INSTALLDIR}/lib || exit $?
+        
+    make || exit $?
+    
+    make install || exit $?
+    
     touch "libsinstalled" || exit $?
+    
+    ${PYTHONHOME}/bin/easy_install pip
 fi
 
 
 #${PYTHONHOME}/bin/pip install ipython || exit $?
 if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/easy_install pip
+    
     ${PYTHONHOME}/bin/easy_install readline
+    
     ${PYTHONHOME}/bin/easy_install IPython
+    
+    ${PYTHONHOME}/bin/pip install Cython || exit $?
+    
     ${PYTHONHOME}/bin/pip install Flask || exit $?
+    
     ${PYTHONHOME}/bin/pip install matplotlib || exit $?
+    
     touch "pipsinstalled" || exit $?
+fi
+
+if [ ! -e "ytinstalled"  ]; then
+
+    rm -Rf yt-hg || exit $?
+    
+    curl -OL http://bitbucket.org/yt_analysis/yt/get/tip.tar.gz  || exit $?
+    
+    tar zxf tip.tar.gz || exit $?
+    
+    cd yt_analysis-yt-*  || exit $?
+    
+    echo $INSTALLDIR > hdf5.cfg
+    
+    ${PYTHON} setup.py install || exit $?
+    
+    cd ..
+    
+    rm -Rf yt_analysis-yt-*  || exit $?
+    
+    rm -Rf tip.tar.gz || exit $?
+    
+    touch "ytinstalled" || exit $?
 fi
 
 if [ ! -e "amuseinstalled" ]; then
@@ -156,12 +202,11 @@ if [ ! -e "amuseinstalled" ]; then
     export
     
     cd ../../../.. # cd to amuse root directory
-
-    ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} || exit $?
-    
     
     make distclean PYTHON=${PYTHON}
-    
+
+    ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} || exit $?
+
     ${PYTHON} setup.py install || exit $?
 
     cd support/distribute/binbuild/build
