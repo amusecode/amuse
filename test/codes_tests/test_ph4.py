@@ -838,3 +838,39 @@ class TestPH4(TestWithMPI):
         delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
         self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
     
+    def test19(self):
+        print "Testing ph4 properties"
+        particles = new_plummer_model(1000, do_scale=True)
+        particles.position += [1, 2, 3] | nbody_system.length
+        cluster_velocity = [4, 5, 6] | nbody_system.speed
+        particles.velocity += cluster_velocity
+        external_kinetic_energy = (0.5 | nbody_system.mass) * cluster_velocity.length_squared()
+        
+        instance = ph4()
+        instance.particles.add_particles(particles)
+        
+        kinetic_energy = instance.kinetic_energy - external_kinetic_energy
+        potential_energy = instance.potential_energy
+        self.assertAlmostRelativeEqual(kinetic_energy, 0.25 | nbody_system.energy, 10)
+        self.assertAlmostRelativeEqual(potential_energy, -0.5 | nbody_system.energy, 10)
+        self.assertAlmostRelativeEqual(instance.total_mass, 1.0 | nbody_system.mass, 10)
+        self.assertAlmostRelativeEqual(instance.center_of_mass_position, 
+            [1, 2, 3] | nbody_system.length, 10)
+        self.assertAlmostRelativeEqual(instance.center_of_mass_velocity, 
+            [4, 5, 6] | nbody_system.speed, 10)
+        initial_total_energy = kinetic_energy + potential_energy
+        
+        instance.evolve_model(0.1 | nbody_system.time)
+        self.assertAlmostRelativeEqual(instance.model_time, 0.1 | nbody_system.time, 3)
+        kinetic_energy = instance.kinetic_energy - external_kinetic_energy
+        potential_energy = instance.potential_energy
+        self.assertAlmostRelativeEqual(kinetic_energy+potential_energy, -0.25 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(instance.total_mass, 1.0 | nbody_system.mass, 3)
+        self.assertAlmostRelativeEqual(instance.center_of_mass_position, 
+            [1.4, 2.5, 3.6] | nbody_system.length, 3)
+        self.assertAlmostRelativeEqual(instance.center_of_mass_velocity, 
+            [4, 5, 6] | nbody_system.speed, 3)
+        
+        instance.cleanup_code()
+        instance.stop()
+    

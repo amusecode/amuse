@@ -581,30 +581,6 @@ class PropertyWithUnitsDefinition(object):
 
 
 
-class PropertyDefinition(object):
-
-    def __init__(self, handler, function_or_attribute_name, public_name):
-        self.function_or_attribute_name = function_or_attribute_name
-        self.public_name = public_name
-        self.handler = handler
-
-    def get_value(self, original):
-        if self.has_same_name_as_original:
-            function_or_attribute = original
-        else:
-            function_or_attribute = getattr(self.handler.interface, self.function_or_attribute_name)
-    
-        if hasattr(function_or_attribute, '__call__'):
-            return_value = function_or_attribute()
-            return return_value
-        else:
-            return function_or_attribute
-
-
-    @late
-    def has_same_name_as_original(self):
-        return self.function_or_attribute_name == self.public_name
-        
 class HandlePropertiesWithUnits(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.property_definitions = {}
@@ -1213,5 +1189,9 @@ class PropertyDefinition(object):
 
     def get_value(self, original):
         method = getattr(self.handler.interface, self.functionname)
-        return method(**self.keyword_arguments)
+        result = method(**self.keyword_arguments)
+        if hasattr(result, "__iter__"):
+            return quantities.VectorQuantity.new_from_scalar_quantities(*result)
+        else:
+            return result
 
