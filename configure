@@ -6030,13 +6030,13 @@ if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
 else
 
                                 LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads -lm $save_LIBS"
-                                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
-$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
-if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
+                                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lmfftw3" >&5
+$as_echo_n "checking for fftw_plan_dft_r2c in -lmfftw3... " >&6; }
+if ${ac_cv_lib_mfftw3_fftw_plan_dft_r2c+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lfftw3  $LIBS"
+LIBS="-lmfftw3  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -6056,17 +6056,17 @@ return fftw_plan_dft_r2c ();
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
+  ac_cv_lib_mfftw3_fftw_plan_dft_r2c=yes
 else
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
+  ac_cv_lib_mfftw3_fftw_plan_dft_r2c=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
-$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
-if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_mfftw3_fftw_plan_dft_r2c" >&5
+$as_echo "$ac_cv_lib_mfftw3_fftw_plan_dft_r2c" >&6; }
+if test "x$ac_cv_lib_mfftw3_fftw_plan_dft_r2c" = xyes; then :
   FFTW_LIBS="$ac_FFTW_LDOPTS -lfftw3  -lfftw3_threads  -lm"
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libfftw3 : library missing. (Cannot find symbol fftw_plan_dft_r2c) in $fftw_prefix. Check if libfftw3 is installed and if the version is correct" >&5
@@ -6173,13 +6173,13 @@ $as_echo "$as_me: WARNING: Cannot find headers (fftw3.h) of the library FFTW in 
 fi
 
 
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lfftw3" >&5
-$as_echo_n "checking for fftw_plan_dft_r2c in -lfftw3... " >&6; }
-if ${ac_cv_lib_fftw3_fftw_plan_dft_r2c+:} false; then :
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fftw_plan_dft_r2c in -lsysfftw3" >&5
+$as_echo_n "checking for fftw_plan_dft_r2c in -lsysfftw3... " >&6; }
+if ${ac_cv_lib_sysfftw3_fftw_plan_dft_r2c+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lfftw3  $LIBS"
+LIBS="-lsysfftw3  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -6199,17 +6199,17 @@ return fftw_plan_dft_r2c ();
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=yes
+  ac_cv_lib_sysfftw3_fftw_plan_dft_r2c=yes
 else
-  ac_cv_lib_fftw3_fftw_plan_dft_r2c=no
+  ac_cv_lib_sysfftw3_fftw_plan_dft_r2c=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&5
-$as_echo "$ac_cv_lib_fftw3_fftw_plan_dft_r2c" >&6; }
-if test "x$ac_cv_lib_fftw3_fftw_plan_dft_r2c" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_sysfftw3_fftw_plan_dft_r2c" >&5
+$as_echo "$ac_cv_lib_sysfftw3_fftw_plan_dft_r2c" >&6; }
+if test "x$ac_cv_lib_sysfftw3_fftw_plan_dft_r2c" = xyes; then :
   FFTW_LIBS="-lfftw3 -lfftw3_threads"
 else
 
