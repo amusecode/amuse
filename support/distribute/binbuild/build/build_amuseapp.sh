@@ -155,15 +155,16 @@ if [ ! -e "amuseinstalled" ]; then
     export PATH=${BASEDIR}/static_libs/bin:${PYTHONHOME}/bin:$PATH
     export
     
-    svn export --password=reviewboard2amuse --username=reviewboard ${SVNURL} amuse-src || exit $?
-    
-    cd amuse-src
+    cd ../../../.. # cd to amuse root directory
 
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} || exit $?
-
+    
+    
+    make distclean PYTHON=${PYTHON}
+    
     ${PYTHON} setup.py install || exit $?
 
-    cd ..
+    cd support/distribute/binbuild/build
     
     make distclean
 
