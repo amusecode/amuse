@@ -150,6 +150,8 @@ if [ ! -e "libsinstalled" ]; then
     
     make install || exit $?
     
+    cd ..
+    
     touch "libsinstalled" || exit $?
     
     ${PYTHONHOME}/bin/easy_install pip
@@ -167,6 +169,14 @@ if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/pip install Cython || exit $?
     
     ${PYTHONHOME}/bin/pip install Flask || exit $?
+    
+    #py_install/bin/pip install -b mpl matplotlib --no-install
+    
+    #cd mpl/matplotlib
+    
+    export CFLAGS=-I${PYTHONHOME}/include -I${PYTHONHOME}/include/freetype2
+
+    export LDFLAGS=-L${PYTHONHOME}/lib
     
     ${PYTHONHOME}/bin/pip install matplotlib || exit $?
     
