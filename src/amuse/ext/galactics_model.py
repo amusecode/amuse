@@ -1,22 +1,22 @@
-from amuse.community.galactics.interface import GalactICs
-from amuse.community.galactics.interface import GalactICsInterface
+from amuse.community.galactics.interface import GalactICs, GalactICsInterface
 from amuse.datamodel import ParticlesWithUnitsConverted
-def _new_galactics_model(halo_number_of_particles, unit_converter = None, do_scale = False, **keyword_arguments):
-    instance = GalactICs(unit_converter = unit_converter)
+
+def _new_galactics_model(halo_number_of_particles, unit_system_converter=None, do_scale=False, **keyword_arguments):
+    instance = GalactICs(unit_system_converter=unit_system_converter)
     instance.parameters.halo_number_of_particles = halo_number_of_particles
     for (key, value) in keyword_arguments.iteritems():
         setattr(instance.parameters, key, value)
     
     instance.generate_particles()
-    result = instance.particles.copy()
+    result = instance.particles.copy_to_memory()
     instance.stop()
     
     result.move_to_center()
     if do_scale:
         result.scale_to_standard()
     
-    if not unit_converter is None:
-        result = ParticlesWithUnitsConverted(result, unit_converter.as_converter_from_si_to_generic())
+    if not unit_system_converter is None:
+        result = ParticlesWithUnitsConverted(result, unit_system_converter.as_converter_from_si_to_generic())
         result = result.copy_to_memory()
     return result
 
