@@ -103,7 +103,18 @@ if [ ! -e "installed" ]; then
     
 
         # configure
-        ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --enable-shared LD_LIBRARY_PATH=${INSTALLDIR}/lib || exit $?
+        
+        if [ ${PLATFORM} == 'Darwin' ]; then
+            if [ ${ARCHITECTURE} == 'i386' ]; then
+                export MACOSX_DEPLOYMENT_TARGET=10.5
+            else
+                export MACOSX_DEPLOYMENT_TARGET=10.6
+            fi
+        
+            ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --disable-framework --disable-universalsdk || exit $?
+        else
+            ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --enable-shared LD_LIBRARY_PATH=${INSTALLDIR}/lib || exit $?
+        fi
         
         # patch 
         patch setup.py < ${BASEDIR}/setup_linux.patch || exit $?
@@ -170,15 +181,19 @@ if [ ! -e "pipsinstalled"  ]; then
     
     ${PYTHONHOME}/bin/pip install Flask || exit $?
     
-    #py_install/bin/pip install -b mpl matplotlib --no-install
+    py_install/bin/pip install -b mpl matplotlib --no-install || exit $?
     
-    #cd mpl/matplotlib
+    cd mpl/matplotlib
     
-    export CFLAGS=-I${PYTHONHOME}/include -I${PYTHONHOME}/include/freetype2
+    export CFLAGS="-I${PYTHONHOME}/include -I${PYTHONHOME}/include/freetype2"
 
-    export LDFLAGS=-L${PYTHONHOME}/lib
+    export LDFLAGS="-L${PYTHONHOME}/lib"
     
-    ${PYTHONHOME}/bin/pip install matplotlib || exit $?
+    ${PYTHONHOME}/bin/python setup.py install || exit $?
+    
+    cd ../../
+    
+    rm -Rf mpl || exit $?
     
     touch "pipsinstalled" || exit $?
 fi

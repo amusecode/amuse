@@ -529,6 +529,24 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         
         self.check_mpich2_install(commands, path)
         
+    def tcl_build(self, path):
+        if True:
+            return
+            
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared',
+          '--enable-threads'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        path = os.path.join(path, 'unix')
+        for x in commands:
+            self.run_application(x, path)
             
             
      
