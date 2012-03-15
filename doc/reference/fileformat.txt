@@ -38,6 +38,69 @@ Supported File Formats
     .. autoclass:: CannotSaveException
     .. autoclass:: CannotLoadException
     
+    
+    Text files
+    ----------
+    
+    AMUSE has support for reading and writing text (``.txt``, ``.csv``) files.
+    You can specify the txt format by entering "txt" (for space separated files) 
+    or "csv" (for comma separated files)
+    as the format::
+    
+        >>> from amuse.support import io
+        >>> particles = io.read_set_from_file(
+                   'plummer.txt',
+                   'txt',
+                   attribute_types = (units.m, units.m, units.kms),
+                   attribute_names= ('x', 'y', 'vx')
+            )
+        >>> io.write_set_to_file(particles, 'plummer.txt', 'txt')
+        
+    .. iooptions:: txt
+    
+    By default, text files are stored with some unit information on 
+    a comment line in the header. Unfortunately, amuse cannot depend 
+    on this line to read the file. When reading a text file you 
+    always need to specify the units of every column in the file. For
+    example, to read a file with particle positions where all positions
+    are stored in parsec, do::
+    
+        particles = io.read_set_from_file(
+               'positions.txt',
+               'txt',
+               attribute_types = (units.parsec, units.parsec, units.parsec),
+               attribute_names= ('x', 'y', 'z')
+        )
+    
+    When writing a text file, you do not need to specify the units. If
+    you don't specify the units the ``write_set_to_file`` function will
+    default to the units of the quantities being saved. For reliability 
+    and reproducibility we suggest to always specify the units and
+    the names of the attributes to save when saving a text file::
+        
+        particles = io.write_set_from_file(
+               particles,
+               'txt',
+               attribute_types = (units.parsec, units.parsec, units.parsec),
+               attribute_names= ('x', 'y', 'z')
+        )
+        
+    The amuse text file routines are very generic and since version 6.0,
+    you can also specify a list of vector quantities instead of a particle
+    set::
+    
+        particles = io.write_set_from_file(
+               None,
+               'txt',
+               attribute_types = (units.parsec, units.parsec, units.parsec),
+               attribute_names = ('x', 'y', 'z'),
+               quantities = [
+                    [0.1,0.2] | units.parsec, 
+                    [0.3,0.4] | units.parsec, 
+                    [0.5,0.6] | units.parsec, 
+               ]
+        )
+    
     Starlab
     -------
     
