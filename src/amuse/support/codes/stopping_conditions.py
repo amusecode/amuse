@@ -1,4 +1,4 @@
-from amuse.units import units
+from amuse.units import units, generic_unit_system
 from amuse.units import nbody_system as nbody
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
@@ -238,6 +238,58 @@ class StoppingConditionInterface(object):
         """
         return function
     
+    @legacy_function
+    def set_stopping_condition_minimum_density_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_stopping_condition_minimum_density_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_stopping_condition_maximum_density_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_stopping_condition_maximum_density_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_stopping_condition_minimum_internal_energy_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_stopping_condition_minimum_internal_energy_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_stopping_condition_maximum_internal_energy_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_stopping_condition_maximum_internal_energy_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
 class StoppingCondition(object):
     
     def __init__(self, conditions, type, description):
@@ -316,11 +368,22 @@ class StoppingConditions(object):
             4,
             "If enabled, the code will stop at the end of the inner loop when the number of evaluations reached the set max number"
         )
-
         self.out_of_box_detection = StoppingCondition(
             self,
             5,
             "If enabled, the code will stop if a particle escapes the box of size out_of_box_size"
+        )
+        self.density_limit_detection = StoppingCondition(
+            self,
+            6,
+            "If enabled, the code will stop if a gas particle has a density out of the range "
+                "[stopping_condition_minimum_density, stopping_condition_maximum_density]"
+        )
+        self.internal_energy_limit_detection = StoppingCondition(
+            self,
+            7,
+            "If enabled, the code will stop if a gas particle has an internal energy out of the range "
+                "[stopping_condition_minimum_internal_energy, stopping_condition_maximum_internal_energy]"
         )
 
     def all_conditions(self):
@@ -381,6 +444,38 @@ class StoppingConditions(object):
             "stopping_conditions_out_of_box_size", 
             "size of cube", 
             default_value = 0.0 |  nbody.length
+        )
+        
+        object.add_method_parameter(
+            "get_stopping_condition_minimum_density_parameter",
+            "set_stopping_condition_minimum_density_parameter", 
+            "stopping_condition_minimum_density", 
+            "minimum density of a gas particle", 
+            default_value = -1.0 | generic_unit_system.density
+        )
+        
+        object.add_method_parameter(
+            "get_stopping_condition_maximum_density_parameter",
+            "set_stopping_condition_maximum_density_parameter", 
+            "stopping_condition_maximum_density", 
+            "maximum density of a gas particle", 
+            default_value = -1.0 | generic_unit_system.density
+        )
+        
+        object.add_method_parameter(
+            "get_stopping_condition_minimum_internal_energy_parameter",
+            "set_stopping_condition_minimum_internal_energy_parameter", 
+            "stopping_condition_minimum_internal_energy", 
+            "minimum internal energy of a gas particle", 
+            default_value = -1.0 | generic_unit_system.specific_energy
+        )
+        
+        object.add_method_parameter(
+            "get_stopping_condition_maximum_internal_energy_parameter",
+            "set_stopping_condition_maximum_internal_energy_parameter", 
+            "stopping_condition_maximum_internal_energy", 
+            "maximum internal energy of a gas particle", 
+            default_value = -1.0 | generic_unit_system.specific_energy
         )
         
     def define_methods(self, object):
@@ -496,6 +591,26 @@ class StoppingConditions(object):
             (nbody.length, ),
             (object.ERROR_CODE,)
         )
+        
+        object.add_method("get_stopping_condition_minimum_density_parameter", 
+            (), (generic_unit_system.density, object.ERROR_CODE,))
+        object.add_method("set_stopping_condition_minimum_density_parameter", 
+            (generic_unit_system.density, ), (object.ERROR_CODE,))
+        
+        object.add_method("get_stopping_condition_maximum_density_parameter", 
+            (), (generic_unit_system.density, object.ERROR_CODE,))
+        object.add_method("set_stopping_condition_maximum_density_parameter", 
+            (generic_unit_system.density, ), (object.ERROR_CODE,))
+        
+        object.add_method("get_stopping_condition_minimum_internal_energy_parameter", 
+            (), (generic_unit_system.specific_energy, object.ERROR_CODE,))
+        object.add_method("set_stopping_condition_minimum_internal_energy_parameter", 
+            (generic_unit_system.specific_energy, ), (object.ERROR_CODE,))
+        
+        object.add_method("get_stopping_condition_maximum_internal_energy_parameter", 
+            (), (generic_unit_system.specific_energy, object.ERROR_CODE,))
+        object.add_method("set_stopping_condition_maximum_internal_energy_parameter", 
+            (generic_unit_system.specific_energy, ), (object.ERROR_CODE,))
         
     def define_particle_set(self, object, name_of_the_set = 'particles'):
         object.add_query(name_of_the_set, 'get_stopping_condition_particle_index')

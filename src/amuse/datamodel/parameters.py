@@ -250,7 +250,7 @@ class ParametersWithUnitsConverted(object):
         for name in self.names():
             output += name + ": "
             output += str(getattr(self, name))
-            output += " default: " + str(self.get_default_value_for(name)) + " will set:" + str(self.get_parameter(name).must_set_to_default())
+            output += " default: " + str(self.get_default_value_for(name))
             output +="\n"
 
         return output

@@ -9,7 +9,7 @@ from amuse.support.exceptions import AmuseException
 from amuse.units import nbody_system
 from amuse.units import generic_unit_converter
 from amuse.units import generic_unit_system
-from amuse.units import units
+from amuse.units import units, constants
 from amuse.datamodel import Particles, Grid
 from amuse.rfi import channel
 from amuse.ic.plummer import new_plummer_model
@@ -1054,6 +1054,76 @@ class TestGadget2(TestWithMPI):
         energy_evolution_plot(times, kinetic_energies, potential_energies, thermal_energies, 
             figname = "gadget2_slowtest22b_energy.png")
     
+    def test23(self):
+        print "Testing Gadget2 density_limit_detection"
+        number_gas_particles = 1000
+        gas = new_evrard_gas_sphere(number_gas_particles, self.default_convert_nbody, do_scale=True, seed=12345)
+        
+        instance = Gadget2(self.default_converter, **default_options)
+        instance.initialize_code()
+        instance.parameters.stopping_condition_maximum_density = 10 * self.UnitMass / self.UnitLength**3
+        instance.gas_particles.add_particles(gas)
+        self.assertIsOfOrder(max(instance.gas_particles.density), self.UnitMass / self.UnitLength**3)
+        
+        density_limit_detection = instance.stopping_conditions.density_limit_detection
+        density_limit_detection.enable()
+        
+        instance.evolve_model(10.0 | units.Myr)
+        print instance.model_time.as_quantity_in(units.Myr)
+        print instance.stopping_conditions
+        self.assertTrue(density_limit_detection.is_set())
+        self.assertTrue(instance.model_time < 10.0 | units.Myr)
+        self.assertEquals(len(density_limit_detection.particles(0, particle_name="gas_particles")), 1)
+        self.assertTrue(density_limit_detection.particles(0, particle_name="gas_particles").density > 
+                10 * self.UnitMass / self.UnitLength**3)
+        
+        instance.particles.remove_particles(density_limit_detection.particles(0, particle_name="gas_particles"))
+        
+        instance.evolve_model(10.0 | units.Myr)
+        print instance.model_time.as_quantity_in(units.Myr)
+        print instance.stopping_conditions
+        self.assertTrue(density_limit_detection.is_set())
+        self.assertTrue(instance.model_time < 10.0 | units.Myr)
+        self.assertEquals(len(density_limit_detection.particles(0, particle_name="gas_particles")), 2)
+        self.assertEquals((density_limit_detection.particles(0, particle_name="gas_particles").density > 
+                10 * self.UnitMass / self.UnitLength**3), [True, True])
+        instance.stop()
+    
+    def test24(self):
+        print "Testing Gadget2 internal_energy_limit_detection"
+        number_gas_particles = 1000
+        gas = new_evrard_gas_sphere(number_gas_particles, self.default_convert_nbody, do_scale=True, seed=12345)
+        initial_internal_energy = 0.05 * constants.G * self.UnitMass / self.UnitLength
+        
+        instance = Gadget2(self.default_converter, **default_options)
+        instance.initialize_code()
+        instance.parameters.stopping_condition_maximum_internal_energy = 10 * initial_internal_energy
+        instance.gas_particles.add_particles(gas)
+        self.assertAlmostRelativeEquals(instance.gas_particles.u, initial_internal_energy, 8)
+        
+        internal_energy_limit_detection = instance.stopping_conditions.internal_energy_limit_detection
+        internal_energy_limit_detection.enable()
+        
+        instance.evolve_model(10.0 | units.Myr)
+        print instance.model_time.as_quantity_in(units.Myr)
+        print instance.stopping_conditions
+        self.assertTrue(internal_energy_limit_detection.is_set())
+        self.assertTrue(instance.model_time < 10.0 | units.Myr)
+        self.assertEquals(len(internal_energy_limit_detection.particles(0, particle_name="gas_particles")), 4)
+        self.assertEquals((internal_energy_limit_detection.particles(0, particle_name="gas_particles").u > 
+                10 * initial_internal_energy), [True, True, True, True])
+        
+        instance.particles.remove_particles(internal_energy_limit_detection.particles(0, particle_name="gas_particles"))
+        
+        instance.evolve_model(10.0 | units.Myr)
+        print instance.model_time.as_quantity_in(units.Myr)
+        print instance.stopping_conditions
+        self.assertTrue(internal_energy_limit_detection.is_set())
+        self.assertTrue(instance.model_time < 10.0 | units.Myr)
+        self.assertEquals(len(internal_energy_limit_detection.particles(0, particle_name="gas_particles")), 3)
+        self.assertEquals((internal_energy_limit_detection.particles(0, particle_name="gas_particles").u > 
+                10 * initial_internal_energy), [True, True, True])
+        instance.stop()
 
 def energy_evolution_plot(time, kinetic, potential, thermal, figname):
     if not HAS_MATPLOTLIB:

@@ -122,6 +122,9 @@ int initialize_code(){
 
     //AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
+    set_support_for_condition(DENSITY_LIMIT_DETECTION);
+    set_support_for_condition(INTERNAL_ENERGY_LIMIT_DETECTION);
+    mpi_setup_stopping_conditions();
 
     set_default_parameters();
     return 0;
@@ -471,18 +474,83 @@ bool drift_to_t_end(int ti_end){
     return done;
 }
 
+bool check_density_stopping_condition(){
+    int stopping_condition_is_set;
+    double minimum_density_parameter, maximum_density_parameter;
+    get_stopping_condition_minimum_density_parameter(&minimum_density_parameter);
+    get_stopping_condition_maximum_density_parameter(&maximum_density_parameter);
+    for (int i=0; i<N_gas; i++) {
+        if ( (SphP[i].Density < minimum_density_parameter) || 
+             (SphP[i].Density > maximum_density_parameter)) {
+            int stopping_index  = next_index_for_stopping_condition();
+            if (stopping_index >= 0) {
+                cout << "set_stopping_condition_info returned: " << 
+                    set_stopping_condition_info(stopping_index, DENSITY_LIMIT_DETECTION) << endl;
+                cout << "set_stopping_condition_particle_index returned: " << 
+                    set_stopping_condition_particle_index(stopping_index, 0, P[i].ID) << endl;
+            }
+        }
+    }
+    
+    mpi_collect_stopping_conditions();
+    is_stopping_condition_set(DENSITY_LIMIT_DETECTION, &stopping_condition_is_set);
+    return stopping_condition_is_set;
+}
+bool check_internal_energy_stopping_condition(){
+    int stopping_condition_is_set;
+    double internal_energy;
+    double minimum_internal_energy_parameter, maximum_internal_energy_parameter;
+    get_stopping_condition_minimum_internal_energy_parameter(&minimum_internal_energy_parameter);    
+    get_stopping_condition_maximum_internal_energy_parameter(&maximum_internal_energy_parameter);    
+    
+#ifndef ISOTHERM_EQS
+    double a3;
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+#endif
+    
+    for (int i=0; i<N_gas; i++) {
+#ifdef ISOTHERM_EQS
+        internal_energy = SphP[i].Entropy;
+#else
+        internal_energy = SphP[i].Entropy *
+                pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+#endif
+        if ( (internal_energy < minimum_internal_energy_parameter) || 
+             (internal_energy > maximum_internal_energy_parameter)) {
+            int stopping_index  = next_index_for_stopping_condition();
+            if (stopping_index > 0) {
+                cout << "set_stopping_condition_info returned: " << 
+                    set_stopping_condition_info(stopping_index, INTERNAL_ENERGY_LIMIT_DETECTION) << endl;
+                cout << "set_stopping_condition_particle_index returned: " << 
+                    set_stopping_condition_particle_index(stopping_index, 0, P[i].ID) << endl;
+            }
+        }
+    }
+    
+    mpi_collect_stopping_conditions();
+    is_stopping_condition_set(INTERNAL_ENERGY_LIMIT_DETECTION, &stopping_condition_is_set);
+    return stopping_condition_is_set;
+}
+
+
 int evolve_model(double t_end){
     bool done;
     double t0, t1;
     int Ti_end, stopflag = 0;
     // AMUSE STOPPING CONDITIONS
     int is_number_of_steps_detection_enabled;
+    int is_density_limit_detection_enabled;
+    int is_internal_energy_limit_detection_enabled;
     int max_number_of_steps;
     int number_of_steps_innerloop = 0;
-    int error;
 
-    error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION,
-                                          &is_number_of_steps_detection_enabled);
+    reset_stopping_conditions();
+    is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
+        &is_number_of_steps_detection_enabled);
+    is_stopping_condition_enabled(DENSITY_LIMIT_DETECTION, 
+        &is_density_limit_detection_enabled);
+    is_stopping_condition_enabled(INTERNAL_ENERGY_LIMIT_DETECTION, 
+        &is_internal_energy_limit_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
 
     // .......
@@ -501,6 +569,16 @@ int evolve_model(double t_end){
             particle_map_up_to_date = false;
             compute_accelerations(0);        /* compute accelerations for
                 * the particles that are to be advanced  */
+            
+            // AMUSE stopping conditions: density and internal energy check
+            // After compute_accelerations(), SPH particle densities are up to date
+            if (is_density_limit_detection_enabled) {
+                if (check_density_stopping_condition()) break;
+            }
+            if (is_internal_energy_limit_detection_enabled) {
+                if (check_internal_energy_stopping_condition()) break;
+            }
+            
             /* check whether we want a full energy statistics */
             if((All.Time - All.TimeLastStatistics) >= All.TimeBetStatistics) {
 #ifdef COMPUTE_POTENTIAL_ENERGY

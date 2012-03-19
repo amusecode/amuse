@@ -1184,7 +1184,6 @@ class Gadget2(GravitationalDynamics):
     
     def initialize_code(self):
         result = self.overridden().initialize_code()
-        self.parameters.set_defaults()
         if self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES:
             self.parameters.periodic_boundaries_flag = True
             
@@ -1645,7 +1644,8 @@ class Gadget2(GravitationalDynamics):
         object.add_setter('gas_particles', 'set_internal_energy')
         object.add_getter('gas_particles', 'get_internal_energy')
         object.add_getter('gas_particles', 'get_smoothing_length')
-        object.add_getter('gas_particles', 'get_density')
+        object.add_getter('gas_particles', 'get_density', names = ('rho',))
+        object.add_getter('gas_particles', 'get_density', names = ('density',))
         object.add_getter('gas_particles', 'get_pressure')
         object.add_getter('gas_particles', 'get_d_internal_energy_dt')
         object.add_getter('gas_particles', 'get_n_neighbours')

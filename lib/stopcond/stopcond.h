@@ -18,6 +18,14 @@ int set_stopping_condition_number_of_steps_parameter(int value);
 int get_stopping_condition_number_of_steps_parameter(int *value);
 int set_stopping_condition_out_of_box_parameter(double value);
 int get_stopping_condition_out_of_box_parameter(double *value);
+int set_stopping_condition_minimum_density_parameter(double value);
+int get_stopping_condition_minimum_density_parameter(double *value);
+int set_stopping_condition_minimum_internal_energy_parameter(double value);
+int get_stopping_condition_minimum_internal_energy_parameter(double *value);
+int set_stopping_condition_maximum_density_parameter(double value);
+int get_stopping_condition_maximum_density_parameter(double *value);
+int set_stopping_condition_maximum_internal_energy_parameter(double value);
+int get_stopping_condition_maximum_internal_energy_parameter(double *value);
 
 #ifdef __cplusplus
 }
@@ -33,6 +41,8 @@ int get_stopping_condition_out_of_box_parameter(double *value);
 #define TIMEOUT_DETECTION    3
 #define NUMBER_OF_STEPS_DETECTION      4
 #define OUT_OF_BOX_DETECTION 5
+#define DENSITY_LIMIT_DETECTION 6
+#define INTERNAL_ENERGY_LIMIT_DETECTION 7
 
 #define COLLISION_DETECTION_BITMAP  1
 #define PAIR_DETECTION_BITMAP       2
@@ -40,6 +50,8 @@ int get_stopping_condition_out_of_box_parameter(double *value);
 #define TIMEOUT_DETECTION_BITMAP    8
 #define NUMBER_OF_STEPS_DETECTION_BITMAP      16
 #define OUT_OF_BOX_DETECTION_BITMAP 32
+#define DENSITY_LIMIT_DETECTION_BITMAP 64
+#define INTERNAL_ENERGY_LIMIT_DETECTION_BITMAP 128
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +64,10 @@ extern long set_conditions;
 extern double timeout_parameter;
 extern long number_of_steps_parameter;
 extern double out_of_box_parameter;
+extern double minimum_density_parameter;
+extern double maximum_density_parameter;
+extern double minimum_internal_energy_parameter;
+extern double maximum_internal_energy_parameter;
 
 int reset_stopping_conditions();
 int next_index_for_stopping_condition();

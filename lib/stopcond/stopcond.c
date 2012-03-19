@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "stopcond.h"
 #include <string.h>
+#include <float.h>
 
 int type_of_stopping_condition_set[MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET];
 int index_of_particle_in_stopping_condition[MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET * MAX_NUMBER_OF_PARTICLES_PER_INDEX];
@@ -13,6 +14,10 @@ long number_of_stopping_conditions_set = 0;
 double timeout_parameter = 4.0;
 double out_of_box_parameter = 0.0;
 long number_of_steps_parameter = 1;
+double minimum_density_parameter = -1.0;
+double maximum_density_parameter = DBL_MAX;
+double minimum_internal_energy_parameter = -1.0;
+double maximum_internal_energy_parameter = DBL_MAX;
 static int sc_mpi_size;
 
 int enable_stopping_condition(int type) {
@@ -282,6 +287,49 @@ int get_stopping_condition_out_of_box_parameter(double *value) {
 int get_stopping_condition_out_of_box_parameter_(double *value) {
     return get_stopping_condition_out_of_box_parameter(value);
 }
+
+int set_stopping_condition_minimum_density_parameter(double value) {
+    minimum_density_parameter = value;
+    return 0;
+}
+int get_stopping_condition_minimum_density_parameter(double *value) {
+    *value = minimum_density_parameter;
+    return 0;
+}
+int set_stopping_condition_maximum_density_parameter(double value) {
+    if (value < 0.0) {
+        maximum_density_parameter = DBL_MAX;
+    } else {
+        maximum_density_parameter = value;
+    }
+    return 0;
+}
+int get_stopping_condition_maximum_density_parameter(double *value) {
+    *value = maximum_density_parameter;
+    return 0;
+}
+
+int set_stopping_condition_minimum_internal_energy_parameter(double value) {
+    minimum_internal_energy_parameter = value;
+    return 0;
+}
+int get_stopping_condition_minimum_internal_energy_parameter(double *value) {
+    *value = minimum_internal_energy_parameter;
+    return 0;
+}
+int set_stopping_condition_maximum_internal_energy_parameter(double value) {
+    if (value < 0.0) {
+        maximum_internal_energy_parameter = DBL_MAX;
+    } else {
+        maximum_internal_energy_parameter = value;
+    }
+    return 0;
+}
+int get_stopping_condition_maximum_internal_energy_parameter(double *value) {
+    *value = maximum_internal_energy_parameter;
+    return 0;
+}
+
 
 #if defined( MPILIB ) && !defined(NOMPI)
 
