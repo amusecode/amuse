@@ -237,8 +237,10 @@ class InstallPrerequisites(object):
           '--prefix='+self.prefix,
           '--enable-shared', 
           '--enable-production',
+	  '--without-zlib',
           '--with-pthread=/usr', 
-          '--enable-threadsafe'
+          '--enable-threadsafe',
+	  'CFLAGS=-fgnu89-inline',
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
@@ -428,7 +430,7 @@ class InstallPrerequisites(object):
             
             print "Unpacking ", app_file
             try:
-                self.run_application(['tar','-xf',app_file], cwd=self.temp_dir)
+                self.run_application(['tar','-xzf',app_file], cwd=self.temp_dir)
             except:
                 print "----------------------------------------------------------"
                 print "Could not unpack source file of", name
