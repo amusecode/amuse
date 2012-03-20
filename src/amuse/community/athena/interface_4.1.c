@@ -417,6 +417,27 @@ static inline int is_on_grid(GridS * grid, int i0, int j0, int k0)
     }
 }
 
+static inline int is_on_extended_grid(DomainS * dom, GridS * grid, int i0, int j0, int k0)
+{
+    if (grid->Nx[0] > 1 && ((grid->Disp[0]>0 && i0 < grid->Disp[0]) || (grid->Disp[0] + grid->Nx[0]<dom->Nx[0] && i0 >= (grid->Disp[0] + grid->Nx[0]))) )
+    {
+        return 0;
+    }
+    else if (grid->Nx[1] > 1 && ((grid->Disp[1]>0 && j0 < grid->Disp[1])  || (grid->Disp[1] + grid->Nx[1]<dom->Nx[1] && j0 >= (grid->Disp[1] + grid->Nx[1]))))
+    {
+        return 0;
+    }
+    else if (grid->Nx[2] > 1 && ((grid->Disp[2]>0 && k0 < grid->Disp[2])  || (grid->Disp[2] + grid->Nx[2]<dom->Nx[2] && k0 >= (grid->Disp[2] + grid->Nx[2]))))
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+
 static inline int is_on_magnetic_grid(GridS * grid, int i0, int j0, int k0)
 {
     if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0] + 1)))
@@ -457,78 +478,77 @@ static inline int ijk_on_grid(GridS * grid, int * i0, int * j0, int * k0)
     }
 }
 
+int get_position_of_index(int *i, int *j, int *k, int *index_of_grid, double * x, double * y,
+  double * z, int number_of_points){
 
-int get_position_of_index(int i, int j, int k, int index_of_grid, double * x, double * y,
-  double * z){
+
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
     
-    double pos[4] = {0,0,0,0};
     if (mesh.NLevels == 0) {
         return -1;
     }
-    DomainS * dom = get_domain_structure_with_index(index_of_grid);
-   
-    if(dom == 0){
-        return -3;
+    DomainS * dom = 0;
+    if (mesh.NLevels == 0) {
+        return -1;
     }
-
-    if(dom->Grid == NULL)
-    {
-        pos[0] = 0.0;
-        pos[1] = 0.0;
-        pos[2] = 0.0;
-        pos[3] = 1;
-    }
-    else
-    {
-        GridS * grid = dom->Grid;
-        //fprintf(stderr, "i %d[%d]: %d, %d, %d, %d\n", i, index_of_grid, grid->is, grid->ie, grid->Nx[0], grid->Disp[0]);
-
-        pos[0] = 0.0;
-        pos[1] = 0.0;
-        pos[2] = 0.0;
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
         
-        if (grid->Nx[0] > 1 && ( (grid->Disp[0] > 0 && i < (grid->Disp[0]))  || (((grid->Disp[0] + grid->Nx[0]) < dom->Nx[0]) && i >= (grid->Disp[0] + grid->Nx[0]))))
+        x[l] = 0.0;
+        y[l] = 0.0;
+        z[l] = 0.0;
+        
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
         {
-            pos[3] = 1;
+            dom = get_domain_structure_with_index(current_index_of_grid);
         }
-        else if (grid->Nx[1] > 1 && ((grid->Disp[1] > 0 && j < (grid->Disp[1]))  || (((grid->Disp[1] + grid->Nx[1]) < dom->Nx[1]) &&j >= (grid->Disp[1] + grid->Nx[1]))))
+        if(dom == 0)
         {
-            pos[3] = 1;
+            continue;
         }
-        else if (grid->Nx[2] > 1 && ((grid->Disp[2] > 0 && k < (grid->Disp[2]))  || (((grid->Disp[2] + grid->Nx[2]) < dom->Nx[2]) &&k >= (grid->Disp[2] + grid->Nx[2]))))
+        
+
+        if(dom->Grid == NULL)
         {
-            pos[3] = 1;
+            continue;
         }
         else
         {
-            cc_pos(
-                grid,
-                i + grid->is - grid->Disp[0],
-                j + grid->js - grid->Disp[1],
-                k + grid->ks - grid->Disp[2],
-                &pos[0] ,
-                &pos[1] ,
-                &pos[2]
-            );
-            pos[3] = 0;
+            GridS * grid = dom->Grid;
+            
+            if (is_on_extended_grid(dom,grid, i0, j0, k0))
+            {
+                ijk_on_grid(grid, &i0, &j0, &k0);
+                cc_pos(
+                  grid,
+                  i0,
+                  j0,
+                  k0,
+                  &x[l] ,
+                  &y[l] ,
+                  &z[l]
+                );
+            }
+
         }
     }
 
-
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(pos, NULL, 4, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(x, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(y, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(z, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, pos, 4, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, x, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, y, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, z, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 #endif
-    
-    if(mpi_comm_size_interface > 0 && pos[3] == mpi_comm_size_interface) {
-        return -4;
-    }
-    *x = pos[0];
-    *y = pos[1];
-    *z = pos[2];
 
     return 0;
 }
@@ -654,7 +674,6 @@ int get_grid_state(
 
         }
     }
-
 
 
 #ifdef MPI_PARALLEL

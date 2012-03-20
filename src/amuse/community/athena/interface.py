@@ -147,9 +147,47 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         self.par_seti(domain, "kDisp", "%d", k, "-")
         
         return self.number_of_grids
-        
-        
+
+    @legacy_function    
+    def get_position_of_index():
+        """
+        Retrieves the x, y and z position of the center of
+        the cell with coordinates i, j, k in the grid specified
+        by the index_of_grid
+        """
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)           
+        function.result_type = 'i'
+        return function
     
+    '''
+    @legacy_function    
+    def get_index_of_position():
+        """
+        Retrieves the i,j and k index of the grid cell containing the
+        given x, y and z position. The cell is looked up
+        in the grid specified by index_of_grid.
+        """
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+
+        function.result_type = 'i'
+        return function
+    '''
     def get_index_range_inclusive(self, index_of_grid = 1):
         """
         Returns the min and max values of indices in each
