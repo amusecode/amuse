@@ -168,7 +168,7 @@ class InstallPrerequisites(object):
             '8.5.11' ,                   #version string
             'tk', '-src.tar.gz',        #pre- and postfix for filename
             'http://downloads.sourceforge.net/project/tcl/Tcl/8.5.11/', #download url, filename is appended
-            self.tcl_build             #method to use for building - same as for FFTW should work
+            self.tk_build             #method to use for building - same as for FFTW should work
           ) ,
         ]
         
@@ -237,10 +237,9 @@ class InstallPrerequisites(object):
           '--prefix='+self.prefix,
           '--enable-shared', 
           '--enable-production',
-	  '--without-zlib',
+          '--without-zlib',
           '--with-pthread=/usr', 
           '--enable-threadsafe',
-	  'CFLAGS=-fgnu89-inline',
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
@@ -340,6 +339,23 @@ class InstallPrerequisites(object):
           './configure',
           '--prefix='+self.prefix,
           '--enable-shared',
+          '--enable-threads'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        path = os.path.join(path, 'unix')
+        for x in commands:
+            self.run_application(x, path)
+            
+    def tk_build(self, path):            
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared',
+          '--disable-xss',
           '--enable-threads'
         ]
         commands.append(command)
@@ -540,6 +556,26 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
           './configure',
           '--prefix='+self.prefix,
           '--enable-shared',
+          '--enable-threads'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        path = os.path.join(path, 'unix')
+        for x in commands:
+            self.run_application(x, path)
+            
+    def tk_build(self, path):
+        if True:
+            return
+            
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared',
+          '--disable-xss',
           '--enable-threads'
         ]
         commands.append(command)
