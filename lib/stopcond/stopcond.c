@@ -288,14 +288,22 @@ int get_stopping_condition_out_of_box_parameter_(double *value) {
     return get_stopping_condition_out_of_box_parameter(value);
 }
 
+
 int set_stopping_condition_minimum_density_parameter(double value) {
     minimum_density_parameter = value;
     return 0;
+}
+int set_stopping_condition_minimum_density_parameter_(int *value) {
+    return set_stopping_condition_minimum_density_parameter(*value);
 }
 int get_stopping_condition_minimum_density_parameter(double *value) {
     *value = minimum_density_parameter;
     return 0;
 }
+int get_stopping_condition_minimum_density_parameter_(int *value) {
+    return get_stopping_condition_minimum_density_parameter(value);
+}
+
 int set_stopping_condition_maximum_density_parameter(double value) {
     if (value < 0.0) {
         maximum_density_parameter = DBL_MAX;
@@ -304,19 +312,32 @@ int set_stopping_condition_maximum_density_parameter(double value) {
     }
     return 0;
 }
+int set_stopping_condition_maximum_density_parameter_(int *value) {
+    return set_stopping_condition_maximum_density_parameter(*value);
+}
 int get_stopping_condition_maximum_density_parameter(double *value) {
     *value = maximum_density_parameter;
     return 0;
+}
+int get_stopping_condition_maximum_density_parameter_(int *value) {
+    return get_stopping_condition_maximum_density_parameter(value);
 }
 
 int set_stopping_condition_minimum_internal_energy_parameter(double value) {
     minimum_internal_energy_parameter = value;
     return 0;
 }
+int set_stopping_condition_minimum_internal_energy_parameter_(int *value) {
+    return set_stopping_condition_minimum_internal_energy_parameter(*value);
+}
 int get_stopping_condition_minimum_internal_energy_parameter(double *value) {
     *value = minimum_internal_energy_parameter;
     return 0;
 }
+int get_stopping_condition_minimum_internal_energy_parameter_(int *value) {
+    return get_stopping_condition_minimum_internal_energy_parameter(value);
+}
+
 int set_stopping_condition_maximum_internal_energy_parameter(double value) {
     if (value < 0.0) {
         maximum_internal_energy_parameter = DBL_MAX;
@@ -325,9 +346,15 @@ int set_stopping_condition_maximum_internal_energy_parameter(double value) {
     }
     return 0;
 }
+int set_stopping_condition_maximum_internal_energy_parameter_(int *value) {
+    return set_stopping_condition_maximum_internal_energy_parameter(*value);
+}
 int get_stopping_condition_maximum_internal_energy_parameter(double *value) {
     *value = maximum_internal_energy_parameter;
     return 0;
+}
+int get_stopping_condition_maximum_internal_energy_parameter_(int *value) {
+    return get_stopping_condition_maximum_internal_energy_parameter(value);
 }
 
 
