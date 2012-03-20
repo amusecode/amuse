@@ -234,9 +234,9 @@ if [ ! -e "amuseinstalled" ]; then
 
     ${PYTHON} setup.py install || exit $?
 
+    make distclean PYTHON=${PYTHON}
+
     cd support/distribute/binbuild/build
-    
-    make distclean
 
     touch "amuseinstalled" || exit $?
 fi
