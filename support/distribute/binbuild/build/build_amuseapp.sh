@@ -155,8 +155,18 @@ if [ ! -e "libsinstalled" ]; then
     
     make clean || exit $?
     
-    ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --enable-shared LD_LIBRARY_PATH=${INSTALLDIR}/lib || exit $?
-        
+    if [ ${PLATFORM} == 'Darwin' ]; then
+        if [ ${ARCHITECTURE} == 'i386' ]; then
+            export MACOSX_DEPLOYMENT_TARGET=10.5
+        else
+            export MACOSX_DEPLOYMENT_TARGET=10.6
+        fi
+    
+        ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --disable-framework --disable-universalsdk || exit $?
+    else
+        ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --enable-shared LD_LIBRARY_PATH=${INSTALLDIR}/lib || exit $?
+    fi
+            
     make || exit $?
     
     make install || exit $?
