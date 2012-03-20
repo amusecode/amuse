@@ -22,6 +22,7 @@ Reference documentation
    options
    directory-structure
    cuda-setup
+   distributed
    style_guide
    code_management
    glossary

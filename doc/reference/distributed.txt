@@ -1,0 +1,54 @@
+==================
+Distributed AMUSE
+==================
+
+It is possible to run AMUSE on multiple machines simultaneously. The AMUSE script itself aways runs on a users' local machine, while workers for codes can be "send out" to remote machines such as workstations, clusters, etc.
+
+
+Installation
+------------
+
+Deploying workers one remote machines requires a full installation of AMUSE on each machine. For each code used the ``sockets`` worker needs to build. This is done by default, and should be available for all codes.
+
+On the local machine, the Ibis library also needs to be build. Ibis requires a Java Development Kit (JDK), preferably Sun Java version 6. The ``configure`` script tries to locate the JDK, but you may need to specify it by hand. For details, see::
+
+./configure --help
+
+AMUSE will build the Ibis library by default if a JDK is found. However, it needs to download some code to build it, so the ``DOWNLOAD_CODES=1`` option needs be specified as well. Building the Ibis library manually can be done by running::
+
+    make ibis.code DOWNLOAD_CODES=1
+
+in the root of AMUSE.
+
+Specifying resources using Jungle files
+---------------------------------------
+
+In order to use a remote machine (resource) for a worker, AMUSE needs to know information about this resource such as hostname, type of machine, username to gain access, etc. This is specified in so-called Jungle files. AMUSE comes with a set of jungle files for the Observatory machines, the LGM, the DAS, etc, in ``lib/ibis``.
+
+Users should not need to change the jungle files themselves. On exception is the ``user.name`` option, which may need to be set for each machine. By default, AMUSE assumes the username on each machine is equal to the users' username on the local machine.
+
+The format of the jungle files is still under active development, and changes in the format will occur from time to time. Currently supported options are listed at the beginning of each file.
+
+
+Starting Ibis Deploy
+--------------------
+
+To run workers on remote machine a special support process needs to be started on the local machine. The script to start this is created automatically by AMUSE, and is called ``ibis-deploy.sh``. It has several options, see::
+
+./ibis-deploy.sh --help
+
+Jungle files can be passed to the deployment program with the ``--jungle-file`` option.
+
+If preferred, the status of the deployment application can also be monitored by specifying the ``--gui`` option. This will create a window showing monitoring information.
+
+Running workers remotely
+---------------------------
+
+To run a worker on a remote machine, some additional options need to be given to AMUSE when creating a worker. First the special `ibis` channel implementation needs to be specified. Also the name of the resource, number of nodes, and number of processes to start in total needs to be specified. For instance, to run an instant of Gadget on node06 of the LGM cluster, and using 8 processes for this one worker, use::
+
+	instance = Gadget2Interface(channel_type='ibis', hostname='lgm06',
+		number_of_nodes=1, number_of_processes=8)
+
+An easy way to start all workers remotely on some resource is to use the generic configuration file system of AMUSE, see :ref:`options-label`.
+
+
