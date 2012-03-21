@@ -17,8 +17,7 @@ import org.slf4j.LoggerFactory;
 
 public class AmuseMessage implements Serializable {
 
-    private static final Logger logger = LoggerFactory
-            .getLogger("ibis.amuse.AmuseMessage");
+    private static final Logger logger = LoggerFactory.getLogger("ibis.amuse.AmuseMessage");
 
     public static final int HEADER_SIZE = 10; // integers
 
@@ -65,14 +64,13 @@ public class AmuseMessage implements Serializable {
         return false;
     }
 
-    static void readAll(SocketChannel channel, ByteBuffer... bytes)
-            throws IOException {
+    static void readAll(SocketChannel channel, ByteBuffer... bytes) throws IOException, ConnectionClosedException {
 
         while (hasRemaining(bytes)) {
             long read = channel.read(bytes);
 
             if (read == -1) {
-                throw new IOException("Connection closed on reading data");
+                throw new ConnectionClosedException("Connection closed on reading data");
             }
         }
     }
@@ -116,9 +114,8 @@ public class AmuseMessage implements Serializable {
         stringHeaderBytes = ByteBuffer.allocateDirect(0);
         stringBytes = new ByteBuffer[0];
 
-        allButStringByteBuffers = new ByteBuffer[] { headerBytes, intBytes,
-                longBytes, floatBytes, doubleBytes, booleanBytes,
-                stringHeaderBytes };
+        allButStringByteBuffers = new ByteBuffer[] { headerBytes, intBytes, longBytes, floatBytes, doubleBytes,
+                booleanBytes, stringHeaderBytes };
 
         // no string buffers yet
         byteBuffers = allButStringByteBuffers;
@@ -278,6 +275,35 @@ public class AmuseMessage implements Serializable {
         }
     }
 
+    public void addString(String value) {
+        int position = header.get(HEADER_STRING_COUNT_INDEX);
+
+        // add an extra string
+        header.put(HEADER_STRING_COUNT_INDEX, position + 1);
+
+        // make sure there is space in the header for the length of the string
+        ensurePrimitiveCapacity();
+
+        // encode string to UTF-8
+        byte[] bytes;
+
+        try {
+            bytes = value.getBytes("UTF-8");
+
+            //set length of string in header
+            stringHeader.put(position, bytes.length);
+
+            // make sure there is space for the string
+            ensureStringsCapacity();
+
+            stringBytes[position].clear();
+            stringBytes[position].put(bytes);
+
+        } catch (UnsupportedEncodingException e) {
+            logger.error("ERROR! UTF-8 not supported by the JVM!");
+        }
+    }
+
     public boolean isErrorState() {
         return headerBytes.get(HEADER_ERROR_FLAG) == TRUE_BYTE;
     }
@@ -327,21 +353,19 @@ public class AmuseMessage implements Serializable {
 
     public String getString(int index) throws IOException {
         if (getStringCount() <= index) {
-            throw new IOException("cannot get string at index " + index
-                    + " in call" + this);
+            throw new IOException("cannot get string at index " + index + " in call" + this);
         }
 
         if (stringBytes.length <= index) {
-            throw new IOException("cannot get string at index " + index
-                    + " in call" + this + " header does not match content!");
+            throw new IOException("cannot get string at index " + index + " in call" + this
+                    + " header does not match content!");
 
         }
 
         int utf8length = stringHeader.get(index);
 
         if (stringBytes[index].hasArray()) {
-            return new String(stringBytes[index].array(), 0, utf8length,
-                    "UTF-8");
+            return new String(stringBytes[index].array(), 0, utf8length, "UTF-8");
         }
         byte[] bytes = new byte[utf8length];
         stringBytes[index].position(0);
@@ -350,14 +374,14 @@ public class AmuseMessage implements Serializable {
 
         return new String(bytes, 0, utf8length, "UTF-8");
     }
-    
+
     public boolean getBoolean(int index) {
         byte rawByte = booleanBytes.get(index);
-        
+
         return rawByte == TRUE_BYTE;
-        
+
     }
-    
+
     public int getInteger(int index) {
         return intBytes.getInt(index * SIZEOF_INT);
     }
@@ -416,25 +440,25 @@ public class AmuseMessage implements Serializable {
         } else if (logger.isDebugEnabled()) {
             logger.debug("writing to socket channel: " + this);
         }
-        
+
         headerBytes.clear();
         setPrimitiveLimitsFromHeader();
         setStringLimitsFromHeader();
 
         // write to channel
-         channel.write(byteBuffers);
+        channel.write(byteBuffers);
 
         // alternative, debugging version of writing buffers
-//        for (ByteBuffer buffer : byteBuffers) {
-//            logger.debug("writing " + buffer + " of length "
-//                    + buffer.remaining());
-//            channel.write(buffer);
-//
-//            if (buffer.hasRemaining()) {
-//                logger.error("Error! not all bytes written "
-//                        + buffer.remaining());
-//            }
-//        }
+        // for (ByteBuffer buffer : byteBuffers) {
+        // logger.debug("writing " + buffer + " of length "
+        // + buffer.remaining());
+        // channel.write(buffer);
+        //
+        // if (buffer.hasRemaining()) {
+        // logger.error("Error! not all bytes written "
+        // + buffer.remaining());
+        // }
+        // }
     }
 
     void writeTo(WriteMessage writeMessage) throws IOException {
@@ -473,42 +497,36 @@ public class AmuseMessage implements Serializable {
         }
 
         if (getFloatCount() * SIZEOF_FLOAT > floatBytes.capacity()) {
-            floatBytes = ByteBuffer.allocateDirect(getFloatCount()
-                    * SIZEOF_FLOAT);
+            floatBytes = ByteBuffer.allocateDirect(getFloatCount() * SIZEOF_FLOAT);
             floatBytes.order(getByteOrder());
             buffersUpdated = true;
         }
 
         if (getDoubleCount() * SIZEOF_DOUBLE > doubleBytes.capacity()) {
-            doubleBytes = ByteBuffer.allocateDirect(getDoubleCount()
-                    * SIZEOF_DOUBLE);
+            doubleBytes = ByteBuffer.allocateDirect(getDoubleCount() * SIZEOF_DOUBLE);
             doubleBytes.order(getByteOrder());
             buffersUpdated = true;
         }
 
         if (getBooleanCount() * SIZEOF_BOOLEAN > booleanBytes.capacity()) {
-            booleanBytes = ByteBuffer.allocateDirect(getBooleanCount()
-                    * SIZEOF_BOOLEAN);
+            booleanBytes = ByteBuffer.allocateDirect(getBooleanCount() * SIZEOF_BOOLEAN);
             booleanBytes.order(getByteOrder());
             buffersUpdated = true;
         }
 
         if (getStringCount() * SIZEOF_INT > stringHeaderBytes.capacity()) {
-            stringHeaderBytes = ByteBuffer.allocateDirect(getStringCount()
-                    * SIZEOF_INT);
+            stringHeaderBytes = ByteBuffer.allocateDirect(getStringCount() * SIZEOF_INT);
             stringHeaderBytes.order(getByteOrder());
             stringHeader = stringHeaderBytes.asIntBuffer();
             buffersUpdated = true;
         }
 
         if (buffersUpdated) {
-            allButStringByteBuffers = new ByteBuffer[] { headerBytes, intBytes,
-                    longBytes, floatBytes, doubleBytes, booleanBytes,
-                    stringHeaderBytes };
+            allButStringByteBuffers = new ByteBuffer[] { headerBytes, intBytes, longBytes, floatBytes, doubleBytes,
+                    booleanBytes, stringHeaderBytes };
 
             // update byte buffers array
-            ByteBuffer[] newByteBuffers = new ByteBuffer[allButStringByteBuffers.length
-                    + stringBytes.length];
+            ByteBuffer[] newByteBuffers = new ByteBuffer[allButStringByteBuffers.length + stringBytes.length];
             for (int i = 0; i < allButStringByteBuffers.length; i++) {
                 newByteBuffers[i] = allButStringByteBuffers[i];
             }
@@ -518,8 +536,7 @@ public class AmuseMessage implements Serializable {
             byteBuffers = newByteBuffers;
 
             if (logger.isTraceEnabled()) {
-                logger.trace("ensurePrimitiveCapacity() Updated buffers to "
-                        + Arrays.toString(byteBuffers));
+                logger.trace("ensurePrimitiveCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
             }
         }
 
@@ -542,8 +559,7 @@ public class AmuseMessage implements Serializable {
 
         for (int i = 0; i < getStringCount(); i++) {
             int stringLength = stringHeader.get(i);
-            if (stringBytes[i] == null
-                    || stringLength > stringBytes[i].capacity()) {
+            if (stringBytes[i] == null || stringLength > stringBytes[i].capacity()) {
 
                 stringBytes[i] = ByteBuffer.allocateDirect(stringLength);
                 buffersUpdated = true;
@@ -552,8 +568,7 @@ public class AmuseMessage implements Serializable {
 
         if (buffersUpdated) {
             // update byte buffers array
-            ByteBuffer[] newByteBuffers = new ByteBuffer[allButStringByteBuffers.length
-                    + stringBytes.length];
+            ByteBuffer[] newByteBuffers = new ByteBuffer[allButStringByteBuffers.length + stringBytes.length];
             for (int i = 0; i < allButStringByteBuffers.length; i++) {
                 newByteBuffers[i] = allButStringByteBuffers[i];
             }
@@ -563,15 +578,14 @@ public class AmuseMessage implements Serializable {
             byteBuffers = newByteBuffers;
 
             if (logger.isTraceEnabled()) {
-                logger.trace("ensureStringsCapacity() Updated buffers to "
-                        + Arrays.toString(byteBuffers));
+                logger.trace("ensureStringsCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
             }
         }
 
         return buffersUpdated;
     }
 
-    boolean readFrom(SocketChannel channel) throws IOException {
+    boolean readFrom(SocketChannel channel) throws IOException, ConnectionClosedException {
         boolean updatedBuffers = false;
 
         logger.trace("receiving header from channel");
@@ -672,10 +686,9 @@ public class AmuseMessage implements Serializable {
 
         return updatedBuffers;
     }
-    
+
     public String toContentString() throws IOException {
-        String message = "AmuseMessage <id:" + getCallID() + " function ID:"
-                + getFunctionID() + " count:" + getCount();
+        String message = "AmuseMessage <id:" + getCallID() + " function ID:" + getFunctionID() + " count:" + getCount();
 
         if (isErrorState()) {
             message = message + " ERROR";
@@ -686,10 +699,10 @@ public class AmuseMessage implements Serializable {
         } else {
             message = message + " order: l";
         }
-        
+
         if (getIntCount() != 0) {
             message = message + " ints: [";
-            for(int i = 0; i < getIntCount(); i++) {
+            for (int i = 0; i < getIntCount(); i++) {
                 message = message + ", " + intBytes.getInt(i * SIZEOF_INT);
             }
             message = message + "] ";
@@ -697,7 +710,7 @@ public class AmuseMessage implements Serializable {
 
         if (getLongCount() != 0) {
             message = message + " longs: [";
-            for(int i = 0; i < getLongCount(); i++) {
+            for (int i = 0; i < getLongCount(); i++) {
                 message = message + ", " + longBytes.getLong(i * SIZEOF_LONG);
             }
             message = message + "] ";
@@ -705,7 +718,7 @@ public class AmuseMessage implements Serializable {
 
         if (getFloatCount() != 0) {
             message = message + " floats: [";
-            for(int i = 0; i < getFloatCount(); i++) {
+            for (int i = 0; i < getFloatCount(); i++) {
                 message = message + ", " + floatBytes.getFloat(i * SIZEOF_FLOAT);
             }
             message = message + "] ";
@@ -713,7 +726,7 @@ public class AmuseMessage implements Serializable {
 
         if (getDoubleCount() != 0) {
             message = message + " double: [";
-            for(int i = 0; i < getDoubleCount(); i++) {
+            for (int i = 0; i < getDoubleCount(); i++) {
                 message = message + ", " + doubleBytes.getDouble(i * SIZEOF_DOUBLE);
             }
             message = message + "] ";
@@ -721,7 +734,7 @@ public class AmuseMessage implements Serializable {
 
         if (getBooleanCount() != 0) {
             message = message + " boolean: [";
-            for(int i = 0; i < getBooleanCount(); i++) {
+            for (int i = 0; i < getBooleanCount(); i++) {
                 message = message + ", " + getBoolean(i);
             }
             message = message + "] ";
@@ -729,10 +742,11 @@ public class AmuseMessage implements Serializable {
 
         if (getStringCount() != 0) {
             message = message + " string: [";
-            for(int i = 0; i < getStringCount(); i++) {
+            for (int i = 0; i < getStringCount(); i++) {
                 message = message + ", " + getString(i);
             }
-            message = message + "] ";  }
+            message = message + "] ";
+        }
 
         message = message + ">";
 
@@ -748,8 +762,7 @@ public class AmuseMessage implements Serializable {
     }
 
     public String toString() {
-        String message = "AmuseMessage <id:" + getCallID() + " function ID:"
-                + getFunctionID() + " count:" + getCount();
+        String message = "AmuseMessage <id:" + getCallID() + " function ID:" + getFunctionID() + " count:" + getCount();
 
         if (isErrorState()) {
             message = message + " ERROR";

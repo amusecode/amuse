@@ -152,7 +152,7 @@ void forsockets_init(int32_t port) {
                         (char *) &flag,  /* the cast is historical cruft */
                         sizeof(int));    /* length of option value */
 
-	fprintf(stderr, "finished initializing forsockets\n");
+	/*fprintf(stderr, "finished initializing forsockets\n");*/
 }
 
 void forsockets_close() {

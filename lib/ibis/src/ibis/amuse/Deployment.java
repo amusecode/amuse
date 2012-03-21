@@ -14,6 +14,8 @@ import ibis.deploy.Experiment;
 import ibis.deploy.Jungle;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
+import ibis.deploy.State;
+import ibis.deploy.StateListener;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.GUI;
@@ -26,7 +28,7 @@ public class Deployment {
     public static final String[] logos = { "images/strw-logo-blue.png", "images/nova-logo.png" };
 
     private int nextMachine = 0;
-    
+
     private final Deploy deploy;
 
     private final Jungle jungle;
@@ -35,12 +37,15 @@ public class Deployment {
 
     private final File amuseHome;
     private final File ibisDir;
+    private final File logDir;
 
-    public Deployment(boolean verbose, boolean keepSandboxes, boolean useGui, boolean useHubs, File[] jungleFiles)
-            throws Exception {
+    public Deployment(boolean verbose, boolean keepSandboxes, boolean useGui, boolean useHubs, File[] jungleFiles,
+            String[] hubs, File logDir) throws Exception {
+        this.logDir = logDir;
+
         jungle = new Jungle();
         if (jungleFiles.length == 0) {
-            System.err.println("No Jungle files specified, only local resource available");
+            logger.warn("No Jungle files specified, only local resource available");
         } else {
             for (File file : jungleFiles) {
                 if (!file.exists()) {
@@ -58,7 +63,7 @@ public class Deployment {
         if (logger.isInfoEnabled()) {
             Resource[] resources = jungle.getResources();
             String[] names = new String[resources.length];
-            for (int i = 0; i< resources.length;i++) {
+            for (int i = 0; i < resources.length; i++) {
                 names[i] = resources[i].getName();
             }
 
@@ -91,9 +96,23 @@ public class Deployment {
             throw new Exception("ibis library dir (" + ibisDir + ") is not a directory");
         }
 
-        deploy = new Deploy(null, verbose, keepSandboxes, useGui, false, 0, null, null, true);
+        deploy = new Deploy(null, verbose, 0, null, null, true);
+        deploy.setKeepSandboxes(keepSandboxes);
+        deploy.setMonitoringEnabled(useGui);
         if (!useHubs) {
             deploy.setHubPolicy(HubPolicy.OFF);
+        }
+
+        for (String hub : hubs) {
+            logger.info("Starting hub on " + hub);
+            Resource hubResource = jungle.getResource(hub);
+
+            if (hubResource == null) {
+                throw new Exception("hub cannot be started on " + hub
+                        + " as it is not specified in the resource description (jungle)");
+            }
+
+            deploy.getHub(hubResource, true, null);
         }
 
         // set location of wrapper scripts to ibis lib dir, IF it does not exist
@@ -124,14 +143,16 @@ public class Deployment {
             new GUI(deploy, workspace, Mode.MONITORING_ONLY, true, logos);
         }
     }
-    
-    /** Return next RoundRobin machine. Skips local unless there is only one machine
-     *
+
+    /**
+     * Return next RoundRobin machine. Skips local unless there is only one
+     * machine
+     * 
      * @return the next machine, selected round-robin
      */
     private synchronized Resource getNextMachine() {
         Resource[] resources = jungle.getResources();
-        
+
         if (resources.length == 0) {
             return null;
         } else if (resources.length == 1) {
@@ -141,23 +162,21 @@ public class Deployment {
         if (nextMachine < 1 || nextMachine > resources.length) {
             nextMachine = 1;
         }
-        
+
         Resource result = resources[nextMachine++];
-        
+
         return result;
     }
-
-
 
     public String getServerAddress() throws Exception {
         return deploy.getServerAddress();
     }
 
-    public Job deploy(String codeName, String codeDir, String resourceName, String workerID, int nrOfWorkers,
-            int nrOfNodes) throws Exception {
+    public Job deploy(String codeName, String codeDir, String resourceName, String stdoutFile, String stderrFile,
+            String workerID, int nrOfWorkers, int nrOfNodes) throws Exception {
         Resource resource = null;
-        logger.info("Deploying worker \"" + workerID + "\" running \"" + codeName + "\" on host " + resourceName
-                + " with " + nrOfWorkers + " workers on " + nrOfNodes + " nodes");
+        logger.info("Deploying worker \"" + workerID + "\" on host " + resourceName + " with " + nrOfWorkers
+                + " workers on " + nrOfNodes + " nodes");
 
         if (resourceName.equalsIgnoreCase("localhost")) {
             resourceName = "local";
@@ -170,14 +189,14 @@ public class Deployment {
             logger.info("Randomly selected resource " + resourceName);
         } else if (resourceName.equals("roundrobin")) {
             resource = getNextMachine();
-            
+
             resourceName = resource.getName();
             logger.info("Round-Robin selected resource " + resourceName);
-        
+
         } else {
             resource = jungle.getResource(resourceName);
         }
-        
+
         if (resource == null) {
             throw new Exception("Resource \"" + resourceName + "\" not found in jungle description");
         }
@@ -227,7 +246,7 @@ public class Deployment {
 
             // application.addInputFile(new
             // File("libibis-amuse-bhtree_worker.so"));
-            application.setMainClass("ibis.amuse.CodeInterface");
+            application.setMainClass("ibis.amuse.CodeProxy");
             application.setMemorySize(1000);
             application.setLog4jFile(new File(ibisDir, "log4j.properties"));
 
@@ -246,6 +265,10 @@ public class Deployment {
         jobDescription.setRuntime(60);
         jobDescription.getApplication().setName(codeName);
         jobDescription.setPoolName("amuse");
+        jobDescription.setStdoutFile(new File(logDir, workerID + ".out.txt"));
+        jobDescription.setStderrFile(new File(logDir, workerID + ".err.txt"));
+
+        // jobDescription.setPoolSize(nrOfNodes);
 
         jobDescription.getApplication().addOutputFile(new File("output"));
 
@@ -255,21 +278,20 @@ public class Deployment {
 
         if (mpdboot == null) {
             jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID,
-                    "--amuse-home", remoteAmuseHome, "--code-dir", codeDir, "--number-of-workers",
+                    "--amuse-home", remoteAmuseHome, "--code-dir", codeDir, "--number-of-processes",
                     Integer.toString(nrOfWorkers), "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec",
-                    mpiexec);
+                    mpiexec, "--stdout", stdoutFile, "--stderr", stderrFile);
         } else {
             jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID,
-                    "--amuse-home", remoteAmuseHome, "--code-dir", codeDir, "--number-of-workers",
+                    "--amuse-home", remoteAmuseHome, "--code-dir", codeDir, "--number-of-processes",
                     Integer.toString(nrOfWorkers), "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec",
-                    mpiexec, "--mpdboot", mpdboot);
+                    mpiexec, "--stdout", stdoutFile, "--stderr", stderrFile, "--mpdboot", mpdboot);
         }
 
         Job result = deploy.submitJob(jobDescription, application, resource, null, null);
 
-        result.waitUntilDeployed();
-
         return result;
 
     }
+
 }

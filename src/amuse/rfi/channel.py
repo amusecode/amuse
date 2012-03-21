@@ -1705,13 +1705,77 @@ class SocketChannel(MessageChannel):
         request.add_result_handler(handle_result)
         
         return request
+    
+class OutputHandler(threading.Thread):
+    
+    def __init__(self, stream):
+        threading.Thread.__init__(self)
+        self.stream = stream
+
+        logging.getLogger("channel").debug("output handler connecting to daemon")
+        
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        
+        address = ('localhost', 61575)
+        
+        try:
+            self.socket.connect(address)
+        except:
+            raise exceptions.CodeException("Could not connect to Ibis Daemon at " + str(address))
+        
+        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        
+        self.socket.sendall('TYPE_OUTPUT'.encode('utf-8'))
+
+        #fetch ID of this connection
+        
+        result = SocketMessage()
+        result.receive(self.socket)
+        
+        self.id = result.strings[0]
+        
+        self.daemon = True
+        self.start()
+        
+    def run(self):
+        
+        while True:
+            logging.getLogger("channel").debug("receiving data for output")
+            data = self.socket.recv(1024)
+            
+            if len(data) == 0:
+                logging.getLogger("channel").debug("end of output", len(data))
+                return
+            
+            logging.getLogger("channel").debug("got %d bytes", len(data))
+            
+            self.stream.write(data)
 
 class IbisChannel(MessageChannel):
+    
+    stdoutHandler = None
+    
+    stderrHandler = None
+    
+    @classmethod
+    def getStdoutID(cls):
+        if IbisChannel.stdoutHandler is None:
+            IbisChannel.stdoutHandler = OutputHandler(sys.stdout)
+            
+        return IbisChannel.stdoutHandler.id
+    
+    @classmethod
+    def getStderrID(cls):
+        if IbisChannel.stderrHandler is None:
+            IbisChannel.stderrHandler = OutputHandler(sys.stderr)
+            
+        return IbisChannel.stderrHandler.id
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, **options):
         MessageChannel.__init__(self, **options)
         
-        #logging.basicConfig(level=logging.DEBUG)
+        #logging.basicConfig(level=logging.WARN)
+        #logging.getLogger("channel").setLevel(logging.DEBUG)
         
         logging.getLogger("channel").debug("initializing IbisChannel with options %s", options)
        
@@ -1779,6 +1843,22 @@ class IbisChannel(MessageChannel):
     def start(self):
         logging.getLogger("channel").debug("connecting to daemon")
         
+        #if redirect = none, set output file to console stdout stream ID, otherwise make absolute
+        if (self.redirect_stdout_file == 'none'):
+            self.redirect_stdout_file = IbisChannel.getStdoutID()
+        else:
+            self.redirect_stdout_file = os.path.abspath(self.redirect_stdout_file)
+
+        #if redirect = none, set error file to console stderr stream ID, otherwise make absolute
+        if (self.redirect_stderr_file == 'none'):
+            self.redirect_stderr_file = IbisChannel.getStderrID()
+        else:
+            self.redirect_stderr_file = os.path.abspath(self.redirect_stderr_file)
+        
+        logging.getLogger("channel").debug("output send to = " + self.redirect_stdout_file)
+        
+        logging.getLogger("channel").debug("error send to = " + self.redirect_stderr_file)
+        
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.socket.connect((self.daemon_host, self.daemon_port))
@@ -1787,7 +1867,7 @@ class IbisChannel(MessageChannel):
         
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         
-        self.socket.sendall('magic_string'.encode('utf-8'))
+        self.socket.sendall('TYPE_WORKER'.encode('utf-8'))
         
         arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers, self.number_of_nodes]}
         

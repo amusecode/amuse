@@ -136,7 +136,7 @@ void ibis_statistics_init() {
 	PMPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &size);
 
-	fprintf(stderr, "ibis_statistics_init(%d, %d)\n", rank, size);
+	/*fprintf(stderr, "ibis_statistics_init(%d, %d)\n", rank, size);*/
 
 	if (size < 0) {
 		fprintf(stderr, "statistics: negative size pool!\n");

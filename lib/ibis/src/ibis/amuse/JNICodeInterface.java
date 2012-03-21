@@ -1,37 +1,29 @@
 package ibis.amuse;
 
-import java.io.IOException;
-
 /**
  * Class representing a code that is used via JNI.
  * 
  * @author Niels Drost
  * 
  */
-public class JNICodeInterface extends CodeInterface {
+public class JNICodeInterface implements CodeInterface {
 
-    JNICodeInterface(String id, PoolInfo poolInfo, String codeName)
-            throws Exception {
-        super(id, poolInfo);
+    private final WorkerInfo info;
 
-        AmuseMessage initRequest = receiveInitRequest();
+    JNICodeInterface(WorkerInfo info) throws Exception {
+        this.info = info;
+    }
 
+    public void init() throws CodeException {
         try {
-            String library = codeName;
+            String library = info.getCodeName();
 
             System.loadLibrary(library);
 
-            init(codeName);
+            nativeInit(info.getCodeName());
         } catch (Throwable t) {
-            IOException error = new IOException(
-                    "Could not load worker library", t);
-            sendInitReply(initRequest.getCallID(), error);
-            
-            end();
-                
-            throw error;
+            throw new CodeException("Could not load worker library", t);
         }
-        sendInitReply(initRequest.getCallID());
     }
 
     /**
@@ -41,7 +33,7 @@ public class JNICodeInterface extends CodeInterface {
      * @param message
      *            the message
      */
-    native void setRequestMessage(AmuseMessage message);
+    public native void setRequestMessage(AmuseMessage message);
 
     /**
      * Sets the message used as output in a call
@@ -49,7 +41,7 @@ public class JNICodeInterface extends CodeInterface {
      * @param message
      *            the message
      */
-    native void setResultMessage(AmuseMessage message);
+    public native void setResultMessage(AmuseMessage message);
 
     /**
      * Performs a call. Uses data from the request and result message
@@ -57,7 +49,7 @@ public class JNICodeInterface extends CodeInterface {
      * @throws Exception
      *             if the function does not exist, or any other error occurs.
      */
-    native void call() throws Exception;
+    public native void call() throws CodeException;
 
     /**
      * Initialize native code, if needed
@@ -65,6 +57,15 @@ public class JNICodeInterface extends CodeInterface {
      * @throws Exception
      *             if initialization fails
      */
-    private native void init(String codeName) throws Exception;
+    private native void nativeInit(String codeName) throws Exception;
+
+    @Override
+    public void end() {
+    }
+
+    @Override
+    public int getResult() {
+        return 0;
+    }
 
 }

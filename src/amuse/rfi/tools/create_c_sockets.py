@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
 
         }
 
-        fprintf(stderr, "sockets: finished initializing code\\n");
+        /*fprintf(stderr, "sockets: finished initializing code\\n");*/
         
     }
 

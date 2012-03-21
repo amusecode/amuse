@@ -41,8 +41,27 @@ public class MPIProfilingCollector extends Thread implements MPIProfilingCollect
         this.start();
     }
 
-    synchronized void setIbises(IbisIdentifier[] rankToIbis) {
-        this.rankToIbis = rankToIbis;
+    synchronized void setIbises(IbisIdentifier[] ibises, int nrOfProcesses) {
+        rankToIbis = new IbisIdentifier[nrOfProcesses];
+        int next = 0;
+
+        for (int i = 0; i < ibises.length; i++) {
+            // number of processes per node
+            int workerCount = nrOfProcesses / ibises.length;
+            // nrOfWorkers not divideble by number of hosts. see if this is a
+            // "remainder" node with an extra worker
+            if (i < nrOfProcesses % ibises.length) {
+                workerCount++;
+            }
+            for (int j = 0; j < workerCount; j++) {
+                rankToIbis[next] = ibises[i];
+                next++;
+            }
+        }
+        if (next != rankToIbis.length) {
+            logger.error("error in setting ibises. List is of length " + next + " but should be "
+                    + nrOfProcesses);
+        }
     }
 
     @Override

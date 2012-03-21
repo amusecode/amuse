@@ -1,6 +1,8 @@
 package ibis.amuse;
 
 import ibis.deploy.Job;
+import ibis.deploy.State;
+import ibis.deploy.StateListener;
 import ibis.ipl.Ibis;
 import ibis.ipl.ReadMessage;
 import ibis.ipl.ReceivePort;
@@ -18,26 +20,29 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Representation of worker at local machine running amuse script. Starts and
- * connects to a "RemoteWorker" to perform the actual work.
+ * connects to a "CodeProxy" to perform the actual work.
  * 
  * @author Niels Drost
  * 
  */
-public class RemoteCodeInterface implements Runnable {
+public class Worker implements Runnable, StateListener {
 
-    public static final String MAGIC_STRING = "magic_string";
 
-    private static final Logger logger = LoggerFactory.getLogger(RemoteCodeInterface.class);
+    private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
     private static int nextID = 0;
 
-    private final SocketChannel channel;
+    private final SocketChannel socket;
 
     private final String codeName;
 
     private final String codeDir;
 
     private final String hostname;
+    
+    private final String stdoutFile;
+    
+    private final String stderrFile;
 
     private final int nrOfWorkers;
 
@@ -85,35 +90,20 @@ public class RemoteCodeInterface implements Runnable {
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    RemoteCodeInterface(SocketChannel socket, Ibis ibis, Deployment deployment) throws Exception {
-        this.channel = socket;
+    Worker(SocketChannel socket, Ibis ibis, Deployment deployment) throws Exception {
+        this.socket = socket;
         this.ibis = ibis;
 
         if (logger.isDebugEnabled()) {
-            logger.debug("New connection from " + socket.socket().getRemoteSocketAddress());
+            logger.debug("New worker connection from " + socket.socket().getRemoteSocketAddress());
         }
 
-        // read magic string, to make sure we are talking to amuse
-
-        ByteBuffer magic = ByteBuffer.allocate(MAGIC_STRING.length());
-
-        while (magic.hasRemaining()) {
-            long read = channel.read(magic);
-
-            if (read == -1) {
-                throw new IOException("Connection closed on reading magic string");
-            }
-        }
-
-        String receivedString = new String(magic.array(), "UTF-8");
-        if (!receivedString.equals(MAGIC_STRING)) {
-            throw new IOException("magic string " + MAGIC_STRING + " not received. Instead got: " + receivedString);
-        }
+       
 
         // read initialization call
 
         AmuseMessage initRequest = new AmuseMessage();
-        initRequest.readFrom(channel);
+        initRequest.readFrom(socket);
 
         if (initRequest.getFunctionID() != AmuseMessage.FUNCTION_ID_INIT) {
             throw new IOException("first call to worker must be init function");
@@ -122,6 +112,8 @@ public class RemoteCodeInterface implements Runnable {
         codeName = initRequest.getString(0);
         codeDir = initRequest.getString(1);
         hostname = initRequest.getString(2);
+        stdoutFile = initRequest.getString(3);
+        stderrFile = initRequest.getString(4);
 
         nrOfWorkers = initRequest.getInteger(0);
         nrOfNodes = initRequest.getInteger(1);
@@ -144,8 +136,10 @@ public class RemoteCodeInterface implements Runnable {
 
         // start deployment of worker (possibly on remote machine)
 
-        job = deployment.deploy(codeName, codeDir, hostname, id, nrOfWorkers, nrOfNodes);
-
+        job = deployment.deploy(codeName, codeDir, hostname, stdoutFile, stderrFile, id, nrOfWorkers, nrOfNodes);
+        
+        job.waitUntilDeployed(logger);
+        
         // we expect a "hello" message from the worker. Will also check if
         // the job is still running
         remotePort = receivePortAddress(receivePort, job);
@@ -170,7 +164,7 @@ public class RemoteCodeInterface implements Runnable {
         }
 
         // send reply to amuse
-        initReply.writeTo(channel);
+        initReply.writeTo(socket);
 
         ThreadPool.createNew(this, "Amuse worker");
 
@@ -184,12 +178,12 @@ public class RemoteCodeInterface implements Runnable {
 
         boolean running = true;
 
-        while (running) {
+        while (running && socket.isOpen() && socket.isConnected()) {
             start = System.currentTimeMillis();
 
             try {
                 // logger.debug("wating for request...");
-                request.readFrom(channel);
+                request.readFrom(socket);
 
                 // logger.debug("performing request " + request);
 
@@ -199,7 +193,7 @@ public class RemoteCodeInterface implements Runnable {
                 }
 
                 if (job.isFinished()) {
-                    throw new IOException("Remote worker no longer running", job.getException());
+                    throw new IOException("Remote Code Proxy no longer running", job.getException());
                 }
 
                 WriteMessage writeMessage = sendPort.newMessage();
@@ -208,38 +202,54 @@ public class RemoteCodeInterface implements Runnable {
 
                 logger.debug("waiting for result");
 
-                ReadMessage readMessage = receivePort.receive();
+                ReadMessage readMessage = null;
+
+                while (readMessage == null) {
+                    try {
+                        readMessage = receivePort.receive(1000);
+                    } catch (ReceiveTimedOutException timeout) {
+                        //IGNORE
+                    }
+
+                    if (receivePort.connectedTo().length == 0 || job.isFinished()) {
+                        throw new IOException(
+                                "receiveport no longer connected to remote proxy, or proxy no longer running");
+                    }
+                }
                 result.readFrom(readMessage);
                 readMessage.finish();
 
-                if (result.getError() != null) {
+                if (result.isErrorState()) {
                     logger.warn("Error while doing call at worker", result.getError());
                 }
 
                 logger.debug("request " + request.getCallID() + " handled, result: " + result);
 
                 // forward result to the channel
-                result.writeTo(channel);
+                result.writeTo(socket);
 
                 finish = System.currentTimeMillis();
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("call took " + (finish - start) + " ms");
                 }
+            } catch (ConnectionClosedException e) {
+                logger.info("channel closed on receiving request");
+                running = false;
             } catch (IOException e) {
-                logger.error("Error on handling call", e);
-                // report error to amuse
-                AmuseMessage errormessage = new AmuseMessage(request.getCallID(), request.getFunctionID(),
-                        request.getCount(), e.getMessage());
-                try {
-                    errormessage.writeTo(channel);
-                } catch (IOException e1) {
-                    logger.error("Error while returning error message to amuse", e1);
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e1) {
-                    // IGNORE
+                if (socket.isOpen() && socket.isConnected()) {
+                    logger.error("Error on handling call", e);
+
+                    // report error to amuse
+                    AmuseMessage errormessage = new AmuseMessage(request.getCallID(), request.getFunctionID(),
+                            request.getCount(), "Ibis/Amuse error: " + e.getMessage());
+                    try {
+                        errormessage.writeTo(socket);
+                    } catch (IOException e1) {
+                        logger.error("Error while returning error message to amuse", e1);
+                    }
+                } else {
+                    logger.error("Error on handling call, lost connection to AMUSE", e);
                 }
             }
         }
@@ -276,6 +286,11 @@ public class RemoteCodeInterface implements Runnable {
     }
 
     public String toString() {
-        return "Worker \"" + id + "\" running \"" + codeName + "\" on host " + hostname;
+        return "Worker \"" + id + "\" on host " + hostname;
+    }
+
+    @Override
+    public void stateUpdated(State newState, Exception exception) {
+        logger.info(toString() + " now " + newState);
     }
 }
