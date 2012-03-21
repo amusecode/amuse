@@ -111,7 +111,7 @@ def fill_grid_with_cloud_shock(
         center = None,
         radius = None,
         ratio_densities = 10.0,
-        velocity_scale_for_medium = 10.0,
+        mach_number = 2.7,
         gamma = 5.0/3.0,
         subgridsize = 4,
     ):
@@ -121,7 +121,7 @@ def fill_grid_with_cloud_shock(
     density_unit =  generic_unit_system.mass / generic_unit_system.length**3
     energy_unit = generic_unit_system.mass / (generic_unit_system.time**2 * generic_unit_system.length)
     
-    velocity_of_medium = (numpy.sqrt(gamma*(gamma-1.0)*ratio_densities) * velocity_scale_for_medium) | velocity_unit
+    velocity_of_medium = (numpy.sqrt(gamma*(gamma-1.0)*ratio_densities) * mach_number) | velocity_unit
     
     rho_in_cloud = 1.0 | density_unit
     rhovx_in_cloud = 0.0 | momentum_unit
@@ -133,7 +133,7 @@ def fill_grid_with_cloud_shock(
     rhovx_in_medium = 0.0 | momentum_unit
     rhovy_in_medium =  rho_in_medium * velocity_of_medium
     rhovz_in_medium = 0.0 | momentum_unit
-    energy_in_medium = (ratio_densities | energy_unit) + (rho_in_medium * velocity_of_medium**2)
+    energy_in_medium = (1.0 | energy_unit) + (0.5* rho_in_medium * velocity_of_medium**2)
     
     grid.rho = rho_in_medium
     grid.rhovx = rhovx_in_medium
