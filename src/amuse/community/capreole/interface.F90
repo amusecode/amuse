@@ -141,153 +141,183 @@ function set_boundary(lowx,highx,lowy,highy,lowz,highz) result(ret)
   
 end function  
 
-! this is somewhat inefficient: blocksize=1
-function set_grid_state(i,j,k,rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
+function set_grid_state(i,j,k,rho_in,rhvx_in,rhvy_in,rhvz_in,en_in,n) result(ret)
   use amuse_helpers
-  integer :: ret,i,j,k
-  real*8 :: rho_in,rhvx_in,rhvy_in,rhvz_in,en_in
+  integer :: n
+  integer :: ret,ii,i(n),j(n),k(n)
+  real*8 :: rho_in(n),rhvx_in(n),rhvy_in(n),rhvz_in(n),en_in(n)
   real*8 :: lstate(neq)
+  integer,allocatable :: retsum(:)
 #ifdef MPI
-  integer retsum,ierr
+  integer ierr
 #endif
+  allocate(retsum(n))
  
-  lstate(RHO)=rho_in
-  lstate(RHVX)=rhvx_in
-  lstate(RHVY)=rhvy_in
-  lstate(RHVZ)=rhvz_in
-  lstate(EN)=en_in
-  ret=fill_grid(i,j,k,lstate)
+  do ii=1,n
+    lstate(RHO)=rho_in(ii)
+    lstate(RHVX)=rhvx_in(ii)
+    lstate(RHVY)=rhvy_in(ii)
+    lstate(RHVZ)=rhvz_in(ii)
+    lstate(EN)=en_in(ii)
+    retsum(ii)=fill_grid(i(ii),j(ii),k(ii),lstate)
+  enddo
 #ifdef MPI
-  call MPI_ALLREDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,MPI_COMM_NEW,ierr)
-  ret=1
-  if(retsum.NE.1) ret=-1
-#endif
-  if(ret.NE.1) then
-    ret=-1
-    return
-  endif  
-  ret=0 
-end function
-
-function get_grid_state(i,j,k,rho_out,rhvx_out,rhvy_out,rhvz_out,en_out) result(ret)
-  use amuse_helpers
-  integer :: ret,i,j,k
-  real*8 :: rho_out,rhvx_out,rhvy_out,rhvz_out,en_out
-  real*8 :: lstate(neq)
-#ifdef MPI
-  integer retsum,ierr
-  real*8 :: tmp(neq)
-#endif
-  
-  ret=retrieve_grid(i,j,k,lstate)
-#ifdef MPI
-  call MPI_ALLREDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,MPI_COMM_NEW,ierr)
-  ret=1
-  if(retsum.NE.1) ret=-1
-#endif
-  if(ret.NE.1) then
-    return
-  endif  
-#ifdef MPI
-  tmp=lstate
-  call MPI_REDUCE(tmp,lstate,neq,MPI_DOUBLE_PRECISION,MPI_SUM,0.,MPI_COMM_NEW,ierr)
-#endif
-  rho_out=lstate(RHO)
-  rhvx_out=lstate(RHVX)
-  rhvy_out=lstate(RHVY)
-  rhvz_out=lstate(RHVZ)
-  en_out=lstate(EN)
+  if(rank.NE.0) then
+    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  else
+    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  endif
+#endif  
   ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
 end function
 
-
-
-function get_grid_momentum_density(i,j,k,rhvx_out,rhvy_out,rhvz_out) result(ret)
+function get_grid_state(i,j,k,rho_out,rhvx_out,rhvy_out,rhvz_out,en_out,n) result(ret)
   use amuse_helpers
-  integer :: ret,i,j,k
-  real*8 :: rhvx_out,rhvy_out,rhvz_out
+  integer :: n
+  integer :: ret,ii,i(n),j(n),k(n)
+  real*8 :: rho_out(n),rhvx_out(n),rhvy_out(n),rhvz_out(n),en_out(n)
   real*8 :: lstate(neq)
+  integer,allocatable :: retsum(:)
 #ifdef MPI
-  integer retsum,ierr
-  real*8 :: tmp(neq)
+  integer ierr
 #endif
+  allocate(retsum(n))
   
-  ret=retrieve_grid(i,j,k,lstate)
+  do ii=1,n
+    retsum(ii)=retrieve_grid(i(ii),j(ii),k(ii),lstate)
+    rho_out(ii)=lstate(RHO)
+    rhvx_out(ii)=lstate(RHVX)
+    rhvy_out(ii)=lstate(RHVY)
+    rhvz_out(ii)=lstate(RHVZ)
+    en_out(ii)=lstate(EN)
+  enddo
+
 #ifdef MPI
-  call MPI_ALLREDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,MPI_COMM_NEW,ierr)
-  ret=1
-  if(retsum.NE.1) ret=-1
-#endif
-  if(ret.NE.1) then
-    return
-  endif  
-#ifdef MPI
-  tmp=lstate
-  call MPI_REDUCE(tmp,lstate,neq,MPI_DOUBLE_PRECISION,MPI_SUM,0.,MPI_COMM_NEW,ierr)
-#endif
-  rhvx_out=lstate(RHVX)
-  rhvy_out=lstate(RHVY)
-  rhvz_out=lstate(RHVZ)
+  if(rank.NE.0) then
+    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rho_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rhvx_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rhvy_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rhvz_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(en_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  else
+    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rho_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rhvx_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rhvy_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rhvz_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,en_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  endif
+#endif  
   ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
 end function
 
 
-function get_grid_energy_density(i,j,k,en_out) result(ret)
+
+function get_grid_momentum_density(i,j,k,rhvx_out,rhvy_out,rhvz_out,n) result(ret)
   use amuse_helpers
-  integer :: ret,i,j,k
-  real*8 :: en_out
+  integer :: n
+  integer :: ret,ii,i(n),j(n),k(n)
+  real*8 :: rhvx_out(n),rhvy_out(n),rhvz_out(n)
   real*8 :: lstate(neq)
+  integer,allocatable :: retsum(:)
 #ifdef MPI
-  integer retsum,ierr
-  real*8 :: tmp(neq)
+  integer ierr
 #endif
+  allocate(retsum(n))
   
-  ret=retrieve_grid(i,j,k,lstate)
+  do ii=1,n
+    retsum(ii)=retrieve_grid(i(ii),j(ii),k(ii),lstate)
+    rhvx_out(ii)=lstate(RHVX)
+    rhvy_out(ii)=lstate(RHVY)
+    rhvz_out(ii)=lstate(RHVZ)
+  enddo
+
 #ifdef MPI
-  call MPI_ALLREDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,MPI_COMM_NEW,ierr)
-  ret=1
-  if(retsum.NE.1) ret=-1
-#endif
-  if(ret.NE.1) then
-    return
-  endif  
-#ifdef MPI
-  tmp=lstate
-  call MPI_REDUCE(tmp,lstate,neq,MPI_DOUBLE_PRECISION,MPI_SUM,0.,MPI_COMM_NEW,ierr)
-#endif
-  en_out=lstate(EN)
+  if(rank.NE.0) then
+    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rhvx_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rhvy_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rhvz_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  else
+    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rhvx_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rhvy_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rhvz_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  endif
+#endif  
   ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
 end function
 
 
-function get_grid_density(i,j,k,rho_out) result(ret)
+function get_grid_energy_density(i,j,k,en_out,n) result(ret)
   use amuse_helpers
-  integer :: ret,i,j,k
-  real*8 :: rho_out
+  integer :: n
+  integer :: ret,ii,i(n),j(n),k(n)
+  real*8 :: en_out(n)
   real*8 :: lstate(neq)
+  integer,allocatable :: retsum(:)
 #ifdef MPI
-  integer retsum,ierr
-  real*8 :: tmp(neq)
+  integer ierr
 #endif
+  allocate(retsum(n))
   
-  ret=retrieve_grid(i,j,k,lstate)
+  do ii=1,n
+    retsum(ii)=retrieve_grid(i(ii),j(ii),k(ii),lstate)
+    en_out(ii)=lstate(EN)
+  enddo
+
 #ifdef MPI
-  call MPI_ALLREDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,MPI_COMM_NEW,ierr)
-  ret=1
-  if(retsum.NE.1) ret=-1
-#endif
-  if(ret.NE.1) then
-    return
-  endif  
-#ifdef MPI
-  tmp=lstate
-  call MPI_REDUCE(tmp,lstate,neq,MPI_DOUBLE_PRECISION,MPI_SUM,0.,MPI_COMM_NEW,ierr)
-#endif
-  rho_out=lstate(RHO)
+  if(rank.NE.0) then
+    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(en_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  else
+    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,en_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  endif
+#endif  
   ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
 end function
 
 
+function get_grid_density(i,j,k,rho_out,n) result(ret)
+  use amuse_helpers
+  integer :: n
+  integer :: ret,ii,i(n),j(n),k(n)
+  real*8 :: rho_out(n),rhvx_out(n),rhvy_out(n),rhvz_out(n),en_out(n)
+  real*8 :: lstate(neq)
+  integer,allocatable :: retsum(:)
+#ifdef MPI
+  integer ierr
+#endif
+  allocate(retsum(n))
+  
+  do ii=1,n
+    retsum(ii)=retrieve_grid(i(ii),j(ii),k(ii),lstate)
+    rho_out(ii)=lstate(RHO)
+  enddo
+
+#ifdef MPI
+  if(rank.NE.0) then
+    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rho_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  else
+    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rho_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  endif
+#endif  
+  ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
+end function
 
 
 function set_gravity_field(i,j,k,fx,fy,fz) result(ret)
@@ -344,44 +374,57 @@ function get_gravity_field(i,j,k,fx,fy,fz) result(ret)
 end function
 
 
-
-
-function get_position_of_index(i,j,k,xout,yout,zout) result(ret)
+function get_position_of_index(i,j,k,xout,yout,zout,n) result(ret)
   use amuse_helpers
-  integer :: ret,i,j,k
-  real*8 :: xout,yout,zout
+  integer :: n
+  integer :: ret,ii,i(n),j(n),k(n)
+  real*8 :: xout(n),yout(n),zout(n)
+  integer,allocatable :: retsum(:)
 #ifdef MPI
-  integer retsum,ierr
-  real*8 posout(3),tmp(3)
+  integer ierr
 #endif
+  allocate(retsum(n))
+  
+  do ii=1,n
+    retsum(ii)=amuse_get_pos_of_index(i(ii),j(ii),k(ii),xout(ii),yout(ii),zout(ii))
+  enddo
 
-  ret=amuse_get_pos_of_index(i,j,k,xout,yout,zout)
 #ifdef MPI
-  call MPI_ALLREDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,MPI_COMM_NEW,ierr)
-  ret=1
-  if(retsum.NE.1) ret=-1
-#endif
-  if(ret.NE.1) then
-    return
-  endif  
-#ifdef MPI
-  tmp(1)=xout
-  tmp(2)=yout
-  tmp(3)=zout
-  call MPI_REDUCE(tmp,posout,3,MPI_DOUBLE_PRECISION,MPI_SUM,0.,MPI_COMM_NEW,ierr)
-  xout=posout(1)
-  yout=posout(2)
-  zout=posout(3)
-#endif
+  if(rank.NE.0) then
+    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(xout,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(yout,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(zout,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  else
+    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,xout,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,yout,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,zout,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  endif
+#endif  
   ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
 end function
 
-function get_index_of_position(xin,yin,zin,i,j,k) result(ret)
+function get_index_of_position(xin,yin,zin,i,j,k,n) result(ret)
   use amuse_helpers
-  integer :: ret,i,j,k
-  real*8 :: xin,yin,zin
-
-  ret=amuse_get_index_of_pos(xin,yin,zin,i,j,k)
+  integer :: n
+  integer :: ret,ii,i(n),j(n),k(n)
+  real*8 :: xin(n),yin(n),zin(n)
+  integer,allocatable :: retsum(:)
+#ifdef MPI
+  integer ierr
+#endif
+  allocate(retsum(n))
+  
+  do ii=1,n
+    retsum(ii)=amuse_get_index_of_pos(xin(ii),yin(ii),zin(ii),i(ii),j(ii),k(ii))
+  enddo
+  
+  ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
 end function
 
 function evolve_model(tend) result(ret)

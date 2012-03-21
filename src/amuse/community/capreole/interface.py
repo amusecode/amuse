@@ -106,28 +106,32 @@ class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferen
         function.result_type = 'i'
         return function
 
+    
     @legacy_function    
     def set_grid_state():
         function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
+        function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('number_of_points', 'i', function.LENGTH)            
         function.result_type = 'i'
         return function
 
     @legacy_function    
     def get_grid_state():
         function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
+        function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
-
+    
+    
     @legacy_function    
     def set_gravity_field():
         function = LegacyFunctionSpecification()  
@@ -169,22 +173,24 @@ class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferen
     @legacy_function    
     def get_position_of_index():
         function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
+        function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
     
     @legacy_function    
     def get_index_of_position():
         function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
+        function.must_handle_array = True
         for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.IN)
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
         
@@ -204,25 +210,28 @@ class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferen
         ni,nj,nk,error = self.get_mesh_size()
         return (1, ni, 1, nj, 1, nk)
     
+    
     @legacy_function
     def get_grid_momentum_density():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rhovx','rhovy','rhovz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
     
     @legacy_function
     def get_grid_density():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rho',]:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
     
@@ -231,11 +240,12 @@ class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferen
     @legacy_function
     def get_grid_energy_density():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['energy']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
         
