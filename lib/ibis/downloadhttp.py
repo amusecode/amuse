@@ -19,10 +19,13 @@ class DownloadIbisDeployFromWebpage(object):
         print "unpacking", filename
         arguments = ['unzip']
         arguments.append(filename)
-        subprocess.call(
+        result = subprocess.call(
             arguments, 
             cwd = self.directory()
         )
+	if result != 0:
+	    print "error on unpacking downloaded file"
+	    sys.exit(1)
         print "done"
 
     def rename_unpacked_dir(self):
@@ -41,14 +44,16 @@ class DownloadIbisDeployFromWebpage(object):
             os.rename('deploy', 'deploy.backup.{0}'.format(counter))
         
         url = self.url_template.format(version = self.version)
-        filename = self.filename_template.format(version = self.version)
-        print "downloading Ibis-Deploy from", url, "to", filename
-        urllib.urlretrieve(url, filename = filename)
+        zipfilename = self.filename_template.format(version = self.version)
+        print "downloading Ibis-Deploy from", url, "to", zipfilename
+        urllib.urlretrieve(url, filename = zipfilename)
         print "downloading finished"
-        self.unpack_downloaded_file(filename)
-	os.remove(filename)
-	self.rename_unpacked_dir()
-	
+	if not os.path.exists(zipfilename):
+		print "could not download file " + zipfilename
+		sys.exit(1)
+
+        self.unpack_downloaded_file(zipfilename)
+	os.remove(zipfilename)
     
 if __name__ == '__main__':
     instance = DownloadIbisDeployFromWebpage()

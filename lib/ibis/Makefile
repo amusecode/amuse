@@ -1,6 +1,6 @@
 VERSION = -20120321-snapshot
 
-CODEDIR = deploy
+CODEDIR = deploy${VERSION}
 DOWNLOAD_FROM_WEB = ./downloadhttp.py
 LIBPROFILING = src/profiling/libibisprofiling.a
 
@@ -8,14 +8,17 @@ JDK ?= /usr
 
 CLASSPATH="deploy/lib/*:tmp"
 
-all: ${CODEDIR} ${LIBPROFILING} lib/ibis-amuse.jar
+all: deploy ${LIBPROFILING} lib/ibis-amuse.jar
 
 $(LIBPROFILING):src/profiling/*.c
 	make -C src/profiling all
 
+deploy: ${CODEDIR}
+	ln -s ${CODEDIR} deploy
+
 $(CODEDIR):
 ifdef DOWNLOAD_CODES
-	$(DOWNLOAD_FROM_WEB) $(VERSION)
+	$(DOWNLOAD_FROM_WEB) ${VERSION}
 else
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
