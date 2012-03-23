@@ -330,7 +330,7 @@ class StoppingCondition(object):
     def number_of_particles(self):
         return self.get_set_conditions_info()
     
-    def particles(self, index_in_the_condition, particle_name="particles"):
+    def particles(self, index_in_the_condition=0, particle_name="particles"):
         selected = self.get_set_conditions_info(index_in_the_condition)
         
         if len(selected) == 0:
