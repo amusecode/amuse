@@ -778,6 +778,7 @@ class ZeroQuantity(Quantity):
         self.base = ()
         self.factor = 1
         self.number = 0.0
+        self.dtype = 'float64'
 
     def is_scalar(self):
         """
@@ -789,6 +790,11 @@ class ZeroQuantity(Quantity):
         """
         True for vector quantities.
         """
+        return False
+    
+    def is_non_numeric(self):
+        return False
+    def iskey(self):
         return False
 
     def __str__(self):
@@ -853,6 +859,7 @@ class ZeroVectorQuantity(ZeroQuantity):
         self.base = ()
         self.factor = 1
         self.number = numpy.zeros(length)
+        self.dtype = 'float64'
 
     def is_scalar(self):
         """
