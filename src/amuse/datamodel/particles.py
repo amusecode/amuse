@@ -327,21 +327,6 @@ class AbstractParticleSet(AbstractSet):
     def can_extend_attributes(self):
         return self._original_set().can_extend_attributes()
         
-        
-    def copy(self):
-        """
-        Creates a new in memory particle set and copies
-        all attributes and values into this set. The history
-        of the set is not copied over.
-        """
-        attributes = self.get_attribute_names_defined_in_store()
-        keys = self.get_all_keys_in_store()
-        values = self.get_values_in_store(keys, attributes)
-        result = self._factory_for_new_collection()()
-        result.add_particles_to_store(keys, attributes, values)
-        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
-       
-        return result
     
     def _is_superset(self):
         return False
@@ -1370,13 +1355,13 @@ class ParticlesSuperset(AbstractParticleSet):
         else:
             resultlength = len(keys)
             
-        values = [None] * len(attributes)
+        values = [[]] * len(attributes)
         units = [None] * len(attributes)
-        converts = [None] * len(attributes)
+        converts = [lambda x : x] * len(attributes)
         for indices, values_for_set in indices_and_values:
             for valueindex, quantity in enumerate(values_for_set):
                 resultvalue = values[valueindex]
-                if resultvalue is None:
+                if len(resultvalue) == 0:
                     if not is_quantity(quantity):
                         dtype = quantity.dtype
                         converts[valueindex] = lambda x : x

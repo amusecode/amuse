@@ -1725,8 +1725,14 @@ class TestParticlesIndexingWithBinding(amusetest.TestCase):
         self.assertAlmostRelativeEquals(converted[:5][2:].mass,  [0.2,0.3,0.4] | nbody_system.mass)
         self.assertAlmostRelativeEquals(converted[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass,  [0,0.2] | nbody_system.mass)
     
-
-
+    def test13(self):
+        set1 = self.TestInterface().particles
+        set2 = self.TestInterface().particles
+        self.assertEquals(set1.mass,  [])
+        particles = datamodel.ParticlesSuperset([set1, set2])
+        
+        self.assertEquals(particles.mass,  [])
+        
 class TestParticlesIndexingWithSet(amusetest.TestCase):
 
     #
