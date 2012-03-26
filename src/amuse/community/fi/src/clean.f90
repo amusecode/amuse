@@ -118,6 +118,11 @@ subroutine partremoval
   lastbh=nbodies
   do while(i.LE.lastsph) 
     if(mass(i).LT.tiny) then
+! AVE, AMUSE
+! keep a record of the removed ids
+      removedidssph(nremovals+1) = nbexist(i)
+      nremovals=nremovals+1
+! ---
       if(mass(lastsph).GE.tiny) then
         call copysph(lastsph,i)
         mass(lastsph)=0

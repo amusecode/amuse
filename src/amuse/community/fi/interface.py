@@ -1517,6 +1517,33 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
     
     def get_periodic_boundaries_flag(self):
         return self.mode == self.MODE_PERIODIC_BOUNDARIES, 0
+        
+    @legacy_function
+    def get_number_of_sph_particles_removed():
+        """
+        Return the number of particles deleted during the last evolve.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_id_of_removed_sph_particle():
+        """
+        Return the id of the nth particle deleted during the last evolve.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_delete', dtype='int32',
+                              direction=function.IN, 
+                 description = 'index in the deleted particles list (zero based)')
+        function.addParameter('index_of_particle', dtype='int32',
+                              direction=function.OUT)
+        function.can_handle_array = True
+        function.result_type = 'int32'
+        return function
+        
     
 class GlFiInterface(FiInterface):
     def name_of_the_worker(self, mode):
@@ -3092,5 +3119,43 @@ class Fi(GravitationalDynamics):
             (nbody_system.energy, object.ERROR_CODE,)
         )
         
-        self.stopping_conditions.define_methods(object)            
+        object.add_method(
+            "get_number_of_sph_particles_removed",
+            (
+            ),
+            (
+                object.NO_UNIT,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_id_of_removed_sph_particle",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                object.INDEX,
+                object.ERROR_CODE
+            )
+        )
 
+        self.stopping_conditions.define_methods(object)       
+        
+    def update_particle_set(self):
+        """
+        update the particle set after changes in the code
+        
+        this implementation needs to move to the
+        amuse.datamodel.incode_storage module, as
+        it uses a lot of internal methods and info!
+        """
+        number_of_removed_particles = self.get_number_of_sph_particles_removed()
+        
+        if number_of_removed_particles == 0:
+            return
+        
+        indices_in_update_list = range(number_of_removed_particles)
+        indices_to_remove = self.get_id_of_removed_sph_particle(indices_in_update_list)
+        
+        incode_storage = self.gas_particles._private.attribute_storage
+        incode_storage._remove_indices(indices_to_remove)

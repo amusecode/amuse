@@ -234,6 +234,48 @@ class TestFiInterface(TestWithMPI):
         instance.stop()
         
     
+    def test8(self):
+        instance=FiInterface()
+        instance.initialize_code()
+        instance.set_use_hydro(0)
+        instance.set_selfgrav(1)
+        instance.set_pboxsize(1.0)
+        instance.set_dtime(0.2)
+        instance.commit_parameters()
+        index,err=instance.new_sph_particle( 
+           0.1, #mass
+           0.5, #x,y,z
+           0.0,
+           0.0,
+           1.0, #vx,vy,vz
+           0.0,
+           0.0,
+           0.0
+        )
+        index2,err=instance.new_sph_particle( 
+           0.001, #mass
+           0.1, #x,y,z
+           0.0,
+           0.0,
+           1.0, #vx,vy,vz
+           0.0,
+           0.0,
+           0.0
+        )
+        instance.commit_particles()
+        instance.evolve_model(0.1)
+        m,x,y,z,vx,vy,vz,r,err=instance.get_state(index)
+        self.assertAlmostRelativeEquals(x, 0.5)
+        nremoved, error = instance.get_number_of_sph_particles_removed()
+        self.assertEquals(error,0)
+        self.assertEquals(nremoved,0)
+        instance.evolve_model(0.15)
+        nremoved, error = instance.get_number_of_sph_particles_removed()
+        self.assertEquals(error,0)
+        self.assertEquals(nremoved,1)
+        idremoved, error = instance.get_id_of_removed_sph_particle(0)
+        self.assertEquals(idremoved,index)
+        
     
 class TestEvrard(TestWithMPI):
 
@@ -1045,4 +1087,46 @@ class TestFi(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.gas_particles[0].h_smooth, 116.754483949 | nbody_system.length, 6)
         self.assertEquals(instance.star_particles[0].radius,0.2| nbody_system.length)
         instance.stop()
+        
+    def test20(self):
+        instance=Fi()
+        instance.initialize_code()
+        instance.parameters.use_hydro_flag = 0
+        instance.parameters.self_gravity_flag = 0
+        instance.parameters.periodic_box_size = 1 | nbody_system.length
+        instance.parameters.timestep = 0.2 | nbody_system.time
+        
+        p1 = instance.gas_particles.add_particle(datamodel.Particle(
+            x = 0.5 | nbody_system.length,
+            y = 0.0 | nbody_system.length,
+            z = 0.0 | nbody_system.length,
+            vx = 1.0  | nbody_system.speed,
+            vy = 0.0 | nbody_system.speed,
+            vz = 0.0 | nbody_system.speed,
+            mass = 0.1 | nbody_system.mass,
+            u = 0.0 | nbody_system.potential
+            
+        )) 
+        p2 = instance.gas_particles.add_particle(datamodel.Particle(
+            x = 0.1 | nbody_system.length,
+            y = 0.0 | nbody_system.length,
+            z = 0.0 | nbody_system.length,
+            vx = 0.0  | nbody_system.speed,
+            vy = 0.0 | nbody_system.speed,
+            vz = 0.0 | nbody_system.speed,
+            mass = 0.001 | nbody_system.mass,
+            u = 0.0 | nbody_system.potential
+            
+        )) 
+        
+        instance.evolve_model(0.1 |nbody_system.time)
+        instance.update_particle_set()
+        self.assertEquals(len(instance.gas_particles), 2)
+        
+        self.assertAlmostRelativeEquals(instance.gas_particles[0].x, 0.5 | nbody_system.length)
+        instance.evolve_model(0.15 |nbody_system.time)
+        instance.update_particle_set()
+        self.assertEquals(len(instance.gas_particles), 1)
+        self.assertAlmostRelativeEquals(instance.gas_particles[0].x, 0.1 | nbody_system.length)
+        self.assertAlmostRelativeEquals(instance.gas_particles.x, [0.1] | nbody_system.length)
         

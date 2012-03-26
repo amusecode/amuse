@@ -35,7 +35,12 @@ private :: ndim,nsubcell
       ! (mass,pos,epsgrav,starfuv,hsmooth)
       ! pordercount -> +1 particle order changed
 
-
+! AMUSE, AVE 26-Mar-2012
+! list of removed ids during the evolve loop
+! nremovals will be set to zero at start of the run
+    integer, allocatable :: removedidssph(:)
+    integer nremovals
+! ---
  contains
 
  subroutine initmem(nbodsmax,nsphmax,ncells)
@@ -56,7 +61,8 @@ private :: ndim,nsubcell
    pactive(1:nbodsmax),  &
    pshape(nbods1:nbodcell),  &
    subp(nbods1:nbodcell,1:nsubcell),  &
-   templist(1:nbodsmax) &
+   templist(1:nbodsmax), &
+   removedidssph(1:nbodsmax) & ! AMUSE, allocated list to store the id's
  )
  allocate( &
    acc(1:nbodsmax,1:ndim+1),  &

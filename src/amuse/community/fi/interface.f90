@@ -1287,6 +1287,20 @@ function get_fi_data_directory(x) result(ret)
   ret=0
 end function
 
+
+function get_number_of_sph_particles_removed(x)
+  integer :: get_number_of_sph_particles_removed
+  integer, intent(out) :: x
+  get_number_of_particles_removed = amuse_get_number_of_sph_particles_removed(x)
+end function
+
+function get_id_of_removed_sph_particle(x, id_of_removed_particle)
+  integer :: get_id_of_removed_sph_particle
+  integer, intent(in) :: x
+  integer, intent(out) :: id_of_removed_particle
+  get_id_of_removed_particle = amuse_get_id_of_removed_sph_particle(x, id_of_removed_particle)
+end function
+
 ! dummies:
 ! (only necessary to be able to compile using old muse style interface files)
 

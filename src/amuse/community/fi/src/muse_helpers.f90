@@ -1836,3 +1836,25 @@ subroutine amuse_get_fi_data_directory(x)
   character(len=200), intent(out) :: x
   x=datadir
 end subroutine
+
+
+function amuse_get_number_of_sph_particles_removed(x)
+  include 'globals.h'
+  integer :: amuse_get_number_of_sph_particles_removed
+  integer, intent(out) :: x
+  x=nremovals
+  amuse_get_number_of_sph_particles_removed = 0
+end function
+
+function amuse_get_id_of_removed_sph_particle(x, id_of_removed_particle)
+  include 'globals.h'
+  integer :: amuse_get_id_of_removed_sph_particle
+  integer, intent(in) :: x
+  integer, intent(out) :: id_of_removed_particle
+  if(x.GE.nremovals) then
+    amuse_get_id_of_removed_sph_particle=-1
+    return
+  endif  
+  amuse_get_id_of_removed_sph_particle = 0
+  id_of_removed_particle=removedidssph(x+1)
+end function
