@@ -6,6 +6,7 @@ from amuse.units.generic_unit_system import *
 
 from amuse.support import exceptions
 from amuse.support.core import late
+
 class UnitsNotOrtogonalException(exceptions.AmuseException):
     formatstring = 'The number of orthoganal units is incorrect, expected {0} but found {1}. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)'
 
@@ -39,7 +40,41 @@ class ConverterDoc(object):
     """
 
     def __get__(self, instance, owner):
-        return self.DOCSTRING       
+        return self.DOCSTRING   
+        
+
+class GenericToSiConverter(object):
+    def __init__(self, generic_to_si):
+        self.generic_to_si = generic_to_si
+    
+    def from_source_to_target(self, quantity):
+        if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
+            return self.generic_to_si.to_si(quantity) 
+        else:
+            return quantity
+        
+    def from_target_to_source(self, quantity):
+        if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
+            return self.generic_to_si.to_generic(quantity)
+        else:
+            return quantity
+            
+class SiToGenericConverter(object):
+    def __init__(self, generic_to_si):
+        self.generic_to_si = generic_to_si
+    
+    def from_source_to_target(self, quantity):
+        if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
+            return self.generic_to_si.to_generic(quantity) 
+        else:
+            return quantity
+        
+    def from_target_to_source(self, quantity):
+        if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
+            return self.generic_to_si.to_si(quantity)
+        else:
+            return quantity
+                
 
 class ConvertBetweenGenericAndSiUnits(object):
 
@@ -196,41 +231,9 @@ class ConvertBetweenGenericAndSiUnits(object):
         return new_quantity(number * factor, new_unit)
 
     def as_converter_from_si_to_generic(self):
-        class SiToGenericConverter(object):
-            def __init__(self, generic_to_si):
-                self.generic_to_si = generic_to_si
-            
-            def from_source_to_target(self, quantity):
-                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-                    return self.generic_to_si.to_generic(quantity) 
-                else:
-                    return quantity
-                
-            def from_target_to_source(self, quantity):
-                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-                    return self.generic_to_si.to_si(quantity)
-                else:
-                    return quantity
-                
         return SiToGenericConverter(self)
 
     def as_converter_from_generic_to_si(self):
-        class GenericToSiConverter(object):
-            def __init__(self, generic_to_si):
-                self.generic_to_si = generic_to_si
-            
-            def from_source_to_target(self, quantity):
-                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-                    return self.generic_to_si.to_si(quantity) 
-                else:
-                    return quantity
-                
-            def from_target_to_source(self, quantity):
-                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-                    return self.generic_to_si.to_generic(quantity)
-                else:
-                    return quantity
-                
         return GenericToSiConverter(self)
 
 #    def __repr__(self):                                                                

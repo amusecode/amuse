@@ -248,17 +248,12 @@ class OrderedDictionary(object):
     def __repr__(self):
         return str(self)
         
-
-    def __getattr__(self, key):
-        return self.mapping[key]
-        
     def iterkeys(self):
         return iter(self.orderedKeys)
         
     def itervalues(self):
         for x in self.orderedKeys:
             yield self.mapping[x]
-    
     
     def iteritems(self):
         for x in self.orderedKeys:
@@ -269,6 +264,12 @@ class OrderedDictionary(object):
     
     def values(self):
         return [self.mapping[x] for x in self.orderedKeys]
+        
+    def copy(self):
+        result = OrderedDictionary()
+        result.mapping = self.mapping.copy()
+        result.orderedKeys = list(self.orderedKeys)
+        return result
             
 
         

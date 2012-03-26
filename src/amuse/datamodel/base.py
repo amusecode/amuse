@@ -1,4 +1,5 @@
 from amuse.support.core import CompositeDictionary
+from amuse.support.core import OrderedDictionary
 from amuse.support import exceptions
 from amuse.units import constants
 from amuse.units import units
@@ -286,52 +287,67 @@ class CollectionAttributes(object):
     
     def __init__(self, collection = None, attributes = None):
         if attributes is None:
-            attributes = {}
+            attributes = OrderedDictionary()
         else:
-            attributes = attributes.copy()    
+            attributes = attributes.copy()
         
         object.__setattr__(self, '_collection', collection)
         object.__setattr__(self, '_attributes', attributes)
     
     def __getattr__(self, name):
-        return self._attributes[name]
-        
+        try:
+            return self._attributes[name]
+        except KeyError:
+            raise AttributeError('uknown attribute: {0!r}'.format(name))
         
     def __setattr__(self, name, value):
         self._attributes[name] = value
+    
+    def __getstate__(self):
+        return self._attributes, self._collection
         
+    def __setstate__(self, data):
+        object.__setattr__(self, '_collection', data[1])
+        object.__setattr__(self, '_attributes', data[0])
         
-        
+    def __str__(self):
+        lines = []
+        for name, value in self._attributes.iteritems():
+            lines.append("{0}: {1}".format(name, value))
+        return '\n'.join(lines)
+    
+    def _copy_for_collection(self, newcollection):
+        return CollectionAttributes(newcollection, self._attributes)
+
+class PrivateProperties(object):
+    """
+    Defined for superclasses to store private properties.
+    Every set has :meth:`__setattr__` defined.
+    
+    The :meth:`__setattr__` function will set all attributes
+    of the entities in the set to the specified value(s).
+    
+    To be able to define attributes on the set itself we
+    use an instance of this class, attributes can be 
+    defined as::
+    
+        self._private.new_attribute = 'new value'
+    
+    Subclass implementers do not need to
+    use the :meth:`object.__setattr__` syntax.
+    
+    For documentation about the :meth:`~object.__setattr__`
+    call please see the 
+    `python data model <http://docs.python.org/reference/datamodel.html>`_ 
+    documentation on the python website.
+    """
+    pass
+
 class AbstractSet(object):
     """
     Abstract superclass of all sets of particles and grids. 
     """
     GLOBAL_DERIVED_ATTRIBUTES = {}
-    
-    
-    class PrivateProperties(object):
-        """
-        Defined for superclasses to store private properties.
-        Every set has :meth:`__setattr__` defined.
-        
-        The :meth:`__setattr__` function will set all attributes
-        of the entities in the set to the specified value(s).
-        
-        To be able to define attributes on the set itself we
-        use an instance of this class, attributes can be 
-        defined as::
-        
-            self._private.new_attribute = 'new value'
-        
-        Subclass implementers do not need to
-        use the :meth:`object.__setattr__` syntax.
-        
-        For documentation about the :meth:`~object.__setattr__`
-        call please see the 
-        `python data model <http://docs.python.org/reference/datamodel.html>`_ 
-        documentation on the python website.
-        """
-        pass
         
     def __init__(self, original = None):
         if original is None:
@@ -340,15 +356,22 @@ class AbstractSet(object):
             derived_attributes = original._derived_attributes
             
         object.__setattr__(self, "_derived_attributes", CompositeDictionary(derived_attributes))
-        object.__setattr__(self, "_private", self.PrivateProperties())
+        object.__setattr__(self, "_private", PrivateProperties())
         
         self._private.collection_attributes = CollectionAttributes(self)
     
+    @property
+    def collection_attributes(self):
+        return self._private.collection_attributes 
     
+    @property
+    def key(self):
+        return self.get_all_keys_in_store()
+        
     def __getattr__(self, name_of_the_attribute):
-        if name_of_the_attribute == 'key':
-            return self.get_all_keys_in_store()
-        elif name_of_the_attribute in self._derived_attributes:
+        if name_of_the_attribute == '__setstate__':
+            raise AttributeError('type object {0!r} has no attribute {1!r}'.format(type(self), name_of_the_attribute))
+        if name_of_the_attribute in self._derived_attributes:
             return self._derived_attributes[name_of_the_attribute].get_values_for_entities(self)
         else:
             try:
@@ -614,7 +637,7 @@ class AbstractSet(object):
 
     def copy(self):
         """
-        Creates a new in memory particle set and copies
+        Creates a new in particle set and copies
         all attributes and values into this set. The history
         of the set is not copied over.
         """
@@ -624,7 +647,7 @@ class AbstractSet(object):
         result = self._factory_for_new_collection()()
         result.add_particles_to_store(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
-       
+        result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         return result
         
     def copy_to_memory(self):
