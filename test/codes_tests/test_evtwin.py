@@ -283,14 +283,14 @@ class TestInterface(TestWithMPI):
             self.assertAlmostEqual(age_after_evolve, 422790.633054, 5)
         
         self.assertEquals(0, instance.delete_star(1))
-        self.assertEquals(instance.get_number_of_particles().number_of_particles, 1)
+        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
         (age, error) = instance.get_age(1)
         self.assertEquals(error, -1)
         
         (indices, errors) = instance.new_particle([1.0, 1.0])
         self.assertEquals(errors, [0, 0])
         self.assertEquals(indices, [1, 3])
-        self.assertEquals(instance.get_number_of_particles().number_of_particles, 3)
+        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 3)
         
         for index in indices:
             (age, error) = instance.get_age(index)
@@ -475,7 +475,7 @@ class TestEVtwin(TestWithMPI):
         
         stars.remove_particle(particles[0])
         self.assertEquals(len(stars), 1)
-        self.assertEquals(instance.get_number_of_particles().number_of_particles, 1)
+        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
         instance.evolve_model(2.0 | units.Myr)
         self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
         

@@ -2,6 +2,7 @@ from amuse.support.core import late
 
 from amuse.io import base
 from amuse.units import units
+from amuse.units.quantities import is_quantity
 
 import re
 
@@ -112,9 +113,9 @@ class TableFormattedText(base.FileFormatProcessor):
         """
         quantities = self.quantities
         if self.quantities:
-            return map(lambda x : x.unit.to_simple_form(), quantities)
+            return map(lambda x : x.unit.to_simple_form() if is_quantity(x) else None, quantities)
         elif self.set is None:
-            return map(lambda x : units.none, self.attribute_names)
+            return [None] * len(self.attribute_names)
     
     @base.format_option
     def header_prefix_string(self):
@@ -187,7 +188,7 @@ class TableFormattedText(base.FileFormatProcessor):
             self.cursor.forward()
     
         quantities = map(
-            lambda value, unit : unit.new_quantity(value), 
+            lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
             values, 
             self.attribute_types
         )
@@ -213,7 +214,7 @@ class TableFormattedText(base.FileFormatProcessor):
     def write_rows(self):
         quantities = self.quantities
         units = self.attribute_types
-        numbers = map(lambda quantity, unit : quantity.value_in(unit), quantities, units)
+        numbers = map(lambda quantity, unit : quantity if unit is None else quantity.value_in(unit), quantities, units)
         
         columns = []
         
@@ -246,7 +247,7 @@ class TableFormattedText(base.FileFormatProcessor):
     def header_lines(self):
         result = []
         result.append(self.column_separator.join(self.attribute_names))
-        result.append(self.column_separator.join(map(str, self.attribute_types)))
+        result.append(self.column_separator.join(self.units_row))
         return result
         
     def footer_lines(self):
@@ -264,7 +265,16 @@ class TableFormattedText(base.FileFormatProcessor):
         else:
             return datamodel.Particles(number_of_items)
         
-    
+    @late
+    def units_row(self):
+        result = []
+        for x in self.attribute_types:
+            if x is None:
+                result.append('-')
+            else:
+                result.append(str(x))
+        return result
+        
     @base.format_option
     def quantities(self):
         """

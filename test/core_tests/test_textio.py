@@ -5,6 +5,7 @@ import os
 from amuse import io
 from amuse.io import text
 from amuse.units import units
+from amuse.units import quantities
 from amuse.units import generic_unit_system
 from amuse import datamodel
 class CursorTests(amusetest.TestCase):
@@ -45,7 +46,8 @@ class TableFormattedTextTests(amusetest.TestCase):
         particles = instance.load()
         
         self.assertEquals(len(particles), 3)
-        self.assertEquals(particles[0].a, 1|units.none)
+        self.assertEquals(particles[0].a, 1)
+        self.assertFalse(quantities.is_quantity(particles[0].a))
         
     def test2(self):
         p = datamodel.Particles(2)
@@ -120,6 +122,38 @@ class TableFormattedTextTests(amusetest.TestCase):
             self.assertEquals(y[0], x[0])
             self.assertEquals(y[1], x[1])
         os.remove("test.csv")
+        
+    
+    
+    def test6(self):
+        p = datamodel.Particles(2)
+        p.a = [1., 4.]
+        p.b = [2, 5] | units.m
+        p.c = [3, 6] | units.m
+        
+        data_file = StringIO.StringIO()
+        instance = text.TableFormattedText("test.txt", data_file, p)
+        instance.attribute_types = [None, units.m, units.m]
+        instance.store()
+        
+        contents = data_file.getvalue()
+        #print contents       
+        self.assertEquals("#a b c\n#- m m\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
+        
+    def test7(self):
+        p = datamodel.Particles(2)
+        p.a = [1., 4.]
+        p.b = [2, 5] | units.m
+        p.c = [3, 6] | units.m
+        
+        data_file = StringIO.StringIO()
+        instance = text.TableFormattedText("test.txt", data_file, p)
+        instance.store()
+        
+        contents = data_file.getvalue()
+        #print contents       
+        self.assertEquals("#a b c\n#- m m\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
+        
         
 class CsvFileTextTests(amusetest.TestCase):
     

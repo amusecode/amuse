@@ -115,7 +115,7 @@ class TestFiInterface(TestWithMPI):
            [0.0,0.0,0.0],
            [0.0,0.0,0.0] )
         instance.commit_particles()
-        self.assertEqual(instance.get_number_of_particles().number_of_particles, 3)
+        self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 3)
         instance.synchronize_model()
         Ep=instance.get_potential_energy()['potential_energy']
         Ek=instance.get_kinetic_energy()['kinetic_energy']
@@ -357,8 +357,8 @@ class TestFi(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = Fi(convert_nbody)
         instance.initialize_code()
-        self.assertTrue('data/fi/input/' in instance.legacy_interface.get_fi_data_directory().fi_data_directory)
-        self.assertEquals(instance.legacy_interface.get_fi_data_directory().fi_data_directory, 
+        self.assertTrue('data/fi/input/' in instance.legacy_interface.get_fi_data_directory()['fi_data_directory'])
+        self.assertEquals(instance.legacy_interface.get_fi_data_directory()['fi_data_directory'], 
             instance.get_data_directory()+'/')
         
         self.assertEquals(False, instance.parameters.radiation_flag)
