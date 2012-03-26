@@ -196,18 +196,18 @@ class StoreHDF(object):
                 self.hdf5file = h5py.File(filename,'r')
     
     
-    def store(self, container):
+    def store(self, container, extra_attributes = {}):
         if hasattr(container, 'shape') and len(container.shape) > 1:
-            self.store_grid(container)
+            self.store_grid(container, extra_attributes)
         else:            
-            self.store_particles(container)
+            self.store_particles(container, extra_attributes)
     
     def new_group(self, master_group):
         index = len(master_group)
         name = format(index + 1,"010d")
         return master_group.create_group(name)
         
-    def store_particles(self, particles):
+    def store_particles(self, particles, extra_attributes = {}):
         group = self.new_group(self.particles_group())
         
         group.attrs["number_of_particles"] = len(particles)
@@ -216,18 +216,18 @@ class StoreHDF(object):
         keys = particles.get_all_keys_in_store()
         dataset = group.create_dataset("keys", data=keys)
 
-        self.store_collection_attributes(particles, group)
+        self.store_collection_attributes(particles, group, extra_attributes)
         self.store_values(particles, group)
             
         self.hdf5file.flush()
     
-    def store_grid(self, grid):
+    def store_grid(self, grid, extra_attributes = {}):
         group = self.new_group(self.grids_group())
         
         group.attrs["class_of_the_container"] = pickle.dumps(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
     
-        self.store_collection_attributes(grid, group)
+        self.store_collection_attributes(grid, group, extra_attributes)
         self.store_values(grid, group)
         
         self.hdf5file.flush()
@@ -255,9 +255,13 @@ class StoreHDF(object):
     
     
     
-    def store_collection_attributes(self, container, group):
+    def store_collection_attributes(self, container, group, extra_attributes):
         collection_attributes, collection = container.collection_attributes.__getstate__()
-        for name, quantity in collection_attributes.iteritems():
+        arguments_and_attributes = {}
+        arguments_and_attributes.update(collection_attributes)
+        arguments_and_attributes.update(extra_attributes)
+        
+        for name, quantity in arguments_and_attributes.iteritems():
             if quantity is None:
                 continue 
             if is_quantity(quantity):
@@ -373,7 +377,8 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     def store(self):
         processor = StoreHDF(self.filename, self.append_to_file, open_for_writing = True)
         try:
-            return processor.store(self.set)
+            print self.extra_attributes
+            return processor.store(self.set, self.extra_attributes)
         finally:
             processor.close()
     

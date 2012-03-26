@@ -222,7 +222,6 @@ class TableFormattedText(base.FileFormatProcessor):
             columns.append(map(self.convert_number_to_string, x))
         
         rows = []
-        print " self.key_in_column",  self.key_in_column
         for i in range(len(columns[0])):
             row = [x[i] for x in columns]
             

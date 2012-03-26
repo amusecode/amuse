@@ -206,7 +206,10 @@ class FileFormatProcessor(object):
         for key, value in dictionary.iteritems():
             if key in supported_options:
                 setattr(self, key, value)
-                
+            else:
+                self.extra_attributes[key] = value
+         
+        
     def store(self):
         """
         Stores the set in the file.
@@ -240,6 +243,18 @@ class FileFormatProcessor(object):
                 doc = ""
             description = textwrap.dedent(doc)
             yield (option, description, default_value)
+            
+    
+    @format_option
+    def extra_attributes(self):
+        """Extra attributes to store with the data set. Some
+        formats (moste notably the amuse native format) 
+        can store extra attributes with the set in file. The
+        'write_set_to_file' function will collect all keyword arguments
+        that do not match to an option into the extra attributes 
+        dictionary.
+        """
+        return {}
             
 class FullTextFileFormatProcessor(FileFormatProcessor):
     """

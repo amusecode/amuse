@@ -47,7 +47,7 @@ class AbstractGrid(AbstractSet):
         instance._private.attribute_storage = self._private.attribute_storage.copy()
         instance.collection_attributes.timestamp = timestamp
         
-        for name, value in attributes:
+        for name, value in attributes.iteritems():
             setattr(instance.collection_attributes, name, value)
             
         instance._private.previous = self._private.previous
@@ -382,7 +382,6 @@ class SamplePointWithIntepolation(object):
     
     def __getattr__(self, name_of_the_attribute):
         values = self.get_values_of_attribute(name_of_the_attribute)
-        print values, self.weighing_factors
         return (values * self.weighing_factors).sum()
         
         

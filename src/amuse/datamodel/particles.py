@@ -958,7 +958,7 @@ class Particles(AbstractParticleSet):
         instance._private.attribute_storage = self._private.attribute_storage.copy()
         instance.collection_attributes.timestamp = timestamp
         
-        for name, value in attributes:
+        for name, value in attributes.iteritems():
             setattr(instance.collection_attributes, name, value)
             
         instance._private.previous = self._private.previous

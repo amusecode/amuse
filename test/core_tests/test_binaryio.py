@@ -283,8 +283,10 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         file = open(filename, 'rb')
         x = nemobin.NemoBinaryFileFormatProcessor()
 
-        set = x.load_file(file)
+        set = x.load_file(file).previous_state()
         file.close()
+        print set.collection_attributes
+        self.assertTrue(False)
         self.assertEquals(len(set), 128)
         self.assertAlmostRelativeEquals(set.kinetic_energy(), 0.230214395174 | nbody_system.energy, 8)
         self.assertAlmostRelativeEquals(set.potential_energy(G=nbody_system.G), -0.473503040144  | nbody_system.energy, 8)        

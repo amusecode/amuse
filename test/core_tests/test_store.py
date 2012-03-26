@@ -206,3 +206,80 @@ class TestStoreHDF(amusetest.TestCase):
         
     
 
+    def test9(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test9.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        number_of_particles = 10
+        p = Particles(number_of_particles)
+        p.mass = [x * 2.0 for x in range(number_of_particles)] | units.kg
+        p.model_time = 2.0 | units.s
+
+        io.write_set_to_file(p, output_file, "hdf5",  timestamp = 2 | units.Myr, scale = 1 | units.kg)
+        
+        loaded_particles = io.read_set_from_file(output_file, "hdf5").previous_state()
+        a = loaded_particles.collection_attributes
+        self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
+        self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
+
+
+    def test10(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test10.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+       
+        shape = 10, 10, 10
+        p = Grid(*shape)
+        p.mass = ([x * 2.0 for x in range(p.size)] | units.kg).reshape(shape)
+        p.model_time = 2.0 | units.s
+
+        io.write_set_to_file(p, output_file, "hdf5",  timestamp = 2 | units.Myr, scale = 1 | units.kg)
+        
+        loaded = io.read_set_from_file(output_file, "hdf5").previous_state()
+        a = loaded.collection_attributes
+        self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
+        self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
+
+
+    def test11(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test11.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        number_of_particles = 10
+        p = Particles(number_of_particles)
+        p.mass = [x * 2.0 for x in range(number_of_particles)] | units.kg
+        p.model_time = 2.0 | units.s
+
+        io.write_set_to_file(p.savepoint(timestamp = 2 | units.Myr, scale = 1 | units.kg), output_file, "hdf5")
+        
+        loaded_particles = io.read_set_from_file(output_file, "hdf5").previous_state()
+        a = loaded_particles.collection_attributes
+        self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
+        self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
+        
+    
+    def test12(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test10.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+       
+        shape = 10, 10, 10
+        p = Grid(*shape)
+        p.mass = ([x * 2.0 for x in range(p.size)] | units.kg).reshape(shape)
+        p.model_time = 2.0 | units.s
+
+        io.write_set_to_file(p.savepoint(timestamp = 2 | units.Myr, scale = 1 | units.kg), output_file, "hdf5")
+        
+        loaded = io.read_set_from_file(output_file, "hdf5").previous_state()
+        a = loaded.collection_attributes
+        self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
+        self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
+
