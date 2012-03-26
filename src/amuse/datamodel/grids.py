@@ -42,15 +42,22 @@ class AbstractGrid(AbstractSet):
         return self._private.previous
         
         
-    def savepoint(self, timestamp=None):
+    def savepoint(self, timestamp=None, **attributes):
         instance = type(self)()
         instance._private.attribute_storage = self._private.attribute_storage.copy()
-        instance._private.timestamp = timestamp
+        instance.collection_attributes.timestamp = timestamp
+        
+        for name, value in attributes:
+            setattr(instance.collection_attributes, name, value)
+            
         instance._private.previous = self._private.previous
         self._private.previous = instance
         return instance
     
     
+    def get_timestamp(self):
+        return self.collection_attributes.timestamp
+        
     def new_channel_to(self, other):
         return GridInformationChannel(self, other)
     
@@ -94,6 +101,9 @@ class Grid(AbstractGrid):
             self._private.attribute_storage = kwargs['storage']
         else:
             self._private.attribute_storage = InMemoryGridAttributeStorage(*args)
+            
+        self._private.previous = None
+        self.collection_attributes.timestamp = None
     
     @classmethod
     def create(cls, shape, lengths, axes_names = ('x', 'y', 'z')):

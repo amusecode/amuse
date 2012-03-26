@@ -938,7 +938,7 @@ class Particles(AbstractParticleSet):
             self.set_values_in_store(self.get_all_indices_in_store(), attributenames, attributevalues, by_key=False)
             
         self._private.previous = None
-        self._private.timestamp = None
+        self.collection_attributes.timestamp = None
         
     
     def __getitem__(self, index):
@@ -953,17 +953,21 @@ class Particles(AbstractParticleSet):
     def _get_version(self):
         return self._private.version
         
-    def savepoint(self, timestamp=None):
+    def savepoint(self, timestamp=None, **attributes):
         instance = type(self)()
         instance._private.attribute_storage = self._private.attribute_storage.copy()
-        instance._private.timestamp = timestamp
+        instance.collection_attributes.timestamp = timestamp
+        
+        for name, value in attributes:
+            setattr(instance.collection_attributes, name, value)
+            
         instance._private.previous = self._private.previous
         instance._private.version = 0
         self._private.previous = instance
         return instance
     
     def get_timestamp(self):
-        return self._private.timestamp
+        return self.collection_attributes.timestamp
         
     def iter_history(self):
         current = self._private.previous
@@ -1004,7 +1008,7 @@ class Particles(AbstractParticleSet):
         timeline = []
         for x in self.history:
             if x.has_key_in_store(particle_key):
-                timeline.append((x._private.timestamp, x._get_value_of_attribute(particle_key, attribute)))
+                timeline.append((x.collection_attributes.timestamp, x._get_value_of_attribute(particle_key, attribute)))
         return timeline
 
     def get_timeline_of_attribute_as_vector(self, particle_key, attribute):
@@ -1012,7 +1016,7 @@ class Particles(AbstractParticleSet):
         chrono_values = AdaptingVectorQuantity()
         for x in self.history:
             if x.has_key_in_store(particle_key):
-                timeline.append(x._private.timestamp)
+                timeline.append(x.collection_attributes.timestamp)
                 chrono_values.append(x._get_value_of_attribute(particle_key, attribute))
         return timeline, chrono_values
     
@@ -1023,7 +1027,7 @@ class Particles(AbstractParticleSet):
         for x in self.history:
             if x.has_key_in_store(particle_key):
                 if  units[0] is None:
-                    units[0] = x._private.timestamp.unit
+                    units[0] = x.collection_attributes.timestamp.unit
                 for i, attribute in enumerate(attributes):
                     quantity = x._get_value_of_attribute(particle_key, attribute)
                     if  units[i+1] is None:

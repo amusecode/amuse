@@ -318,6 +318,7 @@ class CollectionAttributes(object):
     
     def _copy_for_collection(self, newcollection):
         return CollectionAttributes(newcollection, self._attributes)
+        
 
 class PrivateProperties(object):
     """

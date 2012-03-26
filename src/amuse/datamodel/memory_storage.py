@@ -293,7 +293,7 @@ class InMemoryGridAttributeStorage(object):
         return self.number_of_i * self.number_of_j * self.number_of_k
         
     def copy(self):
-        copy = InMemoryGridAttributeStorage()
+        copy = InMemoryGridAttributeStorage(*self.number_of_points_in_each_direction)
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy

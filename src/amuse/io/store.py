@@ -216,7 +216,7 @@ class StoreHDF(object):
         keys = particles.get_all_keys_in_store()
         dataset = group.create_dataset("keys", data=keys)
 
-        self.store_timestamp(particles, group)
+        self.store_collection_attributes(particles, group)
         self.store_values(particles, group)
             
         self.hdf5file.flush()
@@ -226,8 +226,8 @@ class StoreHDF(object):
         
         group.attrs["class_of_the_container"] = pickle.dumps(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
-        
-        self.store_timestamp(grid, group)
+    
+        self.store_collection_attributes(grid, group)
         self.store_values(grid, group)
         
         self.hdf5file.flush()
@@ -254,14 +254,41 @@ class StoreHDF(object):
             group.attrs["timestamp_unit"] = quantity.unit.reference_string()
     
     
+    
+    def store_collection_attributes(self, container, group):
+        collection_attributes, collection = container.collection_attributes.__getstate__()
+        for name, quantity in collection_attributes.iteritems():
+            if quantity is None:
+                continue 
+            if is_quantity(quantity):
+                group.attrs[name] = quantity.value_in(quantity.unit)
+                group.attrs[name+"_unit"] = quantity.unit.reference_string()
+            else:
+                group.attrs[name] = quantity
+                group.attrs[name+"_unit"] = "none"
+            
+    def load_collection_attributes(self, container, group):
+        names = group.attrs.keys()
+        attributenames = [x for x in names if x + '_unit' in group.attrs]
+        for name in attributenames:
+            unit_string = group.attrs[name+"_unit"]
+            if unit_string == 'none':
+                quantity = group.attrs[name]
+            else:
+                unit = eval(group.attrs[name+"_unit"], core.__dict__) 
+                quantity = unit.new_quantity(group.attrs[name])
+            setattr(container.collection_attributes, name, quantity)
+                
     def load(self):
         if not self.PARTICLES_GROUP_NAME in self.hdf5file:
             return self.load_grid()
         else:
             if len(self.particles_group()) > 0:
                 return self.load_particles()
-            else:
+            elif len(self.grids_group()) > 0:
                 return self.load_grid()
+            else:
+                raise Exception("No particles or grids found in the hdf5 file")
                 
     def load_particles(self):
         particles_group = self.particles_group()
@@ -274,15 +301,9 @@ class StoreHDF(object):
             keys = numpy.ndarray(len(dataset), dtype = dataset.dtype)
             dataset.read_direct(keys)
             
-            if "timestamp" in group.attrs:
-                unit = eval(group.attrs["timestamp_unit"], core.__dict__) 
-                timestamp = unit.new_quantity(group.attrs["timestamp"])
-            else:
-                timestamp = None
-            
             particles = class_of_the_particles()
             particles._private.attribute_storage = HDF5AttributeStorage(keys, group)
-            particles._private.timestamp = timestamp
+            self.load_collection_attributes(particles, group)
             
             all_particle_sets[int(group_index) - 1] = particles
             
@@ -307,15 +328,10 @@ class StoreHDF(object):
             class_of_the_container = pickle.loads(group.attrs["class_of_the_container"])
             shape = tuple(group["shape"])
             
-            if "timestamp" in group.attrs:
-                unit = eval(group.attrs["timestamp_unit"], core.__dict__) 
-                timestamp = unit.new_quantity(group.attrs["timestamp"])
-            else:
-                timestamp = None
             
             container = class_of_the_container()
             container._private.attribute_storage = HDF5GridAttributeStorage(shape, group)
-            container._private.timestamp = timestamp
+            self.load_collection_attributes(container, group)
             
             all_containers[int(group_index) - 1] = container
             

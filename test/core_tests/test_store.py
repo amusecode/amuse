@@ -53,6 +53,8 @@ class TestStoreHDF(amusetest.TestCase):
 
         instance = store.StoreHDF(output_file)
         loaded_particles = instance.load()
+        self.assertAlmostRelativeEquals(loaded_particles.previous_state().get_timestamp(), 2 | units.Myr)
+        self.assertAlmostRelativeEquals(loaded_particles.previous_state().previous_state().get_timestamp(), 1 | units.Myr)
         masses = loaded_particles[1].get_timeline_of_attribute("mass")
         self.assertEquals(len(masses), 2)
 
@@ -134,11 +136,12 @@ class TestStoreHDF(amusetest.TestCase):
         p = Grid(*shape)
         p.mass = ([x * 2.0 for x in range(p.size)] | units.kg).reshape(shape)
         p.model_time = 2.0 | units.s
-
-        instance.store_grid(p)
+        
+        instance.store_grid(p.savepoint(1| units.Myr))
 
         loaded_grid = instance.load_grid().previous_state()
         
+        self.assertAlmostRelativeEquals(loaded_grid.get_timestamp(), 1| units.Myr)
         
         self.assertEquals(loaded_grid.shape, shape)
         self.assertEquals(loaded_grid[0][0][0].mass, 0 | units.kg)
