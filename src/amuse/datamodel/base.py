@@ -558,6 +558,7 @@ class AbstractSet(object):
         >>> particles.y = [3.0 , 4.0] | units.m
         >>> print particles.xy
         [3.0, 8.0] m**2
+        >>> del Particles.GLOBAL_DERIVED_ATTRIBUTES['xy']
         
         """
         cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = CalculatedAttribute(function, attributes_names)
@@ -603,7 +604,7 @@ class AbstractSet(object):
         >>> particles.x = [4.0 , 2.0] | units.m
         >>> particles.sum_of_x()
         quantity<6.0 m>
-
+        >>> del Particles.GLOBAL_DERIVED_ATTRIBUTES['sum_of_x']
         
         """
         
