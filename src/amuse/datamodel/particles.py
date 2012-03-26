@@ -11,7 +11,6 @@ from amuse.units.quantities import is_quantity
 from amuse.units.quantities import as_vector_quantity
 from amuse.units.quantities import zero
 from amuse.units.quantities import AdaptingVectorQuantity
-from amuse.units.quantities import AdaptingVectorQuantity
 
 import numpy
 
@@ -1087,23 +1086,20 @@ class BoundSupersetParticlesFunctionAttribute(object):
         self.subsetfunctions.append(callable)
         
     def __call__(self, *list_arguments, **keyword_arguments):
-        result = None
-        offset = 0
+        subset_results = []
         for x in self.subsetfunctions:
-            subset_result = x(*list_arguments, **keyword_arguments)
-            if subset_result is None and result is None:
-                result = None
-            elif hasattr(subset_result, 'unit'):
-                if result is None:
-                    result = VectorQuantity.zeros(len(self.superset), subset_result.unit)
-                    offset = 0
-                result[offset:len(subset_result)+offset] = subset_result
-                offset += len(subset_result)
-            else:
-                if result is None:
-                    result = []
-                result.extend(subset_result)
-        return result
+            subset_results.append(x(*list_arguments, **keyword_arguments))
+        
+        if subset_results[0] is None:
+            return None
+        if isinstance(subset_results[0], AbstractParticleSet):
+            return ParticlesSuperset(subset_results)
+        if hasattr(subset_results[0], 'unit'):
+            result = AdaptingVectorQuantity()
+            for one_result in subset_results:
+                result.extend(one_result)
+            return result
+        return [item for one_result in subset_results for item in one_result]
 
 class DerivedSupersetAttribute(DerivedAttribute):
                         
@@ -1322,7 +1318,7 @@ class ParticlesSuperset(AbstractParticleSet):
         result_indices_array = numpy.arange(len(indices))
         for setindex, x in enumerate(self._private.particle_sets):
             mask = numpy.logical_and( (indices >= offset) , (indices < (offset + len(x))) )
-            split_sets[setindex] = x.get_all_indices_in_store()[indices[mask]-offset]
+            split_sets[setindex] = numpy.asarray(x.get_all_indices_in_store())[indices[mask]-offset]
             split_indices[setindex] = result_indices_array[mask]
             offset = offset + len(x)
         return split_sets, split_indices

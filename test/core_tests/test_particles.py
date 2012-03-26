@@ -963,7 +963,79 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertEquals(superset.u2 , [30,30,20,20])
         superset.u2 = 15
         self.assertEquals(superset.u2 , [15,15,15,15])
+    
+    def test11(self):
+        print "ParticlesSuperset from one set, of one particle"
+        particles1 = datamodel.Particles(1)
+        particles1.u = 10
+        superset = datamodel.ParticlesSuperset([particles1])
         
+        self.assertTrue(hasattr(superset, 'u'))
+        self.assertEquals(superset.u, [10])
+        self.assertEquals(len(superset.u), 1)
+        self.assertEquals(len(superset), 1)
+        
+        particles1.y = 3 | units.m
+        self.assertTrue(hasattr(superset, 'y'))
+        self.assertEquals(superset.y , [3] | units.m)
+        self.assertEquals(len(superset.y), 1)
+        
+        particles1.x = [1.0] | units.m
+        particles1.y = [3.0] | units.m
+        particles1.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y + o, lambda ap, p, o : p.x * p.y + o)
+        superset = datamodel.ParticlesSuperset([particles1])
+        self.assertEquals(len(superset), 1)
+        self.assertEquals(superset.x, [1.0] | units.m)
+        self.assertEquals(superset.xtimesypluso(0.0 | units.m**2), [3.0] | units.m**2)
+        self.assertEquals(superset.xtimesypluso(2.0 | units.m**2), [5.0] | units.m**2)
+        self.assertEquals(superset[0].xtimesypluso(0.0 | units.m**2), 3.0 | units.m**2)
+        self.assertEquals(superset[0].xtimesypluso(2.0 | units.m**2), 5.0 | units.m**2)
+    
+    def test12(self):
+        print "ParticlesSuperset - query"
+        set1 = datamodel.Particles(4)
+        set1.x = [-1.0, 1.0, 2.0, 3.0] | units.m
+        set1.add_function_attribute("greater_than", lambda p, o : p[p.x > o], lambda ap, p, o : p if p.x > o else None)
+        superset = datamodel.ParticlesSuperset([set1])
+        
+        self.assertEqual(len(set1.greater_than(-2.0 | units.m)), 4)
+        self.assertTrue(isinstance(set1.greater_than(-2.0 | units.m), datamodel.ParticlesSubset))
+        self.assertEqual(len(set1.greater_than(0.0 | units.m)), 3)
+        self.assertTrue(isinstance(set1.greater_than(0.0 | units.m), datamodel.ParticlesSubset))
+        self.assertTrue(numpy.all(set1.greater_than(0.0 | units.m).x > 0.0 | units.m))
+        self.assertEqual(len(set1.greater_than(3.0 | units.m)), 0)
+        self.assertTrue(isinstance(set1.greater_than(3.0 | units.m), datamodel.ParticlesSubset))
+        
+        self.assertEqual(len(superset.greater_than(-2.0 | units.m)), 4)
+        self.assertTrue(isinstance(superset.greater_than(-2.0 | units.m), datamodel.ParticlesSuperset))
+        self.assertEqual(len(superset.greater_than(0.0 | units.m)), 3)
+        self.assertTrue(isinstance(superset.greater_than(0.0 | units.m), datamodel.ParticlesSuperset))
+        self.assertTrue(numpy.all(superset.greater_than(0.0 | units.m).x > 0.0 | units.m))
+        self.assertEqual(len(superset.greater_than(3.0 | units.m)), 0)
+        self.assertTrue(isinstance(superset.greater_than(3.0 | units.m), datamodel.ParticlesSuperset))
+        
+        self.assertEqual(superset[0].greater_than(-2.0 | units.m), superset[0])
+        self.assertTrue(isinstance(superset[0].greater_than(-2.0 | units.m), datamodel.Particle))
+        self.assertEqual(superset[0].greater_than(0.0 | units.m), None)
+        
+        set2 = datamodel.Particles(1)
+        set2.x = [4.0] | units.m
+        set2.add_function_attribute("greater_than", lambda p, o : p[p.x > o], lambda ap, p, o : p if p.x > o else None)
+        superset = datamodel.ParticlesSuperset([set1, set2])
+        self.assertEqual(len(superset.greater_than(-2.0 | units.m)), 5)
+        self.assertTrue(isinstance(superset.greater_than(-2.0 | units.m), datamodel.ParticlesSuperset))
+        self.assertEqual(len(superset.greater_than(3.0 | units.m)), 1)
+        self.assertTrue(isinstance(superset.greater_than(3.0 | units.m), datamodel.ParticlesSuperset))
+        self.assertEqual(superset.greater_than(2.0 | units.m).x, [3.0, 4.0] | units.m)
+        
+        superset.add_function_attribute("greater_than", lambda p, o : p[p.x > o], lambda ap, p, o : p if p.x > o else None)
+        self.assertEqual(len(superset.greater_than(-2.0 | units.m)), 5)
+        self.assertTrue(isinstance(superset.greater_than(-2.0 | units.m), datamodel.ParticlesSubset))
+        self.assertEqual(len(superset.greater_than(3.0 | units.m)), 1)
+        self.assertTrue(isinstance(superset.greater_than(3.0 | units.m), datamodel.ParticlesSubset))
+        self.assertEqual(superset.greater_than(2.0 | units.m).x, [3.0, 4.0] | units.m)
+        
+    
     
 class TestSliceParticles(amusetest.TestCase):
     

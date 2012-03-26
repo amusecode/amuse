@@ -1073,19 +1073,20 @@ class TestGadget2(TestWithMPI):
         print instance.stopping_conditions
         self.assertTrue(density_limit_detection.is_set())
         self.assertTrue(instance.model_time < 10.0 | units.Myr)
-        self.assertEquals(len(density_limit_detection.particles(0, particle_name="gas_particles")), 1)
-        self.assertTrue(density_limit_detection.particles(0, particle_name="gas_particles").density > 
+        self.assertEquals(len(density_limit_detection.particles()), 1)
+        self.assertTrue(density_limit_detection.particles().density > 
                 10 * self.UnitMass / self.UnitLength**3)
         
-        instance.particles.remove_particles(density_limit_detection.particles(0, particle_name="gas_particles"))
+        instance.particles.remove_particles(density_limit_detection.particles())
         
         instance.evolve_model(10.0 | units.Myr)
         print instance.model_time.as_quantity_in(units.Myr)
         print instance.stopping_conditions
         self.assertTrue(density_limit_detection.is_set())
         self.assertTrue(instance.model_time < 10.0 | units.Myr)
-        self.assertEquals(len(density_limit_detection.particles(0, particle_name="gas_particles")), 2)
-        self.assertEquals((density_limit_detection.particles(0, particle_name="gas_particles").density > 
+        
+        self.assertEquals(len(density_limit_detection.particles()), 2)
+        self.assertEquals((density_limit_detection.particles().density > 
                 10 * self.UnitMass / self.UnitLength**3), [True, True])
         instance.stop()
     
@@ -1109,19 +1110,19 @@ class TestGadget2(TestWithMPI):
         print instance.stopping_conditions
         self.assertTrue(internal_energy_limit_detection.is_set())
         self.assertTrue(instance.model_time < 10.0 | units.Myr)
-        self.assertEquals(len(internal_energy_limit_detection.particles(0, particle_name="gas_particles")), 4)
-        self.assertEquals((internal_energy_limit_detection.particles(0, particle_name="gas_particles").u > 
+        self.assertEquals(len(internal_energy_limit_detection.particles()), 4)
+        self.assertEquals((internal_energy_limit_detection.particles().u > 
                 10 * initial_internal_energy), [True, True, True, True])
         
-        instance.particles.remove_particles(internal_energy_limit_detection.particles(0, particle_name="gas_particles"))
+        instance.particles.remove_particles(internal_energy_limit_detection.particles())
         
         instance.evolve_model(10.0 | units.Myr)
         print instance.model_time.as_quantity_in(units.Myr)
         print instance.stopping_conditions
         self.assertTrue(internal_energy_limit_detection.is_set())
         self.assertTrue(instance.model_time < 10.0 | units.Myr)
-        self.assertEquals(len(internal_energy_limit_detection.particles(0, particle_name="gas_particles")), 3)
-        self.assertEquals((internal_energy_limit_detection.particles(0, particle_name="gas_particles").u > 
+        self.assertEquals(len(internal_energy_limit_detection.particles()), 3)
+        self.assertEquals((internal_energy_limit_detection.particles().u > 
                 10 * initial_internal_energy), [True, True, True])
         instance.stop()
 
