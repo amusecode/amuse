@@ -94,7 +94,9 @@ class TableFormattedText(base.FileFormatProcessor):
         
     @base.format_option
     def attribute_names(self):
-        "list of the names of the attributes to load or store"
+        """
+        List of the names of the attributes to load or store
+        """
         if self.set is None:
             return map(lambda x : "col({0})".format(x), range(len(self.quantities)))
         else:
@@ -102,7 +104,12 @@ class TableFormattedText(base.FileFormatProcessor):
         
     @base.format_option
     def attribute_types(self):
-        "list of the types of the attributes to store"
+        """
+        List of the units of the attributes to store. If not given the 
+        units will be derived from the units stored in the attribute set.
+        When derived from the set, the units will always be converted to
+        the base units.
+        """
         quantities = self.quantities
         if self.quantities:
             return map(lambda x : x.unit.to_simple_form(), quantities)
@@ -111,25 +118,31 @@ class TableFormattedText(base.FileFormatProcessor):
     
     @base.format_option
     def header_prefix_string(self):
-        "lines starting with this character will be handled as part of the header"
+        """
+        Lines starting with this character will be handled as part of the header
+        """
         return '#'
         
     
     @base.format_option
     def column_separator(self):
-        "separator between the columns"
+        """
+        Separator between the columns
+        """
         return ' '
         
     @base.format_option
     def footer_prefix_string(self):
-        "lines starting with this character will be handled as part of the footer"
+        """
+        Lines starting with this character will be handled as part of the footer
+        """
         return self.header_prefix_string
         
     @base.format_option
     def key_in_column(self):
-        """column for the key (default is -1, no key stored/loaded).
-        keys will be interleaved with the data if set other than 0.
-        no attribute type or name is needed for the key
+        """Column for the key (default is -1, no key stored/loaded).
+        Keys will be interleaved with the data if set other than 0.
+        No attribute type or name can be given for the key.
         """
         return -1
         
@@ -251,8 +264,14 @@ class TableFormattedText(base.FileFormatProcessor):
         else:
             return datamodel.Particles(number_of_items)
         
-    @late
+    
+    @base.format_option
     def quantities(self):
+        """
+        List of vector quantities, each vector quantity is one column in the text file.
+        By default this list will be derived from the particles set. When this
+        option is given it will override the particle set data.
+        """
         if self.set is None:
             return []
         else:
