@@ -251,6 +251,63 @@ class TestGrids(amusetest.TestCase):
         self.assertAlmostRelativeEquals( grid[1][1].y, 0.75 | units.m)
         self.assertEquals(grid[0].x, grid.x[0])
         self.assertEquals(grid[0][1].x, grid.x[0][1])
+        
+    def test18(self):
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        self.assertEquals(grid.shape, (5,4,2) )
+        self.assertEquals(grid[1:2,...,...].x.shape, (1,4,2) )
+        self.assertEquals(grid[1:2,...,...].shape, (1,4,2) )
+        self.assertEquals(grid[1:2,...,...].x, grid.x[1:2,...,...])
+        self.assertEquals(grid[1:3,...,...].x.shape, (2,4,2) )
+        self.assertEquals(grid[1:3,...,...].shape, (2,4,2) )
+        self.assertEquals(grid[1:3,...,...].x, grid.x[1:3,...,...])
+
+    def test19(self):
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        self.assertEquals(grid[1:3,...,...].x, grid.x[1:3,...,...])
+        self.assertEquals(grid[1:3,2:3,...].x, grid.x[1:3,2:3,...])
+        self.assertEquals(grid[1:3,2:3,0:1].x, grid.x[1:3,2:3,0:1])
+        self.assertEquals(grid[1:3,...,0:1].x, grid.x[1:3,...,0:1])
+        self.assertEquals(grid[...,...,0:1].x, grid.x[...,...,0:1])
+        self.assertEquals(grid[...,2:3,0:1].x, grid.x[...,2:3,0:1])
+        
+    def test20(self):
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        self.assertEquals(grid[1:3,:,:].x, grid.x[1:3,:,:])
+        self.assertEquals(grid[1:3,2:3,:].x, grid.x[1:3,2:3,:])
+        self.assertEquals(grid[1:3,2:3,0:1].x, grid.x[1:3,2:3,0:1])
+        self.assertEquals(grid[1:3,:,0:1].x, grid.x[1:3,:,0:1])
+        self.assertEquals(grid[:,:,0:1].x, grid.x[:,:,0:1])
+        self.assertEquals(grid[:,2:3,0:1].x, grid.x[:,2:3,0:1])
+        
+        
+    def test21(self):
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        self.assertEquals(grid[1:3,:,:].copy_to_memory().x, grid.x[1:3,:,:])
+        self.assertEquals(grid[1:3,:,:].copy_to_memory().shape, (2,4,2))
+        self.assertEquals(grid[1:3,2:3,:].copy_to_memory().x, grid.x[1:3,2:3,:])
+        self.assertEquals(grid[1:3,2:3,:].copy_to_memory().shape, (2,1,2))
+        self.assertEquals(grid[1:3,2:3,0:1].copy_to_memory().x, grid.x[1:3,2:3,0:1])
+        self.assertEquals(grid[1:3,2:3,0:1].copy_to_memory().shape, (2,1,1))
+        self.assertEquals(grid[1:3,:,0:1].copy_to_memory().x, grid.x[1:3,:,0:1])
+        self.assertEquals(grid[1:3,:,0:1].copy_to_memory().shape, (2,4,1))
+        self.assertEquals(grid[:,:,0:1].copy_to_memory().x, grid.x[:,:,0:1])
+        self.assertEquals(grid[:,:,0:1].copy_to_memory().shape, (5,4,1))
+        self.assertEquals(grid[:,2:3,0:1].copy_to_memory().x, grid.x[:,2:3,0:1])
+        self.assertEquals(grid[:,2:3,0:1].copy_to_memory().shape, (5,1,1))
+        
+    
+    def test22(self):
+        grid1 = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid2 = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        slice1 = grid1[1:3,:,:].copy_to_memory()
+        slice2 = grid2[1:3,:,:]
+        slice1.x = -10 | units.m
+        channel = slice1.new_channel_to(slice2)
+        channel.copy()
+        self.assertEquals(grid2.x[1:3], -10 | units.m)
+        self.assertEquals(grid2.x[4],grid1.x[4])
+        
 
 class TestIndexing(amusetest.TestCase):
     def test1(self):
@@ -258,7 +315,9 @@ class TestIndexing(amusetest.TestCase):
         self.assertEquals(3, number_of_dimensions_after_index(3, numpy.s_[0:3]))
         self.assertEquals(1, number_of_dimensions_after_index(3, combine_indices(3,2)))
         self.assertEquals(0, number_of_dimensions_after_index(3, combine_indices(combine_indices(3,2),1)))
-
+        self.assertEquals(3, indexing.number_of_dimensions_after_index(3, numpy.s_[1:2,...,...])) 
+        self.assertEquals(3, indexing.number_of_dimensions_after_index(3, numpy.s_[1:2,:,:])) 
+        
     def test2(self):
         a = numpy.arange(12).reshape(3,4)
         print a, a[0][0:2]
@@ -344,10 +403,30 @@ class TestIndexing(amusetest.TestCase):
         a = numpy.arange(60).reshape(5,6,2)
         direct =  a[3]
         indirect = a[combine_indices(3,None)]
+        print combine_indices(3,2)
         print direct, indirect, combine_indices(combine_indices(3,2),1), a[(3,2,1)]
-        
         self.assertEquals(indirect.shape, direct.shape)
         self.assertTrue(numpy.all(indirect ==  direct))
+    
+    def test12(self):
+        self.assertEquals((1,4,2), indexing.shape_after_index((5,4,2), numpy.s_[1:2,...,...])) 
+        self.assertEquals((1,4,2), indexing.shape_after_index((5,4,2), numpy.s_[1:2,:,:])) 
+        self.assertEquals((2,4,2), indexing.shape_after_index((5,4,2), numpy.s_[1:3,...,...])) 
+        self.assertEquals((2,4,2), indexing.shape_after_index((5,4,2), numpy.s_[1:3,:,:])) 
+        self.assertEquals((2,1,2), indexing.shape_after_index((5,4,2), numpy.s_[1:3,2:3,...])) 
+        self.assertEquals((2,1,2), indexing.shape_after_index((5,4,2), numpy.s_[1:3,2:3,:])) 
+        
+    
+    def test13(self):
+        combined_indices = combine_indices(numpy.s_[1:3],numpy.s_[:])
+        self.assertEquals(combined_indices, numpy.s_[1:3:1])
+        combined_indices = combine_indices(numpy.s_[:], numpy.s_[1:3])
+        self.assertEquals(combined_indices, numpy.s_[1:3:1])
+        combined_indices = combine_indices((numpy.s_[:], numpy.s_[:]), (numpy.s_[1:3], numpy.s_[1:2]))
+        self.assertEquals(combined_indices,(numpy.s_[1:3:1], numpy.s_[1:2:1]))
+        
+        combined_indices = combine_indices((numpy.s_[0:2], numpy.s_[:]), (numpy.s_[1:3], numpy.s_[1:2]))
+        self.assertEquals(combined_indices,(numpy.s_[1:2:1], numpy.s_[1:2:1]))
         
         
 class TestGridAttributes(amusetest.TestCase):

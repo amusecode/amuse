@@ -39,6 +39,13 @@ def combine_indices(index0, index1):
     if isinstance(index0, tuple):
         if len(index0) == 1:
             index0 = index0[0]
+        elif isinstance(index1, tuple):
+            if len(index0) == len(index1):
+                combined = [ combine_indices(p0, p1) for p0, p1 in zip(index0, index1)]
+                print combined
+                return tuple(combined)
+            else:
+                raise Exception("unhandled case, two tuple one with different length")
         else:
             result = []
             result.extend(index0[:-1])
@@ -48,7 +55,7 @@ def combine_indices(index0, index1):
             else: 
                 result.append(continuation)
             return tuple(result)
-    
+        
     if isinstance(index0, int) or isinstance(index0, long):
         return (index0, index1)
     elif isinstance(index0, slice):
@@ -79,6 +86,8 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
             for x in index:
                 if isinstance(x, EllipsisType):
                     pass
+                elif isinstance(x, slice):
+                    pass 
                 else:
                     result -= 1
             return result
@@ -97,6 +106,7 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
         raise Exception("Not handled yet")
     
 def shape_after_index(shape, index):
+    print shape, type(shape)
     if isinstance(index, tuple):
         if is_all_int(index):
             return tuple(shape[len(index):])
@@ -109,6 +119,21 @@ def shape_after_index(shape, index):
             for i,x in enumerate(index):
                 if isinstance(x, EllipsisType):
                     result.append(shape_as_list[i])
+                elif isinstance(x, slice):
+                    
+                    start,stop,step = unpack_slice(x)
+                    if start is None:
+                        start = 0
+                    if stop is None:
+                        stop = shape_as_list[i]
+                    if stop < 0:
+                        stop = shape_as_list[i] + stop
+                    if start < 0:
+                        start = shape_as_list[i] + start
+                        
+                    nmax =  min(stop, shape_as_list[i])
+                    nitems = (stop - start) // step
+                    result.append(nitems)
                 else:
                     pass
             return tuple(result)
