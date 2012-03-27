@@ -1,8 +1,5 @@
 from amuse.test import amusetest
 
-
-
-
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.datamodel.indexing import *
@@ -16,6 +13,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse import datamodel
+
 class TestGrids(amusetest.TestCase):
     
     def test1(self):
@@ -307,7 +305,18 @@ class TestGrids(amusetest.TestCase):
         channel.copy()
         self.assertEquals(grid2.x[1:3], -10 | units.m)
         self.assertEquals(grid2.x[4],grid1.x[4])
-        
+    
+    
+    def test23(self):
+        grid1 = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid2 = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        slice1 = grid1[1:3,...,...].copy_to_memory()
+        slice2 = grid2[1:3,...,...]
+        slice1.x = -10 | units.m
+        channel = slice1.new_channel_to(slice2)
+        channel.copy()
+        self.assertEquals(grid2.x[1:3], -10 | units.m)
+        self.assertEquals(grid2.x[4],grid1.x[4])
 
 class TestIndexing(amusetest.TestCase):
     def test1(self):

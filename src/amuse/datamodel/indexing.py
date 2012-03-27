@@ -62,9 +62,20 @@ def combine_indices(index0, index1):
         if isinstance(index1, int) or isinstance(index1, long):
             start,stop,step = unpack_slice(index0)
             return start + (index1 * step)
+        elif isinstance(index1, EllipsisType):
+            return index0
         else:
             start,stop,step = combine_slices(index0, index1)
             return numpy.s_[start:stop:step]
+    elif isinstance(index0, EllipsisType):
+        if isinstance(index1, slice):
+            return index1
+        elif isinstance(index1, EllipsisType):
+            return index0
+        elif isinstance(index1, int) or isinstance(index1, long):
+            return index1
+        else:
+            raise Exception("not handled yet")
     else:
         raise Exception("index must be a integer, slice or sequence")
 
