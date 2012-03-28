@@ -65,8 +65,8 @@ download:
 
 clean:
 	$(RM) -f *.mod *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ worker_code worker_code.f90
-	$(RM) mocassin_worker
+	$(RM) *~ worker_code worker_code.f90 worker_code-sockets.f90
+	$(RM) mocassin_worker mocassin_worker_sockets
 	-make -C $(CODEDIR) clean
 	
 distclean: clean
