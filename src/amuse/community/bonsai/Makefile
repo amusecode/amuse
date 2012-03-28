@@ -44,7 +44,7 @@ compile: $(CUDA_TK) $(CODELIB)
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ bonsai_worker worker_code.cc
+	$(RM) *~ bonsai_worker worker_code.cc worker_code-sockets.cc bonsai_worker_sockets
 	make -C src clean
 
 $(CODELIB):
