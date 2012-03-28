@@ -1,3 +1,6 @@
+AMUSE_DIR?=../..
+-include ${AMUSE_DIR}/config.mk
+
 VERSION = -20120328-snapshot
 
 CODEDIR = deploy${VERSION}
@@ -11,7 +14,9 @@ CLASSPATH="deploy/lib/*:tmp"
 all: deploy ${LIBPROFILING} lib/ibis-amuse.jar
 
 $(LIBPROFILING):src/profiling/*.c
+ifeq ($(MPI_ENABLED),yes)
 	make -C src/profiling all
+endif
 
 deploy: ${CODEDIR}
 	ln -fs ${CODEDIR} deploy
