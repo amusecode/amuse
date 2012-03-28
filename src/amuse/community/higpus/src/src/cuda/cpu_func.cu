@@ -213,7 +213,7 @@ HostError Max_dimension(unsigned int TPB, unsigned int BFMAX, unsigned int N, un
 	int local_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
 
-	if(local_rank == 0)
+	//if(local_rank == 0)
 		//cout<<" Maximum dimension chosen for the accelerations array : "<<*dim_max<<endl;
 
 	MPI_Barrier(MPI_COMM_WORLD);
