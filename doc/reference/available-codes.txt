@@ -32,6 +32,7 @@ Stellar Dynamics
 * mercury_
 * huayno_
 * mmc_
+* HiGPUs
 
 General
 -------
@@ -84,6 +85,12 @@ Note: holds for AMUSE implementation.
 |         |                     |                 |        |         |      |         |              |             |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|HiGPUs   |direct               |block time step  |N       |Y        |N     |C/C++    |              |Y(on cluster)|
+|         |                     |                 |        |         |      |         |              |             |
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+
+
 
 (1) stopping conditions
    
@@ -852,7 +859,99 @@ parameters
     
     .. autoclass:: mmc
     
-        
+
+HiGPUs
+--------
+
+HiGPUs is a parallel direct N-body code based on a 6th order Hermite 
+integrator. The code uses, at the same time, MPI, OpenMP and CUDA 
+libraries to fully exploit all the capabilities offered by the 
+most modern hybrid supercomputers in the world. Moreover it is 
+implemented using block time steps taking into account the 
+properties of the stiff problems such as the gravitational N-body 
+problem.
+
+Specifics
+#########
+
+Parameters
+^^^^^^^^^^
+
++------------------------------------+---------------+---------------+-------------------+
+|name                                |default value  | unit          | description       |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++====================================+===============+===============+===================+
+|N                                   |8192           |none           |number of stars    |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|eta_6                               |0.4            |none           |eta parameter for  |
+|                                    |               |               |determining stars  |
+|                                    |               |               |time steps         |
++------------------------------------+---------------+---------------+-------------------+
+|eta_4                               |0.01           |none           |eta parameter for  |
+|                                    |               |               |initializing blocks|
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|softening                           |0.001          |length         |smoothing parameter|
+|                                    |               |               |for gravity        |
+|                                    |               |               |calculations       |
++------------------------------------+---------------+---------------+-------------------+
+|r_core_plummer                      |0.0            |length         |core radius for    |
+|                                    |               |               |analytical plummer |
+|                                    |               |               |potential          |
++------------------------------------+---------------+---------------+-------------------+
+|mass_plummer                        |0.0            |mass           |total mass for     |
+|                                    |               |               |analytical plummer |
+|                                    |               |               |potential          |
++------------------------------------+---------------+---------------+-------------------+
+|start_time                          |0.0            |time           |initial simulation |
+|                                    |               |               |time               |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|min_step                            |-30.0          |none           |exponent which defi|
+|                                    |               |               |nes the minimum    |
+|                                    |               |               |time step allowed  |
+|                                    |               |               |for stars          |
+|                                    |               |               |(2^exponent)       |
++------------------------------------+---------------+---------------+-------------------+
+|max_step                            |-3.0           |none           |exponent which defi|
+|                                    |               |               |nes the maximum    |
+|                                    |               |               |time step allowed  |
+|                                    |               |               |for stars          | 
+|                                    |               |               |(2^exponent)       |
++------------------------------------+---------------+---------------+-------------------+
+|n_Print                             |1000000        |none           |maximum number of  | 
+|                                    |               |               |snapshots          |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|dt_Print                            |1.0            |time           |time interval      |
+|                                    |               |               |between            |
+|                                    |               |               |diagnostics        |
+|                                    |               |               |output             |
++------------------------------------+---------------+---------------+-------------------+
+|n_gpu                               |2              |none           |number of GPUs per | 
+|                                    |               |               |node               |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|gpu_name                            |GeForce GTX 480|none           |GPUs to use        | 
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|Threads                             |128            |none           |number of gpus     | 
+|                                    |               |               |threads per block  |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+
+
+For more information about parameters check teh readme file in the docs folder.
+
+.. automodule:: amuse.community.higpus.interface
+    
+    .. autoclass:: HiGPUs
+    
+        .. autoparametersattribute:: parameters       
 
 
 
