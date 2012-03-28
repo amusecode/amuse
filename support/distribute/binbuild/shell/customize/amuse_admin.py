@@ -19,7 +19,7 @@ def test():
     amuse. All unit tests are run using nose and you can give all
     nose arguments here. Examples:
     
-    amuse-admin test -v amuse.test.suite.code_tests
+    amuse-admin test -v amuse.test.suite.codes_tests
     amuse-admin test -v amuse.test.suite.ext_tests
     
     """
@@ -46,11 +46,13 @@ def help():
     
     Type 'amuse-admin help <subcommand>' for help on a specific subcommand.
     """
-    
-    commandname = sys.argv[1]
-    for x in _commands:
-        if x.__name__ == commandname:
-            print textwrap.dedent(x.__doc__).strip()
+    if len(sys.argv) > 1:
+        commandname = sys.argv[1]
+        for x in _commands:
+            if x.__name__ == commandname:
+                print textwrap.dedent(x.__doc__).strip()
+    else:
+        usage()
 
 def usage():
     """
