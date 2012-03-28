@@ -14,7 +14,7 @@ $(LIBPROFILING):src/profiling/*.c
 	make -C src/profiling all
 
 deploy: ${CODEDIR}
-	ln -s ${CODEDIR} deploy
+	ln -fs ${CODEDIR} deploy
 
 $(CODEDIR):
 ifdef DOWNLOAD_CODES
