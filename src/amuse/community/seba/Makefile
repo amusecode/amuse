@@ -22,7 +22,7 @@ all: seba_worker
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
-	$(RM) *~ worker_code
+	$(RM) *~ worker_code seba_worker
 	@-make -C src clean
 
 distclean:
