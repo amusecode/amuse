@@ -362,7 +362,7 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
         if self.is_multiple:
             for subgrid in self.set:
                 
-                quantities = map(lambda x:getattr(subgrid, x),self.attribute_names)
+                quantities = subgrid.get_values_in_store(None, self.attribute_names)
                 points = subgrid.points()
                 number_of_cells =  numpy.prod(subgrid.shape)
                 offsets = ((numpy.arange(number_of_cells, dtype=numpy.int32) + 1) * 8)
