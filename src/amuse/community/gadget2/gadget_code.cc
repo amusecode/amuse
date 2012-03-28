@@ -1280,6 +1280,8 @@ int get_mass(int *index, double *mass, int length){
                 mass[i] = buffer[i];
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1287,7 +1289,7 @@ int get_mass(int *index, double *mass, int length){
     return 0;
 }
 
-int check_counts(int *count, int length){
+int check_counts_and_free(int *count, int length){
     int errors = 0;
     if(ThisTask) {
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -1299,6 +1301,7 @@ int check_counts(int *count, int length){
                 errors++;
         }
     }
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1317,7 +1320,7 @@ int set_mass(int *index, double *mass, int length){
         } else count[i] = 0;
     }
     global_quantities_of_system_up_to_date = false;
-    return check_counts(count, length);
+    return check_counts_and_free(count, length);
 }
 
 int get_radius(int index, double *radius){
@@ -1366,6 +1369,8 @@ int get_position(int *index, double *x, double *y, double *z, int length){
             }
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1386,7 +1391,7 @@ int set_position(int *index, double *x, double *y, double *z, int length){
         } else count[i] = 0;
     }
     global_quantities_of_system_up_to_date = false;
-    return check_counts(count, length);
+    return check_counts_and_free(count, length);
 }
 
 int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
@@ -1427,6 +1432,8 @@ int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
             }
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1457,7 +1464,7 @@ int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
         } else count[i] = 0;
     }
     global_quantities_of_system_up_to_date = false;
-    return check_counts(count, length);
+    return check_counts_and_free(count, length);
 }
 
 int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
@@ -1514,6 +1521,8 @@ int get_state(int *index, double *mass, double *x, double *y, double *z, double 
             }
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1548,7 +1557,7 @@ int set_state(int *index, double *mass, double *x, double *y, double *z, double 
         } else count[i] = 0;
     }
     global_quantities_of_system_up_to_date = false;
-    return check_counts(count, length);
+    return check_counts_and_free(count, length);
 }
 
 int get_state_sph(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy, int length) {
@@ -1622,6 +1631,8 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
             }
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1672,7 +1683,7 @@ int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
         } else count[i] = 0;
     }
     global_quantities_of_system_up_to_date = false;
-    return check_counts(count, length);
+    return check_counts_and_free(count, length);
 }
 
 int get_acceleration(int *index, double * ax, double * ay, double * az, int length){
@@ -1718,6 +1729,8 @@ int get_acceleration(int *index, double * ax, double * ay, double * az, int leng
             }
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1771,6 +1784,8 @@ int get_internal_energy(int *index, double *internal_energy, int length){
                 internal_energy[i] = buffer[i];
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1812,7 +1827,7 @@ int set_internal_energy(int *index, double *internal_energy, int length){
         } else count[i] = 0;
     }
     global_quantities_of_system_up_to_date = false;
-    return check_counts(count, length);
+    return check_counts_and_free(count, length);
 }
 
 int get_smoothing_length(int *index, double *smoothing_length, int length){
@@ -1849,6 +1864,8 @@ int get_smoothing_length(int *index, double *smoothing_length, int length){
                 smoothing_length[i] = buffer[i];
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1890,6 +1907,8 @@ int get_density(int *index, double *density_out, int length){
                 density_out[i] = buffer[i];
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1930,6 +1949,8 @@ int get_pressure(int *index, double *pressure_out, int length){
                 pressure_out[i] = buffer[i];
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -1978,6 +1999,8 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
                 d_internal_energy_dt_out[i] = buffer[i];
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -2018,6 +2041,8 @@ int get_n_neighbours(int *index, double *n_neighbours, int length){
                 n_neighbours[i] = buffer[i];
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors){
         cout << "Number of particles not found: " << errors << endl;
         return -3;
@@ -2126,6 +2151,8 @@ int get_potential(int *index, double *potential, int length) {
             }
         }
     }
+    delete[] buffer;
+    delete[] count;
     if (errors) {
         cout << "Number of particles not found: " << errors << endl;
         return -3;
