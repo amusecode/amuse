@@ -158,7 +158,7 @@ public class SocketCodeInterface implements CodeInterface {
             if (info.getMpiexec() == null || info.getMpiexec().equalsIgnoreCase("none")) {
                 logger.info("not using mpiexec (as it is not set, or set to 'none')");
                 if (info.getNrOfProcesses() > 1) {
-                    logger.warn("this probably won't work, as more than one worker is requested");
+                    throw new CodeException( info.getNrOfProcesses() + "requested, but mpiexec not set, or set to 'none'");
                 }
                 builder.command(executable.toString(), Integer.toString(serverSocket.socket().getLocalPort()));
             } else if (info.getNrOfNodes() == 1) {
