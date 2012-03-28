@@ -97,7 +97,7 @@ import inspect
 
 from amuse.datamodel import parameters
 from amuse.datamodel import base
-from amuse.datamodel import Particles
+from amuse.datamodel import Particles, ParticlesSuperset
 from amuse.datamodel import ParticleInformationChannel
 from amuse.datamodel import Particle
 from amuse.datamodel import AttributeStorage
@@ -336,18 +336,31 @@ class ParticleQueryMethod(object):
     
     The idex or indices are converted to a particle subset.
     """
-    def __init__(self, method, names = (), public_name = None):
+    def __init__(self, method, names = (), public_name = None, query_superset=False):
         self.method = method
         self.name_of_the_out_parameters = names
         self.public_name = public_name
+        if query_superset:
+            self.apply = self.apply_for_superset
+        else:
+            self.apply = self.apply_normal
 
-    def apply(self, particles, *args, **kwargs):
+    def apply_normal(self, particles, *args, **kwargs):
         indices = self.method(*args, **kwargs)
         keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)
-        #print "keys:", keys  , indices
-        #print particles.x
         return particles._subset(keys)
-        
+    
+    def apply_for_superset(self, particles, *args, **kwargs):
+        indices = self.method(*args, **kwargs)
+        subset_results = []
+        for subset in particles._private.particle_sets:
+            keys = []
+            for index in indices:
+                if index in subset._private.attribute_storage.mapping_from_index_in_the_code_to_particle_key:
+                    keys.append(subset._private.attribute_storage.mapping_from_index_in_the_code_to_particle_key[index])
+            subset_results.append(subset._subset(keys))
+        return ParticlesSuperset(subset_results)
+    
 
 class ParticleSpecificSelectMethod(object):
     """

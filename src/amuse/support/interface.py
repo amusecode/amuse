@@ -929,15 +929,27 @@ class ParticleSupersetDefinition(AbstractParticleSetDefinition):
         self.index_to_default_set = index_to_default_set
         self.is_superset = True
         self.particles_factory = datamodel.ParticlesSuperset
+        self.queries = []
         
     
     def new_set_instance(self, handler):
         subsets = [handler.get_attribute(subset_name, None) for subset_name in self.particle_subset_names]
-        return self.particles_factory(
+        result = self.particles_factory(
             subsets, 
             index_to_default_set=self.index_to_default_set
         )
+        for one_query in self.new_queries(handler.interface):
+            result.add_function_attribute(one_query.public_name, one_query.apply)
+        return result
     
+    def new_queries(self, interface):
+        queries = []
+        for name, names, public_name in self.queries:
+            x = incode_storage.ParticleQueryMethod(getattr(interface, name), names, public_name, query_superset=True)
+            queries.append(x)
+        return queries
+    
+
 class GridDefinition(AbstractParticleSetDefinition):
 
     def __init__(self, handler):

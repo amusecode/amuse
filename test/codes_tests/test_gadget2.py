@@ -1063,6 +1063,9 @@ class TestGadget2(TestWithMPI):
         instance.initialize_code()
         instance.parameters.stopping_condition_maximum_density = 10 * self.UnitMass / self.UnitLength**3
         instance.gas_particles.add_particles(gas)
+        stars = new_plummer_model(5, self.default_convert_nbody)
+        stars.x += 1000 * self.UnitLength
+        instance.dm_particles.add_particles(stars)
         self.assertIsOfOrder(max(instance.gas_particles.density), self.UnitMass / self.UnitLength**3)
         
         density_limit_detection = instance.stopping_conditions.density_limit_detection

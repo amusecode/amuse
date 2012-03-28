@@ -1652,8 +1652,7 @@ class Gadget2(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('radius',))
         object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('epsilon',))
 
-        self.stopping_conditions.define_particle_set(object, 'dm_particles')
-        self.stopping_conditions.define_particle_set(object, 'gas_particles')
+        self.stopping_conditions.define_particle_set(object)
     
     def define_errorcodes(self, object):
         object.add_errorcode(-1, 'Unspecified, other error.')
