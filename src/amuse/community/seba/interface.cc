@@ -94,6 +94,8 @@ int evolve_star(double mass, double endtime, double metal, double * resulttime, 
         //    << "   " << type_string(bi->get_starbase()->get_element_type())
     }
     
+    rmtree(root);
+    
     return 0;
 }
 
