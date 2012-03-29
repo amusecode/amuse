@@ -97,9 +97,29 @@ class ForTesting(InCodeComponentImplementation):
     def __init__(self, exefile, **options):
         self.stopping_conditions = stopping_conditions.StoppingConditions(self)
         InCodeComponentImplementation.__init__(self, ForTestingInterface(exefile, **options), **options)
+        self.my_particles = datamodel.Particles()
     
     def define_methods(self, object):
         self.stopping_conditions.define_methods(object)
+    
+    def new_particle(self, mass):
+        particles = datamodel.Particles(len(mass))
+        particles.mass = mass
+        self.my_particles.add_particles(particles)
+        return range(len(self.my_particles)-len(mass), len(self.my_particles))
+    
+    def get_mass(self, indices):
+        return self.my_particles.mass[indices]
+    
+    def delete_particle(self, particle):
+        self.my_particles.remove_particle(particle)
+    
+    def define_particle_sets(self, object):
+        object.define_set('particles', 'index_of_the_particle')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_particle')
+        object.add_getter('particles', 'get_mass', names=("mass",))
+        self.stopping_conditions.define_particle_set(object)
 
         
 class TestInterface(TestWithMPI):
@@ -258,6 +278,42 @@ class TestInterface(TestWithMPI):
         instance.set_stopping_condition_info(next,instance.stopping_conditions.out_of_box_detection.type)
         self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
         instance.stop()
+    
+    def test7(self):
+        instance = ForTesting(self.exefile)
+        particles = datamodel.Particles(20)
+        particles.mass = range(1, 21) | units.kg
+        instance.particles.add_particles(particles)
+        instance.reset_stopping_conditions()
+        
+        pairs = [(11, 12), (0, 4), (3, 18), (7, 2)]
+        next = instance.next_index_for_stopping_condition()
+        self.assertFalse(instance.stopping_conditions.pair_detection.is_set())
+        instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
+        instance.set_stopping_condition_particle_index(next, 0, pairs[0][0])
+        instance.set_stopping_condition_particle_index(next, 1, pairs[0][1])
+        self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
+        self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 1)
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(1)), 1)
+        
+        for index1, index2 in pairs[1:]:
+            next = instance.next_index_for_stopping_condition()
+            instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
+            instance.set_stopping_condition_particle_index(next, 0, index1)
+            instance.set_stopping_condition_particle_index(next, 1, index2)
+            self.assertEquals(index1, instance.get_stopping_condition_particle_index(next, 0))
+            self.assertEquals(index2, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 4)
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(1)), 4)
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(2)), 0)
+        
+        self.assertEquals(instance.stopping_conditions.pair_detection.particles(0).mass, 
+            [first + 1 for first, second in pairs] | units.kg)
+        self.assertEquals(instance.stopping_conditions.pair_detection.particles(1).mass, 
+            [second + 1 for first, second in pairs] | units.kg)
+        instance.stop()
 
 
 class TestInterfaceF(TestWithMPI):
@@ -392,5 +448,41 @@ class TestInterfaceF(TestWithMPI):
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
         self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
         self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
+        instance.stop()
+    
+    def test6(self):
+        instance = ForTesting(self.exefile)
+        particles = datamodel.Particles(20)
+        particles.mass = range(1, 21) | units.kg
+        instance.particles.add_particles(particles)
+        instance.reset_stopping_conditions()
+        
+        pairs = [(11, 12), (0, 4), (3, 18), (7, 2)]
+        next = instance.next_index_for_stopping_condition()
+        self.assertFalse(instance.stopping_conditions.pair_detection.is_set())
+        instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
+        instance.set_stopping_condition_particle_index(next, 0, pairs[0][0])
+        instance.set_stopping_condition_particle_index(next, 1, pairs[0][1])
+        self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
+        self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 1)
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(1)), 1)
+        
+        for index1, index2 in pairs[1:]:
+            next = instance.next_index_for_stopping_condition()
+            instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
+            instance.set_stopping_condition_particle_index(next, 0, index1)
+            instance.set_stopping_condition_particle_index(next, 1, index2)
+            self.assertEquals(index1, instance.get_stopping_condition_particle_index(next, 0))
+            self.assertEquals(index2, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 4)
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(1)), 4)
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(2)), 0)
+        
+        self.assertEquals(instance.stopping_conditions.pair_detection.particles(0).mass, 
+            [first + 1 for first, second in pairs] | units.kg)
+        self.assertEquals(instance.stopping_conditions.pair_detection.particles(1).mass, 
+            [second + 1 for first, second in pairs] | units.kg)
         instance.stop()
     

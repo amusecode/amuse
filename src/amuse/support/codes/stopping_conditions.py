@@ -313,31 +313,24 @@ class StoppingCondition(object):
     def is_set(self):
         return self.conditions.code.is_stopping_condition_set(self.type) == 1
 
-    def get_set_conditions_info(self, index_in_the_condition = None):
-        indices = list(range(self.conditions.code.get_number_of_stopping_conditions_set()))
+    def get_set_condition_indices(self, index_in_condition):
+        indices = range(self.conditions.code.get_number_of_stopping_conditions_set())
         types, number_of_particles = self.conditions.code.get_stopping_condition_info(indices)
     
-        result =[]
-        for index, type, number_of_stored_particles in zip(indices, types, number_of_particles):
-            if type == self.type:
-                if index_in_the_condition == None:
-                    result.append(number_of_stored_particles)
-                elif index_in_the_condition < number_of_stored_particles:
-                    result.append(index)
-    
+        result = []
+        for index, type, number_of_particles_in_condition in zip(indices, types, number_of_particles):
+            if type == self.type and index_in_condition < number_of_particles_in_condition:
+                result.append(index)
         return result
     
-    def number_of_particles(self):
-        return self.get_set_conditions_info()
-    
-    def particles(self, index_in_the_condition=0, particle_name="particles"):
-        selected = self.get_set_conditions_info(index_in_the_condition)
+    def particles(self, index_in_the_condition=0, particles_set_name="particles"):
+        selected = self.get_set_condition_indices(index_in_the_condition)
         
         if len(selected) == 0:
-            return []
+            return self.conditions.code.__getattr__(particles_set_name)[0:0]
         else:
-            return self.conditions.code.__getattr__(particle_name).get_stopping_condition_particle_index(selected, 
-                                                                                                         [index_in_the_condition]*len(selected))
+            return self.conditions.code.__getattr__(particles_set_name).get_stopping_condition_particle_index(
+                selected, [index_in_the_condition]*len(selected))
         
 class StoppingConditions(object):
 
