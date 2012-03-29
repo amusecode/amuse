@@ -816,34 +816,53 @@ class TestFi(TestWithMPI):
         instance.stop()
 
     def test13b(self):
-        particles = datamodel.Particles(2)
-        particles.x = [0.0,0.0] | nbody_system.length
-        particles.y = 0 | nbody_system.length
-        particles.z = 0 | nbody_system.length
+        print "Test out_of_box_detection stopping condition"
+        particles = datamodel.Particles(3)
+        particles.position = [0.0, 0.0, 0.0] | nbody_system.length
+        particles.velocity = [[-1.0, 0, 0], [1.0, 0, 0], [0.5, 0, 0]] | nbody_system.speed
         particles.radius = 0.001 | nbody_system.length
-        particles.vx =  [-1,1.] | nbody_system.speed
-        particles.vy =  0 | nbody_system.speed
-        particles.vz =  0 | nbody_system.speed
         particles.mass = 1.0 | nbody_system.mass
-    
+        
+        gas = datamodel.Particles(2)
+        gas.position = [[0.0, 0.5, 0.0], [0.0, -0.5, 0.0]] | nbody_system.length
+        gas.velocity = [[0.0, 0.5, 0.0], [0.0, -0.25, 0.0]] | nbody_system.speed
+        gas.radius = 0.001 | nbody_system.length
+        gas.mass = 1.0 | nbody_system.mass
+        gas.u = 0.01 | nbody_system.specific_energy
+        
         instance = Fi()
         instance.initialize_code()
-        instance.parameters.stopping_conditions_out_of_box_size = 1. | nbody_system.length
-        instance.parameters.self_gravity_flag=False
-        instance.parameters.timestep=0.25 | nbody_system.time
-        self.assertEquals(instance.parameters.stopping_conditions_out_of_box_size,  1.| nbody_system.length)
-        instance.parameters.epsilon_squared = (0.001 | nbody_system.length)**2
+        instance.parameters.stopping_conditions_out_of_box_size = 1.0 | nbody_system.length
+        instance.parameters.self_gravity_flag = False
+        instance.parameters.timestep = 0.25 | nbody_system.time
+        self.assertEquals(instance.parameters.stopping_conditions_out_of_box_size,  1.0 | nbody_system.length)
+        instance.gas_particles.add_particles(gas)
         instance.dm_particles.add_particles(particles)
-        instance.stopping_conditions.out_of_box_detection.enable()
+        out_of_box_detection = instance.stopping_conditions.out_of_box_detection
+        out_of_box_detection.enable()
         instance.evolve_model(2 | nbody_system.time)
-        self.assertEquals(instance.stopping_conditions.out_of_box_detection.number_of_particles()[0],2)
-        print instance.stopping_conditions.out_of_box_detection.particles(0, 'dm_particles')
-        print instance.stopping_conditions.out_of_box_detection.particles(1, 'dm_particles')
-        self.assertEquals(instance.stopping_conditions.out_of_box_detection.particles(2, 'dm_particles'),[])
-    
-        self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
-        self.assertAlmostEqual(instance.model_time.number ,1.,3)
+        self.assertTrue(out_of_box_detection.is_set())
+        self.assertAlmostEqual(instance.model_time, 1.0 | nbody_system.time, 3)
+        self.assertEquals(len(out_of_box_detection.particles()), 3)
+        self.assertEquals(out_of_box_detection.particles().position.lengths() >= 
+            1.0 | nbody_system.length, [True, True, True])
+        self.assertEquals(len(out_of_box_detection.particles(1)), 0)
+        instance.particles.remove_particles(out_of_box_detection.particles())
         
+        stopping_conditions_info = str(instance.stopping_conditions).split("\n")
+        self.assertEquals(stopping_conditions_info[0], "Stopping conditions of a 'Fi' object")
+        for i, word in enumerate(["supported", "enabled", "set"]):
+            self.assertTrue(word in stopping_conditions_info[i+1])
+            self.assertTrue("out_of_box_detection" in stopping_conditions_info[i+1])
+        
+        instance.evolve_model(1.5 | nbody_system.time)
+        self.assertFalse(out_of_box_detection.is_set())
+        self.assertAlmostEqual(instance.model_time, 1.5 | nbody_system.time, 3)
+        
+        instance.evolve_model(3.0 | nbody_system.time)
+        self.assertTrue(out_of_box_detection.is_set())
+        self.assertAlmostEqual(instance.model_time, 2.0 | nbody_system.time, 3)
+        self.assertEquals(len(out_of_box_detection.particles()), 2)
         instance.stop()
 
     

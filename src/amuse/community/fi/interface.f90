@@ -4,7 +4,9 @@ function initialize_code() result(ret)
   integer :: set_support_for_condition, error
   call muse_start
   call muse_reset
+  error = set_support_for_condition(TIMEOUT_DETECTION)
   error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
+  error = set_support_for_condition(OUT_OF_BOX_DETECTION)
   ret=0
 end function
 

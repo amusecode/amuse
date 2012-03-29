@@ -284,7 +284,7 @@ subroutine muse_stepsys(tend,sync)
  include 'globals.h'
  include 'stopcond.inc'
  real :: tend, stop_boxsize
- integer :: i,p
+ integer :: p
  integer :: sync
  integer :: is_any_condition_set
  integer :: is_stopping_condition_enabled
@@ -336,18 +336,14 @@ subroutine muse_stepsys(tend,sync)
       endif
    endif
    if (is_out_of_box_detection_enabled.GT.0) then
-      i=0
       do p=1,nbodies
-      if(sum(pos(p,1:3)**2).GE.stop_boxsize**2) then
-         if(i.EQ.0) then
+         if(sum(pos(p,1:3)**2).GE.stop_boxsize**2) then
             stopping_index = next_index_for_stopping_condition()
-            error = set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION)
+            if (stopping_index.GE.0) then
+               error = set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION)
+               error = set_stopping_condition_particle_index(stopping_index, 0, nbexist(p))
+            endif
          endif
-         if (i.LT.10) then
-            error = set_stopping_condition_particle_index(stopping_index, i, p)
-         endif
-         i=i+1
-      endif
       enddo
    endif
 
