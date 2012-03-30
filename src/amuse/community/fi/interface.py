@@ -1645,6 +1645,10 @@ class Fi(GravitationalDynamics):
         object.add_method('RUN', 'get_center_of_mass_velocity')
         object.add_method('RUN', 'get_total_mass')
         object.add_method('RUN', 'get_time')
+        object.add_method('EDIT', 'get_time')
+        object.add_method('INITIALIZED', 'get_time')
+        object.add_method('PARAMETER_CHANGE_A', 'get_time')
+        object.add_method('PARAMETER_CHANGE_B', 'get_time')
         object.add_method('RUN', 'get_hydro_state_at_point')
     
 # this should be checked!

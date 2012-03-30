@@ -1149,3 +1149,36 @@ class TestFi(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.gas_particles[0].x, 0.1 | nbody_system.length)
         self.assertAlmostRelativeEquals(instance.gas_particles.x, [0.1] | nbody_system.length)
         
+
+    def test21(self):
+        instance=Fi()
+        instance.parameters.use_hydro_flag = 0
+        instance.parameters.self_gravity_flag = 0
+        instance.parameters.periodic_box_size = 1 | nbody_system.length
+        instance.parameters.timestep = 0.2 | nbody_system.time
+        instance.commit_parameters()
+        instance.parameters.use_hydro_flag =1
+        particles = datamodel.Particles(2)
+        particles.mass = 0.5 | nbody_system.mass
+        particles[0].position = [1.0,0.0,0.0] | nbody_system.length
+        particles[1].position = [-1.0,0.0,0.] | nbody_system.length
+        particles.velocity = [0,0,0] | nbody_system.speed
+        particles.u = 0.0 | nbody_system.potential
+        print particles
+        
+        try:
+            t = instance.model_time 
+            self.assertEquals(t, 0 | nbody_system.time)
+            channel = instance.particles.new_channel_to(particles)
+            self.assertEquals(0, len(instance.particles))
+            particles.synchronize_to(instance.particles)
+            self.assertEquals(2, len(instance.particles))
+            instance.commit_particles()
+            
+            self.assertEquals(2, len(particles))
+            instance.particles.synchronize_to(particles)
+            self.assertEquals(2, len(particles))
+            channel.copy()
+        except Exception as ex:
+            print ex
+            self.fail("requesting the model time should not trigger a commit_particles")
