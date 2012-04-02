@@ -32,7 +32,7 @@ Stellar Dynamics
 * mercury_
 * huayno_
 * mmc_
-* HiGPUs
+* HiGPUs_
 
 General
 -------
@@ -85,8 +85,8 @@ Note: holds for AMUSE implementation.
 |         |                     |                 |        |         |      |         |              |             |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|HiGPUs   |direct               |block time step  |N       |Y        |N     |C/C++    |              |Y(on cluster)|
-|         |                     |                 |        |         |      |         |              |             |
+|HiGPUs   |direct               |block time steps |N       |Y        |N     |C/C++    |              |Y (on gpus   |
+|         |                     |                 |        |         |      |         |              |cluster)     |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 
@@ -945,7 +945,15 @@ Parameters
 +------------------------------------+---------------+---------------+-------------------+
 
 
-For more information about parameters check teh readme file in the docs folder.
+For more information about parameters check the readme file in the docs folder.
+These are the maximum performance (in Gflops) reached using different single GPUs installed, one at a time, on a workstation equipped with 2 CPUs Intel Xeon X5650, 12 GB of ECC RAM memory 1333 MHz, Ubuntu Lucid 10.04 x86_64, motherboard Supermicro X8DTG-QF:
+  
+    * TESLA C1060  :  107
+    * TESLA C2050  :  395
+    * TESLA M2070  :  391
+    * GeForce GTX 480  :  265
+    * GeForce GTX 580  :  311
+
 
 .. automodule:: amuse.community.higpus.interface
     
