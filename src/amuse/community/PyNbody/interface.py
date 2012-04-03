@@ -43,7 +43,7 @@ class PyNbodyImplementation(object):
         num = len(self.particles)
         particles = Particles({"body": num})
         for (i, p) in enumerate(self.particles):
-            particles["body"].index[i] = i
+            particles["body"].id[i] = i
             particles["body"].mass[i] = p["mass"]
             particles["body"].eps2[:] = self.eps2/2
             particles["body"].pos[i] = [p["x"], p["y"], p["z"]]
