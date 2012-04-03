@@ -75,6 +75,9 @@ ph4_worker_sockets: worker_code-sockets.cc interface.h $(CODELIB) $(OBJS)
 ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU) -DGPU
 
+ph4_worker_gpu_sockets: worker_code-sockets.cc interface.h $(CODELIB_GPU) $(OBJS)
+	$(MPICXX) $(CXXFLAGS) worker_code-sockets.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU) -DGPU
+
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
 
