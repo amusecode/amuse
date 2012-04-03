@@ -28,7 +28,7 @@
       ! simpleeff: use constant grain heating efficiency (only exp((T/2.e4)**2) falloff) 
       ! cosmrayheat: use cosmic ray heating
       INTEGER nbodsmax,nsphmax
-      PARAMETER(nbodsmax=300000,nsphmax=200000)
+      PARAMETER(nbodsmax=2000000,nsphmax=1000000)
       ! hard limits on maximum number of particles: all & sph
       
       LOGICAL periodic
