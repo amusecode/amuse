@@ -285,13 +285,12 @@ class CollectionAttributes(object):
     as a timestamp or a 
     """
     
-    def __init__(self, collection = None, attributes = None):
+    def __init__(self, attributes = None):
         if attributes is None:
             attributes = OrderedDictionary()
         else:
             attributes = attributes.copy()
         
-        object.__setattr__(self, '_collection', collection)
         object.__setattr__(self, '_attributes', attributes)
     
     def __getattr__(self, name):
@@ -304,11 +303,10 @@ class CollectionAttributes(object):
         self._attributes[name] = value
     
     def __getstate__(self):
-        return self._attributes, self._collection
+        return self._attributes
         
     def __setstate__(self, data):
-        object.__setattr__(self, '_collection', data[1])
-        object.__setattr__(self, '_attributes', data[0])
+        object.__setattr__(self, '_attributes', data)
         
     def __str__(self):
         lines = []
@@ -317,7 +315,7 @@ class CollectionAttributes(object):
         return '\n'.join(lines)
     
     def _copy_for_collection(self, newcollection):
-        return CollectionAttributes(newcollection, self._attributes)
+        return CollectionAttributes(self._attributes)
         
 
 class PrivateProperties(object):
@@ -359,7 +357,7 @@ class AbstractSet(object):
         object.__setattr__(self, "_derived_attributes", CompositeDictionary(derived_attributes))
         object.__setattr__(self, "_private", PrivateProperties())
         
-        self._private.collection_attributes = CollectionAttributes(self)
+        self._private.collection_attributes = CollectionAttributes()
     
     @property
     def collection_attributes(self):

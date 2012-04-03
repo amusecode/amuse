@@ -256,7 +256,7 @@ class StoreHDF(object):
     
     
     def store_collection_attributes(self, container, group, extra_attributes):
-        collection_attributes, collection = container.collection_attributes.__getstate__()
+        collection_attributes = container.collection_attributes.__getstate__()
         arguments_and_attributes = {}
         arguments_and_attributes.update(collection_attributes)
         arguments_and_attributes.update(extra_attributes)
