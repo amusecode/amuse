@@ -36,6 +36,12 @@ VU-GPU.job.options = sshsge.native.flags = -l num_gpu=1
 VU-GPU.latitude = 52.3328
 VU-GPU.longitude = 4.8669
 
+VU-MC.support.uri = ssh://fs0.das4.cs.vu.nl
+VU-MC.job.uri = sshsge://fs0.das4.cs.vu.nl
+VU-MC.job.options = sshsge.native.flags = -l fat,m_type=magnycours
+VU-MC.latitude = 52.3328
+VU-MC.longitude = 4.8669
+
 Leiden.support.uri = ssh://fs1.das4.liacs.nl
 Leiden.job.uri = sshsge://fs1.das4.liacs.nl
 Leiden.latitude = 52.1686
