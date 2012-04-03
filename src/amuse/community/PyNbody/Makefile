@@ -1,4 +1,7 @@
-all: build install
+all: download build install
+
+download:
+	git clone git://github.com/GuilhermeFerrari/PyNbody.git
 
 build:
 	(cd PyNbody; python setup.py build)
