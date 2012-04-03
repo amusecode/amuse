@@ -12,3 +12,6 @@ install:
 clean:
 	rm -f *.pyc; (cd PyNbody; python setup.py clean -a)
 
+clean_all:
+	rm -f *.pyc; rm -rf PyNbody
+
