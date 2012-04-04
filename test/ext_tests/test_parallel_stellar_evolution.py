@@ -63,9 +63,9 @@ class TestParallelStellarEvolution(TestCase):
     def test4(self):
         print "Testing ParallelStellarEvolution parameters"
         parallel = ParallelStellarEvolution(self.code_factory, number_of_workers=3)
-        self.assertRaises(AmuseException, getattr, parallel, "parameters", expected_message=
-            "Not implemented for parallel stellar evolution")
-#~        parallel.parameters.metallicity = 0.01
-#~        self.assertEqual(parallel.parameters.metallicity, 0.01)
+        parallel.parameters.metallicity = 0.01
+        self.assertEqual(parallel.parameters.metallicity, 0.01)
+        for code in parallel.code_instances:
+            self.assertEqual(code.parameters.metallicity, 0.01)
         parallel.stop()
     

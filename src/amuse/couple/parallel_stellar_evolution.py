@@ -13,10 +13,7 @@ class ParallelStellarEvolution(object):
         self.model_time = 0.0 | units.Myr
         self.code_instances = [stellar_evolution_class(**options) for i in range(number_of_workers)]
         self.particles = ParallelParticlesSuperset([code.particles for code in self.code_instances])
-    
-    @property 
-    def parameters(self):
-        raise AmuseException("Not implemented for parallel stellar evolution")
+        self.parameters = ParallelParameters(self.code_instances)
     
     def run_threaded(self, function_name, args=()):
         threads=[]
@@ -66,5 +63,17 @@ class ParallelParticlesSuperset(ParticlesSuperset):
         for particle_set, one_slice in zip(self._private.particle_sets, slices):
             particle_set.add_particles_to_store(keys[one_slice], attributes, [v[one_slice] for v in values])
         self._private.number_of_particles += len(keys)
+    
+class ParallelParameters(object):
+    
+    def __init__(self, code_instances):
+        object.__setattr__(self, "code_instances", code_instances)
+    
+    def __getattr__(self, attribute_name):
+        return getattr(object.__getattribute__(self, "code_instances")[0].parameters, attribute_name)
+    
+    def __setattr__(self, attribute_name, value):
+        for code in object.__getattribute__(self, "code_instances"):
+            setattr(code.parameters, attribute_name, value)
     
 
