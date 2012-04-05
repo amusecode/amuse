@@ -1,6 +1,8 @@
-all: download build install
+all: download build install test
 
-download:
+download: PyNbody/setup.py
+
+PyNbody/setup.py:
 	git clone git://github.com/GuilhermeFerrari/PyNbody.git
 
 build:
@@ -8,6 +10,15 @@ build:
 
 install:
 	(cd PyNbody; python setup.py install --user)
+
+test:
+	@echo
+	@echo "Testing import of modules required for PyNbody (OpenGL, PIL, pyopencl):"
+	python -c "import OpenGL"
+	python -c "import Image"
+	python -c "import pyopencl"
+	@echo "Tests successful!"
+	@echo
 
 clean:
 	rm -f *.pyc; (cd PyNbody; python setup.py clean -a)
