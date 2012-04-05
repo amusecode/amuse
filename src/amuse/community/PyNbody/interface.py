@@ -4,8 +4,12 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 from amuse.rfi.core import PythonCodeInterface
 
-from pynbody.integrator import Integrator
-from pynbody.particles import Particles
+try:
+    from pynbody.integrator import Integrator
+    from pynbody.particles import Particles
+    MODULES_MISSING = False
+except ImportError:
+    MODULES_MISSING = True
 
 """
 MyCodeImplementation is what needs to be adapted to each specific 

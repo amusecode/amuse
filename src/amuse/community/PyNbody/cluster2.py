@@ -7,7 +7,10 @@ from amuse.units import nbody_system
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.ph4.interface import ph4
 from amuse.community.huayno.interface import Huayno
-from amuse.community.PyNbody.interface import PyNbody
+try:
+    from amuse.community.PyNbody.interface import PyNbody
+except ImportError:
+    pass
 import logging
 
 from amuse.ic.plummer import new_plummer_model

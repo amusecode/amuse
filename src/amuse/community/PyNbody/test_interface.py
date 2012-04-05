@@ -4,9 +4,9 @@ import math
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import nbody_system, units, constants
 from amuse.datamodel import Particles
-from amuse.community.PyNbody.interface import PyNbodyInterface, PyNbody
-
 from amuse.ic.plummer import new_plummer_model
+
+from amuse.community.PyNbody.interface import PyNbodyInterface, PyNbody, MODULES_MISSING
 
 
 default_options = dict(redirection="none")
@@ -14,6 +14,8 @@ default_options = dict(redirection="none")
 class TestPyNbodyInterface(TestWithMPI):
 
     def test1(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Test PyNbodyInterface initialization"
         instance = PyNbodyInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
@@ -22,6 +24,8 @@ class TestPyNbodyInterface(TestWithMPI):
         instance.stop()
 
     def test2(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Test PyNbodyInterface new_particle / get_state"
         instance = PyNbodyInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
@@ -48,6 +52,8 @@ class TestPyNbodyInterface(TestWithMPI):
         instance.stop()
 
     def test3(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Test PyNbodyInterface particle property getters/setters"
         instance = PyNbodyInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
@@ -86,6 +92,8 @@ class TestPyNbodyInterface(TestWithMPI):
         instance.stop()
 
     def test4(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Test PyNbodyInterface parameters"
         instance = PyNbodyInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
@@ -108,6 +116,8 @@ class TestPyNbodyInterface(TestWithMPI):
         instance.stop()
 
     def test5(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Test PyNbodyInterface evolve_model, binary"
         instance = PyNbodyInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
@@ -145,6 +155,8 @@ class TestPyNbody(TestWithMPI):
         return particles
 
     def test1(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody initialization"
         instance = PyNbody(self.default_converter, **default_options)
         instance.initialize_code()
@@ -153,6 +165,8 @@ class TestPyNbody(TestWithMPI):
         instance.stop()
 
     def xtest2(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody parameters"
         instance = PyNbody(self.default_converter, **default_options)
         instance.initialize_code()
@@ -200,6 +214,8 @@ class TestPyNbody(TestWithMPI):
         instance.stop()
 
     def test3(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody particles"
         instance = PyNbody(self.default_converter, **default_options)
         instance.initialize_code()
@@ -218,6 +234,8 @@ class TestPyNbody(TestWithMPI):
         instance.stop()
 
     def xtest4(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody evolve_model, 2 particles orbiting the SMBH"
         particles = Particles(2)
         particles.mass = 1.0 | units.MSun
@@ -254,6 +272,8 @@ class TestPyNbody(TestWithMPI):
         instance.stop()
 
     def test5(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody evolve_model, 2 particles, no SMBH"
         particles = Particles(2)
         particles.mass = 1.0 | units.MSun
@@ -289,6 +309,8 @@ class TestPyNbody(TestWithMPI):
         instance.stop()
 
     def test6(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody evolve_model, earth-sun system, no SMBH"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = PyNbody(converter, **default_options)
@@ -313,6 +335,8 @@ class TestPyNbody(TestWithMPI):
         instance.stop()
 
     def xtest7(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing effect of PyNbody parameter epsilon_squared"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         particles = self.new_sun_earth_system()
@@ -344,6 +368,8 @@ class TestPyNbody(TestWithMPI):
         self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
 
     def xtest8(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody get_gravity_at_point and get_potential_at_point"
         instance = PyNbody(**default_options)
         instance.initialize_code()
@@ -384,6 +410,8 @@ class TestPyNbody(TestWithMPI):
         instance.stop()
 
     def xtest9(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody evolve_model and getters energy, plummer sphere, no SMBH"
         converter = nbody_system.nbody_to_si(1.0e2 | units.MSun, 1.0 | units.parsec)
         instance = PyNbody(converter, **default_options)
@@ -412,6 +440,8 @@ class TestPyNbody(TestWithMPI):
         instance.stop()
 
     def xtest10(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody collision_detection"
         particles = Particles(7)
         particles.mass = 0.00000001 | nbody_system.mass
@@ -465,6 +495,8 @@ class TestPyNbody(TestWithMPI):
         instance.stop()
 
     def test11(self):
+        if MODULES_MISSING:
+            self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody properties"
         numpy.random.seed(12345)
         particles = new_plummer_model(100, do_scale=True)
