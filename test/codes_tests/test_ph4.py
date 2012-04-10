@@ -479,13 +479,13 @@ class TestPH4(TestWithMPI):
         instance.stop()
         
     def xtest8(self):
-        particles = ph4(6)
+        particles = datamodel.Particles(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
         
-        for current_mode in ['g6lib','gpu','grape','pg']:
+        for current_mode in ['gpu']:
             try:
                 instance = ph4(mode = current_mode)
             except:
@@ -936,4 +936,32 @@ class TestPH4(TestWithMPI):
             self.assertAlmostRelativeEquals(potential0, potential, 8)
             instance.stop()
     
+    def test22(self):
+        particles = new_plummer_model(200)
+        particles.scale_to_standard()
+        try:
+            instance = ph4(mode="gpu")
+        except:
+            self.skip("gpu mode is not available")
+            
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+        
+        x = numpy.arange(-1,1,0.1) | nbody_system.length
+        zero = numpy.zeros(len(x)) | nbody_system.length
+        gpu_potential =  instance.get_potential_at_point(zero, x , zero, zero)
+        instance.stop()
+        
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+        nogpu_potential =  instance.get_potential_at_point(zero, x , zero, zero)
+    
+        self.assertAlmostRelativeEquals(nogpu_potential, gpu_potential, 5)
+        instance.stop()
+    
+
+
 
