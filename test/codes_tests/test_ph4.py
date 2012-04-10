@@ -874,3 +874,66 @@ class TestPH4(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
+    def test20(self):
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
+        
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius =  [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+        
+        zero = 0.0 | nbody_system.length
+        fx, fy, fz = instance.get_gravity_at_point(zero, 1.0 | nbody_system.length, zero, zero)
+        self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration, 6)
+        self.assertAlmostEqual(fy, 0.0 | nbody_system.acceleration, 6)
+        self.assertAlmostEqual(fz, 0.0 | nbody_system.acceleration, 6)
+        potentials = [-4.57110767688 , -2.66662518639,-2.13331892165] | nbody_system.length**2 / (nbody_system.time**2) 
+        for x, pot in zip((0.25, 0.5, 0.75), potentials):
+            x0 = x | nbody_system.length
+            x1 = (2.0 - x) | nbody_system.length
+            potential0 = instance.get_potential_at_point(zero, x0, zero, zero)
+            potential1 = instance.get_potential_at_point(zero, x1, zero, zero)
+            fx0, fy0, fz0 = instance.get_gravity_at_point(zero, x0, zero, zero)
+            fx1, fy1, fz1 = instance.get_gravity_at_point(zero, x1, zero, zero)
+            
+            self.assertAlmostRelativeEquals(fy0, 0.0 | nbody_system.acceleration, 6)
+            self.assertAlmostRelativeEquals(fz0, 0.0 | nbody_system.acceleration, 6)
+            self.assertAlmostRelativeEquals(fy1, 0.0 | nbody_system.acceleration, 6)
+            self.assertAlmostRelativeEquals(fz1, 0.0 | nbody_system.acceleration, 6)
+            
+            self.assertAlmostRelativeEquals(fx0, -1.0 * fx1, 5)
+            fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
+            print fx, fx0
+            self.assertAlmostRelativeEquals(fx, fx0, 2)
+            self.assertAlmostRelativeEquals(potential0, potential1, 5)
+            self.assertAlmostRelativeEquals(potential0, pot, 5)
+        instance.stop()
+        
+    def test21(self):
+        particles = new_plummer_model(200)
+        particles.scale_to_standard()
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+        
+        x = numpy.arange(-1,1,0.1) | nbody_system.length
+        zero = numpy.zeros(len(x)) | nbody_system.length
+        potential0 =  instance.get_potential_at_point(zero, x , zero, zero)
+        instance.stop()
+        for n in (2, 3, 4):
+            
+            instance = ph4(number_of_workers = n)
+            instance.initialize_code()
+            instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+            instance.particles.add_particles(particles)
+            potential =  instance.get_potential_at_point(zero, x , zero, zero)
+        
+            self.assertAlmostRelativeEquals(potential0, potential, 8)
+            instance.stop()
+    
+

@@ -480,19 +480,85 @@ int get_total_radius(double * radius)
     return 0;
 }
 
-// Optional (not implemented):
-
-int get_potential_at_point(double eps,
-			   double x, double y, double z, 
-			   double * phi)
+int get_potential_at_point(double * eps,
+			   double * x, double * y, double * z, 
+			   double * phi, int n)
 {
-    return -2;
+    idata * tmp_idata = new idata();
+    tmp_idata -> set_ni(n);
+    tmp_idata -> ni = n; // set_ni only allocates buffers, does not set ni!
+    tmp_idata -> jdat = jd;
+    for(int i = 0; i < n; i++)
+    {
+        tmp_idata -> iid[i] = -1;
+        tmp_idata -> ilist[i] = 0;
+        tmp_idata -> inn[i] = 0;
+        tmp_idata -> pnn[i] = 0;
+        
+        tmp_idata -> imass[i] = 1;
+        tmp_idata -> iradius[i] = eps[i];
+        tmp_idata -> itime[i] = 0.0;
+        tmp_idata -> itimestep[i] = 0.0;
+        tmp_idata -> ipot[i] = 0.0;
+        tmp_idata -> ppot[i] = 0.0;
+        tmp_idata -> idnn[i] = 0.0;
+        tmp_idata -> ipos[i][0] = x[i];
+        tmp_idata -> ipos[i][1] = y[i];
+        tmp_idata -> ipos[i][2] = z[i];
+        tmp_idata -> ivel[i][0] = 0.0;
+        tmp_idata -> ivel[i][1] = 0.0;
+        tmp_idata -> ivel[i][2] = 0.0;
+    }
+    tmp_idata -> get_acc_and_jerk();
+    if (jd->mpi_rank == 0) {
+        for(int i = 0; i < n; i++)
+        {
+            phi[i] = tmp_idata->ipot[i];
+        }
+    }
+    delete tmp_idata;
+    return 0;
 }
 
-int get_gravity_at_point(double eps, double x, double y, double z, 
-			 double * forcex, double * forcey, double * forcez)
+int get_gravity_at_point(double * eps, double * x, double * y, double * z, 
+			 double * forcex, double * forcey, double * forcez, int n)
 {
-    return -2;
+    idata * tmp_idata = new idata();
+    tmp_idata -> set_ni(n);
+    tmp_idata -> ni = n; // set_ni only allocates buffers, does not set ni!
+    tmp_idata -> jdat = jd;
+    for(int i = 0; i < n; i++)
+    {
+        tmp_idata -> iid[i] = -1;
+        tmp_idata -> ilist[i] = 0;
+        tmp_idata -> inn[i] = 0;
+        tmp_idata -> pnn[i] = 0;
+        
+        tmp_idata -> imass[i] = 1;
+        tmp_idata -> iradius[i] = eps[i];
+        tmp_idata -> itime[i] = 0.0;
+        tmp_idata -> itimestep[i] = 0.0;
+        tmp_idata -> ipot[i] = 0.0;
+        tmp_idata -> ppot[i] = 0.0;
+        tmp_idata -> idnn[i] = 0.0;
+        tmp_idata -> ipos[i][0] = x[i];
+        tmp_idata -> ipos[i][1] = y[i];
+        tmp_idata -> ipos[i][2] = z[i];
+        tmp_idata -> ivel[i][0] = 0.0;
+        tmp_idata -> ivel[i][1] = 0.0;
+        tmp_idata -> ivel[i][2] = 0.0;
+    }
+    tmp_idata -> get_acc_and_jerk();
+    if (jd->mpi_rank == 0) {
+        for(int i = 0; i < n; i++)
+        {
+            forcex[i] = tmp_idata->iacc[i][0];
+            forcey[i] = tmp_idata->iacc[i][1];
+            forcez[i] = tmp_idata->iacc[i][2];
+        }
+    }
+    delete tmp_idata;
+    return 0;
 }
 
 //----------------------------------------------------------------------
