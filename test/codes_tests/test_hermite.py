@@ -10,6 +10,7 @@ from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
 from amuse.ic import plummer
+from amuse.ic.plummer import new_plummer_model
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -683,3 +684,28 @@ class TestHermite(TestWithMPI):
         self.assertEquals(instance.particles[2].radius, 4.0 | nbody_system.length)
         
         instance.stop()
+        
+    
+    def test16(self):
+        particles = new_plummer_model(200)
+        particles.scale_to_standard()
+        instance = Hermite()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+        
+        x = numpy.arange(-1,1,0.1) | nbody_system.length
+        zero = numpy.zeros(len(x)) | nbody_system.length
+        potential0 =  instance.get_potential_at_point(zero, x , zero, zero)
+        instance.stop()
+        for n in (2, 3, 4):
+            
+            instance = Hermite(number_of_workers = n)
+            instance.initialize_code()
+            instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+            instance.particles.add_particles(particles)
+            potential =  instance.get_potential_at_point(zero, x , zero, zero)
+        
+            self.assertAlmostRelativeEquals(potential0, potential, 8)
+            instance.stop()
+    

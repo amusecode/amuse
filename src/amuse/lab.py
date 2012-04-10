@@ -23,6 +23,7 @@ from amuse.units.quantities import new_quantity
 from amuse.io import write_set_to_file
 from amuse.io import read_set_from_file
 from amuse.io import get_options_for_format
+from amuse.io import ReportTable
 
 from amuse.ext.solarsystem import new_solar_system_for_mercury, new_solar_system
 from amuse.ext.halogen_model import new_halogen_model

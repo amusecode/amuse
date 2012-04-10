@@ -8,6 +8,7 @@ from amuse.units import units
 from amuse.units import quantities
 from amuse.units import generic_unit_system
 from amuse import datamodel
+
 class CursorTests(amusetest.TestCase):
     
     def test1(self):
@@ -154,6 +155,22 @@ class TableFormattedTextTests(amusetest.TestCase):
         #print contents       
         self.assertEquals("#a b c\n#- m m\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
         
+    def test8(self):
+        table = io.ReportTable(
+            "test.csv",
+            "txt", 
+            attribute_types = (units.MSun, units.RSun)
+        )
+        table.add_row(1.0 | units.MSun, 3.0 | units.RSun)
+        table.add_row(2.0 | units.MSun, 4.0 | units.RSun)
+        table.close()
+        
+        with open("test.csv", "r") as f:
+            contents = f.read()
+        self.assertEquals("#MSun RSun\n1.0 3.0\n2.0 4.0\n", contents)
+        
+        
+        os.remove("test.csv")
         
 class CsvFileTextTests(amusetest.TestCase):
     

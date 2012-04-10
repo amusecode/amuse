@@ -76,18 +76,22 @@ class TableFormattedText(base.FileFormatProcessor):
         return self.set
         
     def store(self):
-        
-        if self.stream is None:
-            self.stream = open(self.filename, "w")
-            close_function = self.stream.close 
-        else:
-            close_function = lambda : None
-            
+        self.open_stream()
         try:
             return self.store_on_stream()
         finally:
-            close_function()
+            self.close_stream()
+    
+    def open_stream(self):
+        if self.stream is None:
+            self.stream = open(self.filename, "w")
+            self.close_function = self.stream.close 
+        else:
+            self.close_function = lambda : None
             
+    def close_stream(self):
+        self.close_function()
+        
     def store_on_stream(self):
         self.write_header()
         self.write_rows()
@@ -229,13 +233,22 @@ class TableFormattedText(base.FileFormatProcessor):
                 row.insert(self.key_in_column, self.convert_long_to_string(self.keys[i]))
             
             rows.append(row)
-            
+        
         lines = map(lambda  x : self.column_separator.join(x), rows)
         
         for x in lines:
             self.stream.write(x)
             self.stream.write('\n')
-            
+    
+    def write_row(self, row):
+        units = self.attribute_types
+        row = map(lambda quantity, unit : quantity if unit is None else quantity.value_in(unit), row, units)
+        row = map(self.convert_number_to_string, row)
+        line = self.column_separator.join(row)
+        self.stream.write(line)
+        self.stream.write('\n')
+        self.stream.flush()
+        
         
     def write_footer(self):
         for x in self.footer_lines():
@@ -245,7 +258,8 @@ class TableFormattedText(base.FileFormatProcessor):
         
     def header_lines(self):
         result = []
-        result.append(self.column_separator.join(self.attribute_names))
+        if len(self.attribute_names) > 0:
+            result.append(self.column_separator.join(self.attribute_names))
         result.append(self.column_separator.join(self.units_row))
         return result
         

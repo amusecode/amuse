@@ -37,7 +37,7 @@ class format_option(late):
         return self.initializer.__name__
        
 
-def _get_processor_factor(format):
+def _get_processor_factory(format):
     if isinstance(format, basestring):
         if not format in registered_fileformat_processors:
             raise UnsupportedFormatException(format)
@@ -65,7 +65,7 @@ def write_set_to_file(
     :func:`get_options_for_format`
     """
         
-    processor_factory = _get_processor_factor(format)
+    processor_factory = _get_processor_factory(format)
     
     processor = processor_factory(filename, set=set, format = format)
     processor.set_options(format_specific_keyword_arguments)
@@ -92,12 +92,63 @@ def read_set_from_file(
         raise IoException("Error: file '{0}' does not exist.".format(filename))
         
     
-    processor_factory = _get_processor_factor(format)
+    processor_factory = _get_processor_factory(format)
     
     processor = processor_factory(filename, format = format)
     processor.set_options(format_specific_keyword_arguments)
     return processor.load()
 
+
+class ReportTable(object):
+    
+    
+    def __init__(
+        self,
+        filename,
+        format = 'csv', 
+        **format_specific_keyword_arguments
+        ):
+        """
+        Write data per row to a file.
+        
+        :argument filename: name of the file to write the data to
+        :argument format: name of a registered format or
+            a :class:`FileFormatProcessor` subclass (must be a 
+            class and not an instance)
+        
+        All other keywords are set as attributes on the fileformat processor. To
+        determine the supported options for a processor call 
+        :func:`get_options_for_format`
+        """
+    
+        processor_factory = _get_processor_factory(format)
+    
+        self.processor = processor_factory(filename, format = format)
+        self.processor.set_options(format_specific_keyword_arguments)
+        self.processor.open_stream()
+        self.processor.write_header()
+        
+    def add_row(self, *fields, **fieldsbyname):
+        row = list(fields)
+        if len(fieldsbyname) > 0:
+            names = self.processor.attribute_names
+            if len(names) >= len(row):
+                row.extend([0] * (len(names) - len(row)))
+            names_to_index = {}
+            for i,name in enumerate(names):
+                names_to_index[name] = i
+            
+            for name, value in fieldsbyname.iteritems():
+                index = names_to_index[name]
+                row[index] = value
+        self.processor.write_row(row)
+    
+    def close(self):
+        self.processor.close_stream()
+        
+                
+            
+    
 def get_options_for_format(
         format = 'csv', 
     ):
@@ -110,11 +161,12 @@ def get_options_for_format(
         class and not an instance)
     """
     
-    processor_factory = _get_processor_factor(format)
+    processor_factory = _get_processor_factory(format)
     
     processor = processor_factory(format = format)
     
     return list(processor.get_description_of_options())
+
 
 
 
