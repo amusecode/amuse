@@ -2714,3 +2714,69 @@ class TestParticlesIndexingAfterPickle(amusetest.TestCase):
         self.assertAlmostRelativeEquals(converted[:5][2:].mass,  [0.2,0.3,0.4] | nbody_system.mass)
         self.assertAlmostRelativeEquals(converted[numpy.array([True,False,True,False,True,False,True,False,True,False])][:2].mass,  [0,0.2] | nbody_system.mass)
     
+class TestParticlesOverlay(amusetest.TestCase):
+    
+    def test1(self):
+        set1 = datamodel.Particles(2)
+        set1.x = [1.0, 2.0] | units.kg
+        set2 = datamodel.ParticlesOverlay(set1)
+        set2.y = [4.0, 5.0] | units.m
+        self.assertAlmostRelativeEquals(set2.x, [1.0, 2.0] | units.kg)
+        self.assertAlmostRelativeEquals(set2.y, [4.0, 5.0] | units.m)
+        self.assertTrue('x' in dir(set1))
+        self.assertFalse('y' in dir(set1))
+        
+    def test2(self):
+        set1 = datamodel.Particles(2)
+        set1.x = [1.0, 2.0] | units.kg
+        set2 = datamodel.ParticlesOverlay(set1)
+        set2.y = [4.0, 5.0] | units.m
+        set2.add_particle(datamodel.Particle(x=3.0 | units.kg, y = 6.0 | units.m))
+        self.assertAlmostRelativeEquals(set2.x, [1.0, 2.0, 3.0] | units.kg)
+        self.assertAlmostRelativeEquals(set2.y, [4.0, 5.0, 6.0] | units.m)
+        self.assertAlmostRelativeEquals(set1.x, [1.0, 2.0, 3.0] | units.kg)
+    
+    def test3(self):
+        set1 = datamodel.Particles(2)
+        set1.x = [1.0, 2.0] | units.kg
+        set2 = datamodel.ParticlesOverlay(set1)
+        set2.y = [4.0, 5.0] | units.m
+        particle = set2[0]
+        self.assertAlmostRelativeEquals(particle.x, 1.0 | units.kg)
+        self.assertAlmostRelativeEquals(particle.y, 4.0 | units.m)
+        
+        
+    def test4(self):
+        set1 = datamodel.Particles(2)
+        set1.x = [1.0, 2.0] | units.kg
+        set2 = datamodel.ParticlesOverlay(set1)
+        set2.y = [4.0, 5.0] | units.m
+        set2.remove_particle(set2[1])
+        self.assertEquals(len(set2), 1)
+        self.assertAlmostRelativeEquals(set2.x, [1.0] | units.kg)
+        self.assertAlmostRelativeEquals(set2.y, [4.0] | units.m)
+        self.assertAlmostRelativeEquals(set1.x, [1.0] | units.kg)
+
+    def test5(self):
+        set1 = datamodel.Particles(3)
+        set1.x = [1.0, 2.0, 3.0] | units.kg
+        set2 = datamodel.ParticlesOverlay(set1)
+        set2.y = [4.0, 5.0, 6.0] | units.m
+        subset = set2[1:]
+        self.assertEquals(len(subset), 2)
+        self.assertAlmostRelativeEquals(subset.x, [2.0, 3.0] | units.kg)
+        self.assertAlmostRelativeEquals(subset.y, [5.0, 6.0] | units.m)
+        xy = subset.get_values_in_store(subset.get_all_keys_in_store(), ['x','y'])
+        self.assertAlmostRelativeEquals(xy[0], [2.0, 3.0] | units.kg)
+        self.assertAlmostRelativeEquals(xy[1], [5.0, 6.0] | units.m)
+
+    def test6(self):
+        set1 = datamodel.Particles(3)
+        set1.x = [1.0, 2.0, 3.0] | units.kg
+        set2 = datamodel.ParticlesOverlay(set1)
+        set2.y = [4.0, 5.0, 6.0] | units.m
+        set2.x = [7.0,8.0,9.0] | units.kg
+    
+        self.assertAlmostRelativeEquals(set2.x, [7.0,8.0,9.0] | units.kg)
+        self.assertAlmostRelativeEquals(set1.x, [7.0,8.0,9.0] | units.kg)
+
