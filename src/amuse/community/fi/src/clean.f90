@@ -69,7 +69,7 @@ subroutine copysph(p,i) ! copy sph part p to spot i
   h2frac(i)=h2frac(p)
   vdisp(i)=vdisp(p)
   entropy(i)=entropy(p) ! equiv ethermal
-  dentdt(i)=dentdt(p)   ! equiv dethdt
+  dentdt(i)=dentdt(p)   ! equiv dethdt  
 end subroutine
 
 subroutine copypart(p,i) ! copy part p to spot i
@@ -123,7 +123,7 @@ subroutine partremoval
       removedidssph(nremovals+1) = nbexist(i)
       nremovals=nremovals+1
 ! ---
-      if(mass(lastsph).GE.tiny) then
+      if(i .LT. lastsph) then
         call copysph(lastsph,i)
         mass(lastsph)=0
       endif
