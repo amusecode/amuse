@@ -117,7 +117,6 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
         raise Exception("Not handled yet")
     
 def shape_after_index(shape, index):
-    print shape, type(shape)
     if isinstance(index, tuple):
         if is_all_int(index):
             return tuple(shape[len(index):])
@@ -141,9 +140,14 @@ def shape_after_index(shape, index):
                         stop = shape_as_list[i] + stop
                     if start < 0:
                         start = shape_as_list[i] + start
+                    
+                    if start < 0:
+                        start = 0
+                    if stop < 0:
+                        stop = 0
                         
                     nmax =  min(stop, shape_as_list[i])
-                    nitems = (stop - start) // step
+                    nitems = (nmax - start) // step
                     result.append(nitems)
                 else:
                     pass

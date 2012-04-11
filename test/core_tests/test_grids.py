@@ -438,6 +438,15 @@ class TestIndexing(amusetest.TestCase):
         self.assertEquals(combined_indices,(numpy.s_[1:2:1], numpy.s_[1:2:1]))
         
         
+    def test14(self):
+        self.assertEquals((5,4,2), indexing.shape_after_index((5,4,2), numpy.s_[:10,...,...]))
+        self.assertEquals((5,4,2), indexing.shape_after_index((5,4,2), numpy.s_[...,:10,...]))
+        self.assertEquals((4,4,2), indexing.shape_after_index((5,4,2), numpy.s_[1:10,...,...]))
+        self.assertEquals((1,4,2), indexing.shape_after_index((5,4,2), numpy.s_[-1:,...,...]))
+        self.assertEquals((2,4,2), indexing.shape_after_index((5,4,2), numpy.s_[-2:,...,...]))
+        self.assertEquals((1,4,2), indexing.shape_after_index((5,4,2), numpy.s_[-2:-1,...,...]))
+        self.assertEquals((5,4,2), indexing.shape_after_index((5,4,2), numpy.s_[-10:,...,...]))
+
 class TestGridAttributes(amusetest.TestCase):
     
     def test1(self):
