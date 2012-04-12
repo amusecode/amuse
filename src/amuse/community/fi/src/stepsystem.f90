@@ -249,10 +249,6 @@ subroutine step
   include 'globals.h'
   integer itime
   
-! AVE, AMUSE
-! keep a record of the removed ids
-  nremovals = 0
-! ---
 
   itime=0
   do while(itime.LT.2*max_tbin)

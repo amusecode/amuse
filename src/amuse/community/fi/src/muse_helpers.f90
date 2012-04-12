@@ -316,6 +316,9 @@ subroutine muse_stepsys(tend,sync)
  error = get_stopping_condition_out_of_box_parameter(stop_boxsize)
  call SYSTEM_CLOCK(clock_init, count_rate, count_max)
 
+!keep a record of the removed ids
+ nremovals = 0
+!---
  call activateparts
  call corrpos(itimestp,'desync')
 

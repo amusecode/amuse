@@ -1298,3 +1298,42 @@ class TestFi(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.gas_particles[0].x, 0.1 | nbody_system.length)
         self.assertAlmostRelativeEquals(instance.gas_particles.x, [0.1] | nbody_system.length)
         
+    def test24(self):
+        instance=Fi()
+        instance.initialize_code()
+        instance.parameters.use_hydro_flag = 0
+        instance.parameters.self_gravity_flag = 0
+        instance.parameters.periodic_box_size = 1 | nbody_system.length
+        instance.parameters.timestep = 0.2 | nbody_system.time
+        
+        p1 = instance.gas_particles.add_particle(datamodel.Particle(
+            x = 0.5 | nbody_system.length,
+            y = 0.0 | nbody_system.length,
+            z = 0.0 | nbody_system.length,
+            vx = 1.0  | nbody_system.speed,
+            vy = 0.0 | nbody_system.speed,
+            vz = 0.0 | nbody_system.speed,
+            mass = 0.1 | nbody_system.mass,
+            u = 0.0 | nbody_system.potential
+            
+        )) 
+        p2 = instance.gas_particles.add_particle(datamodel.Particle(
+            x = 0.1 | nbody_system.length,
+            y = 0.0 | nbody_system.length,
+            z = 0.0 | nbody_system.length,
+            vx = 0.0  | nbody_system.speed,
+            vy = 0.0 | nbody_system.speed,
+            vz = 0.0 | nbody_system.speed,
+            mass = 0.001 | nbody_system.mass,
+            u = 0.0 | nbody_system.potential
+            
+        )) 
+        #run more than one innerloop step in fi
+        instance.evolve_model(1|nbody_system.time)
+        instance.update_particle_set()
+        self.assertEquals(len(instance.gas_particles), 1)
+        self.assertEquals(instance.gas_particles.mass, [0.001] | nbody_system.mass)
+        self.assertEquals(instance.gas_particles[0].mass, 0.001 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(instance.gas_particles[0].x, 0.1 | nbody_system.length)
+        self.assertAlmostRelativeEquals(instance.gas_particles.x, [0.1] | nbody_system.length)
+        

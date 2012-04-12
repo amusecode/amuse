@@ -65,6 +65,10 @@ program fi
   endif
   call maphimap(n1)
   do n=n1+1,nsteps
+! for AMUSE
+! reset the record of the removed ids
+    nremovals = 0
+! ---
     call stepsystem(n)
     call maphimap(n)
   enddo
