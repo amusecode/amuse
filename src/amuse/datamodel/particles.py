@@ -149,23 +149,11 @@ class AbstractParticleSet(AbstractSet):
     # Particle storage interface
     #
     
-    def add_particles_to_store(self, keys, attributes, values):
-        pass
-        
     def remove_particles_from_store(self, keys):
         pass
         
     def get_values_in_store(self, keys, attributes):
         pass
-    
-    def set_values_in_store(self, keys, attributes, values):
-        pass
-        
-    def get_all_keys_in_store(self):
-        return []
-        
-    def has_key_in_store(self):
-        return False
     
     def get_attribute_names_defined_in_store(self):
         return []
@@ -603,10 +591,6 @@ class AbstractParticleSet(AbstractSet):
         if removed_keys:
             other_particles.remove_particles_from_store(removed_keys)
         
-    def copy_values_of_all_attributes_to(self, particles):
-        channel = self.new_channel_to(particles)
-        channel.copy_attributes(self.get_attribute_names_defined_in_store())   
-    
     def as_set(self):
         """
         Returns a subset view on this set. The subset
@@ -840,13 +824,6 @@ class AbstractParticleSet(AbstractSet):
         return particle.key in keys
         
             
-    def _attributes_for_dir(self):
-        result = []
-        result.extend(self.get_attribute_names_defined_in_store())
-        result.extend(self._derived_attributes.keys())
-        return result
-        
-    
     def all_attributes(self):
         result = []
         result.append('key')
