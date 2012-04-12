@@ -384,6 +384,7 @@ class StellarEvolution(common.CommonCode):
         object.add_method('UPDATE', 'delete_star')
         object.add_transition('EDIT', 'RUN', 'commit_particles')
         object.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
         object.add_transition('RUN', 'UPDATE', 'delete_star', False)
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
         object.add_method('RUN', 'evolve_model')
@@ -959,8 +960,8 @@ class InternalStellarStructure(object):
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
     
-    def merge_colliding(self, primaries, secondaries, 
-            collision_code, code_options, code_parameters, do_gd_merge_products=True):
+    def merge_colliding(self, primaries, secondaries, collision_code, 
+            code_options=dict(), code_parameters=dict(), do_gd_merge_products=True):
         primaries = primaries.as_set()
         secondaries = secondaries.as_set()
         star_collider = collision_code(**code_options)
