@@ -11,13 +11,13 @@ from amuse.units import units
 from amuse.units.quantities import new_quantity
 from amuse import datamodel
 from amuse.rfi import channel
+
+
 class TestInterface(TestWithMPI):
     
     def test1(self):
         print "Testing get/set for metallicity..."
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = EVtwinInterface()
-        #channel.MessageChannel.DEBUGGER = None
         (metallicity, error) = instance.get_metallicity()
         self.assertEquals(0, error)
         self.assertEquals(0.02, metallicity)
@@ -719,11 +719,11 @@ class TestEVtwin(TestWithMPI):
         self.assertAlmostEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
         self.assertAlmostEqual(instance.particles.time_step, [422790.6330, 36382.1271, 11259.1953] | units.yr, 3)
         
-        print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
+        print "evolve_model without arguments: use shared timestep = 0.99*min(particles.time_step)"
         instance.evolve_model()
-        self.assertAlmostEqual(instance.particles.age, [11259.1953, 11259.1953, 11259.1953] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.age, 0.99*([11259.1953, 11259.1953, 11259.1953] | units.yr), 3)
         self.assertAlmostEqual(instance.particles.time_step, [422790.6330, 36382.1271, 11259.1953] | units.yr, 3)
-        self.assertAlmostEqual(instance.model_time, 11259.1953 | units.yr, 3)
+        self.assertAlmostEqual(instance.model_time, 0.99*11259.1953 | units.yr, 3)
         
         print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
         instance.evolve_model(15000 | units.yr)
@@ -734,7 +734,7 @@ class TestEVtwin(TestWithMPI):
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
         self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([422790.6330, 36382.1271, 11259.1953] | units.yr), 3)
-        self.assertAlmostEqual(instance.particles.time_step, [507348.7596, 43244.8707, 13511.0343] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [507348.7596, 43180.1460, 13511.0343] | units.yr, 3)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
         instance.stop()
     

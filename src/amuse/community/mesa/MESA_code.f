@@ -21,6 +21,9 @@
          double precision :: AMUSE_de_jager_wind_efficiency = 0.0d0
          double precision :: AMUSE_dutch_wind_efficiency = 0.0d0
          
+         double precision, allocatable :: target_times(:)
+         integer :: number_of_particles ! Dead or alive...
+         
          logical :: new_model_defined = .false.
          integer :: id_new_model
          
@@ -149,6 +152,7 @@
       type (star_info), pointer :: s
       new_particle = -1
       AMUSE_id = alloc_star(ierr)
+      number_of_particles = AMUSE_id
       if (failed('alloc_star', ierr)) return
       call get_star_ptr(AMUSE_id, s, ierr)
       if (failed('get_star_ptr', ierr)) return
@@ -199,17 +203,26 @@
       delete_star = 0
    end function
 
-! Does nothing...
    function commit_particles()
+      use amuse_support, only: target_times, number_of_particles
       implicit none
       integer :: commit_particles
+      allocate(target_times(number_of_particles))
       commit_particles = 0
    end function
 
-! Does nothing...
    function recommit_particles()
+      use amuse_support, only: target_times, number_of_particles
       implicit none
       integer :: recommit_particles
+      double precision, allocatable :: temp(:)
+      allocate(temp(size(target_times)))
+      temp = target_times
+      deallocate(target_times)
+      allocate(target_times(number_of_particles))
+      target_times = 0
+      target_times(1:size(temp)) = temp
+      deallocate(temp)
       recommit_particles = 0
    end function
 
@@ -383,7 +396,6 @@
 ! Return the next timestep for the star
       function get_time_step(AMUSE_id, AMUSE_value)
          use star_private_def, only: star_info, get_star_ptr
-         use star_lib, only: star_pick_next_timestep
          use const_def, only: secyer
          use amuse_support, only: failed
          implicit none
@@ -395,10 +407,6 @@
          get_time_step = -1
          call get_star_ptr(AMUSE_id, s, ierr)
          if (failed('get_star_ptr', ierr)) return
-         if (s% generations > 1) then
-            ierr = star_pick_next_timestep(AMUSE_id)
-            if (failed('star_pick_next_timestep', ierr)) return
-         endif
          AMUSE_value = s% dt_next/secyer
          get_time_step = 0
       end function
@@ -1278,38 +1286,24 @@
    integer function evolve_for(AMUSE_id, AMUSE_delta_t)
       use star_private_def, only: star_info, get_star_ptr
       use const_def, only: secyer
-      use amuse_support, only: evolve_failed, debugging
+      use amuse_support, only: evolve_failed, target_times
       implicit none
       integer, intent(in) :: AMUSE_id
       double precision, intent(in) :: AMUSE_delta_t
       type (star_info), pointer :: s
       integer :: ierr
-      double precision :: tmp_max_age, timestep_old, timestep_older
       integer :: evolve_one_step
       
       evolve_for = 0
       call get_star_ptr(AMUSE_id, s, ierr)
       if (evolve_failed('get_star_ptr', ierr, evolve_for, -1)) return
-      tmp_max_age = min(s% time/secyer + AMUSE_delta_t, s% max_age)
-      timestep_old = s% dt_next
-      if ((s% time + s% dt_next) > tmp_max_age*secyer) &
-         s% dt_next = max(s% min_timestep_limit, tmp_max_age*secyer - s% time)
+      
+      target_times(AMUSE_id) = target_times(AMUSE_id) + AMUSE_delta_t * secyer
       
       evolve_loop: do while(evolve_for == 0 .and. &
-            (s% time + s% min_timestep_limit < tmp_max_age*secyer)) ! evolve one step per loop
-         if (debugging) write (*,*) "timestep: ", s% dt_next/secyer, "(", s% dt_next/s% dt, ")"
-         timestep_older = timestep_old
-         timestep_old = s% dt_next
-         if ((s% time + s% dt_next + s% min_timestep_limit) >= tmp_max_age*secyer) &
-            s% dt_next = max(s% min_timestep_limit, (tmp_max_age*secyer - s% time))
+            (s% time + s% min_timestep_limit < target_times(AMUSE_id))) ! evolve one step per loop
          evolve_for = evolve_one_step(AMUSE_id)
       end do evolve_loop
-      
-      if (evolve_for == -12 .and. s% star_age < tmp_max_age) evolve_for = 0
-      
-      if (debugging) write (*,*) "resetting to: ", timestep_older/secyer
-      s% dt_next = timestep_older
-      s% dt = timestep_older
    end function evolve_for
 
 ! Return the maximum age stop condition
@@ -1895,6 +1889,7 @@
       
       finalize_stellar_model = -1
       star_id = id_new_model
+      number_of_particles = star_id
       call set_age(id_new_model, age_tag, ierr)
       if (failed('set_age', ierr)) return
       call flush()

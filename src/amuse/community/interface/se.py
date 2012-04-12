@@ -5,6 +5,7 @@ Stellar Dynamics Interface Defintion
 import numpy
 
 from amuse.units import units
+from amuse.datamodel import Particles, Particle
 from amuse.support import exceptions
 from amuse.community.interface import common
 
@@ -341,11 +342,10 @@ class StellarEvolution(common.CommonCode):
                 particle.evolve_one_step()
             return
         
-        if end_time is None:
-            end_time = self.model_time + min(self.particles.time_step)
+        delta_time = end_time-self.model_time if end_time else 0.99*min(self.particles.time_step)
         for particle in self.particles:
-            particle.evolve_for(end_time - self.model_time)
-        self.model_time = end_time
+            particle.evolve_for(delta_time)
+        self.model_time += delta_time
     
     def _evolve_model_old(self, end_time = None, keep_synchronous = True):
         """

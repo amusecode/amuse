@@ -3,6 +3,7 @@ import sys
 import os.path
 from subprocess import PIPE, Popen
 from numpy import pi
+from math import ceil
 
 from amuse.community.mesa.interface import MESA, MESAInterface
 
@@ -87,20 +88,25 @@ class TestMESAInterface(TestWithMPI):
         status = instance.initialize_code()
         (index_of_the_star, error) = instance.new_particle(1.0)
         self.assertEquals(0, error)
-        self.assertEqual(index_of_the_star,1)
-        (time_step, error) = instance.get_time_step(index_of_the_star)
-        self.assertEquals(0, error)
-        self.assertAlmostEqual(time_step,1.0e5,1)
-        error = instance.evolve_one_step(index_of_the_star)
-        self.assertEquals(0, error)
-        (age_of_the_star, error) = instance.get_age(index_of_the_star)
-        self.assertEquals(0, error)
-        self.assertAlmostEqual(age_of_the_star, 1.0e5, 3)
-        end_time = 5.0e5 # (years)
-        instance.evolve_for(index_of_the_star, end_time-age_of_the_star)
-        (age_of_the_star, error) = instance.get_age(index_of_the_star)
-        self.assertEquals(0, error)
-        self.assertAlmostEqual(age_of_the_star,end_time,3)
+        self.assertEqual(index_of_the_star, 1)
+        self.assertEquals(0, instance.commit_particles())
+        
+        initial_dt = 1.0e5
+        dt_factor = 1.2
+        self.assertEqual([initial_dt, 0], instance.get_time_step(index_of_the_star).values())
+        self.assertEquals(0, instance.evolve_one_step(index_of_the_star))
+        self.assertEqual([initial_dt, 0], instance.get_age(index_of_the_star).values())
+        
+        self.assertEquals(0, instance.evolve_for(index_of_the_star, initial_dt))
+        # nothing happens; the target_time of the star is increased with initial_dt, but star already has this age
+        self.assertEqual([initial_dt, 0], instance.get_age(index_of_the_star).values())
+        
+        target_end_time = 3.0e5 # (years)
+        self.assertEquals(0, instance.evolve_for(index_of_the_star, target_end_time-initial_dt))
+        self.assertEqual([initial_dt*(1 + dt_factor + dt_factor**2), 0], instance.get_age(index_of_the_star).values())
+        self.assertEqual([round(initial_dt*dt_factor**3), 0], instance.get_time_step(index_of_the_star).values())
+        self.assertTrue(instance.get_age(index_of_the_star)['age'] >= target_end_time)
+        
         (L_of_the_star, error) = instance.get_luminosity(index_of_the_star)
         self.assertEquals(0, error)
         self.assertAlmostEqual(L_of_the_star,0.725,1)
@@ -110,9 +116,6 @@ class TestMESAInterface(TestWithMPI):
         (T_of_the_star, error) = instance.get_temperature(index_of_the_star)
         self.assertEquals(0, error)
         self.assertAlmostEqual(T_of_the_star,5650.998,-2)
-        (time_step, error) = instance.get_time_step(index_of_the_star)
-        self.assertEquals(0, error)
-        self.assertAlmostEqual(time_step, 172800.0, 1)
         instance.stop()
     
     def slowtest5(self):
@@ -289,23 +292,29 @@ class TestMESA(TestWithMPI):
         instance.commit_parameters() 
         index_of_the_star = instance.new_particle(1.0 | units.MSun)
         self.assertEqual(index_of_the_star,1)
+        
+        initial_dt = 1.0e5 | units.yr
+        dt_factor = 1.2
         time_step = instance.get_time_step(index_of_the_star)
-        self.assertAlmostEqual(time_step, 1.0e5 | units.yr,1)
+        self.assertAlmostEqual(time_step, initial_dt)
         instance.evolve_one_step(index_of_the_star)
         age_of_the_star = instance.get_age(index_of_the_star)
-        self.assertAlmostEqual(age_of_the_star, 1.0e5 | units.yr, 3)
-        end_time = 5.0e5 | units.yr
-        instance.evolve_for(index_of_the_star, end_time - age_of_the_star)
-        age_of_the_star = instance.get_age(index_of_the_star)
-        self.assertAlmostEqual(age_of_the_star,end_time,3)
+        self.assertAlmostEqual(age_of_the_star, initial_dt)
+        instance.evolve_for(index_of_the_star, age_of_the_star)
+        self.assertAlmostEqual(age_of_the_star, initial_dt)
+        
+        target_end_time = 3.0e5 | units.yr
+        instance.evolve_for(index_of_the_star, target_end_time - age_of_the_star)
+        self.assertAlmostEqual(initial_dt*(1 + dt_factor + dt_factor**2), instance.get_age(index_of_the_star))
+        self.assertAlmostEqual(initial_dt*dt_factor**3, instance.get_time_step(index_of_the_star))
+        self.assertTrue(instance.get_age(index_of_the_star) >= target_end_time)
+        
         L_of_the_star = instance.get_luminosity(index_of_the_star)
         self.assertAlmostEqual(L_of_the_star,0.725 | units.LSun,1)
         M_of_the_star = instance.get_mass(index_of_the_star)
         self.assertAlmostEqual(M_of_the_star,1.000 | units.MSun,3)
         T_of_the_star = instance.get_temperature(index_of_the_star)
         self.assertAlmostEqual(T_of_the_star,5650.998 | units.K,-2)
-        time_step = instance.get_time_step(index_of_the_star)
-        self.assertAlmostEqual(time_step, 172800.0 | units.yr, 1)
         instance.stop()
     
     def test3(self):
@@ -631,22 +640,23 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
         self.assertAlmostEqual(instance.particles.time_step, [100000.0, 17677.6695, 6415.0029] | units.yr, 3)
         
-        print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
+        print "evolve_model without arguments: use shared timestep = 0.99*min(particles.time_step)"
         instance.evolve_model()
-        self.assertAlmostEqual(instance.particles.age, [6415.0029, 6415.0029, 6415.0029] | units.yr, 3)
-        self.assertAlmostRelativeEquals(instance.particles.time_step, [81044.2541, 21213.2034, 7698.0035] | units.yr, 6)
-        self.assertAlmostEqual(instance.model_time, 6415.0029 | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.age, [100000.0, 17677.6695, 6415.0029] | units.yr, 3)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, 1.2*([100000.0, 17677.6695, 6415.0029] | units.yr), 6)
+        self.assertAlmostEqual(instance.model_time, 0.99 * 6415.0029 | units.yr, 3)
         
         print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
         instance.evolve_model(15000 | units.yr)
-        self.assertAlmostEqual(instance.particles.age, [15000.0, 15000.0, 15000.0] | units.yr, 3)
-        self.assertAlmostRelativeEquals(instance.particles.time_step, [65327.1194, 25455.8441, 7589.0067] | units.yr, 4)
+        self.assertAlmostEqual(instance.particles.age, [100000.0, 17677.6695, 6415.0029*(1+1.2+1.44)] | units.yr, 3)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, 1.2*([100000.0, 17677.6695, 1.44*6415.0029] | units.yr), 4)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3)
         
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
-        self.assertAlmostRelativeEquals(instance.particles.age, (15000 | units.yr) + ([65327.1194, 25455.8441, 7589.0067] | units.yr), 5)
-        self.assertAlmostRelativeEquals(instance.particles.time_step, [78392.5433, 30547.0129, 9106.8081] | units.yr, 4)
+        self.assertAlmostRelativeEquals(instance.particles.age, ([100000.0, 17677.6695, 6415.0029*(1+1.2+1.44)] | units.yr)
+            + 1.2*([100000.0, 17677.6695, 1.44*6415.0029] | units.yr), 5)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, 1.44*([100000.0, 17677.6695, 1.44*6415.0029] | units.yr), 4)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
         instance.stop()
     
@@ -822,11 +832,7 @@ class TestMESA(TestWithMPI):
             se_stars[0].evolve_one_step()
         self.assertAlmostEqual(se_stars.age, [364000.0, 0] | units.yr)
         
-        number_of_steps = 10
-        step_size = se_stars[0].age / number_of_steps
-        for i in range(1, number_of_steps + 1):
-            se_stars[1].evolve_for(step_size)
-            self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
+        se_stars[1].evolve_for(se_stars[0].age)
         self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
         self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 2)
         self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 2)
