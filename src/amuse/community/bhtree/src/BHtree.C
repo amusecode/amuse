@@ -781,13 +781,20 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 //				    acc_list, phi_list, &eps2);
 //    
     call_count += ni;
-    double *zero31 = new double[3];
+    double k18[3];
+    double j6[3];
+    double a2[3];
+    double vel[3];
     double pos[3];
     for(int i = 0; i < list_length; i++)
     {
 	for(int k = 0; k < 3; k++)
 	{
 	    pos[k] = pos_list[i][k];
+	    vel[k] = 0.0;
+	    k18[k] = 0.0;
+	    j6[k] = 0.0;
+	    a2[k] = 0.0;
 	}
 	g6_set_j_particle_(
 	    &clusterid,
@@ -796,10 +803,10 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	    &zero,
 	    &zero,
 	    &mass_list[i],
-	    zero31,
-	    zero31,
-	    zero31,
-	    zero31,
+	    k18,
+	    j6,
+	    a2,
+	    vel,
 	    pos
 	);
     }
@@ -814,8 +821,13 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	for(int k = 0; k < 3; k++)
 	{
 	    positions[i][k] = pos_list[i+first_leaf][k];
+	    zero3[i][k]=0.0;
+	    accout[i][k]=0.0;
+	    jerkout[i][k]=0.0;
 	}
+	zero1[i] = 0;
 	index[i] =i + first_leaf; 
+	
     }
     g6calc_firsthalf_(
 	&clusterid, 
