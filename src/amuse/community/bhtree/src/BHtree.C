@@ -721,6 +721,152 @@ void calculate_force_from_interaction_list_using_grape4(vec * pos_list, real * m
 }
 #endif
 
+#ifdef GPU
+
+extern "C" {
+    
+    int g6_open(int clusterid);
+    int g6_close(int clusterid);
+
+    int g6_set_j_particle(int clusterid, int address,
+	     int index,
+	     double tj, /* particle time */
+	     double dtj, /* particle time */
+	     double mass,
+	     double a2by18[3], /* a2dot divided by 18 */
+	     double a1by6[3], /* a1dot divided by 6 */
+	     double aby2[3], /* a divided by 2 */
+	     double v[3], /* velocity */
+	     double x[3] /* position */);
+    
+    int g6_set_ti(int clusterid, double ti);
+    
+    void g6calc_firsthalf(int clusterid, 
+			  int nj,  
+			  int ni,  
+			  int index[],  
+			  double xi[][3],  
+			  double vi[][3],  
+			  double fold[][3],
+			  double jold[][3],  
+			  double phiold[],  
+			  double eps2,   
+			  double h2[]);  
+			   
+    int g6calc_lasthalf(int clusterid,
+			 int nj,
+			 int ni,
+			 int index[],
+			 double xi[][3],
+			 double vi[][3],
+			 double eps2,
+			 double h2[], 
+			 double acc[][3],
+			 double jerk[][3],
+			 double pot[]);   
+}
+
+void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * mass_list,
+							int list_length, int first_leaf, int ni,
+							real eps2,
+							vec * acc_list, real * phi_list)
+{
+    static int call_count = 0;
+    static bool g6_is_open = false;
+    if (!g6_is_open){
+	g6_open(0);
+	g6_is_open = true;
+    }
+    
+    g6_set_ti(0,0.0);
+    
+    nisum += ni;
+    tree_walks += 1;
+    total_interactions += ((real)ni)*list_length;
+    //accel_by_harp3_separate_noopen_(&ni,pos_list+first_leaf, &list_length,pos_list, mass_list,
+//				    acc_list, phi_list, &eps2);
+//    
+    call_count += ni;
+    double *zero31 = new double[3];
+    double pos[3];
+    for(int i = 0; i < list_length; i++)
+    {
+	for(int k = 0; k < 3; k++)
+	{
+	    pos[k] = pos_list[i][k];
+	}
+	g6_set_j_particle(
+	    0,
+	    i,
+	    i,
+	    0.0,
+	    0.0,
+	    mass_list[i],
+	    zero31,
+	    zero31,
+	    zero31,
+	    zero31,
+	    pos
+	);
+    }
+    int *index = new int[ni];
+    double (*zero3)[3] = new double[ni][3];
+    double (*positions)[3] = new double[ni][3];
+    double (*accout)[3] = new double[ni][3];
+    double (*jerkout)[3] = new double[ni][3];
+    double *zero1 = new double[ni];
+    for(int i = 0; i < ni; i++)
+    {
+	for(int k = 0; k < 3; k++)
+	{
+	    positions[i][k] = pos_list[i+first_leaf][k];
+	}
+	index[i] =i + first_leaf; 
+    }
+    g6calc_firsthalf(
+	0, 
+	list_length,  
+	ni,  
+	index,  
+	positions,
+	zero3,  
+	zero3,
+	zero3,  
+	zero1,  
+	eps2,
+	zero1
+    );  
+    
+    g6calc_lasthalf(
+	0, 
+	list_length,  
+	ni,  
+	index,
+	positions,
+	zero3,
+	eps2,
+	zero1,
+        accout,
+        jerkout,
+        phi_list
+    );
+    for(int i = 0; i < ni; i++)
+    {
+	for(int k = 0; k < 3; k++)
+	{
+	    acc_list[i][k] = accout[i][k];
+	    //cerr << "acc_list["<<i<<"]["<<k<<"]:" << acc_list[i][k] << endl;
+	}
+    }
+    if (call_count > 500000){
+	cerr << "Close and release GRAPE-6\n";
+	g6_close(0);
+	g6_is_open = false;
+	call_count = 0;
+    }
+}
+#endif
+
 void bhnode::evaluate_gravity_using_tree_and_list(bhnode & source_node,
 						  real theta2,
 						  real eps2,
@@ -730,7 +876,15 @@ void bhnode::evaluate_gravity_using_tree_and_list(bhnode & source_node,
     static real mass_list[list_max];
     static vec pos_list[list_max];
     real epsinv = 1.0/sqrt(eps2);
-#ifdef HARP3    
+#ifdef HARP3   
+    static vec * acc_list = NULL;
+    static real * phi_list = NULL;
+    if (acc_list == NULL){
+	acc_list = new vec[ncrit + 100];
+	phi_list = new real[ncrit + 100];
+    }
+#endif
+#ifdef GPU   
     static vec * acc_list = NULL;
     static real * phi_list = NULL;
     if (acc_list == NULL){
@@ -767,6 +921,7 @@ void bhnode::evaluate_gravity_using_tree_and_list(bhnode & source_node,
 	}
 	bhparticle * bp = bpfirst;
 #ifndef HARP3	
+#ifndef GPU
 	for(int i = 0; i < nparticle; i++){
 	    real_particle * p = (bp+i)->get_rp();
 	    vec acc;
@@ -776,6 +931,15 @@ void bhnode::evaluate_gravity_using_tree_and_list(bhnode & source_node,
 	    p->set_acc_gravity(acc);
 	    p->set_phi_gravity(phi + p->get_mass()*epsinv);
 	}
+#else
+	calculate_force_from_interaction_list_using_grape6(pos_list, mass_list,list_length, first_leaf,
+							   nparticle, eps2, acc_list, phi_list);
+	for(int i = 0; i < nparticle; i++){
+	    real_particle * p = (bp+i)->get_rp();
+	    p->set_acc_gravity(acc_list[i]);
+	    p->set_phi_gravity(phi_list[i] + p->get_mass()*epsinv);
+	}
+#endif
 #else
 	calculate_force_from_interaction_list_using_grape4(pos_list, mass_list,list_length, first_leaf,
 							   nparticle, eps2, acc_list, phi_list);
@@ -807,11 +971,10 @@ void real_particle::calculate_gravity_using_tree(real eps2, real theta2)
     nn_index = -1;
     r_nn_2 = 1.e30;
 
+
     bn->accumulate_force_from_tree(pos, eps2, theta2,
 				   acc_gravity, phi_gravity, index);
     nisum += 1;
-
-
     
 // AMUSE STOPPING CONDITIONS SUPPORT (AVE May 2010)
     //if(nn_index >= 0 && (COLLISION_DETECTION_BITMAP & enabled_conditions) ) { // compare indices to prevent two detections for one collision: (NdV Feb 2012)

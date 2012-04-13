@@ -25,10 +25,10 @@ BHTC: $(OBJ)
 	$(CXX) $(CXXFLAGS) $(OBJ) -lm -o BHTC $(SCLIBS)
 
 .c.o:
-	$(CC) $(CFLAGS) $(SCINC) -c $?
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(SCINC) -c $?
 
 .C.o:
-	$(CXX) $(CXXFLAGS) $(SCINC) -c $?
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(SCINC) -c $?
 
 test: compile
 

@@ -8,8 +8,8 @@ class BHTreeInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
     """
     include_headers = ['bhtree_code.h', 'worker_code.h', 'stopcond.h']
     
-    def __init__(self, convert_nbody = None, **kwargs):
-        CodeInterface.__init__(self, name_of_the_worker="bhtree_worker", **kwargs)
+    def __init__(self, convert_nbody = None, mode = 'cpu', **kwargs):
+        CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **kwargs)
         """
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         if convert_nbody is None:
@@ -19,7 +19,14 @@ class BHTreeInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
         """
         LiteratureReferencesMixIn.__init__(self)
 
-    
+    def name_of_the_worker(self, mode):
+        if mode == "g6":
+            return 'bhtree_worker_g6'
+        elif mode == "gpu":
+            return 'bhtree_worker_gpu'
+        else:
+            return 'bhtree_worker'
+
        
     
     

@@ -76,9 +76,18 @@ void real_system::calculate_uncorrected_gravity()
     //    void calculate_vf2R = &real_particle::calculate_gravity_using_tree;
     //    apply_vf2R(calculate_vf2R,
     //	     eps2_for_gravity, theta_for_tree*theta_for_tree);
-    
+
     apply_vf(&real_particle::calculate_gravity_using_tree,
 	       eps2_for_gravity, theta_for_tree*theta_for_tree);
+    
+#ifdef GPU
+    
+    evaluate_gravity_using_default_tree_and_list(theta_for_tree*theta_for_tree ,eps2_for_gravity, ncrit_for_tree);
+#else
+    apply_vf(&real_particle::calculate_gravity_using_tree,
+	       eps2_for_gravity, theta_for_tree*theta_for_tree);
+
+#endif
 #endif
     
 //    print_tree_counters();
