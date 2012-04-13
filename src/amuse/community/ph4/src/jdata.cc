@@ -660,6 +660,7 @@ void jdata::advance()
 bool jdata::advance_and_check_encounter()
 {
     bool status = false;
+    int collision_detection_enabled;
     advance();
 
     // Optionally manage close encounters.  AMUSE stopping conditions
@@ -667,12 +668,9 @@ bool jdata::advance_and_check_encounter()
     // encounter has been detected (handled by the top level loop or
     // by AMUSE).
     
-    if (!manage_encounters || eps2 > 1.0e-99) {
-        return false;
-    }
-    
     // AMUSE STOPPING CONDITIONS SUPPORT
-    if (manage_encounters == 4) {
+    is_stopping_condition_enabled(COLLISION_DETECTION, &collision_detection_enabled);
+    if (collision_detection_enabled) {
         if (coll1 >= 0) {
             int stopping_index = next_index_for_stopping_condition();
             set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
@@ -681,6 +679,10 @@ bool jdata::advance_and_check_encounter()
             status = true;
         }
         return status;
+    }
+    
+    if (!manage_encounters || eps2 > 1.0e-99 || manage_encounters == 4) {
+        return false;
     }
     
     if (close1 >= 0) {
