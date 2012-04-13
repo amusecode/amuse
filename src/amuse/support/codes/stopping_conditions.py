@@ -315,6 +315,8 @@ class StoppingCondition(object):
 
     def get_set_condition_indices(self, index_in_condition):
         indices = range(self.conditions.code.get_number_of_stopping_conditions_set())
+        if len(indices) == 0:
+            return []
         types, number_of_particles = self.conditions.code.get_stopping_condition_info(indices)
     
         result = []
