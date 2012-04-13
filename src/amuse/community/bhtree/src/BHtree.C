@@ -772,7 +772,7 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	g6_open_(&clusterid);
 	g6_is_open = true;
     } else {
-	g6_reset_(&clusterid);
+	//g6_reset_(&clusterid);
     }
     
     double ti = 0.0;
@@ -876,7 +876,8 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	    //cerr << "acc_list["<<i<<"]["<<k<<"]:" << acc_list[i][k] << endl;
 	}
     }
-    if (call_count > 0){
+    //cerr << "ni,nj" << ni << "," << list_length << " :  "<<call_count<<endl;
+    if (call_count > 5000000){
 	cerr << "Close and release GRAPE-6\n";
 	g6_close_(&clusterid);
 	g6_is_open = false;
@@ -975,6 +976,7 @@ void evaluate_gravity_using_default_tree_and_list(real theta2,
 					  int ncrit)
 {
     bn->evaluate_gravity_using_tree_and_list(*bn, theta2,eps2, ncrit);
+    //cerr<<"eval loop done!"<<endl;
 }
 
 int id_collision_1, id_collision_2;	// used extern in ../muse_dynamics.C
