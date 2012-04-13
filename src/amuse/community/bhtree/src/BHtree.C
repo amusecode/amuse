@@ -755,6 +755,8 @@ extern "C" {
            double xi[][3], double vi[][3],
            double *eps2, double h2[],
            double acc[][3], double jerk[][3], double pot[]);  
+	   
+    int g6_reset_(int* cluster_id);
 }
 
 void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * mass_list,
@@ -768,6 +770,8 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
     if (!g6_is_open){
 	g6_open_(&clusterid);
 	g6_is_open = true;
+    } else {
+	g6_reset_(&clusterid);
     }
     
     double ti = 0.0;
@@ -864,7 +868,7 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	    //cerr << "acc_list["<<i<<"]["<<k<<"]:" << acc_list[i][k] << endl;
 	}
     }
-    if (call_count > 500000){
+    if (call_count > 1){
 	cerr << "Close and release GRAPE-6\n";
 	g6_close_(&clusterid);
 	g6_is_open = false;

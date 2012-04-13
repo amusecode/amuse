@@ -82,7 +82,7 @@ void real_system::calculate_uncorrected_gravity()
     
 #ifdef GPU
     
-    evaluate_gravity_using_default_tree_and_list(theta_for_tree*theta_for_tree ,eps2_for_gravity, ncrit_for_tree);
+    evaluate_gravity_using_default_tree_and_list(theta_for_tree*theta_for_tree ,eps2_for_gravity, 1024);
 #else
     apply_vf(&real_particle::calculate_gravity_using_tree,
 	       eps2_for_gravity, theta_for_tree*theta_for_tree);
