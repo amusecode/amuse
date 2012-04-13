@@ -377,7 +377,6 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     def store(self):
         processor = StoreHDF(self.filename, self.append_to_file, open_for_writing = True)
         try:
-            print self.extra_attributes
             return processor.store(self.set, self.extra_attributes)
         finally:
             processor.close()
