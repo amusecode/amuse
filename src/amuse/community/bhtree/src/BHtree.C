@@ -757,6 +757,7 @@ extern "C" {
            double acc[][3], double jerk[][3], double pot[]);  
 	   
     int g6_reset_(int* cluster_id);
+    int g6_npipes_();
 }
 
 void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * mass_list,
@@ -777,6 +778,7 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
     double ti = 0.0;
     double zero = 0.0;
     g6_set_ti_(&clusterid,&ti);
+    int max_ni = g6_npipes_();
     
     nisum += ni;
     tree_walks += 1;
@@ -833,33 +835,39 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	index[i] =i + first_leaf; 
 	
     }
-    g6calc_firsthalf_(
-	&clusterid, 
-	&list_length,  
-	&ni,  
-	index,  
-	positions,
-	zero3,  
-	zero3,
-	zero3,  
-	zero1,  
-	&eps2,
-	zero1
-    );  
     
-    g6calc_lasthalf_(
-	&clusterid, 
-	&list_length,  
-	&ni,  
-	index,
-	positions,
-	zero3,
-	&eps2,
-	zero1,
-        accout,
-        jerkout,
-        phi_list
-    );
+    for(int pi = 0; pi < ni; pi+=max_ni)
+    {
+	int actualni = pi + max_ni > ni ? ni - pi : max_ni;
+	
+	g6calc_firsthalf_(
+	    &clusterid, 
+	    &list_length,  
+	    &actualni,  
+	    index + pi,  
+	    positions + pi,
+	    zero3,  
+	    zero3,
+	    zero3,  
+	    zero1,  
+	    &eps2,
+	    zero1
+	);  
+	
+	g6calc_lasthalf_(
+	    &clusterid, 
+	    &list_length,  
+	    &actualni,  
+	    index + pi,
+	    positions + pi,
+	    zero3,
+	    &eps2,
+	    zero1,
+	    accout + pi,
+	    jerkout + pi,
+	    phi_list + pi
+	);
+    }
     for(int i = 0; i < ni; i++)
     {
 	for(int k = 0; k < 3; k++)
@@ -868,7 +876,7 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	    //cerr << "acc_list["<<i<<"]["<<k<<"]:" << acc_list[i][k] << endl;
 	}
     }
-    if (call_count > 1){
+    if (call_count > 0){
 	cerr << "Close and release GRAPE-6\n";
 	g6_close_(&clusterid);
 	g6_is_open = false;
