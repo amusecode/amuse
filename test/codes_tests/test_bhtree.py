@@ -567,17 +567,17 @@ class TestBHTree(TestWithMPI):
                                  1.0|units.ms, 1.0|units.ms, 1.0|units.ms)
         
         curr_state =  instance.get_state(1)
-        for expected, actural in zip((16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+        for expected, actual in zip((16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
                                  1.0|units.ms, 1.0|units.ms, 1.0|units.ms, 0 | units.m), curr_state):
-            self.assertAlmostRelativeEquals(actural,expected)
+            self.assertAlmostRelativeEquals(actual,expected)
         
         instance.set_state(1, 16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
                                  1.0|units.ms, 1.0|units.ms, 1.0|units.ms , 20.0|units.m)
         
         curr_state =  instance.get_state(1)
-        for expected, actural in zip((16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+        for expected, actual in zip((16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
                                  1.0|units.ms, 1.0|units.ms, 1.0|units.ms, 20 | units.m), curr_state):
-            self.assertAlmostRelativeEquals(actural,expected)
+            self.assertAlmostRelativeEquals(actual,expected)
         
         instance.stop()
 
@@ -644,8 +644,8 @@ class TestBHTree(TestWithMPI):
         
         (value, error) = instance.legacy_interface.get_ncrit_for_tree()
         self.assertEquals(0, error)
-        self.assertEquals(1024, value)
-        self.assertEquals(1024 | units.none, instance.parameters.ncrit_for_tree)
+        self.assertEquals(12, value)
+        self.assertEquals(12 | units.none, instance.parameters.ncrit_for_tree)
         for x in [512, 2048, 4096]:
             instance.parameters.ncrit_for_tree = x
             self.assertEquals(x | units.none, instance.parameters.ncrit_for_tree)

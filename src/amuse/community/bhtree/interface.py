@@ -264,7 +264,7 @@ class BHTree(GravitationalDynamics):
             "set_ncrit_for_tree",
             "ncrit_for_tree", 
             "Ncrit, the maximum number of particles sharing an interaction list", 
-            default_value = 1024 | units.none
+            default_value = 12 | units.none
         )
         object.add_method_parameter(
             "get_dt_dia",

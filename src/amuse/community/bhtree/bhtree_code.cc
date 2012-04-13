@@ -67,7 +67,7 @@ const int USE_SELF_GRAVITY = 1;
 int use_self_gravity = USE_SELF_GRAVITY;
 //void set_use_self_gravity(int use)        {use_self_gravity = use;}
 
-const int NCRIT_FOR_TREE = 1024;
+const int NCRIT_FOR_TREE = 12;
 int ncrit_for_tree = NCRIT_FOR_TREE;
 //void set_ncrit_for_tree(int ncrit)        {ncrit_for_tree = ncrit;}
 
@@ -260,16 +260,13 @@ int evolve_model(real t_end)                // default sync = 0
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, &is_number_of_steps_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
     // AMUSE STOPPING CONDITIONS
+    reset_stopping_conditions();
     
     while( bhtcs.time<t_end)
       {
 
         dt=bhtcs.timestep;
         if( bhtcs.time+dt >= t_end) dt=t_end-bhtcs.time;
-        
-        
-        reset_stopping_conditions();
-
         bhtcs.integrate(dt);                // advance the entire system by time dt
 
         bhtcs.time += dt;                
@@ -283,17 +280,17 @@ int evolve_model(real t_end)                // default sync = 0
                 set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
             }
         }
-	if(is_number_of_steps_detection_enabled) {
-	    number_of_steps_innerloop++;
-	    if(number_of_steps_innerloop > max_number_of_steps) {
-	      int stopping_index  = next_index_for_stopping_condition();
-	      set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
-	    }
-	}
+        if(is_number_of_steps_detection_enabled) {
+            number_of_steps_innerloop++;
+            if(number_of_steps_innerloop > max_number_of_steps) {
+              int stopping_index  = next_index_for_stopping_condition();
+              set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+            }
+        }
 
-	// AMUSE STOPPING CONDITIONS
+        // AMUSE STOPPING CONDITIONS
         if (set_conditions & enabled_conditions) {
-	    break;
+            break;
         }
 #if 0
         real KE = bhtcs.kinetic_energy();
@@ -307,7 +304,7 @@ int evolve_model(real t_end)                // default sync = 0
 #endif
 
       }
-
+#if 0
     if (id_primary >= 0) 
       {
         if (debug)
@@ -325,6 +322,7 @@ int evolve_model(real t_end)                // default sync = 0
             cerr << "CPU sec = " << cpusec() << endl;
           }
       }
+#endif
     //id_primary
     return 0;
 }
