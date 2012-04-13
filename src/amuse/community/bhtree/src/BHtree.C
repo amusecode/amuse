@@ -725,45 +725,36 @@ void calculate_force_from_interaction_list_using_grape4(vec * pos_list, real * m
 
 extern "C" {
     
-    int g6_open(int clusterid);
-    int g6_close(int clusterid);
+    int g6_open_(int *clusterid);
+    int g6_close_(int *clusterid);
 
-    int g6_set_j_particle(int clusterid, int address,
-	     int index,
-	     double tj, /* particle time */
-	     double dtj, /* particle time */
-	     double mass,
-	     double a2by18[3], /* a2dot divided by 18 */
-	     double a1by6[3], /* a1dot divided by 6 */
-	     double aby2[3], /* a divided by 2 */
-	     double v[3], /* velocity */
-	     double x[3] /* position */);
     
-    int g6_set_ti(int clusterid, double ti);
+    int g6_set_j_particle_(int *cluster_id,
+         int *address,
+         int *index,
+         double *tj, double *dtj,
+         double *mass,
+         double k18[3], double j6[3],
+         double a2[3], double v[3], double x[3]);
     
-    void g6calc_firsthalf(int clusterid, 
-			  int nj,  
-			  int ni,  
-			  int index[],  
-			  double xi[][3],  
-			  double vi[][3],  
-			  double fold[][3],
-			  double jold[][3],  
-			  double phiold[],  
-			  double eps2,   
-			  double h2[]);  
+    int g6_set_ti_(int *id, double *ti);
+    
+    
+    void g6calc_firsthalf_(int *cluster_id,
+         int *nj, int *ni,
+         int index[], 
+         double xi[][3], double vi[][3],
+         double aold[][3], double j6old[][3],
+         double phiold[3], 
+         double *eps2, double h2[]);
 			   
-    int g6calc_lasthalf(int clusterid,
-			 int nj,
-			 int ni,
-			 int index[],
-			 double xi[][3],
-			 double vi[][3],
-			 double eps2,
-			 double h2[], 
-			 double acc[][3],
-			 double jerk[][3],
-			 double pot[]);   
+    
+    int g6calc_lasthalf_(int *cluster_id,
+           int *nj, int *ni,
+           int index[], 
+           double xi[][3], double vi[][3],
+           double *eps2, double h2[],
+           double acc[][3], double jerk[][3], double pot[]);  
 }
 
 void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * mass_list,
@@ -773,12 +764,15 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 {
     static int call_count = 0;
     static bool g6_is_open = false;
+    static int clusterid = 0;
     if (!g6_is_open){
-	g6_open(0);
+	g6_open_(&clusterid);
 	g6_is_open = true;
     }
     
-    g6_set_ti(0,0.0);
+    double ti = 0.0;
+    double zero = 0.0;
+    g6_set_ti_(&clusterid,&ti);
     
     nisum += ni;
     tree_walks += 1;
@@ -795,13 +789,13 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	{
 	    pos[k] = pos_list[i][k];
 	}
-	g6_set_j_particle(
-	    0,
-	    i,
-	    i,
-	    0.0,
-	    0.0,
-	    mass_list[i],
+	g6_set_j_particle_(
+	    &clusterid,
+	    &i,
+	    &i,
+	    &zero,
+	    &zero,
+	    &mass_list[i],
 	    zero31,
 	    zero31,
 	    zero31,
@@ -823,28 +817,28 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	}
 	index[i] =i + first_leaf; 
     }
-    g6calc_firsthalf(
-	0, 
-	list_length,  
-	ni,  
+    g6calc_firsthalf_(
+	&clusterid, 
+	&list_length,  
+	&ni,  
 	index,  
 	positions,
 	zero3,  
 	zero3,
 	zero3,  
 	zero1,  
-	eps2,
+	&eps2,
 	zero1
     );  
     
-    g6calc_lasthalf(
-	0, 
-	list_length,  
-	ni,  
+    g6calc_lasthalf_(
+	&clusterid, 
+	&list_length,  
+	&ni,  
 	index,
 	positions,
 	zero3,
-	eps2,
+	&eps2,
 	zero1,
         accout,
         jerkout,
@@ -860,7 +854,7 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
     }
     if (call_count > 500000){
 	cerr << "Close and release GRAPE-6\n";
-	g6_close(0);
+	g6_close_(&clusterid);
 	g6_is_open = false;
 	call_count = 0;
     }
