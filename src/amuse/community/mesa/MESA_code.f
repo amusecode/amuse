@@ -1693,7 +1693,7 @@
       double precision :: original_timestep_limit, original_dxdt_nuc_f
       integer :: new_particle, ierr, tmp1_id_new_model, tmp2_id_new_model, &
          new_specified_stellar_model, finalize_stellar_model, match_mesh, &
-         evolve_for, evolve_one_step, erase_memory, index_low, k1, k2
+         evolve_one_step, erase_memory, index_low, k1, k2
       logical :: do_T = .false.
       logical :: do_restore_timestep = .false.
       type (star_info), pointer :: s, s_tmp
@@ -1745,8 +1745,9 @@
             s% xa(:,:) = f * s_tmp% xa(:,:) + (1.0d0 - f) * s% xa(:,:)
             ierr = erase_memory(id_new_model)
             if (failed('erase_memory', ierr)) return
-            ierr = evolve_for(id_new_model, 10.0 * s% min_timestep_limit)
-            if (failed('evolve_for', ierr)) return
+            s% dt_next = 10.0 * s% min_timestep_limit
+            ierr = evolve_one_step(id_new_model)
+            if (failed('evolve_one_step', ierr)) return
             if (debugging) write(*,*) 'f: ', f
             call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
             if (failed('check_remeshed', ierr)) then
@@ -1786,8 +1787,9 @@
                s% xs(s% i_lnT,index_low:) = f*s_tmp%xs(s_tmp%i_lnT,index_low:) + (1d0-f)*s%xs(s%i_lnT,index_low:)
                ierr = erase_memory(id_new_model)
                if (failed('erase_memory', ierr)) return
-               ierr = evolve_for(id_new_model, 10.0 * s% min_timestep_limit)
-               if (failed('evolve_for', ierr)) return
+               s% dt_next = 10.0 * s% min_timestep_limit
+               ierr = evolve_one_step(id_new_model)
+               if (failed('evolve_one_step', ierr)) return
                if (debugging) write(*,*) 'f: ', f
                call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
                if (failed('check_remeshed', ierr)) return
