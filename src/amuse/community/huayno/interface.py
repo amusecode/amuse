@@ -2,7 +2,13 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
-class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
+class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface):
+    """
+    N-body integration module with individual and variable time step
+    using the Hermite integration scheme.
+
+    .. [#] Pelupessy, I.F., XXX, Portegies Zwart, S.F., to be submitted
+    """
     include_headers = ['worker_code.h']
     
     MODE_OPENCL='opencl'

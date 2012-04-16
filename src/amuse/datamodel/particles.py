@@ -1206,7 +1206,7 @@ class ParticlesSuperset(AbstractParticleSet):
             index += 1
     
     def can_extend_attributes(self):
-        for x in self._private.particle_sets():
+        for x in self._private.particle_sets:
             if not x.can_extend_attributes():
                 return False
         return True
