@@ -70,8 +70,12 @@ def change_dylib_ref(name, oldid, newid, dryrun = True):
     if dryrun == True:
         print ' '.join(arguments)
         return
-
-    outputstring = subprocess.check_output(arguments)
+    
+    try:
+        outputstring = subprocess.check_output(arguments)
+    except subprocess.CalledProcessError as ex:
+        print "error while running:", ' '.join(arguments)
+        print "output:", ex.output
     print outputstring
 
 def add_rpath(name, rpath,  dryrun = True):

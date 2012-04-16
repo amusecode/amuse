@@ -254,6 +254,7 @@ fi
 
 if [ ${PLATFORM} == "Darwin" ]; then
     echo 'move refs'
+    chmod u+w ${PYTHONHOME}/lib/libpython*.dylib
     ${PYTHON} mvpath.py -p ${PYTHONHOME}/lib/
     ${PYTHON} mvref.py -p ${PYTHONHOME}/lib/ -b ${PYTHONHOME}
 else
