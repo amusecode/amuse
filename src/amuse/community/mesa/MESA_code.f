@@ -208,6 +208,7 @@
       implicit none
       integer :: commit_particles
       allocate(target_times(number_of_particles))
+      target_times = 0
       commit_particles = 0
    end function
 
