@@ -226,7 +226,7 @@ class CalculateFieldForParticles(object):
     def _softening_lengths_squared_shared(self):
         return self.smoothing_length_squared#.as_vector_with_length(len(self.particles))
     
-    def cleanup_code():
+    def cleanup_code(self):
         self.particles = datamodel.Particles()
         
     def evolve_model(self,tend,timestep=None):
