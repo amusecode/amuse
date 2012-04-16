@@ -205,6 +205,19 @@ int set_longitudinal_unit_vector(double x, double y, double z)
     return 0;
 }
 
+int set_transverse_unit_vector(double x, double y, double z)
+{
+    vec l = k->get_longitudinal_unit_vector();
+    vec t = k->get_transverse_unit_vector();
+    vec n = k->get_normal_unit_vector();
+    real r = sqrt(x*x+y*y+z*z);
+    if (r <= 0) return -1;
+    t = vec(x,y,z)/r;
+    if (fabs(t*n) < TOL*abs(t)*abs(n)) t = n^t;
+    k->set_orientation(l, t, n);
+    return 0;
+}
+
 int set_normal_unit_vector(double x, double y, double z)
 {
     vec l = k->get_longitudinal_unit_vector();
@@ -235,6 +248,7 @@ int get_transverse_unit_vector(double * x, double * y, double * z)
     *z = t[2];
     return 0;
 }
+
 
 int get_normal_unit_vector(double * x, double * y, double * z)
 {

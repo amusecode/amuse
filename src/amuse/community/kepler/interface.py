@@ -456,6 +456,24 @@ class KeplerInterface(CodeInterface,
         return function
 
     @legacy_function
+    def set_transverse_unit_vector():
+        """
+        Set the transverse unit vector of the system (tangent on longitudal uv).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('vx', dtype='float64', direction=function.IN)
+        function.addParameter('vy', dtype='float64', direction=function.IN)
+        function.addParameter('vz', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            set vector OK
+        -1 - ERROR
+            could not set vector"""
+        return function
+
+    @legacy_function
     def get_normal_unit_vector():
         """
         Return the normal unit vector of the system.
@@ -637,6 +655,16 @@ class Kepler(CommonCode):
                           ))
 
         object.add_method("set_longitudinal_unit_vector",
+                          (
+                              units.none,
+                              units.none,
+                              units.none
+                          ),
+                          (
+                              object.ERROR_CODE
+                          ))
+
+        object.add_method("set_transverse_unit_vector",
                           (
                               units.none,
                               units.none,

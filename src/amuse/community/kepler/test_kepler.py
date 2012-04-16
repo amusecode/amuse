@@ -50,6 +50,8 @@ def run_kepler(mass, semi, ecc, time):
     kep.transform_to_time(time)
     x,y,z = kep.get_separation_vector()
     print "separation:", x,y,z
+    x,y,z = kep.get_velocity_vector()
+    print "velocity:", x,y,z
     x,y,z = kep.get_longitudinal_unit_vector()
     print "longitudinal:", x,y,z
 
