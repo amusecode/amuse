@@ -73,33 +73,33 @@ class TestRotations(amusetest.TestCase):
     def test06(self):
         particles = new_plummer_model(100)
         kinetic_energy0 = particles.kinetic_energy()
-        potential_energy0 = particles.potential_energy()
+        potential_energy0 = particles.potential_energy(G=nbody_system.G)
         particles.position = rotation.rotated(particles.position,  numpy.pi/2, 0.0, 0.0)
         particles.velocity = rotation.rotated(particles.velocity,  numpy.pi/2, 0.0, 0.0)
     
     
         kinetic_energy1 = particles.kinetic_energy()
-        potential_energy1 = particles.potential_energy()
+        potential_energy1 = particles.potential_energy(G=nbody_system.G)
         self.assertAlmostRelativeEquals(kinetic_energy1, kinetic_energy0)
         self.assertAlmostRelativeEquals(potential_energy1, potential_energy0)
 
     def test07(self):
         particles = new_plummer_model(100)
         kinetic_energy0 = particles.kinetic_energy()
-        potential_energy0 = particles.potential_energy()
+        potential_energy0 = particles.potential_energy(G=nbody_system.G)
         particles.position = rotation.rotated(particles.position,  numpy.pi/3, numpy.pi/2, 0.0)
         particles.velocity = rotation.rotated(particles.velocity,  numpy.pi/3, numpy.pi/2, 0.0)
     
     
         kinetic_energy1 = particles.kinetic_energy()
-        potential_energy1 = particles.potential_energy()
+        potential_energy1 = particles.potential_energy(G=nbody_system.G)
         self.assertAlmostRelativeEquals(kinetic_energy1, kinetic_energy0)
         self.assertAlmostRelativeEquals(potential_energy1, potential_energy0)
     
     def test08(self):
         particles = new_plummer_model(100)
         kinetic_energy0 = particles.kinetic_energy()
-        potential_energy0 = particles.potential_energy()
+        potential_energy0 = particles.potential_energy(G=nbody_system.G)
         
         particles.move_to_center()
         particles.position += [3, 0, 2] | nbody_system.length
@@ -108,7 +108,7 @@ class TestRotations(amusetest.TestCase):
             [numpy.sqrt(2), -numpy.sqrt(2), -3] | nbody_system.length, 7)
         
         kinetic_energy1 = particles.kinetic_energy()
-        potential_energy1 = particles.potential_energy()
+        potential_energy1 = particles.potential_energy(G=nbody_system.G)
         self.assertAlmostRelativeEquals(kinetic_energy1, kinetic_energy0)
         self.assertAlmostRelativeEquals(potential_energy1, potential_energy0)
 
