@@ -258,25 +258,31 @@ class unit(object):
         return 'unit<'+str(self)+'>'
         
     def combine_bases(self, base1, base2):
-        result = [None] * 7
+        indexed1 = [None] * 7
         for n1, unit1 in base1:
-            found = False
-            for n2, unit2 in base2:
-                if unit1 == unit2:
-                    base2 = filter(lambda x : x[1] != unit1, base2)
-                    found = True
-                    result[unit1.index] = (n1, n2, unit1)
-                    break
-            if not found:
-                result[unit1.index] =  n1, 0, unit1
+            indexed1[unit1.index] = (n1, unit1)
+        
+        indexed2 = [None] * 7
         for n2, unit2 in base2:
-            result[unit2.index] = 0, n2, unit2
-        for x in result:
-            if not x is None:
-                yield x
-                
+            indexed2[unit2.index] = (n2, unit2)
+        
+        result = []
+        for sub1, sub2 in zip(indexed1, indexed2):
+            if not sub1 is None:
+                if not sub2 is None:
+                    if sub1[1] == sub2[1]:
+                        result.append((sub1[0], sub2[0], sub1[1]))
+                    else:
+                        raise exceptions.AmuseException("Cannot combine units from "
+                            "different systems: {0} and {1}".format(sub1[1], sub2[1]))
+                else:
+                    result.append((sub1[0], 0, sub1[1]))
+            elif not sub2 is None:
+                result.append((0, sub2[0], sub2[1]))
+        return result
+    
     def has_same_base_as(self, other):
-        """Detrmine if the base of other is the same as the
+        """Determine if the base of other is the same as the
         base of self.
         
         :argument other: unit to compare base to
