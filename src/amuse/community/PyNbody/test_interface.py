@@ -30,7 +30,7 @@ class TestPyNbodyInterface(TestWithMPI):
         instance = PyNbodyInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
-        
+
         id, error = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         self.assertEquals(0, error)
         self.assertEquals(0, id)
@@ -97,20 +97,20 @@ class TestPyNbodyInterface(TestWithMPI):
         print "Test PyNbodyInterface parameters"
         instance = PyNbodyInterface(**default_options)
         self.assertEquals(0, instance.initialize_code())
-        
-        self.assertEquals(["leapfrog", 0], instance.get_integrator_method().values())
-        
+
+        self.assertEquals(["hts", 0], instance.get_integrator_method().values())
+
         self.assertEquals(0, instance.set_integrator_method("bogus"))
         self.assertEquals(["bogus", 0], instance.get_integrator_method().values())
-        
+
         self.assertEquals([0.01, 0], instance.get_eta().values())
         self.assertEquals(0, instance.set_eta(0.001))
         self.assertEquals([0.001, 0], instance.get_eta().values())
-        
+
         self.assertEquals([0.0, 0], instance.get_time_begin().values())
         self.assertEquals(0, instance.set_time_begin(1.0))
         self.assertEquals([1.0, 0], instance.get_time_begin().values())
-        
+
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
@@ -171,12 +171,12 @@ class TestPyNbody(TestWithMPI):
         instance = PyNbody(self.default_converter, **default_options)
         instance.initialize_code()
 
-        self.assertEquals(instance.parameters.epsilon_squared, 
+        self.assertEquals(instance.parameters.epsilon_squared,
             instance.unit_converter.to_si(0.0 | nbody_system.length**2))
         self.assertEquals(instance.parameters.timestep_parameter, 0.1 | units.none)
 
         for par, value in [('epsilon_squared_star_star', 0.0 | nbody_system.length**2),
-                ('epsilon_squared_star_blackhole', 0.0 | nbody_system.length**2), 
+                ('epsilon_squared_star_blackhole', 0.0 | nbody_system.length**2),
                 ('epsilon_squared_blackhole_blackhole', 0.0 | nbody_system.length**2),
                 ('initial_timestep_parameter', 1.0e-4 | units.none),
                 ('timestep_parameter_stars', 0.1 | units.none),
@@ -192,10 +192,10 @@ class TestPyNbody(TestWithMPI):
                 getattr(instance.parameters, par))
 
         # epsilon_squared is an alias for epsilon_squared_star_star, so epsilon_squared also has become 3:
-        self.assertEquals(instance.parameters.epsilon_squared, 
+        self.assertEquals(instance.parameters.epsilon_squared,
             instance.unit_converter.to_si(3.0 | nbody_system.length**2))
         instance.parameters.epsilon_squared = 0.1 | nbody_system.length**2
-        self.assertEquals(instance.parameters.epsilon_squared, 
+        self.assertEquals(instance.parameters.epsilon_squared,
             instance.unit_converter.to_si(0.1 | nbody_system.length**2))
         # timestep_parameter is an alias for timestep_parameter_stars, so timestep_parameter also has become 3:
         self.assertEquals(instance.parameters.timestep_parameter, 3.0 | units.none)
@@ -308,7 +308,7 @@ class TestPyNbody(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
 
-    def test6(self):
+    def xtest6(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for PyNbody")
         print "Testing PyNbody evolve_model, earth-sun system, no SMBH"
