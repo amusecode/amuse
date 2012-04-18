@@ -40,10 +40,10 @@
   be used at the moment for all the components systems (different units are 
   allowed though). The call to add systems, for example:
 
-  bridgesys.add_system(galaxy, False, (cluster,))
+  bridgesys.add_system(galaxy, (cluster,), False)
   
-  has three arguments: the system, a flag to specify whether
-  synchronization  is needed and a set with *interaction* partners. The
+  has three arguments: the system, a set with *interaction* partners and
+  a flag to specify whether synchronization is needed . The
   interaction partners indicate which systems will kick the system. In the
   most simple case these  would be the set of other systems that are added,
   but usually this is not  what you want to get good performace. In some
@@ -196,9 +196,12 @@ class CalculateFieldForParticles(object):
     of particles can be from another code.
     """
     
-    def __init__(self, particles = datamodel.Particles(), gravity_constant = None,
+    def __init__(self, particles = None, gravity_constant = None,
             softening_mode="shared"):
-        self.particles = particles
+        if particles is None:
+            self.particles=datamodel.Particles()      
+        else:
+            self.particles = particles
         if gravity_constant is None:
             if len(particles) and hasattr(particles, 'mass'):
                 try:
@@ -291,6 +294,12 @@ class GravityCodeInField(object):
         self.timestep=None
         self.radius_is_eps = radius_is_eps
         self.h_smooth_is_eps = h_smooth_is_eps
+        if not hasattr(self.code,"parameters"):
+            self.zero_smoothing=True
+        elif not hasattr(self.code.parameters,"epsilon_squared"):
+            self.zero_smoothing=True
+        else:
+            self.zero_smoothing=False    
     
       
     def evolve_model(self,tend,timestep=None):
@@ -426,6 +435,8 @@ class GravityCodeInField(object):
             return particles.radius
         elif self.h_smooth_is_eps:
             return particles.h_smooth
+        elif self.zero_smoothing:
+            return 0.*particles.x
         else:
             return (self.code.parameters.epsilon_squared**0.5).as_vector_with_length(len(particles))
     

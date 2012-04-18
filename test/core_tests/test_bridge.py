@@ -128,6 +128,16 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
                 instance.get_gravity_at_point(zeros, pos_range, zeros, zeros), 
                 cluster.get_gravity_at_point(zeros, pos_range, zeros, zeros)):
             self.assertAlmostRelativeEqual(a_calculate_field, a_code, 12)
+
+    def test6(self):
+      p=Particles(3)
+      q=Particles(5)
+      instance1 = bridge.CalculateFieldForParticles(gravity_constant = "dummy")
+      instance1.particles.add_particles(p)
+      instance2 = bridge.CalculateFieldForParticles(gravity_constant = "dummy")
+      instance2.particles.add_particles(q)
+      self.assertEqual(len(instance2.particles),5)
+      
     
 
 class ExampleGravityCodeInterface(object):
