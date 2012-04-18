@@ -1565,6 +1565,9 @@ class ParticlesSubset(AbstractParticleSet):
         
     def get_timestamp(self):
         return self._original_set().get_timestamp()
+        
+    def get_indices_of_keys(self, keys):
+        return self._private.particles.get_indices_of_keys(keys)
     
     def previous_state(self):
         return ParticlesSubset(self._private.particles.previous_state(), self._private.keys)
@@ -1755,7 +1758,10 @@ class ParticlesOverlay(AbstractParticleSet):
         return zip(indices0, indices1)
         
     def get_indices_of_keys(self, keys):
-        return self._private.overlay_set.get_indices_of_keys(keys)
+        indices0 = self._private.base_set.get_indices_of_keys(keys)
+        indices1 = self._private.overlay_set.get_indices_of_keys(keys)
+        
+        return zip(indices0, indices1)
         
     def has_key_in_store(self, key):
         return self._private.overlay_set.has_key_in_store(key)
