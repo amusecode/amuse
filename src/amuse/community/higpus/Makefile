@@ -7,7 +7,7 @@ AMUSE_DIR?=../../../..
 
 ALL	 = 
 
-MPICXX   ?= mpicxx
+MPICXX   ?= mpicx
 
 CUDA_INSTALL_PATH := /usr/local/cuda
 MPI_INSTALL_PATH := /usr/lib64/openmpi/1.4-gcc
