@@ -96,7 +96,7 @@ static int check_trig_limit(kepler* k, real &c, const char *s)
 {
     int forced = 0;
 
-    if (fabs(c) > 1) {
+    if (fabs(c) > 1. + 1.e-15) {
 	if (kepler_tolerance_level == 0) {
 	    cout.precision(HIGH_PRECISION);
 	    cout << s << ": c = " << c << endl << flush;
@@ -214,6 +214,7 @@ static int keplerseq(real mean_an,	// mean anomaly
 	    if (fabs(delta_ecc_an) < ITERAC) counter--;
 
 	    if (++iter > MAXITER) {
+	        PRC(delta_ecc_an);PRL(ITERAC);
 		err_or_warn("keplerseq: convergence too slow");
 		break;
 	    }
