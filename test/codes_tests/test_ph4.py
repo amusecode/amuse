@@ -962,6 +962,30 @@ class TestPH4(TestWithMPI):
         self.assertAlmostRelativeEquals(nogpu_potential, gpu_potential, 5)
         instance.stop()
     
+    def test23(self):
+        
+        particles = datamodel.Particles(
+            mass=[1,2] | nbody_system.mass,
+            x=[-1,1] | nbody_system.length,
+            y=[-1,1] | nbody_system.length,
+            z=[-1,1] | nbody_system.length,
+            vx=[-1,1] | nbody_system.speed,
+            vy=[-1,1] | nbody_system.speed,
+            vz=[-1,1] | nbody_system.speed
+        )
+        
+        
+        instance=ph4()
+        
+        overlay = datamodel.ParticlesOverlay(instance.particles)
+        
+        overlay.add_particles(particles)
+        all_attributes = overlay.get_values_in_store(overlay.get_all_keys_in_store(), ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz'])
+        
+        self.assertEquals(all_attributes[0], [1,2] | nbody_system.mass )
+        self.assertEquals(instance.particles.mass, [1,2] | nbody_system.mass )
+        self.assertEquals(overlay.mass, [1,2] | nbody_system.mass )
+        self.assertEquals(overlay.position, [[-1., -1., -1.], [ 1.,  1.,  1.]]  | nbody_system.length )
 
 
 

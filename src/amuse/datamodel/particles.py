@@ -1696,14 +1696,24 @@ class ParticlesOverlay(AbstractParticleSet):
             (attributes_inbase, indices_inbase), 
             (attributes_inoverlay, indices_inoverlay)
         ) = self._split_attributes(attributes)
+        
+        if by_key is False:
+            indices0 = []
+            indices1 = []
+            for i0, i1 in keys:
+                indices0.append(i0)
+                indices1.append(i1)
+        else:
+            indices0 = indices1 = keys
+        
         result = [None] * len(attributes)
         if len(attributes_inbase) > 0:
-            values_inbase = self._private.base_set.get_values_in_store(keys, attributes_inbase, by_key = by_key)
+            values_inbase = self._private.base_set.get_values_in_store(indices0, attributes_inbase, by_key = by_key)
             for i, value in zip(indices_inbase, values_inbase):
                 result[i] = value
                 
         if len(attributes_inoverlay) > 0:
-            values_inoverlay = self._private.overlay_set.get_values_in_store(keys, attributes_inoverlay, by_key = by_key)
+            values_inoverlay = self._private.overlay_set.get_values_in_store(indices1, attributes_inoverlay, by_key = by_key)
             for i, value in zip(indices_inoverlay, values_inoverlay):
                 result[i] = value
     
@@ -1715,10 +1725,19 @@ class ParticlesOverlay(AbstractParticleSet):
             (attributes_inoverlay, values_inoverlay)
         ) = self._split_attributes_and_values(attributes, values)
         
+        if by_key is False:
+            indices0 = []
+            indices1 = []
+            for i0, i1 in keys:
+                indices0.append(i0)
+                indices1.append(i1)
+        else:
+            indices0 = indices1 = keys
+            
         if len(attributes_inbase) > 0:
-            self._private.base_set.set_values_in_store(keys, attributes_inbase, values_inbase, by_key = by_key)
+            self._private.base_set.set_values_in_store(indices0, attributes_inbase, values_inbase, by_key = by_key)
         if len(attributes_inoverlay) > 0:
-            self._private.overlay_set.set_values_in_store(keys, attributes_inoverlay, values_inoverlay, by_key = by_key)
+            self._private.overlay_set.set_values_in_store(indices1, attributes_inoverlay, values_inoverlay, by_key = by_key)
         
     
     def get_attribute_names_defined_in_store(self):
@@ -1730,7 +1749,10 @@ class ParticlesOverlay(AbstractParticleSet):
         return self._private.overlay_set.get_all_keys_in_store()
         
     def get_all_indices_in_store(self):
-        return self._private.overlay_set.get_all_indices_in_store()
+        indices0 = self._private.base_set.get_all_indices_in_store()
+        indices1 = self._private.overlay_set.get_all_indices_in_store()
+        
+        return zip(indices0, indices1)
         
     def get_indices_of_keys(self, keys):
         return self._private.overlay_set.get_indices_of_keys(keys)
