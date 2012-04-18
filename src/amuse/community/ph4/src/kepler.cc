@@ -96,7 +96,7 @@ static int check_trig_limit(kepler* k, real &c, const char *s)
 {
     int forced = 0;
 
-    if (fabs(c) > 1. + 1.e-15) {
+    if (fabs(c) > 1 + TRIG_TOL) {
 	if (kepler_tolerance_level == 0) {
 	    cout.precision(HIGH_PRECISION);
 	    cout << s << ": c = " << c << endl << flush;
@@ -111,7 +111,7 @@ static int check_trig_limit(kepler* k, real &c, const char *s)
 		    err_exit("cosine > 1");
 		}
 		c = 1;
-	    } else if (c < -1) {
+	    } else if (c < -1 - TRIG_TOL) {
 		if (c < -1 - TRIG_TOL) {
 		    cout.precision(HIGH_PRECISION);
 		    cout << s << ": c = " << c << endl << flush;
