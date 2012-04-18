@@ -7,7 +7,7 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
     include_headers = ['worker_code.h']
 	    
     def __init__(self, **keyword_arguments):
-	CodeInterface.__init__(self, name_of_the_worker="higpus_worker_gpu", **keyword_arguments)
+	CodeInterface.__init__(self, name_of_the_worker="higpus_worker", **keyword_arguments)
     
     @legacy_function
     def echo_int():
@@ -177,13 +177,6 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
         return function
 
     @legacy_function
-    def set_number_of_particles():
-        function = LegacyFunctionSpecification()
-        function.addParameter('number_of_particles', dtype='int32', direction=function.IN, description = "number of particles.")
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
     def get_number_of_particles():
         function = LegacyFunctionSpecification()
         function.addParameter('number_of_particles', dtype='int32', direction=function.OUT, description = "number of particles.")
@@ -261,113 +254,104 @@ class HiGPUs(GravitationalDynamics):
 
     def define_parameters(self, object):
         object.add_method_parameter(
-            "get_eta4",			          # getter name in interface.cc
-            "set_eta4",			          # setter name in interface.cc
-            "eta_4",                              # python parameter name
-            "timestep parameter",                 # description
+            "get_eta4",			          
+            "set_eta4",			         
+            "eta_4",                  
+            "timestep parameter",    
             default_value = 0.01 | units.none)
 
         object.add_method_parameter(
-            "get_eta6",                           # getter name in interface.cc
-            "set_eta6",                           # setter name in interface.cc
-            "eta_6",                              # python parameter name
-            "timestep parameter",                 # description
+            "get_eta6",                          
+            "set_eta6",                          
+            "eta_6",                             
+            "timestep parameter",                
             default_value = 0.4 | units.none)
 
         object.add_method_parameter(
-            "get_time_begin",                     # getter name in interface.cc
-            "set_time_begin",                     # setter name in interface.cc
-            "start_time",                         # python parameter name
-            "start time",                         # description
+            "get_time_begin",                    
+            "set_time_begin",                    
+            "start_time",                        
+            "start time",                        
             default_value = 0.0 | nbody_system.time
         )
 
 	object.add_method_parameter(
-            "get_Plummer_core",                   # getter name in interface.cc
-            "set_Plummer_core",                   # setter name in interface.cc
-            "r_core_plummer",                     # python parameter name
-            "radius of Plummer potential",        # description
+            "get_Plummer_core",                  
+            "set_Plummer_core",                  
+            "r_core_plummer",                    
+            "radius of Plummer potential",       
             default_value = 0.0 | nbody_system.length
         )
 
         object.add_method_parameter(
-            "get_Plummer_mass",                   # getter name in interface.cc
-            "set_Plummer_mass",                   # setter name in interface.cc
-            "mass_plummer",                       # python parameter name
-            "mass of Plummer potential",          # description
+            "get_Plummer_mass",                  
+            "set_Plummer_mass",                  
+            "mass_plummer",                      
+            "mass of Plummer potential",         
             default_value = 0.0 | nbody_system.mass
         )
 
         object.add_method_parameter(
-            "get_eps",		                  # getter name in interface.cc
-            "set_eps",          	          # setter name in interface.cc
-            "softening",                          # python parameter name
-            "softening",           	          # description
+            "get_eps",		                 
+            "set_eps",          	         
+            "softening",                         
+            "softening",           	         
             default_value = 0.001 | nbody_system.length
         )
 
 	object.add_method_parameter(
-            "get_number_of_Threads",              # getter name in interface.cc
-            "set_number_of_Threads",              # setter name in interface.cc
-            "Threads",                            # python parameter name
-	    "Threads per block",                  # description
+            "get_number_of_Threads",              
+            "set_number_of_Threads",              
+            "Threads",                            
+	    "Threads per block",                  
             default_value = 128 | units.none
         )
 
         object.add_method_parameter(
-            "get_number_of_particles",            # getter name in interface.cc
-            "set_number_of_particles",            # setter name in interface.cc
-            "N",                                  # python parameter name
-            "number of particles",                # description
-            default_value = 8192 | units.none
-        )
-
-
-        object.add_method_parameter(
-            "get_number_of_Print",                # getter name in interface.cc
-            "set_number_of_Print",                # setter name in interface.cc
-            "n_Print",                            # python parameter name
-	    "start number to print file",         # description
+            "get_number_of_Print",                
+            "set_number_of_Print",                
+            "n_Print",                            
+	    "start number to print file",         
             default_value = 1000000 | units.none
         )
 
         object.add_method_parameter(
-            "get_DTPrint",                        # getter name in interface.cc
-            "set_DTPrint",                        # setter name in interface.cc
-            "dt_Print",                           # python parameter name
-	    "time for snapshot",                  # description
+            "get_DTPrint",                        
+            "set_DTPrint",                        
+            "dt_Print",                           
+	    "time for snapshot",                  
             default_value = 1.0 | nbody_system.time
         )
 
         object.add_method_parameter(
-            "get_max_time_step",                  # getter name in interface.cc
-            "set_max_time_step",                  # setter name in interface.cc
-            "max_step",                           # python parameter name
-	    "power of 2 for maximum time step",   # description
+            "get_max_time_step",                  
+            "set_max_time_step",                  
+            "max_step",                           
+	    "power of 2 for maximum time step",   
             default_value = -3.0 | nbody_system.time
         )
 
 	object.add_method_parameter(
-            "get_min_time_step",                  # getter name in interface.cc
-            "set_min_time_step",                  # setter name in interface.cc
-            "min_step",                           # python parameter name
-            "power of 2 for minmum time step",    # description
+            "get_min_time_step",                  
+            "set_min_time_step",                  
+            "min_step",                           
+            "power of 2 for minmum time step",    
             default_value = -30.0 | nbody_system.time
         )
 
 	object.add_method_parameter(
-            "get_gpu_name",                       # getter name in interface.cc
-            "set_gpu_name",                       # setter name in interface.cc
-            "gpu_name",                           # python parameter name
-            "gpu name",                           # description
+            "get_gpu_name",                       
+            "set_gpu_name",                       
+            "gpu_name",                           
+            "gpu name",                           
             default_value = "GeForce GTX 480" | units.none
         )
 
         object.add_method_parameter(
-            "get_number_of_GPU",                  # getter name in interface.cc
-            "set_number_of_GPU",                  # setter name in interface.cc
-            "n_gpu",                              # python parameter name
-            "number of gpus per node",            # description
+            "get_number_of_GPU",                  
+            "set_number_of_GPU",                  
+            "n_gpu",                              
+            "number of gpus per node",            
             default_value = 2 | units.none
         )
 
@@ -524,16 +508,6 @@ class HiGPUs(GravitationalDynamics):
                 object.ERROR_CODE
             )
 	)
-
-        object.add_method(
-            "set_number_of_particles",
-            (
-                units.none
-            ),
-            (
-                object.ERROR_CODE
-            )
-        )
 
         object.add_method(
             "get_number_of_particles",

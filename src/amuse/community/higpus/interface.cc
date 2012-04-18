@@ -11,7 +11,8 @@ using namespace std;
 
 typedef struct {
     double mass;                                        /// mass
-    double x, y, z;                                     /// position
+    double radius;
+	 double x, y, z;                                     /// position
     double vx, vy, vz;                                  /// velocity
 } dynamics_state;
 
@@ -29,14 +30,14 @@ map<int,dynamics_state>::iterator it;
 map<int,dynamics_state>::iterator et;
 
 int size, rank, particle_id_counter = 0;
-unsigned int N, NGPU, TPB, FMAX, BFMAX, MAXDIM, GPUMINTHREADS;
+unsigned int N, M, NGPU, TPB, FMAX, BFMAX, MAXDIM, GPUMINTHREADS;
 double GTIME, GTW, DTMAX, DTMIN, EPS, ETA6, ETA4, DTPRINT, ATIME, plummer_core, plummer_mass;  
 bool warm_start;
 string GPUNAME;
 
 
 int echo(int input){
-	return 12;
+	return input;
 }
 
 int echo_int(int input, int * output){
@@ -76,9 +77,8 @@ int commit_parameters(){
 	if(rank == 0){
 	   
 		ofstream hlog;
-      hlog.open("H6Blog.dat", ios::app);
+      hlog.open("HiGPUslog.dat", ios::app);
 		hlog<<" ================================================== "<<endl;
-      hlog<<" N                   : "<<N<<endl;
       hlog<<" Gpus                : "<<NGPU<<endl;
       hlog<<" Threads per block   : "<<TPB<<endl;
       hlog<<" Max time step	    : "<<DTMAX<<endl;
@@ -90,8 +90,6 @@ int commit_parameters(){
       hlog<<" Max output files    : "<<FMAX<<endl;
       hlog<<" ================================================== "<<endl;
       hlog.close();
-
-   	HostSafeCall(isDivisible(N, size, NGPU, TPB, &BFMAX));
 
 #ifdef CHECK_ERRORS
 		cout<<" Check errors option ENABLED "<<endl;
@@ -111,7 +109,7 @@ int commit_parameters(){
 #ifdef PLUMMER
       cout<<" Plummer Potential option ENABLED "<<endl;
       ofstream hlog;
-      hlog.open("H6Blog.dat", ios::app);
+      hlog.open("HiGPUslog.dat", ios::app);
       hlog<<" Plummer (core) : "<<plummer_core<<endl;
       hlog<<" Plummer (mass) : "<<plummer_mass<<endl;
       hlog<<" =============================================== "<<endl;
@@ -121,7 +119,7 @@ int commit_parameters(){
 #endif
 	
 	   cout<<"NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file"<<endl;
-		cout<<"NOTE_2: the evolve method requires an input time divisible for the maximum time step ( 'dt' / 'max_step' == integer ) "<<endl;
+		cout<<"NOTE_2: the evolve method requires an input time divisible for the maximum time step ( 't' / 'max_step' == integer ) "<<endl;
 	}
    return 0;
 }
@@ -136,6 +134,7 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
    state.vx = vx;
    state.vy = vy;
    state.vz = vz;
+	state.radius = radius;
 	dm_states[particle_id_counter]= state;
 	particle_id_counter++;
 	return 0;
@@ -143,7 +142,10 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
 
 int commit_particles(){
 	N = particle_id_counter;
-   pos_PH = new double4 [N];
+	
+	HostSafeCall(isDivisible(&N, &M,size, NGPU, TPB, &BFMAX));
+	
+	pos_PH = new double4 [N];
    vel_PH = new  float4 [N];
    pos_CH = new double4 [N];
    vel_CH = new double4 [N];
@@ -154,7 +156,7 @@ int commit_particles(){
 
 	it = dm_states.begin();
    
-	for (int i=0; i<N; i++){
+	for (unsigned int i=0; i<M; i++){
 	
 		pos_PH[i].w = it->second.mass;
       pos_PH[i].x = it->second.x;
@@ -171,20 +173,40 @@ int commit_particles(){
 		vel_PH[i].x = vel_CH[i].x;
 		vel_PH[i].y = vel_CH[i].y;
 		vel_PH[i].z = vel_CH[i].z;
+		vel_PH[i].w = 0.0;
 		it++;	
 	}
 	
-	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
+   for (unsigned int i=M; i<N; i++){
+      pos_PH[i].w = 0.0;
+      pos_PH[i].x = rand()/RAND_MAX*100000.+1.;
+      pos_PH[i].y = rand()/RAND_MAX*100000.+1.;
+      pos_PH[i].z = rand()/RAND_MAX*100000.+1.;
+      vel_CH[i].x = 0.0;
+      vel_CH[i].y = 0.0;
+      vel_CH[i].z = 0.0;
+      vel_CH[i].w = 0.0;
+      pos_CH[i].w = 0.0;
+      pos_CH[i].x = pos_PH[i].x;
+      pos_CH[i].y = pos_PH[i].y;
+      pos_CH[i].z = pos_PH[i].z;
+      vel_PH[i].x = 0.0;
+      vel_PH[i].y = 0.0;
+      vel_PH[i].z = 0.0;
+      vel_PH[i].w = 0.0;
+   }  
+
+	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN,  &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
 	return 0;
 }
 
-int evolve_model(double dt){
+int evolve_model(double t){
 	if(rank==0){
 		ofstream hlog;
-      hlog.open("H6Blog.dat", ios::app);
+      hlog.open("HiGPUslog.dat", ios::app);
       hlog<<endl<<endl;
 		hlog<<" ================================================== "<<endl;
-      hlog<<" Time of integration : "<<dt<<endl;
+      hlog<<" Time of integration : "<<t<<endl;
       hlog<<" ================================================== "<<endl;
       hlog.close();
 	}
@@ -193,12 +215,11 @@ int evolve_model(double dt){
 
    FMAX = 1000000 + ((GTIME+GTW) / DTPRINT);
 	
-	HostSafeCall(Hermite6th(dt, &GTIME, &ATIME, local_time, step, N, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTW, GPUMINTHREADS, plummer_core, plummer_mass));
+	HostSafeCall(Hermite6th(t, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTW, GPUMINTHREADS, plummer_core, plummer_mass));
   
 	warm_start = 1;
-   GTW = 0.0;
 
-	for (int i=0; i<N; i++){
+	for (unsigned int i=0; i<M; i++){
       pos_PH[i].x = pos_CH[i].x;
      	pos_PH[i].y = pos_CH[i].y;
       pos_PH[i].z = pos_CH[i].z;
@@ -244,7 +265,7 @@ int get_index_of_first_particle(int * index_of_the_particle){
 
 int get_total_radius(double * radius){
    *radius = 0.0;
-   for(int i=0; i<N; i++){
+   for(unsigned int i=0; i<M; i++){
 		double r=sqrt(pos_CH[i].x*pos_CH[i].x+pos_CH[i].y*pos_CH[i].y+pos_CH[i].z*pos_CH[i].z);
 		if (r>*radius) *radius = r;
    }
@@ -253,7 +274,7 @@ int get_total_radius(double * radius){
 
 int get_potential_at_point(double eps, double x, double y, double z, double * phi){
 	*phi = 0.0;
-   for(int i=0; i<N ; i++){
+   for(unsigned int i=0; i<M ; i++){
 		double rij =(x - pos_CH[i].x) * (x - pos_CH[i].x) + (y-pos_CH[i].y) * (y - pos_CH[i].y) + (z - pos_CH[i].z) * (z - pos_CH[i].z);
       *phi += pos_CH[i].w / sqrt(rij + eps * eps); 
 	}
@@ -262,7 +283,7 @@ int get_potential_at_point(double eps, double x, double y, double z, double * ph
 
 int get_total_mass(double * mass){
    *mass = 0.0;
-   for(int i=0; i<N; i++)  *mass += pos_CH[i].w;
+   for(unsigned int i=0; i<M; i++)  *mass += pos_CH[i].w;
    return 0;
 }
 
@@ -297,12 +318,7 @@ int get_eta6(double *eta6){
 }
 
 int get_number_of_particles(int * number_of_particles){
-   *number_of_particles = N;
-   return 0;
-}
-
-int set_number_of_particles(int number_of_particles){
-   N = number_of_particles;
+   *number_of_particles = particle_id_counter;
    return 0;
 }
 
@@ -409,7 +425,7 @@ int set_gpu_name(char *gpu_name){
 int get_index_of_next_particle(int index_of_the_particle, int * index_of_the_next_particle){
    it = dm_states.begin();
    for(int i=0; i<=index_of_the_particle; i++) it++;
-   cout<< it->first<<endl;
+   *index_of_the_next_particle = it->first;
    return 0;
 }
 
@@ -421,8 +437,8 @@ int delete_particle(int index_of_the_particle){
 
 int get_potential(int index_of_the_particle, double * potential){ 
 	*potential = 0.0;
-   for(int i=0; i<N ; i++){
-		if(i != index_of_the_particle){
+   for(unsigned int i=0; i<M ; i++){
+		if(i != (unsigned int) index_of_the_particle){
 			double rij =(pos_CH[index_of_the_particle].x - pos_CH[i].x)*(pos_CH[index_of_the_particle].x - pos_CH[i].x) +
 				(pos_CH[index_of_the_particle].y - pos_CH[i].y) * (pos_CH[index_of_the_particle].y - pos_CH[i].y) +
 				(pos_CH[index_of_the_particle].z - pos_CH[i].z) * (pos_CH[index_of_the_particle].z - pos_CH[i].z);
@@ -435,7 +451,7 @@ int get_potential(int index_of_the_particle, double * potential){
 int synchronize_model(){
    it = dm_states.begin();
 
-   for (int i=0; i<N; i++){
+   for (unsigned int i=0; i<M; i++){
 		it->second.mass = pos_CH[i].w;
       it->second.x = pos_CH[i].x;
       it->second.y = pos_CH[i].y;
@@ -459,7 +475,8 @@ int set_state(int index_of_the_particle, double mass, double radius, double x, d
    dm_states[index_of_the_particle].vx = vx;
    dm_states[index_of_the_particle].vy = vy;
    dm_states[index_of_the_particle].vz = vz;
-   return 0;
+   dm_states[index_of_the_particle].radius = radius;
+	return 0;
 }
 
 int get_state(int index_of_the_particle, double * mass, double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz){
@@ -475,7 +492,8 @@ int get_state(int index_of_the_particle, double * mass, double * radius, double 
 }
 
 int get_time_step(double * time_step){
-   if(rank == 0) cout<<"time steps are printed in the file 'Blocks', see README file to obtain more information"<<endl;  
+   *time_step = 0.0;
+	if(rank == 0) cout<<"time steps are printed in the file 'Blocks', see README file to obtain more information"<<endl;  
 	return 0;
 }
 
@@ -490,6 +508,8 @@ int recommit_particles(){
 	delete [] local_time;
 
 	N = particle_id_counter;
+   
+   HostSafeCall(isDivisible(&N, &M,size, NGPU, TPB, &BFMAX));
 
    pos_PH = new double4 [N];
    vel_PH = new  float4 [N];
@@ -501,7 +521,7 @@ int recommit_particles(){
 
 	it = dm_states.begin();
 	
-	for (int i=0; i<N; i++){
+	for (unsigned int i=0; i<M; i++){
 		pos_PH[i].w = it->second.mass;
       pos_PH[i].x = it->second.x;
       pos_PH[i].y = it->second.y;
@@ -517,24 +537,43 @@ int recommit_particles(){
 		vel_PH[i].x = vel_CH[i].x;
       vel_PH[i].y = vel_CH[i].y;
       vel_PH[i].z = vel_CH[i].z;
+		vel_PH[i].w = 0.0;
 		it++;
-		
 	}
    
+   for (unsigned int i=M; i<N; i++){
+      pos_PH[i].w = 0.0;
+      pos_PH[i].x = rand()/RAND_MAX*100000.+1.;
+      pos_PH[i].y = rand()/RAND_MAX*100000.+1.;
+      pos_PH[i].z = rand()/RAND_MAX*100000.+1.;
+      vel_CH[i].x = 0.0;
+      vel_CH[i].y = 0.0;
+      vel_CH[i].z = 0.0;
+      vel_CH[i].w = 0.0;
+      pos_CH[i].w = 0.0;
+      pos_CH[i].x = pos_PH[i].x;
+      pos_CH[i].y = pos_PH[i].y;
+      pos_CH[i].z = pos_PH[i].z;
+      vel_PH[i].x = 0.0;
+      vel_PH[i].y = 0.0;
+      vel_PH[i].z = 0.0;
+		vel_PH[i].w = 0.0;
+   }
+
 	GTW = GTIME;
 	GTIME = 0.0;
 	ATIME = 1.0e+10;
 	warm_start = 1;
 
-	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
+	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN, &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
    return 0;
 }
 
 int get_kinetic_energy(double * kinetic_energy){
 	*kinetic_energy = 0.0;
    double K = 0.0;
-   unsigned int ppG = N / size;
-   for(int i=0; i<ppG; i++)   
+   unsigned int ppG = M / size;
+   for(unsigned int i=0; i<ppG; i++)   
 		K += 0.5 * pos_CH[i].w * (vel_CH[i].x * vel_CH[i].x + vel_CH[i].y * vel_CH[i].y + vel_CH[i].z * vel_CH[i].z);
 	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
    MPISafeCall(MPI_Allreduce(&K, kinetic_energy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
@@ -542,6 +581,10 @@ int get_kinetic_energy(double * kinetic_energy){
 }
 
 int set_acceleration(int index_of_the_particle, double ax, double ay, double az){
+	index_of_the_particle = 0;
+	ax = 0;
+	ay = 0;
+	az = 0;
    if (rank == 0) cout<<"accelerations are stored only on GPU, you can't set it"<<endl;
    return 0;
 }
@@ -549,7 +592,7 @@ int set_acceleration(int index_of_the_particle, double ax, double ay, double az)
 int get_center_of_mass_position(double * x, double * y, double * z){
    double m = 0.0;
    *x = *y = *z = 0.0;
-   for(int i=0; i<N; i++){
+   for(unsigned int i=0; i<M; i++){
 		*x += pos_CH[i].w * pos_CH[i].x;
 	   *y += pos_CH[i].w * pos_CH[i].y;
 	   *z += pos_CH[i].w * pos_CH[i].z;
@@ -564,7 +607,7 @@ int get_center_of_mass_position(double * x, double * y, double * z){
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){ 
 	double m = 0.0;
    *vx = *vy = *vz = 0.0;
-   for(int i=0; i<N; i++){
+   for(unsigned int i=0; i<M; i++){
 		*vx += pos_CH[i].w * vel_CH[i].x;
       *vy += pos_CH[i].w * vel_CH[i].y;
       *vz += pos_CH[i].w * vel_CH[i].z;
@@ -577,12 +620,14 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
 }
 
 int get_radius(int index_of_the_particle, double * radius){
-   *radius = 0.0;
+   index_of_the_particle = 0;
+	*radius = 0.0;
    return 0;
 }
 
 int set_radius(int index_of_the_particle, double radius){
-   return 0;
+   dm_states[index_of_the_particle].radius = radius;
+	return 0;
 }
 
 int cleanup_code(){
@@ -606,7 +651,7 @@ int get_potential_energy(double * potential_energy){
 
 int get_gravity_at_point(double eps, double x, double y, double z, double * forcex, double * forcey, double * forcez){
    *forcex = *forcey = *forcez = 0.0;
-   for(int i=0; i<N ; i++){
+   for(unsigned int i=0; i<M ; i++){
 		double rx = (pos_CH[i].x - x) * (pos_CH[i].x - x);
       double ry = (pos_CH[i].y - y) * (pos_CH[i].y - y);
       double rz = (pos_CH[i].z - z) * (pos_CH[i].z - z);
@@ -640,7 +685,11 @@ int set_position(int index_of_the_particle, double x, double y, double z){
 }
 
 int get_acceleration(int index_of_the_particle, double * ax, double * ay, double * az){
-   if( rank == 0) cout<<"accelerations are stored only on GPU, you can't get it"<<endl;
+   index_of_the_particle = 0;
+	*ax = 0.0;
+	*ay = 0.0;
+	*az = 0.0;
+	if( rank == 0) cout<<"accelerations are stored only on GPU, you can't get it"<<endl;
    return 0;
 }
 
