@@ -87,7 +87,7 @@ HostError check_argv(int ac, char *av[], string *param, bool *warm_start, string
 				cout<<" Options : "<<endl;
 				cout<<"           -f [file]  (input_param.txt) = it specifies the file containing the simulation parameters"<<endl;
 			   cout<<"           -h = it shows this help screen "<<endl;
-				cout<<"           -r [file] = restart the simulation from the specified file (H6Blog.dat is necessary)"<<endl;
+				cout<<"           -r [file] = restart the simulation from the specified file (HiGPUslog.dat is necessary)"<<endl;
 				cout<<"           -p b=[value]:M=[value] = enable plummer potential with parameters b and M           "<<endl;
 				cout<<"                                                                        G*M             "<<endl;
 				cout<<"                                   Plummer potential phi(r) =       -------------        "<<endl;
@@ -163,17 +163,23 @@ HostError check_argv(int ac, char *av[], string *param, bool *warm_start, string
 	return(HNoError);
 }
 
-HostError isDivisible(unsigned int N, int size, unsigned int NGPU, unsigned int TPB, unsigned int *BFMAX){
+HostError isDivisible(unsigned int *N, unsigned int *M, int size, unsigned int NGPU, unsigned int TPB, unsigned int *BFMAX){
 
-	int product = size*NGPU*TPB;
+	unsigned int product = size*NGPU*TPB;
+   double esp = ceil(log(*N) / log (2.0));
+   
+	*M = *N;
+	*N = (unsigned int) pow(2.0,esp);
 
-	if(N%product != 0){
+	if(*N < product) *N = product;
+
+	if(*N%product != 0){
 		cout<<" Minimum N allowed per computational node : "<< product<<endl;
 		cout<<" N must be an integer multiple of : "<<product<<endl;
 		return HInvalidN;
 	}
 
-	*BFMAX = N/product;
+	*BFMAX = *N / product;
 	
 	return HNoError;
 
@@ -222,7 +228,7 @@ HostError Max_dimension(unsigned int TPB, unsigned int BFMAX, unsigned int N, un
 	
 }
 
-HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, double4 *veldb, const unsigned int N, const bool CDM, const bool CDV, const bool warm){
+HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, double4 *veldb, const unsigned int N, const unsigned int M, const bool CDM, const bool CDV, const bool warm){
 
    double *x  = new double [N];
    double *y  = new double [N];
@@ -246,10 +252,10 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
 
 	unsigned int lines = countlines(fin_data);
 
-	if(N > lines)
+	if(M > lines)
 		return HNoLines;
 
-	for(unsigned int i = 0; i < N; i++)
+	for(unsigned int i = 0; i < M; i++)
 		fin_data >> x[i] >> y[i] >> z[i]  >> vx[i] >> vy[i] >> vz[i] >> w[i];
 
 	fin_data.close();
@@ -259,14 +265,14 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
 	Utilis use;
 
    if(CDM){
-      vector <double> cm = use.CdM(x,y,z,w,N);
+      vector <double> cm = use.CdM(x,y,z,w,M);
       cout<<" Previous center of mass coordinates : "<<cm[0]<<"  "<<cm[1]<<"  "<<cm[2]<<"\n";
    }
    else
       cout<<" WARNING : Center of mass different from the system of reference origin \n";
 
    if(CDV){
-      vector <double> cv = use.CdM(vx,vy,vz,w,N);
+      vector <double> cv = use.CdM(vx,vy,vz,w,M);
       cout<<" Previous center of velocity coordinates : "<<cv[0]<<"  "<<cv[1]<<"  "<<cv[2]<<"\n";
    }
    else
@@ -274,7 +280,7 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
 
 
 
-   for(unsigned int i = 0; i < N; i++){
+   for(unsigned int i = 0; i < M; i++){
       pos[i].x = x[i];
       pos[i].y = y[i];
       pos[i].z = z[i];
@@ -286,8 +292,23 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
       vel[i].x = veldb[i].x;
       vel[i].y = veldb[i].y;
       vel[i].z = veldb[i].z;
+		vel[i].w = veldb[i].w;
    }
-
+ 
+	for(unsigned int i = M; i < N; i++){
+      pos[i].x = rand()/RAND_MAX*100000.+1.;
+      pos[i].y = rand()/RAND_MAX*100000.+1.;
+      pos[i].z = rand()/RAND_MAX*100000.+1.;
+      pos[i].w = 0.0;
+      veldb[i].x = 0.0;
+      veldb[i].y = 0.0;
+      veldb[i].z = 0.0;
+		veldb[i].w = 0.0;
+		vel[i].x = 0.0;
+		vel[i].y = 0.0;
+		vel[i].z = 0.0;
+	   vel[i].w = 0.0;
+	}	
 		
 
    delete [] x;
@@ -333,7 +354,7 @@ HostError cpu_read_params(
        return HNoFile;
 	  
 		ofstream hlog;
-		hlog.open("H6Blog.dat", ios::app);
+		hlog.open("HiGPUslog.dat", ios::app);
 
      fin_data >> *N;
      fin_data.ignore(300,'!');

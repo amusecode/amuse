@@ -240,7 +240,7 @@ HostError getEnergyLine_H6Blog(string *lastLine)
 {
 
     ifstream data;
-    data.open("H6Blog.dat");
+    data.open("HiGPUslog.dat");
 
 	 if(!data)
 		 return HNoFile;
@@ -280,7 +280,7 @@ HostError AcquireEnergy(double *E){
 
 
 extern "C"
-HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* local_time, double* step, const unsigned int N, double4* pos_PH, float4* vel_PH, double4* pos_CH, double4* vel_CH, double4* a_H0, const unsigned int MAXDIM, unsigned int NGPU, unsigned int *devices, unsigned int TPB, int rank, int size, unsigned int BFMAX, double ETA6, double ETA4, double DTMAX, double DTMIN, double EPS, double DTPRINT, unsigned int FMAX, const bool warm, double GTW, unsigned int GPUMINTHREADS, double plummer_core, double plummer_mass){
+HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* local_time, double* step, const unsigned int N, const unsigned int M, double4* pos_PH, float4* vel_PH, double4* pos_CH, double4* vel_CH, double4* a_H0, const unsigned int MAXDIM, unsigned int NGPU, unsigned int *devices, unsigned int TPB, int rank, int size, unsigned int BFMAX, double ETA6, double ETA4, double DTMAX, double DTMIN, double EPS, double DTPRINT, unsigned int FMAX, const bool warm, double GTW, unsigned int GPUMINTHREADS, double plummer_core, double plummer_mass){
 
 	unsigned int ompthreads = 4; // N must be integer multiple of this number
    omp_set_num_threads( ompthreads );
@@ -384,7 +384,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 	ofstream stream;
 
 	if(rank == 0){
-		stream.open("H6Blog.dat", ios::app);
+		stream.open("HiGPUslog.dat", ios::app);
 		stream<<"==============================================="<<endl;
 		stream<<scientific<<setprecision(16);
 		stream<<"#Initial Total Energy : #"<<E0<<"#"<<endl;
@@ -431,7 +431,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 	do{
 		
 		if(*GTIME >= TTIME){
-		
+			
 			for(unsigned int i = 0; i < NGPU; i++){
 				DeviceSafeCall(cudaSetDevice(devices[i]));
             DeviceSafeCall(cudaFree(a_D[i]));
@@ -476,7 +476,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 				stream<<scientific<<setprecision(3);
 				stream<<" \n Total integration time : "<<end_program-start_program<<" seconds "<<endl;
 				stream.close();
-				stream.open("H6Blog.dat", ios::app);
+				stream.open("HiGPUslog.dat", ios::app);
 				stream<<scientific<<setprecision(3);
 				stream<<" \n Total integration time : "<<end_program-start_program<<" seconds "<<endl;
 				stream.close();
@@ -647,7 +647,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 
 		if((*GTIME+GTW) >= NEXTOUT ){
 
-			CheckBlocks(step, N);
+			CheckBlocks(step, M);
 			double E;
 			get_times(&start);
 			HostSafeCall(Calculate_Energy(pos_CD, vel_CD, N, EPS, TPB, NGPU, rank, devices, ppG, &E, plummer_core, plummer_mass));
@@ -658,7 +658,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 				stream.open("times.dat", ios::out);
 				stream<<scientific<<setprecision(3);
 				stream<<"  N  "<<"  NEXT  "<<"	  PRED "<<"       EVAL "<<"      REDU "<<"     REPOS "<<"    CPY_ACC "<<"    MPI "<<"        CORR   "<<"    RECON "<<endl;  
-				for(unsigned int i = 1; i <= N; i++){
+				for(unsigned int i = 1; i <= M; i++){
 					if(Times[i].next_time != 0.0)
 						stream<<i<<"  "<<
 							Times[i].next_time<<"  "<<
@@ -684,7 +684,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 				file_name += ".dat";
 				stream.open(to_char(file_name), ios::out);
 				stream<<scientific<<setprecision(16);
-				for(unsigned int i = 0; i < N; i++)
+				for(unsigned int i = 0; i < M; i++)
 					stream<<pos_CH[i].x<<"  "<<pos_CH[i].y<<"  "<<pos_CH[i].z<<"  "<<vel_CH[i].x<<"  "<<vel_CH[i].y<<"  "<<vel_CH[i].z<<"  "<<pos_CH[i].w<<endl;
 				stream.close();
 				out_index++;
@@ -819,7 +819,7 @@ HostError CudaInit(unsigned int *M, int NGPU, int rank, unsigned int *devices, s
 	ofstream hlog;
         
 	if(rank == 0)
-		hlog.open("H6Blog.dat", ios::app);
+		hlog.open("HiGPUslog.dat", ios::app);
 
 	if(count < NGPU || count <= 0)
 		return HNoGpus;
@@ -871,9 +871,9 @@ HostError CudaInit(unsigned int *M, int NGPU, int rank, unsigned int *devices, s
 	return HNoError;
 }
 
-HostError DetermineSteps(double stp, unsigned int N, double4* a_H0, double4* a_H1, double ETA4, double DTMAX, double *step, double *ACTUAL_TIME, double *local_time){
+HostError DetermineSteps(double stp, unsigned int N, unsigned int M, double4* a_H0, double4* a_H1, double ETA4, double DTMAX, double DTMIN, double *step, double *ACTUAL_TIME, double *local_time){
 
-	for(unsigned int who = 0; who < N; who++){
+	for(unsigned int who = 0; who < M; who++){
       double overh3 = 1.0/(stp*stp*stp);
       double overh2 = 1.0/(stp*stp);
       unsigned int who1 = who + N;
@@ -907,7 +907,10 @@ HostError DetermineSteps(double stp, unsigned int N, double4* a_H0, double4* a_H
     double dt = sqrt(ETA4*(sqrt(amod*a2dotsmod) + adotmod) / (sqrt(adotmod*a3dotsmod) + a2dotsmod));
 
     if(dt>DTMAX)
-      dt = DTMAX;
+       dt = DTMAX;
+
+	 if(dt<DTMIN)
+		 dt = DTMIN;
 
     int exponent = log(dt)/log(2.0) - 1;
 
@@ -916,6 +919,11 @@ HostError DetermineSteps(double stp, unsigned int N, double4* a_H0, double4* a_H
     *ACTUAL_TIME = min(step[who],*ACTUAL_TIME);
     local_time[who] = 0.0;
    }
+   
+	for(unsigned int who = M; who < N; who++){ 
+		step[who] = 1.0e+10;
+      local_time[who] = 1.0e+10;
+	}
 
 	return HNoError;
 }
@@ -935,10 +943,10 @@ HostError ReduceAll(unsigned int cpy_size, unsigned int N, unsigned int NGPU, un
  		mpi_red_aux[i] = a_H[i].x;
       mpi_red[i] = 0.0;
 	}
-
-   MPISafeCall(MPI_Allreduce(mpi_red_aux, mpi_red, cpy_size, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
-
-   for(unsigned int k = 0; k < 3; k++){
+   
+	MPISafeCall(MPI_Allreduce(mpi_red_aux, mpi_red, cpy_size, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   
+	for(unsigned int k = 0; k < 3; k++){
       unsigned int p = k*nextsize;
       for(unsigned int i = 0; i < nextsize; i++){
          int who = next[i] + k*N;
@@ -950,9 +958,9 @@ HostError ReduceAll(unsigned int cpy_size, unsigned int N, unsigned int NGPU, un
 		mpi_red_aux[i] = a_H[i].y;  
 		mpi_red[i] = 0.0;  
 	}
-
-   MPISafeCall(MPI_Allreduce(mpi_red_aux, mpi_red, cpy_size, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
-     
+   
+	MPISafeCall(MPI_Allreduce(mpi_red_aux, mpi_red, cpy_size, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+	
 	for(unsigned int k = 0; k < 3; k++){
       unsigned int p = k*nextsize;
       for(unsigned int i = 0; i < nextsize; i++){
@@ -965,10 +973,10 @@ HostError ReduceAll(unsigned int cpy_size, unsigned int N, unsigned int NGPU, un
 		mpi_red_aux[i] = a_H[i].z;
 		mpi_red[i] = 0.0;   
 	}
-
+   
    MPISafeCall(MPI_Allreduce(mpi_red_aux, mpi_red, cpy_size, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
-
-   for(unsigned int k = 0; k < 3; k++){
+   
+	for(unsigned int k = 0; k < 3; k++){
       unsigned int p = k*nextsize;
       for(unsigned int i = 0; i < nextsize; i++){
          int who = next[i] + k*N;
@@ -979,11 +987,13 @@ HostError ReduceAll(unsigned int cpy_size, unsigned int N, unsigned int NGPU, un
    return HNoError;
 }
 
-HostError CheckBlocks(double *step, unsigned int N){
+HostError CheckBlocks(double *step, unsigned int M){
 
 	int local_rank;
-	   MPISafeCall(MPI_Comm_rank(MPI_COMM_WORLD, &local_rank));
 
+	MPISafeCall(MPI_Comm_rank(MPI_COMM_WORLD, &local_rank));
+   
+   for(unsigned int i = 0; i < M; i++)
 	if(local_rank == 0){
       ofstream blocks;
 		blocks.open("Blocks.dat");
@@ -993,7 +1003,7 @@ HostError CheckBlocks(double *step, unsigned int N){
 		for(int i = 0; i < 30; i++)
 			bl[i]=0;
 
-		for(unsigned int i = 0; i < N; i++){
+		for(unsigned int i = 0; i < M; i++){
 			conto = -1.00001*log(step[i])/log(2.0);
 			if(conto>30)
 				return HInvalidBlocks;
@@ -1011,10 +1021,12 @@ HostError CheckBlocks(double *step, unsigned int N){
 }
 
 extern "C"
-HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned int N, unsigned int BFMAX, double ETA4, unsigned int NGPU, double EPS, unsigned int *MAXDIM, double DTMAX, unsigned int *GPUMINTHREADS, unsigned int *devices, string gpu_name, int rank, int nodes, double4* pos_CH, double4* vel_CH, double4* a_H0, double* step, double* local_time, double* ACTUAL_TIME, double plummer_core, double plummer_mass){
+HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned int N, unsigned int M, unsigned int BFMAX, double ETA4, unsigned int NGPU, double EPS, unsigned int *MAXDIM, double DTMAX, double DTMIN, unsigned int *GPUMINTHREADS, unsigned int *devices, string gpu_name, int rank, int nodes, double4* pos_CH, double4* vel_CH, double4* a_H0, double* step, double* local_time, double* ACTUAL_TIME, double plummer_core, double plummer_mass){
+	
 	HostSafeCall(CudaInit(GPUMINTHREADS, NGPU, rank, devices, gpu_name));
+	
 	HostSafeCall(Max_dimension(TPB, BFMAX, N, MAXDIM, *GPUMINTHREADS));
-   
+ 	
 	double4 **a_D    = new double4* [NGPU];
 	double4 **a1_D   = new double4* [NGPU];
 	double4 **a2_D   = new double4* [NGPU];
@@ -1042,7 +1054,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 	int * next = new int [N];
 	for(unsigned int i = 0; i < N; i++)
 		next[i] = i;
-
+   
 	unsigned long nextsize = N;
 	int **next_D = new int* [NGPU];
 
@@ -1059,7 +1071,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 	unsigned int bfmax = BFMAX;
 
 	unsigned int Bfactor = 1;
-
+	
 	while(nextsize*BL < *GPUMINTHREADS && threads > 32){
 		threads /= 2;
 		bfmax *= 2;
@@ -1078,7 +1090,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 	unsigned int malloc_ui    = nextsize*sizeof(unsigned int);
 	unsigned int malloc_db    = nextsize*sizeof(double);
 	unsigned int malloc_db4_N = N*sizeof(double4); 
-
+	
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		
@@ -1109,7 +1121,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 		int BLT = ceil((double)N/threads);
 		initvectors<<<BLT, threads>>>(a3_D[i], acc_PD[i]);
 	}
-
+	
 	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__));
 	HostSafeCall(CPU_memcheck(__FILE__, __LINE__));
 
@@ -1125,7 +1137,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 
 	int ppG = N/(NGPU*nodes);
 	int SHR = threads * (sizeof(double4) + 2 * sizeof(float4));
-
+	
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 
@@ -1133,14 +1145,14 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 		evaluation<<< BL, threads, SHR >>> ( N, pos_PD[i], vel_PD[i], acc_PD[i],  a_D[i], a1_D[i], a2_D[i], 
 													istart, ppG, Bfactor, dim, next_D[i], loc_D[i], 0.0, EPS, plummer_core, plummer_mass);
 	}
-
+	
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaThreadSynchronize());
 		DeviceCheckErrors();
 	}
 
-
+	
 	int bl = BL;
 	int bf = Bfactor;
 	SHR = threads * sizeof(double4);
@@ -1167,7 +1179,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 		reposition<<<dim/threads, threads>>>(a1_D[i], a_temp_Dev[i], 1, nextsize);
 		reposition<<<dim/threads, threads>>>(a2_D[i], a_temp_Dev[i], 2, nextsize);   
 	}
-
+	
 	unsigned int cpy_size = 3*nextsize;
 
 	for(unsigned int i = 0; i < NGPU; i++){
@@ -1175,9 +1187,9 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 		DeviceCheckErrors();
 		DeviceSafeCall(cudaMemcpy(&a_H[i*cpy_size], a_temp_Dev[i], cpy_size*sizeof(double4), cudaMemcpyDeviceToHost));
 	}
-
+	
 	HostSafeCall(ReduceAll(cpy_size, N, NGPU, nextsize, a_H, a_H0, mpi_red_aux, mpi_red, next));	
-
+	
 	for(unsigned int i = 2*N; i < 3*N; i++) //it puts the snap to 0.0
 		a_H0[i].x = a_H0[i].y = a_H0[i].z = a_H0[i].w = 0.0;
 
@@ -1188,7 +1200,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 		DeviceSafeCall(cudaMemcpy(a2_tot_D[i], &a_H0[2*N], N*sizeof(double4), cudaMemcpyHostToDevice));
 
 	}
-
+	
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
       int BLT = ppG/TPB + ceil((double)nextsize/TPB);
@@ -1200,7 +1212,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
       DeviceSafeCall(cudaSetDevice(devices[i]));
       DeviceCheckErrors();
    }
-
+	
 	SHR = threads * (sizeof(double4) + 2 * sizeof(float4));
 
 	for(unsigned int i = 0; i < NGPU; i++){
@@ -1216,7 +1228,6 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
       DeviceSafeCall(cudaThreadSynchronize());
       DeviceCheckErrors();
    }
-
 
    bl = BL;
    bf = Bfactor;
@@ -1236,7 +1247,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
       }
       bf /= 2;
    }
-
+   
 	for(unsigned int i = 0; i < NGPU; i++){
       DeviceSafeCall(cudaSetDevice(devices[i]));
       DeviceSafeCall(cudaThreadSynchronize());
@@ -1252,13 +1263,13 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
       DeviceCheckErrors();
       DeviceSafeCall(cudaMemcpy(&a_H[i*cpy_size], a_temp_Dev[i], cpy_size*sizeof(double4), cudaMemcpyDeviceToHost));
    }
-   
+	
 	HostSafeCall(ReduceAll(cpy_size, N, NGPU, nextsize,  a_H, a_H1, mpi_red_aux, mpi_red, next));
    
-	HostSafeCall(DetermineSteps(stp, N, a_H0, a_H1, ETA4, DTMAX, step, ACTUAL_TIME, local_time));
+	HostSafeCall(DetermineSteps(stp, N, M, a_H0, a_H1, ETA4, DTMAX, DTMIN, step, ACTUAL_TIME, local_time));
    
-	HostSafeCall(CheckBlocks(step, N));
-   
+	HostSafeCall(CheckBlocks(step, M));
+	
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaFree(a_D[i]));
@@ -1282,7 +1293,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 	delete [] mpi_red_aux;
 	delete [] mpi_red;
 	delete [] next;
-
+	
 	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__));
    HostSafeCall(CPU_memcheck(__FILE__, __LINE__));
   

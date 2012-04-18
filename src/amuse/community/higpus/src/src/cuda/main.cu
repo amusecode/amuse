@@ -16,8 +16,7 @@ int main(int argc, char *argv[]){
 
 	int rank, size;
 	HostSafeCall(__MPIstart(&rank, &size, &mpi_float4, &mpi_double4));
-
-	unsigned int N, NGPU, TPB, FMAX, BFMAX, MAXDIM, GPUMINTHREADS;
+	unsigned int N, M, NGPU, TPB, FMAX, BFMAX, MAXDIM, GPUMINTHREADS;
 	unsigned int *devices;
 	bool CDM, CDV, warm_start = 0;
 	double EPS, ETA6, ETA4, TTIME, DTMAX, DTMIN, DTPRINT;
@@ -61,8 +60,8 @@ int main(int argc, char *argv[]){
 	}
 
 	HostSafeCall(cpu_read_params(param, &N, &NGPU, &TPB, &TTIME, &DTMAX, &DTMIN, &EPS, &ETA6, &ETA4, &DTPRINT, &FMAX, &CDM, &CDV, &FINP, &GPUNAME));
-
-	HostSafeCall(isDivisible(N, size, NGPU, TPB, &BFMAX));
+    
+	HostSafeCall(isDivisible(&N, &M, size, NGPU, TPB, &BFMAX));
 
 #ifdef CHECK_ERRORS
 	cout<<" Check errors option ENABLED "<<endl;
@@ -96,7 +95,7 @@ int main(int argc, char *argv[]){
 	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
 
 	HostSafeCall(__MPIbcastParam(&N, &NGPU, &TPB, &TTIME, &DTMAX, &DTMIN, &EPS, &ETA6, &ETA4, &DTPRINT, &BFMAX, &GPUNAME, rank, size)); // i parametri delle stampe sono SOLO di rank 0
-
+	
 	double4 *pos_PH = new double4 [N];
 	float4  *vel_PH = new  float4 [N];
 	double4 *pos_CH = new double4 [N];
@@ -123,7 +122,7 @@ int main(int argc, char *argv[]){
 			GTIME_WARM = (FMAX-FMAX_old)*DTPRINT;
 			cout<<" GTIME WARM : "<<GTIME_WARM<<endl;
 		}
-		HostSafeCall(cpu_read_external(FINP, pos_PH, vel_PH, vel_CH, N, CDM, CDV, warm_start));
+		HostSafeCall(cpu_read_external(FINP, pos_PH, vel_PH, vel_CH, N, M, CDM, CDV, warm_start));
 	}
 
 	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
@@ -131,11 +130,13 @@ int main(int argc, char *argv[]){
 	MPISafeCall(MPI_Bcast(&plummer_core, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
 	MPISafeCall(MPI_Bcast(&plummer_mass, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
 
+   
+
    HostSafeCall(__MPIbcastPosVel(pos_PH, vel_PH, vel_CH, N, rank, size));
 	
-	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
+	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN, &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
 	
-	HostSafeCall(Hermite6th(TTIME, &GTIME, &ATIME, local_time, step, N, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTIME_WARM, GPUMINTHREADS, plummer_core, plummer_mass));
+	HostSafeCall(Hermite6th(TTIME, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTIME_WARM, GPUMINTHREADS, plummer_core, plummer_mass));
 
 	MPI_Finalize();
 

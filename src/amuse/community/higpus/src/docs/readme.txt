@@ -37,6 +37,8 @@ installed on your machine. The code is known to work with CUDA
 
 - GeForce GTX 480.
 
+- Geforce GTX 580.
+
 In any case the GPU must support double precision floating point 
 operations. If you try our code on other hardware please inform 
 us about the results. If you need to install CUDA go to 
@@ -106,7 +108,7 @@ Once you have setup the Makefile you can proceed typing:
 
 > make clean 
 
-> make 
+> make (note: in this version the command to compile is 'make exec')
 
 This creates the executable file 'HiGPUs.x' in the folder 'exec'. 
 
@@ -198,11 +200,11 @@ useful information:
 
 > ------------------------------------------------------- 
 
-> ----------------------Help of H6B---------------
+> ----------------------Help of HiGPUs---------------
 
 > -------------------------------------------------------
 
-> Usage : ./H6B [options] 
+> Usage : ./HiGPUs [options] 
 
 > Options : 
 
