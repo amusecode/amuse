@@ -277,7 +277,7 @@ int get_potential_at_point(double eps, double x, double y, double z, double * ph
 	*phi = 0.0;
    for(unsigned int i=0; i<M ; i++){
 		double rij =(x - pos_CH[i].x) * (x - pos_CH[i].x) + (y-pos_CH[i].y) * (y - pos_CH[i].y) + (z - pos_CH[i].z) * (z - pos_CH[i].z);
-      *phi += pos_CH[i].w / sqrt(rij + eps * eps); 
+      *phi -= pos_CH[i].w / sqrt(rij + eps * eps); 
 	}
    return 0;
 }
@@ -443,7 +443,7 @@ int get_potential(int index_of_the_particle, double * potential){
 			double rij =(pos_CH[index_of_the_particle].x - pos_CH[i].x)*(pos_CH[index_of_the_particle].x - pos_CH[i].x) +
 				(pos_CH[index_of_the_particle].y - pos_CH[i].y) * (pos_CH[index_of_the_particle].y - pos_CH[i].y) +
 				(pos_CH[index_of_the_particle].z - pos_CH[i].z) * (pos_CH[index_of_the_particle].z - pos_CH[i].z);
-        	*potential += (pos_CH[i].w + pos_CH[index_of_the_particle].w) / sqrt(rij + EPS * EPS);
+        	*potential -= pos_CH[i].w / sqrt(rij + EPS * EPS);
 		} 
 	}
    return 0;
