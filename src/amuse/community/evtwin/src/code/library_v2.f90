@@ -692,7 +692,7 @@ contains
       
       call swap_in_star(star_id)
       evolve_one_step = twin_evolve()
-      if (evolve_one_step == 0) call swap_out_star(star_id)
+      call swap_out_star(star_id)
    end function evolve_one_step
    
    function evolve_for(star_id, delta_t)
@@ -731,9 +731,8 @@ contains
       end do evolve_loop
       
       if (verbose) write (*,*) "resetting to: ", timestep_older/csy
-      dt = min(timestep_older, (uc(2) - age) * csy)
-      if (evolve_for == 0) &
-         call swap_out_star(star_id)
+      dt = timestep_older
+      call swap_out_star(star_id)
    end function evolve_for
    
    function twin_evolve()
@@ -793,6 +792,10 @@ contains
       if (jo == 0) then
          if (verbose) print *, 'converged on timestep'
          call timestep_heuristic ( jo, 1 )
+         if (jo.ne.0) then
+            twin_evolve = jo
+            return
+         end if
          call update ( dty )
          call nextdt ( dty, jo, 22 )
          if ( jnn > switch_iterations ) iter = kr2
