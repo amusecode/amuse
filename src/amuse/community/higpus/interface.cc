@@ -120,7 +120,7 @@ int commit_parameters(){
 #endif
 	
 	   cout<<"NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file"<<endl;
-		cout<<"NOTE_2: the evolve method requires an input time divisible for the maximum time step ( 't' / 'max_step' == integer ) "<<endl;
+		cout<<"NOTE_2: the evolve method requires an input time (in nbody units) divisible for the maximum time step ( 't' / 'max_step' == integer ) "<<endl;
 	}
    return 0;
 }
@@ -180,9 +180,9 @@ int commit_particles(){
 	
    for (unsigned int i=M; i<N; i++){
       pos_PH[i].w = 0.0;
-      pos_PH[i].x = rand()/RAND_MAX*100000.+1.;
-      pos_PH[i].y = rand()/RAND_MAX*100000.+1.;
-      pos_PH[i].z = rand()/RAND_MAX*100000.+1.;
+      pos_PH[i].x = rand()/RAND_MAX*100000.;
+      pos_PH[i].y = rand()/RAND_MAX*100000.;
+      pos_PH[i].z = rand()/RAND_MAX*100000.;
       vel_CH[i].x = 0.0;
       vel_CH[i].y = 0.0;
       vel_CH[i].z = 0.0;

@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 		generic.close();
 		generic.open("cpu_memory.dat", ios::out);
 		generic.close();
-		generic.open("H6Blog.dat", ios::out);
+		generic.open("HiGPUslog.dat", ios::out);
 		generic.close();
 		generic.open("energy.dat", ios::out);
 		generic<<scientific<<setprecision(5);
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]){
       generic.open("cpu_memory.dat", ios::app);
 		generic<<" RESTART AT THIS POINT ***************************************************************"<<endl;
       generic.close();
-      generic.open("H6Blog.dat", ios::app);
+      generic.open("HiGPUslog.dat", ios::app);
 		generic<<" RESTART AT THIS POINT ***************************************************************"<<endl;
       generic.close();
       generic.open("energy.dat", ios::app);
