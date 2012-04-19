@@ -414,10 +414,6 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
                         len(self.particle_keys),
                         values_to_set.unit,
                     )
-                attribute_values = VectorQuantity.zeros(
-                    len(self.particle_keys),
-                    values_to_set.unit,
-                )
             
                 self.mapping_from_attribute_to_quantities[attribute] = attribute_values
             
