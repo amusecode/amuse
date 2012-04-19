@@ -452,7 +452,7 @@ class TestEVtwin(TestWithMPI):
                 
         self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age, 
             expected_message = "Error when calling 'evolve_for' of a 'EVtwin', errorcode "
-                "is 2, error is 'BACKUP -- tstep reduced below limit; quit'")
+                "is 5, error is 'PRINTB -- age greater than limit'")
 
         instance.stop()
         
