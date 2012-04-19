@@ -213,8 +213,10 @@ class ConvertBetweenGenericAndSiUnits(object):
             1.0 length * time**-1
 
         """   
-
+    
         generic_units_in_si = self.units
+        if value.unit is None:
+            return value
         base = value.unit.base
         factor = value.unit.factor
         number = value.number

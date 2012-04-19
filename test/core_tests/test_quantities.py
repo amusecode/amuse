@@ -233,7 +233,7 @@ class TestQuantities(amusetest.TestCase):
     
     def test21(self):
         zero_vector = zero.as_vector_with_length(3)
-        self.assertEqual(str(zero_vector), "[ zero zero zero]")
+        self.assertEqual(str(zero_vector), "[0.0, 0.0, 0.0] zero")
         
         self.assertEqual(zero_vector + (1 | units.m), [1, 1, 1] | units.m)
         self.assertEqual(zero_vector - (1 | units.m), [-1, -1, -1] | units.m)
@@ -258,7 +258,14 @@ class TestQuantities(amusetest.TestCase):
         self.assertAlmostRelativeEquals(y*x, [2,4,6,8] | units.m)
         self.assertTrue(is_quantity(x * y))
         self.assertAlmostRelativeEquals(x*y, [2,4,6,8] | units.m)
-
+    
+    def test23(self):
+        z = zero.as_vector_with_length(2)
+        self.assertEquals(len(z), 2)
+        z += 1 | units.kg
+        self.assertEquals(z.unit, units.kg)
+        self.assertEquals(z, [1,1] | units.kg)
+        
 class TestAdaptingVectorQuantities(amusetest.TestCase):
 
     def test1(self):

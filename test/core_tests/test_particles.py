@@ -12,6 +12,7 @@ import sys
 import pickle
 
 from amuse.units import units
+from amuse.units import quantities
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse import datamodel
@@ -281,7 +282,24 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(particles[0].b, 1 | units.none)
         particles.b = [4, 5, 6]
         self.assertEquals(particles[0].b, 4 | units.none)
+    
+    def test21(self):
+        particles = datamodel.Particles(3)
+        particles.z = quantities.zero
+        print particles.z, particles[0].z
+        self.assertEquals(particles[0].z, quantities.zero)
+        particles.z += 1 | units.kg
+        self.assertEquals(particles[0].z, 1 | units.kg)
+        print particles[0].z
+        self.assertEquals(particles.z.unit, units.kg)
         
+        
+    def test22(self):
+        particles = datamodel.Particles(3)
+        particles.z = quantities.zero
+        particles.z = 1 | units.kg
+        self.assertEquals(particles[0].z, 1 | units.kg)
+        self.assertEquals(particles.z.unit, units.kg)
         
 class TestStars(amusetest.TestCase):
 

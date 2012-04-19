@@ -1,6 +1,5 @@
 from amuse.support.core import late
 from amuse.support import exceptions
-from amuse.units import quantities
 
 import numpy
 
@@ -131,6 +130,9 @@ class unit(object):
     @property
     def unit(self):
         return self
+        
+    def is_zero(self):
+        return False
     
     def iskey(self):
         return False
@@ -143,6 +145,7 @@ class unit(object):
         :returns: new ScalarQuantity or VectorQuantity object 
             with this unit
         """
+        from amuse.units import quantities
         return quantities.new_quantity(value, self)
         
     def to_simple_form(self):
@@ -192,7 +195,9 @@ class unit(object):
         return True
                         
     def conversion_factor_from(self, x):
-        if self.base == x.base or isinstance(x, quantities.ZeroQuantity):
+        if x.base is None:
+            return self.factor * 1.0
+        elif self.base == x.base:
             this_factor = self.factor * 1.0
             other_factor = x.factor
             return this_factor / other_factor
@@ -229,6 +234,7 @@ class unit(object):
         >>> ton.as_quantity_in(units.kg)
         quantity<1000.0 kg>
         """
+        from amuse.units import quantities
         if isinstance(unit, quantities.Quantity):
             raise exceptions.AmuseException("Cannot expres a unit in a quantity")
         else:
@@ -417,6 +423,27 @@ class none_unit(unit):
         return True
     
     
+class zero_unit(none_unit):
+    def __init__(self):
+        none_unit.__init__(self,'zero', 'zero')
+
+    def __str__(self):
+        return self.symbol
+        
+    def is_zero(self):
+        return True
+        
+    @late
+    def base(self):
+        return None
+                        
+    def conversion_factor_from(self, x):
+        if x.base is None:
+            return 1.0
+        else:
+            return x.factor
+        
+        
 class key_unit(none_unit):
     
     def iskey(self):

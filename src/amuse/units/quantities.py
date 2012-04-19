@@ -5,6 +5,9 @@ from math import sqrt
 from amuse.support import exceptions
 from amuse.support.core import late
 from amuse.support import console
+
+from amuse.units.core import zero_unit
+
 """
 """
 class Quantity(object):
@@ -91,15 +94,23 @@ class Quantity(object):
         return 'quantity<'+str(self)+'>'
 
     def __add__(self, other):
-        other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-        return new_quantity(self.number + other_in_my_units.number, self.unit)
+        if self.unit.is_zero():
+            return new_quantity(other.number, other.unit)
+        else:
+            other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
+            return new_quantity(self.number + other_in_my_units.number, self.unit)
     __radd__ = __add__
 
     def __sub__(self, other):
-        other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-        return new_quantity(self.number - other_in_my_units.number, self.unit)
+        if self.unit.is_zero():
+            return -other
+        else:
+            other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
+            return new_quantity(self.number - other_in_my_units.number, self.unit)
 
     def __rsub__(self, other):
+        if self.unit.is_zero():
+            return new_quantity(other.number, other.unit)
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
         return new_quantity(other_in_my_units.number - self.number, self.unit)
 
@@ -260,6 +271,9 @@ class ScalarQuantity(Quantity):
         return (self.unit, self.number)
 
 
+    def new_zeros_array(self, length):
+        array = numpy.zeros(length, dtype=self.unit.dtype)
+        return new_quantity(array, self.unit)
 
     def __setstate__(self, tuple):
         self.unit = tuple[0]
@@ -311,6 +325,11 @@ class VectorQuantity(Quantity):
     def aszeros(self):
         return new_quantity(numpy.zeros(self.shape, dtype=self.number.dtype), self.unit)
 
+    
+    def new_zeros_array(self, length):
+        array = numpy.zeros(length, dtype=self.unit.dtype)
+        return type(self)(array, self.unit)
+        
     @classmethod
     def zeros(cls, length, unit):
         array = numpy.zeros(length, dtype=unit.dtype)
@@ -453,6 +472,9 @@ class VectorQuantity(Quantity):
 
     def put(self, indices, vector):
         try:
+            if self.unit.is_zero():
+                self.unit = vector.unit
+            
             self._number.put(indices, vector.value_in(self.unit))
         except AttributeError:
             if not is_quantity(vector):
@@ -475,6 +497,8 @@ class VectorQuantity(Quantity):
         >>> print vector
         [0.0, 3.5, 2.0] kg
         """
+        if self.unit.is_zero():
+            self.unit = quantity.unit
         self._number[index] = quantity.value_in(self.unit)
 
     @property
@@ -771,10 +795,10 @@ class ZeroQuantity(Quantity):
     quantity<2.0 kg>
 
     """
-
+    
+    
     def __init__(self):
-        Quantity.__init__(self, self)
-
+        Quantity.__init__(self, zero_unit())
         self.base = ()
         self.factor = 1
         self.number = 0.0
@@ -794,6 +818,7 @@ class ZeroQuantity(Quantity):
     
     def is_non_numeric(self):
         return False
+        
     def iskey(self):
         return False
 
@@ -828,6 +853,10 @@ class ZeroQuantity(Quantity):
         return self
 
 
+    def new_zeros_array(self, length):
+        from amuse.units.core import zero_unit
+        array = numpy.zeros(length, dtype=self.dtype)
+        return new_quantity(array, zero_unit())
 
     def sqrt(self):
         return self
@@ -845,52 +874,29 @@ class ZeroQuantity(Quantity):
         return self
 
     def as_vector_with_length(self, length):
-        return ZeroVectorQuantity(length)
+        return self.new_zeros_array(length)
 
     def __reduce__(self):
         return "zero"
+        
+    def __lt__(self, other):
+        return 0 < to_quantity(other).value_in(other.unit)
 
+    def __gt__(self, other):
+        return 0 > to_quantity(other).value_in(other.unit)
 
-class ZeroVectorQuantity(ZeroQuantity):
+    def __eq__(self, other):
+        return 0 == to_quantity(other).value_in(other.unit)
 
-    def __init__(self, length):
-        Quantity.__init__(self, self)
+    def __ne__(self, other):
+        return 0 != to_quantity(other).value_in(other.unit)
 
-        self.base = ()
-        self.factor = 1
-        self.number = numpy.zeros(length)
-        self.dtype = 'float64'
+    def __le__(self, other):
+        return 0 <= to_quantity(other).value_in(other.unit)
 
-    def is_scalar(self):
-        """
-        True for scalar quantities.
-        """
-        return False
+    def __ge__(self, other):
+        return 0 >= to_quantity(other).value_in(other.unit)
 
-    def is_vector(self):
-        """
-        True for vector quantities.
-        """
-        return True
-    
-    def __len__(self):
-        return len(self.number)
-
-    def __getitem__(self, index):
-        new_number = self.number[index]
-        if hasattr(new_number, "__len__"):
-            return ZeroVectorQuantity(len(new_number))
-        else:
-            return zero
-    
-    def __str__(self):
-        return "[" + " zero" * len(self) + "]"
-
-    def __add__(self, other):
-        return other.as_vector_with_length(len(self))
-
-    def __sub__(self, other):
-        return -other.as_vector_with_length(len(self))
 
 
 zero = ZeroQuantity()
@@ -950,6 +956,10 @@ class NonNumericQuantity(Quantity):
 
     def as_vector_quantity(self):
         return VectorQuantity([self.value], self.unit)
+        
+    def new_zeros_array(self, length):
+        array = numpy.zeros(length, dtype=self.unit.dtype)
+        return new_quantity(array, self.unit)
 
 class AdaptingVectorQuantity(VectorQuantity):
     """
