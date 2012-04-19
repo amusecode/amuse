@@ -90,15 +90,19 @@ AC_LANG_CASE([C], [
 	CC="$MPICC"
 	AC_SUBST(MPICC)
  	AC_MSG_CHECKING([checking MPI C flags])
- 	ax_mpi_c_flags="`$MPICC -showme 2>/dev/null| cut -d\  -f2-`"
+ 	ax_mpi_c_flags="`$MPICC -showme:compile 2>/dev/null| cut -d\  -f2-`"
+ 	ax_mpi_c_libs="`$MPICC -showme:link 2>/dev/null| cut -d\  -f2-`"
         AS_IF([test "x$ax_mpi_c_flags" = "x"],[
-          ax_mpi_c_flags="`$MPICC -show 2>/dev/null| cut -d\  -f2-`"
+          ax_mpi_c_flags="`$MPICC -show -c 2>/dev/null| cut -d\  -f3-`"
+          ax_mpi_c_libs="`$MPICC -show 2>/dev/null| cut -d\  -f2-`"
 	   AS_IF([test "x$ax_mpi_c_flags" = "x"],[AC_MSG_RESULT([could not determine c flags from show functions])],[AC_MSG_RESULT([flags found])])
           
         ], [
           AC_MSG_RESULT([flags found])])
-	MPICFLAGS="$ax_mpi_c_flags"
-	AC_SUBST(MPICFLAGS)
+	MPI_CFLAGS="$ax_mpi_c_flags"
+	MPI_CLIBS="$ax_mpi_c_libs"
+	AC_SUBST(MPI_CFLAGS)
+	AC_SUBST(MPI_CLIBS)
 
 ],
 [C++], [
@@ -110,15 +114,19 @@ AC_LANG_CASE([C], [
 	AC_SUBST(MPICXX)
 
  	AC_MSG_CHECKING([checking MPI C++ flags])
- 	ax_mpi_cc_flags="`$MPICXX -showme 2>/dev/null| cut -d\  -f2-`"
+ 	ax_mpi_cc_flags="`$MPICXX -showme:compile 2>/dev/null| cut -d\  -f2-`"
+ 	ax_mpi_cc_libs="`$MPICXX -showme:link 2>/dev/null| cut -d\  -f2-`"
         AS_IF([test "x$ax_mpi_cc_flags" = "x"],[
-          ax_mpi_cc_flags="`$MPICXX -show 2>/dev/null| cut -d\  -f2-`"
+          ax_mpi_cc_flags="`$MPICXX -show -c 2>/dev/null| cut -d\  -f2-`"
+          ax_mpi_cc_libs="`$MPICXX -show 2>/dev/null| cut -d\  -f2-`"
 	   AS_IF([test "x$ax_mpi_cc_flags" = "x"],[AC_MSG_RESULT([could not determine C++ flags from show functions])],[AC_MSG_RESULT([flags found])])
           
         ], [
           AC_MSG_RESULT([flags found])])
-	MPICCFLAGS="$ax_mpi_cc_flags"
-	AC_SUBST(MPICCFLAGS)
+	MPI_CXXFLAGS="$ax_mpi_cc_flags"
+	MPI_CXXLIBS="$ax_mpi_cc_libs"
+	AC_SUBST(MPI_CXXFLAGS)
+	AC_SUBST(MPI_CXXLIBS)
 
 ],
 [Fortran 77], [
@@ -137,15 +145,19 @@ AC_LANG_CASE([C], [
 	FC="$MPIFC"
 	AC_SUBST(MPIFC)
 	AC_MSG_CHECKING([checking MPI Fortran flags])
- 	ax_mpi_fc_flags="`$MPICC -showme 2>/dev/null| cut -d\  -f2-`"
+ 	ax_mpi_fc_flags="`$MPIFC -showme:compile 2>/dev/null| cut -d\  -f2-`"
+ 	ax_mpi_fc_libs="`$MPIFC -showme:link 2>/dev/null| cut -d\  -f2-`"
         AS_IF([test "x$ax_mpi_fc_flags" = "x"],[
-          ax_mpi_fc_flags="`$MPICC -show 2>/dev/null| cut -d\  -f2-`"
+          ax_mpi_fc_flags="`$MPIFC -show -c 2>/dev/null| cut -d\  -f2-`"
+          ax_mpi_fc_libs="`$MPIFC -show 2>/dev/null| cut -d\  -f2-`"
 	   AS_IF([test "x$ax_mpi_fc_flags" = "x"],[AC_MSG_RESULT([could not determine c flags from show functions])],[AC_MSG_RESULT([flags found])])
           
         ], [
           AC_MSG_RESULT([flags found])])
-	MPIFCFLAGS="$ax_mpi_fc_flags"
-	AC_SUBST(MPIFCFLAGS)
+	MPI_FCFLAGS="$ax_mpi_fc_flags"
+	MPI_FCLIBS="$ax_mpi_fc_libs"
+	AC_SUBST(MPI_FCFLAGS)
+	AC_SUBST(MPI_FCLIBS)
 ])
 
 if test x = x"$MPILIBS"; then
