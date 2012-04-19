@@ -1,6 +1,6 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../..
+AMUSE_DIR?=../../../../..
 -include $(AMUSE_DIR)/config.mk
 
 .SUFFIXES: .cpp .cu .o
@@ -25,13 +25,16 @@ CUDALIB := -L$(CUDA_INSTALL_PATH)/lib64
 MPIINCLUDE := -I$(MPI_INSTALL_PATH)/include
 MPILIB := -L$(MPI_INSTALL_PATH)/lib
 
+MPI_CXXFLAGS ?= $(MPIINCLUDE)
+MPI_CXXLIBS ?= $(MPILIB) -lmpi -lmpi_cxx
+
 MYINCLUDE := -I./lib/
 
-LIBS := -lcuda -lcudart -lmpi -lmpi_cxx -lm -fopenmp
+LIBS := -lcuda -lcudart -lm -fopenmp
 
 GXXOPTS := -O3 -fopenmp -mno-fused-madd -m64 -Wall -W
-NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" -arch sm_13 $(CUDAINCLUDE) $(MPIINCLUDE) $(MYINCLUDE)
-CXXFLAGS := $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MPIINCLUDE) $(MYINCLUDE)
+NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" -arch sm_13 $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
+CXXFLAGS := $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
 
 CUDAOBJSEXE = ./src/cuda/main.cu.o ./src/cuda/gpu_func.cu.o ./src/cuda/cpu_func.cu.o ./src/cuda/cuda_kernels.cu.o
 CUDAOBJS = ./src/cuda/gpu_func.cu.o ./src/cuda/cpu_func.cu.o ./src/cuda/cuda_kernels.cu.o
@@ -43,7 +46,7 @@ AR = ar ruv
 RANLIB = ranlib
 RM = rm
 
-LINKLINE = $(CXX) -o $(TARGET) $(CUDAOBJSEXE) $(CXXOBJS) $(CUDALIB) $(MPILIB) $(LIBS)
+LINKLINE = $(CXX) -o $(TARGET) $(CUDAOBJSEXE) $(CXXOBJS) $(CUDALIB) $(LIBS) $(MPI_CXXLIBS)
 
 all: $(CODELIB)
 

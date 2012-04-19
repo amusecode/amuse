@@ -25,13 +25,16 @@ MPILIB := -L$(MPI_INSTALL_PATH)/lib
 
 MYINCLUDE := -I./lib/ -I./src/lib
 
-LIBS := -lcuda -lcudart -lmpi -lmpi_cxx -lm -fopenmp
+MPI_CXXFLAGS ?= $(MPIINCLUDE)
+MPI_CXXLIBS ?= $(MPILIB)  -lmpi -lmpi_cxx
+
+LIBS := -lcuda -lcudart -lm -fopenmp
 
 GXXOPTS := -O3 -fopenmp -mno-fused-madd -m64 -Wall -W
-NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" -arch sm_13 $(CUDAINCLUDE) $(MPIINCLUDE) $(MYINCLUDE)
-CXXFLAGS := $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MPIINCLUDE) $(MYINCLUDE)
+NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" -arch sm_13 $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
+CXXFLAGS := $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
 
-LDFLAGS = $(CUDALIB) $(MPILIB) $(LIBS) 
+LDFLAGS = $(LIBS) $(CUDALIB) 
 
 OBJS = interface.o
 

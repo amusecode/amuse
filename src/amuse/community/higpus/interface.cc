@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <string>
 #include <mpi.h>
+#include <map>
 #include "src/lib/my_errors.h"
 #include "src/lib/functions.h"
 #include "src/lib/utilis.h"
