@@ -392,7 +392,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 
 		string str = to_string(FMAX) + ".dat";
 		stream.open(to_char(str), ios::out);
-		for(unsigned int i = 0; i < N; i++)
+		for(unsigned int i = 0; i < M; i++)
 			stream<<pos_CH[i].x<<"  "<<pos_CH[i].y<<"  "<<pos_CH[i].z<<"  "<<vel_CH[i].x<<"  "<<vel_CH[i].y<<"  "<<vel_CH[i].z<<"  "<<pos_CH[i].w<<endl;
 		stream.close();
 	}
