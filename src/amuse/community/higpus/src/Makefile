@@ -69,5 +69,5 @@ $(TARGET): $(CUDAOBJSEXE) $(CXXOBJS) Makefile
 
 clean:
 	/bin/rm -rf ./src/cuda/*.o ./src/cxx/*.o ./exec/HiGPUs.x ./exec/nohup.out ./exec/times.dat
-	/bin/rm -rf ./exec/energy.dat ./exec/Blocks.dat ./exec/HiGPUs.dat ./exec/*memory*
+	/bin/rm -rf ./exec/energy.dat ./exec/Blocks.dat ./exec/HiGPUslog.dat ./exec/*memory*
 	/bin/rm -rf ./*.a
