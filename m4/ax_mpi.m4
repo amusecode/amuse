@@ -89,6 +89,17 @@ AC_LANG_CASE([C], [
 	ax_mpi_save_CC="$CC"
 	CC="$MPICC"
 	AC_SUBST(MPICC)
+ 	AC_MSG_CHECKING([checking MPI C flags])
+ 	ax_mpi_c_flags="`$MPICC -showme 2>/dev/null| cut -d\  -f2-`"
+        AS_IF([test "x$ax_mpi_c_flags" = "x"],[
+          ax_mpi_c_flags="`$MPICC -show 2>/dev/null| cut -d\  -f2-`"
+	   AS_IF([test "x$ax_mpi_c_flags" = "x"],[AC_MSG_RESULT([could not determine c flags from show functions])],[AC_MSG_RESULT([flags found])])
+          
+        ], [
+          AC_MSG_RESULT([flags found])])
+	MPICFLAGS="$ax_mpi_c_flags"
+	AC_SUBST(MPICFLAGS)
+
 ],
 [C++], [
 	AC_REQUIRE([AC_PROG_CXX])
@@ -97,6 +108,18 @@ AC_LANG_CASE([C], [
 	ax_mpi_save_CXX="$CXX"
 	CXX="$MPICXX"
 	AC_SUBST(MPICXX)
+
+ 	AC_MSG_CHECKING([checking MPI C++ flags])
+ 	ax_mpi_cc_flags="`$MPICXX -showme 2>/dev/null| cut -d\  -f2-`"
+        AS_IF([test "x$ax_mpi_cc_flags" = "x"],[
+          ax_mpi_cc_flags="`$MPICXX -show 2>/dev/null| cut -d\  -f2-`"
+	   AS_IF([test "x$ax_mpi_cc_flags" = "x"],[AC_MSG_RESULT([could not determine C++ flags from show functions])],[AC_MSG_RESULT([flags found])])
+          
+        ], [
+          AC_MSG_RESULT([flags found])])
+	MPICCFLAGS="$ax_mpi_cc_flags"
+	AC_SUBST(MPICCFLAGS)
+
 ],
 [Fortran 77], [
 	AC_REQUIRE([AC_PROG_F77])
@@ -113,6 +136,16 @@ AC_LANG_CASE([C], [
 	ax_mpi_save_FC="$FC"
 	FC="$MPIFC"
 	AC_SUBST(MPIFC)
+	AC_MSG_CHECKING([checking MPI Fortran flags])
+ 	ax_mpi_fc_flags="`$MPICC -showme 2>/dev/null| cut -d\  -f2-`"
+        AS_IF([test "x$ax_mpi_fc_flags" = "x"],[
+          ax_mpi_fc_flags="`$MPICC -show 2>/dev/null| cut -d\  -f2-`"
+	   AS_IF([test "x$ax_mpi_fc_flags" = "x"],[AC_MSG_RESULT([could not determine c flags from show functions])],[AC_MSG_RESULT([flags found])])
+          
+        ], [
+          AC_MSG_RESULT([flags found])])
+	MPIFCFLAGS="$ax_mpi_fc_flags"
+	AC_SUBST(MPIFCFLAGS)
 ])
 
 if test x = x"$MPILIBS"; then
@@ -140,6 +173,7 @@ AC_LANG_CASE([Fortran 77], [
 	if test x = x"$MPILIBS"; then
 		AC_CHECK_LIB(mpichf90, MPI_Init, [MPILIBS="-lmpichf90"])
 	fi
+
 ])
 if test x = x"$MPILIBS"; then
 	AC_CHECK_LIB(mpi, MPI_Init, [MPILIBS="-lmpi"])
