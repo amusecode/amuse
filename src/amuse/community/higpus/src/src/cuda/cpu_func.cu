@@ -297,9 +297,9 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
    }
  
 	for(unsigned int i = M; i < N; i++){
-      pos[i].x = rand()/RAND_MAX*100000.+1.;
-      pos[i].y = rand()/RAND_MAX*100000.+1.;
-      pos[i].z = rand()/RAND_MAX*100000.+1.;
+      pos[i].x = rand()/RAND_MAX*100000.;
+      pos[i].y = rand()/RAND_MAX*100000.;
+      pos[i].z = rand()/RAND_MAX*100000.;
       pos[i].w = 0.0;
       veldb[i].x = 0.0;
       veldb[i].y = 0.0;

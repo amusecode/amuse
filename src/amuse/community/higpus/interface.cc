@@ -544,9 +544,9 @@ int recommit_particles(){
    
    for (unsigned int i=M; i<N; i++){
       pos_PH[i].w = 0.0;
-      pos_PH[i].x = rand()/RAND_MAX*100000.+1.;
-      pos_PH[i].y = rand()/RAND_MAX*100000.+1.;
-      pos_PH[i].z = rand()/RAND_MAX*100000.+1.;
+      pos_PH[i].x = rand()/RAND_MAX*100000.;
+      pos_PH[i].y = rand()/RAND_MAX*100000.;
+      pos_PH[i].z = rand()/RAND_MAX*100000.;
       vel_CH[i].x = 0.0;
       vel_CH[i].y = 0.0;
       vel_CH[i].z = 0.0;
