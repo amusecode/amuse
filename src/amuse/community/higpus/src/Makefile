@@ -40,7 +40,7 @@ CUDAOBJSEXE = ./src/cuda/main.cu.o ./src/cuda/gpu_func.cu.o ./src/cuda/cpu_func.
 CUDAOBJS = ./src/cuda/gpu_func.cu.o ./src/cuda/cpu_func.cu.o ./src/cuda/cuda_kernels.cu.o
 CXXOBJS = ./src/cxx/utilis.cpp.o ./src/cxx/types.cpp.o
 CODEOBJS = $(CUDAOBJS) $(CXXOBJS)
-TARGET = ./exec/H6B.x
+TARGET = ./exec/HiGPUs.x
 
 AR = ar ruv
 RANLIB = ranlib
@@ -68,6 +68,6 @@ $(TARGET): $(CUDAOBJSEXE) $(CXXOBJS) Makefile
 	$(LINKLINE)
 
 clean:
-	/bin/rm -rf ./src/cuda/*.o ./src/cxx/*.o ./exec/H6B.x ./exec/nohup.out ./exec/times.dat
-	/bin/rm -rf ./exec/energy.dat ./exec/Blocks.dat ./exec/H6Blog.dat ./exec/*memory*
+	/bin/rm -rf ./src/cuda/*.o ./src/cxx/*.o ./exec/HiGPUs.x ./exec/nohup.out ./exec/times.dat
+	/bin/rm -rf ./exec/energy.dat ./exec/Blocks.dat ./exec/HiGPUs.dat ./exec/*memory*
 	/bin/rm -rf ./*.a
