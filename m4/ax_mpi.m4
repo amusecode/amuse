@@ -93,7 +93,7 @@ AC_LANG_CASE([C], [
  	ax_mpi_c_flags="`$MPICC -showme:compile 2>/dev/null| cut -d\  -f2-`"
  	ax_mpi_c_libs="`$MPICC -showme:link 2>/dev/null| cut -d\  -f2-`"
         AS_IF([test "x$ax_mpi_c_flags" = "x"],[
-          ax_mpi_c_flags="`$MPICC -show -c 2>/dev/null| cut -d\  -f3-`"
+          ax_mpi_c_flags="`$MPICC -show -c 2>/dev/null| cut -d\  -f2-|sed s/-c\ //`"
           ax_mpi_c_libs="`$MPICC -show 2>/dev/null| cut -d\  -f2-`"
 	   AS_IF([test "x$ax_mpi_c_flags" = "x"],[AC_MSG_RESULT([could not determine c flags from show functions])],[AC_MSG_RESULT([flags found])])
           
@@ -117,7 +117,7 @@ AC_LANG_CASE([C], [
  	ax_mpi_cc_flags="`$MPICXX -showme:compile 2>/dev/null| cut -d\  -f2-`"
  	ax_mpi_cc_libs="`$MPICXX -showme:link 2>/dev/null| cut -d\  -f2-`"
         AS_IF([test "x$ax_mpi_cc_flags" = "x"],[
-          ax_mpi_cc_flags="`$MPICXX -show -c 2>/dev/null| cut -d\  -f2-`"
+          ax_mpi_cc_flags="`$MPICXX -show -c 2>/dev/null| cut -d\  -f2-|sed s/-c\ //`"
           ax_mpi_cc_libs="`$MPICXX -show 2>/dev/null| cut -d\  -f2-`"
 	   AS_IF([test "x$ax_mpi_cc_flags" = "x"],[AC_MSG_RESULT([could not determine C++ flags from show functions])],[AC_MSG_RESULT([flags found])])
           
@@ -148,7 +148,7 @@ AC_LANG_CASE([C], [
  	ax_mpi_fc_flags="`$MPIFC -showme:compile 2>/dev/null| cut -d\  -f2-`"
  	ax_mpi_fc_libs="`$MPIFC -showme:link 2>/dev/null| cut -d\  -f2-`"
         AS_IF([test "x$ax_mpi_fc_flags" = "x"],[
-          ax_mpi_fc_flags="`$MPIFC -show -c 2>/dev/null| cut -d\  -f2-`"
+          ax_mpi_fc_flags="`$MPIFC -show -c 2>/dev/null| cut -d\  -f2-|sed s/-c\ //`"
           ax_mpi_fc_libs="`$MPIFC -show 2>/dev/null| cut -d\  -f2-`"
 	   AS_IF([test "x$ax_mpi_fc_flags" = "x"],[AC_MSG_RESULT([could not determine c flags from show functions])],[AC_MSG_RESULT([flags found])])
           

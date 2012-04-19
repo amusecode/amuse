@@ -4306,7 +4306,7 @@ $as_echo_n "checking checking MPI C++ flags... " >&6; }
  	ax_mpi_cc_libs="`$MPICXX -showme:link 2>/dev/null| cut -d\  -f2-`"
         if test "x$ax_mpi_cc_flags" = "x"; then :
 
-          ax_mpi_cc_flags="`$MPICXX -show -c 2>/dev/null| cut -d\  -f2-`"
+          ax_mpi_cc_flags="`$MPICXX -show -c 2>/dev/null| cut -d\  -f2-|sed s/-c\ //`"
           ax_mpi_cc_libs="`$MPICXX -show 2>/dev/null| cut -d\  -f2-`"
 	   if test "x$ax_mpi_cc_flags" = "x"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: could not determine C++ flags from show functions" >&5
@@ -4525,7 +4525,7 @@ $as_echo_n "checking checking MPI C flags... " >&6; }
  	ax_mpi_c_libs="`$MPICC -showme:link 2>/dev/null| cut -d\  -f2-`"
         if test "x$ax_mpi_c_flags" = "x"; then :
 
-          ax_mpi_c_flags="`$MPICC -show -c 2>/dev/null| cut -d\  -f3-`"
+          ax_mpi_c_flags="`$MPICC -show -c 2>/dev/null| cut -d\  -f2-|sed s/-c\ //`"
           ax_mpi_c_libs="`$MPICC -show 2>/dev/null| cut -d\  -f2-`"
 	   if test "x$ax_mpi_c_flags" = "x"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: could not determine c flags from show functions" >&5
@@ -4743,7 +4743,7 @@ $as_echo_n "checking checking MPI Fortran flags... " >&6; }
  	ax_mpi_fc_libs="`$MPIFC -showme:link 2>/dev/null| cut -d\  -f2-`"
         if test "x$ax_mpi_fc_flags" = "x"; then :
 
-          ax_mpi_fc_flags="`$MPIFC -show -c 2>/dev/null| cut -d\  -f2-`"
+          ax_mpi_fc_flags="`$MPIFC -show -c 2>/dev/null| cut -d\  -f2-|sed s/-c\ //`"
           ax_mpi_fc_libs="`$MPIFC -show 2>/dev/null| cut -d\  -f2-`"
 	   if test "x$ax_mpi_fc_flags" = "x"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: could not determine c flags from show functions" >&5
