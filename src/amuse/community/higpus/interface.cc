@@ -33,7 +33,7 @@ map<int,dynamics_state>::iterator et;
 int size, rank, particle_id_counter = 0;
 unsigned int N, M, NGPU, TPB, FMAX, BFMAX, MAXDIM, GPUMINTHREADS;
 double GTIME, GTW, DTMAX, DTMIN, EPS, ETA6, ETA4, DTPRINT, ATIME, plummer_core, plummer_mass;  
-bool warm_start;
+bool warm_start, init = 0;
 string GPUNAME;
 
 
@@ -197,12 +197,16 @@ int commit_particles(){
       vel_PH[i].w = 0.0;
    }  
 
-	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN,  &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
 	return 0;
 }
 
 int evolve_model(double t){
-	if(rank==0){
+	if(init == 0){
+		HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN,  &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
+		init = 1;
+	}
+
+	if(rank == 0){
 		ofstream hlog;
       hlog.open("HiGPUslog.dat", ios::app);
       hlog<<endl<<endl;
@@ -565,8 +569,7 @@ int recommit_particles(){
 	GTIME = 0.0;
 	ATIME = 1.0e+10;
 	warm_start = 1;
-
-	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN, &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
+   init = 0;
    return 0;
 }
 
