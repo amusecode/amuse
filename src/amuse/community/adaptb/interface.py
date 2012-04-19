@@ -229,8 +229,8 @@ class Adaptb(GravitationalDynamics):
         GravitationalDynamics.define_methods(self, object)
         self.stopping_conditions.define_methods(object)
         
-        object.add_method("get_bs_tolerance_float64", (), (units.none, object.ERROR_CODE,))
-        object.add_method("set_bs_tolerance_float64", (units.none, ), (object.ERROR_CODE,))
+        object.add_method("get_bs_tolerance_float64", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_bs_tolerance_float64", (object.NO_UNIT, ), (object.ERROR_CODE,))
         
         object.add_method("get_eps2", (), (nbody_system.length**2, object.ERROR_CODE,))
         object.add_method("set_eps2", (nbody_system.length**2, ), (object.ERROR_CODE,))
@@ -238,11 +238,11 @@ class Adaptb(GravitationalDynamics):
         object.add_method("get_dt_print", (), (nbody_system.time, object.ERROR_CODE,))
         object.add_method("set_dt_print", (nbody_system.time, ), (object.ERROR_CODE,))
     
-        object.add_method("get_word_length", (), (units.none, object.ERROR_CODE,))
-        object.add_method("set_word_length", (units.none, ), (object.ERROR_CODE,))
+        object.add_method("get_word_length", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_word_length", (object.NO_UNIT, ), (object.ERROR_CODE,))
         
-        object.add_method("get_adaptb_output_directory", (), (units.none, object.ERROR_CODE,))
-        object.add_method("set_adaptb_output_directory", (units.none, ), (object.ERROR_CODE,))
+        object.add_method("get_adaptb_output_directory", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_adaptb_output_directory", (object.NO_UNIT, ), (object.ERROR_CODE,))
         
         object.add_method("get_max_cpu_time", (), (units.s, object.ERROR_CODE,))
         object.add_method("set_max_cpu_time", (units.s, ), (object.ERROR_CODE,))

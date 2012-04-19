@@ -276,7 +276,7 @@ class MakeMeAMassiveStar(CommonCode):
             "set_target_n_shells_mixing",
             "target_n_shells_mixing", 
             "target number of shells for mixed models", 
-            default_value = 200 | units.none
+            default_value = 200
         )
         
         object.add_method_parameter(
@@ -284,7 +284,7 @@ class MakeMeAMassiveStar(CommonCode):
             "set_target_n_shells",
             "target_n_shells", 
             "target number of shells for unmixed models", 
-            default_value = 10000 | units.none
+            default_value = 10000
         ) 
         
         object.add_boolean_parameter(
@@ -323,27 +323,27 @@ class MakeMeAMassiveStar(CommonCode):
         object.add_method(
             "add_shell",
             (object.INDEX, units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
-                units.K, units.LSun, units.amu, units.none, units.none, units.none, units.none, 
-                units.none, units.none, units.none, units.none, units.none),
+                units.K, units.LSun, units.amu, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT),
             (object.ERROR_CODE,)
         )
         object.add_method(
             "get_stellar_model_element",
             (object.INDEX, object.INDEX,),
             (units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
-                units.none, units.K, units.LSun, units.amu,
-                units.none, units.none, units.none, units.none, units.none, 
-                units.none, units.none, units.none, units.none, object.ERROR_CODE,)
+                object.NO_UNIT, units.K, units.LSun, units.amu,
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "get_number_of_zones",
             (object.INDEX, ),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "get_number_of_particles",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "merge_two_stars",
@@ -351,13 +351,13 @@ class MakeMeAMassiveStar(CommonCode):
             (object.INDEX, object.ERROR_CODE,)
         )
         
-        object.add_method("get_target_n_shells_mixing", (), (units.none, object.ERROR_CODE,)) 
-        object.add_method("set_target_n_shells_mixing", (units.none, ), (object.ERROR_CODE,)) 
+        object.add_method("get_target_n_shells_mixing", (), (object.NO_UNIT, object.ERROR_CODE,)) 
+        object.add_method("set_target_n_shells_mixing", (object.NO_UNIT, ), (object.ERROR_CODE,)) 
         
-        object.add_method("get_target_n_shells", (), (units.none, object.ERROR_CODE,)) 
-        object.add_method("set_target_n_shells", (units.none, ), (object.ERROR_CODE,)) 
+        object.add_method("get_target_n_shells", (), (object.NO_UNIT, object.ERROR_CODE,)) 
+        object.add_method("set_target_n_shells", (object.NO_UNIT, ), (object.ERROR_CODE,)) 
         
-        object.add_method("get_number_of_particles", (), (units.none, object.ERROR_CODE,)) 
+        object.add_method("get_number_of_particles", (), (object.NO_UNIT, object.ERROR_CODE,)) 
     
     
     def define_particle_sets(self, object):
@@ -390,7 +390,7 @@ class MakeMeAMassiveStar(CommonCode):
         """
         Returns the inclusive range of defined zones/mesh-cells of the star.
         """
-        return (0, self.get_number_of_zones(index_of_the_particle).number-1)
+        return (0, self.get_number_of_zones(index_of_the_particle)-1)
     
     def _specify_stellar_model(self, definition, index_of_the_particle = 0):
         definition.set_grid_range('get_range_in_zones')

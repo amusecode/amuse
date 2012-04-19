@@ -194,7 +194,7 @@ def test_smallN(infile = None, number_of_stars = 10,
         print_log(time, gravity, E0)
 
         over = gravity.is_over()
-        if over.number:
+        if over:
             print '\ninteraction is over'
             gravity.update_particle_tree()
             gravity.update_particle_set()
@@ -216,7 +216,7 @@ def test_smallN(infile = None, number_of_stars = 10,
     
         sys.stdout.flush()
 
-    if not over.number:
+    if not over:
         print '\ninteraction is not over'
     gravity.stop()
 

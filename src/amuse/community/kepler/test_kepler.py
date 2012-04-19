@@ -19,7 +19,7 @@ from amuse.rfi.core import is_mpd_running
 def test1():
     mass = 1 | nbody_system.mass
     semi = 1 | nbody_system.length
-    ecc = 0.5 | units.none
+    ecc = 0.5 
     time = 5.0 | nbody_system.time
     run_kepler(mass, semi, ecc, time)
     
@@ -28,8 +28,8 @@ def run_kepler(mass, semi, ecc, time):
     kep = Kepler()
     kep.initialize_code()
 
-    kep.set_longitudinal_unit_vector(1.0|units.none, 1.0|units.none,
-                                     0.0|units.none)
+    kep.set_longitudinal_unit_vector(1.0, 1.0,
+                                     0.0)
     kep.initialize_from_elements(mass, semi, ecc)
     a,e = kep.get_elements()
     p = kep.get_periastron()
@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     mass = 1 | nbody_system.mass
     semi = 1 | nbody_system.length
-    ecc = 0.5 | units.none
+    ecc = 0.5 
     time = 5.0 | nbody_system.time
 
     try:

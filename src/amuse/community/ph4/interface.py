@@ -271,7 +271,7 @@ class ph4(GravitationalDynamics):
             "set_eta",                   # setter name in interface.cc
             "timestep_parameter",        # python parameter name
             "timestep parameter",        # description
-            default_value = 0.14 | units.none
+            default_value = 0.14
         )
 
         object.add_method_parameter(
@@ -287,7 +287,7 @@ class ph4(GravitationalDynamics):
             "set_gpu",                   # setter name in interface.cc
             "use_gpu",                   # python parameter name
             "use GPU",                   # description
-            default_value = 1 | units.none
+            default_value = 1
         )
         
         object.add_method_parameter(
@@ -295,7 +295,7 @@ class ph4(GravitationalDynamics):
             "set_manage_encounters",     # setter name in interface.cc
             "manage_encounters",	 # python parameter name
             "manage close encounters",   # description
-            default_value = 4 | units.none
+            default_value = 4
         )
         
         self.stopping_conditions.define_parameters(object)
@@ -354,7 +354,7 @@ class ph4(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.length,
-                units.none
+                object.NO_UNIT
             ),
             (
                 object.INDEX,
@@ -375,7 +375,7 @@ class ph4(GravitationalDynamics):
         object.add_method(
             "set_eta",
             (
-                units.none
+                object.NO_UNIT
             ),
             (
                 object.ERROR_CODE
@@ -386,7 +386,7 @@ class ph4(GravitationalDynamics):
             "get_eta",
             (),
             (
-                units.none,
+                object.NO_UNIT,
                 object.ERROR_CODE
             )
         )
@@ -413,7 +413,7 @@ class ph4(GravitationalDynamics):
         object.add_method(
             "set_gpu",
             (
-                units.none
+                object.NO_UNIT
             ),
             (
                 object.ERROR_CODE
@@ -424,7 +424,7 @@ class ph4(GravitationalDynamics):
             "get_gpu",
             (),
             (
-                units.none,
+                object.NO_UNIT,
                 object.ERROR_CODE
             )
         )
@@ -432,7 +432,7 @@ class ph4(GravitationalDynamics):
         object.add_method(
             "set_manage_encounters",
             (
-                units.none
+                object.NO_UNIT
             ),
             (
                 object.ERROR_CODE
@@ -443,7 +443,7 @@ class ph4(GravitationalDynamics):
             "get_manage_encounters",
             (),
             (
-                units.none,
+                object.NO_UNIT,
                 object.ERROR_CODE
             )
         )

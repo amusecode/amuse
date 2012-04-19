@@ -615,7 +615,7 @@ class TestAthena(TestWithMPI):
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
-        instance.setup_mesh(10 | units.none, 10 | units.none, 1 | units.none, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length , 0.0 | generic_unit_system.length)
+        instance.setup_mesh(10, 10, 1, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length , 0.0 | generic_unit_system.length)
         instance.parameters.mesh_size = (10,10,1)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
@@ -787,12 +787,12 @@ class TestAthena(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.parameters.isothermal_sound_speed, 0.0 | generic_unit_system.speed)
         instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
         self.assertAlmostRelativeEquals(instance.parameters.isothermal_sound_speed, 0.1 | generic_unit_system.speed)
-        self.assertAlmostRelativeEquals(instance.parameters.gamma, 1.66666666666666667 | units.none)
+        self.assertAlmostRelativeEquals(instance.parameters.gamma, 1.66666666666666667)
         instance.parameters.gamma = 0.1
-        self.assertAlmostRelativeEquals(instance.parameters.gamma, 0.1 | units.none)
-        self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.3 | units.none)
+        self.assertAlmostRelativeEquals(instance.parameters.gamma, 0.1)
+        self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.3)
         instance.parameters.courant_number = 0.1
-        self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.1 | units.none)
+        self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.1)
         
         print instance.parameters
         instance.stop()
@@ -804,7 +804,7 @@ class TestAthena(TestWithMPI):
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
-        instance.setup_mesh(10 | units.none , 20 | units.none, 40 | units.none, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length)
+        instance.setup_mesh(10 , 20, 40, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
         
@@ -855,7 +855,7 @@ class TestAthena(TestWithMPI):
         self.assertEquals(maxj, 19)
         self.assertEquals(mink, 0)
         self.assertEquals(maxk, 39)
-        self.assertEquals(instance.parameters.mesh_size, (10,20,40) | units.none)
+        self.assertEquals(instance.parameters.mesh_size, (10,20,40))
         print instance.parameters
         instance.stop()
     
@@ -863,7 +863,7 @@ class TestAthena(TestWithMPI):
         instance=self.new_instance(Athena)
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 10
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 10|units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 10)
         instance.stop()
 
     def test8a(self):

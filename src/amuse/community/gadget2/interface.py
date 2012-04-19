@@ -1297,7 +1297,7 @@ class Gadget2(GravitationalDynamics):
             "set_nsmooth",
             "n_smooth", 
             "The target number of SPH neighbours.", 
-            default_value = 50 | units.none
+            default_value = 50
         )
         
         object.add_method_parameter(
@@ -1338,7 +1338,7 @@ class Gadget2(GravitationalDynamics):
             "set_bh_tol",
             "opening_angle", 
             "Opening angle, theta, for building the tree: between 0 and 1 (unitless, 0.5).", 
-            default_value = 0.5 | units.none
+            default_value = 0.5
         )
         
         object.add_method_parameter(
@@ -1346,7 +1346,7 @@ class Gadget2(GravitationalDynamics):
             "set_gdgtol",
             "gadget_cell_opening_constant", 
             "Gadget-cell-openings criterion parameter  (unitless, 0.005)", 
-            default_value = 0.005 | units.none
+            default_value = 0.005
         )
         
         object.add_method_parameter(
@@ -1363,7 +1363,7 @@ class Gadget2(GravitationalDynamics):
             "polytropic_index_gamma", 
             "gas polytropic index (1.6666667 or 1 for isothermal"
                 "(read-only: makefile option ISOTHERM_EQS).", 
-            default_value = (5.0/3) | units.none
+            default_value = (5.0/3)
         )
         
         object.add_method_parameter(
@@ -1371,7 +1371,7 @@ class Gadget2(GravitationalDynamics):
             "set_alpha",
             "artificial_viscosity_alpha", 
             "SPH artificial viscosity alpha parameter (0.5)", 
-            default_value = 0.5 | units.none
+            default_value = 0.5
         )
         
         object.add_method_parameter(
@@ -1380,7 +1380,7 @@ class Gadget2(GravitationalDynamics):
             "courant", 
             "SPH courant condition parameter (0.3). Note that we follow conventional smoothing length "
                 "definitions, implying a factor 2 difference with Gadget's CourantFac parameter", 
-            default_value = 0.3 | units.none
+            default_value = 0.3
         )
         
         object.add_method_parameter(
@@ -1388,7 +1388,7 @@ class Gadget2(GravitationalDynamics):
             "set_nsmtol",
             "n_smooth_tol", 
             "fractional tolerance in number of SPH neighbours", 
-            default_value = 0.1 | units.none
+            default_value = 0.1
         )
         
         object.add_method_parameter(
@@ -1452,7 +1452,7 @@ class Gadget2(GravitationalDynamics):
             "set_type_of_timestep_criterion",
             "type_of_timestep_criterion", 
             "Timestep criterion to use. Can only be zero: timestep proportional to acceleration^-0.5", 
-            default_value = 0 | units.none
+            default_value = 0
         )
         
         object.add_method_parameter(
@@ -1476,7 +1476,7 @@ class Gadget2(GravitationalDynamics):
             "set_omega_zero",
             "omega_zero", 
             "Cosmological matter density parameter in units of the critical density at z=0.", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         
         object.add_method_parameter(
@@ -1484,7 +1484,7 @@ class Gadget2(GravitationalDynamics):
             "set_omega_lambda",
             "omega_lambda", 
             "Cosmological vacuum energy density parameter in units of the critical density at z=0.", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         
         object.add_method_parameter(
@@ -1492,7 +1492,7 @@ class Gadget2(GravitationalDynamics):
             "set_omega_baryon",
             "omega_baryon", 
             "Cosmological baryonic density parameter in units of the critical density at z=0.", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         
         object.add_method_parameter(
@@ -1508,7 +1508,7 @@ class Gadget2(GravitationalDynamics):
             "set_err_tol_int_accuracy",
             "timestep_accuracy_parameter", 
             "Accuracy parameter used in timestep criterion. Actual timesteps are proportional to err_tol_int_accuracy^0.5", 
-            default_value = 0.025 | units.none
+            default_value = 0.025
         )
         
         object.add_method_parameter(
@@ -1532,7 +1532,7 @@ class Gadget2(GravitationalDynamics):
             "set_tree_domain_update_frequency",
             "tree_domain_update_frequency", 
             "The frequency with which the tree and domain decomposition are fully updated, in terms of (# force computations / # particles).", 
-            default_value = 0.05 | units.none
+            default_value = 0.05
         )
         
         object.add_method_parameter(
@@ -1556,7 +1556,7 @@ class Gadget2(GravitationalDynamics):
             "set_min_gas_hsmooth_fractional",
             "min_gas_hsmooth_fractional", 
             "The minimum smoothing length of gas particles relative to their softening lengths.", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         
         object.add_method_parameter(
@@ -1944,7 +1944,7 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_n_neighbours",
             (object.INDEX,),
-            (units.none, object.ERROR_CODE)
+            (object.NO_UNIT, object.ERROR_CODE)
         )
         object.add_method(
             "get_epsilon_dm_part",
@@ -1998,12 +1998,12 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_nsmooth",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_nsmooth",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2034,24 +2034,24 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_bh_tol",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_bh_tol",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_gdgtol",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_gdgtol",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2070,42 +2070,42 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_gamma",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_alpha",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_alpha",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_courant",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_courant",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_nsmtol",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_nsmtol",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2184,12 +2184,12 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_type_of_timestep_criterion",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_type_of_timestep_criterion",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2220,36 +2220,36 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_omega_zero",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_omega_zero",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_omega_lambda",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_omega_lambda",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_omega_baryon",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_omega_baryon",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2268,12 +2268,12 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_err_tol_int_accuracy",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_err_tol_int_accuracy",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2304,12 +2304,12 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_tree_domain_update_frequency",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_tree_domain_update_frequency",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2340,12 +2340,12 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_min_gas_hsmooth_fractional",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_min_gas_hsmooth_fractional",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         

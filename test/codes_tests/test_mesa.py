@@ -458,7 +458,7 @@ class TestMESA(TestWithMPI):
         instance.evolve_model()
         self.assertEquals(instance.particles.get_number_of_zones(), [479, 985])
         self.assertEquals(len(instance.particles[0].get_mass_profile()), 479)
-        self.assertAlmostEquals(instance.particles[0].get_mass_profile().sum(), 1.0 | units.none)
+        self.assertAlmostEquals(instance.particles[0].get_mass_profile().sum(), 1.0)
         self.assertRaises(AmuseException, instance.particles.get_mass_profile, 
             expected_message = "Querying mass profiles of more than one particle at a time is not supported.")
         print instance.particles
@@ -473,7 +473,7 @@ class TestMESA(TestWithMPI):
         radius2.prepend(0|units.m)
         delta_radius_cubed = (radius1**3 - radius2**3)
         self.assertAlmostEquals(instance.particles[0].get_density_profile() / 
-            (delta_mass/(4./3.*pi*delta_radius_cubed)), [1]*479|units.none, places=3)
+            (delta_mass/(4./3.*pi*delta_radius_cubed)), [1]*479, places=3)
         self.assertAlmostEquals(instance.particles[1].get_mu_profile(), [0.62]*985 | units.amu, places=1)
         instance.stop()
     
@@ -505,10 +505,10 @@ class TestMESA(TestWithMPI):
         self.assertEquals(species_IDs,   [2,    5,     6,     38,    51,    69,    114,    168])
         self.assertAlmostEquals(species_masses, [1.0078250, 3.0160293, 4.0026032, 12.0, 
                                 14.0030740, 15.9949146, 19.9924401, 23.9850417] | units.amu, places=5)
-        self.assertAlmostEquals(composition[ :1,-1].sum(),  0.7 | units.none)
-        self.assertAlmostEquals(composition[1:3,-1].sum(),  (0.3 | units.none) - instance.parameters.metallicity)
+        self.assertAlmostEquals(composition[ :1,-1].sum(),  0.7)
+        self.assertAlmostEquals(composition[1:3,-1].sum(),  (0.3) - instance.parameters.metallicity)
         self.assertAlmostEquals(composition[3: ,-1].sum(),  instance.parameters.metallicity)
-        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
+        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones)
         instance.stop()
     
     def slowtest8(self):
@@ -599,8 +599,8 @@ class TestMESA(TestWithMPI):
         composition = instance.particles[0].get_chemical_abundance_profiles()
         k_surface = -1 # index to the outer mesh cell (surface)
         
-        self.assertAlmostEquals(composition[ :1, k_surface].sum(),  0.7 | units.none)
-        self.assertAlmostEquals(composition[1:3, k_surface].sum(),  (0.3 | units.none) - instance.parameters.metallicity)
+        self.assertAlmostEquals(composition[ :1, k_surface].sum(),  0.7)
+        self.assertAlmostEquals(composition[1:3, k_surface].sum(),  (0.3) - instance.parameters.metallicity)
         self.assertAlmostEquals(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
         
         # Gradually and consistently increase helium and decrease hydrogen abundances until reversed
@@ -614,10 +614,10 @@ class TestMESA(TestWithMPI):
             instance.evolve_model()
             composition = instance.particles[0].get_chemical_abundance_profiles()
         
-        self.assertAlmostEquals(composition[ :2, k_surface].sum(),  (0.3 | units.none) - instance.parameters.metallicity)
-        self.assertAlmostEquals(composition[2:3, k_surface].sum(),  0.7 | units.none)
+        self.assertAlmostEquals(composition[ :2, k_surface].sum(),  (0.3) - instance.parameters.metallicity)
+        self.assertAlmostEquals(composition[2:3, k_surface].sum(),  0.7)
         self.assertAlmostEquals(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
-        self.assertAlmostEquals(composition.sum(axis=0), 1.0 | units.none)
+        self.assertAlmostEquals(composition.sum(axis=0), 1.0)
         
         self.assertRaises(AmuseException, instance.particles[0].set_chemical_abundance_profiles, composition[:7], 
             expected_message = "The length of the supplied vector (7) does not match the number of "

@@ -360,22 +360,22 @@ class TestSmallN(TestWithMPI):
         
        
         value = instance.get_eta()
-        self.assertEquals(0.14 | units.none, value)
-        self.assertAlmostEquals(0.14 | units.none, instance.parameters.timestep_parameter, in_units=units.none)
+        self.assertEquals(0.14, value)
+        self.assertAlmostEquals(0.14, instance.parameters.timestep_parameter)
         for x in [0.001, 0.01, 0.1]:
             instance.parameters.timestep_parameter = x
-            self.assertAlmostEquals(x | units.none, instance.parameters.timestep_parameter, in_units=units.none)
+            self.assertAlmostEquals(x, instance.parameters.timestep_parameter)
         
         
         value = instance.get_time()
         self.assertEquals(0| units.yr, value)
         
         value = instance.get_gamma()
-        self.assertEquals(1e-6| units.none, value)
-        self.assertAlmostEquals(1e-6| units.none, instance.parameters.unperturbed_threshold, in_units=units.none)
+        self.assertEquals(1e-6, value)
+        self.assertAlmostEquals(1e-6, instance.parameters.unperturbed_threshold)
         for x in [0.001, 0.01, 0.1]:
             instance.parameters.unperturbed_threshold = x
-            self.assertAlmostEquals(x | units.none, instance.parameters.unperturbed_threshold, in_units=units.none)
+            self.assertAlmostEquals(x, instance.parameters.unperturbed_threshold)
         instance.stop()
     
 

@@ -217,7 +217,7 @@ class Hacs64(GravitationalDynamics):
             "set_nmax",                        # setter name in interface.cc
             "nmax",                            # python parameter name
             "maximal number of particles",     # description
-            default_value = -1 | units.none    # default
+            default_value = -1    # default
         )
 
         object.add_method_parameter(
@@ -241,7 +241,7 @@ class Hacs64(GravitationalDynamics):
             "set_eta_reg",                        # setter name in interface.cc
             "eta_reg",        # python parameter name
             "regular timestep parameter",        # description
-            default_value = 0.1  | units.none                # default
+            default_value = 0.1                # default
         )
         
         object.add_method_parameter(
@@ -249,7 +249,7 @@ class Hacs64(GravitationalDynamics):
             "set_eta_irr",                         # setter name in interface.cc
             "eta_irr",              # python parameter name
             "irregular timestep parameter",        # description
-            default_value = 0.6  | units.none
+            default_value = 0.6
         )
 
         object.add_method_parameter(
@@ -307,8 +307,8 @@ class Hacs64(GravitationalDynamics):
         # See hermite0/interface.py for examples.
 
         object.add_method("get_nmax", (),
-            (units.none, object.ERROR_CODE,))
-        object.add_method("set_nmax", (units.none, ),
+            (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_nmax", (object.NO_UNIT, ),
             (object.ERROR_CODE,))
         
         object.add_method("get_dtmax", (),
@@ -322,13 +322,13 @@ class Hacs64(GravitationalDynamics):
             (object.ERROR_CODE,))
 
         object.add_method("get_eta_irr", (),
-            (units.none, object.ERROR_CODE,))
-        object.add_method("set_eta_irr", (units.none, ),
+            (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_eta_irr", (object.NO_UNIT, ),
             (object.ERROR_CODE,))
 
         object.add_method("get_eta_reg", (),
-            (units.none, object.ERROR_CODE,))
-        object.add_method("set_eta_reg", (units.none, ),
+            (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_eta_reg", (object.NO_UNIT, ),
             (object.ERROR_CODE,))
 
         object.add_method("get_eps2", (),

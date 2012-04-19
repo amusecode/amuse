@@ -351,7 +351,7 @@ class legacy_global(object):
         raise exceptions.CodeException("No working crc32 implementation found!")
      
 class ParameterSpecification(object):
-    def __init__(self, name, dtype, direction, description, default = None):
+    def __init__(self, name, dtype, direction, description, default = None, unit = None):
         """Specification of a parameter of a legacy function 
         """
         self.name = name
@@ -361,6 +361,7 @@ class ParameterSpecification(object):
         self.description = description
         self.datatype = _typecode_to_datatype(dtype)
         self.default = default
+        self.unit = unit
         
     def is_input(self):
         return ( self.direction == LegacyFunctionSpecification.IN 

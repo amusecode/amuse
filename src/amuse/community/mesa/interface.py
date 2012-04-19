@@ -757,7 +757,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_metallicity",
             "metallicity", 
             "Metallicity of all stars", 
-            default_value = 0.02 | units.none
+            default_value = 0.02
         )
         
         object.add_method_parameter(
@@ -781,7 +781,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_max_iter_stop_condition",
             "max_iter_stop_condition", 
             "The maximum number of iterations of this instance. (Negative means no maximum)",
-            default_value = -1111 | units.none
+            default_value = -1111
         )
         
         object.add_method_parameter(
@@ -789,7 +789,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_mixing_length_ratio",
             "mixing_length_ratio", 
             "The mixing-length ratio (alpha).",
-            default_value = 2.0 | units.none
+            default_value = 2.0
         )
         
         object.add_method_parameter(
@@ -798,7 +798,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "semi_convection_efficiency", 
             "The efficiency of semi-convection, after Heger, Langer, & Woosley 2000 (ApJ), "
                "which goes back to Langer, Sugimoto & Fricke 1983 (A&A).",
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         
         object.add_method_parameter(
@@ -807,7 +807,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "RGB_wind_scheme", 
             "The mass loss scheme for RGB stars: none (0), Reimers (1), "
                 "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
-            default_value = 0 | units.none
+            default_value = 0
         )
         
         object.add_method_parameter(
@@ -816,7 +816,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "AGB_wind_scheme", 
             "The mass loss scheme for AGB stars: none (0), Reimers (1), "
                 "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
-            default_value = 0 | units.none
+            default_value = 0
         )
         
         object.add_method_parameter(
@@ -824,28 +824,28 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_reimers_wind_efficiency",
             "reimers_wind_efficiency", 
             "The Reimers mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 1).",
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         object.add_method_parameter(
             "get_blocker_wind_efficiency",
             "set_blocker_wind_efficiency",
             "blocker_wind_efficiency", 
             "The Blocker mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 2).",
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         object.add_method_parameter(
             "get_de_jager_wind_efficiency",
             "set_de_jager_wind_efficiency",
             "de_jager_wind_efficiency", 
             "The de Jager mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 3).",
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         object.add_method_parameter(
             "get_dutch_wind_efficiency",
             "set_dutch_wind_efficiency",
             "dutch_wind_efficiency", 
             "The Dutch mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 4).",
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         object.add_boolean_parameter(
             "get_stabilize_new_stellar_model_flag",
@@ -934,37 +934,37 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
         object.add_method(
             "get_mass_fraction_at_zone", 
-            (object.INDEX,units.none,), 
-            (units.none, object.ERROR_CODE,)
+            (object.INDEX,object.NO_UNIT,), 
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "set_mass_fraction_at_zone", 
-            (object.INDEX, units.none, units.none,), 
+            (object.INDEX, object.NO_UNIT, object.NO_UNIT,), 
             (object.ERROR_CODE,)
         )
         object.add_method(
             "get_luminosity_at_zone", 
-            (object.INDEX,units.none,), 
+            (object.INDEX,object.NO_UNIT,), 
             (units.erg/units.s, object.ERROR_CODE,)
         )
         object.add_method(
             "set_luminosity_at_zone", 
-            (object.INDEX, units.none, units.erg/units.s,), 
+            (object.INDEX, object.NO_UNIT, units.erg/units.s,), 
             (object.ERROR_CODE,)
         )
         object.add_method(
             "get_pressure_at_zone", 
-            (object.INDEX, units.none,), 
+            (object.INDEX, object.NO_UNIT,), 
             (units.barye, object.ERROR_CODE,)
         )
         object.add_method(
             "get_id_of_species", 
-            (object.INDEX,units.none,), 
-            (units.none, object.ERROR_CODE,)
+            (object.INDEX,object.NO_UNIT,), 
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "get_mass_of_species", 
-            (object.INDEX,units.none,), 
+            (object.INDEX,object.NO_UNIT,), 
             (units.amu, object.ERROR_CODE,)
         )
         object.add_method(
@@ -976,8 +976,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "new_stellar_model", 
             (units.MSun, units.cm, units.g / units.cm**3, units.K, units.erg / units.s, 
-                units.none, units.none, units.none, units.none, units.none, 
-                units.none, units.none, units.none, units.none,), 
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,), 
             (object.ERROR_CODE,)
         )
         object.add_method(
@@ -1017,13 +1017,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_max_iter_stop_condition", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_max_iter_stop_condition", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
         
@@ -1031,13 +1031,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_mixing_length_ratio", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_mixing_length_ratio", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
         
@@ -1045,13 +1045,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_semi_convection_efficiency", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_semi_convection_efficiency", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
         
@@ -1059,13 +1059,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_RGB_wind_scheme", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_RGB_wind_scheme", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
         
@@ -1073,13 +1073,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_AGB_wind_scheme", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_AGB_wind_scheme", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
         
@@ -1087,13 +1087,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_reimers_wind_efficiency", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_reimers_wind_efficiency", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
         
@@ -1101,13 +1101,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_blocker_wind_efficiency", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_blocker_wind_efficiency", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
         
@@ -1115,13 +1115,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_de_jager_wind_efficiency", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_de_jager_wind_efficiency", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
         
@@ -1129,13 +1129,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_dutch_wind_efficiency", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
     
         object.add_method(
             "set_dutch_wind_efficiency", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
         
@@ -1160,7 +1160,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
     
     def get_cumulative_mass_profile(self, indices_of_the_stars, number_of_zones = None):
         frac_profile = self.get_mass_profile(indices_of_the_stars, number_of_zones = number_of_zones)
-        return VectorQuantity(frac_profile.number.cumsum(), frac_profile.unit)
+        return frac_profile.cumsum()
     
     def set_mass_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting mass profiles")
@@ -1198,8 +1198,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
             number_of_species = self.get_number_of_species(indices_of_the_stars)
         return list(self.get_id_of_species(
             [indices_of_the_stars]*number_of_species, 
-            range(1,number_of_species+1) | units.none
-        ).value_in(units.none))
+            range(1,number_of_species+1) 
+        ))
     
     def get_masses_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance mass numbers")
@@ -1207,7 +1207,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             number_of_species = self.get_number_of_species(indices_of_the_stars)
         return self.get_mass_of_species(
             [indices_of_the_stars]*number_of_species, 
-            range(1,number_of_species+1) | units.none
+            range(1,number_of_species+1)
         )
     
     def new_particle_from_model(self, internal_structure, current_age, key=None):

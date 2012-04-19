@@ -457,11 +457,11 @@ class StellarEvolution(common.CommonCode):
         object.add_method(
             "get_metallicity", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "set_metallicity", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
 
@@ -803,37 +803,37 @@ class InternalStellarStructure(object):
         )
         object.add_method(
             "get_temperature_at_zone", 
-            (object.INDEX,units.none,), 
+            (object.INDEX,object.NO_UNIT,), 
             (units.K, object.ERROR_CODE,)
         )
         object.add_method(
             "set_temperature_at_zone", 
-            (object.INDEX, units.none, units.K,), 
+            (object.INDEX, object.NO_UNIT, units.K,), 
             (object.ERROR_CODE,)
         )
         object.add_method(
             "get_density_at_zone", 
-            (object.INDEX,units.none,), 
+            (object.INDEX,object.NO_UNIT,), 
             (units.g/units.cm**3, object.ERROR_CODE,)
         )
         object.add_method(
             "set_density_at_zone", 
-            (object.INDEX, units.none, units.g/units.cm**3,),
+            (object.INDEX, object.NO_UNIT, units.g/units.cm**3,),
             (object.ERROR_CODE,)
         )
         object.add_method(
             "get_radius_at_zone", 
-            (object.INDEX,units.none,), 
+            (object.INDEX,object.NO_UNIT,), 
             (units.cm, object.ERROR_CODE,)
         )
         object.add_method(
             "set_radius_at_zone", 
-            (object.INDEX, units.none, units.cm,), 
+            (object.INDEX, object.NO_UNIT, units.cm,), 
             (object.ERROR_CODE,)
         )
         object.add_method(
             "get_mu_at_zone", 
-            (object.INDEX, units.none,), 
+            (object.INDEX, object.NO_UNIT,), 
             (units.amu, object.ERROR_CODE,)
         )
         object.add_method(
@@ -843,7 +843,7 @@ class InternalStellarStructure(object):
         )
         object.add_method(
             "get_name_of_species", 
-            (object.INDEX, units.none,), 
+            (object.INDEX, object.NO_UNIT,), 
             (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(

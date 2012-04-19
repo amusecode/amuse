@@ -3,6 +3,7 @@ from amuse.units import generic_unit_system
 from amuse.units import quantities
 from amuse.units.quantities import is_quantity
 from amuse.units.core import unit
+from amuse.units import units
 from amuse.support.options import OptionalAttributes, option
 
 from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition, IncorrectWrappedMethodException
@@ -401,7 +402,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 if self.units[index] == self.NO_UNIT:
                     arg = keyword_arguments[parameter]
                     if is_quantity(arg):
-                        result[parameter] = arg.value_in(unit.none)
+                        result[parameter] = arg.value_in(units.none)
                     else:
                         result[parameter] = arg
                 elif self.units[index] == self.INDEX:
@@ -417,7 +418,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             if self.units[index] == self.NO_UNIT:
                 arg = argument
                 if is_quantity(arg):
-                    result[parameter] = arg.value_in(unit.none)
+                    result[parameter] = arg.value_in(units.none)
                 else:
                     result[parameter] = arg
             elif self.units[index] == self.INDEX:

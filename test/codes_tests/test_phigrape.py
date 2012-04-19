@@ -617,7 +617,7 @@ class TestPhigrape(TestWithMPI):
         instance = PhiGRAPE(**default_test_options)
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2 | units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()

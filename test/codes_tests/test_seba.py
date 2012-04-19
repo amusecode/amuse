@@ -24,7 +24,7 @@ class TestSeBa(TestWithMPI):
         
         instance = self.new_instance_of_an_optional_code(SeBa)
             
-        endtime, mass, radius, luminosity, temperature = instance.evolve_star(1 | units.MSun, 4600 | units.Myr, 0.02 | units.none)
+        endtime, mass, radius, luminosity, temperature = instance.evolve_star(1 | units.MSun, 4600 | units.Myr, 0.02)
         
         self.assertTrue( endtime <= 4600 | units.Myr)
         self.assertAlmostRelativeEqual(mass, 1.0 | units.MSun, 4)
@@ -38,7 +38,7 @@ class TestSeBa(TestWithMPI):
         
         p = Particle()
         p.mass = 5 | units.MSun
-        p.metallicity = 0.02 | units.none
+        p.metallicity = 0.02
         
         p = instance.particles.add_particle(p)
         instance.evolve_model(130 | units.Myr)

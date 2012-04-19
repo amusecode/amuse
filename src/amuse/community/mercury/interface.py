@@ -554,7 +554,7 @@ class MercuryWayWard(GravitationalDynamics):
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                units.none
+                object.NO_UNIT
             ),
             (
                 object.INDEX, 
@@ -578,7 +578,7 @@ class MercuryWayWard(GravitationalDynamics):
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                units.none,
+                object.NO_UNIT,
                 object.ERROR_CODE
             )
         )
@@ -615,7 +615,7 @@ class MercuryWayWard(GravitationalDynamics):
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                units.none
+                object.NO_UNIT
             ),
             (
                 object.ERROR_CODE
@@ -705,7 +705,7 @@ class MercuryWayWard(GravitationalDynamics):
             "set_celimit",
             (
                 object.INDEX,
-                units.none,
+                object.NO_UNIT,
             ),
             (
                 object.ERROR_CODE
@@ -717,7 +717,7 @@ class MercuryWayWard(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                units.none,
+                object.NO_UNIT,
                 object.ERROR_CODE
             )
         )

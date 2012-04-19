@@ -654,7 +654,7 @@ class Hop(InCodeComponentImplementation):
         builder.add_method(
             'get_group_id',
             (builder.INDEX,),
-            (units.none, builder.ERROR_CODE)
+            (builder.NO_UNIT, builder.ERROR_CODE)
         )
         
         builder.add_method(
@@ -726,36 +726,36 @@ class Hop(InCodeComponentImplementation):
         builder.add_method(
             "get_nHop",
             (),
-            (units.none, builder.ERROR_CODE,)
+            (builder.NO_UNIT, builder.ERROR_CODE,)
         )
         
         builder.add_method(
             "set_nHop",
-            (units.none, ),
+            (builder.NO_UNIT, ),
             (builder.ERROR_CODE,)
         )
         
         builder.add_method(
             "get_nDens",
             (),
-            (units.none, builder.ERROR_CODE,)
+            (builder.NO_UNIT, builder.ERROR_CODE,)
         )
         
         builder.add_method(
             "set_nDens",
-            (units.none, ),
+            (builder.NO_UNIT, ),
             (builder.ERROR_CODE,)
         )
         
         builder.add_method(
             "get_nBucket",
             (),
-            (units.none, builder.ERROR_CODE,)
+            (builder.NO_UNIT, builder.ERROR_CODE,)
         )
         
         builder.add_method(
             "set_nBucket",
-            (units.none, ),
+            (builder.NO_UNIT, ),
             (builder.ERROR_CODE,)
         )
         
@@ -773,7 +773,7 @@ class Hop(InCodeComponentImplementation):
             "set_nHop",
             "number_of_hops", 
             "number of particles to search to determin to look for density maximum", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
 
         object.add_method_parameter(
@@ -781,7 +781,7 @@ class Hop(InCodeComponentImplementation):
             "set_density_method",
             "density_method", 
             "method used for density computation (0,1,2 = gather-scatter spline, gather spline, tophat)", 
-            default_value = 0 | units.none
+            default_value = 0
         )
 
 
@@ -790,7 +790,7 @@ class Hop(InCodeComponentImplementation):
             "set_nDens",
             "number_of_neighbors_for_local_density", 
             "Return the number of particles to smooth over when calculating densities.", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         
         object.add_method_parameter(
@@ -798,7 +798,7 @@ class Hop(InCodeComponentImplementation):
             "set_nBucket",
             "number_of_buckets", 
             "Return the bucket parameter to tune the performance of the kd-tree search.", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
   
     def define_particle_sets(self, builder):
@@ -815,7 +815,7 @@ class Hop(InCodeComponentImplementation):
 
     def groups(self):
         number_of_groups = self.get_number_of_groups()
-        group_id = self.particles.group_id.value_in(units.none)
+        group_id = self.particles.group_id
         
         for index in range(number_of_groups):
             result = self.particles[group_id == index]

@@ -197,11 +197,11 @@ class TestSimpleX(TestWithMPI):
 #        instance.particles.du_dt=particles.du_dt
 #        instance.commit_particles()
         instance.particles.du_dt=particles.du_dt
-        self.assertAlmostEqual(instance.particles.xion.mean(), 0.0 | units.none)
+        self.assertAlmostEqual(instance.particles.xion.mean(), 0.0)
         self.assertAlmostEqual(instance.particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
         instance.evolve_model(0.5 | units.Myr)
         self.assertAlmostEqual(instance.particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
-        self.assertAlmostEqual(instance.particles.xion.mean(), 0.000845247683257 | units.none)
+        self.assertAlmostEqual(instance.particles.xion.mean(), 0.000845247683257)
         instance.cleanup_code()
         instance.stop()
 
@@ -211,13 +211,13 @@ class TestSimpleX(TestWithMPI):
 
         default=dict( timestep= 0.05| units.Myr, 
                   source_effective_T=  1.e5 | units.K,
-                  hilbert_order= 1 | units.none,
-                  number_of_freq_bins= 1 | units.none,
-                  thermal_evolution_flag = 0 | units.none,
-                  blackbody_spectrum_flag = 0 | units.none,
+                  hilbert_order= 1,
+                  number_of_freq_bins= 1,
+                  thermal_evolution_flag = 0,
+                  blackbody_spectrum_flag = 0,
                   box_size=13200 | units.parsec,
-                  metal_cooling_flag=0 | units.none,
-                  collisional_ionization_flag=0 | units.none)
+                  metal_cooling_flag=0,
+                  collisional_ionization_flag=0)
         for x in default:
             self.assertEqual(getattr(instance.parameters,x), default[x])
         instance.commit_parameters()
@@ -235,13 +235,13 @@ class TestSimpleX(TestWithMPI):
         instance = SimpleX(**default_options)
         param=dict( timestep= 0.1| units.Myr, 
                   source_effective_T=  2.e5 | units.K,
-                  hilbert_order= 3 | units.none,
-                  number_of_freq_bins= 4 | units.none,
-                  thermal_evolution_flag = 1 | units.none,
-                  blackbody_spectrum_flag = 1 | units.none,
+                  hilbert_order= 3,
+                  number_of_freq_bins= 4,
+                  thermal_evolution_flag = 1,
+                  blackbody_spectrum_flag = 1,
                   box_size=32100 | units.parsec,
-                  metal_cooling_flag=1 | units.none,
-                  collisional_ionization_flag=1 | units.none)
+                  metal_cooling_flag=1,
+                  collisional_ionization_flag=1)
         for x in param:
             setattr(instance.parameters,x, param[x])
         for x in param:

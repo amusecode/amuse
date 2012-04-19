@@ -540,10 +540,10 @@ class TestEVtwin(TestWithMPI):
         self.assertEquals(len(composition),    number_of_species)
         self.assertEquals(len(composition[0]), number_of_zones)
         self.assertEquals(species_names, ['h1', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24', 'si28', 'fe56'])
-        self.assertAlmostEquals(composition[0, -1],        0.7 | units.none, 4)
+        self.assertAlmostEquals(composition[0, -1],        0.7, 4)
         self.assertAlmostEquals(composition[1, -1],        0.3 - instance.parameters.metallicity, 4)
         self.assertAlmostEquals(composition[2:,-1].sum(),  instance.parameters.metallicity, 4)
-        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
+        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones)
         instance.stop()
         del instance
     

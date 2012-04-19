@@ -231,7 +231,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_eta1",
             "timestep_parameter",
             "timestep parameter",
-            default_value = 0.02 |  units.none
+            default_value = 0.02
         )
 
         object.add_method_parameter(
@@ -239,7 +239,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_eta_s",
             "initial_timestep_parameter",
             "parameter to determine the initial timestep",
-            default_value = 0.01 |  units.none
+            default_value = 0.01
         )
         
         object.add_method_parameter(
@@ -247,7 +247,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_initialize_once",
             "initialize_gpu_once",
             "set to 1 if the gpu must only be initialized once, 0 if it can be initialized for every call\nIf you want to run multiple instances of the code on the same gpu this parameter needs to be 0 (default)",
-            default_value = 0 |  units.none
+            default_value = 0
         )
 
         self.stopping_conditions.define_parameters(object)
@@ -282,36 +282,36 @@ class PhiGRAPE(GravitationalDynamics):
         object.add_method(
             "get_eta",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
 
         object.add_method(
             "set_eta1",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 
         object.add_method(
             "get_eta_s",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
 
         object.add_method(
             "set_eta_s",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 
         object.add_method(
             "get_initialize_once",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
 
         object.add_method(
             "set_initialize_once",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 

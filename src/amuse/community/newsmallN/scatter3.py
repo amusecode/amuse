@@ -44,10 +44,10 @@ def cross(a, b):
 
 def set_inner_orbit(kep, init):
     semi = 1.0|nbody_system.length
-    ecc = init.eccentricity|units.none
+    ecc = init.eccentricity
     kep.set_longitudinal_unit_vector(one, zero, zero)
     kep.set_normal_unit_vector(zero, zero, one)
-    mean_an = 2*math.pi*numpy.random.random()|units.none
+    mean_an = 2*math.pi*numpy.random.random()
     kep.initialize_from_elements(1.0|nbody_system.mass, semi, ecc, mean_an)
 
 def set_outer_orbit(kep, init):
@@ -63,11 +63,11 @@ def set_outer_orbit(kep, init):
     if energy3 > 0:
         semi = 0.5*mtotal/energy3|nbody_system.length
         ang_mom3 = init.impact_parameter * v_inf
-        ecc = math.sqrt( 1 + 2 * energy3 * (ang_mom3/mtotal)**2)|units.none
+        ecc = math.sqrt( 1 + 2 * energy3 * (ang_mom3/mtotal)**2)
         periastron = 0|nbody_system.length	# irrelevant
     else:
         semi = 0|nbody_system.length		# irrelevant
-        ecc = 1|units.none
+        ecc = 1
         periastron = init.impact_parameter|nbody_system.length
 
     # Orientation:
@@ -83,9 +83,9 @@ def set_outer_orbit(kep, init):
         sintheta = math.sqrt(max(0, 1-costheta**2))
         phi = 2*math.pi*numpy.random.random()
         long = [sintheta*math.cos(phi), sintheta*math.sin(phi), costheta]
-        kep.set_longitudinal_unit_vector(long[0]|units.none,
-                                         long[1]|units.none,
-                                         long[2]|units.none)
+        kep.set_longitudinal_unit_vector(long[0],
+                                         long[1],
+                                         long[2])
         if abs(long[0]) < 0.5:
             temp = [1, 0, 0]
         else:
@@ -98,11 +98,11 @@ def set_outer_orbit(kep, init):
         normal = [cospsi*trans[0]+sinpsi*normal[0],
                   cospsi*trans[1]+sinpsi*normal[1],
                   cospsi*trans[2]+sinpsi*normal[2]]
-        kep.set_normal_unit_vector(normal[0]|units.none,
-                                   normal[1]|units.none,
-                                   normal[2]|units.none)
+        kep.set_normal_unit_vector(normal[0],
+                                   normal[1],
+                                   normal[2])
 
-    mean_anomaly = 0|units.none		# periastron
+    mean_anomaly = 0		# periastron
     time = 0.0|nbody_system.time
     kep.initialize_from_elements(mtotal|nbody_system.mass, semi, ecc,
                                  mean_anomaly, time, periastron)
@@ -149,7 +149,7 @@ def make_triple(init):
 
     # Create the 3-body system.
 
-    id = [1, 2, 3] | units.none
+    id = [1, 2, 3]
     mass = [1-init.m, init.m, init.M] | nbody_system.mass
     pos = [pos1, pos2, pos3]
     vel = [vel1, vel2, vel3]
@@ -178,7 +178,7 @@ def get_binary_elements(p):
     return m,a,e
 
 def scatter3(init,
-             accuracy_parameter = 0.1 | units.none,
+             accuracy_parameter = 0.1,
              delta_t = 10 | nbody_system.time,
              t_end = 1.e4 | nbody_system.time):
 
@@ -218,7 +218,7 @@ def scatter3(init,
         energy = gravity.get_kinetic_energy()+gravity.get_potential_energy()
         print "time =", time.number, "energy =", energy.number
         over = gravity.is_over()
-        if time > t_crit and over.number:
+        if time > t_crit and over:
             print '\ninteraction is over'
             gravity.update_particle_tree()
             gravity.update_particle_set()
@@ -230,24 +230,24 @@ def scatter3(init,
             roots = list(x.iter_roots())
             for r in roots:
                 for level, particle in r.iter_levels():
-                    print '  '*level, int(particle.id.number),
+                    print '  '*level, int(particle.id),
                     if not particle.child1 is None:
                         M,a,e = get_binary_elements(particle)
                         print ' ( M =', M.number, ' a =', a.number, \
-                              ' e =', e.number, ')'
+                              ' e =', e, ')'
                     else:
                         print ''
             break
     
         sys.stdout.flush()
 
-    if not over.number:
+    if not over:
         print '\ninteraction is not over'
     gravity.stop()
 
 if __name__ == '__main__':
 
-    accuracy_parameter = 0.1 | units.none
+    accuracy_parameter = 0.1
     delta_t = 10.0 | nbody_system.time
     t_end = 1.e4 | nbody_system.time
     init = Initial_state();
@@ -263,7 +263,7 @@ if __name__ == '__main__':
 
     for o, a in opts:
         if o == "-A":
-            accuracy_parameter = float(a) | units.none
+            accuracy_parameter = float(a)
         elif o == "-d":
             delta_t = float(a) | nbody_system.time 
         elif o == "-e":

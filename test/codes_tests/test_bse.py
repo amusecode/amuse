@@ -220,7 +220,7 @@ class TestBSE(TestWithMPI):
         binary.mass1 = 3.0 | units.MSun
         binary.mass2 = 0.3 | units.MSun
         binary.orbital_period = 200.0 | units.day
-        binary.eccentricity = 0.5 | units.none
+        binary.eccentricity = 0.5
         
         instance.particles.add_particles(stars)
         from_bse_to_model = instance.particles.new_channel_to(stars)
@@ -291,7 +291,7 @@ class TestBSE(TestWithMPI):
         binary.mass1 = 3.0 | units.MSun
         binary.mass2 = 0.3 | units.MSun
         binary.orbital_period = 2.0e5 | units.day
-        binary.eccentricity = 0.0 | units.none
+        binary.eccentricity = 0.0
 
         instance.particles.add_particles(stars)
         from_bse_to_model = instance.particles.new_channel_to(stars)
@@ -362,7 +362,7 @@ class TestBSE(TestWithMPI):
         binary.mass1 = 7.816 | units.MSun
         binary.mass2 = 4.387 | units.MSun
         binary.orbital_period = 1964.18453 | units.day
-        binary.eccentricity = 0.0 | units.none
+        binary.eccentricity = 0.0
 
         instance.particles.add_particles(stars)
         from_bse_to_model = instance.particles.new_channel_to(stars)
@@ -440,7 +440,7 @@ class TestBSE(TestWithMPI):
         binary.mass1 = 7.816 | units.MSun
         binary.mass2 = 4.387 | units.MSun
         binary.orbital_period = 1964.18453 | units.day
-        binary.eccentricity = 0.0 | units.none
+        binary.eccentricity = 0.0
 
         instance.particles.add_particles(stars)
         from_bse_to_model = instance.particles.new_channel_to(stars)
@@ -468,7 +468,7 @@ class TestBSE(TestWithMPI):
         binary.mass1 = 3.0 | units.MSun
         binary.mass2 = 0.3 | units.MSun
         binary.orbital_period = 200.0 | units.day
-        binary.eccentricity = 0.99 | units.none
+        binary.eccentricity = 0.99
 
         instance.particles.add_particles(stars)
         from_bse_to_model = instance.particles.new_channel_to(stars)
@@ -489,8 +489,8 @@ class TestBSE(TestWithMPI):
         print "Testing additional parameters for initialization..."
         instance = BSE()
         instance.initialize_code()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        myvalue = 0.7 | units.none
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
+        myvalue = 0.7
         instance.parameters.reimers_mass_loss_coefficient = myvalue
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
         instance.commit_parameters()
@@ -498,12 +498,12 @@ class TestBSE(TestWithMPI):
         instance.stop()
         
         instance = BSE()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        myvalue = 0.7 | units.none
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
+        myvalue = 0.7
         instance.parameters.reimers_mass_loss_coefficient = myvalue
         instance.parameters.set_defaults()
         instance.commit_parameters()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
         instance.stop()
     
     def test7(self):
@@ -512,7 +512,7 @@ class TestBSE(TestWithMPI):
         binaries.mass1 = [1.0, 2.0, 3.0] | units.MSun
         binaries.mass2 = [0.1, 0.2, 0.3] | units.MSun
         binaries.orbital_period = 200.0 | units.day
-        binaries.eccentricity = 0.0 | units.none
+        binaries.eccentricity = 0.0
         
         instance = BSE()
         instance.commit_parameters()
@@ -547,7 +547,7 @@ class TestBSE(TestWithMPI):
         binaries.mass1 = 1.0 | units.MSun
         binaries.mass2 = 0.2 | units.MSun
         binaries.orbital_period = 200.0 | units.day
-        binaries.eccentricity = 0.0 | units.none
+        binaries.eccentricity = 0.0
         
         instance = BSE()
         instance.initialize_code()
@@ -582,7 +582,7 @@ class TestBSE(TestWithMPI):
         binaries.mass1 = 1.0 | units.MSun
         binaries.mass2 = 0.2 | units.MSun
         binaries.orbital_period = 200.0 | units.day
-        binaries.eccentricity = 0.0 | units.none
+        binaries.eccentricity = 0.0
         
         print "First do everything manually:",
         instance = BSE()

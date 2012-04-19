@@ -253,7 +253,7 @@ class Multiples(object):
             #print 'evolving to time', time
             resolve_collision_code.evolve_model(time)
             energy = self.get_total_energy(resolve_collision_code)
-            over = resolve_collision_code.is_over().value_in(units.none)
+            over = resolve_collision_code.is_over()
             if over:
                 #print 'interaction is over at:', time
                 

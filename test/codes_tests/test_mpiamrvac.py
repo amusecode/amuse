@@ -245,7 +245,7 @@ class TestMpiAmrVac(TestWithMPI):
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
         self.assertEquals(error, 0)
-        instance.setup_mesh(20 | units.none,20 | units.none,20 | units.none, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length)
+        instance.setup_mesh(20,20,20, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length)
         error = instance.set_boundary("periodic", "periodic", "periodic", "periodic", "periodic", "periodic")
         error = instance.commit_parameters()
         

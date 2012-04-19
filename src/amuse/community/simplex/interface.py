@@ -544,7 +544,7 @@ class SimpleX(CommonCode):
             "set_hilbert_order", 
             "hilbert_order", 
             "hilbert_order for domain decomposition", 
-            default_value = 1 | units.none
+            default_value = 1
         )
 
         object.add_method_parameter(
@@ -552,7 +552,7 @@ class SimpleX(CommonCode):
             "set_number_frequency_bins", 
             "number_of_freq_bins", 
             "the number of bins of frequency", 
-            default_value = 1 | units.none
+            default_value = 1
         )
 
         object.add_method_parameter(
@@ -560,7 +560,7 @@ class SimpleX(CommonCode):
             "set_thermal_evolution", 
             "thermal_evolution_flag", 
             "solve full thermal evolution if 1", 
-            default_value = 0 | units.none
+            default_value = 0
         )
 
         object.add_method_parameter(
@@ -568,7 +568,7 @@ class SimpleX(CommonCode):
             "set_metal_cooling", 
             "metal_cooling_flag", 
             "include cooling from metals if 1, not if zero", 
-            default_value = 0 | units.none
+            default_value = 0
         )
 
 
@@ -578,7 +578,7 @@ class SimpleX(CommonCode):
             "set_blackbody_spectrum", 
             "blackbody_spectrum_flag", 
             "monochromatic if 1, blackbody_spectrum if 1", 
-            default_value = 0 | units.none
+            default_value = 0
         )
 
         object.add_method_parameter(
@@ -586,7 +586,7 @@ class SimpleX(CommonCode):
             "set_collisional_ionization", 
             "collisional_ionization_flag", 
             "not use collisional ionization if 0, do if 1", 
-            default_value = 0 | units.none
+            default_value = 0
         )
 
         object.add_method_parameter(
@@ -609,7 +609,7 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
-                units.none,
+                object.NO_UNIT,
                 units.cm**2 / units.s**2
                 ),
             (
@@ -638,7 +638,7 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
-                units.none,
+                object.NO_UNIT,
                 units.cm**2 / units.s**2,
                 object.ERROR_CODE
                 )
@@ -652,7 +652,7 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
-                units.none,
+                object.NO_UNIT,
                 units.cm**2 / units.s**2,
                 ),
             (
@@ -767,7 +767,7 @@ class SimpleX(CommonCode):
             "set_ionisation",
             (
                 object.NO_UNIT,
-                units.none
+                object.NO_UNIT
             ),
             (
                 object.ERROR_CODE
@@ -779,7 +779,7 @@ class SimpleX(CommonCode):
                 object.NO_UNIT,
             ),
             (
-                units.none,
+                object.NO_UNIT,
                 object.ERROR_CODE
             )
         )
@@ -822,49 +822,49 @@ class SimpleX(CommonCode):
         object.add_method(
             "get_hilbert_order",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_hilbert_order",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_blackbody_spectrum",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 
         object.add_method(
             "get_blackbody_spectrum",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
 
 
         object.add_method(
             "get_thermal_evolution",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_thermal_evolution",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 
         object.add_method(
             "get_collisional_ionization",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_collisional_ionization",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 
@@ -873,12 +873,12 @@ class SimpleX(CommonCode):
         object.add_method(
             "get_number_frequency_bins",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_number_frequency_bins",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 
@@ -886,12 +886,12 @@ class SimpleX(CommonCode):
         object.add_method(
             "get_metal_cooling",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_metal_cooling",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 

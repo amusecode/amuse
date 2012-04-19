@@ -411,11 +411,11 @@ class _TestHacs64(TestWithMPI):
             self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         
         value = instance.get_dt_param()
-        self.assertEquals(0.03 | units.none, value)
-        self.assertAlmostEquals(0.03 | units.none, instance.parameters.dt_param, in_units=units.none)
+        self.assertEquals(0.03, value)
+        self.assertAlmostEquals(0.03, instance.parameters.dt_param, in_units=units.none)
         for x in [0.001, 0.01, 0.1]:
             instance.parameters.dt_param = x
-            self.assertAlmostEquals(x | units.none, instance.parameters.dt_param, in_units=units.none)
+            self.assertAlmostEquals(x, instance.parameters.dt_param, in_units=units.none)
         
         value = instance.get_dt_dia()
         self.assertAlmostEquals(1.0 | units.yr, value)
@@ -558,7 +558,7 @@ class _TestHacs64(TestWithMPI):
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.parameters.stopping_conditions_number_of_steps = 10
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,10|units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,10)
     
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
@@ -587,7 +587,7 @@ class _TestHacs64(TestWithMPI):
         instance = Hermite()
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2|units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()
         instance.evolve_model(10 | nbody_system.time)

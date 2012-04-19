@@ -414,8 +414,8 @@ class TestSSE(TestWithMPI):
     
     def test8(self):
         instance = SSE()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        myvalue = 0.7 | units.none
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
+        myvalue = 0.7
         instance.parameters.reimers_mass_loss_coefficient = myvalue
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
         instance.commit_parameters()
@@ -423,12 +423,12 @@ class TestSSE(TestWithMPI):
         instance.stop()
         
         instance = SSE()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        myvalue = 0.7 | units.none
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
+        myvalue = 0.7
         instance.parameters.reimers_mass_loss_coefficient = myvalue
         instance.parameters.set_defaults()
         instance.commit_parameters()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
         instance.stop()
         
     def test9(self):

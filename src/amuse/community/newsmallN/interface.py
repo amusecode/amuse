@@ -290,7 +290,7 @@ class SmallN(GravitationalDynamics):
             "set_eta",                   # setter name in interface.cc
             "timestep_parameter",        # python parameter name
             "timestep parameter",        # description
-            default_value = 0.14 | units.none
+            default_value = 0.14
         )
         
         object.add_method_parameter(
@@ -298,7 +298,7 @@ class SmallN(GravitationalDynamics):
             "set_gamma",                 # setter name in interface.cc
             "unperturbed_threshold",     # python parameter name
             "unperturbed threshold",     # description
-            default_value = 1.e-6 | units.none
+            default_value = 1.e-6
         )
         
         object.add_method_parameter(
@@ -306,7 +306,7 @@ class SmallN(GravitationalDynamics):
             "set_allow_full_unperturbed",  # setter name in interface.cc
             "allow_full_unperturbed",      # python parameter name
             "full unperturbed motion",     # description
-            default_value = 1 | units.none
+            default_value = 1
         )
         
         object.add_method_parameter(
@@ -314,7 +314,7 @@ class SmallN(GravitationalDynamics):
             "set_cm_index",		   # setter name in interface.cc
             "cm_index",			   # python parameter name
             "current CM index",	           # description
-            default_value = -1 | units.none
+            default_value = -1
         )
         
     def define_particle_sets(self, object):
@@ -336,7 +336,7 @@ class SmallN(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.length,
-                units.none
+                object.NO_UNIT
             ),
             (
                 object.INDEX,
@@ -346,24 +346,24 @@ class SmallN(GravitationalDynamics):
 
         object.add_method("set_time", (nbody_system.time), (object.ERROR_CODE))
 
-        object.add_method("get_eta", (), (units.none, object.ERROR_CODE))
-        object.add_method("set_eta", (units.none), (object.ERROR_CODE))
-        object.add_method("get_gamma", (), (units.none, object.ERROR_CODE))
-        object.add_method("set_gamma", (units.none), (object.ERROR_CODE))
+        object.add_method("get_eta", (), (object.NO_UNIT, object.ERROR_CODE))
+        object.add_method("set_eta", (object.NO_UNIT), (object.ERROR_CODE))
+        object.add_method("get_gamma", (), (object.NO_UNIT, object.ERROR_CODE))
+        object.add_method("set_gamma", (object.NO_UNIT), (object.ERROR_CODE))
         object.add_method("get_allow_full_unperturbed",
-                          (), (units.none, object.ERROR_CODE))
+                          (), (object.NO_UNIT, object.ERROR_CODE))
         object.add_method("set_allow_full_unperturbed",
-                          (units.none), (object.ERROR_CODE))
+                          (object.NO_UNIT), (object.ERROR_CODE))
         object.add_method("get_cm_index",
-                          (), (units.none, object.ERROR_CODE))
+                          (), (object.NO_UNIT, object.ERROR_CODE))
         object.add_method("set_cm_index",
-                          (units.none), (object.ERROR_CODE))
+                          (object.NO_UNIT), (object.ERROR_CODE))
 
         object.add_method("set_break_scale",
                           (nbody_system.length), (object.ERROR_CODE))
         object.add_method("set_structure_check_interval",
                           (nbody_system.time), (object.ERROR_CODE))
-        object.add_method("is_over", (), (units.none, object.ERROR_CODE))
+        object.add_method("is_over", (), (object.NO_UNIT, object.ERROR_CODE))
 
         object.add_method("get_children_of_particle", (object.INDEX),
                           (object.INDEX, object.INDEX, object.ERROR_CODE))

@@ -355,7 +355,7 @@ class Capreole(InCodeComponentImplementation):
         
         object.add_method(
             'setup_mesh',
-            (units.none, units.none, units.none, length, length, length,),
+            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, length, length, length,),
             (object.ERROR_CODE,)
         )
         object.add_method(
@@ -398,7 +398,7 @@ class Capreole(InCodeComponentImplementation):
             "nmeshx",
             "nx", 
             "number of cells in the x direction",
-            10 | units.none,
+            10,
         )
         
         
@@ -407,7 +407,7 @@ class Capreole(InCodeComponentImplementation):
             "nmeshy",
             "ny", 
             "number of cells in the y direction",
-            10 | units.none,
+            10,
         )
         
         
@@ -416,7 +416,7 @@ class Capreole(InCodeComponentImplementation):
             "nmeshz",
             "nz", 
             "number of cells in the z direction",
-            10 | units.none,
+            10,
         )
         
         object.add_caching_parameter(

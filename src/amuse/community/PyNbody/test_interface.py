@@ -173,16 +173,16 @@ class TestPyNbody(TestWithMPI):
 
         self.assertEquals(instance.parameters.epsilon_squared,
             instance.unit_converter.to_si(0.0 | nbody_system.length**2))
-        self.assertEquals(instance.parameters.timestep_parameter, 0.1 | units.none)
+        self.assertEquals(instance.parameters.timestep_parameter, 0.1)
 
         for par, value in [('epsilon_squared_star_star', 0.0 | nbody_system.length**2),
                 ('epsilon_squared_star_blackhole', 0.0 | nbody_system.length**2),
                 ('epsilon_squared_blackhole_blackhole', 0.0 | nbody_system.length**2),
-                ('initial_timestep_parameter', 1.0e-4 | units.none),
-                ('timestep_parameter_stars', 0.1 | units.none),
-                ('timestep_parameter_supermassive_black_holes', 0.4 | units.none),
-                ('timestep_parameter_intermediate_mass_black_holes', 0.4 | units.none),
-                ('max_relative_energy_error', 5.0e-5 | units.none),
+                ('initial_timestep_parameter', 1.0e-4),
+                ('timestep_parameter_stars', 0.1),
+                ('timestep_parameter_supermassive_black_holes', 0.4),
+                ('timestep_parameter_intermediate_mass_black_holes', 0.4),
+                ('max_relative_energy_error', 5.0e-5),
                 ('maximum_timestep', 1.0/1024.0 | nbody_system.time),
                 ('smbh_mass', 1.0 | nbody_system.mass)]:
             self.assertEquals(instance.unit_converter.to_si(value),
@@ -198,9 +198,9 @@ class TestPyNbody(TestWithMPI):
         self.assertEquals(instance.parameters.epsilon_squared,
             instance.unit_converter.to_si(0.1 | nbody_system.length**2))
         # timestep_parameter is an alias for timestep_parameter_stars, so timestep_parameter also has become 3:
-        self.assertEquals(instance.parameters.timestep_parameter, 3.0 | units.none)
+        self.assertEquals(instance.parameters.timestep_parameter, 3.0)
         instance.parameters.timestep_parameter = 0.01
-        self.assertEquals(instance.parameters.timestep_parameter, 0.01 | units.none)
+        self.assertEquals(instance.parameters.timestep_parameter, 0.01)
 
         self.assertEquals(instance.parameters.include_smbh, False)
         instance.parameters.include_smbh = True

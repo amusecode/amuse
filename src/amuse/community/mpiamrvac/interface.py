@@ -2264,12 +2264,12 @@ class MpiAmrVac(InCodeComponentImplementation):
         object.add_method(
             "get_gamma",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_gamma",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2324,24 +2324,24 @@ class MpiAmrVac(InCodeComponentImplementation):
         object.add_method(
             "get_courantpar",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_courantpar",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_mxnest",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_mxnest",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2353,7 +2353,7 @@ class MpiAmrVac(InCodeComponentImplementation):
         
         object.add_method(
             'setup_mesh',
-            (units.none, units.none, units.none,  generic_unit_system.length,  generic_unit_system.length,  generic_unit_system.length, ),
+            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,  generic_unit_system.length,  generic_unit_system.length,  generic_unit_system.length, ),
             (object.ERROR_CODE,)
         )
         object.add_method(
@@ -2370,7 +2370,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_gamma",
             "gamma", 
             "ratio of specific heats used in equation of state", 
-            default_value = 1.6666666666666667 | units.none
+            default_value = 1.6666666666666667
         )
         
         object.add_method_parameter(
@@ -2407,7 +2407,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_courantpar",
             "courant_number", 
             "CFL number", 
-            default_value = 0.7 | units.none
+            default_value = 0.7
         )
         
         
@@ -2416,7 +2416,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "nmeshx",
             "nx", 
             "number of cells in the x direction", 
-            10 | units.none,
+            10,
         )
         
         
@@ -2425,7 +2425,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "nmeshy",
             "ny", 
             "number of cells in the y direction", 
-            10 | units.none,
+            10,
         )
         
         
@@ -2434,7 +2434,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "nmeshz",
             "nz", 
             "number of cells in the z direction", 
-            10 | units.none,
+            10,
         )
         
         object.add_caching_parameter(
@@ -2551,7 +2551,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_mxnest",
             "maximum_number_of_grid_levels", 
             "the maximum number of grid levels that can be used during the simulation, including the base grid level", 
-            default_value = 3 | units.none
+            default_value = 3
         )
         
         

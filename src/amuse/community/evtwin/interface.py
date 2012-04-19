@@ -718,7 +718,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_maximum_number_of_stars",
             "maximum_number_of_stars", 
             "Maximum number of stars that can be allocated", 
-            default_value = 10 | units.none
+            default_value = 10
         )
         
         object.add_method_parameter(
@@ -726,7 +726,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_metallicity",
             "metallicity", 
             "Metallicity of all stats", 
-            default_value = 0.02 | units.none
+            default_value = 0.02
         )
         
         object.add_method_parameter(
@@ -758,7 +758,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_number_of_ionization_elements",
             "number_of_ionization_elements", 
             "The number of elements used for ionization in EoS solver of this instance.",
-            default_value = 2 | units.none
+            default_value = 2
         )
         
         object.add_method_parameter(
@@ -766,7 +766,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_convective_overshoot_parameter",
             "convective_overshoot_parameter", 
             "The convective overshoot parameter.",
-            default_value = 0.12 | units.none
+            default_value = 0.12
         )
         
         object.add_method_parameter(
@@ -774,7 +774,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_mixing_length_ratio",
             "mixing_length_ratio", 
             "The mixing-length ratio (alpha).",
-            default_value = 2.0 | units.none
+            default_value = 2.0
         )
         
         object.add_method_parameter(
@@ -782,7 +782,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_semi_convection_efficiency",
             "semi_convection_efficiency", 
             "The efficiency of semi-convection, after Langer, Sugimoto & Fricke 1983 (A&A).",
-            default_value = 0.04 | units.none
+            default_value = 0.04
         )
         
         object.add_method_parameter(
@@ -790,7 +790,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_thermohaline_mixing_parameter",
             "thermohaline_mixing_parameter", 
             "The thermohaline mixing parameter, probably only important for binaries and collision remnants.",
-            default_value = 1.0 | units.none
+            default_value = 1.0
         )
         
         object.add_method_parameter(
@@ -798,7 +798,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_AGB_wind_setting",
             "AGB_wind_setting", 
             "The AGB wind setting: (1, 2) for (Wachter&al, Vasiliadis&Wood) mass loss.",
-            default_value = 1 | units.none
+            default_value = 1
         )
         
         object.add_method_parameter(
@@ -806,7 +806,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_RGB_wind_setting",
             "RGB_wind_setting", 
             "The RGB wind setting: (positive, negative, 0) for (Schroeder&Cuntz, Reimers, none) mass loss.",
-            default_value = 1.0 | units.none
+            default_value = 1.0
         )
         
         
@@ -886,8 +886,8 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "new_stellar_model", 
             (units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
-                units.none, units.none, units.none, units.none, units.none, 
-                units.none, units.none, units.none, units.none,), 
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,), 
             (object.ERROR_CODE,)
         )
         object.add_method(
@@ -899,20 +899,20 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "get_stellar_model_element", 
             (object.INDEX, object.INDEX,),
             (units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
-                units.none, units.K, units.LSun, units.amu,
-                units.none, units.none, units.none, units.none, units.none, 
-                units.none, units.none, units.none, units.none, object.ERROR_CODE)
+                object.NO_UNIT, units.K, units.LSun, units.amu,
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE)
         )
     
         object.add_method(
             "get_maximum_number_of_stars", 
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_maximum_number_of_stars", 
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
@@ -949,84 +949,84 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         object.add_method(
             "get_number_of_ionization_elements", 
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_number_of_ionization_elements", 
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
         object.add_method(
             "get_convective_overshoot_parameter", 
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_convective_overshoot_parameter", 
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
         object.add_method(
             "get_mixing_length_ratio", 
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_mixing_length_ratio", 
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
         object.add_method(
             "get_semi_convection_efficiency", 
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_semi_convection_efficiency", 
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
         object.add_method(
             "get_thermohaline_mixing_parameter", 
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_thermohaline_mixing_parameter", 
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
         object.add_method(
             "get_AGB_wind_setting", 
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_AGB_wind_setting", 
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
         object.add_method(
             "get_RGB_wind_setting", 
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_RGB_wind_setting", 
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     

@@ -304,7 +304,7 @@ class SSE(common.CommonCode):
                 units.RSun, 
                 units.MSun, 
                 units.RSun, 
-                units.none,
+                object.NO_UNIT,
                 units.Myr,
                 units.Myr,
                 units.Myr,
@@ -320,7 +320,7 @@ class SSE(common.CommonCode):
                 units.RSun, 
                 units.MSun, 
                 units.RSun,
-                units.none, 
+                object.NO_UNIT, 
                 units.Myr,
                 units.Myr,
                 units.Myr,
@@ -331,19 +331,19 @@ class SSE(common.CommonCode):
         object.add_method(
             "initialize",
             (
-                units.none,
-                units.none, 
-                units.none, 
-                units.none, 
+                object.NO_UNIT,
+                object.NO_UNIT, 
+                object.NO_UNIT, 
+                object.NO_UNIT, 
                 units.km / units.s,
-                units.none, 
-                units.none, 
-                units.none, 
-                units.none, 
+                object.NO_UNIT, 
+                object.NO_UNIT, 
+                object.NO_UNIT, 
+                object.NO_UNIT, 
                 units.MSun,
-                units.none, 
-                units.none, 
-                units.none
+                object.NO_UNIT, 
+                object.NO_UNIT, 
+                object.NO_UNIT
             )
         )
          

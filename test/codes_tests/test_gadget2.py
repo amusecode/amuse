@@ -395,7 +395,7 @@ class TestGadget2(TestWithMPI):
         instance.parameters.opening_angle = 0.4
         instance.commit_parameters()
         self.assertAlmostEquals(instance.parameters.epsilon_squared, 0.01 | units.kpc**2)
-        self.assertAlmostEquals(instance.parameters.opening_angle, 0.4 | units.none)
+        self.assertAlmostEquals(instance.parameters.opening_angle, 0.4)
         self.assertAlmostRelativeEquals(instance.parameters.code_mass_unit, 1.989e43 | units.g, 7)
         self.assertAlmostRelativeEquals(instance.parameters.code_time_unit, 3.085678e16 | units.s, 7)
         instance.stop()
@@ -484,9 +484,9 @@ class TestGadget2(TestWithMPI):
                 ('courant',0.3), ('type_of_timestep_criterion',0), ('omega_zero',0.0),
                 ('omega_lambda',0.0), ('omega_baryon',0.0), ('min_gas_hsmooth_fractional',0.0),
                 ('timestep_accuracy_parameter',0.025), ('tree_domain_update_frequency',0.05)]:
-            self.assertEquals(value | units.none, getattr(instance.parameters, par))
-            setattr(instance.parameters, par, 1 | units.none)
-            self.assertEquals(1 | units.none, getattr(instance.parameters, par))
+            self.assertEquals(value, getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 1)
+            self.assertEquals(1, getattr(instance.parameters, par))
         
         for par, value in [('gas_epsilon', 0.01 | generic_unit_system.length), 
                 ('time_begin', 0.0 | generic_unit_system.time), 
@@ -527,7 +527,7 @@ class TestGadget2(TestWithMPI):
                             ('code_length_unit',   self.default_converter.to_si(generic_unit_system.length)),
                             ('code_time_unit',     self.default_converter.to_si(generic_unit_system.time)),
                             ('code_velocity_unit', self.default_converter.to_si(generic_unit_system.speed)),
-                            ('polytropic_index_gamma', (1.0 if testing_isotherm_no_gravity else 5.0/3) | units.none)]:
+                            ('polytropic_index_gamma', (1.0 if testing_isotherm_no_gravity else 5.0/3))]:
             self.assertEquals(value, getattr(instance.parameters, par))
             self.assertRaises(AmuseException, try_set_parameter, par, value, instance,
                 expected_message = "Could not set value for parameter '"+par+"' of a 'Gadget2' object, "
@@ -623,7 +623,7 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **few_particles_default_options)
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2 | units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.parameters.epsilon_squared = (0.01 | generic_unit_system.length)**2
         instance.particles.add_particles(particles)
         instance.stopping_conditions.number_of_steps_detection.enable()

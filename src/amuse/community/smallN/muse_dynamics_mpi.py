@@ -203,7 +203,7 @@ class SmallN(GravitationalDynamics):
             "set_number_of_particles",
             "number_of_particles", 
             "The number of particles being managed by the SmallN module", 
-            default_value = 0 | units.none
+            default_value = 0
         )
     
     def define_properties(self, object):
@@ -291,14 +291,14 @@ class SmallN(GravitationalDynamics):
         object.add_method(
             "get_number_of_particles", 
             (), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         
     
         object.add_method(
             "set_number_of_particles", 
-            (units.none, ), 
+            (object.NO_UNIT, ), 
             (object.ERROR_CODE,)
         )
     

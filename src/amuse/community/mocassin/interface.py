@@ -686,12 +686,12 @@ class Mocassin(InCodeComponentImplementation):
         object.add_method(
             'get_grid_ion_density',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             'set_grid_ion_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX, units.none , object.INDEX),
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.NO_UNIT , object.INDEX),
             (object.ERROR_CODE,)
         )
         
@@ -733,12 +733,12 @@ class Mocassin(InCodeComponentImplementation):
         object.add_method(
             "get_convergence_limit",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_convergence_limit",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -793,12 +793,12 @@ class Mocassin(InCodeComponentImplementation):
         object.add_method(
             "get_input_directory",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_input_directory",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -829,36 +829,36 @@ class Mocassin(InCodeComponentImplementation):
         object.add_method(
             "get_maximum_number_of_monte_carlo_iterations",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_maximum_number_of_monte_carlo_iterations",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_minimum_convergence_level",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_minimum_convergence_level",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_number_of_ionisation_stages",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_number_of_ionisation_stages",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -866,54 +866,54 @@ class Mocassin(InCodeComponentImplementation):
         object.add_method(
             "get_symmetricXYZ",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_symmetricXYZ",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_total_number_of_photons",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_total_number_of_photons",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_total_number_of_points_in_frequency_mesh",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_total_number_of_points_in_frequency_mesh",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             "get_write_snapshot_every_iteration",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_write_snapshot_every_iteration",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
         object.add_method(
             'setup_mesh',
-            (units.none,  units.none, units.none, units.cm, units.cm, units.cm, units.none,),
+            (object.NO_UNIT,  object.NO_UNIT, object.NO_UNIT, units.cm, units.cm, units.cm, object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         
@@ -941,7 +941,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_convergence_limit", 
             "convergence_limit", 
             "<fill>", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
     
     
@@ -986,7 +986,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_input_directory", 
             "input_directory", 
             "<fill>", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
     
     
@@ -1004,7 +1004,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_maximum_number_of_monte_carlo_iterations", 
             "maximum_number_of_monte_carlo_iterations", 
             "<fill>", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
     
     
@@ -1013,7 +1013,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_minimum_convergence_level", 
             "minimum_convergence_level", 
             "<fill>", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
     
     
@@ -1022,7 +1022,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_number_of_ionisation_stages", 
             "number_of_ionisation_stages", 
             "<fill>", 
-            default_value = 6 | units.none
+            default_value = 6
         )
     
     
@@ -1033,7 +1033,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_symmetricXYZ", 
             "symmetricXYZ", 
             "If true assumes model is symetric in the X, Y and Z axes", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
     
     
@@ -1042,7 +1042,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_total_number_of_photons", 
             "total_number_of_photons", 
             "Total number of photons to start the iteration with", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
     
     
@@ -1051,7 +1051,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_total_number_of_points_in_frequency_mesh", 
             "total_number_of_points_in_frequency_mesh", 
             "<fill>", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
     
     
@@ -1060,7 +1060,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_write_snapshot_every_iteration", 
             "write_snapshot_every_iteration", 
             "If True will write the data to an output directory after every monte carlo iteration", 
-            default_value = 0.0 | units.none
+            default_value = 0.0
         )
         
         object.add_caching_parameter(
@@ -1068,7 +1068,7 @@ class Mocassin(InCodeComponentImplementation):
             "nmeshx",
             "nx", 
             "number of cells in the x direction", 
-            10 | units.none,
+            10,
         )
         
         
@@ -1077,7 +1077,7 @@ class Mocassin(InCodeComponentImplementation):
             "nmeshy",
             "ny", 
             "number of cells in the y direction", 
-            10 | units.none,
+            10,
         )
         
         
@@ -1086,7 +1086,7 @@ class Mocassin(InCodeComponentImplementation):
             "nmeshz",
             "nz", 
             "number of cells in the z direction", 
-            10 | units.none,
+            10,
         )
         
         object.add_caching_parameter(

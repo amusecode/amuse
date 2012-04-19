@@ -455,9 +455,9 @@ class TestFi(TestWithMPI):
         for int_par, value in [('first_snapshot',0),('output_interval',5),('log_interval',5),
             ('maximum_time_bin',4096),('minimum_part_per_bin',1),('targetnn',32),
             ('verbosity',0),('n_smooth',64)]:
-            self.assertEquals(value | units.none, getattr(instance.parameters,int_par))
-            setattr(instance.parameters, int_par, 1 | units.none)
-            self.assertEquals(1 | units.none, getattr(instance.parameters,int_par))
+            self.assertEquals(value, getattr(instance.parameters,int_par))
+            setattr(instance.parameters, int_par, 1)
+            self.assertEquals(1, getattr(instance.parameters,int_par))
         
         instance.cleanup_code()
         instance.stop()
@@ -480,8 +480,7 @@ class TestFi(TestWithMPI):
             0.0, -1.0, 0.5, 0.01, 0.1, 0.005 | nbody_system.length, 1.6666667, 0.5, 1.0, 0.01, 0.3, 
             0.25, 0.2 | nbody_system.length, 0.1, 0.05, 3.6 | 1.8e-17 * units.s**-1, 0.0, 0.0, 1.0, 
             0.0, 1.0, 1.0e5 | units.MSun, 0.25, 3.0e7 | units.Myr, 0.0, 3.e6 | units.Myr, 100.0]
-        defaults = [val | units.none if isinstance(val,float) else val for val in defaults]
-        defaults = [instance.unit_converter.to_si(val) if nbody_system.is_nbody_unit(val.unit) else val for val in defaults]
+        defaults = [instance.unit_converter.to_si(val) if not isinstance(val,float) and  nbody_system.is_nbody_unit(val.unit) else val for val in defaults]
         for double_par, value in zip(par_names, defaults):
             self.assertAlmostRelativeEquals(getattr(instance.parameters,double_par), value, 7)
             setattr(instance.parameters,double_par,2 * value)
@@ -776,7 +775,7 @@ class TestFi(TestWithMPI):
         instance = Fi()
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2|units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()

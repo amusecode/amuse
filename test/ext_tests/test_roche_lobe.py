@@ -230,7 +230,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         apastron = 40.0 | units.RSun
         mass_binary = stars.mass[0] + stars.mass[1]
         q = (stars.mass[1] / stars.mass[0]) # mass ratio
-        Eggleton_roche_estimate = 0.49 * q**(2/3.0) / (0.6 * q**(2/3.0) + math.log(1 + q**(1/3.0))) | units.none
+        Eggleton_roche_estimate = 0.49 * q**(2/3.0) / (0.6 * q**(2/3.0) + math.log(1 + q**(1/3.0)))
         periastron = 0.9 * se_stars[1].radius / Eggleton_roche_estimate
         
         v_outer = 0.5 * (constants.G * 2 * mass_binary / (2000.0 | units.RSun)).sqrt()
@@ -253,7 +253,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         rlof.add_particles([se_stars[1], se_stars[3]], [0.0, 0.0] | units.RSun, companions = [se_stars[0], se_stars[2]])
         self.assertEqual(rlof.overflow_radii, [0.0, 0.0] | units.RSun)
         rlof.update_roche_radii()
-        self.assertAlmostEqual(rlof.overflow_radii, Eggleton_roche_estimate * [1, 1] * apastron)
+        self.assertAlmostEqual(rlof.overflow_radii, Eggleton_roche_estimate * numpy.asarray([1, 1]) * apastron)
         mass_lost = rlof.do_roche_lobe_overflow()
         self.assertEqual(mass_lost, [0.0, 0.0] | units.MSun)
         

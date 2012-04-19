@@ -116,12 +116,12 @@ class TestStellarModel2SPH(TestWithMPI):
         print aa.dtype, aa
         print numpy.round(aa ,7)
         self.assertAlmostEqual(sph_particles.composition.sum(axis=1), numpy.asarray([1.0]*number_of_sph_particles) )
-        self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.h1[1:]  - sph_particles.h1[:-1]  >= -0.0001 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he3[1:] - sph_particles.he3[:-1] <=  0.0001 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he4[1:] - sph_particles.he4[:-1] <=  0.0001 | units.none ))
+        self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 ))
+        self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 ))
+        self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 ))
+        self.assertTrue(numpy.all( sph_particles.h1[1:]  - sph_particles.h1[:-1]  >= -0.0001 ))
+        self.assertTrue(numpy.all( sph_particles.he3[1:] - sph_particles.he3[:-1] <=  0.0001 ))
+        self.assertTrue(numpy.all( sph_particles.he4[1:] - sph_particles.he4[:-1] <=  0.0001 ))
     
     def test5(self):
         print "Test evolving created SPH particles in Gadget"
@@ -144,7 +144,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertAlmostEqual(sph_particles.mass.sum(), stars.mass)
         self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
         self.assertIsOfOrder(max(sph_particles.x), 1 | units.RSun)
-        self.assertAlmostEqual(sph_particles.h1, 0.7 | units.none, places=2)
+        self.assertAlmostEqual(sph_particles.h1, 0.7, places=2)
         stellar_evolution.stop()
         
         time_end = 1.0 | units.s
@@ -504,11 +504,11 @@ class TestStellarModel2SPH(TestWithMPI):
             expected_message = "Subsets return incompatible quantities for attribute 'composition', attribute cannot be queried from the superset")
         
         
-        self.assertAlmostEqual(some_sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles | units.none)
-        self.assertAlmostEqual(more_sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles | units.none)
-        self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 | units.none ))
+        self.assertAlmostEqual(some_sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles)
+        self.assertAlmostEqual(more_sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles)
+        self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 ))
+        self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 ))
+        self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 ))
         
     def slowtest12(self):
         print "Test merge two stars"
@@ -807,7 +807,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertEqual(converter.temperature_profile, [1e7, 1e6, 1e5, 1e4] | units.K)
         self.assertEqual(converter.mu_profile, [0.8, 0.6, 0.6, 1.3] | units.amu)
         self.assertEqual(converter.composition_profile, [[0.0, 0.7, 0.7, 0.7], 
-            [0.05, 0.01, 0.01, 0.01], [0.95, 0.29, 0.29, 0.29]] | units.none)
+            [0.05, 0.01, 0.01, 0.01], [0.95, 0.29, 0.29, 0.29]])
         self.assertAlmostEqual(converter.specific_internal_energy_profile, 
             [155896.35894, 20786.18119, 2078.61812, 95.93622] | (units.km/units.s)**2, places = 1)
         
@@ -838,13 +838,13 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertAlmostEqual(sph_particles.mass.sum(), star.mass)
         self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
         self.assertIsOfOrder(max(sph_particles.x), star.radius)
-        self.assertAlmostEqual(sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles | units.none)
-        self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.h1[1:]  - sph_particles.h1[:-1]  >= -0.0001 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he3[1:] - sph_particles.he3[:-1] <=  0.0001 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he4[1:] - sph_particles.he4[:-1] <=  0.0001 | units.none ))
+        self.assertAlmostEqual(sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles)
+        self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 ))
+        self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 ))
+        self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 ))
+        self.assertTrue(numpy.all( sph_particles.h1[1:]  - sph_particles.h1[:-1]  >= -0.0001 ))
+        self.assertTrue(numpy.all( sph_particles.he3[1:] - sph_particles.he3[:-1] <=  0.0001 ))
+        self.assertTrue(numpy.all( sph_particles.he4[1:] - sph_particles.he4[:-1] <=  0.0001 ))
     
     def slowtest17(self):
         print "SPH red super giant model with core"

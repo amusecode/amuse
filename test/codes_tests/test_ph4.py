@@ -382,7 +382,7 @@ class TestPH4(TestWithMPI):
         instance.update_particle_set()
         
         self.assertEquals(len(instance.particles), 5)
-        self.assertEquals(instance.particles.index_in_code, [3,4,5,6,10] | units.none)
+        self.assertEquals(instance.particles.index_in_code, [3,4,5,6,10])
         self.assertEquals(instance.particles.mass, [0.1,0.1,0.1,0.1,0.11] | nbody_system.mass)
         
         self.assertEquals(len(particles), 6)
@@ -663,7 +663,7 @@ class TestPH4(TestWithMPI):
         instance = ph4()
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2 | units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()

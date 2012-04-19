@@ -176,7 +176,9 @@ class ConvertBetweenGenericAndSiUnits(object):
             >>> print converter.to_si(length)
             299792458.0 m
         """ 
-        
+        if not hasattr(value, 'unit'):
+            return value
+            
         factor = value.unit.factor
         number = value.number
         new_unit = 1

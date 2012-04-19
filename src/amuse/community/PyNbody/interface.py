@@ -428,7 +428,7 @@ class PyNbody(GravitationalDynamics):
             "set_eta",
             "timestep_parameter",
             "timestep parameter",
-            default_value = 0.01 | units.none
+            default_value = 0.01
         )
 
         object.add_method_parameter(
@@ -454,12 +454,12 @@ class PyNbody(GravitationalDynamics):
         object.add_method(
             "get_eta",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
 
         object.add_method(
             "set_eta",
-            (units.none,),
+            (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
 

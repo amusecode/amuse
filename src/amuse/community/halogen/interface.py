@@ -332,7 +332,7 @@ class Halogen(CommonCode):
             "set_model_alpha",
             "alpha",
             "alpha parameter in density profile (see amuse/community/halogen/src/doc for details)",
-            default_value = -1.0 | units.none
+            default_value = -1.0
         )
         
         object.add_method_parameter(
@@ -340,7 +340,7 @@ class Halogen(CommonCode):
             "set_model_beta",
             "beta",
             "beta parameter in density profile (see amuse/community/halogen/src/doc for details)",
-            default_value = -1.0 | units.none
+            default_value = -1.0
         )
         
         object.add_method_parameter(
@@ -348,7 +348,7 @@ class Halogen(CommonCode):
             "set_model_gamma",
             "gamma",
             "gamma parameter in density profile (see amuse/community/halogen/src/doc for details)",
-            default_value = -1.0 | units.none
+            default_value = -1.0
         )
         
         object.add_method_parameter(
@@ -380,7 +380,7 @@ class Halogen(CommonCode):
             "set_target_number_of_particles",
             "number_of_particles",
             "the number of particles to be generated in the model",
-            default_value = -1 | units.none
+            default_value = -1
         )
         
         object.add_method_parameter(
@@ -396,7 +396,7 @@ class Halogen(CommonCode):
             "set_random_seed",
             "random_seed",
             "the initial seed to be used by the random number generator",
-            default_value = 42 | units.none
+            default_value = 42
         )
         
         object.add_boolean_parameter(
@@ -466,14 +466,14 @@ class Halogen(CommonCode):
             (nbody_system.speed, nbody_system.speed, nbody_system.speed, object.ERROR_CODE)
         )
         
-        object.add_method("get_model_alpha", (), (units.none, object.ERROR_CODE,))
-        object.add_method("set_model_alpha", (units.none, ), (object.ERROR_CODE,))
+        object.add_method("get_model_alpha", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_model_alpha", (object.NO_UNIT, ), (object.ERROR_CODE,))
         
-        object.add_method("get_model_beta", (), (units.none, object.ERROR_CODE,))
-        object.add_method("set_model_beta", (units.none, ), (object.ERROR_CODE,))
+        object.add_method("get_model_beta", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_model_beta", (object.NO_UNIT, ), (object.ERROR_CODE,))
         
-        object.add_method("get_model_gamma", (), (units.none, object.ERROR_CODE,))
-        object.add_method("set_model_gamma", (units.none, ), (object.ERROR_CODE,))
+        object.add_method("get_model_gamma", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_model_gamma", (object.NO_UNIT, ), (object.ERROR_CODE,))
         
         object.add_method("get_total_mass", (), (nbody_system.mass, object.ERROR_CODE,))
         object.add_method("set_total_mass", (nbody_system.mass, ), (object.ERROR_CODE,))
@@ -484,14 +484,14 @@ class Halogen(CommonCode):
         object.add_method("get_cutoff_radius", (), (nbody_system.length, object.ERROR_CODE,))
         object.add_method("set_cutoff_radius", (nbody_system.length, ), (object.ERROR_CODE,))
         
-        object.add_method("get_target_number_of_particles", (), (units.none, object.ERROR_CODE,))
-        object.add_method("set_target_number_of_particles", (units.none, ), (object.ERROR_CODE,))
+        object.add_method("get_target_number_of_particles", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_target_number_of_particles", (object.NO_UNIT, ), (object.ERROR_CODE,))
         
         object.add_method("get_black_hole_mass", (), (nbody_system.mass, object.ERROR_CODE,))
         object.add_method("set_black_hole_mass", (nbody_system.mass, ), (object.ERROR_CODE,))
         
-        object.add_method("get_random_seed", (), (units.none, object.ERROR_CODE,))
-        object.add_method("set_random_seed", (units.none, ), (object.ERROR_CODE,))
+        object.add_method("get_random_seed", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_random_seed", (object.NO_UNIT, ), (object.ERROR_CODE,))
         
         object.add_method("get_output_path", (), (object.NO_UNIT, object.ERROR_CODE,))
         object.add_method("set_output_path", (object.NO_UNIT,), (object.ERROR_CODE,))

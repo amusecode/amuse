@@ -114,9 +114,9 @@ class TestAmuseInterface(TestWithMPI):
         instance.parameters.epsilon_squared = 0.05 | units.AU**2
         self.assertAlmostRelativeEqual(0.05, instance.parameters.epsilon_squared.value_in(units.AU**2), 6)
        
-        self.assertAlmostEqual(0.8|units.none, instance.parameters.opening_angle, 6)#default
+        self.assertAlmostEqual(0.8, instance.parameters.opening_angle, 6)#default
         instance.parameters.opening_angle = 0.5
-        self.assertAlmostEqual(0.5|units.none, instance.parameters.opening_angle, 6)
+        self.assertAlmostEqual(0.5, instance.parameters.opening_angle, 6)
         instance.parameters.timestep = 1.0 |units.s
         self.assertEqual(1.0|units.s, instance.parameters.timestep)
         instance.stop()
@@ -145,7 +145,7 @@ class TestAmuseInterface(TestWithMPI):
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.parameters.stopping_conditions_number_of_steps = 1
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,1|units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,1)
     
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
@@ -171,7 +171,7 @@ class TestAmuseInterface(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(Octgrav)
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 20
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 20|units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 20)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()

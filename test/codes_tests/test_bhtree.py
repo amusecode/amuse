@@ -629,26 +629,26 @@ class TestBHTree(TestWithMPI):
         (value, error) = instance.legacy_interface.get_theta_for_tree()
         self.assertEquals(0, error)
         self.assertEquals(0.75, value)
-        self.assertEquals(0.75 | units.none, instance.parameters.opening_angle)
+        self.assertEquals(0.75, instance.parameters.opening_angle)
         for x in [0.2, 0.5, 0.7]:
             instance.parameters.opening_angle = x
-            self.assertEquals(x | units.none, instance.parameters.opening_angle)
+            self.assertEquals(x, instance.parameters.opening_angle)
         
         (value, error) = instance.legacy_interface.get_use_self_gravity()
         self.assertEquals(0, error)
         self.assertEquals(1, value)
-        self.assertEquals(1 | units.none, instance.parameters.use_self_gravity)
+        self.assertEquals(1, instance.parameters.use_self_gravity)
         for x in [0, 1]:
             instance.parameters.use_self_gravity = x
-            self.assertEquals(x | units.none, instance.parameters.use_self_gravity)
+            self.assertEquals(x, instance.parameters.use_self_gravity)
         
         (value, error) = instance.legacy_interface.get_ncrit_for_tree()
         self.assertEquals(0, error)
         self.assertEquals(12, value)
-        self.assertEquals(12 | units.none, instance.parameters.ncrit_for_tree)
+        self.assertEquals(12, instance.parameters.ncrit_for_tree)
         for x in [512, 2048, 4096]:
             instance.parameters.ncrit_for_tree = x
-            self.assertEquals(x | units.none, instance.parameters.ncrit_for_tree)
+            self.assertEquals(x, instance.parameters.ncrit_for_tree)
         
         (value, error) = instance.legacy_interface.get_dt_dia()
         self.assertEquals(0, error)
@@ -795,7 +795,7 @@ class TestBHTree(TestWithMPI):
         instance = BHTree()
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2|units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()

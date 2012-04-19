@@ -652,24 +652,24 @@ class Athena(InCodeComponentImplementation):
         object.add_method(
             "get_gamma",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_gamma",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
         object.add_method(
             "get_courant_friedrichs_lewy_number",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
     
         object.add_method(
             "set_courant_friedrichs_lewy_number",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
     
@@ -681,7 +681,7 @@ class Athena(InCodeComponentImplementation):
     
         object.add_method(
             'setup_mesh',
-            (units.none, units.none, units.none, length, length, length,),
+            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, length, length, length,),
             (object.ERROR_CODE,)
         )
         object.add_method(
@@ -775,7 +775,7 @@ class Athena(InCodeComponentImplementation):
             "set_gamma",
             "gamma", 
             "ratio of specific heats used in equation of state", 
-            default_value = 1.6666666666666667 | units.none,
+            default_value = 1.6666666666666667,
             must_set_before_get = True
         )
         
@@ -784,7 +784,7 @@ class Athena(InCodeComponentImplementation):
             "set_courant_friedrichs_lewy_number",
             "courant_number", 
             "CFL number", 
-            default_value = 0.3 | units.none,
+            default_value = 0.3,
             must_set_before_get = True
         )
         
@@ -794,7 +794,7 @@ class Athena(InCodeComponentImplementation):
             "nmeshx",
             "nx", 
             "number of cells in the x direction", 
-            10 | units.none,
+            10,
         )
         
         
@@ -803,7 +803,7 @@ class Athena(InCodeComponentImplementation):
             "nmeshy",
             "ny", 
             "number of cells in the y direction", 
-            10 | units.none,
+            10,
         )
         
         
@@ -812,7 +812,7 @@ class Athena(InCodeComponentImplementation):
             "nmeshz",
             "nz", 
             "number of cells in the z direction", 
-            10 | units.none,
+            10,
         )
         
         object.add_caching_parameter(

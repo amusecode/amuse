@@ -299,35 +299,35 @@ class MI6(GravitationalDynamics):
             "set_eta_s", 
             "initial_timestep_parameter", 
             "initial timestep parameter (eta)", 
-            default_value = 1.0e-4 | units.none
+            default_value = 1.0e-4
         )
         object.add_method_parameter(
             "get_eta_fs",
             "set_eta_fs", 
             "timestep_parameter", 
             "timestep parameter (eta) for field stars (alias for timestep_parameter_stars)", 
-            default_value = 0.1 | units.none
+            default_value = 0.1
         )
         object.add_method_parameter(
             "get_eta_fs",
             "set_eta_fs", 
             "timestep_parameter_stars", 
             "timestep parameter (eta) for field stars", 
-            default_value = 0.1 | units.none
+            default_value = 0.1
         )
         object.add_method_parameter(
             "get_eta_smbh",
             "set_eta_smbh", 
             "timestep_parameter_supermassive_black_holes", 
             "timestep parameter (eta) for supermassive black holes", 
-            default_value = 0.4 | units.none
+            default_value = 0.4
         )
         object.add_method_parameter(
             "get_eta_imbh",
             "set_eta_imbh", 
             "timestep_parameter_intermediate_mass_black_holes", 
             "timestep parameter (eta) for intermediate mass black holes", 
-            default_value = 0.4 | units.none
+            default_value = 0.4
         )
         object.add_method_parameter(
             "get_drink",
@@ -341,7 +341,7 @@ class MI6(GravitationalDynamics):
             "set_max_relative_energy_error", 
             "max_relative_energy_error", 
             "the maximum relative energy error per full step", 
-            default_value = 5e-5 | units.none # or nbody_system.time**-1 ??? why /dt_max ???
+            default_value = 5e-5 # or nbody_system.time**-1 ??? why /dt_max ???
         )
         object.add_method_parameter(
             "get_maximum_timestep",
@@ -389,17 +389,17 @@ class MI6(GravitationalDynamics):
         object.add_method("get_eps2_bh_bh", (), (nbody_system.length**2, object.ERROR_CODE))
         object.add_method("set_eps2_bh_bh", (nbody_system.length**2,), (object.ERROR_CODE,))
         
-        object.add_method("get_eta_s", (), (units.none, object.ERROR_CODE))
-        object.add_method("set_eta_s", (units.none,), (object.ERROR_CODE,))
-        object.add_method("get_eta_fs", (), (units.none, object.ERROR_CODE))
-        object.add_method("set_eta_fs", (units.none,), (object.ERROR_CODE,))
-        object.add_method("get_eta_smbh", (), (units.none, object.ERROR_CODE))
-        object.add_method("set_eta_smbh", (units.none,), (object.ERROR_CODE,))
-        object.add_method("get_eta_imbh", (), (units.none, object.ERROR_CODE))
-        object.add_method("set_eta_imbh", (units.none,), (object.ERROR_CODE,))
+        object.add_method("get_eta_s", (), (object.NO_UNIT, object.ERROR_CODE))
+        object.add_method("set_eta_s", (object.NO_UNIT,), (object.ERROR_CODE,))
+        object.add_method("get_eta_fs", (), (object.NO_UNIT, object.ERROR_CODE))
+        object.add_method("set_eta_fs", (object.NO_UNIT,), (object.ERROR_CODE,))
+        object.add_method("get_eta_smbh", (), (object.NO_UNIT, object.ERROR_CODE))
+        object.add_method("set_eta_smbh", (object.NO_UNIT,), (object.ERROR_CODE,))
+        object.add_method("get_eta_imbh", (), (object.NO_UNIT, object.ERROR_CODE))
+        object.add_method("set_eta_imbh", (object.NO_UNIT,), (object.ERROR_CODE,))
         
-        object.add_method("get_max_relative_energy_error", (), (units.none, object.ERROR_CODE))
-        object.add_method("set_max_relative_energy_error", (units.none,), (object.ERROR_CODE,))
+        object.add_method("get_max_relative_energy_error", (), (object.NO_UNIT, object.ERROR_CODE))
+        object.add_method("set_max_relative_energy_error", (object.NO_UNIT,), (object.ERROR_CODE,))
         object.add_method("get_maximum_timestep", (), (nbody_system.time, object.ERROR_CODE))
         object.add_method("set_maximum_timestep", (nbody_system.time,), (object.ERROR_CODE,))
         

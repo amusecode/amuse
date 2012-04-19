@@ -212,10 +212,10 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         
         instance.particles[1].add_shell([1.0, 2.0]|units.MSun, [2.0, 4.0]|units.MSun, [3.0, 6.0]|units.RSun, 
             [4.0, 8.0]|units.g / units.cm**3, [5.0, 10.0]|units.barye, 
-            [6.0, 12.0]|units.K, [-6.0, -12.0]|units.LSun, [7.0, 14.0]|units.amu, [0.4, 0.2]|units.none, 
-            [0.2, 0.4]|units.none, [0.15, 0.1]|units.none, [0.1, 0.15]|units.none, 
-            [0.05, 0.01]|units.none, [0.04, 0.02]|units.none, [0.03, 0.03]|units.none, 
-            [0.02, 0.04]|units.none, [0.01, 0.05]|units.none)
+            [6.0, 12.0]|units.K, [-6.0, -12.0]|units.LSun, [7.0, 14.0]|units.amu, [0.4, 0.2], 
+            [0.2, 0.4], [0.15, 0.1], [0.1, 0.15], 
+            [0.05, 0.01], [0.04, 0.02], [0.03, 0.03], 
+            [0.02, 0.04], [0.01, 0.05])
         self.assertEqual(instance.particles[1].number_of_zones, 2)
         stellar_model = instance.particles[1].internal_structure()
         self.assertTrue(set(['d_mass', 'mass', 'radius', 'rho', 'pressure', 'entropy', 
@@ -229,19 +229,19 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(stellar_model.radius,    [3.0, 6.0]|units.RSun)
         self.assertEqual(stellar_model.rho,       [4.0, 8.0]|units.g / units.cm**3)
         self.assertEqual(stellar_model.pressure,  [5.0, 10.0]|units.barye)
-        self.assertAlmostEqual(stellar_model.entropy, [407038297.689, 256418059.686]|units.none, 2)
+        self.assertAlmostEqual(stellar_model.entropy, [407038297.689, 256418059.686], 2)
         self.assertEqual(stellar_model.temperature,   [6.0, 12.0]|units.K)
         self.assertEqual(stellar_model.luminosity,    [-6.0, -12.0]|units.LSun)
         self.assertEqual(stellar_model.molecular_weight, [7.0, 14.0]|units.amu)
-        self.assertEqual(stellar_model.X_H,   [0.4,  0.2]|units.none)
-        self.assertEqual(stellar_model.X_He,  [0.2,  0.4]|units.none)
-        self.assertEqual(stellar_model.X_C,  [0.15, 0.1]|units.none)
-        self.assertEqual(stellar_model.X_N,  [0.1,  0.15]|units.none)
-        self.assertEqual(stellar_model.X_O,  [0.05, 0.01]|units.none)
-        self.assertEqual(stellar_model.X_Ne, [0.04, 0.02]|units.none)
-        self.assertEqual(stellar_model.X_Mg, [0.03, 0.03]|units.none)
-        self.assertEqual(stellar_model.X_Si, [0.02, 0.04]|units.none)
-        self.assertEqual(stellar_model.X_Fe, [0.01, 0.05]|units.none)
+        self.assertEqual(stellar_model.X_H,   [0.4,  0.2])
+        self.assertEqual(stellar_model.X_He,  [0.2,  0.4])
+        self.assertEqual(stellar_model.X_C,  [0.15, 0.1])
+        self.assertEqual(stellar_model.X_N,  [0.1,  0.15])
+        self.assertEqual(stellar_model.X_O,  [0.05, 0.01])
+        self.assertEqual(stellar_model.X_Ne, [0.04, 0.02])
+        self.assertEqual(stellar_model.X_Mg, [0.03, 0.03])
+        self.assertEqual(stellar_model.X_Si, [0.02, 0.04])
+        self.assertEqual(stellar_model.X_Fe, [0.01, 0.05])
         instance.stop()
     
     def test3(self):
@@ -269,8 +269,8 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertAlmostEqual(stellar_model.radius[-1], 16.8 | units.RSun, 1)
         self.assertAlmostEqual(stellar_model.temperature[0], 47318040.0 | units.K, 0)
         self.assertAlmostEqual(stellar_model.temperature[-1], 81542.0 | units.K, 0)
-        self.assertAlmostEqual(stellar_model.X_H[0], 0.0121 | units.none, 4)
-        self.assertAlmostEqual(stellar_model.X_H[-1], 0.7 | units.none, 4)
+        self.assertAlmostEqual(stellar_model.X_H[0], 0.0121, 4)
+        self.assertAlmostEqual(stellar_model.X_H[-1], 0.7, 4)
         instance.stop()
     
     def slowtest4(self):
@@ -310,9 +310,9 @@ class TestMakeMeAMassiveStar(TestWithMPI):
             self.assertFalse(value is getattr(instance.parameters, par))
         
         for par, value in [('target_n_shells_mixing', 200), ('target_n_shells', 10000)]:
-            self.assertEquals(value | units.none, getattr(instance.parameters, par))
-            setattr(instance.parameters, par, 1 | units.none)
-            self.assertEquals(1 | units.none, getattr(instance.parameters, par))
+            self.assertEquals(value, getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 1)
+            self.assertEquals(1, getattr(instance.parameters, par))
         
         instance.stop()
     

@@ -163,7 +163,7 @@ class Octgrav(GravitationalDynamics):
             "set_theta_for_tree",
             "opening_angle",
             "opening angle for building the tree between 0 and 1", 
-            default_value = 0.8 | units.none
+            default_value = 0.8
         )
 
         self.stopping_conditions.define_parameters(object)
@@ -198,12 +198,12 @@ class Octgrav(GravitationalDynamics):
         object.add_method(
             "get_theta_for_tree",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_theta_for_tree",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         

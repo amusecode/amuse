@@ -531,8 +531,8 @@ class Kepler(CommonCode):
             (
                 nbody_system.mass,
                 nbody_system.length,
-                units.none,
-                units.none,
+                object.NO_UNIT,
+                object.NO_UNIT,
                 nbody_system.time,
                 nbody_system.length
             ),
@@ -589,7 +589,7 @@ class Kepler(CommonCode):
                           (),
                           (
                               nbody_system.length,
-                              units.none,
+                              object.NO_UNIT,
                               object.ERROR_CODE
                           ))
 
@@ -649,16 +649,16 @@ class Kepler(CommonCode):
         object.add_method("get_angles",
                           (),
                           (
-                              units.none,
-                              units.none,
+                              object.NO_UNIT,
+                              object.NO_UNIT,
                               object.ERROR_CODE
                           ))
 
         object.add_method("set_longitudinal_unit_vector",
                           (
-                              units.none,
-                              units.none,
-                              units.none
+                              object.NO_UNIT,
+                              object.NO_UNIT,
+                              object.NO_UNIT
                           ),
                           (
                               object.ERROR_CODE
@@ -666,9 +666,9 @@ class Kepler(CommonCode):
 
         object.add_method("set_transverse_unit_vector",
                           (
-                              units.none,
-                              units.none,
-                              units.none
+                              object.NO_UNIT,
+                              object.NO_UNIT,
+                              object.NO_UNIT
                           ),
                           (
                               object.ERROR_CODE
@@ -676,9 +676,9 @@ class Kepler(CommonCode):
 
         object.add_method("set_normal_unit_vector",
                           (
-                              units.none,
-                              units.none,
-                              units.none
+                              object.NO_UNIT,
+                              object.NO_UNIT,
+                              object.NO_UNIT
                           ),
                           (
                               object.ERROR_CODE
@@ -687,26 +687,26 @@ class Kepler(CommonCode):
         object.add_method("get_longitudinal_unit_vector",
                           (),
                           (
-                              units.none,
-                              units.none,
-                              units.none,
+                              object.NO_UNIT,
+                              object.NO_UNIT,
+                              object.NO_UNIT,
                               object.ERROR_CODE
                           ))
 
         object.add_method("get_transverse_unit_vector",
                           (),
                           (
-                              units.none,
-                              units.none,
-                              units.none,
+                              object.NO_UNIT,
+                              object.NO_UNIT,
+                              object.NO_UNIT,
                               object.ERROR_CODE
                           ))
 
         object.add_method("get_normal_unit_vector",
                           (),
                           (
-                              units.none,
-                              units.none,
-                              units.none,
+                              object.NO_UNIT,
+                              object.NO_UNIT,
+                              object.NO_UNIT,
                               object.ERROR_CODE
                           ))

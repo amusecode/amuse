@@ -206,7 +206,7 @@ class Hermite(GravitationalDynamics):
             "set_dt_param",
             "dt_param",
             "timestep scaling factor", 
-            default_value = 0.03 | units.none
+            default_value = 0.03
         )
         object.add_method_parameter(
             "get_dt_dia",
@@ -227,7 +227,7 @@ class Hermite(GravitationalDynamics):
             "set_pair_detect_factor",
             "pair_factor",
             "radius factor for pair detection", 
-            default_value = 1.0 | units.none
+            default_value = 1.0
         )
 
         self.stopping_conditions.define_parameters(object)
@@ -265,12 +265,12 @@ class Hermite(GravitationalDynamics):
         object.add_method(
             "get_dt_param",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_dt_param",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -301,12 +301,12 @@ class Hermite(GravitationalDynamics):
         object.add_method(
             "get_pair_detect_factor",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_pair_detect_factor",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         

@@ -186,9 +186,9 @@ class HalogenTests(TestWithMPI):
         
         for par, value in [('alpha', -1.0), ('beta', -1.0), ('gamma', -1.0),
                 ('number_of_particles', -1), ('random_seed', 42)]:
-            self.assertEquals(value | units.none, getattr(instance.parameters, par))
-            setattr(instance.parameters, par, 1 | units.none)
-            self.assertEquals(1 | units.none, getattr(instance.parameters, par))
+            self.assertEquals(value, getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 1)
+            self.assertEquals(1, getattr(instance.parameters, par))
         
         for par, value in [('total_mass', 1.0 | nbody_system.mass), 
                 ('scale_radius',    1.0 | nbody_system.length), 

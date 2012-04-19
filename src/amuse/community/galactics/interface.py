@@ -548,70 +548,70 @@ class GalactICs(CommonCode):
             "set_number_of_grid_intervals",
             "number_of_grid_intervals",
             "Number of gridpoints in the radial direction",
-            default_value = 90000 | units.none
+            default_value = 90000
         )
         object.add_method_parameter(
             "get_order_of_multipole_expansion",
             "set_order_of_multipole_expansion",
             "order_of_multipole_expansion",
             "order of multipole expansion - even number - should be l=10 for models with disks - l=0 for purely spherical models without a disk",
-            default_value = 10 | units.none
+            default_value = 10
         )
         object.add_method_parameter(
             "get_number_of_radial_steps_correction_fns",
             "set_number_of_radial_steps_correction_fns",
             "number_of_radial_steps_correction_fns_disk_df",
             "The number of intervals for correction functions (min. 6); used in calculation of the DF of the disk",
-            default_value = 10 | units.none
+            default_value = 10
         )
         object.add_method_parameter(
             "get_number_of_iterations",
             "set_number_of_iterations",
             "number_of_iterations_disk_df",
             "The number of iterations in calculation of the DF of the disk",
-            default_value = 50 | units.none
+            default_value = 50
         )
         object.add_method_parameter(
             "get_halo_number_of_particles",
             "set_halo_number_of_particles",
             "halo_number_of_particles",
             "The number of halo particles to generate",
-            default_value = 200000 | units.none
+            default_value = 200000
         )
         object.add_method_parameter(
             "get_bulge_number_of_particles",
             "set_bulge_number_of_particles",
             "bulge_number_of_particles",
             "The number of bulge particles to generate",
-            default_value = 50000 | units.none
+            default_value = 50000
         )
         object.add_method_parameter(
             "get_disk_number_of_particles",
             "set_disk_number_of_particles",
             "disk_number_of_particles",
             "The number of disk particles to generate",
-            default_value = 100000 | units.none
+            default_value = 100000
         )
         object.add_method_parameter(
             "get_halo_random_seed",
             "set_halo_random_seed",
             "halo_random_seed",
             "The seed to the random number generator used to generate the halo particles",
-            default_value = -1 | units.none
+            default_value = -1
         )
         object.add_method_parameter(
             "get_bulge_random_seed",
             "set_bulge_random_seed",
             "bulge_random_seed",
             "The seed to the random number generator used to generate the bulge particles",
-            default_value = -1 | units.none
+            default_value = -1
         )
         object.add_method_parameter(
             "get_disk_random_seed",
             "set_disk_random_seed",
             "disk_random_seed",
             "The seed to the random number generator used to generate the disk particles",
-            default_value = -1 | units.none
+            default_value = -1
         )
         
         # float parameters
@@ -648,14 +648,14 @@ class GalactICs(CommonCode):
             "set_inner_cusp_slope",
             "halo_inner_cusp_slope",
             "The slope of inner cusp of the halo density profile",
-            default_value = 1.0 | units.none
+            default_value = 1.0
         )
         object.add_method_parameter(
             "get_outer_slope",
             "set_outer_slope",
             "halo_outer_slope",
             "The outer slope of the halo density profile",
-            default_value = 2.3 | units.none
+            default_value = 2.3
         )
         object.add_method_parameter(
             "get_disk_mass",
@@ -697,7 +697,7 @@ class GalactICs(CommonCode):
             "set_Sersic_index_n",
             "Sersic_index",
             "The Sersic index of the bulge (1.0 for a classical bulge)",
-            default_value = 0.937324703 | units.none
+            default_value = 0.937324703
         )
         object.add_method_parameter(
             "get_bulge_velocity",
@@ -725,7 +725,7 @@ class GalactICs(CommonCode):
             "set_central_radial_vel_dispersion",
             "disk_central_radial_velocity_dispersion",
             "The velocity dispersion of the disk in the radial direction at the center (in units of vertical velocity dispersion)",
-            default_value = 0.73 | units.none
+            default_value = 0.73
         )
         object.add_method_parameter(
             "get_scale_length_of_sigR2",
@@ -739,14 +739,14 @@ class GalactICs(CommonCode):
             "set_halo_streaming_fraction",
             "halo_streaming_fraction",
             "Control for rotating halo: distribution function is split in positive and negative angular momentum, and recombined with this parameter (F = aF+ + (1-a)F-); 0.5 means no rotation",
-            default_value = 0.50 | units.none
+            default_value = 0.50
         )
         object.add_method_parameter(
             "get_bulge_streaming_fraction",
             "set_bulge_streaming_fraction",
             "bulge_streaming_fraction",
             "Control for rotating bulge: distribution function is split in positive and negative angular momentum, and recombined with this parameter (F = aF+ + (1-a)F-); 0.5 means no rotation",
-            default_value = 0.80 | units.none
+            default_value = 0.80
         )
     
     def define_methods(self, object):
@@ -774,8 +774,8 @@ class GalactICs(CommonCode):
                 "_disk_number_of_particles", "_disk_random_seed",
                 "_inner_cusp_slope", "_outer_slope", "_Sersic_index_n", "_central_radial_vel_dispersion", 
                 "_halo_streaming_fraction", "_bulge_streaming_fraction"]:
-            object.add_method("get"+par, (), (units.none, object.ERROR_CODE,))
-            object.add_method("set"+par, (units.none, ), (object.ERROR_CODE,))
+            object.add_method("get"+par, (), (object.NO_UNIT, object.ERROR_CODE,))
+            object.add_method("set"+par, (object.NO_UNIT, ), (object.ERROR_CODE,))
         
         for par in ["_halo_outer_radius", "_scale_radius", "_truncation_delta_r", 
                 "_disk_scale_length", "_disk_outer_radius", "_disk_scale_height_sech2", 

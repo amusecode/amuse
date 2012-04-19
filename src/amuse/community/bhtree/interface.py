@@ -257,21 +257,21 @@ class BHTree(GravitationalDynamics):
             "set_theta_for_tree",
             "opening_angle", 
             "opening angle, theta, for building the tree: between 0 and 1", 
-            default_value = 0.75 | units.none
+            default_value = 0.75
         )
         object.add_method_parameter(
             "get_use_self_gravity",
             "set_use_self_gravity",
             "use_self_gravity", 
             "flag for usage of self gravity, 1 or 0 (true or false)", 
-            default_value = 1 | units.none
+            default_value = 1
         )
         object.add_method_parameter(
             "get_ncrit_for_tree",
             "set_ncrit_for_tree",
             "ncrit_for_tree", 
             "Ncrit, the maximum number of particles sharing an interaction list", 
-            default_value = 12 | units.none
+            default_value = 12
         )
         object.add_method_parameter(
             "get_dt_dia",
@@ -325,36 +325,36 @@ class BHTree(GravitationalDynamics):
         object.add_method(
             "get_theta_for_tree",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
 
         object.add_method(
             "set_theta_for_tree",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 
         object.add_method(
             "get_use_self_gravity",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
 
         object.add_method(
             "set_use_self_gravity",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 
         object.add_method(
             "get_ncrit_for_tree",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
 
         object.add_method(
             "set_ncrit_for_tree",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 

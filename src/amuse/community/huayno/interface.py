@@ -193,7 +193,7 @@ class Huayno(GravitationalDynamics):
             "set_timestep_parameter", 
             "timestep_parameter", 
             "timestep parameter for gravity calculations", 
-            default_value = 0.03 | units.none
+            default_value = 0.03
         )
 
         object.add_method_parameter(
@@ -210,7 +210,7 @@ class Huayno(GravitationalDynamics):
             "set_inttype_parameter", 
             "inttype_parameter", 
             "integrator method to use", 
-            default_value = 8 | units.none
+            default_value = 8
         )
 
         object.add_method_parameter(
@@ -240,12 +240,12 @@ class Huayno(GravitationalDynamics):
         object.add_method(
             "get_timestep_parameter",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_timestep_parameter",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
 
@@ -265,12 +265,12 @@ class Huayno(GravitationalDynamics):
         object.add_method(
             "get_inttype_parameter",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_inttype_parameter",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
