@@ -939,6 +939,11 @@ Parameters
 |                                    |               |               |threads per block  |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
+|output_path_name                    |../../test_re  |none           |path where HiGPUs  |
+|                                    |sults/         |               |output will be     |
+|                                    |               |               |stored             |
++------------------------------------+---------------+---------------+-------------------+
+
 
 
 For more information about parameters check the readme file in the docs folder.
