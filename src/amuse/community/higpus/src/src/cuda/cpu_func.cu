@@ -9,6 +9,7 @@
 #include <my_errors.h>
 #include <utilis.h>
 #include <mpi_types.h>
+#include <stdarg.h> 
 
 #include "sys/time.h"
 
