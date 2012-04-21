@@ -2,7 +2,6 @@
 #include <iomanip>
 #include <string>
 #include <mpi.h>
-#include <map>
 #include "src/lib/my_errors.h"
 #include "src/lib/functions.h"
 #include "src/lib/utilis.h"
@@ -11,10 +10,10 @@
 using namespace std;
 
 typedef struct {
-    double mass;                                        /// mass
+    double mass;                                        
     double radius;
-	 double x, y, z;                                     /// position
-    double vx, vy, vz;                                  /// velocity
+	 double x, y, z;                                     
+    double vx, vy, vz;                                  
 } dynamics_state;
 
 double4 *pos_PH;
@@ -30,12 +29,12 @@ map<int, dynamics_state> dm_states;
 map<int,dynamics_state>::iterator it;
 map<int,dynamics_state>::iterator et;
 
-int size, rank, particle_id_counter = 0;
+int size, rank, particle_id_counter;
 unsigned int N, M, NGPU, TPB, FMAX, BFMAX, MAXDIM, GPUMINTHREADS;
 double GTIME, GTW, DTMAX, DTMIN, EPS, ETA6, ETA4, DTPRINT, ATIME, plummer_core, plummer_mass;  
-bool warm_start, init = 0;
-string GPUNAME;
-
+bool warm_start, init;
+string GPUNAME, path, temp;
+char *output_name;
 
 int echo(int input){
 	return input;
@@ -48,20 +47,15 @@ int echo_int(int input, int * output){
 
 int initialize_code(){
 	HostSafeCall(__MPIstart(&rank, &size, &mpi_float4, &mpi_double4));
-	warm_start = 0;  	
+   GTIME = 0.0;
+   ATIME = 1.0e+10;
+   GTW = 0.0;
+   warm_start = 0; 
+	init = 0;
+	particle_id_counter = 0;
 	if(rank == 0){
-		ofstream generic;
-      generic.open("gpu_memory.dat", ios::out);
-      generic.close();
-      generic.open("cpu_memory.dat", ios::out);
-      generic.close();
-      generic.open("H6Blog.dat", ios::out);
-      generic.close();
-      generic.open("energy.dat", ios::out);
-      generic<<scientific<<setprecision(5);
-      double value = 0.0;
-      generic<<value<<"  "<<value<<endl;
-      generic.close();
+		cout<<"NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file"<<endl;
+      cout<<"NOTE_2: the evolve method requires an input time (in nbody units) greater than or equal of the maximum time step ( 't' > or = 'max_step') "<<endl;
 	}
 	return 0;
 }
@@ -71,14 +65,30 @@ int recommit_parameters(){
 }
 
 int commit_parameters(){
-	GTIME = 0.0;
-	ATIME = 1.0e+10;
-	GTW = 0.0;
 
 	if(rank == 0){
 	   
+      ofstream generic;
+      temp = path + "gpu_memory.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::out);
+      generic.close();
+      temp = path + "cpu_memory.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::out);
+      generic.close();
+      temp = path + "energy.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::out);
+      generic<<scientific<<setprecision(5);
+      double value = 0.0;
+      generic<<value<<"  "<<value<<endl;
+      generic.close();
+
 		ofstream hlog;
-      hlog.open("HiGPUslog.dat", ios::app);
+		temp = path + "HiGPUslog.dat";
+      output_name = to_char(temp);
+      hlog.open(output_name, ios::out);
 		hlog<<" ================================================== "<<endl;
       hlog<<" Gpus                : "<<NGPU<<endl;
       hlog<<" Threads per block   : "<<TPB<<endl;
@@ -100,7 +110,9 @@ int commit_parameters(){
 
 #ifdef CHECK_TIMES
 		ofstream generic;
-      generic.open("times.dat", ios::out);
+		temp = path + "times.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::out);
       generic.close();
       cout<<" Check times option ENABLED "<<endl;
 #else
@@ -110,7 +122,9 @@ int commit_parameters(){
 #ifdef PLUMMER
       cout<<" Plummer Potential option ENABLED "<<endl;
       ofstream hlog;
-      hlog.open("HiGPUslog.dat", ios::app);
+		temp = path + "HiGPUslog.dat";
+      output_name = to_char(temp);
+      hlog.open(output_name, ios::app);
       hlog<<" Plummer (core) : "<<plummer_core<<endl;
       hlog<<" Plummer (mass) : "<<plummer_mass<<endl;
       hlog<<" =============================================== "<<endl;
@@ -118,9 +132,6 @@ int commit_parameters(){
 #else
       cout<<" Plummer Potential option DISABLED "<<endl;
 #endif
-	
-	   cout<<"NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file"<<endl;
-		cout<<"NOTE_2: the evolve method requires an input time (in nbody units) divisible for the maximum time step ( 't' / 'max_step' == integer ) "<<endl;
 	}
    return 0;
 }
@@ -143,9 +154,9 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
 
 int commit_particles(){
 	N = particle_id_counter;
-	
+
 	HostSafeCall(isDivisible(&N, &M,size, NGPU, TPB, &BFMAX));
-	
+
 	pos_PH = new double4 [N];
    vel_PH = new  float4 [N];
    pos_CH = new double4 [N];
@@ -201,14 +212,16 @@ int commit_particles(){
 }
 
 int evolve_model(double t){
-	if(init == 0){
-		HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN,  &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
+   if(init == 0){
+		HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN,  &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass, path));
 		init = 1;
 	}
-
+	
 	if(rank == 0){
 		ofstream hlog;
-      hlog.open("HiGPUslog.dat", ios::app);
+		temp = path + "HiGPUslog.dat";
+      output_name = to_char(temp);
+      hlog.open(output_name, ios::app);
       hlog<<endl<<endl;
 		hlog<<" ================================================== "<<endl;
       hlog<<" Time of integration : "<<t<<endl;
@@ -220,7 +233,7 @@ int evolve_model(double t){
 
    FMAX = 1000000 + ((GTIME+GTW) / DTPRINT);
 	
-	HostSafeCall(Hermite6th(t, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTW, GPUMINTHREADS, plummer_core, plummer_mass));
+	HostSafeCall(Hermite6th(t, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTW, GPUMINTHREADS, plummer_core, plummer_mass, path));
   
 	warm_start = 1;
 
@@ -278,17 +291,25 @@ int get_total_radius(double * radius){
 }
 
 int get_potential_at_point(double eps, double x, double y, double z, double * phi){
-	*phi = 0.0;
-   for(unsigned int i=0; i<M ; i++){
+   *phi = 0.0;
+	double F = 0.0;
+	unsigned int ppG = ceil ( (double) M / size);
+   for(unsigned int i=0; i<ppG ; i++){
 		double rij =(x - pos_CH[i].x) * (x - pos_CH[i].x) + (y-pos_CH[i].y) * (y - pos_CH[i].y) + (z - pos_CH[i].z) * (z - pos_CH[i].z);
-      *phi -= pos_CH[i].w / sqrt(rij + eps * eps); 
+      F -= pos_CH[i].w / sqrt(rij + eps * eps); 
 	}
+	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&F, phi, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
    return 0;
 }
 
 int get_total_mass(double * mass){
-   *mass = 0.0;
-   for(unsigned int i=0; i<M; i++)  *mass += pos_CH[i].w;
+	*mass = 0.0;
+	double M = 0.0;
+	unsigned int ppG = ceil ( (double) M / size);
+   for(unsigned int i=0; i<ppG; i++)  M += pos_CH[i].w;
+	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
+	MPISafeCall(MPI_Allreduce(&M, mass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
    return 0;
 }
 
@@ -427,6 +448,16 @@ int set_gpu_name(char *gpu_name){
    return 0;
 }
 
+int get_output_path_name(char ** output_path_name){
+	   *output_path_name = to_char(path);
+		   return 0;
+}
+
+int set_output_path_name(char *output_path_name){
+	   path = to_string(output_path_name);
+		   return 0;
+}
+
 int get_index_of_next_particle(int index_of_the_particle, int * index_of_the_next_particle){
    it = dm_states.begin();
    for(int i=0; i<=index_of_the_particle; i++) it++;
@@ -442,14 +473,18 @@ int delete_particle(int index_of_the_particle){
 
 int get_potential(int index_of_the_particle, double * potential){ 
 	*potential = 0.0;
-   for(unsigned int i=0; i<M ; i++){
+	double P = 0.0;
+   unsigned int ppG = ceil ( (double) M / size);
+   for(unsigned int i=0; i<ppG ; i++){
 		if(i != (unsigned int) index_of_the_particle){
-			double rij =(pos_CH[index_of_the_particle].x - pos_CH[i].x)*(pos_CH[index_of_the_particle].x - pos_CH[i].x) +
-				(pos_CH[index_of_the_particle].y - pos_CH[i].y) * (pos_CH[index_of_the_particle].y - pos_CH[i].y) +
-				(pos_CH[index_of_the_particle].z - pos_CH[i].z) * (pos_CH[index_of_the_particle].z - pos_CH[i].z);
-        	*potential -= pos_CH[i].w / sqrt(rij + EPS * EPS);
+			double rij =((pos_CH[index_of_the_particle].x - pos_CH[i].x)*(pos_CH[index_of_the_particle].x - pos_CH[i].x)) +
+				((pos_CH[index_of_the_particle].y - pos_CH[i].y) * (pos_CH[index_of_the_particle].y - pos_CH[i].y)) +
+				((pos_CH[index_of_the_particle].z - pos_CH[i].z) * (pos_CH[index_of_the_particle].z - pos_CH[i].z));
+        	P -= pos_CH[i].w / (sqrt(rij + EPS * EPS));
 		} 
 	}
+   MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
+	MPISafeCall(MPI_Allreduce(&P, potential, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
    return 0;
 }
 
@@ -576,7 +611,7 @@ int recommit_particles(){
 int get_kinetic_energy(double * kinetic_energy){
 	*kinetic_energy = 0.0;
    double K = 0.0;
-   unsigned int ppG = M / size;
+   unsigned int ppG = ceil ( (double) M / size);
    for(unsigned int i=0; i<ppG; i++)   
 		K += 0.5 * pos_CH[i].w * (vel_CH[i].x * vel_CH[i].x + vel_CH[i].y * vel_CH[i].y + vel_CH[i].z * vel_CH[i].z);
 	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
@@ -594,33 +629,51 @@ int set_acceleration(int index_of_the_particle, double ax, double ay, double az)
 }
 
 int get_center_of_mass_position(double * x, double * y, double * z){
-   double m = 0.0;
+   unsigned int ppG = ceil ( (double) M / size);
+	double *sum = new double[4];
+   sum[0] = sum[1] = sum[2] = sum[3] = 0.0;
    *x = *y = *z = 0.0;
-   for(unsigned int i=0; i<M; i++){
-		*x += pos_CH[i].w * pos_CH[i].x;
-	   *y += pos_CH[i].w * pos_CH[i].y;
-	   *z += pos_CH[i].w * pos_CH[i].z;
-	   m += pos_CH[i].w;
+	for(unsigned int i=0; i<ppG; i++){
+		sum[0] += pos_CH[i].w * pos_CH[i].x;
+	   sum[1] += pos_CH[i].w * pos_CH[i].y;
+	   sum[2] += pos_CH[i].w * pos_CH[i].z;
+	   sum[3] += pos_CH[i].w;
    }
-   *x /= m;
-   *y /= m;
-   *z /= m;
-   return 0;
+   
+   sum[0] /= sum[3];
+   sum[1] /= sum[3];
+   sum[2] /= sum[3];
+
+   MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&sum[0], x, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&sum[1], y, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&sum[2], z, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   delete [] sum;
+	return 0;
 }
 
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){ 
-	double m = 0.0;
+   unsigned int ppG = ceil ( (double) M / size);
+   double *sum = new double[4];
+   sum[0] = sum[1] = sum[2] = sum[3] = 0.0;
    *vx = *vy = *vz = 0.0;
-   for(unsigned int i=0; i<M; i++){
-		*vx += pos_CH[i].w * vel_CH[i].x;
-      *vy += pos_CH[i].w * vel_CH[i].y;
-      *vz += pos_CH[i].w * vel_CH[i].z;
-      m += pos_CH[i].w;
+	for(unsigned int i=0; i<ppG; i++){
+      sum[0] += pos_CH[i].w * vel_CH[i].x;
+      sum[1] += pos_CH[i].w * vel_CH[i].y;
+      sum[2] += pos_CH[i].w * vel_CH[i].z;
+      sum[3] += pos_CH[i].w;
    }
-   *vx /= m;
-   *vy /= m;
-   *vz /= m;
-   return 0;
+   
+   sum[0] /= sum[3];
+   sum[1] /= sum[3];
+   sum[2] /= sum[3];
+
+   MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&sum[0], vx, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&sum[1], vy, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&sum[2], vz, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   delete [] sum;
+	return 0;
 }
 
 int get_radius(int index_of_the_particle, double * radius){
@@ -648,22 +701,30 @@ int cleanup_code(){
 
 int get_potential_energy(double * potential_energy){
    unsigned int ppG = N/(NGPU*size); 
-   HostSafeCall(CudaInit(&GPUMINTHREADS, NGPU, rank, devices, GPUNAME));
+   HostSafeCall(CudaInit(&GPUMINTHREADS, NGPU, rank, devices, GPUNAME, path));
    HostSafeCall(Calculate_potential_Energy(pos_CH, N, EPS, TPB, NGPU, rank, devices, ppG, potential_energy, plummer_core, plummer_mass));
 	return 0;
 }
 
 int get_gravity_at_point(double eps, double x, double y, double z, double * forcex, double * forcey, double * forcez){
-   *forcex = *forcey = *forcez = 0.0;
-   for(unsigned int i=0; i<M ; i++){
+   unsigned int ppG = ceil ( (double) M / size);
+   double *sum = new double[3];
+   sum[0] = sum[1] = sum[2] = 0.0;
+	*forcex = *forcey = *forcez = 0.0;
+   for(unsigned int i=0; i<ppG ; i++){
 		double rx = (pos_CH[i].x - x) * (pos_CH[i].x - x);
       double ry = (pos_CH[i].y - y) * (pos_CH[i].y - y);
       double rz = (pos_CH[i].z - z) * (pos_CH[i].z - z);
       double distance = rx * rx + ry * ry + rz * rz + eps * eps; 
-      *forcex += pos_CH[i].w * rx / sqrt(distance * distance * distance);
-      *forcey += pos_CH[i].w * ry / sqrt(distance * distance * distance);
-      *forcez += pos_CH[i].w * rz / sqrt(distance * distance * distance);
+      sum[0] += pos_CH[i].w * rx / sqrt(distance * distance * distance);
+      sum[1] += pos_CH[i].w * ry / sqrt(distance * distance * distance);
+      sum[2] += pos_CH[i].w * rz / sqrt(distance * distance * distance);
    }
+   MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&sum[0], forcex, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&sum[1], forcey, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Allreduce(&sum[2], forcez, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
+   delete [] sum;
    return 0;
 }
 

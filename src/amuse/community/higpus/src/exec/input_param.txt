@@ -1,4 +1,4 @@
-256       // number of particles !
+300       // number of particles !
 2       // number of gpus to use !
 128     // gpus threads per block !
 3.    // integration time !

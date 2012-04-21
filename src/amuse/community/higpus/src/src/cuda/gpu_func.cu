@@ -202,18 +202,21 @@ HostError Corrector(double *GTIME, double *ATIME, double *local_time, double *st
 
 
 extern "C"
-HostError GPU_memcheck(unsigned int NGPU, unsigned int *devices, const char *file, const int line){
+HostError GPU_memcheck(unsigned int NGPU, unsigned int *devices, const char *file, const int line, string path){
 
 	size_t free, total;
    double Mb_conv = 1024.0*1024.0;
-
+   string temp;
+	char *output_name;
    int local_rank;
    MPISafeCall(MPI_Comm_rank(MPI_COMM_WORLD, &local_rank));
 
    if(local_rank == 0){
 
       ofstream meminfo;
-      meminfo.open("gpu_memory.dat", ios::app);
+		temp = path + "gpu_memory.dat";
+      output_name = to_char(temp);
+      meminfo.open(output_name, ios::app);
       if(!meminfo)
          return HNoFile;
 
@@ -236,11 +239,15 @@ HostError GPU_memcheck(unsigned int NGPU, unsigned int *devices, const char *fil
 
 
 
-HostError getEnergyLine_H6Blog(string *lastLine)
+HostError getEnergyLine_H6Blog(string *lastLine, string path)
 {
 
     ifstream data;
-    data.open("HiGPUslog.dat");
+	 string temp;
+	 char *input_name;
+	 temp = path + "HiGPUslog.dat";
+    input_name = to_char(temp);
+    data.open(input_name);
 
 	 if(!data)
 		 return HNoFile;
@@ -261,10 +268,10 @@ HostError getEnergyLine_H6Blog(string *lastLine)
 
 
 
-HostError AcquireEnergy(double *E){
+HostError AcquireEnergy(double *E, string path){
 
 	string last_line;
-	HostSafeCall(getEnergyLine_H6Blog(&last_line));
+	HostSafeCall(getEnergyLine_H6Blog(&last_line, path));
 
 	size_t found  = last_line.find('#',1);
 	size_t found2 = last_line.find('#',found+1);
@@ -280,7 +287,7 @@ HostError AcquireEnergy(double *E){
 
 
 extern "C"
-HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* local_time, double* step, const unsigned int N, const unsigned int M, double4* pos_PH, float4* vel_PH, double4* pos_CH, double4* vel_CH, double4* a_H0, const unsigned int MAXDIM, unsigned int NGPU, unsigned int *devices, unsigned int TPB, int rank, int size, unsigned int BFMAX, double ETA6, double ETA4, double DTMAX, double DTMIN, double EPS, double DTPRINT, unsigned int FMAX, const bool warm, double GTW, unsigned int GPUMINTHREADS, double plummer_core, double plummer_mass){
+HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* local_time, double* step, const unsigned int N, const unsigned int M, double4* pos_PH, float4* vel_PH, double4* pos_CH, double4* vel_CH, double4* a_H0, const unsigned int MAXDIM, unsigned int NGPU, unsigned int *devices, unsigned int TPB, int rank, int size, unsigned int BFMAX, double ETA6, double ETA4, double DTMAX, double DTMIN, double EPS, double DTPRINT, unsigned int FMAX, const bool warm, double GTW, unsigned int GPUMINTHREADS, double plummer_core, double plummer_mass, string path){
 
 	unsigned int ompthreads = 4; // N must be integer multiple of this number
    omp_set_num_threads( ompthreads );
@@ -289,7 +296,8 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 	int *next = new int [N];
 	unsigned long nextsize = N;
 	double NEXTOUT = DTPRINT;
-
+   string temp;
+   char *output_name;
 	double4 **pos_PD = new double4* [NGPU];
 	float4  **vel_PD = new float4*  [NGPU];
 	float4  **acc_PD = new float4*  [NGPU];
@@ -375,7 +383,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 		while(NEXTOUT <= GTW) NEXTOUT += DTPRINT;
 		while(NEXTOUT <= *GTIME) NEXTOUT += DTPRINT;
 		if(rank == 0)
-	      HostSafeCall(AcquireEnergy(&E0));
+	      HostSafeCall(AcquireEnergy(&E0, path));
 	}
 	else{
 	   HostSafeCall(Calculate_Energy(pos_CD, vel_CD, N, EPS, TPB, NGPU, rank, devices, ppG, &E0, plummer_core, plummer_mass));
@@ -384,14 +392,17 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 	ofstream stream;
 
 	if(rank == 0){
-		stream.open("HiGPUslog.dat", ios::app);
+      temp = path + "HiGPUslog.dat";
+      output_name = to_char(temp);
+		stream.open(output_name, ios::app);
 		stream<<"==============================================="<<endl;
 		stream<<scientific<<setprecision(16);
 		stream<<"#Initial Total Energy : #"<<E0<<"#"<<endl;
 		stream.close();
 
-		string str = to_string(FMAX) + ".dat";
-		stream.open(to_char(str), ios::out);
+		temp = path + to_string(FMAX) + ".dat";
+		output_name = to_char(temp);
+		stream.open(output_name, ios::out);
 		for(unsigned int i = 0; i < M; i++)
 			stream<<pos_CH[i].x<<"  "<<pos_CH[i].y<<"  "<<pos_CH[i].z<<"  "<<vel_CH[i].x<<"  "<<vel_CH[i].y<<"  "<<vel_CH[i].z<<"  "<<pos_CH[i].w<<endl;
 		stream.close();
@@ -419,8 +430,8 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 		Times[i].energy_time = 0.0;
 	}
 
-	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__));
-	HostSafeCall(CPU_memcheck(__FILE__, __LINE__));
+	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__, path));
+	HostSafeCall(CPU_memcheck(__FILE__, __LINE__, path));
 
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
@@ -462,8 +473,8 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 			delete [] vetint;
 			delete [] counter;
 			
-        	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__));
-			HostSafeCall(CPU_memcheck(__FILE__, __LINE__));
+        	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__, path));
+			HostSafeCall(CPU_memcheck(__FILE__, __LINE__, path));
 			
 			gettimeofday(&tv, NULL);
 			int sec = tv.tv_sec;
@@ -472,11 +483,15 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 
 #ifdef CHECK_TIMES
 			if(rank == 0){
-				stream.open("times.dat", ios::app);
+            temp = path + "times.dat";
+				output_name = to_char(temp);
+				stream.open(output_name, ios::app);
 				stream<<scientific<<setprecision(3);
 				stream<<" \n Total integration time : "<<end_program-start_program<<" seconds "<<endl;
 				stream.close();
-				stream.open("HiGPUslog.dat", ios::app);
+				temp = path + "HiGPUslog.dat";
+				output_name = to_char(temp);
+				stream.open(output_name, ios::app);
 				stream<<scientific<<setprecision(3);
 				stream<<" \n Total integration time : "<<end_program-start_program<<" seconds "<<endl;
 				stream.close();
@@ -485,12 +500,10 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 
 			if(rank == 0){
          	ofstream out_times;
-            string str;
-            str = "times_N_" + to_string(N) + "_nodes_" + to_string(size) + ".dat";
-            char* file;
-            file = to_char(str);
-            out_times.open(file, ios::out);
-            out_times<<"Executed with N = "<<N<<" , using "<<size<<" nodes "<<endl;
+            temp = path + "times_N_" + to_string(M) + "_nodes_" + to_string(size) + ".dat";
+            output_name = to_char(temp);
+            out_times.open(output_name, ios::out);
+            out_times<<"Executed with N = "<<M<<" , using "<<size<<" nodes "<<endl;
             out_times<<"global time of execution T = "<<scientific<<setprecision(4)<<end_program-start_program<<endl;
 				out_times.close();
 			}
@@ -647,7 +660,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 
 		if((*GTIME+GTW) >= NEXTOUT ){
 
-			CheckBlocks(step, M);
+			CheckBlocks(step, M, path);
 			double E;
 			get_times(&start);
 			HostSafeCall(Calculate_Energy(pos_CD, vel_CD, N, EPS, TPB, NGPU, rank, devices, ppG, &E, plummer_core, plummer_mass));
@@ -655,7 +668,9 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 			set_times(end-start, &(Times[nextsize].energy_time));
 
 			if(rank == 0){
-				stream.open("times.dat", ios::out);
+				temp = path + "times.dat";
+            output_name = to_char(temp);
+				stream.open(output_name, ios::out);
 				stream<<scientific<<setprecision(3);
 				stream<<"  N  "<<"  NEXT  "<<"	  PRED "<<"       EVAL "<<"      REDU "<<"     REPOS "<<"    CPY_ACC "<<"    MPI "<<"        CORR   "<<"    RECON "<<endl;  
 				for(unsigned int i = 1; i <= M; i++){
@@ -674,15 +689,16 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 							Times[i].reconstruct_time<<"  "<<endl;
 				}
 				stream.close();
-
-				stream.open("energy.dat", ios::app);
+            temp = path + "energy.dat";
+				output_name = to_char(temp);
+				stream.open(output_name, ios::app);
 				stream<<scientific<<setprecision(5);
 				stream<<*GTIME+GTW<<"  "<<(E-E0)/E0<<endl;
 				stream.close();
 
-				string file_name = to_string(out_index + FMAX);
-				file_name += ".dat";
-				stream.open(to_char(file_name), ios::out);
+				temp = path + to_string(out_index + FMAX) + ".dat";
+				output_name = to_char(temp);
+				stream.open(output_name, ios::out);
 				stream<<scientific<<setprecision(16);
 				for(unsigned int i = 0; i < M; i++)
 					stream<<pos_CH[i].x<<"  "<<pos_CH[i].y<<"  "<<pos_CH[i].z<<"  "<<vel_CH[i].x<<"  "<<vel_CH[i].y<<"  "<<vel_CH[i].z<<"  "<<pos_CH[i].w<<endl;
@@ -811,15 +827,19 @@ HostError Calculate_potential_Energy(double4 *pos_CH, unsigned int N, double EPS
 }
 
 
-HostError CudaInit(unsigned int *M, int NGPU, int rank, unsigned int *devices, string gpu_name){
+HostError CudaInit(unsigned int *M, int NGPU, int rank, unsigned int *devices, string gpu_name, string path){
 	cudaDeviceProp *properties;
 	int count;
 	DeviceSafeCall(cudaGetDeviceCount(&count));
 	properties = new cudaDeviceProp [count];
 	ofstream hlog;
-        
+   string temp;
+	char *output_name;
+	
 	if(rank == 0)
-		hlog.open("HiGPUslog.dat", ios::app);
+      temp = path + "HiGPUslog.dat";
+      output_name = to_char(temp);
+		hlog.open(output_name, ios::app);
 
 	if(count < NGPU || count <= 0)
 		return HNoGpus;
@@ -987,16 +1007,20 @@ HostError ReduceAll(unsigned int cpy_size, unsigned int N, unsigned int NGPU, un
    return HNoError;
 }
 
-HostError CheckBlocks(double *step, unsigned int M){
+HostError CheckBlocks(double *step, unsigned int M, string path){
 
 	int local_rank;
+   string temp;
+	char *output_name;
 
 	MPISafeCall(MPI_Comm_rank(MPI_COMM_WORLD, &local_rank));
    
    for(unsigned int i = 0; i < M; i++)
 	if(local_rank == 0){
       ofstream blocks;
-		blocks.open("Blocks.dat");
+		temp = path + "Blocks.dat";
+		output_name = to_char(temp);
+		blocks.open(output_name);
 		int *bl = new int [35];
 		double conto;
 
@@ -1021,9 +1045,9 @@ HostError CheckBlocks(double *step, unsigned int M){
 }
 
 extern "C"
-HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned int N, unsigned int M, unsigned int BFMAX, double ETA4, unsigned int NGPU, double EPS, unsigned int *MAXDIM, double DTMAX, double DTMIN, unsigned int *GPUMINTHREADS, unsigned int *devices, string gpu_name, int rank, int nodes, double4* pos_CH, double4* vel_CH, double4* a_H0, double* step, double* local_time, double* ACTUAL_TIME, double plummer_core, double plummer_mass){
+HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned int N, unsigned int M, unsigned int BFMAX, double ETA4, unsigned int NGPU, double EPS, unsigned int *MAXDIM, double DTMAX, double DTMIN, unsigned int *GPUMINTHREADS, unsigned int *devices, string gpu_name, int rank, int nodes, double4* pos_CH, double4* vel_CH, double4* a_H0, double* step, double* local_time, double* ACTUAL_TIME, double plummer_core, double plummer_mass, string path){
 	
-	HostSafeCall(CudaInit(GPUMINTHREADS, NGPU, rank, devices, gpu_name));
+	HostSafeCall(CudaInit(GPUMINTHREADS, NGPU, rank, devices, gpu_name, path));
 	
 	HostSafeCall(Max_dimension(TPB, BFMAX, N, MAXDIM, *GPUMINTHREADS));
  	
@@ -1062,8 +1086,8 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 	double *mpi_red = new double [3*N];
 	double stp = 0.001;
 
-	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__));
-	HostSafeCall(CPU_memcheck(__FILE__, __LINE__));
+	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__, path));
+	HostSafeCall(CPU_memcheck(__FILE__, __LINE__, path));
    
 	unsigned long BL = ceil((double)nextsize/TPB);
 	int dim = TPB*BL;
@@ -1122,8 +1146,8 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 		initvectors<<<BLT, threads>>>(a3_D[i], acc_PD[i]);
 	}
 	
-	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__));
-	HostSafeCall(CPU_memcheck(__FILE__, __LINE__));
+	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__, path));
+	HostSafeCall(CPU_memcheck(__FILE__, __LINE__, path));
 
 	unsigned int dim2 = ceil((double)nextsize/TPB)*TPB;
 
@@ -1268,7 +1292,7 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
    
 	HostSafeCall(DetermineSteps(stp, N, M, a_H0, a_H1, ETA4, DTMAX, DTMIN, step, ACTUAL_TIME, local_time));
    
-	HostSafeCall(CheckBlocks(step, M));
+	HostSafeCall(CheckBlocks(step, M, path));
 	
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
@@ -1294,8 +1318,8 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 	delete [] mpi_red;
 	delete [] next;
 	
-	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__));
-   HostSafeCall(CPU_memcheck(__FILE__, __LINE__));
+	HostSafeCall(GPU_memcheck(NGPU, devices, __FILE__, __LINE__, path));
+   HostSafeCall(CPU_memcheck(__FILE__, __LINE__, path));
   
 	return HNoError;
 }

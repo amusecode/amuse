@@ -9,23 +9,25 @@
 #include <my_errors.h>
 #include <utilis.h>
 #include <mpi_types.h>
-#include <stdarg.h>
 
 #include "sys/time.h"
 
 using namespace std;
 
-HostError CPU_memcheck(const char *file, const int line){
+HostError CPU_memcheck(const char *file, const int line, string path){
 	
-	string str1, str2, str3;
+	string str1, str2, str3, temp;
    int memtot, memfree, membuf, cached;
 	int local_rank;
+	char *output_name;
 	MPISafeCall(MPI_Comm_rank(MPI_COMM_WORLD, &local_rank));
 
 	if(local_rank == 0){
 
 		ofstream meminfo;
-		meminfo.open("cpu_memory.dat", ios::app);
+		temp = path + "cpu_memory.dat";
+	   output_name = to_char(temp);
+		meminfo.open(output_name, ios::app);
 		if(!meminfo)
          return HNoFile;
 
@@ -82,9 +84,9 @@ HostError check_argv(int ac, char *av[], string *param, bool *warm_start, string
 			if(to_string(&av[i][1])=="h" || to_string(&av[i][1])=="help"){
 				cout<<endl;
 				cout<<" ------------------------------------------------------- "<<endl;
-				cout<<" ----------------------Help of H6B---------------------- "<<endl;
+				cout<<" ----------------------Help of HiGPUs------------------- "<<endl;
 				cout<<" ------------------------------------------------------- "<<endl;
-				cout<<" Usage : ./H6B [options] "<<endl;
+				cout<<" Usage : ./HiGPUs [options] "<<endl;
 				cout<<" Options : "<<endl;
 				cout<<"           -f [file]  (input_param.txt) = it specifies the file containing the simulation parameters"<<endl;
 			   cout<<"           -h = it shows this help screen "<<endl;
@@ -343,98 +345,102 @@ HostError cpu_read_params(
 		bool         *cdm, 
 		bool         *cdv,  
 		string       *file,
-		string       *gpu_name) {
+		string       *gpu_name,
+      string       path) {
 
 		ifstream fin_data;
-		char *file_name;
+		string temp;
+		char *file_name, *output_name;
 
-     file_name = to_char(file_to_read);
-     fin_data.open(file_name);
+      file_name = to_char(file_to_read);
+      fin_data.open(file_name);
 
-     if(!fin_data)
-       return HNoFile;
+      if(!fin_data)
+			return HNoFile;
 	  
-		ofstream hlog;
-		hlog.open("HiGPUslog.dat", ios::app);
+	   ofstream hlog;
+      temp = path + "HiGPUslog.dat";
+      output_name = to_char(temp);
+	   hlog.open(output_name, ios::app);
 
-     fin_data >> *N;
-     fin_data.ignore(300,'!');
+      fin_data >> *N;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *gpus;
-     fin_data.ignore(300,'!');
+      fin_data >> *gpus;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *threads;
-     fin_data.ignore(300,'!');
+      fin_data >> *threads;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *totaltime;
-     fin_data.ignore(300,'!');
+      fin_data >> *totaltime;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *dtmax;
-     fin_data.ignore(300,'!');
+      fin_data >> *dtmax;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *dtmin;
-     fin_data.ignore(300,'!');
+      fin_data >> *dtmin;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *epsilon;
-     fin_data.ignore(300,'!');
+      fin_data >> *epsilon;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *eta6;
-     fin_data.ignore(300,'!');
+      fin_data >> *eta6;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *eta4;
-     fin_data.ignore(300,'!');
+      fin_data >> *eta4;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *dtprint;
-     fin_data.ignore(300,'!');
+      fin_data >> *dtprint;
+      fin_data.ignore(300,'!');
 
-     fin_data >> *filemax;
-     fin_data.ignore(300,'!');
+      fin_data >> *filemax;
+      fin_data.ignore(300,'!');
 
-	  fin_data >> *cdm;
-	  fin_data.ignore(300,'!');
+	   fin_data >> *cdm;
+	   fin_data.ignore(300,'!');
 
-	  fin_data >> *cdv;
-	  fin_data.ignore(300,'!');
+	   fin_data >> *cdv;
+	   fin_data.ignore(300,'!');
 
-	  fin_data >> *file;
-	  fin_data.ignore(300,'!');
+	   fin_data >> *file;
+	   fin_data.ignore(300,'!');
 
-	  getline(fin_data, *gpu_name);
-	  getline(fin_data, *gpu_name);
+	   getline(fin_data, *gpu_name);
+	   getline(fin_data, *gpu_name);
 
-	  size_t found = gpu_name->find('#');
+	   size_t found = gpu_name->find('#');
 	  
-	  if (found==string::npos)
-		  return HNotFound;
+	   if (found==string::npos)
+			return HNotFound;
 
-	  gpu_name->resize(int(found));
+	   gpu_name->resize(int(found));
 
-	  *dtmax = pow(2.0, *dtmax);
-	  *dtmin = pow(2.0, *dtmin);
+	   *dtmax = pow(2.0, *dtmax);
+	   *dtmin = pow(2.0, *dtmin);
 
 
-     hlog<<" ================================================== "<<endl;
-     hlog<<" Read parameters file : "<<file_to_read<<endl;
-     hlog<<" N                   : "<<*N<<endl;
-     hlog<<" Gpus                : "<<*gpus<<endl;
-     hlog<<" Threads per block   : "<<*threads<<endl;
-     hlog<<" Time of integration : "<<*totaltime<<endl;
-     hlog<<" Max time step       : "<<*dtmax<<endl;
-     hlog<<" Min time step       : "<<*dtmin<<endl;
-     hlog<<" Softening           : "<<*epsilon<<endl;
-	  hlog<<" eta 6th order       : "<<*eta6<<endl;
-	  hlog<<" eta 4th order       : "<<*eta4<<endl;
-	  hlog<<" time for printing   : "<<*dtprint<<endl;
-	  hlog<<" Max output files    : "<<*filemax<<endl;
-	  hlog<<" CDM scale           : "<<*cdm<<endl;
-	  hlog<<" CDV scale           : "<<*cdv<<endl;
-	  hlog<<" Input file          : "<<*file<<endl;
-	  hlog<<" ================================================== "<<endl;
+      hlog<<" ================================================== "<<endl;
+      hlog<<" Read parameters file : "<<file_to_read<<endl;
+      hlog<<" N                   : "<<*N<<endl;
+      hlog<<" Gpus                : "<<*gpus<<endl;
+      hlog<<" Threads per block   : "<<*threads<<endl;
+      hlog<<" Time of integration : "<<*totaltime<<endl;
+      hlog<<" Max time step       : "<<*dtmax<<endl;
+      hlog<<" Min time step       : "<<*dtmin<<endl;
+      hlog<<" Softening           : "<<*epsilon<<endl;
+	   hlog<<" eta 6th order       : "<<*eta6<<endl;
+	   hlog<<" eta 4th order       : "<<*eta4<<endl;
+	   hlog<<" time for printing   : "<<*dtprint<<endl;
+	   hlog<<" Max output files    : "<<*filemax<<endl;
+	   hlog<<" CDM scale           : "<<*cdm<<endl;
+	   hlog<<" CDV scale           : "<<*cdv<<endl;
+	   hlog<<" Input file          : "<<*file<<endl;
+	   hlog<<" ================================================== "<<endl;
 
-     fin_data.close();
-	  hlog.close();
+      fin_data.close();
+	   hlog.close();
 
-	  return (HNoError);
+	   return (HNoError);
 
 }
 

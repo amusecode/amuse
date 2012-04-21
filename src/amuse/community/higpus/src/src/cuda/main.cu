@@ -23,6 +23,8 @@ int main(int argc, char *argv[]){
 	string FINP, GPUNAME, warm_start_file;
 	double plummer_core = 0.0;
 	double plummer_mass = 0.0;
+   string temp, path = "./data/";
+	char *output_name;
 
 	if(rank == 0){
 
@@ -31,12 +33,21 @@ int main(int argc, char *argv[]){
 
 	if(!warm_start){
 		ofstream generic;
-		generic.open("gpu_memory.dat", ios::out);
-		generic.close();
-		generic.open("cpu_memory.dat", ios::out);
-		generic.close();
-		generic.open("HiGPUslog.dat", ios::out);
-		generic.close();
+      temp = path + "gpu_memory.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::out);
+      generic.close();
+      temp = path + "cpu_memory.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::out);
+      generic.close();
+      temp = path + "HiGPUslog.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::out);
+      generic.close();
+      temp = path + "energy.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::out);
 		generic.open("energy.dat", ios::out);
 		generic<<scientific<<setprecision(5);
 		double value = 0.0;
@@ -44,22 +55,30 @@ int main(int argc, char *argv[]){
 		generic.close();
 	}
 	else{
-		ofstream generic;
-      generic.open("gpu_memory.dat", ios::app);
-		generic<<" RESTART AT THIS POINT ***************************************************************"<<endl;
-      generic.close();
-      generic.open("cpu_memory.dat", ios::app);
-		generic<<" RESTART AT THIS POINT ***************************************************************"<<endl;
-      generic.close();
-      generic.open("HiGPUslog.dat", ios::app);
-		generic<<" RESTART AT THIS POINT ***************************************************************"<<endl;
-      generic.close();
-      generic.open("energy.dat", ios::app);
+      ofstream generic;
+      temp = path + "gpu_memory.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::app);
+      generic<<" RESTART AT THIS POINT ***************************************************************"<<endl;
+		generic.close();
+      temp = path + "cpu_memory.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::app);
+      generic<<" RESTART AT THIS POINT ***************************************************************"<<endl;
+		generic.close();
+      temp = path + "HiGPUslog.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::app);
+      generic<<" RESTART AT THIS POINT ***************************************************************"<<endl;
+		generic.close();
+      temp = path + "energy.dat";
+      output_name = to_char(temp);
+      generic.open(output_name, ios::app);
 		generic<<"\n \n"<<endl;
       generic.close();
 	}
 
-	HostSafeCall(cpu_read_params(param, &N, &NGPU, &TPB, &TTIME, &DTMAX, &DTMIN, &EPS, &ETA6, &ETA4, &DTPRINT, &FMAX, &CDM, &CDV, &FINP, &GPUNAME));
+	HostSafeCall(cpu_read_params(param, &N, &NGPU, &TPB, &TTIME, &DTMAX, &DTMIN, &EPS, &ETA6, &ETA4, &DTPRINT, &FMAX, &CDM, &CDV, &FINP, &GPUNAME, path));
     
 	HostSafeCall(isDivisible(&N, &M, size, NGPU, TPB, &BFMAX));
 
@@ -71,7 +90,9 @@ int main(int argc, char *argv[]){
 
 #ifdef CHECK_TIMES
 	ofstream generic;
-	generic.open("times.dat", ios::out);
+	temp = path + "times.dat";
+   output_name = to_char(temp);
+	generic.open(output_name, ios::out);
 	generic.close();
 	cout<<" Check times option ENABLED "<<endl;
 #else
@@ -81,7 +102,9 @@ int main(int argc, char *argv[]){
 #ifdef PLUMMER
 	cout<<" Plummer Potential option ENABLED "<<endl;
 	ofstream hlog;
-	hlog.open("H6Blog.dat", ios::app);
+   temp = path + "HiGPUslog.dat";
+   output_name = to_char(temp);
+	hlog.open(output_name, ios::app);
 	hlog<<" Plummer (core) : "<<plummer_core<<endl;
 	hlog<<" Plummer (mass) : "<<plummer_mass<<endl;
 	hlog<<" =============================================== "<<endl;
@@ -134,9 +157,9 @@ int main(int argc, char *argv[]){
 
    HostSafeCall(__MPIbcastPosVel(pos_PH, vel_PH, vel_CH, N, rank, size));
 	
-	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN, &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass));
+	HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN, &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass, path));
 	
-	HostSafeCall(Hermite6th(TTIME, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTIME_WARM, GPUMINTHREADS, plummer_core, plummer_mass));
+	HostSafeCall(Hermite6th(TTIME, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTIME_WARM, GPUMINTHREADS, plummer_core, plummer_mass, path));
 
 	MPI_Finalize();
 
