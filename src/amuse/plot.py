@@ -120,7 +120,7 @@ def ylabel(s, *args, **kwargs):
         s = custom_label.format(s, UnitlessArgs.unitnames_of_args[1])
     native_plot.ylabel(s, *args, **kwargs)
 
-def smart_length_units_for_vector_quantity(quantity):
+def _smart_length_units_for_vector_quantity(quantity):
     length_units = [units.Mpc, units.kpc, units.parsec, units.AU, units.RSun, units.km]
     total_size = max(quantity) - min(quantity)
     for length_unit in length_units:
@@ -168,7 +168,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
     current_axes.set_axis_bgcolor('#101010')
     if view:
         current_axes.set_aspect("equal", adjustable = "box")
-        length_unit = smart_length_units_for_vector_quantity(view)
+        length_unit = _smart_length_units_for_vector_quantity(view)
         current_axes.set_xlim(view[0].value_in(length_unit), 
             view[1].value_in(length_unit), emit=True, auto=False)
         current_axes.set_ylim(view[2].value_in(length_unit), 
@@ -176,7 +176,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
         phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((view[1]-view[0])**2 + (view[3]-view[2])**2)
     else:
         current_axes.set_aspect("equal", adjustable = "datalim")
-        length_unit = smart_length_units_for_vector_quantity(x)
+        length_unit = _smart_length_units_for_vector_quantity(x)
         phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((max(x)-min(x))**2 + (max(y)-min(y))**2)
     sizes = numpy.maximum((h_smooths**2 * phys_to_pix2), min_size)
     
