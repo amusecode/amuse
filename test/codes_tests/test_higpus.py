@@ -199,7 +199,7 @@ class TestHiGPUs(TestWithMPI):
 
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = HiGPUs(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(HiGPUs(convert_nbody))
         instance.initialize_code()
     
         instance.parameters.softening = 0.000001 | units.AU
@@ -237,7 +237,7 @@ class TestHiGPUs(TestWithMPI):
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = HiGPUs(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(HiGPUs(convert_nbody))
 
         instance.initialize_code()
         instance.commit_parameters()
@@ -265,7 +265,7 @@ class TestHiGPUs(TestWithMPI):
         instance.stop()
         
     def test3(self):
-        instance = HiGPUs()
+        instance = self.new_instance_of_an_optional_code(HiGPUs)
         instance.initialize_code()
         instance.commit_parameters()  
         particles = datamodel.Particles(6)
@@ -285,7 +285,7 @@ class TestHiGPUs(TestWithMPI):
         
         
     def test4(self):
-        instance = HiGPUs()
+        instance = self.new_instance_of_an_optional_code(HiGPUs)
         instance.initialize_code()
         instance.parameters.softening = 0.0000001 | nbody_system.length
         instance.commit_parameters()  
@@ -327,7 +327,7 @@ class TestHiGPUs(TestWithMPI):
         instance.stop()
         
     def test5(self):
-        instance = HiGPUs()
+        instance = self.new_instance_of_an_optional_code(HiGPUs)
         instance.initialize_code()
     
         instance.parameters.softening = 0.000001 | nbody_system.length
@@ -370,7 +370,7 @@ class TestHiGPUs(TestWithMPI):
         particle.position = [0.0, 1.0, 0.0] | nbody_system.length
         particle.velocity = [-1.0, 0.0, 0.0] | nbody_system.speed
         
-        instance = HiGPUs()
+        instance = self.new_instance_of_an_optional_code(HiGPUs)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
@@ -397,7 +397,7 @@ class TestHiGPUs(TestWithMPI):
 
     def test7(self):
        
-        instance = HiGPUs()
+        instance = self.new_instance_of_an_optional_code(HiGPUs)
         instance.parameters.softening = 0.5  | nbody_system.length
         
         instance.commit_parameters()        
