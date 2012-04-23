@@ -864,12 +864,14 @@ HiGPUs
 --------
 
 HiGPUs is a parallel direct N-body code based on a 6th order Hermite 
-integrator. The code uses, at the same time, MPI, OpenMP and CUDA 
-libraries to fully exploit all the capabilities offered by the 
-most modern hybrid supercomputers in the world. Moreover it is 
-implemented using block time steps taking into account the 
-properties of the stiff problems such as the gravitational N-body 
-problem.
+integrator. The code has been developed by Capuzzo-Dolcetta, Punzo 
+and Spera (Dep. of Physics, Sapienza, Univ. di Roma; 
+see astrowww.phys.uniroma1.it/dolcetta/hpc/hpc.html) and uses, at 
+the same time, MPI, OpenMP and CUDA libraries to fully exploit all 
+the capabilities offered by hybrid supercomputing platforms. 
+Moreover, it is implemented using block time steps (individual time stepping) 
+such to be able to deal with stiff problems like highly collisional gravitational 
+N-body problems.
 
 Specifics
 #########
@@ -947,7 +949,9 @@ Parameters
 
 
 For more information about parameters check the readme file in the docs folder.
-These are the maximum performance (in Gflops) reached using different single GPUs installed, one at a time, on a workstation equipped with 2 CPUs Intel Xeon X5650, 12 GB of ECC RAM memory 1333 MHz, Ubuntu Lucid 10.04 x86_64, motherboard Supermicro X8DTG-QF:
+These are the maximum performance (in Gflops) reached using different single GPUs installed, one at a time, 
+on a workstation equipped with 2 CPUs Intel Xeon X5650, 12 GB of ECC RAM memory 1333 MHz, 
+Ubuntu Lucid 10.04 x86_64, motherboard Supermicro X8DTG-QF:
   
     * TESLA C1060  :  107
     * TESLA C2050  :  395
