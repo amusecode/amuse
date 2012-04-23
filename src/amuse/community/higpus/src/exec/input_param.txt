@@ -11,5 +11,5 @@
 1000000  // maximum number of snapshots !
 0       // rescale to the center of mass 1 = true, 0 = false !
 0       // rescale to the center of velocity 1 = true, 0 = false !
-KBOdata.dat  // input file for positions, velocities and masses (it must be created in THIS order) !
+random.dat  // input file for positions, velocities and masses (it must be created in THIS order) !
 GeForce GTX 480#  // GPU to use (the name must be terminated with the character #) !
