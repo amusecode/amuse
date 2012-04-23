@@ -416,7 +416,8 @@ int get_max_time_step(double * max_time_step){
 }
 
 int set_max_time_step(double max_time_step){
-   DTMAX = pow(2.0,max_time_step);
+   DTMAX = max_time_step;
+	cout<<" NOTE : the parameter max_time_step (in nbody time) must be 2^-n where n is an integer "<<endl;
    return 0;
 }
 
@@ -426,7 +427,8 @@ int get_min_time_step(double * min_time_step){
 }
 
 int set_min_time_step(double min_time_step){
-   DTMIN = pow(2.0,min_time_step);
+   DTMIN = min_time_step;
+	cout<<" NOTE : the parameter min_time_step (in nbody time) must be 2^-n where n is an integer "<<endl;
    return 0;
 }
 
@@ -714,9 +716,9 @@ int get_gravity_at_point(double eps, double x, double y, double z, double * forc
    sum[0] = sum[1] = sum[2] = 0.0;
 	*forcex = *forcey = *forcez = 0.0;
    for(unsigned int i=0; i<ppG ; i++){
-		double rx = (pos_CH[i].x - x) * (pos_CH[i].x - x);
-      double ry = (pos_CH[i].y - y) * (pos_CH[i].y - y);
-      double rz = (pos_CH[i].z - z) * (pos_CH[i].z - z);
+		double rx = (pos_CH[i].x - x);
+      double ry = (pos_CH[i].y - y);
+      double rz = (pos_CH[i].z - z);
       double distance = rx * rx + ry * ry + rz * rz + eps * eps; 
       sum[0] += pos_CH[i].w * rx / sqrt(distance * distance * distance);
       sum[1] += pos_CH[i].w * ry / sqrt(distance * distance * distance);
