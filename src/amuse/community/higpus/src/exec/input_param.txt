@@ -1,15 +1,15 @@
-300       // number of particles !
+8192 // number of particles !
 2       // number of gpus to use !
 128     // gpus threads per block !
-3.    // integration time !
+625.     // integration time !
 -3.0    // exponent which defines the maximum time step allowed for particles (2^exponent) !
 -30.0   // exponent which defines the minimum time step allowed for particles (2^exponent) !
-0.001  // softening parameter !
-0.4    // eta parameter for determining particles time steps (generalized Aarseth criterion for the Hermite 6th order method) !
+0.0004  // softening parameter !
+0.01    // eta parameter for determining particles time steps (generalized Aarseth criterion for the Hermite 6th order method) !
 0.01    // eta parameter for initializing blocks (Aarseth criterion) !
-1.0   // time step for snapshots !
+100.   // time step for snapshots !
 1000000  // maximum number of snapshots !
 0       // rescale to the center of mass 1 = true, 0 = false !
 0       // rescale to the center of velocity 1 = true, 0 = false !
-random.dat  // input file for positions, velocities and masses (it must be created in THIS order) !
+KBOdata.dat  // input file for positions, velocities and masses (it must be created in THIS order) !
 GeForce GTX 480#  // GPU to use (the name must be terminated with the character #) !
