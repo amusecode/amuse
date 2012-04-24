@@ -31,9 +31,8 @@ class SalpeterIMF(object):
         return ((u2 - l2) * alpha1) / ((u1 - l1) * alpha2)
         
     def mass(self, random_number):
-        one = 1.0 | units.none
         alpha1 = self.alpha + 1
-        factor = (pow(self.mass_max / self.mass_min, alpha1) - one )
+        factor = (pow(self.mass_max / self.mass_min, alpha1) - 1.0 )
         return self.mass_min * (pow(one + (factor * random_number), 1.0 / alpha1))
         
     def next_mass(self,N=1):

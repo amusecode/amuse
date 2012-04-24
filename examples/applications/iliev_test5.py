@@ -156,7 +156,7 @@ def iliev_test_5_ic( N=10000,
   p.rho = rhoinit
   p.mass=mp
   p.flux=0. | (units.s**-1)
-  p.xion=0. | units.none
+  p.xion=0. 
 
   sources=datamodel.Particles(Ns)
   x,y,z=uniform_unit_sphere(Ns).make_xyz()
@@ -166,7 +166,7 @@ def iliev_test_5_ic( N=10000,
   sources.z=L*z*(1./N)**(1./3)/10
   sources.rho=rhoinit/100.
   sources.flux=(5.e48/Ns) | (units.s**-1)
-  sources.xion=1. | units.none
+  sources.xion=1. 
   
   return p,sources
 

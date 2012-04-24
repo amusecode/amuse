@@ -430,7 +430,7 @@ class StoppingConditions(object):
             "set_stopping_condition_number_of_steps_parameter", 
             "stopping_conditions_number_of_steps", 
             "max inner loop evals", 
-            default_value = 1.0 |  units.none
+            default_value = 1.0
         )
 
         object.add_method_parameter(
@@ -566,12 +566,12 @@ class StoppingConditions(object):
         object.add_method(
             "get_stopping_condition_number_of_steps_parameter",
             (),
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_stopping_condition_number_of_steps_parameter",
-            (units.none, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
