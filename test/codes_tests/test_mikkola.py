@@ -2,8 +2,8 @@ import numpy
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
-from .interface import MikkolaInterface
-from .interface import Mikkola
+from amuse.community.mikkola.interface import MikkolaInterface
+from amuse.community.mikkola.interface import Mikkola
 
 class MikkolaInterfaceTests(TestWithMPI):
     

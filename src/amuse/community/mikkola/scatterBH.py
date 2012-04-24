@@ -1,6 +1,6 @@
 import numpy
-#from amuse.community import *
-from amuse.lab impot *
+
+from amuse.lab import *
 
 from .interface import MikkolaInterface
 from .interface import Mikkola
@@ -21,43 +21,43 @@ def new_system_of_Hulse_Taylor_pulsar():
     return stars
 
 def HulseTaylor3():
-        instance = Mikkola()
-        stars = self.new_system_of_Hulse_Taylor_pulsar()
-        instance.particles.add_particles(stars)
-        Hulse = stars[0]
-        Taylor = stars[1]
-        
-        postion_at_start = Taylor.position.value_in(units.AU)[0]
-        
-        #orbital period
-        #period_HTpulsar = 7.751939106 | units.hour
-        #period_HTpulsar = 77.51939106 | units.hour
-        # period for abseidal motion
+    instance = Mikkola()
+    stars = self.new_system_of_Hulse_Taylor_pulsar()
+    instance.particles.add_particles(stars)
+    Hulse = stars[0]
+    Taylor = stars[1]
+    
+    postion_at_start = Taylor.position.value_in(units.AU)[0]
+    
+    #orbital period
+    #period_HTpulsar = 7.751939106 | units.hour
+    #period_HTpulsar = 77.51939106 | units.hour
+    # period for abseidal motion
 #        period_HTpulsar = 85.0 | units.yr #4.2degrees/year
-        period_HTpulsar = 1.0 | units.yr 
-        instance.evolve_model(period_HTpulsar)
-        instance.particles.copy_values_of_state_attributes_to(stars)
+    period_HTpulsar = 1.0 | units.yr 
+    instance.evolve_model(period_HTpulsar)
+    instance.particles.copy_values_of_state_attributes_to(stars)
 
-        postion_after_full_rotation = Taylor.position.value_in(units.AU)[0]
-       
-        self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 4)
-        
-        instance.evolve_model(1.5 * period_HTpulsar)
-        
-        instance.particles.copy_values_of_state_attributes_to(stars)
-        
-        postion_after_half_a_rotation = Taylor.position.value_in(units.AU)[0]
-        self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
-        
-        instance.evolve_model(1.75 * period_HTpulsar)
-         
-        instance.particles.copy_values_of_state_attributes_to(stars)
-        
-        postion_after_half_a_rotation = Taylor.position.value_in(units.AU)[1]
-        
-        self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
-        instance.cleanup_code()
-        del instance
+    postion_after_full_rotation = Taylor.position.value_in(units.AU)[0]
+   
+    self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 4)
+    
+    instance.evolve_model(1.5 * period_HTpulsar)
+    
+    instance.particles.copy_values_of_state_attributes_to(stars)
+    
+    postion_after_half_a_rotation = Taylor.position.value_in(units.AU)[0]
+    self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
+    
+    instance.evolve_model(1.75 * period_HTpulsar)
+     
+    instance.particles.copy_values_of_state_attributes_to(stars)
+    
+    postion_after_half_a_rotation = Taylor.position.value_in(units.AU)[1]
+    
+    self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
+    instance.cleanup_code()
+    del instance
 
 
 def new_option_parser():
