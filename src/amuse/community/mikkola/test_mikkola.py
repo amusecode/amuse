@@ -12,8 +12,8 @@ class MikkolaInterfaceTests(TestWithMPI):
     
     def test1(self):
 #        instance = MikkolaInterface(debugger="ddd")
-        instance = MikkolaInterface(debugger="xterm")
-#        instance = MikkolaInterface()
+#        instance = MikkolaInterface(debugger="xterm")
+        instance = MikkolaInterface()
         instance.initialize_code()
         instance.commit_parameters()
 
@@ -27,14 +27,14 @@ class MikkolaInterfaceTests(TestWithMPI):
         retrieved_state2 = instance.get_state(2)
     
         end_time = 10.0 
-        instance.evolve(end_time)
+        instance.evolve_model(end_time)
         instance.cleanup_code()
         del instance
 # run with: 
 # %>nosetests -v test_mikkola.py:TestMikkola.test1
 class TestMikkola(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = core.Stars(2)
+        stars = datamodel.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -59,23 +59,26 @@ class TestMikkola(TestWithMPI):
         postion_at_start = earth.position.value_in(units.AU)[0]
         
 #        instance.evolve_model(365.0 | units.day)
+
         instance.evolve_model(1.0 | units.yr)
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        channel = instance.particles.new_channel_to(stars)
+        channel.copy()
         
         postion_after_full_rotation = earth.position.value_in(units.AU)[0]
        
+        self.assertAlmostEqual(postion_at_start, instance.particles[1].position.value_in(units.AU)[0], 4)
         self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 4)
         
         instance.evolve_model(1.5 | units.yr)
         
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        channel.copy()
         
         postion_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         
         instance.evolve_model(1.75  | units.yr)
          
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        channel.copy()
         
         postion_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         
@@ -86,7 +89,7 @@ class TestMikkola(TestWithMPI):
 # run with: 
 # %>nosetests -v test_mikkola.py:TestMikkola.test1
     def new_system_of_sun_and_mercury(self):
-        stars = core.Stars(2)
+        stars = datamodel.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
@@ -111,7 +114,8 @@ class TestMikkola(TestWithMPI):
         
         period_mercury = 87.9691 | units.day
         instance.evolve_model(period_mercury)
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        channel = instance.particles.new_channel_to(stars)
+        channel.copy()
         
         postion_after_full_rotation = mercury.position.value_in(units.AU)[0]
        
@@ -119,14 +123,14 @@ class TestMikkola(TestWithMPI):
         
         instance.evolve_model(1.5 * period_mercury)
         
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        channel.copy()
         
         postion_after_half_a_rotation = mercury.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         
         instance.evolve_model(1.75 *period_mercury)
          
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        channel.copy()
         
         postion_after_half_a_rotation = mercury.position.value_in(units.AU)[1]
         
@@ -137,13 +141,13 @@ class TestMikkola(TestWithMPI):
 # run with: 
 # %>nosetests -v test_mikkola.py:TestMikkola.test3
     def new_system_of_Hulse_Taylor_pulsar(self):
-        stars = core.Stars(2)
+        stars = datamodel.Stars(2)
         Hulse = stars[0]
         Hulse.mass = 1.441 | units.MSun
         Hulse.radius = 1.4e-5 | units.RSun
-#        Hulse.position = [-1576800.0, 0, 0] | units.km
+        Hulse.position = [-1576800.0, 0, 0] | units.km
 #        Hulse.velocity = [0.0, -55.0, 0.0] | units.km/units.s
-        Hulse.position = [-1546691.3719943422, 0, 0] | units.km
+#        Hulse.position = [-1546691.3719943422, 0, 0] | units.km
         Hulse.velocity = [0.0, -110.0, 0.0] | units.km/units.s
 
         Taylor = stars[1]
@@ -165,31 +169,20 @@ class TestMikkola(TestWithMPI):
         postion_at_start = Taylor.position.value_in(units.AU)[0]
         
         #orbital period
-        #period_HTpulsar = 7.751939106 | units.hour
+        #see http://www.johnstonsarchive.net/relativity/binpulsar.html
+        period_HTpulsar = 7.75 | units.hour
         #period_HTpulsar = 77.51939106 | units.hour
         # period for abseidal motion
-#        period_HTpulsar = 85.0 | units.yr #4.2degrees/year
-        period_HTpulsar = 1.0 | units.yr 
+        #        period_HTpulsar = 85.0 | units.yr #4.2degrees/year
+        #period_HTpulsar = 1.0 | units.yr 
         instance.evolve_model(period_HTpulsar)
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        channel = instance.particles.new_channel_to(stars)
+        channel.copy()
 
         postion_after_full_rotation = Taylor.position.value_in(units.AU)[0]
        
-        self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 4)
+        print "Time=", instance.model_time, period_HTpulsar
+        self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 3)
         
-        instance.evolve_model(1.5 * period_HTpulsar)
-        
-        instance.particles.copy_values_of_state_attributes_to(stars)
-        
-        postion_after_half_a_rotation = Taylor.position.value_in(units.AU)[0]
-        self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
-        
-        instance.evolve_model(1.75 * period_HTpulsar)
-         
-        instance.particles.copy_values_of_state_attributes_to(stars)
-        
-        postion_after_half_a_rotation = Taylor.position.value_in(units.AU)[1]
-        
-        self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
-        instance.cleanup_code()
+        instance.stop()
         del instance

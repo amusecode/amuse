@@ -35,7 +35,7 @@ FUNCTION commit_parameters()
   commit_parameters=0
 END FUNCTION
 
-FUNCTION new_particle(index_of_the_particle, m, r, x, y, z, vx, vy, vz)
+FUNCTION new_particle(index_of_the_particle, m, x, y, z, vx, vy, vz, r)
   IMPLICIT NONE
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: m, r
@@ -121,8 +121,8 @@ FUNCTION set_position(index_of_the_particle, x, y, z)
   set_position=0
 END FUNCTION
 
-FUNCTION get_state(index_of_the_particle, mass, radius, x, y, z, vx, vy,  &
-    vz)
+FUNCTION get_state(index_of_the_particle, mass, x, y, z, vx, vy,  &
+    vz, radius)
   IMPLICIT NONE
   INTEGER :: get_state
   INTEGER :: index_of_the_particle
@@ -197,8 +197,8 @@ FUNCTION evolve_model(end_time)
   tolerance = 1.e-13 ! accuracy parameter to which to integrate
 
   evolve_model = Mikkola_ARWV(start_time, particle_m, POS,VEL,particle_id, &
-& IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
-& lightspeed,Ixc,Nbh,BHspin,tolerance) 
+&                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
+&                lightspeed,Ixc,Nbh,BHspin,tolerance) 
 
   do i=1, number_of_particles_allocated
      particle_x(i) = POS(1,i)
@@ -283,8 +283,8 @@ FUNCTION synchronize_model()
   synchronize_model=0
 END FUNCTION
 
-FUNCTION set_state(index_of_the_particle, mass, radius, x, y, z, vx, vy,  &
-    vz)
+FUNCTION set_state(index_of_the_particle, mass, x, y, z, vx, vy,  &
+    vz, radius)
   IMPLICIT NONE
   INTEGER :: set_state
   INTEGER :: index_of_the_particle
