@@ -1,6 +1,9 @@
 import numpy
 
 from amuse.test.amusetest import TestWithMPI
+from amuse.units import nbody_system
+from amuse.units import units
+from amuse import datamodel
 from amuse.community.higpus.interface import HiGPUsInterface, HiGPUs
 
 
@@ -199,7 +202,7 @@ class TestHiGPUs(TestWithMPI):
 
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = self.new_instance_of_an_optional_code(HiGPUs(convert_nbody))
+        instance = self.new_instance_of_an_optional_code(HiGPUs, convert_nbody)
         instance.initialize_code()
     
         instance.parameters.softening = 0.000001 | units.AU
@@ -237,7 +240,7 @@ class TestHiGPUs(TestWithMPI):
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = self.new_instance_of_an_optional_code(HiGPUs(convert_nbody))
+        instance = self.new_instance_of_an_optional_code(HiGPUs, convert_nbody)
 
         instance.initialize_code()
         instance.commit_parameters()
