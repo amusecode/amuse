@@ -95,7 +95,7 @@ class TestParallelStellarEvolution(TestCase):
     
     def test6(self):
         print "Testing ParallelStellarEvolution exception handling"
-        self.code_factory = MESA
+        self.code_factory = EVtwin
         if self.code_factory == MESA:
             expected_message = ("Error when calling 'evolve_for' of a 'MESA', errorcode is -12, error is 'Evolve terminated: Maximum age reached.'")
         elif self.code_factory == EVtwin:

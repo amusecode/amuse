@@ -127,8 +127,7 @@ class ThreadWithResult(threading.Thread):
     
     def get_result(self):
         if self.caught_exception:
-            traceback.print_exception(*self.result)
-            raise self.result[1]
+            raise self.result[1], None, self.result[2]
         return self.result
     
 
