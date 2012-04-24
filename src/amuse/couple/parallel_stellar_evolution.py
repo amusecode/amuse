@@ -7,26 +7,26 @@ from amuse.units import units
 from amuse.datamodel import ParticlesSuperset
 from amuse.support.exceptions import AmuseException
 from amuse.community.interface.se import merge_colliding_in_stellar_evolution_code
+from amuse.support.options import option, OptionalAttributes
 
 
-def _execute_all_threads(threads):
-    for x in threads:
-        x.start()
-    for x in threads:
-        x.join()
-    result = [x.get_result() for x in threads]
-    if not result == [None]*len(threads):
-        return result
 
 
-class ParallelStellarEvolution(object):
+class ParallelStellarEvolution(OptionalAttributes):
 
-    def __init__(self, stellar_evolution_class, number_of_workers=1, individual_options=None, 
-            execute_all_threads_func=_execute_all_threads, **options):
+    def __init__(
+            self, 
+            stellar_evolution_class, 
+            number_of_workers=1, 
+            individual_options=None, 
+            **options
+        ):
+                
+        OptionalAttributes.__init__(self, **options)
+        
         self.code_factory = stellar_evolution_class
         self.number_of_workers = number_of_workers
         self.model_time = 0.0 | units.Myr
-        self._execute_all_threads_func = execute_all_threads_func
         
         if individual_options is None:
             options_list = [options] * number_of_workers
@@ -35,17 +35,45 @@ class ParallelStellarEvolution(object):
             for individual, shared in zip(individual_options, options_list):
                 shared.update(individual)
         
+        
         threads = [ThreadWithResult(target=stellar_evolution_class, kwargs=options_list[i]) for i in range(number_of_workers)]
-        self.code_instances = self._execute_all_threads_func(threads)
+        self.code_instances = self._execute_all_threads(threads)
         
         self.particles = ParallelParticlesSuperset(
             [code.particles for code in self.code_instances], 
-            execute_all_threads_func=self._execute_all_threads_func)
+            execute_all_threads_func=self._execute_all_threads)
         self.parameters = ParallelParameters(self.code_instances)
+    
+    @option(type='boolean', sections=('code'))
+    def must_run_threaded(self):
+        return True
+    
+    def _execute_all_threads(self, threads):
+        if self.must_run_threaded:
+            return self._execute_all_threads_parallel(threads)
+        else:
+            return self._execute_all_threads_serial(threads)
+            
+    def _execute_all_threads_parallel(self, threads):
+        for x in threads:
+            x.start()
+        for x in threads:
+            x.join()
+        result = [x.get_result() for x in threads]
+        if not result == [None]*len(threads):
+            return result
+
+
+    def _execute_all_threads_serial(self, threads):
+        for x in threads:
+            x.run()
+        result = [x.get_result() for x in threads]
+        if not result == [None]*len(threads):
+            return result
     
     def _run_threaded(self, function_name, args=()):
         threads = [ThreadWithResult(target=getattr(code, function_name), args=args) for code in self.code_instances]
-        return self._execute_all_threads_func(threads)
+        return self._execute_all_threads(threads)
     
     def initialize_code(self):
         self._run_threaded("initialize_code")
@@ -106,7 +134,7 @@ class ThreadWithResult(threading.Thread):
 
 class ParallelParticlesSuperset(ParticlesSuperset):
     
-    def __init__(self, particle_sets, execute_all_threads_func=_execute_all_threads):
+    def __init__(self, particle_sets, execute_all_threads_func=None):
         ParticlesSuperset.__init__(self, particle_sets)
         self._private.number_of_particles = 0
         self._private.number_of_sets = len(particle_sets)

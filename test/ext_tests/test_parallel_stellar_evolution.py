@@ -14,20 +14,13 @@ from amuse.community.sse.interface import SSE
 from amuse.couple.parallel_stellar_evolution import ParallelStellarEvolution
 
 
-def execute_all_threads_serial(threads):
-    for x in threads:
-        x.run()
-    result = [x.get_result() for x in threads]
-    if not result == [None]*len(threads):
-        return result
-
-default_options = dict(execute_all_threads_func = execute_all_threads_serial) # Always thread-safe
+default_options = dict(must_run_threaded = False) # Always thread-safe
 #~default_options = dict() # Really really parallel
 
 
 class TestParallelStellarEvolution(TestCase):
     
-    code_factory = MESA
+    code_factory = SSE
     
     def test1(self):
         print "Testing ParallelStellarEvolution initialization"
@@ -102,6 +95,7 @@ class TestParallelStellarEvolution(TestCase):
     
     def test6(self):
         print "Testing ParallelStellarEvolution exception handling"
+        self.code_factory = MESA
         if self.code_factory == MESA:
             expected_message = ("Error when calling 'evolve_for' of a 'MESA', errorcode is -12, error is 'Evolve terminated: Maximum age reached.'")
         elif self.code_factory == EVtwin:
