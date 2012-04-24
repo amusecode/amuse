@@ -111,7 +111,6 @@ int commit_parameters(){
 #endif
 
 #ifdef CHECK_TIMES
-		ofstream generic;
 		temp = path + "times.dat";
       output_name = to_char(temp);
       generic.open(output_name, ios::out);
@@ -705,7 +704,10 @@ int cleanup_code(){
 
 int get_potential_energy(double * potential_energy){
    unsigned int ppG = N/(NGPU*size); 
-   HostSafeCall(CudaInit(&GPUMINTHREADS, NGPU, rank, devices, GPUNAME, path));
+   if(init == 0){
+		HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN,  &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass, path));
+		init = 1;
+	}
    HostSafeCall(Calculate_potential_Energy(pos_CH, N, EPS, TPB, NGPU, rank, devices, ppG, potential_energy, plummer_core, plummer_mass));
 	return 0;
 }
