@@ -67,10 +67,10 @@ def new_option_parser():
     result.add_option("-a", dest="a",type="float",default=205.)
     result.add_option("-e", dest="e",type="float",default=0.6)
     result.add_option("-t", dest="tend",type="float",default=10.)
-    result.add_option("-d", dest="dtdiag",type="float",default=c.very_long_time)
+    result.add_option("-d", dest="dtdiag",type="float",default=1e99)
     return result
 
-def main(a=205, e=0.6, M=13., m=11., tend=10., dtdiag=c.very_long_time) :
+def main(a=205, e=0.6, M=13., m=11., tend=10., dtdiag=1e99) :
 
     bs = double_star(a, e, M, m)
     M = bs.p.get_mass()
