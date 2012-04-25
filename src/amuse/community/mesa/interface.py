@@ -807,7 +807,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "RGB_wind_scheme", 
             "The mass loss scheme for RGB stars: none (0), Reimers (1), "
                 "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
-            default_value = 0
+            default_value = 1
         )
         
         object.add_method_parameter(
@@ -816,7 +816,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "AGB_wind_scheme", 
             "The mass loss scheme for AGB stars: none (0), Reimers (1), "
                 "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
-            default_value = 0
+            default_value = 1
         )
         
         object.add_method_parameter(
@@ -824,28 +824,28 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_reimers_wind_efficiency",
             "reimers_wind_efficiency", 
             "The Reimers mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 1).",
-            default_value = 0.0
+            default_value = 0.5
         )
         object.add_method_parameter(
             "get_blocker_wind_efficiency",
             "set_blocker_wind_efficiency",
             "blocker_wind_efficiency", 
             "The Blocker mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 2).",
-            default_value = 0.0
+            default_value = 0.1
         )
         object.add_method_parameter(
             "get_de_jager_wind_efficiency",
             "set_de_jager_wind_efficiency",
             "de_jager_wind_efficiency", 
             "The de Jager mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 3).",
-            default_value = 0.0
+            default_value = 0.8
         )
         object.add_method_parameter(
             "get_dutch_wind_efficiency",
             "set_dutch_wind_efficiency",
             "dutch_wind_efficiency", 
             "The Dutch mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 4).",
-            default_value = 0.0
+            default_value = 0.8
         )
         object.add_boolean_parameter(
             "get_stabilize_new_stellar_model_flag",

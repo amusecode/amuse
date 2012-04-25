@@ -14,12 +14,12 @@
          integer :: AMUSE_max_iter_stop_condition = -1111
          double precision :: AMUSE_mixing_length_ratio = 2.0d0
          double precision :: AMUSE_semi_convection_efficiency = 0.0d0
-         integer :: AMUSE_RGB_wind_scheme = 0
-         integer :: AMUSE_AGB_wind_scheme = 0
-         double precision :: AMUSE_reimers_wind_efficiency = 0.0d0
-         double precision :: AMUSE_blocker_wind_efficiency = 0.0d0
-         double precision :: AMUSE_de_jager_wind_efficiency = 0.0d0
-         double precision :: AMUSE_dutch_wind_efficiency = 0.0d0
+         integer :: AMUSE_RGB_wind_scheme = 1
+         integer :: AMUSE_AGB_wind_scheme = 1
+         double precision :: AMUSE_reimers_wind_efficiency = 0.5d0
+         double precision :: AMUSE_blocker_wind_efficiency = 0.1d0
+         double precision :: AMUSE_de_jager_wind_efficiency = 0.8d0
+         double precision :: AMUSE_dutch_wind_efficiency = 0.8d0
          
          double precision, allocatable :: target_times(:)
          integer :: number_of_particles ! Dead or alive...

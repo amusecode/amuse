@@ -949,8 +949,8 @@
       ! mass gain or loss
             
             
-         RGB_wind_scheme = 0 ! e.g., 1 ! Reimers
-         AGB_wind_scheme = 0 ! e.g., 2 ! Blockers
+         RGB_wind_scheme = 1 ! e.g., 1 ! Reimers
+         AGB_wind_scheme = 1 ! e.g., 2 ! Blockers
          RGB_to_AGB_wind_switch = 1d-4
             ! if center hydrogen abundance is < 0.01
             ! and center helium abundance by mass is less than RGB_to_AGB_wind_switch
@@ -988,23 +988,23 @@
          ! Reimers mass loss for red giants
             ! D. Reimers, "Problems in Stellar Atmospheres and Envelopes", 
             ! Baschek, Kegel, Traving (eds), Springer, Berlin, 1975, p. 229.
-         Reimers_wind_eta = 0 ! e.g., 0.5d0  
+         Reimers_wind_eta = 0.5d0 ! e.g., 0.5d0  
             ! parameter for mass loss by Reimers wind prescription.
             ! Reimers mdot is eta*4d-13*L*R/M (Msun/year), with L, R, and M in solar units.
             
          ! Blocker's mass loss for AGB stars
             ! T. Blocker, "Stellar evolution of low and intermediate-mass stars", A&A 297, 727-738 (1995).
-         Blocker_wind_eta = 0 ! e.g., 0.1d0  
+         Blocker_wind_eta = 0.1d0 ! e.g., 0.1d0  
             ! parameter for mass loss by Blocker's wind prescription.
             ! Blocker mdot is eta*4.83d-9*M**-2.1*L**2.7*4d-13*L*R/M (Msun/year), 
             ! with L, R, and M in solar units.
             
          ! de Jager mass loss for entire range of H-R diagram.
             ! de Jager, C., Nieuwenhuijzen, H., & van der Hucht, K. A. 1988, A&AS, 72, 259.
-         de_Jager_wind_eta = 0d0  ! use 0.8 for non-rotating mdoels (Maeder & Meynet, 2001)
+         de_Jager_wind_eta = 0.8d0  ! use 0.8 for non-rotating mdoels (Maeder & Meynet, 2001)
             ! parameter for mass loss by de Jager wind prescription.
             
-         Dutch_wind_eta = 0d0  ! use 0.8 for non-rotating mdoels (Maeder & Meynet, 2001)
+         Dutch_wind_eta = 0.8d0  ! use 0.8 for non-rotating mdoels (Maeder & Meynet, 2001)
 
          wind_envelope_limit = -1 ! 3d-4 ! mass in Msun units
             ! winds automatically shut off when the hydrogen rich envelope mass is less than this limit.
