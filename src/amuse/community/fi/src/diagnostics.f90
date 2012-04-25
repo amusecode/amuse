@@ -98,8 +98,9 @@ subroutine outstate(n)
   
   tcurrent=rtime()
   if(tcurrent.lt.tprevious) then
-    print*,' timer error (overflow)'
-    stop
+    print*,' timer error (overflow) tcurrent:', tcurrent, ', tprevious:', tprevious
+    tprevious = 0.
+    return
   endif          
   tstep=tcurrent-tprevious
   tprevious=tcurrent
