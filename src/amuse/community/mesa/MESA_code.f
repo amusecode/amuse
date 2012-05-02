@@ -337,6 +337,43 @@
       endif
    end function
 
+! Return the current user-specified mass transfer rate of the star
+   function get_manual_mass_transfer_rate(AMUSE_id, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(out) :: AMUSE_value
+      integer :: get_manual_mass_transfer_rate, ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = -1.0
+         get_manual_mass_transfer_rate = -1
+      else
+         AMUSE_value = s% mass_change
+         get_manual_mass_transfer_rate = 0
+      endif
+   end function
+
+! Set a new user-specified mass transfer rate of the star
+   function set_manual_mass_transfer_rate(AMUSE_id, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(out) :: AMUSE_value
+      integer :: set_manual_mass_transfer_rate, ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         set_manual_mass_transfer_rate = -1
+      else
+         s% mass_change = AMUSE_value
+         set_manual_mass_transfer_rate = 0
+      endif
+   end function
+
 ! Return the current temperature of the star
    function get_temperature(AMUSE_id, AMUSE_value)
       use star_private_def, only: star_info, get_star_ptr

@@ -144,6 +144,34 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
     
+    @legacy_function   
+    def get_manual_mass_transfer_rate():
+        """
+        Retrieve the current user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('mass_change', dtype='float64', direction=function.OUT
+            , description="The current user-specified mass transfer rate of the star. (negative for winds, positive for accretion)")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function   
+    def set_manual_mass_transfer_rate():
+        """
+        Set a new user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('mass_change', dtype='float64', direction=function.IN
+            , description="The new user-specified mass transfer rate of the star. (negative for winds, positive for accretion)")
+        function.result_type = 'int32'
+        return function
+    
     @legacy_function
     def get_number_of_backups_in_a_row():
         """
@@ -880,6 +908,10 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_setter(particle_set_name, 'set_time_step', names = ('time_step',))
             object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
             object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
+            
+            object.add_getter(particle_set_name, 'get_manual_mass_transfer_rate', names = ('mass_change',))
+            object.add_setter(particle_set_name, 'set_manual_mass_transfer_rate', names = ('mass_change',))
+            
             object.add_method(particle_set_name, 'evolve_one_step')
             object.add_method(particle_set_name, 'evolve_for')
             InternalStellarStructure.define_particle_sets(
@@ -921,6 +953,16 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "get_mass_loss_rate",
             (object.INDEX,),
             (units.g / units.s, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_manual_mass_transfer_rate",
+            (object.INDEX,),
+            (units.MSun / units.yr, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "set_manual_mass_transfer_rate",
+            (object.INDEX, units.MSun / units.yr),
+            (object.ERROR_CODE,)
         )
         object.add_method(
             "get_number_of_backups_in_a_row", 

@@ -889,5 +889,30 @@ class TestMESA(TestWithMPI):
             else:
                 self.assertTrue(line in amuse_output)
     
+    def test18(self):
+        print "Testing MESA mass_change (User-specified wind/accretion)"
+        instance = self.new_instance(MESA)
+        instance.parameters.RGB_wind_scheme = 0 # must be turned off for user-specified rates
+        instance.parameters.AGB_wind_scheme = 0 # must be turned off for user-specified rates
+        
+        star = instance.particles.add_particle(Particle(mass=1|units.MSun))
+        star.mass_change = 1.0e-8 | units.MSun / units.yr # positive -> accretion
+        star.evolve_one_step()
+        
+        self.assertAlmostRelativeEqual(star.mass_change, 1.0e-8 | units.MSun / units.yr)
+        self.assertAlmostRelativeEqual(star.wind, -1.0e-8 | units.MSun / units.yr, 3)
+        self.assertAlmostRelativeEqual(star.age, 1.0e5 | units.yr)
+        self.assertAlmostRelativeEqual(star.mass, 1.0010 | units.MSun)
+        
+        star.mass_change = -1.0e-8 | units.MSun / units.yr # negative -> wind
+        star.evolve_one_step()
+        
+        self.assertAlmostRelativeEqual(star.mass_change, -1.0e-8 | units.MSun / units.yr)
+        self.assertAlmostRelativeEqual(star.wind, 1.0e-8 | units.MSun / units.yr, 3)
+        self.assertAlmostRelativeEqual(star.age, 1.8e5 | units.yr)
+        self.assertAlmostRelativeEqual(star.mass, 1.0002 | units.MSun)
+        print star.as_set()
+        instance.stop()
+    
 
 
