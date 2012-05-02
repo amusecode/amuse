@@ -11,6 +11,7 @@ import shlex
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.support.exceptions import AmuseException
 from amuse.rfi.tools import create_c
 from amuse.rfi.tools import create_fortran
 from amuse.rfi import channel
@@ -239,6 +240,7 @@ class TestInterface(TestWithMPI):
         
     def test3(self):
         instance = ForTesting(self.exefile) #, debugger = "xterm")
+        instance.initialize_code()
         self.assertFalse(instance.stopping_conditions.pair_detection.is_enabled())
         instance.stopping_conditions.pair_detection.enable()
         self.assertTrue(instance.stopping_conditions.pair_detection.is_enabled())
@@ -314,6 +316,15 @@ class TestInterface(TestWithMPI):
         self.assertEquals(instance.stopping_conditions.pair_detection.particles(1).mass, 
             [second + 1 for first, second in pairs] | units.kg)
         instance.stop()
+    
+    def test8(self):
+        instance = ForTesting(self.exefile)
+        instance.initialize_code()
+        self.assertFalse(instance.stopping_conditions.escaper_detection.is_supported())
+        self.assertRaises(AmuseException, instance.stopping_conditions.escaper_detection.enable, expected_message=
+            "Can't enable stopping condition 'escaper_detection', since 'ForTesting' does not support this condition.")
+        instance.stop()
+    
 
 
 class TestInterfaceF(TestWithMPI):
@@ -416,6 +427,7 @@ class TestInterfaceF(TestWithMPI):
 
     def test3(self):
         instance = ForTesting(self.exefile) #, debugger = "xterm")
+        instance.initialize_code()
         self.assertFalse(instance.stopping_conditions.pair_detection.is_enabled())
         instance.stopping_conditions.pair_detection.enable()
         self.assertTrue(instance.stopping_conditions.pair_detection.is_enabled())
@@ -484,5 +496,13 @@ class TestInterfaceF(TestWithMPI):
             [first + 1 for first, second in pairs] | units.kg)
         self.assertEquals(instance.stopping_conditions.pair_detection.particles(1).mass, 
             [second + 1 for first, second in pairs] | units.kg)
+        instance.stop()
+    
+    def test8(self):
+        instance = ForTesting(self.exefile)
+        instance.initialize_code()
+        self.assertFalse(instance.stopping_conditions.escaper_detection.is_supported())
+        self.assertRaises(AmuseException, instance.stopping_conditions.escaper_detection.enable, expected_message=
+            "Can't enable stopping condition 'escaper_detection', since 'ForTesting' does not support this condition.")
         instance.stop()
     

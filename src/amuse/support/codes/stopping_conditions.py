@@ -1,5 +1,6 @@
 from amuse.units import units, generic_unit_system
 from amuse.units import nbody_system as nbody
+from amuse.support.exceptions import AmuseException
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
 
@@ -299,7 +300,11 @@ class StoppingCondition(object):
         self.__doc__ = description
         
     def enable(self):
-        self.conditions.code.enable_stopping_condition(self.type)
+        if self.is_supported():
+            self.conditions.code.enable_stopping_condition(self.type)
+        else:
+            name = [name for name, value in self.conditions.all_conditions() if value is self][0]
+            raise AmuseException("Can't enable stopping condition '{0}', since '{1}' does not support this condition.".format(name, type(self.conditions.code).__name__))
         
     def disable(self):
         self.conditions.code.disable_stopping_condition(self.type)
