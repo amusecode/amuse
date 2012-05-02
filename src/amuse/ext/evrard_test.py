@@ -26,7 +26,8 @@ class regular_grid_unit_cube(object):
         self.par=long(float(targetN)**(1./3.)+1.5) 
     def make_xyz(self):
         nf=self.par
-        x,y,z=numpy.mgrid[-1.:1.:nf*1j,-1.:1.:nf*1j,-1.:1.:nf*1j] 
+        dnf=1./(nf)
+        x,y,z=numpy.mgrid[-1.+dnf:1.-dnf:nf*1j,-1.+dnf:1.-dnf:nf*1j,-1.+dnf:1.-dnf:nf*1j] 
         x=x.flatten()
         y=y.flatten()
         z=z.flatten()
@@ -40,8 +41,8 @@ class body_centered_grid_unit_cube(object):
     def make_xyz(self):
         nf=self.par
         x1,y1,z1=numpy.mgrid[-1.:1.:nf*1j,-1.:1.:nf*1j,-1.:1.:nf*1j] 
-        x2,y2,z2=numpy.mgrid[-1.+1./2/nf:1.-1./2/nf:(nf-1)*1j,  
-          -1.+1./2/nf:1.-1./2/nf:(nf-1)*1j,-1.+1./2/nf:1.-1./2/nf:(nf-1)*1j]                        
+        x2,y2,z2=numpy.mgrid[-1.+1./nf:1.-1./nf:(nf-1)*1j,  
+          -1.+1./nf:1.-1./nf:(nf-1)*1j,-1.+1./nf:1.-1./nf:(nf-1)*1j]                        
         x=numpy.concatenate( (x1.flatten(),x2.flatten()) )
         y=numpy.concatenate( (y1.flatten(),y2.flatten()) )
         z=numpy.concatenate( (z1.flatten(),z2.flatten()) )
