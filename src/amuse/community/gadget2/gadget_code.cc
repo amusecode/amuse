@@ -2234,10 +2234,10 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
     *rhovy = rhov_out[1];
     *rhovz = rhov_out[2];
 #ifdef ISOTHERM_EQS
-    *rhoe = rhoe_out + (rhov_out[0]*rhov_out[0] + rhov_out[1]*rhov_out[1] + rhov_out[2]*rhov_out[2]) / rho_out;
+    *rhoe = rhoe_out + 0.5*(rhov_out[0]*rhov_out[0] + rhov_out[1]*rhov_out[1] + rhov_out[2]*rhov_out[2]) / rho_out;
 #else
     if (All.ComovingIntegrationOn) {a3 = All.Time * All.Time * All.Time;} else {a3 = 1;}
-    *rhoe = rhoe_out * (pow(rho_out / a3, GAMMA_MINUS1) / GAMMA_MINUS1) + rhov2_out;
+    *rhoe = rhoe_out * (pow(rho_out / a3, GAMMA_MINUS1) / GAMMA_MINUS1) + 0.5*rhov2_out;
 #endif
     return 0;
 }
