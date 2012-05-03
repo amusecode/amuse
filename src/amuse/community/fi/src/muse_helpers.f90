@@ -491,10 +491,10 @@ subroutine muse_get_hydro_state(x,y,z,vx,vy,vz, &
     rhvz_out(i)=rhv(3)
     rhe=rhe/ethtoent
     if(vdisp_included) then
-      rhe_out(i)=rhe+rhv2
+      rhe_out(i)=rhe+0.5*rhv2
     else
       rhe_out(i)=0.
-      if(rh.GT.0) rhe_out(i)=rhe+sum(rhv**2)/rh
+      if(rh.GT.0) rhe_out(i)=rhe+0.5*sum(rhv**2)/rh
     endif
   enddo
 !$omp end parallel
