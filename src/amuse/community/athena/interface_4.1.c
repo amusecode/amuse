@@ -1774,6 +1774,7 @@ int evolve_model(double tlim) {
     int error;
     
     par_setd("time","tlim", "%.15e", tlim, "-");
+    tlim=par_getd("time","tlim"); /* this fixes accuracy problem by using the par_setd stuff */
 
     //AMUSE STOPPING CONDITIONS SUPPORT
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION,
