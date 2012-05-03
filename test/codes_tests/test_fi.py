@@ -8,7 +8,7 @@ from amuse.community.fi.interface import FiInterface, Fi
 from amuse.ext.evrard_test import new_evrard_gas_sphere
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
 from amuse.units import nbody_system
-from amuse.units import units
+from amuse.units import units, constants
 from amuse import datamodel
 from amuse.rfi import channel
 from amuse.ic.plummer import new_plummer_model
@@ -1336,3 +1336,87 @@ class TestFi(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.gas_particles[0].x, 0.1 | nbody_system.length)
         self.assertAlmostRelativeEquals(instance.gas_particles.x, [0.1] | nbody_system.length)
         
+    def test25(self):
+        print "Testing Fi density_limit_detection"
+        number_gas_particles = 500
+        UnitLength = 3.085678e21 | units.cm     # ~ 1.0 kpc
+        UnitMass = 1.989e43 | units.g           # 1.0e10 solar masses
+        convert_nbody = nbody_system.nbody_to_si(UnitLength, UnitMass)
+        gas = new_evrard_gas_sphere(number_gas_particles, convert_nbody, do_scale=True, seed=12345)
+        
+        instance = Fi(convert_nbody)
+        instance.initialize_code()
+        instance.parameters.stopping_condition_maximum_density = 10.0 * UnitMass / UnitLength**3
+        instance.parameters.timestep = 0.1 | units.Myr
+        instance.gas_particles.add_particles(gas)
+        stars = new_plummer_model(5, convert_nbody)
+        stars.x += 1000 * UnitLength
+        instance.dm_particles.add_particles(stars)
+        self.assertIsOfOrder(max(instance.gas_particles.density), UnitMass / UnitLength**3)
+        
+        density_limit_detection = instance.stopping_conditions.density_limit_detection
+        density_limit_detection.enable()
+        
+        instance.evolve_model(10.0 | units.Myr)
+        print instance.model_time.as_quantity_in(units.Myr)
+        print instance.stopping_conditions
+        self.assertTrue(density_limit_detection.is_set())
+        self.assertTrue(instance.model_time < 10.0 | units.Myr)
+        self.assertEquals(len(density_limit_detection.particles()), 1)
+        self.assertTrue((density_limit_detection.particles().density > 
+                10 * UnitMass / UnitLength**3).all())
+        
+        instance.particles.remove_particles(density_limit_detection.particles())
+        
+        instance.evolve_model(10.0 | units.Myr)
+        print instance.model_time.as_quantity_in(units.Myr)
+        print instance.stopping_conditions
+        self.assertTrue(density_limit_detection.is_set())
+        self.assertTrue(instance.model_time < 10.0 | units.Myr)
+        
+        self.assertEquals(len(density_limit_detection.particles()), 1)
+        self.assertTrue((density_limit_detection.particles().density > 
+                10 * UnitMass / UnitLength**3).all())
+        instance.stop()
+    
+    def test26(self):
+        print "Testing Fi internal_energy_limit_detection"
+        number_gas_particles = 500
+        UnitLength = 3.085678e21 | units.cm     # ~ 1.0 kpc
+        UnitMass = 1.989e43 | units.g           # 1.0e10 solar masses
+        convert_nbody = nbody_system.nbody_to_si(UnitLength, UnitMass)
+        gas = new_evrard_gas_sphere(number_gas_particles, convert_nbody, do_scale=True, seed=12345)
+        initial_internal_energy = 0.05 * constants.G * UnitMass / UnitLength
+        
+        instance = Fi(convert_nbody)
+        instance.initialize_code()
+        instance.parameters.timestep = 0.1 | units.Myr
+        instance.parameters.stopping_condition_maximum_internal_energy = 10 * initial_internal_energy
+        instance.gas_particles.add_particles(gas)
+        self.assertAlmostRelativeEquals(instance.gas_particles.u, initial_internal_energy, 8)
+        
+        internal_energy_limit_detection = instance.stopping_conditions.internal_energy_limit_detection
+        internal_energy_limit_detection.enable()
+        
+        instance.evolve_model(10.0 | units.Myr)
+        print instance.model_time.as_quantity_in(units.Myr)
+        print instance.stopping_conditions
+        self.assertTrue(internal_energy_limit_detection.is_set())
+        self.assertTrue(instance.model_time < 10.0 | units.Myr)
+        self.assertEquals(len(internal_energy_limit_detection.particles()), 8)
+        self.assertTrue((internal_energy_limit_detection.particles().u > 
+                10 * initial_internal_energy).all())
+        
+        instance.particles.remove_particles(internal_energy_limit_detection.particles())
+        
+        instance.evolve_model(10.0 | units.Myr)
+        print instance.model_time.as_quantity_in(units.Myr)
+        print instance.stopping_conditions
+        self.assertTrue(internal_energy_limit_detection.is_set())
+        self.assertTrue(instance.model_time < 10.0 | units.Myr)
+        self.assertEquals(len(internal_energy_limit_detection.particles()), 5)
+        self.assertTrue((internal_energy_limit_detection.particles().u > 
+                10 * initial_internal_energy).all())
+        instance.stop()
+    
+

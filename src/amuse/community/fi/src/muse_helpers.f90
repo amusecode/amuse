@@ -283,7 +283,7 @@ end function
 subroutine muse_stepsys(tend,sync)
  include 'globals.h'
  include 'stopcond.inc'
- real :: tend, stop_boxsize
+ real :: tend
  integer :: p
  integer :: sync
  integer :: is_any_condition_set
@@ -291,18 +291,31 @@ subroutine muse_stepsys(tend,sync)
  integer :: is_number_of_steps_detection_enabled
  integer :: is_timeout_detection_enabled
  integer :: is_out_of_box_detection_enabled
+ integer :: is_density_limit_detection_enabled
+ integer :: is_internal_energy_limit_detection_enabled
+ 
  integer :: get_stopping_condition_number_of_steps_parameter 
  integer :: get_stopping_condition_timeout_parameter 
- integer :: clock_init, clock_current, count_rate, count_max
- integer :: max_number_of_steps
- integer :: timeout
- integer :: number_of_steps_innerloop
- integer :: stopping_index
+ integer :: get_stopping_condition_out_of_box_parameter
+ integer :: get_stopping_condition_minimum_density_parameter
+ integer :: get_stopping_condition_maximum_density_parameter
+ integer :: get_stopping_condition_minimum_internal_energy_parameter
+ integer :: get_stopping_condition_maximum_internal_energy_parameter
  integer :: next_index_for_stopping_condition
  integer :: set_stopping_condition_info
  integer :: set_stopping_condition_particle_index
- integer :: reset_stopping_conditions, error
- real :: get_stopping_condition_out_of_box_parameter
+ integer :: reset_stopping_conditions
+ 
+ integer :: max_number_of_steps
+ integer :: timeout
+ real :: stop_boxsize
+ real :: minimum_density_parameter, maximum_density_parameter
+ real :: minimum_internal_energy_parameter, maximum_internal_energy_parameter
+ 
+ integer :: clock_init, clock_current, count_rate, count_max
+ integer :: number_of_steps_innerloop
+ real :: u(nsph)
+ integer :: stopping_index, error
  integer,save :: n=0
  
  number_of_steps_innerloop = 0
@@ -311,9 +324,15 @@ subroutine muse_stepsys(tend,sync)
  error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, is_number_of_steps_detection_enabled)
  error = is_stopping_condition_enabled(TIMEOUT_DETECTION, is_timeout_detection_enabled)
  error = is_stopping_condition_enabled(OUT_OF_BOX_DETECTION, is_out_of_box_detection_enabled)
+ error = is_stopping_condition_enabled(DENSITY_LIMIT_DETECTION, is_density_limit_detection_enabled)
+ error = is_stopping_condition_enabled(INTERNAL_ENERGY_LIMIT_DETECTION, is_internal_energy_limit_detection_enabled)
  error = get_stopping_condition_number_of_steps_parameter(max_number_of_steps)
  error = get_stopping_condition_timeout_parameter(timeout)
  error = get_stopping_condition_out_of_box_parameter(stop_boxsize)
+ error = get_stopping_condition_minimum_density_parameter(minimum_density_parameter);
+ error = get_stopping_condition_maximum_density_parameter(maximum_density_parameter);
+ error = get_stopping_condition_minimum_internal_energy_parameter(minimum_internal_energy_parameter);
+ error = get_stopping_condition_maximum_internal_energy_parameter(maximum_internal_energy_parameter);
  call SYSTEM_CLOCK(clock_init, count_rate, count_max)
 
 !keep a record of the removed ids
@@ -344,6 +363,33 @@ subroutine muse_stepsys(tend,sync)
             stopping_index = next_index_for_stopping_condition()
             if (stopping_index.GE.0) then
                error = set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION)
+               error = set_stopping_condition_particle_index(stopping_index, 0, nbexist(p))
+            endif
+         endif
+      enddo
+   endif
+   if (is_density_limit_detection_enabled.GT.0) then
+      do p=1,nsph
+         if ((rho(p).GT.maximum_density_parameter).OR.(rho(p).LT.minimum_density_parameter)) then
+            stopping_index = next_index_for_stopping_condition()
+            if (stopping_index.GE.0) then
+               error = set_stopping_condition_info(stopping_index, DENSITY_LIMIT_DETECTION)
+               error = set_stopping_condition_particle_index(stopping_index, 0, nbexist(p))
+            endif
+         endif
+      enddo
+   endif
+   if (is_internal_energy_limit_detection_enabled.GT.0) then
+      if(uentropy) then
+        u=entropy(1:nsph)/gamma1*rho(1:nsph)**gamma1
+      else
+        u=ethermal(1:nsph)
+      endif
+      do p=1,nsph
+         if ((u(p).GT.maximum_internal_energy_parameter).OR.(u(p).LT.minimum_internal_energy_parameter)) then
+            stopping_index = next_index_for_stopping_condition()
+            if (stopping_index.GE.0) then
+               error = set_stopping_condition_info(stopping_index, INTERNAL_ENERGY_LIMIT_DETECTION)
                error = set_stopping_condition_particle_index(stopping_index, 0, nbexist(p))
             endif
          endif

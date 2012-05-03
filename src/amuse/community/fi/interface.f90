@@ -7,6 +7,8 @@ function initialize_code() result(ret)
   error = set_support_for_condition(TIMEOUT_DETECTION)
   error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
   error = set_support_for_condition(OUT_OF_BOX_DETECTION)
+  error = set_support_for_condition(DENSITY_LIMIT_DETECTION)
+  error = set_support_for_condition(INTERNAL_ENERGY_LIMIT_DETECTION)
   ret=0
 end function
 

@@ -2,7 +2,7 @@
 AMUSE_DIR?=../../../../..
 -include ${AMUSE_DIR}/config.mk
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 FC=ifort

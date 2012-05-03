@@ -2251,7 +2251,8 @@ class Fi(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_dinternal_energy_dt')
         object.add_setter('gas_particles', 'set_smoothing_length')
         object.add_getter('gas_particles', 'get_smoothing_length')
-        object.add_getter('gas_particles', 'get_density')
+        object.add_getter('gas_particles', 'get_density', names = ('rho',))
+        object.add_getter('gas_particles', 'get_density', names = ('density',))
         
         object.define_set('star_particles', 'id')
         object.set_new('star_particles', 'new_star_particle')

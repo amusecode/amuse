@@ -27,7 +27,7 @@ FFTW_LIBS ?= -lfftw3  -lfftw3_threads
 THREADLIB = -L. -lpthread $(BUILDDIR)/libpt.a
 PTHREADLIB = -L. -lpthread $(PERIODIC_BUILDDIR)/libpt.a
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 OPENMP_FCFLAGS?=# -openmp -openmp_report0 
