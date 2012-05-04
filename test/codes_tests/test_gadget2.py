@@ -691,7 +691,7 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostRelativeEqual(rhovy, density*instance.gas_particles[0].vy, places=3)
         self.assertAlmostRelativeEqual(rhovz, density*instance.gas_particles[0].vz, places=3)
         self.assertAlmostRelativeEqual(rhoe,  density * (instance.gas_particles[0].u + 
-            instance.gas_particles[0].velocity.length_squared()),  places=3)
+            0.5 * instance.gas_particles[0].velocity.length_squared()),  places=3)
         
         coords = [0.1 | units.kpc]*3
         rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*(coords + speeds))
@@ -700,7 +700,7 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostRelativeEqual(rhovy, density*instance.gas_particles[0].vy, places=3)
         self.assertAlmostRelativeEqual(rhovz, density*instance.gas_particles[0].vz, places=3)
         self.assertAlmostRelativeEqual(rhoe,  density * (instance.gas_particles[0].u + 
-            instance.gas_particles[0].velocity.length_squared()),  places=3)
+            0.5 * instance.gas_particles[0].velocity.length_squared()),  places=3)
         instance.stop()
     
     def test14(self):
