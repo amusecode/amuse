@@ -12,6 +12,7 @@ Reference documentation
    legacy_support
    available-codes
    fileformat
+   report
    quantities_and_units
    particles
    particle_attributes
