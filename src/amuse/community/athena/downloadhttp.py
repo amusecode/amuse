@@ -7,7 +7,8 @@ import time
 import urllib
 
 class DownloadAthenaFromWebpage(object):
-    url_template = "http://www.astro.princeton.edu/~jstone/downloads/athena/athena{version}.tar.gz"
+    url_template = "http://www.amusecode.org/codes/athena{version}.tar.gz"
+    url_template_original = "http://www.astro.princeton.edu/~jstone/downloads/athena/athena{version}.tar.gz"
     filename_template = "athena{version}.tar.gz"
     version = "4.0"
     
