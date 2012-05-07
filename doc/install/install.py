@@ -43,7 +43,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.5.1' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            'http://ignum.dl.sourceforge.net/sourceforge/numpy/', #download url, filename is appended
+            'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -74,7 +74,7 @@ class InstallPrerequisites(object):
             [], 
             '0.7', 
             'docutils-','.tar.gz', 
-            'http://downloads.sourceforge.net/project/docutils/docutils/0.7/', 
+            'http://pypi.python.org/packages/source/d/docutils/', 
             self.python_build
           ) ,
           (
