@@ -159,3 +159,20 @@ function get_isothermal(flag) result(ret)
   if(x) flag=1
   ret=0
 end function
+
+function get_time(time) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(r8b) :: time
+  time=sphray_model_time()
+  ret=0
+end function
+
+function set_time(time) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(r8b) :: time
+  call sphray_set_model_time(time)
+  ret=-1
+end function
+

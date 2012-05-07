@@ -195,6 +195,42 @@ class TestSPHRayInterface(TestWithMPI):
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
+    def test4(self):
+        print "Test 2: set, get time"
+        instance = SPHRayInterface(**default_options)
+        ensure_data_directory_exists(instance.output_directory())
+        self.assertEqual(0, instance.set_data_directory(instance.data_directory()))
+        self.assertEquals(0, instance.set_output_directory(instance.output_directory()))        
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+        
+        input_file = os.path.join(instance.data_directory(), 'sphray_4K')
+        mass, hsml, x, y, z, rho, xe, u = self.read_gas_file(input_file)
+        number_of_gas_particles = len(x)
+        indices, errors = instance.new_gas_particle(mass, hsml, x, y, z, rho, xe, u)
+        self.assertEqual(errors, [0]*number_of_gas_particles)
+        self.assertEqual(indices, range(1,number_of_gas_particles+1))
+        
+        input_file = os.path.join(instance.data_directory(), 'test1_sources_001.1')
+        L, xs, ys, zs, spctype = self.read_src_file(input_file)
+        number_of_src_particles = len(xs)
+        s_indices, errors = instance.new_src_particle(L, xs, ys, zs, spctype)
+        self.assertEqual(errors, [0]*number_of_src_particles)
+        self.assertEqual(s_indices, range(number_of_gas_particles+1,number_of_src_particles+number_of_gas_particles+1))
+       
+        self.assertEqual(0, instance.commit_particles())
+        
+        time,err= instance.get_time()
+        self.assertEqual(0,err)
+        self.assertEqual(0.,time)
+        err= instance.set_time(123.)
+        self.assertEqual(-1,err)   # because we don't know whether it is safe yet
+        time,err= instance.get_time()
+        self.assertEqual(0,err)
+        self.assertEqual(123.,time)
+        
+        
+
     def read_gas_file(self,filename):
         p=read_set_from_file(filename,'amuse')
         mass=p.mass.number

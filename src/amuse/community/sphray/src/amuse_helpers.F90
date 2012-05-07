@@ -352,8 +352,6 @@ function sphray_get_gas_particle_state(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
     rho=psys%par(index)%rho
     xe=psys%par(index)%xHII
     u=u_from_temp( real(psys%par(index)%T, r8b) , real(psys%par(index)%ye,r8b) ,GV%H_mf) 
-!    print*, psys%par(index)%T,u, u_from_temp( real(psys%par(index)%T, r8b) ,real(xe,r8b) ,GV%H_mf)
-
     ret=0
 
 end function
@@ -451,24 +449,23 @@ subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u)
     par_buffer(npar_buffer)%hsml=hsml
     par_buffer(npar_buffer)%rho=rho
     par_buffer(npar_buffer)%T=temp_from_u( real(u,r8b) , real(xe,r8b), GV%H_mf)   
-!    print*,par_buffer(npar_buffer)%T
     par_buffer(npar_buffer)%ye=xe   
-    par_buffer(npar_buffer)%xHI=xe   
-    par_buffer(npar_buffer)%xHII=1-xe   
+    par_buffer(npar_buffer)%xHI=1-xe   
+    par_buffer(npar_buffer)%xHII=xe   
 
-  caseA = .false.
-  if (GV%HydrogenCaseA) caseA(1) = .true.
-  if (GV%HeliumCaseA)   caseA(2) = .true.
+!  caseA = .false.
+!  if (GV%HydrogenCaseA) caseA(1) = .true.
+!  if (GV%HeliumCaseA)   caseA(2) = .true.
 
-  DoH = .true.
-#ifdef incHe
-  DoHe = .true.
-#else
-  DoHe = .false.
-#endif
+!  DoH = .true.
+!#ifdef incHe
+!  DoHe = .true.
+!#else
+!  DoHe = .false.
+!#endif
 
-  call particle_set_ci_eq( par_buffer(npar_buffer), caseA, DoH, DoHe, fit='hui' )
-  call particle_set_ye( par_buffer(npar_buffer), GV%H_mf, GV%He_mf, GV%NeBackground )
+!  call particle_set_ci_eq( par_buffer(npar_buffer), caseA, DoH, DoHe, fit='hui' )
+!  call particle_set_ye( par_buffer(npar_buffer), GV%H_mf, GV%He_mf, GV%NeBackground )
 
 end subroutine
 
@@ -494,6 +491,8 @@ subroutine sphray_add_src_particle(id,L,x,y,z,SpcType)
     src_buffer(nsrc_buffer)%pos(3)=z
     src_buffer(nsrc_buffer)%SpcType=spcType
     src_buffer(nsrc_buffer)%EmisPrf=0
+    src_buffer(nsrc_buffer)%lastemit=GV%rayn
+    
 
 end subroutine
 
@@ -528,6 +527,7 @@ function sphray_remove_src_particle(id) result(ret)
 end function
 
 subroutine sphray_evolve(tend)
+  use particle_system_mod, only: particle_system_set_ye
   use amuse_mainloop_mod
   real(r8b) :: tend
  
@@ -539,10 +539,26 @@ subroutine sphray_evolve(tend)
   call preparemain
   call mainloop
 
+  call particle_system_set_ye(psys, GV%H_mf, GV%He_mf, GV%NeBackground)
+
   PLAN%snap(1)%TimeAt=tend
   gas_searcheable=.FALSE.
   src_searcheable=.FALSE. 
+    
 end subroutine
+
+function sphray_model_time() result(time)
+  use amuse_mainloop_mod
+  real(r8b) :: time
+  time=PLAN%snap(1)%TimeAt
+end function
+
+subroutine sphray_set_model_time(time) 
+  use amuse_mainloop_mod
+  real(r8b) :: time
+  PLAN%snap(1)%TimeAt=time   ! is this safe? 
+end subroutine
+
 
 subroutine preparemain()
   use gadget_General_class, only: gadget_constants_type
@@ -575,7 +591,7 @@ subroutine preparemain()
 !  psys%src%lastemit = GV%rayn
 ! to recommit parameter
 
-  psys%src%lastemit = 0
+!  psys%src%lastemit = 0
 
 !from readin_snaps
 #ifdef outGammaHI
@@ -642,6 +658,36 @@ subroutine sphray_get_isothermal(flag)
   flag=GV%FixSnapTemp
 end subroutine
 
+function sphray_set_he_mass_frac(hemf) result(ret)
+  real(r8b) :: hemf
+  integer :: ret  
+  if(hemf.LT.0.OR.hemf.GT.1) then
+    ret=-1
+    return
+  endif  
+#ifdef incHe
+  GV%He_mf=hemf
+  GV%H_mf=1.-hemf
+  ret=0.
+#else
+  ret=-2
+#endif  
+
+end function
+
+function sphray_get_he_mass_frac(hemf) result(ret)
+  real(r8b) :: hemf
+  integer :: ret
+  ret=0.
+#ifdef incHe
+  hemf=GV%He_mf
+#else
+  hemf=0.
+  if(GV%He_mf.NE.0) ret=-1
+#endif
+
+end function
+
 
 subroutine set_default_parameters
   GV%Verbosity=3              !< [Config File] 0=silent, 1=whisper, 2=talk, 3=debug
@@ -685,7 +731,7 @@ subroutine set_default_parameters
 
 
   GV%RayScheme="raynum"           !< [Config File] one of {raynum, header}
-  GV%ForcedRayNumber=10000     !< [Config File] number of rays to trace if RayScheme = raynum
+  GV%ForcedRayNumber=30000     !< [Config File] number of rays to trace if RayScheme = raynum
 
   GV%RayStats=.false.            !< [Config File] T = massive output file on ray statistics in raystats.dat
   GV%BndryCond=0           !< [Config File] one of {-1:reflecting 0:vacuum 1:periodic}
@@ -696,7 +742,7 @@ subroutine set_default_parameters
   GV%HydrogenCaseA=.true.       !< [Config File] T = use case A for Hydrogen Recombinations
   GV%HeliumCaseA=.true.         !< [Config File] T = use case A for Helium Recombinsations
 
-  GV%IonTempSolver=1       !< [Config File] one of {1:euler, 2:bdf}
+  GV%IonTempSolver=2       !< [Config File] one of {1:euler, 2:bdf}
 
   GV%Tfloor=1              !< [Config File] minimum allowed temperature
   GV%Tceiling=1.d9            !< [Config File] maximum allowed temperature

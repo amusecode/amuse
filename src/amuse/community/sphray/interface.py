@@ -173,6 +173,20 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return function
 
     @legacy_function
+    def set_time():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_time():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def set_data_directory():
         """
         Update the path to the sphray database.
@@ -239,3 +253,12 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
             Could not retrieve value
         """
         return function
+
+class SPHRay(CommonCode):
+        
+    def __init__(self, **options):
+        InCodeComponentImplementation.__init__(self, SPHRayInterface(**options))
+        self.set_data_directory(self.data_directory())
+        self.set_output_directory(self.output_directory())  
+
+
