@@ -40,7 +40,8 @@ class Grid2SPH(object):
         self.cumulative_weight = numpy.cumsum((density / summed_density))
         self.position_lookup_table = self.grid.position.reshape((-1,3))
         self.velocity_lookup_table = (self.grid.momentum / density.reshape(shape_for_vector_multiply)).reshape((-1,3))
-        self.specific_internal_energy_lookup_table = (self.grid.energy / density).flatten()
+        self.specific_internal_energy_lookup_table = (self.grid.energy / density).flatten() - 0.5 * self.velocity_lookup_table.lengths_squared()
+        self.density_lookup_table = density.flatten()
         cellsize = self.grid.cellsize()
         self.cellsize_unit = cellsize.unit
         self.cellsize_number = cellsize.value_in(cellsize.unit)
@@ -71,6 +72,9 @@ class Grid2SPH(object):
     def new_particle_specific_internal_energies(self):
         return self.specific_internal_energy_lookup_table[self.indices]
     
+    def new_particle_densities(self):
+        return self.density_lookup_table[self.indices]
+    
     @property
     def result(self):
         self.setup_lookup_tables()
@@ -79,7 +83,8 @@ class Grid2SPH(object):
         sph_particles = Particles(self.number_of_sph_particles)
         sph_particles.position = self.new_particle_positions()
         sph_particles.velocity = self.new_particle_velocities()
-        sph_particles.u        = self.new_particle_specific_internal_energies()
+        sph_particles.u = self.new_particle_specific_internal_energies()
+        sph_particles.rho = self.new_particle_densities()
         
         sph_particles.mass = (self.mass.number * 1.0 / self.number_of_sph_particles) | self.mass.unit
         # Crude estimate of the smoothing length; the SPH code will calculate the true value itself.

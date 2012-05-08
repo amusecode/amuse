@@ -27,7 +27,7 @@ class TestGrid2SPH(TestWithMPI):
         test_grid.rhovx = test_grid.rho * (3.0 | units.m/units.s)
         test_grid.rhovy = test_grid.rho * (4.0 | units.m/units.s)
         test_grid.rhovz = test_grid.rho * (0.0 | units.m/units.s)
-        test_grid.energy = test_grid.rho * (1.0 | (units.m/units.s)**2)
+        test_grid.energy = test_grid.rho * ((1.0 | (units.m/units.s)**2) + 0.5 * (5.0 | units.m/units.s)**2)
         return test_grid
     
     def test0(self):
@@ -37,8 +37,8 @@ class TestGrid2SPH(TestWithMPI):
         self.assertEqual(test_grid.position[-1][-1][-1],  [7.0/8.0, 5.0/6.0, 3.0/4.0] | units.m)
         self.assertEqual(test_grid.momentum[ 0][ 0][ 0],  [3.0, 4.0, 0.0] | (units.kg/units.m**3) * (units.m/units.s))
         self.assertEqual(test_grid.momentum[-1][-1][-1],  [6.0, 8.0, 0.0] | (units.kg/units.m**3) * (units.m/units.s))
-        self.assertEqual(test_grid.energy[ 0][ 0][ 0],  1.0 | (units.J/units.m**3))
-        self.assertEqual(test_grid.energy[-1][-1][-1],  2.0 | (units.J/units.m**3))
+        self.assertEqual(test_grid.energy[ 0][ 0][ 0], 13.5 | (units.J/units.m**3))
+        self.assertEqual(test_grid.energy[-1][-1][-1], 27.0 | (units.J/units.m**3))
         
     def test1(self):
         print "Testing the converter"
@@ -58,7 +58,7 @@ class TestGrid2SPH(TestWithMPI):
         self.assertEqual(converter.position_lookup_table[-1], [7.0/8.0, 5.0/6.0, 3.0/4.0] | units.m)
         self.assertEqual(converter.position_lookup_table[9],  [3.0/8.0, 3.0/6.0, 3.0/4.0] | units.m)
         self.assertAlmostEqual(converter.velocity_lookup_table,  [3.0, 4.0, 0.0] | units.m/units.s)
-        self.assertEqual(converter.specific_internal_energy_lookup_table,  1.0 | units.J/units.kg)
+        self.assertAlmostEqual(converter.specific_internal_energy_lookup_table,  1.0 | units.J/units.kg)
         self.assertEqual(converter.cellsize_unit,  units.m)
         self.assertTrue(converter.cellsize_unit is units.m)
         self.assertAlmostEqual(converter.cellsize_number, [0.25, 1/3.0, 0.5])
