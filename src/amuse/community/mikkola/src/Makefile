@@ -1,4 +1,10 @@
-FC = mpif90
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../../../../..
+-include ${AMUSE_DIR}/config.mk
+
+MPIFC ?= mpif90
+FC    = $(MPIFC)
 
 FFLAGS   += -Wall -g -O4
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
