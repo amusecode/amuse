@@ -160,6 +160,42 @@ function get_isothermal(flag) result(ret)
   ret=0
 end function
 
+function set_H_caseA(flag) result(ret)
+  use amuse_sphrayMod
+  integer flag,ret
+  if(flag.NE.0) call sphray_set_H_caseA(.TRUE.)
+  if(flag.EQ.0) call sphray_set_H_caseA(.FALSE.)
+  ret=0
+end function
+
+function get_H_caseA(flag) result(ret)
+  use amuse_sphrayMod
+  integer :: ret,flag
+  logical :: x
+  flag=0
+  call sphray_get_H_caseA(x)
+  if(x) flag=1
+  ret=0
+end function
+
+function set_He_caseA(flag) result(ret)
+  use amuse_sphrayMod
+  integer flag,ret
+  if(flag.NE.0) call sphray_set_He_caseA(.TRUE.)
+  if(flag.EQ.0) call sphray_set_He_caseA(.FALSE.)
+  ret=0
+end function
+
+function get_He_caseA(flag) result(ret)
+  use amuse_sphrayMod
+  integer :: ret,flag
+  logical :: x
+  flag=0
+  call sphray_get_He_caseA(x)
+  if(x) flag=1
+  ret=0
+end function
+
 function get_time(time) result(ret)
   use amuse_sphrayMod
   integer :: ret
@@ -175,4 +211,84 @@ function set_time(time) result(ret)
   call sphray_set_model_time(time)
   ret=-1
 end function
+
+
+function get_raynumber(N) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  integer(i4b) :: N
+  call sphray_get_raynumber(N)
+  ret=0
+end function
+
+function set_raynumber(N) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  integer(i4b) :: N
+  call sphray_set_raynumber(N)
+  ret=0
+end function
+
+function get_iontempsolver(N) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  integer(i4b) :: N
+  call sphray_get_iontempsolver(N)
+  ret=0
+end function
+
+function set_iontempsolver(N) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  integer(i4b) :: N
+  call sphray_set_iontempsolver(N)
+  ret=0
+end function
+
+function get_boundary(N) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  integer(i4b) :: N
+  call sphray_get_boundary(N)
+  ret=0
+end function
+
+function set_boundary(N) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  integer(i4b) :: N
+  call sphray_set_boundary(N)
+  ret=0
+end function
+
+function get_boxsize(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(i8b) :: x
+  call sphray_get_boxsize(x)
+  ret=0
+end function
+
+function set_boxsize(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(i8b) :: x
+  call sphray_set_boxsize(x)
+  ret=0
+end function
+
+function set_globalHefraction(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(i8b) :: x
+  ret=sphray_set_he_mass_frac(x)
+end function
+
+function get_globalHefraction(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(i8b) :: x
+  ret=sphray_get_he_mass_frac(x)
+end function
+
 

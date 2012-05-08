@@ -228,8 +228,46 @@ class TestSPHRayInterface(TestWithMPI):
         time,err= instance.get_time()
         self.assertEqual(0,err)
         self.assertEqual(123.,time)
+
+    def test2(self):
+        instance=SPHRayInterface()
+        instance.initialize_code()
         
-        
+        for x,l in [('isothermal',0), ('H_caseA',1),('He_caseA',1)]:
+            result,err=getattr(instance, 'get_'+x)()
+            self.assertEquals( (x,result),(x,l))
+            err=getattr(instance, 'set_'+x)(1)
+            result,err=getattr(instance, 'get_'+x)()
+            self.assertEquals( (x,result),(x,1))
+            err=getattr(instance, 'set_'+x)(0)
+            result,err=getattr(instance, 'get_'+x)()
+            self.assertEquals((x,result),(x,0))
+
+        for x,l in [('raynumber',30000),('iontempsolver',2),('boundary',0)]:
+            result,err=getattr(instance, 'get_'+x)()
+            self.assertEquals( (x,result),(x,l))
+            err=getattr(instance, 'set_'+x)(1)
+            result,err=getattr(instance, 'get_'+x)()
+            self.assertEquals( (x,result),(x,1))
+            err=getattr(instance, 'set_'+x)(0)
+            result,err=getattr(instance, 'get_'+x)()
+            self.assertEquals((x,result),(x,0))
+
+        for x,l in [('boxsize',13.2)]:
+            result,err=getattr(instance, 'get_'+x)()
+            self.assertAlmostEqual( result,l ,6)
+            err=getattr(instance, 'set_'+x)(1.)
+            result,err=getattr(instance, 'get_'+x)()
+            self.assertAlmostEqual( result,1. ,6)
+            err=getattr(instance, 'set_'+x)(0)
+            result,err=getattr(instance, 'get_'+x)()
+            self.assertAlmostEqual( result,0. ,6)
+
+        result,err=instance.get_globalHefraction()
+        self.assertEqual(err, 0)
+        self.assertEqual(result,0.)
+        err=instance.set_globalHefraction(0.1)
+        self.assertEqual(err, -2)
 
     def read_gas_file(self,filename):
         p=read_set_from_file(filename,'amuse')

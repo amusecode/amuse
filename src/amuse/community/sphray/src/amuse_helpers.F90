@@ -658,6 +658,67 @@ subroutine sphray_get_isothermal(flag)
   flag=GV%FixSnapTemp
 end subroutine
 
+subroutine sphray_set_H_caseA(flag)
+  logical :: flag
+  GV%HydrogenCaseA=flag
+end subroutine
+
+subroutine sphray_get_H_caseA(flag)
+  logical :: flag
+  flag=GV%HydrogenCaseA
+end subroutine
+
+subroutine sphray_set_He_caseA(flag)
+  logical :: flag
+  GV%HeliumCaseA=flag
+end subroutine
+
+subroutine sphray_get_He_caseA(flag)
+  logical :: flag
+  flag=GV%HeliumCaseA
+end subroutine
+
+subroutine sphray_set_raynumber(N)
+  integer(i4b) :: N
+  GV%ForcedRayNumber=N
+end subroutine
+
+subroutine sphray_get_raynumber(N)
+  integer(i4b) :: N
+  N=GV%ForcedRayNumber
+end subroutine
+
+subroutine sphray_set_iontempsolver(N)
+  integer(i4b) :: N
+  GV%IonTempSolver=N
+end subroutine
+
+subroutine sphray_get_iontempsolver(N)
+  integer(i4b) :: N
+  N=GV%IonTempSolver
+end subroutine
+
+subroutine sphray_set_boundary(N)
+  integer(i4b) :: N
+  GV%BndryCond=N
+end subroutine
+
+subroutine sphray_get_boundary(N)
+  integer(i4b) :: N
+  N=GV%BndryCond
+end subroutine
+
+subroutine sphray_set_boxsize(x)
+  real(i8b) :: x
+  GV%BoxUprs=x/2
+  GV%BoxLwrs=-x/2
+end subroutine
+
+subroutine sphray_get_boxsize(x)
+  real(i8b) :: x
+  x=maxval(GV%BoxUprs-GV%BoxLwrs)
+end subroutine
+
 function sphray_set_he_mass_frac(hemf) result(ret)
   real(r8b) :: hemf
   integer :: ret  

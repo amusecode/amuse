@@ -163,6 +163,110 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.addParameter('isothermal_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
+    @legacy_function   
+    def set_H_caseA():
+        """ set_H_caseA([0,1]): use case A for H if 1, not if 0 """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('H_caseA_flag', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_H_caseA():
+        """ get_H_caseA(): use case A for H if 1, not if 0  """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('H_caseA_flag', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def set_He_caseA():
+        """ set_He_caseA([0,1]): use case A for H if 1, not if 0 """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('He_caseA_flag', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_He_caseA():
+        """ get_He_caseA(): use case A for H if 1, not if 0  """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('He_caseA_flag', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def set_raynumber():
+        """ set number of rays per evolve """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('number_rays', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_raynumber():
+        """ get number of rays per evolve  """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('number_rays', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+        
+    @legacy_function   
+    def set_iontempsolver():
+        """ set solver to use (1,2 = euler, bdf) """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('iontempsolver', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_iontempsolver():
+        """ get solver to use (1,2 = euler, bdf)  """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('iontempsolver', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def set_boundary():
+        """ set boundary condition to use (-1,0,1 = reflective, vacuum, periodic) """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('boundary', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_boundary():
+        """ get boundary condition to use (-1,0,1 = reflective, vacuum, periodic)  """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('boundary', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def set_boxsize():
+        """ set box size in kpc  """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('boxsize', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_boxsize():
+        """ get box size in kpc   """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('boxsize', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def set_globalHefraction():
+        """ set He mass fraction (f_H+f_He=1 )  """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('globalHefraction', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_globalHefraction():
+        """ get He mass fraction (f_H+f_He=1 )   """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('globalHefraction', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
 
 
     @legacy_function    
@@ -261,4 +365,71 @@ class SPHRay(CommonCode):
         self.set_data_directory(self.data_directory())
         self.set_output_directory(self.output_directory())  
 
+    def define_properties(self, object):
+        object.add_property('get_time', public_name = "model_time")
+
+    def define_parameters(self, object):
+        object.add_boolean_parameter(
+            "get_isothermal",
+            "set_isothermal", 
+            "isothermal_flag", 
+            "whether to evolve temperature (0) or keep isothermal (1)", 
+            default_value = False
+        )
+
+        object.add_method_parameter(
+            "get_raynumber",
+            "set_raynumber", 
+            "number_of_rays", 
+            "number of rays per evolve step", 
+            default_value = 30000
+        )
+
+        object.add_method_parameter(
+            "get_iontempsolver",
+            "set_iontempsolver", 
+            "ionization_temperature_solver", 
+            "solver to use (1: euler, 2: bdf)", 
+            default_value = 2
+        )        
+
+        object.add_method_parameter(
+            "get_globalHefraction",
+            "set_globalHefraction", 
+            "global_helium_mass_Fraction", 
+            "global helium mass fraction (f_H+f_He=1)", 
+            default_value = 0.
+        )
+
+        object.add_method_parameter(
+            "get_boxsize",
+            "set_boxsize", 
+            "box_size", 
+            "simulation box size", 
+            default_value = 13.2 | units.kpc
+        )
+
+        object.add_method_parameter(
+            "get_boundary",
+            "set_boundary", 
+            "boundary_condition", 
+            "simulation bundary condition (-1,0,1 = reflective, vacuum, periodic", 
+            default_value = 0
+        )
+
+        object.add_boolean_parameter(
+            "get_H_caseA",
+            "set_H_caseA", 
+            "hydrogen_case_A", 
+            "flag for hydrogen case A recombination (1)", 
+            default_value = True
+        )
+
+        object.add_boolean_parameter(
+            "get_He_caseA",
+            "set_He_caseA", 
+            "helium_case_A", 
+            "flag for  helium case A recombination (1)", 
+            default_value = True
+        )
 
