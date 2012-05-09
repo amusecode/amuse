@@ -36,7 +36,7 @@ class TestSimpleXInterface(TestWithMPI):
         self.assertEqual(errors, [0]*number_of_particles)
         self.assertEqual(indices, range(number_of_particles))
         self.assertEqual(0, instance.commit_particles())
-        x_out, y_out, z_out, n_H_out, flux_out, X_ion_out,u_out, error = instance.get_state(indices)
+        x_out, y_out, z_out, n_H_out, flux_out, X_ion_out,u_out, metallicity_out, error = instance.get_state(indices)
 
         self.assertAlmostEqual((x-x_out)/13200., numpy.zeros_like(x), 7)
         self.assertAlmostEqual((y-y_out)/13200., numpy.zeros_like(x), 7)
@@ -45,10 +45,11 @@ class TestSimpleXInterface(TestWithMPI):
         self.assertAlmostEqual(n_H,n_H_out, 7)
         self.assertAlmostEqual(X_ion,X_ion_out, 7)
         self.assertAlmostRelativeEqual(u,u_out, 7)
+        #self.assertAlmostRelativeEqual(metallicity,metallicity_out, 7)
         
         
         
-        x, y, z, n_H, flux, X_ion,u, error = instance.get_state(0)
+        x, y, z, n_H, flux, X_ion,u,metallicity, error = instance.get_state(0)
         for expected, received in zip([0, 0, 0, 0.001, 5.0, 0.0, 831447247704,0], 
                 [x, y, z, n_H, flux, X_ion, u,error]):
             self.assertAlmostRelativeEqual(expected, received,6)
@@ -61,7 +62,7 @@ class TestSimpleXInterface(TestWithMPI):
             self.assertAlmostRelativeEqual(expected, received, 5)
         
         self.assertEqual(0, instance.set_state(3, 1.0, 2.0, 3.0, 4.0, 5.0, 0.6,77.0))
-        x, y, z, n_H, flux, X_ion, u,error = instance.get_state(3)
+        x, y, z, n_H, flux, X_ion, u,metallicity,error = instance.get_state(3)
         for expected, received in zip([1.0, 2.0, 3.0, 4.0, 5.0, 0.6, 77,0], 
                 [x, y, z, n_H, flux, X_ion,u, error]):
             self.assertAlmostRelativeEqual(expected, received, 5)
@@ -70,7 +71,7 @@ class TestSimpleXInterface(TestWithMPI):
         self.assertEqual(0, instance.set_flux(4, 0.5))
         self.assertEqual(0, instance.set_ionisation(4, 0.4))
         self.assertEqual(0, instance.set_internal_energy(4, 1234.))
-        x, y, z, n_H, flux, X_ion,u, error = instance.get_state(4)
+        x, y, z, n_H, flux, X_ion,u,metallicity, error = instance.get_state(4)
         for expected, received in zip([3.0, 2.0, 1.0, 0.6, 0.5, 0.4,1234., 0], 
                 [x, y, z, n_H, flux, X_ion,u, error]):
             self.assertAlmostRelativeEqual(expected, received, 5)
