@@ -2,9 +2,9 @@ import os.path
 import numpy
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.community.sphray.interface import SPHRayInterface
+from amuse.community.sphray.interface import SPHRayInterface,SPHRay
 from amuse.units import units
-from amuse.datamodel import Particles
+from amuse.datamodel import Particles,create_particle_set
 from amuse.community import ensure_data_directory_exists
 
 from amuse.io import read_set_from_file
@@ -253,7 +253,7 @@ class TestSPHRayInterface(TestWithMPI):
             result,err=getattr(instance, 'get_'+x)()
             self.assertEquals((x,result),(x,0))
 
-        for x,l in [('boxsize',13.2)]:
+        for x,l in [('boxsize',13.2),("defaultspectype",-1.)]:
             result,err=getattr(instance, 'get_'+x)()
             self.assertAlmostEqual( result,l ,6)
             err=getattr(instance, 'set_'+x)(1.)
@@ -299,3 +299,115 @@ class TestSPHRayInterface(TestWithMPI):
             z.append(float(l[2]))
             spctype.append(float(l[7]))
         return numpy.array(L), numpy.array(x), numpy.array(y), numpy.array(z), numpy.array(spctype)
+
+class TestSPHRay(TestWithMPI):
+
+    def test0(self):
+        print "test1: basic startup and flow"
+        instance=SPHRay()
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.parameters.box_size = 100 | units.parsec
+        self.assertEquals(instance.parameters.box_size, 100 | units.parsec)
+        instance.commit_parameters()
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.commit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+
+        self.assertEquals(instance.parameters.box_size, 100 | units.parsec)
+        instance.cleanup_code()
+        instance.stop()
+
+    def test1(self):
+        print "test1: adding particles"
+
+        instance=SPHRay()
+
+        gasparts=self.read_gas_file(os.path.join(instance.data_directory(), 'sphray_4K'))
+        srcparts=self.read_src_file(os.path.join(instance.data_directory(), 'test1_sources_001.1'))
+                
+        self.assertEqual(len(instance.gas_particles),0)
+        self.assertEqual(len(instance.src_particles),0)
+        instance.gas_particles.add_particles(gasparts)
+        instance.src_particles.add_particles(srcparts)
+        self.assertEqual(len(instance.gas_particles),len(gasparts))
+        self.assertEqual(len(instance.src_particles),len(srcparts))
+
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+
+        gaspart2=instance.gas_particles.copy()
+
+        maxabsdev=abs(gasparts.position-gaspart2.position).amax().number
+        self.assertLess(maxabsdev, 1.e-6)
+
+        maxabsdev=abs(gasparts.rho-gaspart2.rho).amax().number
+        self.assertLess(maxabsdev, 1.e-12)
+
+        maxabsdev=abs(gasparts.u-gaspart2.u).amax().number
+        self.assertLess(maxabsdev, 1.e-12)
+
+        instance.cleanup_code()
+        instance.stop()
+
+    def test2(self):
+        print "test2: test parameters"
+        instance=SPHRay()
+
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+
+        self.assertEquals(instance.parameters.isothermal_flag, False)
+        self.assertEquals(instance.parameters.hydrogen_case_A_flag, True)
+        self.assertEquals(instance.parameters.helium_case_A_flag, True)
+
+        instance.parameters.isothermal_flag=True
+        self.assertEquals(instance.parameters.isothermal_flag, True)
+        dsfs
+
+
+#        for bool_par in ['isothermal_flag','hydrogen_case_A_flag',
+#                            'helium_case_A_flag']:
+#            setattr(instance.parameters, bool_par, False)
+        
+        for par,val in [("hydrogen_case_A_flag", False),("box_size", 10| units.kpc)]:
+            setattr(instance.parameters, par, val)
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        
+        
+        
+
+    def read_gas_file(self,filename):
+        p=read_set_from_file(filename,'amuse')
+        mass=p.mass.number
+        hsml=p.smoothing_length.number
+        x=p.x.number
+        y=p.y.number
+        z=p.z.number
+        rho=p.rho.number
+        u=p.internal_energy.number
+        xe=numpy.zeros_like(x)
+        return create_particle_set(mass=mass | (10**10*units.MSun), hsml=hsml | (units.kpc), 
+            x=x | (units.kpc), y=y| (units.kpc), z=z| (units.kpc), rho=rho | ((10**10*units.MSun) /(units.kpc)**3),
+            xe=xe, u=u| (10**5 * units.cm/units.s)**2)
+        
+    def read_src_file(self,filename):
+        f=open(filename)
+        lines=f.readlines()
+        f.close()
+        L=[]
+        x=[]
+        y=[]
+        z=[]
+        spctype=[]
+        for line in lines:
+          l=line.split()
+          if len(l) == 9:
+            L.append(float(l[6]))
+            x.append(float(l[0]))
+            y.append(float(l[1]))
+            z.append(float(l[2]))
+            spctype.append(float(l[7]))
+        return create_particle_set( L=numpy.array(L) | (10**48 * units.s**-1), 
+            x=numpy.array(x) | (units.kpc), y=numpy.array(y)| (units.kpc), 
+                  z=numpy.array(z)| (units.kpc), SpcType=numpy.array(spctype))
