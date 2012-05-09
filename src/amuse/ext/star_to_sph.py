@@ -162,9 +162,15 @@ class StellarModel2SPH(object):
                 comp.append(delta*extended[indices] + one_minus_delta*extended[indices+1])
             
             comp = numpy.asarray(comp)
-            return interpolated_energies, comp.transpose()
+            
+            extended = self.mu_profile[:1]
+            extended.extend(self.mu_profile)
+            extended.append(self.mu_profile[-1])
+            mu = delta*extended[indices] + one_minus_delta*extended[indices+1]
+            
+            return interpolated_energies, comp.transpose(), mu
         else:
-            return interpolated_energies, None
+            return interpolated_energies, None, None
     
     def convert_to_SPH(self):
         sph_particles = new_spherical_particle_distribution(
@@ -191,7 +197,7 @@ class StellarModel2SPH(object):
         hydro_code.gas_particles.add_particles(particles)
         
         for i in range(1, num_iterations+1):
-            hydro_code.gas_particles.u, tmp = self.interpolate_internal_energy(particles.position.lengths(), do_composition_too = False)
+            hydro_code.gas_particles.u, tmp, tmp2 = self.interpolate_internal_energy(particles.position.lengths(), do_composition_too = False)
             hydro_code.evolve_model(i * (1.0e-5 | units.s))
             accelerations     = hydro_code.gas_particles.acceleration
             acc_correlated = (previous_acc * accelerations).sum() / (accelerations * accelerations).sum()
@@ -232,7 +238,7 @@ class StellarModel2SPH(object):
             for result_string in self.relax(sph_particles):
                 print result_string
         
-        specific_internal_energy, composition = self.interpolate_internal_energy(
+        specific_internal_energy, composition, mu = self.interpolate_internal_energy(
             sph_particles.position.lengths(),
             do_composition_too = self.do_store_composition
         )
@@ -240,6 +246,7 @@ class StellarModel2SPH(object):
         if self.do_store_composition:
             sph_particles.add_vector_attribute("composition", self.species_names)
             sph_particles.composition = composition
+            sph_particles.mu = mu
         
         if self.with_core_particle and self.core_radius:
             core_particle = Particle()

@@ -96,7 +96,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertEqual(outer_radii, [0.125, 0.25, 0.5, 1.0] | units.RSun)
         self.assertEqual(inner_radii, [0.0, 0.125, 0.25, 0.5] | units.RSun)
         radial_positions = (outer_radii + inner_radii) / 2
-        int_specific_internal_energy, int_composition = converter.interpolate_internal_energy(radial_positions)
+        int_specific_internal_energy, int_composition, int_mu = converter.interpolate_internal_energy(radial_positions)
         self.assertEqual( converter.specific_internal_energy_profile, int_specific_internal_energy)
     
     def test4(self):
@@ -113,9 +113,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
         self.assertIsOfOrder(max(sph_particles.x), star.radius)
         aa = sph_particles.composition.sum(axis=1) - numpy.asarray([1.0]*number_of_sph_particles)
-        print aa.dtype, aa
-        print numpy.round(aa ,7)
-        self.assertAlmostEqual(sph_particles.composition.sum(axis=1), numpy.asarray([1.0]*number_of_sph_particles) )
+        self.assertAlmostEqual(sph_particles.composition.sum(axis=1), 1.0)
         self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 ))
         self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 ))
         self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 ))
