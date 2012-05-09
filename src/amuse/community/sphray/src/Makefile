@@ -85,7 +85,7 @@ endif
 
 ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
 FC= gfortran
-FFLAGS= -cpp -O5
+FFLAGS= -cpp -O0
 
 ISLIB= -L
 ISINC= -I
