@@ -20,6 +20,7 @@ module amuse_sphrayMod
   character(len=clen) :: b2cdFile='./column_depth/latmon_b2cd_table.txt'           !< [Config File] file containing b2cd tables
   character(len=clen) :: AtomicRatesFile='./atomic_rates/atomic_rates_Hui.txt'    !< [Config File] file containnig atomic rates tables
 
+  real(r8b) :: default_spectral_type = -1.
 
  contains
 
@@ -416,7 +417,11 @@ function sphray_set_src_particle_state(id,L,x,y,z,SpcType) result(ret)
     psys%src(index)%pos(1)=x
     psys%src(index)%pos(2)=y
     psys%src(index)%pos(3)=z
-    psys%src(index)%SpcType=SpcType
+    if(SpcType.NE.0) then
+      psys%src(index)%SpcType=SpcType
+    else
+      psys%src(index)%SpcType=default_spectral_type
+    endif
     ret=0
 end function
 
@@ -489,11 +494,14 @@ subroutine sphray_add_src_particle(id,L,x,y,z,SpcType)
     src_buffer(nsrc_buffer)%pos(1)=x
     src_buffer(nsrc_buffer)%pos(2)=y
     src_buffer(nsrc_buffer)%pos(3)=z
-    src_buffer(nsrc_buffer)%SpcType=spcType
+    if(SpcType.NE.0) then
+      src_buffer(nsrc_buffer)%SpcType=SpcType
+    else
+      src_buffer(nsrc_buffer)%SpcType=default_spectral_type
+    endif
     src_buffer(nsrc_buffer)%EmisPrf=0
     src_buffer(nsrc_buffer)%lastemit=GV%rayn
     
-
 end subroutine
 
 function sphray_remove_gas_particle(id) result(ret)
@@ -709,14 +717,24 @@ subroutine sphray_get_boundary(N)
 end subroutine
 
 subroutine sphray_set_boxsize(x)
-  real(i8b) :: x
+  real(r8b) :: x
   GV%BoxUprs=x/2
   GV%BoxLwrs=-x/2
 end subroutine
 
 subroutine sphray_get_boxsize(x)
-  real(i8b) :: x
+  real(r8b) :: x
   x=maxval(GV%BoxUprs-GV%BoxLwrs)
+end subroutine
+
+subroutine sphray_set_defaultspectype(x)
+  real(r8b) :: x
+  default_spectral_type=x
+end subroutine
+
+subroutine sphray_get_defaultspectype(x)
+  real(r8b) :: x
+  x=default_spectral_type
 end subroutine
 
 function sphray_set_he_mass_frac(hemf) result(ret)

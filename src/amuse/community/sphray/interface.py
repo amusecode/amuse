@@ -87,8 +87,9 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.OUT)
-        for x in ['L','x','y','z','SpcType']:
+        for x in ['L','x','y','z']:
             function.addParameter(x, dtype='float32', direction=function.IN)
+        function.addParameter("SpcType", dtype='float32', direction=function.IN,default=0)    
         function.result_type = 'i'
         return function
 
@@ -127,8 +128,9 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.IN)
-        for x in ['L','x','y','z','SpcType']:
+        for x in ['L','x','y','z']:
             function.addParameter(x, dtype='float32', direction=function.IN)
+        function.addParameter("SpcType", dtype='float32', direction=function.IN,default=0)    
         function.result_type = 'i'
         return function
 
@@ -206,6 +208,22 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.addParameter('number_rays', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
+
+    @legacy_function   
+    def set_defaultspectype():
+        """ set default specType (negative in units of rydbergs, or positive integer) """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('defaultspectype', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_defaultspectype():
+        """ get default specType (negative in units of rydbergs, or positive integer) """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('defaultspectype', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
         
     @legacy_function   
     def set_iontempsolver():
@@ -360,11 +378,26 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
 
 class SPHRay(CommonCode):
         
-    def __init__(self, **options):
+    def __init__(self,unit_converter = None, **options):
+        
+        if unit_converter is not None:
+            raise Exception("atm SPHRay uses predefined units converter")
+           
+        self.unit_converter = ConvertBetweenGenericAndSiUnits(
+                3.085678e21 | units.cm,   # 1.0 kpc
+                1.989e43 | units.g,       # 1.0e10 solar masses
+                1e5 | units.cm / units.s) # 1 km/sec
+
         InCodeComponentImplementation.__init__(self, SPHRayInterface(**options))
         self.set_data_directory(self.data_directory())
-        self.set_output_directory(self.output_directory())  
-
+        self.set_output_directory(self.output_directory())
+        
+    def define_converter(self, object):
+        if self.unit_converter is None:
+            raise Exception("something seriously wrong")
+        
+        object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+          
     def define_properties(self, object):
         object.add_property('get_time', public_name = "model_time")
 
@@ -374,7 +407,7 @@ class SPHRay(CommonCode):
             "set_isothermal", 
             "isothermal_flag", 
             "whether to evolve temperature (0) or keep isothermal (1)", 
-            default_value = False
+            False
         )
 
         object.add_method_parameter(
@@ -410,6 +443,14 @@ class SPHRay(CommonCode):
         )
 
         object.add_method_parameter(
+            "get_defaultspectype",
+            "set_defaultspectype", 
+            "default_spectral_type", 
+            "default src spectral type", 
+            default_value = -1.
+        )
+
+        object.add_method_parameter(
             "get_boundary",
             "set_boundary", 
             "boundary_condition", 
@@ -420,16 +461,212 @@ class SPHRay(CommonCode):
         object.add_boolean_parameter(
             "get_H_caseA",
             "set_H_caseA", 
-            "hydrogen_case_A", 
+            "hydrogen_case_A_flag", 
             "flag for hydrogen case A recombination (1)", 
-            default_value = True
+            True
         )
 
         object.add_boolean_parameter(
             "get_He_caseA",
             "set_He_caseA", 
-            "helium_case_A", 
+            "helium_case_A_flag", 
             "flag for  helium case A recombination (1)", 
-            default_value = True
+            True
         )
 
+    def define_methods(self, object):
+        CommonCode.define_methods(self, object)
+        object.add_method('evolve_model', (generic_unit_system.time,), ( object.ERROR_CODE, ))
+        object.add_method(
+            "new_gas_particle",
+            (
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.density,
+                object.NO_UNIT,
+                generic_unit_system.speed**2
+            ),
+            (
+                object.INDEX,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "set_state_gas",
+            (
+                object.NO_UNIT,
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.density,
+                object.NO_UNIT,
+                generic_unit_system.speed**2
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_state_gas",
+            (
+                object.INDEX,
+            ),
+            (
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.density,
+                object.NO_UNIT,
+                generic_unit_system.speed**2,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "new_src_particle",
+            (
+                1.e50 * units.s**-1,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                object.NO_UNIT,
+            ),
+            (
+                object.INDEX,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "set_state_src",
+            (
+                object.NO_UNIT,
+                1.e50 * units.s**-1,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                object.NO_UNIT,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_state_src",
+            (
+                object.INDEX,
+            ),
+            (
+                1.e50 | units.s**-1,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                object.NO_UNIT,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "remove_src_particle",
+            (
+                object.INDEX,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "remove_gas_particle",
+            (
+                object.INDEX,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "set_boxsize",
+            (
+                generic_unit_system.length,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "set_globalHefraction",
+            (
+               object.NO_UNIT,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_boxsize",
+            (
+            ),
+            (
+                generic_unit_system.length,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_globalHefraction",
+            (
+            ),
+            (
+                object.NO_UNIT,
+                object.ERROR_CODE,
+            )
+        )
+
+    def define_particle_sets(self, object):
+        object.define_set('gas_particles', 'id')
+        object.set_new('gas_particles', 'new_gas_particle')
+        object.set_delete('gas_particles', 'remove_gas_particle')
+        object.add_setter('gas_particles', 'set_state_gas')
+        object.add_getter('gas_particles', 'get_state_gas')
+                        
+        object.define_set('src_particles', 'id')
+        object.set_new('src_particles', 'new_src_particle')
+        object.set_delete('src_particles', 'remove_src_particle')
+        object.add_setter('src_particles', 'set_state_src')
+        object.add_getter('src_particles', 'get_state_src')
+        
+    def define_state(self, object):
+        CommonCode.define_state(self, object)
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
+        object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
+        object.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
+        object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
+        object.add_method('EDIT', 'new_gas_particle')
+        object.add_method('EDIT', 'remove_gas_particle')
+        object.add_method('EDIT', 'new_src_particle')
+        object.add_method('EDIT', 'remove_src_particle')
+        object.add_transition('EDIT', 'RUN', 'commit_particles')
+        object.add_transition('RUN', 'UPDATE', 'new_gas_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'remove_gas_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'new_src_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'remove_src_particle', False)
+#        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        object.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
+        object.add_method('EVOLVED', 'evolve_model')
+#        object.add_transition('EVOLVED','RUN', 'synchronize_model')
+#        object.add_method('RUN', 'synchronize_model')
+        object.add_method('RUN', 'get_state_gas')
+        object.add_method('RUN', 'get_state_src')
+
+        object.add_method('INITIALIZED', 'set_isothermal')
+        object.add_method('INITIALIZED', 'set_boxsize')
+        object.add_method('INITIALIZED', 'set_globalHefraction')
+        object.add_method('INITIALIZED', 'set_raynumber')
+        object.add_method('INITIALIZED', 'set_iontempsolver')
+        object.add_method('INITIALIZED', 'set_boundary')
+        object.add_method('INITIALIZED', 'set_H_caseA')
+        object.add_method('INITIALIZED', 'set_He_caseA')

@@ -229,6 +229,24 @@ function set_raynumber(N) result(ret)
   ret=0
 end function
 
+
+function get_defaultspectype(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(r8b) :: x
+  call sphray_get_defaultspectype(x)
+  ret=0
+end function
+
+function set_defaultspectype(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(r8b) :: x
+  call sphray_set_defaultspectype(x)
+  ret=0
+end function
+
+
 function get_iontempsolver(N) result(ret)
   use amuse_sphrayMod
   integer :: ret
@@ -264,7 +282,7 @@ end function
 function get_boxsize(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
-  real(i8b) :: x
+  real(r8b) :: x
   call sphray_get_boxsize(x)
   ret=0
 end function
@@ -272,7 +290,7 @@ end function
 function set_boxsize(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
-  real(i8b) :: x
+  real(r8b) :: x
   call sphray_set_boxsize(x)
   ret=0
 end function
@@ -280,14 +298,14 @@ end function
 function set_globalHefraction(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
-  real(i8b) :: x
+  real(r8b) :: x
   ret=sphray_set_he_mass_frac(x)
 end function
 
 function get_globalHefraction(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
-  real(i8b) :: x
+  real(r8b) :: x
   ret=sphray_get_he_mass_frac(x)
 end function
 
