@@ -92,7 +92,7 @@ class glass_unit_cube(object):
         sph.parameters.integrate_entropy_flag=False
         sph.parameters.timestep=dt  
         sph.parameters.verbosity=0
-        sph.parameters.pboxsize=2*L
+        sph.parameters.periodic_box_size=2*L
         sph.parameters.artificial_viscosity_alpha = 1.
         sph.parameters.beta = 2.
         sph.commit_parameters()
