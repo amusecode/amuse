@@ -338,14 +338,9 @@ class TestSPHRay(TestWithMPI):
 
         gaspart2=instance.gas_particles.copy()
 
-        maxabsdev=abs(gasparts.position-gaspart2.position).amax().number
-        self.assertLess(maxabsdev, 1.e-6)
-
-        maxabsdev=abs(gasparts.rho-gaspart2.rho).amax().number
-        self.assertLess(maxabsdev, 1.e-12)
-
-        maxabsdev=abs(gasparts.u-gaspart2.u).amax().number
-        self.assertLess(maxabsdev, 1.e-12)
+        self.assertAlmostRelativeEquals(gasparts.position,gaspart2.position,6)
+        self.assertAlmostRelativeEquals(gasparts.rho,gaspart2.rho,6)
+        self.assertAlmostRelativeEquals(gasparts.u,gaspart2.u,6)
 
         instance.cleanup_code()
         instance.stop()
@@ -356,21 +351,36 @@ class TestSPHRay(TestWithMPI):
 
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
 
-        self.assertEquals(instance.parameters.isothermal_flag, False)
-        self.assertEquals(instance.parameters.hydrogen_case_A_flag, True)
-        self.assertEquals(instance.parameters.helium_case_A_flag, True)
+        for par,val in [("isothermal_flag", False),
+            ("hydrogen_case_A_flag", True),("helium_case_A_flag", True)]:
+            val1=getattr(instance.parameters,par)
+            self.assertEqual(val,val1)            
+            setattr(instance.parameters, par, False)
+            val1=getattr(instance.parameters,par)
+            self.assertEqual(val1,False)            
+            setattr(instance.parameters, par, True)
+            val1=getattr(instance.parameters,par)
+            self.assertEqual(val1,True)            
+            setattr(instance.parameters, par, False)
+            val1=getattr(instance.parameters,par)
+            self.assertEqual(val1,False)            
 
-        instance.parameters.isothermal_flag=True
-        self.assertEquals(instance.parameters.isothermal_flag, True)
-        dsfs
+        for par,val in [("number_of_rays", 30000),
+            ("ionization_temperature_solver", 2),("boundary_condition", 0)]:
+            val1=getattr(instance.parameters,par)
+            self.assertEqual(val,val1)            
+            setattr(instance.parameters, par, 123)
+            val1=getattr(instance.parameters,par)
+            self.assertEqual(val1,123)            
 
+        for par,val,tval in [ ("box_size",13.2 | units.kpc,  10. | units.kpc),
+                              ("default_spectral_type", -1.,1.)]:
+            val1=getattr(instance.parameters,par)
+            self.assertAlmostRelativeEqual(val,val1,6)            
+            setattr(instance.parameters, par, tval)
+            val1=getattr(instance.parameters,par)
+            self.assertAlmostRelativeEqual(val1,tval,6)            
 
-#        for bool_par in ['isothermal_flag','hydrogen_case_A_flag',
-#                            'helium_case_A_flag']:
-#            setattr(instance.parameters, bool_par, False)
-        
-        for par,val in [("hydrogen_case_A_flag", False),("box_size", 10| units.kpc)]:
-            setattr(instance.parameters, par, val)
         
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
         
