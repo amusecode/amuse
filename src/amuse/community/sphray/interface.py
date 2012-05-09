@@ -130,7 +130,7 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.addParameter('id', dtype='int32', direction=function.IN)
         for x in ['L','x','y','z']:
             function.addParameter(x, dtype='float32', direction=function.IN)
-        function.addParameter("SpcType", dtype='float32', direction=function.IN,default=0)    
+        function.addParameter("SpcType", dtype='float32', direction=function.IN,default=0.)    
         function.result_type = 'i'
         return function
 
@@ -562,7 +562,7 @@ class SPHRay(CommonCode):
                 object.INDEX,
             ),
             (
-                1.e50 | units.s**-1,
+                1.e50 * units.s**-1,
                 generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length,
@@ -598,6 +598,15 @@ class SPHRay(CommonCode):
             )
         )
         object.add_method(
+            "set_defaultspectype",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
             "set_globalHefraction",
             (
                object.NO_UNIT,
@@ -624,6 +633,77 @@ class SPHRay(CommonCode):
                 object.ERROR_CODE,
             )
         )
+        object.add_method(
+            "get_defaultspectype",
+            (
+            ),
+            (
+                object.NO_UNIT,
+                object.ERROR_CODE,
+            )
+        )
+
+        object.add_method(
+            "set_raynumber",
+            (
+               object.NO_UNIT,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+
+        object.add_method(
+            "get_raynumber",
+            (
+            ),
+            (
+                object.NO_UNIT,
+                object.ERROR_CODE,
+            )
+        )
+
+        object.add_method(
+            "set_iontempsolver",
+            (
+               object.NO_UNIT,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+
+        object.add_method(
+            "get_iontempsolver",
+            (
+            ),
+            (
+                object.NO_UNIT,
+                object.ERROR_CODE,
+            )
+        )
+
+        object.add_method(
+            "set_boundary",
+            (
+               object.NO_UNIT,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+
+        object.add_method(
+            "get_boundary",
+            (
+            ),
+            (
+                object.NO_UNIT,
+                object.ERROR_CODE,
+            )
+        )
+
+
 
     def define_particle_sets(self, object):
         object.define_set('gas_particles', 'id')
@@ -654,11 +734,8 @@ class SPHRay(CommonCode):
         object.add_transition('RUN', 'UPDATE', 'remove_gas_particle', False)
         object.add_transition('RUN', 'UPDATE', 'new_src_particle', False)
         object.add_transition('RUN', 'UPDATE', 'remove_src_particle', False)
-#        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        object.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
-        object.add_method('EVOLVED', 'evolve_model')
-#        object.add_transition('EVOLVED','RUN', 'synchronize_model')
-#        object.add_method('RUN', 'synchronize_model')
+        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        object.add_method('RUN', 'evolve_model')
         object.add_method('RUN', 'get_state_gas')
         object.add_method('RUN', 'get_state_src')
 
