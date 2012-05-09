@@ -62,6 +62,42 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return function
     
     @legacy_function
+    def set_data_directory():
+        """
+        Update the path to the SimpleX database.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('data_directory', dtype='string', direction=function.IN,
+            description = "Name of the SimpleX data directory")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was set
+        -1 - ERROR
+            Directory does not exist
+        """
+        return function
+    
+    # @legacy_function
+    # def get_data_directory():
+    #     """
+    #     Retrieve the path to the SimpleX database currently used.
+    #     """
+    #     function = LegacyFunctionSpecification()  
+    #     function.addParameter('data_directory', dtype='string', direction=function.OUT,
+    #         description = "Name of the SimpleX data directory")
+    #     function.result_type = 'int32'
+    #     function.result_doc = """
+    #     0 - OK
+    #         Value was retrieved
+    #     -1 - ERROR
+    #         Could not retrieve value
+    #     """
+    #     return function
+    
+    
+    
+    @legacy_function
     def commit_particles():
         """
         Let the code perform initialization actions
@@ -92,6 +128,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT)
         for x in ['x','y','z','rho','flux','xion','u']:
             function.addParameter(x, dtype='float64', direction=function.IN)
+        function.addParameter('metallicity', dtype='float64',direction=function.IN, default=0.0 )
         function.result_type = 'int32'
         return function
     
@@ -110,6 +147,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         for x in ['x','y','z','rho','flux','xion','u']:
             function.addParameter(x, dtype='float64', direction=function.OUT)
+        function.addParameter('metallicity', dtype='float64', direction=function.OUT)    
         function.result_type = 'int32'
         return function
     
@@ -212,7 +250,24 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
             particle could not be found
         """
         return function
-    
+
+
+    @legacy_function
+    def get_metallicity():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the metallicity from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('metallicity', dtype='float64', direction=function.OUT, description = "The current metallicity of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+        
     @legacy_function
     def set_state():
         function = LegacyFunctionSpecification()
@@ -220,6 +275,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         for x in ['x','y','z','rho','flux','xion','u']:
             function.addParameter(x, dtype='float64', direction=function.IN)
+        function.addParameter('metallicity',dtype='float64',direction=function.IN,default=0.0)    
         function.result_type = 'int32'
         return function
     
@@ -314,6 +370,23 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to set the ionisation for. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('xion', dtype='float64', direction=function.IN, description = "The new ionisation of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+    
+    @legacy_function
+    def set_metallicity():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the metallicity for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('metallicity', dtype='float64', direction=function.IN, description = "The new metallicity of the particle")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -462,6 +535,22 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.result_type = 'int32'
         return function
 
+    
+    @legacy_function
+    def set_recombination_radiation():
+        function = LegacyFunctionSpecification()
+        function.addParameter('recombination_radiation_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_recombination_radiation():
+        function = LegacyFunctionSpecification()
+        function.addParameter('recombination_radiation_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    
     @legacy_function
     def set_collisional_ionization():
         function = LegacyFunctionSpecification()
@@ -517,6 +606,7 @@ class SimpleX(CommonCode):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, SimpleXInterface(**options))
         self.set_output_directory(self.output_directory)
+        self.set_data_directory(self.data_directory)
 
     def define_properties(self, object):
         object.add_property('get_time', public_name = "model_time")
@@ -571,6 +661,14 @@ class SimpleX(CommonCode):
             default_value = 0
         )
 
+        #
+        object.add_method_parameter(
+            "get_recombination_radiation",
+            "set_recombination_radiation", 
+            "recombination_radiation_flag", 
+            "include recombination radiation if 1, not if zero", 
+            default_value = 0
+        )
 
 
         object.add_method_parameter(
@@ -597,6 +695,13 @@ class SimpleX(CommonCode):
             default_value = 13200. | units.parsec
         )
 
+        object.add_method_parameter(
+            "get_simplex_data_directory", 
+            "set_simplex_data_directory",
+            "simplex_data_directory", 
+            "Name of the SimpleX data directory", 
+            default_value = ""
+        )
 
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
@@ -610,7 +715,8 @@ class SimpleX(CommonCode):
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
                 object.NO_UNIT,
-                units.cm**2 / units.s**2
+                units.cm**2 / units.s**2,
+                object.NO_UNIT
                 ),
             (
                 object.INDEX,
@@ -640,6 +746,7 @@ class SimpleX(CommonCode):
                 1.0e48 / units.s,
                 object.NO_UNIT,
                 units.cm**2 / units.s**2,
+                object.NO_UNIT,
                 object.ERROR_CODE
                 )
             )
@@ -654,6 +761,7 @@ class SimpleX(CommonCode):
                 1.0e48 / units.s,
                 object.NO_UNIT,
                 units.cm**2 / units.s**2,
+                object.NO_UNIT
                 ),
             (
                 object.ERROR_CODE
@@ -784,6 +892,26 @@ class SimpleX(CommonCode):
             )
         )
         object.add_method(
+            "set_metallicity",
+            (
+                object.NO_UNIT,
+                object.NO_UNIT
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_metallicity",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                object.NO_UNIT,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
             'commit_particles',
             (),
             (object.ERROR_CODE)
@@ -895,7 +1023,18 @@ class SimpleX(CommonCode):
             (object.ERROR_CODE,)
         )
 
-
+        
+        object.add_method(
+            "get_recombination_radiation",
+            (),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_recombination_radiation",
+            (object.NO_UNIT, ),
+            (object.ERROR_CODE,)
+        )
     
         object.add_method(
             "get_box_size",
@@ -920,6 +1059,17 @@ class SimpleX(CommonCode):
             (object.ERROR_CODE,)
         )
 
+        object.add_method(
+            "get_simplex_data_directory",
+            (),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_simplex_data_directory",
+            (object.NO_UNIT,),
+            (object.ERROR_CODE,)
+        )
     
     def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_particle')
@@ -935,6 +1085,8 @@ class SimpleX(CommonCode):
         object.add_getter('particles', 'get_flux')
         object.add_setter('particles', 'set_ionisation')
         object.add_getter('particles', 'get_ionisation')
+        object.add_setter('particles', 'set_metallicity')
+        object.add_getter('particles', 'get_metallicity')
         object.add_setter('particles', 'set_internal_energy')
         object.add_getter('particles', 'get_internal_energy')
         object.add_setter('particles', 'set_dinternal_energy_dt')
@@ -977,6 +1129,7 @@ class SimpleX(CommonCode):
         object.add_method('INITIALIZED', 'set_thermal_evolution')
         object.add_method('INITIALIZED', 'set_blackbody_spectrum')
         object.add_method('INITIALIZED', 'set_metal_cooling')
+        object.add_method('INITIALIZED', 'set_recombination_radiation')
         object.add_method('INITIALIZED', 'set_collisional_ionization')
 
 

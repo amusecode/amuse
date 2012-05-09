@@ -196,6 +196,11 @@ class Site : public Vertex {
   //! get the number density of ionised hydrogen of site
   const float& get_n_HII() const{ return n_HII; }
 
+  //! assign the number density of ionised hydrogen to site
+  void set_metallicity(const float& Z){ metallicity = Z; }
+  //! get the number density of ionised hydrogen of site
+  const float& get_metallicity() const{ return metallicity; }
+
   //! assign internalEnergy to site
   void set_internalEnergy(const float& _u){ internalEnergy = _u; }
   //! get the u in the site
@@ -352,6 +357,8 @@ class Site : public Vertex {
   float internalEnergy;             //!< Internal energy of the gas
   float dinternalEnergydt;          //!< Rate of change of internal energy (adiabatic)
   float clumping;                   //!< Clumping factor of the gas
+  float metallicity;                //!< Metallicity relative to solar
+  
   bool ballistic;                   //!< Ballistic transport or direction conserving?
   bool source;                      //!< Source or not?
 

@@ -77,7 +77,7 @@ class SimpleX{
 
   public:
     //! constructor
-    SimpleX(const string& output_path = ".");
+    SimpleX(const string& output_path = ".", const string& data_path = ".");
     //! destructor
     ~SimpleX();
 
@@ -473,15 +473,17 @@ class SimpleX{
     int randomSeed;                //!< Seed for random number generator
     short dimension;               //!< Dimension of the simulation (default = 3)
     string inputFileName;          //!< File which holds densities and fluxes to be read in
+    string dataPath;               //!< Path where the metal line cooling tables are
     bool blackBody;                //!< Use blackbody for source spectrum?
     bool recombination;            //!< Include recombination or not
+    bool rec_rad;                  //!< Include recombination radiation or not
     bool coll_ion;                 //!< Include collisional ionisations?
     bool heat_cool;                //!< Include heating and cooling?
     bool metal_cooling;            //!< Include metal line cooling?
     short int numFreq;             //!< Number of frequencies
     short int freq_spacing;        //!< Spacing of the frequency bins
     short RTmethod;                //!< Method for RT
-    bool diffuseTransport;       //!< Set this to 1 to do only ballistic transport
+    bool diffuseTransport;         //!< Set this to 1 to do only ballistic transport
     bool ballisticTransport;       //!< Set this to 1 to do only ballistic transport
     bool dirConsTransport;         //!< Set this to 1 to do only direction conserving transport
     bool combinedTransport;        //!< Set this to 1 to do combined transport

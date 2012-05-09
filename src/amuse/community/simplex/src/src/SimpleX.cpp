@@ -36,7 +36,7 @@ along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 
 // constructor
-SimpleX::SimpleX(const string& output_path){
+SimpleX::SimpleX(const string& output_path, const string& data_path){
 
   //rank of this processor and total number of processors
   COMM_RANK = MPI::COMM_WORLD.Get_rank();    
@@ -83,6 +83,9 @@ SimpleX::SimpleX(const string& output_path){
     simpleXlog.open( "SimpleX.log" );
   else
     simpleXlog.open( (output_path + "/SimpleX.log").c_str() );
+  
+  dataPath = data_path;
+
 
 }
 
@@ -5762,8 +5765,24 @@ void SimpleX::compute_physics( const unsigned int& run ){
     if(blackBody) {   // -> Blackbody spectrum
       black_body_source( sourceTeff );
     } else {             // -> Monochromatic spectrum
-    
-      cross_H.resize(1, cross_HI( nu0HI, nu0HI ) );
+      //if recombination photons are included, use 2 bins
+      if(rec_rad){
+        
+        cross_H.resize(2, cross_HI( nu0HI, nu0HI ) );
+        
+        //put the flux of the source in first bin instead of zeroth,
+        //that is used for recombination radiation
+        for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+          if(it->get_source()) {
+            float flux = it->get_flux( 0 );
+            it->set_flux( 0, 0.0 ); 
+            it->set_flux( 1, flux );
+          }
+        }
+
+      }else{
+        cross_H.resize(1, cross_HI( nu0HI, nu0HI ) );
+      }
     }
 
   }else{
@@ -5820,19 +5839,21 @@ void SimpleX::initialise_physics_params() {
 /****  Read metal line cooling data  ****/
 void SimpleX::read_metals(){
 
+  string datadir = dataPath + "/";
+
   // Read the curves
-  cooling_curve hydrogen("/data2/kruip/amuse/trunk/data/fi/input/H.cool");
-  cooling_curve helium("/data2/kruip/amuse/trunk/data/fi/input/He.cool");
-  cooling_curve carbon("/data2/kruip/amuse/trunk/data/fi/input/C.cool");
-  cooling_curve carbonH("/data2/kruip/amuse/trunk/data/fi/input/C.Hcool");
-  cooling_curve nitrogen("/data2/kruip/amuse/trunk/data/fi/input/N.cool");
-  cooling_curve oxigen("/data2/kruip/amuse/trunk/data/fi/input/O.cool");
-  cooling_curve oxigenH("/data2/kruip/amuse/trunk/data/fi/input/O.Hcool");
-  cooling_curve neon("/data2/kruip/amuse/trunk/data/fi/input/Ne.cool");
-  cooling_curve silicon("/data2/kruip/amuse/trunk/data/fi/input/Si.cool");
-  cooling_curve siliconH("/data2/kruip/amuse/trunk/data/fi/input/Si.Hcool");
-  cooling_curve iron("/data2/kruip/amuse/trunk/data/fi/input/Fe.cool");
-  cooling_curve ironH("/data2/kruip/amuse/trunk/data/fi/input/Fe.Hcool");
+  cooling_curve hydrogen(datadir+"H.cool");
+  cooling_curve helium(datadir+"He.cool");
+  cooling_curve carbon(datadir+"C.cool");
+  cooling_curve carbonH(datadir+"C.Hcool");
+  cooling_curve nitrogen(datadir+"N.cool");
+  cooling_curve oxigen(datadir+"O.cool");
+  cooling_curve oxigenH(datadir+"O.Hcool");
+  cooling_curve neon(datadir+"Ne.cool");
+  cooling_curve silicon(datadir+"Si.cool");
+  cooling_curve siliconH(datadir+"Si.Hcool");
+  cooling_curve iron(datadir+"Fe.cool");
+  cooling_curve ironH(datadir+"Fe.Hcool");
 
   // Place them in the cooling curve vector
   curves.push_back(hydrogen);
@@ -5869,7 +5890,7 @@ void SimpleX::read_metals(){
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Metal line cooling curves initialized " << endl;
-    cerr << "  Metal line cooling curves initialized " << endl;
+    //cerr << "  Metal line cooling curves initialized " << endl;
   }
 
   return;
@@ -6170,8 +6191,22 @@ void SimpleX::black_body_source(const double& tempSource) {
   const double upperBound = 1e2;
   const double lowerBound = 1.0;
 
+  //if recombination radiation is included, zeroth bin is for radiation at Lyman limit
+  //so is not included in calculation of bin spacing
+  if(rec_rad){
+    numFreq--;
+  }
+    
   //calculate the frequency bounds
   vector<double> freq_bounds = calc_freq_bounds(lowerBound, upperBound);
+
+  //Proper number of frequencies
+  if(rec_rad){
+    numFreq++;
+    //add extra bin
+    vector<double>::iterator it = freq_bounds.begin();
+    freq_bounds.insert(it, 1, lowerBound);
+  }
 
  
   // cerr << " Frequency bounds: ";
@@ -6251,6 +6286,10 @@ void SimpleX::black_body_source(const double& tempSource) {
 
   }
 
+  //if recombination radiation is included, cross section is cross section at Lyman limit
+  if(rec_rad){
+    cross_H[0] = cross_HI(nu0HI,nu0HI);
+  }
  
   //***** Determine excess energy of the photons ******//
 
@@ -6271,7 +6310,12 @@ void SimpleX::black_body_source(const double& tempSource) {
 
   }
 
- 
+  //if recombination radiation is included, excess energy is k*T_gas
+  //for now assume that all gas that emits photons is at 10^4 K
+  if(rec_rad){
+    photon_excess_energy[0] = k_B * 1.e4;
+  }
+  
   // cerr << " Heating: ";
   // for(int i=0; i<photon_excess_energy.size(); i++){
   //   cerr << photon_excess_energy[i] << " ";
@@ -6409,12 +6453,45 @@ double SimpleX::recombine(){
       double num_rec_factor = (double) it->get_clumping() * N_HII * (double) it->get_n_HII() * UNIT_D * UNIT_T;
 
       //number of recombinations
-      double num_rec = num_rec_factor*recomb_coeff_HII_caseB( it->get_temperature() );
+      double num_rec = (rec_rad) ? num_rec_factor*recomb_coeff_HII_caseA( it->get_temperature() ) 
+        : num_rec_factor*recomb_coeff_HII_caseB( it->get_temperature() );
 
       //make sure there are no more recombinations than ionised atoms
       if( num_rec > N_HII ) {
-	num_rec = N_HII;  
+	      num_rec = N_HII;  
       } 
+
+      //if recombination photons are included, their contribution to ionisations 
+      //inside the cell needs to be taken into account
+      //the rest is sent to all neighbours
+      if( rec_rad ) { 
+
+        //optical depth through the cell
+        double tau = (double) it->get_n_HI() * UNIT_D * (double) it->get_neigh_dist() * UNIT_L * cross_H[0];
+        //fraction of the photons that can escape
+        double rec_escape = rec_rad_escape( tau );
+
+        //total number of recombination photons produced in the cell
+        double N_out_diffuse = num_rec_factor * ( recomb_coeff_HII_caseA( it->get_temperature() ) - recomb_coeff_HII_caseB( it->get_temperature() ) );
+
+        //the fraction that is not escaping balances recombinations
+        num_rec -= (1.0 - rec_escape) * N_out_diffuse;
+
+        if(num_rec < 0.0){
+          cerr << " (" << COMM_RANK << ") Negative number of recombinations! " << endl
+            << " rec_escape: " << rec_escape << " tau: " << tau << endl;
+        }
+
+        //send the fraction that escapes to all neighbours
+        vector<double> N_out(numFreq, 0.0);
+        //put the recombination photons in zeroth bin
+        N_out[0] = rec_escape * N_out_diffuse/UNIT_I;
+        if(N_out_diffuse > 0.0){
+          diffuse_transport( *it, N_out );
+        }
+
+      }
+
 
       totalRecombs += num_rec;
 
@@ -6450,7 +6527,11 @@ double SimpleX::cooling_rate( Site& site ){
   double n_e = n_HII;
 
   //recombination cooling
-  C += recomb_cooling_coeff_HII_caseB( site.get_temperature() ) * n_e * n_HII * site.get_clumping();
+  if(rec_rad){
+    C += recomb_cooling_coeff_HII_caseA( site.get_temperature() ) * n_e * n_HII * site.get_clumping();
+  }else{
+    C += recomb_cooling_coeff_HII_caseB( site.get_temperature() ) * n_e * n_HII * site.get_clumping();;
+  }
 
   //collisional ionisation cooling
   C += coll_ion_cooling_coeff_HI( site.get_temperature() ) * n_e * n_HI;
@@ -6463,15 +6544,16 @@ double SimpleX::cooling_rate( Site& site ){
 
   //metal cooling (including helium for the moment)
   if(metal_cooling){
-    
+        
     //loop over metal line cooling curves
     for(unsigned int j=1; j<curves.size();j++){// j=1 because hydrogen is not taken into account here (but explicitly above)
       
       // abundance*cooling/rate
-      if(withH[j])
-	C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * n_H;
-      else
-	C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_e * n_H;
+      if(withH[j]){
+	      C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * site.get_metallicity();
+      }else{
+        C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_e * site.get_metallicity();
+      }
     }
   }
   
@@ -6495,7 +6577,7 @@ double SimpleX::heating_rate( const vector<double>& N_ion, const double& t_end )
 
   //loop over frequencies
   for( short int f=0; f<numFreq; f++ ){
-
+  
     //number of photons per second
     double N_ion_sec = N_ion[f]/t_end;
 
@@ -6531,7 +6613,6 @@ double SimpleX::T_to_u( const double& T, const double& mu ){
 // function returns the heating/cooling time
 double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, const double& t_end ){
 
-
   //range of temperatures between which the rates are valid
   double T_min = 10.;
   double T_max = 1.e9;
@@ -6555,7 +6636,7 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
   double duDtAdiabatic = site.get_dinternalEnergydt();
   
   //divide this by the internal energy to obtain a constant quantity
-  double u_0 = site.get_internalEnergy();
+  //double u_0 = site.get_internalEnergy();
 
   // not a good idea (shock heating terms)
   // duDtAdiabatic = (u_0 > 0.0)? duDtAdiabatic/u_0 : 0.0;
@@ -6571,7 +6652,7 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
 
     //total cooling inside this cell per second
     double C = cooling_rate( site ); 
-    
+        
     //change in internal energy per second per unit mass
     double du = duDtAdiabatic + (H - C)/(N_H * m_H);
     // removed *u
@@ -6598,7 +6679,7 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
     }else if(u < u_min){
       u = u_min;
     }
-
+    
     //set new internal energy
     site.set_internalEnergy( (float) u );
 
@@ -6746,6 +6827,9 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
       vector<double> number_of_photo_ionisations(numFreq, 0.0);
       double number_of_recombinations = 0.0;
 
+      //total number of diffuse recombination photons during this time step
+      double N_rec_phot = 0.0;
+
       //number of neutral and ionised atoms during subcycle step
       double N_HI_step = initial_N_HI;
       double N_HII_step = initial_N_HII;
@@ -6830,8 +6914,48 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 	  num_rec_factor = 0;
 	}
 
-	//number of recombinations
-	double num_rec = num_rec_factor*recomb_coeff_HII_caseB( site.get_temperature() );
+  //number of recombinations
+  double num_rec = (rec_rad) ? num_rec_factor*recomb_coeff_HII_caseA( site.get_temperature() ) 
+    : num_rec_factor*recomb_coeff_HII_caseB( site.get_temperature() );
+
+
+  //number of diffuse recombination photons in this subcycle step
+  double N_rec_phot_step = 0.0;
+  //number of ionisations by diffuse recombination photons in this subcycle step
+  double N_rec_ion_step = 0.0;
+  //calculate contribution of recombination radiation to ionisation inside cell
+  //calculate the number of photons that is transported to neighbours
+
+  if( rec_rad ) { 
+
+    //fraction of the photons that can escape
+    double rec_escape = rec_rad_escape( tau_step[0]/straight_correction_factor );
+
+    //total number of recombination photons produced in the cell
+    N_rec_phot_step = num_rec_factor * ( recomb_coeff_HII_caseA( site.get_temperature() ) - recomb_coeff_HII_caseB( site.get_temperature() ) );
+    //N_rec_phot_step = num_rec_factor * ( recomb_coeff_HII_caseA( 10000. ) - recomb_coeff_HII_caseB( 10000. ) );
+
+
+    //the fraction of diffuse photons that is not escaping 
+    N_rec_ion_step = (1.0 - rec_escape) * N_rec_phot_step;
+    //these photons balance recombinations
+    num_rec -= N_rec_ion_step;
+    //they also add to the heating, so add to photo-ionisations in this step
+    photo_ionisations_step[0] += N_rec_ion_step;
+
+    //number of outgoing diffuse photons
+    N_rec_phot_step *= rec_escape;
+
+    //keep track of total number of recombination photons
+    N_rec_phot += N_rec_phot_step;
+
+    if(N_rec_phot_step < 0.0){
+      cerr << " (" << COMM_RANK << ") Negative number of diffuse photons!" << endl;
+      MPI::COMM_WORLD.Abort(-1);
+    }
+
+  }
+
 	if( num_rec > N_HII_step){
 	  num_rec = N_HII_step;
 	  cerr << " Warning, subcycle step too large: dx: " << num_rec << " N_HII_step: " << N_HII_step << endl;
@@ -6894,6 +7018,12 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 	  //number of steps left to take
 	  unsigned int Nleft = Nsteps - i - 1;
 
+    //remove extra photo-ionisations by diffuse photons to avoid counting them double
+    //in equilibrium
+    if(rec_rad){
+      photo_ionisations_step[0] -= N_rec_ion_step ;
+    }
+
 	  //in case of heating and cooling subcycle on heating time scale
 	  if(heat_cool){
 
@@ -6927,12 +7057,41 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 	      //electron density times recombination coefficient
 	      double n_e_times_alpha=0.0;
   
-	      n_e_times_alpha = site.get_clumping()*recomb_coeff_HII_caseB( site.get_temperature() ) * site.get_n_HII() * UNIT_D;
+        if(rec_rad){
+        //for now assume that in this case the optical depth is low, so recombination photons almost all
+        //escape. This makes it somewhat safe to use alpha_A in calculation of the equilibrium
+        //Error in number of diffuse recombination photons < 0.1%
+        //If case B would be used: Error > 50%
+        //this error is comparable to error without diffuse photons!
+          n_e_times_alpha = site.get_clumping()*recomb_coeff_HII_caseA( site.get_temperature() ) * site.get_n_HII() * UNIT_D;
+        }else{
+          n_e_times_alpha = site.get_clumping()*recomb_coeff_HII_caseB( site.get_temperature() ) * site.get_n_HII() * UNIT_D;
+        }
                 
 	      //equilibrium number of neutral and ionised atoms
 	      N_HI_step = n_e_times_alpha * N_H/( n_e_times_alpha + Gamma);
 	      N_HII_step = N_H - N_HI_step;
 
+        double N_rec_ion_eq = 0.0;
+            //number of recombination photons
+        if( rec_rad ) { 
+
+        //optical depth through the cell
+          double tau = N_HI_step * one_over_volume * (double) site.get_neigh_dist() * UNIT_L * cross_H[0] * straight_correction_factor;
+        //fraction of the photons that can escape
+          double rec_escape = rec_rad_escape( tau );
+
+        //total number of recombination photons produced in the cell, error < 0.1% 
+          double N_rec_phot_eq = num_rec_factor * 
+            ( recomb_coeff_HII_caseA( site.get_temperature() ) - recomb_coeff_HII_caseB( site.get_temperature() ) );
+
+        //keep track of total number of recombination photons
+          N_rec_phot += rec_escape * N_rec_phot_eq*dt2/dt_ss;
+
+        //number of ionisations by recombination photons
+          N_rec_ion_eq = (1.0 - rec_escape)*N_rec_phot_eq*dt2/dt_ss;
+        }
+        
 	      //update the site for temperature calculation
 	      double tmp = N_HI_step * num_to_dens;
 	      site.set_n_HI( (float) tmp );
@@ -6948,6 +7107,11 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 		number_of_photo_ionisations[f] += photo_ionisations_heating_step[f];
 	      }
 
+        //add recombination photons that add to the heating
+        if(rec_rad){
+          photo_ionisations_heating_step[0] += N_rec_ion_eq;
+        }
+                
 	      //calculate new temperature	    
 	      t_heat = update_temperature( site, photo_ionisations_step, dt2);
 
@@ -6962,6 +7126,13 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 	    for(short int f=0; f<numFreq; f++){
 	      number_of_photo_ionisations[f] += photo_ionisations_step[f]*Nleft;//*t_left/dt_ss;//*Nleft;
 	    }
+
+      //if diffuse recombination radiation is included, keep track of photons that need to be sent
+      if( rec_rad ) { 
+        //double total_recombinations = num_rec*Nleft;//*t_left/dt_ss;//Nleft;     
+        N_rec_phot += N_rec_phot_step*Nleft;
+
+      }//if diffuse
 	  }
 
 	  i = Nsteps-1;
@@ -6974,19 +7145,25 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
       //calculate the number of outgoing photons after the subcycling
       for(short int f=0; f<numFreq; f++){
 
-	//make sure N_out is bigger than zero, when subcycle time step is small this might 
-	//not be the case due to numerical errors
-	N_out_total[f] = ( (N_in_total[f] - number_of_photo_ionisations[f]) > 0.0 ) ? 
-	  (N_in_total[f] - number_of_photo_ionisations[f]) : 0.0;
+  //make sure N_out is bigger than zero, when subcycle time step is small this might 
+  //not be the case due to numerical errors
+        N_out_total[f] = ( (N_in_total[f] - number_of_photo_ionisations[f]) > 0.0 ) ? 
+          (N_in_total[f] - number_of_photo_ionisations[f]) : 0.0;
 
-	//check for NANs
-	if(N_out_total[f] != N_out_total[f] ){
-	  cerr << endl << " (" << COMM_RANK << ") NAN detected! N_out_total: " << N_out_total[f] << " " 
-	       << N_in_total[f] << " " << number_of_photo_ionisations[f] << endl;
-	  MPI::COMM_WORLD.Abort(-1);
-	}
+  //check for NANs
+        if(N_out_total[f] != N_out_total[f] ){
+          cerr << endl << " (" << COMM_RANK << ") NAN detected! N_out_total: " << N_out_total[f] << " " 
+            << N_in_total[f] << " " << number_of_photo_ionisations[f] << endl;
+          MPI::COMM_WORLD.Abort(-1);
+        }
       }
 
+      //send the recombination photons
+      if(N_rec_phot > 0.0){
+        vector<double> N_out(numFreq,0.0);
+        N_out[0] = N_rec_phot/(UNIT_I);
+        diffuse_transport( site, N_out );
+      }
 
     }else{ //don't use temporal photon conservation scheme
 

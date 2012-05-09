@@ -42,6 +42,9 @@ void AMUSE_SimpleX::read_parameters(){
   //include metal line cooling?
   metal_cooling = 0;
   
+  //include recombination radiation?
+  rec_rad = 0;
+  
 //----------- Don't change these unless you know what you're doing -------------------------//
 
  //dimension should always be 3
@@ -106,7 +109,7 @@ void AMUSE_SimpleX::read_parameters(){
 
 //add one vertex to the list of vertices that needs to be triangulated
 int AMUSE_SimpleX::add_vertex(long *id, double x,double y,double z,double rho,
-                                           double flux,double xion,double uInt){
+                                           double flux,double xion,double uInt, double metallicity){
 
   Vertex tempVert;
   if( COMM_RANK ==0){
@@ -136,7 +139,7 @@ int AMUSE_SimpleX::add_vertex(long *id, double x,double y,double z,double rho,
 
 //add a site to the sites list
 int AMUSE_SimpleX::add_site(long *id, double x,double y,double z,double rho,
-                                           double flux,double xion, double uInt){
+                                           double flux,double xion, double uInt, double metallicity){
 
   Site tempSite;
 
@@ -480,7 +483,7 @@ int AMUSE_SimpleX::reinitialize(){
 
 //return properties of specified site
 int AMUSE_SimpleX::get_site(int id, double *x,double *y,double *z,double *rho,
-                                              double *flux,double *xion, double *uInt){
+                                              double *flux,double *xion, double *uInt, double *metallicity){
    SITE_ITERATOR p;
    Site tmp;
    
@@ -502,6 +505,7 @@ int AMUSE_SimpleX::get_site(int id, double *x,double *y,double *z,double *rho,
        *flux = totalFlux;
        *xion = (double) p->get_n_HII()/tmp;
        *uInt = p->get_internalEnergy();
+       *metallicity = p->get_metallicity();
        
        return 1;
      }
@@ -576,6 +580,21 @@ int AMUSE_SimpleX::get_ionisation(int id, double *xion){
     return 0;
 }
 
+int AMUSE_SimpleX::get_metallicity(int id, double *metallicity){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        if (p->get_process() == COMM_RANK){
+            *metallicity = (double) p->get_metallicity();
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int AMUSE_SimpleX::get_internalEnergy(int id, double *uInt){
 
   SITE_ITERATOR p;
@@ -616,7 +635,7 @@ int AMUSE_SimpleX::get_dinternalEnergydt(int id, double *uInt){
 
 //set properties of specified site
 int AMUSE_SimpleX::set_site(int id, double x, double y, double z, double rho,
-                                              double flux, double xion, double uInt){
+                                              double flux, double xion, double uInt, double metallicity){
     SITE_ITERATOR p;
     Site tmp;
     
@@ -637,7 +656,8 @@ int AMUSE_SimpleX::set_site(int id, double x, double y, double z, double rho,
         }
         p->set_n_HI((1-xion)*rho);
         p->set_n_HII(xion*rho);
-	p->set_internalEnergy( uInt );
+	      p->set_internalEnergy( uInt );
+        p->set_metallicity( metallicity );
         
         return 1;
     }
@@ -693,6 +713,7 @@ int AMUSE_SimpleX::set_flux(int id, double flux){
     }
     return 0;
 }
+
 int AMUSE_SimpleX::set_ionisation(int id, double xion){
     SITE_ITERATOR p;
     Site tmp;
@@ -704,6 +725,19 @@ int AMUSE_SimpleX::set_ionisation(int id, double xion){
         p->set_n_HI((1-xion)*rho);
         p->set_n_HII(xion*rho);
         return 1;
+    }
+    return 0;
+}
+
+int AMUSE_SimpleX::set_metallicity(int id, double metallicity){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+      p->set_metallicity( metallicity );
+      return 1;
     }
     return 0;
 }
@@ -740,16 +774,22 @@ AMUSE_SimpleX *SimpleXGrid;
 int COMM_RANK;
 int lastid = 0;
 string global_output_path = ".";
+string global_data_path = ".";
 
 int initialize_code() {
   COMM_RANK = MPI::COMM_WORLD.Get_rank();
-  SimpleXGrid=new AMUSE_SimpleX(global_output_path);
+  SimpleXGrid=new AMUSE_SimpleX(global_output_path, global_data_path);
   return (*SimpleXGrid).setup_simplex();  
 }
 
 int set_output_directory(char *output_path){
     global_output_path = output_path;
     return 0;
+}
+
+int set_data_directory( char *data_path ){
+  global_data_path = data_path;
+  return 0;
 }
 
 int commit_particles() {
@@ -761,7 +801,7 @@ int recommit_particles() {
 }
 
 int new_particle(int *id, double x,double y,double z,double rho,
-                                        double flux,double xion, double uInt){
+                                        double flux,double xion, double uInt, double metallicity ){
     long tmp_id;
     double bs;
     
@@ -780,9 +820,9 @@ int new_particle(int *id, double x,double y,double z,double rho,
     *id = lastid++;
     tmp_id = *id;
     if((*SimpleXGrid).get_syncflag() == -1)
-        return (*SimpleXGrid).add_vertex(&tmp_id, x, y, z, rho, flux, xion, uInt);
+        return (*SimpleXGrid).add_vertex(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
     if((*SimpleXGrid).get_syncflag() == 1)
-        return (*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion, uInt);
+        return (*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
     return -1;
 }
 
@@ -811,30 +851,32 @@ int set_time(double t){
 }
 
 int get_state(int id, double *x, double *y, double *z, double *rho,
-                                           double *flux, double *xion, double *uInt){
-    double fx=0.0, fy=0.0, fz=0.0, frho=0.0, fflux=0.0, fxion=0.0, fuInt=0.0;
-    double send[7], recv[7];
+                                           double *flux, double *xion, double *uInt, double *metallicity){
+    double fx=0.0, fy=0.0, fz=0.0, frho=0.0, fflux=0.0, fxion=0.0, fuInt=0.0, fmetallicity=0.0;
+    double send[8], recv[8];
     int ret, totalret=0;
     double bs;
     
     (*SimpleXGrid).get_sizeBox(&bs);
     if(bs==0) return -2;  
     
-    ret=(*SimpleXGrid).get_site(id, &fx, &fy, &fz, &frho, &fflux, &fxion, &fuInt);
+    ret=(*SimpleXGrid).get_site(id, &fx, &fy, &fz, &frho, &fflux, &fxion, &fuInt, &fmetallicity);
     MPI::COMM_WORLD.Reduce(&ret,&totalret,1,MPI::INT,MPI::SUM,0); 
-    send[0]=fx;send[1]=fy;send[2]=fz;send[3]=frho;send[4]=fflux;send[5]=fxion;send[6]=fuInt;
-    MPI::COMM_WORLD.Reduce(&send[0],&recv[0],7,MPI::DOUBLE,MPI::SUM,0); 
+    send[0]=fx;send[1]=fy;send[2]=fz;send[3]=frho;send[4]=fflux;send[5]=fxion;send[6]=fuInt;send[7]=fmetallicity;
+    MPI::COMM_WORLD.Reduce(&send[0],&recv[0],8,MPI::DOUBLE,MPI::SUM,0); 
     MPI::COMM_WORLD.Barrier();
     fx=recv[0];fy=recv[1];fz=recv[2];
     frho=recv[3];
     fflux=recv[4];
     fxion=recv[5];
     fuInt=recv[6];
+    fmetallicity=recv[7];
     *x=(fx-0.5)*bs;*y=(fy-0.5)*bs;*z=(fz-0.5)*bs;
     *rho=frho;
     *flux=fflux;
     *xion=fxion;
     *uInt=fuInt;
+    *metallicity=fmetallicity;
     return totalret-1;
 }
 
@@ -902,6 +944,20 @@ int get_ionisation(int id, double *xion){
     return totalret-1;
 }
 
+int get_metallicity(int id, double *metallicity){
+    double fmetallicity=0.0;
+    double send, recv;
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).get_metallicity(id, &fmetallicity);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    send = fmetallicity;
+    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    *metallicity = recv;
+    return totalret-1;
+}
+
 int get_internal_energy(int id, double *uInt){
   double fuInt=0.0;
   double send, recv;
@@ -932,7 +988,7 @@ int get_dinternal_energy_dt(int id, double *dudt){
 
 
 int set_state(int id, double x, double y, double z, double rho,
-                                           double flux, double xion, double uInt){
+                                           double flux, double xion, double uInt, double metallicity){
     int ret,totalret;
     double bs;
     
@@ -943,7 +999,7 @@ int set_state(int id, double x, double y, double z, double rho,
         y<0 || y>1 ||
         z<0 || z>1 ) return -3;
           
-    ret = (*SimpleXGrid).set_site(id, x, y, z, rho, flux, xion, uInt);
+    ret = (*SimpleXGrid).set_site(id, x, y, z, rho, flux, xion, uInt, metallicity);
     MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
     MPI::COMM_WORLD.Barrier();
     return totalret-1;
@@ -988,6 +1044,15 @@ int set_ionisation(int id, double xion){
     int ret, totalret;
     
     ret = (*SimpleXGrid).set_ionisation(id, xion);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    return totalret-1;
+}
+
+int set_metallicity(int id, double metallicity){
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).set_metallicity(id, metallicity);
     MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
     MPI::COMM_WORLD.Barrier();
     return totalret-1;
@@ -1064,6 +1129,14 @@ int set_metal_cooling(int ts){
 
 int get_metal_cooling(int *ts){
   return (*SimpleXGrid).get_metal_cooling(ts);
+}
+
+int set_recombination_radiation(int ts){
+  return (*SimpleXGrid).set_recombination_radiation(ts);
+}
+
+int get_recombination_radiation(int *ts){
+  return (*SimpleXGrid).get_recombination_radiation(ts);
 }
 
 

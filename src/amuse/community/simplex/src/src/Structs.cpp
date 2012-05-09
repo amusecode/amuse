@@ -172,6 +172,7 @@ Site::Site(){
     internalEnergy = 0.0;
     dinternalEnergydt = 0.0;
     clumping = 1.0;
+    metallicity=0.0;
     source = 0;
 
     flux = NULL; 

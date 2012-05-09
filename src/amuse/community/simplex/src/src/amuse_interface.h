@@ -7,7 +7,7 @@ class AMUSE_SimpleX : public SimpleX {
   
  public:
   
- AMUSE_SimpleX(string output_path): SimpleX(output_path) {
+ AMUSE_SimpleX(string output_path, string data_path): SimpleX(output_path, data_path) {
     total_time=0.;
     syncflag=-1;
   };
@@ -15,9 +15,9 @@ class AMUSE_SimpleX : public SimpleX {
   ~AMUSE_SimpleX(){};
   
   int add_vertex(long *id, double x,double y,double z,double rho,
-		 double flux,double xion, double);
+		 double flux,double xion, double, double);
   int add_site(long *id, double x,double y,double z,double rho,
-	       double flux,double xion,double);
+	       double flux,double xion,double,double);
   int remove_site(long id);
   int setup_simplex();
 
@@ -29,19 +29,21 @@ class AMUSE_SimpleX : public SimpleX {
   int get_time(double *t){*t=total_time;return 0;}
   int set_time(double t){total_time=t;return 0;}
   int get_site(int id, double *x,double *y,double *z,double *rho,
-	       double *flux,double *xion, double *uInt);
+	       double *flux,double *xion, double *uInt, double *metallicity);
   int get_position(int id, double *x, double *y, double *z);
   int get_density(int id, double *rho);
   int get_flux(int id, double *flux);
   int get_ionisation(int id, double *xion);
+  int get_metallicity(int id, double *metallicity);
   int get_internalEnergy(int id, double *uInt);
   int get_dinternalEnergydt(int id, double *dudt);
   int set_site(int id, double x, double y, double z, double rho,
-	       double flux, double xion, double uInt);
+	       double flux, double xion, double uInt, double metallicity);
   int set_position(int id, double x, double y, double z);
   int set_density(int id, double rho);
   int set_flux(int id, double flux);
   int set_ionisation(int id, double xion);
+  int set_metallicity(int id, double metallicity);
   int set_internalEnergy(int id, double uInt);
   int set_dinternalEnergydt(int id, double dudt);
   int cleanup();
@@ -61,6 +63,8 @@ class AMUSE_SimpleX : public SimpleX {
   int get_heat_cool(int *ts){ *ts=heat_cool;return 0;}
   int set_metal_cooling(int ts){ metal_cooling=ts;return 0;}
   int get_metal_cooling(int *ts){ *ts=metal_cooling;return 0;}
+  int set_recombination_radiation(int ts){ rec_rad=ts;return 0;}
+  int get_recombination_radiation(int *ts){ *ts=rec_rad;return 0;}
   int set_coll_ion(int ts){ coll_ion=ts;return 0;}
   int get_coll_ion(int *ts){ *ts=heat_cool;return 0;}
   int set_blackBody(int ts){ blackBody=ts;return 0;}
