@@ -131,7 +131,8 @@ contains
           call set_time_elapsed_from_itime( GV )
           GV%IonizingPhotonsPerSec = GV%TotalPhotonsCast / GV%time_elapsed_s
 
-          print*, rayn, PLAN%snap(snapn)%SrcRays,GV%time_elapsed_myr
+          if(mod(rayn,PLAN%snap(snapn)%SrcRays/100).EQ.0) &
+              print*, rayn, PLAN%snap(snapn)%SrcRays,GV%time_elapsed_myr
 
 
           globalraylist%ray = ray

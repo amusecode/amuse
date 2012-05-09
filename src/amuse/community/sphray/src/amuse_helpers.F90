@@ -538,7 +538,8 @@ subroutine sphray_evolve(tend)
   use particle_system_mod, only: particle_system_set_ye
   use amuse_mainloop_mod
   real(r8b) :: tend
- 
+
+  if(tend.LE.PLAN%snap(1)%TimeAt) return 
   PLAN%snap(1)%TimeToNext=tend
   PLAN%snap(1)%RunTime=tend-PLAN%snap(1)%TimeAt
   PLAN%snap(1)%StartTime=PLAN%snap(1)%TimeAt
