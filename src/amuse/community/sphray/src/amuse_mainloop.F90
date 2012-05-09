@@ -14,7 +14,7 @@ module amuse_mainloop_mod
   use oct_tree_mod, only: buildtree, setparticleorder
   use ray_mod
   use raylist_mod
-  use ion_temperature_update, only: update_raylist
+  use ion_temperature_update, only: update_raylist, non_photo_update_all
   use mt19937_mod, only: genrand_real1
   use output_mod, only: output_total_snap, ion_frac_out
   use global_mod, only: set_dt_from_dtcode, set_time_elapsed_from_itime
@@ -79,6 +79,14 @@ contains
     ! loop over the snapshots 
     !=========================
     snaps: do snapn = GV%StartSnapNum, GV%EndSnapNum
+    
+       if(size(psys%src).EQ.0) then
+          GV%itime = GV%itime + PLAN%snap(snapn)%SrcRays
+          call set_time_elapsed_from_itime( GV )
+          print*, PLAN%snap(snapn)%SrcRays, PLAN%snap(snapn)%SrcRays,GV%time_elapsed_myr
+          goto 123
+       endif   
+         
               
        !  build oct tree.  only need to do this once per snap (for now)
        !----------------------------------------------------------------
@@ -217,15 +225,13 @@ contains
           end if
           
           
-          
-          
        end do src_rays
-
-
        
        ! free up the memory from the globalraylist.
        call kill_raylist(globalraylist)
-       
+
+123 call non_photo_update_all(psys%par)
+
     end do snaps
     
     close(GV%ionlun)
@@ -234,8 +240,7 @@ contains
     if (GV%raystats) then
        close(GV%raystatlun)
     end if
-    
-    
+        
   end subroutine mainloop
   
 end module amuse_mainloop_mod

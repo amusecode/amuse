@@ -596,7 +596,7 @@ subroutine preparemain()
   psys%box%tbound = GV%BndryCond
   psys%box%bbound = GV%BndryCond
 
-  call order_sources_lum(psys%src)
+  if(size(psys%src).GT.0) call order_sources_lum(psys%src)
 !  psys%src%lastemit = GV%rayn
 ! to recommit parameter
 

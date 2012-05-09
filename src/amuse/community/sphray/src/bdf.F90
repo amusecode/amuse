@@ -53,6 +53,8 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
   !-----------------
   if (isoT .and. fixT) stop "isoT and fixT cant both be true"
 
+  if (ip%dt_code.LE.0) return
+
   scalls = 0   
   t_tot = zero
   dt2 = ip%dt_s / two

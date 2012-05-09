@@ -233,10 +233,9 @@ end subroutine update_raylist
 
 !> updates all particles not hit by a ray 
 !!-----------------------------------------------------------------
-subroutine non_photo_update_all(pars, box)
+subroutine non_photo_update_all(pars)
 
   type(particle_type), intent(inout) :: pars(:)  !< particle system
-  type(box_type), intent(in) :: box  !< particle system
 
   type(particle_type) :: par
   type(ionpart_type) :: ipar

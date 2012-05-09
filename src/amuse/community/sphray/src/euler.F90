@@ -59,6 +59,8 @@ subroutine eulerint(ip,scalls,photo,caseA,He,isoT,fixT)
   !---------------------------------------------------------
   if (isoT .and. fixT) stop "isoT and fixT can't both be true"
 
+  if (ip%dt_code.LE.0) return
+
   if (isoT) then
      k = isoT_k
   end if
@@ -259,6 +261,9 @@ subroutine recombeulerint(ip,scalls)
   integer(i8b), intent(out) :: scalls !< number of runs through the solver
  
   scalls = 0   
+
+! warning about the following:
+  if (ip%dt_code.LE.0) return
 
 !---------------------------------------------------------
 ! set initial number and ionization fractions
