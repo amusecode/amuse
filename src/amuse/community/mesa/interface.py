@@ -1253,11 +1253,15 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
     
     def new_particle_from_model(self, internal_structure, current_age, key=None):
-        mass_profile = [0.0] | units.MSun
         if isinstance(internal_structure, dict):
-            mass_profile.extend(internal_structure['mass'])
+            if "dmass" in internal_structure:
+                mass_profile = internal_structure['dmass'][::-1]
+            else:
+                cumulative_mass_profile = [0.0] | units.MSun
+                cumulative_mass_profile.extend(internal_structure['mass'])
+                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
             self.new_stellar_model(
-                (mass_profile[1:] - mass_profile[:-1])[::-1],
+                mass_profile,
                 internal_structure['radius'][::-1],
                 internal_structure['rho'][::-1],
                 internal_structure['temperature'][::-1],
@@ -1273,9 +1277,14 @@ class MESA(StellarEvolution, InternalStellarStructure):
                 internal_structure['X_Fe'][::-1]
             )
         else:
-            mass_profile.extend(internal_structure.mass)
+            if hasattr(internal_structure, "dmass"):
+                mass_profile = internal_structure.dmass[::-1]
+            else:
+                cumulative_mass_profile = [0.0] | units.MSun
+                cumulative_mass_profile.extend(internal_structure.mass)
+                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
             self.new_stellar_model(
-                (mass_profile[1:] - mass_profile[:-1])[::-1],
+                mass_profile,
                 internal_structure.radius[::-1],
                 internal_structure.rho[::-1],
                 internal_structure.temperature[::-1],
