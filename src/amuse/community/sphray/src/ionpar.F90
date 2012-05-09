@@ -591,6 +591,76 @@ end subroutine initialize_ionpar
 
 
 
+!> initializes a non photo update particle
+!-----------------------------------------------------------------------
+subroutine initialize_non_photo_ionpar(ipar,par,index,He)
+
+  type(ionpart_type), intent(inout) :: ipar           !< ionization particle
+  type(particle_type), intent(in) :: par              !< standard particle
+  integer(i8b) :: index                               !< par = psys%par(index)
+  logical, intent(in) :: He                           !< update Helium ?
+
+  type(gadget_constants_type) :: gconst  
+  real(r8b) :: mass_cgs
+  real(r8b) :: rho_cgs
+
+
+  call par2ionpar(par,ipar,index)
+
+  ! store initial values
+  !-------------------------
+  ipar%xHI_in  = ipar%xHI
+  ipar%xHII_in = ipar%xHII
+  if (He) then
+     ipar%xHeI_in   = ipar%xHeI
+     ipar%xHeII_in  = ipar%xHeII
+     ipar%xHeIII_in = ipar%xHeIII
+  else
+     ipar%xHeI_in   = 0.0d0
+     ipar%xHeII_in  = 0.0d0
+     ipar%xHeIII_in = 0.0d0
+  end if
+  ipar%T_in = ipar%T
+
+  ! set values that are static during the update
+  !-----------------------------------------------
+
+  ipar%NeBckgnd = GV%NeBackground
+  ipar%Tcmb     = GV%Tcmb_cur
+
+  mass_cgs      = ipar%mass * GV%cgs_mass 
+  rho_cgs       = ipar%rho *  GV%cgs_rho 
+
+  ipar%gpercm3  = rho_cgs
+  ipar%cm3      = mass_cgs / rho_cgs
+
+  ipar%nH       = rho_cgs  * ipar%H_mf / gconst%PROTONMASS
+  ipar%Hcnt     = mass_cgs * ipar%H_mf / gconst%PROTONMASS
+
+  if (He) then
+     ipar%nHe   = rho_cgs  * ipar%He_mf / (4 * gconst%PROTONMASS)
+     ipar%Hecnt = mass_cgs * ipar%He_mf / (4 * gconst%PROTONMASS)
+  else
+     ipar%nHe   = 0.0d0
+     ipar%Hecnt = 0.0d0
+  end if
+
+  ! initialize solver iteration counter to zero
+  !---------------------------------------------
+  ipar%iter = 0
+
+  ipar%dt_code = (GV%itime - ipar%lasthit) * GV%dt_code
+  ipar%dt_s    = (GV%itime - ipar%lasthit) * GV%dt_s
+     
+  ipar%strtag = "in initialize_non_photo_ionpar"
+  call check_x(ipar)
+     
+end subroutine initialize_non_photo_ionpar
+
+
+
+
+
 
 
 

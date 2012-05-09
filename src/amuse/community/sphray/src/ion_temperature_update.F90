@@ -24,7 +24,7 @@ implicit none
 
 private
 public :: update_raylist
-
+public :: non_photo_update_all
  
 contains
 
@@ -226,6 +226,100 @@ subroutine update_raylist(raylist, pars, box, srcray)
 
 end subroutine update_raylist
 
+
+
+
+
+
+!> updates all particles not hit by a ray 
+!!-----------------------------------------------------------------
+subroutine non_photo_update_all(pars, box)
+
+  type(particle_type), intent(inout) :: pars(:)  !< particle system
+  type(box_type), intent(in) :: box  !< particle system
+
+  type(particle_type) :: par
+  type(ionpart_type) :: ipar
+  integer(i8b) :: ipart  
+  integer(i8b) :: scalls  ! number of calls to solver
+  logical :: photo
+  logical :: He
+  logical :: caseA(2)
+  logical :: isoT
+  logical :: fixT
+  integer(i8b) :: index
+
+
+  ! set booleans
+  !-------------------------------------------------------
+  call set_bools( He, caseA, isoT, fixT )
+  photo = .false.
+
+  
+  ! loop through all particles
+  !-------------------------------------------------------
+  particle_loop: do ipart = 1, size(pars)
+
+     index = ipart
+     par = pars(index)
+
+     call initialize_non_photo_ionpar(ipar,par,index,He)
+
+     if (GV%IonTempSolver==1) then
+        call eulerint(ipar,scalls,photo,caseA,He,isoT,fixT)
+        ipar%strtag = "on_eulerint_output"
+     else if (GV%IonTempSolver==2) then
+        call bdfint(ipar,scalls,photo,caseA,He,isoT,fixT)
+        ipar%strtag = "on_bdfint_output"
+     end if
+     call check_x(ipar)
+
+     GV%TotalDerivativeCalls = GV%TotalDerivativeCalls + scalls
+     if (scalls .GT. GV%PeakUpdates) GV%PeakUpdates = scalls
+
+
+     !  put the updated particle data into the particle system
+     !===========================================================
+     call ionpar2par(ipar,par)
+     if (par%T < GV%Tfloor) par%T = GV%Tfloor
+
+     pars(ipar%index) = par
+
+     pars(ipar%index)%lasthit = GV%itime 
+    
+
+
+     !  use the solution to set some global variables
+     !=================================================
+     GV%TotalIonizations     = GV%TotalIonizations + &
+                               (ipar%xHII - ipar%xHII_in) * ipar%Hcnt
+#ifdef incHe
+     GV%TotalIonizations     = GV%TotalIonizations + &
+                               (ipar%xHeII - ipar%xHeII_in) * ipar%Hecnt     
+     GV%TotalIonizations     = GV%TotalIonizations + &
+                               (ipar%xHeIII - ipar%xHeIII_in) * ipar%Hecnt     
+#endif
+
+
+     ! if the particle satisfies the rec ray tol put it on the recomb list
+     !=====================================================================
+#ifdef incHrec
+     if (.not. pars(ipar%indx)%OnRecList) then
+        if (pars(ipar%indx)%xHIIrc > GV%RecRayTol) then
+           pars(ipar%indx)%OnRecList = .true.
+           GV%recpt = GV%recpt + 1
+           reclist(GV%recpt) = ipar%indx
+        end if
+     end if
+#endif
+     
+     
+         
+  end do particle_loop
+
+!  stop "finished impact loop"
+
+end subroutine non_photo_update_all
 
 
 
