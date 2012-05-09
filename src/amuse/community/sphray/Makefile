@@ -21,7 +21,7 @@ FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 PIC=#-fPIC
 
 ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
-FFLAGS= -cpp -O5
+FFLAGS= -cpp -O0  # problems with ANY optimizations in gfortran 4.4 and below
 endif
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
@@ -43,14 +43,14 @@ all: sphray_worker
 
 sphray_worker: sphray_worker.f90 interface.o
 	$(MPIF90) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS) $(SCLIBS)
-	
+
 sphray_worker_sockets: sphray_worker-sockets.f90 interface.o
 	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FSINC) $^ -o $@ $(LIBS) $(SCLIBS) $(FSLIBS)
 
 sphray_worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
-	
+
 sphray_worker-sockets.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 --mode=sockets $< $(CLASSNAME) -o $@
