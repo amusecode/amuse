@@ -123,7 +123,14 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
         object.define_converter(self)
 
     def convert_arguments(self, method,  list_arguments, keyword_arguments):
-        converted_list_arguments = [self.from_source_to_target(x) if bool else x for x,bool in zip(list_arguments,method.nbody_input_attributes)]
+        
+        converted_list_arguments = []
+        for x,is_nbody in zip(list_arguments, method.nbody_input_attributes):
+            if is_nbody:
+                converted_list_arguments.append(self.from_source_to_target(x))
+            else:
+                converted_list_arguments.append(x)
+        
         converted_keyword_arguments = {}
         for key, value in keyword_arguments.iteritems():
             converted_keyword_arguments[key] = self.from_source_to_target(value)

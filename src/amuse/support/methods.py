@@ -84,7 +84,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.nbody_input_attributes
         else:
-            return []
+            return [False] * len(self.method_input_argument_names)
     
     @late
     def index_output_attributes(self):
@@ -103,9 +103,7 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
     
     def __call__(self, *list_arguments, **keyword_arguments):
         object = self.precall()
-        
         list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)
-        
         result = self.method(*list_arguments, **keyword_arguments)
         
         result = self.convert_result(result)
