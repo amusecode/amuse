@@ -546,7 +546,20 @@ def LagrangianRadii(stars,
             lr.append(rsorted[i-1])
     return lr,mf
     
-    
+def find_closest_particle_to(particles,x,y,z):
+    """
+    return closest particle to x,y,z position
+
+    >>> from amuse.datamodel import Particles
+    >>> particles = Particles(2)
+    >>> particles.x = [0.0, 2.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> print particles.find_closest_particle_to( -1 | units.m,0.| units.m,0.| units.m).x
+    0.0 m 
+    """
+    d2=(particles.x-x)**2+(particles.y-y)**2+(particles.z-z)**2
+    return particles[d2.number.argmin()]
 
 def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G):
     """
@@ -664,3 +677,4 @@ AbstractParticleSet.add_global_function_attribute("binaries", get_binaries)
 AbstractParticleSet.add_global_function_attribute("densitycentre_coreradius_coredens", densitycentre_coreradius_coredens)
 
 AbstractParticleSet.add_global_function_attribute("LagrangianRadii", LagrangianRadii)
+AbstractParticleSet.add_global_function_attribute("find_closest_particle_to", find_closest_particle_to)
