@@ -7,10 +7,22 @@
 !<
 module ion_temperature_update
 use myf03_mod
+use physical_constants_mod
 use ray_mod
 use raylist_mod
-use ionpar_mod
-use physical_constants_mod
+
+
+
+! routines
+use ionpar_mod, only: initialize_ionpar, initialize_non_photo_ionpar, &
+                      ionpar2par, ionpar2screen, check_x
+
+
+
+
+! types
+use ionpar_mod, only: ionpart_type
+
 use particle_system_mod, only: particle_system_type
 use particle_system_mod, only: particle_type
 use particle_system_mod, only: box_type
@@ -99,8 +111,6 @@ subroutine update_raylist(raylist, pars, box, srcray)
      par = pars(index)
 
 
-     
-
      ! check we dont have double intersections when we shouldn't
      !-------------------------------------------------------------
      if (srcray) then
@@ -121,14 +131,14 @@ subroutine update_raylist(raylist, pars, box, srcray)
         end if
      end if
 
+
+     ! transfer psys par into an ionization par
+     !-------------------------------------------------------------
      call initialize_ionpar(ipar,par,index,srcray,He,raylist,impact)
 
 
-!     write(*,*) "d,dl:", raylist%intersection(impact)%d, ipar%dl
-!     write(*,"(A,4F12.6)") "pos,nH: ", ipar%pos, ipar%nH
-!     write(*,*) "inside: ", ipar%inside
-!     write(*,*) 
-
+     ! send through the correct solver
+     !-------------------------------------------------------------
      if (srcray) then
         if (GV%IonTempSolver==1) then
            call eulerint(ipar,scalls,photo,caseA,He,isoT,fixT)
@@ -143,16 +153,30 @@ subroutine update_raylist(raylist, pars, box, srcray)
      end if
      call check_x(ipar)
 
+
+     ! update some tracking variables
+     !-------------------------------------------------------------
      raylist%lastnnb = impact
 
      GV%TotalDerivativeCalls = GV%TotalDerivativeCalls + scalls
      if (scalls .GT. GV%PeakUpdates) GV%PeakUpdates = scalls
 
 
+     !  calculate momentum transfer
+     !=================================================
+#ifdef incVel     
+          
+     ipar%vel = (raylist%ray%enrg / c) / ( ipar%mass * GV%cgs_mass ) * &
+                raylist%ray%dir
+
+     ipar%vel = ipar%vel / GV%cgs_mass
+
+#endif
+
      !  put the updated particle data into the particle system
      !===========================================================
      call ionpar2par(ipar,par)
-     if (par%T < GV%Tfloor) par%T = GV%Tfloor
+     if ( par%T < GV%Tfloor ) par%T = GV%Tfloor
 
 #ifdef outGammaHI
      par%gammaHI = pars(ipar%index)%gammaHI + ipar%gammaHI * ipar%dt_s
@@ -177,6 +201,9 @@ subroutine update_raylist(raylist, pars, box, srcray)
      GV%TotalIonizations     = GV%TotalIonizations + &
                                (ipar%xHeIII - ipar%xHeIII_in) * ipar%Hecnt     
 #endif
+
+
+
 
 
      ! if the particle satisfies the rec ray tol put it on the recomb list

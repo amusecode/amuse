@@ -15,8 +15,6 @@ implicit none
 
 private
 
-
-
 public :: src_ray_type
 public :: src_ray_make
 public :: src_ray_transform

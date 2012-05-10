@@ -50,18 +50,20 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
   integer(i8b) :: i
  
   ! check logicals
-  !-----------------
+  !-------------------------------------------------------------------
   if (isoT .and. fixT) stop "isoT and fixT cant both be true"
+  if (ip%dt_code <= zero) return
 
-  if (ip%dt_code.LE.0) return
 
+  ! initialize call counters and time variables
+  !-------------------------------------------------------------------
   scalls = 0   
   t_tot = zero
   dt2 = ip%dt_s / two
 
 
-  !---------------------------------------------------------
   ! if constant temperature run, set constant atomic rates
+  !-------------------------------------------------------------------
   if (isoT) then
      k = isoT_k
   end if
@@ -70,9 +72,9 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
      call get_atomic_rates(ip%T,rtable,k)
   end if
 
-  !-------------------------------------------------------------------
-  ! do first round of calculations (only have xHI,xHeI,xHeII,nH,nHe)
 
+  ! do first round of calculations (only have xHI,xHeI,xHeII,nH,nHe)
+  !-------------------------------------------------------------------
   ip%nHI  = ip%nH * ip%xHI
   ip%nHII = ip%nH * ip%xHII
   ip%ne = ip%nHII + ip%NeBckgnd
@@ -93,15 +95,15 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
   end if
 
 
-!---------------------------------------------------------  
-  
+  ! begin sub-cycling steps
+  !-------------------------------------------------------------------
   do i = 1,MaxSteps
 
      ip%iter = i
 
-     !----------------------------------------------------------  
-     ! calculate the cooling function
 
+     ! calculate the cooling function
+     !-------------------------------------------------------------------
      if (.not. isoT .and. .not. fixT) then
         ip%u = 1.5 * (ip%nH + ip%nHe + ip%ne) * k_erg_K * ip%T 
         call get_atomic_rates(ip%T,rtable,k)
@@ -120,12 +122,9 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
      end if
 
 
-     !----------------------------------------------------------  
      ! calculate the time rate of change of the electron density
-
+     !-------------------------------------------------------------------
      call set_ionization_func(ip,k,photo,caseA,He)
-!     call setDH(ip,photo,caseA(1))
-!     if (He) call setDHe(ip,photo,caseA(2))
  
      call set_dnedt(ip,photo,caseA,He)
      if (abs(ip%dnedt) > 0.0) then
@@ -135,10 +134,8 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
      endif
 
 
-
-     !----------------------------------------------------------  
      ! calculate the time step
-
+     !-------------------------------------------------------------------
      if (isoT .or. fixT) then
         dt_i = ION_FAC * ip%tion
      else
@@ -148,60 +145,26 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
      if (dt_i > ip%dt_s - t_tot) dt_i = ip%dt_s - t_tot
      if (dt_i > dt2) dt_i = dt2
 
-     !----------------------------------------------------------  
-     ! take the time step
 
+     ! take the time step
+     !-------------------------------------------------------------------
      call take_bdf_ion_step(ip,k,dt_i,He)
      
      ip%strtag = "just after bdf_ion_step"
      call check_x(ip)
-
-     !----------------------------------------------------------  
-     ! do mass conservation
-
-!     mfac = one / (ip%xHI + ip%xHII)
-!     ip%xHI = ip%xHI * mfac
-!     ip%xHII = ip%xHII * mfac
-
-!     if (He) then
-!        mfac = one / (ip%xHeI + ip%xHeII + ip%xHeIII)
-!        ip%xHeI   = ip%xHeI   * mfac
-!        ip%xHeII  = ip%xHeII  * mfac
-!        ip%xHeIII = ip%xHeIII * mfac
-!     end if
-
-!     ip%strtag = "just after mass correction"
-!     call check_x(ip)
-
-
-!     ip%nHI  = ip%nH * ip%xHI
-!     ip%nHII = ip%nH * ip%xHII
-!     ip%ne   = ip%nHII + ip%NeBckgnd
- 
-!     if (He) then
-!        ip%nHeI   = ip%nHe * ip%xHeI
-!        ip%nHeII  = ip%nHe * ip%xHeII
-!        ip%nHeIII = ip%nHe * ip%xHeIII
-!        ip%ne = ip%nHII + ip%nHeII + two * ip%nHeIII + ip%NeBckgnd
-!     end if
 
 
      if (.not. isoT .and. .not. fixT) then
         ip%T = ip%T + ip%dTdt * dt_i
         if (ip%T > 1.0d9) ip%T = 1.0d9
         if (ip%T < 1.0d0) ip%T = 1.0d0
-!        write(*,*) "isoT,fixT", isoT,fixT
-!        write(*,*) "no one is supposed to be here"
-!        stop
-!        ip%u = 1.5d0 * (ip%nH + ip%nHe + ip%ne) * k_erg_K * ip%T
-!        call take_bdf_temp_step(ip,dt_i)
      end if
 
 
-     !----------------------------------------------------------  
      ! track photons, recombinations and update total time
+     !-------------------------------------------------------------------
 
-     ! photo ionizations
+     !! photo ionizations
 
      if (photo) then
         ip%pdeps = ip%pdeps + ip%gammaHI * ip%HIcnt * dt_i
@@ -212,7 +175,7 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
      end if
 
 
-     ! time step
+     !! time step
 
      t_tot = t_tot + dt_i
      t_min = huge(one)

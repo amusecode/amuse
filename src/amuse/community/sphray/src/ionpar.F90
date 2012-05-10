@@ -27,7 +27,7 @@ implicit none
 type ionpart_type
 
    ! quantities taken from standard particle
-
+   !---------------------------------------------------------------------
    real(r8b) :: pos(3)       !< x,y,z coordinates
    real(r8b) :: vel(3)       !< x,y,z velocities
    integer(i8b) :: id        !< particle id
@@ -50,7 +50,7 @@ type ionpart_type
 
 
    ! quantities initialized before solver is called 
-
+   !---------------------------------------------------------------------
    real(r8b) :: xHI_in       !< initial xHI
    real(r8b) :: xHII_in      !< initial xHII
    real(r8b) :: xHeI_in      !< initial xHeI
@@ -73,10 +73,10 @@ type ionpart_type
    real(r8b) :: Hecnt        !< number of He nuclei
 
    real(r8b) :: dl           !< path length for particle
-   logical   :: inside       !< is the source inside the particle? 
+
 
    ! ray/photo quantities initialied before solver is called
-
+   !---------------------------------------------------------------------
    integer(i8b) :: impact    !< index of the particle in the raylist
    real(r8b) :: d            !< distance along ray (code)
    real(r8b) :: b            !< impact parameter (code)
@@ -89,11 +89,12 @@ type ionpart_type
    real(r8b) :: penrg        !< energy of one photon in the ray (ergs)
    real(r8b) :: pflux        !< photons per second arriving at the particle
    real(r8b) :: pdeps        !< total photons deposited into particle
+   real(r8b) :: pmntm(3)     !< total momentum deposited by photons
+   real(r8b) :: pvel(3)      !< velocity due to photon momentum transfer
    real(r8b) :: pdeps_eq     !< photons deposited in equilibrium conditions
 
    real(r8b) :: DH(2,2)      !< dxH/dt array
    real(r8b) :: DHe(3,3)     !< dxHe/dt array
-
 
    real(r8b) :: sigmaHI      !< HI photo cross-section
    real(r8b) :: sigmaHeI     !< HeI photo cross-section
@@ -101,20 +102,6 @@ type ionpart_type
 
    real(r8b) :: fracabsorb   !< fraction of all photons absorbed
    real(r8b) :: pdepr        !< photons per second deposited in particle
-
-
-!   real(r8b) :: HIcolions   !< total HI collisional ionizations in the particle
-!   real(r8b) :: HeIcolions  !< total HeI collisional ionizations in the particle
-!   real(r8b) :: HeIIcolions !< total HeII collisional ionizations in the particle
-
-!   real(r8b) :: HIIrcmbsB   !< total HII recombinations excluding to n=1 lvl
-!   real(r8b) :: HIIrcmbsA   !< total HII recombinations to all levels
-!   real(r8b) :: HeIIrcmbsB  !< total HeII recombinations excluding to n=1 lvl
-!   real(r8b) :: HeIIrcmbsA  !< total HeII recombinations to all levels
-!   real(r8b) :: HeIIIrcmbsB !< total HeIII recombinations excluding to n=1 lvl
-!   real(r8b) :: HeIIIrcmbsA !< total HeIII recombinations to all levels
-
-
 
    real(r8b) :: ne           !< number density of electrons
    real(r8b) :: dnedt        !< time rate of change of ne
@@ -518,40 +505,15 @@ subroutine initialize_ionpar(ipar,par,index,srcray,He,raylist,impact)
   !---------------------------------------------
   if (present(raylist)) then
 
-     if (.not. present(impact)) stop "raylist but no impact in initialize_ionpar"
-     ipar%impact = impact  ! which impact in the raylist
+     if (.not. present(impact)) then
+        stop "raylist but no impact in initialize_ionpar"
+     endif
 
+     ipar%impact = impact  ! which impact in the raylist
 
      ipar%d = raylist%intersection(impact)%d   ! distance along ray
      ipar%b = raylist%intersection(impact)%b   ! impact parameter
- 
-!!$     if ( sqrt( sum( (raylist%ray%start - ipar%pos)**2 ) ) <= ipar%hsml ) then
-!!$        ipar%inside=.true.
-!!$     else
-!!$        ipar%inside=.false.
-!!$     endif
-!!$
-!!$     if (raylist%nnb == 1) then 
-!!$        ipar%dl = 2 * ipar%hsml
-!!$
-!!$     else 
-!!$        if (impact == 1) then 
-!!$           if (ipar%inside) then
-!!$              ipar%dl = ipar%hsml
-!!$           else
-!!$              ipar%dl = 0.5 * (raylist%intersection(2)%d + ipar%d )  
-!!$!              ipar%dl = raylist%intersection(2)%d - ipar%d  
-!!$!              ipar%dl = 2 * ipar%hsml
-!!$           endif
-!!$        else if (impact == raylist%nnb) then
-!!$           ipar%dl = ipar%d - raylist%intersection(raylist%nnb-1)%d
-!!$        else
-!!$           ipar%dl = 0.5 * ( raylist%intersection(impact+1)%d - &
-!!$                             raylist%intersection(impact-1)%d )
-!!$        endif
-!!$     endif
-
-     
+      
      ipar%bnorm = ipar%b / ipar%hsml
      ipar%cdfac = b2cdfac(ipar%bnorm,ipar%hsml,GV%cgs_len)
 

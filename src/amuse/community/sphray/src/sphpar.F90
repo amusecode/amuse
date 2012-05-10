@@ -15,7 +15,7 @@ use particle_system_mod, only: transformation_type
      real(r4b)    :: pos(3)     !< x,y,z coordinates
 
 #ifdef incVel
-     real(r4b)    :: vel
+     real(r4b)    :: vel(3)
 #endif
 
      integer(i4b) :: id         !< particle id

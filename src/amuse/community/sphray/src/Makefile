@@ -20,6 +20,9 @@
 #OPT += -DincHmf     # if you want individual Hydrogen mass fractions
 #OPT += -DincHemf    # if you want individual Helium mass fractions
 
+OPT += -DincVel      # include velocity field.  right now used for
+                     # updates from photon momentum
+
 #OPT += -DincEOS     # store equation of state variable 
 #OPT += -DincSFR     # store star formation rate
 #OPT += -DincCloudy  # store CLOUDY eq. ionization values for particles
