@@ -309,13 +309,13 @@ class TestSPHRay(TestWithMPI):
         instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.parameters.box_size = 100 | units.parsec
-        self.assertEquals(instance.parameters.box_size, 100 | units.parsec)
+        self.assertAlmostRelativeEquals(instance.parameters.box_size, 100 | units.parsec,7)
         instance.commit_parameters()
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
         instance.commit_particles()
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
 
-        self.assertEquals(instance.parameters.box_size, 100 | units.parsec)
+        self.assertAlmostRelativeEquals(instance.parameters.box_size, 100 | units.parsec,7)
         instance.cleanup_code()
         instance.stop()
 
@@ -397,9 +397,9 @@ class TestSPHRay(TestWithMPI):
         rho=p.rho.number
         u=p.internal_energy.number
         xe=numpy.zeros_like(x)
-        return create_particle_set(mass=mass | (10**10*units.MSun), hsml=hsml | (units.kpc), 
+        return create_particle_set(mass=mass | (10**10*units.MSun), h_smooth=hsml | (units.kpc), 
             x=x | (units.kpc), y=y| (units.kpc), z=z| (units.kpc), rho=rho | ((10**10*units.MSun) /(units.kpc)**3),
-            xe=xe, u=u| (10**5 * units.cm/units.s)**2)
+            xion=xe, u=u| (10**5 * units.cm/units.s)**2)
         
     def read_src_file(self,filename):
         f=open(filename)
@@ -418,6 +418,6 @@ class TestSPHRay(TestWithMPI):
             y.append(float(l[1]))
             z.append(float(l[2]))
             spctype.append(float(l[7]))
-        return create_particle_set( L=numpy.array(L) | (10**48 * units.s**-1), 
+        return create_particle_set( luminosity=numpy.array(L) | (10**48 * units.s**-1), 
             x=numpy.array(x) | (units.kpc), y=numpy.array(y)| (units.kpc), 
                   z=numpy.array(z)| (units.kpc), SpcType=numpy.array(spctype))
