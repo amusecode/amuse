@@ -556,7 +556,7 @@ def find_closest_particle_to(particles,x,y,z):
     >>> particles.y = [0.0, 0.0] | units.m
     >>> particles.z = [0.0, 0.0] | units.m
     >>> print particles.find_closest_particle_to( -1 | units.m,0.| units.m,0.| units.m).x
-    0.0 m 
+    0.0 m
     """
     d2=(particles.x-x)**2+(particles.y-y)**2+(particles.z-z)**2
     return particles[d2.number.argmin()]
