@@ -377,34 +377,13 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
     @legacy_function
     def evolve_model():
         """
-        Evolve the model until the given time or until a collision happens.
+        Evolve the model until the given time, or until a stopping condition is set.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('time',
-            dtype='float64',
-            direction=function.IN,
-            description =
-                "Model time to evolve the code to. "
-                "The model will be evolved until "
-                "this time is reached exactly or just before")
-        """
-        cello, probably gonna kill this one...........
-        function.addParameter('collision_flag',
-            dtype='float64',
-            direction=function.IN,
-            description =
-                "(1) Stop evolving the model when a collision is detected by the code "
-                "(0) Continue evolving the code, ignore collisions")
-        """
+        function.addParameter('time', dtype='float64', direction=function.IN,
+            description = "Model time to evolve the code to. The model will be "
+                "evolved until this time is reached exactly or just after.")
         function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Evolved until time, no collision happened
-        -1 - ERROR
-            Model did not converge
-        -2 - ERROR
-            Procedure get_kinetic_energy FAILED
-        """
         return function
 
     @legacy_function

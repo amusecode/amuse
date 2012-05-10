@@ -29,6 +29,9 @@ map<long long, dynamics_state> dm_states;
 map<long long, sph_state> sph_states;
 map<long long, int> local_index_map;
 
+double redshift_begin_parameter = 20.0;
+double redshift_max_parameter = 0.0;
+
 // general interface functions:
 
 void set_default_parameters(){
@@ -214,12 +217,15 @@ int commit_parameters(){
 
     for(int i = 0; i < 6; i++)
         All.MassTable[i] = 0;
-    All.Time = All.TimeBegin;
+    
     if(All.ComovingIntegrationOn){
+        All.TimeBegin = 1.0 / (1.0 + redshift_begin_parameter);
+        All.TimeMax = 1.0 / (1.0 + redshift_max_parameter);
         All.Timebase_interval = (log(All.TimeMax) - log(All.TimeBegin)) / TIMEBASE;
     }else{
         All.Timebase_interval = (All.TimeMax - All.TimeBegin) / TIMEBASE;
     }
+    All.Time = All.TimeBegin;
     All.Ti_Current = 0;
     All.NumCurrentTiStep = 0;        /* setup some counters */
     All.SnapshotFileCount = 0;
@@ -533,7 +539,8 @@ bool check_internal_energy_stopping_condition(){
 }
 
 
-int evolve_model(double t_end){
+int evolve_model_generic(double t_end){
+    cout << All.TimeMax << " " << All.TimeBegin << " " << t_end << endl;
     bool done;
     double t0, t1;
     int Ti_end, stopflag = 0;
@@ -558,7 +565,11 @@ int evolve_model(double t_end){
     if (t_end > All.TimeMax)
         return -7;
     ZeroTimestepEncountered = 0;
-    Ti_end = (t_end - All.TimeBegin) / All.Timebase_interval;
+    if(All.ComovingIntegrationOn){
+        Ti_end = log(t_end / All.TimeBegin) / All.Timebase_interval;
+    } else {
+        Ti_end = (t_end - All.TimeBegin) / All.Timebase_interval;
+    }
     if (Ti_end >= All.Ti_Current){
         global_quantities_of_system_up_to_date = density_up_to_date = false;
         done = drift_to_t_end(Ti_end); /* find next synchronization point and drift particles to MIN(this time, t_end). */
@@ -632,6 +643,14 @@ int evolve_model(double t_end){
     if (All.Ti_Current > TIMEBASE || All.Time > All.TimeMax)
         return -7;
     return 0;
+}
+int evolve_to_redshift(double redshift){
+    if (!All.ComovingIntegrationOn) {return -9;}
+    return evolve_model_generic(1.0 / (1.0 + redshift));
+}
+int evolve_model(double t_end){
+    if (All.ComovingIntegrationOn) {return -9;}
+    return evolve_model_generic(t_end);
 }
 
 int synchronize_model() {
@@ -1017,6 +1036,24 @@ int get_time_max(double *time_max){
 }
 int set_time_max(double time_max){
     All.TimeMax = time_max;
+    return 0;
+}
+int get_redshift_begin(double *redshift_begin){
+    if (ThisTask) {return 0;}
+    *redshift_begin = redshift_begin_parameter;
+    return 0;
+}
+int set_redshift_begin(double redshift_begin){
+    redshift_begin_parameter = redshift_begin;
+    return 0;
+}
+int get_redshift_max(double *redshift_max){
+    if (ThisTask) {return 0;}
+    *redshift_max = redshift_max_parameter;
+    return 0;
+}
+int set_redshift_max(double redshift_max){
+    redshift_max_parameter = redshift_max;
     return 0;
 }
 int get_omega_zero(double *omega_zero){
@@ -1878,7 +1915,9 @@ int get_density(int *index, double *density_out, int length){
     double *buffer = new double[length];
     int *count = new int[length];
     int local_index;
-
+    double a3;
+    
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
@@ -1887,7 +1926,7 @@ int get_density(int *index, double *density_out, int length){
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
-            buffer[i] = SphP[local_index].Density;
+            buffer[i] = SphP[local_index].Density / a3;
         } else {
             count[i] = 0;
             buffer[i] = 0;
@@ -2082,7 +2121,14 @@ void update_global_quantities(bool do_potential){
 }
 int get_time(double *time){
     if (ThisTask) {return 0;}
+    if (All.ComovingIntegrationOn) {return -9;}
     *time = All.Time;
+    return 0;
+}
+int get_redshift(double *redshift){
+    if (ThisTask) {return 0;}
+    if (!All.ComovingIntegrationOn) {return -9;}
+    *redshift = 1.0 / All.Time - 1.0;
     return 0;
 }
 int get_total_radius(double *radius){

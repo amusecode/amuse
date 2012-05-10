@@ -10,8 +10,9 @@ from amuse.units import nbody_system
 from amuse.units import generic_unit_converter
 from amuse.units import generic_unit_system
 from amuse.units import units, constants
-from amuse.datamodel import Particles, Grid
+from amuse.datamodel import Particles, Grid, ParticlesSuperset
 from amuse.rfi import channel
+from amuse.io import read_set_from_file
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.gasplummer import new_plummer_gas_model
 
@@ -472,18 +473,17 @@ class TestGadget2(TestWithMPI):
             setattr(instance.parameters, par, not value)
             self.assertFalse(value is getattr(instance.parameters, par))
         
-        for par, value in [('time_limit_cpu', 36000 | units.s), 
-                ('hubble_param', 0.7 | 100 * units.km / units.s / units.Mpc),
-                ('min_gas_temp', 0.0 | units.K)]:
+        for par, value in [('time_limit_cpu', 36000 | units.s), ('min_gas_temp', 0.0 | units.K)]:
             self.assertEquals(value, getattr(instance.parameters, par))
             setattr(instance.parameters, par, 2 * value)
             self.assertEquals(2 * value, getattr(instance.parameters, par))
         
         for par, value in [('n_smooth_tol',0.1), ('n_smooth',50), ('opening_angle',0.5),
                 ('gadget_cell_opening_constant',0.005), ('artificial_viscosity_alpha',0.5),
-                ('courant',0.3), ('type_of_timestep_criterion',0), ('omega_zero',0.0),
-                ('omega_lambda',0.0), ('omega_baryon',0.0), ('min_gas_hsmooth_fractional',0.0),
-                ('timestep_accuracy_parameter',0.025), ('tree_domain_update_frequency',0.05)]:
+                ('courant',0.3), ('type_of_timestep_criterion',0), ('hubble_parameter', 0.7),
+                ('omega_zero',0.0), ('omega_lambda',0.0), ('omega_baryon',0.0), 
+                ('min_gas_hsmooth_fractional',0.0), ('timestep_accuracy_parameter',0.025), 
+                ('tree_domain_update_frequency',0.05)]:
             self.assertEquals(value, getattr(instance.parameters, par))
             setattr(instance.parameters, par, 1)
             self.assertEquals(1, getattr(instance.parameters, par))
@@ -1127,6 +1127,52 @@ class TestGadget2(TestWithMPI):
         self.assertEquals(len(internal_energy_limit_detection.particles()), 3)
         self.assertEquals((internal_energy_limit_detection.particles().u > 
                 10 * initial_internal_energy), [True, True, True])
+        instance.stop()
+    
+    def test25(self):
+        print "Testing Gadget2 comoving_integration_flag"
+        particles = new_plummer_model(100, self.default_convert_nbody, do_scale=True)
+        instance = Gadget2(self.default_converter, redirection="none", **default_options)
+        instance.initialize_code()
+        instance.parameters.comoving_integration_flag = True
+        instance.parameters.redshift_begin = 20.0
+        instance.parameters.redshift_max = 0.0
+        instance.parameters.omega_zero = 0.3
+        instance.parameters.omega_lambda = 0.7
+        instance.parameters.omega_baryon = 0.0
+        instance.parameters.hubble_parameter = 0.7
+        instance.parameters.epsilon_squared = (1.0 | generic_unit_system.length)**2
+        instance.parameters.softening_halo_max_phys = 1.0 | generic_unit_system.length
+        instance.dm_particles.add_particles(particles)
+        
+        instance.evolve_to_redshift(19.9)
+        self.assertRaises(AmuseException, instance.evolve_model, 1|units.Myr, expected_message=
+            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -9, error is "
+            "'This function should not be used with the current value of comoving_integration_flag'")
+        
+        self.assertAlmostEqual(instance.model_redshift, 19.9, 5)
+        self.assertRaises(AmuseException, getattr, instance, "model_time", expected_message=
+            "Error when calling 'get_time' of a 'Gadget2', errorcode is -9, error is "
+            "'This function should not be used with the current value of comoving_integration_flag'")
+        instance.stop()
+    
+    def xtest26(self):
+        print "Testing Gadget2 comoving_integration_flag validation (WIP)"
+        particles = read_set_from_file("cluster_littleendian.dat", "gadget")
+        particles = ParticlesSuperset(particles[1:4])
+        instance = Gadget2(self.default_converter, redirection="none", **default_options)
+        instance.initialize_code()
+        instance.parameters.comoving_integration_flag = True
+        instance.parameters.redshift_begin = 20.0
+        instance.parameters.redshift_max = 0.0
+        instance.parameters.omega_zero = 0.3
+        instance.parameters.omega_lambda = 0.7
+        instance.parameters.omega_baryon = 0.0
+        instance.parameters.hubble_parameter = 0.7
+        instance.parameters.epsilon_squared = (72.0 | generic_unit_system.length)**2
+        instance.parameters.softening_halo_max_phys = 12.0 | generic_unit_system.length
+        instance.particles.add_particles(particles)
+        instance.evolve_to_redshift(19.5)
         instance.stop()
 
 def energy_evolution_plot(time, kinetic, potential, thermal, figname):

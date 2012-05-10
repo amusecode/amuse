@@ -893,6 +893,52 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         return function
     
     @legacy_function
+    def evolve_to_redshift():
+        function = LegacyFunctionSpecification()
+        function.addParameter('redshift', dtype='d', direction=function.IN,
+            description = "Model redshift to evolve to (for cosmological integrations).")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_redshift():
+        function = LegacyFunctionSpecification()
+        function.addParameter('redshift', dtype='d', direction=function.OUT,
+            description = "The current redshift (for cosmological integrations).")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_redshift_begin():
+        function = LegacyFunctionSpecification()
+        function.addParameter('redshift_begin', dtype='d', direction=function.OUT,
+            description = "The redshift at the start of the run.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_redshift_begin():
+        function = LegacyFunctionSpecification()
+        function.addParameter('redshift_begin', dtype='d', direction=function.IN,
+            description = "The redshift at the start of the run.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_redshift_max():
+        function = LegacyFunctionSpecification()
+        function.addParameter('redshift_max', dtype='d', direction=function.OUT,
+            description = "The redshift at the end of the run.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_redshift_max():
+        function = LegacyFunctionSpecification()
+        function.addParameter('redshift_max', dtype='d', direction=function.IN,
+            description = "The redshift at the end of the run.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
     def get_omega_zero():
         function = LegacyFunctionSpecification()
         function.addParameter('omega_zero', dtype='d', direction=function.OUT,
@@ -1205,6 +1251,7 @@ class Gadget2(GravitationalDynamics):
         object.add_property("get_center_of_mass_velocity")
         object.add_property("get_total_mass")
         object.add_property('get_time', public_name = "model_time")
+        object.add_property('get_redshift', public_name = "model_redshift")
     
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
@@ -1214,6 +1261,8 @@ class Gadget2(GravitationalDynamics):
         object.add_method('EDIT', 'new_sph_particle')
         object.add_method('UPDATE', 'new_sph_particle')
         object.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
+        object.add_transition('RUN', 'EVOLVED', 'evolve_to_redshift', False)
+        object.add_method('EVOLVED', 'evolve_to_redshift')
         object.add_method('RUN', 'get_state_sph')
         object.add_method('RUN', 'get_acceleration')
         object.add_method('RUN', 'get_internal_energy')
@@ -1472,6 +1521,22 @@ class Gadget2(GravitationalDynamics):
         )
         
         object.add_method_parameter(
+            "get_redshift_begin", 
+            "set_redshift_begin",
+            "redshift_begin", 
+            "The redshift at the start of the run.", 
+            default_value = 20.0
+        )
+        
+        object.add_method_parameter(
+            "get_redshift_max", 
+            "set_redshift_max",
+            "redshift_max", 
+            "The redshift at the end of the run.", 
+            default_value = 0.0
+        )
+        
+        object.add_method_parameter(
             "get_omega_zero", 
             "set_omega_zero",
             "omega_zero", 
@@ -1498,9 +1563,9 @@ class Gadget2(GravitationalDynamics):
         object.add_method_parameter(
             "get_hubble_param", 
             "set_hubble_param",
-            "hubble_param", 
-            "The cosmological Hubble parameter.", 
-            default_value = 0.7 | 100 * units.km / units.s / units.Mpc
+            "hubble_parameter", 
+            "The cosmological Hubble parameter, value of Hubble constant in units of 100 km/s / Mpc.", 
+            default_value = 0.7
         )
         
         object.add_method_parameter(
@@ -1663,10 +1728,12 @@ class Gadget2(GravitationalDynamics):
         object.add_errorcode(-6, "Can't evolve backwards in time.")
         object.add_errorcode(-7, "Can't evolve further than time_max.")
         object.add_errorcode(-8, "A particle was assigned a timestep of size zero. The code_time_unit used may be too large.")
+        object.add_errorcode(-9, "This function should not be used with the current value of comoving_integration_flag")
     
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
         object.add_method('evolve_model', (generic_unit_system.time,), ( object.ERROR_CODE, ))
+        object.add_method('evolve_to_redshift', (object.NO_UNIT,), ( object.ERROR_CODE, ))
         object.add_method(
             "new_particle",
             (
@@ -2218,6 +2285,30 @@ class Gadget2(GravitationalDynamics):
         )
         
         object.add_method(
+            "get_redshift_begin",
+            (),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_redshift_begin",
+            (object.NO_UNIT, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_redshift_max",
+            (),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_redshift_max",
+            (object.NO_UNIT, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
             "get_omega_zero",
             (),
             (object.NO_UNIT, object.ERROR_CODE,)
@@ -2256,12 +2347,12 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "get_hubble_param",
             (),
-            (100 * units.km / units.s / units.Mpc, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_hubble_param",
-            (100 * units.km / units.s / units.Mpc, ),
+            (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
         
@@ -2431,6 +2522,12 @@ class Gadget2(GravitationalDynamics):
             'get_time',
             (),
             (generic_unit_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_redshift',
+            (),
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         self.stopping_conditions.define_methods(object)
