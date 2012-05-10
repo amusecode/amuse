@@ -49,45 +49,90 @@ end function
 function new_gas_particle(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
   use amuse_sphrayMod
   integer(i4b) :: ret,id
-  real(r4b) :: mass,hsml,x,y,z,rho,xe,u
-  call sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u)
+  real(r8b) :: mass,hsml,x,y,z,rho,xe,u
+  real(r4b) :: t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u
+  t_mass=mass;t_hsml=hsml;t_x=x;t_y=y;t_z=z;t_rho=rho;t_xe=xe;t_u=u
+  call sphray_add_gas_particle(id,t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u)
   ret=0
 end function
 
 function new_src_particle(id,L,x,y,z,SpcType) result(ret)
   use amuse_sphrayMod
   integer :: ret,id
-  real(r4b) :: L,x,y,z,SpcType
-  call sphray_add_src_particle(id,L,x,y,z,SpcType)
+  real(r8b) :: L,x,y,z,SpcType
+  real(r4b) :: t_L,t_x,t_y,t_z,t_SpcType
+  t_L=L;t_x=x;t_y=y;t_z=z;t_SpcType=SpcType
+  call sphray_add_src_particle(id,t_L,t_x,t_y,t_z,t_SpcType)
   ret=0
 end function
 
 function get_state_gas(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
   use amuse_sphrayMod
   integer :: ret,id
-  real(r4b) :: mass,hsml,x,y,z,rho,xe,u
-  ret= sphray_get_gas_particle_state(id,mass,hsml,x,y,z,rho,xe,u)
+  real(r8b) :: mass,hsml,x,y,z,rho,xe,u
+  real(r4b) :: t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u
+  ret= sphray_get_gas_particle_state(id,t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u)
+  mass=t_mass;hsml=t_hsml;x=t_x;y=t_y;z=t_z;rho=t_rho;xe=t_xe;u=t_u;
 end function
 
 function set_state_gas(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
   use amuse_sphrayMod
   integer(i4b) :: ret,id
-  real(r4b) :: mass,hsml,x,y,z,rho,xe,u
-  ret=sphray_set_gas_particle_state(id,mass,hsml,x,y,z,rho,xe,u)
+  real(r8b) :: mass,hsml,x,y,z,rho,xe,u
+  real(r4b) :: t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u
+  t_mass=mass;t_hsml=hsml;t_x=x;t_y=y;t_z=z;t_rho=rho;t_xe=xe;t_u=u
+  ret=sphray_set_gas_particle_state(id,t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u)
+end function
+
+function set_pos_gas(id,x,y,z) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  real(r8b) :: x,y,z
+  real(r4b) ::t_x,t_y,t_z
+  t_x=x;t_y=y;t_z=z
+  ret=sphray_set_gas_particle_pos(id,t_x,t_y,t_z)
+end function
+function set_hsml_gas(id,hsml) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  real(r8b) :: hsml
+  real(r4b) :: t_hsml
+  t_hsml=hsml
+  ret=sphray_set_gas_particle_hsml(id,t_hsml)
+end function
+function set_rho_gas(id,rho) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  real(r8b) :: rho
+  real(r4b) :: t_rho
+  t_rho=rho
+  ret=sphray_set_gas_particle_rho(id,t_rho)
+end function
+function set_u_gas(id,u) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  real(r8b) :: u
+  real(r4b) :: t_u
+  t_u=u
+  ret=sphray_set_gas_particle_u(id,t_u)
 end function
 
 function get_state_src(id,L,x,y,z,spctype) result(ret)
   use amuse_sphrayMod
   integer(i4b) :: id,ret
-  real(r4b) :: L,x,y,z,spctype
-  ret=sphray_get_src_particle_state(id,L,x,y,z,spctype)
+  real(r8b) :: L,x,y,z,spctype
+  real(r4b) :: t_L,t_x,t_y,t_z,t_spctype
+  ret=sphray_get_src_particle_state(id,t_L,t_x,t_y,t_z,t_spctype)
+  L=t_L;x=t_x;y=t_y;z=t_z;spctype=t_spctype
 end function
 
 function set_state_src(id,L,x,y,z,spctype) result(ret)
   use amuse_sphrayMod
   integer(i4b) :: id,ret
-  real(r4b) :: L,x,y,z,spctype
-  ret=sphray_set_src_particle_state(id,L,x,y,z,spctype)
+  real(r8b) :: L,x,y,z,spctype
+  real(r4b) :: t_L,t_x,t_y,t_z,t_SpcType
+  t_L=L;t_x=x;t_y=y;t_z=z;t_SpcType=SpcType
+  ret=sphray_set_src_particle_state(id,t_L,t_x,t_y,t_z,t_spctype)
 end function
 
 function evolve_model(tend) result(ret)

@@ -77,8 +77,8 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.OUT)
-        for x in ['mass','hsml','x','y','z','rho','xe','u']:
-            function.addParameter(x, dtype='float32', direction=function.IN)
+        for x in ['mass','h_smooth','x','y','z','rho','xion','u']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
         function.result_type = 'i'
         return function
 
@@ -87,9 +87,9 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.OUT)
-        for x in ['L','x','y','z']:
-            function.addParameter(x, dtype='float32', direction=function.IN)
-        function.addParameter("SpcType", dtype='float32', direction=function.IN,default=0)    
+        for x in ['luminosity','x','y','z']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.addParameter("SpcType", dtype='float64', direction=function.IN,default=0)    
         function.result_type = 'i'
         return function
 
@@ -98,8 +98,8 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','hsml','x','y','z','rho','xe','u']:
-            function.addParameter(x, dtype='float32', direction=function.OUT)
+        for x in ['mass','h_smooth','x','y','z','rho','xion','u']:
+            function.addParameter(x, dtype='float64', direction=function.OUT)
         function.result_type = 'i'
         return function
 
@@ -108,8 +108,8 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.IN)
-        for x in ['L','x','y','z','SpcType']:
-            function.addParameter(x, dtype='float32', direction=function.OUT)
+        for x in ['luminosity','x','y','z','SpcType']:
+            function.addParameter(x, dtype='float64', direction=function.OUT)
         function.result_type = 'i'
         return function
 
@@ -118,19 +118,58 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','hsml','x','y','z','rho','xe','u']:
-            function.addParameter(x, dtype='float32', direction=function.IN)
+        for x in ['mass','h_smooth','x','y','z','rho','xion','u']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
         function.result_type = 'i'
         return function
+
+    @legacy_function    
+    def set_pos_gas():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def set_hsml_gas():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['h_smooth']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def set_rho_gas():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['rho']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def set_u_gas():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['u']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+
 
     @legacy_function    
     def set_state_src():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.IN)
-        for x in ['L','x','y','z']:
-            function.addParameter(x, dtype='float32', direction=function.IN)
-        function.addParameter("SpcType", dtype='float32', direction=function.IN,default=0.)    
+        for x in ['luminosity','x','y','z']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.addParameter("SpcType", dtype='float64', direction=function.IN,default=0.)    
         function.result_type = 'i'
         return function
 
@@ -384,9 +423,9 @@ class SPHRay(CommonCode):
             raise Exception("atm SPHRay uses predefined units converter")
            
         self.unit_converter = ConvertBetweenGenericAndSiUnits(
-                3.085678e21 | units.cm,   # 1.0 kpc
-                1.989e43 | units.g,       # 1.0e10 solar masses
-                1e5 | units.cm / units.s) # 1 km/sec
+                1. | units.kpc,   
+                1.e10 | units.MSun,
+                1. | units.kms)
 
         InCodeComponentImplementation.__init__(self, SPHRayInterface(**options))
         self.set_data_directory(self.data_directory())
@@ -504,6 +543,48 @@ class SPHRay(CommonCode):
                 generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.density,
+                object.NO_UNIT,
+                generic_unit_system.speed**2
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "set_pos_gas",
+            (
+                object.NO_UNIT,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "set_rho_gas",
+            (
+                object.NO_UNIT,
+                generic_unit_system.density,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "set_hsml_gas",
+            (
+                object.NO_UNIT,
+                generic_unit_system.length,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "set_u_gas",
+            (
                 object.NO_UNIT,
                 generic_unit_system.speed**2
             ),
@@ -702,6 +783,15 @@ class SPHRay(CommonCode):
                 object.ERROR_CODE,
             )
         )
+        object.add_method(
+            "get_time",
+            (
+            ),
+            (
+                generic_unit_system.time,
+                object.ERROR_CODE,
+            )
+        )
 
 
 
@@ -711,6 +801,10 @@ class SPHRay(CommonCode):
         object.set_delete('gas_particles', 'remove_gas_particle')
         object.add_setter('gas_particles', 'set_state_gas')
         object.add_getter('gas_particles', 'get_state_gas')
+        object.add_setter('gas_particles', 'set_pos_gas')
+        object.add_setter('gas_particles', 'set_hsml_gas')
+        object.add_setter('gas_particles', 'set_rho_gas')
+        object.add_setter('gas_particles', 'set_u_gas')
                         
         object.define_set('src_particles', 'id')
         object.set_new('src_particles', 'new_src_particle')

@@ -381,6 +381,76 @@ function sphray_set_gas_particle_state(ids,mass,hsml,x,y,z,rho,xe,u) result(ret)
 
 end function
 
+function sphray_set_gas_particle_pos(ids,x,y,z) result(ret)
+  integer(i4b) ::  ids
+  real(r4b) :: mass, hsml,x,y,z, &
+    rho, u , xe 
+  integer(i4b) :: i,index,ret
+
+    index=find_gas(ids)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    psys%par(index)%pos(1)=x
+    psys%par(index)%pos(2)=y
+    psys%par(index)%pos(3)=z
+
+    ret=0
+
+end function
+
+function sphray_set_gas_particle_rho(ids,rho) result(ret)
+  integer(i4b) ::  ids
+  real(r4b) :: mass, hsml,x,y,z, &
+    rho, u , xe 
+  integer(i4b) :: i,index,ret
+
+    index=find_gas(ids)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    psys%par(index)%rho=rho
+
+    ret=0
+
+end function
+
+function sphray_set_gas_particle_hsml(ids,hsml) result(ret)
+  integer(i4b) ::  ids
+  real(r4b) :: mass, hsml,x,y,z, &
+    rho, u , xe 
+  integer(i4b) :: i,index,ret
+
+    index=find_gas(ids)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    psys%par(index)%hsml=hsml
+
+    ret=0
+
+end function
+
+function sphray_set_gas_particle_u(ids,u) result(ret)
+  integer(i4b) ::  ids
+  real(r4b) :: mass, hsml,x,y,z, &
+    rho, u , xe 
+  integer(i4b) :: i,index,ret
+
+    index=find_gas(ids)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    psys%par(index)%T=temp_from_u( real(u,r8b) , real(xe,r8b), GV%H_mf)  
+
+    ret=0
+
+end function
+
 
 function sphray_get_src_particle_state(id,L,x,y,z,SpcType) result(ret)
   integer(i4b) :: id
