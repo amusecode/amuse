@@ -296,7 +296,9 @@ class TestSimpleXSplitSet(TestWithMPI):
         self.assertAlmostEqual(instance.gas_particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
         self.assertAlmostEqual(instance.gas_particles.xion.mean(), 0.000845247683257)
         instance.gas_particles.remove_particles(particles[0:4])
+        instance.recommit_particles()
         instance.evolve_model(0.75 | units.Myr)
+        self.assertEqual(len(instance.particles), len(particles)-4)
         instance.cleanup_code()
         instance.stop()
 
