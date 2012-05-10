@@ -295,6 +295,8 @@ class TestSimpleXSplitSet(TestWithMPI):
         instance.evolve_model(0.5 | units.Myr)
         self.assertAlmostEqual(instance.gas_particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
         self.assertAlmostEqual(instance.gas_particles.xion.mean(), 0.000845247683257)
+        instance.gas_particles.remove_particles(particles[0:4])
+        instance.evolve_model(0.75 | units.Myr)
         instance.cleanup_code()
         instance.stop()
 
@@ -385,7 +387,6 @@ def splitset_from_input_file(input_file):
     particles.u = u | (units.cm**2/units.s**2)
     
     a=numpy.where(numpy.array(flux) > 0.)[0]
-    print "a:", a
     src_particles=Particles(len(a))
     src_particles.x = x[a] | units.parsec
     src_particles.y = y[a] | units.parsec

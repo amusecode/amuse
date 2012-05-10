@@ -1154,25 +1154,30 @@ class SimpleXSplitSet(SimpleX):
         self.particles.add_particles(sites)
         del sites
         
-        self.gas_to_simplex_channel=self.gas_particles.new_channel_to(self.particles)
         self.simplex_to_gas_channel=self.particles.new_channel_to(self.gas_particles)
         
         self.overridden().commit_particles()
         
     def recommit_particles(self):  
 
-        sites=self.gas_particles.copy()        
+        sites=self.gas_particles.copy()
         sites.flux=0. | units.s**-1
 
         for p in self.src_particles:
           nearest=sites.find_closest_particle_to(p.x,p.y,p.z)
           nearest.flux+=p.luminosity
 
-        self.particles.remove_particles(self.particles-sites)
-        self.particles.add_particles(sites-self.particles)
+        sites.synchronize_to(self.particles)
+        channel=sites.new_channel_to(self.particles)
+        attributes=["x","y","z","rho","xion","u","flux"]
+        if hasattr(sites,"metallicity"):
+           attributes.append("metallicity") 
+        if hasattr(sites,"du_dt"):
+           attributes.append("du_dt") 
+        channel.copy_attributes(attributes)
         del sites
 
-        self.overridden().recommit_particles(self)
+        self.overridden().recommit_particles()
 
     def evolve_model(self,tend):
         self.overridden().evolve_model(tend)
