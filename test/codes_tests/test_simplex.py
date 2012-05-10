@@ -2,7 +2,7 @@ import os.path
 import numpy
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.community.simplex.interface import SimpleXInterface, SimpleX
+from amuse.community.simplex.interface import SimpleXInterface, SimpleX,SimpleXSplitSet
 from amuse.units import units
 from amuse.datamodel import Particles
 #default_options = dict(number_of_workers=2, redirection="none")
@@ -248,6 +248,99 @@ class TestSimpleX(TestWithMPI):
         for x in param:
             self.assertEqual(getattr(instance.parameters,x), param[x])
 
+class TestSimpleXSplitSet(TestWithMPI):
+
+    def test1(self):
+        print "Test 1: initialization"
+        instance = SimpleXSplitSet(**default_options)
+        instance.initialize_code()
+        instance.commit_parameters()
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test2(self):
+        print "Test 2: commit_particles, getters and setters"
+        instance = SimpleXSplitSet(**default_options)
+        instance.initialize_code()
+        instance.commit_parameters()
+        
+        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        particles,src_particles = splitset_from_input_file(input_file)
+        instance.gas_particles.add_particles(particles)
+        instance.src_particles.add_particles(src_particles)
+        instance.commit_particles()
+#        for attribute in ['position', 'rho', 'flux', 'xion']:
+#            self.assertAlmostEqual(13200.*getattr(particles, attribute),
+#                                   13200.*getattr(instance.particles, attribute), 5)
+#            setattr(instance.particles, attribute, getattr(particles, attribute)/2.0)
+#            self.assertAlmostEqual(13200.*getattr(particles, attribute)/2.0,
+#                                   13200.*getattr(instance.particles, attribute), 5)
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test3(self):
+        print "Test 3: evolve"
+        instance = SimpleXSplitSet(**default_options)
+        instance.initialize_code()
+        instance.commit_parameters()
+        
+        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        particles,src_particles = splitset_from_input_file(input_file)
+        instance.src_particles.add_particles(src_particles)
+        particles.du_dt = particles.u/(10|units.Myr)
+        instance.gas_particles.add_particles(particles)
+
+        self.assertAlmostEqual(instance.gas_particles.xion.mean(), 0.0)
+        self.assertAlmostEqual(instance.gas_particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
+        instance.evolve_model(0.5 | units.Myr)
+        self.assertAlmostEqual(instance.gas_particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
+        self.assertAlmostEqual(instance.gas_particles.xion.mean(), 0.000845247683257)
+        instance.cleanup_code()
+        instance.stop()
+
+    def test4(self):
+        print "Test 4: default parameters"
+        instance = SimpleXSplitSet(**default_options)
+
+        default=dict( timestep= 0.05| units.Myr, 
+                  source_effective_T=  1.e5 | units.K,
+                  hilbert_order= 1,
+                  number_of_freq_bins= 1,
+                  thermal_evolution_flag = 0,
+                  blackbody_spectrum_flag = 0,
+                  box_size=13200 | units.parsec,
+                  metal_cooling_flag=0,
+                  collisional_ionization_flag=0)
+        for x in default:
+            self.assertEqual(getattr(instance.parameters,x), default[x])
+        instance.commit_parameters()
+        for x in default:
+            self.assertEqual(getattr(instance.parameters,x), default[x])
+
+        tnow=instance.model_time
+        self.assertEqual(tnow, 0. | units.Myr)    
+        instance.model_time=321. | units.Myr
+        tnow=instance.model_time
+        self.assertEqual(tnow, 321. | units.Myr)    
+
+    def test5(self):
+        print "Test 4: default parameters"
+        instance = SimpleXSplitSet(**default_options)
+        param=dict( timestep= 0.1| units.Myr, 
+                  source_effective_T=  2.e5 | units.K,
+                  hilbert_order= 3,
+                  number_of_freq_bins= 4,
+                  thermal_evolution_flag = 1,
+                  blackbody_spectrum_flag = 1,
+                  box_size=32100 | units.parsec,
+                  metal_cooling_flag=1,
+                  collisional_ionization_flag=1)
+        for x in param:
+            setattr(instance.parameters,x, param[x])
+        for x in param:
+            self.assertEqual(getattr(instance.parameters,x), param[x])
+
+
 
     
 def read_input_file(input_file):
@@ -279,4 +372,25 @@ def particles_from_input_file(input_file):
     particles.xion = X_ion | units.none
     particles.u = u | (units.cm**2/units.s**2)
     return particles
+
+def splitset_from_input_file(input_file):
+    x, y, z, n_H, flux, X_ion,u = read_input_file(input_file)
+    
+    particles = Particles(len(x))
+    particles.x = x | units.parsec
+    particles.y = y | units.parsec
+    particles.z = z | units.parsec
+    particles.rho = n_H | units.amu / units.cm**3
+    particles.xion = X_ion | units.none
+    particles.u = u | (units.cm**2/units.s**2)
+    
+    a=numpy.where(numpy.array(flux) > 0.)[0]
+    print "a:", a
+    src_particles=Particles(len(a))
+    src_particles.x = x[a] | units.parsec
+    src_particles.y = y[a] | units.parsec
+    src_particles.z = z[a] | units.parsec
+    src_particles.luminosity = flux[a] | 1.e48*units.s**-1    
+    
+    return particles,src_particles
 

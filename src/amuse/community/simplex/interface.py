@@ -3,6 +3,7 @@ from amuse.community.interface.common import CommonCodeInterface, CommonCode
 from amuse.community import *
 from amuse.support.options import option
 
+from amuse.datamodel import Particles
 
 class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
@@ -1134,4 +1135,45 @@ class SimpleX(CommonCode):
 
 
     
+class SimpleXSplitSet(SimpleX):
+    
+    def __init__(self,**options):
+        SimpleX.__init__(self,**options)
+        self.gas_particles=Particles()
+        self.src_particles=Particles()
 
+    def commit_particles(self):
+        
+        sites=self.gas_particles.copy()
+        sites.flux=0. | units.s**-1
+
+        for p in self.src_particles:
+          nearest=sites.find_closest_particle_to(p.x,p.y,p.z)
+          nearest.flux+=p.luminosity
+
+        self.particles.add_particles(sites)
+        del sites
+        
+        self.gas_to_simplex_channel=self.gas_particles.new_channel_to(self.particles)
+        self.simplex_to_gas_channel=self.particles.new_channel_to(self.gas_particles)
+        
+        self.overridden().commit_particles()
+        
+    def recommit_particles(self):  
+
+        sites=self.gas_particles.copy()        
+        sites.flux=0. | units.s**-1
+
+        for p in self.src_particles:
+          nearest=sites.find_closest_particle_to(p.x,p.y,p.z)
+          nearest.flux+=p.luminosity
+
+        self.particles.remove_particles(self.particles-sites)
+        self.particles.add_particles(sites-self.particles)
+        del sites
+
+        self.overridden().recommit_particles(self)
+
+    def evolve_model(self,tend):
+        self.overridden().evolve_model(tend)
+        self.simplex_to_gas_channel.copy_attributes(["xion","u","metallicity"])
