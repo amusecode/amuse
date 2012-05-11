@@ -185,7 +185,42 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
             particle could not be found
         """
         return function
+
     
+    @legacy_function
+    def get_mean_intensity():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the mean intensity from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('Js', dtype='float64', direction=function.OUT, description = "The current mean intensity of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+
+    @legacy_function
+    def get_diffuse_intensity():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the diffuse intensity from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('Jd', dtype='float64', direction=function.OUT, description = "The current diffuse intensity of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+        
     @legacy_function
     def get_density():
         function = LegacyFunctionSpecification()
@@ -873,6 +908,26 @@ class SimpleX(CommonCode):
             )
         )
         object.add_method(
+            "get_mean_intensity",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                1.0e48 / units.s,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_diffuse_intensity",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                1.0e48 / units.s,
+                object.ERROR_CODE
+            )
+        )        
+        object.add_method(
             "set_ionisation",
             (
                 object.NO_UNIT,
@@ -1084,6 +1139,8 @@ class SimpleX(CommonCode):
         object.add_getter('particles', 'get_density')
         object.add_setter('particles', 'set_flux')
         object.add_getter('particles', 'get_flux')
+        object.add_getter('particles', 'get_mean_intensity')
+        object.add_getter('particles', 'get_diffuse_intensity')
         object.add_setter('particles', 'set_ionisation')
         object.add_getter('particles', 'get_ionisation')
         object.add_setter('particles', 'set_metallicity')
@@ -1115,6 +1172,8 @@ class SimpleX(CommonCode):
         object.add_method('RUN', 'get_density')
         object.add_method('RUN', 'get_position')
         object.add_method('RUN', 'get_flux')
+        object.add_method('RUN', 'get_mean_intensity')
+        object.add_method('RUN', 'get_diffuse_intensity')
         object.add_method('RUN', 'get_ionisation')
         object.add_method('RUN', 'get_internal_energy')
         object.add_method('RUN', 'set_dinternal_energy_dt')
