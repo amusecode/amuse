@@ -5,6 +5,7 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.sphray.interface import SPHRayInterface,SPHRay
 from amuse.units import units
 from amuse.datamodel import Particles,create_particle_set
+from amuse.datamodel import Particle
 from amuse.community import ensure_data_directory_exists
 
 from amuse.io import read_set_from_file
@@ -385,8 +386,58 @@ class TestSPHRay(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
         
         
-        
+    
+    def test3(self):
+        instance=SPHRay()
 
+        instance.src_particles.add_particle(
+            Particle(
+                L = 1 | 1e48 * units.s**-1,
+                x = 2 | units.m,
+                y = 3 | units.m,
+                z = 4 | units.m,
+                SpcType = 12.3
+            )
+        )
+        self.assertAlmostRelativeEquals(instance.src_particles.L, 1 | 1e48 * units.s**-1, 6)
+        self.assertAlmostRelativeEquals(instance.src_particles.x, 2 | units.m)
+        self.assertAlmostRelativeEquals(instance.src_particles.y, 3 | units.m)
+        self.assertAlmostRelativeEquals(instance.src_particles.z, 4 | units.m)
+        self.assertAlmostRelativeEquals(instance.src_particles.SpcType, 12.3)
+               
+    def test4(self):
+        instance=SPHRay()
+
+        instance.gas_particles.add_particle(
+            Particle(
+                mass = 1 | (10**10*units.MSun),
+                x = 2 | units.kpc,
+                y = 3 | units.kpc,
+                z = 4 | units.kpc,
+                hsml = 0.1 | (units.kpc),
+                rho = 0.5 | ((10**10*units.MSun) /(units.kpc)**3),
+                xe = 0.01,
+                u = 0.2 | (10**5 * units.cm/units.s)**2
+            )
+        )
+        instance.src_particles.add_particle(
+            Particle(
+                L = 1 | 1e48 * units.s**-1,
+                x = 2 | units.m,
+                y = 3 | units.m,
+                z = 4 | units.m,
+                SpcType = 12.3
+            )
+        )
+        instance.commit_particles()
+        self.assertAlmostRelativeEquals(instance.src_particles.L, 1 | 1e48 * units.s**-1, 6)
+        self.assertAlmostRelativeEquals(instance.src_particles.x, 2 | units.m)
+        self.assertAlmostRelativeEquals(instance.src_particles.y, 3 | units.m)
+        self.assertAlmostRelativeEquals(instance.src_particles.z, 4 | units.m)
+        self.assertAlmostRelativeEquals(instance.src_particles.SpcType, 12.3)
+               
+        print instance.src_particles
+        
     def read_gas_file(self,filename):
         p=read_set_from_file(filename,'amuse')
         mass=p.mass.number
@@ -421,3 +472,5 @@ class TestSPHRay(TestWithMPI):
         return create_particle_set( luminosity=numpy.array(L) | (10**48 * units.s**-1), 
             x=numpy.array(x) | (units.kpc), y=numpy.array(y)| (units.kpc), 
                   z=numpy.array(z)| (units.kpc), SpcType=numpy.array(spctype))
+                  
+                  
