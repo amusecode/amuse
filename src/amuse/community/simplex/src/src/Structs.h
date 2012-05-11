@@ -345,7 +345,6 @@ class Site : public Vertex {
   //! add the intensity from neighbour in outgoing intensity array
   void addRadiationDiffOut(const short int& f, const unsigned int& id, const double& intensity);
 
-
  private:
 
   unsigned long long int site_id;   //!< Position of the site in the local sites vector
@@ -647,6 +646,7 @@ bool compare_vertex_id_site_update( const Site_Update& x, const Site_Update& y);
 
 //!compare Site_Update class by process for sort routine
 bool compare_process_site_update( const Site_Update& x, const Site_Update& y);
+
 
 
 #endif

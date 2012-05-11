@@ -33,6 +33,8 @@ class AMUSE_SimpleX : public SimpleX {
   int get_position(int id, double *x, double *y, double *z);
   int get_density(int id, double *rho);
   int get_flux(int id, double *flux);
+  int get_mean_intensity(int id, double *mean_intensity);
+  int get_diffuse_intensity(int id, double *diffuse_intensity);
   int get_ionisation(int id, double *xion);
   int get_metallicity(int id, double *metallicity);
   int get_internalEnergy(int id, double *uInt);

@@ -3221,15 +3221,15 @@ void SimpleX::return_intensities(){
     while( it != sites.end() && !stop ){ 
       //only include direction conserving sites on this proc not in border
       if( it->get_process() == COMM_RANK && !it->get_border() && !it->get_ballistic() ){  
-	//associate every vertex id with its place in the array 
-	if( ( (long int) it->get_vertex_id() - (long int) start_vertex_id) >= 0 && 
-	    (it->get_vertex_id() - start_vertex_id) < this_chunk_size ){
-	  mapping_sites[ it->get_vertex_id() - start_vertex_id ] = it->get_site_id();
-	}
+  //associate every vertex id with its place in the array 
+        if( ( (long int) it->get_vertex_id() - (long int) start_vertex_id) >= 0 && 
+        (it->get_vertex_id() - start_vertex_id) < this_chunk_size ){
+          mapping_sites[ it->get_vertex_id() - start_vertex_id ] = it->get_site_id();
+        }
       }           
       it++;
       if(it->get_vertex_id() >= (start_vertex_id + this_chunk_size) ){
-	stop = 1;
+        stop = 1;
       }
     }  
 
@@ -3237,37 +3237,37 @@ void SimpleX::return_intensities(){
     for( unsigned int i=0; i<intens_ids.size(); i++ ){
       //only include vertex ids in current chunk
       if(intens_ids[i] >= start_vertex_id && intens_ids[i] < (start_vertex_id+this_chunk_size) ){
-	//get site id from vertex id using pre-calculated mapping
-	unsigned int site_id = mapping_sites[ intens_ids[i] - start_vertex_id ];
-	//only take into account if site id is valid, otherwise the
-	//intensities should not be given back at this point
-	if( site_id < sites.size() ){
+  //get site id from vertex id using pre-calculated mapping
+        unsigned int site_id = mapping_sites[ intens_ids[i] - start_vertex_id ];
+  //only take into account if site id is valid, otherwise the
+  //intensities should not be given back at this point
+        if( site_id < sites.size() ){
 
-	  //loop over all directions
-	  //be careful, j is the position of the direction in the orientation of the PREVIOUS run!!!
-	  for( unsigned int j=0; j<numPixels; j++ ){
+    //loop over all directions
+    //be careful, j is the position of the direction in the orientation of the PREVIOUS run!!!
+          for( unsigned int j=0; j<numPixels; j++ ){
 
-	    //get the closest associate with this neighbour from the mapping 
-	    //stored in the header file
-	    unsigned int pos = maps[orientation_index][orientation_index_old][j];
+      //get the closest associate with this neighbour from the mapping 
+      //stored in the header file
+            unsigned int pos = maps[orientation_index][orientation_index_old][j];
 
-	    //loop over frequencies
-	    for(short int f=0; f<numFreq;f++){
+      //loop over frequencies
+            for(short int f=0; f<numFreq;f++){
 
-	      //get the intensity that belongs to this site
-	      double inten = (double) site_intensities[ i*numPixels*numFreq + j*numFreq + f ];
+        //get the intensity that belongs to this site
+              double inten = (double) site_intensities[ i*numPixels*numFreq + j*numFreq + f ];
 
-	      //in case there is already intensity in this direction
-	      //obsolete with the new header file
-	      inten += (double) sites[site_id].get_intensityOut(f, pos);
+        //in case there is already intensity in this direction
+        //obsolete with the new header file
+              inten += (double) sites[site_id].get_intensityOut(f, pos);
 
-	      //assign the intensity to the site
-	      sites[site_id].set_intensityOut( f, pos, (float) inten );
-	      sites[site_id].set_intensityIn( f, pos, 0.0 );
+        //assign the intensity to the site
+              sites[site_id].set_intensityOut( f, pos, (float) inten );
+              sites[site_id].set_intensityIn( f, pos, 0.0 );
 
-	    }//for all freqs
-	  }//for all directions
-	}//if valid id
+            }//for all freqs
+          }//for all directions
+        }//if valid id
       }
     } //for all intens_ids
 
@@ -5914,6 +5914,11 @@ void SimpleX::assign_read_properties(){
 	it->set_n_HII( temp_n_HII_list[ it->get_vertex_id() ] );
 	//set internal energy
 	it->set_internalEnergy( temp_u_list[ it->get_vertex_id() ] );
+	//set temperature
+  double mu = compute_mu( *it );
+  float T = static_cast<float>( u_to_T( temp_u_list[ it->get_vertex_id() ],  mu ) );
+  it->set_temperature( T );
+  
 	//set dudt
 	it->set_dinternalEnergydt( temp_dudt_list[ it->get_vertex_id() ] );
 
@@ -5937,6 +5942,7 @@ void SimpleX::assign_read_properties(){
 	it->set_n_HII( 0.0 );
 	it->set_source( 0 );
 	it->set_internalEnergy( 0.0 );
+  it->set_temperature( 0.0 );
       }
     }
   }
@@ -5993,11 +5999,17 @@ void SimpleX::return_physics(){
 	  it->set_n_HII( site_properties[ i ].get_n_HII() ); 
 	  it->set_ballistic( site_properties[ i ].get_ballistic() );
 	  it->set_internalEnergy( site_properties[ i ].get_internalEnergy() );
+	  //set temperature
+    double mu = compute_mu( *it );
+    float T = static_cast<float>( u_to_T( it->get_internalEnergy(),  mu ) );
+    it->set_temperature( T );
+  	
 	  //if site is source, put flux in first bin
 	  if( site_properties[ i ].get_flux() > 0.0 ){
 	    it->set_source(1);
 	    it->create_flux(numFreq);
 	    it->set_flux( 0, site_properties[ i ].get_flux() );
+ 
 	  }else{
 	    it->set_source(0);
 	  }
@@ -6023,37 +6035,64 @@ void SimpleX::return_physics(){
     }//if on this proc 
   }//for all sites
 
+
+  if(blackBody){
+    
+    if(rec_rad){
+      numFreq--;
+    }
+    
   //fill the source bins correctly
   //upper and lower bounds of integration in terms of the ionisation frequency for hydrogen
   //tweak the upper bound in case of evenly spaced bins
-  const double upperBound = 1e2;
-  const double lowerBound = 1.0;
+    const double upperBound = 1e2;
+    const double lowerBound = 1.0;
 
   //calculate the frequency bounds
-  vector<double> freq_bounds = calc_freq_bounds(lowerBound, upperBound);
+    vector<double> freq_bounds = calc_freq_bounds(lowerBound, upperBound);
 
+  //Proper number of frequencies
+  if(rec_rad){
+    numFreq++;
+    //add extra bin
+    vector<double>::iterator it = freq_bounds.begin();
+    freq_bounds.insert(it, 1, lowerBound);
+  }
+  
   //Planck curve divided by h * nu over entire domain
-  double normBB = qromb(PlanckDivNu, lowerBound, upperBound, sourceTeff);
+    double normBB = qromb(PlanckDivNu, lowerBound, upperBound, sourceTeff);
+
+
 
   //loop over all sites
-  for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+    for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
     //if site is source
-    if( it->get_source() ){
-      double total_flux = it->get_flux(0);
+      if( it->get_source() ){
+        double total_flux = it->get_flux(0);
       //loop over frequencies
-      for(short int f=0; f<numFreq; f++){
+        for(short int f=0; f<numFreq; f++){
 
-	// Integrated number of photons for this bin
-	double bbOverNu = qromb(PlanckDivNu, freq_bounds[f], freq_bounds[f+1], sourceTeff);
+  // Integrated number of photons for this bin
+          double bbOverNu = qromb(PlanckDivNu, freq_bounds[f], freq_bounds[f+1], sourceTeff);
 
-	// Normalise to the source strength
-	double flux = total_flux * bbOverNu/normBB;
-	it->set_flux( f, (float) flux);
+  // Normalise to the source strength
+          double flux = total_flux * bbOverNu/normBB;
+          it->set_flux( f, (float) flux);
 
-      }//for all freqs
-    }//if source
-  }//for all sites
-
+        }//for all freqs
+      }//if source
+    }//for all sites
+  }else{
+        //put the flux of the source in first bin instead of zeroth,
+        //that is used for recombination radiation
+    for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+      if(it->get_source()) {
+        float flux = it->get_flux( 0 );
+        it->set_flux( 0, 0.0 ); 
+        it->set_flux( 1, flux );
+      }
+    }
+  }
 
   if( COMM_RANK == 0 ){
     simpleXlog << " Returned physics to proper sites" << endl;
@@ -6550,9 +6589,9 @@ double SimpleX::cooling_rate( Site& site ){
       
       // abundance*cooling/rate
       if(withH[j]){
-	      C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * site.get_metallicity();
+	      C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * n_H * site.get_metallicity();
       }else{
-        C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_e * site.get_metallicity();
+        C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * n_e * site.get_metallicity();
       }
     }
   }
@@ -6587,6 +6626,14 @@ double SimpleX::heating_rate( const vector<double>& N_ion, const double& t_end )
 
   return heating;
 
+}
+
+double SimpleX::compute_mu(Site& site){
+  
+  double mu = ( site.get_n_HI() + site.get_n_HII() )/(site.get_n_HI() + 2*site.get_n_HII() );
+  
+  return mu;
+  
 }
 
 //convert internal energy to temperature using ideal gas law
@@ -6682,6 +6729,10 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
     
     //set new internal energy
     site.set_internalEnergy( (float) u );
+  	//set temperature
+    float T = static_cast<float>( u_to_T( u,  mu ) );
+    site.set_temperature( T );
+
 
     //add time step to total time
     t += dt; 
@@ -6951,6 +7002,7 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 
     if(N_rec_phot_step < 0.0){
       cerr << " (" << COMM_RANK << ") Negative number of diffuse photons!" << endl;
+      cerr << num_rec_factor << " " << rec_escape << " " << site.get_temperature() << " " << ( recomb_coeff_HII_caseA( site.get_temperature() ) - recomb_coeff_HII_caseB( site.get_temperature() ) ) << endl;
       MPI::COMM_WORLD.Abort(-1);
     }
 
@@ -7826,16 +7878,16 @@ void SimpleX::radiation_transport( const unsigned int& run ){
           it->set_intensityIn( f, j, 0.0 );
 
         }
-        total_diffuse_proc += (double) it->get_intensityOut(0,j);
+        //total_diffuse_proc += (double) it->get_intensityOut(0,j);
       }//for all pixels
     }//for all sites
 
-    double total_diffuse;
-    MPI::COMM_WORLD.Allreduce(&total_diffuse_proc,&total_diffuse,1,MPI::DOUBLE,MPI::SUM);
-
-    if(COMM_RANK == 0){
-      //cerr << " Number of diffuse photons: " << total_diffuse << endl;
-    }
+    // double total_diffuse;
+    // MPI::COMM_WORLD.Allreduce(&total_diffuse_proc,&total_diffuse,1,MPI::DOUBLE,MPI::SUM);
+    // 
+    // if(COMM_RANK == 0){
+    //   cerr << " Number of diffuse photons: " << total_diffuse*UNIT_I << endl;
+    // }
 
     //if direction conserving transport is possible, rotate solid angles or
     //do virtual vertex movement if set

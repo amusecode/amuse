@@ -233,6 +233,10 @@ int AMUSE_SimpleX::initialize(double current_time) {
     cerr << "AMUSE_SimpleX: initialising...";
   }
 
+  if(rec_rad){
+    numFreq++;
+  }
+  
   // initialise random number generator with random seed
   gsl_rng_set ( ran , randomSeed );
 
@@ -366,12 +370,14 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
 
 }
 
+
 //store everything in the simulation and recompute triangulation and physics
 int AMUSE_SimpleX::reinitialize(){
 
   if(COMM_RANK == 0){
     cerr << "AMUSE_SimpleX: recomputing triangulation...";
   }
+  
    //make sure that the vectors that will be filled are empty 
     site_intensities.clear();
     intens_ids.clear();
@@ -454,7 +460,7 @@ int AMUSE_SimpleX::reinitialize(){
       send_site_physics();  
       send_site_intensities();
     }
-        
+            
     //compute the triangulation
     compute_triangulation();
 
@@ -466,13 +472,13 @@ int AMUSE_SimpleX::reinitialize(){
 
     //return the physical properties to the sites
     return_physics();
-        
+            
     compute_site_properties();
     
     compute_physics( 1 );
     
     remove_border_simplices();
-  
+      
     if(COMM_RANK == 0){
       cerr << " Done" << endl;
     }
@@ -565,6 +571,62 @@ int AMUSE_SimpleX::get_flux(int id, double *flux){
     }
     return 0;
 }
+
+int AMUSE_SimpleX::get_mean_intensity(int id, double *mean_intensity){
+  
+  SITE_ITERATOR p;
+  Site tmp;
+    
+  tmp.set_vertex_id((unsigned long long) id);
+  p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+  if(p->get_vertex_id() == (unsigned long long int)id){
+      if (p->get_process() == COMM_RANK){
+        
+        double meanIntensity = 0.0;
+        //in case of ballistic transport, intensity has size of number of neighbours;
+        //in case of direction conserving transport, intensity has 
+        //the size of the tesselation of the unit sphere
+        numPixels = ( p->get_ballistic() ) ? p->get_numNeigh() : number_of_directions;
+        
+        for(unsigned int i=0; i<numPixels; i++){
+          short int start = (rec_rad) ? 1 : 0;
+          for(short int f=start;f<numFreq;f++){
+            meanIntensity += p->get_intensityOut(f,i) + p->get_intensityIn(f,i);
+          }
+        }
+        *mean_intensity = meanIntensity;
+        return 1;
+      }
+  }
+  return 0;
+   
+}
+
+int AMUSE_SimpleX::get_diffuse_intensity(int id, double *diffuse_intensity){
+  
+  SITE_ITERATOR p;
+  Site tmp;
+    
+  tmp.set_vertex_id((unsigned long long) id);
+  p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+  if(p->get_vertex_id() == (unsigned long long int)id){
+      if (p->get_process() == COMM_RANK){
+        
+        double diffuseIntensity = 0.0;
+        numPixels = ( p->get_ballistic() ) ? p->get_numNeigh() : number_of_directions;
+        
+        for(unsigned int i=0; i<numPixels; i++){
+          short int f = 0;
+          diffuseIntensity += p->get_intensityOut(f,i) + p->get_intensityIn(f,i);
+        }
+        *diffuse_intensity = diffuseIntensity;
+        return 1;
+      }
+  }
+  return 0;
+   
+}
+
 int AMUSE_SimpleX::get_ionisation(int id, double *xion){
     SITE_ITERATOR p;
     Site tmp;
@@ -927,6 +989,34 @@ int get_flux(int id, double *flux){
     MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
     MPI::COMM_WORLD.Barrier();
     *flux = recv;
+    return totalret-1;
+}
+
+int get_mean_intensity(int id, double *mean_intensity){
+    double fmean_intensity = 0.0;
+    double send, recv;
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).get_mean_intensity(id, &fmean_intensity);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    send = fmean_intensity;
+    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    *mean_intensity = recv;
+    return totalret-1;
+}
+
+int get_diffuse_intensity(int id, double *diffuse_intensity){
+    double fdiffuse_intensity = 0.0;
+    double send, recv;
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).get_diffuse_intensity(id, &fdiffuse_intensity);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    send = fdiffuse_intensity;
+    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    *diffuse_intensity = recv;
     return totalret-1;
 }
 

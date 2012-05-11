@@ -348,6 +348,9 @@ class SimpleX{
     //! Rate of energy gain in cell
     double heating_rate( const vector<double>& N_ion, const double& t_end );
 
+    //! compute mean molecular weight
+    double compute_mu( Site& );
+
     //!Convert internal energy to temperature
     double u_to_T( const double& u, const double& mu );
 
@@ -403,6 +406,7 @@ class SimpleX{
   
     //! Return number of outputs
     const unsigned int& get_numOutputs() const{ return numOutputs; }
+
 
     // ================ Public lists and variables ===================//
 
