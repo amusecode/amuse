@@ -93,6 +93,9 @@ class AbstractGrid(AbstractSet):
     def get_all_indices_in_store(self):
         return self.get_all_keys_in_store()
         
+    def can_extend_attributes(self):
+        return self._original_set().can_extend_attributes()
+        
 class Grid(AbstractGrid):
     def __init__(self, *args, **kwargs):
         AbstractGrid.__init__(self)
@@ -104,6 +107,9 @@ class Grid(AbstractGrid):
             
         self._private.previous = None
         self.collection_attributes.timestamp = None
+        
+    def can_extend_attributes(self):
+        return self._private.attribute_storage.can_extend_attributes()
     
     @classmethod
     def create(cls, shape, lengths, axes_names = ('x', 'y', 'z')):
@@ -250,8 +256,24 @@ class GridInformationChannel(object):
         data = self.source.get_values_in_store(self.index, attributes)
         self.target.set_values_in_store(self.index, attributes, data)
     
+        
     def copy(self):
-        self.copy_attributes(self.target._get_writeable_attribute_names())
+        if not self.target.can_extend_attributes():
+            self.copy_overlapping_attributes()
+        else:
+            self.copy_all_attributes()
+        
+    def copy_all_attributes(self):
+        names_to_copy = self.source.get_attribute_names_defined_in_store()
+        self.copy_attributes(list(names_to_copy))    
+
+    def copy_overlapping_attributes(self):
+
+        from_names = self.source.get_attribute_names_defined_in_store()
+        to_names = self.target._get_writeable_attribute_names()
+        names_to_copy = set(from_names).intersection(set(to_names))
+             
+        self.copy_attributes(list(names_to_copy))  
 
 class SamplePointOnCellCenter(object):
     def __init__(self, grid, point):

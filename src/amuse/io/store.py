@@ -13,6 +13,258 @@ from amuse.support import exceptions
 from amuse.datamodel import Particles
 from amuse.datamodel import AttributeStorage
 
+
+class HDF5Attribute(object):
+    
+    def __init__(self, name):
+        self.name = name
+        
+    def get_values(self, indices):
+        pass
+    
+    def set_values(self, indices, valus):
+        pass
+    
+    def get_length(self):
+        return 0
+    
+    def get_shape(self):
+        return 0
+    
+    def increase_to_length(self, newlength):
+        pass
+        
+    def copy(self):
+        pass
+    
+    @classmethod
+    def new_attribute(cls, name, shape, input, group):
+        if is_quantity(input):
+            dataset = group.create_dataset(name, shape=shape, dtype=input.number.dtype)
+            return HDF5VectorQuantityAttribute(name, dataset, input.unit) 
+        elif hasattr(input, 'as_set'):
+            #dataset = group.create_dataset(name, shape=shape, dtype=input.dtype)
+            #return HDF5VectorQuantityAttribute(name, dataset) 
+            pass
+        else:
+            dtype = numpy.asanyarray(input).dtype
+            dataset = group.create_dataset(name, shape=shape, dtype=dtype)
+            return HDF5UnitlessAttribute(name, dataset)
+
+    @classmethod
+    def load_attribute(cls, name, dataset):
+        units_string = dataset.attrs["units"]
+        if units_string == "none":
+            return HDF5UnitlessAttribute(name, dataset)
+        else:
+            unit = eval(units_string, core.__dict__)
+            return HDF5VectorQuantityAttribute(name, dataset, unit) 
+
+    def get_value(self, index):
+        pass
+
+    def remove_indices(self, indices):
+        pass
+
+class HDF5VectorQuantityAttribute(HDF5Attribute):
+    
+    def __init__(self, name, dataset, unit):
+        HDF5Attribute.__init__(self, name)
+    
+        self.dataset = dataset
+        self.unit = unit
+        
+    def get_values(self, indices):
+        return self.unit.new_quantity(self.dataset[indices])
+    
+    def set_values(self, indices, values):
+        try:
+            self.dataset[indices] = values.value_in(self.unit)
+        except AttributeError:
+            if not is_quantity(values):
+                raise ValueError("Tried to put a non quantity value in a quantity")
+            else:
+                raise
+    
+    def get_shape(self):
+        return self.dataset.shape
+    
+
+    def increase_to_length(self, newlength):
+        oldlength = len(self.dataset)
+        delta = newlength - len(self.dataset)
+        if delta == 0: 
+           return
+        newshape = list(self.dataset.shape)
+        newshape[0] = newlength
+        
+        values = numpy.empty(shape=self.dataset.shape, dtype=self.dataset.dtype)
+        values[:] = self.dataset[:]
+    
+        parent = self.dataset.parent
+        del parent[self.name]
+        self.dataset = parent.create_dataset(self.name, shape=newshape, dtype=values.dtype)
+        self.dataset[:oldlength] = values[:]
+
+    def get_length(self):
+        return len(self.dataset)
+
+    def copy(self):
+        #result = type(self)(self.name, self.get_shape(), self.quantity.unit)
+        #result.set_values(None, self.get_values(None))
+        #return result
+        raise NotImplementedError("Copy of an attribute in a hdf5 file is not implemented")
+
+    def get_value(self, index):
+        return self.unit.new_quantity(self.dataset[indices])
+
+    def remove_indices(self, indices):
+        oldlength = len(self.dataset)
+        
+        values = numpy.empty(shape=self.dataset.shape, dtype=self.dataset.dtype)
+        values[:] = self.dataset[:]
+        values = numpy.delete(values, indices)
+        
+        parent = self.dataset.parent
+        del parent[self.name]
+        self.dataset = parent.create_dataset(self.name, shape=values.shape, dtype=values.dtype)
+        self.dataset[:] = values[:]
+        
+        
+
+    def has_units(self):
+        return True
+
+class HDF5UnitlessAttribute(HDF5Attribute):
+    
+    def __init__(self, name, dataset):
+        HDF5Attribute.__init__(self, name)
+        
+        self.dataset = dataset
+        
+    def get_values(self, indices):
+        return self.dataset[indices]
+    
+    def set_values(self, indices, values):
+        self.dataset[indices] = values
+    
+    def get_shape(self):
+        return self.dataset.shape
+    
+    def increase_to_length(self, newlength):
+        oldlength = len(self.dataset)
+        delta = newlength - len(self.dataset)
+        if delta == 0: 
+           return
+        newshape = list(self.dataset.shape)
+        newshape[0] = newlength
+        
+        values = numpy.empty(shape=self.dataset.shape, dtype=self.dataset.dtype)
+        values[:] = self.dataset[:]
+    
+        parent = self.dataset.parent
+        del parent[self.name]
+        self.dataset = parent.create_dataset(self.name, shape=newshape, dtype=values.dtype)
+        self.dataset[:oldlength] = values[:]
+
+    def get_length(self):
+        return len(self.dataset)
+
+    def copy(self):
+        #result = type(self)(self.name, self.get_shape(), self.quantity.unit)
+        #result.set_values(None, self.get_values(None))
+        #return result
+        raise NotImplementedError("Copy of an attribute in hdf5 is not implemented")
+
+    def get_value(self, index):
+        return self.dataset[indices]
+
+    def remove_indices(self, indices):
+        oldlength = len(self.dataset)
+        
+        values = numpy.empty(shape=self.dataset.shape, dtype=self.dataset.dtype)
+        values[:] = self.dataset[:]
+        values = numpy.delete(values, indices)
+        
+        parent = self.dataset.parent
+        del parent[self.name]
+        self.dataset = parent.create_dataset(self.name, shape=values.shape, dtype=values.dtype)
+        self.dataset[:] = values[:]
+
+    def has_units(self):
+        return False
+
+
+class HDF5LinkedAttribute(HDF5Attribute):
+    
+    def __init__(self, name, shape, linked_set):
+        HDF5Attribute.__init__(self, name)
+        
+        self.linked_set = linked_set
+        
+        self.values = numpy.ma.masked_all(
+            shape,
+            dtype = linked_set.get_all_keys_in_store().dtype
+        )
+        
+        
+    def get_values(self, indices):
+        return self.linked_set._masked_subset(self.values[indices])
+    
+    def set_values(self, indices, values):
+        if hasattr(values, 'get_all_keys_in_store'):
+            keys = values.get_all_keys_in_store()
+            mask = ~values.get_valid_particles_mask()
+            keys = numpy.ma.array(keys, dtype=self.values.dtype)
+            keys.mask = mask
+            self.values[indices] = keys
+        else:
+            if values is None:
+                self.values[indices] = ma.masked
+            else:
+                for index, key in zip(indices, values):
+                    if key is None:
+                        self.values[index] = ma.masked
+                    else:
+                        self.values[index] = key
+    
+    def get_length(self):
+        return self.values.shape
+        
+    def increase_to_length(self, newlength):
+        delta = newlength - len(self.values)
+        if delta == 0: 
+           return
+        deltashape = list(self.values.shape)
+        deltashape[0] = delta
+        zeros_for_concatenation =  numpy.ma.masked_all(deltashape, dtype = self.values.dtype)
+        self.values = numpy.ma.concatenate([self.values, zeros_for_concatenation])
+
+    def get_shape(self):
+        return self.values.shape
+
+    def copy(self):
+        result = type(self)(self.name, self.get_shape(), self.linked_set)
+        result.set_values(None, self.get_values(None))
+        return result
+
+    def get_value(self, index):
+        key = self.values[index]
+        if key is ma.masked:
+            return None
+        else:
+            return self.linked_set._get_particle_unsave(key)
+
+    def remove_indices(self, indices):
+        newmask = numpy.delete(self.values.mask, indices)
+        newvalues = numpy.delete(self.values.data, indices)
+        
+        self.values = numpy.ma.array(newvalues, mask = newmask) 
+
+    def has_units(self):
+        return False
+
+
 class HDF5AttributeStorage(AttributeStorage):
 
     def __init__(self, keys, hdfgroup):
@@ -48,14 +300,6 @@ class HDF5AttributeStorage(AttributeStorage):
             result[index] = mapping_from_particle_to_index[particle_key]
             index += 1
         return result
-    
-    def get_unit_of(self, attribute):
-        dataset = self.attributesgroup[attribute]
-        units_string = dataset.attrs["units"]
-        if units_string == "none":
-            return None
-        else:
-            return eval(units_string, core.__dict__) 
         
     def get_defined_attribute_names(self):
         return self.attributesgroup.keys()
@@ -68,16 +312,14 @@ class HDF5AttributeStorage(AttributeStorage):
             
         results = []
         for attribute in attributes:
-            values_vector = self.attributesgroup[attribute]
-            bools = numpy.zeros(values_vector.shape, dtype='bool')
+            dataset = HDF5Attribute.load_attribute(
+                attribute,
+                self.attributesgroup[attribute]
+            )
+            bools = numpy.zeros(dataset.get_shape(), dtype='bool')
             bools[indices] = True
-            selected_values = values_vector[bools]
-            
-            unit = self.get_unit_of(attribute)
-            if unit is None:
-                results.append(selected_values)
-            else:
-                results.append(self.get_unit_of(attribute).new_quantity(selected_values))
+            selected_values = dataset.get_values(bools)
+            results.append(selected_values)
         
         return results
         
@@ -95,21 +337,21 @@ class HDF5AttributeStorage(AttributeStorage):
             
         for attribute, quantity in zip(attributes, quantities):
             if attribute in self.attributesgroup:
-                dataset = self.attributesgroup[attribute]
+                dataset = HDF5Attribute.load_attribute(
+                    attribute,
+                    self.attributesgroup[attribute]
+                )
             else:
-                if is_quantity(quantity):
-                    dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.dtype)
-                    dataset["unit"] = "undefined"
-                else:
-                    dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.number.dtype)
-                    dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
-             
-            bools = numpy.zeros(dataset.shape, dtype='bool')
+                dataset = HDF5Attribute.new_attribute(
+                    attribute,
+                    len(self.particle_keys),
+                    quantity,
+                    self.attributesgroup
+                )
+                
+            bools = numpy.zeros(dataset.get_shape(), dtype='bool')
             bools[indices] = True
-            if is_quantity(quantity):
-                dataset[bools] = quantity.value_in(self.get_unit_of(attribute))
-            else:
-                dataset[bools] = quantity
+            dataset.set_values(bools, quantity)
 
     def get_all_indices_in_store(self):
         return numpy.arange(len(self.particle_keys))

@@ -18,6 +18,7 @@ import numpy
 from amuse import datamodel
 from amuse.datamodel import parameters
 from amuse.datamodel import incode_storage
+
 class OldObjectsBindingMixin(object):
 
     def setup_particles(self, particles):
@@ -26,13 +27,69 @@ class OldObjectsBindingMixin(object):
     def update_particles(self, particles):
         self.particles.copy_values_of_all_attributes_to(particles)
 
+class MethodArgumentOrResultType(object):
+     
+     def append_result_value(self, method, definition, value, result):
+         result.append(self.convert_result_value(method, definition, value))
+         
+     def convert_result_value(self, method, definition, value):
+         return value
+         
+     def convert_argument_value(self, method, definition, value):
+         return value
+
+class NoUnitMethodArgumentOrResultType(MethodArgumentOrResultType):
+    pass
+
+class ErrorCodeMethodArgumentOrResultType(MethodArgumentOrResultType):
+
+    def append_result_value(self, method, definition, value, result):
+        self.convert_result_value(method, definition, value)
+        
+    def convert_result_value(self, method, definition, errorcode):
+        if hasattr(errorcode, 'any'):
+            if not errorcode.any():
+                return
+        if hasattr(errorcode, '__iter__'):
+            for x in errorcode:
+                definition.handle_errorcode(x)
+        else:
+            definition.handle_errorcode(errorcode)
+
+
+class IndexMethodArgumentOrResultType(MethodArgumentOrResultType):
+     
+    def convert_result_value(self, method, definition, value):
+        return value
+     
+    def convert_argument_value(self, method, definition, value):
+        return value
+
+class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
     
-
+    def __init__(self, linked_set_name):
+        self.linked_set_name = linked_set_name
     
-
-
-
-
+    def get_linked_set(self, method, definition):
+        # method might provide a shorter path to the interface object
+        # and is cleaner as definition might move to interface class later
+        return getattr(definition.handler.interface, self.linked_set_name)
+        
+    def convert_result_value(self, method, definition, value):
+        linked_set = self.get_linked_set(method, definition)
+        storage = linked_set._private.attribute_storage
+        keys = storage._get_keys_for_indices_in_the_code(value)
+        return linked_set._subset(keys)
+     
+    def convert_argument_value(self, method, definition, value):
+        linked_set = self.get_linked_set(method, definition)
+        storage = linked_set._private.attribute_storage
+        if isinstance(value, datamodel.Particle):
+            indices = storage.get_indices_of([value.key])
+            return indices[0]
+        else:
+            indices = storage.get_indices_of(value.key)
+            return indices
 
 class CodeAttributeWrapper(object):
 
@@ -323,10 +380,10 @@ class MethodWithUnits(CodeMethodWrapper):
 
 class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
-    ERROR_CODE =  object()
-    NO_UNIT = object()
-    INDEX = object()
-    LINK = object()
+    ERROR_CODE =  ErrorCodeMethodArgumentOrResultType()
+    NO_UNIT = NoUnitMethodArgumentOrResultType()
+    INDEX = IndexMethodArgumentOrResultType()
+    LINK = LinkMethodArgumentOrResultType
 
     def __init__(self, handler, function_name, units, return_units, name):
         self.function_name = function_name
@@ -363,7 +420,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         else:
             return errorcode
 
-    def handle_as_errorcode(self, errorcode):
+    def handle_as_errorcode(self, method, errorcode):
         if hasattr(errorcode, 'any'):
             if not errorcode.any():
                 return
@@ -373,27 +430,17 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         else:
             self.handle_errorcode(errorcode)
 
-    def handle_as_unit(self, return_value):
+    def handle_as_unit(self, method, return_value):
         if not hasattr(self.return_units, '__iter__'):
-            if self.return_units == self.NO_UNIT or self.return_units == self.INDEX:
-                return return_value
-            elif self.return_units == self.ERROR_CODE:
-                self.handle_as_errorcode(return_value)
-            else:
-                return self.return_units.new_quantity(return_value)
+            return self.return_units.convert_result_value(method, self, return_value)
         else:
             if not hasattr(return_value, '__iter__'):
                 return_value = [return_value]
+                
             result = []
             for value, unit in zip(list(return_value), self.return_units):
-                if unit == self.ERROR_CODE:
-                    self.handle_as_errorcode(value)
-                elif unit == self.NO_UNIT:
-                    result.append(value)
-                elif unit == self.INDEX:
-                    result.append(value)
-                else:
-                    result.append(unit.new_quantity(value))
+                unit.append_result_value(method, self, value, result)
+                    
             if len(result) == 1:                
                 return result[0]
             else:
@@ -430,6 +477,8 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                     result[parameter] = arg
             elif self.units[index] == self.INDEX:
                 result[parameter] = argument
+            elif type(self.units[index]) == self.LINK:
+                result[parameter] = self.units[index].convert_argument_value(method, self, argument)
             else:
                 if self.units[index].is_none() and not hasattr(argument,'unit'):
                     result[parameter] = argument
@@ -438,11 +487,10 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                         result[parameter] = argument
                     else:
                         result[parameter] = argument.value_in(self.units[index])
-
         return (), result
 
     def convert_result(self, method, result):
-        return self.handle_return_value(result)
+        return self.handle_return_value(method, result)
 
     @late
     def has_same_name_as_original(self):
@@ -515,6 +563,7 @@ class HandleMethodsWithUnits(object):
     ERROR_CODE = MethodWithUnitsDefinition.ERROR_CODE
     NO_UNIT = MethodWithUnitsDefinition.NO_UNIT
     INDEX = MethodWithUnitsDefinition.INDEX
+    LINK = MethodWithUnitsDefinition.LINK
 
     def __init__(self, interface):
         self.method_definitions = {}
@@ -1214,4 +1263,3 @@ class PropertyDefinition(object):
             return quantities.VectorQuantity.new_from_scalar_quantities(*result)
         else:
             return result
-

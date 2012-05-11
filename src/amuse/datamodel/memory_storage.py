@@ -1,4 +1,5 @@
 import numpy
+from numpy import ma
 
 from amuse.units import quantities
 from amuse.units.quantities import VectorQuantity
@@ -47,10 +48,9 @@ class InMemoryAttributeStorage(AttributeStorage):
     def setup_storage(self, keys, attributes, quantities):
         self.mapping_from_attribute_to_quantities = {}
         for attribute, quantity in zip(attributes, quantities):
-            if not is_quantity(quantity):
-                self.mapping_from_attribute_to_quantities[attribute] = quantity
-            else:
-                self.mapping_from_attribute_to_quantities[attribute] = quantity.as_vector_quantity()
+            storage = InMemoryAttribute.new_attribute(attribute, len(keys), quantity)
+            self.mapping_from_attribute_to_quantities[attribute] = storage
+            storage.set_values(None, quantity)
          
         self.particle_keys = numpy.array(keys, dtype='uint64')
 
@@ -59,30 +59,18 @@ class InMemoryAttributeStorage(AttributeStorage):
     def append_to_storage(self, keys, attributes, values):
         for attribute, values_to_set in zip(attributes, values):
             if attribute in self.mapping_from_attribute_to_quantities:
-                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+                storage = self.mapping_from_attribute_to_quantities[attribute]
             else:
-                if not is_quantity(values_to_set):
-                    attribute_values = numpy.zeros(len(self.particle_keys))
-                else:
-                    attribute_values = VectorQuantity.zeros(
-                        len(self.particle_keys),
-                        values_to_set.unit,
-                    )
+                storage = InMemoryAttribute.new_attribute(attribute, len(self.particle_keys), values_to_set)
+                self.mapping_from_attribute_to_quantities[attribute] = storage
+        
+            storage.increase_to_length(len(self.particle_keys) + len(keys))
+            storage.set_values(slice(len(self.particle_keys), len(self.particle_keys) + len(keys)), values_to_set)
             
-                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-            
-            
-            if not is_quantity(attribute_values):
-                attribute_values = numpy.concat(attribute_values,values_to_set)
-                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-            else:
-                attribute_values.extend(values_to_set)
         
         old_length = len(self.particle_keys)
-        for attribute_values in self.mapping_from_attribute_to_quantities.values():
-            if len(attribute_values) == old_length:
-                zeros_for_concatenation = VectorQuantity.zeros(len(keys), attribute_values.unit)
-                attribute_values.extend(zeros_for_concatenation)
+        for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.iteritems()):
+            attribute_values.increase_to_length(len(self.particle_keys) + len(keys))
                 
         self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
         self.reindex()
@@ -95,12 +83,10 @@ class InMemoryAttributeStorage(AttributeStorage):
             
         results = []
         for attribute in attributes:
-            attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-            if indices is None:
-                selected_values = attribute_values
-            else:
-                selected_values = attribute_values.take(indices)
-            
+            storage = self.mapping_from_attribute_to_quantities[attribute]
+        
+            selected_values = storage.get_values(indices)
+        
             results.append(selected_values)
         
         return results
@@ -112,35 +98,28 @@ class InMemoryAttributeStorage(AttributeStorage):
             indices = particles
         
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
+    
             if attribute in self.mapping_from_attribute_to_quantities:
-                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+                storage = self.mapping_from_attribute_to_quantities[attribute]
             else:
-                if is_quantity(values_to_set):
-                    attribute_values = VectorQuantity.zeros(
-                        len(self.particle_keys),
-                        values_to_set.unit,
-                    )
-                else:
-                    dtype = numpy.asanyarray(values_to_set).dtype
-                    attribute_values = numpy.zeros(len(self.particle_keys), dtype = dtype)
-                    
-                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+                storage = InMemoryAttribute.new_attribute(attribute, len(self.particle_keys), values_to_set)
+                self.mapping_from_attribute_to_quantities[attribute] = storage
             
             try:
-                attribute_values.put(indices, values_to_set)
+                storage.set_values(indices, values_to_set)
             except ValueError as ex:
                 # hack to set values between 
                 # with quanities with units.none
                 # and when values are stored without units
                 # need to be removed when units.none is completely gone
-                if is_quantity(values_to_set) and not is_quantity(attribute_values):
+                if is_quantity(values_to_set) and not storage.has_units():
                     if not values_to_set.unit.base:
-                        attribute_values.put(indices, values_to_set.value_in(units.none))
+                        storage.set_values(indices, values_to_set.value_in(units.none))
                     else:
                         raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
-                elif not is_quantity(values_to_set) and is_quantity(attribute_values):
-                    if not attribute_values.unit.base:
-                        attribute_values.put(indices, units.none.new_quantity(values_to_set))
+                elif not is_quantity(values_to_set) and storage.has_units():
+                    if not storage.quantity.unit.base:
+                        storage.set_values(indices, units.none.new_quantity(values_to_set))
                     else:
                         raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
                 else:
@@ -174,7 +153,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         
         index = self.get_indices_of(particle_key)
         
-        return attribute_values[index]
+        return attribute_values.get_value(index)
    
     def get_indices_of(self, particles):
         if particles is None:
@@ -187,11 +166,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         indices = self.get_indices_of(keys)
         
         for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.iteritems()):
-            if is_quantity(attribute_values):
-                attribute_values._number = numpy.delete(attribute_values.number, indices)
-            else:
-                attribute_values = numpy.delete(attribute_values, indices)
-                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+            attribute_values.remove_indices(indices)
             
         
         self.particle_keys = numpy.delete(self.particle_keys,indices)
@@ -233,7 +208,8 @@ class InMemoryAttributeStorage(AttributeStorage):
             indices = self.get_indices_of(particle_key)
         else:
             indices = particle_key
-        return attribute_values[index]
+        
+        return attribute_values.get_value(index)
     
     
 class InMemoryGridAttributeStorage(object):
@@ -317,42 +293,6 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
 
     
 
-    def append_to_storage(self, keys, attributes, values):
-        for attribute, values_to_set in zip(attributes, values):
-            if attribute in self.mapping_from_attribute_to_quantities:
-                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-            else:
-                if not is_quantity(values_to_set):
-                    attribute_values = numpy.zeros(len(self.particle_keys))
-                else:
-                    attribute_values = VectorQuantity.zeros(
-                        len(self.particle_keys),
-                        values_to_set.unit,
-                    )
-                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-
-            attribute_values.extend(values_to_set)
-
-
-        old_length = len(self.particle_keys)
-        for attribute_values in self.mapping_from_attribute_to_quantities.values():
-            if len(attribute_values) == old_length:
-                zeros_for_concatenation = VectorQuantity.zeros(len(keys), attribute_values.unit)
-                attribute_values.extend(zeros_for_concatenation)
-
-        index = len(self.particle_keys)
-        self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
-
-        
-
-        for particle_key in keys:
-            self.mapping_from_particle_to_index[particle_key] = index
-            index += 1
-
-            
-
-    
-
     def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index
 
@@ -402,44 +342,6 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         self.sorted_indices = []
         self.keys_set = set([])
     
-    def append_to_storage(self, keys, attributes, values):
-        for attribute, values_to_set in zip(attributes, values):
-            if attribute in self.mapping_from_attribute_to_quantities:
-                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-            else:
-                if not is_quantity(values_to_set):
-                    attribute_values = numpy.zeros(len(self.particle_keys))
-                else:
-                    attribute_values = VectorQuantity.zeros(
-                        len(self.particle_keys),
-                        values_to_set.unit,
-                    )
-            
-                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-            
-            if not is_quantity(attribute_values):
-                attribute_values = numpy.concatenate((attribute_values,values_to_set))
-                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-            else:
-                attribute_values.extend(values_to_set)
-            
-        
-        old_length = len(self.particle_keys)
-        for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.iteritems()):
-            if len(attribute_values) == old_length:
-                
-                if not is_quantity(attribute_values):
-                    zeros_for_concatenation = numpy.zeros(len(keys), dtype=attribute_values.dtype)
-                    attribute_values = numpy.concatenate((attribute_values,zeros_for_concatenation))
-                    self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-                else:
-                    zeros_for_concatenation = VectorQuantity.zeros(len(keys), attribute_values.unit)
-                    attribute_values.extend(zeros_for_concatenation)
-                
-        self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
-        self.reindex()
-            
-    
     def has_key_in_store(self, key):
         return key in self.keys_set
         
@@ -459,7 +361,7 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         
         index = self.get_indices_of(particle_key)
         
-        return attribute_values[index]
+        return attribute_values.get_value(index)
    
     def get_indices_of(self, particles):
         if particles is None:
@@ -485,7 +387,8 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
             index = self.get_indices_of(particle_key)
         else:
             index = particle_key
-        return attribute_values[index]
+        
+        return attribute_values.get_value(index)
 
 
 def get_in_memory_attribute_storage_factory():
@@ -514,6 +417,25 @@ class InMemoryAttribute(object):
     
     def increase_to_length(self, newlength):
         pass
+    def copy(self):
+        pass
+
+    @classmethod
+    def new_attribute(cls, name, shape, input):
+        if is_quantity(input):
+            return InMemoryVectorQuantityAttribute(name, shape, input.unit)
+        elif hasattr(input, 'as_set'):
+            return InMemoryLinkedAttribute(name, shape, input.as_set()._original_set())
+        else:
+            dtype = numpy.asanyarray(input).dtype
+            return InMemoryUnitlessAttribute(name, shape, dtype)
+
+    def get_value(self, index):
+        pass
+
+    def remove_indices(self, indices):
+        pass
+
 class InMemoryVectorQuantityAttribute(InMemoryAttribute):
     
     def __init__(self, name, shape, unit):
@@ -528,7 +450,13 @@ class InMemoryVectorQuantityAttribute(InMemoryAttribute):
         return self.quantity[indices]
     
     def set_values(self, indices, values):
-        self.quantity[indices] = values
+        try:
+            self.quantity[indices] = values
+        except AttributeError:
+            if not is_quantity(values):
+                raise ValueError("Tried to put a non quantity value in a quantity")
+            else:
+                raise
     
     def get_shape(self):
         return self.quantity.shape
@@ -536,6 +464,8 @@ class InMemoryVectorQuantityAttribute(InMemoryAttribute):
 
     def increase_to_length(self, newlength):
         delta = newlength - len(self.quantity)
+        if delta == 0: 
+           return
         deltashape = list(self.quantity.shape)
         deltashape[0] = delta
     
@@ -544,6 +474,20 @@ class InMemoryVectorQuantityAttribute(InMemoryAttribute):
 
     def get_length(self):
         return len(self.quantity)
+
+    def copy(self):
+        result = type(self)(self.name, self.get_shape(), self.quantity.unit)
+        result.set_values(None, self.get_values(None))
+        return result
+
+    def get_value(self, index):
+        return self.quantity[index]
+
+    def remove_indices(self, indices):
+        self.quantity._number = numpy.delete(self.quantity.number, indices)
+
+    def has_units(self):
+        return True
 
 class InMemoryUnitlessAttribute(InMemoryAttribute):
     
@@ -567,12 +511,98 @@ class InMemoryUnitlessAttribute(InMemoryAttribute):
 
     def increase_to_length(self, newlength):
         delta = newlength - len(self.values)
+        if delta == 0: 
+           return
         deltashape = list(self.values.shape)
         deltashape[0] = delta
-
         zeros_for_concatenation =  numpy.zeros(deltashape, dtype = self.values.dtype)
-        self.values = numpy.concatenate(self.values ,zeros_for_concatenation)
+        self.values = numpy.concatenate([self.values, zeros_for_concatenation])
 
     def get_shape(self):
-        return self.quantity.shape
+        return self.values.shape
+
+    def copy(self):
+        result = type(self)(self.name, self.get_shape(), self.values.dtype)
+        result.set_values(None, self.get_values(None))
+        return result
+
+    def get_value(self, index):
+        return self.values[index]
+
+    def remove_indices(self, indices):
+        self.values = numpy.delete(self.values, indices)
+
+    def has_units(self):
+        return False
+
+
+class InMemoryLinkedAttribute(InMemoryAttribute):
+    
+    def __init__(self, name, shape, linked_set):
+        InMemoryAttribute.__init__(self, name)
+        
+        self.linked_set = linked_set
+        
+        self.values = numpy.ma.masked_all(
+            shape,
+            dtype = linked_set.get_all_keys_in_store().dtype
+        )
+        
+        
+    def get_values(self, indices):
+        return self.linked_set._masked_subset(self.values[indices])
+    
+    def set_values(self, indices, values):
+        if hasattr(values, 'get_all_keys_in_store'):
+            keys = values.get_all_keys_in_store()
+            mask = ~values.get_valid_particles_mask()
+            keys = numpy.ma.array(keys, dtype=self.values.dtype)
+            keys.mask = mask
+            self.values[indices] = keys
+        else:
+            if values is None:
+                self.values[indices] = ma.masked
+            else:
+                for index, key in zip(indices, values):
+                    if key is None:
+                        self.values[index] = ma.masked
+                    else:
+                        self.values[index] = key
+    
+    def get_length(self):
+        return self.values.shape
+        
+    def increase_to_length(self, newlength):
+        delta = newlength - len(self.values)
+        if delta == 0: 
+           return
+        deltashape = list(self.values.shape)
+        deltashape[0] = delta
+        zeros_for_concatenation =  numpy.ma.masked_all(deltashape, dtype = self.values.dtype)
+        self.values = numpy.ma.concatenate([self.values, zeros_for_concatenation])
+
+    def get_shape(self):
+        return self.values.shape
+
+    def copy(self):
+        result = type(self)(self.name, self.get_shape(), self.linked_set)
+        result.set_values(None, self.get_values(None))
+        return result
+
+    def get_value(self, index):
+        key = self.values[index]
+        if key is ma.masked:
+            return None
+        else:
+            return self.linked_set._get_particle_unsave(key)
+
+    def remove_indices(self, indices):
+        newmask = numpy.delete(self.values.mask, indices)
+        newvalues = numpy.delete(self.values.data, indices)
+        
+        self.values = numpy.ma.array(newvalues, mask = newmask) 
+
+    def has_units(self):
+        return False
+
 

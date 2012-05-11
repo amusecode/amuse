@@ -432,7 +432,8 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
     def set_legacy_value(self,  parameter, object, number):
         if self.set_method is None:
             raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
-    
+         
+        
         error = getattr(object, self.set_method)(number)
         if error < 0:
             raise ParameterException(object, self.name, error, False)

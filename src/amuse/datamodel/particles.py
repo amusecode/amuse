@@ -13,6 +13,7 @@ from amuse.units.quantities import zero
 from amuse.units.quantities import AdaptingVectorQuantity
 
 import numpy
+from numpy import ma
 
 class AbstractParticleSet(AbstractSet):
     """
@@ -223,7 +224,7 @@ class AbstractParticleSet(AbstractSet):
         <amuse.datamodel.particles.Particle object at ...>
         >>> particles.x = [4.0 , 3.0] | units.m
         >>> particles.y = [5.0 , 2.0] | units.km
-        >>> print particles 
+        >>> print particles.to_string()
                          key            x            y
                            -            m           km
         ====================  ===========  ===========
@@ -269,7 +270,11 @@ class AbstractParticleSet(AbstractSet):
             else:
                 if hasattr(quantity, 'unit'):
                     if numpy.issubdtype(quantity.number.dtype, float):
-                        values_to_show = map(format_float,quantity.number)
+                        print quantity
+                        try:
+                            values_to_show = map(format_float,quantity.number)
+                        except ValueError:
+                            values_to_show = map(format_str11,quantity.number)
                     else:
                         values_to_show = map(format_str11,quantity.number)
                 else:
@@ -325,6 +330,7 @@ class AbstractParticleSet(AbstractSet):
         values = self.get_values_in_store(keys, attributes)
         result = Particles()
         result.add_particles_to_store(keys, attributes, values)
+        
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
@@ -590,7 +596,13 @@ class AbstractParticleSet(AbstractSet):
         removed_keys = list(removed_keys)
         if removed_keys:
             other_particles.remove_particles_from_store(removed_keys)
+    
+    def compress(self):
+        return self
         
+    def get_valid_particles_mask(self):
+        return numpy.ones(len(self), dtype = numpy.bool)
+    
     def as_set(self):
         """
         Returns a subset view on this set. The subset
@@ -626,9 +638,9 @@ class AbstractParticleSet(AbstractSet):
         
         """
         keys = self.get_all_keys_in_store()
+        
         #values = self._get_values(keys, attributes) #fast but no vectors
         values = map(lambda x: getattr(self, x), attributes)
-        
         selected_keys = []
         for index in range(len(keys)):
             key = keys[index]
@@ -670,7 +682,6 @@ class AbstractParticleSet(AbstractSet):
         keys = self.get_all_keys_in_store()
         #values = self._get_values(keys, attributes) #fast but no vectors
         quantities = [getattr(self, x) for x in attributes]
-        
         selections = selection_function(*quantities)
         selected_keys =  numpy.compress(selections, keys)
         
@@ -721,6 +732,9 @@ class AbstractParticleSet(AbstractSet):
         
     def _subset(self, keys):
         return ParticlesSubset(self._original_set(), keys)
+        
+    def _masked_subset(self, keys):
+        return ParticlesMaskedSubset(self._original_set(), keys)
     
     def reversed(self):
         """
@@ -1498,6 +1512,14 @@ class ParticlesSubset(AbstractParticleSet):
     def _get_version(self):
         return self._private.particles._get_version()
     
+    def compress(self):
+        keys = self._private.keys
+        return self._subset(keys[numpy.logical_and(keys > 0 ,  keys < 18446744073709551615L)])
+        
+    def get_valid_particles_mask(self):
+        keys = self._private.keys
+        return numpy.logical_and(keys > 0 ,  keys < 18446744073709551615L)
+    
     def unconverted_set(self):
         return ParticlesSubset(self._private.particles.unconverted_set(), self._private.keys)
             
@@ -1599,6 +1621,153 @@ class ParticlesSubset(AbstractParticleSet):
         return self
 
 
+class ParticlesMaskedSubset(ParticlesSubset):
+    """A subset of particles. Attribute values are not
+    stored by the subset. The subset provides a limited view
+    to the particles. Unlike the normal subset the masked subset
+    can store None values.
+    """
+    
+    def __init__(self, particles, keys):
+        AbstractParticleSet.__init__(self, particles)
+        
+        self._private.particles = particles
+        
+        
+        self._private.keys = numpy.ma.array(keys, dtype='uint64').copy()
+        validkeys = self._private.keys.compressed()
+        if len(validkeys) > 0:
+            self._private.set_of_keys = set(validkeys)
+        else:
+            self._private.set_of_keys = set([])
+            
+        self._private.version = -1
+        self._private.indices = None
+    
+    def compress(self):
+        return self._subset(self._private.keys.compressed())
+        
+    def get_valid_particles_mask(self):
+        return ~self._private.keys.mask
+    
+    def __iter__(self):
+        original_set = self._original_set()
+        for key in self._private.keys :
+            if key is ma.masked:
+                yield None
+            else:
+                yield original_set._get_particle_unsave(key)
+        
+    def __getitem__(self, index):
+        keys = self.get_all_keys_in_store()[index]
+        
+        if not keys is ma.masked and hasattr(keys, '__iter__'):
+            if numpy.all(~ keys.mask):
+                return self._subset(keys.data)
+            else:
+                return ParticlesMaskedSubset(self._original_set(),keys)
+        else:
+            key = keys
+            if not key is ma.masked:
+                return self._original_set()._get_particle_unsave(key)
+            else:
+                return None
+    
+    def _get_version(self):
+        return self._private.particles._get_version()
+    
+    def unconverted_set(self):
+        return ParticlesMaskedSubset(self._private.particles.unconverted_set(), self._private.keys)
+            
+    def add_particles_to_store(self, keys, attributes = [], values = []):
+        raise Exception("Cannot add particles to a masked subset")
+        
+    def remove_particles_from_store(self, keys):
+        raise Exception("Cannot remove particles from a masked subset")
+        
+    
+    def get_values_in_store(self, keys, attributes, by_key = True):
+        if keys is None:
+            keys = self.get_all_keys_in_store()
+        if by_key is True:
+            mask = numpy.ma.array(keys, dtype='uint64').mask
+        else:
+            mask = keys == -1
+            
+        if numpy.all(~mask):
+            return self._private.particles.get_values_in_store(keys, attributes, by_key = by_key)
+        
+        
+        subkeys = keys[~mask]
+        subvalues = self._private.particles.get_values_in_store(subkeys, attributes, by_key = by_key)
+        
+        raise Exception("not implemented more of this")
+        
+        
+    def set_values_in_store(self, keys, attributes, values, by_key = True):
+        if keys is None:
+            keys = self.get_all_keys_in_store()
+        
+        if by_key is True:
+            mask = keys.mask
+        else:
+            mask = keys == -1
+            
+        if numpy.all(~mask):
+            return self._private.particles.get_values_in_store(keys, attributes, by_key = by_key)
+        
+        subkeys = keys[~mask]
+        raise Exception("not implemented more of this")
+        
+    def get_attribute_names_defined_in_store(self):
+        return self._private.particles.get_attribute_names_defined_in_store()
+        
+    def get_all_keys_in_store(self):
+        return self._private.keys
+        
+    def get_all_indices_in_store(self):
+        if not self._private.version == self._private.particles._get_version():
+            self._private.indices = -1 * numpy.ones(len(self._private.keys()), dtype = numpy.int32)
+            mask = self._private.keys.mask
+            mask = ~mask
+            self._private.indices[mask] = self._private.particles.get_indices_of_keys(self._private.keys[mask])
+            self._private.version = self._private.particles._get_version()
+        
+        return self._private.indices
+        
+    def has_key_in_store(self, key):
+        return key in self._private.set_of_keys        
+
+    def get_indices_of_keys(self, keys):
+        result = -1 * numpy.ones(len(keys), dtype = numpy.int32)
+        self._private.indices[~keys.mask] = self._private.particles.get_indices_of_keys(keys[~keys.mask])
+        return result
+    
+    def previous_state(self):
+        return MaskedParticlesSubset(self._private.particles.previous_state(), self._private.keys)
+        
+    def copy_to_memory(self):
+        attributes = self.get_attribute_names_defined_in_store()
+        keys = self.get_all_keys_in_store()
+        keys = keys[~keys.mask] 
+        values = self.get_values_in_store(keys, attributes)
+        result = Particles()
+        result.add_particles_to_store(keys, attributes, values)
+        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
+        return result
+        
+    def __str__(self):
+        """
+        Display string of a particle subset.
+        
+        >>> particles = Particles(keys=[1,2])
+        >>> particles[0].child = particles[1]
+        >>> print particles.child
+        [2L, None]
+        """
+        keys = numpy.where(self.get_valid_particles_mask(), self._private.keys, [None])
+        return str(list(keys))
+        
 class ParticlesOverlay(AbstractParticleSet):
     """An overlay of of a particles set. The overlay
     stores extra attributes for the particles in the
@@ -1833,12 +2002,20 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         
         self._private.particles = particles
         self._private.converter = converter
+    
+    def compress(self):
+        return ParticlesWithUnitsConverted(self._private.particles.compress(), self._private.converter)
+        
+    def get_valid_particles_mask(self):
+        return self._private.particles.get_valid_particles_mask()
         
     def __getitem__(self, index):
         
         keys = self.get_all_keys_in_store()[index]
         
-        if hasattr(keys, '__iter__'):
+        if keys is ma.masked:
+            return None
+        elif hasattr(keys, '__iter__'):
             return self._subset(keys)
         else:
             return Particle(keys, self)
@@ -1866,9 +2043,12 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     def get_values_in_store(self, keys, attributes, by_key = True):
         values = self._private.particles.get_values_in_store(keys, attributes, by_key = by_key)
         converted_values = []
-        for quantity in values:
-            converted_quantity = self._private.converter.from_target_to_source(quantity)
-            converted_values.append(converted_quantity)
+        for quantity in values: 
+            if hasattr(quantity, 'as_set'):
+                converted_values.append(ParticlesWithUnitsConverted(quantity, self._private.converter))
+            else:
+                converted_quantity = self._private.converter.from_target_to_source(quantity)
+                converted_values.append(converted_quantity)
         return converted_values
         
     def set_values_in_store(self, keys, attributes, values, by_key = True):
@@ -2042,10 +2222,10 @@ class Particle(object):
         if is_quantity(new_value_for_the_attribute):
             self.particles_set._set_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)
         elif isinstance(new_value_for_the_attribute, Particle):
-            self.particles_set._set_value_of_attribute(
-                self.key, 
-                name_of_the_attribute, 
-                new_value_for_the_attribute.key | units.object_key
+            self.particles_set.set_values_in_store(
+                [self.key], 
+                [name_of_the_attribute], 
+                [new_value_for_the_attribute.as_set()]#.key | units.object_key
             )
         else:
             self.particles_set._set_unitless_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)

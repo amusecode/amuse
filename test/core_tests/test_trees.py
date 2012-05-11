@@ -23,8 +23,8 @@ class TestBinaryTree(amusetest.TestCase):
         self.assertEquals(particles[0].child1.mass, 1 | units.kg)
         self.assertEquals(particles[1].child1, None)
     
-        children1 = particles.child1.select_array(lambda x  : x > 0, ['key',])
-        children2 = particles.child2.select_array(lambda x  : x > 0, ['key',])
+        children1 = particles.child1.compress()
+        children2 = particles.child2.compress()
         children = children1 + children2
         roots = particles - children
     
@@ -43,15 +43,14 @@ class TestBinaryTree(amusetest.TestCase):
         self.assertEquals(particles[n-1].child1.mass, 0 | units.kg)
         self.assertEquals(particles[n-1].child2.mass, 1 | units.kg)
     
-        children1 = particles.child1.select_array(lambda x  : x > 0, ['key',])
-        children2 = particles.child2.select_array(lambda x  : x > 0, ['key',])
+        children1 = particles.child1.compress()
+        children2 = particles.child2.compress()
         children = children1 + children2
         roots = particles - children
     
         self.assertEquals(len(roots), n - 2)
         self.assertEquals(len(children), 2)
-    
-        binaries = particles.select_array(lambda x  : x.key > 0, ['child1',])
+        binaries = particles.select_array(lambda x : x.get_valid_particles_mask(), ['child1',])
         self.assertEquals(len(binaries), 1)
     def test3(self):
         n = 10
@@ -64,13 +63,13 @@ class TestBinaryTree(amusetest.TestCase):
         
         self.assertEquals(particles[0].child1.child1.mass, 3 | units.kg)
     
-        binaries = particles.select_array(lambda x : x.key > 0, ["child1",])
+        binaries = particles.select_array(lambda x : x.get_valid_particles_mask(), ["child1",])
     
         print len(binaries)
         self.assertEquals(len(binaries), 2)
     
-        binaries_children1 = binaries.child1.select_array(lambda x : x > 0, ["key",]).select_array(lambda x : x.key > 0, ["child1",])
-        binaries_children2 = binaries.child2.select_array(lambda x : x > 0, ["key",]).select_array(lambda x : x.key > 0, ["child1",])
+        binaries_children1 = binaries.child1.compress().select_array(lambda x : x.get_valid_particles_mask(), ["child1",])
+        binaries_children2 = binaries.child2.compress().select_array(lambda x : x.get_valid_particles_mask(), ["child1",])
         binaries_roots = binaries - (binaries_children1 + binaries_children2)
     
         self.assertEquals(len(binaries_roots), 1)

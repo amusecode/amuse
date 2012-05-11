@@ -100,7 +100,37 @@ def read_set_from_file(
 
 
 class ReportTable(object):
+    """
+    Report quantities and values to a file.
     
+    
+    :argument filename: name of the file to write the data to
+    :argument format: name of a registered format ('csv' or 'txt')
+    
+    All other keywords are set as attributes on the fileformat processor. To
+    determine the supported options for a processor call 
+    :func:`get_options_for_format`
+    
+    Important options fot text and comma separated files are:
+    
+    :argument attribute_types: list of the units to store the values in
+    :argument attribute_names: list of the names of for the values 
+        (used in the header of the file and when using add_row with keyword parameters)
+    
+    
+    Writes data per row to a file. Ideal for storing intermediate values of
+    one Particle or one Gridpoint during a run.
+    
+    Example usage::
+    
+        report = ReportTable(
+            "hrdiagram.txt", "txt", 
+            attribute_types=(units.Myr, units.K, units.LSun), 
+            attribute_names=('age', 'temperature_at_time', 'luminosity_at_time')
+        )
+        report.add_row(particle.age, particle.temperature_at_time, particle.luminosity_at_time) 
+    
+    """
     
     def __init__(
         self,
@@ -108,19 +138,6 @@ class ReportTable(object):
         format = 'csv', 
         **format_specific_keyword_arguments
         ):
-        """
-        Write data per row to a file.
-        
-        :argument filename: name of the file to write the data to
-        :argument format: name of a registered format or
-            a :class:`FileFormatProcessor` subclass (must be a 
-            class and not an instance)
-        
-        All other keywords are set as attributes on the fileformat processor. To
-        determine the supported options for a processor call 
-        :func:`get_options_for_format`
-        """
-    
         processor_factory = _get_processor_factory(format)
     
         self.processor = processor_factory(filename, format = format)
@@ -129,6 +146,26 @@ class ReportTable(object):
         self.processor.write_header()
         
     def add_row(self, *fields, **fieldsbyname):
+        """
+        Add a row to the report, columns can be added by name or by 
+        position in list. If columns are given by name the order
+        does not matter and will alway follow to order given in the 
+        'attribute_names' option specified when creating the ReportTable.
+        
+        Example usage::
+    
+            report.add_row(
+                particle.age, 
+                particle.temperature_at_time, 
+                particle.luminosity_at_time
+            )
+            
+            report.add_row(
+                temperature_at_time = particle.temperature_at_time,
+                age = particle.age,
+                luminosity_at_time = particle.luminosity_at_time
+            )
+        """
         row = list(fields)
         if len(fieldsbyname) > 0:
             names = self.processor.attribute_names

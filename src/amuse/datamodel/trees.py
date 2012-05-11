@@ -32,20 +32,18 @@ class BinaryTreesOnAParticleSet(object):
         binaries = self._binaries()
         binaries_children1 = self._get_inner_nodes(binaries, self.name_of_firstchild_attribute)
         binaries_children2 = self._get_inner_nodes(binaries, self.name_of_secondchild_attribute)
-    
+        
         return (binaries - (binaries_children1 + binaries_children2))
         
     def _binaries(self):
-        return self.particles_set.select_array(lambda x : x.key > 0, [self.name_of_firstchild_attribute,])
-
+        return self.particles_set.select_array(lambda x : x.get_valid_particles_mask(), [self.name_of_firstchild_attribute,])
 
     def _get_inner_nodes(self, set, name_of_attribute):
-        children = getattr(set, name_of_attribute)
-        return children.select_array(lambda x : x > 0, ["key",]).select_array(lambda x : x.key > 0, [name_of_attribute,])
+        descendants = self._get_descendant_nodes(set, name_of_attribute)
+        return descendants.select_array(lambda x : x.get_valid_particles_mask(), [name_of_attribute,])
 
     def _get_descendant_nodes(self, set, name_of_attribute):
-        children = getattr(set, name_of_attribute)
-        return children.select_array(lambda x : x > 0, ["key",])
+        return getattr(set, name_of_attribute).compress()
         
         
 class BinaryTreeOnParticle(object):

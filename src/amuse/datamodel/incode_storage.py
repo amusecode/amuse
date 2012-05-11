@@ -820,6 +820,9 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         AbstractInCodeAttributeStorage.__init__(self, code_interface, setters, getters, extra_keyword_arguments_for_getters_and_setters)
         self.get_range_method = get_range_method
             
+    def can_extend_attributes(self):
+        return False
+        
     def storage_shape(self):
         try:
             minmax_per_dimension = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)

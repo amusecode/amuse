@@ -351,6 +351,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
             
         def __init__(self):
             self.masses = {}
+            self.links = {}
             
         def get_mass(self, id):
             masses = []
@@ -366,13 +367,29 @@ class TestParticlesWithBinding(amusetest.TestCase):
                 
             return ( [0] * len(id),)
             
+            
+        def get_link(self, id):
+            result = []
+            errors = []
+            for x in id:
+                result.append(self.links[x])
+                errors.append(0)
+            return ( result, errors, )
+        
+        def set_link(self, id, link):
+            for i,l in zip(id,link):
+                self.links[i] = l
+                
+            return ( [0] * len(id),)
+            
         def new_particle(self, mass):
             ids = []
             errors = []
             
             for x in mass:
                 id = len(self.masses)
-                self.masses[len(self.masses)]  = x
+                self.masses[id]  = x
+                self.links[id]  = -1
                 ids.append(id)
                 errors.append(0)
                 
@@ -382,6 +399,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
             errors = []
             for x in ids:
                 del self.masses[x]
+                del self.links[x]
                 errors.append(0)
             return errors
             
@@ -399,6 +417,8 @@ class TestParticlesWithBinding(amusetest.TestCase):
         def define_methods(self, handler):
             handler.add_method('get_mass',(handler.NO_UNIT,), (units.g, handler.ERROR_CODE))
             handler.add_method('set_mass',(handler.NO_UNIT, units.g,), (handler.ERROR_CODE,))
+            handler.add_method('get_link',(handler.NO_UNIT,), (handler.LINK('particles'), handler.ERROR_CODE))
+            handler.add_method('set_link',(handler.NO_UNIT, handler.LINK('particles'),), (handler.ERROR_CODE,))
             handler.add_method('new_particle',(units.g,), (handler.INDEX, handler.ERROR_CODE))
             handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
             handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
@@ -409,6 +429,8 @@ class TestParticlesWithBinding(amusetest.TestCase):
             handler.set_delete('particles', 'delete_particle')
             handler.add_setter('particles', 'set_mass')
             handler.add_getter('particles', 'get_mass', names = ('mass',))
+            handler.add_setter('particles', 'set_link')
+            handler.add_getter('particles', 'get_link', names = ('link',))
         
     
     def test1(self):
@@ -589,9 +611,44 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         self.assertEquals(remote_particles.mass, local_particles.mass)
 
+            
+    def test8(self):
+        interface = self.TestInterface()
+        
+        local_particles1 = datamodel.Particles(2)
+        local_particles1.mass = units.kg.new_quantity([3.0, 4.0])
         
         
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles1)
         
+        interface.set_link([0], remote_particles[1].as_set())
+        self.assertEquals(interface.legacy_interface.links[0], 1)
+        p = interface.get_link([0])
+        self.assertEquals(p[0], remote_particles[1])
+        self.assertEquals(p[0], local_particles1[1])
+        
+        
+    def test9(self):
+        interface = self.TestInterface()
+        
+        local_particles1 = datamodel.Particles(2)
+        local_particles1.mass = units.kg.new_quantity([3.0, 4.0])
+        
+        
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles1)
+        self.assertEquals(remote_particles.link[0], None)
+        self.assertEquals(remote_particles.link[1], None)
+        remote_particles[0].link = remote_particles[1]
+        self.assertEquals(remote_particles.link[0], remote_particles[1])
+        self.assertEquals(remote_particles.link[0], local_particles1[1])
+        self.assertEquals(remote_particles.link[1], None)
+        channel = remote_particles.new_channel_to(local_particles1)
+        channel.copy_all_attributes()
+        self.assertEquals(local_particles1.link[0], remote_particles[1])
+        self.assertEquals(local_particles1.link[0], local_particles1[1])
+        self.assertEquals(local_particles1.link[1], None)
         
 class TestParticlesWithUnitsConverted(amusetest.TestCase):
     
@@ -658,12 +715,63 @@ class TestParticlesWithUnitsConverted(amusetest.TestCase):
         
         
 
+class TestParticlesWithReferences(amusetest.TestCase):
+    
+    def test1(self):
+        
+        set = datamodel.Particles(3)
+        parent = set[0]
+        child1 = set[1]
+        child2 = set[2]
+        
+        set.mass = [2,3,4] | units.kg
+        parent.child1 = child1
+        parent.child2 = child2
+        child1.sibling = child2
+        
+        print set.child1
+        self.assertEquals(len(set.child1), 3)
+        self.assertEquals(len(set.child1.compress()), 1)
+        self.assertEquals(len(set.child2), 3)
+        self.assertEquals(len(set.child2.compress()), 1)
+        
+        self.assertAlmostRelativeEqual(parent.child1.mass, 3 | units.kg)
 
+    def test2(self):
+        
+        
+        set = datamodel.Particles(3)
+        parent = set[0]
+        child1 = set[1]
+        child2 = set[2]
+        
+        set.mass = [2,3,4] | units.kg
+        
+        
+        parent.child1 = child1
+        parent.child2 = child2
+        child1.sibling = child2
+        
+        
+        convert_nbody = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+        set = datamodel.ParticlesWithUnitsConverted(
+            set, 
+            convert_nbody.as_converter_from_generic_to_si()
+        )
+        self.assertEquals(len(set.child1), 3)
+        self.assertEquals(len(set.child1.compress()), 1)
+        self.assertEquals(len(set.child2), 3)
+        self.assertEquals(len(set.child2.compress()), 1)
+        
+        self.assertAlmostRelativeEqual(set[0].child1.mass, 0.3 | nbody_system.mass)
+        self.assertAlmostRelativeEqual(set[0].child1.mass, 0.3 | nbody_system.mass)
+        
 class TestParticlesWithChildren(amusetest.TestCase):
     
     def test1(self):
         
         all = datamodel.Particles(3)
+        
         parent = all[0]
         child1 = all[1]
         child2 = all[2]
@@ -693,7 +801,9 @@ class TestParticlesWithChildren(amusetest.TestCase):
         
         parent.add_child(child1)
         parent.add_child(child2)
-        print all
+        outputstr = str(all)
+        print outputstr
+        self.assertTrue("  4.000e+00         None" in outputstr)
         code1.particles.add_particles(parent.as_set())
         code2.particles.add_particles(parent.children())
         

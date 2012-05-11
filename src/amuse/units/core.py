@@ -320,16 +320,20 @@ class unit(object):
     def is_non_numeric(self):
         return False
     
-    
-        
-
     def is_generic(self):
         return False
-    
-    
-
+        
     def is_none(self):
         return False
+        
+    def convert_result_value(self, method, definition, value):
+        return self.new_quantity(value)
+         
+    def convert_argument_value(self, method, definition, value):
+        return value.value_in(self)
+         
+    def append_result_value(self, method, definition, value, result):
+        result.append(self.convert_result_value(method, definition, value))
     
     
 class base_unit(unit):
