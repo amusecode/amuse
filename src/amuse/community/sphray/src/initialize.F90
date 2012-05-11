@@ -293,7 +293,7 @@ subroutine do_ray_planning()
 
 
   100 format(A,  T8,A,      T22,A,      T36,A,      T50,A,      T64,A)
-  101 format(I3, T8,ES12.6, T22,ES12.6, T36,ES12.6, T50,ES12.6, T64,ES12.6)
+  101 format(I3, T8,ES13.6, T22,ES13.6, T36,ES13.6, T50,ES13.6, T64,ES13.6)
 
   write(lun,*) "ray plan in code units"
   write(lun,100) "snap", "t @ snap", "t start", "t end", "dt", "Src rays"
@@ -336,7 +336,7 @@ end subroutine do_ray_planning
 !> when a new particle snapshot is read in, this routine should be called
 !! to initialize some global variables.
 subroutine initialize_global_variables()
-  use ray_mod, only: raystatbuffsize
+
 
   character(clen), parameter :: myname="initialize_global_variables"
   logical, parameter :: crash=.true.
@@ -388,11 +388,6 @@ subroutine initialize_global_variables()
   GV%srcdata_file = trim(GV%OutputDir) // "/source_data.log"
   call open_formatted_file_w(GV%srcdata_file,GV%srcdatalun)
 
-  GV%raystat_file = trim(GV%OutputDir) // "/raystats.dat"
-  if (GV%raystats) then
-     raystatbuffsize = nrays / 10
-     call open_unformatted_file_w(GV%raystat_file, GV%raystatlun)
-  end if
 
 
                  

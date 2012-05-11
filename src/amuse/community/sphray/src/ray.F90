@@ -25,12 +25,7 @@ public :: src_ray_part_intersection
 public :: src_ray_cell_intersection
 public :: src_ray_pluecker
 
-public :: raystatbuffsize
-public :: raystat_type
 
-
-
-integer(i8b) :: raystatbuffsize 
 real(r8b), parameter :: zero = 0.0d0
 real(r8b), parameter :: one = 1.0d0
 
@@ -52,13 +47,6 @@ type src_ray_type
 end type src_ray_type
 
 
-!> ray stats that can be output for each ray
-!-----------------------------------------------------------------------
-type raystat_type
-   integer(i4b) :: srcn
-   real(r4b) :: start(3)
-   real(r4b) :: ryd
-end type raystat_type
 
 
 
@@ -89,25 +77,41 @@ contains
   
 !  set the direction of the ray from the emmission profile (src%EmisPrf)
 !     0  = isotropic
-!    -1  = towards +z
-!    -2  = towards -z
+!    -1  = low z wall, towards +z
+!    -2  = high z wall, towards -z
 !
 !  note that for all point sources the luminosity is interpreted as a Flux 
 !  [photons/s].  
 
     select case (src%EmisPrf)
        
-    ! this makes rays go in -z direction  
+    ! this makes rays go in -z direction from the high z wall  
     !-----------------------------------------------------------------------  
     case(-2)
+
+       ray%start(1) = box%bots(1) + &
+            genrand_real1() * (box%tops(1) - box%bots(1))
+
+       ray%start(2) = box%bots(2) + &
+            genrand_real1() * (box%tops(2) - box%bots(2))
+
+       ray%start(3) = box%tops(3) 
 
        ray%dir(1) = 0.0
        ray%dir(2) = 0.0
        ray%dir(3) = -1.0       
        
-    ! this makes rays go in +z direction 
+    ! this makes rays go in +z direction from the low z wall 
     !-----------------------------------------------------------------------  
     case(-1)
+
+       ray%start(1) = box%bots(1) + &
+            genrand_real1() * (box%tops(1) - box%bots(1))
+
+       ray%start(2) = box%bots(2) + &
+            genrand_real1() * (box%tops(2) - box%bots(2))
+
+       ray%start(3) = box%bots(3) 
 
        ray%dir(1) = 0.0
        ray%dir(2) = 0.0
@@ -117,8 +121,10 @@ contains
     !-----------------------------------------------------------------------  
     case(0)
 
+       ray%start = src%pos
+
        r=2.0d0 
-       do while ( r .GT. 1.0d0 .and. r .NE. 0.0d0 )
+       do while ( r > 1.0d0 .and. r /= 0.0d0 )
           xx=(2.0d0 * genrand_real1()-1.0d0)   
           yy=(2.0d0 * genrand_real1()-1.0d0)   
           zz=(2.0d0 * genrand_real1()-1.0d0)   
@@ -137,8 +143,6 @@ contains
        
     end select
     !-----------------------------------------------------------------------  
-
-    ray%start = src%pos
 
     if ( present(length) ) then
        ray%length = length

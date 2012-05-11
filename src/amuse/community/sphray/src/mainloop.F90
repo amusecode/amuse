@@ -47,8 +47,6 @@ contains
     integer, parameter :: verb=1
     character(clen) :: str,fmt
 
-    type(raystat_type) :: raystats(raystatbuffsize)
-    integer(i8b) :: raystatcnt
     type(gadget_constants_type) :: gconst
 
     !  local counters 
@@ -74,8 +72,6 @@ contains
 #endif
     
     
-    raystatcnt = 0
-    
     ! loop over the snapshots 
     !=========================
     snaps: do snapn = GV%StartSnapNum, GV%EndSnapNum
@@ -92,9 +88,7 @@ contains
        call prepare_raysearch(psys, globalraylist)
        
       
-       if (GV%raystats) then
-          write(GV%raystatlun) PLAN%snap(snapn)%SrcRays, raystatbuffsize 
-       endif
+
        
 
        if(GV%JustInit) then
@@ -148,21 +142,6 @@ contains
           srcray = .true.
           call update_raylist(globalraylist,psys%par,psys%box,srcray)
                     
-          if (GV%raystats) then
-             
-             raystatcnt = raystatcnt + 1
-             
-             raystats(raystatcnt)%srcn  = srcn
-             raystats(raystatcnt)%start = globalraylist%ray%start  
-             raystats(raystatcnt)%ryd   = globalraylist%ray%freq
-             
-             if (raystatcnt == raystatbuffsize) then
-                write(GV%raystatlun) raystats
-                flush(GV%raystatlun)
-                raystatcnt = 0
-             end if
-                          
-          end if
           
                               
           

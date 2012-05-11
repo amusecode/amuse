@@ -1,28 +1,40 @@
 module amuse_sphrayMod
-  use myf03_mod
-  use global_mod, only: psys, PLAN,GV
-  use particle_system_mod, only: particle_type,source_type
-  implicit none
+use myf03_mod
+use global_mod, only: psys, PLAN,GV
+use particle_system_mod, only: particle_type,source_type
+implicit none
   
-  type(particle_type), allocatable :: par_buffer(:)
-  type(source_type), allocatable :: src_buffer(:)
+type(particle_type), allocatable :: par_buffer(:)
+type(source_type), allocatable :: src_buffer(:)
   
-  integer(i8b) :: npar_buffer=0,nsrc_buffer=0
-  integer(i8b) :: nmaxpar_buffer=100000,nmaxsrc_buffer=10000
+integer(i8b) :: npar_buffer=0,nsrc_buffer=0
+integer(i8b) :: nmaxpar_buffer=100000
+integer(i8b) :: nmaxsrc_buffer=10000
 
-  integer(i8b) :: tot_id=0
-  integer(i8b) :: ngas=0,nsrc=0
-  integer, allocatable :: gid(:),sid(:)
-  logical :: gas_searcheable=.FALSE.,src_searcheable=.FALSE.
+integer(i8b) :: tot_id=0
+integer(i8b) :: ngas=0,nsrc=0
+integer, allocatable :: gid(:),sid(:)
+logical :: gas_searcheable=.FALSE.
+logical :: src_searcheable=.FALSE.
 
-  character(len=clen) :: data_directory='./'
-  character(len=clen) :: SpectraFile='./spectra/thermal1e5.cdf'        !< [Config File] file containing spectra tables
-  character(len=clen) :: b2cdFile='./column_depth/latmon_b2cd_table.txt'           !< [Config File] file containing b2cd tables
-  character(len=clen) :: AtomicRatesFile='./atomic_rates/atomic_rates_Hui.txt'    !< [Config File] file containnig atomic rates tables
+character(len=clen) :: data_directory='./'
 
-  real(r8b) :: default_spectral_type = -1.
+!< [Config File] file containing spectra tables
+character(len=clen) :: SpectraFile='./spectra/thermal1e5.cdf'
+!< [Config File] file containing b2cd tables
+character(len=clen) :: b2cdFile='./column_depth/latmon_b2cd_table.txt'
+!< [Config File] file containnig atomic rates tables     
+character(len=clen) :: AtomicRatesFile='./atomic_rates/atomic_rates_Hui.txt'
+
+real(r8b) :: default_spectral_type = -1.
+
+
+
 
  contains
+
+
+
 
 subroutine sphray_set_data_directory(x)
   character(len=clen) :: x
@@ -162,9 +174,12 @@ subroutine sphray_commit_parameters
   use atomic_rates_mod, only: read_atomic_rates_file, get_atomic_rates
   use atomic_rates_mod, only: write_atomic_rates_to_log_file
   
-  GV%SpectraFile=trim(data_directory)//'/'//trim(SpectraFile)        !< [Config File] file containing spectra tables
-  GV%b2cdFile=trim(data_directory)//'/'//trim(b2cdFile)           !< [Config File] file containing b2cd tables
-  GV%AtomicRatesFile=trim(data_directory)//'/'//trim(AtomicRatesFile)    !< [Config File] file containnig atomic rates tables
+  !< [Config File] file containing spectra tables
+  GV%SpectraFile=trim(data_directory)//'/'//trim(SpectraFile) 
+  !< [Config File] file containing b2cd tables
+  GV%b2cdFile=trim(data_directory)//'/'//trim(b2cdFile)           
+  !< [Config File] file containnig atomic rates tables
+  GV%AtomicRatesFile=trim(data_directory)//'/'//trim(AtomicRatesFile) 
   
   call read_b2cd_file(GV%b2cdFile)
   call read_spectra_file(GV%SpectraFile)
@@ -186,8 +201,8 @@ end subroutine
 
 subroutine amuse_initialize_global_variables
   use gadget_General_class, only: gadget_constants_type
-  use ray_mod, only: raystatbuffsize
-  use particle_system_mod, only: return_bytes_per_source,return_bytes_per_particle
+  use particle_system_mod, only: return_bytes_per_source
+  use particle_system_mod, only: return_bytes_per_particle
 
   character(clen), parameter :: myname="initialize_global_variables"
   logical, parameter :: crash=.true.
@@ -235,11 +250,6 @@ subroutine amuse_initialize_global_variables
   GV%srcdata_file = trim(GV%OutputDir) // "/source_data.log"
   call open_formatted_file_w(GV%srcdata_file,GV%srcdatalun)
 
-  GV%raystat_file = trim(GV%OutputDir) // "/raystats.dat"
-  if (GV%raystats) then
-     raystatbuffsize = nrays / 10
-     call open_unformatted_file_w(GV%raystat_file, GV%raystatlun)
-  end if
 
                  
   ! initialize counters and timers
@@ -309,7 +319,7 @@ subroutine amuse_planning_data()
   GV%LittleH=1.   !< Hubble parameter z=0 in units of 100 km/s/Mpc
 ! ----------------- 
  
-   GV%Lunit=1.d50                  !< code source luminosity unit [photons/s]
+  GV%Lunit=1.d50                  !< code source luminosity unit [photons/s]
 
 end subroutine
 
@@ -350,10 +360,13 @@ function sphray_get_gas_particle_state(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
     hsml=psys%par(index)%hsml
     rho=psys%par(index)%rho
     xe=psys%par(index)%xHII
-    u=u_from_temp( real(psys%par(index)%T, r8b) , real(psys%par(index)%ye,r8b) ,GV%H_mf) 
+    u=u_from_temp( real(psys%par(index)%T, r8b) , &
+                   real(psys%par(index)%ye,r8b) , &
+                   GV%H_mf ) 
     ret=0
 
 end function
+
 
 function sphray_set_gas_particle_state(ids,mass,hsml,x,y,z,rho,xe,u) result(ret)
   integer(i4b) ::  ids
@@ -379,6 +392,7 @@ function sphray_set_gas_particle_state(ids,mass,hsml,x,y,z,rho,xe,u) result(ret)
 
 end function
 
+
 function sphray_set_gas_particle_pos(ids,x,y,z) result(ret)
   integer(i4b) ::  ids
   real(r4b) :: mass, hsml,x,y,z, &
@@ -398,6 +412,7 @@ function sphray_set_gas_particle_pos(ids,x,y,z) result(ret)
 
 end function
 
+
 function sphray_set_gas_particle_rho(ids,rho) result(ret)
   integer(i4b) ::  ids
   real(r4b) :: mass, hsml,x,y,z, &
@@ -414,6 +429,7 @@ function sphray_set_gas_particle_rho(ids,rho) result(ret)
     ret=0
 
 end function
+
 
 function sphray_set_gas_particle_hsml(ids,hsml) result(ret)
   integer(i4b) ::  ids
@@ -432,6 +448,7 @@ function sphray_set_gas_particle_hsml(ids,hsml) result(ret)
 
 end function
 
+
 function sphray_set_gas_particle_u(ids,u) result(ret)
   integer(i4b) ::  ids
   real(r4b) :: mass, hsml,x,y,z, &
@@ -449,10 +466,10 @@ function sphray_set_gas_particle_u(ids,u) result(ret)
 
 end function
 
+
 function sphray_set_gas_particle_vel(ids,vx,vy,vz) result(ret)
   integer(i4b) ::  ids
-  real(r4b) :: mass, hsml,vx,vy,vz, &
-    rho, u , xe 
+  real(r4b) :: mass, hsml, vx, vy, vz, rho, u , xe 
   integer(i4b) :: i,index,ret
 
   ret=-99
@@ -470,10 +487,10 @@ function sphray_set_gas_particle_vel(ids,vx,vy,vz) result(ret)
 
 end function
 
+
 function sphray_get_gas_particle_vel(ids,vx,vy,vz) result(ret)
   integer(i4b) ::  ids
-  real(r4b) :: mass, hsml,vx,vy,vz, &
-    rho, u , xe 
+  real(r4b) :: mass, hsml,vx,vy,vz, rho, u , xe 
   integer(i4b) :: i,index,ret
 
   ret=-99
@@ -490,6 +507,7 @@ function sphray_get_gas_particle_vel(ids,vx,vy,vz) result(ret)
 #endif
 
 end function
+
 
 function sphray_get_src_particle_state(id,L,x,y,z,SpcType) result(ret)
   integer(i4b) :: id
@@ -536,10 +554,9 @@ end function
 
 
 subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u,vx,vy,vz)
-  use particle_system_mod, only: particle_set_ye,particle_set_ci_eq
+  use particle_system_mod, only: particle_set_ye, particle_set_ci_eq
   integer(i4b) ::  id
-  real(r4b) :: mass, hsml,x,y,z, &
-    rho, u , xe,vx,vy,vz 
+  real(r4b) :: mass, hsml, x, y, z, rho, u , xe, vx, vy, vz 
   integer(i4b) :: i
   logical :: DoH
   logical :: DoHe 
@@ -552,25 +569,25 @@ subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u,vx,vy,vz)
     call extend_par(par_buffer,nmaxpar_buffer)
   enddo
   
-    ngas=ngas+1
-    id=new_id()
-    npar_buffer=npar_buffer+1
-    par_buffer(npar_buffer)%mass=mass
-    par_buffer(npar_buffer)%id=id
-    par_buffer(npar_buffer)%pos(1)=x
-    par_buffer(npar_buffer)%pos(2)=y
-    par_buffer(npar_buffer)%pos(3)=z
+  ngas=ngas+1
+  id=new_id()
+  npar_buffer=npar_buffer+1
+  par_buffer(npar_buffer)%mass=mass
+  par_buffer(npar_buffer)%id=id
+  par_buffer(npar_buffer)%pos(1)=x
+  par_buffer(npar_buffer)%pos(2)=y
+  par_buffer(npar_buffer)%pos(3)=z
 #ifdef incVel
-    par_buffer(npar_buffer)%vel(1)=vx
-    par_buffer(npar_buffer)%vel(2)=vy
-    par_buffer(npar_buffer)%vel(3)=vz
+  par_buffer(npar_buffer)%vel(1)=vx
+  par_buffer(npar_buffer)%vel(2)=vy
+  par_buffer(npar_buffer)%vel(3)=vz
 #endif
-    par_buffer(npar_buffer)%hsml=hsml
-    par_buffer(npar_buffer)%rho=rho
-    par_buffer(npar_buffer)%T=temp_from_u( real(u,r8b) , real(xe,r8b), GV%H_mf)   
-    par_buffer(npar_buffer)%ye=xe   
-    par_buffer(npar_buffer)%xHI=1-xe   
-    par_buffer(npar_buffer)%xHII=xe   
+  par_buffer(npar_buffer)%hsml=hsml
+  par_buffer(npar_buffer)%rho=rho
+  par_buffer(npar_buffer)%T=temp_from_u( real(u,r8b) , real(xe,r8b), GV%H_mf)   
+  par_buffer(npar_buffer)%ye=xe   
+  par_buffer(npar_buffer)%xHI=1-xe   
+  par_buffer(npar_buffer)%xHII=xe   
 
 !  caseA = .false.
 !  if (GV%HydrogenCaseA) caseA(1) = .true.
@@ -622,6 +639,102 @@ subroutine sphray_add_src_particle(id,L,x,y,z,SpcType)
     src_buffer(nsrc_buffer)%lastemit=GV%rayn
     
 end subroutine
+
+
+
+
+
+
+
+
+
+function sphray_get_wall_src_state(id,L,SpcType,EmisPrf) result(ret)
+  integer(i4b) :: id
+  real(r4b) :: L,SpcType
+  integer(i4b) :: i,index,ret,EmisPrf
+
+    index=find_src(id)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    
+    L=psys%src(index)%L
+    SpcType=psys%src(index)%SpcType
+    EmisPrf=psys%src(index)%EmisPrf
+    ret=0
+
+end function
+
+
+function sphray_set_wall_src_state(id,L,SpcType,EmisPrf) result(ret)
+  integer(i4b) ::  id
+  real(r4b) :: L,SpcType
+  integer(i4b) :: i,index,ret,EmisPrf
+
+    index=find_src(id)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+        
+    psys%src(index)%L=L
+    if(SpcType.NE.0) then
+      psys%src(index)%SpcType=SpcType
+    else
+      psys%src(index)%SpcType=default_spectral_type
+    endif
+
+    psys%src(index)%EmisPrf=EmisPrf
+
+    ret=0
+end function
+
+
+
+subroutine sphray_add_wall_src(id,F,SpcType,EmisPrf)
+  integer(i4b) ::  id
+  real(r4b) :: F,L,SpcType
+  integer(i4b) :: i
+  integer(i4b) :: EmisPrf
+
+  src_searcheable=.FALSE. 
+  
+  do while(nsrc_buffer+1.GT.nmaxsrc_buffer)
+    nmaxsrc_buffer=nmaxsrc_buffer*2 
+    call extend_src(src_buffer,nmaxsrc_buffer)
+  enddo 
+
+  nsrc=nsrc+1
+  id=new_id()
+  nsrc_buffer=nsrc_buffer+1
+    
+  ! for a wall source we take F = photons / cm^2 as input
+  ! and convert it to L = photons / s using the wall size
+  ! this assumes the box is square
+
+  L = F * psys%box%lens_cm(1)**2
+
+  src_buffer(nsrc_buffer)%L=L
+  src_buffer(nsrc_buffer)%id=id   
+
+  ! position should never be used for a wall source 
+
+  src_buffer(nsrc_buffer)%pos(1) = 0.0d0
+  src_buffer(nsrc_buffer)%pos(2) = 0.0d0
+  src_buffer(nsrc_buffer)%pos(3) = 0.0d0
+
+  if(SpcType.NE.0) then
+     src_buffer(nsrc_buffer)%SpcType=SpcType
+  else
+      src_buffer(nsrc_buffer)%SpcType=default_spectral_type
+   endif
+   src_buffer(nsrc_buffer)%EmisPrf=EmisPrf
+   src_buffer(nsrc_buffer)%lastemit=GV%rayn
+    
+end subroutine
+
+
 
 function sphray_remove_gas_particle(id) result(ret)
   integer(i4b) :: id
