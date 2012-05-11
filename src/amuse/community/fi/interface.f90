@@ -276,6 +276,13 @@ function get_density(id,density) result(ret)
   real*8 :: density
   ret=amuse_get_density(id,density)
 end function
+
+function get_pressure(id,pressure) result(ret)
+  integer :: id,ret,amuse_get_pressure
+  real*8 :: pressure
+  ret=amuse_get_pressure(id,pressure)
+end function
+
 function get_position(id,x,y,z) result(ret)
   integer :: id,ret,amuse_get_position
   real*8 :: x,y,z

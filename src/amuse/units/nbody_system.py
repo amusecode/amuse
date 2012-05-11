@@ -84,6 +84,7 @@ specific_energy = potential
 speed = length / time
 volume = (length ** 3)
 density = mass / volume
+pressure = mass / length / (time ** 2)
 momentum_density = density * speed
 energy_density = density * specific_energy
 G = 1 | (length**3) / (mass * (time**2))

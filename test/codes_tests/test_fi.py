@@ -1420,4 +1420,37 @@ class TestFi(TestWithMPI):
                 10 * initial_internal_energy).all())
         instance.stop()
     
+    def test27(self):
+        print "Testing Fi SPH particle properties"
+        number_sph_particles = 1000
+        convert_nbody = nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
+        
+        gas = new_evrard_gas_sphere(number_sph_particles, convert_nbody, seed = 1234)
+        instance = Fi(convert_nbody)
+        instance.parameters.timestep = 0.05 | nbody_system.time
+        instance.parameters.integrate_entropy_flag = True
+        instance.gas_particles.add_particles(gas)
+        self.assertIsOfOrder(instance.gas_particles.h_smooth, 
+            convert_nbody.to_si(0.5 | nbody_system.length) * 
+            (instance.parameters.n_smooth*1.0/number_sph_particles)**(1.0/3))
+        self.assertAlmostRelativeEqual(instance.gas_particles.u, 
+            convert_nbody.to_si(0.05 | nbody_system.specific_energy))
+        
+        # the density of the cloud scales with 1/r:
+        r_sort, rho_sort = instance.gas_particles.position.lengths().sorted_with(instance.gas_particles.rho)
+        mean_density = convert_nbody.to_si(3.0/(4.0*numpy.pi) | nbody_system.density)
+        select = slice(number_sph_particles/2) # select 50% particles closest to center to avoid boundaries
+        self.assertIsOfOrder(rho_sort[select]/mean_density, r_sort.mean()/r_sort[select])
+        
+        self.assertAlmostEqual(instance.gas_particles.u * instance.gas_particles.rho, 
+            1.5 * instance.gas_particles.pressure)
+        
+        self.assertAlmostEqual(instance.gas_particles.du_dt, 0 | units.m**2 * units.s**-3)
+        u_0 = instance.gas_particles.u.sum()
+        instance.evolve_model(0.1 | nbody_system.time)
+        # Collapsing ==> heating:
+        self.assertTrue(instance.gas_particles.du_dt.sum() >= 0 | units.m**2 * units.s**-3)
+        self.assertIsOfOrder(instance.gas_particles.du_dt.sum() * convert_nbody.to_si(0.1 | nbody_system.time), 
+            instance.gas_particles.u.sum() - u_0)
+        instance.stop()
 

@@ -248,6 +248,16 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function.addParameter('rho', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
+    
+    @legacy_function
+    def get_pressure():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN)
+        function.addParameter('pressure', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
     @legacy_function    
     def get_star_tform():
         function = LegacyFunctionSpecification()   
@@ -1632,6 +1642,7 @@ class Fi(GravitationalDynamics):
         object.add_method('RUN', 'get_dinternal_energy_dt')
         object.add_method('RUN', 'get_smoothing_length')
         object.add_method('RUN', 'get_density')
+        object.add_method('RUN', 'get_pressure')
         object.add_method('RUN', 'get_star_tform')
         object.add_method('RUN', 'get_state_sph')
         object.add_method('RUN', 'get_state_star')
@@ -2253,6 +2264,7 @@ class Fi(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_smoothing_length')
         object.add_getter('gas_particles', 'get_density', names = ('rho',))
         object.add_getter('gas_particles', 'get_density', names = ('density',))
+        object.add_getter('gas_particles', 'get_pressure')
         
         object.define_set('star_particles', 'id')
         object.set_new('star_particles', 'new_star_particle')
@@ -2413,6 +2425,11 @@ class Fi(GravitationalDynamics):
             "get_density",
             (object.INDEX,),
             (nbody_system.density, object.ERROR_CODE)
+        )
+        object.add_method(
+            "get_pressure",
+            (object.INDEX,),
+            (nbody_system.pressure, object.ERROR_CODE)
         )
         
         object.add_method(
