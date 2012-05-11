@@ -276,19 +276,19 @@ function set_time(time) result(ret)
 end function
 
 
-function get_raynumber(N) result(ret)
+function get_raynumber(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
-  integer(i4b) :: N
-  call sphray_get_raynumber(N)
+  real(r8b) :: x  
+  call sphray_get_raynumber(x)
   ret=0
 end function
 
-function set_raynumber(N) result(ret)
+function set_raynumber(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
-  integer(i4b) :: N
-  call sphray_set_raynumber(N)
+  real(r8b) :: x  
+  call sphray_set_raynumber(x)
   ret=0
 end function
 

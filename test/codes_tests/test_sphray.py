@@ -244,7 +244,7 @@ class TestSPHRayInterface(TestWithMPI):
             result,err=getattr(instance, 'get_'+x)()
             self.assertEquals((x,result),(x,0))
 
-        for x,l in [('raynumber',30000),('iontempsolver',2),('boundary',0)]:
+        for x,l in [('iontempsolver',2),('boundary',0)]:
             result,err=getattr(instance, 'get_'+x)()
             self.assertEquals( (x,result),(x,l))
             err=getattr(instance, 'set_'+x)(1)
@@ -254,7 +254,7 @@ class TestSPHRayInterface(TestWithMPI):
             result,err=getattr(instance, 'get_'+x)()
             self.assertEquals((x,result),(x,0))
 
-        for x,l in [('boxsize',13.2),("defaultspectype",-1.)]:
+        for x,l in [('raynumber',1000000.),('boxsize',13.2),("defaultspectype",-1.)]:
             result,err=getattr(instance, 'get_'+x)()
             self.assertAlmostEqual( result,l ,6)
             err=getattr(instance, 'set_'+x)(1.)
@@ -483,7 +483,7 @@ class TestSPHRay(TestWithMPI):
             val1=getattr(instance.parameters,par)
             self.assertEqual(val1,False)            
 
-        for par,val in [("number_of_rays", 30000),
+        for par,val in [
             ("ionization_temperature_solver", 2),("boundary_condition", 0)]:
             val1=getattr(instance.parameters,par)
             self.assertEqual(val,val1)            
@@ -491,7 +491,8 @@ class TestSPHRay(TestWithMPI):
             val1=getattr(instance.parameters,par)
             self.assertEqual(val1,123)            
 
-        for par,val,tval in [ ("box_size",13.2 | units.kpc,  10. | units.kpc),
+        for par,val,tval in [ ("number_of_rays", 1022.69032205 | (units.Myr**-1) , 10000| units.Myr**-1),
+                              ("box_size",13.2 | units.kpc,  10. | units.kpc),
                               ("default_spectral_type", -1.,1.)]:
             val1=getattr(instance.parameters,par)
             self.assertAlmostRelativeEqual(val,val1,6)            

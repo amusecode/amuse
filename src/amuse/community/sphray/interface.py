@@ -253,16 +253,16 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
 
     @legacy_function   
     def set_raynumber():
-        """ set number of rays per evolve """
+        """ set number of rays per unit time """
         function = LegacyFunctionSpecification()  
-        function.addParameter('number_rays', dtype='i', direction=function.IN)
+        function.addParameter('number_rays', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_raynumber():
-        """ get number of rays per evolve  """
+        """ get number of rays per unit time  """
         function = LegacyFunctionSpecification()  
-        function.addParameter('number_rays', dtype='i', direction=function.OUT)
+        function.addParameter('number_rays', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
@@ -471,8 +471,8 @@ class SPHRay(CommonCode):
             "get_raynumber",
             "set_raynumber", 
             "number_of_rays", 
-            "number of rays per evolve step", 
-            default_value = 30000
+            "number of rays per unit time", 
+            default_value = 1000 | generic_unit_system.time**-1
         )
 
         object.add_method_parameter(
@@ -748,7 +748,7 @@ class SPHRay(CommonCode):
         object.add_method(
             "set_raynumber",
             (
-               object.NO_UNIT,
+               generic_unit_system.time**-1,
             ),
             (
                 object.ERROR_CODE,
@@ -760,7 +760,7 @@ class SPHRay(CommonCode):
             (
             ),
             (
-                object.NO_UNIT,
+                generic_unit_system.time**-1,
                 object.ERROR_CODE,
             )
         )

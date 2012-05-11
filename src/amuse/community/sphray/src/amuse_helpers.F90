@@ -25,6 +25,8 @@ character(len=clen) :: SpectraFile='./spectra/thermal1e5.cdf'
 character(len=clen) :: b2cdFile='./column_depth/latmon_b2cd_table.txt'
 !< [Config File] file containnig atomic rates tables     
 character(len=clen) :: AtomicRatesFile='./atomic_rates/atomic_rates_Hui.txt'
+ 
+  real(r8b) :: RaysperUnitTime=1.e6
 
 real(r8b) :: default_spectral_type = -1.
 
@@ -298,7 +300,7 @@ subroutine amuse_planning_data()
   PLAN%snap(1)%TimeAt=0.
   PLAN%snap(1)%ScaleFacAt=1.
   PLAN%snap(1)%StartTime=PLAN%snap(1)%TimeAt
-  PLAN%snap(1)%SrcRays = GV%ForcedRayNumber
+  PLAN%snap(1)%SrcRays = 0 ! GV%ForcedRayNumber
 
 ! standard gadget units
   GV%cgs_len  = gunits%cgs_length
@@ -774,6 +776,10 @@ subroutine sphray_evolve(tend)
   if(tend.LE.PLAN%snap(1)%TimeAt) return 
   PLAN%snap(1)%TimeToNext=tend
   PLAN%snap(1)%RunTime=tend-PLAN%snap(1)%TimeAt
+  
+  GV%ForcedRayNumber=RaysperUnitTime*(tend-PLAN%snap(1)%TimeAt)
+  if(GV%ForcedRayNumber.LE.0) call myerr("no rays to trace??","sphray_evolve",.true.)
+  
   PLAN%snap(1)%StartTime=PLAN%snap(1)%TimeAt
   PLAN%snap(1)%SrcRays = GV%ForcedRayNumber
 
@@ -919,14 +925,14 @@ subroutine sphray_get_He_caseA(flag)
   flag=GV%HeliumCaseA
 end subroutine
 
-subroutine sphray_set_raynumber(N)
-  integer(i4b) :: N
-  GV%ForcedRayNumber=N
+subroutine sphray_set_raynumber(x)
+  real(r8b) :: x
+  RaysperUnitTime=x
 end subroutine
 
-subroutine sphray_get_raynumber(N)
-  integer(i4b) :: N
-  N=GV%ForcedRayNumber
+subroutine sphray_get_raynumber(x)
+  real(r8b) :: x
+  x=RaysperUnitTime
 end subroutine
 
 subroutine sphray_set_iontempsolver(N)
@@ -1044,6 +1050,7 @@ subroutine set_default_parameters
 
   GV%RayScheme="raynum"           !< [Config File] one of {raynum, header}
   GV%ForcedRayNumber=30000     !< [Config File] number of rays to trace if RayScheme = raynum
+  RaysperUnitTime=1.e6
 
   GV%RayStats=.false.            !< [Config File] T = massive output file on ray statistics in raystats.dat
   GV%BndryCond=0           !< [Config File] one of {-1:reflecting 0:vacuum 1:periodic}
