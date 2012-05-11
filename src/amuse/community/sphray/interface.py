@@ -79,6 +79,8 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.addParameter('id', dtype='int32', direction=function.OUT)
         for x in ['mass','h_smooth','x','y','z','rho','xion','u']:
             function.addParameter(x, dtype='float64', direction=function.IN)
+        for x in ['vx','vy','vz']:
+            function.addParameter(x, dtype='float64', direction=function.IN,default=0)
         function.result_type = 'i'
         return function
 
@@ -159,8 +161,24 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
             function.addParameter(x, dtype='float64', direction=function.IN)
         function.result_type = 'i'
         return function
-
-
+    @legacy_function    
+    def set_vel_gas():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['vx','vy','vz']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def get_vel_gas():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['vx','vy','vz']:
+            function.addParameter(x, dtype='float64', direction=function.OUT)
+        function.result_type = 'i'
+        return function
 
     @legacy_function    
     def set_state_src():
@@ -526,7 +544,10 @@ class SPHRay(CommonCode):
                 generic_unit_system.length,
                 generic_unit_system.density,
                 object.NO_UNIT,
-                generic_unit_system.speed**2
+                generic_unit_system.speed**2,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
             ),
             (
                 object.INDEX,

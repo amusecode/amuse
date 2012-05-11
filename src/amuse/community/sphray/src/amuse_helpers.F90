@@ -24,8 +24,6 @@ module amuse_sphrayMod
 
  contains
 
-
-
 subroutine sphray_set_data_directory(x)
   character(len=clen) :: x
   data_directory=x
@@ -451,6 +449,47 @@ function sphray_set_gas_particle_u(ids,u) result(ret)
 
 end function
 
+function sphray_set_gas_particle_vel(ids,vx,vy,vz) result(ret)
+  integer(i4b) ::  ids
+  real(r4b) :: mass, hsml,vx,vy,vz, &
+    rho, u , xe 
+  integer(i4b) :: i,index,ret
+
+  ret=-99
+#ifdef incVel
+    index=find_gas(ids)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    psys%par(index)%vel(1)=vx
+    psys%par(index)%vel(2)=vy
+    psys%par(index)%vel(3)=vz
+    ret=0
+#endif
+
+end function
+
+function sphray_get_gas_particle_vel(ids,vx,vy,vz) result(ret)
+  integer(i4b) ::  ids
+  real(r4b) :: mass, hsml,vx,vy,vz, &
+    rho, u , xe 
+  integer(i4b) :: i,index,ret
+
+  ret=-99
+#ifdef incVel
+    index=find_gas(ids)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    vx=psys%par(index)%vel(1)
+    vy=psys%par(index)%vel(2)
+    vz=psys%par(index)%vel(3)
+    ret=0
+#endif
+
+end function
 
 function sphray_get_src_particle_state(id,L,x,y,z,SpcType) result(ret)
   integer(i4b) :: id
@@ -496,11 +535,11 @@ function sphray_set_src_particle_state(id,L,x,y,z,SpcType) result(ret)
 end function
 
 
-subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u)
+subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u,vx,vy,vz)
   use particle_system_mod, only: particle_set_ye,particle_set_ci_eq
   integer(i4b) ::  id
   real(r4b) :: mass, hsml,x,y,z, &
-    rho, u , xe 
+    rho, u , xe,vx,vy,vz 
   integer(i4b) :: i
   logical :: DoH
   logical :: DoHe 
@@ -521,6 +560,11 @@ subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u)
     par_buffer(npar_buffer)%pos(1)=x
     par_buffer(npar_buffer)%pos(2)=y
     par_buffer(npar_buffer)%pos(3)=z
+#ifdef incVel
+    par_buffer(npar_buffer)%vel(1)=vx
+    par_buffer(npar_buffer)%vel(2)=vy
+    par_buffer(npar_buffer)%vel(3)=vz
+#endif
     par_buffer(npar_buffer)%hsml=hsml
     par_buffer(npar_buffer)%rho=rho
     par_buffer(npar_buffer)%T=temp_from_u( real(u,r8b) , real(xe,r8b), GV%H_mf)   
@@ -564,6 +608,11 @@ subroutine sphray_add_src_particle(id,L,x,y,z,SpcType)
     src_buffer(nsrc_buffer)%pos(1)=x
     src_buffer(nsrc_buffer)%pos(2)=y
     src_buffer(nsrc_buffer)%pos(3)=z
+#ifdef incVel
+    src_buffer(nsrc_buffer)%pos(1)=x
+    src_buffer(nsrc_buffer)%pos(2)=y
+    src_buffer(nsrc_buffer)%pos(3)=z
+#endif
     if(SpcType.NE.0) then
       src_buffer(nsrc_buffer)%SpcType=SpcType
     else

@@ -46,13 +46,14 @@ function get_number_of_gas_particles(n) result(ret)
   ret=-1
 end function
 
-function new_gas_particle(id,mass,hsml,x,y,z,rho,xe,u) result(ret)
+function new_gas_particle(id,mass,hsml,x,y,z,rho,xe,u,vx,vy,vz) result(ret)
   use amuse_sphrayMod
   integer(i4b) :: ret,id
-  real(r8b) :: mass,hsml,x,y,z,rho,xe,u
-  real(r4b) :: t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u
+  real(r8b) :: mass,hsml,x,y,z,rho,xe,u,vx,vy,vz
+  real(r4b) :: t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u,t_vx,t_vy,t_vz
   t_mass=mass;t_hsml=hsml;t_x=x;t_y=y;t_z=z;t_rho=rho;t_xe=xe;t_u=u
-  call sphray_add_gas_particle(id,t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u)
+  t_vx=vx;t_vy=vy;t_vz=vz
+  call sphray_add_gas_particle(id,t_mass,t_hsml,t_x,t_y,t_z,t_rho,t_xe,t_u,t_vx,t_vy,t_vz)
   ret=0
 end function
 
@@ -115,6 +116,23 @@ function set_u_gas(id,u) result(ret)
   real(r4b) :: t_u
   t_u=u
   ret=sphray_set_gas_particle_u(id,t_u)
+end function
+function set_vel_gas(id,vx,vy,vz) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  real(r8b) :: vx,vy,vz
+  real(r4b) :: t_vx,t_vy,t_vz
+  t_vx=vx;t_vy=vy;t_vz=vz
+  ret=sphray_set_gas_particle_vel(id,t_vx,t_vy,t_vz)
+end function
+
+function get_vel_gas(id,vx,vy,vz) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  real(r8b) :: vx,vy,vz
+  real(r4b) :: t_vx,t_vy,t_vz
+  ret=sphray_get_gas_particle_vel(id,t_vx,t_vy,t_vz)
+  vx=t_vx;vy=t_vy;vz=t_vz
 end function
 
 function get_state_src(id,L,x,y,z,spctype) result(ret)
@@ -273,7 +291,6 @@ function set_raynumber(N) result(ret)
   call sphray_set_raynumber(N)
   ret=0
 end function
-
 
 function get_defaultspectype(x) result(ret)
   use amuse_sphrayMod
