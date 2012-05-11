@@ -1,4 +1,6 @@
 from amuse.community import *
+from amuse.datamodel import Particles
+from amuse.datamodel import ParticlesSubset
 
 class SeBaInterface(CodeInterface, LiteratureReferencesMixIn):
     
@@ -38,7 +40,34 @@ class SeBaInterface(CodeInterface, LiteratureReferencesMixIn):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+
+class SeBaParticles(Particles):
     
+    def __init__(self, code_interface, storage = None):
+        Particles.__init__(self, storage = storage)
+        self._private.code_interface = code_interface 
+    
+    def add_particles_to_store(self, keys, attributes = [], values = []):
+        if len(keys) == 0:
+            return
+            
+        all_attributes = []
+        all_attributes.extend(attributes)
+        all_values = []
+        all_values.extend(values)
+        
+        given_attributes = set(attributes)
+        
+        if not "initial_mass" in given_attributes:
+            index_of_mass_attibute = attributes.index("mass")
+            all_attributes.append("initial_mass")
+            all_values.append(values[index_of_mass_attibute] * 1.0)
+        
+        super(SeBaParticles, self).add_particles_to_store(keys, all_attributes, all_values)
+        
+        added_particles = ParticlesSubset(self, keys)
+        self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
+
 class SeBa(InCodeComponentImplementation):
 
     def __init__(self, **options):
@@ -63,7 +92,8 @@ class SeBa(InCodeComponentImplementation):
     
     
     def define_particle_sets(self, object):
-        object.define_inmemory_set('particles')
+        object.define_inmemory_set('particles', SeBaParticles)
+    
         
     def _evolve_particles(self, particles, end_time):
         attributes = (
@@ -75,7 +105,7 @@ class SeBa(InCodeComponentImplementation):
         )
         
         result = self.evolve_star(
-            particles.mass,
+            particles.initial_mass,
             end_time.as_vector_with_length(len(particles)),
             self.parameters.metallicity,
         )
