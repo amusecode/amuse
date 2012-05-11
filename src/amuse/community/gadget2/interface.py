@@ -1242,10 +1242,6 @@ class Gadget2(GravitationalDynamics):
         self.set_unit_time(self.unit_converter.to_si(generic_unit_system.time).value_in(units.s))
         return result
     
-    def define_converter(self, object):
-        print "in define_converter"
-        GravitationalDynamics.define_converter(self, object)
-    
     def define_properties(self, object):
         object.add_property("get_kinetic_energy")
         object.add_property("get_potential_energy")
