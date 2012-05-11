@@ -5,14 +5,11 @@ import math
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.athena.interface import AthenaInterface, Athena
-
-
-
-from mpi4py import MPI
 from amuse.units.quantities import VectorQuantity
 from amuse.units import generic_unit_system
 from amuse.units import units
 from amuse import datamodel
+
 class TestAthenaInterface(TestWithMPI):
     
     def test0(self):
@@ -118,50 +115,6 @@ class TestAthenaInterface(TestWithMPI):
         instance.stop()
         
     
-    def test15(self):
-        results = []
-        for x in range(1,6):
-            instance=self.new_instance(AthenaInterface, number_of_workers=x)
-            instance.initialize_code()
-            instance.setup_mesh(100,1,1,100.0,0,0)
-            instance.set_gamma(1.6666666666666667)
-            instance.set_courant_friedrichs_lewy_number(0.8)
-            instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
-            result = instance.commit_parameters()
-            
-            for index in range(100):
-                x,y,z,error = instance.get_position_of_index(index,0,0)
-                self.assertEquals(error, 0)
-                self.assertAlmostRelativeEquals(x, index + 0.5)
-                
-                i,j,k,error = instance.get_index_of_position(x,y,z)
-                self.assertEquals(error, 0)
-                self.assertAlmostRelativeEquals(i, index)
-                
-            
-            instance.stop()
-        
-    def test16(self):
-        for x in range(1,6):
-            instance=self.new_instance(AthenaInterface, number_of_workers=x)
-            instance.initialize_code()
-            instance.setup_mesh(10,100,1,100.0,100.0,0)
-            instance.set_gamma(1.6666666666666667)
-            instance.set_courant_friedrichs_lewy_number(0.8)
-            instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
-            result = instance.commit_parameters()
-            
-            for index in range(100):
-                x,y,z,error = instance.get_position_of_index(0,index,0)
-                self.assertEquals(error, 0)
-                self.assertAlmostRelativeEquals(y, index + 0.5)
-                
-                i,j,k,error = instance.get_index_of_position(x,y,z)
-                self.assertEquals(error, 0)
-                self.assertAlmostRelativeEquals(j, index)
-                
-            
-            instance.stop()
 
 
 
@@ -540,7 +493,76 @@ class TestAthenaInterface(TestWithMPI):
         self.assertEquals(error, 0)
         self.assertEquals(potential, 0.5)
         instance.stop()
-    
+        
+    def test14(self):
+        instance=self.new_instance(AthenaInterface, mode="scalar")
+        instance.initialize_code()
+        instance.setup_mesh(5, 5, 5, 1.0, 1.0, 1.0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.4)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        result = instance.commit_parameters()
+        self.assertEquals(result, 0)
+        
+        error = instance.set_grid_scalar(1,1,1,0.45)
+        self.assertEquals(error, 0)
+        
+        scalar, error = instance.get_grid_scalar(1,1,1)
+        
+        self.assertEquals(error, 0)
+        self.assertEquals(scalar, 0.45)
+        
+        scalar, error = instance.get_grid_scalar(1,1,2)
+        
+        self.assertEquals(error, 0)
+        self.assertEquals(scalar, 0)
+        
+        instance.stop()
+        
+    def test15(self):
+        results = []
+        for x in range(1,6):
+            instance=self.new_instance(AthenaInterface, number_of_workers=x)
+            instance.initialize_code()
+            instance.setup_mesh(100,1,1,100.0,0,0)
+            instance.set_gamma(1.6666666666666667)
+            instance.set_courant_friedrichs_lewy_number(0.8)
+            instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+            result = instance.commit_parameters()
+            
+            for index in range(100):
+                x,y,z,error = instance.get_position_of_index(index,0,0)
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(x, index + 0.5)
+                
+                i,j,k,error = instance.get_index_of_position(x,y,z)
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(i, index)
+                
+            
+            instance.stop()
+        
+    def test16(self):
+        for x in range(1,6):
+            instance=self.new_instance(AthenaInterface, number_of_workers=x)
+            instance.initialize_code()
+            instance.setup_mesh(10,100,1,100.0,100.0,0)
+            instance.set_gamma(1.6666666666666667)
+            instance.set_courant_friedrichs_lewy_number(0.8)
+            instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+            result = instance.commit_parameters()
+            
+            for index in range(100):
+                x,y,z,error = instance.get_position_of_index(0,index,0)
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(y, index + 0.5)
+                
+                i,j,k,error = instance.get_index_of_position(x,y,z)
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(j, index)
+                
+            
+            instance.stop()
     
 class TestAthena(TestWithMPI):
     

@@ -47,6 +47,7 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
     MODE_NORMAL = 'normal'
     MODE_SELF_GRAVITY   = 'self-gravity'
     MODE_MHD   = 'mhd'
+    MODE_SCALAR   = 'scalar'
     
     def __init__(self, mode = MODE_NORMAL, **options):
         
@@ -62,6 +63,8 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
             return 'athena_worker_selfgrav'
         elif mode == self.MODE_MHD:
             return 'athena_worker_mhd'
+        elif mode == self.MODE_SCALAR:
+            return 'athena_worker_scalar'
         else:
             return 'athena_worker'
         
@@ -494,6 +497,38 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         return function
         
 
+    @legacy_function
+    def get_grid_scalar():
+        """
+        Retreives advected scalar property
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['scalar',]:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def set_grid_scalar():
+        """
+        Stores advected scalar property
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['scalar',]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
     
     
     
@@ -576,6 +611,18 @@ class Athena(InCodeComponentImplementation):
             'get_grid_density',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (density,
+            object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_grid_scalar',
+            (object.INDEX, object.INDEX, object.INDEX,
+            object.NO_UNIT, object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_grid_scalar',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (object.NO_UNIT,
             object.ERROR_CODE,)
         )
         object.add_method(
@@ -702,6 +749,8 @@ class Athena(InCodeComponentImplementation):
         
         definition.add_getter('get_grid_density', names=('rho',))
         definition.add_setter('set_grid_density', names=('rho',))
+        definition.add_getter('get_grid_scalar', names=('scalar',))
+        definition.add_setter('set_grid_scalar', names=('scalar',))
         definition.add_getter('get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
         definition.add_setter('set_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
         definition.add_getter('get_grid_energy_density', names=('energy',))

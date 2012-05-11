@@ -963,6 +963,75 @@ int get_grid_density(
     return 0;
 }
 
+int get_grid_scalar(
+    int * i, int * j, int * k,
+    int * index_of_grid,
+    double * scalar,
+    int number_of_points)
+{
+    int l=0;
+    int i0,j0,k0 = 0;
+    int ii = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    DomainS * dom = 0;
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        
+        scalar[l] = 0.0;
+        
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            
+            if (is_on_grid(grid, i0, j0, k0))
+            {
+
+                ijk_on_grid(grid, &i0, &j0, &k0);
+#if (NSCALARS > 0)
+                scalar[l] = grid->U[k0][j0][i0].s[0];
+#endif
+            }
+
+        }
+    }
+
+
+
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(scalar, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, scalar, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+    return 0;
+}
+
 
 int get_grid_momentum_density(
     int * i, int * j, int * k,
@@ -1223,6 +1292,64 @@ int set_grid_density(
     return 0;
 }
 
+
+
+int set_grid_scalar(
+    int * i,
+    int * j,
+    int * k,
+    double * scalar,
+    int * index_of_grid,
+    int number_of_points)
+{
+
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    DomainS * dom = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            
+            if (is_on_grid(grid, i0, j0, k0))
+            {
+                ijk_on_grid(grid, &i0, &j0, &k0);
+
+#if (NSCALARS > 0)
+                grid->U[k0][j0][i0].s[0] = scalar[l];
+#endif
+            }
+
+        }
+    }
+
+    return 0;
+}
 
 
 int set_grid_energy_density(

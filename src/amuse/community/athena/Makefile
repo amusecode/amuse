@@ -12,15 +12,27 @@ VERSION = 4.1
 ATHENA_DIR = src/athena$(VERSION)
 
 CC = $(MPICC)
-CFLAGS   += -g -I$(ATHENA_DIR)/src 
+CFLAGS   += -g  
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -ldl -lm
 
-AMUSE_OBJS = interface_$(VERSION).o
-AMUSE_OBJS_SELFGRAV = interface_$(VERSION).selfgrav_o
-AMUSE_OBJS_MHD = interface_$(VERSION).mhd_o
+BUILDDIR = build
+SELFGRAV_BUILDDIR = build_selfgrav
+MHD_BUILDDIR = build_mhd
+SCALAR_BUILDDIR = build_scalar
 
-CODELIB = $(ATHENA_DIR)/bin/libathena.a
+
+
+CODELIB = $(BUILDDIR)/bin/libathena.a
+SELFGRAV_CODELIB = $(SELFGRAV_BUILDDIR)/bin/libathena.a
+MHD_CODELIB = $(MHD_BUILDDIR)/bin/libathena.a
+SCALAR_CODELIB = $(SCALAR_BUILDDIR)/bin/libathena.a
+
+
+AMUSE_OBJS = $(BUILDDIR)/interface_$(VERSION).o
+SELFGRAV_AMUSE_OBJS = $(SELFGRAV_BUILDDIR)/interface_$(VERSION).o
+MHD_AMUSE_OBJS = $(MHD_BUILDDIR)/interface_$(VERSION).o
+SCALAR_AMUSE_OBJS = $(SCALAR_BUILDDIR)/interface_$(VERSION).o
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./downloadhttp.py
@@ -39,10 +51,10 @@ FFTWINC = -I/usr/include
 all: athena_worker 
 
 ifdef DOWNLOAD_CODES
-$(ATHENA_DIR)/Makefile:
+$(ATHENA_DIR)/Makefile.in:
 	make -C . download
 else
-$(ATHENA_DIR)/Makefile:
+$(ATHENA_DIR)/Makefile.in:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -68,6 +80,7 @@ clean:
 	$(RM) -f $(CODELIB) $(AMUSE_OBJS_SELFGRAV)
 	$(RM) -f *.mhd_o
 	$(RM) -rf *.dSYM
+	$(RM) -rf $(BUILDDIR) $(SELFGRAV_BUILDDIR) $(MHD_BUILDDIR)
 
 codeclean: clean
 	make -C $(ATHENA_DIR) clean
@@ -79,22 +92,25 @@ distclean: clean
 	$(RM) -Rf src
 	$(RM) -Rf src.*
 
-$(CODELIB): $(ATHENA_DIR)/Makefile
-	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr 
-	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
-	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
-	rm -f $(CODELIB)
-	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
-	
-
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py AthenaInterface -o $@
 
 worker_code-sockets.cc: interface.py
 	$(CODE_GENERATOR) --type=c --mode=sockets interface.py AthenaInterface -o $@
-
+	
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py -i amuse.support.codes.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
+
+$(BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
+	cp -r $(ATHENA_DIR) $(BUILDDIR)
+
+$(CODELIB): $(BUILDDIR)/Makefile
+	cd $(BUILDDIR); ./configure --with-gas=hydro --enable-mpi --enable-smr 
+	cd $(BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
+	exit
+	cd $(BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	rm -f $(CODELIB)
+	cd $(BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
 
 athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
@@ -102,49 +118,60 @@ athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 athena_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code-sockets.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
 
-athena_worker_selfgrav: worker_code.cc worker_code.h interface_$(VERSION).c
-	cd $(ATHENA_DIR); make clean
-	$(RM) -f $(CODELIB)
-	cd $(ATHENA_DIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft --disable-cooling
-	#cd $(ATHENA_DIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft --with-flux=roe --with-eos=adiabatic --with-order=2 --enable-h-correction --disable-cooling
-	#cd $(ATHENA_DIR); ./configure --with-gas=hydro --with-gravity=multigrid
+$(SELFGRAV_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
+	cp -r $(ATHENA_DIR) $(SELFGRAV_BUILDDIR)
 
+$(SELFGRAV_CODELIB): $(SELFGRAV_BUILDDIR)/Makefile
+	cd $(SELFGRAV_BUILDDIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft --disable-cooling
+	cd $(SELFGRAV_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
+	exit
+	cd $(SELFGRAV_BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	rm -f $(CODELIB)
+	cd $(SELFGRAV_BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
 	
-	$(CC) $(CXXFLAGS) $(SCINC) -c -o $(AMUSE_OBJS_SELFGRAV) interface_$(VERSION).c
-	
-	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
-	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
-	$(RM) -f $(CODELIB)
-	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(CODELIB) $(AMUSE_OBJS_SELFGRAV) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS) $(FFTWLIB)
-	$(RM) -f $(CODELIB)
-	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr
-	cd $(ATHENA_DIR); make clean
-	$(RM) -f $(CODELIB)
-	
+athena_worker_selfgrav: worker_code.cc worker_code.h $(SELFGRAV_CODELIB) $(SELFGRAV_AMUSE_OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(SELFGRAV_AMUSE_OBJS) $(SELFGRAV_CODELIB) $(LDFLAGS) -o $@ $(SCLIBS) $(FFTWLIB)
 
-athena_worker_mhd: worker_code.cc worker_code.h interface_$(VERSION).c
-	cd $(ATHENA_DIR); make clean
-	$(RM) -f $(CODELIB)
-	cd $(ATHENA_DIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld
-	
-	$(CC) $(CXXFLAGS) $(SCINC) -c -o $(AMUSE_OBJS_MHD) interface_$(VERSION).c
-	
-	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
-	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
-	$(RM) -f $(CODELIB)
-	
-	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(CODELIB) $(AMUSE_OBJS_MHD) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS) $(FFTWLIB)
-	$(RM) -f $(CODELIB)
-	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr
-	cd $(ATHENA_DIR); make clean
-	$(RM) -f $(CODELIB)
-	
+$(MHD_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
+	cp -r $(ATHENA_DIR) $(MHD_BUILDDIR)
 
+$(MHD_CODELIB): $(MHD_BUILDDIR)/Makefile
+	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld
+	cd $(MHD_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
+	exit
+	cd $(MHD_BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	rm -f $(CODELIB)
+	cd $(MHD_BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+
+athena_worker_mhd: worker_code.cc worker_code.h $(MHD_CODELIB) $(MHD_AMUSE_OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(MHD_AMUSE_OBJS) $(MHD_CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
+
+
+$(SCALAR_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
+	cp -r $(ATHENA_DIR) $(SCALAR_BUILDDIR)
+
+$(SCALAR_CODELIB): $(SCALAR_BUILDDIR)/Makefile
+	cd $(SCALAR_BUILDDIR); ./configure --with-gas=hydro --enable-mpi --enable-smr --with-nscalars=1
+	cd $(SCALAR_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
+	exit
+	cd $(SCALAR_BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	rm -f $(CODELIB)
+	cd $(SCALAR_BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+
+athena_worker_scalar: worker_code.cc worker_code.h $(SCALAR_CODELIB) $(SCALAR_AMUSE_OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(SCALAR_AMUSE_OBJS) $(SCALAR_CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
+
+$(BUILDDIR)/%.o: %.c
+	$(CC) $(CXXFLAGS) -I$(BUILDDIR)/src $(SCINC) -c -o $@ $< 
 	
-.c.o: $<
-	$(CC) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
+$(SELFGRAV_BUILDDIR)/%.o: %.c
+	$(CC) $(CXXFLAGS) -I$(SELFGRAV_BUILDDIR)/src $(SCINC) -c -o $@ $< 
+	
+$(MHD_BUILDDIR)/%.o: %.c
+	$(CC) $(CXXFLAGS) -I$(MHD_BUILDDIR)/src $(SCINC) -c -o $@ $< 
+	
+$(SCALAR_BUILDDIR)/%.o: %.c
+	$(CC) $(CXXFLAGS) -I$(SCALAR_BUILDDIR)/src $(SCINC) -c -o $@ $< 
 	
 
 
