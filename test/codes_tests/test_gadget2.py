@@ -1163,7 +1163,7 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, redirection="none", **default_options)
         instance.initialize_code()
         instance.parameters.comoving_integration_flag = True
-        instance.parameters.redshift_begin = 20.0
+        instance.parameters.redshift_begin = 23.0
         instance.parameters.redshift_max = 0.0
         instance.parameters.omega_zero = 0.3
         instance.parameters.omega_lambda = 0.7
@@ -1171,8 +1171,19 @@ class TestGadget2(TestWithMPI):
         instance.parameters.hubble_parameter = 0.7
         instance.parameters.epsilon_squared = (72.0 | generic_unit_system.length)**2
         instance.parameters.softening_halo_max_phys = 12.0 | generic_unit_system.length
+        instance.parameters.max_size_timestep = 0.03 | generic_unit_system.time
+        instance.parameters.tree_domain_update_frequency = 0.1
         instance.particles.add_particles(particles)
-        instance.evolve_to_redshift(19.5)
+        instance.evolve_to_redshift(5.0)
+        write_set_to_file(instance.particles, "z5", "hdf5")
+        instance.evolve_to_redshift(3.0)
+        write_set_to_file(instance.particles, "z3", "hdf5")
+        instance.evolve_to_redshift(2.0)
+        write_set_to_file(instance.particles, "z2", "hdf5")
+        instance.evolve_to_redshift(1.0)
+        write_set_to_file(instance.particles, "z1", "hdf5")
+        instance.evolve_to_redshift(0.0)
+        write_set_to_file(instance.particles, "z0", "hdf5")
         instance.stop()
 
 def energy_evolution_plot(time, kinetic, potential, thermal, figname):
