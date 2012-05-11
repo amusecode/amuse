@@ -155,8 +155,8 @@ contains
 
 !-------------------------------------------------
 !>  Haiman bremsstrahlung cooling [erg cm^3 s^-1]
-    function Haiman_Bremss_cool(T,nHII,nHeII,nHeIII,ne)
-        real(r8b)  :: Haiman_Bremss_cool !< rate
+    function Haiman_Bremss_cool_He(T,nHII,nHeII,nHeIII,ne)
+        real(r8b)  :: Haiman_Bremss_cool_He !< rate
         real(r8b)  :: T !< temperature [K]
         real(r8b)  :: ne !< electron number density
         real(r8b)  :: nHII   !< HII number density
@@ -164,9 +164,22 @@ contains
         real(r8b) ::  nHeIII !< HeIII number density
         real(r8b)  :: gff !< gaunt factor
         gff = 1.10e0 + 0.34e0 * exp( -(5.50e0 - log10(T))**2/3.0e0 )
-        Haiman_Bremss_cool = 1.42e-27 * T**(1./2.) * gff * &
+        Haiman_Bremss_cool_He = 1.42e-27 * T**(1./2.) * gff * &
                           (nHII + nHeII + 4*nHeIII) * ne
-    end function Haiman_Bremss_cool
+    end function Haiman_Bremss_cool_He
+
+!-------------------------------------------------
+!>  Haiman bremsstrahlung cooling [erg cm^3 s^-1]
+    function Haiman_Bremss_cool_H(T,nHII,ne)
+        real(r8b)  :: Haiman_Bremss_cool_H !< rate
+        real(r8b)  :: T !< temperature [K]
+        real(r8b)  :: ne !< electron number density
+        real(r8b)  :: nHII   !< HII number density
+        real(r8b)  :: gff !< gaunt factor
+        gff = 1.10e0 + 0.34e0 * exp( -(5.50e0 - log10(T))**2/3.0e0 )
+        Haiman_Bremss_cool_H = 1.42e-27 * T**(1./2.) * gff * &
+                          (nHII) * ne
+    end function Haiman_Bremss_cool_H
 
 !---------------------------------------------------    
 !> Haiman compton heating / cooling [erg cm^3 s^-1]

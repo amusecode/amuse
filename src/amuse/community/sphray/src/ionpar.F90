@@ -15,7 +15,7 @@ use b2cd_mod, only: b2cdfac
 use cen_atomic_rates_mod, only: Verner_HI_photo_cs
 use cen_atomic_rates_mod, only: Osterbrok_HeI_photo_cs
 use cen_atomic_rates_mod, only: Osterbrok_HeII_photo_cs
-use cen_atomic_rates_mod, only: Haiman_Bremss_cool
+use cen_atomic_rates_mod, only: Haiman_Bremss_cool_H, Haiman_Bremss_cool_He
 use cen_atomic_rates_mod, only: Haiman_Comp_Heol
 use global_mod, only: GV
 use hui_gnedin_atomic_rates_mod
@@ -963,10 +963,17 @@ subroutine set_cooling_func(ip,k,photo,caseA,He)
         ip%PH = ip%PH + ip%pdepr * ip%HeIfrac  * (ip%penrg - HeI_th_erg ) 
         ip%PH = ip%PH + ip%pdepr * ip%HeIIfrac * (ip%penrg - HeII_th_erg) 
      end if
+
   end if
 
+  if (He) then
+     ip%BREM = Haiman_Bremss_cool_He(ip%T,ip%nHII,ip%nHeII,ip%nHeIII,ip%ne)
+  else
+     ip%BREM = Haiman_Bremss_cool_H(ip%T,ip%nHII,ip%ne)
+  endif
+
   ip%PH = ip%PH / ip%cm3
-  ip%BREM = Haiman_Bremss_cool(ip%T,ip%nHII,ip%nHeII,ip%nHeIII,ip%ne)
+
   ip%COMP = Haiman_Comp_Heol(ip%T,ip%Tcmb,ip%ne)
 
   ip%COOL  = -( ip%CIC + ip%CEC + ip%RCC + ip%BREM + ip%COMP )

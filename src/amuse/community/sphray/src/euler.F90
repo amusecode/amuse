@@ -80,6 +80,10 @@ subroutine eulerint(ip,scalls,photo,caseA,He,isoT,fixT)
      ip%nHeII  = ip%nHe * ip%xHeII     
      ip%nHeIII = ip%nHe * ip%xHeIII
      ip%ne = ip%nHII + ip%nHeII + two * ip%nHeIII + ip%NeBckgnd
+  else
+     ip%nHeI = zero
+     ip%nHeII = zero
+     ip%nHeIII = zero
   end if
 
   if (photo) then

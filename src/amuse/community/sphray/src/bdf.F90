@@ -84,6 +84,10 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
      ip%nHeII  = ip%nHe * ip%xHeII     
      ip%nHeIII = ip%nHe * ip%xHeIII
      ip%ne = ip%nHII + ip%nHeII + two * ip%nHeIII + ip%NeBckgnd
+  else
+      ip%nHeI = zero
+      ip%nHeII = zero
+      ip%nHeIII = zero
   end if
 
   if (photo) then
@@ -158,9 +162,12 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
         ip%T = ip%T + ip%dTdt * dt_i
         if (ip%T > 1.0d9) ip%T = 1.0d9
         if (ip%T < 1.0d0) ip%T = 1.0d0
+        if ( .not. ip%T < 10.d0 .and. .not. ip%T >= 10.0d0 ) then
+           call ionpar2screen(ip) 
+           stop
+        endif
      end if
-
-
+        
      ! track photons, recombinations and update total time
      !-------------------------------------------------------------------
 
