@@ -2,11 +2,11 @@ import numpy
 
 from amuse.lab import *
 
-from .interface import MikkolaInterface
-from .interface import Mikkola
+from amuse.community.mikkola.interface import Mikkola
+from optparse import OptionParser
 
 def new_system_of_Hulse_Taylor_pulsar():
-    stars = core.Stars(2)
+    stars = Particles(2)
     Hulse = stars[0]
     Hulse.mass = 1.441 | units.MSun
     Hulse.radius = 1.4e-5 | units.RSun
@@ -72,7 +72,7 @@ def new_option_parser():
 
 def main(a=205, e=0.6, M=13., m=11., tend=10., dtdiag=1e99) :
 
-    bs = double_star(a, e, M, m)
+    bs = new_system_of_Hulse_Taylor_pulsar() #(a, e, M, m)
     M = bs.p.get_mass()
     m = bs.s.get_mass()
     Porb = bs.OrbitalPeriod()

@@ -218,6 +218,9 @@ class InMemoryGridAttributeStorage(object):
         self.mapping_from_attribute_to_quantities = {}
         self.number_of_points_in_each_direction = number_of_points_in_each_direction
         
+    def can_extend_attributes(self):
+        return True
+        
     def storage_shape(self):
         return self.number_of_points_in_each_direction
         
