@@ -79,24 +79,22 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         """
         return function
     
-    # @legacy_function
-    # def get_data_directory():
-    #     """
-    #     Retrieve the path to the SimpleX database currently used.
-    #     """
-    #     function = LegacyFunctionSpecification()  
-    #     function.addParameter('data_directory', dtype='string', direction=function.OUT,
-    #         description = "Name of the SimpleX data directory")
-    #     function.result_type = 'int32'
-    #     function.result_doc = """
-    #     0 - OK
-    #         Value was retrieved
-    #     -1 - ERROR
-    #         Could not retrieve value
-    #     """
-    #     return function
-    
-    
+    @legacy_function
+    def get_data_directory():
+        """
+        Retrieve the path to the SimpleX database currently used.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('data_directory', dtype='string', direction=function.OUT,
+            description = "Name of the SimpleX data directory")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Value was retrieved
+        -1 - ERROR
+            Could not retrieve value
+        """
+        return function
     
     @legacy_function
     def commit_particles():
@@ -648,6 +646,7 @@ class SimpleX(CommonCode):
         object.add_property('get_time', public_name = "model_time")
     
     def define_parameters(self, object):
+        
         object.add_method_parameter(
             "get_timestep",
             "set_timestep", 
@@ -655,7 +654,7 @@ class SimpleX(CommonCode):
             "timestep for radiative transfer sweeps", 
             default_value = 0.05 | units.Myr
         )
-
+        
         object.add_method_parameter(
             "get_source_Teff",
             "set_source_Teff", 
@@ -697,7 +696,6 @@ class SimpleX(CommonCode):
             default_value = 0
         )
 
-        #
         object.add_method_parameter(
             "get_recombination_radiation",
             "set_recombination_radiation", 
@@ -706,12 +704,11 @@ class SimpleX(CommonCode):
             default_value = 0
         )
 
-
         object.add_method_parameter(
             "get_blackbody_spectrum",
             "set_blackbody_spectrum", 
             "blackbody_spectrum_flag", 
-            "monochromatic if 1, blackbody_spectrum if 1", 
+            "monochromatic if 0, blackbody_spectrum if 1", 
             default_value = 0
         )
 
@@ -732,13 +729,13 @@ class SimpleX(CommonCode):
         )
 
         object.add_method_parameter(
-            "get_simplex_data_directory", 
-            "set_simplex_data_directory",
+            "get_data_directory", 
+            "set_data_directory",
             "simplex_data_directory", 
             "Name of the SimpleX data directory", 
-            default_value = ""
+            default_value = "."
         )
-
+        
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
         object.add_method('evolve_model', (units.Myr,), ( object.ERROR_CODE, ))
@@ -1052,8 +1049,6 @@ class SimpleX(CommonCode):
             (object.ERROR_CODE,)
         )
 
-
-
         object.add_method(
             "get_number_frequency_bins",
             (),
@@ -1116,13 +1111,13 @@ class SimpleX(CommonCode):
         )
 
         object.add_method(
-            "get_simplex_data_directory",
+            "get_data_directory",
             (),
             (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
-            "set_simplex_data_directory",
+            "set_data_directory",
             (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
@@ -1241,3 +1236,45 @@ class SimpleXSplitSet(SimpleX):
     def evolve_model(self,tend):
         self.overridden().evolve_model(tend)
         self.simplex_to_gas_channel.copy_attributes(["xion","u","metallicity"])
+        
+    def define_state(self, object):
+        CommonCode.define_state(self, object)
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
+        object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
+        object.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
+        object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
+        object.add_method('EDIT', 'new_particle')
+        object.add_method('EDIT', 'delete_particle')
+        object.add_transition('EDIT', 'RUNCOMMIT', 'commit_particles')
+        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        object.add_transition('RUN','RUNCOMMIT', 'recommit_particles')
+        object.add_transition('RUNCOMMIT','RUN', 'invoke_state_change2')
+        object.add_transition('RUNCOMMIT', 'EVOLVED', 'evolve_model', False)
+#        object.add_method('EVOLVED', 'evolve_model')
+        object.define_state('RUNCOMMIT')
+        object.add_transition('EVOLVED','RUN', 'synchronize_model')
+        object.add_method('RUN', 'synchronize_model')
+        object.add_method('RUN', 'get_state')
+        object.add_method('RUN', 'get_density')
+        object.add_method('RUN', 'get_position')
+        object.add_method('RUN', 'get_flux')
+        object.add_method('RUN', 'get_ionisation')
+        object.add_method('RUN', 'get_internal_energy')
+        object.add_method('RUN', 'set_dinternal_energy_dt')
+        object.add_method('RUN', 'get_dinternal_energy_dt')
+        object.add_method('UPDATE', 'set_dinternal_energy_dt')
+        object.add_method('UPDATE', 'get_dinternal_energy_dt')
+
+        object.add_method('INITIALIZED', 'set_hilbert_order')
+        object.add_method('INITIALIZED', 'set_box_size')
+        object.add_method('INITIALIZED', 'set_timestep')
+        object.add_method('INITIALIZED', 'set_source_Teff')
+        object.add_method('INITIALIZED', 'set_number_frequency_bins')
+        object.add_method('INITIALIZED', 'set_thermal_evolution')
+        object.add_method('INITIALIZED', 'set_blackbody_spectrum')
+        object.add_method('INITIALIZED', 'set_metal_cooling')
+        object.add_method('INITIALIZED', 'set_recombination_radiation')
+        object.add_method('INITIALIZED', 'set_collisional_ionization')

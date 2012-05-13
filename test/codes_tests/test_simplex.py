@@ -154,7 +154,33 @@ class TestSimpleXInterface(TestWithMPI):
 
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
-    
+
+    def test5(self):
+        print "Test 2: delete particles"
+        instance = SimpleXInterface(**default_options)
+        self.assertEqual(0, instance.set_output_directory(instance.output_directory))
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+        
+        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        x, y, z, n_H, flux, X_ion,u = read_input_file(input_file)
+        x=numpy.array(x)
+        y=numpy.array(y)
+        z=numpy.array(z)
+        number_of_particles = len(x)
+        indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion,u)
+        self.assertEqual(errors, [0]*number_of_particles)
+        self.assertEqual(indices, range(number_of_particles))
+        error=instance.delete_particle(indices[0])
+        self.assertEqual(error, -1)
+        instance.commit_particles()
+        error=instance.delete_particle(indices[0])
+# this one I don't understand:
+        self.assertEqual(error, -1)
+        self.assertEqual(0, instance.evolve_model(0.125))
+        error=instance.delete_particle(indices[0])
+        self.assertEqual(error, 0)
+
 
 class TestSimpleX(TestWithMPI):
 
@@ -242,11 +268,20 @@ class TestSimpleX(TestWithMPI):
                   blackbody_spectrum_flag = 1,
                   box_size=32100 | units.parsec,
                   metal_cooling_flag=1,
-                  collisional_ionization_flag=1)
+                  collisional_ionization_flag=1,
+                  simplex_data_directory='.')
         for x in param:
             setattr(instance.parameters,x, param[x])
         for x in param:
             self.assertEqual(getattr(instance.parameters,x), param[x])
+
+    def test6(self):
+        print "Test 2: print parameters,data directory"
+        instance = SimpleX(**default_options)
+        print instance.parameters
+        
+        instance.parameters.simplex_data_directory="some/dir"
+        self.assertEqual(instance.parameters.simplex_data_directory, "some/dir")
 
 class TestSimpleXSplitSet(TestWithMPI):
 
@@ -292,11 +327,15 @@ class TestSimpleXSplitSet(TestWithMPI):
 
         self.assertAlmostEqual(instance.gas_particles.xion.mean(), 0.0)
         self.assertAlmostEqual(instance.gas_particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
         instance.evolve_model(0.5 | units.Myr)
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
         self.assertAlmostEqual(instance.gas_particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
         self.assertAlmostEqual(instance.gas_particles.xion.mean(), 0.000845247683257)
         instance.gas_particles.remove_particles(particles[0:4])
-        instance.recommit_particles()
+# this is what we would like....
+#        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+#        instance.recommit_particles()
         instance.evolve_model(0.75 | units.Myr)
         self.assertEqual(len(instance.particles), len(particles)-4)
         instance.cleanup_code()
