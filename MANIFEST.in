@@ -29,7 +29,6 @@ recursive-exclude lib *.pyc *.o *~ ccache *.a
 prune lib/ibis
 
 prune src/amuse/community/mesa/src
-prune src/amuse/community/seba/src
 prune src/amuse/community/mpiamrvac/src
 prune src/amuse/community/mpiamrvac/.pc
 prune src/amuse/community/mocassin/src
