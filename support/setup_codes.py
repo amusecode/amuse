@@ -657,12 +657,19 @@ class BuildCodes(CodeCommand):
             if 'CUDA_SDK variable is not set' in line:
                 return True
         return False
+        
+    def are_python_imports_needed(self, string):
+        for line in string.splitlines():
+            if 'Python imports not available' in line:
+                return True
+        return False
     
     def run (self):
         not_build = list()
         is_download_needed = list()
         is_cuda_needed = list()
-        not_build_special = list()
+        not_build_special = {}
+        are_python_imports_needed = list()
         build = list()
         lib_build = list()
         lib_not_build = list()
@@ -700,9 +707,9 @@ class BuildCodes(CodeCommand):
             if returncode == 2:
                 self.announce("[{2:%H:%M:%S}] building {0}, failed, see {1!r} for error log".format(shortname, buildlog, endtime), level =  log.DEBUG)
                 if self.is_download_needed(outputlog):
-                    is_download_needed.append(shortname)
+                    is_download_needed.append(x[len(self.lib_dir) + 1:])
                 elif self.is_cuda_needed(outputlog):
-                    is_cuda_needed.append(shortname)
+                    is_cuda_needed.append(x[len(self.lib_dir) + 1:])
                 else:
                     lib_not_build.append(shortname)
             else:
@@ -739,6 +746,8 @@ class BuildCodes(CodeCommand):
                     is_download_needed.append(shortname)
                 elif self.is_cuda_needed(outputlog):
                     is_cuda_needed.append(shortname)
+                elif self.are_python_imports_needed(outputlog):
+                    are_python_imports_needed.append(shortname)
                 else:
                     not_build.append(shortname)
                     
@@ -759,7 +768,8 @@ class BuildCodes(CodeCommand):
                 returncode, outputlog = self.run_make_on_directory(shortname, x, target, environment)
                 endtime = datetime.datetime.now()
                 if returncode > 0:
-                    not_build_special.append(shortname + " - " + target_name)
+                    specials_list = not_build_special.setdefault(shortname,[])
+                    specials_list.append(target_name)
                     self.announce("[{3:%H:%M:%S}] building {0} - {1}, failed, see {2!r} for error log".format(shortname, target_name, buildlog,endtime), level =  log.DEBUG)
                 else:
                     build_to_special_targets.setdefault(shortname, list()).append(target_name)
@@ -796,25 +806,32 @@ class BuildCodes(CodeCommand):
             not_build = not_build_copy
                 
         
-        if not_build or not_build_special or is_download_needed or is_cuda_needed:
+        if not_build or not_build_special or is_download_needed or is_cuda_needed or are_python_imports_needed:
             if not_build:
                 level = log.WARN
             else:
                 level = log.INFO
-            
-            self.announce("Community codes not built (because of errors):",  level = level)
-            self.announce("="*80,  level = level)
-            for x in not_build:
-                self.announce(' * {0}'.format(x), level =  level)
-            self.announce("Optional builds failed, need special libraries:",  level = level)
-            for x in not_build_special:
-                self.announce(' * {0}'.format(x), level = level)
-            self.announce("Optional builds failed, need CUDA/GPU libraries:",  level = level)
-            for x in is_cuda_needed:
-                self.announce(' * {0}'.format(x), level = level)
-            self.announce("Optional builds failed, need separate download",  level = level)
-            for x in is_download_needed:
-                self.announce(' * {0} , make {0}.code DOWNLOAD_CODES=1'.format(x), level = level)
+            if not_build:
+                self.announce("Community codes not built (because of errors):",  level = level)
+                self.announce("="*80,  level = level)
+                for x in not_build:
+                    self.announce(' * {0}'.format(x), level =  level)
+            if not_build_special:
+                self.announce("Optional builds failed, need special libraries:",  level = level)
+                for x in sorted(not_build_special.keys()):
+                    self.announce(' * {0} - {1}'.format(x, ', '.join(not_build_special[x])), level = level)
+            if is_cuda_needed:
+                self.announce("Optional builds failed, need CUDA/GPU libraries:",  level = level)
+                for x in is_cuda_needed:
+                    self.announce(' * {0}'.format(x), level = level)
+            if are_python_imports_needed:
+                self.announce("Optional builds failed, need additional python packages:",  level = level)
+                for x in are_python_imports_needed:
+                    self.announce(' * {0}'.format(x), level = level)
+            if is_download_needed:
+                self.announce("Optional builds failed, need separate download",  level = level)
+                for x in is_download_needed:
+                    self.announce(' * {0} , make {0}.code DOWNLOAD_CODES=1'.format(x), level = level)
 
             self.announce("="*80,  level = level)
         
