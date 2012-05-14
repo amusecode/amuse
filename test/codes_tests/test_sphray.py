@@ -419,7 +419,36 @@ class TestSPHRayInterface(TestWithMPI):
         return numpy.array(L), numpy.array(x), numpy.array(y), numpy.array(z), numpy.array(spctype)
 
 class TestSPHRay(TestWithMPI):
-
+    
+    def is_fortan_version_up_to_date(self):
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'compilers')
+            if is_configured:
+                is_configured = hasattr(config.compilers, 'gfortran_version')
+        except ImportError:
+            is_configured = False
+    
+        if is_configured:
+            if not config.compilers.gfortran_version:
+                return True
+            
+            try:
+                parts = [int(x) for x in config.compilers.gfortran_version.split('.')]
+            except:
+                parts = []
+                
+            if len(parts) < 2:
+                return True
+                
+            return parts[0] >= 4 and parts[1] > 1
+        else:
+            return True
+            
+    def setUp(self):
+        super(TestWithMPI, self).setUp()
+        self.check_fortran_version()
+        
     def test0(self):
         print "test1: basic startup and flow"
         instance=SPHRay()
