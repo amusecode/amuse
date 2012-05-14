@@ -35,6 +35,7 @@ prune src/amuse/community/mocassin/src
 prune src/amuse/community/mocassin/.pc
 prune src/amuse/community/athena/src
 prune src/amuse/community/athena/.pc
+prune src/amuse/community/pynbody/PyNbody
 
 recursive-exclude  data/gadget2/output *.* *
 recursive-exclude  data/simplex/output  *.* *
