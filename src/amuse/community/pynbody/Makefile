@@ -1,3 +1,9 @@
+PYTHON ?= python
+
+PYOPENGL_AVAILABLE := $(shell $(PYTHON) -c "import OpenGL"  1>&2 2> /dev/null && echo "yes" || echo "no")
+PYIMAGE_AVAILABLE := $(shell $(PYTHON) -c "import Image"  1>&2 2> /dev/null && echo "yes" || echo "no")
+PYOPENCL_AVAILABLE := $(shell $(PYTHON) -c "import pyopencl"  1>&2 2> /dev/null && echo "yes" || echo "no")
+
 all: download build install test
 
 download: PyNbody/setup.py
@@ -14,9 +20,15 @@ install:
 test:
 	@echo
 	@echo "Testing import of modules required for PyNbody (OpenGL, PIL, pyopencl):"
-	python -c "import OpenGL" || (@echo "Python imports not available";$(error Python imports not available: OpenGL))
-	python -c "import Image" || (@echo "Python imports not available";$(error Python imports not available: Image))
-	python -c "import pyopencl" || (@echo "Python imports not available";$(error Python imports not available: pyopencl))
+ifeq ($(PYOPENGL_AVAILABLE),no)
+	$(error "Python imports not available: OpenGL")
+endif
+ifeq ($(PYIMAGE_AVAILABLE),no)
+	$(error "Python imports not available: Image")
+endif
+ifeq ($(PYOPENCL_AVAILABLE),no)
+	$(error "Python imports not available: pyopencl")
+endif
 	@echo "Tests successful!"
 	@echo
 	
