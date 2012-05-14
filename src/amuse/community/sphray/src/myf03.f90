@@ -16,7 +16,9 @@
 !<
 
 module myf03_mod
+#if (__GNUC__ > 3 && __GNUC_MINOR__ > 7) || __INTEL_COMPILER > 1200
 use iso_fortran_env    
+#endif
 implicit none
 private
 
@@ -50,11 +52,15 @@ public :: myerr
 
 ! pre connected logical unit numbers
 !------------------------------------------------------------------------
-
+#if __GNUC__ > 3 && __GNUC_MINOR__ > 7 
   integer, parameter :: stderr = error_unit  !< preconnected std error lun 
   integer, parameter :: stdin  = input_unit  !< preconnected std in lun
   integer, parameter :: stdout = output_unit !< preconnected std out lun
-
+#else
+  integer, parameter :: stderr = 0  !< preconnected std error lun 
+  integer, parameter :: stdin  = 5  !< preconnected std in lun
+  integer, parameter :: stdout = 6  !< preconnected std out lun
+#endif
 ! selected_int_kind(r)     -10^r < n < 10^r
 !------------------------------------------------------------------------
 
@@ -104,9 +110,15 @@ contains
     logical, parameter :: crash = .true.
 
 
+#if (__GNUC__ > 3 && __GNUC_MINOR__ > 7) || __INTEL_COMPILER > 1200
     cmnd%nargs = command_argument_count()
+    
     call get_command( command=cmnd%str, length=cmnd%len )
-
+#else
+    cmnd%nargs = 0
+    cmnd%str = ' '
+    
+#endif
     call mywrite('', verb) 
     call mywrite('command string: ' // trim(cmnd%str), verb)
     write(str,'(A,I5)') 'command nargs :', cmnd%nargs
