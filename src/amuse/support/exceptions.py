@@ -19,7 +19,6 @@ class AmuseException(Exception):
         self.arguments = arguments
     
     def __str__(self):
-        print self.formatstring.format(*self.arguments)
         return self.formatstring.format(*self.arguments)
 
 

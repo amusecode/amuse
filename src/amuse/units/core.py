@@ -559,10 +559,9 @@ class enumeration_unit(nonnumeric_unit):
         ...
     AmuseException: <3> is not a valid value for unit<my_unit>
     
-    
     Or, with default values:
     
-    >>> my_unit = enumeration_unit('my_unit','my_unit',None, ["star","gas","planet"])
+    >>> my_unit = enumeration_unit('my_unit','my_unit', None, ["star","gas","planet"])
     >>> 2 | my_unit
     quantity<2 - planet>
     >>> list(my_unit.quantities())

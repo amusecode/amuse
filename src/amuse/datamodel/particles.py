@@ -270,7 +270,6 @@ class AbstractParticleSet(AbstractSet):
             else:
                 if hasattr(quantity, 'unit'):
                     if numpy.issubdtype(quantity.number.dtype, float):
-                        print quantity
                         try:
                             values_to_show = map(format_float,quantity.number)
                         except ValueError:
