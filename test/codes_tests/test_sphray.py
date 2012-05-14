@@ -445,6 +445,10 @@ class TestSPHRay(TestWithMPI):
         else:
             return True
             
+    def check_fortran_version(self):
+        if not self.is_fortan_version_up_to_date():
+            self.skip('cannot compile, fortran module names cannot be resolved correctly in this gfortran version')
+            
     def setUp(self):
         super(TestWithMPI, self).setUp()
         self.check_fortran_version()
