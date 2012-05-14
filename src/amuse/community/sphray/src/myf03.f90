@@ -47,7 +47,7 @@ public :: myerr
      module procedure scanfile_r4b, scanfile_r8b, scanfile_i4b, &
                       scanfile_i8b, scanfile_chr, scanfile_log
   end interface
-bls
+  
 ! pre connected logical unit numbers
 !------------------------------------------------------------------------
   integer, parameter :: stderr = error_unit  !< preconnected std error lun 
