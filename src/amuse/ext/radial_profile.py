@@ -20,7 +20,7 @@ def radial_density(r,mass,N=100,dim=3):
   elif dim==2:
     volfac=numpy.pi
   else:
-    volfac==1
+    volfac=1
   
   n=len(r)
   a=r.argsort()
