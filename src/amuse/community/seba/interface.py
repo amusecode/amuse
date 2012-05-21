@@ -37,6 +37,8 @@ class SeBaInterface(CodeInterface, LiteratureReferencesMixIn):
         function.addParameter('end_radius', dtype='float64', direction=function.OUT)
         function.addParameter('end_luminosity', dtype='float64', direction=function.OUT)
         function.addParameter('end_temperature', dtype='float64', direction=function.OUT)
+        function.addParameter('time_step', dtype='float64', direction=function.OUT)
+        function.addParameter('stellar_type', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
@@ -73,6 +75,8 @@ class SeBa(InCodeComponentImplementation):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self,  SeBaInterface(**options), **options)
     
+        self.model_time = 0.0 | units.yr
+
     def define_parameters(self, object):
     
         object.add_caching_parameter(
@@ -87,13 +91,12 @@ class SeBa(InCodeComponentImplementation):
         object.add_method(
             "evolve_star",
             (units.MSun, units.Myr, units.none),
-            (units.Myr, units.MSun, units.RSun, units.LSun, units.K, object.ERROR_CODE)
+            (units.Myr, units.MSun, units.RSun, units.LSun, units.K, units.Myr,units.stellar_type, object.ERROR_CODE)
         )
     
     
     def define_particle_sets(self, object):
         object.define_inmemory_set('particles', SeBaParticles)
-    
         
     def _evolve_particles(self, particles, end_time):
         attributes = (
@@ -102,6 +105,8 @@ class SeBa(InCodeComponentImplementation):
             "radius",
             "luminosity",
             "temperature",
+            "time_step",
+            "stellar_type",
         )
         
         result = self.evolve_star(
@@ -117,5 +122,7 @@ class SeBa(InCodeComponentImplementation):
             raise exceptions.CodeException("Cannot determine end_time from the code yet, so end_time must be provided!")
             
         self._evolve_particles(self.particles, end_time)
+        self.model_time = end_time
+
     def commit_particles(self):
         self.evolve_model(1|units.yr)

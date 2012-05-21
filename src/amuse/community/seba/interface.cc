@@ -26,7 +26,57 @@ local void evolve_star_until_next_time(node* bi, const real out_time, const int 
     starev.close();
 }
 
-int evolve_star(double mass, double endtime, double metal, double * resulttime, double * end_mass, double * end_radius, double * end_luminosity, double * end_temperature){
+local int translate_to_SSE_type(stellar_type stp, const real mass) {
+
+  switch (stp) {
+    case Brown_Dwarf:
+  case Main_Sequence: 
+      if (mass<0.1) {
+	return 0;
+      }
+      return 1;
+    case Hertzsprung_Gap:
+      return 2;
+    case Sub_Giant:
+      return 3;
+    case Horizontal_Branch:
+      return 4;
+    case Super_Giant:
+      return 5;
+    case Hyper_Giant:
+      return 6;
+    case Carbon_Star:
+    case Helium_Star: 
+      return 7;
+    case Helium_Giant:
+      return 9;
+    case Helium_Dwarf:
+      return 10;
+    case Carbon_Dwarf:
+      return 11;
+    case Oxygen_Dwarf:
+      return 12;
+    case Xray_Pulsar:
+    case Radio_Pulsar:
+    case Neutron_Star: 
+      return 13;
+    case Black_Hole:
+      return 14;
+    case Disintegrated:
+      return 15;
+    case Proto_Star:
+    case Planet:
+    case Static_Star:
+    case SPZDCH_Star:
+    case NAS: 
+    case Thorn_Zytkow:
+    case Double:
+    case no_of_stellar_type:
+      return -1;
+  }
+}
+
+int evolve_star(double mass, double endtime, double metal, double * resulttime, double * end_mass, double * end_radius, double * end_luminosity, double * end_temperature, double *end_time_step, int *end_stellar_type){
     stellar_type type = Main_Sequence;
     char * star_type_string;
     int  c;
@@ -90,6 +140,8 @@ int evolve_star(double mass, double endtime, double metal, double * resulttime, 
        *end_radius = bi->get_starbase()->get_effective_radius(); 
        *end_luminosity = bi->get_starbase()->get_luminosity();
        *end_temperature = bi->get_starbase()->temperature();
+       *end_time_step = bi->get_starbase()->get_evolve_timestep();
+       *end_stellar_type = translate_to_SSE_type(bi->get_starbase()->get_element_type(), mass);
 
         //    << "   " << type_string(bi->get_starbase()->get_element_type())
     }
@@ -98,4 +150,5 @@ int evolve_star(double mass, double endtime, double metal, double * resulttime, 
     
     return 0;
 }
+
 
