@@ -69,10 +69,6 @@ class nbody_unit(core.base_unit):
     
 nbody_system = core.system('nbody')
 
-length = nbody_unit(units.m, nbody_system)
-time = nbody_unit(units.s, nbody_system)
-mass = nbody_unit(units.kg, nbody_system)
-
 length = generic_unit_system.length
 time =  generic_unit_system.time
 mass =  generic_unit_system.mass
