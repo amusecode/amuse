@@ -1,6 +1,10 @@
 #define IMPBH   //Improved barnes hut opening method
 //#define INDSOFT //Individual softening using cubic spline kernel
 
+
+// #define _AMUSE_STOPPING_CONDITIONS_
+
+
 //Tree-walk and stack configuration
 //#define LMEM_STACK_SIZE            3072         //Number of storage places PER thread, MUST be power 2 !!!!
 //#define LMEM_STACK_SIZE            2048         //Number of storage places PER thread, MUST be power 2 !!!!

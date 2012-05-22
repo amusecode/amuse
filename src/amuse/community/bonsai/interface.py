@@ -2,7 +2,7 @@ import os.path
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
-class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface):
+class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
         .. [#] Bedorf J., Gaburov E., Portegies Zwart S., "A sparse octree
         .. [#] gravitational N-body code that runs entirely on the GPU processor",
@@ -12,7 +12,7 @@ class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
 
 
 
-    include_headers = ['worker_code.h']
+    include_headers = ['worker_code.h', 'stopcond.h']
     
     def name_of_worker(self,mode):
         return 'bonsai_worker'
@@ -174,6 +174,9 @@ class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
 class Bonsai(GravitationalDynamics):
     
     def __init__(self, unit_converter = None, **options):
+        self.stopping_conditions = StoppingConditions(self)
+        
+        
         legacy_interface = BonsaiInterface(**options)
         GravitationalDynamics.__init__(
             self,
@@ -198,6 +201,8 @@ class Bonsai(GravitationalDynamics):
             "timestep for the system", 
             default_value = 1.0 / 64 | nbody_system.time
         )
+        
+        self.stopping_conditions.define_parameters(object)
     
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
@@ -221,5 +226,10 @@ class Bonsai(GravitationalDynamics):
             (nbody_system.length**2,),
             (object.ERROR_CODE,)
         )
-    
+        self.stopping_conditions.define_methods(object)
+        
+    def define_particle_sets(self, object):
+        GravitationalDynamics.define_particle_sets(self, object)
+        
+        self.stopping_conditions.define_particle_set(object)        
 

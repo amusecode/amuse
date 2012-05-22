@@ -250,7 +250,92 @@ extern "C"  __global__ void setActiveGroups(const int n_bodies,
                                                                                                                                                             
 }     
 
-#if 1
+
+#ifdef _AMUSE_STOPPING_CONDITIONS_
+extern "C" __global__ void correct_particles(const int n_bodies,
+                                             float tc,
+                                             float2 *time,                                                                              
+                                             uint   *active_list,
+                                             real4 *vel,
+                                             real4 *acc0,
+                                             real4 *acc1,
+                                             real4 *pos,
+                                             real4 *pPos,
+                                             real4 *pVel,                                             
+                                             int   *ngb,
+                                             int   *pairDetection) {
+  const int bid =  blockIdx.y *  gridDim.x +  blockIdx.x;
+  const int tid =  threadIdx.y * blockDim.x + threadIdx.x;
+  const int dim =  blockDim.x * blockDim.y;
+
+  int idx = bid * dim + tid;
+  if (idx >= n_bodies) return;
+
+  //Check if particle is set to active during approx grav
+  if (active_list[idx] != 1) return;
+
+
+  float4 v  = vel [idx];
+  float4 a0 = acc0[idx];
+  float4 a1 = acc1[idx];
+  float  tb = time[idx].x;
+//   float  dt = time[idx].y;
+
+  float dt_cb = tc - tb;
+
+  //Store the predicted position as the one to use
+  pos[idx] = pPos[idx];
+
+  //Correct the position
+  v = pVel[idx];
+
+  dt_cb *= 0.5f;
+  v.x += (a1.x - a0.x)*dt_cb;
+  v.y += (a1.y - a0.y)*dt_cb;
+  v.z += (a1.z - a0.z)*dt_cb;
+
+  //Store the corrected velocity, accelaration and the new time step info
+  vel [idx] = v;
+  acc0[idx] = a1; 
+
+//   time[idx] = (float2){tc, tc + dt};
+
+
+  //Code specific to stopping conditions
+  int j = ngb[idx];
+  if(j >= 0)    //Only check if we have a valid nearby neighbour
+  {
+    float4 posi = pPos[idx];
+    float4 posj = pPos[j];
+    float  radj = vel[j].w; //Particle radius is stored in w component of velocity
+    float  radi = v.w;
+
+    //Compute distance and compare to summed radius
+    float ds2 = ((posi.x-posj.x)*(posi.x-posj.x)) +
+          ((posi.y-posj.y)*(posi.y-posj.y)) +
+          ((posi.z-posj.z)*(posi.z-posj.z));
+
+    float rsum = radi + radj;
+    if (ds2 <= rsum*rsum)
+    {
+      //Collision detected, store the indices of the involved particles
+      //Note that this will create double items in the final list
+      //if j is nearest neighbour of i and i nearest neighbour of j
+      pairDetection[2*idx+0] = idx | (1 << 31);
+      pairDetection[2*idx+1] = j | (1 << 31);
+
+      //Another option is to store it like this, but this destroys the 
+      //info about pairs
+    }
+  }//if j >= 0
+
+
+}
+
+
+
+
+#else
 extern "C" __global__ void correct_particles(const int n_bodies,
                                              float tc,
                                              float2 *time,                                                                              
@@ -299,6 +384,12 @@ extern "C" __global__ void correct_particles(const int n_bodies,
 
 }
 #endif
+
+
+
+
+
+
 
 #if 0
 extern "C" __global__ void correct_particles(const int n_bodies,

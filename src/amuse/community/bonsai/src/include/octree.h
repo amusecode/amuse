@@ -294,6 +294,12 @@ protected:
 
   bool store_energy_flag;
   double tinit;
+  
+  
+  #ifdef _AMUSE_STOPPING_CONDITIONS_
+    int stopping_condition_found;  //Indicates if a stopping condition was triggered    
+  #endif
+  
 
   // OpenCL context
 

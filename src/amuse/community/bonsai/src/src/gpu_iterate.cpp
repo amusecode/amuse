@@ -3,7 +3,14 @@
 #include <iostream>
 #include <algorithm>
 #include <iomanip>
+
+#ifdef _AMUSE_STOPPING_CONDITIONS_
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
+#endif
+
 using namespace std;
+
 
 static double de_max = 0;
 static double dde_max = 0;  
@@ -108,7 +115,13 @@ void octree::makeLET()
 
 
 void octree::iterate() {
-
+  
+  #ifdef _AMUSE_STOPPING_CONDITIONS_
+    //Reset stopping condition settings
+    this->stopping_condition_found = 0;      
+    reset_stopping_conditions();
+  #endif    
+      
   int Nact_since_last_tree_rebuild = 0;
   real4 r_min, r_max;
   
@@ -178,6 +191,7 @@ void octree::iterate() {
   for(int i=0; i < 10000000; i++) //Large number, limit
   {
     printf("At the start of iterate:\n");
+
 
     //predict localtree
     devContext.startTiming();
@@ -303,6 +317,17 @@ void octree::iterate() {
     devContext.startTiming();
     double de = compute_energies(this->localTree); de=de;
     devContext.stopTiming("Energy", 7);
+    
+    
+    #ifdef _AMUSE_STOPPING_CONDITIONS_
+      //Check if a stopping condition was triggered
+      if(this->stopping_condition_found)
+      {
+        return;
+      }
+    #endif
+      
+    
         
 
     if(snapshotIter > 0)
@@ -733,12 +758,75 @@ void octree::correct(tree_structure &tree)
   correctParticles.set_arg<cl_mem>(7, tree.bodies_pos.p());
   correctParticles.set_arg<cl_mem>(8, tree.bodies_Ppos.p());
   correctParticles.set_arg<cl_mem>(9, tree.bodies_Pvel.p());
+#ifdef _AMUSE_STOPPING_CONDITIONS_
+  //Stopping conditions requires extra buffers and tests
+  
+  //The buffers to hold the results
+  my_dev::dev_mem<uint> pairDetectionBuffer(devContext);
+  my_dev::dev_mem<uint> compactPairDetectionBuffer(devContext);  
+  pairDetectionBuffer.cmalloc_copy(tree.generalBuffer1.get_pinned(), 
+                         tree.generalBuffer1.get_flags(), 
+                         tree.generalBuffer1.get_devMem(),
+                         &tree.generalBuffer1[0], 0,  
+                         2*tree.n, getAllignmentOffset(0));  
+
+  compactPairDetectionBuffer.cmalloc_copy(tree.generalBuffer1.get_pinned(), 
+                         tree.generalBuffer1.get_flags(), 
+                         tree.generalBuffer1.get_devMem(),
+                         &tree.generalBuffer1[2*tree.n], 2*tree.n,  
+                         2*tree.n, getAllignmentOffset(2*tree.n));   
+  
+  
+  pairDetectionBuffer.zeroMem();
+
+  correctParticles.set_arg<cl_mem>(11, tree.ngb.p());
+  correctParticles.set_arg<cl_mem>(12, pairDetectionBuffer.p());
+#endif   
      
 
   correctParticles.setWork(tree.n, 128);
   correctParticles.execute();
   clFinish(devContext.get_command_queue());
-
+  
+#ifdef _AMUSE_STOPPING_CONDITIONS_
+  
+  int is_collision_detection_enabled;
+  int error = is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);  
+  if(is_collision_detection_enabled)
+  {
+    //Compact the detection list to check if there were collisions
+    int collisionPairs = 0;
+    gpuCompact(devContext, pairDetectionBuffer, compactPairDetectionBuffer,
+              tree.n*2, &collisionPairs);
+    
+    if(collisionPairs > 0)
+    {
+      //Set the stopping info
+      //Pairs are in : compactPairDetectionBuffer
+      //Pair 0: compactPairDetectionBuffer[2*0+0],compactPairDetectionBuffer[2*0+1]
+      //Pair 1: compactPairDetectionBuffer[2*1+0],compactPairDetectionBuffer[2*1+1]
+      //etc.
+      compactPairDetectionBuffer.d2h();
+      tree.bodies_ids.d2h();
+      for(int i =0; i < collisionPairs; i +=2)
+      {
+        int stopping_index  = next_index_for_stopping_condition();        //get the next storage location
+        if(stopping_index  >= 0)
+        {
+          set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+          set_stopping_condition_particle_index(stopping_index, 0, tree.bodies_ids[compactPairDetectionBuffer[i]]);        set_stopping_condition_particle_index(stopping_index, 1, tree.bodies_ids[compactPairDetectionBuffer[i+1]]);
+        }
+      }
+      //Set error
+      this->stopping_condition_found = 1;
+    }
+  }
+  
+  
+#endif  //Ifdef _AMUSE_STOPPING_CONDITIONS_
+  
+  
+  
 
   computeDt.set_arg<int>(0,    &tree.n);
   computeDt.set_arg<float>(1,  &t_current);

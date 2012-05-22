@@ -13,6 +13,11 @@ OFLAGS = -O3 -g -Wall -fopenmp
 CXXFLAGS =  -fPIC $(OFLAGS) -I$(CUDA_TK)/include 
 
 
+AMUSE_DIR?=../../../../..
+#-include ${AMUSE_DIR}/config.mk
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
+
 
 
 # NVCC      = $(CUDA_TK)/bin/nvcc  --device-emulation
@@ -26,14 +31,14 @@ NVCCFLAGS = -arch sm_20
 # Use with Mac OS X
 # NVCCFLAGS = -arch sm_12 -Xcompiler="-Duint=unsigned\ int"
 
-LDFLAGS = -lcuda 
+LDFLAGS = -lcuda
 
 #For tipsy support uncomment the following line
 CXXFLAGS += -DTIPSYOUTPUT
 
 
 INCLUDEPATH = ./include
-CXXFLAGS  += -I$(INCLUDEPATH)
+CXXFLAGS  += -I$(INCLUDEPATH) $(SCINC)
 NVCCFLAGS += -I$(INCLUDEPATH)
 
 CUDAKERNELSPATH = CUDAkernels
@@ -71,7 +76,7 @@ $(CODELIB): $(OBJ) $(CUDAPTX)
 
 
 $(PROG): $(OBJ)
-	$(LD) $(LDFLAGS) $^ -o $@ 
+	$(LD) $(LDFLAGS) $^ -o $@ $(SCLIBS)
 
 %.o: $(SRCPATH)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

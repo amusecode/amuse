@@ -136,7 +136,8 @@ int new_particle(int *id, double mass, double x, double y, double z, double vx, 
   bodies_vel[n_bodies].x = vx;
   bodies_vel[n_bodies].y = vy;
   bodies_vel[n_bodies].z = vz;
-  bodies_vel[n_bodies].w = 0;
+  //bodies_vel[n_bodies].w = 0;
+  bodies_vel[n_bodies].w = radius; //Store radius in 'w' component for easy access stopping conditions
 
   bodies_time.resize(n_bodies+1);
   bodies_time[n_bodies].x = t_now;
