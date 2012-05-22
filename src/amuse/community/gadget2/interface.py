@@ -1242,6 +1242,14 @@ class Gadget2(GravitationalDynamics):
         self.set_unit_time(self.unit_converter.to_si(generic_unit_system.time).value_in(units.s))
         return result
     
+    def commit_parameters(self):
+        if self.parameters.comoving_integration_flag:
+            h = self.parameters.hubble_parameter
+            self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g/h))
+            self.set_unit_length(self.unit_converter.to_si(generic_unit_system.length).value_in(units.cm/h))
+            self.set_unit_time(self.unit_converter.to_si(generic_unit_system.time).value_in(units.s/h))
+        return self.overridden().commit_parameters()
+    
     def define_properties(self, object):
         object.add_property("get_kinetic_energy")
         object.add_property("get_potential_energy")

@@ -12,9 +12,10 @@ from amuse.units import generic_unit_system
 from amuse.units import units, constants
 from amuse.datamodel import Particles, Grid, ParticlesSuperset
 from amuse.rfi import channel
-from amuse.io import read_set_from_file
+from amuse.io import read_set_from_file, write_set_to_file
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.gasplummer import new_plummer_gas_model
+from amuse.ext.cosmo import convert_comoving_to_physical
 
 try:
     from matplotlib import pyplot
@@ -1132,7 +1133,7 @@ class TestGadget2(TestWithMPI):
     def test25(self):
         print "Testing Gadget2 comoving_integration_flag"
         particles = new_plummer_model(100, self.default_convert_nbody, do_scale=True)
-        instance = Gadget2(self.default_converter, redirection="none", **default_options)
+        instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
         instance.parameters.comoving_integration_flag = True
         instance.parameters.redshift_begin = 20.0
@@ -1164,7 +1165,7 @@ class TestGadget2(TestWithMPI):
         instance.initialize_code()
         instance.parameters.comoving_integration_flag = True
         instance.parameters.redshift_begin = 23.0
-        instance.parameters.redshift_max = 0.0
+        instance.parameters.redshift_max = -0.1
         instance.parameters.omega_zero = 0.3
         instance.parameters.omega_lambda = 0.7
         instance.parameters.omega_baryon = 0.0
@@ -1185,6 +1186,53 @@ class TestGadget2(TestWithMPI):
         instance.evolve_to_redshift(0.0)
         write_set_to_file(instance.particles, "z0", "hdf5")
         instance.stop()
+    
+    def xtest27(self):
+        print "Testing Gadget2 comoving_integration_flag validation II (WIP)"
+        particles = read_set_from_file("lcdm_gas_littleendian.dat", "gadget")
+        gas = particles[0]
+        mu = constants.proton_mass * 4.0 / (1.0 + 3.0 * 0.76)
+        gas.u = self.default_converter.to_generic(3 * constants.kB * (1000 | units.K) / (2 * mu))
+        gas.velocity /= 11.0**-0.5 # velocities in Gadget files are in w=sqrt(a)*dx/dt
+        halo = particles[1]
+        halo.velocity /= 11.0**-0.5 # velocities in Gadget files are in w=sqrt(a)*dx/dt
+        gas = convert_comoving_to_physical(gas, redshift=10.0)
+        halo = convert_comoving_to_physical(halo, redshift=10.0)
+        
+        instance = Gadget2(self.default_converter, mode="periodic", redirection="none", number_of_workers=1)
+        instance.parameters.comoving_integration_flag = True
+        instance.parameters.n_smooth = 33.0
+        instance.parameters.n_smooth_tol = 2.0 / instance.parameters.n_smooth
+        instance.parameters.periodic_box_size = 50000.0 | generic_unit_system.length
+        instance.parameters.redshift_begin = 10.0
+        instance.parameters.redshift_max = -0.1
+        instance.parameters.omega_zero = 0.3
+        instance.parameters.omega_lambda = 0.7
+        instance.parameters.omega_baryon = 0.04
+        instance.parameters.hubble_parameter = 1.0 # coordinates in input file are already in kpc/h
+        instance.parameters.artificial_viscosity_alpha = 0.8
+        instance.parameters.min_gas_temp = 50.0 | units.K
+        instance.parameters.gas_epsilon = 600.0 | generic_unit_system.length
+        instance.parameters.epsilon_squared = (600.0 | generic_unit_system.length)**2
+        instance.parameters.softening_gas_max_phys = 600.0 | generic_unit_system.length
+        instance.parameters.softening_halo_max_phys = 600.0 | generic_unit_system.length
+        instance.parameters.max_size_timestep = 0.03 | generic_unit_system.time
+        instance.parameters.tree_domain_update_frequency = 0.1
+        instance.gas_particles.add_particles(gas)
+        instance.dm_particles.add_particles(halo)
+        write_set_to_file(instance.particles, "z10", "hdf5")
+        instance.evolve_to_redshift(5.0)
+        write_set_to_file(instance.particles, "z5", "hdf5")
+        instance.evolve_to_redshift(3.0)
+        write_set_to_file(instance.particles, "z3", "hdf5")
+        instance.evolve_to_redshift(2.0)
+        write_set_to_file(instance.particles, "z2", "hdf5")
+        instance.evolve_to_redshift(1.0)
+        write_set_to_file(instance.particles, "z1", "hdf5")
+        instance.evolve_to_redshift(0.0)
+        write_set_to_file(instance.particles, "z0", "hdf5")
+        instance.stop()
+    
 
 def energy_evolution_plot(time, kinetic, potential, thermal, figname):
     if not HAS_MATPLOTLIB:

@@ -2,7 +2,10 @@
 # to be extended as needed
 
 import numpy
-from amuse.units import units
+from amuse.units import units, generic_unit_system
+from amuse.units.quantities import to_quantity
+from amuse.datamodel import Particles
+from amuse.support.exceptions import AmuseException
 
 def findbin(ylist,y):
   s=1
@@ -111,6 +114,43 @@ class Cosmology(object):
   def afromtau(self,tau):
     return self.a_lookup.evaluate(tau)
     
+def convert_comoving_to_physical(original, redshift=0.0, hubble_parameter=1.0, attribute_names=None):
+    """
+    Converts quantities or particle sets from comoving coordinates to physical 
+    coordinates. In comoving coordinates, changes in positions due to the 
+    expansion of the universe are corrected for, by dividing by the scale 
+    factor 'a':
+    a = 1 / (1 + z).
+    This function will undo this correction for all quantities with units that 
+    are (derived from) length units (e.g. position, velocity, energy, but not 
+    time or mass).
+    
+    Optionally, a value for the Hubble parameter (value of Hubble constant in 
+    units of 100 km/s/Mpc) can be supplied. If so, the units of 'original' are 
+    assumed to be based on length/h, mass/h, and time/h, instead of length, 
+    mass, and time, respectively. These factors will be divided out in the result
+    """
+    if isinstance(original, Particles):
+        copy = original.copy_to_memory()
+        if attribute_names is None:
+            attribute_names = copy.get_attribute_names_defined_in_store()
+        for attribute in attribute_names:
+            setattr(copy, attribute, convert_quantity_from_comoving_to_physical(
+                getattr(copy, attribute), redshift, hubble_parameter))
+        return copy
+    elif hasattr(original, "unit"):
+        return convert_quantity_from_comoving_to_physical(original, redshift, hubble_parameter)
+    else:
+        raise AmuseException("Can't convert instance of {0} from comoving to physical "
+            "coordinates (only Particles or Quantity supported)".format(original.__class__))
+
+def convert_quantity_from_comoving_to_physical(original, redshift, hubble_parameter=1.0):
+    for (exponent, unit) in to_quantity(original).unit.base:
+        if unit is units.m or unit is generic_unit_system.length:
+            return original * (1 / (1.0 + redshift))**exponent
+    return original
+
+
 if __name__=="__main__":  
   cosmo=Cosmology()
   print cosmo.agefroma(1.).in_(units.Myr)

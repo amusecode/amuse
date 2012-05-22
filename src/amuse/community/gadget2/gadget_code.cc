@@ -252,6 +252,13 @@ int commit_particles(){
 #ifndef ISOTHERM_EQS
     double a3;
 #endif
+    double a, a_inv;
+    if (All.ComovingIntegrationOn) {
+        a = All.Time;
+        a_inv = 1.0 / All.Time;
+    } else {
+        a = a_inv = 1;
+    }
 
     t0 = second();
     All.TotNumPart = dm_particles_in_buffer + sph_particles_in_buffer;
@@ -269,12 +276,12 @@ int commit_particles(){
             state_iter != sph_states.end(); state_iter++, i++){
         P[i].ID = (*state_iter).first;
         P[i].Mass = (*state_iter).second.mass;
-        P[i].Pos[0] = (*state_iter).second.x;
-        P[i].Pos[1] = (*state_iter).second.y;
-        P[i].Pos[2] = (*state_iter).second.z;
-        P[i].Vel[0] = (*state_iter).second.vx;
-        P[i].Vel[1] = (*state_iter).second.vy;
-        P[i].Vel[2] = (*state_iter).second.vz;
+        P[i].Pos[0] = (*state_iter).second.x * a_inv;
+        P[i].Pos[1] = (*state_iter).second.y * a_inv;
+        P[i].Pos[2] = (*state_iter).second.z * a_inv;
+        P[i].Vel[0] = (*state_iter).second.vx * a;
+        P[i].Vel[1] = (*state_iter).second.vy * a;
+        P[i].Vel[2] = (*state_iter).second.vz * a;
         P[i].Type = 0; // SPH particles (dark matter particles have type 1)
         SphP[i].Entropy = (*state_iter).second.u;
         SphP[i].Density = -1;
@@ -288,12 +295,12 @@ int commit_particles(){
             state_iter != dm_states.end(); state_iter++, i++){
         P[i].ID = (*state_iter).first;
         P[i].Mass = (*state_iter).second.mass;
-        P[i].Pos[0] = (*state_iter).second.x;
-        P[i].Pos[1] = (*state_iter).second.y;
-        P[i].Pos[2] = (*state_iter).second.z;
-        P[i].Vel[0] = (*state_iter).second.vx;
-        P[i].Vel[1] = (*state_iter).second.vy;
-        P[i].Vel[2] = (*state_iter).second.vz;
+        P[i].Pos[0] = (*state_iter).second.x * a_inv;
+        P[i].Pos[1] = (*state_iter).second.y * a_inv;
+        P[i].Pos[2] = (*state_iter).second.z * a_inv;
+        P[i].Vel[0] = (*state_iter).second.vx * a;
+        P[i].Vel[1] = (*state_iter).second.vy * a;
+        P[i].Vel[2] = (*state_iter).second.vz * a;
         P[i].Type = 1; // dark matter particles (SPH particles have type 0)
     }
     dm_states.clear();
@@ -365,35 +372,42 @@ int commit_particles(){
     All.CPU_Total += timediff(t0, t1);
 
     particles_initialized = true;
-    if (ThisTask == 0)
+    if (ThisTask == 0){
         cout << flush;
+    }
     return 0;
 }
 
 void push_particle_data_on_state_vectors(){
     map<long long, int>::iterator iter;
     int i;
+    double a_inv, a;
 #ifndef ISOTHERM_EQS
     double a3;
-
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
     }
 #endif
+    if (All.ComovingIntegrationOn) {
+        a = All.Time;
+        a_inv = 1.0 / All.Time;
+    } else {
+        a = a_inv = 1;
+    }
     for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
         i = (*iter).second;
         if (P[i].Type == 0){
             // store sph particle data
             sph_state state;
             state.mass = P[i].Mass;
-            state.x =    P[i].Pos[0];
-            state.y =    P[i].Pos[1];
-            state.z =    P[i].Pos[2];
-            state.vx =   P[i].Vel[0];
-            state.vy =   P[i].Vel[1];
-            state.vz =   P[i].Vel[2];
+            state.x =    P[i].Pos[0] * a;
+            state.y =    P[i].Pos[1] * a;
+            state.z =    P[i].Pos[2] * a;
+            state.vx =   P[i].Vel[0] * a_inv;
+            state.vy =   P[i].Vel[1] * a_inv;
+            state.vz =   P[i].Vel[2] * a_inv;
 #ifdef ISOTHERM_EQS
             state.u = SphP[i].Entropy;
 #else
@@ -404,12 +418,12 @@ void push_particle_data_on_state_vectors(){
             // store dark matter particle data
             dynamics_state state;
             state.mass = P[i].Mass;
-            state.x =    P[i].Pos[0];
-            state.y =    P[i].Pos[1];
-            state.z =    P[i].Pos[2];
-            state.vx =   P[i].Vel[0];
-            state.vy =   P[i].Vel[1];
-            state.vz =   P[i].Vel[2];
+            state.x =    P[i].Pos[0] * a;
+            state.y =    P[i].Pos[1] * a;
+            state.z =    P[i].Pos[2] * a;
+            state.vx =   P[i].Vel[0] * a_inv;
+            state.vy =   P[i].Vel[1] * a_inv;
+            state.vz =   P[i].Vel[2] * a_inv;
             dm_states.insert(std::pair<long long, dynamics_state>(P[i].ID, state));
         }
     }
@@ -540,7 +554,6 @@ bool check_internal_energy_stopping_condition(){
 
 
 int evolve_model_generic(double t_end){
-    cout << All.TimeMax << " " << All.TimeBegin << " " << t_end << endl;
     bool done;
     double t0, t1;
     int Ti_end, stopflag = 0;
@@ -657,7 +670,7 @@ int synchronize_model() {
     return 0;
 }
 
-int contruct_tree_if_needed(void){
+int construct_tree_if_needed(void){
     double tstart, tend;
     if (!particles_initialized)
         return -1;
@@ -1368,7 +1381,7 @@ int set_radius(int index, double radius){
     return -2;
 }
 
-int get_position(int *index, double *x, double *y, double *z, int length){
+int get_position_comoving(int *index, double *x, double *y, double *z, int length){
     int errors = 0;
     double *buffer = new double[length*3];
     int *count = new int[length];
@@ -1414,8 +1427,19 @@ int get_position(int *index, double *x, double *y, double *z, int length){
     }
     return 0;
 }
+int get_position(int *index, double *x, double *y, double *z, int length){
+    int result = get_position_comoving(index, x, y, z, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        for (int i = 0; i < length; i++){
+            x[i] *= All.Time;
+            y[i] *= All.Time;
+            z[i] *= All.Time;
+        }
+    }
+    return result;
+}
 
-int set_position(int *index, double *x, double *y, double *z, int length){
+int set_position_comoving(int *index, double *x, double *y, double *z, int length){
     int *count = new int[length];
     int local_index;
 
@@ -1430,8 +1454,19 @@ int set_position(int *index, double *x, double *y, double *z, int length){
     global_quantities_of_system_up_to_date = false;
     return check_counts_and_free(count, length);
 }
+int set_position(int *index, double *x, double *y, double *z, int length){
+    if(All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / All.Time;
+        for (int i = 0; i < length; i++){
+            x[i] *= a_inv;
+            y[i] *= a_inv;
+            z[i] *= a_inv;
+        }
+    }
+    return set_position_comoving(index, x, y, z, length);
+}
 
-int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
+int get_velocity_gadget_u(int *index, double *vx, double *vy, double *vz, int length){
     int errors = 0;
     double *buffer = new double[length*3];
     int *count = new int[length];
@@ -1477,8 +1512,32 @@ int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
     }
     return 0;
 }
+int get_velocity_comoving(int *index, double *vx, double *vy, double *vz, int length){
+    int result = get_velocity_gadget_u(index, vx, vy, vz, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        double a2_inv = 1.0 / (All.Time * All.Time);
+        for (int i = 0; i < length; i++){
+            vx[i] *= a2_inv;
+            vy[i] *= a2_inv;
+            vz[i] *= a2_inv;
+        }
+    }
+    return result;
+}
+int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
+    int result = get_velocity_gadget_u(index, vx, vy, vz, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / All.Time;
+        for (int i = 0; i < length; i++){
+            vx[i] *= a_inv;
+            vy[i] *= a_inv;
+            vz[i] *= a_inv;
+        }
+    }
+    return result;
+}
 
-int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
+int set_velocity_gadget_u(int *index, double *vx, double *vy, double *vz, int length){
     int *count = new int[length];
     int local_index;
 
@@ -1503,8 +1562,29 @@ int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
     global_quantities_of_system_up_to_date = false;
     return check_counts_and_free(count, length);
 }
+int set_velocity_comoving(int *index, double *vx, double *vy, double *vz, int length){
+    if(All.ComovingIntegrationOn) {
+        double a2 = All.Time * All.Time;
+        for (int i = 0; i < length; i++){
+            vx[i] *= a2;
+            vy[i] *= a2;
+            vz[i] *= a2;
+        }
+    }
+    return set_velocity_gadget_u(index, vx, vy, vz, length);
+}
+int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
+    if(All.ComovingIntegrationOn) {
+        for (int i = 0; i < length; i++){
+            vx[i] *= All.Time;
+            vy[i] *= All.Time;
+            vz[i] *= All.Time;
+        }
+    }
+    return set_velocity_gadget_u(index, vx, vy, vz, length);
+}
 
-int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
+int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
     int errors = 0;
     double *buffer = new double[length*7];
     int *count = new int[length];
@@ -1566,8 +1646,35 @@ int get_state(int *index, double *mass, double *x, double *y, double *z, double 
     }
     return 0;
 }
+int get_state_comoving(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
+    int result = get_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        double a2_inv = 1.0 / (All.Time * All.Time);
+        for (int i = 0; i < length; i++){
+            vx[i] *= a2_inv;
+            vy[i] *= a2_inv;
+            vz[i] *= a2_inv;
+        }
+    }
+    return result;
+}
+int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
+    int result = get_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / All.Time;
+        for (int i = 0; i < length; i++){
+            x[i] *= All.Time;
+            y[i] *= All.Time;
+            z[i] *= All.Time;
+            vx[i] *= a_inv;
+            vy[i] *= a_inv;
+            vz[i] *= a_inv;
+        }
+    }
+    return result;
+}
 
-int set_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
+int set_state_gadget(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
     int *count = new int[length];
     int local_index;
 
@@ -1596,8 +1703,33 @@ int set_state(int *index, double *mass, double *x, double *y, double *z, double 
     global_quantities_of_system_up_to_date = false;
     return check_counts_and_free(count, length);
 }
+int set_state_comoving(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
+    if(All.ComovingIntegrationOn) {
+        double a2 = All.Time * All.Time;
+        for (int i = 0; i < length; i++){
+            vx[i] *= a2;
+            vy[i] *= a2;
+            vz[i] *= a2;
+        }
+    }
+    return set_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
+}
+int set_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
+    if(All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / All.Time;
+        for (int i = 0; i < length; i++){
+            x[i] *= a_inv;
+            y[i] *= a_inv;
+            z[i] *= a_inv;
+            vx[i] *= All.Time;
+            vy[i] *= All.Time;
+            vz[i] *= All.Time;
+        }
+    }
+    return set_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
+}
 
-int get_state_sph(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy, int length) {
+int get_state_sph_gadget(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy, int length) {
     int errors = 0;
     double *buffer = new double[length*8];
     int *count = new int[length];
@@ -1676,8 +1808,23 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
     }
     return 0;
 }
+int get_state_sph(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy, int length) {
+    int result = get_state_sph_gadget(index, mass, x, y, z, vx, vy, vz, internal_energy, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / All.Time;
+        for (int i = 0; i < length; i++){
+            x[i] *= All.Time;
+            y[i] *= All.Time;
+            z[i] *= All.Time;
+            vx[i] *= a_inv;
+            vy[i] *= a_inv;
+            vz[i] *= a_inv;
+        }
+    }
+    return result;
+}
 
-int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
+int set_state_sph_gadget(int *index, double *mass, double *x, double *y, double *z,
         double *vx, double *vy, double *vz, double *internal_energy, int length){
     int *count = new int[length];
     int local_index;
@@ -1722,8 +1869,23 @@ int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
     global_quantities_of_system_up_to_date = false;
     return check_counts_and_free(count, length);
 }
+int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
+        double *vx, double *vy, double *vz, double *internal_energy, int length){
+    if(All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / All.Time;
+        for (int i = 0; i < length; i++){
+            x[i] *= a_inv;
+            y[i] *= a_inv;
+            z[i] *= a_inv;
+            vx[i] *= All.Time;
+            vy[i] *= All.Time;
+            vz[i] *= All.Time;
+        }
+    }
+    return set_state_sph_gadget(index, mass, x, y, z, vx, vy, vz, internal_energy, length);
+}
 
-int get_acceleration(int *index, double * ax, double * ay, double * az, int length){
+int get_acceleration_comoving(int *index, double * ax, double * ay, double * az, int length){
     int errors = 0;
     double *buffer = new double[length*3];
     int *count = new int[length];
@@ -1773,6 +1935,17 @@ int get_acceleration(int *index, double * ax, double * ay, double * az, int leng
         return -3;
     }
     return 0;
+}
+int get_acceleration(int *index, double * ax, double * ay, double * az, int length){
+    int result = get_acceleration_comoving(index, ax, ay, az, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        for (int i = 0; i < length; i++){
+            ax[i] *= All.Time;
+            ay[i] *= All.Time;
+            az[i] *= All.Time;
+        }
+    }
+    return result;
 }
 
 int set_acceleration(int index, double ax, double ay, double az){
@@ -1867,7 +2040,7 @@ int set_internal_energy(int *index, double *internal_energy, int length){
     return check_counts_and_free(count, length);
 }
 
-int get_smoothing_length(int *index, double *smoothing_length, int length){
+int get_smoothing_length_comoving(int *index, double *smoothing_length, int length){
     int errors = 0;
     double *buffer = new double[length];
     int *count = new int[length];
@@ -1909,8 +2082,17 @@ int get_smoothing_length(int *index, double *smoothing_length, int length){
     }
     return 0;
 }
+int get_smoothing_length(int *index, double *smoothing_length, int length){
+    int result = get_smoothing_length_comoving(index, smoothing_length, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        for (int i = 0; i < length; i++){
+            smoothing_length[i] *= All.Time;
+        }
+    }
+    return result;
+}
 
-int get_density(int *index, double *density_out, int length){
+int get_density_comoving(int *index, double *density_out, int length){
     int errors = 0;
     double *buffer = new double[length];
     int *count = new int[length];
@@ -1954,12 +2136,25 @@ int get_density(int *index, double *density_out, int length){
     }
     return 0;
 }
-int get_pressure(int *index, double *pressure_out, int length){
+int get_density(int *index, double *density_out, int length){
+    int result = get_density_comoving(index, density_out, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        double a3_inv = 1.0 / (All.Time * All.Time * All.Time);
+        for (int i = 0; i < length; i++){
+            density_out[i] *= a3_inv;
+        }
+    }
+    return result;
+}
+
+int get_pressure_comoving(int *index, double *pressure_out, int length){
     int errors = 0;
     double *buffer = new double[length];
     int *count = new int[length];
     int local_index;
-
+    double a;
+    
+    if(All.ComovingIntegrationOn){a = All.Time;}else{a = 1;}
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
@@ -1968,7 +2163,7 @@ int get_pressure(int *index, double *pressure_out, int length){
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
-            buffer[i] = SphP[local_index].Pressure;
+            buffer[i] = SphP[local_index].Pressure / a;
         } else {
             count[i] = 0;
             buffer[i] = 0;
@@ -1996,6 +2191,17 @@ int get_pressure(int *index, double *pressure_out, int length){
     }
     return 0;
 }
+int get_pressure(int *index, double *pressure_out, int length){
+    int result = get_pressure_comoving(index, pressure_out, length);
+    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / All.Time;
+        for (int i = 0; i < length; i++){
+            pressure_out[i] *= a_inv;
+        }
+    }
+    return result;
+}
+
 int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int length){
     int errors = 0;
     double *buffer = new double[length];
@@ -2046,6 +2252,7 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
     }
     return 0;
 }
+
 int get_n_neighbours(int *index, double *n_neighbours, int length){
     int errors = 0;
     double *buffer = new double[length];
@@ -2091,8 +2298,11 @@ int get_n_neighbours(int *index, double *n_neighbours, int length){
 int get_epsilon_dm_part(int *index, double *epsilon, int length){
     set_softenings();
     if (ThisTask) {return 0;}
-    for (int i = 0; i < length; i++)
-        epsilon[i] = All.SofteningTable[1];
+    double a;
+    if (All.ComovingIntegrationOn) {a = All.Time;} else {a = 1;}
+    for (int i = 0; i < length; i++){
+        epsilon[i] = a * All.SofteningTable[1];
+    }
     return 0;
 }
 int get_epsilon_gas_part(int *index, double *epsilon, int length){
@@ -2101,8 +2311,11 @@ int get_epsilon_gas_part(int *index, double *epsilon, int length){
 #else
     set_softenings();
     if (ThisTask) {return 0;}
-    for (int i = 0; i < length; i++)
-        epsilon[i] = All.SofteningTable[0];
+    double a;
+    if (All.ComovingIntegrationOn) {a = All.Time;} else {a = 1;}
+    for (int i = 0; i < length; i++){
+        epsilon[i] = a * All.SofteningTable[0];
+    }
     return 0;
 #endif
 }
@@ -2148,7 +2361,11 @@ int get_total_radius(double *radius){
         MPI_Reduce(&local_max, NULL, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
     } else {
         MPI_Reduce(MPI_IN_PLACE, &local_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-        *radius = sqrt(local_max);
+        if (All.ComovingIntegrationOn){
+            *radius = All.Time * sqrt(local_max);
+        } else {
+            *radius = sqrt(local_max);
+        }
     }
     return 0;
 }
@@ -2188,12 +2405,14 @@ int get_potential(int *index, double *potential, int length) {
     } else {
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        double a2;
+        if (All.ComovingIntegrationOn) {a2 = All.Time * All.Time;} else {a2 = 1;}
         for (int i = 0; i < length; i++) {
             if (count[i] != 1){
                 errors++;
                 potential[i] = 0;
             } else {
-                potential[i] = buffer[i];
+                potential[i] = a2 * buffer[i];
             }
         }
     }
@@ -2236,18 +2455,22 @@ int get_center_of_mass_position(double *x, double *y, double *z){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
     if (ThisTask) {return 0;}
-    *x = SysState.CenterOfMass[0];
-    *y = SysState.CenterOfMass[1];
-    *z = SysState.CenterOfMass[2];
+    double a;
+    if (All.ComovingIntegrationOn) {a = All.Time;} else {a = 1;}
+    *x = a * SysState.CenterOfMass[0];
+    *y = a * SysState.CenterOfMass[1];
+    *z = a * SysState.CenterOfMass[2];
     return 0;
 }
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
     if (ThisTask) {return 0;}
-    *vx = SysState.Momentum[0]/SysState.Mass;
-    *vy = SysState.Momentum[1]/SysState.Mass;
-    *vz = SysState.Momentum[2]/SysState.Mass;
+    double a_inv;
+    if (All.ComovingIntegrationOn) {a_inv = 1.0 / All.Time;} else {a_inv = 1;}
+    *vx = a_inv * SysState.Momentum[0]/SysState.Mass;
+    *vy = a_inv * SysState.Momentum[1]/SysState.Mass;
+    *vz = a_inv * SysState.Momentum[2]/SysState.Mass;
     return 0;
 }
 int get_gravity_at_point(double eps, double x, double y, double z, double *forcex, double *forcey, double *forcez){
@@ -2261,29 +2484,36 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
     double pos[3], vel[3];
     double h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
     int error;
-#ifndef ISOTHERM_EQS
-    double a3;
-#endif
-    error = contruct_tree_if_needed();
-    if (error)
-        return error;
-    pos[0] = x;
-    pos[1] = y;
-    pos[2] = z;
-    vel[0] = vx;
-    vel[1] = vy;
-    vel[2] = vz;
+    double a, a_inv, a3_inv, a4_inv, a5_inv;
+    if (All.ComovingIntegrationOn) {
+        a = All.Time;
+        a_inv = 1.0 / All.Time;
+        a3_inv = a_inv * a_inv * a_inv;
+        a4_inv = a3_inv * a_inv;
+        a5_inv = a4_inv * a_inv;
+    } else {
+        a = a_inv = a3_inv = a4_inv = a5_inv = 1;
+    }
+    
+    error = construct_tree_if_needed();
+    if (error) {return error;}
+    
+    pos[0] = a_inv * x;
+    pos[1] = a_inv * y;
+    pos[2] = a_inv * z;
+    vel[0] = a * vx;
+    vel[1] = a * vy;
+    vel[2] = a * vz;
     hydro_state_at_point(pos, vel, &h_out, &ngb_out, &dhsml_out, &rho_out, rhov_out, &rhov2_out, &rhoe_out);
     if (ThisTask) {return 0;}
-    *rho   = rho_out;
-    *rhovx = rhov_out[0];
-    *rhovy = rhov_out[1];
-    *rhovz = rhov_out[2];
+    *rho   = rho_out * a3_inv;
+    *rhovx = rhov_out[0] * a4_inv;
+    *rhovy = rhov_out[1] * a4_inv;
+    *rhovz = rhov_out[2] * a4_inv;
 #ifdef ISOTHERM_EQS
-    *rhoe = rhoe_out + 0.5*(rhov_out[0]*rhov_out[0] + rhov_out[1]*rhov_out[1] + rhov_out[2]*rhov_out[2]) / rho_out;
+    *rhoe = a3_inv * rhoe_out + a5_inv * 0.5*(rhov_out[0]*rhov_out[0] + rhov_out[1]*rhov_out[1] + rhov_out[2]*rhov_out[2]) / rho_out;
 #else
-    if (All.ComovingIntegrationOn) {a3 = All.Time * All.Time * All.Time;} else {a3 = 1;}
-    *rhoe = rhoe_out * (pow(rho_out / a3, GAMMA_MINUS1) / GAMMA_MINUS1) + 0.5*rhov2_out;
+    *rhoe = a3_inv * rhoe_out * (pow(rho_out * a3_inv, GAMMA_MINUS1) / GAMMA_MINUS1) + a5_inv * 0.5*rhov2_out;
 #endif
     return 0;
 }
