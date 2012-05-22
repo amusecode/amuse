@@ -1,4 +1,5 @@
 import numpy
+from numpy import pi
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
@@ -12,9 +13,10 @@ class MikkolaInterfaceTests(TestWithMPI):
     
     def test1(self):
 #        instance = MikkolaInterface(debugger="ddd")
-#        instance = MikkolaInterface(debugger="xterm")
         instance = MikkolaInterface()
+        #instance = MikkolaInterface()
         instance.initialize_code()
+        instance.set_lightspeed(1e4)
         instance.commit_parameters()
 
         res1 = instance.new_particle(mass = 1.0, radius = 0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
@@ -50,7 +52,8 @@ class TestMikkola(TestWithMPI):
         return stars
 
     def test1(self):
-        instance = Mikkola()
+        convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
+        instance = Mikkola(convert_nbody)
         stars = self.new_system_of_sun_and_earth()
         instance.particles.add_particles(stars)
         Sun = stars[0]
@@ -104,7 +107,8 @@ class TestMikkola(TestWithMPI):
         return stars
 
     def test2(self):
-        instance = Mikkola()
+        convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
+        instance = Mikkola(convert_nbody)
         stars = self.new_system_of_sun_and_mercury()
         instance.particles.add_particles(stars)
         Sun = stars[0]
@@ -160,7 +164,8 @@ class TestMikkola(TestWithMPI):
         return stars
 
     def test3(self):
-        instance = Mikkola()
+        convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
+        instance = Mikkola(convert_nbody)
         stars = self.new_system_of_Hulse_Taylor_pulsar()
         instance.particles.add_particles(stars)
         Hulse = stars[0]

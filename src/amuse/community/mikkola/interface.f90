@@ -11,6 +11,7 @@ DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vz
 DOUBLE PRECISION :: start_time
 integer :: maximum_number_of_particles
 integer :: number_of_particles_allocated
+DOUBLE PRECISION :: lightspeed, tolerance
 
 CONTAINS
 
@@ -168,7 +169,7 @@ FUNCTION evolve_model(end_time)
   DOUBLE PRECISION :: end_time
   DOUBLE PRECISION :: POS(3,maximum_number_of_particles)
   DOUBLE PRECISION :: VEL(3,maximum_number_of_particles)
-  DOUBLE PRECISION :: IWRR, DELTAT, TEND, soft, cmet(3), lightspeed, tolerance
+  DOUBLE PRECISION :: IWRR, DELTAT, TEND, soft, cmet(3), tolerance
   DOUBLE PRECISION :: BHspin(3)
   INTEGER :: stepr, i, Mikkola_ARWV
   INTEGER :: Np, Nbh, Ixc
@@ -187,15 +188,11 @@ FUNCTION evolve_model(end_time)
   IWRR = -0 !?
   DELTAT = 0.001 ! Initial timestep, not used according to Mikkola
 #  TMAX = 12560 ! Maximum integration time
-#  start_time = 0.0
   stepr = 0 ! Not used, should be maximum number of steps
   soft= 0.e-6 ! Softening parameter
   cmet= [1.e-0, 0.e-0, 0.e-0] !?
-  lightspeed = 1.e4 ! speed of light in units of the orbital speed of Earh
   Ixc=2 ! time output is exacte (2) or not exact (1, faster)
   BHspin=[0.0, 0.0, 0.0] !spin of the first black hole (between 0 and 1) 
-  tolerance = 1.e-13 ! accuracy parameter to which to integrate
-
   evolve_model = Mikkola_ARWV(start_time, particle_m, POS,VEL,particle_id, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
 &                lightspeed,Ixc,Nbh,BHspin,tolerance) 
@@ -252,6 +249,38 @@ FUNCTION get_eps2(epsilon_squared)
   INTEGER :: get_eps2
   DOUBLE PRECISION :: epsilon_squared
   get_eps2=0
+END FUNCTION
+
+FUNCTION set_lightspeed(inputvalue)
+  IMPLICIT NONE
+  INTEGER :: set_lightspeed
+  DOUBLE PRECISION, intent(in) :: inputvalue
+  lightspeed = inputvalue
+  set_lightspeed=0
+END FUNCTION
+
+FUNCTION get_lightspeed(outputvalue)
+  IMPLICIT NONE
+  INTEGER :: get_lightspeed
+  DOUBLE PRECISION, intent(out) :: outputvalue
+  outputvalue = lightspeed
+  get_lightspeed=0
+END FUNCTION
+
+FUNCTION set_tolerance(inputvalue)
+  IMPLICIT NONE
+  INTEGER :: set_tolerance
+  DOUBLE PRECISION, intent(in) :: inputvalue
+  tolerance = inputvalue
+  set_tolerance=0
+END FUNCTION
+
+FUNCTION get_tolerance(outputvalue)
+  IMPLICIT NONE
+  INTEGER :: get_tolerance
+  DOUBLE PRECISION, intent(out) :: outputvalue
+  outputvalue = tolerance
+  get_tolerance=0
 END FUNCTION
 
 FUNCTION get_index_of_next_particle(index_of_the_particle,  &
@@ -390,6 +419,9 @@ FUNCTION initialize_code()
   maximum_number_of_particles = 100
   initialize_code=0
   start_time = 0
+  lightspeed = 1
+  tolerance = 1.e-13 ! accuracy parameter to which to integrate
+  
 END FUNCTION
 
 FUNCTION get_potential_energy(potential_energy)
