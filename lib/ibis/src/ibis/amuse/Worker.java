@@ -4,6 +4,7 @@ import ibis.deploy.Job;
 import ibis.deploy.State;
 import ibis.deploy.StateListener;
 import ibis.ipl.Ibis;
+import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReadMessage;
 import ibis.ipl.ReceivePort;
 import ibis.ipl.ReceivePortIdentifier;
@@ -13,7 +14,6 @@ import ibis.ipl.WriteMessage;
 import ibis.util.ThreadPool;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Worker implements Runnable, StateListener {
 
-
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
     private static int nextID = 0;
@@ -39,9 +38,9 @@ public class Worker implements Runnable, StateListener {
     private final String codeDir;
 
     private final String hostname;
-    
+
     private final String stdoutFile;
-    
+
     private final String stderrFile;
 
     private final int nrOfWorkers;
@@ -50,16 +49,20 @@ public class Worker implements Runnable, StateListener {
 
     private final String id;
 
-    private final Job job;
-
     private final Ibis ibis;
 
     private final ReceivePort receivePort;
 
     private final SendPort sendPort;
 
-    private final ReceivePortIdentifier remotePort;
+    private final AmuseMessage initRequest;
 
+    private final Deployment deployment;
+    
+    private Job job = null;
+    
+    private IbisIdentifier remoteIbis = null;
+    
     private static String getNextID() {
         return Integer.toString(nextID++);
     }
@@ -93,16 +96,15 @@ public class Worker implements Runnable, StateListener {
     Worker(SocketChannel socket, Ibis ibis, Deployment deployment) throws Exception {
         this.socket = socket;
         this.ibis = ibis;
+        this.deployment = deployment;
 
         if (logger.isDebugEnabled()) {
             logger.debug("New worker connection from " + socket.socket().getRemoteSocketAddress());
         }
 
-       
-
         // read initialization call
 
-        AmuseMessage initRequest = new AmuseMessage();
+        initRequest = new AmuseMessage();
         initRequest.readFrom(socket);
 
         if (initRequest.getFunctionID() != AmuseMessage.FUNCTION_ID_INIT) {
@@ -136,46 +138,82 @@ public class Worker implements Runnable, StateListener {
 
         // start deployment of worker (possibly on remote machine)
 
-        job = deployment.deploy(codeName, codeDir, hostname, stdoutFile, stderrFile, id, nrOfWorkers, nrOfNodes);
-        
-        job.waitUntilDeployed(logger);
-        
-        // we expect a "hello" message from the worker. Will also check if
-        // the job is still running
-        remotePort = receivePortAddress(receivePort, job);
-
-        sendPort.connect(remotePort);
-
-        // do init function at remote worker so it can initialize the code
-
-        // write init message
-        WriteMessage writeMessage = sendPort.newMessage();
-        initRequest.writeTo(writeMessage);
-        writeMessage.finish();
-
-        // read reply
-        AmuseMessage initReply = new AmuseMessage();
-        ReadMessage readMessage = receivePort.receive();
-        initReply.readFrom(readMessage);
-        readMessage.finish();
-
-        if (initReply.getError() != null) {
-            throw new IOException(initReply.getError());
-        }
-
-        // send reply to amuse
-        initReply.writeTo(socket);
-
         ThreadPool.createNew(this, "Amuse worker");
 
-        logger.info("New worker successfully started: " + this);
+        logger.info("New worker submitted: " + this);
     }
 
     public void run() {
+        ReceivePortIdentifier remotePort;
+        Job job;
+
         AmuseMessage request = new AmuseMessage();
         AmuseMessage result = new AmuseMessage();
         long start, finish;
 
+        // finish initializing worker
+        try {
+            
+            job = deployment.deploy(codeName, codeDir, hostname, stdoutFile, stderrFile, id, nrOfWorkers, nrOfNodes);
+            
+            synchronized(this) {
+                this.job = job;
+            }
+
+            // wait until job is running
+            job.waitUntilDeployed(logger);
+
+            // we expect a "hello" message from the worker. Will also check if
+            // the job is still running
+            remotePort = receivePortAddress(receivePort, job);
+            
+            synchronized(this) {
+                remoteIbis = remotePort.ibisIdentifier();
+            }
+
+            sendPort.connect(remotePort);
+
+            // do init function at remote worker so it can initialize the code
+
+            // write init message
+            WriteMessage writeMessage = sendPort.newMessage();
+            initRequest.writeTo(writeMessage);
+            writeMessage.finish();
+
+            // read reply
+            AmuseMessage initReply = new AmuseMessage();
+            ReadMessage readMessage = receivePort.receive();
+            initReply.readFrom(readMessage);
+            readMessage.finish();
+
+            if (initReply.getError() != null) {
+                throw new IOException(initReply.getError());
+            }
+
+            // send reply to amuse
+            initReply.writeTo(socket);
+
+        } catch (Exception e) {
+            if (socket.isOpen() && socket.isConnected()) {
+                logger.error("Error on handling call", e);
+
+                // report error to amuse
+                AmuseMessage errormessage = new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(),
+                        initRequest.getCount(), "Ibis/Amuse error: " + e.getMessage());
+                try {
+                    errormessage.writeTo(socket);
+                } catch (IOException e1) {
+                    logger.error("Error while returning error message to amuse", e1);
+                }
+            } else {
+                logger.error("Error on handling call, lost connection to AMUSE", e);
+            }
+            end();
+            return;
+        }
+
+        logger.info("New worker successfully started: " + this);
+        
         boolean running = true;
 
         while (running && socket.isOpen() && socket.isConnected()) {
@@ -208,7 +246,7 @@ public class Worker implements Runnable, StateListener {
                     try {
                         readMessage = receivePort.receive(1000);
                     } catch (ReceiveTimedOutException timeout) {
-                        //IGNORE
+                        // IGNORE
                     }
 
                     if (receivePort.connectedTo().length == 0 || job.isFinished()) {
@@ -237,6 +275,7 @@ public class Worker implements Runnable, StateListener {
                 logger.info("channel closed on receiving request");
                 running = false;
             } catch (IOException e) {
+                running = false;
                 if (socket.isOpen() && socket.isConnected()) {
                     logger.error("Error on handling call", e);
 
@@ -259,8 +298,18 @@ public class Worker implements Runnable, StateListener {
     }
 
     private void end() {
+        IbisIdentifier remote;
+        Job job;
+        
+        synchronized(this) {
+            remote = this.remoteIbis;
+            job = this.job;
+        }
+        
         try {
-            ibis.registry().signal("end", remotePort.ibisIdentifier());
+            if (remote != null) {
+                ibis.registry().signal("end", remote);
+            }
         } catch (IOException e) {
             logger.error("could not signal remote worker to leave");
         }
@@ -278,10 +327,11 @@ public class Worker implements Runnable, StateListener {
         }
 
         try {
-            job.waitUntilFinished();
+            if (job != null) {
+                job.waitUntilFinished();
+            }
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Error waiting on job to finish", e);
         }
     }
 

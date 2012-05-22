@@ -121,6 +121,7 @@ public class Daemon implements RegistryEventHandler {
             try {
                 logger.debug("Waiting for connection");
                 socket = loopbackServer.accept();
+                logger.debug("New connection accepted");
 
                 // read string, to make sure we are talking to amuse, and to get
                 // the type of connection
@@ -145,6 +146,7 @@ public class Daemon implements RegistryEventHandler {
                             + receivedString);
                 }
 
+                logger.debug("New connection handled");
             } catch (Exception e) {
                 if (socket != null) {
                     // report error to amuse

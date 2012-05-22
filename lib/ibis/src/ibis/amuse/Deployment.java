@@ -172,7 +172,7 @@ public class Deployment {
         return deploy.getServerAddress();
     }
 
-    public Job deploy(String codeName, String codeDir, String resourceName, String stdoutFile, String stderrFile,
+    public synchronized Job deploy(String codeName, String codeDir, String resourceName, String stdoutFile, String stderrFile,
             String workerID, int nrOfWorkers, int nrOfNodes) throws Exception {
         Resource resource = null;
         logger.info("Deploying worker \"" + workerID + "\" on host " + resourceName + " with " + nrOfWorkers
@@ -223,6 +223,8 @@ public class Deployment {
 
         String mpdboot = resource.getProperties().getProperty("mpdboot");
 
+        
+        
         // get or create Application for worker
         Application application = applications.getApplication(codeName);
 
