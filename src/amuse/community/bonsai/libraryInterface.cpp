@@ -7,6 +7,11 @@
 #include <fstream>
 #include "src/include/octree.h"
 
+#ifdef _AMUSE_STOPPING_CONDITIONS_
+  // AMUSE STOPPING CONDITIONS SUPPORT
+  #include <stopcond.h>
+#endif  
+
 
 octree *bonsai;
 bool initialized = false;
@@ -109,6 +114,12 @@ int initialize_code()
   bonsai->load_kernels();
 
   initialized = true;
+  
+  #ifdef _AMUSE_STOPPING_CONDITIONS_
+    // AMUSE STOPPING CONDITIONS SUPPORT
+    set_support_for_condition(COLLISION_DETECTION);  
+  #endif
+  
 
   return 0;
 }

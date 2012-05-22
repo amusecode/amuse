@@ -7,6 +7,7 @@
 #ifdef _AMUSE_STOPPING_CONDITIONS_
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
+#include <map>
 #endif
 
 using namespace std;
@@ -801,6 +802,8 @@ void octree::correct(tree_structure &tree)
     
     if(collisionPairs > 0)
     {
+      //We store keys with values to check on double occurances
+      std::map<int, std::vector<int> > doubleCheck; 
       //Set the stopping info
       //Pairs are in : compactPairDetectionBuffer
       //Pair 0: compactPairDetectionBuffer[2*0+0],compactPairDetectionBuffer[2*0+1]
@@ -810,12 +813,39 @@ void octree::correct(tree_structure &tree)
       tree.bodies_ids.d2h();
       for(int i =0; i < collisionPairs; i +=2)
       {
-        int stopping_index  = next_index_for_stopping_condition();        //get the next storage location
-        if(stopping_index  >= 0)
+        int val1   = compactPairDetectionBuffer[i];
+        int val2   = compactPairDetectionBuffer[i+1];
+        int key    = std::min(val1, val2);
+        int val    = std::max(val1, val2);
+        bool isNew = true;
+        
+        if(doubleCheck.find( key ) != doubleCheck.end())
         {
-          set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-          set_stopping_condition_particle_index(stopping_index, 0, tree.bodies_ids[compactPairDetectionBuffer[i]]);        set_stopping_condition_particle_index(stopping_index, 1, tree.bodies_ids[compactPairDetectionBuffer[i+1]]);
+          std::vector<int> temp = doubleCheck[key];
+          for(uint j=0; j < temp.size(); j++)
+          {
+            if(temp[j] == val) isNew = false;
+          }
         }
+        
+        if(isNew){
+          //Add this pair
+          std::vector<int> temp =  doubleCheck[key];
+          temp.push_back(val);
+          doubleCheck[key] = temp;
+        
+          int stopping_index  = next_index_for_stopping_condition();        //get the next storage location
+          if(stopping_index  >= 0)
+          {
+            set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+            set_stopping_condition_particle_index(stopping_index, 0, tree.bodies_ids[compactPairDetectionBuffer[i]]);        set_stopping_condition_particle_index(stopping_index, 1, tree.bodies_ids[compactPairDetectionBuffer[i+1]]);
+            //fprintf(stderr, "STOP found: %d \t %d   %d \n", i, compactPairDetectionBuffer[i], compactPairDetectionBuffer[i+1]);
+          }
+        }
+        else {
+          //Double item
+        }
+        
       }
       //Set error
       this->stopping_condition_found = 1;

@@ -2,7 +2,7 @@
 //#define INDSOFT //Individual softening using cubic spline kernel
 
 
-// #define _AMUSE_STOPPING_CONDITIONS_
+#define _AMUSE_STOPPING_CONDITIONS_
 
 
 //Tree-walk and stack configuration

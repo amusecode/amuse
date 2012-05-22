@@ -322,7 +322,7 @@ extern "C" __global__ void correct_particles(const int n_bodies,
       //Note that this will create double items in the final list
       //if j is nearest neighbour of i and i nearest neighbour of j
       pairDetection[2*idx+0] = idx | (1 << 31);
-      pairDetection[2*idx+1] = j | (1 << 31);
+      pairDetection[2*idx+1] = j   | (1 << 31);
 
       //Another option is to store it like this, but this destroys the 
       //info about pairs

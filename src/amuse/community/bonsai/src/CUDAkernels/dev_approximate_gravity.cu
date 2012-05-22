@@ -786,7 +786,7 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
                   acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], ds2, eps2, selfGrav);
                 #endif
 #endif
-                ds2 += selfGrav*1.0e10f;
+                ds2 += (!selfGrav)*1.0e10f;
 		if (ds2 < ds2_min) {
 		  ngb     = sh_jid[offs + j];
 		  ds2_min = ds2;
@@ -934,7 +934,7 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
           acc_i = add_acc(acc_i, pos_i, sh_mass[offs + j], sh_pos[offs + j], ds2, eps2, selfGrav);
         #endif
   #endif
-        ds2 += selfGrav*1.0e10f;
+        ds2 += (!selfGrav)*1.0e10f;
         if (ds2 < ds2_min) {
           ngb     = sh_jid[offs + j];
           ds2_min = ds2;
