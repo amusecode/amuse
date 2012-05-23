@@ -202,7 +202,7 @@ class TestBonsai(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
         
-        instance = Bonsai()
+        instance = self.new_instance_of_an_optional_code(Bonsai)
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.particles.add_particles(particles)
