@@ -51,17 +51,18 @@ class TestParallelStellarEvolution(TestCase):
         particles = Particles(4)
         particles.mass = range(1, 1+len(particles)) | units.MSun
         
-        serial = self.code_factory()
+        serial = MESA()
         inserial = serial.particles.add_particles(particles)
         self.assertAlmostEqual(inserial.mass, range(1, 1+len(particles)) | units.MSun)
         serial.evolve_model(0.2 | units.Myr)
         
-        parallel = ParallelStellarEvolution(self.code_factory, number_of_workers=3, **default_options)
+        parallel = ParallelStellarEvolution(MESA, number_of_workers=3, **default_options)
         inparallel = parallel.particles.add_particles(particles)
         self.assertAlmostEqual(inparallel.mass, range(1, 1+len(particles)) | units.MSun)
         parallel.evolve_model(0.2 | units.Myr)
         self.assertEqual(parallel.model_time, 0.2 | units.Myr)
-        self.assertAlmostEqual(inparallel.age, [0.2]*4 | units.Myr)
+        self.assertTrue(numpy.all(inparallel.age >= (0.2 | units.Myr)))
+        self.assertTrue(numpy.all(inparallel.age - inparallel.time_step <= (0.2 | units.Myr)))
         
         self.assertEqual(inserial.luminosity, inparallel.luminosity)
         self.assertEqual(inserial.time_step, inparallel.time_step)
