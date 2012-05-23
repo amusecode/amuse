@@ -2207,10 +2207,18 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
     double *buffer = new double[length];
     int *count = new int[length];
     int local_index;
-#ifndef ISOTHERM_EQS
-    double a3;
     
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    double hubble;
+    if (All.ComovingIntegrationOn){
+        hubble = All.Hubble * sqrt(All.Omega0 / (All.Time * All.Time * All.Time)
+            + (1 - All.Omega0 - All.OmegaLambda) / (All.Time * All.Time) + All.OmegaLambda);
+    } else {
+        hubble = 1;
+    }
+    
+#ifndef ISOTHERM_EQS
+    //~double a3;
+    //~if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     if (!density_up_to_date){
         density();
         density_up_to_date = true;
@@ -2220,10 +2228,10 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
 #ifdef ISOTHERM_EQS
-            buffer[i] = SphP[local_index].DtEntropy;
+            buffer[i] = SphP[local_index].DtEntropy * hubble;
 #else
             buffer[i] = - SphP[local_index].Pressure * SphP[local_index].DivVel /
-                SphP[local_index].Density;
+                SphP[local_index].Density * hubble;
 #endif
         } else {
             count[i] = 0;
