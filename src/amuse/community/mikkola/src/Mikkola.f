@@ -23,8 +23,8 @@
         
         FUNCTION get_energr()
         include 'ARCCOM2e2.CH'
-        REAL*8 get_radiated_gravitational_energy
-        get_radiated_gravitational_energy = EnerGR
+        REAL*8 get_energr
+        get_energr = EnerGR
         END FUNCTION
         
         FUNCTION Mikkola_ARWV(TIME,BODY,POS,VEL,INDEX, 
