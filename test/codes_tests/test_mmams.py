@@ -1,12 +1,13 @@
 import os.path
 import itertools
 import pickle
+from math import pi
 from amuse.test.amusetest import get_path_to_results, TestWithMPI
 from amuse.support.exceptions import AmuseException, CodeException
 from amuse.community.mesa.interface import MESA
 from amuse.community.evtwin.interface import EVtwin
 from amuse.community.mmams.interface import MakeMeAMassiveStarInterface, MakeMeAMassiveStar
-from amuse.units import units
+from amuse.units import units, constants
 from amuse.datamodel import Particles, Particle
 
 # Change the default for some MakeMeAMassiveStar(-Interface) keyword arguments:
@@ -979,6 +980,52 @@ class TestMakeMeAMassiveStar(TestWithMPI):
             print "mass:", stellar_model.mass[-1]
             print "radius:", stellar_model.radius[-1]
             print "X_H:", stellar_model.X_H[[0, -1]]
+    
+    def test13(self):
+        print "Test 13: merge particles, as fast/crude as possible"
+        stars = Particles(2)
+        stars.mass = [1.0, 2.0] | units.MSun
         
+        instance = MakeMeAMassiveStar(**default_options)
+        instance.initialize_code()
+        instance.parameters.target_n_shells = 100
+        instance.parameters.dump_mixed_flag = False
+        instance.parameters.do_shock_heating_flag = False
+        instance.commit_parameters()
+        instance.particles.add_particles(stars)
+        self.assertEqual(instance.number_of_particles, 2)
+        
+        d_mass = [0.25]*4 | units.MSun
+        cumul_mass = d_mass.accumulate()
+        radius = ([0.0]+[0.25]*4 | units.RSun).accumulate()
+        d_volume = 4.0/3.0 * pi * (radius[1:]**3 - radius[:-1]**3)
+        density = d_mass / d_volume
+        pressure = (constants.G * cumul_mass * density * (radius[1:] - radius[:-1]) / radius[1:]**2)[::-1].accumulate()[::-1]
+        mu = constants.proton_mass * (16.0/27.0)
+        temperature = pressure * mu / (constants.kB * density)
+        luminosity = [0]*4 | units.LSun
+        X = [0.75]*4
+        Y = [0.25]*4
+        Z = [0.00]*4
+        
+        instance.particles[0].add_shell(d_mass, cumul_mass, radius[1:], density,
+            pressure, temperature, luminosity, mu, X, Y, Z, Z, Z, Z, Z, Z, Z)
+        instance.particles[1].add_shell(d_mass*2, cumul_mass*2, radius[1:], density*2,
+            pressure*4, temperature*2, luminosity, mu, X, Y, Z, Z, Z, Z, Z, Z, Z)
+        self.assertEqual(instance.particles[1].number_of_zones, 4)
+        stellar_model = instance.particles[1].internal_structure()
+        self.assertTrue(set(['d_mass', 'mass', 'radius', 'rho', 'pressure', 'entropy', 
+            'temperature', 'luminosity', 'molecular_weight', 'X_H', 'X_He', 'X_C', 
+            'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']).issubset(
+                stellar_model.all_attributes()
+            )
+        )
+        merge_product = Particle()
+        merge_product.primary = instance.particles[0]
+        merge_product.secondary = instance.particles[1]
+        instance.merge_products.add_particle(merge_product)
+        self.assertEqual(instance.number_of_particles, 3)
+        self.assertEqual(instance.particles.number_of_zones, [4, 4, 233])
+        instance.stop()
     
 
