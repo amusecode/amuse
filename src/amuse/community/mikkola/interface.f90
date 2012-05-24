@@ -187,7 +187,7 @@ FUNCTION evolve_model(end_time)
 
   IWRR = -0 !?
   DELTAT = 0.001 ! Initial timestep, not used according to Mikkola
-#  TMAX = 12560 ! Maximum integration time
+!  TMAX = 12560 ! Maximum integration time
   stepr = 0 ! Not used, should be maximum number of steps
   soft= 0.e-6 ! Softening parameter
   cmet= [1.e-0, 0.e-0, 0.e-0] !?
@@ -345,7 +345,28 @@ FUNCTION get_kinetic_energy(kinetic_energy)
   IMPLICIT NONE
   INTEGER :: get_kinetic_energy
   DOUBLE PRECISION :: kinetic_energy
-  get_kinetic_energy=0
+  REAL*8 get_tkin
+  kinetic_energy = get_tkin()
+  get_kinetic_energy= 0
+END FUNCTION
+
+
+FUNCTION get_radiated_gravitational_energy(output)
+  IMPLICIT NONE
+  INTEGER :: get_radiated_gravitational_energy
+  DOUBLE PRECISION :: output
+  REAL*8 get_energr
+  output = get_energr()
+  get_radiated_gravitational_energy= 0
+END FUNCTION
+
+FUNCTION get_total_energy(output)
+  IMPLICIT NONE
+  INTEGER :: get_total_energy
+  DOUBLE PRECISION :: output
+  REAL*8 get_energy
+  output = get_energy()
+  get_total_energy= 0
 END FUNCTION
 
 FUNCTION get_number_of_particles(number_of_particles)
@@ -428,7 +449,9 @@ FUNCTION get_potential_energy(potential_energy)
   IMPLICIT NONE
   INTEGER :: get_potential_energy
   DOUBLE PRECISION :: potential_energy
-  get_potential_energy=0
+  REAL*8 get_upot
+  potential_energy = -get_upot() !mikkola store potential energy as a positive value, in amuse in needs to be negative
+  get_potential_energy= 0
 END FUNCTION
 
 ! eps is ignored, and eps2 = 0

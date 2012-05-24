@@ -66,6 +66,8 @@ class TestMikkola(TestWithMPI):
         instance.evolve_model(1.0 | units.yr)
         channel = instance.particles.new_channel_to(stars)
         channel.copy()
+        self.assertAlmostRelativeEquals(instance.potential_energy * -0.5, instance.kinetic_energy, 3)
+        self.assertAlmostRelativeEquals(instance.radiated_gravitational_energy, instance.kinetic_energy)
         
         postion_after_full_rotation = earth.position.value_in(units.AU)[0]
        

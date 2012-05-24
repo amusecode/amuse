@@ -86,6 +86,42 @@ class MikkolaInterface(CodeInterface,
             could not set parameter
         """
         return function
+    
+    
+    @legacy_function
+    def get_radiated_gravitational_energy():
+        """
+        Retrieve the current radiated gravitational energy of the model
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('radiated_gravitational_energy', dtype='float64', direction=function.OUT,
+            description = "The energy radiated by gravitational waves")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the energy was set
+        -1 - ERROR
+            Energy could not be provided
+        """
+        return function
+    
+    
+    @legacy_function
+    def get_total_energy():
+        """
+        Retrieve the current total energy of the model
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('energy', dtype='float64', direction=function.OUT,
+            description = "The energy radiated by gravitational waves")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the energy was set
+        -1 - ERROR
+            Energy could not be provided
+        """
+        return function
         
 class Mikkola(GravitationalDynamics):
 
@@ -150,3 +186,22 @@ class Mikkola(GravitationalDynamics):
             ( ),
             (object.NO_UNIT, object.ERROR_CODE,)
         )
+        
+        object.add_method(
+            "get_radiated_gravitational_energy",
+            (),
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_total_energy",
+            (),
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+        )
+
+    def define_properties(self, object):
+        
+        GravitationalDynamics.define_properties(self, object)
+        object.add_property("get_radiated_gravitational_energy")
+

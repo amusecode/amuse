@@ -1,3 +1,32 @@
+        FUNCTION get_tkin()
+        include 'ARCCOM2e2.CH'
+        common/justforfun/Tkin,Upot,dSkin,dSpot
+        REAL*8 Tkin,Upot,dSkin,dSpot
+        REAL*8 get_tkin
+        get_tkin = Tkin
+        END FUNCTION
+        
+        FUNCTION get_upot()
+        include 'ARCCOM2e2.CH'
+        common/justforfun/Tkin,Upot,dSkin,dSpot
+        REAL*8 Tkin,Upot,dSkin,dSpot
+        REAL*8 get_upot
+        get_upot = Upot
+        END FUNCTION
+        
+        FUNCTION get_energy()
+        include 'ARCCOM2e2.CH'
+        REAL*8 get_energy
+        get_energy = ENERGY
+        END FUNCTION
+        
+        
+        FUNCTION get_energr()
+        include 'ARCCOM2e2.CH'
+        REAL*8 get_radiated_gravitational_energy
+        get_radiated_gravitational_energy = EnerGR
+        END FUNCTION
+        
         FUNCTION Mikkola_ARWV(TIME,BODY,POS,VEL,INDEX, 
      &                   IWRR,Np,DELTAT,TMAX,stepr,soft,cmet,
      &                   lightspeed,Ixc,Nbh,BHspin,tolerance) 
