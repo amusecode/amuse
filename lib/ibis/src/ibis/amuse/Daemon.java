@@ -113,6 +113,7 @@ public class Daemon implements RegistryEventHandler {
             throw new IOException("did not win amuse election: another daemon" + " must be present in this pool");
         }
         logger.info("Daemon running on port " + port);
+        logger.info("Logging worker output to " + logDir);
     }
 
     public void run() {
