@@ -204,7 +204,7 @@ __device__ float4 get_D04(float ds2, float epsP, float epsQ, int selfGrav = 1) {
 __device__ float4 get_D04(float ds2, int selfGrav = 1) {
 #if 1
   float ids  = rsqrtf(ds2);  //Does not work with zero-softening
-  //   if(isnan(ids)) ids = 0;               //This does work with zero-softening, few percent performance drop
+  if(isnan(ids)) ids = 0;    //This does work with zero-softening, few percent performance drop
   //float ids  = (1.0f / sqrtf(ds2)) * selfGrav; Slower in Pre CUDA4.1
   ids *= selfGrav;
 #else
@@ -863,7 +863,7 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
     } else {
       //Set non-active memory locations to zero
       node_mon0[tid] = 0.0f;
-      node_mon1[tid] = (float3){0.0f, 0.0f, 0.0f};
+      node_mon1[tid] = (float3){1.0e10f, 1.0e10f, 1.0e10f};
       node_oct0[tid] = (float3){0.0f, 0.0f, 0.0f};
       node_oct1[tid] = (float3){0.0f, 0.0f, 0.0f};
 
@@ -913,6 +913,7 @@ __device__ float4 approximate_gravity(int DIM2x, int DIM2y,
       #endif
     } else {
       sh_mass[tid] = 0.0f;
+      sh_pos [tid] = (float3){1.0e10f, 1.0e10f, 1.0e10f};
       sh_jid [tid] = -1;
 
       #ifdef INDSOFT
