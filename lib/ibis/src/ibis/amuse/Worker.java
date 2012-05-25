@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Worker implements Runnable, StateListener {
+    
+    public static final int CONNECT_TIMEOUT = 60000;
 
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
@@ -70,7 +72,7 @@ public class Worker implements Runnable, StateListener {
     private static ReceivePortIdentifier receivePortAddress(ReceivePort receivePort, Job job) throws IOException {
         while (!job.isFinished()) {
             try {
-                ReadMessage readMessage = receivePort.receive(1000);
+                ReadMessage readMessage = receivePort.receive(10000);
 
                 ReceivePortIdentifier remotePort = (ReceivePortIdentifier) readMessage.readObject();
                 readMessage.finish();
@@ -171,7 +173,7 @@ public class Worker implements Runnable, StateListener {
                 remoteIbis = remotePort.ibisIdentifier();
             }
 
-            sendPort.connect(remotePort);
+            sendPort.connect(remotePort, CONNECT_TIMEOUT, true);
 
             // do init function at remote worker so it can initialize the code
 
