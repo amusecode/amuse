@@ -7,7 +7,7 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
     include_headers = ['worker_code.h']
 	    
     def __init__(self, **keyword_arguments):
-	CodeInterface.__init__(self, name_of_the_worker="higpus_worker_gpu", **keyword_arguments)
+	CodeInterface.__init__(self, name_of_the_worker="higpus_worker", **keyword_arguments)
     
     @legacy_function
     def echo_int():
@@ -39,9 +39,63 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
                  description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN,
                  description = "The initial velocity vector of the particle")
+        function.addParameter('soft', dtype='float32', direction=function.IN,
+                 description = "Individual softening of the particle")
         function.result_type = 'int32'
         return function
-        
+
+    @legacy_function
+    def set_state():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('mass', dtype='float64', direction=function.IN,
+                 description = "The mass of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.IN,
+                 description = "The radius of the particle")
+        function.addParameter('x', dtype='float64', direction=function.IN,
+                 description = "The initial position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN,
+                 description = "The initial position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN,
+                 description = "The initial position vector of the particle")
+        function.addParameter('vx', dtype='float64', direction=function.IN,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.IN,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.IN,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('soft', dtype='float32', direction=function.IN,
+                 description = "Individual softening of the particle")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_state():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('mass', dtype='float64', direction=function.OUT,
+                 description = "The mass of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.OUT,
+                 description = "The radius of the particle")
+        function.addParameter('x', dtype='float64', direction=function.OUT,
+                 description = "The initial position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.OUT,
+                 description = "The initial position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.OUT,
+                 description = "The initial position vector of the particle")
+        function.addParameter('vx', dtype='float64', direction=function.OUT,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.OUT,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.OUT,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('soft', dtype='float32', direction=function.OUT,
+                 description = "Individual softening of the particle")
+        function.result_type = 'int32'
+        return function
+         
     @legacy_function
     def evolve_model():
         function = LegacyFunctionSpecification()
@@ -120,20 +174,6 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
         function.result_type = 'int32'
         return function
 
-    @legacy_function
-    def set_eps():
-	function = LegacyFunctionSpecification()
-        function.addParameter('epsilon', dtype='float64', direction=function.IN, description = "softening parameter.")
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def get_eps():
-	function = LegacyFunctionSpecification()
-        function.addParameter('epsilon', dtype='float64', direction=function.OUT, description = "softening parameter.")
-        function.result_type = 'int32'
-        return function
-   
     @legacy_function
     def set_number_of_GPU():
         function = LegacyFunctionSpecification()
@@ -305,13 +345,6 @@ class HiGPUs(GravitationalDynamics):
             default_value = 0.0 | nbody_system.mass
         )
 
-        object.add_method_parameter(
-            "get_eps",		                 
-            "set_eps",          	         
-            "softening",                         
-            "softening",           	         
-            default_value = 0.001 | nbody_system.length
-        )
 
 	object.add_method_parameter(
             "get_number_of_Threads",              
@@ -342,7 +375,7 @@ class HiGPUs(GravitationalDynamics):
             "set_max_time_step",                  
             "max_step",                           
 	    "power of 2 for maximum time step",   
-            default_value = -3.0 | nbody_system.time
+            default_value = pow(2.,-3.0) | nbody_system.time
         )
 
 	object.add_method_parameter(
@@ -350,7 +383,7 @@ class HiGPUs(GravitationalDynamics):
             "set_min_time_step",                  
             "min_step",                           
             "power of 2 for minmum time step",    
-            default_value = -30.0 | nbody_system.time
+            default_value = pow(2.,-30.0) | nbody_system.time
         )
 
 	object.add_method_parameter(
@@ -392,12 +425,49 @@ class HiGPUs(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
 	        nbody_system.speed,
+                nbody_system.length,
            ),
             (
                	object.INDEX,
                 object.ERROR_CODE
             )
 	)
+        object.add_method(
+            "set_state",
+            (
+                object.INDEX,
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.length,
+           ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_state",
+            (
+                object.INDEX
+           ),
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.length,
+                object.ERROR_CODE
+            )
+        )
         object.add_method(
             "set_time_begin",
             (
@@ -487,26 +557,6 @@ class HiGPUs(GravitationalDynamics):
             (),
             (
                 units.none,
-                object.ERROR_CODE
-            )
-	)
-
-
-        object.add_method(
-            "set_eps",
-            (
-                nbody_system.length
-            ),
-            (
-                object.ERROR_CODE
-            )
-        )
-
-        object.add_method(
-	    "get_eps",
-            (),
-	    (
-             	nbody_system.length,
                 object.ERROR_CODE
             )
 	)

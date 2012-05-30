@@ -287,7 +287,7 @@ HostError AcquireEnergy(double *E, string path){
 
 
 extern "C"
-HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* local_time, double* step, const unsigned int N, const unsigned int M, double4* pos_PH, float4* vel_PH, double4* pos_CH, double4* vel_CH, double4* a_H0, const unsigned int MAXDIM, unsigned int NGPU, unsigned int *devices, unsigned int TPB, int rank, int size, unsigned int BFMAX, double ETA6, double ETA4, double DTMAX, double DTMIN, double EPS, double DTPRINT, unsigned int FMAX, const bool warm, double GTW, unsigned int GPUMINTHREADS, double plummer_core, double plummer_mass, string path){
+HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* local_time, double* step, const unsigned int N, const unsigned int M, double4* pos_PH, float4* vel_PH, double4* pos_CH, double4* vel_CH, double4* a_H0, const unsigned int MAXDIM, unsigned int NGPU, unsigned int *devices, unsigned int TPB, int rank, int size, unsigned int BFMAX, double ETA6, double ETA4, double DTMAX, double DTMIN, double DTPRINT, unsigned int FMAX, const bool warm, double GTW, unsigned int GPUMINTHREADS, double plummer_core, double plummer_mass, string path){
 
 	unsigned int ompthreads = 4; // N must be integer multiple of this number
    omp_set_num_threads( ompthreads );
@@ -317,7 +317,6 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 	double4 **a3_D    = new double4* [NGPU];
 	double4 **p_v_a3_Dev = new double4* [NGPU];
 	double4 **a_temp_Dev = new double4* [NGPU];
-
 
 	unsigned int malloc_size  = MAXDIM*sizeof(double4); //it contains a, adot, a2dots sequentially
    unsigned int malloc_db4   = nextsize*sizeof(double4);
@@ -349,10 +348,10 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
       DeviceSafeCall(cudaMemcpy( vel_PD[i], vel_PH,     malloc_fl4,    cudaMemcpyHostToDevice ));
       DeviceSafeCall(cudaMemcpy( pos_CD[i], pos_CH,     malloc_db4,    cudaMemcpyHostToDevice ));
       DeviceSafeCall(cudaMemcpy( vel_CD[i], vel_CH,     malloc_db4,    cudaMemcpyHostToDevice ));
-		DeviceSafeCall(cudaMemcpy(a_tot_D[i], a_H0,        malloc_db4_N,  cudaMemcpyHostToDevice));
-		DeviceSafeCall(cudaMemcpy(a1_tot_D[i], &a_H0[N],   malloc_db4_N,  cudaMemcpyHostToDevice));
-		DeviceSafeCall(cudaMemcpy(a2_tot_D[i], &a_H0[2*N], malloc_db4_N,  cudaMemcpyHostToDevice));
-   	DeviceSafeCall(cudaMemcpy(  loc_D[i], local_time, malloc_db,     cudaMemcpyHostToDevice));
+		DeviceSafeCall(cudaMemcpy( a_tot_D[i], a_H0,        malloc_db4_N,  cudaMemcpyHostToDevice));
+		DeviceSafeCall(cudaMemcpy( a1_tot_D[i], &a_H0[N],   malloc_db4_N,  cudaMemcpyHostToDevice));
+		DeviceSafeCall(cudaMemcpy( a2_tot_D[i], &a_H0[2*N], malloc_db4_N,  cudaMemcpyHostToDevice));
+   	DeviceSafeCall(cudaMemcpy( loc_D[i], local_time, malloc_db,     cudaMemcpyHostToDevice));
 	}
 
 
@@ -386,7 +385,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 	      HostSafeCall(AcquireEnergy(&E0, path));
 	}
 	else{
-	   HostSafeCall(Calculate_Energy(pos_CD, vel_CD, N, EPS, TPB, NGPU, rank, devices, ppG, &E0, plummer_core, plummer_mass));
+	   HostSafeCall(Calculate_Energy(pos_CD, vel_CD, vel_PD, N, TPB, NGPU, rank, devices, ppG, &E0, plummer_core, plummer_mass));
 	}
 
 	ofstream stream;
@@ -569,8 +568,8 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 	      DeviceSafeCall(cudaSetDevice(devices[i]));
          DeviceCheckErrors();
 	      int istart = ppG*(i+rank*NGPU);
-	      evaluation<<< BLOCKS, THREADS, SHARED >>> ( N, pos_PD[i], vel_PD[i], acc_PD[i],  a_D[i], a1_D[i], a2_D[i],
-                                       istart, ppG, Bfactor, DIMENSION, next_D[i], loc_D[i], *GTIME, EPS, plummer_core, plummer_mass);
+	      evaluation<<< BLOCKS, THREADS, SHARED >>> ( N, pos_PD[i], vel_PD[i], acc_PD[i], a_D[i], a1_D[i], a2_D[i],
+                                       istart, ppG, Bfactor, DIMENSION, next_D[i], loc_D[i], *GTIME, plummer_core, plummer_mass);
 	   }
 
 		get_times(&end);
@@ -663,7 +662,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 			CheckBlocks(step, M, path);
 			double E;
 			get_times(&start);
-			HostSafeCall(Calculate_Energy(pos_CD, vel_CD, N, EPS, TPB, NGPU, rank, devices, ppG, &E, plummer_core, plummer_mass));
+			HostSafeCall(Calculate_Energy(pos_CD, vel_CD, vel_PD, N, TPB, NGPU, rank, devices, ppG, &E, plummer_core, plummer_mass));
 			get_times(&end);
 			set_times(end-start, &(Times[nextsize].energy_time));
 
@@ -713,7 +712,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 
 }
 
-HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, unsigned int N, double EPS, unsigned int THREADS, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass){
+HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, float4 **vel_PD, unsigned int N, unsigned int THREADS, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass){
 
 	double *E [NGPU];
 	double *EH = new double [N*NGPU];
@@ -730,13 +729,13 @@ HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, unsigned int N, d
 	}
 
 	int BLOCKS = N/THREADS;
-	int SHARED = THREADS*sizeof(double4);
+	int SHARED = THREADS*(sizeof(double4) + sizeof(float4));
 
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaThreadSynchronize());
 		int istart = ppG*(i+rank*NGPU);
-		energy<<<BLOCKS, THREADS, SHARED>>>(pos_CD[i], vel_CD[i], E[i], N, EPS, istart, ppG, plummer_core, plummer_mass);
+		energy<<<BLOCKS, THREADS, SHARED>>>(pos_CD[i], vel_CD[i], vel_PD[i], E[i], N, istart, ppG, plummer_core, plummer_mass);
 	}
 
 	for(unsigned int i = 0; i < NGPU; i++){
@@ -768,10 +767,11 @@ HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, unsigned int N, d
 	return HNoError;
 }
 
-HostError Calculate_potential_Energy(double4 *pos_CH, unsigned int N, double EPS, unsigned int THREADS, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass){
+HostError Calculate_potential_Energy(double4 *pos_CH, float4 *vel_PH, unsigned int N, unsigned int THREADS, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass){
 
 	double *E [NGPU];
 	double4 **pos_CD = new double4* [NGPU];
+	float4 **vel_PD = new float4* [NGPU];
 	double *EH = new double [N*NGPU];
 	double *Empi = new double [N];
 
@@ -783,18 +783,21 @@ HostError Calculate_potential_Energy(double4 *pos_CH, unsigned int N, double EPS
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaMalloc(( void**)&E[i], N*sizeof(double)));
-		DeviceSafeCall(cudaMalloc((void **)&pos_CD[i],  N*sizeof(double4)));	
-      DeviceSafeCall(cudaMemcpy( pos_CD[i], pos_CH,     N*sizeof(double4),    cudaMemcpyHostToDevice ));
+		DeviceSafeCall(cudaMalloc((void **)&pos_CD[i],  N*sizeof(double4)));
+		DeviceSafeCall(cudaMalloc((void **)vel_PD[i],  N*sizeof(float)));
+      
+		DeviceSafeCall(cudaMemcpy( pos_CD[i], pos_CH,  N*sizeof(double4),    cudaMemcpyHostToDevice ));
+	   DeviceSafeCall(cudaMemcpy( vel_PD[i], vel_PH,  N*sizeof(float),    cudaMemcpyHostToDevice ));
 	}
 
 	int BLOCKS = N/THREADS;
-	int SHARED = THREADS*sizeof(double4);
+	int SHARED = THREADS*(sizeof(double4) + sizeof(float4));
 
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaThreadSynchronize());
 		int istart = ppG*(i+rank*NGPU);
-		potential_energy<<<BLOCKS, THREADS, SHARED>>>(pos_CD[i], E[i], N, EPS, istart, ppG, plummer_core, plummer_mass);
+		potential_energy<<<BLOCKS, THREADS, SHARED>>>(pos_CD[i], vel_PD[i], E[i], N, istart, ppG, plummer_core, plummer_mass);
 	}
 
 	for(unsigned int i = 0; i < NGPU; i++){
@@ -816,11 +819,12 @@ HostError Calculate_potential_Energy(double4 *pos_CH, unsigned int N, double EPS
 
 	delete [] Empi;
 	delete [] EH;
-
+ 
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaFree(E[i]));
 		DeviceSafeCall(cudaFree(pos_CD[i]));
+	   DeviceSafeCall(cudaFree(vel_PD[i]));
 	}
 
 	return HNoError;
@@ -1045,7 +1049,7 @@ HostError CheckBlocks(double *step, unsigned int M, string path){
 }
 
 extern "C"
-HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned int N, unsigned int M, unsigned int BFMAX, double ETA4, unsigned int NGPU, double EPS, unsigned int *MAXDIM, double DTMAX, double DTMIN, unsigned int *GPUMINTHREADS, unsigned int *devices, string gpu_name, int rank, int nodes, double4* pos_CH, double4* vel_CH, double4* a_H0, double* step, double* local_time, double* ACTUAL_TIME, double plummer_core, double plummer_mass, string path){
+HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned int N, unsigned int M, unsigned int BFMAX, double ETA4, unsigned int NGPU, unsigned int *MAXDIM, double DTMAX, double DTMIN, unsigned int *GPUMINTHREADS, unsigned int *devices, string gpu_name, int rank, int nodes, double4* pos_CH, double4* vel_CH, double4* a_H0, double* step, double* local_time, double* ACTUAL_TIME, double plummer_core, double plummer_mass, string path){
 	
 	HostSafeCall(CudaInit(GPUMINTHREADS, NGPU, rank, devices, gpu_name, path));
 	
@@ -1166,8 +1170,8 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 
 		int istart = ppG*(i+rank*NGPU);
-		evaluation<<< BL, threads, SHR >>> ( N, pos_PD[i], vel_PD[i], acc_PD[i],  a_D[i], a1_D[i], a2_D[i], 
-													istart, ppG, Bfactor, dim, next_D[i], loc_D[i], 0.0, EPS, plummer_core, plummer_mass);
+		evaluation<<< BL, threads, SHR >>> ( N, pos_PD[i], vel_PD[i], acc_PD[i], a_D[i], a1_D[i], a2_D[i], 
+													istart, ppG, Bfactor, dim, next_D[i], loc_D[i], 0.0, plummer_core, plummer_mass);
 	}
 	
 	for(unsigned int i = 0; i < NGPU; i++){
@@ -1243,8 +1247,8 @@ HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned
       DeviceSafeCall(cudaSetDevice(devices[i]));
 
       int istart = ppG*(i+rank*NGPU);
-      evaluation<<< BL, threads, SHR >>> ( N, pos_PD[i], vel_PD[i], acc_PD[i],  a_D[i], a1_D[i], a2_D[i],
-                                       istart, ppG, Bfactor, dim, next_D[i], loc_D[i], 0.0, EPS, plummer_core, plummer_mass);
+      evaluation<<< BL, threads, SHR >>> ( N, pos_PD[i], vel_PD[i], acc_PD[i], a_D[i], a1_D[i], a2_D[i],
+                                       istart, ppG, Bfactor, dim, next_D[i], loc_D[i], 0.0, plummer_core, plummer_mass);
    }
 
    for(unsigned int i = 0; i < NGPU; i++){

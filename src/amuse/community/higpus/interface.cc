@@ -2,17 +2,16 @@
 #include <iomanip>
 #include <string>
 #include <mpi.h>
-#include <map>
 #include "src/lib/my_errors.h"
 #include "src/lib/functions.h"
 #include "src/lib/utilis.h"
 #include <math.h>
 
-
 using namespace std;
 
 typedef struct {
-    double mass;                                        
+    double soft;
+	 double mass;                                        
     double radius;
 	 double x, y, z;                                     
     double vx, vy, vz;                                  
@@ -96,7 +95,6 @@ int commit_parameters(){
       hlog<<" Threads per block   : "<<TPB<<endl;
       hlog<<" Max time step	    : "<<DTMAX<<endl;
       hlog<<" Min time step	    : "<<DTMIN<<endl;
-      hlog<<" Softening           : "<<EPS<<endl;
       hlog<<" eta 6th order       : "<<ETA6<<endl;
       hlog<<" eta 4th order       : "<<ETA4<<endl;
       hlog<<" time for printing   : "<<DTPRINT<<endl;
@@ -111,6 +109,7 @@ int commit_parameters(){
 #endif
 
 #ifdef CHECK_TIMES
+		ofstream generic;
 		temp = path + "times.dat";
       output_name = to_char(temp);
       generic.open(output_name, ios::out);
@@ -137,7 +136,7 @@ int commit_parameters(){
    return 0;
 }
 
-int new_particle(int *id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz){
+int new_particle(int *id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz, float soft){
 	*id = particle_id_counter;
  	dynamics_state state;
 	state.mass = mass;
@@ -148,6 +147,7 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
    state.vy = vy;
    state.vz = vz;
 	state.radius = radius;
+	state.soft = soft;
 	dm_states[particle_id_counter]= state;
 	particle_id_counter++;
 	return 0;
@@ -186,7 +186,7 @@ int commit_particles(){
 		vel_PH[i].x = vel_CH[i].x;
 		vel_PH[i].y = vel_CH[i].y;
 		vel_PH[i].z = vel_CH[i].z;
-		vel_PH[i].w = 0.0;
+		vel_PH[i].w = it-> second.soft;
 		it++;	
 	}
 	
@@ -206,7 +206,7 @@ int commit_particles(){
       vel_PH[i].x = 0.0;
       vel_PH[i].y = 0.0;
       vel_PH[i].z = 0.0;
-      vel_PH[i].w = 0.0;
+      vel_PH[i].w = 1.0e-6;
    }  
 
 	return 0;
@@ -214,7 +214,7 @@ int commit_particles(){
 
 int evolve_model(double t){
    if(init == 0){
-		HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN,  &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass, path));
+		HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, &MAXDIM, DTMAX, DTMIN,  &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass, path));
 		init = 1;
 	}
 	
@@ -234,7 +234,7 @@ int evolve_model(double t){
 
    FMAX = 1000000 + ((GTIME+GTW) / DTPRINT);
 	
-	HostSafeCall(Hermite6th(t, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTW, GPUMINTHREADS, plummer_core, plummer_mass, path));
+	HostSafeCall(Hermite6th(t, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, devices, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, DTPRINT, FMAX, warm_start, GTW, GPUMINTHREADS, plummer_core, plummer_mass, path));
   
 	warm_start = 1;
 
@@ -291,13 +291,13 @@ int get_total_radius(double * radius){
    return 0;
 }
 
-int get_potential_at_point(double eps, double x, double y, double z, double * phi){
+int get_potential_at_point(double soft, double x, double y, double z, double * phi){
    *phi = 0.0;
 	double F = 0.0;
 	unsigned int ppG = ceil ( (double) M / size);
    for(unsigned int i=0; i<ppG ; i++){
 		double rij =(x - pos_CH[i].x) * (x - pos_CH[i].x) + (y-pos_CH[i].y) * (y - pos_CH[i].y) + (z - pos_CH[i].z) * (z - pos_CH[i].z);
-      F -= pos_CH[i].w / sqrt(rij + eps * eps); 
+      F -= pos_CH[i].w / sqrt(rij + soft * vel_PH[i].w); 
 	}
 	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
    MPISafeCall(MPI_Allreduce(&F, phi, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
@@ -314,23 +314,11 @@ int get_total_mass(double * mass){
    return 0;
 }
 
-int set_eps2(double epsilon){
-   EPS = epsilon;
+int set_eps2(double){
    return 0;
 }
 
-int get_eps2(double *epsilon){
-   *epsilon = EPS;
-   return 0;
-}
-
-int set_eps(double epsilon){
-   EPS = epsilon;
-   return 0;
-}
-
-int get_eps(double *epsilon){
-   *epsilon = EPS;
+int get_eps2(double *){
    return 0;
 }
 
@@ -416,7 +404,6 @@ int get_max_time_step(double * max_time_step){
 
 int set_max_time_step(double max_time_step){
    DTMAX = max_time_step;
-	cout<<" NOTE : the parameter max_time_step (in nbody time) must be 2^-n where n is an integer "<<endl;
    return 0;
 }
 
@@ -427,7 +414,6 @@ int get_min_time_step(double * min_time_step){
 
 int set_min_time_step(double min_time_step){
    DTMIN = min_time_step;
-	cout<<" NOTE : the parameter min_time_step (in nbody time) must be 2^-n where n is an integer "<<endl;
    return 0;
 }
 
@@ -483,7 +469,7 @@ int get_potential(int index_of_the_particle, double * potential){
 			double rij =((pos_CH[index_of_the_particle].x - pos_CH[i].x)*(pos_CH[index_of_the_particle].x - pos_CH[i].x)) +
 				((pos_CH[index_of_the_particle].y - pos_CH[i].y) * (pos_CH[index_of_the_particle].y - pos_CH[i].y)) +
 				((pos_CH[index_of_the_particle].z - pos_CH[i].z) * (pos_CH[index_of_the_particle].z - pos_CH[i].z));
-        	P -= pos_CH[i].w / (sqrt(rij + EPS * EPS));
+        	P -= pos_CH[i].w / (sqrt(rij + vel_PH[index_of_the_particle].w * vel_PH[i].w));
 		} 
 	}
    MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
@@ -510,7 +496,7 @@ int synchronize_model(){
 	return 0;
 }
 
-int set_state(int index_of_the_particle, double mass, double radius, double x, double y, double z, double vx, double vy, double vz){
+int set_state(int index_of_the_particle, double mass, double radius, double x, double y, double z, double vx, double vy, double vz, float soft){
 	dm_states[index_of_the_particle].mass = mass;
    dm_states[index_of_the_particle].x = x;
 	dm_states[index_of_the_particle].y = y;
@@ -519,10 +505,11 @@ int set_state(int index_of_the_particle, double mass, double radius, double x, d
    dm_states[index_of_the_particle].vy = vy;
    dm_states[index_of_the_particle].vz = vz;
    dm_states[index_of_the_particle].radius = radius;
+	dm_states[index_of_the_particle].soft = soft;
 	return 0;
 }
 
-int get_state(int index_of_the_particle, double * mass, double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz){
+int get_state(int index_of_the_particle, double * mass, double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz, float * soft){
 	*mass = pos_CH[index_of_the_particle].w;
    *radius = 0.0;
    *x = pos_CH[index_of_the_particle].x;
@@ -531,6 +518,7 @@ int get_state(int index_of_the_particle, double * mass, double * radius, double 
    *vx = vel_CH[index_of_the_particle].x;
    *vy = vel_CH[index_of_the_particle].y;
    *vz = vel_CH[index_of_the_particle].z;
+	*soft = vel_PH[index_of_the_particle].w;
    return 0;
 }
 
@@ -558,10 +546,10 @@ int recommit_particles(){
    vel_PH = new  float4 [N];
    pos_CH = new double4 [N];
    vel_CH = new double4 [N];
-   a_H0 = new double4 [3*N];
+	a_H0 = new double4 [3*N];
    step = new double [N];
    local_time = new double [N];
-
+   
 	it = dm_states.begin();
 	
 	for (unsigned int i=0; i<M; i++){
@@ -580,7 +568,7 @@ int recommit_particles(){
 		vel_PH[i].x = vel_CH[i].x;
       vel_PH[i].y = vel_CH[i].y;
       vel_PH[i].z = vel_CH[i].z;
-		vel_PH[i].w = 0.0;
+		vel_PH[i].w = it->second.soft;
 		it++;
 	}
    
@@ -600,7 +588,7 @@ int recommit_particles(){
       vel_PH[i].x = 0.0;
       vel_PH[i].y = 0.0;
       vel_PH[i].z = 0.0;
-		vel_PH[i].w = 0.0;
+		vel_PH[i].w = 1.0e-6;
    }
 
 	GTW = GTIME;
@@ -704,15 +692,12 @@ int cleanup_code(){
 
 int get_potential_energy(double * potential_energy){
    unsigned int ppG = N/(NGPU*size); 
-   if(init == 0){
-		HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, NGPU, EPS, &MAXDIM, DTMAX, DTMIN,  &GPUMINTHREADS, devices, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, plummer_core, plummer_mass, path));
-		init = 1;
-	}
-   HostSafeCall(Calculate_potential_Energy(pos_CH, N, EPS, TPB, NGPU, rank, devices, ppG, potential_energy, plummer_core, plummer_mass));
+   HostSafeCall(CudaInit(&GPUMINTHREADS, NGPU, rank, devices, GPUNAME, path));
+   HostSafeCall(Calculate_potential_Energy(pos_CH, vel_PH, N, TPB, NGPU, rank, devices, ppG, potential_energy, plummer_core, plummer_mass));
 	return 0;
 }
 
-int get_gravity_at_point(double eps, double x, double y, double z, double * forcex, double * forcey, double * forcez){
+int get_gravity_at_point(double soft, double x, double y, double z, double * forcex, double * forcey, double * forcez){
    unsigned int ppG = ceil ( (double) M / size);
    double *sum = new double[3];
    sum[0] = sum[1] = sum[2] = 0.0;
@@ -721,7 +706,7 @@ int get_gravity_at_point(double eps, double x, double y, double z, double * forc
 		double rx = (pos_CH[i].x - x);
       double ry = (pos_CH[i].y - y);
       double rz = (pos_CH[i].z - z);
-      double distance = rx * rx + ry * ry + rz * rz + eps * eps; 
+      double distance = rx * rx + ry * ry + rz * rz + soft * vel_PH[i].w; 
       sum[0] += pos_CH[i].w * rx / sqrt(distance * distance * distance);
       sum[1] += pos_CH[i].w * ry / sqrt(distance * distance * distance);
       sum[2] += pos_CH[i].w * rz / sqrt(distance * distance * distance);

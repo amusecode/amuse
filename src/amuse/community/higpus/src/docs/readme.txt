@@ -108,7 +108,8 @@ Once you have setup the Makefile you can proceed typing:
 
 > make clean 
 
-> make (note: in this version the command to compile is 'make exec')
+> make (note: in the AMUSE release the command to compile without 
+the interface is 'make exec')
 
 This creates the executable file 'HiGPUs.x' in the folder 'exec'. 
 
@@ -132,8 +133,6 @@ for particles (2^exponent) !
 
 > -30.0 // exponent which defines the minimum time step allowed 
 for particles (2^exponent) !
-
-> 0.0001 // softening parameter !
 
 > 0.45 // eta parameter for determining particles time steps 
 (generalized Aarseth criterion for the Hermite 6th order method) 
@@ -163,7 +162,7 @@ The input data file, whose name is specified in the parameters
 file, must contain the N-body data for the simulation in the 
 following format :
 
-> x y z vx vy vz mass 
+> x y z vx vy vz mass softening
 
 An example of input data file is in the folder 'exec'.
 
@@ -256,7 +255,7 @@ particles having the same time step.
 ratio (E-E0)/E0 where E is the total energy at the current time 
 and E0 is the total initial energy.
 
-- H6Blog.dat : it summarizes the simulation information. It could 
+- HiGPUs.dat : it summarizes the simulation information. It could 
 be something like: 
 
 > ==================================================
@@ -274,8 +273,6 @@ be something like:
 > Max time step : 0.125 
 
 > Min time step : 9.31323e-10
-
-> Softening : 0.0001
 
 > eta 6th order : 0.45 
 

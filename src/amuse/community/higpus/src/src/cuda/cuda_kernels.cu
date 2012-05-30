@@ -206,15 +206,17 @@ __forceinline__ __device__ void AddPlummerEnergy(double4 dr, double *pot, double
 }
 
 
-__global__ void energy(double4 *posD, double4 *velD, double *E, unsigned int N, double EPS, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass){
+__global__ void energy(double4 *posCD, double4 *velCD, float4 *velPD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass){
 
 	unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	extern __shared__ double4 shPosition[];
 	double4 *shPos = (double4*)shPosition;
-
-	double4 myposition = posD[i];
-	double4 myvelocity = velD[i];
+   float4 *shVel = (float4*)&shPos[blockDim.x];
+	
+	double4 myposition = posCD[i];
+	double4 myvelocity = velCD[i];
+   float myEpsilon = velPD[i].w;
 
 	double kin = 0.0, pE = 0.0;
 	int k = 0, j;
@@ -226,14 +228,15 @@ __global__ void energy(double4 *posD, double4 *velD, double *E, unsigned int N, 
 
 	while(k < ppG){
       j = 0;
-      shPos[threadIdx.x] = posD[k + threadIdx.x + istart];
-      __syncthreads();
+      shPos[threadIdx.x] = posCD[k + threadIdx.x + istart];
+      shVel[threadIdx.x] = velPD[k + threadIdx.x + istart];
+		__syncthreads();
 
       while(j < blockDim.x){
          double4 dr = {shPos[j].x - myposition.x, shPos[j].y - myposition.y, shPos[j].z - myposition.z, 0.0};
          double distance = (dr.x * dr.x + dr.y * dr.y + dr.z * dr.z);
          if(distance != 0.0)
-            pE -= 0.5 * myposition.w*shPos[j].w * rsqrt(distance + EPS*EPS);
+            pE -= 0.5 * myposition.w * shPos[j].w * rsqrt(distance + myEpsilon * shVel[j].w);
       j++;
       }
    __syncthreads();
@@ -245,14 +248,16 @@ __global__ void energy(double4 *posD, double4 *velD, double *E, unsigned int N, 
 	E[i] = kin + pE;
 }
 
-__global__ void potential_energy(double4 *posD, double *E, unsigned int N, double EPS, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass){
+__global__ void potential_energy(double4 *posCD, float4 *velPD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass){
 
 	unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	extern __shared__ double4 shPosition[];
 	double4 *shPos = (double4*)shPosition;
+   float4 *shVel = (float4*)&shPos[blockDim.x];
 
-	double4 myposition = posD[i];
+	double4 myposition = posCD[i];
+   float myEpsilon = velPD[i].w;
 
 	double pE = 0.0;
 	int k = 0, j;
@@ -260,14 +265,15 @@ __global__ void potential_energy(double4 *posD, double *E, unsigned int N, doubl
 
 	while(k < ppG){
 		j = 0;
-		shPos[threadIdx.x] = posD[k + threadIdx.x + istart];
+		shPos[threadIdx.x] = posCD[k + threadIdx.x + istart];
+		shVel[threadIdx.x] = velPD[k + threadIdx.x + istart];
 		__syncthreads();
 
 		while(j < blockDim.x){
 			double4 dr = {shPos[j].x - myposition.x, shPos[j].y - myposition.y, shPos[j].z - myposition.z, 0.0};
 			double distance = (dr.x * dr.x + dr.y * dr.y + dr.z * dr.z);
 			if(distance != 0.0)
-				pE -= 0.5 * myposition.w*shPos[j].w * rsqrt(distance + EPS*EPS);
+				pE -= 0.5 * myposition.w * shPos[j].w * rsqrt(distance + myEpsilon * shVel[j].w);
 			j++;	
 		}
 		__syncthreads();
@@ -320,7 +326,7 @@ __global__  void evaluation(unsigned int N,
 									 const double4 *const globalX,
                             const float4 *const globalV,
                             const float4 *const globalA,
-                            double4 *aC,
+									 double4 *aC,
 									 double4 *aC1,
 									 double4 *aC2,
                             unsigned int istart,
@@ -330,7 +336,6 @@ __global__  void evaluation(unsigned int N,
                             int *next,
                             double *loc_time,
                             double TIME,
-									 double EPS,
 									 double pl_core,
 									 double pl_mass)
 {
@@ -380,7 +385,7 @@ __global__  void evaluation(unsigned int N,
      while(j < blockDim.x){
 
 		  float3 dr = {shPos[j].x - myPosition.x, shPos[j].y - myPosition.y, shPos[j].z - myPosition.z};
-        float distance = (dr.x * dr.x + dr.y * dr.y + dr.z * dr.z) + EPS*EPS;
+        float distance = (dr.x * dr.x + dr.y * dr.y + dr.z * dr.z) + myVelocity.w * shVel[j].w;
         float sqrdist = shPos[j].w * rsqrtf(distance*distance*distance);
         distance = 1.0f/distance;
 

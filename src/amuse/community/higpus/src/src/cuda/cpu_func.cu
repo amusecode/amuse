@@ -9,7 +9,6 @@
 #include <my_errors.h>
 #include <utilis.h>
 #include <mpi_types.h>
-#include <stdarg.h> 
 
 #include "sys/time.h"
 
@@ -242,7 +241,7 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
    double *vy = new double [N];
    double *vz = new double [N];
    double *w  = new double [N];
-
+	
 	ifstream fin_data;
 
 	char* name = to_char(file_name);
@@ -260,7 +259,7 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
 		return HNoLines;
 
 	for(unsigned int i = 0; i < M; i++)
-		fin_data >> x[i] >> y[i] >> z[i]  >> vx[i] >> vy[i] >> vz[i] >> w[i];
+		fin_data >> x[i] >> y[i] >> z[i]  >> vx[i] >> vy[i] >> vz[i] >> w[i] >> vel[i].w;
 
 	fin_data.close();
 
@@ -296,7 +295,6 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
       vel[i].x = veldb[i].x;
       vel[i].y = veldb[i].y;
       vel[i].z = veldb[i].z;
-		vel[i].w = veldb[i].w;
    }
  
 	for(unsigned int i = M; i < N; i++){
@@ -311,7 +309,7 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
 		vel[i].x = 0.0;
 		vel[i].y = 0.0;
 		vel[i].z = 0.0;
-	   vel[i].w = 0.0;
+	   vel[i].w = 1.0e-06;
 	}	
 		
 
@@ -337,8 +335,7 @@ HostError cpu_read_params(
 		unsigned int *threads, 
 		double       *totaltime, 
 		double       *dtmax, 
-		double       *dtmin, 
-		double       *epsilon, 
+		double       *dtmin,  
 		double       *eta6, 
 		double       *eta4, 
 		double       *dtprint, 
@@ -380,9 +377,6 @@ HostError cpu_read_params(
       fin_data.ignore(300,'!');
 
       fin_data >> *dtmin;
-      fin_data.ignore(300,'!');
-
-      fin_data >> *epsilon;
       fin_data.ignore(300,'!');
 
       fin_data >> *eta6;
@@ -428,7 +422,6 @@ HostError cpu_read_params(
       hlog<<" Time of integration : "<<*totaltime<<endl;
       hlog<<" Max time step       : "<<*dtmax<<endl;
       hlog<<" Min time step       : "<<*dtmin<<endl;
-      hlog<<" Softening           : "<<*epsilon<<endl;
 	   hlog<<" eta 6th order       : "<<*eta6<<endl;
 	   hlog<<" eta 4th order       : "<<*eta4<<endl;
 	   hlog<<" time for printing   : "<<*dtprint<<endl;
@@ -463,8 +456,7 @@ HostError __MPIstart(int *rank, int *size, MPI_Datatype *mpi_float4, MPI_Datatyp
 }
 
 
-HostError __MPIbcastParam(unsigned int *N, unsigned int *NGPU, unsigned int *TPB, double *TTIME,  double *DTMAX, 
-									double *DTMIN, double *EPS, double *ETA6, double *ETA4, double *DTPRINT, unsigned int *BFMAX, string *gpu_name, int rank, int size){
+HostError __MPIbcastParam(unsigned int *N, unsigned int *NGPU, unsigned int *TPB, double *TTIME,  double *DTMAX, double *DTMIN, double *ETA6, double *ETA4, double *DTPRINT, unsigned int *BFMAX, string *gpu_name, int rank, int size){
 
 	char *value = new char [256];
 	if(rank==0)
@@ -478,14 +470,13 @@ HostError __MPIbcastParam(unsigned int *N, unsigned int *NGPU, unsigned int *TPB
 	MPISafeCall(MPI_Bcast( DTMAX, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
 	MPISafeCall(MPI_Bcast( DTMIN, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
 	MPISafeCall(MPI_Bcast( DTPRINT, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
-	MPISafeCall(MPI_Bcast( EPS,   1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
 	MPISafeCall(MPI_Bcast( ETA6,  1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
 	MPISafeCall(MPI_Bcast( ETA4,  1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
 	MPISafeCall(MPI_Bcast( value,  256, MPI_CHAR, 0, MPI_COMM_WORLD));
 
 	*gpu_name = to_string(value);
 
-	return random_check_Bcast(rank, size, "4i-6d", *N, *NGPU, *TPB, *BFMAX, *TTIME, *DTMAX, *DTMIN, *EPS, *ETA6, *ETA4, *DTPRINT);
+	return random_check_Bcast(rank, size, "4i-6d", *N, *NGPU, *TPB, *BFMAX, *TTIME, *DTMAX, *DTMIN, *ETA6, *ETA4, *DTPRINT);
 
 }
 
