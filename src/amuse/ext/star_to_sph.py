@@ -137,13 +137,23 @@ class StellarModel2SPH(object):
         index = numpy.searchsorted(sorted_vector, value)
         return max(index - 1, 0)
     
+    def get_indices(self,values,sorted_vector):
+        if values.amin() < sorted_vector[0] or values.amax()>sorted_vector[-1]:
+            raise AmuseException("Can't find a valid index.  not in "
+                "the range [{0}, {1}].".format(sorted_vector[0], sorted_vector[-1]))
+        indices=numpy.maximum(numpy.searchsorted(sorted_vector,values)-1,0)
+        return indices
+
+    
     def calculate_interpolation_coefficients(self, radial_positions):
-        indices = numpy.array([self.get_index(r, self.midpoints_profile) for r in radial_positions])
+#        indices = numpy.array([self.get_index(r, self.midpoints_profile) for r in radial_positions])
+        indices=self.get_indices(radial_positions,self.midpoints_profile)
         delta = (self.midpoints_profile[indices+1] - radial_positions) / (
             self.midpoints_profile[indices+1] - self.midpoints_profile[indices])
         return indices, delta
     
     def interpolate_internal_energy(self, radial_positions, do_composition_too = True):
+        print len(radial_positions)
         indices, delta = self.calculate_interpolation_coefficients(radial_positions)
         one_minus_delta = 1 - delta
         
