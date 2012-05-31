@@ -153,7 +153,6 @@ class StellarModel2SPH(object):
         return indices, delta
     
     def interpolate_internal_energy(self, radial_positions, do_composition_too = True):
-        print len(radial_positions)
         indices, delta = self.calculate_interpolation_coefficients(radial_positions)
         one_minus_delta = 1 - delta
         
