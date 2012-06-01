@@ -14,6 +14,23 @@ class MikkolaInterface(CodeInterface,
         CodeInterface.__init__(self, name_of_the_worker="mikkola_worker", **keyword_arguments)
     
     @legacy_function
+    def set_time_step():
+        """
+        Set the model timestep.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('time_step', dtype='float64', direction=function.IN,
+            description = "The current model timestep")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the time step was retrieved
+        -1 - ERROR
+            The code does not have support for querying the time
+        """
+        return function
+        
+    @legacy_function
     def get_lightspeed():
         """
         Get the lightspeed value, the lightspeed scales the units (like G=1)
@@ -146,6 +163,13 @@ class Mikkola(GravitationalDynamics):
         GravitationalDynamics.define_parameters(self, object)
         
         object.add_method_parameter(
+            "get_time_step",
+            "set_time_step",
+            "timestep",
+            "initial timestep for iteration", 
+            default_value = 1.0 | nbody_system.time
+        )
+        object.add_method_parameter(
             "get_lightspeed", 
             "set_lightspeed",
             "lightspeed", 
@@ -175,6 +199,12 @@ class Mikkola(GravitationalDynamics):
             (nbody_system.length / nbody_system.time, object.ERROR_CODE,)
         )
         
+        object.add_method(
+            "set_time_step",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+
         object.add_method(
             "set_tolerance",
             (object.NO_UNIT, ),

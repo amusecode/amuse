@@ -11,7 +11,7 @@ DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vz
 DOUBLE PRECISION :: start_time
 integer :: maximum_number_of_particles
 integer :: number_of_particles_allocated
-DOUBLE PRECISION :: lightspeed, tolerance
+DOUBLE PRECISION :: lightspeed, tolerance, timestep
 
 CONTAINS
 
@@ -156,13 +156,6 @@ FUNCTION get_time(time)
   get_time=0
 END FUNCTION
 
-FUNCTION get_time_step(time_step)
-  IMPLICIT NONE
-  INTEGER :: get_time_step
-  DOUBLE PRECISION :: time_step
-  get_time_step=0
-END FUNCTION
-
 FUNCTION evolve_model(end_time)
   IMPLICIT NONE
   INTEGER :: evolve_model
@@ -186,8 +179,12 @@ FUNCTION evolve_model(end_time)
   enddo
 
   IWRR = -0 !?
-  DELTAT = 0.001 ! Initial timestep, not used according to Mikkola
-!  TMAX = 12560 ! Maximum integration time
+  DELTAT = MIN(timestep, end_time - start_time) ! Initial timestep, not used according to Mikkola
+  if DELTAT .LE. 0.0 then
+     DELTAT = 0.001 ! if timestep or end_time invalid ensure a valid deltat
+  end if  
+  
+  TMAX = 12560 ! Maximum integration time
   stepr = 0 ! Not used, should be maximum number of steps
   soft= 0.e-6 ! Softening parameter
   cmet= [1.e-0, 0.e-0, 0.e-0] !?
@@ -196,7 +193,6 @@ FUNCTION evolve_model(end_time)
   evolve_model = Mikkola_ARWV(start_time, particle_m, POS,VEL,particle_id, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
 &                lightspeed,Ixc,Nbh,BHspin,tolerance) 
-
   do i=1, number_of_particles_allocated
      particle_x(i) = POS(1,i)
      particle_y(i) = POS(2,i)
@@ -265,6 +261,22 @@ FUNCTION get_lightspeed(outputvalue)
   DOUBLE PRECISION, intent(out) :: outputvalue
   outputvalue = lightspeed
   get_lightspeed=0
+END FUNCTION
+
+FUNCTION set_time_step(inputvalue)
+  IMPLICIT NONE
+  INTEGER :: set_time_step
+  DOUBLE PRECISION, intent(in) :: inputvalue
+  timestep = inputvalue
+  set_time_step=0
+END FUNCTION
+
+FUNCTION get_time_step(outputvalue)
+  IMPLICIT NONE
+  INTEGER :: get_time_step
+  DOUBLE PRECISION, intent(out) :: outputvalue
+  outputvalue = timestep
+  get_time_step=0
 END FUNCTION
 
 FUNCTION set_tolerance(inputvalue)
@@ -442,7 +454,7 @@ FUNCTION initialize_code()
   start_time = 0
   lightspeed = 1
   tolerance = 1.e-13 ! accuracy parameter to which to integrate
-  
+  timestep = 1.0
 END FUNCTION
 
 FUNCTION get_potential_energy(potential_energy)

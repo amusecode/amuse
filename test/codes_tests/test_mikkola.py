@@ -54,6 +54,7 @@ class TestMikkola(TestWithMPI):
     def test1(self):
         convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
         instance = Mikkola(convert_nbody)
+        instance.parameters.timestep = 0.5 | units.day
         stars = self.new_system_of_sun_and_earth()
         instance.particles.add_particles(stars)
         Sun = stars[0]
@@ -67,12 +68,12 @@ class TestMikkola(TestWithMPI):
         channel = instance.particles.new_channel_to(stars)
         channel.copy()
         self.assertAlmostRelativeEquals(instance.potential_energy * -0.5, instance.kinetic_energy, 3)
-        self.assertAlmostRelativeEquals(instance.radiated_gravitational_energy, -6218871076.69 | units.m**2 * units.kg * units.s**-2, 4)
+        self.assertAlmostRelativeEquals(instance.radiated_gravitational_energy, -6222456075.98| units.m**2 * units.kg * units.s**-2, 4)
         
         postion_after_full_rotation = earth.position.value_in(units.AU)[0]
        
-        self.assertAlmostEqual(postion_at_start, instance.particles[1].position.value_in(units.AU)[0], 4)
-        self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 4)
+        self.assertAlmostEqual(postion_at_start, instance.particles[1].position.value_in(units.AU)[0], 3)
+        self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 3)
         
         instance.evolve_model(1.5 | units.yr)
         
@@ -111,6 +112,7 @@ class TestMikkola(TestWithMPI):
     def test2(self):
         convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
         instance = Mikkola(convert_nbody)
+        instance.parameters.timestep = 1 | units.day
         stars = self.new_system_of_sun_and_mercury()
         instance.particles.add_particles(stars)
         Sun = stars[0]
