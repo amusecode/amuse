@@ -180,11 +180,11 @@ FUNCTION evolve_model(end_time)
 
   IWRR = -0 !?
   DELTAT = MIN(timestep, end_time - start_time) ! Initial timestep, not used according to Mikkola
-  if DELTAT .LE. 0.0 then
+  if (DELTAT .LE. 0.0) then
      DELTAT = 0.001 ! if timestep or end_time invalid ensure a valid deltat
   end if  
   
-  TMAX = 12560 ! Maximum integration time
+!  TMAX = 12560 ! Maximum integration time
   stepr = 0 ! Not used, should be maximum number of steps
   soft= 0.e-6 ! Softening parameter
   cmet= [1.e-0, 0.e-0, 0.e-0] !?
