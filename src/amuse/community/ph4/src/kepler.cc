@@ -1087,11 +1087,16 @@ void kepler::initialize_from_pos_and_vel(bool minimal, bool verbose)
 
 void kepler::initialize_from_shape_and_phase()
 {
-    // Compute energy, angular momentum, periastron, period, and mean
-    // motion...
+    // Compute the energy, angular momentum, periastron, period, and
+    // mean motion...
+    // 
+    // NOTE: If eccentricity = 1 and periastron = 0, i.e. linear
+    // motion, the sign of the semi-major axis determines the energy.
 
-    if (eccentricity != 1) {		// elliptical/hyperbolic motion
+    if (eccentricity != 1) {		// elliptical/hyperbolic motion; eccentricity
+					// decides which, overriding semi_major_axis sign
 
+	semi_major_axis = fabs(semi_major_axis);
 	energy = 0.5 * total_mass / semi_major_axis;
 	if (eccentricity < 1) energy = -energy;
 
@@ -1100,19 +1105,20 @@ void kepler::initialize_from_shape_and_phase()
 	period = (energy < 0 ? 2*M_PI / mean_motion : _INFINITY_);
 	angular_momentum = sqrt(fabs(1 - eccentricity * eccentricity)
 	                        * total_mass * semi_major_axis);
-	    
+
     } else if (periastron == 0) {	// linear orbit
 
 	angular_momentum = 0;
 
-	if (energy == 0) {
+	if (semi_major_axis == 0) {	// note convention
 
 	    period = semi_major_axis = _INFINITY_;
 	    mean_motion = sqrt(4.5*total_mass);		// yes, really!
 
-	} else {
+	} else {			// positive semimajor axis means negative energy
 
-	    energy = 0.5 * sign(energy) * total_mass / semi_major_axis;
+	    energy = -0.5 * total_mass / semi_major_axis;
+	    semi_major_axis = fabs(semi_major_axis);
 	    mean_motion = sqrt(total_mass / pow(semi_major_axis, 3));
 	    period = (energy < 0 ? 2*M_PI / mean_motion : _INFINITY_);
 	}
@@ -1123,6 +1129,7 @@ void kepler::initialize_from_shape_and_phase()
 	period = semi_major_axis = _INFINITY_;
 	mean_motion = sqrt(total_mass / (2*pow(periastron, 3)));
 	angular_momentum = sqrt(2 * total_mass * periastron);
+
     }
 
     // ...then compute phase.

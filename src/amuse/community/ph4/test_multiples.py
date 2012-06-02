@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys, unittest, numpy, random, collections, getopt, os, math
 
 from amuse.units import nbody_system
@@ -12,6 +14,7 @@ from amuse.datamodel import trees
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
+
 def is_a_parent(child1_key, child2_key):
     return child1_key > 0 or child2_key > 0
 
@@ -1012,7 +1015,7 @@ if __name__ == '__main__':
 
     infile = None
     N = 100
-    t_end = 1000.0 | nbody_system.time
+    t_end = 100.0 | nbody_system.time
     delta_t = 10.0 | nbody_system.time
     n_workers = 1
     use_gpu = 0

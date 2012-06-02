@@ -46,17 +46,24 @@ int initialize_from_elements(double mass, double semi, double ecc,
     // Standard orbit will be in the x-y plane, with long axis along
     // x.  However, we can set the orientation separately, before or
     // after calling this function.  The code here is based on that
-    // found in Starlab::make_standard_kepler().  Default mean anomaly
-    // is 0 (i.e. periapsis) at the specified time (default 0).  Note
-    // that ecc = 1 is a special case that requires periastron also to
-    // be set.
+    // found in Starlab::make_standard_kepler().  The mean anomaly on
+    // entry is usually taken to be 0 (i.e. periapsis) at the
+    // specified time (default 0), unless the orbit is linear.
+    //
+    // Note that ecc = 1 is a special case that requires periastron
+    // also to be set.  In that case, the sign of semi determines
+    // whether the orbit is bound or unbound.
 
     k->set_time(time);
     k->set_total_mass(mass);
     k->set_semi_major_axis(semi);
     k->set_eccentricity(ecc);
+    k->set_periastron(periastron);
     k->set_mean_anomaly(mean_anomaly);
-    k->initialize_from_shape_and_phase();	// expects a, e [, q [, E]]
+
+    k->initialize_from_shape_and_phase();	// expects a, e [, peri]
+    // k->print_all();
+
     return 0;
 }
 
