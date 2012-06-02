@@ -359,7 +359,7 @@ if __name__ == '__main__':
         scatter3(init, accuracy_parameter, delta_t, t_end)
         if nscatter > 1: print '\n--------------------\n'
 
-    print 'timing: inst', time1, ' init', time2, \
+    print 'timing:  inst', time1, ' init', time2, \
 	  ' evol', time3, ' over', time4
 
     kep.stop()
