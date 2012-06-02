@@ -2,6 +2,8 @@
 
 import sys, unittest, numpy, random, collections, getopt, os, math
 
+from time import *
+
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.community.newsmallN.interface import SmallN
@@ -49,6 +51,7 @@ def set_inner_orbit(kep, init):
     kep.set_normal_unit_vector(zero, zero, one)
     mean_an = 2*math.pi*numpy.random.random()
     kep.initialize_from_elements(1.0|nbody_system.mass, semi, ecc, mean_an)
+    print 'inner semi, ecc =', semi.number, ecc
 
 def set_outer_orbit(kep, init):
 
@@ -60,8 +63,10 @@ def set_outer_orbit(kep, init):
     v_inf = init.v_infinity \
 	        * math.sqrt( (1 - init.m) * init.m * mtotal / init.M )
     energy3 = 0.5 * v_inf * v_inf
+    print 'm1, m2, m3 =', 1-init.m, init.m, init.M
+    print 'energy3 =', energy3
     if energy3 > 0:
-        semi = 0.5*mtotal/energy3|nbody_system.length
+        semi = -0.5*mtotal/energy3|nbody_system.length
         ang_mom3 = init.impact_parameter * v_inf
         ecc = math.sqrt( 1 + 2 * energy3 * (ang_mom3/mtotal)**2)
         periastron = 0|nbody_system.length	# irrelevant
@@ -102,10 +107,15 @@ def set_outer_orbit(kep, init):
                                    normal[1],
                                    normal[2])
 
-    mean_anomaly = 0		# periastron
     time = 0.0|nbody_system.time
+    mean_anomaly = 0				# t = 0 at periastron
+    if periastron.number == 0: mean_anomaly = -1.e-3
+
+    print 'outer semi, ecc =', semi.number, ecc
     kep.initialize_from_elements(mtotal|nbody_system.mass, semi, ecc,
                                  mean_anomaly, time, periastron)
+    print 'outer normal =', kep.get_normal_unit_vector()
+    print 'outer periastron =', kep.get_periastron().number
 
 def make_triple(init):
 
@@ -137,6 +147,8 @@ def make_triple(init):
     pos12 = [-f*rel_pos[0], -f*rel_pos[1], -f*rel_pos[2]]
     vel12 = [-f*rel_vel[0], -f*rel_vel[1], -f*rel_vel[2]]
 
+    print 'outer separation =', kep.get_separation().number, ' time =', kep.get_time().number
+
     pos1 = sum3(pos1, pos12)
     vel1 = sum3(vel1, vel12)
     pos2 = sum3(pos2, pos12)
@@ -144,7 +156,7 @@ def make_triple(init):
     pos3 = [(1-f)*rel_pos[0], (1-f)*rel_pos[1], (1-f)*rel_pos[2]]
     vel3 = [(1-f)*rel_vel[0], (1-f)*rel_vel[1], (1-f)*rel_vel[2]]
 
-    print 'initial time =', time, "(time of outer periastron = 0)"
+    print 'initial time =', time.number, "(time of outer periastron = 0)"
     kep.stop()
 
     # Create the 3-body system.
@@ -179,13 +191,18 @@ def get_binary_elements(p):
 
 def scatter3(init,
              accuracy_parameter = 0.1,
-             delta_t = 10 | nbody_system.time,
+             delta_t = 0 | nbody_system.time,
              t_end = 1.e4 | nbody_system.time):
+
+    t0 = clock()
 
     gravity = SmallN(redirection = "none")
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     gravity.parameters.timestep_parameter = accuracy_parameter
+
+    t1 = clock()
+    dtime1 = t1 - t0
 
     time,stars = make_triple(init)	# time = 0 at outer periastron
     number_of_stars = len(stars)
@@ -206,15 +223,29 @@ def scatter3(init,
     print "evolving triple to completion in steps of", delta_t.number
     sys.stdout.flush()
 
-    # Don't have a proper unerturbed termination criterion in smallN.
+    # Don't have a proper unperturbed termination criterion in smallN.
     # For now, insist that the final time exceed minus the initial
     # time (recall that outer peri is at t = 0).
 
     t_crit = -time
+    if delta_t.number <= 0.0: delta_t = 2*t_crit	# for efficiency
+
+    t2 = clock()
+    dtime2 = t2 - t1
+
+    dtime3 = 0.0
+    dtime4 = 0.0
 
     while time < t_end:
+
+        t3 = clock()
+
         time += delta_t
         gravity.evolve_model(time)
+
+        t4 = clock()
+        dtime3 += t4 - t3
+
         energy = gravity.get_kinetic_energy()+gravity.get_potential_energy()
         print "time =", time.number, "energy =", energy.number
         over = gravity.is_over()
@@ -240,16 +271,23 @@ def scatter3(init,
             break
     
         sys.stdout.flush()
+        dtime4 += clock() - t4
 
     if not over:
         print '\ninteraction is not over'
     gravity.stop()
 
+    global time1, time2, time3, time4
+    time1 += dtime1
+    time2 += dtime2
+    time3 += dtime3
+    time4 += dtime4
+
 if __name__ == '__main__':
 
     accuracy_parameter = 0.1
-    delta_t = 10.0 | nbody_system.time
-    t_end = 1.e4 | nbody_system.time
+    delta_t = 0.0 | nbody_system.time
+    t_end = 1.e5 | nbody_system.time
     init = Initial_state();
 
     try:
@@ -299,13 +337,22 @@ if __name__ == '__main__':
         else:
             print "unexpected argument", o
 
+    # ** Note potential conflict between C++ and Python random generators. **
+
     if init.random_seed <= 0:
         numpy.random.seed()
         init.random_seed = numpy.random.randint(1, pow(2,31)-1)
     numpy.random.seed(init.random_seed)
     print "random seed =", init.random_seed, numpy.random.random()
 
-    # ** Note potential conflict between C++ and Python random generators. **
-
     assert is_mpd_running()
+
+    time1 = 0.0		# instantiation
+    time2 = 0.0		# initialization
+    time3 = 0.0		# integration
+    time4 = 0.0		# investigation
+
     scatter3(init, accuracy_parameter, delta_t, t_end)
+
+    print '\ntime1 =', time1, ' time2 =', time2, \
+          ' time3 =', time3, ' time4 =', time4

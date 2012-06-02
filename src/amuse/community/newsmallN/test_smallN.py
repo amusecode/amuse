@@ -137,7 +137,7 @@ def test_smallN(infile = None, number_of_stars = 10,
     print "adding particles"
     # print stars
     sys.stdout.flush()
-    gravity.set_time(time);
+    gravity.set_time(time)
     gravity.particles.add_particles(stars)
     print "committing particles"
     gravity.commit_particles()

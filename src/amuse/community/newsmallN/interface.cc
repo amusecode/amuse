@@ -361,6 +361,20 @@ int set_structure_check_interval(real dt) {
     return 0;
 }
 
+void myspaces(int n) {for (int i = 0; i < n; i++) cout << " ";}
+
+void myprint(hdyn *b, int level = 0)
+{
+    myspaces(4*level);
+    cout << b->get_index() << "  " << "mass = " << b->get_mass();
+    if (b->get_kepler()) cout << "  kepler";
+    cout << endl;
+    myspaces(4*level);
+    cout << "    pos = " << b->get_pos() << endl;
+    for_all_daughters(hdyn, b, bb)
+	myprint(bb, level+1);
+}
+
 int evolve_model(double time)
 {
     // On return, system_time will be greater than or equal to the
@@ -375,6 +389,8 @@ int evolve_model(double time)
 
     // int status = 
     smallN_evolve(b, time, break_scale_sq, structure_check_interval);
+    //myprint(b);
+
     return 0;
 }
 
