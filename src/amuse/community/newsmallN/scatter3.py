@@ -285,13 +285,14 @@ def scatter3(init,
 
 if __name__ == '__main__':
 
+    nscatter = 1
     accuracy_parameter = 0.1
     delta_t = 0.0 | nbody_system.time
     t_end = 1.e5 | nbody_system.time
     init = Initial_state();
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "A:d:e:g:m:M:pPr:s:t:v:")
+        opts, args = getopt.getopt(sys.argv[1:], "A:d:e:g:m:M:n:pPr:s:t:v:")
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(1)
@@ -318,6 +319,8 @@ if __name__ == '__main__':
             init.M = float(a)
             if init.M <= 0:
                 raise Exception("M > 0 required")
+        elif o == "-n":
+            nscatter = int(a)
         elif o == "-p":
             init.planar = 1
         elif o == "-P":
@@ -352,7 +355,9 @@ if __name__ == '__main__':
     time3 = 0.0		# integration
     time4 = 0.0		# investigation
 
-    scatter3(init, accuracy_parameter, delta_t, t_end)
+    for i in range(nscatter):
+        scatter3(init, accuracy_parameter, delta_t, t_end)
+        if nscatter > 1: print '\n--------------------\n'
 
-    print '\ntime1 =', time1, ' time2 =', time2, \
+    print 'time1 =', time1, ' time2 =', time2, \
           ' time3 =', time3, ' time4 =', time4
