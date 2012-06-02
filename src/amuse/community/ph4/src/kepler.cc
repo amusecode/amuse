@@ -1112,11 +1112,12 @@ void kepler::initialize_from_shape_and_phase()
 
 	if (semi_major_axis == 0) {	// note convention
 
+	    energy = 0;
 	    period = semi_major_axis = _INFINITY_;
 	    mean_motion = sqrt(4.5*total_mass);		// yes, really!
 
-	} else {			// positive semimajor axis means negative energy
-
+	} else {			// positive semimajor axis
+					// means negative energy
 	    energy = -0.5 * total_mass / semi_major_axis;
 	    semi_major_axis = fabs(semi_major_axis);
 	    mean_motion = sqrt(total_mass / pow(semi_major_axis, 3));

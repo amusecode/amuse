@@ -217,15 +217,15 @@ def scatter3(init,
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
 
-    print "evolving triple to completion in steps of", delta_t.number
-    sys.stdout.flush()
-
     # Don't have a proper unperturbed termination criterion in smallN.
     # For now, insist that the final time exceed minus the initial
     # time (recall that outer peri is at t = 0).
 
     t_crit = -time
     if delta_t.number <= 0.0: delta_t = 2*t_crit	# for efficiency
+
+    print "evolving triple to completion in steps of", delta_t.number
+    sys.stdout.flush()
 
     t2 = clock()
     dtime2 = t2 - t1
