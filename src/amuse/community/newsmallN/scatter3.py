@@ -122,8 +122,7 @@ def make_triple(init):
     # Create IDs and initial masses, positions, and velocities.
     # Convention: initial binary is (1,2).
 
-    kep = Kepler(redirection = "none") #, debugger="gdb")
-    kep.initialize_code()
+    global kep
 
     # Inner orbit (1,2).
 
@@ -147,7 +146,8 @@ def make_triple(init):
     pos12 = [-f*rel_pos[0], -f*rel_pos[1], -f*rel_pos[2]]
     vel12 = [-f*rel_vel[0], -f*rel_vel[1], -f*rel_vel[2]]
 
-    print 'outer separation =', kep.get_separation().number, ' time =', kep.get_time().number
+    print 'outer separation =', kep.get_separation().number, \
+	  ' time =', kep.get_time().number
 
     pos1 = sum3(pos1, pos12)
     vel1 = sum3(vel1, vel12)
@@ -157,7 +157,6 @@ def make_triple(init):
     vel3 = [(1-f)*rel_vel[0], (1-f)*rel_vel[1], (1-f)*rel_vel[2]]
 
     print 'initial time =', time.number, "(time of outer periastron = 0)"
-    kep.stop()
 
     # Create the 3-body system.
 
@@ -177,16 +176,14 @@ def make_triple(init):
 #-----------------------------------------------------------------------
 
 def get_binary_elements(p):
+    global kep
     comp1 = p.child1
     comp2 = p.child2
-    kepler = Kepler(redirection = "none")
-    kepler.initialize_code()
     m = comp1.mass + comp2.mass
-    kepler.initialize_from_dyn(m,
-            comp2.x-comp1.x, comp2.y-comp1.y, comp2.z-comp1.z,
-            comp2.vx-comp1.vx, comp2.vy-comp1.vy, comp2.vz-comp1.vz)
-    a,e = kepler.get_elements()
-    kepler.stop()
+    kep.initialize_from_dyn(m,
+		comp2.x-comp1.x, comp2.y-comp1.y, comp2.z-comp1.z,
+		comp2.vx-comp1.vx, comp2.vy-comp1.vy, comp2.vz-comp1.vz)
+    a,e = kep.get_elements()
     return m,a,e
 
 def scatter3(init,
@@ -350,6 +347,9 @@ if __name__ == '__main__':
 
     assert is_mpd_running()
 
+    kep = Kepler(redirection = "none") #, debugger="gdb")
+    kep.initialize_code()
+
     time1 = 0.0		# instantiation
     time2 = 0.0		# initialization
     time3 = 0.0		# integration
@@ -361,3 +361,5 @@ if __name__ == '__main__':
 
     print 'time1 =', time1, ' time2 =', time2, \
           ' time3 =', time3, ' time4 =', time4
+
+    kep.stop()
