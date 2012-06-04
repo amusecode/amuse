@@ -16,7 +16,7 @@ to allocate, load, start functions, etc.
 
 enum { GRAPE5 = 0, FOURTH, SIXTH, EIGHT};        //0, 1, 2, 3
 
-#ifdef _OCL_
+#ifdef FOUND_CL
 #include "include/ocldev.h"
 #else
 #include "include/cudadev.h"

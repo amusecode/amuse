@@ -78,6 +78,7 @@ AC_LANG(C)
 
 AX_CUDA()
 
+AC_PROG_SED()
 #
 # Sapporo 
 #
@@ -94,7 +95,13 @@ AC_ARG_ENABLE(sapporo2,
     SAPPORO_LIBS="-L\${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo"
     AS_IF([test "x$enable_sapporo2" != "xno"], [
 	SAPPORO_VERSION="2"
-    SAPPORO_LIBS="${OPENMP_CFLAGS} -L\${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo"
+    AS_IF([test x$WITH_CUDA  =="xno"], [
+      AX_CHECK_CL()
+      SAPPORO_LIBS="${CL_LIBS} ${OPENMP_CFLAGS} -L\${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo"
+    ], [
+      SAPPORO_LIBS="${OPENMP_CFLAGS} -L\${AMUSE_DIR}/lib/sapporo_$SAPPORO_VERSION -lsapporo"
+    ])
+    
     ])
     ],
     [SAPPORO_VERSION="light"

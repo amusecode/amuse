@@ -1,6 +1,12 @@
-CXX := g++
-CC  := gcc
-LD  := g++ 
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../..
+-include ${AMUSE_DIR}/config.mk
+
+
+CXX ?= g++
+CC  ?= gcc
+LD  ?= g++ 
 
 .SUFFIXES: .o .cpp .ptx .cu
 
@@ -11,7 +17,8 @@ CUDA_TK  ?= /usr/local/cuda
 #OFLAGS = -O3 -g -Wall -fopenmp
 #OFLAGS = -g -Wall -fopenmp -D_OCL_
 OFLAGS = -g -Wall -fopenmp 
-CXXFLAGS =  -fPIC $(OFLAGS) -I$(CUDA_TK)/include 
+
+CXXFLAGS =  -fPIC $(OFLAGS) -I$(CUDA_TK)/include  $(CL_CFLAGS)
 
 
 # NVCC      = $(CUDA_TK)/bin/nvcc  --device-emulation
@@ -25,7 +32,7 @@ NVCCFLAGS ?= -arch=sm_12
 # Use with Mac OS X
 # NVCCFLAGS = -arch sm_12 -Xcompiler="-Duint=unsigned\ int"
 
-LDFLAGS = -lcuda -lOpenCL -fopenmp 
+LDFLAGS = -lcuda $(CL_LIBS) -fopenmp 
 
 
 INCLUDEPATH = ./include
@@ -72,12 +79,16 @@ clean:
 $(OBJ): $(INCLUDEPATH)/*.h
 
 #testkernel.ptx: 
+
+ifeq ($(CUDA_ENABLED),"yes")
 sapporohostclass.o : include/kernels4th.ptxh include/kernels6thDP.ptxh include/kernelsG5DS.ptxh include/kernelsG5SP.ptxh sapporohostclass.h sapdevclass.h $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernels4th.ptx : $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernels4thDP.ptx : $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernels6thDP.ptx : $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernelsG5DS.ptx : $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernelsG5SP.ptx : $(INCLUDEPATH)/defines.h
+endif
+
 
 libsapporo.a : sapporohostclass.o
 
