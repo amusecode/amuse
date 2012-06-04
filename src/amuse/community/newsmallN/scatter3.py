@@ -138,9 +138,9 @@ def make_triple(init):
     # Outer orbit ((1,2),3).
 
     set_outer_orbit(kep, init)
-    print '----------'
-    kep.print_all()
-    print '----------'
+    # print '----------'
+    # kep.print_all()
+    # print '----------'
     kep.return_to_radius((init.gamma/init.M)**(-1./3)|nbody_system.length)
     time = kep.get_time()
     rel_pos = kep.get_separation_vector()
