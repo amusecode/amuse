@@ -1025,7 +1025,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         merge_product.secondary = instance.particles[1]
         instance.merge_products.add_particle(merge_product)
         self.assertEqual(instance.number_of_particles, 3)
-        self.assertEqual(instance.particles.number_of_zones, [4, 4, 233])
+        self.assertEqual(instance.particles.number_of_zones, [4, 4, 226])
         instance.stop()
     
 

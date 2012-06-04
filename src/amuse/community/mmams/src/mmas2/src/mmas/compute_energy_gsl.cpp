@@ -30,46 +30,51 @@ double integrand(double mass, void *params) {
 real mmas::compute_stellar_energy(usm &model) {
   n_shells = model.get_num_shells();
 
-  arr_mass   = new double[n_shells];
-  arr_radius = new double[n_shells];
-  arr_temp   = new double[n_shells];
-  arr_dens   = new double[n_shells];
-  arr_m_mu   = new double[n_shells];
+  arr_mass   = new double[n_shells+1];
+  arr_radius = new double[n_shells+1];
+  arr_temp   = new double[n_shells+1];
+  arr_dens   = new double[n_shells+1];
+  arr_m_mu   = new double[n_shells+1];
   for (int i = 0; i < n_shells; i++) {
     mass_shell &shell = model.get_shell(i);
     if (i > 0 && shell.mass <= arr_mass[i-1]){
         n_shells = i;
         break;
     }
-    arr_mass[i]   = shell.mass;
-    arr_radius[i] = shell.radius;
-    arr_temp[i]   = shell.temperature;
-    arr_dens[i]   = shell.density;
-    arr_m_mu[i]   = shell.mean_mu;
+    arr_mass[i+1]   = shell.mass;
+    arr_radius[i+1] = shell.radius;
+    arr_temp[i+1]   = shell.temperature;
+    arr_dens[i+1]   = shell.density;
+    arr_m_mu[i+1]   = shell.mean_mu;
 //     fprintf(stderr, "m= %lg: r= %lg, t= %lg, rho= %lg, mu= %lg\n",
 // 	    shell.mass, shell.radius, shell.temperature, shell.density, shell.mean_mu);
   }
+  arr_mass[0] = 0.0;
+  arr_radius[0] = 0.0;
+  arr_temp[0] = arr_temp[1];
+  arr_dens[0] = arr_dens[1];
+  arr_m_mu[0] = arr_m_mu[1];
 
 //   fprintf(stderr,"radius\n");
   acc_radius    = gsl_interp_accel_alloc();
-  interp_radius = gsl_interp_alloc(gsl_interp_linear, n_shells);
-  int status = gsl_interp_init(interp_radius, arr_mass, arr_radius, n_shells);
+  interp_radius = gsl_interp_alloc(gsl_interp_linear, n_shells+1);
+  int status = gsl_interp_init(interp_radius, arr_mass, arr_radius, n_shells+1);
   if (status != GSL_SUCCESS) return -1e99;
   
 //   fprintf(stderr,"temp\n");
   acc_temp    = gsl_interp_accel_alloc();
-  interp_temp = gsl_interp_alloc(gsl_interp_linear, n_shells);
-  gsl_interp_init(interp_temp, arr_mass, arr_temp, n_shells);
+  interp_temp = gsl_interp_alloc(gsl_interp_linear, n_shells+1);
+  gsl_interp_init(interp_temp, arr_mass, arr_temp, n_shells+1);
 
 //   fprintf(stderr,"dens\n");
   acc_dens    = gsl_interp_accel_alloc();
-  interp_dens = gsl_interp_alloc(gsl_interp_linear, n_shells);
-  gsl_interp_init(interp_dens, arr_mass, arr_dens, n_shells);
+  interp_dens = gsl_interp_alloc(gsl_interp_linear, n_shells+1);
+  gsl_interp_init(interp_dens, arr_mass, arr_dens, n_shells+1);
  
 //   fprintf(stderr,"mu\n");
   acc_m_mu    = gsl_interp_accel_alloc();
-  interp_m_mu = gsl_interp_alloc(gsl_interp_linear, n_shells);
-  gsl_interp_init(interp_m_mu, arr_mass, arr_m_mu, n_shells);
+  interp_m_mu = gsl_interp_alloc(gsl_interp_linear, n_shells+1);
+  gsl_interp_init(interp_m_mu, arr_mass, arr_m_mu, n_shells+1);
 
 
   int n_limit = 2*n_shells;
