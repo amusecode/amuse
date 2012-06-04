@@ -11,7 +11,10 @@ class TestKingModel(amusetest.TestCase):
         print "First test: making a King model."
         number_of_particles = 10
         particles = new_king_model(number_of_particles, 6.0)
-        self.assertEquals(len(particles), number_of_particles)
+        self.assertAlmostEqual(particles.mass.sum(), 1 | nbody_system.mass)
+        self.assertAlmostEqual(particles[0].mass , 0.1 | nbody_system.mass)
+        print particles
+        self.assertFalse(particles[0].mass.is_vector())
     
     def test2(self):
         print "Testing kinetic and potential energy of a King model realisation."

@@ -437,7 +437,7 @@ class MakeKingModel(object):
             print "initial_rtidal_over_rvirial",  rr[nprof] / (0.25/kin)
         #    // Assign positions and velocities. Note that it may actually
         #    // be preferable to do this in layers instead.
-        masses = numpy.zeros((self.number_of_particles,1)) + (1.0 / self.number_of_particles)
+        masses = numpy.zeros(self.number_of_particles) + (1.0 / self.number_of_particles)
         positions = []
         velocities = []
         #    // Convenient to have the "unscaled" system 
