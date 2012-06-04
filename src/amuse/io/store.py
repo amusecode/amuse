@@ -75,7 +75,11 @@ class HDF5VectorQuantityAttribute(HDF5Attribute):
         self.unit = unit
         
     def get_values(self, indices):
-        return self.unit.new_quantity(self.dataset[indices])
+        if len(self.get_shape()) > 1:
+            return self.unit.new_quantity(self.dataset[:][indices])
+        else:
+            return self.unit.new_quantity(self.dataset[indices])
+            
     
     def set_values(self, indices, values):
         try:
@@ -116,7 +120,8 @@ class HDF5VectorQuantityAttribute(HDF5Attribute):
         raise NotImplementedError("Copy of an attribute in a hdf5 file is not implemented")
 
     def get_value(self, index):
-        return self.unit.new_quantity(self.dataset[indices])
+        print self.name, self.unit.new_quantity(self.dataset[index])
+        return self.unit.new_quantity(self.dataset[index])
 
     def remove_indices(self, indices):
         oldlength = len(self.dataset)
@@ -143,7 +148,11 @@ class HDF5UnitlessAttribute(HDF5Attribute):
         self.dataset = dataset
         
     def get_values(self, indices):
-        return self.dataset[indices]
+        if len(self.get_shape()) > 1:
+            return self.dataset[:][indices]
+        else:
+            return self.dataset[indices]
+        
     
     def set_values(self, indices, values):
         self.dataset[indices] = values
@@ -316,9 +325,9 @@ class HDF5AttributeStorage(AttributeStorage):
                 attribute,
                 self.attributesgroup[attribute]
             )
-            bools = numpy.zeros(dataset.get_shape(), dtype='bool')
+            bools = numpy.zeros(dataset.get_length(), dtype='bool')
             bools[indices] = True
-            selected_values = dataset.get_values(bools)
+            selected_values = dataset.get_values(numpy.asarray(bools))
             results.append(selected_values)
         
         return results

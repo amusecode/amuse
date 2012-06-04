@@ -266,7 +266,7 @@ class TestStoreHDF(amusetest.TestCase):
     
     def test12(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test10.hdf5")
+        output_file = os.path.join(test_results_path, "test12.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -282,4 +282,75 @@ class TestStoreHDF(amusetest.TestCase):
         a = loaded.collection_attributes
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
+    
+    def test13(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test13.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
 
+        stars = Particles(2)
+        stars.x = 1.0  | units.km
+        stars.md = [[1,2,3],[4,5,6]] | units.km
+       
+
+        io.write_set_to_file(stars, output_file, "hdf5")
+        
+        loaded = io.read_set_from_file(output_file, "hdf5")
+        print loaded[0].md
+        self.assertEquals(loaded[0].md, [1,2,3] | units.km)
+        self.assertEquals(loaded[1].md, [4,5,6] | units.km)
+        
+        self.assertEquals(loaded.md[0], [1,2,3] | units.km)
+        self.assertEquals(loaded.md[1], [4,5,6] | units.km)
+         
+        self.assertEquals(loaded.previous_state()[0].md, [1,2,3] | units.km)
+        #self.assertEquals(loaded.previous_state()[0].md,  [7,8,9] | units.km)
+    
+      
+    def test14(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test14.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        stars = Particles(2)
+        stars.x = 1.0  | units.km
+        stars.md = [[[1,3],[2,4],[3,5]],[[4,6],[5,7],[6,8]]]
+       
+
+        io.write_set_to_file(stars, output_file, "hdf5")
+        
+        loaded = io.read_set_from_file(output_file, "hdf5")
+        print loaded[0].md
+        self.assertEquals(loaded[0].md, [[1,3],[2,4],[3,5]])
+        self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
+        
+        self.assertEquals(loaded.md[0], [[1,3],[2,4],[3,5]])
+        self.assertEquals(loaded.md[1], [[4,6],[5,7],[6,8]])
+    
+    def test15(self):
+        
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test14.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        stars = Particles(2)
+        stars.x = 1.0  | units.km
+        stars.md = [[[1,3],[2,4],[3,5]],[[4,6],[5,7],[6,8]]]
+       
+
+        io.write_set_to_file(stars, output_file, "hdf5")
+        processor = store.StoreHDF(output_file, True, open_for_writing = True)
+        loaded = processor.load()
+        loaded.previous_state()[0].md = [[3,1],[3,4],[5,2]] 
+        self.assertEquals(loaded.previous_state()[0].md, [[3,1],[3,4],[5,2]] )
+        processor.close()
+        
+        loaded = io.read_set_from_file(output_file, "hdf5")
+        print loaded[0].md
+        self.assertEquals(loaded[0].md, [[3,1],[3,4],[5,2]])
+        self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
+        
+        

@@ -88,8 +88,13 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
             indices = storage.get_indices_of([value.key])
             return indices[0]
         else:
-            indices = storage.get_indices_of(value.key)
-            return indices
+            valid = value.get_valid_particles_mask()
+            all_keys = value.get_all_keys_in_store()
+            valid_keys = all_keys[valid]
+            valid_indices = numpy.asarray(storage.get_indices_of(valid_keys))
+            all_indices = -1 * numpy.ones(len(value), dtype=valid_indices.dtype)
+            all_indices[valid] = valid_indices
+            return valid_indices
 
 class CodeAttributeWrapper(object):
 
@@ -804,7 +809,13 @@ class AbstractParticleSetDefinition(object):
 
     def add_setter(self, name_of_the_setter, names = None):
         self.setters.append((name_of_the_setter, names))
-
+    
+    def add_gridded_getter(self, name_of_the_getter, name_of_the_range_method, names = None):
+        self.gridded_getters.append((name_of_the_getter,name_of_the_range_method, names))
+        
+    def add_gridded_setter(self, name_of_the_setter, name_of_the_range_method, names = None):
+        self.gridded_setters.append((name_of_the_setter,name_of_the_range_method, names))
+        
     def add_attribute(self, name_of_the_attribute, name_of_the_method, names = None):
         self.attributes.append((name_of_the_attribute,name_of_the_method, names))
 
@@ -852,6 +863,8 @@ class ParticleSetDefinition(AbstractParticleSetDefinition):
         self.name_of_number_of_particles_method = 'get_number_of_particles'
         self.setters = []
         self.getters = []
+        self.gridded_getters = []
+        self.gridded_setters = []
         self.queries = []
         self.attributes = []
     
@@ -877,7 +890,23 @@ class ParticleSetDefinition(AbstractParticleSetDefinition):
         for name, names in self.getters:
             x = incode_storage.ParticleGetAttributesMethod(getattr(interface, name), names)
             getters.append(x)
-    
+        
+        for name, range_method_name, names in self.gridded_getters:
+            x = incode_storage.ParticleGetGriddedAttributesMethod(
+                    getattr(interface, name), 
+                    getattr(interface, range_method_name), 
+                    names
+            )
+            getters.append(x)
+            
+        for name, range_method_name, names in self.gridded_setters:
+            x = incode_storage.ParticleSetGriddedAttributesMethod(
+                    getattr(interface, name), 
+                    getattr(interface, range_method_name), 
+                    names
+            )
+            setters.append(x)
+            
     
         name, names = self.new_particle_method
         new_particle_method = incode_storage.NewParticleMethod(getattr(interface, name), names)
@@ -1113,10 +1142,16 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
 
     def add_getter(self, name_of_the_set, name_of_the_getter, names = None):
         self.mapping_from_name_to_set_definition[name_of_the_set].add_getter(name_of_the_getter, names = names)
-
+        
     def add_setter(self, name_of_the_set, name_of_the_setter, names = None):
         self.mapping_from_name_to_set_definition[name_of_the_set].add_setter(name_of_the_setter, names = names)
 
+    def add_gridded_getter(self, name_of_the_set, name_of_the_getter, name_of_the_range_method, names = None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_gridded_getter(name_of_the_getter, name_of_the_range_method, names = names)
+    
+    def add_gridded_setter(self, name_of_the_set, name_of_the_setter, name_of_the_range_method, names = None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_gridded_setter(name_of_the_setter, name_of_the_range_method, names = names)
+    
     def add_attribute(self, name_of_the_set, name_of_the_attribute, name_of_the_method, names = None):
         self.mapping_from_name_to_set_definition[name_of_the_set].add_attribute(name_of_the_attribute, name_of_the_method, names = names)
 

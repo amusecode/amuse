@@ -100,6 +100,7 @@ from amuse.datamodel import base
 from amuse.datamodel import Particles, ParticlesSuperset
 from amuse.datamodel import ParticleInformationChannel
 from amuse.datamodel import Particle
+from amuse.datamodel import Grid
 from amuse.datamodel import AttributeStorage
 
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
@@ -203,7 +204,43 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
             print self.method
             raise
         return self.convert_return_value(return_value, storage, attributes_to_return)
+        
+class ParticleGetGriddedAttributesMethod(ParticleGetAttributesMethod):
     
+    def __init__(self, method, get_range_method, attribute_names = None):
+        ParticleGetAttributesMethod.__init__(self, method, attribute_names)
+        self.get_range_method = get_range_method
+        
+    def get_attribute_values(self, storage, attributes_to_return, *indices):
+        
+        self.check_arguments(storage, indices, attributes_to_return)
+        
+        minmax_per_dimension = self.get_range_method( **storage.extra_keyword_arguments_for_getters_and_setters)
+        
+        result = [slice(0, len(indices[0]))]
+        for i in range(0, len(minmax_per_dimension), 2):
+            minval = minmax_per_dimension[i]
+            maxval = minmax_per_dimension[i+1]
+            result.append(slice(minval, maxval+1))
+        
+        grid_indices = numpy.mgrid[tuple(result)]
+        gridshape = grid_indices[0].shape
+        newshape = [1]*len(result)
+        newshape[0] = len(indices[0])
+        a =  numpy.array(indices[0]).reshape(newshape)
+        grid_indices[0] = a
+        
+        one_dimensional_arrays_of_indices = [x.reshape(-1) for x in grid_indices]
+        try:
+            return_value = self.method(*one_dimensional_arrays_of_indices, **storage.extra_keyword_arguments_for_getters_and_setters)
+        except:
+            print self.method
+            raise
+        mapping_from_name_to_value = self.convert_return_value(return_value, storage, attributes_to_return)
+        for key, value in mapping_from_name_to_value.iteritems():
+            mapping_from_name_to_value[key] = value.reshape(gridshape)
+        return mapping_from_name_to_value
+        
 class ParticleSetAttributesMethod(ParticleMappingMethod):
     """
     Instances wrap other methods and provide mappings
@@ -268,7 +305,8 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
         list_arguments = list(indices)
         list_args, keyword_args = self.convert_attributes_and_values_to_list_and_keyword_arguments(attributes, values)
         list_arguments.extend(list_args)
-        self.method(*list_arguments, **storage.extra_keyword_arguments_for_getters_and_setters)
+        keyword_args.update(storage.extra_keyword_arguments_for_getters_and_setters)
+        self.method(*list_arguments, **keyword_args)
     
     def convert_attributes_and_values_to_list_and_keyword_arguments(self, attributes, values):
         not_set_marker = object()
@@ -297,7 +335,45 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
                     
         list_arguments = [x for x in list_arguments if not x is not_set_marker]
         return list_arguments, dict_arguments
-
+        
+class ParticleSetGriddedAttributesMethod(ParticleSetAttributesMethod):
+    
+    def __init__(self, method, get_range_method, attribute_names = None):
+        ParticleSetAttributesMethod.__init__(self, method, attribute_names)
+        self.get_range_method = get_range_method
+        
+    
+    def set_attribute_values(self, storage, attributes, values, *indices):
+        list_args, keyword_args = self.convert_attributes_and_values_to_list_and_keyword_arguments(attributes, values)
+        minmax_per_dimension = self.get_range_method( **storage.extra_keyword_arguments_for_getters_and_setters)
+        
+        result = [slice(0, len(indices[0]))]
+        for i in range(0, len(minmax_per_dimension), 2):
+            minval = minmax_per_dimension[i]
+            maxval = minmax_per_dimension[i+1]
+            result.append(slice(minval, maxval+1))
+        
+        grid_indices = numpy.mgrid[tuple(result)]
+        gridshape = grid_indices[0].shape
+        newshape = [1]*len(result)
+        newshape[0] = len(indices[0])
+        a =  numpy.array(indices[0]).reshape(newshape)
+        grid_indices[0] = a
+        
+        one_dimensional_arrays_of_indices = [x.reshape(-1) for x in grid_indices]
+        
+        list_arguments = list(grid_indices)
+        list_arguments.extend(list_args)
+        one_dimensional_arrays_of_args = [x.reshape(-1) for x in list_arguments]
+        
+        for key, value in keyword_args.iteritems():
+            keyword_args[key] = value.reshape(-1)
+        
+        keyword_args.update(storage.extra_keyword_arguments_for_getters_and_setters)
+        
+        self.method(*one_dimensional_arrays_of_args, **keyword_args)
+    
+        
 
 class NewParticleMethod(ParticleSetAttributesMethod):
     """
@@ -807,8 +883,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
 
 class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     """
-    Manages grids stored in codes. Grids are currently
-    assumed to be three dimensional.
+    Manages grids stored in codes. 
     """
     def __init__(self, 
             code_interface, 
@@ -822,7 +897,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             
     def can_extend_attributes(self):
         return False
-        
+            
     def storage_shape(self):
         try:
             minmax_per_dimension = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
@@ -845,13 +920,13 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     
     def _to_arrays_of_indices(self, index):
         #imin, imax, jmin, jmax, kmin, kmax = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
-        
         minmax_per_dimension = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
         result = []
         for i in range(0, len(minmax_per_dimension), 2):
             minval = minmax_per_dimension[i]
             maxval = minmax_per_dimension[i+1]
             result.append(slice(minval, maxval+1))
+
         indices = numpy.mgrid[tuple(result)]
         
         if index is None:
@@ -912,6 +987,9 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         
     def _get_writeable_attribute_names(self):
         return self.writable_attributes
+
+
+
 
 
 class ParticleSpecificSelectSubsetMethod(object):

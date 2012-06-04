@@ -423,14 +423,27 @@ class InMemoryAttribute(object):
     def copy(self):
         pass
 
+    
+    @classmethod
+    def _determine_shape(cls, length, input):
+        vector_shape = input.shape
+        if len(vector_shape) > 1 and len(input) == length:
+            return vector_shape
+        else:
+            return length
+            
     @classmethod
     def new_attribute(cls, name, shape, input):
         if is_quantity(input):
+            if input.is_vector() :
+                shape = cls._determine_shape(shape, input)
             return InMemoryVectorQuantityAttribute(name, shape, input.unit)
         elif hasattr(input, 'as_set'):
             return InMemoryLinkedAttribute(name, shape, input.as_set()._original_set())
         else:
-            dtype = numpy.asanyarray(input).dtype
+            array = numpy.asanyarray(input)
+            dtype = array.dtype
+            shape = cls._determine_shape(shape, array)
             return InMemoryUnitlessAttribute(name, shape, dtype)
 
     def get_value(self, index):

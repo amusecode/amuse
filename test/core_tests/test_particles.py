@@ -346,12 +346,53 @@ class TestStars(amusetest.TestCase):
         
         self.assertEquals(stars.position[0], [1000.0, 2000.0, 3500.0] | units.m)
 
+    def test5(self):
+        stars = datamodel.Particles(2)
+        stars.x = 1.0  | units.km
+        stars.md = [[1,2,3],[4,5,6]] | units.km
+        
+        self.assertEquals(stars[0].md, [1,2,3] | units.km)
+        self.assertEquals(stars[1].md, [4,5,6] | units.km)
+        
+        self.assertEquals(stars.md[0], [1,2,3] | units.km)
+        self.assertEquals(stars.md[1], [4,5,6] | units.km)
+        stars.md_nounit = [[1,2,3],[4,5,6]] 
+        
+        self.assertEquals(stars[0].md_nounit, [1,2,3])
+        self.assertEquals(stars[1].md_nounit, [4,5,6])
+        self.assertEquals(stars.md_nounit[0], [1,2,3])
+        self.assertEquals(stars.md_nounit[1], [4,5,6])
+        
+        stars.md2 = [[[1,3],[2,4],[3,6]],[[4,2],[5,3],[6,1]]] | units.km
+        
+        self.assertEquals(stars[0].md2, [[1,3],[2,4],[3,6]] | units.km)
+        self.assertEquals(stars[1].md2, [[4,2],[5,3],[6,1]] | units.km)
+        self.assertEquals(stars.md2[0], [[1,3],[2,4],[3,6]] | units.km)
+        self.assertEquals(stars.md2[1], [[4,2],[5,3],[6,1]] | units.km)
+        
+    def test6(self):
+        stars = datamodel.Particles(2)
+        stars.x = 1.0  | units.km
+        stars.md = [[1,2,3],[4,5,6]] | units.km
+        
+        self.assertEquals(stars[0].md, [1,2,3] | units.km)
+        self.assertEquals(stars[1].md, [4,5,6] | units.km)
+        
+        copy = stars.copy_to_memory()
+        
+        self.assertEquals(copy[0].md, [1,2,3] | units.km)
+        self.assertEquals(copy[1].md, [4,5,6] | units.km)
+        copy[0].md = [7,8,9] | units.km
+        self.assertEquals(stars[0].md, [1,2,3] | units.km)
+        self.assertEquals(copy[0].md, [7,8,9] | units.km)
+        
 class TestParticlesWithBinding(amusetest.TestCase):
     class TestLegacyCode(object):
             
         def __init__(self):
             self.masses = {}
             self.links = {}
+            self.grids = {}
             
         def get_mass(self, id):
             masses = []
@@ -382,6 +423,26 @@ class TestParticlesWithBinding(amusetest.TestCase):
                 
             return ( [0] * len(id),)
             
+            
+            
+        def get_grid(self, id, index1, index2):
+            result = []
+            errors = []
+            for x,i1,i2 in zip(id, index1, index2):
+                result.append(self.grids[x][i1][i2])
+                errors.append(0)
+            return ( result, errors, )
+            
+        def set_grid(self, id, index1, index2, value):
+            errors = []
+            for x,i1,i2, v in zip(id, index1, index2, value):
+                self.grids[x][i1][i2] = v
+                errors.append(0)
+            return ( 0, )
+        
+        def get_grid_range(self):
+            return ( 0, 3, 0, 2 )
+            
         def new_particle(self, mass):
             ids = []
             errors = []
@@ -390,6 +451,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
                 id = len(self.masses)
                 self.masses[id]  = x
                 self.links[id]  = -1
+                self.grids[id] = numpy.arange(4*3).reshape(4,3)
                 ids.append(id)
                 errors.append(0)
                 
@@ -419,10 +481,14 @@ class TestParticlesWithBinding(amusetest.TestCase):
             handler.add_method('set_mass',(handler.NO_UNIT, units.g,), (handler.ERROR_CODE,))
             handler.add_method('get_link',(handler.NO_UNIT,), (handler.LINK('particles'), handler.ERROR_CODE))
             handler.add_method('set_link',(handler.NO_UNIT, handler.LINK('particles'),), (handler.ERROR_CODE,))
+            handler.add_method('get_grid',(handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT), (units.g, handler.ERROR_CODE))
+            handler.add_method('set_grid',(handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT, units.g), ( handler.ERROR_CODE))
+        
             handler.add_method('new_particle',(units.g,), (handler.INDEX, handler.ERROR_CODE))
             handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
             handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
-        
+            
+            
         def define_particle_sets(self, handler):
             handler.define_set('particles', 'id')
             handler.set_new('particles', 'new_particle')
@@ -431,6 +497,8 @@ class TestParticlesWithBinding(amusetest.TestCase):
             handler.add_getter('particles', 'get_mass', names = ('mass',))
             handler.add_setter('particles', 'set_link')
             handler.add_getter('particles', 'get_link', names = ('link',))
+            handler.add_gridded_getter('particles', 'get_grid','get_grid_range', names = ('grid',))
+            handler.add_gridded_setter('particles', 'set_grid','get_grid_range', names = ('grid',))
         
     
     def test1(self):
@@ -649,6 +717,38 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(local_particles1.link[0], remote_particles[1])
         self.assertEquals(local_particles1.link[0], local_particles1[1])
         self.assertEquals(local_particles1.link[1], None)
+        
+        
+    def test10(self):
+        interface = self.TestInterface()
+        
+        local_particles = datamodel.Particles(2)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0])
+        
+        
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles)
+        self.assertEquals(remote_particles[0].grid[1][2], 5 | units.g)
+        self.assertEquals(remote_particles.grid[0][1][2], 5 | units.g)
+        
+    def test11(self):
+        interface = self.TestInterface()
+        
+        local_particles = datamodel.Particles(2)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0])
+        
+        
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles)
+        
+        channel = remote_particles.new_channel_to(local_particles)
+        channel.copy()
+        
+        self.assertEquals(local_particles[0].grid[1][2], 5 | units.g)
+        self.assertEquals(local_particles.grid[0][1][2], 5 | units.g)
+        
+        channel = local_particles.new_channel_to(remote_particles)
+        channel.copy()
         
 class TestParticlesWithUnitsConverted(amusetest.TestCase):
     
@@ -1943,10 +2043,14 @@ class TestParticlesIndexingWithSet(amusetest.TestCase):
     def test1(self):
         particles = datamodel.Particles(10)
         particles.mass = numpy.arange(10) | units.kg
+        particles.multidimensional = numpy.arange(60).reshape(10,2,3)
         
         self.assertAlmostRelativeEquals(particles.mass, numpy.arange(10) | units.kg)
+        self.assertAlmostRelativeEquals(particles.multidimensional, numpy.arange(60).reshape(10,2,3))
         particles[5].mass = 15 | units.kg
         self.assertAlmostRelativeEquals(particles.mass, (0,1,2,3,4,15,6,7,8,9) | units.kg )
+        particles[5].multidimensional = 15 
+        self.assertAlmostRelativeEquals(particles.multidimensional[5], [[15,15,15],[15,15,15]] )
         particles.mass = numpy.arange(10) | units.kg
         particles[[1,3,2,6]].mass = (11, 13, 12, 16) | units.kg
         self.assertAlmostRelativeEquals(particles.mass, (0,11,12,13,4,5,16,7,8,9) | units.kg )
@@ -2295,7 +2399,6 @@ class TestParticlesIndexingWithBindingAndSet(amusetest.TestCase):
             ["mass"],
             [ numpy.arange(10) | units.kg]
         )
-        
         
         self.assertAlmostRelativeEquals(particles.mass, numpy.arange(10) | units.kg)
         particles[5].mass = 15 | units.kg

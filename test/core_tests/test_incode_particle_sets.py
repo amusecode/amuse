@@ -5,6 +5,7 @@ from amuse.support import interface
 from amuse.support import exceptions
 
 from amuse import datamodel
+
 class ExampleParticlesInterface(interface.InCodeComponentImplementation):
     """This is an example class to demonstrate how to work with incode particle sets
     using the object mapping interface.
