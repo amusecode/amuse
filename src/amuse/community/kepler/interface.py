@@ -491,6 +491,21 @@ class KeplerInterface(CodeInterface,
             could not get vector"""
         return function
 
+    @legacy_function
+    def print_all():
+        """
+        Print a kepler system.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            kepler was printed
+        -1 - ERROR
+            kepler could not be printed"""
+        return function
+    
 class Kepler(CommonCode):
 
     def __init__(self, unit_converter = None,  **options):
@@ -710,3 +725,8 @@ class Kepler(CommonCode):
                               object.NO_UNIT,
                               object.ERROR_CODE
                           ))
+
+        object.add_method("print_all",
+                          (),
+                          (object.ERROR_CODE))
+

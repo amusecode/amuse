@@ -265,3 +265,8 @@ int get_normal_unit_vector(double * x, double * y, double * z)
     *z = n[2];
     return 0;
 }
+
+int print_all()
+{
+    k->print_all();
+}
