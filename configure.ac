@@ -26,6 +26,9 @@ AMUSE_CHECK_JDK()
 AC_SUBST(JDK)
 AC_SUBST(JNI_INCLUDES)
 
+FIND_MPIEXEC()
+
+AC_SUBST(MPIEXEC)
 
 AC_ARG_ENABLE(mpi,
     [AS_HELP_STRING([--enable-mpi],[Enable MPI support for communicating with codes, by default enabled])],
