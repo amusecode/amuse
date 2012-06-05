@@ -1,6 +1,8 @@
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
+from amuse.test.amusetest import TestCase
+
 
 import numpy
 import parser
@@ -13,6 +15,7 @@ from amuse import datamodel
 from amuse.rfi import python_code
 from amuse.rfi.core import *
 from amuse.rfi.channel import AsyncRequestsPool
+from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
 
 class ForTestingInterface(PythonCodeInterface):
     
@@ -236,11 +239,15 @@ class ForTesting(InCodeComponentImplementation):
     def define_methods(self, object):
         object.add_method("sleep", (units.s,), (object.ERROR_CODE,))
 
-class TestInterface(TestWithMPI):
+class TestCreatePythonWorker(TestCase):
     
     def test1(self):
-        script_string = ForTestingInterface.new_executable_script_string_for(ForTestingImplementation)
+        x = CreateAPythonWorker()
+        x.implementation_factory = ForTestingImplementation
+        x.channel_type = 'mpi'
+        x.interface_class = ForTestingInterface
         
+        script_string = x.new_executable_script_string()
         self.assertTrue(script_string.find('syspath = (') > 0)
         self.assertTrue(script_string.find('ForTestingInterface') > 0)
         self.assertTrue(script_string.find('ForTestingImplementation') > 0)
@@ -250,6 +257,28 @@ class TestInterface(TestWithMPI):
             st = compile(script_string, 'test.py', 'exec')
         except SyntaxError, ex:
             self.fail("Compilation error {0}".format(ex))
+            
+    def test2(self):
+        x = CreateAPythonWorker()
+        x.implementation_factory = ForTestingImplementation
+        x.channel_type = 'sockets'
+        x.interface_class = ForTestingInterface
+        
+        script_string = x.new_executable_script_string()
+        self.assertTrue(script_string.find('syspath = (') > 0)
+        self.assertTrue(script_string.find('ForTestingInterface') > 0)
+        self.assertTrue(script_string.find('ForTestingImplementation') > 0)
+        self.assertTrue(script_string.find('test_python_implementation') > 0)
+        self.assertTrue(script_string.find('PythonImplementation(instance, ForTestingInterface)')>0)
+        self.assertTrue(script_string.find('start_socket')>0)
+        try:
+            st = compile(script_string, 'test.py', 'exec')
+        except SyntaxError, ex:
+            self.fail("Compilation error {0}".format(ex))
+            
+class TestInterface(TestWithMPI):
+    
+    
             
     def test2(self):
         implementation = ForTestingImplementation()

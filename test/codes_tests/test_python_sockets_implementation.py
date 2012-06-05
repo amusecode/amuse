@@ -1,6 +1,6 @@
 from amuse.support.interface import InCodeComponentImplementation
 
-from amuse.test.amusetest import TestWithMPI
+from amuse.test.amusetest import TestWithMPI, TestCase
 
 import numpy
 import parser
@@ -14,6 +14,7 @@ from amuse.rfi import python_code
 from amuse.rfi.core import *
 from amuse.rfi.channel import AsyncRequestsPool
 
+            
 class ForTestingInterface(PythonCodeInterface):
     
     def __init__(self, **options):
@@ -236,6 +237,8 @@ class ForTesting(InCodeComponentImplementation):
     def define_methods(self, object):
         object.add_method("sleep", (units.s,), (object.ERROR_CODE,))
 
+
+            
 class TestInterface(TestWithMPI):
     def setUp(self):
         super(TestInterface, self).setUp()
@@ -252,18 +255,6 @@ class TestInterface(TestWithMPI):
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
             self.skip('cannot run the socket tests under hydra process manager')
             
-    def test1(self):
-        script_string = ForTestingInterface.new_executable_script_string_for(ForTestingImplementation, channel_type='sockets')
-        self.assertTrue(script_string.find('syspath = (') > 0)
-        self.assertTrue(script_string.find('ForTestingInterface') > 0)
-        self.assertTrue(script_string.find('ForTestingImplementation') > 0)
-        self.assertTrue(script_string.find('test_python_sockets_implementation') > 0)
-        self.assertTrue(script_string.find('PythonImplementation(instance, ForTestingInterface)')>0)
-        self.assertTrue(script_string.find('start_socket')>0)
-        try:
-            st = compile(script_string, 'test.py', 'exec')
-        except SyntaxError, ex:
-            self.fail("Compilation error {0}".format(ex))
             
     def test2(self):
         implementation = ForTestingImplementation()

@@ -72,10 +72,10 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-t",
             "--type",
-            choices=["c","h", "H", "f90"],
+            choices=["c","h", "H", "f90", "py"],
             default="c",
             dest="type",
-            help="TYPE of the code to generate. Can be one of c, h, H, f90. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. (Defaults to c)")
+            help="TYPE of the code to generate. Can be one of c, h, H, f90 or py. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper (Defaults to c)")
         self.parser.add_option(
             "-m",
             "--mode",
@@ -95,7 +95,13 @@ class ParseCommandLine(object):
             default="",
             dest="ignore",
             help="Name of the classes to ignore, functions defined on these classes will not generate code. Comma separated list")
-        
+        self.parser.add_option(
+            "-x",
+            "--executable",
+            action="store_true", 
+            default=False,
+            dest="make_executable",
+            help="Set the executable bit when generating the output file")
         
         self.options = None
         self.arguments = None
@@ -107,6 +113,12 @@ class ParseCommandLine(object):
         else:
             self.options.ignore_classes = []
         
+        self.options.name_of_implementation_class = None 
+        self.options.name_of_module_or_python_file = None 
+        self.options.name_of_class = None 
+        self.options.name_of_the_code = None 
+        
+        
     def parse_arguments(self):
         if self.options.mode == 'dir':
             if len(self.arguments) != 1:
@@ -114,11 +126,13 @@ class ParseCommandLine(object):
                 
             self.options.name_of_the_code = self.arguments[0]
         else:
-            if len(self.arguments) != 2:
+            if not len(self.arguments) in (2,3) :
                 self.show_error_and_exit("incorrect number of arguments")
             try:
                 self.options.name_of_module_or_python_file = self.arguments[0]
                 self.options.name_of_class = self.arguments[1]
+                if len(self.arguments) > 2:
+                    self.options.name_of_implementation_class = self.arguments[2]
             except Exception as exception:
                 self.show_error_and_exit(exception)
     
@@ -164,17 +178,32 @@ def make_cplusplus_header():
     result = create_c.GenerateACHeaderStringFromASpecificationClass()
     result.make_extern_c = False
     return result
-   
-def make_file(settings):
+
+def make_a_python_worker(channel_type):
+    result = create_python_worker.CreateAPythonWorker()
+    result.channel_type = channel_type
+    return result
+
+def make_a_mpi_python_worker():
+    return make_a_python_worker('mpi')
     
+def make_a_socket_python_worker():
+    return make_a_python_worker('socket')
+    
+def make_file(settings):
+    implementation_class = None
     try:
         if settings.name_of_module_or_python_file.endswith('.py'):
             module = {}
             execfile(settings.name_of_module_or_python_file, module)
             specification_class = module[settings.name_of_class]
+            if not settings.name_of_implementation_class is None:
+                implementation_class = module[settings.name_of_implementation_class]
         else:
-            module = __import__(settings.name_of_module,fromlist=[settings.name_of_class])
+            module = __import__(settings.name_of_module_or_python_file,fromlist=[settings.name_of_class])
             specification_class = getattr(module, settings.name_of_class)
+            if not settings.name_of_implementation_class is None:
+                implementation_class = getattr(module, settings.name_of_implementation_class)
     except ImportError as exception:
         uc.show_error_and_exit(exception)
     
@@ -188,11 +217,15 @@ def make_file(settings):
         ('f90','stub'): create_fortran.GenerateAFortranStubStringFromASpecificationClass,
         ('c','sockets'): create_c_sockets.GenerateACSourcecodeStringFromASpecificationClass,    
         ('f90','sockets'): create_fortran_sockets.GenerateAFortranSourcecodeStringFromASpecificationClass,   
+        ('py','sockets'): make_a_mpi_python_worker,    
+        ('py','mpi'): make_a_socket_python_worker,    
     }
     
     try:
         builder = usecases[(settings.type, settings.mode)]()
         builder.specification_class = specification_class
+        if not implementation_class is None:
+            builder.implementation_factory = implementation_class
         builder.ignore_functions_from_specification_class = settings.ignore_classes
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
@@ -201,8 +234,13 @@ def make_file(settings):
         print builder.result
     else:
         try:
+            
             with open(settings.output, "w") as f:
                 f.write(builder.result)
+                
+            if settings.make_executable:
+                os.chmod(settings.output, 0777)
+                
         except Exception as exception:
             uc.show_error_and_exit(exception)
             
@@ -234,6 +272,7 @@ if __name__ == '__main__':
     from amuse.rfi.tools import create_dir
     from amuse.rfi.tools import create_c_sockets
     from amuse.rfi.tools import create_fortran_sockets
+    from amuse.rfi.tools import create_python_worker
     
     uc = ParseCommandLine()
     uc.start()

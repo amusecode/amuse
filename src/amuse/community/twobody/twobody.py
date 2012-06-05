@@ -520,7 +520,7 @@ class TwoBodyImplementation(object):
 class TwoBodyInterface(PythonCodeInterface, GravitationalDynamicsInterface):
     
     def __init__(self, **options):
-        PythonCodeInterface.__init__(self, TwoBodyImplementation, **options)
+        PythonCodeInterface.__init__(self, TwoBodyImplementation, 'twobody_worker', **options)
     
     @legacy_function
     def get_gravity_at_point():

@@ -755,51 +755,19 @@ class PythonCodeInterface(CodeInterface):
         pass
         
     def make_executable_script_for(self, implementation_factory):
-        import inspect
-        import stat
+        from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
         
-        string = self.new_executable_script_string_for(implementation_factory, self.channel_type)
+        x = CreateAPythonWorker()
+        x.channel_type = self.channel_type
+        x.interface_class = type(self)
+        x.implementation_factory = implementation_factory
+        x.start()
+        return x.worker_name
         
-        filename = os.path.basename(inspect.getfile(implementation_factory))
-        filename = filename.split('.')[0]
-        filename.replace(os.sep, '_')
-        path = os.path.abspath(os.path.curdir)
-        path = os.path.join(path, filename)
-        
-        executable_path = path
-        if self.channel_type in ('sockets', 'ibis'):
-            executable_path += '_sockets'
-            
-        with open(executable_path, 'w') as f:
-            f.write(string)
-        
-        os.chmod(executable_path, 0777)
-        
-        return path
         
     @classmethod
     def new_executable_script_string_for(cls, implementation_factory, channel_type = 'mpi'):
-        import inspect
-        import sys
-        
-        path = os.path.dirname(__file__)
-        if channel_type in ('sockets', 'ibis'):
-            path = os.path.join(path, 'python_socket_code_script.template')
-        else:
-            path = os.path.join(path, 'python_code_script.template')
-            
-        with open(path, "r") as f:
-            template_string = f.read()
-        
-
-        return template_string.format(
-            executable = sys.executable,
-            syspath = ','.join(map(repr, sys.path)),
-            factory_module = inspect.getmodule(implementation_factory).__name__,
-            factory = implementation_factory.__name__,
-            interface_module = inspect.getmodule(cls).__name__,
-            interface = cls.__name__,
-        )
+        raise Exception("tracing use")
             
             
             
