@@ -727,6 +727,7 @@ MPI_CXXFLAGS
 MPICXX
 WITH_MPI
 MPIEXEC
+WITH_MPIEXEC
 JNI_INCLUDES
 JAR
 JAVAH
@@ -793,6 +794,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_jdk
+enable_mpiexec
 enable_mpi
 enable_cuda
 with_cuda_libdir
@@ -1451,6 +1453,8 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-mpiexec        Enable MPI exec usage by distributed AMUSE, by
+                          default enabled
   --enable-mpi            Enable MPI support for communicating with codes, by
                           default enabled
   --enable-cuda           Enable CUDA for codes
@@ -4230,26 +4234,51 @@ fi
 
 
 
-	for ac_prog in mpiexec mpirun
+
+	# Check whether --enable-mpiexec was given.
+if test "${enable_mpiexec+set}" = set; then :
+  enableval=$enable_mpiexec; WITH_MPIEXEC=no
+	    if test "x$enable_mpiexec" != "xno"; then :
+
+		    WITH_MPIEXEC=yes
+
+fi
+
+else
+  WITH_MPIEXEC=yes
+
+fi
+
+
+
+
+
+
+
+	if test x"$WITH_MPIEXEC" != xno; then :
+
+		for ac_prog in $MPIEXEC mpiexec mpirun
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_MPIEXEC+:} false; then :
+if ${ac_cv_path_MPIEXEC+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$MPIEXEC"; then
-  ac_cv_prog_MPIEXEC="$MPIEXEC" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+  case $MPIEXEC in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_MPIEXEC="$MPIEXEC" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
 do
   IFS=$as_save_IFS
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_MPIEXEC="$ac_prog"
+    ac_cv_path_MPIEXEC="$as_dir/$ac_word$ac_exec_ext"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -4257,9 +4286,10 @@ done
   done
 IFS=$as_save_IFS
 
+  ;;
+esac
 fi
-fi
-MPIEXEC=$ac_cv_prog_MPIEXEC
+MPIEXEC=$ac_cv_path_MPIEXEC
 if test -n "$MPIEXEC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $MPIEXEC" >&5
 $as_echo "$MPIEXEC" >&6; }
@@ -4272,6 +4302,14 @@ fi
   test -n "$MPIEXEC" && break
 done
 
+
+
+else
+
+		MPIEXEC=""
+
+
+fi
 
 
 
