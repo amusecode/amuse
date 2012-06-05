@@ -263,6 +263,11 @@ class AbstractParticleSet(AbstractSet):
                         values_to_show = list(map(format_str11,quantity.number[:20]))
                         values_to_show.append(format_str11('...'))
                         values_to_show.extend(map(format_str11,quantity.number[-20:]))
+                elif hasattr(quantity, 'as_set'):
+                    keys = quantity.as_set().key
+                    values_to_show = list(map(format_str11,keys[:20]))
+                    values_to_show.append(format_str11('...'))
+                    values_to_show.extend(map(format_str11,keys[-20:]))
                 else:
                     values_to_show = list(map(format_str11,quantity[:20]))
                     values_to_show.append(format_str11('...'))
@@ -276,8 +281,10 @@ class AbstractParticleSet(AbstractSet):
                             values_to_show = map(format_str11,quantity.number)
                     else:
                         values_to_show = map(format_str11,quantity.number)
+                elif hasattr(quantity, 'as_set'):
+                    values_to_show = map(format_str11, quantity.as_set().key)
                 else:
-                    values_to_show = map(format_str11,quantity)
+                    values_to_show = map(format_str11, quantity)
                     
             column.extend(values_to_show)
             column.append('=' * 11)

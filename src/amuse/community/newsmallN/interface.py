@@ -366,7 +366,7 @@ class SmallN(GravitationalDynamics):
         object.add_method("is_over", (), (object.NO_UNIT, object.ERROR_CODE))
 
         object.add_method("get_children_of_particle", (object.INDEX),
-                          (object.INDEX, object.INDEX, object.ERROR_CODE))
+                          (object.LINK('particles'), object.LINK('particles'), object.ERROR_CODE))
     
     def update_particle_set(self):
         """

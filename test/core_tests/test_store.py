@@ -297,7 +297,6 @@ class TestStoreHDF(amusetest.TestCase):
         io.write_set_to_file(stars, output_file, "hdf5")
         
         loaded = io.read_set_from_file(output_file, "hdf5")
-        print loaded[0].md
         self.assertEquals(loaded[0].md, [1,2,3] | units.km)
         self.assertEquals(loaded[1].md, [4,5,6] | units.km)
         
@@ -322,7 +321,6 @@ class TestStoreHDF(amusetest.TestCase):
         io.write_set_to_file(stars, output_file, "hdf5")
         
         loaded = io.read_set_from_file(output_file, "hdf5")
-        print loaded[0].md
         self.assertEquals(loaded[0].md, [[1,3],[2,4],[3,5]])
         self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
         
@@ -332,7 +330,7 @@ class TestStoreHDF(amusetest.TestCase):
     def test15(self):
         
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test14.hdf5")
+        output_file = os.path.join(test_results_path, "test15.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -349,8 +347,133 @@ class TestStoreHDF(amusetest.TestCase):
         processor.close()
         
         loaded = io.read_set_from_file(output_file, "hdf5")
-        print loaded[0].md
         self.assertEquals(loaded[0].md, [[3,1],[3,4],[5,2]])
         self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
         
+    def test16(self):
         
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test16.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        stars = Particles(2)
+        stars[0].x = 1.0  | units.km
+        stars[1].x = 2.0  | units.km
+        stars[0].nn = stars[1]
+        stars[1].nn = stars[0]
+       
+
+        self.assertEqual(stars[0].nn,stars[1])
+        self.assertEqual(stars[1].nn,stars[0])
+        
+        io.write_set_to_file(stars, output_file, "hdf5")
+        processor = store.StoreHDF(output_file, True, open_for_writing = True)
+        loaded = processor.load()
+        
+        self.assertEqual(loaded[0].nn,loaded[1])
+        self.assertEqual(loaded[1].nn,loaded[0])
+        self.assertEqual(loaded[0].nn.key,stars[1].key)
+        self.assertEqual(loaded[0].nn.x,stars[1].x)
+        
+    
+    def test17(self):
+        
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test17.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        stars = Particles(4)
+        stars[0].x = 1.0  | units.km
+        stars[1].x = 2.0  | units.km
+        stars[2].x = 3.0  | units.km
+        stars[3].x = 4.0  | units.km
+        
+        binaries = Particles(2)
+        binaries[0].y = 1.0 | units.km
+        binaries[1].y = 2.0 | units.km
+        binaries[0].child1 = stars[0]
+        binaries[0].child2 = stars[1]
+        binaries[1].child1 = stars[2]
+        binaries[1].child2 = stars[3]
+
+        self.assertEqual(binaries[0].child1,stars[0])
+        self.assertEqual(binaries[1].child1,stars[2])
+        
+        io.write_set_to_file(binaries, output_file, "hdf5")
+        
+        loaded = io.read_set_from_file(output_file, "hdf5")
+        
+        
+        self.assertEqual(loaded[0].child1.key,stars[0].key)
+        self.assertEqual(loaded[1].child1.key,stars[2].key)
+        
+    def test18(self):
+        
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test18.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        stars = Particles(2)
+        stars[0].x = 1.0  | units.km
+        stars[1].x = 2.0  | units.km
+        
+        binaries = Particles(1)
+        binaries[0].y = 1.0 | units.km
+        binaries[0].child1 = stars[0]
+        binaries[0].child2 = stars[1]
+
+        stars[0].parent = binaries[0]
+        stars[1].parent = binaries[0]
+        
+        self.assertEqual(binaries[0].child1,stars[0])
+        self.assertEqual(binaries[0].child2,stars[1])
+        self.assertEqual(binaries[0].child1.parent,binaries[0])
+        self.assertEqual(binaries[0].child2.parent,binaries[0])
+        
+        io.write_set_to_file(binaries, output_file, "hdf5")
+        
+        loaded = io.read_set_from_file(output_file, "hdf5")
+        
+        self.assertEqual(loaded[0].child1.key,stars[0].key)
+        self.assertEqual(loaded[0].child2.key,stars[1].key)
+        self.assertEqual(loaded[0].child1,stars[0])
+        self.assertEqual(loaded[0].child2,stars[1])
+        self.assertEqual(loaded[0].child1.parent,loaded[0])
+        self.assertEqual(loaded[0].child2.parent,loaded[0])
+    
+    def test19(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test18.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        stars = Particles(2)
+        stars[0].x = 1.0  | units.km
+        stars[1].x = 2.0  | units.km
+        
+        binaries = Particles(1)
+        binaries[0].y = 1.0 | units.km
+        binaries[0].child1 = stars[0]
+        binaries[0].child2 = stars[1]
+
+        stars[0].parent = binaries[0]
+        stars[1].parent = binaries[0]
+        
+        self.assertEqual(binaries[0].child1,stars[0])
+        self.assertEqual(binaries[0].child2,stars[1])
+        self.assertEqual(binaries[0].child1.parent,binaries[0])
+        self.assertEqual(binaries[0].child2.parent,binaries[0])
+        
+        io.write_set_to_file([binaries,stars], output_file, "hdf5", names = ['binaries', 'children'])
+        
+        loader_binaries, loaded_stars = io.read_set_from_file(output_file, "hdf5", names = ['binaries', 'children'])
+        
+        self.assertEqual(loader_binaries[0].child1.key,stars[0].key)
+        self.assertEqual(loader_binaries[0].child2.key,stars[1].key)
+        self.assertEqual(loader_binaries[0].child1,loaded_stars[0])
+        self.assertEqual(loader_binaries[0].child2,loaded_stars[1])
+        self.assertEqual(loader_binaries[0].child1.parent,loader_binaries[0])
+        self.assertEqual(loader_binaries[0].child2.parent,loader_binaries[0])

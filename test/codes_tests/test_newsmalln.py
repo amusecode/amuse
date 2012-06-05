@@ -9,6 +9,8 @@ from amuse.community.newsmallN.interface import SmallNInterface, SmallN
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+from amuse import io
+from amuse.datamodel import trees
 from amuse.ic import plummer
 try:
     from matplotlib import pyplot
@@ -409,3 +411,62 @@ class TestSmallN(TestWithMPI):
         self.assertEquals(instance.particles[2].radius, 4.0 | nbody_system.length)
         
         instance.stop()
+
+    def assertEarthAndMoonWasDetectedAsBinary(self, set, stars):
+        alltrees = trees.BinaryTreesOnAParticleSet(set, 'child1', 'child2')
+        roots = list(alltrees.iter_roots())
+        self.assertEquals(len(roots), 1)
+        root = roots[0].particle
+        earth_and_moon = None
+        if not root.child1.child1 is None:
+            earth_and_moon = root.child1
+        else:
+            earth_and_moon = root.child2
+        
+        self.assertAlmostRelativeEquals(earth_and_moon.mass, stars[1].mass + stars[2].mass)
+        
+        
+    def test16(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+    
+        smalln = SmallN(convert_nbody)
+        smalln.initialize_code()
+        smalln.dt_dia = 5000
+        
+        stars = self.new_system_of_sun_and_earth()
+        
+        moon = datamodel.Particle()
+        moon.mass = units.kg(7.3477e22)
+        moon.radius = units.km(1737.10) 
+        moon.position = units.km(numpy.array((149.5e6 + 384.399 ,0.0,0.0)))
+        moon.velocity = units.ms(numpy.array((0.0,29800 + 1022,0.0)))
+        
+        stars.add_particle(moon)
+        
+        earth = stars[1]
+                
+        smalln.particles.add_particles(stars)
+        
+        smalln.evolve_model(365.0 | units.day)
+        smalln.update_particle_tree()
+        smalln.update_particle_set()
+        
+
+        self.assertEquals(len(smalln.particles), 5)
+        
+        
+        self.assertEarthAndMoonWasDetectedAsBinary(smalln.particles, stars)
+        
+        
+        inmemory = smalln.particles.copy_to_memory()
+        self.assertEarthAndMoonWasDetectedAsBinary(inmemory, stars)
+        
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "newsmalln-test16.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+            
+        io.write_set_to_file(smalln.particles, output_file, "hdf5")
+        fromfile = io.read_set_from_file(output_file, "hdf5")
+        self.assertEarthAndMoonWasDetectedAsBinary(fromfile, stars)
+        

@@ -43,19 +43,22 @@ class HDF5Attribute(object):
             dataset = group.create_dataset(name, shape=shape, dtype=input.number.dtype)
             return HDF5VectorQuantityAttribute(name, dataset, input.unit) 
         elif hasattr(input, 'as_set'):
-            #dataset = group.create_dataset(name, shape=shape, dtype=input.dtype)
-            #return HDF5VectorQuantityAttribute(name, dataset) 
-            pass
+            subgroup = group.create_group(name)
+            group.create_dataset('keys', shape=shape, dtype=input.key.dtype)
+            group.create_dataset('masked', shape=shape, dtype=numpy.bool)
+            return HDF5LinkedAttribute(name, subgroup) 
         else:
             dtype = numpy.asanyarray(input).dtype
             dataset = group.create_dataset(name, shape=shape, dtype=dtype)
             return HDF5UnitlessAttribute(name, dataset)
 
     @classmethod
-    def load_attribute(cls, name, dataset):
+    def load_attribute(cls, name, dataset, loader):
         units_string = dataset.attrs["units"]
         if units_string == "none":
             return HDF5UnitlessAttribute(name, dataset)
+        elif units_string == "object":
+            return HDF5LinkedAttribute(name, dataset, loader)
         else:
             unit = eval(units_string, core.__dict__)
             return HDF5VectorQuantityAttribute(name, dataset, unit) 
@@ -78,7 +81,7 @@ class HDF5VectorQuantityAttribute(HDF5Attribute):
         if len(self.get_shape()) > 1:
             return self.unit.new_quantity(self.dataset[:][indices])
         else:
-            return self.unit.new_quantity(self.dataset[indices])
+            return self.unit.new_quantity(self.dataset[:][indices])
             
     
     def set_values(self, indices, values):
@@ -120,7 +123,6 @@ class HDF5VectorQuantityAttribute(HDF5Attribute):
         raise NotImplementedError("Copy of an attribute in a hdf5 file is not implemented")
 
     def get_value(self, index):
-        print self.name, self.unit.new_quantity(self.dataset[index])
         return self.unit.new_quantity(self.dataset[index])
 
     def remove_indices(self, indices):
@@ -151,7 +153,7 @@ class HDF5UnitlessAttribute(HDF5Attribute):
         if len(self.get_shape()) > 1:
             return self.dataset[:][indices]
         else:
-            return self.dataset[indices]
+            return self.dataset[:][indices]
         
     
     def set_values(self, indices, values):
@@ -206,69 +208,106 @@ class HDF5UnitlessAttribute(HDF5Attribute):
 
 class HDF5LinkedAttribute(HDF5Attribute):
     
-    def __init__(self, name, shape, linked_set):
+    def __init__(self, name, group, loader):
         HDF5Attribute.__init__(self, name)
         
-        self.linked_set = linked_set
-        
-        self.values = numpy.ma.masked_all(
-            shape,
-            dtype = linked_set.get_all_keys_in_store().dtype
-        )
-        
-        
+        self.group = group
+        self.keys = group['keys']
+        self.masked = group['masked']
+        self.loader = loader
+
     def get_values(self, indices):
-        return self.linked_set._masked_subset(self.values[indices])
+        reference = self.group.attrs['reference']
+        
+        referenced_group = self.loader.derefence(reference)
+        mapping_from_groupid_to_set = self.loader.mapping_from_groupid_to_set
+        
+        if not referenced_group.id in mapping_from_groupid_to_set:
+            linked_set = self.loader.load_particles_from_group(referenced_group)
+        else:
+            linked_set = mapping_from_groupid_to_set[referenced_group.id]
+            
+        values = numpy.ma.array(self.keys[:][indices], mask = self.masked[:][indices])
+        return linked_set._masked_subset(values)
     
     def set_values(self, indices, values):
         if hasattr(values, 'get_all_keys_in_store'):
             keys = values.get_all_keys_in_store()
             mask = ~values.get_valid_particles_mask()
-            keys = numpy.ma.array(keys, dtype=self.values.dtype)
-            keys.mask = mask
-            self.values[indices] = keys
+            self.keys[indices] = keys
+            self.masked[indices] = mask
         else:
             if values is None:
-                self.values[indices] = ma.masked
+                self.keys[indices] = 0
+                self.masked[indices] = True
             else:
                 for index, key in zip(indices, values):
                     if key is None:
-                        self.values[index] = ma.masked
+                        self.keys[indices] = 0
+                        self.masked[indices] = True
                     else:
-                        self.values[index] = key
+                        self.keys[index] = key
+                        self.masked[indices] = False
     
     def get_length(self):
-        return self.values.shape
-        
+        return len(self.keys)
+                
+    
     def increase_to_length(self, newlength):
-        delta = newlength - len(self.values)
+        oldlength = len(self.keys)
+        delta = newlength - len(self.keys)
         if delta == 0: 
            return
-        deltashape = list(self.values.shape)
-        deltashape[0] = delta
-        zeros_for_concatenation =  numpy.ma.masked_all(deltashape, dtype = self.values.dtype)
-        self.values = numpy.ma.concatenate([self.values, zeros_for_concatenation])
+        newshape = list(self.keys.shape)
+        newshape[0] = newlength
+        
+        values = numpy.empty(shape=self.keys.shape, dtype=self.keys.dtype)
+        values[:] = self.keys[:]
+    
+        parent = self.group
+        del parent['keys']
+        self.keys = parent.create_dataset('keys', shape=newshape, dtype=values.dtype)
+        self.keys[:oldlength] = values[:]
+        
+        values = numpy.empty(shape=self.masked.shape, dtype=self.masked.dtype)
+        values[:] = self.masked[:]
+        parent = self.group
+        del parent['masked']
+        self.masked = parent.create_dataset('masked', shape=newshape, dtype=values.dtype)
+        self.masked[:oldlength] = values[:]
+        
 
     def get_shape(self):
-        return self.values.shape
+        return self.keys.shape
 
     def copy(self):
-        result = type(self)(self.name, self.get_shape(), self.linked_set)
-        result.set_values(None, self.get_values(None))
-        return result
+        #result = type(self)(self.name, self.get_shape(), self.linked_set)
+        #result.set_values(None, self.get_values(None))
+        #return result
+        raise NotImplementedError("Copy of an attribute in hdf5 is not implemented")
 
     def get_value(self, index):
-        key = self.values[index]
-        if key is ma.masked:
-            return None
-        else:
-            return self.linked_set._get_particle_unsave(key)
+        #key = self.values[index]
+        #if key is ma.masked:
+        #    return None
+        #else:
+        #    return self.linked_set._get_particle_unsave(key)
+        raise NotImplementedError("Copy of an attribute in hdf5 is not implemented")
 
     def remove_indices(self, indices):
-        newmask = numpy.delete(self.values.mask, indices)
-        newvalues = numpy.delete(self.values.data, indices)
+        if 1:
+            
+            raise NotImplementedError("Copy of an attribute in hdf5 is not implemented")
+        oldlength = len(self.dataset)
         
-        self.values = numpy.ma.array(newvalues, mask = newmask) 
+        values = numpy.empty(shape=self.dataset.shape, dtype=self.dataset.dtype)
+        values[:] = self.dataset[:]
+        values = numpy.delete(values, indices)
+        
+        parent = self.dataset.parent
+        del parent[self.name]
+        self.dataset = parent.create_dataset(self.name, shape=values.shape, dtype=values.dtype)
+        self.dataset[:] = values[:]
 
     def has_units(self):
         return False
@@ -276,13 +315,14 @@ class HDF5LinkedAttribute(HDF5Attribute):
 
 class HDF5AttributeStorage(AttributeStorage):
 
-    def __init__(self, keys, hdfgroup):
+    def __init__(self, keys, hdfgroup, loader):
         self.hdfgroup = hdfgroup
         self.attributesgroup = self.hdfgroup["attributes"]
         self.number_of_particles = self.hdfgroup.attrs["number_of_particles"]
         self.particle_keys = keys
+        self.loader = loader
         self.mapping_from_particle_to_index = self.new_index()
-    
+        
     def can_extend_attributes(self):
         return True
         
@@ -323,11 +363,10 @@ class HDF5AttributeStorage(AttributeStorage):
         for attribute in attributes:
             dataset = HDF5Attribute.load_attribute(
                 attribute,
-                self.attributesgroup[attribute]
+                self.attributesgroup[attribute],
+                self.loader
             )
-            bools = numpy.zeros(dataset.get_length(), dtype='bool')
-            bools[indices] = True
-            selected_values = dataset.get_values(numpy.asarray(bools))
+            selected_values = dataset.get_values(indices)
             results.append(selected_values)
         
         return results
@@ -348,7 +387,8 @@ class HDF5AttributeStorage(AttributeStorage):
             if attribute in self.attributesgroup:
                 dataset = HDF5Attribute.load_attribute(
                     attribute,
-                    self.attributesgroup[attribute]
+                    self.attributesgroup[attribute],
+                    self.loader
                 )
             else:
                 dataset = HDF5Attribute.new_attribute(
@@ -367,10 +407,11 @@ class HDF5AttributeStorage(AttributeStorage):
 
 class HDF5GridAttributeStorage(AttributeStorage):
 
-    def __init__(self, shape, hdfgroup):
+    def __init__(self, shape, hdfgroup, loader):
         self.hdfgroup = hdfgroup
         self.attributesgroup = self.hdfgroup["attributes"]
         self.shape = shape
+        self.loader = loader
         
     def storage_shape(self):
         return self.shape
@@ -427,6 +468,7 @@ class HDF5GridAttributeStorage(AttributeStorage):
 class StoreHDF(object):
     PARTICLES_GROUP_NAME = "particles"
     GRIDS_GROUP_NAME = "grids"
+    UNNAMED_REFERENCES_GROUP_NAME = "referenced"
     
     def __init__(self, filename, append_to_file=True, open_for_writing = True):
         if not append_to_file and open_for_writing and os.path.exists(filename):
@@ -445,21 +487,59 @@ class StoreHDF(object):
                 self.hdf5file = h5py.File(filename,'w')
             else:
                 self.hdf5file = h5py.File(filename,'r')
+        
+        self.mapping_from_groupid_to_set = {}
+        
     
-    
+    def store_sets(self, sets, names,  extra_attributes = {}):
+        mapping_from_setid_to_group = {}
+        links_to_resolve = []
+        for x, name in zip(sets, names):
+            if hasattr(x, 'shape') and len(x.shape) > 1:
+                self.store_grid(x, extra_attributes, parent = self.named_group(name))
+            else:   
+                self.store_particles(x, extra_attributes, self.named_group(name), mapping_from_setid_to_group, links_to_resolve)
+        
+        while len(links_to_resolve) > 0:
+            sets_to_store, links_to_resolve = self.resolve_links(
+                mapping_from_setid_to_group,
+                links_to_resolve
+            )
+            for x in set(sets_to_store):
+                if hasattr(container, 'shape') and len(container.shape) > 1:
+                    self.store_grid(container, extra_attributes, parent = self.unnamed_references_group())
+                else:   
+                    self.store_particles(x, {}, self.unnamed_references_group(), mapping_from_setid_to_group, links_to_resolve)
+        
+        
     def store(self, container, extra_attributes = {}):
         if hasattr(container, 'shape') and len(container.shape) > 1:
             self.store_grid(container, extra_attributes)
-        else:            
-            self.store_particles(container, extra_attributes)
-    
+        else:      
+            mapping_from_setid_to_group = {}
+            links_to_resolve = []
+            self.store_particles(container, extra_attributes, None, mapping_from_setid_to_group, links_to_resolve)
+            while len(links_to_resolve) > 0:
+                sets_to_store, links_to_resolve = self.resolve_links(
+                    mapping_from_setid_to_group,
+                    links_to_resolve
+                )
+                for x in set(sets_to_store):
+                    self.store_particles(x, {}, self.unnamed_references_group(), mapping_from_setid_to_group, links_to_resolve)
+                
     def new_group(self, master_group):
         index = len(master_group)
         name = format(index + 1,"010d")
         return master_group.create_group(name)
         
-    def store_particles(self, particles, extra_attributes = {}):
-        group = self.new_group(self.particles_group())
+    def store_particles(self, particles, extra_attributes = {}, parent=None, mapping_from_setid_to_group = {}, links = []):
+        if parent is None:
+            parent = self.particles_group()
+            
+        group = self.new_group(parent)
+        group.attrs["type"] = 'particles'
+        self.mapping_from_groupid_to_set[group.id] = particles._original_set()
+        
         
         group.attrs["number_of_particles"] = len(particles)
         group.attrs["class_of_the_particles"] = pickle.dumps(particles._factory_for_new_collection())
@@ -468,22 +548,42 @@ class StoreHDF(object):
         dataset = group.create_dataset("keys", data=keys)
 
         self.store_collection_attributes(particles, group, extra_attributes)
-        self.store_values(particles, group)
+        self.store_values(particles, group, links)
             
+        mapping_from_setid_to_group[id(particles._original_set())] = group
+        
         self.hdf5file.flush()
     
-    def store_grid(self, grid, extra_attributes = {}):
-        group = self.new_group(self.grids_group())
+    def resolve_links(self, mapping_from_setid_to_group, links):
+        sets_to_store = []
+        links_to_resolve = []
+        for group, linked_set in links:
+            if id(linked_set) in mapping_from_setid_to_group:
+                stored_group = mapping_from_setid_to_group[id(linked_set)]
+                group.attrs['reference'] = stored_group.ref
+            else:
+                sets_to_store.append(linked_set)
+                links_to_resolve.append([group, linked_set])
         
+        return sets_to_store, links_to_resolve
+    
+    def store_grid(self, grid, extra_attributes = {}, parent=None, mapping_from_setid_to_group = {}, links = []):
+        if parent is None:
+            parent = self.grids_group()
+        group = self.new_group(parent)
+        
+        group.attrs["type"] = 'grid'
         group.attrs["class_of_the_container"] = pickle.dumps(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
     
         self.store_collection_attributes(grid, group, extra_attributes)
         self.store_values(grid, group)
         
+        mapping_from_setid_to_group[id(grid._original_set())] = group
+        
         self.hdf5file.flush()
         
-    def store_values(self, container, group):
+    def store_values(self, container, group, links = []):
         attributes_group = group.create_group("attributes")
         
         all_values = container.get_values_in_store(None, container.get_attribute_names_defined_in_store())
@@ -492,6 +592,14 @@ class StoreHDF(object):
                 value = quantity.value_in(quantity.unit)
                 dataset = attributes_group.create_dataset(attribute, data=value)
                 dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
+            elif hasattr(quantity, 'as_set'):
+                subgroup = attributes_group.create_group(attribute)
+                keys = quantity.get_all_keys_in_store()
+                masked = ~quantity.get_valid_particles_mask()
+                links.append([subgroup, quantity.as_set()._original_set()])
+                subgroup.create_dataset('keys', data=keys)
+                subgroup.create_dataset('masked', data=masked)
+                subgroup.attrs["units"] = "object"
             else:
                 dataset = attributes_group.create_dataset(attribute, data=quantity)
                 dataset.attrs["units"] = "none"
@@ -536,58 +644,79 @@ class StoreHDF(object):
                 
     def load(self):
         if not self.PARTICLES_GROUP_NAME in self.hdf5file:
-            return self.load_grid()
+            return self.load_grid(self.grids_group())
         else:
             if len(self.particles_group()) > 0:
-                return self.load_particles()
+                return self.load_particles(self.particles_group())
             elif len(self.grids_group()) > 0:
-                return self.load_grid()
+                return self.load_grid(self.grids_group())
             else:
                 raise Exception("No particles or grids found in the hdf5 file")
                 
-    def load_particles(self):
-        particles_group = self.particles_group()
-        number_of_saved_particle_sets = len(particles_group)
-        all_particle_sets = [None] * number_of_saved_particle_sets
-        for group_index in particles_group.keys():
-            group = particles_group[group_index]
-            class_of_the_particles = pickle.loads(group.attrs["class_of_the_particles"])
-            dataset = group["keys"]
-            keys = numpy.ndarray(len(dataset), dtype = dataset.dtype)
-            dataset.read_direct(keys)
+    def load_sets(self, names):
+        result = []
+        for x in names:
+            set = self.load_container(self.named_group(x), 'particles')
+            result.append(set)
+        return result
             
-            particles = class_of_the_particles()
-            particles._private.attribute_storage = HDF5AttributeStorage(keys, group)
-            self.load_collection_attributes(particles, group)
-            
-            all_particle_sets[int(group_index) - 1] = particles
-            
-        previous = None
-        for x in all_particle_sets:
-            x._private.previous = previous
-            previous = x
-            
-        last = all_particle_sets[-1]
-        copy_of_last = last.copy_to_memory()
-        copy_of_last._private.previous = last
-        return copy_of_last
+    def load_particles_from_group(self, group):
+        class_of_the_particles = pickle.loads(group.attrs["class_of_the_particles"])
+        dataset = group["keys"]
+        keys = numpy.ndarray(len(dataset), dtype = dataset.dtype)
+        dataset.read_direct(keys)
         
+        particles = class_of_the_particles()
+        particles._private.attribute_storage = HDF5AttributeStorage(keys, group, self)
+        self.load_collection_attributes(particles, group)
+        
+        self.mapping_from_groupid_to_set[group.id] = particles
+        
+        return particles
+        
+        
+    def load_grid_from_group(self, group):
+        class_of_the_container = pickle.loads(group.attrs["class_of_the_container"])
+        shape = tuple(group["shape"])
+        
+        container = class_of_the_container()
+        container._private.attribute_storage = HDF5GridAttributeStorage(shape, group, self)
+        self.load_collection_attributes(container, group)
+        
+        self.mapping_from_groupid_to_set[group.id] = container
+        return container
+    
+    def load_from_group(self, group, default_type = 'particles'):
+        if 'type' in group.attrs:
+            container_type = group.attrs['type']
+        else:
+            container_type = default_type
+        
+        if container_type == 'particles':
+            return self.load_particles_from_group(group)
+        elif container_type == 'grid':
+            return self.load_grid_from_group(group)
+        else:
+            raise Exception('unknown container type in file {0}'.format(container_type))
+        
+        
+    def load_particles(self, container_group = None):
+        if container_group is None:
+            container_group = self.particles_group()
+        return self.load_container(container_group, 'particles')
         
     
-    def load_grid(self):
-        container_group = self.grids_group()
-        number_of_saved_particle_containers= len(container_group)
-        all_containers = [None] * number_of_saved_particle_containers
+    def load_grid(self, container_group = None):
+        if container_group is None:
+            container_group = self.grids_group()
+        return self.load_container(container_group, 'grid')
+        
+    def load_container(self, container_group, default_type):
+        number_of_saved_containers= len(container_group)
+        all_containers = [None] * number_of_saved_containers
         for group_index in container_group.keys():
             group = container_group[group_index]
-            class_of_the_container = pickle.loads(group.attrs["class_of_the_container"])
-            shape = tuple(group["shape"])
-            
-            
-            container = class_of_the_container()
-            container._private.attribute_storage = HDF5GridAttributeStorage(shape, group)
-            self.load_collection_attributes(container, group)
-            
+            container = self.load_from_group(group, default_type)
             all_containers[int(group_index) - 1] = container
             
         previous = None
@@ -599,12 +728,21 @@ class StoreHDF(object):
         copy_of_last = last.copy_to_memory()
         copy_of_last._private.previous = last
         return copy_of_last
+    
+    def derefence(self, reference):
+        return self.hdf5file[reference]
         
     def particles_group(self):
-        return self.hdf5file.require_group(self.PARTICLES_GROUP_NAME)
+        return self.named_group(self.PARTICLES_GROUP_NAME)
+        
+    def unnamed_references_group(self):
+        return self.named_group(self.UNNAMED_REFERENCES_GROUP_NAME)
         
     def grids_group(self):
-        return self.hdf5file.require_group(self.GRIDS_GROUP_NAME)
+        return self.named_group(self.GRIDS_GROUP_NAME)
+        
+    def named_group(self, name):
+        return self.hdf5file.require_group(name)
         
     def close(self):
         self.hdf5file.flush()
@@ -623,12 +761,18 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     
     def load(self):
         processor = StoreHDF(self.filename, False, open_for_writing = False)
-        return processor.load()
+        if len(self.names) > 0:
+            return processor.load_sets(self.names)
+        else:
+            return processor.load()
         
     def store(self):
         processor = StoreHDF(self.filename, self.append_to_file, open_for_writing = True)
         try:
-            return processor.store(self.set, self.extra_attributes)
+            if len(self.names) > 0:
+                return processor.store_sets(self.set, self.names, self.extra_attributes)
+            else:
+                return processor.store(self.set, self.extra_attributes)
         finally:
             processor.close()
     
@@ -638,4 +782,13 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         If set to False, the existing file is removed and overwritten.
         Only relevant for write set to file. (default: True)"""
         return True
+        
+    @base.format_option
+    def names(self):
+        """A list of names to save the data under. If filled this 
+        will load the sets or grids with the given names and
+        return this as a list. When saving the names will be used to
+        save each set, a list of sets is needed in the write_set_to_file 
+        function (default: [])"""
+        return []
     

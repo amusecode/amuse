@@ -903,7 +903,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         parent.add_child(child2)
         outputstr = str(all)
         print outputstr
-        self.assertTrue("  4.000e+00         None" in outputstr)
+        self.assertTrue("  4.000e+00           --" in outputstr)
         code1.particles.add_particles(parent.as_set())
         code2.particles.add_particles(parent.children())
         
