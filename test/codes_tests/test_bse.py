@@ -214,31 +214,43 @@ class TestBSE(TestWithMPI):
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
-        stars =  Particles(1)
+        stars =  Particles(2)
+        stars[0].mass = 3.0 | units.MSun
+        stars[1].mass = 0.3 | units.MSun
         
-        binary = stars[0]
-        binary.mass1 = 3.0 | units.MSun
-        binary.mass2 = 0.3 | units.MSun
-        binary.orbital_period = 200.0 | units.day
-        binary.eccentricity = 0.5
         
         instance.particles.add_particles(stars)
+        
+        binaries =  Particles(1)
+        
+        binary = binaries[0]
+        binary.orbital_period = 200.0 | units.day
+        binary.eccentricity = 0.5
+        binary.child1 = stars[0]
+        binary.child2 = stars[1]
+        
+        instance.binaries.add_particles(binaries)
+        
         from_bse_to_model = instance.particles.new_channel_to(stars)
         from_bse_to_model.copy()
+
+        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_bse_to_model_binaries.copy()
         
-        previous_type1 = binary.type1
+        previous_type = binary.child1.type
         results = []
         current_time = 0 | units.Myr
         
         while current_time < (480 | units.Myr):
             instance.update_time_steps()
             # The next line appears a bit weird, but saves time for this simple test.
-            current_time = current_time + max(5.0*instance.particles[0].time_step, 0.3 | units.Myr)
+            current_time = current_time + max(5.0*instance.binaries[0].time_step, 0.3 | units.Myr)
             instance.evolve_model(current_time)
             from_bse_to_model.copy()
-            if not binary.type1 == previous_type1:
-                results.append((binary.age, binary.mass1, binary.type1))
-                previous_type1 = binary.type1
+            from_bse_to_model_binaries.copy()
+            if not binary.child1.type == previous_type:
+                results.append((binary.age, binary.child1.mass, binary.child1.type))
+                previous_type = binary.child1.type
             
         self.assertEqual(len(results), 6)
         
@@ -285,32 +297,43 @@ class TestBSE(TestWithMPI):
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
-        stars =  Particles(1)
         
-        binary = stars[0]
-        binary.mass1 = 3.0 | units.MSun
-        binary.mass2 = 0.3 | units.MSun
-        binary.orbital_period = 2.0e5 | units.day
-        binary.eccentricity = 0.0
-
+        stars =  Particles(2)
+        stars[0].mass = 3.0 | units.MSun
+        stars[1].mass = 0.3 | units.MSun
+        
         instance.particles.add_particles(stars)
+        
+        binaries =  Particles(1)
+        
+        binary = binaries[0]
+        binary.orbital_period = 2.0e5 | units.day
+        binary.eccentricity = 0.5
+        binary.child1 = stars[0]
+        binary.child2 = stars[1]
+        
+        instance.binaries.add_particles(binaries)
+        
         from_bse_to_model = instance.particles.new_channel_to(stars)
         from_bse_to_model.copy()
+
+        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_bse_to_model_binaries.copy()
         
-        previous_type1 = binary.type1
+        previous_type = binary.child1.type
         results = []
         current_time = 0 | units.Myr
+        
         while current_time < (335 | units.Myr):
             instance.update_time_steps()
             # The next line appears a bit weird, but saves time for this simple test.
-            current_time = current_time + max(2.0*instance.particles[0].time_step, 0.04 | units.Myr)
+            current_time = current_time + max(2.0*instance.binaries[0].time_step, 0.04 | units.Myr)
             instance.evolve_model(current_time)
             from_bse_to_model.copy()
-    
-            if not binary.type1 == previous_type1:
-                results.append((binary.age, binary.mass1, binary.type1))
-                previous_type1 = binary.type1
-            
+            from_bse_to_model_binaries.copy()
+            if not binary.child1.type == previous_type:
+                results.append((binary.age, binary.child1.mass, binary.child1.type))
+                previous_type = binary.child1.type
         print results
         self.assertEqual(len(results), 6)
         
@@ -356,33 +379,46 @@ class TestBSE(TestWithMPI):
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
-        stars =  Particles(1)
         
-        binary = stars[0]
-        binary.mass1 = 7.816 | units.MSun
-        binary.mass2 = 4.387 | units.MSun
+        stars =  Particles(2)
+        stars[0].mass = 7.816 | units.MSun
+        stars[1].mass = 4.387 | units.MSun
+        
+        instance.particles.add_particles(stars)
+        
+        binaries =  Particles(1)
+        
+        binary = binaries[0]
         binary.orbital_period = 1964.18453 | units.day
         binary.eccentricity = 0.0
-
-        instance.particles.add_particles(stars)
+        binary.child1 = stars[0]
+        binary.child2 = stars[1]
+        
+        instance.binaries.add_particles(binaries)
+        
         from_bse_to_model = instance.particles.new_channel_to(stars)
         from_bse_to_model.copy()
+
+        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_bse_to_model_binaries.copy()
         
-        previous_type1 = binary.type1
-        previous_type2 = binary.type2
+        previous_type1 = binary.child1.type
+        previous_type2 = binary.child2.type
         results = []
-        current_time = 0 | units.Myr        
+        current_time = 0 | units.Myr
+        
         while current_time < (170 | units.Myr):
             instance.update_time_steps()
             # The next line appears a bit weird, but saves time for this simple test.
-            current_time = current_time + max(2.0*instance.particles[0].time_step, 0.04 | units.Myr)
+            current_time = current_time + max(2.0*instance.binaries[0].time_step, 0.04 | units.Myr)
             instance.evolve_model(current_time)
             from_bse_to_model.copy()
-    
-            if not (binary.type1 == previous_type1 and binary.type2 == previous_type2):
-                results.append((binary.age, str(binary.type1)+" and "+str(binary.type2)))
-                previous_type1 = binary.type1
-                previous_type2 = binary.type2
+            from_bse_to_model_binaries.copy()        
+            if not (binary.child1.type  == previous_type1 and binary.child2.type == previous_type2):
+                results.append((binary.age, str(binary.child1.type)+" and "+str(binary.child2.type)))
+                previous_type1 = binary.child1.type
+                previous_type2 = binary.child2.type
+        
             
         print '\n'.join(map(str, results))
         self.assertEqual(len(results), 13)
@@ -423,8 +459,8 @@ class TestBSE(TestWithMPI):
         for result, expected in zip(results, types):
             self.assertEquals(result[1], expected)
         
-        self.assertAlmostEqual(binary.mass1.value_in(units.MSun), 1.304, 3)
-        self.assertAlmostEqual(binary.mass2.value_in(units.MSun), 0.800, 3)
+        self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 1.304, 3)
+        self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.800, 3)
         
         instance.stop()
         
@@ -434,25 +470,37 @@ class TestBSE(TestWithMPI):
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
-        stars =  Particles(1)
         
-        binary = stars[0]
-        binary.mass1 = 7.816 | units.MSun
-        binary.mass2 = 4.387 | units.MSun
+        stars =  Particles(2)
+        stars[0].mass = 7.816 | units.MSun
+        stars[1].mass = 4.387 | units.MSun
+        
+        instance.particles.add_particles(stars)
+        
+        binaries =  Particles(1)
+        
+        binary = binaries[0]
         binary.orbital_period = 1964.18453 | units.day
         binary.eccentricity = 0.0
-
-        instance.particles.add_particles(stars)
+        binary.child1 = stars[0]
+        binary.child2 = stars[1]
+        
+        instance.binaries.add_particles(binaries)
+        
         from_bse_to_model = instance.particles.new_channel_to(stars)
         from_bse_to_model.copy()
+
+        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_bse_to_model_binaries.copy()
         
         instance.evolve_model(170 | units.Myr)
         from_bse_to_model.copy()
+        from_bse_to_model_binaries.copy()
 
-        self.assertAlmostEqual(binary.mass1.value_in(units.MSun), 1.304, 3)
-        self.assertAlmostEqual(binary.mass2.value_in(units.MSun), 0.800, 3)
-        self.assertEquals(str(binary.type1), "Neutron Star")
-        self.assertEquals(str(binary.type2), "Carbon/Oxygen White Dwarf")
+        self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 1.304, 3)
+        self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.800, 3)
+        self.assertEquals(str(binary.child1.type), "Neutron Star")
+        self.assertEquals(str(binary.child2.type), "Carbon/Oxygen White Dwarf")
 
         instance.stop()
     
@@ -462,25 +510,38 @@ class TestBSE(TestWithMPI):
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
-        stars =  Particles(1)
+
+        stars =  Particles(2)
+        stars[0].mass = 3.0  | units.MSun
+        stars[1].mass = 0.3 | units.MSun
         
-        binary = stars[0]
-        binary.mass1 = 3.0 | units.MSun
-        binary.mass2 = 0.3 | units.MSun
+        instance.particles.add_particles(stars)
+        
+        binaries =  Particles(1)
+        
+        binary = binaries[0]
         binary.orbital_period = 200.0 | units.day
         binary.eccentricity = 0.99
-
-        instance.particles.add_particles(stars)
+        binary.child1 = stars[0]
+        binary.child2 = stars[1]
+        
+        instance.binaries.add_particles(binaries)
+        
         from_bse_to_model = instance.particles.new_channel_to(stars)
         from_bse_to_model.copy()
+
+        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_bse_to_model_binaries.copy()
         
         instance.evolve_model(170 | units.Myr)
+        
         from_bse_to_model.copy()
-
-        self.assertAlmostEqual(binary.mass1.value_in(units.MSun), 3.300, 3)
-        self.assertAlmostEqual(binary.mass2.value_in(units.MSun), 0.000, 3)
-        self.assertEquals(str(binary.type1), "Main Sequence star")
-        self.assertEquals(str(binary.type2), "Massless Supernova")
+        from_bse_to_model_binaries.copy()
+        
+        self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 3.300, 3)
+        self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.000, 3)
+        self.assertEquals(str(binary.child1.type), "Main Sequence star")
+        self.assertEquals(str(binary.child2.type), "Massless Supernova")
 
         instance.stop()
         
@@ -508,81 +569,99 @@ class TestBSE(TestWithMPI):
     
     def test7(self):
         print "Test evolve_model optional arguments: end_time and keep_synchronous"
-        binaries = Particles(3)
-        binaries.mass1 = [1.0, 2.0, 3.0] | units.MSun
-        binaries.mass2 = [0.1, 0.2, 0.3] | units.MSun
+
+        stars =  Particles(6)
+        stars.mass = [1.0,2.0,3.0, 0.1, 0.2, 0.3]  | units.MSun
+        
+        binaries =  Particles(3)
         binaries.orbital_period = 200.0 | units.day
         binaries.eccentricity = 0.0
+        for i in range(3):
+            binaries[i].child1 = stars[i]
+            binaries[i].child2 = stars[i+3]
+
+               
+        
         
         instance = BSE()
         instance.commit_parameters()
-        instance.particles.add_particles(binaries)
+        instance.particles.add_particles(stars)
+        instance.binaries.add_particles(binaries)
         
-        self.assertAlmostEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
-        self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
+        self.assertAlmostEqual(instance.binaries.age, [0.0, 0.0, 0.0] | units.yr)
+        self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
         
         print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
         instance.evolve_model()
-        self.assertAlmostEqual(instance.particles.age, [18.8768, 18.8768, 18.8768] | units.Myr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
+        self.assertAlmostEqual(instance.binaries.age, [18.8768, 18.8768, 18.8768] | units.Myr, 3)
+        self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
         self.assertAlmostEqual(instance.model_time, 18.8768 | units.Myr, 3)
         
         print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
         instance.evolve_model(100 | units.Myr)
-        self.assertAlmostEqual(instance.particles.age, [100.0, 100.0, 100.0] | units.Myr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
+        self.assertAlmostEqual(instance.binaries.age, [100.0, 100.0, 100.0] | units.Myr, 3)
+        self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
         self.assertAlmostEqual(instance.model_time, 100.0 | units.Myr, 3)
         
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
-        self.assertAlmostEqual(instance.particles.age, (100 | units.Myr) + ([550.1565, 58.2081, 18.8768] | units.Myr), 3)
-        self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
+        self.assertAlmostEqual(instance.binaries.age, (100 | units.Myr) + ([550.1565, 58.2081, 18.8768] | units.Myr), 3)
+        self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
         self.assertAlmostEqual(instance.model_time, 100.0 | units.Myr, 3) # Unchanged!
         instance.stop()
         
     def test8(self):
         print "Testing adding and removing particles from stellar evolution code..."
         
-        binaries = Particles(3)
-        binaries.mass1 = 1.0 | units.MSun
-        binaries.mass2 = 0.2 | units.MSun
+        stars =  Particles(6)
+        stars.mass = [1.0,1.0, 1.0, 0.2, 0.2, 0.2]  | units.MSun
+        
+        binaries =  Particles(3)
         binaries.orbital_period = 200.0 | units.day
         binaries.eccentricity = 0.0
-        
+        for i in range(3):
+            binaries[i].child1 = stars[i]
+            binaries[i].child2 = stars[i+3]
+
         instance = BSE()
         instance.initialize_code()
         instance.commit_parameters()
-        self.assertEquals(len(instance.particles), 0) # before creation
-        instance.particles.add_particles(binaries[:-1])
+        self.assertEquals(len(instance.particles), 0)
+        self.assertEquals(len(instance.binaries), 0) # before creation
+        instance.particles.add_particles(stars)
+        instance.binaries.add_particles(binaries[:-1])
         instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
-        self.assertEquals(len(instance.particles), 2) # before remove
-        self.assertAlmostEqual(instance.particles.age, 1.0 | units.Myr)
+        self.assertEquals(len(instance.binaries), 2) # before remove
+        self.assertAlmostEqual(instance.binaries.age, 1.0 | units.Myr)
         
-        instance.particles.remove_particle(binaries[0])
-        self.assertEquals(len(instance.particles), 1)
+        instance.binaries.remove_particle(binaries[0])
+        self.assertEquals(len(instance.binaries), 1)
         instance.evolve_model(2.0 | units.Myr)
-        self.assertAlmostEqual(instance.particles[0].age, 2.0 | units.Myr)
+        self.assertAlmostEqual(instance.binaries[0].age, 2.0 | units.Myr)
         
-        instance.particles.add_particles(binaries[::2])
-        self.assertEquals(len(instance.particles), 3) # it's back...
-        self.assertAlmostEqual(instance.particles[0].age, 2.0 | units.Myr)
-        self.assertAlmostEqual(instance.particles[1].age, 0.0 | units.Myr)
-        self.assertAlmostEqual(instance.particles[2].age, 0.0 | units.Myr) # ... and rejuvenated.
+        instance.binaries.add_particles(binaries[::2])
+        self.assertEquals(len(instance.binaries), 3) # it's back...
+        self.assertAlmostEqual(instance.binaries[0].age, 2.0 | units.Myr)
+        self.assertAlmostEqual(instance.binaries[1].age, 0.0 | units.Myr)
+        self.assertAlmostEqual(instance.binaries[2].age, 0.0 | units.Myr) # ... and rejuvenated.
         
         instance.evolve_model(3.0 | units.Myr) # The young stars keep their age offset from the old star
-        self.assertAlmostEqual(instance.particles.age, [3.0, 1.0, 1.0] | units.Myr)
+        self.assertAlmostEqual(instance.binaries.age, [3.0, 1.0, 1.0] | units.Myr)
         instance.evolve_model(4.0 | units.Myr)
-        self.assertAlmostEqual(instance.particles.age, [4.0, 2.0, 2.0] | units.Myr)
+        self.assertAlmostEqual(instance.binaries.age, [4.0, 2.0, 2.0] | units.Myr)
         instance.stop()
     
     def test9(self):
         print "Testing BSE states"
-        binaries = Particles(1)
-        binaries.mass1 = 1.0 | units.MSun
-        binaries.mass2 = 0.2 | units.MSun
+        stars =  Particles(2)
+        stars.mass = [1.0, 0.2]  | units.MSun
+        
+        binaries =  Particles(1)
         binaries.orbital_period = 200.0 | units.day
         binaries.eccentricity = 0.0
+        binaries[0].child1 = stars[0]
+        binaries[0].child2 = stars[1]
         
         print "First do everything manually:",
         instance = BSE()
@@ -602,7 +681,8 @@ class TestBSE(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.reimers_mass_loss_coefficient = 0.5
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
-        instance.particles.add_particles(binaries)
+        instance.particles.add_particles(stars)
+        instance.binaries.add_particles(binaries)
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
         self.assertEquals(instance.get_name_of_current_state(), 'END')
