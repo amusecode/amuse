@@ -9,6 +9,7 @@ from amuse.units.quantities import new_quantity
 from amuse.units.quantities import is_quantity
 from amuse.units.quantities import zero
 from amuse.units.quantities import AdaptingVectorQuantity
+from amuse.units.quantities import as_vector_quantity
 
 import numpy
 import random
@@ -384,15 +385,15 @@ class AbstractSet(object):
                     raise AttributeError("You tried to access attribute '{0}'"
                         " but this attribute is not defined for this set.".format(name_of_the_attribute))
     
+    
     def check_attribute(self, value):
-        if not isinstance(value, Quantity):
-            if hasattr(value, "__iter__"):
-                result = AdaptingVectorQuantity()
-                for subvalue in value:
-                    result.append(self.check_attribute(subvalue))
-                return result
-            raise AttributeError("Can only assign quantities or other particles to an attribute.")
-        return value
+        if not (is_quantity(value) or hasattr(value, 'as_set')):
+            try:
+                return as_vector_quantity(value)
+            except:
+                return value
+        else:
+            return value
             
     def __setattr__(self, name_of_the_attribute, value):
         value = self.check_attribute(value)
@@ -417,14 +418,9 @@ class AbstractSet(object):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].set_value_for_entity(self, key, value)
         else:
-            return self.set_values_in_store([key], [attribute], value.as_vector_with_length(1))
-            
-            
-    def _set_unitless_value_of_attribute(self, key, attribute, value):
-        if attribute in self._derived_attributes:
-            return self._derived_attributes[attribute].set_value_for_entity(self, key, value)
-        else:
             return self.set_values_in_store([key], [attribute], [value])
+            
+            
             
     def _convert_to_entities_or_quantities(self, x):
         if hasattr(x, 'unit') and x.unit.iskey():

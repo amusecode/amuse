@@ -317,6 +317,22 @@ class TestGrids(amusetest.TestCase):
         channel.copy()
         self.assertEquals(grid2.x[1:3], -10 | units.m)
         self.assertEquals(grid2.x[4],grid1.x[4])
+        
+    
+    def test24(self):
+        particle = datamodel.Particle()
+        particle.mass = 10 | units.kg
+        
+        grid = datamodel.Grid(5,4,3)
+        grid.mass = 2.0 | units.kg
+        grid.nounit = 10
+        self.assertEquals(grid.nounit[0][1][2], 10)
+        self.assertEquals(grid[0][1][2].nounit, 10)
+        self.assertEquals(len(grid.nounit), 5)
+        #grid[0][1][0].particle = particle
+        #self.assertEquals(grid.mass[0][1][2], 2.0 | units.kg)
+        #self.assertEquals(grid[0][1][0].particle, particle)
+        #self.assertEquals(grid[0][1][1].particle, None)
 
 class TestIndexing(amusetest.TestCase):
     def test1(self):
@@ -329,7 +345,6 @@ class TestIndexing(amusetest.TestCase):
         
     def test2(self):
         a = numpy.arange(12).reshape(3,4)
-        print a, a[0][0:2]
         self.assertEquals(a[combine_indices(0,1)], a[0][1])
         self.assertEquals(a[combine_indices(1,0)], a[1][0])
         self.assertTrue(numpy.all(a[combine_indices(1,numpy.s_[0:2])] == a[1][0:2]))
@@ -371,9 +386,6 @@ class TestIndexing(amusetest.TestCase):
         a = numpy.arange(30).reshape(6,5)
         direct =  a[1:5:2][1:]
         indirect = a[combine_indices(numpy.s_[1:5:2],numpy.s_[1:])]
-        print a
-        print "direct", direct
-        print "indirect", indirect
         self.assertEquals(indirect.shape, direct.shape)
         self.assertTrue(numpy.all(indirect ==  direct))
         
@@ -381,9 +393,6 @@ class TestIndexing(amusetest.TestCase):
         a = numpy.arange(30)
         direct =  a[2:14:3][1:5:2]
         indirect = a[combine_indices(numpy.s_[2:14:3],numpy.s_[1:5:2])]
-        print a
-        print "direct", direct
-        print "indirect", indirect
         self.assertEquals(indirect.shape, direct.shape)
         self.assertTrue(numpy.all(indirect ==  direct))
         
@@ -395,10 +404,8 @@ class TestIndexing(amusetest.TestCase):
                 for step in range(1,5):
                     direct =  a[s:e:step][1:5:2]
                     indirect = a[combine_indices(numpy.s_[s:e:step],numpy.s_[1:5:2])]
-                    print direct, indirect
                     self.assertEquals(indirect.shape, direct.shape)
                     self.assertTrue(numpy.all(indirect ==  direct))
-        #self.assertTrue(False)
     
     
     def test10(self):
@@ -412,8 +419,6 @@ class TestIndexing(amusetest.TestCase):
         a = numpy.arange(60).reshape(5,6,2)
         direct =  a[3]
         indirect = a[combine_indices(3,None)]
-        print combine_indices(3,2)
-        print direct, indirect, combine_indices(combine_indices(3,2),1), a[(3,2,1)]
         self.assertEquals(indirect.shape, direct.shape)
         self.assertTrue(numpy.all(indirect ==  direct))
     
@@ -553,7 +558,6 @@ class TestGridSampling(amusetest.TestCase):
             
         for x in range(200,400):
             sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
-            print sample.index
             self.assertEquals(sample.index , [1,3,4])
 
     def test2(self):

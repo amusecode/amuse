@@ -78,7 +78,9 @@ class HDF5VectorQuantityAttribute(HDF5Attribute):
         self.unit = unit
         
     def get_values(self, indices):
-        if len(self.get_shape()) > 1:
+        if indices is None:
+            return self.unit.new_quantity(self.dataset[:])
+        elif len(self.get_shape()) > 1:
             return self.unit.new_quantity(self.dataset[:][indices])
         else:
             return self.unit.new_quantity(self.dataset[:][indices])
@@ -150,7 +152,9 @@ class HDF5UnitlessAttribute(HDF5Attribute):
         self.dataset = dataset
         
     def get_values(self, indices):
-        if len(self.get_shape()) > 1:
+        if indices is None:
+            return self.dataset[:]
+        elif len(self.get_shape()) > 1:
             return self.dataset[:][indices]
         else:
             return self.dataset[:][indices]
@@ -436,15 +440,22 @@ class HDF5GridAttributeStorage(AttributeStorage):
             
         results = []
         for attribute in attributes:
-            values_vector = self.attributesgroup[attribute]
-            if indices is None:
-                selected_values = numpy.ndarray(shape=self.shape, dtype = values_vector.dtype)
-                values_vector.read_direct(selected_values)
-            else:    
-                #selection = h5py.selections.PointSelection(values_vector.shape)
-                #selection.set(numpy.transpose([indices,]))
-                selected_values = values_vector[indices]
-            results.append(self.get_unit_of(attribute).new_quantity(selected_values))
+            dataset = HDF5Attribute.load_attribute(
+                attribute,
+                self.attributesgroup[attribute],
+                self.loader
+            )
+            selected_values = dataset.get_values(indices)
+            results.append(selected_values)
+            #values_vector = self.attributesgroup[attribute]
+            #if indices is None:
+            #    selected_values = numpy.ndarray(shape=self.shape, dtype = values_vector.dtype)
+            #    values_vector.read_direct(selected_values)
+            #else:    
+            #    #selection = h5py.selections.PointSelection(values_vector.shape)
+            #    #selection.set(numpy.transpose([indices,]))
+            #    selected_values = values_vector[indices]
+            #results.append(self.get_unit_of(attribute).new_quantity(selected_values))
         
         return results
         

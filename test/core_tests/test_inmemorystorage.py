@@ -236,13 +236,13 @@ class TestInMemoryGridAttributeStorage(amusetest.TestCase):
         )
         
         b, a = x.get_values_in_store(None, ['b','a'])
-        print a
+        print b.shape, a.shape
         self.assertEquals(b[0][1][0], 1.0 | units.m)
         self.assertEquals(b[0][0][0], 0.0 | units.m)
         self.assertEquals(a[0][1][0], 2.0 | units.kg)
         self.assertEquals(a[1][3][2], 2.0 | units.kg)
         self.assertEquals(a[1][2][2], 0.0 | units.kg)
-        
+                
         (b,) = x.get_values_in_store((numpy.s_[0:4], numpy.s_[1:4], numpy.s_[:]), ['a'])
         
         self.assertEquals(b[0][0][0], 2.0 | units.kg)
@@ -295,6 +295,26 @@ class TestInMemoryGridAttributeStorage(amusetest.TestCase):
         self.assertEquals(b[1][2][2], 2.0  )
         
         
+    def test3(self):
+        x = InMemoryGridAttributeStorage(5,4,3)
+        i = (0,1,2,3,4)
+        j = (1,3,1,3,1)
+        k = (0,2,0,2,0)
+        x.set_values_in_store(
+            (i,j,k), 
+            ['a','b'], 
+            [2.0 | units.kg, 1.0 | units.m]
+        )
+        
+        b, a = x.get_values_in_store((0,1,0), ['b','a'])
+        print b, a
+        self.assertEquals(b, 1.0 | units.m)
+        self.assertEquals(a, 2.0 | units.kg)
+        b, a = x.get_values_in_store((0,0,0), ['b','a'])
+        print b, a
+        self.assertEquals(b, 0.0 | units.m)
+        self.assertEquals(a, 0.0 | units.kg)
+                
         
 class TestInMemoryVectorQuantityAttribute(amusetest.TestCase):
     

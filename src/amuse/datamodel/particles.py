@@ -136,15 +136,6 @@ class AbstractParticleSet(AbstractSet):
         AbstractSet.__init__(self, original)
     
     
-    def check_attribute(self, value):
-        
-        if not (is_quantity(value) or isinstance(value, Particle) or isinstance(value, AbstractParticleSet)):
-            try:
-                return as_vector_quantity(value)
-            except:
-                return value
-        else:
-            return value
             
     #
     # Particle storage interface
@@ -616,7 +607,6 @@ class AbstractParticleSet(AbstractSet):
             for x in values:
                 if hasattr(x,'_as_masked_subset_in') and x._original_set() is self._original_set():
                     converted.append(x._as_masked_subset_in(other_particles))
-                    print "c:", converted[-1].key, x.key, added_keys
                 else:
                     converted.append(x)
             other_particles.add_particles_to_store(added_keys, attributes, converted)
@@ -2272,19 +2262,14 @@ class Particle(object):
             attribute_value = keyword_arguments[attribute_name]
             setattr(self, attribute_name, attribute_value)
             
-    def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
-       
-        if is_quantity(new_value_for_the_attribute):
-            self.particles_set._set_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)
-        elif isinstance(new_value_for_the_attribute, Particle):
-            self.particles_set.set_values_in_store(
-                [self.key], 
-                [name_of_the_attribute], 
-                [new_value_for_the_attribute.as_set()]#.key | units.object_key
-            )
-        else:
-            self.particles_set._set_unitless_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)
-            
+    def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):       
+        self.particles_set._set_value_of_attribute(
+            self.key, 
+            name_of_the_attribute, 
+            new_value_for_the_attribute
+        )
+        
+        
     def __getattr__(self, name_of_the_attribute):
         try:
             return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)

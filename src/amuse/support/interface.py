@@ -86,7 +86,7 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
         storage = linked_set._private.attribute_storage
         if isinstance(value, datamodel.Particle):
             indices = storage.get_indices_of([value.key])
-            return indices[0]
+            return indices
         else:
             valid = value.get_valid_particles_mask()
             all_keys = value.get_all_keys_in_store()

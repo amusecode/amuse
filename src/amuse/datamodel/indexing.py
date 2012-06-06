@@ -42,7 +42,6 @@ def combine_indices(index0, index1):
         elif isinstance(index1, tuple):
             if len(index0) == len(index1):
                 combined = [ combine_indices(p0, p1) for p0, p1 in zip(index0, index1)]
-                print combined
                 return tuple(combined)
             else:
                 raise Exception("unhandled case, two tuple one with different length")

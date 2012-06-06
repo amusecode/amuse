@@ -21,13 +21,8 @@ class AbstractGrid(AbstractSet):
             return self._derived_attributes[attribute].get_value_for_entity(self, key)
         else:
             return self._convert_to_entities_or_quantities(self.get_values_in_store(key, [attribute])[0])
-        
-    def _set_value_of_attribute(self, key, attribute, value):
-        if attribute in self._derived_attributes:
-            return self._derived_attributes[attribute].set_value_for_entity(self, key, value)
-        else:
-            return self.set_values_in_store(key, [attribute], value)
-
+            
+            
     def _get_values_for_entity(self, key, attributes):
         return self.get_values_in_store(key, attributes)
         
@@ -221,10 +216,12 @@ class GridPoint(object):
         object.__setattr__(self,"grid",grid)    
     
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
-        if isinstance(new_value_for_the_attribute, quantities.Quantity):
+        try:
             self.grid._set_value_of_attribute(self.index, name_of_the_attribute, new_value_for_the_attribute)
-        else:
-            raise AttributeError("Can only assign quantities or other particles to an attribute.")
+        except Exception as ex:
+            if 1:
+                raise
+            raise AttributeError("Could not assign to attribute {0}.".format(name_of_the_attribute))
     
     def __getattr__(self, name_of_the_attribute):
         return self.grid._get_value_of_attribute(self.index, name_of_the_attribute)

@@ -10,6 +10,7 @@ from amuse.units import nbody_system
 from amuse.datamodel import Particles
 from amuse.datamodel import Grid
 
+    
 class TestStoreHDF(amusetest.TestCase):
 
     def test1(self):
@@ -477,3 +478,21 @@ class TestStoreHDF(amusetest.TestCase):
         self.assertEqual(loader_binaries[0].child2,loaded_stars[1])
         self.assertEqual(loader_binaries[0].child1.parent,loader_binaries[0])
         self.assertEqual(loader_binaries[0].child2.parent,loader_binaries[0])
+
+    def test20(self):
+        
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test19.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+       
+        shape = 10, 10, 10
+        p = Grid(*shape)
+        p.mass = (numpy.asarray([x * 2.0 for x in range(p.size)])).reshape(shape)
+
+        io.write_set_to_file(p, output_file, "hdf5")
+        
+        loaded = io.read_set_from_file(output_file, "hdf5").previous_state()
+        self.assertAlmostRelativeEquals(p.mass[0][1][2], 24)
+        self.assertAlmostRelativeEquals(p[0][1][2].mass, 24)

@@ -234,33 +234,35 @@ class InMemoryGridAttributeStorage(object):
         results = []
         for attribute in attributes:
             attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-            if indices is None:
-                selected_values = attribute_values
-            else:
-                selected_values = attribute_values[indices]
+            #if indices is None:
+            #    selected_values = attribute_values
+            #else:
+            #    selected_values = attribute_values[indices]
             
-            results.append(selected_values)
+            results.append(attribute_values.get_values(indices))
         
         return results
         
     def set_values_in_store(self,  indices, attributes, list_of_values_to_set):
         
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
+
             if attribute in self.mapping_from_attribute_to_quantities:
-                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+                storage = self.mapping_from_attribute_to_quantities[attribute]
             else:
-                if is_quantity(values_to_set):
-                    attribute_values = VectorQuantity.zeros(
-                       (self.storage_shape()),
-                       values_to_set.unit,
-                    )
-                else: 
-                    dtype = numpy.asanyarray(values_to_set).dtype
-                    attribute_values = numpy.zeros((self.storage_shape()), dtype = dtype)
+                storage = InMemoryAttribute.new_attribute(attribute, self.storage_shape(), values_to_set)
+                self.mapping_from_attribute_to_quantities[attribute] = storage
+                #storage.set_values(None, quantity)
+                #if is_quantity(values_to_set):
+                #    attribute_values = VectorQuantity.zeros(
+                #       (self.storage_shape()),
+                #       values_to_set.unit,
+                #    )
+                #else: 
+                #    dtype = numpy.asanyarray(values_to_set).dtype
+                #    attribute_values = numpy.zeros((self.storage_shape()), dtype = dtype)
                     
-                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
-                 
-            attribute_values[indices] = values_to_set
+            storage.set_values(indices, values_to_set)
      
     def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index
@@ -269,7 +271,7 @@ class InMemoryGridAttributeStorage(object):
         return None #numpy.s_[0:self.number_of_i], numpy.s_[0:self.number_of_j], numpy.s_[0:self.number_of_k]
         
     def __len__(self):
-        return self.number_of_i * self.number_of_j * self.number_of_k
+        return self.storage_shape()[0]
         
     def copy(self):
         copy = InMemoryGridAttributeStorage(*self.number_of_points_in_each_direction)
@@ -426,6 +428,8 @@ class InMemoryAttribute(object):
     
     @classmethod
     def _determine_shape(cls, length, input):
+        if isinstance(length, tuple):
+            return length
         vector_shape = input.shape
         if len(vector_shape) > 1 and len(input) == length:
             return vector_shape
@@ -463,7 +467,10 @@ class InMemoryVectorQuantityAttribute(InMemoryAttribute):
         )
         
     def get_values(self, indices):
-        return self.quantity[indices]
+        if indices is None:
+            return self.quantity
+        else:
+            return self.quantity[indices]
     
     def set_values(self, indices, values):
         try:
@@ -516,7 +523,10 @@ class InMemoryUnitlessAttribute(InMemoryAttribute):
         )
         
     def get_values(self, indices):
-        return self.values[indices]
+        if indices is None:
+            return self.values
+        else:
+            return self.values[indices]
     
     def set_values(self, indices, values):
         self.values[indices] = values
@@ -575,15 +585,21 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
             keys = numpy.ma.array(keys, dtype=self.values.dtype)
             keys.mask = mask
             self.values[indices] = keys
-        else:
-            if values is None:
+        elif values is None:
                 self.values[indices] = ma.masked
-            else:
-                for index, key in zip(indices, values):
-                    if key is None:
-                        self.values[index] = ma.masked
-                    else:
-                        self.values[index] = key
+        elif hasattr(values, 'as_set'):
+            values = values.as_set()
+            keys = values.get_all_keys_in_store()
+            mask = ~values.get_valid_particles_mask()
+            keys = numpy.ma.array(keys, dtype=self.values.dtype)
+            keys.mask = mask
+            self.values[indices] = keys
+        else:
+            for index, key in zip(indices, values):
+                if key is None:
+                    self.values[index] = ma.masked
+                else:
+                    self.values[index] = key
     
     def get_length(self):
         return self.values.shape
