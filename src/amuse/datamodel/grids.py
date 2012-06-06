@@ -22,7 +22,11 @@ class AbstractGrid(AbstractSet):
         else:
             return self._convert_to_entities_or_quantities(self.get_values_in_store(key, [attribute])[0])
             
-            
+    def _set_value_of_attribute(self, key, attribute, value):             
+	        if attribute in self._derived_attributes: 	 	 
+	            return self._derived_attributes[attribute].set_value_for_entity(self, key, value) 	 	 
+	        else: 	 	 
+	            return self.set_values_in_store(key, [attribute], value)
     def _get_values_for_entity(self, key, attributes):
         return self.get_values_in_store(key, attributes)
         
@@ -219,8 +223,6 @@ class GridPoint(object):
         try:
             self.grid._set_value_of_attribute(self.index, name_of_the_attribute, new_value_for_the_attribute)
         except Exception as ex:
-            if 1:
-                raise
             raise AttributeError("Could not assign to attribute {0}.".format(name_of_the_attribute))
     
     def __getattr__(self, name_of_the_attribute):

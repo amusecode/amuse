@@ -568,10 +568,13 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
         InMemoryAttribute.__init__(self, name)
         
         self.linked_set = linked_set
-        
+        if len(linked_set) == 0:
+           dtype = 'uint64'
+        else:
+           dtype = linked_set.get_all_keys_in_store().dtype
         self.values = numpy.ma.masked_all(
             shape,
-            dtype = linked_set.get_all_keys_in_store().dtype
+            dtype = dtype
         )
         
         

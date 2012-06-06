@@ -469,8 +469,7 @@ class AbstractParticleSet(AbstractSet):
             if key in new_keys:
                 new_keys.remove(key)
             else:
-                raise exceptions.AmuseException("Unable to subtract a particle, because "
-                    "it is not part of this set.")
+                raise exceptions.AmuseException("Unable to subtract a particle, because it is not part of this set.")
         return self._subset(new_keys)
     
     def add_particles(self, particles):

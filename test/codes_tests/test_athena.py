@@ -762,10 +762,6 @@ class TestAthena(TestWithMPI):
         channel.copy()
         potential_grid = datamodel.Grid(12,12,1)
         potential_grid.potential = 0.0 | generic_unit_system.potential
-        print instance.potential_grid.shape
-        print instance.potential_grid.x[0].number.shape
-        print instance.grid.shape
-        print instance.grid.x[0].number.shape
         x = instance.potential_grid.x
         y = instance.potential_grid.y
         
@@ -780,14 +776,13 @@ class TestAthena(TestWithMPI):
                 if py < 0 or py > 1.0:
                     potential = 0.0
                 instance.potential_grid[i][j][0].potential = generic_unit_system.potential.new_quantity([potential])
-        print potential_grid.potential
         #channel = potential_grid.new_channel_to(instance.potential_grid)
         #channel.copy()
         result = instance.initialize_grid()
         
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
         for x in instance.grid[1].rho.value_in(density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertAlmostRelativeEquals(x, 0.1)
             
         instance.evolve_model(1.0 | generic_unit_system.time)
         #print instance.grid.rhox
