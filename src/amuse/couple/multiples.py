@@ -90,10 +90,7 @@ class Multiples(object):
         self.gravity_code = gravity_code
         self._immemory_particles = self.gravity_code.particles.copy()
         self._immemory_particles.id = self.gravity_code.particles.index_in_code
-        
-        self._immemory_particles.child1 = 0 | units.object_key # for printing
-        self._immemory_particles.child2 = 0 | units.object_key
-        
+                
         self.channel_from_code_to_memory = self.gravity_code.particles.new_channel_to(self._immemory_particles)
         
         self.resolve_collision_code_creation_function = resolve_collision_code_creation_function

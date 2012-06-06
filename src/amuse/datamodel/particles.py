@@ -330,12 +330,27 @@ class AbstractParticleSet(AbstractSet):
         return False
 
     
-    def copy_to_memory(self):
+    def copy_to_memory(self, memento = None):
         attributes = self.get_attribute_names_defined_in_store()
         keys = self.get_all_keys_in_store()
         values = self.get_values_in_store(keys, attributes)
         result = Particles()
-        result.add_particles_to_store(keys, attributes, values)
+        converted = []
+        if memento is None:
+            memento = {}
+        memento[id(self._original_set())] = result
+        for x in values:
+            if hasattr(x,'_as_masked_subset_in'):
+                if x._original_set() is self._original_set():
+                    converted.append(x._as_masked_subset_in(result))
+                elif id(x._original_set()) in memento:
+                    converted.append(x._as_masked_subset_in(memento[id(x._original_set())]))
+                else:
+                    copyofset =  x._original_set().copy_to_memory(memento)
+                    converted.append(x._as_masked_subset_in(copyofset))
+            else:
+                converted.append(x)
+        result.add_particles_to_store(keys, attributes, converted)
         
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
@@ -597,8 +612,15 @@ class AbstractParticleSet(AbstractSet):
         if added_keys:
             attributes = self.get_attribute_names_defined_in_store()
             values = self.get_values_in_store(added_keys, attributes)
-            other_particles.add_particles_to_store(added_keys, attributes, values)
-        
+            converted = []
+            for x in values:
+                if hasattr(x,'_as_masked_subset_in') and x._original_set() is self._original_set():
+                    converted.append(x._as_masked_subset_in(other_particles))
+                    print "c:", converted[-1].key, x.key, added_keys
+                else:
+                    converted.append(x)
+            other_particles.add_particles_to_store(added_keys, attributes, converted)
+            
         removed_keys = list(removed_keys)
         if removed_keys:
             other_particles.remove_particles_from_store(removed_keys)
@@ -857,6 +879,12 @@ class AbstractParticleSet(AbstractSet):
     def get_intersecting_subset_in(self, other):
         selected_keys = filter(lambda x : other.has_key_in_store(x), self.get_all_keys_in_store())
         return other._subset(selected_keys)
+        
+    
+    def _as_masked_subset_in(self, other):
+        keys = numpy.ma.array(self.get_all_keys_in_store(), dtype='uint64')
+        keys.mask = ~self.get_valid_particles_mask()
+        return other._masked_subset(keys)
         
 class Particles(AbstractParticleSet):
     """
@@ -1756,9 +1784,24 @@ class ParticlesMaskedSubset(ParticlesSubset):
         attributes = self.get_attribute_names_defined_in_store()
         keys = self.get_all_keys_in_store()
         keys = keys[~keys.mask] 
-        values = self.get_values_in_store(keys, attributes)
+        values = self.get_values_in_store(keys, attributes) 
         result = Particles()
-        result.add_particles_to_store(keys, attributes, values)
+        converted = []
+        if memento is None:
+            memento = {}
+        memento[id(self._original_set())] = result
+        for x in values:
+            if hasattr(x,'_as_masked_subset_in'):
+                if x._original_set() is self._original_set():
+                    converted.append(x._as_masked_subset_in(result))
+                elif id(x._original_set()) in memento:
+                    converted.append(x._as_masked_subset_in(memento[id(x._original_set())]))
+                else:
+                    copyofset =  x._original_set().copy_to_memory(memento)
+                    converted.append(x._as_masked_subset_in(copyofset))
+            else:
+                converted.append(x)
+        result.add_particles_to_store(keys, attributes, converted)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
         return result
         
@@ -2133,8 +2176,14 @@ class ParticleInformationChannel(object):
         
     def copy_attributes(self, attributes):
         self._reindex()
-        data = self.from_particles.get_values_in_store(self.keys, attributes)
-        self.to_particles.set_values_in_store(self.keys, attributes, data)
+        values = self.from_particles.get_values_in_store(self.keys, attributes)
+        converted = []
+        for x in values:
+            if hasattr(x,'_as_masked_subset_in') and x._original_set() is self.from_particles:
+                converted.append(x._as_masked_subset_in(self.to_particles))
+            else:
+                converted.append(x)
+        self.to_particles.set_values_in_store(self.keys, attributes, converted)
     
     def copy(self):
         if not self.to_particles.can_extend_attributes():

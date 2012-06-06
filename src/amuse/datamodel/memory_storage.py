@@ -470,7 +470,7 @@ class InMemoryVectorQuantityAttribute(InMemoryAttribute):
             self.quantity[indices] = values
         except AttributeError:
             if not is_quantity(values):
-                raise ValueError("Tried to put a non quantity value in a quantity")
+                raise ValueError("Tried to set a non quantity value for an attribute ({0}) with a unit".format(self.name))
             else:
                 raise
     

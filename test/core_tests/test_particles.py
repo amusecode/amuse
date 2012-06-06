@@ -386,6 +386,7 @@ class TestStars(amusetest.TestCase):
         self.assertEquals(stars[0].md, [1,2,3] | units.km)
         self.assertEquals(copy[0].md, [7,8,9] | units.km)
         
+        
 class TestParticlesWithBinding(amusetest.TestCase):
     class TestLegacyCode(object):
             
@@ -865,7 +866,126 @@ class TestParticlesWithReferences(amusetest.TestCase):
         
         self.assertAlmostRelativeEqual(set[0].child1.mass, 0.3 | nbody_system.mass)
         self.assertAlmostRelativeEqual(set[0].child1.mass, 0.3 | nbody_system.mass)
+    
+    def test3(self):
         
+        set = datamodel.Particles(3)
+        parent = set[0]
+        child1 = set[1]
+        child2 = set[2]
+        
+        set.mass = [2,3,4] | units.kg
+        parent.child1 = child1
+        parent.child2 = child2
+        child1.sibling = child2
+        
+        other = datamodel.Particles()
+        set.synchronize_to(other)
+        root = None
+        for x in other:
+            if not x.child1 is None:
+               root = x
+               break
+        
+        self.assertFalse(root is None)
+        
+        self.assertAlmostRelativeEqual(root.child1.mass, 3 | units.kg)
+        self.assertTrue(root.child1.as_set()._original_set() is other)
+        self.assertTrue(root.child1.sibling.as_set()._original_set() is other)
+        
+    def test4(self):
+        
+        set = datamodel.Particles(3)
+        parent = set[0]
+        child1 = set[1]
+        child2 = set[2]
+        
+        set.mass = [2,3,4] | units.kg
+        
+        other = set.copy_to_memory()
+        parent.child1 = child1
+        parent.child2 = child2
+        child1.sibling = child2
+        
+        channel = set.new_channel_to(other)
+        channel.copy()
+        
+        self.assertTrue(other[0].child1.as_set()._original_set() is other)
+        self.assertTrue(other[1].sibling.as_set()._original_set() is other)
+        self.assertAlmostRelativeEqual(other[0].child1.mass, 3 | units.kg)
+    
+    def test5(self):
+        
+        set = datamodel.Particles(3)
+        parent = set[0]
+        child1 = set[1]
+        child2 = set[2]
+        
+        set.mass = [2,3,4] | units.kg
+        
+        parent.child1 = child1
+        parent.child2 = child2
+        child1.sibling = child2
+        
+        other = set.copy_to_memory()
+        
+        self.assertAlmostRelativeEqual(other[0].child1.mass, 3 | units.kg)
+        self.assertTrue(other[0].child1.as_set()._original_set() is other)
+        self.assertTrue(other[1].sibling.as_set()._original_set() is other)  
+          
+    def test6(self):
+        
+        binaries = datamodel.Particles(2)
+        binaries.mass = [4,6] | units.kg
+        
+        stars = datamodel.Particles(4)
+        stars.mass = [1,3,4,2] | units.kg
+        
+        binaries[0].child1 = stars[0]
+        binaries[0].child2 = stars[1]
+        binaries[1].child1 = stars[3]
+        binaries[1].child2 = stars[2]
+        
+        other = binaries.copy_to_memory()
+        stars.mass = 2 * ([1,3,4,2] | units.kg)
+        self.assertAlmostRelativeEqual(binaries[0].child1.mass, 2 | units.kg)
+        self.assertAlmostRelativeEqual(other[0].child1.mass, 1 | units.kg)
+        self.assertAlmostRelativeEqual(other[0].child2.mass, 3 | units.kg)
+        self.assertAlmostRelativeEqual(binaries[1].child1.mass, 4 | units.kg)
+        self.assertAlmostRelativeEqual(other[1].child1.mass, 2 | units.kg)
+        self.assertAlmostRelativeEqual(other[1].child2.mass, 4 | units.kg)
+    
+          
+    def test7(self):
+        
+        binaries = datamodel.Particles(2)
+        binaries.mass = [4,6] | units.kg
+        
+        stars = datamodel.Particles(4)
+        stars.mass = [1,3,4,2] | units.kg
+        
+        binaries[0].child1 = stars[0]
+        binaries[0].child2 = stars[1]
+        binaries[1].child1 = stars[3]
+        binaries[1].child2 = stars[2]
+        stars[0].binary = binaries[0]
+        stars[1].binary = binaries[0]
+        stars[2].binary = binaries[1]
+        stars[3].binary = binaries[1]
+        
+        other = binaries.copy_to_memory()
+        stars.mass *= 2
+        binaries.mass  *= 2
+        self.assertAlmostRelativeEqual(other[0].child1.mass, 1 | units.kg)
+        self.assertAlmostRelativeEqual(binaries[0].child1.mass, 2 | units.kg)
+        self.assertAlmostRelativeEqual(other[0].child2.mass, 3 | units.kg)
+        self.assertAlmostRelativeEqual(other[1].child1.mass, 2 | units.kg)
+        self.assertAlmostRelativeEqual(other[1].child2.mass, 4 | units.kg)
+        self.assertAlmostRelativeEqual(binaries[0].child1.binary.mass, 8 | units.kg)
+        self.assertAlmostRelativeEqual(other[0].child1.binary.mass, 4 | units.kg)
+        self.assertAlmostRelativeEqual(other[1].child1.binary.mass, 6 | units.kg)
+        
+          
 class TestParticlesWithChildren(amusetest.TestCase):
     
     def test1(self):
