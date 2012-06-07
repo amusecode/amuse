@@ -1,7 +1,9 @@
 from amuse.test import amusetest
 from StringIO import StringIO
+from collections import namedtuple
 
 import os.path
+import math
 from amuse import io
 from amuse.io import gadget
 from amuse.io import nemobin
@@ -218,7 +220,7 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         try:
             io.write_set_to_file((gas, halo, disk, bulge, stars, bndry), outputfilename, format='gadget', ids_are_long = False)
         
-            gas, halo, disk, bulge, stars, bndry = io.read_set_from_file(filename, format='gadget')
+            gas, halo, disk, bulge, stars, bndry = io.read_set_from_file(outputfilename, format='gadget')
             self.assertEquals(len(gas), 1472)
             self.assertEquals(len(halo), 0)
             self.assertEquals(gas[0].key,1)
@@ -228,8 +230,66 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         finally:
             if os.path.exists(outputfilename):
                 os.remove(outputfilename)
+    
+    def test12(self):
+        print "Test return_header for Gadget read_set_from_file"
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'gassphere_littleendian.dat')
+        data = io.read_set_from_file(filename, format='gadget', return_header=False) # (default)
+        self.assertTrue(isinstance(data, tuple))
+        self.assertEquals(data.__doc__, "GadgetData(gas, halo, disk, bulge, stars, bndry)")
+            
+        data = io.read_set_from_file(filename, format='gadget', return_header=True)
+        self.assertTrue(isinstance(data, tuple))
+        self.assertEquals(data.__doc__, "GadgetData(gas, halo, disk, bulge, stars, bndry, "
+            "Npart, Massarr, Time, Redshift, FlagSfr, FlagFeedback, Nall, FlagCooling, "
+            "NumFiles, BoxSize, Omega0, OmegaLambda, HubbleParam, FlagAge, FlagMetals, "
+            "NallHW, flag_entr_ics)")
         
+        self.assertEquals(len(data.gas), 1472)
+        self.assertEquals(len(data.halo), 0)
+        self.assertEquals(data.gas[0].key,1)
+        self.assertEquals(data.gas[1].key,2)
+        self.assertEquals(data.gas[2].key,3)
+        self.assertEquals(data.gas[1471].key,1472)
+        self.assertAlmostRelativeEquals(data.gas[0:5].x,[-0.0713372901082, 0.0713372901082, -0.21178227663, -0.0698266476393, 0.0698266476393] | nbody_system.length, 7)
+        self.assertAlmostRelativeEquals(data.gas[0:5].u, [0.0500000007451, 0.0500000007451, 0.0500000007451, 0.0500000007451, 0.0500000007451] | (nbody_system.length / nbody_system.time)**2, 7 )
         
+        self.assertEquals(data.Npart, (1472, 0, 0, 0, 0, 0))
+        self.assertEquals(data.Time, 0.0)
+        self.assertEquals(data.Redshift, 0.0)
+    
+    def test13(self):
+        print "Test convert_gadget_w_to_velocity and return_header for Gadget read_set_from_file"
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'lcdm_gas_littleendian.dat')
+        data = io.read_set_from_file(filename, format='gadget', return_header=False, convert_gadget_w_to_velocity=False) # (default)
+        self.assertTrue(isinstance(data, tuple))
+        self.assertEquals(data.__doc__, "GadgetData(gas, halo, disk, bulge, stars, bndry)")
+        self.assertEquals(len(data.gas), 32**3)
+        self.assertEquals(len(data.halo), 32**3)
+        self.assertEquals(data.gas[0].key, 1)
+        self.assertEquals(data.halo[0].key, 32**3 + 1)
+        
+        data_converted = io.read_set_from_file(filename, format='gadget', return_header=True, convert_gadget_w_to_velocity=True)
+        self.assertTrue(isinstance(data_converted, tuple))
+        self.assertEquals(data_converted.__doc__, "GadgetData(gas, halo, disk, bulge, stars, bndry, "
+            "Npart, Massarr, Time, Redshift, FlagSfr, FlagFeedback, Nall, FlagCooling, "
+            "NumFiles, BoxSize, Omega0, OmegaLambda, HubbleParam, FlagAge, FlagMetals, "
+            "NallHW, flag_entr_ics)")
+        
+        self.assertEquals(len(data_converted.gas), 32**3)
+        self.assertEquals(len(data_converted.halo), 32**3)
+        self.assertEquals(data_converted.gas[0].key, 1)
+        self.assertEquals(data_converted.halo[0].key, 32**3 + 1)
+        self.assertEquals(data_converted.Npart, (32**3, 32**3, 0, 0, 0, 0))
+        self.assertEquals(data_converted.Time, 1/11.0)
+        self.assertEquals(data_converted.Redshift, 10.0)
+        self.assertEquals(data.gas.position, data_converted.gas.position)
+        self.assertAlmostRelativeEquals(data.gas.velocity, math.sqrt(data_converted.Time) * data_converted.gas.velocity, 7)
+        
+    
+
 class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
     
     

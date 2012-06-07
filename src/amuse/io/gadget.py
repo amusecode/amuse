@@ -12,7 +12,7 @@ from amuse import datamodel
 
 class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
     """
-    Process (read) a Gadget binary data file (saving to Gadget files not supported)
+    Process a Gadget binary data file
     """
     
     provided_formats = ['gadget']
@@ -107,7 +107,17 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         """Set to true the ids will be written
         as longs in the gadget file"""
         return True
-        
+    
+    @base.format_option
+    def return_header(self):
+        """Set to True to return both the particles and the header from the gadget file"""
+        return False
+    
+    @base.format_option
+    def convert_gadget_w_to_velocity(self):
+        """Set to True to convert the w=sqrt(a)*dx/dt to (comoving) velocity in comoving integrations"""
+        return False
+    
     @late
     def header_size(self):
         return struct.calcsize(self.header_format)
@@ -238,6 +248,8 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
                 
             x.position = nbody_system.length.new_quantity(self.positions[offset:offset+length])
             x.velocity = nbody_system.speed.new_quantity(self.velocities[offset:offset+length])
+            if self.convert_gadget_w_to_velocity:
+                x.velocity *= numpy.sqrt(1.0 + self.header_struct.Redshift)
             if not self.pot is None:
                 x.potential_energy = nbody_system.energy.new_quantity(self.pot[offset:offset+length])
             if not self.acc is None:
@@ -267,7 +279,6 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
             if not self.hsml is None:
                 gas_set.h_smooth = nbody_system.length.new_quantity(self.hsml)
             
-        
         return sets
         
             
@@ -275,8 +286,15 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
     def load_file(self, file):
         self.load_header(file)
         self.load_body(file)
-        return self.new_sets_from_arrays()
         
+        attribute_names = ["gas","halo","disk","bulge","stars","bndry"]
+        values = self.new_sets_from_arrays()
+        
+        if self.return_header:
+            attribute_names += [name for name, times, formatchar in self.header_struct_format]
+            values += list(self.header_struct)
+        return namedtuple("GadgetData", attribute_names)(*values)
+    
     
     @late
     def sets_to_save(self):
