@@ -262,14 +262,16 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
     def test13(self):
         print "Test convert_gadget_w_to_velocity and return_header for Gadget read_set_from_file"
         directory_name = os.path.dirname(__file__)
-        filename = os.path.join(directory_name, 'lcdm_gas_littleendian.dat')
+        filename = os.path.join(directory_name, 'tiny_lcdm_data_littleendian.dat')
         data = io.read_set_from_file(filename, format='gadget', return_header=False, convert_gadget_w_to_velocity=False) # (default)
         self.assertTrue(isinstance(data, tuple))
         self.assertEquals(data.__doc__, "GadgetData(gas, halo, disk, bulge, stars, bndry)")
-        self.assertEquals(len(data.gas), 32**3)
-        self.assertEquals(len(data.halo), 32**3)
+        self.assertEquals(len(data.gas), 32)
+        self.assertEquals(len(data.halo), 32)
         self.assertEquals(data.gas[0].key, 1)
         self.assertEquals(data.halo[0].key, 32**3 + 1)
+        self.assertAlmostRelativeEquals(data.gas[:3].position, [[395.23443604, 395.75210571, 1244.31152344], 
+            [310.17266846, 440.21728516, 2817.06396484], [191.95669556, 465.57223511, 4430.20068359]] | nbody_system.length, 7)
         
         data_converted = io.read_set_from_file(filename, format='gadget', return_header=True, convert_gadget_w_to_velocity=True)
         self.assertTrue(isinstance(data_converted, tuple))
@@ -278,11 +280,11 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
             "NumFiles, BoxSize, Omega0, OmegaLambda, HubbleParam, FlagAge, FlagMetals, "
             "NallHW, flag_entr_ics)")
         
-        self.assertEquals(len(data_converted.gas), 32**3)
-        self.assertEquals(len(data_converted.halo), 32**3)
+        self.assertEquals(len(data_converted.gas), 32)
+        self.assertEquals(len(data_converted.halo), 32)
         self.assertEquals(data_converted.gas[0].key, 1)
         self.assertEquals(data_converted.halo[0].key, 32**3 + 1)
-        self.assertEquals(data_converted.Npart, (32**3, 32**3, 0, 0, 0, 0))
+        self.assertEquals(data_converted.Npart, (32, 32, 0, 0, 0, 0))
         self.assertEquals(data_converted.Time, 1/11.0)
         self.assertEquals(data_converted.Redshift, 10.0)
         self.assertEquals(data.gas.position, data_converted.gas.position)

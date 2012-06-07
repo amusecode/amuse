@@ -114,6 +114,11 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         return False
     
     @base.format_option
+    def write_header_from(self):
+        """Pass a namedtuple to store non-default values in the header of the gadget file"""
+        return None
+    
+    @base.format_option
     def convert_gadget_w_to_velocity(self):
         """Set to True to convert the w=sqrt(a)*dx/dt to (comoving) velocity in comoving integrations"""
         return False
@@ -315,25 +320,55 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         self.store_header(file)
         self.store_body(file)
         
+    def header_field_value(self, name):
+        if hasattr(self.write_header_from, name):
+            return getattr(self.write_header_from, name)
+        else:
+            return self.default_header_field_value(name)
+    
+    def default_header_field_value(self, name):
+        return self.default_header[name]
+    
     def store_header(self, file):
+        self.default_header = dict(
+                Massarr = list(self.equal_mass_array.value_in(nbody_system.mass)),
+                Time = 0.0,
+                Redshift = 0.0,
+                FlagSfr = 0,
+                FlagFeedback = 0,
+                Nall =  [len(x) for x in self.sets_to_save],
+                FlagCooling = 0,
+                NumFiles = 1,
+                BoxSize = 0,
+                Omega0 = 0,
+                OmegaLambda = 0,
+                HubbleParam = 0,
+                FlagAge = 0.0,
+                FlagMetals = 0.0,
+                NallHW = [0]*6,
+                flag_entr_ics = 0
+        )
+        if self.write_header_from is None:
+            self.header_field_value = self.default_header_field_value
+        
         self.header_struct = self.struct_class(
             Npart = [len(x) for x in self.sets_to_save],
-            Massarr = list(self.equal_mass_array.value_in(nbody_system.mass)),
-            Time = 0.0,
-            Redshift = 0.0,
-            FlagSfr = 0,
-            FlagFeedback = 0,
-            Nall =  [len(x) for x in self.sets_to_save],
-            FlagCooling = 0,
-            NumFiles = 1,
-            BoxSize = 0,
-            Omega0 = 0,
-            OmegaLambda = 0,
-            HubbleParam = 0,
-            FlagAge = 0.0,
-            FlagMetals = 0.0,
-            NallHW = [0]*6,
-            flag_entr_ics = 0
+            Massarr = list(self.header_field_value("Massarr")),
+            Time = self.header_field_value("Time"),
+            Redshift = self.header_field_value("Redshift"),
+            FlagSfr = self.header_field_value("FlagSfr"),
+            FlagFeedback = self.header_field_value("FlagFeedback"),
+            Nall = list(self.header_field_value("Nall")),
+            FlagCooling = self.header_field_value("FlagCooling"),
+            NumFiles = self.header_field_value("NumFiles"),
+            BoxSize = self.header_field_value("BoxSize"),
+            Omega0 = self.header_field_value("Omega0"),
+            OmegaLambda = self.header_field_value("OmegaLambda"),
+            HubbleParam = self.header_field_value("HubbleParam"),
+            FlagAge = self.header_field_value("FlagAge"),
+            FlagMetals = self.header_field_value("FlagMetals"),
+            NallHW = list(self.header_field_value("NallHW")),
+            flag_entr_ics = self.header_field_value("flag_entr_ics")
         )
         
         bytes = bytearray(256)
