@@ -2,6 +2,7 @@
 #include "single_star.h"
 #include "main_sequence.h"
 #include "worker_code.h"
+#include "double_star.h"
 
 #include <map>
 
@@ -12,6 +13,52 @@ static map<int, nodeptr> mapping_from_id_to_node;
 static double seba_metallicity = 0.02;
 static double seba_time = 0.0;
 static stellar_type start_type = Main_Sequence;
+static binary_type binary_start_type = Detached;
+
+local void addbinary(
+    node *bi, real stellar_time,	// bi is binary CM
+    binary_type type,
+    real sma, real ecc)
+{
+    node* od = bi->get_oldest_daughter();
+    int id;
+    if((od->is_low_level_node() &&
+        od->get_younger_sister()->is_low_level_node()) &&
+       (od->get_elder_sister() == NULL) &&
+       bi->n_leaves()==2 ) {
+
+        if (!has_dstar(od)) {
+            //bi->get_parent()->get_starbase()->get_element_type()!=Double) {
+
+            //    if (bi->is_parent() && !bi->is_root())
+            story * old_story = bi->get_starbase()->get_star_story();
+            bi->get_starbase()->set_star_story(NULL);
+
+            id = bi->get_index();
+
+            // cerr << "Adding binary to "<< id << " at time = "
+            //      << stellar_time << endl;
+
+            double_star* new_double
+            = new_double_star(bi, sma, ecc, stellar_time, id, type);
+            // synchronize_binary_components(dynamic_cast(double_star*,
+            // 						  bi->get_starbase()));
+
+            // Give the new binary the old star_story.
+
+            new_double->set_star_story(old_story);
+
+            
+        }
+        else {
+            cerr << "No double_star to node needed in adddouble"<<endl;
+        }
+    }
+    else {
+        cerr << "Sorry, no binary node in adddouble"<<endl;
+    }
+}
+
 
 local real evolve_star_until_next_time(node* bi, const real out_time, const int n_steps) {
     ofstream starev("starev.data", ios::app|ios::out);
@@ -370,3 +417,97 @@ int evolve_system(double end_time) {
     }
     return 0;
 }
+
+
+
+int new_binary(
+    int * index_of_the_star, 
+    double semi_major_axis, 
+    double eccentricity, 
+    int index_of_child1, 
+    int index_of_child2){
+    
+    int error_code = 0;
+    node * child1 = get_seba_node_from_index(index_of_child1, &error_code);
+    if(error_code < 0) {return error_code;}
+    node * child2 = get_seba_node_from_index(index_of_child2, &error_code);
+    if(error_code < 0) {return error_code;}
+    
+    if (child1 == seba_insertion_point) {
+        seba_insertion_point = child1->get_younger_sister();
+    }
+    if (child2 == seba_insertion_point) {
+        seba_insertion_point = child2->get_younger_sister();
+    }
+    detach_node_from_general_tree(child1);
+    detach_node_from_general_tree(child2);
+    
+    
+    node * new_node = new node();
+    new_node->set_label(next_seba_id);
+    new_node->set_parent(seba_root);
+    new_node->set_mass(child1->get_mass() + child2->get_mass());
+    mapping_from_id_to_node[next_seba_id] = new_node;
+    
+    if(seba_insertion_point == 0) {
+        seba_insertion_point = new_node;
+        seba_root->set_oldest_daughter(new_node);
+    } else {
+        seba_insertion_point->set_younger_sister(new_node);
+        new_node->set_elder_sister(seba_insertion_point);
+        seba_insertion_point = new_node;
+    }
+    new_node->set_oldest_daughter(child1);
+    child1->set_younger_sister(child2);
+    child2->set_elder_sister(child1);
+    child1->set_parent(new_node);
+    child2->set_parent(new_node);
+    
+    addbinary(new_node, seba_time, binary_start_type, semi_major_axis, eccentricity);
+    *index_of_the_star = next_seba_id;
+    
+    next_seba_id++;
+    
+    return 0;
+}
+
+int remove_binary(int index_of_the_star){
+    
+    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    if(i == mapping_from_id_to_node.end()) {
+        return -1;
+    } else {
+        node * node_to_remove = i->second;
+        if (node_to_remove == seba_insertion_point) {
+            seba_insertion_point = node_to_remove->get_younger_sister();
+        }
+        ///XXX AVE
+        ///need to add the children to the stars here!
+        
+        detach_node_from_general_tree(node_to_remove);
+        
+        mapping_from_id_to_node.erase(i);
+        return 0;
+    }
+    
+}
+
+int get_eccentricity(int index_of_the_star, double * value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *value= seba_node->get_starbase()->get_eccentricity() ;
+    return error_code;
+}
+
+int get_semi_major_axis(int index_of_the_star, double * value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *value= seba_node->get_starbase()->get_semi() ;
+    return error_code;
+}
+
+
+
+

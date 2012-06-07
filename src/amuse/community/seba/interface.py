@@ -43,6 +43,33 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+    
+    @legacy_function   
+    def new_binary():
+        """
+        Define a new star in the code. The star will start with the given mass.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
+            , description="The new index for the star. This index can be used to refer to this star in other functions")
+        function.addParameter('semi_major_axis', dtype='float64', direction=function.IN
+            , description="The eccentricity of the orbit")
+        function.addParameter('eccentricuty', dtype='float64', direction=function.IN
+            , description="The eccentricity of the orbit")
+        function.addParameter('index_of_child1', dtype='int32', direction=function.IN
+            , description="The index of the first child, as returned by new_particle")
+        function.addParameter('index_of_child2', dtype='int32', direction=function.IN
+            , description="The index of the second child, as returned by new_particle")
+            
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            New star was loaded and the index_of_the_star parameter set.
+        -1 - ERROR
+            New star could not be created.
+        """
+        return function
         
     @legacy_function
     def evolve_system():
@@ -59,33 +86,6 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 
     def evolve_model(self, time):
         return self.evolve_system(time)
-
-class SeBaParticles(Particles):
-    
-    def __init__(self, code_interface, storage = None):
-        Particles.__init__(self, storage = storage)
-        self._private.code_interface = code_interface 
-    
-    def add_particles_to_store(self, keys, attributes = [], values = []):
-        if len(keys) == 0:
-            return
-            
-        all_attributes = []
-        all_attributes.extend(attributes)
-        all_values = []
-        all_values.extend(values)
-        
-        given_attributes = set(attributes)
-        
-        if not "initial_mass" in given_attributes:
-            index_of_mass_attibute = attributes.index("mass")
-            all_attributes.append("initial_mass")
-            all_values.append(values[index_of_mass_attibute] * 1.0)
-        
-        super(SeBaParticles, self).add_particles_to_store(keys, all_attributes, all_values)
-        
-        added_particles = ParticlesSubset(self, keys)
-        self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
 
 class SeBa(se.StellarEvolution):
 

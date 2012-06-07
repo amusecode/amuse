@@ -13,7 +13,7 @@ unexport CFLAGS CXXFLAGS LDFLAGS
 
 AMUSE_OBJS = interface.o
 
-CODELIB = src/sstar/libsstar.a
+CODELIB = src/sstar/libsstar.a src/dstar/libdstar.a
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_SVN = ./downloadsvn.py
