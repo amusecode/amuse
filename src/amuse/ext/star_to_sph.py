@@ -262,7 +262,7 @@ class StellarModel2SPH(object):
             core_particle.mass = self.core_mass
             core_particle.position = [0.0, 0.0, 0.0] | units.m
             core_particle.velocity = [0.0, 0.0, 0.0] | units.m / units.s
-            core_particle.radius = 0.0 | units.m
+            core_particle.radius = self.core_radius
             return StellarModelInSPH(gas_particles=sph_particles, core_particle=core_particle, core_radius=self.core_radius)
         return StellarModelInSPH(gas_particles=sph_particles, core_particle=Particle(), core_radius=None)
 
