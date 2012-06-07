@@ -64,14 +64,15 @@ def set_outer_orbit(kep, init):
 	        * math.sqrt( (1 - init.m) * init.m * mtotal / init.M )
     energy3 = 0.5 * v_inf * v_inf
     print 'm1, m2, m3 =', 1-init.m, init.m, init.M
-    print 'energy3 =', energy3
+    print 'v_inf =', v_inf, 'energy3 =', energy3, \
+          'rho =', init.impact_parameter
     if energy3 > 0:
         semi = -0.5*mtotal/energy3|nbody_system.length
         ang_mom3 = init.impact_parameter * v_inf
         ecc = math.sqrt( 1 + 2 * energy3 * (ang_mom3/mtotal)**2)
-        periastron = 0|nbody_system.length	# irrelevant
+        periastron = -semi*max(ecc-1.0, 0.0)	# not used
     else:
-        semi = 0|nbody_system.length		# irrelevant
+        semi = 0|nbody_system.length		# not used
         ecc = 1
         periastron = init.impact_parameter|nbody_system.length
 
@@ -116,6 +117,7 @@ def set_outer_orbit(kep, init):
                                  mean_anomaly, time, periastron)
     print 'outer normal =', kep.get_normal_unit_vector()
     print 'outer periastron =', kep.get_periastron().number
+    #kep.print_all()
 
 def make_triple(init):
 
