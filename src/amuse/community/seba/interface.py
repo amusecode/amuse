@@ -1,8 +1,9 @@
 from amuse.community import *
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSubset
+from amuse.community.interface import se
 
-class SeBaInterface(CodeInterface, LiteratureReferencesMixIn):
+class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureReferencesMixIn):
     
     """
     Stellar evolution is performed by the rapid single-star evolution
@@ -42,6 +43,22 @@ class SeBaInterface(CodeInterface, LiteratureReferencesMixIn):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+        
+    @legacy_function
+    def evolve_system():
+        """
+        Evolve the model until the given time, or until a stopping condition is set.
+        Need to call this evolve_system as evolve_model is overriden in se.StellarEvolution
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.IN,
+            description = "Model time to evolve the code to. The model will be "
+                "evolved until this time is reached exactly or just after.")
+        function.result_type = 'int32'
+        return function
+
+    def evolve_model(self, time):
+        return self.evolve_system(time)
 
 class SeBaParticles(Particles):
     
@@ -70,59 +87,45 @@ class SeBaParticles(Particles):
         added_particles = ParticlesSubset(self, keys)
         self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
 
-class SeBa(InCodeComponentImplementation):
+class SeBa(se.StellarEvolution):
 
     def __init__(self, **options):
-        InCodeComponentImplementation.__init__(self,  SeBaInterface(**options), **options)
+        se.StellarEvolution.__init__(self,  SeBaInterface(**options), **options)
     
         self.model_time = 0.0 | units.yr
 
-    def define_parameters(self, object):
     
-        object.add_caching_parameter(
-        "initialize",
-        "z_in",
-        "metallicity",
-        "Metallicity of all stars",
-        0.02
-    )
+    def evolve_model(self, end_time):
+        return self.evolve_system(end_time);
 
     def define_methods(self, object):
+        se.StellarEvolution.define_methods(self, object)
+        
         object.add_method(
             "evolve_star",
             (units.MSun, units.Myr, units.none),
             (units.Myr, units.MSun, units.RSun, units.LSun, units.K, units.Myr,units.stellar_type, object.ERROR_CODE)
         )
-    
+        object.add_method(
+            "evolve_system",
+            (units.Myr,),
+            (object.ERROR_CODE,)
+        )
     
     def define_particle_sets(self, object):
-        object.define_inmemory_set('particles', SeBaParticles)
+       
+        object.define_set('particles', 'index_of_the_star')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_star')
         
-    def _evolve_particles(self, particles, end_time):
-        attributes = (
-            "age",
-            "mass",
-            "radius",
-            "luminosity",
-            "temperature",
-            "time_step",
-            "stellar_type",
-        )
-        
-        result = self.evolve_star(
-            particles.initial_mass,
-            end_time.as_vector_with_length(len(particles)),
-            self.parameters.metallicity,
-        )
-        
-        particles.set_values_in_store(particles.get_all_keys_in_store(), attributes, result)
-
-    def evolve_model(self, end_time = None):
-        if end_time is None:
-            raise exceptions.CodeException("Cannot determine end_time from the code yet, so end_time must be provided!")
-            
-        self._evolve_particles(self.particles, end_time)
-        self.model_time = end_time
-
-    def commit_particles(self):
-        self.evolve_model(1|units.yr)
+        object.add_getter('particles', 'get_radius', names = ('radius',))
+        object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
+        object.add_getter('particles', 'get_mass', names = ('mass',))
+        object.add_getter('particles', 'get_age', names = ('age',))
+        object.add_getter('particles', 'get_time_step', names = ('time_step',))
+        #object.add_getter('particles', 'get_spin', names = ('spin',))
+        object.add_getter('particles', 'get_luminosity', names = ('luminosity',))
+        object.add_getter('particles', 'get_temperature', names = ('temperature',))
+        object.add_method('particles', 'evolve_one_step')
+        object.add_method('particles', 'evolve_for')
+    
