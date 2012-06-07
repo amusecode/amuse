@@ -84,13 +84,13 @@ local real evolve_star_until_next_time(node* bi, const real out_time, const int 
     return out_time;
 }
 
-local int translate_to_SSE_type(stellar_type stp, const real mass) {
+local int translate_stellar_type_to_int(stellar_type stp, const real mass) {
 
   switch (stp) {
     case Brown_Dwarf:
-  case Main_Sequence: 
+    case Main_Sequence: 
       if (mass<0.1) {
-	return 0;
+            return 0;
       }
       return 1;
     case Hertzsprung_Gap:
@@ -133,6 +133,66 @@ local int translate_to_SSE_type(stellar_type stp, const real mass) {
       return -1;
   }
 }
+
+
+
+local int translate_binary_type_to_int(binary_type btp) {
+  switch (btp) {
+    case Strong_Encounter:
+        return -1;
+    case Unknown_Binary_Type:
+        return 0;
+    case Synchronized:
+        return 1;
+    case Detached:
+        return 2;
+    case Semi_Detached:
+        return 3;
+    case Contact:
+        return 4;
+    case Common_Envelope:
+        return 5;
+	case Double_Spiral_In:
+        return 6;
+    case Merged:
+        return 7;
+    case Disrupted:
+        return 8;
+    case Spiral_In:
+        return 9;
+    default:
+        return -2;
+  }
+}
+
+local binary_type translate_int_to_binary_type(int btp) {
+  switch (btp) {
+    case -1:
+        return Strong_Encounter;
+    case 0:
+        return Unknown_Binary_Type;
+    case 1:
+        return Synchronized;
+    case 2:
+        return Detached;
+    case 3:
+        return Semi_Detached;
+    case 4:
+        return Contact;
+    case 5:
+        return Common_Envelope;
+	case 6:
+        return Common_Envelope;
+    case 7:
+        return Merged;
+    case 8:
+        return Disrupted;
+    case 9:
+        return Spiral_In;
+  }
+}
+
+
 
 int evolve_star(double mass, double endtime, double metal, double * resulttime, double * end_mass, double * end_radius, double * end_luminosity, double * end_temperature, double *end_time_step, int *end_stellar_type){
     stellar_type type = Main_Sequence;
@@ -199,7 +259,7 @@ int evolve_star(double mass, double endtime, double metal, double * resulttime, 
        *end_luminosity = bi->get_starbase()->get_luminosity();
        *end_temperature = bi->get_starbase()->temperature();
        *end_time_step = bi->get_starbase()->get_evolve_timestep();
-       *end_stellar_type = translate_to_SSE_type(bi->get_starbase()->get_element_type(), mass);
+       *end_stellar_type = translate_stellar_type_to_int(bi->get_starbase()->get_element_type(), mass);
 
         //    << "   " << type_string(bi->get_starbase()->get_element_type())
     }
@@ -216,7 +276,7 @@ int initialize_code(){
     seba_root->set_root(seba_root); 
     seba_root->get_starbase()->set_stellar_evolution_scaling(
         1,   // mass units is 1 MSun
-        2.255e-8, // radius units is RSun
+        100, //was 2.255e-8, // radius units is RSun
         1   // time units is Myr
     );
     // XXX AVE
@@ -370,7 +430,7 @@ int get_stellar_type(int index_of_the_star, int * stellar_type){
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
     if(error_code < 0) {return error_code;}
     double mass = seba_node->get_starbase()->get_total_mass();
-    *stellar_type = translate_to_SSE_type(seba_node->get_starbase()->get_element_type(), mass);
+    *stellar_type = translate_stellar_type_to_int(seba_node->get_starbase()->get_element_type(), mass);
     return error_code;
 }
 

@@ -82,6 +82,46 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             description = "Model time to evolve the code to. The model will be "
                 "evolved until this time is reached exactly or just after.")
         function.result_type = 'int32'
+        return function  
+    
+    @legacy_function   
+    def get_eccentricity():
+        """
+        Retrieve the current eccentricity of the binary star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current eccentricity.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+    
+    @legacy_function   
+    def get_semi_major_axis():
+        """
+        Retrieve the current semi major axis of the elliptical orbit of the parts in the binary star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current semi major axis.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
         return function
 
     def evolve_model(self, time):

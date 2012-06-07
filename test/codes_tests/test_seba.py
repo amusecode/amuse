@@ -254,6 +254,7 @@ class TestSeBaInterface(TestWithMPI):
         instance = SeBaInterface() #self.new_instance_of_an_optional_code(SeBaInterface)
         error = instance.initialize_code()
         self.assertEquals(error, 0)
+        instance.set_metallicity(0.001)
         
         index,error = instance.new_particle([3.0,0.3])
         self.assertEquals(error, 0)
@@ -261,13 +262,13 @@ class TestSeBaInterface(TestWithMPI):
         
         mu = (3.3 | units.MSun) * constants.G
         orbital_period = 200.0 | units.day
-        semi_major_axis = ((orbital_period / 2.0 * numpy.pi)**2*mu)**(1.0/3.0)
-        print semi_major_axis, semi_major_axis.value_in(1000000 * units.RSun)
-        print semi_major_axis, semi_major_axis.value_in(units.parsec)
+        semi_major_axis = (((orbital_period / 2.0 * numpy.pi)**2)*mu)**(1.0/3.0)
+        print semi_major_axis.value_in(units.RSun)
+        
         
         eccentricity = 0.5
         index,error = instance.new_binary(
-            semi_major_axis.value_in(1000000 * units.RSun), 
+            semi_major_axis.value_in(units.RSun), 
             eccentricity,
             index[0],
             index[1]
@@ -286,17 +287,17 @@ class TestSeBaInterface(TestWithMPI):
         self.assertEquals(error, 0)
         mass, error = instance.get_mass(1)
         self.assertEquals(error, 0)
-        self.assertAlmostRelativeEqual(mass, 3.29607, 4)
+        self.assertAlmostRelativeEqual(mass, 2.98777, 4)
         mass, error = instance.get_mass(2)
         self.assertEquals(error, 0)
-        self.assertAlmostRelativeEqual(mass, 0.0, 4)
+        self.assertAlmostRelativeEqual(mass, 0.29999, 4)
         
         
         error = instance.evolve_model(400)
         self.assertEquals(error, 0)
         mass, error = instance.get_mass(1)
         self.assertEquals(error, 0)
-        self.assertAlmostRelativeEqual(mass, 0.77727, 4)
+        self.assertAlmostRelativeEqual(mass, 0.91963, 4)
         mass, error = instance.get_mass(2)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.0, 4)
