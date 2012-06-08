@@ -237,7 +237,7 @@ class TestBSE(TestWithMPI):
         from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
         from_bse_to_model_binaries.copy()
         
-        previous_type = binary.child1.type
+        previous_type = binary.child1.stellar_type
         results = []
         current_time = 0 | units.Myr
         
@@ -248,9 +248,9 @@ class TestBSE(TestWithMPI):
             instance.evolve_model(current_time)
             from_bse_to_model.copy()
             from_bse_to_model_binaries.copy()
-            if not binary.child1.type == previous_type:
-                results.append((binary.age, binary.child1.mass, binary.child1.type))
-                previous_type = binary.child1.type
+            if not binary.child1.stellar_type == previous_type:
+                results.append((binary.age, binary.child1.mass, binary.child1.stellar_type))
+                previous_type = binary.child1.stellar_type
             
         self.assertEqual(len(results), 6)
         
@@ -320,7 +320,7 @@ class TestBSE(TestWithMPI):
         from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
         from_bse_to_model_binaries.copy()
         
-        previous_type = binary.child1.type
+        previous_type = binary.child1.stellar_type
         results = []
         current_time = 0 | units.Myr
         
@@ -331,9 +331,9 @@ class TestBSE(TestWithMPI):
             instance.evolve_model(current_time)
             from_bse_to_model.copy()
             from_bse_to_model_binaries.copy()
-            if not binary.child1.type == previous_type:
-                results.append((binary.age, binary.child1.mass, binary.child1.type))
-                previous_type = binary.child1.type
+            if not binary.child1.stellar_type == previous_type:
+                results.append((binary.age, binary.child1.mass, binary.child1.stellar_type))
+                previous_type = binary.child1.stellar_type
         print results
         self.assertEqual(len(results), 6)
         
@@ -402,8 +402,8 @@ class TestBSE(TestWithMPI):
         from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
         from_bse_to_model_binaries.copy()
         
-        previous_type1 = binary.child1.type
-        previous_type2 = binary.child2.type
+        previous_type1 = binary.child1.stellar_type
+        previous_type2 = binary.child2.stellar_type
         results = []
         current_time = 0 | units.Myr
         
@@ -414,10 +414,10 @@ class TestBSE(TestWithMPI):
             instance.evolve_model(current_time)
             from_bse_to_model.copy()
             from_bse_to_model_binaries.copy()        
-            if not (binary.child1.type  == previous_type1 and binary.child2.type == previous_type2):
-                results.append((binary.age, str(binary.child1.type)+" and "+str(binary.child2.type)))
-                previous_type1 = binary.child1.type
-                previous_type2 = binary.child2.type
+            if not (binary.child1.stellar_type  == previous_type1 and binary.child2.stellar_type == previous_type2):
+                results.append((binary.age, str(binary.child1.stellar_type)+" and "+str(binary.child2.stellar_type)))
+                previous_type1 = binary.child1.stellar_type
+                previous_type2 = binary.child2.stellar_type
         
             
         print '\n'.join(map(str, results))
@@ -499,8 +499,8 @@ class TestBSE(TestWithMPI):
 
         self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 1.304, 3)
         self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.800, 3)
-        self.assertEquals(str(binary.child1.type), "Neutron Star")
-        self.assertEquals(str(binary.child2.type), "Carbon/Oxygen White Dwarf")
+        self.assertEquals(str(binary.child1.stellar_type), "Neutron Star")
+        self.assertEquals(str(binary.child2.stellar_type), "Carbon/Oxygen White Dwarf")
 
         instance.stop()
     
@@ -540,8 +540,8 @@ class TestBSE(TestWithMPI):
         
         self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 3.300, 3)
         self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.000, 3)
-        self.assertEquals(str(binary.child1.type), "Main Sequence star")
-        self.assertEquals(str(binary.child2.type), "Massless Supernova")
+        self.assertEquals(str(binary.child1.stellar_type), "Main Sequence star")
+        self.assertEquals(str(binary.child2.stellar_type), "Massless Supernova")
 
         instance.stop()
         

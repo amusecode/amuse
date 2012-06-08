@@ -140,7 +140,7 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
         
     def evolve_particle(self, particle, time_end):
         t = particle.current_time
-        if particle.type == 15:
+        if particle.stellar_type == 15:
             return
         while t < time_end:
             t0 = t
@@ -154,7 +154,7 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
             if dt.value_in(units.Myr) == 0.0:
                 print t, t0, t1, dt, "BREAK BREAK BREAK!"
                 return
-            if particle.type == 15:
+            if particle.stellar_type == 15:
                 return
     
     def initialize_code(self):
@@ -206,7 +206,7 @@ class BSEStars(Particles):
             "spin": 0 | units.none,
             "main_sequence_lifetime": 0 | units.Myr,
             "age": 0 | units.Myr,
-            "type":  0 | units.stellar_type #units.stellar_type("Main Sequence star"),
+            "stellar_type":  0 | units.stellar_type #units.stellar_type("Main Sequence star"),
         }
         
         given_attributes = set(attributes)
@@ -586,7 +586,7 @@ class BSE(common.CommonCode):
     
     def _get_time_step(self, child1, child2, age):
         return self.get_time_step(
-            child1.type, child2.type,
+            child1.stellar_type, child2.stellar_type,
             child1.initial_mass, child2.initial_mass,
             child1.mass, child2.mass,
             child1.age, child2.age,
@@ -601,7 +601,7 @@ class BSE(common.CommonCode):
         )
         
         single_attributes = (
-            "type",
+            "stellar_type",
             "initial_mass", 
             "mass", 
             "radius", 
