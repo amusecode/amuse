@@ -124,6 +124,17 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertTrue(numpy.all( r_squared < 1.0**2 ))
         self.assertFalse(numpy.all(r_squared < 0.9**2 ))
     
+    def test11(self):
+        print "Test new_uniform_spherical_particle_distribution, sobol sequence"
+        particles = new_uniform_spherical_particle_distribution(1421, 1 | units.m, 1 | units.kg, type="sobol")
+        self.assertEqual(len(particles), 1421)
+        r_squared = particles.position.lengths_squared()
+        self.assertTrue(numpy.all( r_squared < (1.0 | units.m)**2))
+        self.assertFalse(numpy.all( r_squared < (0.9 | units.m)**2 ))
+        self.assertAlmostEqual(particles.total_mass(), 1 | units.kg)
+        select_half_radius = numpy.where(r_squared < (0.5 | units.m)**2)
+        self.assertAlmostEqual(particles.mass[select_half_radius].sum(), 1.0/8.0 | units.kg, places=2)
+    
 
 class TestXEnclosedMassInterpolator(TestCase):
     

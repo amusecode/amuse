@@ -3,6 +3,7 @@ import numpy
 from amuse.support.exceptions import AmuseException, AmuseWarning
 from amuse.units import units, nbody_system
 from amuse.datamodel import Particles
+from amuse.ext.sobol import i4_sobol_generate
 
 class EnclosedMassInterpolator(object):
     """
@@ -64,6 +65,7 @@ class UniformSphericalDistribution(object):
     "body_centered_cubic": same as "bcc"
     "random": particles are randomly distributed using numpy.random.uniform
     "glass":  like random, but stabilised using hydro pressure and no gravity
+    "sobol":  3D sobol sequence (low discrepancy, quasi-random)
     
     "offset" is only used for the regular grids ("cubic", "bcc"), and 
     should contain three numbers in the half-open interval [0, 1). These 
@@ -133,6 +135,10 @@ class UniformSphericalDistribution(object):
             return (x[select_sphere][0:self.number_of_particles], 
                 y[select_sphere][0:self.number_of_particles], 
                 z[select_sphere][0:self.number_of_particles])
+    
+    def sobol(self):
+        x, y, z = i4_sobol_generate(3, 2*self.number_of_particles, 2)
+        return self._cutout_sphere(x, y, z)
     
     def glass(self):
         from amuse.community.fi.interface import Fi
@@ -231,6 +237,7 @@ def new_uniform_spherical_particle_distribution(number_of_particles, size, total
             "body_centered_cubic": same as "bcc"
             "random": particles are randomly distributed using numpy.random.uniform
             "glass":  like random, but stabilised using hydro pressure and no gravity
+            "sobol":  3D sobol sequence (low discrepancy, quasi-random)
         :argument offset:           only used for the regular grids ("cubic", "bcc"), and 
             should contain three numbers in the half-open interval [0, 1). These 
             define the offset between the origin of the grid and the corner 
@@ -277,6 +284,7 @@ def new_spherical_particle_distribution(number_of_particles,
             "body_centered_cubic": same as "bcc"
             "random": particles are randomly distributed using numpy.random.uniform
             "glass":  like random, but stabilised using hydro pressure and no gravity
+            "sobol":  3D sobol sequence (low discrepancy, quasi-random)
         :argument offset:           only used for the regular grids ("cubic", "bcc"), and 
             should contain three numbers in the half-open interval [0, 1). These 
             define the offset between the origin of the grid and the corner 
