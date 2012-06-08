@@ -55,11 +55,11 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             , description="The new index for the star. This index can be used to refer to this star in other functions")
         function.addParameter('semi_major_axis', dtype='float64', direction=function.IN
             , description="The eccentricity of the orbit")
-        function.addParameter('eccentricuty', dtype='float64', direction=function.IN
+        function.addParameter('eccentricity', dtype='float64', direction=function.IN
             , description="The eccentricity of the orbit")
-        function.addParameter('index_of_child1', dtype='int32', direction=function.IN
+        function.addParameter('child1', dtype='int32', direction=function.IN
             , description="The index of the first child, as returned by new_particle")
-        function.addParameter('index_of_child2', dtype='int32', direction=function.IN
+        function.addParameter('child2', dtype='int32', direction=function.IN
             , description="The index of the second child, as returned by new_particle")
             
         function.result_type = 'int32'
@@ -140,7 +140,12 @@ class SeBa(se.StellarEvolution):
 
     def define_methods(self, object):
         se.StellarEvolution.define_methods(self, object)
-        
+
+        object.add_method(
+            "evolve_for",
+            (object.INDEX, units.Myr),
+            (object.ERROR_CODE,)
+        )
         object.add_method(
             "evolve_star",
             (units.MSun, units.Myr, units.none),
@@ -151,7 +156,40 @@ class SeBa(se.StellarEvolution):
             (units.Myr,),
             (object.ERROR_CODE,)
         )
+        object.add_method(
+            "new_binary",
+            (units.RSun, object.NO_UNIT, object.LINK('particles'), object.LINK('particles')),
+            (object.INDEX, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "remove_binary",
+            (object.INDEX,),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_eccentricity",
+            (object.INDEX,),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_semi_major_axis",
+            (object.INDEX,),
+            (units.RSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_age", 
+            (object.INDEX,), 
+            (units.Myr, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_time_step", 
+            (object.INDEX,), 
+            (units.Myr, object.ERROR_CODE,)
+        )
     
+    def update_time_steps(self):
+        pass
+        
     def define_particle_sets(self, object):
        
         object.define_set('particles', 'index_of_the_star')
@@ -169,3 +207,13 @@ class SeBa(se.StellarEvolution):
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')
     
+
+        object.define_set('binaries', 'index_of_the_star')
+        object.set_new('binaries', 'new_binary')
+        object.set_delete('binaries', 'remove_binary')
+        
+        object.add_getter('binaries', 'get_semi_major_axis', names = ('semi_major_axis',))
+        object.add_getter('binaries', 'get_eccentricity', names = ('eccentricity',))
+        object.add_getter('binaries', 'get_mass', names = ('mass',))
+        object.add_getter('binaries', 'get_time_step', names = ('time_step',))
+        object.add_getter('binaries', 'get_age', names = ('age',))

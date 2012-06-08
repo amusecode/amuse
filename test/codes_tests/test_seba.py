@@ -7,6 +7,7 @@ from amuse.community.seba.interface import SeBaInterface, SeBa
 from amuse.units import units
 from amuse.units import constants
 from amuse.datamodel import Particle
+from amuse.datamodel import Particles
 
 class TestSeBaInterface(TestWithMPI):
 
@@ -300,7 +301,7 @@ class TestSeBaInterface(TestWithMPI):
         self.assertAlmostRelativeEqual(mass, 0.91963, 4)
         mass, error = instance.get_mass(2)
         self.assertEquals(error, 0)
-        self.assertAlmostRelativeEqual(mass, 0.0, 4)
+        self.assertAlmostRelativeEqual(mass, 0.3, 4)
         
         
         
@@ -333,3 +334,85 @@ class TestSeBa(TestWithMPI):
 
         self.assertAlmostRelativeEqual(p.mass, 0.9906 | units.MSun, 4)
         
+    def test3(self):
+        print "Testing evolution of a close binary system..."
+        instance = self.new_instance_of_an_optional_code(SeBa)
+        instance.commit_parameters()
+        stars =  Particles(2)
+        stars[0].mass = 3.0 | units.MSun
+        stars[1].mass = 0.3 | units.MSun
+        
+        
+        mu = (3.3 | units.MSun) * constants.G
+        orbital_period = 200.0 | units.day
+        semi_major_axis = (((orbital_period / 2.0 * numpy.pi)**2)*mu)**(1.0/3.0)
+        
+        instance.particles.add_particles(stars)
+        
+        binaries =  Particles(1)
+        
+        binary = binaries[0]
+        binary.semi_major_axis = semi_major_axis
+        binary.eccentricity = 0.5
+        binary.child1 = stars[0]
+        binary.child2 = stars[1]
+        
+        instance.binaries.add_particles(binaries)
+        
+        from_bse_to_model = instance.particles.new_channel_to(stars)
+        from_bse_to_model.copy()
+
+        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_bse_to_model_binaries.copy()
+        
+        previous_type = binary.child1.stellar_type
+        results = []
+        current_time = 0 | units.Myr
+        
+        while current_time < (480 | units.Myr):
+            instance.update_time_steps()
+            # The next line appears a bit weird, but saves time for this simple test.
+            deltat = max(1.0*instance.binaries[0].time_step, 0.1| units.Myr)
+            current_time = current_time + deltat
+            instance.evolve_model(current_time)
+            from_bse_to_model.copy()
+            from_bse_to_model_binaries.copy()
+            if not binary.child1.stellar_type == previous_type:
+                results.append((binary.age, binary.child1.mass, binary.child1.stellar_type))
+                previous_type = binary.child1.stellar_type
+            
+        self.assertEqual(len(results), 5)
+        print results
+        types = (
+            "Hertzsprung Gap",
+            "First Giant Branch",
+            "Core Helium Burning",
+            "First Asymptotic Giant Branch",
+            "Carbon/Oxygen White Dwarf",
+        )
+        
+
+        for result, expected in zip(results, types):
+            self.assertEquals(str(result[2]), expected)
+        
+        times = ( 
+            377.6369 | units.Myr, 
+            379.8877 | units.Myr,
+            382.3112 | units.Myr,
+            473.4804 | units.Myr,
+            477.6766 | units.Myr, 
+        )
+        for result, expected in zip(results, times):
+            self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 0)
+            
+        masses = ( 
+            3.0000 | units.MSun, 
+            3.0000 | units.MSun, 
+            2.9983 | units.MSun, 
+            2.9741 | units.MSun,
+            0.7403 | units.MSun,
+        )
+        for result, expected in zip(results, masses):
+            self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 2)
+         
+        instance.stop()
