@@ -531,21 +531,60 @@ int new_binary(
     return 0;
 }
 
-int remove_binary(int index_of_the_star){
+int delete_binary(int index_of_the_star){
     
     map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
     if(i == mapping_from_id_to_node.end()) {
         return -1;
     } else {
         node * node_to_remove = i->second;
-        if (node_to_remove == seba_insertion_point) {
-            seba_insertion_point = node_to_remove->get_younger_sister();
+        node * parent = node_to_remove->get_parent();
+        node * younger_sister = node_to_remove->get_younger_sister();
+        
+        node * child1 = node_to_remove->get_oldest_daughter();
+        if(child1 != 0) {
+            node * child2 = child1->get_younger_sister();
+            
+            node * elder_sister = node_to_remove->get_elder_sister();
+            
+            child1->set_elder_sister(elder_sister);
+            child1->set_parent(parent);
+            if(elder_sister) {
+                elder_sister->set_younger_sister(child1);
+            }
+            
+            if(parent->get_oldest_daughter() == node_to_remove) {
+                parent->set_oldest_daughter(child1);
+            }
+            
+            if(child2 != 0) {
+                child2->set_younger_sister(younger_sister);
+                child2->set_parent(parent);
+                
+                if(younger_sister) {
+                    younger_sister->set_elder_sister(child2);
+                }
+                
+                if (node_to_remove == seba_insertion_point) {
+                    seba_insertion_point = child2;
+                }
+            } else {
+                if(younger_sister) {
+                    younger_sister->set_elder_sister(child1);
+                }
+                if (node_to_remove == seba_insertion_point) {
+                    seba_insertion_point = child1;
+                }
+            }
+            
+        } else {
+            detach_node_from_general_tree(node_to_remove);
+            
+            if (node_to_remove == seba_insertion_point) {
+                seba_insertion_point = younger_sister;
+            }
         }
-        ///XXX AVE
-        ///need to add the children to the stars here!
-        
-        detach_node_from_general_tree(node_to_remove);
-        
+
         mapping_from_id_to_node.erase(i);
         return 0;
     }

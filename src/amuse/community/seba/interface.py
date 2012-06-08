@@ -72,6 +72,27 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         return function
         
     @legacy_function
+    def delete_binary():
+        """
+        Remove the definition of binary from the code. After calling this function the particle is
+        no longer part of the model evolution. It's children are still a part of particles model.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the binary to be removed. This index must have been returned by an earlier call to :meth:`new_binary`")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            binary was removed from the model
+        -1 - ERROR
+            binary could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function
+        
+    @legacy_function
     def evolve_system():
         """
         Evolve the model until the given time, or until a stopping condition is set.
@@ -162,7 +183,7 @@ class SeBa(se.StellarEvolution):
             (object.INDEX, object.ERROR_CODE,)
         )
         object.add_method(
-            "remove_binary",
+            "delete_binary",
             (object.INDEX,),
             (object.ERROR_CODE,)
         )
@@ -210,7 +231,7 @@ class SeBa(se.StellarEvolution):
 
         object.define_set('binaries', 'index_of_the_star')
         object.set_new('binaries', 'new_binary')
-        object.set_delete('binaries', 'remove_binary')
+        object.set_delete('binaries', 'delete_binary')
         
         object.add_getter('binaries', 'get_semi_major_axis', names = ('semi_major_axis',))
         object.add_getter('binaries', 'get_eccentricity', names = ('eccentricity',))

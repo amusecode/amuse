@@ -303,7 +303,20 @@ class TestSeBaInterface(TestWithMPI):
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.3, 4)
         
+        error = instance.delete_binary(index)
+        self.assertEquals(error, 0)
+        mass, error = instance.get_mass(index)
+        self.assertEquals(error, -1)
         
+        # check if singles are still in the mode and evolve
+        value, error = instance.get_age([1,2])
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEqual(value, 400, 4)
+        error = instance.evolve_model(500)
+        self.assertEquals(error, 0)
+        value, error = instance.get_age([1,2])
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEqual(value, 500, 4)
         
 class TestSeBa(TestWithMPI):
 
