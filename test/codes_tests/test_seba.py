@@ -372,11 +372,11 @@ class TestSeBa(TestWithMPI):
         
         instance.binaries.add_particles(binaries)
         
-        from_bse_to_model = instance.particles.new_channel_to(stars)
-        from_bse_to_model.copy()
+        from_seba_to_model = instance.particles.new_channel_to(stars)
+        from_seba_to_model.copy()
 
-        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
-        from_bse_to_model_binaries.copy()
+        from_seba_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_seba_to_model_binaries.copy()
         
         previous_type = binary.child1.stellar_type
         results = []
@@ -388,8 +388,8 @@ class TestSeBa(TestWithMPI):
             deltat = max(1.0*instance.binaries[0].time_step, 0.1| units.Myr)
             current_time = current_time + deltat
             instance.evolve_model(current_time)
-            from_bse_to_model.copy()
-            from_bse_to_model_binaries.copy()
+            from_seba_to_model.copy()
+            from_seba_to_model_binaries.copy()
             if not binary.child1.stellar_type == previous_type:
                 results.append((binary.age, binary.child1.mass, binary.child1.stellar_type))
                 previous_type = binary.child1.stellar_type
