@@ -44,6 +44,7 @@ int initialize_code()
     b->set_system_time(0.0);
     b->set_allow_full_unperturbed(1);
     b->set_cm_index(100000);
+
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
     mpi_setup_stopping_conditions();
@@ -190,6 +191,19 @@ int delete_particle(int index_of_the_particle)
     hdyn *bb = particle_with_index(b, index_of_the_particle);
     if (!bb) return -1;
     else return remove_particle(bb);
+}
+
+int clear_data()
+{
+    // Clear particle data structures.  Retain only the root node.
+
+    if (b) {
+	for_all_daughters(hdyn, b, bb) rmtree(bb);
+	b->set_oldest_daughter(NULL);
+	b_copy = NULL;
+	UpdatedParticles.clear();
+    }
+    return 0;
 }
 
 int get_index_of_next_particle(int index_of_the_particle, 
