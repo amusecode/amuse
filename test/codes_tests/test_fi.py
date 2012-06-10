@@ -1454,3 +1454,23 @@ class TestFi(TestWithMPI):
             instance.gas_particles.u.sum() - u_0)
         instance.stop()
 
+    def test28(self):
+        print "Testing Fi u error"
+        number_gas_particles = 500
+        UnitLength = 3.085678e21 | units.cm     # ~ 1.0 kpc
+        UnitMass = 1.989e43 | units.g           # 1.0e10 solar masses
+        convert_nbody = nbody_system.nbody_to_si(UnitLength, UnitMass)
+        gas = new_evrard_gas_sphere(number_gas_particles, convert_nbody, do_scale=True, seed=12345)
+        
+        instance = Fi(convert_nbody)
+        instance.initialize_code()
+        instance.parameters.stopping_condition_maximum_density = 10.0 * UnitMass / UnitLength**3
+        instance.parameters.timestep = 0.1 | units.Myr
+        instance.gas_particles.add_particles(gas)
+
+        u=instance.gas_particles.u
+        gas_particles=instance.gas_particles.copy()
+        
+        self.assertEqual(u,gas_particles.u)
+        
+        

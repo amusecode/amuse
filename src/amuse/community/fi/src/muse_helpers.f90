@@ -661,7 +661,7 @@ function amuse_get_state_sph(id,m,x,y,z,vx,vy,vz,e,u) result(ret)
   vz=vel(p,3)
   e=epsgrav(p)
   if(uentropy) then
-    u=ethermal(p)*gamma1/rho(p)**gamma1
+    u=entropy(p)/gamma1*rho(p)**gamma1
   else
     u=ethermal(p)
   endif
