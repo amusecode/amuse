@@ -303,7 +303,7 @@ CONTAINS
         integer :: seedSize, ierr
         
         call random_seed(seedSize) 
-
+        set_random_seed = 0
         allocate(seed(1:seedSize), stat= ierr)
         if (ierr /= 0) then
             print*, "can't allocate array memory: seed"

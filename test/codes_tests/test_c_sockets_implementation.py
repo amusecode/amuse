@@ -590,10 +590,10 @@ class TestInterface(TestWithMPI):
 
     def test15(self):
         instance = ForTesting(self.exefile, channel_type="sockets")
-        output_ints1, output_ints2, result = instance.echo_2_int([1,2],[3,4])
-        output_ints3, output_ints4, result = instance.echo_2_int([1,2,3])
-        output_ints5, output_ints6, result = instance.echo_2_int([5],[0])
-        output_ints7, output_ints8, result = instance.echo_2_int([5])
+        output_ints1, output_ints2 = instance.echo_2_int([1,2],[3,4])
+        output_ints3, output_ints4 = instance.echo_2_int([1,2,3])
+        output_ints5, output_ints6 = instance.echo_2_int([5],[0])
+        output_ints7, output_ints8 = instance.echo_2_int([5])
         instance.stop()
         self.assertEquals(output_ints1[1], 2)
         self.assertEquals(output_ints2[0], 3)

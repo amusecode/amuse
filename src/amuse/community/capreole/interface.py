@@ -535,7 +535,7 @@ class Capreole(InCodeComponentImplementation):
         The total number of cells in one direction
         is max - min + 1.
         """
-        nx, ny, nz, error = self.get_mesh_size()
+        nx, ny, nz = self.get_mesh_size()
         return (1, nx, 1, ny, 1, nz)
     
     

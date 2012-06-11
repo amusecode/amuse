@@ -488,24 +488,18 @@ class TestInterface(TestWithMPI):
         print "Testing the splitting of very long MPI messages into blocks"
         x = ForTesting(max_message_length=10)
         N = 100
-        doubles, errors = x.echo_double([1.0*i for i in range(N)])
-        self.assertTrue(list(errors) == [0 for i in range(N)])
+        doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
-        sums, errors = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
-        self.assertTrue(list(errors) == [0 for i in range(N)])
+        sums = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
         self.assertTrue(list(sums) == [2.0*i for i in range(N)])
-        products, errors = x.multiply_ints(range(N),range(N))
-        self.assertTrue(list(errors) == [0 for i in range(N)])
+        products = x.multiply_ints(range(N),range(N))
         self.assertTrue(list(products) == [i*i for i in range(N)])
         N = 101
-        doubles, errors = x.echo_double([1.0*i for i in range(N)])
-        self.assertTrue(list(errors) == [0 for i in range(N)])
+        doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
-        sums, errors = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
-        self.assertTrue(list(errors) == [0 for i in range(N)])
+        sums = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
         self.assertTrue(list(sums) == [2.0*i for i in range(N)])
-        products, errors = x.multiply_ints(range(N),range(N))
-        self.assertTrue(list(errors) == [0 for i in range(N)])
+        products = x.multiply_ints(range(N),range(N))
         self.assertTrue(list(products) == [i*i for i in range(N)])
         x.stop()
     
@@ -513,13 +507,11 @@ class TestInterface(TestWithMPI):
         print "Testing the splitting of very long MPI messages into blocks II: strings"
         x = ForTesting(max_message_length=10)
         N = 100
-        strings1, strings2, errors = x.echo_strings(['REDRUM' for i in range(N)],['stressed' for i in range(N)])
-        self.assertTrue(list(errors) == [0 for i in range(N)])
+        strings1, strings2 = x.echo_strings(['REDRUM' for i in range(N)],['stressed' for i in range(N)])
         self.assertTrue(list(strings1) == ['MURDER' for i in range(N)])
         self.assertTrue(list(strings2) == ['desserts' for i in range(N)])
         N = 101
-        strings1, strings2, errors = x.echo_strings(['REDRUM' for i in range(N)],['stressed' for i in range(N)])
-        self.assertTrue(list(errors) == [0 for i in range(N)])
+        strings1, strings2 = x.echo_strings(['REDRUM' for i in range(N)],['stressed' for i in range(N)])
         self.assertTrue(list(strings1) == ['MURDER' for i in range(N)])
         self.assertTrue(list(strings2) == ['desserts' for i in range(N)])
         x.stop()

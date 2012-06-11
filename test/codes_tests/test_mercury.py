@@ -304,7 +304,7 @@ class TestMercury(TestWithMPI):
         self.assertAlmostEqual(mercury.central_particle.j4, .0|units.AU**4)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.98892e+30 |units.kg, 3)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.0 |units.MSun, 3)
-        self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
+        self.assertEquals(mercury.get_number_of_orbiters(),1)
         self.assertEquals(mercury.orbiters.position, [[1,0,0]] | units.AU)
         self.assertEquals(mercury.orbiters.density, 1.0|units.g/units.cm**3 )
         self.assertEquals(mercury.orbiters.angularmomentum, [[1.0, 0.0, 0.0]] | units.MSun*units.AU**2/units.day)

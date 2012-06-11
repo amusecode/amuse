@@ -475,7 +475,7 @@ class TestEVtwin(TestWithMPI):
         
         stars.remove_particle(particles[0])
         self.assertEquals(len(stars), 1)
-        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
+        self.assertEquals(instance.get_number_of_particles(), 1)
         instance.evolve_model(2.0 | units.Myr)
         self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
         

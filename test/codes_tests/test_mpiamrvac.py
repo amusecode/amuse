@@ -243,8 +243,7 @@ class TestMpiAmrVac(TestWithMPI):
     def test1(self):
         instance = self.new_instance(MpiAmrVac)
         instance.set_parameters_filename(instance.default_parameters_filename)
-        error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        instance.initialize_code()
         instance.setup_mesh(20,20,20, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length)
         error = instance.set_boundary("periodic", "periodic", "periodic", "periodic", "periodic", "periodic")
         error = instance.commit_parameters()
@@ -261,8 +260,7 @@ class TestMpiAmrVac(TestWithMPI):
     
         instance = self.new_instance(MpiAmrVac)
         instance.set_parameters_filename(instance.default_parameters_filename)
-        error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        instance.initialize_code()
         instance.parameters.mesh_length = (20.0, 20.0, 20.0) | generic_unit_system.length
         instance.parameters.mesh_size = (20, 20, 20) 
         
@@ -310,8 +308,7 @@ class TestMpiAmrVac(TestWithMPI):
         for number_of_workers in range(2,6):
             instance = self.new_instance(MpiAmrVac, number_of_workers = number_of_workers)
             instance.set_parameters_filename(instance.default_parameters_filename)
-            error = instance.initialize_code()
-            self.assertEquals(error, 0)
+            instance.initialize_code()
             instance.parameters.mesh_length = (20.0, 20.0, 20.0) | generic_unit_system.length
             instance.parameters.mesh_size = (20, 20, 20) 
             instance.parameters.x_boundary_conditions = ("periodic","periodic")
@@ -358,8 +355,7 @@ class TestMpiAmrVac(TestWithMPI):
     
         instance = self.new_instance(MpiAmrVac, number_of_workers = 1)
         instance.set_parameters_filename(instance.default_parameters_filename)
-        error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        instance.initialize_code()
         instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
         instance.parameters.mesh_size = (10, 10, 10)
         instance.parameters.maximum_number_of_grid_levels = 5
@@ -399,8 +395,7 @@ class TestMpiAmrVac(TestWithMPI):
         
         instance = self.new_instance(MpiAmrVac, number_of_workers = 1)
         instance.set_parameters_filename(instance.default_parameters_filename)
-        error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        instance.initialize_code()
         instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
         instance.parameters.mesh_size = (10, 10, 10)
         instance.parameters.maximum_number_of_grid_levels = 4
@@ -435,7 +430,7 @@ class TestMpiAmrVac(TestWithMPI):
     def test6(self):
         instance = self.new_instance(MpiAmrVac, number_of_workers = 1)
         instance.set_parameters_filename(instance.default_parameters_filename)
-        error = instance.initialize_code()
+        instance.initialize_code()
         instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
         instance.parameters.mesh_size = (10, 10, 10)
         instance.parameters.x_boundary_conditions = ("periodic","periodic")

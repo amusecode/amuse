@@ -2158,7 +2158,7 @@ class MpiAmrVac(InCodeComponentImplementation):
     
     
     def get_index_range_inclusive(self, index_of_grid = 1):
-        nx, ny, nz, error = self.get_mesh_size(index_of_grid)
+        nx, ny, nz = self.get_mesh_size(index_of_grid)
         
         return (0, nx-1, 0, ny-1, 0, nz-1)
 
@@ -2573,7 +2573,7 @@ class MpiAmrVac(InCodeComponentImplementation):
         object.add_setter('acceleration_grid', 'set_acceleration_grid_acceleration', names=('ax','ay','az'))
         
     def itergrids(self):
-        n, error = self.get_number_of_grids()
+        n = self.get_number_of_grids()
         
         for x in range(1,n+1):
             yield self._create_new_grid(self.specify_grid, index_of_grid = x)
