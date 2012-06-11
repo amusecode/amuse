@@ -30,15 +30,14 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('mass', dtype='float64', direction=function.IN)
-        function.addParameter('x', dtype='float64', direction=function.IN)
-        function.addParameter('y', dtype='float64', direction=function.IN)
-        function.addParameter('z', dtype='float64', direction=function.IN)
-        function.addParameter('vx', dtype='float64', direction=function.IN)
-        function.addParameter('vy', dtype='float64', direction=function.IN)
-        function.addParameter('vz', dtype='float64', direction=function.IN)
-        function.addParameter('time', dtype='float64', direction=function.IN,
-                              default = 0)
+        function.addParameter('mass', dtype='float64', direction=function.IN, unit = nbody_system.mass)
+        function.addParameter('x', dtype='float64', direction=function.IN, unit = nbody_system.length)
+        function.addParameter('y', dtype='float64', direction=function.IN, unit = nbody_system.length)
+        function.addParameter('z', dtype='float64', direction=function.IN, unit = nbody_system.length)
+        function.addParameter('vx', dtype='float64', direction=function.IN, unit = nbody_system.speed)
+        function.addParameter('vy', dtype='float64', direction=function.IN, unit = nbody_system.speed)
+        function.addParameter('vz', dtype='float64', direction=function.IN, unit = nbody_system.speed)
+        function.addParameter('time', dtype='float64', direction=function.IN, default = 0, unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -54,17 +53,17 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('mass', dtype='float64', direction=function.IN)
-        function.addParameter('semi', dtype='float64', direction=function.IN)
-        function.addParameter('ecc', dtype='float64', direction=function.IN)
+        function.addParameter('mass', dtype='float64', direction=function.IN, unit = nbody_system.mass)
+        function.addParameter('semi', dtype='float64', direction=function.IN, unit = nbody_system.length)
+        function.addParameter('ecc', dtype='float64', direction=function.IN, unit = NO_UNIT)
         function.addParameter('mean_anomaly',
                               dtype='float64', direction=function.IN,
-                              default = 0)
+                              default = 0, unit = NO_UNIT)
         function.addParameter('time', dtype='float64', direction=function.IN,
-                              default = 0)
+                              default = 0, unit = nbody_system.time)
         function.addParameter('periastron',
                               dtype='float64', direction=function.IN,
-                              default = 0)
+                              default = 0, unit =  nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -80,7 +79,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('time', dtype='float64', direction=function.IN)
+        function.addParameter('time', dtype='float64', direction=function.IN, unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -96,7 +95,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('radius', dtype='float64', direction=function.IN)
+        function.addParameter('radius', dtype='float64', direction=function.IN, unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -112,7 +111,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('radius', dtype='float64', direction=function.IN)
+        function.addParameter('radius', dtype='float64', direction=function.IN, unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -188,7 +187,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('mass', dtype='float64', direction=function.OUT)
+        function.addParameter('mass', dtype='float64', direction=function.OUT, unit = nbody_system.mass)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -204,7 +203,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('time', dtype='float64', direction=function.OUT)
+        function.addParameter('time', dtype='float64', direction=function.OUT, unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -220,7 +219,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('period', dtype='float64', direction=function.OUT)
+        function.addParameter('period', dtype='float64', direction=function.OUT, unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -236,8 +235,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('semi', dtype='float64', direction=function.OUT)
-        function.addParameter('ecc', dtype='float64', direction=function.OUT)
+        function.addParameter('semi', dtype='float64', direction=function.OUT, unit = nbody_system.length)
+        function.addParameter('ecc', dtype='float64', direction=function.OUT, unit = NO_UNIT)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -253,9 +252,9 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('energy', dtype='float64', direction=function.OUT)
+        function.addParameter('energy', dtype='float64', direction=function.OUT, unit = nbody_system.speed*nbody_system.speed)
         function.addParameter('angular_momentum',
-                              dtype='float64', direction=function.OUT)
+                              dtype='float64', direction=function.OUT, unit = nbody_system.length*nbody_system.speed)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -271,9 +270,9 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('x', dtype='float64', direction=function.OUT)
-        function.addParameter('y', dtype='float64', direction=function.OUT)
-        function.addParameter('z', dtype='float64', direction=function.OUT)
+        function.addParameter('x', dtype='float64', direction=function.OUT, unit = nbody_system.length)
+        function.addParameter('y', dtype='float64', direction=function.OUT, unit = nbody_system.length)
+        function.addParameter('z', dtype='float64', direction=function.OUT, unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -289,7 +288,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('r', dtype='float64', direction=function.OUT)
+        function.addParameter('r', dtype='float64', direction=function.OUT, unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -305,7 +304,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('peri', dtype='float64', direction=function.IN)
+        function.addParameter('peri', dtype='float64', direction=function.IN, unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -321,7 +320,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('peri', dtype='float64', direction=function.OUT)
+        function.addParameter('peri', dtype='float64', direction=function.OUT, unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -337,7 +336,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('apo', dtype='float64', direction=function.OUT)
+        function.addParameter('apo', dtype='float64', direction=function.OUT, unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -353,9 +352,9 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('vx', dtype='float64', direction=function.OUT)
-        function.addParameter('vy', dtype='float64', direction=function.OUT)
-        function.addParameter('vz', dtype='float64', direction=function.OUT)
+        function.addParameter('vx', dtype='float64', direction=function.OUT, unit = nbody_system.speed)
+        function.addParameter('vy', dtype='float64', direction=function.OUT, unit = nbody_system.speed)
+        function.addParameter('vz', dtype='float64', direction=function.OUT, unit = nbody_system.speed)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -522,211 +521,6 @@ class Kepler(CommonCode):
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
 
-        # Turn interface functions into methods.
 
-        object.add_method(
-            "initialize_from_dyn",
-            (
-                nbody_system.mass,
-                nbody_system.length,
-                nbody_system.length,
-                nbody_system.length,
-                nbody_system.speed,
-                nbody_system.speed,
-                nbody_system.speed,
-                nbody_system.time
-            ),
-            (
-                object.ERROR_CODE
-            )
-        )
 
-        object.add_method(
-            "initialize_from_elements",
-            (
-                nbody_system.mass,
-                nbody_system.length,
-                object.NO_UNIT,
-                object.NO_UNIT,
-                nbody_system.time,
-                nbody_system.length
-            ),
-            (
-                object.ERROR_CODE
-            )
-        )
-
-        object.add_method("transform_to_time",
-                          (nbody_system.time),
-                          (object.ERROR_CODE))
-        object.add_method("advance_to_radius",
-                          (nbody_system.length),
-                          (object.ERROR_CODE))
-        object.add_method("return_to_radius",
-                          (nbody_system.length),
-                          (object.ERROR_CODE))
-
-        object.add_method("advance_to_periastron",
-                          (),
-                          (object.ERROR_CODE))
-        object.add_method("advance_to_apastron",
-                          (),
-                          (object.ERROR_CODE))
-        object.add_method("return_to_periastron",
-                          (),
-                          (object.ERROR_CODE))
-        object.add_method("return_to_apastron",
-                          (),
-                          (object.ERROR_CODE))
-
-        object.add_method("get_total_mass",
-                          (),
-                          (
-                              nbody_system.mass,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_time",
-                          (),
-                          (
-                              nbody_system.time,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_period",
-                          (),
-                          (
-                              nbody_system.time,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_elements",
-                          (),
-                          (
-                              nbody_system.length,
-                              object.NO_UNIT,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_integrals",
-                          (),
-                          (
-                              nbody_system.speed*nbody_system.speed,
-                              nbody_system.length*nbody_system.speed,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_separation_vector",
-                          (),
-                          (
-                              nbody_system.length,
-                              nbody_system.length,
-                              nbody_system.length,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_separation",
-                          (),
-                          (
-                              nbody_system.length,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("set_periastron",
-                          (nbody_system.length,),
-                          (
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_periastron",
-                          (),
-                          (
-                              nbody_system.length,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_apastron",
-                          (),
-                          (
-                              nbody_system.length,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_velocity_vector",
-                          (),
-                          (
-                              nbody_system.speed,
-                              nbody_system.speed,
-                              nbody_system.speed,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_angles",
-                          (),
-                          (
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("set_longitudinal_unit_vector",
-                          (
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.NO_UNIT
-                          ),
-                          (
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("set_transverse_unit_vector",
-                          (
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.NO_UNIT
-                          ),
-                          (
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("set_normal_unit_vector",
-                          (
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.NO_UNIT
-                          ),
-                          (
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_longitudinal_unit_vector",
-                          (),
-                          (
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_transverse_unit_vector",
-                          (),
-                          (
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("get_normal_unit_vector",
-                          (),
-                          (
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.NO_UNIT,
-                              object.ERROR_CODE
-                          ))
-
-        object.add_method("print_all",
-                          (),
-                          (object.ERROR_CODE))
 

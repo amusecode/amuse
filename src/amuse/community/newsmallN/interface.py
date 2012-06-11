@@ -87,7 +87,7 @@ class SmallNInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.addParameter('system_time', dtype='float64',
-                              direction=function.IN)
+                              direction=function.IN, unit = nbody_system.time)
         function.result_type = 'int32'
         return function
         
@@ -186,7 +186,7 @@ class SmallNInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.addParameter('break_scale', dtype='float64',
-                              direction=function.IN)
+                              direction=function.IN, unit = nbody_system.length)
         function.result_type = 'int32'
         return function
 
@@ -197,7 +197,7 @@ class SmallNInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.addParameter('check_interval', dtype='float64',
-                              direction=function.IN)
+                              direction=function.IN, unit = nbody_system.time)
         function.result_type = 'int32'
         return function
 
@@ -256,10 +256,13 @@ class SmallNInterface(CodeInterface,
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32',
                               direction=function.IN, 
-                 description = 'index of the parent particle')
+                 description = 'index of the parent particle',
+                 unit = INDEX)
         function.addParameter('child1', dtype='int32', direction=function.OUT,
-                description = 'index of the first child particle, -1 if none')
-        function.addParameter('child2', dtype='int32', direction=function.OUT)
+                description = 'index of the first child particle, -1 if none',
+                unit = LINK('particles') )
+        function.addParameter('child2', dtype='int32', direction=function.OUT,
+                unit = LINK('particles'))
         function.can_handle_array = True
         function.result_type = 'int32'
         return function
@@ -353,29 +356,7 @@ class SmallN(GravitationalDynamics):
             )
         )
 
-        object.add_method("set_time", (nbody_system.time), (object.ERROR_CODE))
 
-        object.add_method("get_eta", (), (object.NO_UNIT, object.ERROR_CODE))
-        object.add_method("set_eta", (object.NO_UNIT), (object.ERROR_CODE))
-        object.add_method("get_gamma", (), (object.NO_UNIT, object.ERROR_CODE))
-        object.add_method("set_gamma", (object.NO_UNIT), (object.ERROR_CODE))
-        object.add_method("get_allow_full_unperturbed",
-                          (), (object.NO_UNIT, object.ERROR_CODE))
-        object.add_method("set_allow_full_unperturbed",
-                          (object.NO_UNIT), (object.ERROR_CODE))
-        object.add_method("get_cm_index",
-                          (), (object.NO_UNIT, object.ERROR_CODE))
-        object.add_method("set_cm_index",
-                          (object.NO_UNIT), (object.ERROR_CODE))
-
-        object.add_method("set_break_scale",
-                          (nbody_system.length), (object.ERROR_CODE))
-        object.add_method("set_structure_check_interval",
-                          (nbody_system.time), (object.ERROR_CODE))
-        object.add_method("is_over", (), (object.NO_UNIT, object.ERROR_CODE))
-
-        object.add_method("get_children_of_particle", (object.INDEX),
-                          (object.LINK('particles'), object.LINK('particles'), object.ERROR_CODE))
         object.add_method("clear_data", (), (object.ERROR_CODE))
     
     def update_particle_set(self):
@@ -384,16 +365,14 @@ class SmallN(GravitationalDynamics):
               
         """
         
-        number_of_updated_particles, error \
-                = self.get_number_of_particles_added()
+        number_of_updated_particles = self.get_number_of_particles_added()
         #print "number_of_updated_particles =", number_of_updated_particles
         
         if number_of_updated_particles == 0:
             return
         
         indices_in_update_list = range(number_of_updated_particles)
-        indices_to_add, errors \
-                = self.get_id_of_added_particle(indices_in_update_list)
+        indices_to_add = self.get_id_of_added_particle(indices_in_update_list)
         #print "indices_to_add:", indices_to_add, indices_in_update_list
         
         incode_storage = self.particles._private.attribute_storage

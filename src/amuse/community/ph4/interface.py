@@ -32,7 +32,6 @@ class ph4Interface(CodeInterface,
         )
 
     # Interface functions:
-
     @legacy_function
     def new_particle():
         """
@@ -49,30 +48,38 @@ class ph4Interface(CodeInterface,
             An index assigned to the newly created particle.
             This index is supposed to be a local index for the code
             (and not valid in other instances of the code or in other codes)
-            """
+            """,
+            unit = INDEX
             )
 
         function.addParameter('mass', dtype='float64', direction=function.IN,
-                 description = "The mass of the particle")
+                 description = "The mass of the particle", 
+                 unit = nbody_system.mass)
         function.addParameter('x', dtype='float64', direction=function.IN,
-                 description = "The initial position vector of the particle")
+                 description = "The initial position vector of the particle",
+                 unit = nbody_system.length)
         function.addParameter('y', dtype='float64', direction=function.IN,
-                 description = "The initial position vector of the particle")
+                 description = "The initial position vector of the particle",
+                 unit = nbody_system.length)
         function.addParameter('z', dtype='float64', direction=function.IN,
-                 description = "The initial position vector of the particle")
+                 description = "The initial position vector of the particle",
+                 unit = nbody_system.length)
         function.addParameter('vx', dtype='float64', direction=function.IN,
-                 description = "The initial velocity vector of the particle")
+                 description = "The initial velocity vector of the particle",
+                 unit = nbody_system.speed)
         function.addParameter('vy', dtype='float64', direction=function.IN,
-                 description = "The initial velocity vector of the particle")
+                 description = "The initial velocity vector of the particle",
+                 unit = nbody_system.speed)
         function.addParameter('vz', dtype='float64', direction=function.IN,
-                 description = "The initial velocity vector of the particle")
+                 description = "The initial velocity vector of the particle",
+                 unit = nbody_system.speed)
         function.addParameter('radius', dtype='float64', direction=function.IN,
                  description = "The radius of the particle",
-                 default = -1)
+                 default = -1, unit = nbody_system.length)
         function.addParameter('id', dtype='int32', direction=function.IN,
                  description = "Identifier of the particle, "
                                +"option for restoring state after loading",
-                              default = -1)
+                 default = -1, unit = NO_UNIT)
         function.result_type = 'int32'
         function.result_doc = """ 0 - OK
             particle was created and added to the model
@@ -106,7 +113,7 @@ class ph4Interface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.addParameter('system_time', dtype='float64',
-                              direction=function.IN)
+                              direction=function.IN, unit = nbody_system.time)
         function.result_type = 'int32'
         return function
         
@@ -214,7 +221,8 @@ class ph4Interface(CodeInterface,
         function.addParameter(
             'binary_energy', 
             dtype='float64',
-            direction=function.OUT
+            direction=function.OUT,
+            unit = nbody_system.energy
         )
         function.result_type = 'int32'
         return function
@@ -342,7 +350,6 @@ class ph4(GravitationalDynamics):
         GravitationalDynamics.define_methods(self, object)
 
         # Turn interface functions into methods.
-
         object.add_method(
             "new_particle",
             (
@@ -358,35 +365,6 @@ class ph4(GravitationalDynamics):
             ),
             (
                 object.INDEX,
-                object.ERROR_CODE
-            )
-        )
-
-        object.add_method(
-            "set_time",
-            (
-                nbody_system.time
-            ),
-            (
-                object.ERROR_CODE
-            )
-        )
-
-        object.add_method(
-            "set_eta",
-            (
-                object.NO_UNIT
-            ),
-            (
-                object.ERROR_CODE
-            )
-        )
-
-        object.add_method(
-            "get_eta",
-            (),
-            (
-                object.NO_UNIT,
                 object.ERROR_CODE
             )
         )
@@ -410,52 +388,7 @@ class ph4(GravitationalDynamics):
             )
         )
 
-        object.add_method(
-            "set_gpu",
-            (
-                object.NO_UNIT
-            ),
-            (
-                object.ERROR_CODE
-            )
-        )
-
-        object.add_method(
-            "get_gpu",
-            (),
-            (
-                object.NO_UNIT,
-                object.ERROR_CODE
-            )
-        )
-
-        object.add_method(
-            "set_manage_encounters",
-            (
-                object.NO_UNIT
-            ),
-            (
-                object.ERROR_CODE
-            )
-        )
-
-        object.add_method(
-            "get_manage_encounters",
-            (),
-            (
-                object.NO_UNIT,
-                object.ERROR_CODE
-            )
-        )
-
-        object.add_method(
-            "get_binary_energy",
-            (),
-            (
-                nbody_system.energy,
-                object.ERROR_CODE
-            )
-        )        
+     
         
         self.stopping_conditions.define_methods(object)
 

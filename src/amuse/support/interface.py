@@ -533,7 +533,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 number_specified_inputs = 1
         else:
             number_specified_inputs = 0
-        
+            
         if number_expected_inputs != number_specified_inputs:
             raise IncorrectMethodDefinition(self.name, type(self.handler.interface).__name__, number_expected_inputs, number_specified_inputs, 'inputs')
     
@@ -576,7 +576,7 @@ class HandleMethodsWithUnits(object):
         self.setup_units_from_legacy_interface()
     
     def setup_units_from_legacy_interface(self):
-        for specification in self.interface_function_specifications():
+        for name, specification in self.interface_function_specifications():
             units = [x.unit for x in specification.input_parameters]
             return_units = [x.unit for x in specification.output_parameters]
             
@@ -585,19 +585,19 @@ class HandleMethodsWithUnits(object):
                     return_units.append(MethodWithUnitsDefinition.ERROR_CODE)
                 else:
                     return_units.append(specification.result_unit)
-                
+                    
             default_to_nounit = lambda y : MethodWithUnitsDefinition.NO_UNIT if y is None else y
             
             return_units = [ default_to_nounit(x) for x in return_units]
             units = [default_to_nounit(x) for x in units]
             definition = MethodWithUnitsDefinition(
                 self,
-                specification.name,
+                name,
                 units,
                 return_units,
-                specification.name
+                name
             )
-            self.method_definitions[specification.name] = definition
+            self.method_definitions[name] = definition
 
     def interface_function_specifications(self):
         interface_type = type(self.interface.legacy_interface)
@@ -608,8 +608,8 @@ class HandleMethodsWithUnits(object):
                 continue
             value = getattr(interface_type, x)
             if hasattr(value, 'specification') and hasattr(value.specification, 'input_parameters'):
-                result.append(value.specification)
-        result.sort(key= lambda x: x.id)
+                result.append( [x,value.specification])
+        result.sort(key= lambda x: x[1].id)
         return result
         
     def supports(self, name, was_found):

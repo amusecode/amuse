@@ -28,20 +28,20 @@ class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
     @legacy_function   
     def initialize():
         function = LegacyFunctionSpecification()  
-        function.addParameter('z_in', dtype='d', direction=function.IN)
-        function.addParameter('neta_in', dtype='d', direction=function.IN)
-        function.addParameter('bwind_in', dtype='d', direction=function.IN)
-        function.addParameter('hewind_in', dtype='d', direction=function.IN)
-        function.addParameter('sigma_in', dtype='d', direction=function.IN)
-        function.addParameter('ifflag_in', dtype='i', direction=function.IN)
-        function.addParameter('wdflag_in', dtype='i', direction=function.IN)
-        function.addParameter('bhflag_in', dtype='i', direction=function.IN)
-        function.addParameter('nsflag_in', dtype='i', direction=function.IN)
-        function.addParameter('mxns_in', dtype='d', direction=function.IN)
-        function.addParameter('pts1_in', dtype='d', direction=function.IN)
-        function.addParameter('pts2_in', dtype='d', direction=function.IN)
-        function.addParameter('pts3_in', dtype='d', direction=function.IN)
-        function.addParameter('status', dtype='i', direction=function.OUT)
+        function.addParameter('z_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('neta_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('bwind_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('hewind_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('sigma_in', dtype='d', direction=function.IN, unit = units.km / units.s)
+        function.addParameter('ifflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('wdflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('bhflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('nsflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('mxns_in', dtype='d', direction=function.IN, unit = units.MSun)
+        function.addParameter('pts1_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('pts2_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('pts3_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('status', dtype='i', direction=function.OUT, unit = NO_UNIT)
         return function
         
     @legacy_function     
@@ -49,49 +49,50 @@ class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
         function = LegacyFunctionSpecification()  
         function.name = 'evolve0'
         function.can_handle_array = True 
-        function.addParameter('kw', dtype='i', direction=function.INOUT)
-        function.addParameter('mass', dtype='d', direction=function.INOUT)
-        function.addParameter('mt', dtype='d', direction=function.INOUT)
-        function.addParameter('r', dtype='d', direction=function.INOUT)
-        function.addParameter('lum', dtype='d', direction=function.INOUT)
-        function.addParameter('mc', dtype='d', direction=function.INOUT)
-        function.addParameter('rc', dtype='d', direction=function.INOUT)
-        function.addParameter('menv', dtype='d', direction=function.INOUT)
-        function.addParameter('renv', dtype='d', direction=function.INOUT)
-        function.addParameter('ospin', dtype='d', direction=function.INOUT)
-        function.addParameter('epoch', dtype='d', direction=function.INOUT)
-        function.addParameter('tm', dtype='d', direction=function.INOUT)
-        function.addParameter('tphys', dtype='d', direction=function.INOUT)
-        function.addParameter('tphysf', dtype='d', direction=function.INOUT)
+        function.addParameter('kw', dtype='i', direction=function.INOUT, unit = units.stellar_type)
+        function.addParameter('mass', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('mt', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('r', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('lum', dtype='d', direction=function.INOUT, unit = units.LSun)
+        function.addParameter('mc', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('rc', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('menv', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('renv', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('ospin', dtype='d', direction=function.INOUT, unit = NO_UNIT)
+        function.addParameter('epoch', dtype='d', direction=function.INOUT, unit = units.Myr)
+        function.addParameter('tm', dtype='d', direction=function.INOUT, unit = units.Myr)
+        function.addParameter('tphys', dtype='d', direction=function.INOUT, unit = units.Myr)
+        function.addParameter('tphysf', dtype='d', direction=function.INOUT, unit = units.Myr)
         return function
         
     @legacy_function      
     def get_time_step():
         function = LegacyFunctionSpecification() 
         function.can_handle_array = True  
-        function.addParameter('kw', dtype='i', direction=function.IN)
-        function.addParameter('mass', dtype='d', direction=function.IN)
-        function.addParameter('age', dtype='d', direction=function.IN)
-        function.addParameter('mt', dtype='d', direction=function.IN)
-        function.addParameter('tm', dtype='d', direction=function.IN)
-        function.addParameter('epoch', dtype='d', direction=function.IN)
-        function.addParameter('dt', dtype='d', direction=function.OUT)
+        function.addParameter('kw', dtype='i', direction=function.IN, unit = units.stellar_type)
+        function.addParameter('mass', dtype='d', direction=function.IN, unit =  units.MSun)
+        function.addParameter('age', dtype='d', direction=function.IN, unit =  units.Myr)
+        function.addParameter('mt', dtype='d', direction=function.IN, unit =  units.MSun)
+        function.addParameter('tm', dtype='d', direction=function.IN, unit =  units.Myr)
+        function.addParameter('epoch', dtype='d', direction=function.IN, unit = units.Myr)
+        function.addParameter('dt', dtype='d', direction=function.OUT, unit = units.Myr)
+       
         return function
         
     def initialize_code(self):
-        pass
+        return 0
         
     def commit_parameters(self):
-        pass
+        return 0
         
     def recommit_parameters(self):
-        pass
+        return 0
         
     def cleanup_code(self):
-        pass
+        return 0
         
     def commit_particles(self):
-        pass
+        return 0
         
     
         
@@ -277,75 +278,6 @@ class SSE(common.CommonCode):
         object.add_transition('INITIALIZED','RUN','commit_parameters')
         object.add_method('RUN', 'evolve_star')
     
-    def define_methods(self, object):
-        
-        object.add_method( 
-            "get_time_step", 
-            (
-                units.stellar_type, 
-                units.MSun, 
-                units.Myr, 
-                units.MSun,  
-                units.Myr, 
-                units.Myr
-            ),
-            (units.Myr,)
-        )
-        
-        object.add_method( 
-            "evolve_star", 
-            (
-                units.stellar_type, 
-                units.MSun, 
-                units.MSun, 
-                units.RSun, 
-                units.LSun,
-                units.MSun, 
-                units.RSun, 
-                units.MSun, 
-                units.RSun, 
-                object.NO_UNIT,
-                units.Myr,
-                units.Myr,
-                units.Myr,
-                units.Myr,
-            ),
-            (
-                units.stellar_type, 
-                units.MSun, 
-                units.MSun, 
-                units.RSun, 
-                units.LSun,
-                units.MSun, 
-                units.RSun, 
-                units.MSun, 
-                units.RSun,
-                object.NO_UNIT, 
-                units.Myr,
-                units.Myr,
-                units.Myr,
-                units.Myr,
-            )
-        )
-        
-        object.add_method(
-            "initialize",
-            (
-                object.NO_UNIT,
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                units.km / units.s,
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                units.MSun,
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT
-            )
-        )
          
     def define_particle_sets(self, object):
         object.define_inmemory_set('particles', SSEParticles)
