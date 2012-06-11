@@ -801,6 +801,9 @@ class GravitationalDynamics(common.CommonCode):
         object.add_method('RUN', 'get_potential_at_point')
         object.add_method('RUN', 'get_potential_energy')
         object.add_method('RUN', 'get_kinetic_energy')
+        
+        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+        object.add_method('END', 'initialize_code')
 
     def define_parameters(self, object):
         object.add_method_parameter(
