@@ -214,6 +214,7 @@ class TestBSE(TestWithMPI):
     def test1(self):
         print "Testing evolution of a close binary system..."
         instance = BSE()
+        instance.initialize_code()
         instance.parameters.metallicity = 0.001
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0

@@ -573,7 +573,45 @@ class HandleMethodsWithUnits(object):
     def __init__(self, interface):
         self.method_definitions = {}
         self.interface = interface
+        self.setup_units_from_legacy_interface()
+    
+    def setup_units_from_legacy_interface(self):
+        for specification in self.interface_function_specifications():
+            units = [x.unit for x in specification.input_parameters]
+            return_units = [x.unit for x in specification.output_parameters]
+            
+            if not specification.result_type is None:
+                if specification.result_unit is None:
+                    return_units.append(MethodWithUnitsDefinition.ERROR_CODE)
+                else:
+                    return_units.append(specification.result_unit)
+                
+            default_to_nounit = lambda y : MethodWithUnitsDefinition.NO_UNIT if y is None else y
+            
+            return_units = [ default_to_nounit(x) for x in return_units]
+            units = [default_to_nounit(x) for x in units]
+            definition = MethodWithUnitsDefinition(
+                self,
+                specification.name,
+                units,
+                return_units,
+                specification.name
+            )
+            self.method_definitions[specification.name] = definition
 
+    def interface_function_specifications(self):
+        interface_type = type(self.interface.legacy_interface)
+        attribute_names = dir(interface_type)
+        result = []
+        for x in attribute_names:
+            if x.startswith('__'):
+                continue
+            value = getattr(interface_type, x)
+            if hasattr(value, 'specification') and hasattr(value.specification, 'input_parameters'):
+                result.append(value.specification)
+        result.sort(key= lambda x: x.id)
+        return result
+        
     def supports(self, name, was_found):
         return name in self.method_definitions
 

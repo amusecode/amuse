@@ -22,6 +22,12 @@ from amuse.rfi.core import is_mpd_running
 
 import os
 
+
+ERROR_CODE = MethodWithUnitsDefinition.ERROR_CODE
+NO_UNIT = MethodWithUnitsDefinition.NO_UNIT
+INDEX = MethodWithUnitsDefinition.INDEX
+LINK = MethodWithUnitsDefinition.LINK
+
 """
 Existing, production codes
 

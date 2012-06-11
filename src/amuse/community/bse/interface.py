@@ -43,83 +43,84 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
     @legacy_function   
     def initialize():
         function = LegacyFunctionSpecification()  
-        function.addParameter('z_in', dtype='d', direction=function.IN)
-        function.addParameter('neta_in', dtype='d', direction=function.IN)
-        function.addParameter('bwind_in', dtype='d', direction=function.IN)
-        function.addParameter('hewind_in', dtype='d', direction=function.IN)
-        function.addParameter('alpha1_in', dtype='d', direction=function.IN)
-        function.addParameter('CElambda_in', dtype='d', direction=function.IN)
-        function.addParameter('ceflag_in', dtype='i', direction=function.IN)
-        function.addParameter('tflag_in', dtype='i', direction=function.IN)
-        function.addParameter('ifflag_in', dtype='i', direction=function.IN)
-        function.addParameter('wdflag_in', dtype='i', direction=function.IN)
-        function.addParameter('bhflag_in', dtype='i', direction=function.IN)
-        function.addParameter('nsflag_in', dtype='i', direction=function.IN)
-        function.addParameter('mxns_in', dtype='d', direction=function.IN)
-        function.addParameter('idum_in', dtype='i', direction=function.IN)
-        function.addParameter('pts1_in', dtype='d', direction=function.IN)
-        function.addParameter('pts2_in', dtype='d', direction=function.IN)
-        function.addParameter('pts3_in', dtype='d', direction=function.IN)
-        function.addParameter('sigma_in', dtype='d', direction=function.IN)
-        function.addParameter('beta_in', dtype='d', direction=function.IN)
-        function.addParameter('xi_in', dtype='d', direction=function.IN)
-        function.addParameter('acc2_in', dtype='d', direction=function.IN)
-        function.addParameter('epsnov_in', dtype='d', direction=function.IN)
-        function.addParameter('eddfac_in', dtype='d', direction=function.IN)
-        function.addParameter('gamma_in', dtype='d', direction=function.IN)
-        function.addParameter('status', dtype='i', direction=function.OUT)
+        function.addParameter('z_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('neta_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('bwind_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('hewind_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('alpha1_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('CElambda_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('ceflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('tflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('ifflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('wdflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('bhflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('nsflag_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('mxns_in', dtype='d', direction=function.IN, unit = units.MSun)
+        function.addParameter('idum_in', dtype='i', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('pts1_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('pts2_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('pts3_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('sigma_in', dtype='d', direction=function.IN, unit = units.km / units.s)
+        function.addParameter('beta_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('xi_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('acc2_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('epsnov_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('eddfac_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('gamma_in', dtype='d', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('status', dtype='i', direction=function.OUT, unit = NO_UNIT)
         return function
         
     @legacy_function     
     def evolve_binary():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True 
-        function.addParameter('type1', dtype='i', direction=function.INOUT)
-        function.addParameter('type2', dtype='i', direction=function.INOUT)
-        function.addParameter('initial_mass1', dtype='d', direction=function.INOUT)
-        function.addParameter('initial_mass2', dtype='d', direction=function.INOUT)
-        function.addParameter('mass1', dtype='d', direction=function.INOUT)
-        function.addParameter('mass2', dtype='d', direction=function.INOUT)
-        function.addParameter('radius1', dtype='d', direction=function.INOUT)
-        function.addParameter('radius2', dtype='d', direction=function.INOUT)
-        function.addParameter('luminosity1', dtype='d', direction=function.INOUT)
-        function.addParameter('luminosity2', dtype='d', direction=function.INOUT)
-        function.addParameter('core_mass1', dtype='d', direction=function.INOUT)
-        function.addParameter('core_mass2', dtype='d', direction=function.INOUT)
-        function.addParameter('core_radius1', dtype='d', direction=function.INOUT)
-        function.addParameter('core_radius2', dtype='d', direction=function.INOUT)
-        function.addParameter('envelope_mass1', dtype='d', direction=function.INOUT)
-        function.addParameter('envelope_mass2', dtype='d', direction=function.INOUT)
-        function.addParameter('envelope_radius1', dtype='d', direction=function.INOUT)
-        function.addParameter('envelope_radius2', dtype='d', direction=function.INOUT)
-        function.addParameter('spin1', dtype='d', direction=function.INOUT)
-        function.addParameter('spin2', dtype='d', direction=function.INOUT)
-        function.addParameter('epoch1', dtype='d', direction=function.INOUT)
-        function.addParameter('epoch2', dtype='d', direction=function.INOUT)
-        function.addParameter('MS_lifetime1', dtype='d', direction=function.INOUT)
-        function.addParameter('MS_lifetime2', dtype='d', direction=function.INOUT)
-        function.addParameter('age', dtype='d', direction=function.INOUT)
-        function.addParameter('orbital_period', dtype='d', direction=function.INOUT)
-        function.addParameter('eccentricity', dtype='d', direction=function.INOUT)
-        function.addParameter('end_time', dtype='d', direction=function.INOUT)
+        function.addParameter('type1', dtype='i', direction=function.INOUT, unit = units.stellar_type)
+        function.addParameter('type2', dtype='i', direction=function.INOUT, unit = units.stellar_type)
+        function.addParameter('initial_mass1', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('initial_mass2', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('mass1', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('mass2', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('radius1', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('radius2', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('luminosity1', dtype='d', direction=function.INOUT, unit = units.LSun)
+        function.addParameter('luminosity2', dtype='d', direction=function.INOUT, unit = units.LSun)
+        function.addParameter('core_mass1', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('core_mass2', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('core_radius1', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('core_radius2', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('envelope_mass1', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('envelope_mass2', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('envelope_radius1', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('envelope_radius2', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('spin1', dtype='d', direction=function.INOUT, unit = NO_UNIT)
+        function.addParameter('spin2', dtype='d', direction=function.INOUT, unit = NO_UNIT)
+        function.addParameter('epoch1', dtype='d', direction=function.INOUT, unit = units.Myr)
+        function.addParameter('epoch2', dtype='d', direction=function.INOUT, unit = units.Myr)
+        function.addParameter('MS_lifetime1', dtype='d', direction=function.INOUT, unit = units.Myr)
+        function.addParameter('MS_lifetime2', dtype='d', direction=function.INOUT, unit = units.Myr)
+        function.addParameter('age', dtype='d', direction=function.INOUT, unit = units.Myr)
+        function.addParameter('orbital_period', dtype='d', direction=function.INOUT, unit = units.day)
+        function.addParameter('eccentricity', dtype='d', direction=function.INOUT, unit = NO_UNIT)
+        function.addParameter('end_time', dtype='d', direction=function.INOUT, unit = units.Myr)
         return function
         
     @legacy_function      
     def get_time_step():
         function = LegacyFunctionSpecification() 
         function.can_handle_array = True
-        function.addParameter('type1', dtype='i', direction=function.IN)
-        function.addParameter('type2', dtype='i', direction=function.IN)
-        function.addParameter('initial_mass1', dtype='d', direction=function.IN)
-        function.addParameter('initial_mass2', dtype='d', direction=function.IN)
-        function.addParameter('mass1', dtype='d', direction=function.IN)
-        function.addParameter('mass2', dtype='d', direction=function.IN)
-        function.addParameter('MS_lifetime1', dtype='d', direction=function.IN)
-        function.addParameter('MS_lifetime2', dtype='d', direction=function.IN)
-        function.addParameter('epoch1', dtype='d', direction=function.IN)
-        function.addParameter('epoch2', dtype='d', direction=function.IN)
-        function.addParameter('age', dtype='d', direction=function.IN)
-        function.addParameter('time_step', dtype='d', direction=function.OUT)
+        function.addParameter('type1', dtype='i', direction=function.IN, unit = units.stellar_type)
+        function.addParameter('type2', dtype='i', direction=function.IN, unit = units.stellar_type)
+        function.addParameter('initial_mass1', dtype='d', direction=function.IN, unit = units.MSun)
+        function.addParameter('initial_mass2', dtype='d', direction=function.IN, unit = units.MSun)
+        function.addParameter('mass1', dtype='d', direction=function.IN, unit = units.MSun)
+        function.addParameter('mass2', dtype='d', direction=function.IN, unit = units.MSun)
+        function.addParameter('MS_lifetime1', dtype='d', direction=function.IN, unit =  units.Myr)
+        function.addParameter('MS_lifetime2', dtype='d', direction=function.IN, unit =  units.Myr)
+        function.addParameter('epoch1', dtype='d', direction=function.IN, unit =  units.Myr)
+        function.addParameter('epoch2', dtype='d', direction=function.IN, unit =  units.Myr)
+        function.addParameter('age', dtype='d', direction=function.IN, unit =  units.Myr)
+        function.addParameter('time_step', dtype='d', direction=function.OUT, unit = units.Myr)
+        
         return function
         
     def get_time_step_for_binary(self, binary):
@@ -162,19 +163,19 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
                 return
     
     def initialize_code(self):
-        pass
+        return 0
         
     def commit_parameters(self):
-        pass
+        return 0
         
     def recommit_parameters(self):
-        pass
+        return 0
         
     def cleanup_code(self):
-        pass
+        return 0
         
     def commit_particles(self):
-        pass
+        return 0
         
         
 
@@ -487,89 +488,8 @@ class BSE(common.CommonCode):
         object.add_transition('INITIALIZED','RUN','commit_parameters')
         object.add_method('RUN', 'evolve_binary')
     
-    def define_methods(self, object):
-        
-        object.add_method( 
-            "get_time_step", 
-            (
-                units.stellar_type,
-                units.stellar_type,
-                units.MSun, 
-                units.MSun, 
-                units.MSun, 
-                units.MSun, 
-                units.Myr,  
-                units.Myr,  
-                units.Myr,  
-                units.Myr,  
-                units.Myr
-            ),
-            (units.Myr,)
-        )
         
         
-        p = (
-            units.stellar_type,
-            units.stellar_type,
-            units.MSun,
-            units.MSun,
-            units.MSun,
-            units.MSun,
-            units.RSun,
-            units.RSun,
-            units.LSun,
-            units.LSun,
-            units.MSun,
-            units.MSun,
-            units.RSun,
-            units.RSun,
-            units.MSun,
-            units.MSun,
-            units.RSun,
-            units.RSun,
-            object.NO_UNIT,
-            object.NO_UNIT,
-            units.Myr,
-            units.Myr,
-            units.Myr,
-            units.Myr,
-            units.Myr,
-            units.day,
-            object.NO_UNIT,
-            units.Myr,
-        )
-        
-        object.add_method( "evolve_binary", p, p)
-        
-        object.add_method(
-            "initialize",
-            (
-                object.NO_UNIT,
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                units.MSun,
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT,
-                units.km / units.s,
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT, 
-                object.NO_UNIT
-            ),
-        )
          
     def define_particle_sets(self, object):
         object.define_inmemory_set('particles', BSEStars)

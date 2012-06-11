@@ -60,7 +60,8 @@ class BHTreeInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
         """
         function = LegacyFunctionSpecification()
         function.addParameter('epsilon_squared', dtype='float64', direction=function.OUT,
-            description = "epsilon^2, a softening parameter for gravitational potentials with point particles")
+            description = "epsilon^2, a softening parameter for gravitational potentials with point particles",
+            unit = nbody_system.length * nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -77,7 +78,8 @@ class BHTreeInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
         """
         function = LegacyFunctionSpecification()
         function.addParameter('epsilon_squared', dtype='float64', direction=function.IN,
-            description = "epsilon^2, a softening parameter for gravitational potentials with point particles")
+            description = "epsilon^2, a softening parameter for gravitational potentials with point particles",
+            unit = nbody_system.length * nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -196,7 +198,8 @@ class BHTreeInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
         """
         function = LegacyFunctionSpecification()
         function.addParameter('dt_dia', dtype='float64', direction=function.OUT,
-            description = "the time interval between diagnostics output")
+            description = "the time interval between diagnostics output",
+            unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -213,7 +216,8 @@ class BHTreeInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
         """
         function = LegacyFunctionSpecification()
         function.addParameter('dt_dia', dtype='float64', direction=function.IN,
-            description = "the time interval between diagnostics output")
+            description = "the time interval between diagnostics output",
+            unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -298,17 +302,6 @@ class BHTree(GravitationalDynamics):
             (nbody_system.potential, object.ERROR_CODE)
         )
 
-        object.add_method(
-            "get_epsilon_squared",
-            (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
-        )
-
-        object.add_method(
-            "set_epsilon_squared",
-            (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,)
-        )
 
         object.add_method(
             "get_time_step",
@@ -322,53 +315,7 @@ class BHTree(GravitationalDynamics):
             (object.ERROR_CODE,)
         )
 
-        object.add_method(
-            "get_theta_for_tree",
-            (),
-            (object.NO_UNIT, object.ERROR_CODE,)
-        )
 
-        object.add_method(
-            "set_theta_for_tree",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
-        )
-
-        object.add_method(
-            "get_use_self_gravity",
-            (),
-            (object.NO_UNIT, object.ERROR_CODE,)
-        )
-
-        object.add_method(
-            "set_use_self_gravity",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
-        )
-
-        object.add_method(
-            "get_ncrit_for_tree",
-            (),
-            (object.NO_UNIT, object.ERROR_CODE,)
-        )
-
-        object.add_method(
-            "set_ncrit_for_tree",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
-        )
-
-        object.add_method(
-            "get_dt_dia",
-            (),
-            (nbody_system.time, object.ERROR_CODE,)
-        )
-
-        object.add_method(
-            "set_dt_dia",
-            (nbody_system.time, ),
-            (object.ERROR_CODE,)
-        )
 
         self.stopping_conditions.define_methods(object)
         

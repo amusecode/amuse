@@ -86,7 +86,74 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         self.assertRaises(Exception, lambda : instance.return_an_errorcode(-1),
             expected_message="Error when calling 'return_an_errorcode' of a 'InCodeComponentImplementation', errorcode is -1"
         )
-
+        
+        
+class CodeInterfaceWithUnitsOnLegacyFunctionTests(amusetest.TestCase):
+        
+    def test1(self): 
+        class TestImplementation(object):
+        
+            def get_mass(self):
+                return 10.0, 0
+                
+        class TestInterface(object):
+           
+            @legacy_function
+            def get_mass():
+                function = LegacyFunctionSpecification()
+                function.addParameter('input1', dtype='d', direction=function.OUT, unit=units.kg)
+                function.result_type = 'i'
+                return function
+            
+        original = TestInterface()
+        instance = interface.InCodeComponentImplementation(original)
+        
+        instance.get_handler("LEGACY").legacy_interface = TestImplementation()
+        self.assertAlmostRelativeEquals(instance.get_mass(), 10 | units.kg)
+    
+    def test2(self): 
+        class TestImplementation(object):
+        
+            def echo_one(self, input):
+                return input, 0
+                
+        class TestInterface(object):
+           
+            @legacy_function
+            def echo_one():
+                function = LegacyFunctionSpecification()
+                function.addParameter('input', dtype='d', direction=function.IN, unit=units.kg)
+                function.addParameter('output', dtype='d', direction=function.OUT, unit=units.g)
+                function.result_type = 'i'
+                return function
+            
+        original = TestInterface()
+        instance = interface.InCodeComponentImplementation(original)
+        
+        instance.get_handler("LEGACY").legacy_interface = TestImplementation()
+        self.assertAlmostRelativeEquals(instance.echo_one(1|units.kg), 1 | units.g)
+    
+    def test3(self): 
+        class TestImplementation(object):
+        
+            def return_error(self):
+                return  -1
+                
+        class TestInterface(object):
+           
+            @legacy_function
+            def return_error():
+                function = LegacyFunctionSpecification()
+                function.result_type = 'i'
+                return function
+            
+        original = TestInterface()
+        instance = interface.InCodeComponentImplementation(original)
+        
+        instance.get_handler("LEGACY").legacy_interface = TestImplementation()
+        self.assertRaises(Exception,instance.return_error, " Error when calling 'echo_one' of a 'InCodeComponentImplementation', errorcode is -1")
+        
+        
 class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     class TestClass(object):
        

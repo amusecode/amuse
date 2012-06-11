@@ -421,6 +421,7 @@ class LegacyFunctionSpecification(object):
         self.name = None
         self.id = None
         self.result_type = None
+        self.result_unit = None
         self.description = None
         self.input_parameters = []
         self.output_parameters = []
@@ -430,7 +431,7 @@ class LegacyFunctionSpecification(object):
         self.must_handle_array = False
         self.result_doc = ''
         
-    def addParameter(self, name, dtype = 'i', direction = IN, description = "", default = None):
+    def addParameter(self, name, dtype = 'i', direction = IN, description = "", default = None, unit = None):
         """
         Extend the specification with a new parameter.
         
@@ -444,7 +445,7 @@ class LegacyFunctionSpecification(object):
         :argument description: Description of the argument, for documenting purposes
         :argument default: An optional default value for the parameter
         """
-        parameter = ParameterSpecification(name, dtype, direction, description, default)
+        parameter = ParameterSpecification(name, dtype, direction, description, default, unit)
         self.parameters.append(parameter)
         
         if parameter.is_input():
