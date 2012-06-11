@@ -256,7 +256,6 @@ int get_transverse_unit_vector(double * x, double * y, double * z)
     return 0;
 }
 
-
 int get_normal_unit_vector(double * x, double * y, double * z)
 {
     vec n = k->get_normal_unit_vector();
@@ -269,4 +268,172 @@ int get_normal_unit_vector(double * x, double * y, double * z)
 int print_all()
 {
     k->print_all();
+    return 0;
+}
+
+//--------------------------------------------------------------------
+// From Amanda Benson:  Extra code to initialize a 3-body encounter,
+// which is too slow in python relative to the cost of a typical
+// 3-body scattering.
+
+static void set_inner_orbit(real ecc)
+{
+    real mass = 1;	// standard assumption from
+    real semi = 1;	// Hut & Bahcall 1983
+    k->align_with_axes(1);
+    real mean_an = 2*M_PI*randinter(0, 1);
+    initialize_from_elements(mass, semi, ecc, mean_an, 0.0, 0.0);
+    cout << "inner "; PRC(semi); PRL(ecc);
+}
+
+static void set_outer_orbit(real m, real M,
+			    real v_inf, real impact_parameter,
+			    int planar)
+{
+    real mtotal = 1 + M;
+
+    // Multiply the incoming velocity by the critical value (see Hut &
+    // Bahcall 1983).
+
+    v_inf *= sqrt((1-m)*m*mtotal/M);
+    real energy3 = 0.5*v_inf*v_inf;
+    cout << "m1, m2, m3 = " << 1-m << " " << m << " " << M << endl << flush;
+    PRC(v_inf); PRC(energy3); PRL(impact_parameter);
+
+    real semi, ang_mom3, ecc, periastron;
+    if (energy3 > 0) {
+	semi = -0.5*mtotal/energy3;
+	ang_mom3 = impact_parameter*v_inf;
+	ecc = sqrt(1+2*energy3*pow(ang_mom3/mtotal, 2));
+	periastron = -semi*fmax(ecc-1, 0.0);	// not used
+    } else {
+	semi = 0;				// not used
+	ecc = 1;
+	periastron = impact_parameter;
+    }
+
+    // Orientation:
+
+    vec longitudinal(1,0,0), transverse(0,1,0), normal(0,0,1);
+    if (planar < 0) {
+	transverse = -transverse;
+	normal = -normal;
+    } else if (planar == 0) {
+	real costheta = randinter(-1, 1);
+	real sintheta = sqrt(fmax(0., 1-pow(costheta, 2)));
+	real phi = 2*M_PI*randinter(-1, 1);
+	longitudinal = vec(sintheta*cos(phi), sintheta*sin(phi), costheta);
+	vec temp(1,0,0);
+	if (abs(longitudinal[0]) > 0.5) temp = vec(0,1,0);
+	transverse = longitudinal^temp;
+	transverse /= abs(transverse);
+	normal = longitudinal^transverse;
+	real psi = randinter(0,2*M_PI);
+	real cospsi = cos(psi);
+	real sinpsi = sin(psi);
+	normal = cospsi*normal + sinpsi*transverse;
+	transverse = normal^longitudinal;
+    }
+    k->set_orientation(longitudinal, transverse, normal);
+
+    real time = 0;
+    real mean_anomaly = 0;
+    if (periastron == 0) mean_anomaly = -1.e-3;
+    PRL(mean_anomaly);
+
+    cout << "outer "; PRC(semi); PRL(ecc);
+    initialize_from_elements(mtotal, semi, ecc, mean_anomaly,
+			     time, periastron);
+    PRL(k->get_normal_unit_vector());
+    PRL(k->get_periastron());
+    // k->print_all();
+}
+
+int set_random(int seed)
+{
+    if (seed <= 0)
+	srand(time(NULL));
+    else
+	srand(seed);
+    return 0;
+}
+
+// Binary scattering in standard (Hut & Bahcall 1983) units.  Binary
+// mass = 1, semimajor axis = 1, t = 0 at pericenter if appropriate.
+
+int make_binary_scattering(real m, real ecc,
+			   real M, real v_inf, real impact_parameter,
+			   real gamma, int planar,
+			   double * time,
+			   double * m1, double * m2, double * m3,
+			   double * x1, double * x2, double * x3,
+			   double * y1, double * y2, double * y3,
+			   double * z1, double * z2, double * z3,
+			   double * vx1, double * vx2, double * vx3,
+			   double * vy1, double * vy2, double * vy3,
+			   double * vz1, double * vz2, double * vz3)
+{
+    // Inner orbit (1,2).
+
+    *m1 = 1 - m;
+    *m2 = m;
+
+    set_inner_orbit(ecc);
+    vec rel_pos = k->get_rel_pos();
+    vec rel_vel = k->get_rel_vel();
+    vec pos1 = -m*rel_pos;
+    vec pos2 = (1-m)*rel_pos;
+    vec vel1 = -m*rel_vel;
+    vec vel2 = (1-m)*rel_vel;
+
+    // Outer orbit ((1,2),3).
+
+    *m3 = M;
+
+    set_outer_orbit(m, M, v_inf, impact_parameter, planar);
+    // cout << "----------" << endl << flush;
+    // k->print_all();
+    k->return_to_radius(pow(gamma/M, -1./3));
+    // cout << "----------" << endl << flush;
+    // k->print_all();
+    // cout << "----------" << endl << flush;
+    *time = k->get_time();
+
+    rel_pos = k->get_rel_pos();
+    rel_vel = k->get_rel_vel();
+    real f = M/(1+M);
+    vec pos12 = -f*rel_pos, pos3 = (1-f)*rel_pos;
+    vec vel12 = -f*rel_vel, vel3 = (1-f)*rel_vel;
+
+    PRC(k->get_separation()); PRL(k->get_time());
+
+    pos1 += pos12;
+    pos2 += pos12;
+    vel1 += vel12;
+    vel2 += vel12;
+
+    PRL(*time);
+
+    // Remaining return arguments:
+
+    *x1 = pos1[0];
+    *x2 = pos2[0];
+    *x3 = pos3[0];
+    *y1 = pos1[1];
+    *y2 = pos2[1];
+    *y3 = pos3[1];
+    *z1 = pos1[2];
+    *z2 = pos2[2];
+    *z3 = pos3[2];
+    *vx1 = vel1[0];
+    *vx2 = vel2[0];
+    *vx3 = vel3[0];
+    *vy1 = vel1[1];
+    *vy2 = vel2[1];
+    *vy3 = vel3[1];
+    *vz1 = vel1[2];
+    *vz2 = vel2[2];
+    *vz3 = vel3[2];
+
+    return 0;
 }

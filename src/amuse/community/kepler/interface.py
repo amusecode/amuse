@@ -30,14 +30,22 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('mass', dtype='float64', direction=function.IN, unit = nbody_system.mass)
-        function.addParameter('x', dtype='float64', direction=function.IN, unit = nbody_system.length)
-        function.addParameter('y', dtype='float64', direction=function.IN, unit = nbody_system.length)
-        function.addParameter('z', dtype='float64', direction=function.IN, unit = nbody_system.length)
-        function.addParameter('vx', dtype='float64', direction=function.IN, unit = nbody_system.speed)
-        function.addParameter('vy', dtype='float64', direction=function.IN, unit = nbody_system.speed)
-        function.addParameter('vz', dtype='float64', direction=function.IN, unit = nbody_system.speed)
-        function.addParameter('time', dtype='float64', direction=function.IN, default = 0, unit = nbody_system.time)
+        function.addParameter('mass', dtype='float64', direction=function.IN,
+                              unit = nbody_system.mass)
+        function.addParameter('x', dtype='float64', direction=function.IN,
+                              unit = nbody_system.length)
+        function.addParameter('y', dtype='float64', direction=function.IN,
+                              unit = nbody_system.length)
+        function.addParameter('z', dtype='float64', direction=function.IN,
+                              unit = nbody_system.length)
+        function.addParameter('vx', dtype='float64', direction=function.IN,
+                              unit = nbody_system.speed)
+        function.addParameter('vy', dtype='float64', direction=function.IN,
+                              unit = nbody_system.speed)
+        function.addParameter('vz', dtype='float64', direction=function.IN,
+                              unit = nbody_system.speed)
+        function.addParameter('time', dtype='float64', direction=function.IN,
+                              default = 0, unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -53,9 +61,12 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('mass', dtype='float64', direction=function.IN, unit = nbody_system.mass)
-        function.addParameter('semi', dtype='float64', direction=function.IN, unit = nbody_system.length)
-        function.addParameter('ecc', dtype='float64', direction=function.IN, unit = NO_UNIT)
+        function.addParameter('mass', dtype='float64', direction=function.IN,
+                              unit = nbody_system.mass)
+        function.addParameter('semi', dtype='float64', direction=function.IN,
+                              unit = nbody_system.length)
+        function.addParameter('ecc', dtype='float64', direction=function.IN,
+                              unit = NO_UNIT)
         function.addParameter('mean_anomaly',
                               dtype='float64', direction=function.IN,
                               default = 0, unit = NO_UNIT)
@@ -79,7 +90,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('time', dtype='float64', direction=function.IN, unit = nbody_system.time)
+        function.addParameter('time', dtype='float64', direction=function.IN,
+                              unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -95,7 +107,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('radius', dtype='float64', direction=function.IN, unit = nbody_system.length)
+        function.addParameter('radius', dtype='float64', direction=function.IN,
+                              unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -111,7 +124,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('radius', dtype='float64', direction=function.IN, unit = nbody_system.length)
+        function.addParameter('radius', dtype='float64', direction=function.IN,
+                              unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -187,7 +201,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('mass', dtype='float64', direction=function.OUT, unit = nbody_system.mass)
+        function.addParameter('mass', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.mass)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -203,7 +218,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('time', dtype='float64', direction=function.OUT, unit = nbody_system.time)
+        function.addParameter('time', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -219,7 +235,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('period', dtype='float64', direction=function.OUT, unit = nbody_system.time)
+        function.addParameter('period', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.time)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -235,8 +252,10 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('semi', dtype='float64', direction=function.OUT, unit = nbody_system.length)
-        function.addParameter('ecc', dtype='float64', direction=function.OUT, unit = NO_UNIT)
+        function.addParameter('semi', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('ecc', dtype='float64', direction=function.OUT,
+                              unit = NO_UNIT)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -252,9 +271,11 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('energy', dtype='float64', direction=function.OUT, unit = nbody_system.speed*nbody_system.speed)
+        function.addParameter('energy', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed*nbody_system.speed)
         function.addParameter('angular_momentum',
-                              dtype='float64', direction=function.OUT, unit = nbody_system.length*nbody_system.speed)
+                              dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length*nbody_system.speed)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -270,9 +291,12 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('x', dtype='float64', direction=function.OUT, unit = nbody_system.length)
-        function.addParameter('y', dtype='float64', direction=function.OUT, unit = nbody_system.length)
-        function.addParameter('z', dtype='float64', direction=function.OUT, unit = nbody_system.length)
+        function.addParameter('x', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('y', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('z', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -288,7 +312,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('r', dtype='float64', direction=function.OUT, unit = nbody_system.length)
+        function.addParameter('r', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -304,7 +329,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('peri', dtype='float64', direction=function.IN, unit = nbody_system.length)
+        function.addParameter('peri', dtype='float64', direction=function.IN,
+                              unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -320,7 +346,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('peri', dtype='float64', direction=function.OUT, unit = nbody_system.length)
+        function.addParameter('peri', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -336,7 +363,8 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('apo', dtype='float64', direction=function.OUT, unit = nbody_system.length)
+        function.addParameter('apo', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -352,9 +380,12 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
-        function.addParameter('vx', dtype='float64', direction=function.OUT, unit = nbody_system.speed)
-        function.addParameter('vy', dtype='float64', direction=function.OUT, unit = nbody_system.speed)
-        function.addParameter('vz', dtype='float64', direction=function.OUT, unit = nbody_system.speed)
+        function.addParameter('vx', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vy', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vz', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
@@ -504,7 +535,100 @@ class KeplerInterface(CodeInterface,
         -1 - ERROR
             kepler could not be printed"""
         return function
-    
+
+    @legacy_function
+    def set_random():
+        """
+        Set the random seed for kepler functions.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('seed', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            seed was initialized
+        -1 - ERROR
+            error occurred"""
+        return function
+
+    @legacy_function
+    def make_binary_scattering():
+        """
+        Return a three-body scattering configuration (much faster than python).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+
+        function.addParameter('m', dtype='float64', direction=function.IN,
+                              unit = nbody_system.mass)
+        function.addParameter('ecc', dtype='float64', direction=function.IN,
+                              unit = NO_UNIT)
+        function.addParameter('M', dtype='float64', direction=function.IN,
+                              unit = nbody_system.mass)
+        function.addParameter('v_inf', dtype='float64', direction=function.IN,
+                              unit = nbody_system.speed)
+        function.addParameter('impact_parameter', dtype='float64',
+                              direction=function.IN,
+                              unit = nbody_system.length)
+        function.addParameter('gamma', dtype='float64', direction=function.IN,
+                              unit = NO_UNIT)
+        function.addParameter('planar', dtype='int32', direction=function.IN,
+                              unit = NO_UNIT)
+
+        function.addParameter('time', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.time)
+        function.addParameter('m1',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.mass)
+        function.addParameter('m2',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.mass)
+        function.addParameter('m3',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.mass)
+        function.addParameter('x1',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('x2',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('x3',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('y1',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('y2',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('y3',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('z1',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('z2',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('z3',   dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.addParameter('vx1',  dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vx2',  dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vx3',  dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vy1',  dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vy2',  dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vy3',  dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vz1',  dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vz2',  dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+        function.addParameter('vz3',  dtype='float64', direction=function.OUT,
+                              unit = nbody_system.speed)
+
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            legal scattering configuration
+        -1 - ERROR
+            problem"""
+        return function
+
 class Kepler(CommonCode):
 
     def __init__(self, unit_converter = None,  **options):
@@ -520,7 +644,3 @@ class Kepler(CommonCode):
     
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
-
-
-
-

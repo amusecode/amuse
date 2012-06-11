@@ -55,6 +55,14 @@ def run_kepler(mass, semi, ecc, time):
     x,y,z = kep.get_longitudinal_unit_vector()
     print "longitudinal:", x,y,z
 
+    print kep.make_binary_scattering(0.5 | nbody_system.mass,
+                                     0.5,
+                                     0.5 | nbody_system.mass,
+                                     0.0 | nbody_system.speed,
+                                     0.0 | nbody_system.length,
+                                     1.e-6,
+                                     0)
+
     kep.stop()
 
 if __name__ == '__main__':
