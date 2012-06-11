@@ -691,8 +691,10 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, EVtwinInterface(**options), **options)
         self.set_ev_path(self.data_directory)
-        self.set_init_dat_name(self.init_dat_name )        
-        self.set_init_run_name(self.init_run_name )        
+        if os.path.exists(self.init_dat_name):
+            self.set_init_dat_name(self.init_dat_name) 
+        if os.path.exists(self.init_run_name):       
+            self.set_init_run_name(self.init_run_name )        
         self.model_time = 0.0 | units.yr
     
     @option(type="string")

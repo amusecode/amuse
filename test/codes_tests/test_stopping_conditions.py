@@ -16,6 +16,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi.tools import create_fortran
 from amuse.rfi import channel
 from amuse.rfi.core import *
+from amuse.community import NO_UNIT
 codestring = """
 #include <stopcond.h>
 #ifdef __cplusplus
@@ -72,6 +73,7 @@ class ForTestingInterface(CodeInterface, stopping_conditions.StoppingConditionIn
     def next_index_for_stopping_condition():
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'
+        function.result_unit = NO_UNIT
         function.can_handle_array = False
         return function  
         
@@ -253,7 +255,7 @@ class TestInterface(TestWithMPI):
         instance.reset_stopping_conditions()
         next = instance.next_index_for_stopping_condition()
         self.assertFalse(instance.stopping_conditions.pair_detection.is_set())
-
+        print next,instance.stopping_conditions.pair_detection.type
         instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
          
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())

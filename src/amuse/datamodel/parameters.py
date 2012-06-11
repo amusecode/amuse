@@ -423,11 +423,11 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
         if self.get_method is None:
             return self.stored_value
         else:
-            (result, error) = getattr(object, self.get_method)()
-            if error < 0:
+            try:
+                return getattr(object, self.get_method)()
+            except Exception as ex:
                 raise ParameterException(object, self.name, error, True)
-            else:
-                return result
+            
 
     def set_legacy_value(self,  parameter, object, number):
         if self.set_method is None:

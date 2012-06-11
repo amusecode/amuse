@@ -58,9 +58,8 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         
         module = sys.modules['testcode.interface']
         instance = module.TestCode()
-        result, error = instance.echo_int(12)
-        print result, error
-        self.assertEquals(error, 0)
+        result = instance.echo_int(12)
+        
         self.assertEquals(result, 12)
         
         instance.stop()
@@ -129,9 +128,8 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         
         module = sys.modules['testcodef.interface']
         instance = module.TestCodeF()
-        result, error = instance.echo_int(12)
+        result = instance.echo_int(12)
         
-        self.assertEquals(error, 0)
         self.assertEquals(result, 12)
         
         instance.stop()

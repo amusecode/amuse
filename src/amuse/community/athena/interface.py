@@ -779,13 +779,13 @@ class Athena(InCodeComponentImplementation):
         return self._create_new_grid(self.specify_grid, index_of_grid = 1)
         
     def itergrids(self):
-        n, error = self.get_number_of_grids()
+        n = self.get_number_of_grids()
         
         for x in range(1,n+1):
             yield self._create_new_grid(self.specify_grid, index_of_grid = x)
 
     def iter_magnetic_field_grids(self):
-        n, error = self.get_number_of_grids()
+        n = self.get_number_of_grids()
         
         for x in range(1,n+1):
             yield self._create_new_grid(self.specify_mangnetic_filed_grid, index_of_grid = x)
