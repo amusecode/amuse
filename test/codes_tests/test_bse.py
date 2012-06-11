@@ -2,7 +2,11 @@ from amuse.community.bse.interface import BSE, BSEInterface
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import units
+from amuse.units import constants
 from amuse.datamodel import Particles
+
+import numpy
+
 class TestBSEInterface(TestWithMPI):
     
     class state(object):
@@ -218,13 +222,15 @@ class TestBSE(TestWithMPI):
         stars[0].mass = 3.0 | units.MSun
         stars[1].mass = 0.3 | units.MSun
         
+        orbital_period = 200.0 | units.day
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  stars[0].mass , stars[1].mass)
         
         instance.particles.add_particles(stars)
         
         binaries =  Particles(1)
         
         binary = binaries[0]
-        binary.orbital_period = 200.0 | units.day
+        binary.semi_major_axis = semi_major_axis
         binary.eccentricity = 0.5
         binary.child1 = stars[0]
         binary.child2 = stars[1]
@@ -301,13 +307,15 @@ class TestBSE(TestWithMPI):
         stars =  Particles(2)
         stars[0].mass = 3.0 | units.MSun
         stars[1].mass = 0.3 | units.MSun
+        orbital_period =  2.0e5 | units.day
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  stars[0].mass , stars[1].mass)
         
         instance.particles.add_particles(stars)
         
         binaries =  Particles(1)
         
         binary = binaries[0]
-        binary.orbital_period = 2.0e5 | units.day
+        binary.semi_major_axis = semi_major_axis
         binary.eccentricity = 0.5
         binary.child1 = stars[0]
         binary.child2 = stars[1]
@@ -384,12 +392,14 @@ class TestBSE(TestWithMPI):
         stars[0].mass = 7.816 | units.MSun
         stars[1].mass = 4.387 | units.MSun
         
+        orbital_period =   1964.18453 | units.day
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  stars[0].mass , stars[1].mass)
         instance.particles.add_particles(stars)
         
         binaries =  Particles(1)
         
         binary = binaries[0]
-        binary.orbital_period = 1964.18453 | units.day
+        binary.semi_major_axis = semi_major_axis
         binary.eccentricity = 0.0
         binary.child1 = stars[0]
         binary.child2 = stars[1]
@@ -480,7 +490,9 @@ class TestBSE(TestWithMPI):
         binaries =  Particles(1)
         
         binary = binaries[0]
-        binary.orbital_period = 1964.18453 | units.day
+        orbital_period =   1964.18453 | units.day
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  stars[0].mass , stars[1].mass)
+        binary.semi_major_axis = semi_major_axis
         binary.eccentricity = 0.0
         binary.child1 = stars[0]
         binary.child2 = stars[1]
@@ -520,7 +532,9 @@ class TestBSE(TestWithMPI):
         binaries =  Particles(1)
         
         binary = binaries[0]
-        binary.orbital_period = 200.0 | units.day
+        orbital_period =   200.0 | units.day
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  stars[0].mass , stars[1].mass)
+        binary.semi_major_axis = semi_major_axis
         binary.eccentricity = 0.99
         binary.child1 = stars[0]
         binary.child2 = stars[1]
@@ -570,21 +584,24 @@ class TestBSE(TestWithMPI):
     def test7(self):
         print "Test evolve_model optional arguments: end_time and keep_synchronous"
 
+        instance = BSE()
+        instance.commit_parameters()
+        
         stars =  Particles(6)
         stars.mass = [1.0,2.0,3.0, 0.1, 0.2, 0.3]  | units.MSun
         
         binaries =  Particles(3)
-        binaries.orbital_period = 200.0 | units.day
         binaries.eccentricity = 0.0
         for i in range(3):
             binaries[i].child1 = stars[i]
             binaries[i].child2 = stars[i+3]
+        orbital_period =   200.0 | units.day
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  binaries.child1.mass , binaries.child2.mass)
+        binaries.semi_major_axis = semi_major_axis
 
                
         
         
-        instance = BSE()
-        instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.binaries.add_particles(binaries)
         
@@ -613,18 +630,21 @@ class TestBSE(TestWithMPI):
     def test8(self):
         print "Testing adding and removing particles from stellar evolution code..."
         
+        instance = BSE()
+        instance.initialize_code()
+        
         stars =  Particles(6)
         stars.mass = [1.0,1.0, 1.0, 0.2, 0.2, 0.2]  | units.MSun
         
         binaries =  Particles(3)
-        binaries.orbital_period = 200.0 | units.day
         binaries.eccentricity = 0.0
         for i in range(3):
             binaries[i].child1 = stars[i]
             binaries[i].child2 = stars[i+3]
+        orbital_period =   200.0 | units.day
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  binaries.child1.mass , binaries.child2.mass)
+        binaries.semi_major_axis = semi_major_axis
 
-        instance = BSE()
-        instance.initialize_code()
         instance.commit_parameters()
         self.assertEquals(len(instance.particles), 0)
         self.assertEquals(len(instance.binaries), 0) # before creation
@@ -654,17 +674,20 @@ class TestBSE(TestWithMPI):
     
     def test9(self):
         print "Testing BSE states"
+        instance = BSE()
+        
         stars =  Particles(2)
         stars.mass = [1.0, 0.2]  | units.MSun
         
         binaries =  Particles(1)
-        binaries.orbital_period = 200.0 | units.day
+        orbital_period =   200.0 | units.day
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  stars[0].mass , stars[1].mass)
+        binaries.semi_major_axis = semi_major_axis
         binaries.eccentricity = 0.0
         binaries[0].child1 = stars[0]
         binaries[0].child2 = stars[1]
         
         print "First do everything manually:",
-        instance = BSE()
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')

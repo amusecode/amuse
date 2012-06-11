@@ -1,10 +1,14 @@
 from amuse.community import *
 from amuse.units import units
+from amuse.units import constants
 from amuse.units.quantities import Quantity
 from amuse.community.interface import common
 
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSubset
+
+import numpy
+
 class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferencesMixIn): 
     """
     Binary evolution is performed by the **rapid** binary-star evolution (BSE) 
@@ -259,7 +263,7 @@ class BSEBinaries(Particles):
             "age": 0 | units.Myr
         }
         
-     
+        
         
         for attribute, default_value in mapping_from_attribute_to_default_value.iteritems():
             if not attribute in given_attributes:
@@ -593,10 +597,19 @@ class BSE(common.CommonCode):
             child1.epoch, child2.epoch,
             age
         )
+        
+    def orbital_period_to_semi_major_axis(self, orbital_period, mass1, mass2):
+        mu = (mass1 + mass2) * constants.G
+        return (((orbital_period / (2.0 * numpy.pi))**2)*mu)**(1.0/3.0)
+    
+    def semi_major_axis_to_orbital_period(self, semi_major_axis, mass1, mass2):
+        mu = (mass1 + mass2) * constants.G
+        return 2.0 * numpy.pi * ((semi_major_axis**3/mu)**0.5)
+        
     def _evolve_binaries(self, particles, end_time):
         binary_attributes = (
             "age", 
-            "orbital_period", 
+            "semi_major_axis", 
             "eccentricity"
         )
         
@@ -622,6 +635,8 @@ class BSE(common.CommonCode):
         
         binaries_arguments = particles.get_values_in_store(particles.get_all_keys_in_store(), binary_attributes)
         
+        binaries_arguments[1] = self.semi_major_axis_to_orbital_period(binaries_arguments[1] , children1_arguments[2], children2_arguments[2])
+        
         arguments = []
         for argument1, argument2 in zip(children1_arguments, children2_arguments):
             arguments.append(argument1)
@@ -631,6 +646,9 @@ class BSE(common.CommonCode):
         arguments.append(end_time.as_vector_with_length(len(particles)))
         
         result = self.evolve_binary(*arguments)
+        
+        result[-3] = self.orbital_period_to_semi_major_axis(result[-3] , result[4], result[5])
+        
         
         children1_results = []
         children2_results = []

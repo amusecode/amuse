@@ -358,7 +358,7 @@ class TestSeBa(TestWithMPI):
         
         mu = (3.3 | units.MSun) * constants.G
         orbital_period = 200.0 | units.day
-        semi_major_axis = (((orbital_period / 2.0 * numpy.pi)**2)*mu)**(1.0/3.0)
+        semi_major_axis = (((orbital_period / (2.0 * numpy.pi))**2)*mu)**(1.0/3.0)
         
         instance.particles.add_particles(stars)
         
@@ -394,13 +394,16 @@ class TestSeBa(TestWithMPI):
                 results.append((binary.age, binary.child1.mass, binary.child1.stellar_type))
                 previous_type = binary.child1.stellar_type
             
-        self.assertEqual(len(results), 5)
-        print results
+        self.assertEqual(len(results), 6)
+        for x in results:
+            print x
+        
         types = (
             "Hertzsprung Gap",
             "First Giant Branch",
             "Core Helium Burning",
             "First Asymptotic Giant Branch",
+            "Giant Branch Naked Helium star",
             "Carbon/Oxygen White Dwarf",
         )
         
@@ -413,7 +416,8 @@ class TestSeBa(TestWithMPI):
             379.8877 | units.Myr,
             382.3112 | units.Myr,
             473.4804 | units.Myr,
-            477.6766 | units.Myr, 
+            475.9766 | units.Myr,
+            476.6182 | units.Myr, 
         )
         for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 0)
@@ -423,7 +427,8 @@ class TestSeBa(TestWithMPI):
             3.0000 | units.MSun, 
             2.9983 | units.MSun, 
             2.9741 | units.MSun,
-            0.7403 | units.MSun,
+            0.6711 | units.MSun,
+            0.6711 | units.MSun,
         )
         for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 2)
