@@ -8,7 +8,7 @@
 """
 
 import numpy
-from optparse import OptionParser
+from amuse.units.optparse import OptionParser
 from math import atan
 from math import log
 from amuse.lab import *
@@ -113,40 +113,40 @@ def plot_orbit(x, y):
 def new_option_parser():
     result = OptionParser()
     result.add_option("-t", dest="t_end", type="float",default = 250,
-                      help="end time [Myr]")
+                      unit = units.Myr, help="end time [%unit]")
     result.add_option("-d", dest="dt_diag", type="float",default = 10,
-                      help="diagnostic timestep [Myr]")
+                      unit = units.Myr, help="diagnostic timestep [%unit]")
     result.add_option("-P", dest="potential", default = "MilkyWay",
                       help="name of potential")
     result.add_option("-M", dest="mass", type="float",default = 1.e+11,
-                      help="mass of the galaxy [MSun]")
+                      unit = units.MSun, help="mass of the galaxy [%unit]")
     result.add_option("-e", dest="eps", type="float",default = 0.0,
-                      help="softening of the potential [pc]")
+                      unit = units.parsec, help="softening of the potential [%unit]")
     result.add_option("-x", dest="x", type="float",default = 8500,
-                      help="x-position [pc]")
+                      unit = units.parsec, help="x-position [%unit]")
     result.add_option("-y", dest="y", type="float",default = 0,
-                      help="y-position [pc]")
+                      unit = units.parsec, help="y-position [%unit]")
     result.add_option("-z", dest="z", type="float",default = 0,
-                      help="z-position [pc]")
+                      unit = units.parsec, help="z-position [%unit]")
     result.add_option("--vx", dest="vx", type="float",default = 0,
-                      help="x-velocity [km/s]")
+                      unit = units.km/units.s,help="x-velocity [%unit]")
     result.add_option("--vy", dest="vy", type="float",default = 220,
-                      help="y-velocity [km/s]")
+                      unit = units.km/units.s,help="y-velocity [%unit]")
     result.add_option("--vz", dest="vz", type="float",default = 0,
-                      help="z-velocity [km/s]")
+                      unit = units.km/units.s, help="z-velocity [%unit]")
     return result
     
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
 
-    t_end = o.t_end | units.Myr
-    dt_diag = min(o.dt_diag, 0.1*o.t_end) | units.Myr
+    t_end = o.t_end 
+    dt_diag = min(o.dt_diag, 0.1*o.t_end) 
     size_unit = units.parsec
-    mass = 1.0 | units.MSun
-    pos = [o.x, o.y, o.z] | size_unit
-    vel = [o.vx, o.vy, o.vz] | units.km/units.s
+    mass = 1.0 
+    pos = [o.x, o.y, o.z]
+    vel = [o.vx, o.vy, o.vz]
     single_star = new_single_star(mass, pos, vel)
-    galaxy=MilkyWay_galaxy(o.potential, M=o.mass|units.MSun)
+    galaxy=MilkyWay_galaxy(o.potential, M=o.mass)
     x, y, z = evolve_particle_trajectory_in_potential(single_star, galaxy, dt_diag, t_end)
     plot_orbit(x,y)
     

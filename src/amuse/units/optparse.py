@@ -122,3 +122,19 @@ class OptionParser(optparse.OptionParser):
             description, formatter,
             add_help_option, prog, epilog
         )
+
+    def get_default_values(self):
+        if not self.process_default_values:
+                # Old, pre-Optik 1.5 behaviour.
+            return Values(self.defaults)
+
+        defaults = self.defaults.copy()
+        for option in self._get_all_options():
+            default = defaults.get(option.dest)
+            if optparse.isbasestring(default):
+                opt_str = option.get_opt_string()
+                defaults[option.dest] = option.check_value(opt_str, default)
+            elif not option.unit is None and not quantities.is_quantity(default):
+                defaults[option.dest] = quantities.new_quantity(default, option.unit)
+                
+        return optparse.Values(defaults)
