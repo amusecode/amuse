@@ -187,7 +187,7 @@ class TestMpiAmrVacInterface(TestWithMPI):
         error = instance.commit_parameters()
         self.assertEquals(error, 0)
         
-        number_of_grids, error = instance.get_number_of_grids()
+        number_of_grids = instance.get_number_of_grids()
         self.assertEquals(error, 0)
         self.assertEquals(number_of_grids, 8)
         error = instance.initialize_grid()
@@ -522,11 +522,11 @@ class TestMpiAmrVac(TestWithMPI):
         instance.parameters.y_boundary_conditions = "periodic","periodic"
         instance.parameters.z_boundary_conditions = "periodic","periodic"
         
-        name, error = instance.get_typeghostfill()
+        name = instance.get_typeghostfill()
         self.assertEquals(name, 'linear')
         instance.commit_parameters()
         
-        name, error = instance.get_typeghostfill()
+        name = instance.get_typeghostfill()
         self.assertEquals(name, 'linear')
         grid = datamodel.Grid(10,10,10)
         grid.rho = 0.1 | generic_unit_system.density
@@ -541,7 +541,7 @@ class TestMpiAmrVac(TestWithMPI):
         channel = grid.new_channel_to(igrid)
         channel.copy()
         
-        name, error = instance.get_typeghostfill()
+        name = instance.get_typeghostfill()
         self.assertEquals(name, 'linear')
     
         self.assertEquals((50,50,50), instance.acceleration_grid.shape)
@@ -555,12 +555,12 @@ class TestMpiAmrVac(TestWithMPI):
         channel = acc_grid.new_channel_to(instance.acceleration_grid)
         channel.copy()
         
-        name, error = instance.get_typeghostfill()
+        name = instance.get_typeghostfill()
         self.assertEquals(name, 'linear')
         
         result = instance.initialize_grid()
                    
-        name, error = instance.get_typeghostfill()
+        name = instance.get_typeghostfill()
         self.assertEquals(name, 'linear')
     
         instance.evolve_model(0.1 | generic_unit_system.time)
