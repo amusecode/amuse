@@ -27,12 +27,15 @@ class Initial_state():		# modeled on the Starlab scatter3 class
     planar = 0
 
 class Final_state():		# modeled on the Starlab scatter3 class
-    semi = 0.0
+    is_over = 0
+    time = 0.0
+    mbinary = 0.0
+    semimajoraxis = 0.0
     eccentricity = 0.0
+    mescaper = 0.0
     escaper = 0
     separation = 0.0
-    v_escaper = 0.0
-    time = 0.0
+    v_rel = 0.0
 
 #-----------------------------------------------------------------------
 # Build functions could/should be offloaded to a separate module.
@@ -284,31 +287,74 @@ def scatter3(init, kep, gravity,
         over = gravity.is_over()
 
         if time > t_crit and over:
-            print '\ninteraction is over'
+            #print '\nscatter3: interaction is over'
+
             gravity.update_particle_tree()
             gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)
             channel.copy()
             channel.copy_attribute("index_in_code", "id")
-            print "binaries:"
-            x = trees.BinaryTreesOnAParticleSet(stars, "child1", "child2")
-            roots = list(x.iter_roots())
-            for r in roots:
-                for level, particle in r.iter_levels():
-                    print '  '*level, int(particle.id),
-                    if particle.child1 is None:
-                        print 'escaper =', particle.id
-                    else:
-                        M,a,e = get_binary_elements(particle, kep)
-                        print ' ( M =', M.number, ' a =', a.number, \
-                              ' e =', e, ')'
+
+            # Determine the final state.
+
+            final.is_over = 1
+            final.time = time.number
+            final.escaper = -1
+            ionized = 1
+
+            tree = stars.as_binary_tree()
+            sep = numpy.zeros(3)
+            vel = numpy.zeros(3)
+            for node in tree.iter_children():
+                if node.particle.child1 is None:
+                    final.escaper = node.particle.id
+                    final.mescaper = node.particle.mass.number
+                    sep += numpy.array([node.particle.x.number,
+                                        node.particle.y.number,
+                                        node.particle.z.number])
+                    vel += numpy.array([node.particle.vx.number,
+                                        node.particle.vy.number,
+                                        node.particle.vz.number])
+                else:
+                    M,a,e = get_binary_elements(node.particle, kep)
+                    final.mbinary = M.number
+                    final.semimajoraxis = a.number
+                    final.eccentricity = e
+                    ionized = 0
+                    sep -= numpy.array([node.particle.x.number,
+                                        node.particle.y.number,
+                                        node.particle.z.number])
+                    vel -= numpy.array([node.particle.vx.number,
+                                        node.particle.vy.number,
+                                        node.particle.vz.number])
+
+            if ionized == 0:
+                final.separation = math.sqrt((sep*sep).sum())
+                final.v_rel = math.sqrt((vel*vel).sum())
+            else:
+                final.mbinary = -1.0
+                final.semimajoraxis = -1.0
+                final.eccentricity = -1.0
+                final.escaper = -1
+                final.mescaper = -1.0
+                final.separation = -1.0
+                final.v_rel = -1.0
+ 
             break
     
         sys.stdout.flush()
         dtime4 += clock() - t4
 
     if not over:
-        print '\ninteraction is not over'
+        #print '\nscatter3: interaction is not over'
+        final.is_over = 0
+        final.mbinary = -1.0
+        final.semimajoraxis = -1.0
+        final.eccentricity = -1.0
+        final.escaper = -1
+        final.mescaper = -1.0
+        final.separation = -1.0
+        final.v_rel = -1.0
 
     gravity.cleanup_code()		# clear internal data for recycling
     gravity.initialize_code()
@@ -367,7 +413,7 @@ if __name__ == '__main__':
         elif o == "-s":
             random_seed = int(a)
         elif o == "-t":
-            t_end = float(a)
+            t_end = float(a)|nbody_system.time
         elif o == "-v":
             init.v_infinity = float(a)
             if init.v_infinity < 0:
@@ -409,6 +455,20 @@ if __name__ == '__main__':
 
         final,dtime2,dtime3,dtime4 = \
             scatter3(init, kep, gravity, delta_t, t_end)
+
+        print ''
+        if final.is_over == 0:
+            print 'interaction is not over'
+        else:
+            if final.escaper > 0:
+                print 'escaper =', final.escaper, \
+                      'sep =', final.separation, \
+                      'vel =', final.v_rel
+                print 'binary (mass =', final.mbinary, \
+                      'semi =', final.semimajoraxis, \
+                      'ecc =', final.eccentricity, ')'
+            else:
+                print 'ionization'
 
         #time1 += dtime1
         time2 += dtime2
