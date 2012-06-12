@@ -271,15 +271,13 @@ class Hacs64(GravitationalDynamics):
         it uses a lot of internal methods and info!
         
         """
-        number_of_updated_particles, error \
-                = self.get_number_of_particles_updated()
+        number_of_updated_particles = self.get_number_of_particles_updated()
         
         if number_of_updated_particles == 0:
             return
         
         indices_in_update_list = range(number_of_updated_particles)
-        particle_indices, updates, erros \
-                = self.get_id_of_updated_particle(indices_in_update_list)
+        particle_indices, updates = self.get_id_of_updated_particle(indices_in_update_list)
         
         incode_storage = self.particles._private.attribute_storage
         

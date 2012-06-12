@@ -187,7 +187,7 @@ class TestMpiAmrVacInterface(TestWithMPI):
         error = instance.commit_parameters()
         self.assertEquals(error, 0)
         
-        number_of_grids = instance.get_number_of_grids()
+        number_of_grids, error = instance.get_number_of_grids()
         self.assertEquals(error, 0)
         self.assertEquals(number_of_grids, 8)
         error = instance.initialize_grid()
