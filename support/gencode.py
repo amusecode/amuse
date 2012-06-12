@@ -188,7 +188,7 @@ def make_a_mpi_python_worker():
     return make_a_python_worker('mpi')
     
 def make_a_socket_python_worker():
-    return make_a_python_worker('socket')
+    return make_a_python_worker('sockets')
     
 def make_file(settings):
     implementation_class = None
@@ -217,8 +217,8 @@ def make_file(settings):
         ('f90','stub'): create_fortran.GenerateAFortranStubStringFromASpecificationClass,
         ('c','sockets'): create_c_sockets.GenerateACSourcecodeStringFromASpecificationClass,    
         ('f90','sockets'): create_fortran_sockets.GenerateAFortranSourcecodeStringFromASpecificationClass,   
-        ('py','sockets'): make_a_mpi_python_worker,    
-        ('py','mpi'): make_a_socket_python_worker,    
+        ('py','sockets'): make_a_socket_python_worker,    
+        ('py','mpi'): make_a_mpi_python_worker,    
     }
     
     try:
