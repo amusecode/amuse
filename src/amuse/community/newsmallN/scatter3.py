@@ -15,21 +15,30 @@ from amuse.datamodel import trees
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
-zero = 0.0|units.none
-one = 1.0|units.none
 
-class Initial_state():		# modeled on the scatter3 class
-    eccentricity = 0		# no units in init -- add in make_triple
-    gamma = 1.e-6
-    m = 0.5
+#-----------------------------------------------------------------------
+
+class Initial_state():		# modeled on the Starlab scatter3 class
+    m = 0.5			# no units in init -- add in make_triple
     M = 0.5
+    eccentricity = 0.
+    impact_parameter = 0.
+    v_infinity = 1.0
     planar = 0
-    random_seed = -1
-    impact_parameter = 0
-    v_infinity = 0
+
+class Final_state():		# modeled on the Starlab scatter3 class
+    semi = 0.0
+    eccentricity = 0.0
+    escaper = 0
+    separation = 0.0
+    v_escaper = 0.0
+    time = 0.0
 
 #-----------------------------------------------------------------------
 # Build functions could/should be offloaded to a separate module.
+
+zero = 0.0|units.none
+one = 1.0|units.none
 
 def normalized(a):
     amagi = 1./math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2])
@@ -44,7 +53,7 @@ def cross(a, b):
     c = [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]]
     return c
 
-def set_inner_orbit(kep, init):
+def set_inner_orbit(init, kep):
     semi = 1.0|nbody_system.length
     ecc = init.eccentricity
     kep.set_longitudinal_unit_vector(one, zero, zero)
@@ -53,7 +62,7 @@ def set_inner_orbit(kep, init):
     kep.initialize_from_elements(1.0|nbody_system.mass, semi, ecc, mean_an)
     print 'inner semi, ecc =', semi.number, ecc
 
-def set_outer_orbit(kep, init):
+def set_outer_orbit(init, kep):
 
     mtotal = 1 + init.M
 
@@ -111,6 +120,7 @@ def set_outer_orbit(kep, init):
     time = 0.0|nbody_system.time
     mean_anomaly = 0				# t = 0 at periastron
     if periastron.number == 0: mean_anomaly = -1.e-3
+    print 'mean_anomaly =', mean_anomaly
 
     print 'outer semi, ecc =', semi.number, ecc
     kep.initialize_from_elements(mtotal|nbody_system.mass, semi, ecc,
@@ -119,16 +129,14 @@ def set_outer_orbit(kep, init):
     print 'outer periastron =', kep.get_periastron().number
     #kep.print_all()
 
-def make_triple(init):
+def make_triple(init, kep):
 
     # Create IDs and initial masses, positions, and velocities.
     # Convention: initial binary is (1,2).
 
-    global kep
-
     # Inner orbit (1,2).
 
-    set_inner_orbit(kep, init)
+    set_inner_orbit(init, kep)
     rel_pos = kep.get_separation_vector()
     rel_vel = kep.get_velocity_vector()
     f = init.m
@@ -139,12 +147,16 @@ def make_triple(init):
 
     # Outer orbit ((1,2),3).
 
-    set_outer_orbit(kep, init)
+    set_outer_orbit(init, kep)
+    # print '----------'
+    # kep.print_all()
+    gamma = gravity.parameters.unperturbed_threshold
+    kep.return_to_radius((gamma/init.M)**(-1./3)|nbody_system.length)
     # print '----------'
     # kep.print_all()
     # print '----------'
-    kep.return_to_radius((init.gamma/init.M)**(-1./3)|nbody_system.length)
     time = kep.get_time()
+
     rel_pos = kep.get_separation_vector()
     rel_vel = kep.get_velocity_vector()
     f = init.M/(1+init.M)
@@ -170,18 +182,34 @@ def make_triple(init):
     pos = [pos1, pos2, pos3]
     vel = [vel1, vel2, vel3]
 
-    stars = datamodel.Particles(3)
-    stars.id = id
-    stars.mass = mass
-    stars.position = pos
-    stars.velocity = vel
-    stars.radius = 0. | nbody_system.length
-    return time,stars
+    return time, id, mass, pos, vel
+
+def make_triple2(init, kep, gamma):
+
+    # Use kepler to replace the Python functionality of make_triple.
+
+    # Create IDs and initial masses, positions, and velocities.
+    # Convention: initial binary is (1,2).
+
+    t,m1,m2,m3,x1,x2,x3,y1,y2,y3,z1,z2,z3, \
+        vx1,vx2,vx3,vy1,vy2,vy3,vz1,vz2,vz3 \
+	= kep.make_binary_scattering(init.m|nbody_system.mass,
+                                     init.eccentricity,
+                                     init.M|nbody_system.mass,
+                                     init.v_infinity|nbody_system.speed,
+                                     init.impact_parameter|nbody_system.length,
+                                     gamma, init.planar)
+
+    id = [1, 2, 3]
+    mass = [m1,m2,m3]
+    pos = [[x1,y1,z1], [x2,y2,z2], [x3,y3,z3]]
+    vel = [[vx1,vy1,vz1], [vx2,vy2,vz2], [vx3,vy3,vz3]]
+
+    return t, id, mass, pos, vel
 
 #-----------------------------------------------------------------------
 
-def get_binary_elements(p):
-    global kep
+def get_binary_elements(p, kep):
     comp1 = p.child1
     comp2 = p.child2
     m = comp1.mass + comp2.mass
@@ -191,33 +219,34 @@ def get_binary_elements(p):
     a,e = kep.get_elements()
     return m,a,e
 
-def scatter3(init,
-             accuracy_parameter = 0.1,
+def scatter3(init, kep, gravity,
              delta_t = 0 | nbody_system.time,
              t_end = 1.e4 | nbody_system.time):
 
-    t0 = clock()
-
-    gravity = SmallN(redirection = "none")
-    gravity.initialize_code()
-    gravity.parameters.set_defaults()
-    gravity.parameters.timestep_parameter = accuracy_parameter
-
     t1 = clock()
-    dtime1 = t1 - t0
 
-    time,stars = make_triple(init)	# time = 0 at outer periastron
-    number_of_stars = len(stars)
+    # Create the 3-body system.
+
+    #time, id, mass, pos, vel = make_triple(init, kep)  # time = 0 at outer peri
+    time, id, mass, pos, vel = \
+        make_triple2(init, kep, gravity.parameters.unperturbed_threshold)
+    
+    stars = datamodel.Particles(3)
+    stars.id = id
+    stars.mass = mass
+    stars.position = pos
+    stars.velocity = vel
+    stars.radius = 0. | nbody_system.length
 
     #print stars
 
     print "adding particles"
     sys.stdout.flush()
-    gravity.set_time(time);
+    gravity.set_time(time)
     gravity.particles.add_particles(stars)
-    print "committing particles"
+    #print "committing particles"
+    #gravity.commit_particles()
     sys.stdout.flush()
-    gravity.commit_particles()
 
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
@@ -234,9 +263,10 @@ def scatter3(init,
 
     t2 = clock()
     dtime2 = t2 - t1
-
     dtime3 = 0.0
     dtime4 = 0.0
+
+    final = Final_state()
 
     while time < t_end:
 
@@ -250,7 +280,9 @@ def scatter3(init,
 
         energy = gravity.get_kinetic_energy()+gravity.get_potential_energy()
         print "time =", time.number, "energy =", energy.number
+
         over = gravity.is_over()
+
         if time > t_crit and over:
             print '\ninteraction is over'
             gravity.update_particle_tree()
@@ -264,12 +296,12 @@ def scatter3(init,
             for r in roots:
                 for level, particle in r.iter_levels():
                     print '  '*level, int(particle.id),
-                    if not particle.child1 is None:
-                        M,a,e = get_binary_elements(particle)
+                    if particle.child1 is None:
+                        print 'escaper =', particle.id
+                    else:
+                        M,a,e = get_binary_elements(particle, kep)
                         print ' ( M =', M.number, ' a =', a.number, \
                               ' e =', e, ')'
-                    else:
-                        print ''
             break
     
         sys.stdout.flush()
@@ -277,21 +309,22 @@ def scatter3(init,
 
     if not over:
         print '\ninteraction is not over'
-    gravity.stop()
 
-    global time1, time2, time3, time4
-    time1 += dtime1
-    time2 += dtime2
-    time3 += dtime3
-    time4 += dtime4
+    gravity.cleanup_code()		# clear internal data for recycling
+    gravity.initialize_code()
+
+    return final,dtime2,dtime3,dtime4	# final state ToDo...
 
 if __name__ == '__main__':
 
     nscatter = 1
     accuracy_parameter = 0.1
+    gamma = 1.e-6
     delta_t = 0.0 | nbody_system.time
     t_end = 1.e5 | nbody_system.time
-    init = Initial_state();
+    random_seed = -1
+
+    init = Initial_state()
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "A:d:e:g:m:M:n:pPr:s:t:v:")
@@ -312,7 +345,7 @@ if __name__ == '__main__':
             if init.eccentricity >= 1:
                 raise Exception("e < 1 required")
         elif o == "-g":
-            init.gamma = float(a)
+            gamma = float(a)
         elif o == "-m":
             init.m = float(a)
             if init.m <= 0 or init.m >= 1:
@@ -332,7 +365,7 @@ if __name__ == '__main__':
             if init.impact_parameter < 0:
                 raise Exception("r >= 0 required")
         elif o == "-s":
-            init.random_seed = int(a)
+            random_seed = int(a)
         elif o == "-t":
             t_end = float(a)
         elif o == "-v":
@@ -342,29 +375,49 @@ if __name__ == '__main__':
         else:
             print "unexpected argument", o
 
-    # ** Note potential conflict between C++ and Python random generators. **
-
-    if init.random_seed <= 0:
+    if random_seed <= 0:
         numpy.random.seed()
-        init.random_seed = numpy.random.randint(1, pow(2,31)-1)
-    numpy.random.seed(init.random_seed)
-    print "random seed =", init.random_seed, numpy.random.random()
+        random_seed = numpy.random.randint(1, pow(2,31)-1)
+    numpy.random.seed(random_seed)
+    print "random seed =", random_seed, numpy.random.random()
+
+    #-----------------------------------------------------------------
 
     assert is_mpd_running()
 
+    # Instantiate workers once only and pass to scatter3 as arguments.
+
+    gravity = SmallN(redirection = "none")
+    gravity.initialize_code()
+    gravity.parameters.set_defaults()
+    gravity.parameters.timestep_parameter = accuracy_parameter
+    gravity.parameters.unperturbed_threshold = gamma
+
     kep = Kepler(redirection = "none") #, debugger="gdb")
     kep.initialize_code()
+    kep.set_random(random_seed)	  # ** Note potential conflict between C++
+				  # ** and Python random generators.
 
-    time1 = 0.0		# instantiation
+    # Timing:
+
+    #time1 = 0.0	# instantiation
     time2 = 0.0		# initialization
     time3 = 0.0		# integration
     time4 = 0.0		# investigation
 
     for i in range(nscatter):
-        scatter3(init, accuracy_parameter, delta_t, t_end)
+
+        final,dtime2,dtime3,dtime4 = \
+            scatter3(init, kep, gravity, delta_t, t_end)
+
+        #time1 += dtime1
+        time2 += dtime2
+        time3 += dtime3
+        time4 += dtime4
         if nscatter > 1: print '\n--------------------\n'
 
-    print 'timing:  inst', time1, ' init', time2, \
+    print 'timing:  init', time2, \
 	  ' evol', time3, ' over', time4
 
+    gravity.stop()
     kep.stop()

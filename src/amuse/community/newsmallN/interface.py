@@ -267,15 +267,6 @@ class SmallNInterface(CodeInterface,
         function.result_type = 'int32'
         return function
 
-    @legacy_function
-    def clear_data():
-        """
-        Clear all internal dynamical data (prepare for a new calcultion).
-        """
-        function = LegacyFunctionSpecification()
-        function.result_type = 'int32'
-        return function
-
 class SmallN(GravitationalDynamics):
 
     # The actual module.
@@ -326,7 +317,7 @@ class SmallN(GravitationalDynamics):
             "set_cm_index",		   # setter name in interface.cc
             "cm_index",			   # python parameter name
             "current CM index",	           # description
-            default_value = -1
+            default_value = 100000
         )
         
     def define_particle_sets(self, object):
@@ -356,9 +347,6 @@ class SmallN(GravitationalDynamics):
             )
         )
 
-
-        object.add_method("clear_data", (), (object.ERROR_CODE))
-    
     def update_particle_set(self):
         """
         update the particle set after the code has added binaries

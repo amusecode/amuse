@@ -33,23 +33,35 @@ vector<UpdatedParticle> UpdatedParticles;
 
 // Setup and parameters.
 
+int cleanup_code()
+{
+    // Clean up at the end of the calculation.
+
+    if (b) {
+	rmtree(b);		// deletes b
+	b = NULL;
+    }
+    if (b_copy) {
+	rmtree(b_copy);		// deletes b_copy
+	b_copy = NULL;
+    }
+    UpdatedParticles.clear();
+    return 0;
+}
+
 int initialize_code()
 {
     // Begin the initialization by creating a basic hdyn data structure.
 
+    cleanup_code();
     b = new hdyn;
     b_copy = NULL;
-    b->set_eta(0.14);
-    b->set_gamma(1e-6);
-    b->set_system_time(0.0);
-    b->set_allow_full_unperturbed(1);
-    b->set_cm_index(100000);
 
-    // AMUSE STOPPING CONDITIONS SUPPORT
+    // AMUSE stopping conditions support.
+
     set_support_for_condition(COLLISION_DETECTION);
     mpi_setup_stopping_conditions();
 
-    UpdatedParticles.clear();
     return 0;
 }
 
@@ -154,14 +166,6 @@ int recommit_particles()
     return 0;
 }
 
-int cleanup_code()
-{
-    // Clean up at the end of the calculation.
-
-    if (b) rmtree(b);
-    if (b_copy) rmtree(b_copy);
-    return 0;
-}
 
 // Setters and getters for individual particles.
 
@@ -191,19 +195,6 @@ int delete_particle(int index_of_the_particle)
     hdyn *bb = particle_with_index(b, index_of_the_particle);
     if (!bb) return -1;
     else return remove_particle(bb);
-}
-
-int clear_data()
-{
-    // Clear particle data structures.  Retain only the root node.
-
-    if (b) {
-	for_all_daughters(hdyn, b, bb) rmtree(bb);
-	b->set_oldest_daughter(NULL);
-	b_copy = NULL;
-	UpdatedParticles.clear();
-    }
-    return 0;
 }
 
 int get_index_of_next_particle(int index_of_the_particle, 
