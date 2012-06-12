@@ -148,7 +148,8 @@ static void err_or_warn(const char *s)
 	warning(s);
 
 	if (kepler_tolerance_level == 3 && ++nwarnings > MAX_WARNINGS) {
-	    cout << "err_or_warn: too many warnings: "; PRL(MAX_WARNINGS);
+	    cout << "kepler: err_or_warn: too many warnings: ";
+	    PRL(MAX_WARNINGS);
 	    kepler_tolerance_level = 0;
 	}
 
@@ -532,14 +533,16 @@ void kepler::pred_true_to_mean_anomaly()
 	    real  maxtruean = M_PI - acos(1 / eccentricity);
 
 	    if (pred_true_anomaly < -maxtruean) {
-		cout << "pred_true_to_mean_anomaly: hyp. true anom. = "
-		  << pred_true_anomaly << " < minimum = " << -maxtruean <<"\n";
+		cout << "kepler: pred_true_to_mean_anomaly: hyp. true anom. = "
+		     << pred_true_anomaly << " < minimum = " << -maxtruean
+		     << endl;
 		exit (1);
 	    }
 
 	    if (pred_true_anomaly > maxtruean) {
-		cout << "pred_true_to_mean_anomaly: hyp. true anom. = "
-		  << pred_true_anomaly << " > maximum = " << maxtruean << "\n";
+		cout << "kepler: pred_true_to_mean_anomaly: hyp. true anom. = "
+		     << pred_true_anomaly << " > maximum = " << maxtruean
+		     << endl;
 		exit (1);
 	    }
 
@@ -661,7 +664,7 @@ void kepler::to_pred_rel_pos_vel_linear(real true_an) // special case
 	if (true_an < 0) v_r = -v_r;
 	pred_rel_vel = -v_r * longitudinal_unit_vector;
     } else {
-        warning("to_pred_rel_pos_vel_linear: r <= 0");
+        warning("kepler: to_pred_rel_pos_vel_linear: r <= 0");
         pred_rel_vel = _INFINITY_*transverse_unit_vector;
     }
 }
@@ -1325,7 +1328,7 @@ real kepler::pred_transform_to_radius(real r, int direction)
         true_anomaly = sym_angle(true_anomaly); // unnecessary?
     else if (separation > r && direction*true_anomaly > 0) {
 	err_or_warn(
-	    "pred_transform_to_radius: unbound orbit inside target radius");
+	"kepler: pred_transform_to_radius: unbound orbit inside target radius");
 	if (direction > 0)
 	  cout << "Mapping to incoming branch." << endl;
 	else
@@ -1334,7 +1337,7 @@ real kepler::pred_transform_to_radius(real r, int direction)
 
     if (r < periastron) {
 	if (kepler_tolerance_level <= 1)
-	    err_exit("pred_transform_to_radius: r < periastron");
+	    err_exit("kepler: pred_transform_to_radius: r < periastron");
 	r = periastron;
     }
 
@@ -1715,14 +1718,13 @@ int main(int argc, char **argv)
 		case 'v':	for (int k = 0; k < 3; k++)
 		    		    v[k] = atof(argv[++i]);
 				break;
-		default:	cerr << "unknown option \"" << argv[i]
+		default:	cout << "unknown option \"" << argv[i]
 				     << endl << flush;
 				exit(1);
 	    }
 
     set_kepler_tolerance(2);
     cout.precision(12);
-    cerr.precision(12);
 
     real m1 = 0;
     if (anim) {
