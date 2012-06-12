@@ -607,7 +607,7 @@ class TestGadget2(TestWithMPI):
         instance.evolve_model(0.001 | generic_unit_system.time)
         self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
 
     def test11(self):
         particles = Particles(2)

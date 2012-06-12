@@ -709,6 +709,6 @@ class TestBSE(TestWithMPI):
         instance.binaries.add_particles(binaries)
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
         print "ok"
 

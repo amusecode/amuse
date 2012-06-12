@@ -773,5 +773,5 @@ class TestEVtwin(TestWithMPI):
         mass = instance.particles[0].mass
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
         print "ok"

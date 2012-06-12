@@ -331,7 +331,7 @@ class HalogenTests(TestWithMPI):
         self.assertEquals(len(instance.particles), number_of_particles)
         self.assertEquals(instance.get_number_of_particles_updated(), 0)
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
     
     def test7(self):
         print "Testing Halogen error handling"

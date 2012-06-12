@@ -778,7 +778,7 @@ class TestPH4(TestWithMPI):
         mass = instance.particles[0].mass
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
     
 
 
@@ -1000,7 +1000,6 @@ class TestPH4(TestWithMPI):
             vz=[-1,1] | nbody_system.speed
         )
         
-        print len(particles)
         instance=ph4()
         
         instance.particles.add_particles(particles)
@@ -1013,5 +1012,4 @@ class TestPH4(TestWithMPI):
         instance.particles.add_particles(particles)
         self.assertEquals(len(instance.particles), 2)
         self.assertAlmostRelativeEquals(instance.particles.mass, [1,2] | nbody_system.mass)
-   
 

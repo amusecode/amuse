@@ -247,20 +247,28 @@ class CodeInterfaceTests(amusetest.TestCase):
     class TestClass(object):
         def __init__(self):
             self.state = 0
+            self.number_of_times_move_to_state_1_called = 0
+            self.number_of_times_move_to_state_2_called = 0
+            self.number_of_times_move_to_state_3_called = 0
+            self.number_of_times_move_to_state_4_called = 0
             
         def always_works(self):
             return True
         
         def move_to_state_1(self):
+            self.number_of_times_move_to_state_1_called += 1
             self.state = 1
             
         def move_to_state_2(self):
+            self.number_of_times_move_to_state_2_called += 1
             self.state = 2
             
         def move_to_state_3(self):
+            self.number_of_times_move_to_state_3_called += 1
             self.state = 3
             
         def move_to_state_4(self):
+            self.number_of_times_move_to_state_4_called += 1
             self.state = 4
             
         def returns_1(self):
@@ -498,15 +506,59 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.add_method('THREE', 'returns_3')
         handler.set_initial_state('ZERO')
         
-        self.assertTrue(instance.state_machine.is_enabled())
+        self.assertTrue(instance.state_machine.is_enabled)
         self.assertEquals(instance.state_machine.get_name_of_current_state(), 'ZERO')
         instance.move_to_state_1()
         self.assertEquals(instance.get_name_of_current_state(), 'ONE')
         instance.state_machine.disable()
-        self.assertFalse(instance.state_machine.is_enabled())
+        self.assertFalse(instance.state_machine.is_enabled)
         instance.move_to_state_2()
         self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        
+    def test11(self):
+        original = self.TestClass()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        handler = instance.get_handler('STATE')
+        
+        handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
+        handler.add_transition('!ZERO', 'TWO', 'move_to_state_2')
+        handler.add_transition('TWO', 'ONE', 'move_to_state_1')
+        handler.add_method('TWO', 'returns_1')
+        handler.set_initial_state('ZERO')
+            
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        instance.returns_1()
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
+        self.assertEquals(instance.number_of_times_move_to_state_1_called, 1)
+        self.assertEquals(instance.number_of_times_move_to_state_2_called, 1)
     
+    
+        
+    def test12(self):
+        original = self.TestClass()
+        
+        instance = interface.InCodeComponentImplementation(original, log_transitions = True)
+        handler = instance.get_handler('STATE')
+        handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
+        handler.add_transition('ONE', 'THREE', 'move_to_state_3')
+        handler.add_transition('THREE', 'FOUR', 'move_to_state_4')
+        handler.add_transition('!ZERO!ONE!THREE', 'TWO', 'move_to_state_2')
+        handler.add_transition('TWO', 'ONE', 'move_to_state_1')
+        handler.add_method('TWO', 'returns_1')
+        handler.set_initial_state('ZERO')
+            
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        instance.returns_1()
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
+        self.assertEquals(instance.number_of_times_move_to_state_1_called, 1)
+        self.assertEquals(instance.number_of_times_move_to_state_2_called, 1)
+        self.assertEquals(instance.number_of_times_move_to_state_3_called, 1)
+        self.assertEquals(instance.number_of_times_move_to_state_4_called, 1)
     
 class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
     class TestClass(object):
@@ -577,7 +629,6 @@ class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
         errorcode = 0
         
         def get_mass(self):
-            print "EC:", self.errorcode
             return 10.0, self.errorcode
             
     

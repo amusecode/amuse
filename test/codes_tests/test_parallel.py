@@ -98,5 +98,4 @@ class TestAmuseInterface(TestWithMPI):
         bhtree.stop()
         hermite.stop()
         bhtree.stop()
-        hermite.stop()
 

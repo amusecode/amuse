@@ -1,5 +1,8 @@
 from amuse.support import exceptions
+from amuse.support.options import OptionalAttributes
+from amuse.support.options import option
 
+import logging
 
 class State(object):
     def __init__(self, handler, name):
@@ -10,8 +13,63 @@ class State(object):
 
     def __str__(self):
         return "state '{0}'".format(self.name)
+       
+    def matches(self, other):
+        return other == self
+    
+    def add_from_transition(self, transition):
+        """add a transition starting at this state"""
+        self.from_transitions.append(transition)
+        
+    def add_to_transition(self, transition):
+        """add a transition to this state"""
+        self.to_transitions.append(transition)
+        
+        
+    def get_to_transitions(self):
+        return list(self.to_transitions)
+        
+class AllExcept(object):
+    
+    def __init__(self, states):
+        self.states = states
+        self.from_transitions = []
+        self.to_transitions = []
+    
+    def __str__(self):
+        return "all except {0}".format(', '.join([str(x) for x in self.states]))
+        
+    def matches(self, other):
+        for x in self.states:
+            if other == x:
+                return False
+        return True
+    
+    def add_from_transition(self, transition):
+        """add a transition starting at this state"""
+        pass # ignored
+        
+    def add_to_transition(self, transition):
+        """add a transition to this state"""
+        raise Exception('you cannot define a transition to any except one state')
 
 
+    def get_to_transitions(self):
+        """to transitions are the to transitions of all states except this one"""
+        result = []
+        state_machine = self.states[0].handler
+        for state in state_machine.iter_states():
+            if state == self:
+                continue
+            if not self.matches(state):
+                continue
+            else:
+                for transition in state.get_to_transitions():
+                    if not transition.from_state == self:
+                        result.append(transition)
+        return result
+        
+        
 class StateTransition(object):
     def __init__(self, handler, from_state, to_state, method = None, is_auto = True):
         self.method = method
@@ -24,29 +82,39 @@ class StateTransition(object):
         return "transition from {0} to {1}".format(self.from_state, self.to_state)
 
     def do(self):
+        if self.handler.log_transitions:
+            logging.getLogger("state").info(str(self))
+            
         if self.method is None:
             self.handler.current_state = self.to_state
         else:
             self.method.new_method()()
 
 
-class StateMachine(object):
-    def __init__(self, interface):
+class StateMachine(OptionalAttributes):
+    
+    def __init__(self, interface, **options):
+        OptionalAttributes.__init__(self, **options)
+        
         self.states = {}
         
         self._do_automatic_state_transitions = True
         self._current_state = State(self, None)
         self.interface = interface
-        self._is_enabled = True
 
+    @option(type='boolean', sections=['state',])
     def is_enabled(self):
-        return self._is_enabled
+        return True
+        
+    @option(type='boolean', sections=['state',])
+    def log_transitions(self):
+        return False
         
     def enable(self):
-        self._is_enabled = True
+        self.is_enabled = True
 
     def disable(self):
-        self._is_enabled = False
+        self.is_enabled = False
 
 
     def new_transition(self, from_name, to_name, is_auto = True):
@@ -55,19 +123,23 @@ class StateMachine(object):
     
         transition = StateTransition(self, from_state, to_state, None, is_auto)
     
-        if from_state:
-            from_state.from_transitions.append(transition)
+        if not from_state is None:
+            from_state.add_from_transition(transition)
         
-        if to_state:
-            to_state.to_transitions.append(transition)
+        if not to_state is None:
+            to_state.add_to_transition(transition)
     
         return transition
     
-    
+    def iter_states(self):
+        return iter(self.states.values())
 
     def new_state(self, name):
         if name is None:
             return None
+        
+        if name.startswith('!'):
+            return AllExcept([self.new_state(x) for x in name[1:].split('!')])
             
         if name in self.states:
             return self.states[name]
@@ -83,12 +155,13 @@ class StateMachine(object):
     
 
     def _get_transitions_path_from_to(self, from_state, to_state):
-        transitions = filter(lambda x : x.is_auto, to_state.to_transitions)
+        transitions = filter(lambda x : x.is_auto, to_state.get_to_transitions())
     
         paths = map(lambda x : [x], transitions)
     
         def has_no_circle(path):
             seen_states = set([])
+            seen_states.add(path[0].from_state)
             for transition in path:
                 if transition.to_state in seen_states:
                     return False
@@ -99,17 +172,16 @@ class StateMachine(object):
         while paths:
             current = paths.pop()
             first = current[0]
-            if first.from_state == from_state:
+            if first.from_state is None:
                 return current
-            elif first.from_state is None:
+            elif first.from_state.matches(from_state):
                 return current
             else:
-                transitions = filter(lambda x : x.is_auto, first.from_state.to_transitions)
+                transitions = filter(lambda x : x.is_auto, first.from_state.get_to_transitions())
                 new_paths = map(lambda x : [x], transitions)
     
                 for new_path in new_paths:
                     new_path.extend(current)
-    
                 new_paths = filter(has_no_circle, new_paths)
     
                 paths.extend(new_paths)

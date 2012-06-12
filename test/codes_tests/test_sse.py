@@ -552,6 +552,6 @@ class TestSSE(TestWithMPI):
         instance.particles.add_particles(stars)
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
         print "ok"
     

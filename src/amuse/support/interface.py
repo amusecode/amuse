@@ -246,7 +246,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
         for from_state, to_state in self.transitions:
             if from_state is None:
                 return to_state
-            elif from_state == self.state_machine._current_state:
+            elif from_state.matches(self.state_machine._current_state):
                 return to_state
             else:
                 stored_transitions.append((from_state, to_state))
@@ -264,7 +264,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
     def postcall(self, method, to_state):
         if to_state is None:
             return
-        elif to_state == self.state_machine._current_state:
+        elif to_state.matches(self.state_machine._current_state):
             return
         else:
             self.state_machine._current_state = to_state
@@ -272,17 +272,17 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
 
 class HandleState(HandleCodeInterfaceAttributeAccess):
 
-    def __init__(self, interface):
+    def __init__(self, interface, **options):
         self._mapping_from_name_to_state_method = {}
         self.interface = interface
-        self._state_machine = state.StateMachine(interface)
+        self._state_machine = state.StateMachine(interface, **options)
 
 
     def supports(self, name, was_found):
         if name == 'state_machine':
             return True
         else:
-            return self._state_machine.is_enabled() and (name in self._mapping_from_name_to_state_method)
+            return self._state_machine.is_enabled and (name in self._mapping_from_name_to_state_method)
 
     def get_attribute(self, name, value): 
         if name == 'state_machine':
@@ -1245,13 +1245,13 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
         self._handlers.append(HandleParameters(self))
         self._handlers.append(HandleParticles(self))
         if self.must_handle_state:
-            self._handlers.append(HandleState(self))
+            self._handlers.append(HandleState(self, **options))
         self._handlers.append(HandleConvertUnits(self))
         self._handlers.append(HandleErrorCodes(self))
 
         self.setup()
 
-    @option(type='boolean', sections=("code",))
+    @option(type='boolean', sections=("code", "state",))
     def must_handle_state(self):
         return True
     

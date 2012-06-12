@@ -763,7 +763,7 @@ class GravitationalDynamics(common.CommonCode):
     def __init__(self, legacy_interface, unit_converter = None,  **options):
         self.unit_converter = unit_converter
         
-        InCodeComponentImplementation.__init__(self, legacy_interface, **options)
+        common.CommonCode.__init__(self, legacy_interface, **options)
 
     def define_properties(self, object):
         object.add_property("get_kinetic_energy")
@@ -774,8 +774,10 @@ class GravitationalDynamics(common.CommonCode):
         object.add_property("get_total_mass")
         object.add_property('get_time', public_name = "model_time")
 
-    def define_state(self, object):
-        common.CommonCode.define_state(self, object)
+    def define_state(self, object): 
+        common.CommonCode.define_state(self, object)   
+        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
+        
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
         object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
         object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
@@ -802,9 +804,7 @@ class GravitationalDynamics(common.CommonCode):
         object.add_method('RUN', 'get_potential_energy')
         object.add_method('RUN', 'get_kinetic_energy')
         
-        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
-        object.add_method('END', 'initialize_code')
-
+        
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_time_step",

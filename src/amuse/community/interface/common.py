@@ -97,8 +97,9 @@ class CommonCode(InCodeComponentImplementation):
         object.set_initial_state('UNINITIALIZED')
         object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
         object.add_method('INITIALIZED', 'invoke_state_change')
-        object.add_transition_to_method('END', 'cleanup_code')
-        object.add_method('END', 'stop')
+        object.add_transition('!UNINITIALIZED!STOPPED', 'END', 'cleanup_code')
+        object.add_transition('END', 'STOPPED', 'stop', False)
+        object.add_method('STOPPED', 'stop')
     
     def define_methods(self, object):
         object.add_method(

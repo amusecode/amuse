@@ -97,7 +97,7 @@ class TestMocassinInterface(TestWithMPI):
         
         
     def xtest3(self):
-        instance=self.new_instance(MocassinInterface, debugger = "ddd")
+        instance=self.new_instance(MocassinInterface) #, debugger = "ddd")
         #instance.redirect_outputs_to("moc3-out.txt", "moc3-err.txt")
         instance.initialize_code()
         instance.set_symmetricXYZ(True)
