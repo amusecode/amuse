@@ -740,11 +740,18 @@ function amuse_set_state_sph(id,m,x,y,z,vx,vy,vz,e,u) result(ret)
   vel(p,2)=vy
   vel(p,3)=vz
   epsgrav(p)=e
-! this should set csound (as soon as interface is fixed)
   if(uentropy) then
     entropy(p)=u*gamma1/rho(p)**gamma1
+    entold(p)=entropy(p)
+    csound(p)=sqrt(gamma*gamma1*u)
   else
+    if(.NOT.isotherm) then
+      csound(p)=sqrt(gamma*gamma1*u)
+    else
+      csound(p)=sqrt(u)   
+    endif
     ethermal(p)=u
+    ethold(p)=u
   endif
   ret=0 
 end function
@@ -1043,13 +1050,16 @@ function amuse_set_internal_energy(id,u) result(ret)
   if(nbexist(p).NE.id) call terror("id error 2")
   if(uentropy) then
     entropy(p)=u*gamma1/rho(p)**gamma1
+    entold(p)=entropy(p)
+    csound(p)=sqrt(gamma*gamma1*u)
   else
     if(.NOT.isotherm) then
       csound(p)=sqrt(gamma*gamma1*u)
     else
       csound(p)=sqrt(u)   
     endif
-    ethermal(p)=u ! ethold??
+    ethermal(p)=u
+    ethold(p)=u
   endif
   ret=0 
 end function
