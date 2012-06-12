@@ -2,6 +2,7 @@ from amuse.support.core import CompositeDictionary
 from amuse.support import exceptions
 from amuse.datamodel.base import *
 from amuse.datamodel.memory_storage import *
+from amuse.datamodel import trees
 from amuse.units import constants
 from amuse.units import units
 from amuse.units import quantities
@@ -320,6 +321,8 @@ class AbstractParticleSet(AbstractSet):
     def _is_superset(self):
         return False
 
+    def as_binary_tree(self, name_of_first_child = 'child1', name_of_second_child = 'child2'):
+        return trees.ChildTreeOnParticleSet(self, (name_of_first_child, name_of_second_child))
     
     def copy_to_memory(self, memento = None):
         attributes = self.get_attribute_names_defined_in_store()

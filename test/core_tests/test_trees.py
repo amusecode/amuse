@@ -188,3 +188,92 @@ class TestBinaryTree(amusetest.TestCase):
         self.assertEquals(len(list(x.iter_roots())), 1)
         self.assertEquals(len(x.particles_not_in_a_multiple()), 5)
             
+
+class TestChildTree(amusetest.TestCase):
+    
+    def test1(self):
+        particles = Particles(10)
+        particles.mass = list(range(10)) | units.kg
+        particles[0].child1 = particles[1]
+        particles[0].child2 = particles[2]
+        
+        self.assertEquals(particles[0].mass, 0 | units.kg)
+        self.assertEquals(particles[0].child1.mass, 1 | units.kg)
+        self.assertEquals(particles[1].child1, None)
+    
+        tree = particles.as_binary_tree()
+        self.assertFalse(tree.is_leaf())
+        self.assertEquals(len(list(tree.iter_children())), 8)
+        self.assertEquals(len(list(tree.iter_branches())), 1)
+        self.assertEquals(len(list(tree.iter_leafs())), 7)
+        branches = list(tree.iter_branches())
+        self.assertEquals(len(list(branches[0].iter_children())), 2)
+        self.assertEquals(len(list(branches[0].iter_branches())), 0)
+        self.assertEquals(len(list(branches[0].iter_leafs())), 2)
+        
+        
+    
+    def test2(self):
+        particles = Particles(10)
+        particles.mass = list(range(10)) | units.kg
+        particles[0].child1 = particles[1]
+        particles[0].child2 = particles[2]
+        
+        self.assertEquals(particles[0].mass, 0 | units.kg)
+        self.assertEquals(particles[0].child1.mass, 1 | units.kg)
+        self.assertEquals(particles[1].child1, None)
+    
+        tree = particles.as_binary_tree()
+        self.assertFalse(tree.is_leaf())
+        self.assertEquals(len(list(tree.iter_descendant_leafs())), 9)
+        self.assertEquals(len(list(tree.iter_descendant_branches())), 1)
+        branches = list(tree.iter_branches())
+        self.assertEquals(len(list(branches[0].iter_descendant_leafs())), 2)
+        self.assertEquals(len(list(branches[0].iter_descendant_branches())), 0)
+
+
+    def test3(self):
+        particles = Particles(10)
+        particles.mass = list(range(10)) | units.kg
+        particles[0].child1 = particles[1]
+        particles[0].child2 = particles[2]
+        particles[1].child1 = particles[3]
+        particles[1].child2 = particles[4]
+        particles[2].child1 = particles[5]
+        particles[2].child2 = particles[6]
+        
+    
+        tree = particles.as_binary_tree()
+        self.assertFalse(tree.is_leaf())
+        self.assertEquals(len(list(tree.iter_children())), 4)
+        self.assertEquals(len(list(tree.iter_branches())), 1)
+        self.assertEquals(len(list(tree.iter_leafs())), 3)
+        self.assertEquals(len(list(tree.iter_descendant_leafs())), 7)
+        self.assertEquals(len(list(tree.iter_descendant_branches())), 3)
+        branches = list(tree.iter_branches())
+        self.assertEquals(len(list(branches[0].iter_children())), 2)
+        self.assertEquals(len(list(branches[0].iter_branches())), 2)
+        self.assertEquals(len(list(branches[0].iter_leafs())), 0)
+        self.assertEquals(len(list(branches[0].iter_descendant_leafs())), 4)
+        self.assertEquals(len(list(branches[0].iter_descendant_branches())), 2)
+        
+    def test4(self):
+        particles = Particles(10)
+        particles.mass = list(range(10)) | units.kg
+        particles[0].child1 = particles[2]
+        particles[0].child2 = particles[1]
+        particles[1].child1 = particles[4]
+        particles[1].child2 = particles[3]
+        particles[2].child1 = particles[6]
+        particles[2].child2 = particles[5]
+        
+        tree = particles.as_binary_tree()
+        masses = [] | units.kg
+        stack = list(reversed(tree.get_children()))
+        while stack:
+            x = stack.pop()
+            masses.append(x.particle.mass)
+            stack.extend(reversed(x.get_children()))
+            
+        self.assertEquals(masses, [0,2,6,5,1,4,3,7,8,9] | units.kg)
+        

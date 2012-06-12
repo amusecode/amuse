@@ -184,3 +184,173 @@ class BinaryTreeOnParticle(object):
             stack.extend(reversed(children))
             
 
+class ChildTreeOnParticleSet(object):
+
+    def __init__(self, particles_set, names_of_child_attributes = ["child1" , "child2"]):
+        self.particles_set = particles_set
+        self.names_of_child_attributes = names_of_child_attributes
+        
+    @property
+    def particle(self):
+        return self.particle_set #a particle set associated, maybe upgrade to some aggregate particle
+        
+            
+    def is_leaf(self):
+        return False
+            
+    def iter_leafs(self):
+        for node in self.iter_children():
+            if node.is_leaf():
+                yield node
+            
+    def iter_branches(self):
+        for node in self.iter_children():
+            if not node.is_leaf():
+                yield node
+                
+            
+    def iter_descendants(self):
+        stack = list(reversed(list(self.iter_children())))
+        while len(stack) > 0:
+            current = stack.pop()
+            
+            yield current
+            
+            children = list(current.iter_children())
+            
+            stack.extend(reversed(children))
+            
+    def iter_descendant_leafs(self):
+        stack = list(reversed(list(self.iter_children())))
+        while len(stack) > 0:
+            current = stack.pop()
+
+            if current.is_leaf():
+                yield current
+            else:
+                children = list(current.iter_children())
+                stack.extend(reversed(children))
+
+
+    def iter_descendant_branches(self):
+        
+        stack = list(reversed(list(self.iter_children())))
+        while len(stack) > 0:
+            current = stack.pop()
+            
+            if not current.is_leaf():
+                yield current
+                children = list(current.iter_children())
+                stack.extend(reversed(children))
+
+    def iter_children(self):
+        for particle in self._children():
+            yield ChildTreeOnParticle(particle, self.names_of_child_attributes)
+    
+    def get_children(self):
+        return list(self.iter_children())
+        
+    def __iter__(self):
+        return self.iter_children()
+
+    def _branches(self):
+        binaries = self._binaries()
+        result = binaries
+        
+        for name in self.names_of_child_attributes:
+            result -= self._get_inner_nodes(binaries, name)
+        
+        return result
+    
+    def _inner_particles(self):
+        result = None
+        
+        for name in self.names_of_child_attributes:
+            descendants = self._get_descendant_nodes(self.particles_set, name)
+            if result is None:
+                result = descendants
+            else:
+                result += descendants
+                
+        return result
+        
+    def _children(self):
+        return self.particles_set - self._inner_particles()
+        
+    def _get_descendant_nodes(self, set, name_of_attribute):
+        return getattr(set, name_of_attribute).compress()
+        
+
+
+class ChildTreeOnParticle(object):
+
+    def __init__(self, particle, names_of_child_attributes = ["child1" , "child2"]):
+        self.particle = particle
+        self.names_of_child_attributes = names_of_child_attributes
+        
+        
+    def iter_descendants(self):
+        stack = [self.particle]
+        while len(stack) > 0:
+            current = stack.pop()
+            children = []
+            for name in self.names_of_child_attributes:
+                child  = getattr(current, name)
+                if not child is None:
+                    yield ChildTreeOnParticle(child1, self.names_of_child_attributes)
+                    children.append(child)
+            
+            stack.extend(reversed(children))
+            
+    def is_leaf(self):
+        for name in self.names_of_child_attributes:
+            child  = getattr(self.particle, name)
+            if not child is None:
+                return False
+        return True
+            
+    def iter_leafs(self):
+        for node in self.iter_children():
+            if node.is_leaf():
+                yield node
+                
+    def iter_branches(self):
+        for node in self.iter_children():
+            if not node.is_leaf():
+                yield node
+            
+    def iter_descendant_leafs(self):
+        stack = list(reversed(list(self.iter_children())))
+        while len(stack) > 0:
+            current = stack.pop()
+
+            if current.is_leaf():
+                yield current
+            else:
+                children = list(current.iter_children())
+                stack.extend(reversed(children))
+
+    def iter_descendant_branches(self):
+        
+        stack = list(reversed(list(self.iter_children())))
+        while len(stack) > 0:
+            current = stack.pop()
+            
+            if not current.is_leaf():
+                yield current
+                children = list(current.iter_children())
+                stack.extend(reversed(children))
+
+    def iter_children(self):
+        current = self.particle
+        
+        for name in self.names_of_child_attributes:
+            child  = getattr(current, name)
+            if not child is None:
+                yield ChildTreeOnParticle(child, self.names_of_child_attributes)
+    
+    def get_children(self):
+        return list(self.iter_children())
+        
+    def __iter__(self):
+        return self.iter_children()
