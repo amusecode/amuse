@@ -250,7 +250,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
                 return to_state
             else:
                 stored_transitions.append((from_state, to_state))
-
+                
         for from_state, to_state  in stored_transitions:
             try:
                 self.state_machine._do_state_transition_to(from_state)

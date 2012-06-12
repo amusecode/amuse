@@ -173,9 +173,9 @@ class StateMachine(OptionalAttributes):
             current = paths.pop()
             first = current[0]
             if first.from_state is None:
-                return current
+                yield current
             elif first.from_state.matches(from_state):
-                return current
+                yield current
             else:
                 transitions = filter(lambda x : x.is_auto, first.from_state.get_to_transitions())
                 new_paths = map(lambda x : [x], transitions)
@@ -187,15 +187,20 @@ class StateMachine(OptionalAttributes):
                 paths.extend(new_paths)
     
     
-        return None
+        return
     
     
 
     def _do_state_transition_to(self, state):
-        transitions = self._get_transitions_path_from_to(self._current_state, state)
-        if transitions is None:
+        all_transitions = list(self._get_transitions_path_from_to(self._current_state, state))
+        transitions = []
+        for x in all_transitions:
+            if len(transitions) == 0 or len(x) < len(transitions):
+                transitions = x
+                
+        if len(transitions) == 0:
             raise Exception("No transition from current state {0} to {1} possible".format(self._current_state, state))
-    
+        
         transitions_with_methods = filter(lambda x : not x.method is None,transitions)
         if not self._do_automatic_state_transitions and len(transitions_with_methods) > 0:
             lines = []

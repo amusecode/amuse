@@ -559,6 +559,35 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(instance.number_of_times_move_to_state_2_called, 1)
         self.assertEquals(instance.number_of_times_move_to_state_3_called, 1)
         self.assertEquals(instance.number_of_times_move_to_state_4_called, 1)
+        
+    
+        
+    def test13(self):
+        original = self.TestClass()
+        
+        instance = interface.InCodeComponentImplementation(original, log_transitions = True)
+        handler = instance.get_handler('STATE')
+        handler.add_transition('!ZERO!ONE!TWO', 'FOUR', 'move_to_state_4')
+        handler.add_transition('ONE', 'TWO', 'move_to_state_2')
+        handler.add_transition('TWO', 'THREE', 'move_to_state_3')
+        handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
+        handler.add_method('!ZERO', 'returns_1')
+        handler.set_initial_state('ZERO')
+            
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        instance.returns_1()
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEquals(instance.number_of_times_move_to_state_1_called, 1)
+        self.assertEquals(instance.number_of_times_move_to_state_2_called, 0)
+        self.assertEquals(instance.number_of_times_move_to_state_3_called, 0)
+        self.assertEquals(instance.number_of_times_move_to_state_4_called, 0)
+        instance.move_to_state_2()
+        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
+        instance.returns_1()
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
     
 class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
     class TestClass(object):
