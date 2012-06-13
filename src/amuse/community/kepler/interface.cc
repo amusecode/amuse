@@ -328,6 +328,7 @@ static void set_outer_orbit(real m, real M,
 	transverse = longitudinal^temp;
 	transverse /= abs(transverse);
 	normal = longitudinal^transverse;
+
 	real psi = randinter(0,2*M_PI);
 	real cospsi = cos(psi);
 	real sinpsi = sin(psi);
@@ -349,12 +350,17 @@ static void set_outer_orbit(real m, real M,
     // k->print_all();
 }
 
+static unsigned long local_seed = 0;
+
 int set_random(int seed)
 {
     if (seed <= 0)
-	srand(time(NULL));
+	srandom(time(NULL));
     else
-	srand(seed);
+	srandom((unsigned int)seed);	// seems to have no effect; seed is
+					// lost and numbers are still random,
+					// independent of the input seed
+    local_seed = random();
     return 0;
 }
 
@@ -373,6 +379,9 @@ int make_binary_scattering(real m, real ecc,
 			   double * vy1, double * vy2, double * vy3,
 			   double * vz1, double * vz2, double * vz3)
 {
+    srandom(local_seed);	// seems to work; don't know why (SLWM)
+    local_seed = random();
+
     // Inner orbit (1,2).
 
     *m1 = 1 - m;

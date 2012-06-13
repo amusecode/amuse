@@ -6,8 +6,6 @@ import collections
 import getopt
 import os
 
-
-
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.community.kepler.interface import Kepler
@@ -25,7 +23,7 @@ def test1():
     
 def run_kepler(mass, semi, ecc, time):
 
-    kep = Kepler()
+    kep = Kepler(redirection='none')
     kep.initialize_code()
 
     kep.set_longitudinal_unit_vector(1.0, 1.0,
@@ -55,14 +53,14 @@ def run_kepler(mass, semi, ecc, time):
     x,y,z = kep.get_longitudinal_unit_vector()
     print "longitudinal:", x,y,z
 
-    print kep.make_binary_scattering(0.5 | nbody_system.mass,
-                                     0.5,
-                                     0.5 | nbody_system.mass,
-                                     0.0 | nbody_system.speed,
-                                     0.0 | nbody_system.length,
-                                     1.e-6,
-                                     0)
-
+    kep.set_random(42)
+    kep.make_binary_scattering(0.5 | nbody_system.mass,
+                               0.5,
+                               0.5 | nbody_system.mass,
+                               0.0 | nbody_system.speed,
+                               0.0 | nbody_system.length,
+                               1.e-6,
+                               0)
     kep.stop()
 
 if __name__ == '__main__':
