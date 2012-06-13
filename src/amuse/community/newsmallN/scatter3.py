@@ -136,7 +136,7 @@ def set_outer_orbit(init, kep):
     print 'outer periastron =', kep.get_periastron().number
     #kep.print_all()
 
-def make_triple(init, kep):
+def make_triple(init, kep, gamma):
 
     # Create IDs and initial masses, positions, and velocities.
     # Convention: initial binary is (1,2).
@@ -157,7 +157,7 @@ def make_triple(init, kep):
     set_outer_orbit(init, kep)
     # print '----------'
     # kep.print_all()
-    gamma = gravity.parameters.unperturbed_threshold
+    # gamma = gravity.parameters.unperturbed_threshold	# won't work in general
     kep.return_to_radius((gamma/init.M)**(-1./3)|nbody_system.length)
     # print '----------'
     # kep.print_all()
@@ -227,7 +227,7 @@ def get_binary_elements(p, kep):
     a,e = kep.get_elements()
     return m,a,e
 
-def get_final_state(stars):
+def get_final_state(stars, kep):
 
     final = Final_state()
     final.is_over = 1
@@ -275,16 +275,16 @@ def get_final_state(stars):
     return final
 
 def scatter3(init, kep, gravity,
+             gamma = 1.e-6,
              delta_t = 0 | nbody_system.time,
              t_end = 1.e4 | nbody_system.time):
 
     t1 = clock()		# <----------------- t1 -----------------
 
-    # Create the 3-body system.
+    # Create the 3-body system; time = 0 at outer periastron.
 
-    #time, id, mass, pos, vel = make_triple(init, kep)  # time = 0 at outer peri
-    time, id, mass, pos, vel = \
-        make_triple2(init, kep, gravity.parameters.unperturbed_threshold)
+    #time, id, mass, pos, vel = make_triple(init, kep, gamma)
+    time, id, mass, pos, vel = make_triple2(init, kep, gamma)
     
     stars = datamodel.Particles(3)
     stars.id = id
@@ -357,7 +357,7 @@ def scatter3(init, kep, gravity,
 
 		# Determine the final state.
 
-                final = get_final_state(stars)
+                final = get_final_state(stars, kep)
                 final.time = time.number
  
             ttt7 = clock()	# <---------------- ttt7 ----------------
@@ -475,7 +475,7 @@ if __name__ == '__main__':
 
     for i in range(nscatter):
 
-        final,dcpu = scatter3(init, kep, gravity, delta_t, t_end)
+        final,dcpu = scatter3(init, kep, gravity, gamma, delta_t, t_end)
         cpu += dcpu
 
         print ''
