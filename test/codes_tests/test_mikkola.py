@@ -31,7 +31,111 @@ class MikkolaInterfaceTests(TestWithMPI):
         end_time = 10.0 
         instance.evolve_model(end_time)
         instance.cleanup_code()
-        del instance
+        instance.stop()
+        
+    def test2(self):
+        instance = MikkolaInterface()
+        instance.initialize_code()
+        instance.set_lightspeed(1e4)
+        instance.commit_parameters()
+
+        index1, error = instance.new_particle(mass = 1.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
+        self.assertEquals(error, 0)
+        index2, error = instance.new_particle(mass = 0.001, radius = 0, x = 3.0, y = 4.0, z = 5.0, vx = 3.3, vy = 4.4, vz = 5.5)
+        self.assertEquals(error, 0)
+        
+        self.assertEquals(1, index1)
+        self.assertEquals(2, index2)
+        
+        mass,error = instance.get_mass(1)
+        self.assertEquals(error, 0)
+        self.assertEquals(mass, 1.0)
+                
+        mass,error = instance.get_mass(2)
+        self.assertEquals(error, 0)
+        self.assertEquals(mass, 0.001)
+        
+        
+        x,y,z,error = instance.get_position(1)
+        self.assertEquals(error, 0)
+        self.assertEquals(x, 1.0)
+        self.assertEquals(y, 2.0)
+        self.assertEquals(z, 3.0)
+                
+        x,y,z,error = instance.get_position(2)
+        self.assertEquals(error, 0)
+        self.assertEquals(x, 3.0)
+        self.assertEquals(y, 4.0)
+        self.assertEquals(z, 5.0)
+        
+        vx,vy,vz,error = instance.get_velocity(1)
+        self.assertEquals(error, 0)
+        self.assertEquals(vx, 1.1)
+        self.assertEquals(vy, 2.2)
+        self.assertEquals(vz, 3.3)
+    
+        instance.cleanup_code()
+        instance.stop()
+        
+    def test3(self):
+        instance = MikkolaInterface()
+        instance.initialize_code()
+        instance.set_lightspeed(1e4)
+        instance.commit_parameters()
+
+        index1, error = instance.new_particle(mass = 1.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
+        self.assertEquals(error, 0)
+        index2, error = instance.new_particle(mass = 0.001, radius = 0, x = 3.0, y = 4.0, z = 5.0, vx = 3.3, vy = 4.4, vz = 5.5)
+        self.assertEquals(error, 0)
+        
+        self.assertEquals(1, index1)
+        self.assertEquals(2, index2)
+        
+        mass,error = instance.get_mass(1)
+        self.assertEquals(error, 0)
+        self.assertEquals(mass, 1.0)
+                
+        mass,error = instance.get_mass(2)
+        self.assertEquals(error, 0)
+        self.assertEquals(mass, 0.001)
+        
+        error  = instance.delete_particle(1)
+        mass,error = instance.get_mass(1)
+        self.assertEquals(error, -1)
+        
+        index1, error = instance.new_particle(mass = 2.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
+        self.assertEquals(error, 0)
+        self.assertEquals(1, index1)
+        
+        mass,error = instance.get_mass(1)
+        self.assertEquals(error, 0)
+        self.assertEquals(mass, 2.0)
+                
+        mass,error = instance.get_mass(2)
+        self.assertEquals(error, 0)
+        self.assertEquals(mass, 0.001)
+        
+    def test4(self):
+        instance = MikkolaInterface()
+        instance.initialize_code()
+        instance.set_lightspeed(1e4)
+        instance.commit_parameters()
+
+        index1, error = instance.new_particle(mass = 1.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
+        self.assertEquals(error, 0)
+        self.assertEquals(index1, 1)
+        
+        error = instance.cleanup_code()
+        self.assertEquals(error, 0)
+        
+        mass,error = instance.get_mass(1)
+        self.assertEquals(error, -1)
+        instance.commit_parameters()
+        index1, error = instance.new_particle(mass = 1.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
+        self.assertEquals(error, 0)
+        self.assertEquals(index1, 1)
+        
+        
 # run with: 
 # %>nosetests -v test_mikkola.py:TestMikkola.test1
 class TestMikkola(TestWithMPI):

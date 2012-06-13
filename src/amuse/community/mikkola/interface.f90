@@ -74,6 +74,10 @@ FUNCTION get_mass(index_of_the_particle, mass)
   INTEGER :: get_mass
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      get_mass = -1
+      RETURN
+  ENDIF
   mass = particle_m(index_of_the_particle)
   get_mass=0
 END FUNCTION
@@ -83,6 +87,10 @@ FUNCTION get_velocity(index_of_the_particle, vx, vy, vz)
   INTEGER :: get_velocity
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: vx, vy, vz
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      get_velocity = -1
+      RETURN
+  ENDIF
   vx = particle_vx(index_of_the_particle)
   vy = particle_vy(index_of_the_particle)
   vz = particle_vz(index_of_the_particle)
@@ -94,6 +102,10 @@ FUNCTION set_velocity(index_of_the_particle, vx, vy, vz)
   INTEGER :: set_velocity
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: vx, vy, vz
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      set_velocity = -1
+      RETURN
+  ENDIF
   particle_vx(index_of_the_particle) = vx
   particle_vy(index_of_the_particle) = vy
   particle_vz(index_of_the_particle) = vz
@@ -105,6 +117,10 @@ FUNCTION get_position(index_of_the_particle, x, y, z)
   INTEGER :: get_position
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: x, y, z
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      get_position = -1
+      RETURN
+  ENDIF
   x = particle_x(index_of_the_particle)
   y = particle_y(index_of_the_particle)
   z = particle_z(index_of_the_particle)
@@ -116,6 +132,10 @@ FUNCTION set_position(index_of_the_particle, x, y, z)
   INTEGER :: set_position
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: x, y, z
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      set_position = -1
+      RETURN
+  ENDIF
   particle_x(index_of_the_particle) = x
   particle_y(index_of_the_particle) = y
   particle_z(index_of_the_particle) = z
@@ -128,6 +148,10 @@ FUNCTION get_state(index_of_the_particle, mass, x, y, z, vx, vy,  &
   INTEGER :: get_state
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass, radius, x, y, z, vx, vy, vz
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      get_state = -1
+      RETURN
+  ENDIF
   radius = 0
   mass = particle_m(index_of_the_particle)
   x = particle_x(index_of_the_particle)
@@ -144,6 +168,10 @@ FUNCTION set_mass(index_of_the_particle, mass)
   INTEGER :: set_mass
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      set_mass = -1
+      RETURN
+  ENDIF
   particle_m(index_of_the_particle) = mass  
   set_mass=0
 END FUNCTION
@@ -162,22 +190,27 @@ FUNCTION evolve_model(end_time)
   DOUBLE PRECISION :: end_time
   DOUBLE PRECISION :: POS(3,maximum_number_of_particles)
   DOUBLE PRECISION :: VEL(3,maximum_number_of_particles)
+  INTEGER :: INDEX(maximum_number_of_particles)
   DOUBLE PRECISION :: IWRR, DELTAT, TEND, soft, cmet(3), tolerance
   DOUBLE PRECISION :: BHspin(3)
-  INTEGER :: stepr, i, Mikkola_ARWV
+  INTEGER :: stepr, i, j, Mikkola_ARWV
   INTEGER :: Np, Nbh, Ixc
   Np = number_of_particles_allocated
   Nbh = Np
-
-  do i=1, number_of_particles_allocated
-     POS(1,i) = particle_x(i) 
-     POS(2,i) = particle_y(i) 
-     POS(3,i) = particle_z(i) 
-     VEL(1,i) = particle_vx(i) 
-     VEL(2,i) = particle_vy(i) 
-     VEL(3,i) = particle_vz(i) 
-  enddo
-
+  j = 1
+  DO i=1, maximum_number_of_particles
+     IF (particle_id(i).NE.-1) THEN
+         INDEX(j) = particle_id(i)
+         POS(1,j) = particle_x(i) 
+         POS(2,j) = particle_y(i) 
+         POS(3,j) = particle_z(i) 
+         VEL(1,j) = particle_vx(i) 
+         VEL(2,j) = particle_vy(i) 
+         VEL(3,j) = particle_vz(i) 
+         j = j + 1
+     ENDIF
+  ENDDO
+  
   IWRR = -0 !?
   DELTAT = MIN(timestep, end_time - start_time) ! Initial timestep, not used according to Mikkola
   if (DELTAT .LE. 0.0) then
@@ -190,17 +223,22 @@ FUNCTION evolve_model(end_time)
   cmet= [1.e-0, 0.e-0, 0.e-0] !?
   Ixc=2 ! time output is exacte (2) or not exact (1, faster)
   BHspin=[0.0, 0.0, 0.0] !spin of the first black hole (between 0 and 1) 
-  evolve_model = Mikkola_ARWV(start_time, particle_m, POS,VEL,particle_id, &
+  evolve_model = Mikkola_ARWV(start_time, particle_m, POS,VEL,INDEX, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
 &                lightspeed,Ixc,Nbh,BHspin,tolerance) 
-  do i=1, number_of_particles_allocated
-     particle_x(i) = POS(1,i)
-     particle_y(i) = POS(2,i)
-     particle_z(i) = POS(3,i)
-     particle_vx(i) = VEL(1,i)
-     particle_vy(i) = VEL(2,i)
-     particle_vz(i) = VEL(3,i)
-  enddo
+  
+  j = 1
+  DO i=1, maximum_number_of_particles
+     IF (particle_id(i).NE.-1) THEN
+         particle_x(i) = POS(1,j)
+         particle_y(i) = POS(2,j)
+         particle_z(i) = POS(3,j)
+         particle_vx(i) = VEL(1,j)
+         particle_vy(i) = VEL(2,j)
+         particle_vz(i) = VEL(3,j) 
+         j = j + 1
+     ENDIF
+  ENDDO
   start_time = end_time
 END FUNCTION
 
@@ -307,6 +345,12 @@ FUNCTION delete_particle(index_of_the_particle)
   IMPLICIT NONE
   INTEGER :: delete_particle
   INTEGER :: index_of_the_particle
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      delete_particle = -1
+      RETURN
+  ENDIF
+  particle_id(index_of_the_particle)  = -1
+  number_of_particles_allocated = number_of_particles_allocated - 1
   delete_particle=0
 END FUNCTION
 
@@ -330,6 +374,10 @@ FUNCTION set_state(index_of_the_particle, mass, x, y, z, vx, vy,  &
   INTEGER :: set_state
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass, radius, x, y, z, vx, vy, vz
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      set_state = -1
+      RETURN
+  ENDIF
   particle_m(index_of_the_particle) = mass
   particle_x(index_of_the_particle) = x
   particle_y(index_of_the_particle) = y
@@ -385,7 +433,7 @@ FUNCTION get_number_of_particles(number_of_particles)
   IMPLICIT NONE
   INTEGER :: get_number_of_particles
   INTEGER :: number_of_particles
-  get_number_of_particles=0
+  get_number_of_particles=number_of_particles_allocated
 END FUNCTION
 
 FUNCTION set_acceleration(index_of_the_particle, ax, ay, az)
@@ -437,6 +485,18 @@ END FUNCTION
 FUNCTION cleanup_code()
   IMPLICIT NONE
   INTEGER :: cleanup_code
+  
+  
+  DEALLOCATE(particle_id)
+  DEALLOCATE(particle_m)
+  DEALLOCATE(particle_x)
+  DEALLOCATE(particle_y)
+  DEALLOCATE(particle_z)
+  DEALLOCATE(particle_vx)
+  DEALLOCATE(particle_vy)
+  DEALLOCATE(particle_vz)
+  
+  number_of_particles_allocated = 0
   cleanup_code=0
 END FUNCTION
 
@@ -476,17 +536,19 @@ FUNCTION get_gravity_at_point(eps, x, y, z, forcex, forcey, forcez)
   forcey = 0
   forcez = 0
   eps2 = 0
-  DO i=1, number_of_particles_allocated
-     rx = particle_x(i) - x
-     ry = particle_y(i) - y
-     rz = particle_z(i) - z
-     r2 = (rx*rx+ry*ry+rz*rz + eps2)
-     r = sqrt(r2)
-     r3 = r2*r
-     F = particle_m(i)/r3
-     forcex = forcex + F * rx
-     forcey = forcey + F * ry
-     forcez = forcez + F * rz
+  DO i=1, maximum_number_of_particles
+     IF (particle_id(i).NE.-1) THEN
+         rx = particle_x(i) - x
+         ry = particle_y(i) - y
+         rz = particle_z(i) - z
+         r2 = (rx*rx+ry*ry+rz*rz + eps2)
+         r = sqrt(r2)
+         r3 = r2*r
+         F = particle_m(i)/r3
+         forcex = forcex + F * rx
+         forcey = forcey + F * ry
+         forcez = forcez + F * rz
+     ENDIF
   ENDDO
   get_gravity_at_point=0
 END FUNCTION
