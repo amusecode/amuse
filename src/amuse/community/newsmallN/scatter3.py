@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Scatter3: binary scattering package replicating most of the
+# functionality of the scatter3 tool in Starlab.  See McMillan & Hut
+# 1996, ApJ, 467, 348.
+
 import sys, unittest, numpy, random, collections, getopt, os, math
 
 from time import *
@@ -189,7 +193,8 @@ def make_triple(init, kep):
 
 def make_triple2(init, kep, gamma):
 
-    # Use kepler to replace the Python functionality of make_triple.
+    # Use a kepler built-in to replace the Python functionality of
+    # make_triple.
 
     # Create IDs and initial masses, positions, and velocities.
     # Convention: initial binary is (1,2).
@@ -222,11 +227,58 @@ def get_binary_elements(p, kep):
     a,e = kep.get_elements()
     return m,a,e
 
+def get_final_state(stars):
+
+    final = Final_state()
+    final.is_over = 1
+    final.escaper = -1
+    ionized = 1
+
+    tree = stars.as_binary_tree()
+    sep = numpy.zeros(3)
+    vel = numpy.zeros(3)
+    for node in tree.iter_children():
+        if node.particle.child1 is None:
+            final.escaper = node.particle.id
+            final.mescaper = node.particle.mass.number
+            sep += numpy.array([node.particle.x.number,
+                                node.particle.y.number,
+                                node.particle.z.number])
+            vel += numpy.array([node.particle.vx.number,
+                                node.particle.vy.number,
+                                node.particle.vz.number])
+        else:
+            M,a,e = get_binary_elements(node.particle, kep)
+            final.mbinary = M.number
+            final.semimajoraxis = a.number
+            final.eccentricity = e
+            ionized = 0
+            sep -= numpy.array([node.particle.x.number,
+                                node.particle.y.number,
+                                node.particle.z.number])
+            vel -= numpy.array([node.particle.vx.number,
+                                node.particle.vy.number,
+                                node.particle.vz.number])
+
+    if ionized == 0:
+        final.separation = math.sqrt((sep*sep).sum())
+        final.v_rel = math.sqrt((vel*vel).sum())
+    else:
+        final.mbinary = -1.0
+        final.semimajoraxis = -1.0
+        final.eccentricity = -1.0
+        final.escaper = -1
+        final.mescaper = -1.0
+        final.separation = -1.0
+        final.v_rel = -1.0
+
+    return final
+
 def scatter3(init, kep, gravity,
              delta_t = 0 | nbody_system.time,
              t_end = 1.e4 | nbody_system.time):
 
-    t1 = clock()
+    t1 = clock()		# <----------------- t1 -----------------
 
     # Create the 3-body system.
 
@@ -264,87 +316,57 @@ def scatter3(init, kep, gravity,
     print "evolving triple to completion in steps of", delta_t.number
     sys.stdout.flush()
 
-    t2 = clock()
-    dtime2 = t2 - t1
-    dtime3 = 0.0
-    dtime4 = 0.0
+    t2 = clock()		# <----------------- t2 -----------------
+
+    dt_init = t2 - t1
+    dt_evolve = 0.0
+    dt_over = 0.0
+    dt_tree = 0.0
 
     final = Final_state()
+    over = 0
 
-    while time < t_end:
+    while time < t_end and over == 0:
 
-        t3 = clock()
+        tt3 = clock()		# <----------------- tt3 ----------------
 
         time += delta_t
         gravity.evolve_model(time)
 
-        t4 = clock()
-        dtime3 += t4 - t3
-
         energy = gravity.get_kinetic_energy()+gravity.get_potential_energy()
         print "time =", time.number, "energy =", energy.number
 
-        over = gravity.is_over()
+        tt4 = clock()		# <----------------- tt4 ----------------
 
-        if time > t_crit and over:
-            #print '\nscatter3: interaction is over'
+        if time > t_crit:
 
-            gravity.update_particle_tree()
-            gravity.update_particle_set()
-            gravity.particles.synchronize_to(stars)
-            channel.copy()
-            channel.copy_attribute("index_in_code", "id")
+            ttt5 = clock()	# <---------------- ttt5 ----------------
 
-            # Determine the final state.
+            over = gravity.is_over()
 
-            final.is_over = 1
-            final.time = time.number
-            final.escaper = -1
-            ionized = 1
+            ttt6 = clock()	# <---------------- ttt6 ----------------
 
-            tree = stars.as_binary_tree()
-            sep = numpy.zeros(3)
-            vel = numpy.zeros(3)
-            for node in tree.iter_children():
-                if node.particle.child1 is None:
-                    final.escaper = node.particle.id
-                    final.mescaper = node.particle.mass.number
-                    sep += numpy.array([node.particle.x.number,
-                                        node.particle.y.number,
-                                        node.particle.z.number])
-                    vel += numpy.array([node.particle.vx.number,
-                                        node.particle.vy.number,
-                                        node.particle.vz.number])
-                else:
-                    M,a,e = get_binary_elements(node.particle, kep)
-                    final.mbinary = M.number
-                    final.semimajoraxis = a.number
-                    final.eccentricity = e
-                    ionized = 0
-                    sep -= numpy.array([node.particle.x.number,
-                                        node.particle.y.number,
-                                        node.particle.z.number])
-                    vel -= numpy.array([node.particle.vx.number,
-                                        node.particle.vy.number,
-                                        node.particle.vz.number])
+            if over:
+                #print '\nscatter3: interaction is over'
 
-            if ionized == 0:
-                final.separation = math.sqrt((sep*sep).sum())
-                final.v_rel = math.sqrt((vel*vel).sum())
-            else:
-                final.mbinary = -1.0
-                final.semimajoraxis = -1.0
-                final.eccentricity = -1.0
-                final.escaper = -1
-                final.mescaper = -1.0
-                final.separation = -1.0
-                final.v_rel = -1.0
+                gravity.update_particle_tree()
+                gravity.update_particle_set()
+                gravity.particles.synchronize_to(stars)
+                channel.copy()
+                channel.copy_attribute("index_in_code", "id")
+
+		# Determine the final state.
+
+                final = get_final_state(stars)
+                final.time = time.number
  
-            break
-    
-        sys.stdout.flush()
-        dtime4 += clock() - t4
+            ttt7 = clock()	# <---------------- ttt7 ----------------
 
+            dt_over += ttt6 - ttt5
+            dt_tree += ttt7 - ttt6
+
+        dt_evolve += tt4 - tt3
+ 
     if not over:
         #print '\nscatter3: interaction is not over'
         final.is_over = 0
@@ -356,10 +378,13 @@ def scatter3(init, kep, gravity,
         final.separation = -1.0
         final.v_rel = -1.0
 
-    gravity.cleanup_code()		# clear internal data for recycling
+    # Clean up internal data for recycling.
+
+    #gravity.particles.remove_particles(gravity.particles)
+    gravity.cleanup_code()
     gravity.initialize_code()
 
-    return final,dtime2,dtime3,dtime4	# final state ToDo...
+    return final,numpy.array([dt_init, dt_evolve, dt_over, dt_tree])
 
 if __name__ == '__main__':
 
@@ -446,15 +471,12 @@ if __name__ == '__main__':
 
     # Timing:
 
-    #time1 = 0.0	# instantiation
-    time2 = 0.0		# initialization
-    time3 = 0.0		# integration
-    time4 = 0.0		# investigation
+    cpu = numpy.zeros(4)
 
     for i in range(nscatter):
 
-        final,dtime2,dtime3,dtime4 = \
-            scatter3(init, kep, gravity, delta_t, t_end)
+        final,dcpu = scatter3(init, kep, gravity, delta_t, t_end)
+        cpu += dcpu
 
         print ''
         if final.is_over == 0:
@@ -470,14 +492,11 @@ if __name__ == '__main__':
             else:
                 print 'ionization'
 
-        #time1 += dtime1
-        time2 += dtime2
-        time3 += dtime3
-        time4 += dtime4
         if nscatter > 1: print '\n--------------------\n'
 
-    print 'timing:  init', time2, \
-	  ' evol', time3, ' over', time4
+    print 'timing:  init', cpu[0], 'evol', cpu[1], 'over', cpu[2], \
+          'tree', cpu[3]
+    print ''
 
     gravity.stop()
     kep.stop()
