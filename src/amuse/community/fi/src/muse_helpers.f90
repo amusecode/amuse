@@ -93,7 +93,7 @@ function muse_reinitialize() result(ret)
   
   call inittimestep
   
-  print*,' **warning: check results reinit**' 
+  if(verbosity.GT.0) print*,' **warning: check results reinit**' 
   ret=0
 end function
 
