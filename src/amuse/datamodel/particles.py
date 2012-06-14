@@ -1387,15 +1387,16 @@ class ParticlesSuperset(AbstractParticleSet):
                         dtype = quantity.number.dtype
                         converts[valueindex] = quantity.unit.new_quantity
                         units[valueindex] = quantity.unit
-                    
-                    resultvalue = numpy.zeros(resultlength,dtype=dtype)
+                    shape = list(quantity.shape)
+                    shape[0] = resultlength
+                    resultvalue = numpy.zeros(shape,dtype=dtype)
                     values[valueindex] = resultvalue
                     
                 resultunit = units[valueindex]
                 if not resultunit is None:
-                    numpy.put(resultvalue, indices, quantity.value_in(resultunit))
+                    resultvalue[indices] = quantity.value_in(resultunit)
                 else:
-                    numpy.put(resultvalue, indices, quantity)
+                    resultvalue[indices] = quantity
             
         return map(lambda u,v : u(v), converts, values)
         

@@ -1383,8 +1383,22 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertTrue(isinstance(superset.greater_than(3.0 | units.m), datamodel.ParticlesSubset))
         self.assertEqual(superset.greater_than(2.0 | units.m).x, [3.0, 4.0] | units.m)
         
-    
-    
+            
+    def test13(self):
+        set1 = datamodel.Particles(2)
+        set1.x = [[1.0, 2.0], [3.0, 4.0]] | units.m
+        set2 = datamodel.Particles(2)
+        set2.x = [[5.0, 6.0], [7.0, 8.0]] | units.m
+        superset = datamodel.ParticlesSuperset([set1, set2])
+        
+        print superset.x
+        self.assertEquals(superset.x.shape, (4,2) )
+        
+        print superset.x[2]
+        print superset[2].x
+        self.assertEquals(superset.x[2], [5.0, 6.0] | units.m )
+        self.assertEquals(superset[2].x, [5.0, 6.0] | units.m )
+        
 class TestSliceParticles(amusetest.TestCase):
     
     def test1(self):
