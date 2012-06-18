@@ -7,7 +7,7 @@ import time
 import math
 
 from amuse.community.hermite0.interface import Hermite
-from amuse.community.newsmallN.interface import SmallN
+from amuse.community.smalln.interface import SmallN
 
 from amuse.units import nbody_system
 from amuse.units import units

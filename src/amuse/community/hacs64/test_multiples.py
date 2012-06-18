@@ -3,7 +3,7 @@ import sys, unittest, numpy, random, collections, getopt, os, math
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.community.hacs64.interface import Hacs64 as grav
-from amuse.community.newsmallN.interface import SmallN
+from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 
 from amuse import datamodel

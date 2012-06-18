@@ -6,7 +6,7 @@ from amuse.community.fi.interface import Fi
 from amuse.community.octgrav.interface import Octgrav
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.phiGRAPE.interface import PhiGRAPE
-from amuse.community.newsmallN.interface import SmallN
+from amuse.community.smalln.interface import SmallN
 
 from amuse.ic import plummer
 from amuse.ic import gasplummer
