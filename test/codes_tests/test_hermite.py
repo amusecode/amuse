@@ -708,3 +708,19 @@ class TestHermite(TestWithMPI):
             self.assertAlmostRelativeEquals(potential0, potential, 8)
             instance.stop()
     
+
+    
+    def test17(self):
+        particles = new_plummer_model(50)
+        particles.scale_to_standard()
+        instance = Hermite()
+        instance.parameters.epsilon_squared = 0.22000 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+        self.assertEquals(len(instance.particles), 50)
+        
+        instance.reset()
+        
+        self.assertAlmostRelativeEquals(instance.parameters.epsilon_squared , 0.22000 | nbody_system.length**2)
+        self.assertEquals(len(instance.particles), 0)
+        instance.particles.add_particles(particles)
+        self.assertEquals(len(instance.particles), 50)

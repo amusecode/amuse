@@ -145,6 +145,75 @@ class Parameters(object):
             if not value == default_value:
                print "!default value is not equal to value in code: {0}".format(x.definition.name)
             
+
+    def copy(self):
+        mapping_from_name_to_value = {}
+        for name in self.names():
+            mapping_from_name_to_value[name] = getattr(self, name)
+            
+        return ParametersMemento(mapping_from_name_to_value)
+    
+    def reset_from_memento(self, memento):
+        for name in memento.names():
+            setattr(self, name, getattr(memento, name))
+            
+
+class ParametersMemento(object):
+    __name__ = 'Parameters'
+    
+    def __init__(self, mapping_from_name_to_value = None):
+        if mapping_from_name_to_value is None:
+            mapping_from_name_to_value = {}
+            
+        object.__setattr__(self, '_mapping_from_name_to_value', mapping_from_name_to_value)
+    
+
+    def __getattr__(self, name):
+        if not name in self._mapping_from_name_to_value:
+            raise exceptions.CoreException("tried to get unknown parameter '{0}'".format(name))
+            
+        
+        return self._mapping_from_name_to_value[name]
+
+    def __setattr__(self, name, value):
+        if not name in self._mapping_from_name_to_value:
+            warnings.warn("tried to set unknown parameter '{0}'".format(name), exceptions.AmuseWarning)
+            return
+            
+        self._mapping_from_name_to_value[name] = name
+
+    def names(self):
+        return self._mapping_from_name_to_value.keys()
+
+    def set_defaults(self):
+        pass
+        
+    def __dir__(self):
+        result = []
+        result.extend(dir(type(self)))
+        result.extend(self.names())
+        return result
+
+
+    def get_default_value_for(self, name):
+        if not name in self._mapping_from_name_to_value:
+            raise exceptions.CoreException("tried to get default value of unknown parameter '{0}'".format(name))
+    
+        raise exceptions.CoreException("tried to get default value, for a parameter in a parameters memento")
+
+
+    def __str__(self):
+        output = ""
+
+        for name in self.names():
+            output += name + ": "
+            output += str(getattr(self, name))+"\n"
+
+        return output
+
+    
+    
+
     
 
 def new_parameters_instance_with_docs(definitions, instance):

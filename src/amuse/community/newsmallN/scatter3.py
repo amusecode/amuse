@@ -380,10 +380,8 @@ def scatter3(init, kep, gravity,
 
     # Clean up internal data for recycling.
 
-    #gravity.particles.remove_particles(gravity.particles)
-    gravity.cleanup_code()
-    gravity.initialize_code()
-
+    gravity.reset()
+    
     return final,numpy.array([dt_init, dt_evolve, dt_over, dt_tree])
 
 if __name__ == '__main__':

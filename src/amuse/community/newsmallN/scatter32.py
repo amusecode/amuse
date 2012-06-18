@@ -397,8 +397,7 @@ def scatter32(init, kep, gravity, treecheck,
 	    # Clean up treecheck for the next use.
 
             #treecheck.particles.remove_particles(treecheck.particles)
-            treecheck.cleanup_code()
-            treecheck.initialize_code()
+            treecheck.reset()
 
             ttt8 = clock()	# <---------------- ttt8 ----------------
     
@@ -421,9 +420,7 @@ def scatter32(init, kep, gravity, treecheck,
 
     # Clean up internal data for recycling.
 
-    #gravity.particles.remove_particles(gravity.particles)
-    gravity.cleanup_code()
-    gravity.initialize_code()
+    gravity.reset()
 
     return final,numpy.array([dt_init, dt_evolve, dt_over, dt_tree, dt_clean])
 

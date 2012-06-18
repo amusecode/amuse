@@ -1151,3 +1151,10 @@ class GravitationalDynamics(common.CommonCode):
         handler = self.get_handler('PARTICLES')
         handler._cleanup_instances()
 
+    def reset(self):
+        parameters = self.parameters.copy()
+        self.cleanup_code()
+        self.initialize_code()
+        self.parameters.reset_from_memento(parameters)
+        
+        

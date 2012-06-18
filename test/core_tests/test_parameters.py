@@ -304,7 +304,44 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         
         self.assertEquals(instance.x, 20 | units.m)
         self.assertEquals(instance.y, 12 | units.m)
-    
+        
+        
+    def test12(self):
+        definition = parameters.ModuleMethodParameterDefinition(
+            "get_test",
+            "set_test",
+            "test_name",
+            "a test parameter",
+            0.1 | units.m
+        )
+        class TestModule(object):
+            def get_test(self):
+                return self.x
+            def set_test(self, value):
+                self.x = value
+                
+        o = TestModule()
+        set = parameters.Parameters([definition,], o)
+        set.test_name = 10|units.m
+        
+        self.assertEqual(o.x, 10|units.m)
+        self.assertTrue(set.test_name, 10|units.m)
+        
+        memento = set.copy()
+        self.assertTrue(memento.test_name, 10|units.m)
+        set.test_name = 20|units.m
+        
+        self.assertEqual(o.x, 20|units.m)
+        self.assertTrue(set.test_name, 20|units.m)
+        self.assertTrue(memento.test_name, 10|units.m)
+        
+        set.reset_from_memento(memento)
+        
+        self.assertEqual(o.x, 10|units.m)
+        self.assertTrue(set.test_name, 10|units.m)
+        self.assertTrue(memento.test_name, 10|units.m)
+        
+        
     
 class TestParameters(amusetest.TestCase):
     def test1(self):

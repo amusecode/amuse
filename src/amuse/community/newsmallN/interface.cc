@@ -60,13 +60,13 @@ int initialize_code()
     
     b = new hdyn;
     b_copy = NULL;
-    /* need to fix scatter3 code first
+    
     b->set_eta(0.14);
     b->set_gamma(1e-6);
     b->set_system_time(0.0);
     b->set_allow_full_unperturbed(1);
-    b->set_cm_index(100000); 
-    */
+    b->set_cm_index(100000);
+    
     // AMUSE stopping conditions support.
 
     set_support_for_condition(COLLISION_DETECTION);
