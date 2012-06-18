@@ -65,7 +65,7 @@
      &                 body_act_tmp(7,NMAX),body_act_new(7,NMAX)
       DOUBLE PRECISION pot_act_tmp_loc(NMAX),a_act_tmp_loc(NDIM,NMAX),   &
      &                 adot_act_tmp_loc(NDIM,NMAX)
-      DOUBLE PRECISION time_cur,eps2,min_t
+      DOUBLE PRECISION time_cur,time_begin,eps2,min_t
       DOUBLE PRECISION E_tot,E_pot,E_kin,xcm(NDIM),vcm(NDIM),mom(NDIM),  &
      &                 E_totini
 
@@ -107,7 +107,7 @@
 
 
       COMMON /systemi/ diskstep,Timesteps
-      COMMON /system/  time_cur,eps2,min_t
+      COMMON /system/  time_cur,time_begin,eps2,min_t
 
  
 

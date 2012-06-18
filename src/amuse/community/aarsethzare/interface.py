@@ -143,7 +143,6 @@ class AarsethZare(InCodeComponentImplementation):
         else:
             time = tend.as_vector_with_length(len(self.particles)).aszeros()
         
-        print time,mass,x,y,z,vx,vy,vz,tend.as_vector_with_length(len(self.particles))
         time, x, y, z, vx, vy, vz = self.evolve_triple(time,mass,x,y,z,vx,vy,vz,tend.as_vector_with_length(len(self.particles)))
         
         self.particles.time = time

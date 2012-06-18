@@ -634,6 +634,8 @@ C     AMUSE STOPPING CONDITION SUPPORT
       
       eta_s   = 0.01
       eta     = 0.02
+      time_cur = 0.0
+      time_begin = 0.0
 C--------------------------------------------------------------------
 C---  initialise MPI 
 C--------------------------------------------------------------------
@@ -665,7 +667,6 @@ C  update local particles on grape
       CALL amuse_init_grape
       CALL update_grape(1) 
 
-      time = 0.0d0
       
 C---  set some vars
       inrg       = 0
@@ -681,7 +682,6 @@ C---  more parameters to set
 
 
 C---  set individual particle times and time steps
-      time_cur = time
       DO i=1,N
          t(i)   = time_cur
          dt(i)  = dt_min
@@ -863,12 +863,13 @@ C     close grape before exiting (fip)
       IMPLICIT NONE
 #include "src/general.inc"
 
-      INTEGER cleanup_code
+      INTEGER cleanup_code, err, delete_all_particles
 #ifndef NOMPI
       INTEGER ierr
 #endif
 
       N=0
+      err = delete_all_particles()
 
 C---  just release GRAPE
       IF (g_init_once.EQ.1) THEN
@@ -882,6 +883,46 @@ C          --------
       cleanup_code = 0
       RETURN
       END
+      
+      
+
+      FUNCTION delete_all_particles()
+      IMPLICIT NONE 
+#include "src/general.inc"
+
+C---  local vars
+      INTEGER delete_all_particles,i,k
+
+
+      delete_all_particles = -1
+
+C---  shift particles after ip to free spot
+      DO i=1,N-1
+         m(i) = 0.0
+         myind(i)= -1
+         DO k=1,3
+             x(k,i)    = 0.d0
+             v(k,i)    = 0.d0
+             a(k,i)    = 0.d0
+             adot(k,i) = 0.d0
+         ENDDO
+     
+         pot(i)       = 0.d0
+         t(i)         = 0.d0
+         dt(i)        = dt_min
+         ind(i)       = 0
+         myid(i)      = 0
+      ENDDO
+      N        = 0
+      n_loc    = 0
+      nbh = 0   ! removed particle was BH
+
+      delete_all_particles = 0
+
+      END
+      
+      
+      
 
 
       FUNCTION set_particle(id,mm,xx,yy,zz,vx,vy,vz,rad)
@@ -1109,6 +1150,33 @@ C---  local vars
 
       END
 
+      FUNCTION get_begin_time(system_time)
+      IMPLICIT NONE 
+#include "src/general.inc"
+
+C---  local vars
+      INTEGER get_begin_time
+      DOUBLE PRECISION system_time
+
+      system_time = time_begin
+
+      get_begin_time = 0
+
+      END
+
+      FUNCTION set_begin_time(system_time)
+      IMPLICIT NONE 
+#include "src/general.inc"
+
+C---  local vars
+      INTEGER set_begin_time
+      DOUBLE PRECISION system_time
+
+      time_begin = system_time
+
+      set_begin_time = 0
+
+      END
       FUNCTION get_time_step(time_step_arg)
       IMPLICIT NONE 
 #include "src/general.inc"
@@ -1302,6 +1370,9 @@ C            ----------------------
       delete_particle = 0
 
       END
+
+
+
  
       FUNCTION evolve_model(tend)
 C---  isync removed      
@@ -1560,7 +1631,7 @@ C     close grape before exiting (fip)
 #include "src/general.inc"
       INTEGER  commit_parameters
       commit_parameters = 0
-      
+      time_cur = time_begin
       IF(g_init_once.EQ.1) THEN
         IF(g_initialized.EQ.0) THEN
             CALL initgrape
@@ -1576,4 +1647,5 @@ C     close grape before exiting (fip)
       INTEGER  recommit_parameters
       recommit_parameters = 0
       END
+      
       

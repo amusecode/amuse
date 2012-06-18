@@ -249,13 +249,13 @@ int evolve_model(double t){
 	return 0;
 }
 
-int set_time_begin(double time_begin){
-   GTIME = time_begin;
-	return 0;
+int set_begin_time(double time_begin){
+    GTIME = time_begin;
+    return 0;
 }
 
 
-int get_time_begin(double *time_begin){
+int get_begin_time(double *time_begin){
    *time_begin = GTIME;
    return 0;
 }
@@ -455,10 +455,11 @@ int get_index_of_next_particle(int index_of_the_particle, int * index_of_the_nex
 }
 
 int delete_particle(int index_of_the_particle){
-   dm_states.erase(index_of_the_particle);
-	particle_id_counter--;
-	return 0;
+    dm_states.erase(index_of_the_particle);
+    particle_id_counter--;
+    return 0;
 }
+
 
 int get_potential(int index_of_the_particle, double * potential){ 
 	*potential = 0.0;
@@ -679,15 +680,16 @@ int set_radius(int index_of_the_particle, double radius){
 }
 
 int cleanup_code(){
-   delete [] pos_PH;
-   delete [] vel_PH;
-   delete [] pos_CH;
-   delete [] vel_CH;
-   delete [] a_H0;
-   delete [] step;
-   delete [] local_time;
-	dm_states.clear();
-	return 0;
+    particle_id_counter = 0;
+    delete [] pos_PH;
+    delete [] vel_PH;
+    delete [] pos_CH;
+    delete [] vel_CH;
+    delete [] a_H0;
+    delete [] step;
+    delete [] local_time;
+    dm_states.clear();
+    return 0;
 }
 
 int get_potential_energy(double * potential_energy){

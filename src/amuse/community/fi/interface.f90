@@ -4,6 +4,7 @@ function initialize_code() result(ret)
   integer :: set_support_for_condition, error
   call muse_start
   call muse_reset
+  call muse_set_time(0.0)
   error = set_support_for_condition(TIMEOUT_DETECTION)
   error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
   error = set_support_for_condition(OUT_OF_BOX_DETECTION)
@@ -20,9 +21,9 @@ function cleanup_code() result(ret)
   ret=0
 end function
 
+
 function commit_particles() result(ret)
   integer :: ret
-  call muse_set_time(0.0)
   call muse_finalize_init 
   ret=0
 end function
@@ -68,6 +69,21 @@ function get_time(t) result(ret)
   t=muse_get_time()
   ret=0
 end function
+
+function set_begin_time(t) result(ret)
+  integer :: ret
+  real*8 :: t
+  call muse_set_begin_time(t)
+  ret = 0
+end function
+
+function get_begin_time(t) result(ret)
+  integer :: ret
+  real*8 :: t
+  t = muse_get_begin_time(t)
+  ret = 0
+end function
+
 
 function evolve_model(tend) result(ret)
   integer :: ret

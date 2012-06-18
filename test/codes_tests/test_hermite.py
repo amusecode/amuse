@@ -181,7 +181,6 @@ class TestHermiteInterface(TestWithMPI):
         
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
-    
 
 
 class TestHermite(TestWithMPI):
@@ -395,12 +394,12 @@ class TestHermite(TestWithMPI):
             instance.parameters.dt_dia = x | units.yr
             self.assertAlmostEquals(x | units.yr, instance.parameters.dt_dia, in_units=units.yr)
         
-        value = instance.get_time()
+        value = instance.get_begin_time()
         self.assertEquals(0.0| units.yr, value)
-        self.assertAlmostEquals(0.0 | units.yr, instance.parameters.time, in_units=units.yr)
+        self.assertAlmostEquals(0.0 | units.yr, instance.parameters.begin_time, in_units=units.yr)
         for x in [1.0, 10.0, 100.0]:
-            instance.parameters.time = x | units.yr
-            self.assertAlmostEquals(x | units.yr, instance.parameters.time, in_units=units.yr)
+            instance.parameters.begin_time = x | units.yr
+            self.assertAlmostEquals(x | units.yr, instance.parameters.begin_time, in_units=units.yr)
         instance.stop()
     
     def test7(self):

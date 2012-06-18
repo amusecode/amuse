@@ -40,6 +40,8 @@ class PyNbodyImplementation(object):
 
     def commit_parameters(self):
         return 0
+    
+
 
     def commit_particles(self):
         num = len(self.particles)
@@ -264,6 +266,10 @@ class PyNbodyImplementation(object):
         time.value = self.current_time
         return 0
 
+    def set_time(self, time):
+        self.current_time = time
+        return 0
+
 
     def set_eps2(self, epsilon_squared):
         self.eps2 = epsilon_squared
@@ -274,11 +280,11 @@ class PyNbodyImplementation(object):
         return 0
 
 
-    def set_time_begin(self, time_begin):
+    def set_begin_time(self, time_begin):
         self.time_begin = time_begin
         return 0
 
-    def get_time_begin(self, time_begin):
+    def get_begin_time(self, time_begin):
         time_begin.value = self.time_begin
         return 0
 
@@ -379,21 +385,6 @@ class PyNbodyInterface(PythonCodeInterface, GravitationalDynamicsInterface):
 
 
     @legacy_function
-    def set_time_begin():
-        function = LegacyFunctionSpecification()
-        function.addParameter('time_begin', dtype='float64', direction=function.IN)
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def get_time_begin():
-        function = LegacyFunctionSpecification()
-        function.addParameter('time_begin', dtype='float64', direction=function.OUT)
-        function.result_type = 'int32'
-        return function
-
-
-    @legacy_function
     def set_integrator_method():
         function = LegacyFunctionSpecification()
         function.addParameter('integrator_method', dtype='string', direction=function.IN)
@@ -430,15 +421,7 @@ class PyNbody(GravitationalDynamics):
             "timestep parameter",
             default_value = 0.01
         )
-
-        object.add_method_parameter(
-            "get_time",
-            "set_time",
-            "time",
-            "current simulation time",
-            default_value = 0.0 | nbody_system.time
-        )
-
+        
         object.add_method_parameter(
             "get_eps2",
             "set_eps2",
@@ -447,6 +430,13 @@ class PyNbody(GravitationalDynamics):
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
 
+        object.add_method_parameter(
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | nbody_system.time
+        )
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
@@ -470,9 +460,14 @@ class PyNbody(GravitationalDynamics):
         )
 
         object.add_method(
-            "set_time",
+            "set_begin_time",
             (nbody_system.time,),
             (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_begin_time",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
         )
 
         object.add_method(

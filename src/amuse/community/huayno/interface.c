@@ -8,6 +8,7 @@ int pcounter,pindex[NMAX];
 double t_now;
 int inttype;
 double dtime;
+static double begin_time = 0;
 
 int initialize_code()
 {
@@ -24,19 +25,25 @@ int initialize_code()
 }
 
 int cleanup_code()
-{
-  pcounter=-1;
-  mainsys.n=0;
-  free(mainsys.part);
-  mainsys.last=NULL;
-  dt_param=.03; 
-  dtime=0.;
-  eps2=0.;
-  inttype=8;
-  stop_code();
-  return 0;
+{ 
+    for(int i = 0; i < NMAX; i++) {
+        pindex[i] = 0;
+    }
+    
+    mainsys.n = 0;
+    mainsys.last = 0;
+    pcounter=-1;
+    mainsys.n=0;
+    free(mainsys.part);
+    mainsys.last=NULL;
+    dt_param=.03; 
+    dtime=0.;
+    eps2=0.;
+    inttype=8;
+    begin_time = 0;
+    stop_code();
+    return 0;
 }
-
 
 int new_particle(int *id, double mass,
                  double x, double y, double z,
@@ -310,10 +317,14 @@ int get_time(double *time)
  return 0;
 }
 
-int set_time(double time)
-{
- t_now=time;
- return 0;
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
+}
+
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
 }
 
 int commit_particles()
@@ -390,7 +401,8 @@ int recommit_parameters()
 }
 int commit_parameters()
 {
-  return 0;
+    t_now = begin_time;
+    return 0;
 }
 
 int get_potential(int id, double *pot)

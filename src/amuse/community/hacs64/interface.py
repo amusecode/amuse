@@ -260,6 +260,14 @@ class Hacs64(GravitationalDynamics):
             default_value = 0.0  | nbody_system.length * nbody_system.length
         )
         
+        object.add_method_parameter(
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | nbody_system.time
+        )
+        
         self.stopping_conditions.define_parameters(object)
 
     def update_particle_set(self):

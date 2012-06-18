@@ -8,6 +8,9 @@
 static hdyn *b;		// root node for all smallN data
 static hdyn *b_copy;
 
+static double begin_time = 0;
+
+
 class UpdatedParticle {
 
   // AMUSE bookkeeping.  A particle on the UpdatedParticle list has
@@ -38,12 +41,12 @@ int cleanup_code()
     // Clean up at the end of the calculation.
 
     if (b) {
-	rmtree(b);		// deletes b
-	b = NULL;
+        rmtree(b);		// deletes b
+        b = NULL;
     }
     if (b_copy) {
-	rmtree(b_copy);		// deletes b_copy
-	b_copy = NULL;
+        rmtree(b_copy);		// deletes b_copy
+        b_copy = NULL;
     }
     UpdatedParticles.clear();
     return 0;
@@ -54,9 +57,16 @@ int initialize_code()
     // Begin the initialization by creating a basic hdyn data structure.
 
     cleanup_code();
+    
     b = new hdyn;
     b_copy = NULL;
-
+    /* need to fix scatter3 code first
+    b->set_eta(0.14);
+    b->set_gamma(1e-6);
+    b->set_system_time(0.0);
+    b->set_allow_full_unperturbed(1);
+    b->set_cm_index(100000); 
+    */
     // AMUSE stopping conditions support.
 
     set_support_for_condition(COLLISION_DETECTION);
@@ -64,6 +74,17 @@ int initialize_code()
 
     return 0;
 }
+
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
+}
+
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
+}
+
 
 int set_eps2(double softening_parameter_sq)		// not used
 {
@@ -140,7 +161,9 @@ int get_time(double * sys_time)
 int commit_parameters()
 {
     // Perform any needed setup after initial code parameters have been set.
-
+    if( b->get_system_time() == 0) {
+        b->set_system_time(begin_time);
+    }
     return 0;
 }
 
@@ -166,7 +189,6 @@ int recommit_particles()
     return 0;
 }
 
-
 // Setters and getters for individual particles.
 
 int new_particle(int * index_of_the_particle,

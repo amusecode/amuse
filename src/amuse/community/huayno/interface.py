@@ -31,12 +31,6 @@ class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
         function.result_type = 'i'
         return function
 
-    @legacy_function      
-    def set_time():
-        function = LegacyFunctionSpecification()
-        function.addParameter('time', dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function
 
     @legacy_function      
     def commit_particles():
@@ -214,12 +208,13 @@ class Huayno(GravitationalDynamics):
         )
 
         object.add_method_parameter(
-            "get_time",
-            "set_time",
-            "time",
-            "current simulation time", 
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
         )
+
 
 
     def define_methods(self, object):
@@ -271,18 +266,6 @@ class Huayno(GravitationalDynamics):
         object.add_method(
             "set_inttype_parameter",
             (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
-        )
-        
-        object.add_method(
-            "get_time",
-            (),
-            (nbody_system.time, object.ERROR_CODE,)
-        )
-        
-        object.add_method(
-            "set_time",
-            (nbody_system.time, ),
             (object.ERROR_CODE,)
         )
         

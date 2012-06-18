@@ -862,20 +862,7 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         function.result_type = 'i'
         return function
     
-    @legacy_function
-    def get_time_begin():
-        function = LegacyFunctionSpecification()
-        function.addParameter('time_begin', dtype='d', direction=function.OUT,
-            description = "The time at the start of the run.")
-        function.result_type = 'i'
-        return function
-    @legacy_function
-    def set_time_begin():
-        function = LegacyFunctionSpecification()
-        function.addParameter('time_begin', dtype='d', direction=function.IN,
-            description = "The time at the start of the run.")
-        function.result_type = 'i'
-        return function
+  
     
     @legacy_function
     def get_time_max():
@@ -1513,11 +1500,11 @@ class Gadget2(GravitationalDynamics):
         )
         
         object.add_method_parameter(
-            "get_time_begin", 
-            "set_time_begin",
-            "time_begin", 
-            "The time at the start of the run.", 
-            default_value = 0.0 | generic_unit_system.time
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | nbody_system.time
         )
         
         object.add_method_parameter(
@@ -2268,17 +2255,19 @@ class Gadget2(GravitationalDynamics):
             (object.ERROR_CODE,)
         )
         
+        
         object.add_method(
-            "get_time_begin",
+            "get_begin_time",
             (),
             (generic_unit_system.time, object.ERROR_CODE,)
         )
         
         object.add_method(
-            "set_time_begin",
+            "set_begin_time",
             (generic_unit_system.time, ),
             (object.ERROR_CODE,)
         )
+        
         
         object.add_method(
             "get_time_max",

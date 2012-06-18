@@ -125,6 +125,8 @@ class MikkolaInterfaceTests(TestWithMPI):
         self.assertEquals(error, 0)
         self.assertEquals(index1, 1)
         
+        instance.commit_particles()
+        
         error = instance.cleanup_code()
         self.assertEquals(error, 0)
         
@@ -134,6 +136,10 @@ class MikkolaInterfaceTests(TestWithMPI):
         index1, error = instance.new_particle(mass = 1.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
         self.assertEquals(error, 0)
         self.assertEquals(index1, 1)
+        instance.commit_particles()
+        error = instance.cleanup_code()
+        self.assertEquals(error, 0)
+        
         
         
 # run with: 
@@ -299,3 +305,24 @@ class TestMikkola(TestWithMPI):
         
         instance.stop()
         del instance
+        
+    def test4(self):
+        convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
+        instance = Mikkola(convert_nbody)
+
+        stars = self.new_system_of_Hulse_Taylor_pulsar()
+        instance.particles.add_particles(stars)
+        
+        instance.commit_particles()
+        self.assertEquals(len(instance.particles), 2)
+        instance.cleanup_code()
+        self.assertEquals(len(instance.particles), 0)
+        
+        instance.initialize_code()
+        instance.particles.add_particles(stars)
+        self.assertEquals(len(instance.particles), 2)
+        
+        instance.commit_particles()
+        self.assertEquals(len(instance.particles), 2)
+        instance.cleanup_code()
+        self.assertEquals(len(instance.particles), 0)

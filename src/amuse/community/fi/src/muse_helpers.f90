@@ -19,6 +19,8 @@ subroutine muse_init
  
 ! call startout
 
+ call muse_set_time(tbegin)
+ 
  call check_parameters
 
  call heattabel
@@ -109,6 +111,7 @@ subroutine muse_reset(time)
  nbh=0
  
  tnow=0
+ tbegin=0
  mtot=0
  ektot=0
  eptot=0
@@ -171,6 +174,19 @@ subroutine muse_set_time(time)
  tbh=tnow
    
 end subroutine
+
+
+subroutine muse_set_begin_time(time)
+ include 'globals.h'
+ real :: time
+ tbegin = time
+end subroutine
+
+function muse_get_begin_time()
+ include 'globals.h'
+ real :: muse_get_begin_time
+ muse_get_begin_time = tbegin
+end function
 
 subroutine muse_add_particle_sph(id,m,x,y,z,vx,vy,vz,e,u,npart)
  include 'globals.h'

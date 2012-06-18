@@ -490,7 +490,7 @@ class TestGadget2(TestWithMPI):
             self.assertEquals(1, getattr(instance.parameters, par))
         
         for par, value in [('gas_epsilon', 0.01 | generic_unit_system.length), 
-                ('time_begin', 0.0 | generic_unit_system.time), 
+                ('begin_time', 0.0 | generic_unit_system.time), 
                 ('time_max', 100.0 | generic_unit_system.time), 
                 ('max_size_timestep', 0.01 | generic_unit_system.time), 
                 ('min_size_timestep', 0.0 | generic_unit_system.time), 
@@ -826,20 +826,20 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES,
             **few_particles_default_options)
         instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length # implicitly calls initialize_code()...
-        instance.parameters.time_begin = 10.04 | generic_unit_system.time
+        instance.parameters.begin_time = 10.04 | generic_unit_system.time
         instance.parameters.time_max = 10.4 | generic_unit_system.time
         instance.parameters.min_size_timestep = 0.1 | generic_unit_system.time
         
         self.assertAlmostEqual(instance.model_time, 0.0 | units.s)
         instance.dm_particles.add_particles(self.three_particles_IC)
-        self.assertAlmostEqual(instance.model_time, instance.parameters.time_begin)
+        self.assertAlmostEqual(instance.model_time, instance.parameters.begin_time)
         self.assertAlmostEqual(instance.dm_particles.x, [0.5,0.,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.y, [0.,1.5,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.5] | units.kpc, places=6)
         
         instance.evolve_model(10.14 | generic_unit_system.time)
         self.assertAlmostRelativeEqual(instance.model_time, 
-            instance.parameters.time_begin + instance.parameters.min_size_timestep, 7)
+            instance.parameters.begin_time + instance.parameters.min_size_timestep, 7)
         self.assertAlmostEqual(instance.dm_particles.x, [0.4,0.,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.y, [0.,1.6,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.4] | units.kpc, places=6)

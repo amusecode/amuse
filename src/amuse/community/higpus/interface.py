@@ -104,30 +104,17 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
         function.result_type = 'int32'
         return function
 
-    @legacy_function
-    def set_time_begin():
-	function = LegacyFunctionSpecification()
-        function.addParameter('time_begin', dtype='float64', direction=function.IN, description = "start time.")
-	function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def get_time_begin():
-	function = LegacyFunctionSpecification()
-        function.addParameter('time_begin', dtype='float64', direction=function.OUT, description = "start time.")
-        function.result_type = 'int32'
-        return function
-    
+  
     @legacy_function
     def set_eta6():
-	function = LegacyFunctionSpecification()
+        function = LegacyFunctionSpecification()
         function.addParameter('eta6', dtype='float64', direction=function.IN, description = "eta parameter of time steps.")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_eta6():
-	function = LegacyFunctionSpecification()
+        function = LegacyFunctionSpecification()
         function.addParameter('eta6', dtype='float64', direction=function.OUT, description = "eta parameter of time steps.")
         function.result_type = 'int32'
         return function
@@ -321,15 +308,16 @@ class HiGPUs(GravitationalDynamics):
             "timestep parameter",                
             default_value = 0.4 | units.none)
 
+        
         object.add_method_parameter(
-            "get_time_begin",                    
-            "set_time_begin",                    
-            "start_time",                        
-            "start time",                        
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
         )
 
-	object.add_method_parameter(
+        object.add_method_parameter(
             "get_Plummer_core",                  
             "set_Plummer_core",                  
             "r_core_plummer",                    
@@ -345,12 +333,11 @@ class HiGPUs(GravitationalDynamics):
             default_value = 0.0 | nbody_system.mass
         )
 
-
-	object.add_method_parameter(
+        object.add_method_parameter(
             "get_number_of_Threads",              
             "set_number_of_Threads",              
             "Threads",                            
-	    "Threads per block",                  
+            "Threads per block",                  
             default_value = 128 | units.none
         )
 
@@ -358,7 +345,7 @@ class HiGPUs(GravitationalDynamics):
             "get_number_of_Print",                
             "set_number_of_Print",                
             "n_Print",                            
-	    "start number to print file",         
+            "start number to print file",         
             default_value = 1000000 | units.none
         )
 

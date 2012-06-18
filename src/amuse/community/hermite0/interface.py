@@ -114,24 +114,7 @@ class HermiteInterface(CodeInterface,
             could not retrieve parameter
         """
         return function
-        
-    @legacy_function
-    def set_time():
-        """
-        Set the current simulation time.
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('time', dtype='float64',
-                              direction=function.IN,
-            description = "the current simulation time")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            the parameter was set
-        -1 - ERROR
-            could not set parameter
-        """
-        return function
+    
 
     @legacy_function
     def get_pair_detect_factor():
@@ -216,18 +199,18 @@ class Hermite(GravitationalDynamics):
             default_value = 1.0 | nbody_system.time
         )
         object.add_method_parameter(
-            "get_time",
-            "set_time",
-            "time",
-            "current simulation time", 
-            default_value = 0.0 | nbody_system.time
-        )
-        object.add_method_parameter(
             "get_pair_detect_factor",
             "set_pair_detect_factor",
             "pair_factor",
             "radius factor for pair detection", 
             default_value = 1.0
+        )
+        object.add_method_parameter(
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | nbody_system.time
         )
 
         self.stopping_conditions.define_parameters(object)

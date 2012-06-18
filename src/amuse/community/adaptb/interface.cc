@@ -14,6 +14,7 @@ using namespace std;
 ////////////////////////////////////////////////////////
 int numBits = 64;  
 int Lw = numBits/4;
+static double begin_time = 0;
 ofstream odata;
 
 ////////////////////////////////////////////////////////
@@ -63,7 +64,7 @@ int initialize_code() {
     out_directory = "./";
     file_out = "file.out";	// Outfile for phase space coordinates
     file_log = "file.log";	// Outfile for input/output numbers
-    
+    begin_time = 0;
     n_max = 64;			// Bulirsch-Stoer sub step variables
     k_max = 64;
     
@@ -87,6 +88,7 @@ int new_particle_float64(int *particle_identifier, double mass,
 }
 int commit_particles() {
     cluster->set_N(particle_id_counter);
+    cluster->set_t( begin_time );
     cluster->print(odata);
     
     cerr << endl;
@@ -183,6 +185,8 @@ int commit_parameters() {
     bs = new Bs_integrator(mpreal_globals::epsilon, n_max, k_max);
     myclock = new Clock("0", "1", mpreal_globals::dt_print, mpreal_globals::dt_max, mpreal_globals::dt_factor);
     myclock->Start_timer();
+    cluster->set_t( begin_time );
+    myclock->set_t( begin_time );
     odata.open( (out_directory + file_out).c_str() );
     if( !odata ) {
         cerr << "Could not open " << (out_directory + file_out) << "!" << endl;
@@ -374,8 +378,11 @@ int cleanup_code() {
         odata << "dE        = " << mpreal_globals::dE << endl;
     }
     delete cluster;
+    cluster = 0;
+    particle_id_counter = 0;
     return 0;
 }
+
 
 int delete_particle(int id) {
   return -2;
@@ -384,10 +391,25 @@ int recommit_particles() {
   return -2;
 }
 
+
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
+}
+
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
+}
+
+int get_time(double* time){
+    *time = myclock->get_t().toDouble();
+    return 0;
+}
+
 int get_potential(int id, double* pot){return -2;}
 int get_gravity_at_point(double m, double x, double y, double z, double* rx, double* ry, double* rz){return -2;}
 int get_number_of_particles(int* N){return -2;}
-int get_time(double* time){return -2;}
 int get_potential_at_point(double m, double x, double y, double z, double* p){return -2;}
 int get_center_of_mass_position(double* x , double* y, double* z){return -2;}
 int get_total_radius(double* R){return -2;}

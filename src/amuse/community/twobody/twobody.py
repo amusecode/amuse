@@ -241,6 +241,7 @@ class TwoBodyImplementation(object):
     def initialize(self):
         pass
       
+        
     def new_particle(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
         index_of_the_particle.value = 0
         if( len(self.particles)>=2):

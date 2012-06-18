@@ -64,7 +64,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
             not yet implemented
         """
         return function
-
+        
     @legacy_function
     def get_state():
         """
@@ -528,7 +528,43 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
             The code does not have support for querying the time
         """
         return function
+        
 
+    @legacy_function
+    def get_begin_time():
+        """
+        Retrieve the model time to start the evolution at.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.OUT,
+            description = "The begin time", unit = nbody_system.time)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the time was retrieved
+        -2 - ERROR
+            The code does not have support for querying the begin time
+        """
+        return function
+    
+    @legacy_function
+    def set_begin_time():
+        """
+        Set the model time to start the evolution at. This is an offset for
+        all further calculations in the code.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.IN,
+            description = "The model time to start at", unit = nbody_system.time)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Time value was changed
+        -2 - ERROR
+            The code does not support setting the begin time
+        """
+        return function
+        
     @legacy_function
     def get_time_step():
         """
@@ -812,7 +848,15 @@ class GravitationalDynamics(common.CommonCode):
             "timestep",
             "constant timestep for iteration",
             default_value = 0.7 | nbody_system.time
-            )
+        )
+        
+        object.add_method_parameter(
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | nbody_system.time
+        )
 
     def define_methods(self, object):
         common.CommonCode.define_methods(self, object)

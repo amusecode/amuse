@@ -34,13 +34,6 @@ class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
         return function
     
     @legacy_function
-    def set_time():
-        function = LegacyFunctionSpecification()
-        function.addParameter('time', dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function
-    
-    @legacy_function
     def set_time_step():
         function = LegacyFunctionSpecification()
         function.addParameter('time_step', dtype='float64', direction=function.IN,
@@ -202,6 +195,13 @@ class Bonsai(GravitationalDynamics):
             default_value = 1.0 / 64 | nbody_system.time
         )
         
+        object.add_method_parameter(
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | nbody_system.time
+        )
         self.stopping_conditions.define_parameters(object)
     
     def define_methods(self, object):

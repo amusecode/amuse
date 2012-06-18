@@ -32,6 +32,7 @@ int n_bodies            = 0;
 double total_mass       = 0;
 double t_now		= 0.0;
 double timestep_h	= 0.0;
+static double begin_time = 0;
 
 bool curStateOnHost	= false;
 
@@ -224,6 +225,10 @@ int delete_particle(int id)
 }
 
 
+
+
+
+
 int commit_particles()
 {
   assert(initialized == true);
@@ -267,8 +272,9 @@ int commit_particles()
 
 int commit_parameters()
 {
-  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return 0;
+    bonsai->setTime(begin_time);
+    t_now = begin_time;
+    return 0;
 }
 
 
@@ -366,12 +372,6 @@ int set_eps2(double epsilon_squared)
   return 0;
 }
 
-int set_time(double time_now)
-{
-  bonsai->setTime(time_now);
-  t_now = time_now;
-  return 0;
-}
 
 int get_time(double *time)
 {
@@ -692,10 +692,36 @@ int get_gravity_at_point(double eps, double x, double y, double z,
 }
 
 int cleanup_code(){
-  if (initialized && bonsai->localTree.n > 0) delete bonsai;
+  if (initialized) {
+    getCurrentStateToHost();
+  }
+  
+  bodies_pos.clear();
+  bodies_vel.clear();
+  bodies_grav.clear();
+  starids.clear();
+  radii.clear();
+  bodies_time.clear();
+  
+  total_mass = 0;
+  n_bodies = 0;
+  id_counter = 0;
+  idToIndex.clear();
+
   //TODO waarom de test op n? 
+  if (initialized && bonsai->localTree.n > 0) delete bonsai;
   bonsai = NULL;
+  initialized = false;
   return 0;
 }
 
 
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
+}
+
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
+}

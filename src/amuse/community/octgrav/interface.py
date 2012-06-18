@@ -165,7 +165,14 @@ class Octgrav(GravitationalDynamics):
             "opening angle for building the tree between 0 and 1", 
             default_value = 0.8
         )
-
+        object.add_method_parameter(
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | nbody_system.time
+        )
+        
         self.stopping_conditions.define_parameters(object)
 
     def define_methods(self, object):

@@ -249,6 +249,13 @@ class PhiGRAPE(GravitationalDynamics):
             "set to 1 if the gpu must only be initialized once, 0 if it can be initialized for every call\nIf you want to run multiple instances of the code on the same gpu this parameter needs to be 0 (default)",
             default_value = 0
         )
+        object.add_method_parameter(
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | nbody_system.time
+        )
 
         self.stopping_conditions.define_parameters(object)
 

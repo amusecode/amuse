@@ -45,6 +45,8 @@ double Tmerge = 0.0;
 //~double Tend = 0.0;
 double Egr = 0.0;
 double Emerge = 0.0;
+static double begin_time = 0;
+
 int myrank;
 int Nproc;
 map<int, dynamics_state> particle_buffer;        // for initialization only
@@ -121,6 +123,8 @@ int initialize_code() {
     cout << setprecision(15);
     cerr << setprecision(15);
     
+    begin_time = 0;
+    
     MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
     MPI_Comm_size (MPI_COMM_WORLD, &Nproc);
     
@@ -185,6 +189,8 @@ int delete_particle(int particle_identifier) {
     return -3; // Not found!
 }
 
+
+
 int commit_particles() {
     NFS = particle_buffer.size();
     NBH = 0;//black_hole_buffer.size();
@@ -207,6 +213,8 @@ int commit_particles() {
     //~}
     //~black_hole_buffer.clear();
     //~i = NBH; // Just to be sure...
+    local_index_map.clear();
+    reverse_index_map.clear();
     for (map<int, dynamics_state>::iterator iter = particle_buffer.begin();
             iter != particle_buffer.end(); iter++, i++){
         local_index_map.insert(pair<int, int>((*iter).first, i)); // identifier -> index
@@ -218,6 +226,7 @@ int commit_particles() {
         prt[i].index = i;
         prt[i].address = i;
     }
+    particle_buffer.clear();
     particle_buffer.clear();
     
     Nip_tot = Ntot - Ndead;
@@ -317,8 +326,13 @@ void push_particle_data_back_to_buffer(){
 
 int recommit_particles() {
     push_particle_data_back_to_buffer();
-    cleanup_code();
-    //~if (particles_initialized){
+    if (particles_initialized) {
+        particles_initialized = false;
+        delete[] prt;
+        delete[] prt_old;
+        delete[] address;
+        delete[] address_old;
+    }
     return commit_particles();
 }
 
@@ -330,8 +344,13 @@ int cleanup_code() {
         delete[] address;
         delete[] address_old;
     }
+    local_index_map.clear();
+    reverse_index_map.clear();
+    particle_buffer.clear();
+    particle_id_counter = 0;
     return 0;
 }
+
 
 void iteration(Particle prt[], Particle prt_old[], int address[], int address_old[],
     const int &Ntot, const int &Ndead_old, const int &Nmerge_old, const int &Naccrete_old,
@@ -647,6 +666,17 @@ int get_time(double *time) {
     *time = current_time;
     return 0;
 }
+
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
+}
+
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
+}
+
 int get_center_of_mass_position(double *x, double *y, double *z){
     // calculate only on the root mpi process, not on others
     if (myrank == 0) {
@@ -930,6 +960,8 @@ int get_include_smbh_flag(int *value){
 int commit_parameters() {
     set_eps2(eps2_fs_fs, eps2_fs_smbh, eps2_bh_bh);
     set_eta(eta_s, eta_fs, eta_smbh, eta_imbh);
+    current_time = begin_time;
+    Tsys = begin_time;
     return 0;
 }
 int recommit_parameters() {

@@ -15,6 +15,7 @@
 static jdata *jd = NULL;
 static idata *id = NULL;
 static scheduler *s = NULL;
+static double begin_time = 0;
 
 // Setup and parameters.
 
@@ -32,6 +33,8 @@ int initialize_code()
 	cout << "initialize_code: ";
 	PRC(jd->mpi_size); PRL(jd->have_gpu);
     }
+    
+    begin_time = 0.0;
     jd->system_time = 0;		// ? TBD
 
     // AMUSE STOPPING CONDITIONS SUPPORT
@@ -103,6 +106,17 @@ int get_time(double * sys_time)
     return 0;
 }
 
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
+}
+
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
+}
+
+
 int commit_parameters()
 {
     // Perform any needed setup after initial code parameters have been set.
@@ -111,6 +125,10 @@ int commit_parameters()
 
     if (jd->use_gpu && !jd->have_gpu) jd->use_gpu = false;
 
+    if(jd->system_time == 0) {
+        jd->system_time = begin_time;
+    }
+    
     if (jd->mpi_rank == 0) {
 	cout << "commit_parameters: ";
 	PRC(jd->have_gpu); PRL(jd->use_gpu);
@@ -174,6 +192,8 @@ int cleanup_code()
         s->cleanup();
     return 0;
 }
+
+
 
 // Setters and getters for individual particles.
 

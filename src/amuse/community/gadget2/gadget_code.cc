@@ -144,6 +144,7 @@ int cleanup_code(){
     return 0;
 }
 
+
 int check_parameters(){
     MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
     if (ThisTask)
@@ -1033,12 +1034,12 @@ int set_type_of_timestep_criterion(int type_of_timestep_criterion){
     All.TypeOfTimestepCriterion = type_of_timestep_criterion;
     return 0;
 }
-int get_time_begin(double *time_begin){
+int get_begin_time(double *time_begin){
     if (ThisTask) {return 0;}
     *time_begin = All.TimeBegin;
     return 0;
 }
-int set_time_begin(double time_begin){
+int set_begin_time(double time_begin){
     All.TimeBegin = time_begin;
     return 0;
 }
@@ -2346,6 +2347,8 @@ int get_time(double *time){
     *time = All.Time;
     return 0;
 }
+
+
 int get_redshift(double *redshift){
     if (ThisTask) {return 0;}
     if (!All.ComovingIntegrationOn) {return -9;}

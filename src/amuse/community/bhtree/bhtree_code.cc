@@ -16,6 +16,8 @@
 using namespace std;
 
 const bool debug = false;
+static double begin_time = 0;
+
 
 // global static parameters
 // N-body data:
@@ -45,6 +47,7 @@ bool initialized = false;
 int counter = 0;
 
 BHTC_SYSTEM bhtcs;
+
 vector<dynamics_state> ds;        // for initialization only
 
 // External parameters to be used inside the treecode.
@@ -203,6 +206,16 @@ int get_time(double *time)
 {
   *time = bhtcs.time;
   return 0;
+}
+
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
+}
+
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
 }
 
 int set_mass(int id, double m)
@@ -443,7 +456,6 @@ int delete_particle(int id)
             indexMap[np[i].get_index()] = i;
           }
         bhtcs.n--;
-
         bhtcs.set_nsize(bhtcs.n);
 
         real pos_scale = 1;
@@ -639,6 +651,9 @@ int set_radius(int id, double radius)
 
 int initialize_code()
 {
+    begin_time = 0.0;
+    bhtcs.time = 0.0;
+    
     set_support_for_condition(COLLISION_DETECTION);
     set_support_for_condition(TIMEOUT_DETECTION);
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
@@ -647,7 +662,21 @@ int initialize_code()
 
 int cleanup_code()
 {
-    return 0;
+    if(initialized) {
+        initialized = false;
+        
+        nbody_particle *np = bhtcs.get_particle_pointer();
+        delete np;
+        
+        bhtcs.mass = 0;
+        bhtcs.n = 0;
+        bhtcs.set_nsize(0);
+        bhtcs.set_particle_pointer(0);
+    }
+    
+    ds.clear();
+    indexMap.clear();
+    counter = 0;
 }
 
 int get_identity_from_index(int i)
@@ -682,7 +711,6 @@ int get_index_from_identity(int id)
 
 int initialize_particles()
 {
-    bhtcs.time = 0.0;
     bhtcs.setup_tree();
 
     return 0;
@@ -921,6 +949,11 @@ int get_escaper()
 
 
 int recommit_particles(){
+    if(!initialized) {
+        create_treecode_system();        // note that ds is never used again after this
+        initialized = true;
+    }
+    
     bhtcs.setup_tree();
     bhtcs.calculate_gravity();
     
@@ -929,8 +962,9 @@ int recommit_particles(){
 
 int recommit_parameters()
 {
-  return commit_parameters();
+    return commit_parameters();
 }
+
 
 int commit_particles(){
     if(!initialized) {
@@ -938,8 +972,6 @@ int commit_particles(){
         initialized = true;
     }
 
-    
-    bhtcs.time = 0.0;
     bhtcs.setup_tree();
     bhtcs.calculate_gravity();
     return 0;
@@ -947,6 +979,7 @@ int commit_particles(){
 
 int commit_parameters(){
     
+    bhtcs.time = begin_time;
     bhtcs.timestep = timestep;
     bhtcs.eps2_for_gravity = eps2_for_gravity;
     bhtcs.use_self_gravity = use_self_gravity;

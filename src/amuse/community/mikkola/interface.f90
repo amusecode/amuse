@@ -8,7 +8,8 @@ DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_z
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vy
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vx
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vz
-DOUBLE PRECISION :: start_time
+DOUBLE PRECISION :: current_time
+DOUBLE PRECISION :: begin_time
 integer :: maximum_number_of_particles
 integer :: number_of_particles_allocated
 DOUBLE PRECISION :: lightspeed, tolerance, timestep
@@ -18,6 +19,8 @@ CONTAINS
 FUNCTION commit_parameters()
   IMPLICIT NONE
   INTEGER :: commit_parameters, i
+  
+  current_time = begin_time
   
   ALLOCATE(particle_id(maximum_number_of_particles))
   ALLOCATE(particle_m(maximum_number_of_particles))
@@ -180,8 +183,24 @@ FUNCTION get_time(time)
   IMPLICIT NONE
   INTEGER :: get_time
   DOUBLE PRECISION :: time
-  time = 0
+  time = current_time
   get_time=0
+END FUNCTION
+
+FUNCTION set_begin_time(time)
+  IMPLICIT NONE
+  INTEGER :: set_begin_time
+  DOUBLE PRECISION :: time
+  begin_time = time
+  set_begin_time=0
+END FUNCTION
+
+FUNCTION get_begin_time(time)
+  IMPLICIT NONE
+  INTEGER :: get_begin_time
+  DOUBLE PRECISION :: time
+  time = begin_time
+  get_begin_time=0
 END FUNCTION
 
 FUNCTION evolve_model(end_time)
@@ -212,7 +231,7 @@ FUNCTION evolve_model(end_time)
   ENDDO
   
   IWRR = -0 !?
-  DELTAT = MIN(timestep, end_time - start_time) ! Initial timestep, not used according to Mikkola
+  DELTAT = MIN(timestep, end_time - current_time) ! Initial timestep, not used according to Mikkola
   if (DELTAT .LE. 0.0) then
      DELTAT = 0.001 ! if timestep or end_time invalid ensure a valid deltat
   end if  
@@ -223,7 +242,7 @@ FUNCTION evolve_model(end_time)
   cmet= [1.e-0, 0.e-0, 0.e-0] !?
   Ixc=2 ! time output is exacte (2) or not exact (1, faster)
   BHspin=[0.0, 0.0, 0.0] !spin of the first black hole (between 0 and 1) 
-  evolve_model = Mikkola_ARWV(start_time, particle_m, POS,VEL,INDEX, &
+  evolve_model = Mikkola_ARWV(current_time, particle_m, POS,VEL,INDEX, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
 &                lightspeed,Ixc,Nbh,BHspin,tolerance) 
   
@@ -239,7 +258,7 @@ FUNCTION evolve_model(end_time)
          j = j + 1
      ENDIF
   ENDDO
-  start_time = end_time
+  current_time = end_time
 END FUNCTION
 
 FUNCTION get_index_of_first_particle(index_of_the_particle)
@@ -486,19 +505,25 @@ FUNCTION cleanup_code()
   IMPLICIT NONE
   INTEGER :: cleanup_code
   
-  
-  DEALLOCATE(particle_id)
-  DEALLOCATE(particle_m)
-  DEALLOCATE(particle_x)
-  DEALLOCATE(particle_y)
-  DEALLOCATE(particle_z)
-  DEALLOCATE(particle_vx)
-  DEALLOCATE(particle_vy)
-  DEALLOCATE(particle_vz)
+  IF (ALLOCATED(particle_id)) THEN
+      DEALLOCATE(particle_id)
+      DEALLOCATE(particle_m)
+      DEALLOCATE(particle_x)
+      DEALLOCATE(particle_y)
+      DEALLOCATE(particle_z)
+      DEALLOCATE(particle_vx)
+      DEALLOCATE(particle_vy)
+      DEALLOCATE(particle_vz)
+  END IF
   
   number_of_particles_allocated = 0
   cleanup_code=0
 END FUNCTION
+
+
+
+
+
 
 FUNCTION recommit_parameters()
   IMPLICIT NONE
@@ -511,7 +536,8 @@ FUNCTION initialize_code()
   INTEGER :: initialize_code
   maximum_number_of_particles = 100
   initialize_code=0
-  start_time = 0
+  current_time = 0
+  begin_time = 0
   lightspeed = 1
   tolerance = 1.e-13 ! accuracy parameter to which to integrate
   timestep = 1.0

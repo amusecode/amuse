@@ -28,6 +28,7 @@ double timestep = 0.01;
 double total_mass = 0.0;
 bool initialized = false;
 int verbose_mode = 0;
+static double begin_time = 0;
 
 int id_counter = 0; // for each new particle is this is
                     // being incremented to give unique id for new particle.
@@ -88,6 +89,7 @@ int delete_particle(int id)
         starids.erase(starids.begin()+i);
         radii.erase(radii.begin()+i);
         n_bodies--;
+        
         return 0;
       }
     else
@@ -95,6 +97,7 @@ int delete_particle(int id)
         return -1;
       }
 }
+
 
 static void create_treecode_system();
 
@@ -392,14 +395,17 @@ int get_acceleration(int id, double * ax, double * ay, double * az)
 
 void clear_all()
 {
-  bodies_pos.clear();    //(w = mass)
-  bodies_grav.clear();   //(w = potential)
-  bodies_vel.clear();    //(w serves no purpose currently)
-  starids.clear();  //list of identifiers
+    bodies_pos.clear();    //(w = mass)
+    bodies_grav.clear();   //(w = potential)
+    bodies_vel.clear();    //(w serves no purpose currently)
+    starids.clear();  //list of identifiers
+    radii.clear();
 
-  n_bodies = 0;
-  total_mass = 0.0;
+    n_bodies = 0;
+    total_mass = 0.0;
+    id_counter = 0;
 }
+
 
 int get_eps2(double *epsilon_squared)
 {
@@ -411,6 +417,17 @@ int get_time(double *time)
 {
   *time = t_now;
   return 0;
+}
+
+
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
+}
+
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
 }
 
 int initialize_particles()
@@ -717,7 +734,8 @@ int get_theta_for_tree(double *theta_for_tree)
 
 int commit_parameters()
 {
-  return 0;
+    t_now = begin_time;
+    return 0;
 }
 
 int recommit_parameters()
@@ -741,6 +759,7 @@ int cleanup_code()
 
 int initialize_code()
 {
+    begin_time = 0.0;
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
     return 0;
 }

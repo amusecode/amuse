@@ -107,9 +107,9 @@ class TestPyNbodyInterface(TestWithMPI):
         self.assertEquals(0, instance.set_eta(0.001))
         self.assertEquals([0.001, 0], instance.get_eta().values())
 
-        self.assertEquals([0.0, 0], instance.get_time_begin().values())
-        self.assertEquals(0, instance.set_time_begin(1.0))
-        self.assertEquals([1.0, 0], instance.get_time_begin().values())
+        self.assertEquals([0.0, 0], instance.get_begin_time().values())
+        self.assertEquals(0, instance.set_begin_time(1.0))
+        self.assertEquals([1.0, 0], instance.get_begin_time().values())
 
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())

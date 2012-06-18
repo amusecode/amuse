@@ -16,6 +16,7 @@ std::vector< std::pair<int, int> > UpdatedPtcl;
 
 inline double SQR(const double x) {return x*x;}
 
+static double begin_time = 0;
 
 #ifndef __MACOSX_
 #define __LINUX__
@@ -73,9 +74,11 @@ int initialize_code()
 
         // set default parameters to sane values
         is_commited = false;
+        begin_time = 0;
         
         nbody_ptr->nmax = 10000; // will be enough for small calculations but will fail for bigger
         nbody_ptr->dtmax = 1;    // dtmax will influence timestep scaling, for now take 1 nbody time unit
+        
     // AMUSE STOPPING CONDITIONS SUPPORT
         set_support_for_condition(COLLISION_DETECTION);
 #if 0
@@ -97,7 +100,7 @@ int cleanup_code()
     try
     {
         if(nbody_ptr == NULL){
-        return 0;
+            return 0;
         }
         delete nbody_ptr;
         nbody_ptr = NULL;
@@ -106,7 +109,7 @@ int cleanup_code()
     catch(assert_failed ex)
     {
         return handle_assert_failed(ex);
-   }    
+    }
 }
 
 /******************/
@@ -296,6 +299,8 @@ int commit_parameters()
         assert(nbody_ptr->irr_ptr == NULL);
         assert(nbody_ptr->reg_ptr == NULL);
         assert(!is_commited);
+        
+        nbody_ptr->t_global = begin_time;
         nbody_ptr->commit_parameters();
         is_commited = true;
         return 0;
@@ -727,6 +732,17 @@ int get_time(double * sys_time)
         return handle_assert_failed(ex);
     }    
 }
+
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
+}
+
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
+}
+
 
 int get_time_step(double * time_step)
 {

@@ -105,16 +105,21 @@ class ph4Interface(CodeInterface,
     # ph4_worker to build.
 
     # The following functions aren't defined in the default interface:
-
     @legacy_function
     def set_time():
         """
-        Set the current system time.
+        Set the model time. Should use set_begin_time!
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('system_time', dtype='float64',
-                              direction=function.IN, unit = nbody_system.time)
+        function.addParameter('time', dtype='float64', direction=function.IN,
+            description = "The model time to start at", unit = nbody_system.time)
         function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Time value was changed
+        -2 - ERROR
+            The code does not support setting the  time
+        """
         return function
         
     @legacy_function
@@ -306,6 +311,13 @@ class ph4(GravitationalDynamics):
             default_value = 4
         )
         
+        object.add_method_parameter(
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | nbody_system.time
+        )
         self.stopping_conditions.define_parameters(object)
         
     def update_particle_set(self):

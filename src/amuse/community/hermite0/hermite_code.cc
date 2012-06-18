@@ -68,6 +68,7 @@ real t_evolve = t;                // Time requested by evolve.  Control returns
                                 // and this is assumed when the state of the
                                 // system is computed by extrapolation.
 real t_wanted = 0;
+static double begin_time = 0;
 
 vector<int>  ident;
 vector<real> mass, radius, potential;
@@ -136,15 +137,18 @@ int get_time(double *_t)
   *_t = t;
   return 0;
 }
-int set_time(double _t)
-{
-  t = _t;
-  return 0;
+
+
+int set_begin_time(double input) {
+    begin_time = input;
+    return 0;
 }
 
+int get_begin_time(double * output) {
+    *output = begin_time;
+    return 0;
+}
 
-
-
 
 // (Most of) the original code (some arguments replaced by global data):
 
@@ -881,8 +885,14 @@ int set_pair_detect_factor(double pdf) {
   return 0;
 }
 
+static int max_identifier = 0;
+
 int cleanup_code()
 {
+    if(mpi_rank) {
+        return 0;
+    }
+    
     vel.clear();
     pos.clear();
     mass.clear();
@@ -890,10 +900,11 @@ int cleanup_code()
     jerk.clear();
     potential.clear();
     radius.clear();
+    max_identifier = 0;
     return 0;
 }
 
-static int max_identifier = 0;
+
 
 int new_particle(int *id, double _mass,
                  double x, double y, double z,
@@ -930,8 +941,6 @@ int new_particle(int *id, double _mass,
 }
 
 int delete_particle(int id)
-//cello, proj 1
-// assuming same as remove particle??
 {
     
     if(mpi_rank)     { // calculate only on the root mpi process, not on others
@@ -957,6 +966,7 @@ int delete_particle(int id)
       return -1;
     }
 }
+
 
 /*
 int remove_particle(int id)                // remove id from the dynamical system
@@ -1219,7 +1229,8 @@ int evolve_model(double t_end)
 
 int initialize_code()
 {
-
+    begin_time = 0.0;
+    
 #ifndef NOMPI
     int error = 0;
     error = MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -1608,16 +1619,17 @@ int recommit_parameters(){
 int commit_particles()
 {
     real epot, coll_time;
-
-    t = 0;
-    t_evolve = 0;
-    t_wanted = 0;
-
     get_acc_jerk_pot_coll(&epot, &coll_time);
     return 0;
 }
 
 int commit_parameters(){
+    
+    t = begin_time;
+    t_evolve = t;
+    t_wanted = t;
+    t_dia = begin_time;
+    
     if(test_mode) {
         sout = &cerr;
     }

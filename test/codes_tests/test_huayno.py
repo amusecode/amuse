@@ -280,10 +280,10 @@ class TestHuayno(TestWithMPI):
         (value, error) = instance.legacy_interface.get_time()
         self.assertEquals(0, error)
         self.assertEquals(0.0, value)
-        self.assertAlmostEquals(0.0 | units.yr, instance.parameters.time, in_units=units.yr)
+        self.assertAlmostEquals(0.0 | units.yr, instance.parameters.begin_time, in_units=units.yr)
         for x in [1.0, 10.0, 100.0]:
-            instance.parameters.time = x | units.yr
-            self.assertAlmostEquals(x | units.yr, instance.parameters.time, in_units=units.yr)
+            instance.parameters.begin_time = x | units.yr
+            self.assertAlmostEquals(x | units.yr, instance.parameters.begin_time, in_units=units.yr)
         instance.stop()
     
     def test7(self):
