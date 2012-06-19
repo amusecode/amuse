@@ -115,6 +115,7 @@ int initialize_code()
   bonsai->load_kernels();
 
   initialized = true;
+  curStateOnHost = true;
   
   #ifdef _AMUSE_STOPPING_CONDITIONS_
     // AMUSE STOPPING CONDITIONS SUPPORT
