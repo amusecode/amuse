@@ -153,7 +153,7 @@ class TestBonsai(TestWithMPI):
         instance.evolve_model(0.1 | nbody_system.time)
         self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
     
     def test7(self):
         print "Testing Bonsai properties"
