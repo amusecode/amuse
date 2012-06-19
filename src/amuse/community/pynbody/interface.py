@@ -302,7 +302,7 @@ class PyNbodyImplementation(object):
 class PyNbodyInterface(PythonCodeInterface, GravitationalDynamicsInterface):
 
     def __init__(self, **options):
-        PythonCodeInterface.__init__(self, PyNbodyImplementation, **options)
+        PythonCodeInterface.__init__(self, PyNbodyImplementation, 'pynbody_worker', **options)
 
 
     @legacy_function
