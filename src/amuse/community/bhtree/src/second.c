@@ -11,7 +11,7 @@
  *             void cpumin(&double): returns the cpu minutes
  */
  
-#ifdef MSC
+#ifdef _WIN32
 #include <time.h>
 
 static long start_time;
@@ -35,6 +35,12 @@ double *dmin ;
 	double sec;
 	second(&sec);
 	*dmin = sec/60.0;
+}
+double cpusec()
+{
+    double t;
+    second(&t);
+    return t;
 }
 #else
 

@@ -198,7 +198,7 @@ const vec uniform_random_position_in_sphere(double power_index)
 {
     vec x;
     do{
-	for(int i = 0; i<3;i++) x[i] = drand48()*2-1;
+	//for(int i = 0; i<3;i++) x[i] = drand48()*2-1;
     }while (x*x >= 1);
     x *=  pow(x*x, 3.0/(power_index+3)-1);
     return x;

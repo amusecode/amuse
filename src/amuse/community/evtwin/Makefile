@@ -27,12 +27,13 @@ FLIB= -L/software/local/intel64/compiler91/lib -lifcore -lifport
 LD = ld
 AR = ar ruv
 RANLIB = ranlib
+CMAKE_GENERATOR ?= "Unix Makefiles"
 
 all:    $(BUILDDIR)/Makefile evtwin_worker
 
 $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 	-mkdir -p $(BUILDDIR)
-	cd $(BUILDDIR) && FC=$(FC) cmake ../src -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"
+	cd $(BUILDDIR) && FC=$(FC) cmake ../src -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)"
 
 clean:
 	rm -f *.pyc make.log
