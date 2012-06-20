@@ -27,7 +27,7 @@ FLIB= -L/software/local/intel64/compiler91/lib -lifcore -lifport
 LD = ld
 AR = ar ruv
 RANLIB = ranlib
-CMAKE_GENERATOR ?= "Unix Makefiles"
+CMAKE_GENERATOR ?= Unix Makefiles
 
 all:    $(BUILDDIR)/Makefile evtwin_worker
 
