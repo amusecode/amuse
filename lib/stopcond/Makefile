@@ -1,3 +1,6 @@
+AMUSE_DIR?=../..
+include ${AMUSE_DIR}/config.mk
+
 MPICC ?= mpicc
 
 LIBNAME = libstopcond.a
@@ -21,6 +24,8 @@ $(LIBNAMEMPI): $(OBJSMPI)
 %.mo: %.c
 	$(MPICC) $(CFLAGS) -DMPILIB  -c -o $@ $<
 
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -Rf *.o *.lo *.a *.mo

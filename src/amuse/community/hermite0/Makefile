@@ -16,7 +16,7 @@ LDFLAGS = -lm $(MUSE_LD_FLAGS)
 
 A_OBJS = hermite_code.o
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR = $(PYTHON) $(AMUSE_DIR)/build.py
 
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond

@@ -3,7 +3,7 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= mpif90
+MPIF90 ?= $(MPIFC)
 
 FORTRAN ?= gfortran
 
@@ -26,7 +26,7 @@ clean:
 
 sse_worker:	worker_code.f90  SSE_muse_interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN)
-	$(MPIF90) $^ -o $@ 
+	$(MPIF90) -v $^ -o $@ 
 
 sse_worker_sockets: worker_code-sockets.f90  SSE_muse_interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN)
