@@ -318,6 +318,25 @@
       endif
    end function
 
+! Return the current core mass of the star, where hydrogen abundance is <= h1_boundary_limit
+   function get_core_mass(AMUSE_id, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(out) :: AMUSE_value
+      integer :: get_core_mass, ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = -1.0
+         get_core_mass = -1
+      else
+         AMUSE_value = s% h1_boundary_mass
+         get_core_mass = 0
+      endif
+   end function
+
 ! Return the current mass loss rate of the star
    function get_mass_loss_rate(AMUSE_id, AMUSE_value)
       use star_private_def, only: star_info, get_star_ptr

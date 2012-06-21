@@ -131,6 +131,20 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
         
     @legacy_function   
+    def get_core_mass():
+        """
+        Retrieve the current core mass of the star, where hydrogen abundance is <= h1_boundary_limit
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('core_mass', dtype='float64', direction=function.OUT
+            , description="The current core mass of the star, where hydrogen abundance is <= h1_boundary_limit")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function   
     def get_mass_loss_rate():
         """
         Retrieve the current mass loss rate of the star. (positive for winds, negative for accretion)
@@ -902,6 +916,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
             object.add_getter(particle_set_name, 'get_mass', names = ('mass',))
             object.add_setter(particle_set_name, 'set_mass', names = ('mass',))
+            object.add_getter(particle_set_name, 'get_core_mass', names = ('core_mass',))
             object.add_getter(particle_set_name, 'get_mass_loss_rate', names = ('wind',))
             object.add_getter(particle_set_name, 'get_age', names = ('age',))
             object.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
@@ -948,6 +963,11 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_time_step", 
             (object.INDEX, units.yr), 
             (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_core_mass",
+            (object.INDEX,),
+            (units.MSun, object.ERROR_CODE,)
         )
         object.add_method(
             "get_mass_loss_rate",
