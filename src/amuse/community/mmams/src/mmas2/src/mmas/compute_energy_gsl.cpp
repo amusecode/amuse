@@ -28,6 +28,8 @@ double integrand(double mass, void *params) {
 }
 
 real mmas::compute_stellar_energy(usm &model) {
+  int gsl_status;
+  
   n_shells = model.get_num_shells();
 
   arr_mass   = new double[n_shells+1];
@@ -58,23 +60,26 @@ real mmas::compute_stellar_energy(usm &model) {
 //   fprintf(stderr,"radius\n");
   acc_radius    = gsl_interp_accel_alloc();
   interp_radius = gsl_interp_alloc(gsl_interp_linear, n_shells+1);
-  int status = gsl_interp_init(interp_radius, arr_mass, arr_radius, n_shells+1);
-  if (status != GSL_SUCCESS) return -1e99;
+  gsl_status = gsl_interp_init(interp_radius, arr_mass, arr_radius, n_shells+1);
+  if (gsl_status != GSL_SUCCESS) return -1e99;
   
 //   fprintf(stderr,"temp\n");
   acc_temp    = gsl_interp_accel_alloc();
   interp_temp = gsl_interp_alloc(gsl_interp_linear, n_shells+1);
-  gsl_interp_init(interp_temp, arr_mass, arr_temp, n_shells+1);
+  gsl_status = gsl_interp_init(interp_temp, arr_mass, arr_temp, n_shells+1);
+  if (gsl_status != GSL_SUCCESS) return -1e99;
 
 //   fprintf(stderr,"dens\n");
   acc_dens    = gsl_interp_accel_alloc();
   interp_dens = gsl_interp_alloc(gsl_interp_linear, n_shells+1);
-  gsl_interp_init(interp_dens, arr_mass, arr_dens, n_shells+1);
+  gsl_status = gsl_interp_init(interp_dens, arr_mass, arr_dens, n_shells+1);
+  if (gsl_status != GSL_SUCCESS) return -1e99;
  
 //   fprintf(stderr,"mu\n");
   acc_m_mu    = gsl_interp_accel_alloc();
   interp_m_mu = gsl_interp_alloc(gsl_interp_linear, n_shells+1);
-  gsl_interp_init(interp_m_mu, arr_mass, arr_m_mu, n_shells+1);
+  gsl_status = gsl_interp_init(interp_m_mu, arr_mass, arr_m_mu, n_shells+1);
+  if (gsl_status != GSL_SUCCESS) return -1e99;
 
 
   int n_limit = 2*n_shells;

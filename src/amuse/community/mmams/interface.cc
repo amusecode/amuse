@@ -2,11 +2,12 @@
 #include "src/mmas2/src/eos/eos.h"
 #include "worker_code.h"
 #include <map>
+#include <gsl/gsl_errno.h>
 
 using namespace std;
 
 // Default parameters:
-int dump_mixed = 0;
+int dump_mixed = 1;
 int target_n_shells_mixing = 200;
 int target_n_shells = 10000;
 int flag_do_shock_heating = 1;
@@ -18,12 +19,23 @@ map<long long, mmas*> results;
 map<long long, usm*> usm_models;
 long long hashtable_up_to_date_for_particle_with_index = -1;
 
+bool error_occurred = false;
+gsl_error_handler_t * previous_error_handler;
+void amuse_error_handler (const char * reason, const char * file, int line, int gsl_errno) {
+    gsl_stream_printf ("ERROR", file, line, reason);
+    fprintf (stderr, "AMUSE GSL error handler invoked.\n");
+    error_occurred = true;
+}
+
+
 
 int initialize_code(){
+    previous_error_handler = gsl_set_error_handler(&amuse_error_handler);
     return 0;
 }
 
 int cleanup_code(){
+    gsl_set_error_handler(previous_error_handler);
     return 0;
 }
 

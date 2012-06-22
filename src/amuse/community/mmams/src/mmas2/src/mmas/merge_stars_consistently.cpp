@@ -15,7 +15,8 @@ struct merge_stars_consistently_params {
 
 double merge_stars_consistently_eq(double f_heat, void *params) {
     merge_stars_consistently_params *p = (struct merge_stars_consistently_params*)params;
-    p->mmas_ptr->shock_heating(f_heat);
+    int status = p->mmas_ptr->shock_heating(f_heat);
+    if (status < 0) return -1e99;
     p->mmas_ptr->merge_stars(1.0, p->n_shells);
     real energy_p = p->mmas_ptr->compute_stellar_energy(p->mmas_ptr->get_product());
     real vesc = sqrt(p->mmas_ptr->get_product().star_mass / p->mmas_ptr->get_product().star_radius);
@@ -41,8 +42,8 @@ void mmas::merge_stars_consistently(int n_shells, int flag_do_shock_heating) {
     p.n_shells = 1000;
     
     // specifies minimal and maximal heating
-    const real f_heat_min = 0.1;
-    const real f_heat_max = 10;
+    real f_heat_min = 0.1;
+    real f_heat_max = 10;
     
     gsl_function F;
     F.function = &merge_stars_consistently_eq;
@@ -60,22 +61,24 @@ void mmas::merge_stars_consistently(int n_shells, int flag_do_shock_heating) {
     gsl_root_fsolver_name (s));
     
     // Calculating lower bound test interval
-    double f1 = merge_stars_consistently_eq(f_heat_min, F.params);
-    gsl_error_handler_t * previous_handler = gsl_set_error_handler_off();
-    // Calculating upper bound test interval (handling GSL exceptions)
-    double f2;
-    real f_heat_max_iter = f_heat_max;
+    double f1;// = merge_stars_consistently_eq(f_heat_min, F.params);
     do {
-        f2 = merge_stars_consistently_eq(f_heat_max_iter, F.params);
-        if (f2 == -1e99) f_heat_max_iter /= 2.0;
-    } while (f2 == -1e99 && f_heat_max_iter > 1.0);
-    gsl_set_error_handler(previous_handler);
-    if (f2 == -1e99) f2 = f1; // No shock heating
+        f1 = merge_stars_consistently_eq(f_heat_min, F.params);
+        if (f1 == -1e99) f_heat_min *= 2.0;
+    } while (f1 == -1e99 && f_heat_min < 1.0);
+    
+    // Calculating upper bound test interval
+    double f2;
+    do {
+        f2 = merge_stars_consistently_eq(f_heat_max, F.params);
+        if (f2 == -1e99) f_heat_max /= 2.0;
+    } while (f2 == -1e99 && f_heat_max > 1.0);
+    if (f1 == -1e99 or f2 == -1e99) f2 = f1; // No shock heating
     
     if (f1*f2 < 0.0 and flag_do_shock_heating)    // if heating rate is appropriate, solve for f_heat, otherwise assume no heating
     {
         fprintf(stderr,"\n\n\n  Solving for f_heat ... \n\n\n");
-        gsl_root_fsolver_set (s, &F, f_heat_min, f_heat_max_iter);
+        gsl_root_fsolver_set (s, &F, f_heat_min, f_heat_max);
         fprintf (stderr, "%5s [%9s, %9s] %9s %9s\n",
             "iter", "lower", "upper", "root", "err(est)");
         

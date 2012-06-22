@@ -1,3 +1,4 @@
+import numpy
 from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
 from amuse.support.options import option
@@ -292,7 +293,7 @@ class MakeMeAMassiveStar(CommonCode):
             "set_dump_mixed_flag",
             "dump_mixed_flag",
             "dump_mixed flag: specifies whether the returned products must be mixed first",
-            False
+            True
         )
         
         object.add_boolean_parameter(
@@ -417,7 +418,7 @@ class MakeMeAMassiveStar(CommonCode):
         return result
     
     def match_composition_to_mass_profile(self, stellar_model, mass_profile):
-        new_composition = [[0.0]*len(mass_profile)]*8 | units.none
+        new_composition = numpy.array([[0.0]*len(mass_profile)]*8)
         current_index = 0
         previous_mass = 0.0 | units.MSun
         for i, mass_i in enumerate(mass_profile):

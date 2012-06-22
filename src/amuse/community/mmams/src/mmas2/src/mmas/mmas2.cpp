@@ -9,6 +9,7 @@
 #include <fenv.h>
 #endif // _MACOSX_
 
+bool error_occurred = false;
 
 void is_file(char *fn) {
   ifstream fin(fn, ifstream::in);

@@ -1,6 +1,7 @@
 #include "mmas.h"
 #include "eos/eos.h"
 #include <gsl/gsl_interp.h>
+#include <gsl/gsl_errno.h>
 
 // int mmas::shock_heating(usm &model, real strength, real da_const) {
 //   for (int i = 0; i < model.get_num_shells(); i++) {
@@ -10,6 +11,8 @@
 //     shell.entropy += pow(10, strength) * pow(shell.pressure, da_const);
 //   }
 // }
+
+extern bool error_occurred;
 
 int mmas::shock_heating_4(usm& model, real a, real b, real c, real d) {
   real density_max = 0, pressure_max = 0, entropy_min = 1e300;
@@ -105,7 +108,7 @@ int mmas::shock_heating(real ff) {
     real a, b, c, d;
   };
   
-  int n = 4;
+  int status, n = 4;
   double tams_dm[]         = {8.3, 8.9, 5.0, 1.9};
   double tams_q[]          = {0.8, 0.4, 0.2, 0.1};
   fit_params tams_params[] = { {-0.12, -0.63, -1.025, -0.77},          // 10+8
@@ -158,9 +161,19 @@ int mmas::shock_heating(real ff) {
   /* get a */
 
   gsl_interp *interpolation = gsl_interp_alloc (gsl_interp_linear,n);
-  gsl_interp_init(interpolation, xq, xa, n);
+  status = gsl_interp_init(interpolation, xq, xa, n);
+  if (status != GSL_SUCCESS) {
+      cerr << "Error in gsl_interp_init for parameter a, in mmas::shock_heating(real ff) ";
+      PRL(status);
+      return -1;
+  }
   gsl_interp_accel * accelerator =  gsl_interp_accel_alloc();
   real a = gsl_interp_eval(interpolation, xq, xa, q, accelerator);
+  if (error_occurred) {
+      cerr << "Error in gsl_interp_eval for parameter a, in mmas::shock_heating(real ff)" << endl;
+      error_occurred = false;
+      return -1;
+  }
   gsl_interp_accel_free(accelerator);
   gsl_interp_free(interpolation);
 //   PRL(a);
@@ -168,9 +181,19 @@ int mmas::shock_heating(real ff) {
   /* get b */
 
   interpolation = gsl_interp_alloc (gsl_interp_linear,n);
-  gsl_interp_init(interpolation, xq, xb, n);
+  status = gsl_interp_init(interpolation, xq, xb, n);
+  if (status != GSL_SUCCESS) {
+      cerr << "Error in gsl_interp_init for parameter b, in mmas::shock_heating(real ff) ";
+      PRL(status);
+      return -1;
+  }
   accelerator =  gsl_interp_accel_alloc();
   real b = gsl_interp_eval(interpolation, xq, xb, q, accelerator);
+  if (error_occurred) {
+      cerr << "Error in gsl_interp_eval for parameter b, in mmas::shock_heating(real ff)" << endl;
+      error_occurred = false;
+      return -1;
+  }
   gsl_interp_accel_free(accelerator);
   gsl_interp_free(interpolation);
 //   PRL(b);
@@ -178,9 +201,19 @@ int mmas::shock_heating(real ff) {
   /* get c */
 
   interpolation = gsl_interp_alloc (gsl_interp_linear,n);
-  gsl_interp_init(interpolation, xq, xc, n);
+  status = gsl_interp_init(interpolation, xq, xc, n);
+  if (status != GSL_SUCCESS) {
+      cerr << "Error in gsl_interp_init for parameter c, in mmas::shock_heating(real ff) ";
+      PRL(status);
+      return -1;
+  }
   accelerator =  gsl_interp_accel_alloc();
   real c = gsl_interp_eval(interpolation, xq, xc, q, accelerator);
+  if (error_occurred) {
+      cerr << "Error in gsl_interp_eval for parameter c, in mmas::shock_heating(real ff)" << endl;
+      error_occurred = false;
+      return -1;
+  }
   gsl_interp_accel_free(accelerator);
   gsl_interp_free(interpolation);
 //   PRL(c);
@@ -188,9 +221,19 @@ int mmas::shock_heating(real ff) {
   /* get d */
 
   interpolation = gsl_interp_alloc (gsl_interp_linear,n);
-  gsl_interp_init(interpolation, xq, xd, n);
+  status = gsl_interp_init(interpolation, xq, xd, n);
+  if (status != GSL_SUCCESS) {
+      cerr << "Error in gsl_interp_init for parameter d, in mmas::shock_heating(real ff) ";
+      PRL(status);
+      return -1;
+  }
   accelerator =  gsl_interp_accel_alloc();
   real d = gsl_interp_eval(interpolation, xq, xd, q, accelerator);
+  if (error_occurred) {
+      cerr << "Error in gsl_interp_eval for parameter d, in mmas::shock_heating(real ff)" << endl;
+      error_occurred = false;
+      return -1;
+  }
   gsl_interp_accel_free(accelerator);
   gsl_interp_free(interpolation);
 //   PRL(d);
