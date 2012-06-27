@@ -42,7 +42,7 @@ def print_log(s, gravity, E0 = 0.0 | nbody_system.energy):
         
     #print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
     #	(s+"%%", time.number, M.number, T.number, U.number, \
-    #    E.number, Ebin.number, Rv.number, Q.number)
+    #    E.number, Ebin.number, Rv.number, Q)
     sys.stdout.flush()
     return E
 
@@ -105,7 +105,7 @@ def run_smallN(
         gravity.evolve_model(time)
         print_log('smallN', gravity, E0)
         over = gravity.is_over()
-        if over.number:
+        if over:
             print 'interaction is over\n'; sys.stdout.flush()
 
             # Create a tree in the module representing the binary structure.
@@ -118,6 +118,7 @@ def run_smallN(
 
             gravity.update_particle_set()
             gravity.particles.synchronize_to(particles)
+            print gravity.particles
             channel.copy()
             channel.copy_attribute("index_in_code", "id")
 
@@ -133,7 +134,7 @@ def run_smallN(
             roots = list(x.iter_roots())
             for r in roots:
                 for level, particle in r.iter_levels():
-                    print '  '*level, int(particle.id.number),
+                    print '  '*level, int(particle.id),
                     if not particle.child1 is None:
                         M,a,e,r,E = get_cm_binary_elements(particle)
                         print " mass = %.5e" % (M.number)
@@ -225,10 +226,10 @@ def find_nnn(star1, star2, stars):	# print next nearest neighbor
     top_level = stars.select(is_not_a_child, ["is_a_child"])
 
     min_dr = 1.e10
-    id1 = star1.id.number
-    id2 = star2.id.number
+    id1 = star1.id
+    id2 = star2.id
     for t in top_level:
-        tid = t.id.number
+        tid = t.id
         if tid != id1 and tid != id2:
             dr2 = sep2(t, star1)
             if dr2 > 0 and dr2 < min_dr:
@@ -236,7 +237,7 @@ def find_nnn(star1, star2, stars):	# print next nearest neighbor
                 nnn = t
     min_dr = math.sqrt(min_dr)
     print 'star =', int(id1), ' min_dr =', min_dr, \
-          ' nnn =', int(nnn.id.number), '(', nnn.mass.number, ')'
+          ' nnn =', int(nnn.id), '(', nnn.mass.number, ')'
     print '    phi_tidal =', phi_tidal(star1, star2, nnn)
     print '    nnn pos:', nnn.x.number, nnn.y.number, nnn.z.number
     sys.stdout.flush()
@@ -251,7 +252,7 @@ def total_energy(slist):
     kinetic = 0.0
     potential = 0.0
     for s in slist:
-        # print 'slist:', int(s.id.number)
+        # print 'slist:', int(s.id)
         smass = s.mass.number
         spos = s.position.number
         svel = s.velocity.number
@@ -262,7 +263,7 @@ def total_energy(slist):
                 ssmass = ss.mass.number
                 sspos = ss.position.number
                 r = math.sqrt(((sspos-spos)**2).sum())
-                # print int(s.id.number), int(ss.id.number), r
+                # print int(s.id), int(ss.id), r
                 spot -= ssmass/r
         potential += smass*spot
     kinetic /= 2
@@ -303,7 +304,7 @@ def offset_particle_tree(particle, dpos, dvel):
         offset_particle_tree(particle.child2, dpos, dvel)
     particle.position += dpos
     particle.velocity += dvel
-    # print 'offset', int(particle.id.number), 'by', dpos; sys.stdout.flush()
+    # print 'offset', int(particle.id), 'by', dpos; sys.stdout.flush()
 
 def compress_binary_components(comp1, comp2, scale):
 
@@ -315,8 +316,8 @@ def compress_binary_components(comp1, comp2, scale):
     sep12 = ((pos2-pos1)**2).sum()
 
     if sep12 > scale*scale:
-        print '\ncompressing components', int(comp1.id.number), \
-              'and', int(comp2.id.number), 'to separation', scale.number
+        print '\ncompressing components', int(comp1.id), \
+              'and', int(comp2.id), 'to separation', scale.number
         sys.stdout.flush()
         mass1 = comp1.mass
         mass2 = comp2.mass
@@ -364,7 +365,7 @@ def compress_binary_components(comp1, comp2, scale):
         # a,e = kep.get_elements()
         # r = kep.get_separation()
         # E,J = kep.get_integrals()
-        # print 'kepler: a,e,r =', a.number, e.number, r.number
+        # print 'kepler: a,e,r =', a.number, e, r.number
         # print 'E, J =', E, J
 
         # Note: if periastron > scale, we are now just past periastron.
@@ -411,13 +412,13 @@ def compress_binary_components(comp1, comp2, scale):
 
 def print_elements(s, a, e, r, E):
     print '%s elements  a = %.4e  e = %.5f  r = %.4e  E = %.4e' \
-	  % (s, a.number, e.number, r.number, E.number)
+	  % (s, a.number, e, r.number, E.number)
 
 def print_multiple(m, level=0):
 
     # Recursively print the structure of (multipe) node m.
 
-    print '    '*level, int(m.id.number), ' mass =', m.mass.number
+    print '    '*level, int(m.id), ' mass =', m.mass.number
     print '    '*level, 'pos =', m.position.number
     print '    '*level, 'vel =', m.velocity.number
     if not m.child1 is None and not m.child2 is None:
@@ -905,7 +906,7 @@ def test_multiples(infile = None, number_of_stars = 40,
         stars.velocity = vel | nbody_system.speed
         stars.radius = 0. | nbody_system.length
 
-    # print "IDs:", stars.id.number
+    # print "IDs:", stars.id
     sys.stdout.flush()
 
     global root_index
@@ -941,8 +942,10 @@ def test_multiples(infile = None, number_of_stars = 40,
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
     
-    stopping_condition = gravity.stopping_conditions.collision_detection
+    #stopping_condition = gravity.stopping_conditions.collision_detection
+    stopping_condition = gravity.stopping_conditions.pair_detection
     stopping_condition.enable()
+    print gravity.stopping_conditions
     
     # Tree structure on the stars dataset:
 
@@ -999,7 +1002,7 @@ def test_multiples(infile = None, number_of_stars = 40,
             if 0:
                 print "stars:"
                 for s in stars:
-                    print " ", s.id.number, s.mass.number, \
+                    print " ", s.id, s.mass.number, \
 			       s.x.number, s.y.number, s.z.number
             else:
                 print "number of stars =", len(stars)

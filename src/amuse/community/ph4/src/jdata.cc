@@ -72,10 +72,13 @@ void jdata::set_manage_encounters(int m)
     // conditions.  Use this instead of jd.manage_emcounters = ...
 
     // AMUSE STOPPING CONDITIONS SUPPORT
-    int is_collision_detection_enabled;
+    int is_collision_detection_enabled, is_pair_detection_enabled;
     is_stopping_condition_enabled(COLLISION_DETECTION,
 				  &is_collision_detection_enabled);
-    if (is_collision_detection_enabled) manage_encounters = 4;	// unnecessary
+    is_stopping_condition_enabled(PAIR_DETECTION,
+				  &is_pair_detection_enabled);
+    if (is_collision_detection_enabled
+	|| is_pair_detection_enabled) manage_encounters = 4;	// unnecessary
 
     if (manage_encounters == 4 && m != 4)
 	if (mpi_rank == 0)
@@ -336,11 +339,11 @@ void jdata::initialize_arrays()
 
     check_inverse_id();
 
-    // *** To be refined... ***
+    // *** To be refined.  Probably want to specify a scaling. ***
 
     rmin = 2./nj;		// 90 degree turnaround in standard units
     dtmin = eta*(2./nj) * 4;	// for nn check: final 4 is a fudge factor
-
+				// -- not used??
     if (mpi_rank == 0) {
 	PRC(rmin); PRL(dtmin);
     }
@@ -660,7 +663,7 @@ void jdata::advance()
 bool jdata::advance_and_check_encounter()
 {
     bool status = false;
-    int collision_detection_enabled;
+    int collision_detection_enabled, pair_detection_enabled;
     advance();
 
     // Optionally manage close encounters.  AMUSE stopping conditions
@@ -669,7 +672,9 @@ bool jdata::advance_and_check_encounter()
     // by AMUSE).
     
     // AMUSE STOPPING CONDITIONS SUPPORT
-    is_stopping_condition_enabled(COLLISION_DETECTION, &collision_detection_enabled);
+
+    is_stopping_condition_enabled(COLLISION_DETECTION,
+				  &collision_detection_enabled);
     if (collision_detection_enabled) {
         if (coll1 >= 0) {
             int stopping_index = next_index_for_stopping_condition();
@@ -681,19 +686,31 @@ bool jdata::advance_and_check_encounter()
         return status;
     }
     
-    if (!manage_encounters || eps2 > 1.0e-99 || manage_encounters == 4) {
-        return false;
+    is_stopping_condition_enabled(PAIR_DETECTION,
+				  &pair_detection_enabled);
+    if (pair_detection_enabled) {
+        if (close1 >= 0) {
+            int stopping_index = next_index_for_stopping_condition();
+            set_stopping_condition_info(stopping_index, PAIR_DETECTION);
+            set_stopping_condition_particle_index(stopping_index, 0, close1);
+            set_stopping_condition_particle_index(stopping_index, 1, close2);
+            status = true;
+        }
+        return status;
     }
     
-    if (close1 >= 0) {
+    if (!manage_encounters || eps2 > 1.0e-99 || manage_encounters == 4)
+        return false;
+
+    if (close1 >= 0)
         status = resolve_encounter();
-    }
-    if (status) {
+
+    if (status)
         if (0 && mpi_rank == 0) {
             cout << "after resolve_encounter" << endl << flush;
             PRL(get_energy());
         }
-    }
+
     return status;
 }
 

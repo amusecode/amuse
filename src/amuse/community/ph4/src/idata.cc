@@ -612,6 +612,7 @@ void idata::check_encounters()
 
     jdat->close1 = jdat->close2 = -1;
     jdat->coll1 = jdat->coll2 = -1;
+    real rmin = jdat->rmin;
 
     if (!jdat->use_gpu || NN > 0) {
 
@@ -625,7 +626,9 @@ void idata::check_encounters()
 	    int jnn = inn[i];			// j index, note
 	    if (jnn >= 0) {			// valid neighbor
 
-		real r = jdat->rmin/idnn[i];
+		// Note no dtmin test.
+
+		real r = rmin/idnn[i];
 		if (r > rmax_close) {
 		    rmax_close = r;
 		    imax_close = i;
@@ -633,7 +636,7 @@ void idata::check_encounters()
 
 		// Hmmm.  Still have to go into jdata for radius[jnn].
 		// Not clear if this is expensive.  Should monitor.
-		// TODO.
+		// Should suppress this check if not needed.  TODO.
 
 		r = (iradius[i]+jdat->radius[jnn])/idnn[i];
 		if (r > rmax_coll) {
@@ -644,8 +647,28 @@ void idata::check_encounters()
 	}
 
 	if (rmax_close >= 1) {			// close criterion
-	    jdat->close1 = iid[imax_close];
-	    jdat->close2 = jdat->id[inn[imax_close]];
+	    int close1 = iid[imax_close];
+	    int close2 = jdat->id[inn[imax_close]];
+
+	    // Pair (close1,close2) is closest and inside rmin.
+	    // Refine the test here before managing the close
+	    // encounter.
+
+	    // Default rmin is <m>/<v^2>.  Should replace it here with
+	    // (m1+m2)/(v2-v1)^2.
+
+	    int jclose1 = jdat->inverse_id[close1];
+	    int jclose2 = jdat->inverse_id[close2];
+	    real mtot = jdat->mass[jclose1] + jdat->mass[jclose2];
+	    real r = idnn[imax_close];
+	    real v2 = 0;
+	    for (int k = 0; k < 3; k++)
+		v2 += pow(jdat->vel[jclose2][k]-jdat->vel[jclose1][k], 2);
+
+	    PRC(r); PRC(rmin); PRC(mtot/v2); PRL(r*v2/mtot);
+
+	    jdat->close1 = close1;
+	    jdat->close2 = close2;
 	}
 
 	if (rmax_coll >= 1) {			// collision criterion
