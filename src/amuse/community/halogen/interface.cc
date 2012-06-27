@@ -20,13 +20,6 @@ bool write_output = false;
 CHAR output_path[MAXLEN_PATH];      /*!< output directory of the code */
 CHAR output_basename[STRINGSIZE];   /*!< basename of output files */
 
-#ifdef _WIN32
-
-inline void srand48(int seed) {
-	srand(seed);
-}
-#endif
-
 /*
  * Interface code for the stripped-down version of HALOGEN for the AMUSE project
  */

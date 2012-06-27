@@ -18,8 +18,8 @@ LIBS	= -lm
 
 # Object definition
 
-LIBOBJS = functions.o amuse_routines.o
-EXEOBJS = $(BASE).o functions.o routines.o
+LIBOBJS = drand48.o functions.o amuse_routines.o
+EXEOBJS = $(BASE).o drand48.o functions.o routines.o
 
 # Rules
 
