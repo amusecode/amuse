@@ -49,7 +49,7 @@ public class OutputForwarder extends Thread {
     public void run() {
         byte[] buffer = new byte[OutputManager.MAX_MESSAGE_SIZE];
         SendPort sendPort = null;
-        
+
         logger.debug("Forwarding output to " + file);
 
         try {
@@ -65,7 +65,7 @@ public class OutputForwarder extends Thread {
                 logger.debug("Connecting to output manager port");
                 sendPort.connect(daemon, "output");
             }
-            
+
             logger.debug("Starting with forwarding output");
 
             while (true) {
@@ -86,7 +86,9 @@ public class OutputForwarder extends Thread {
                 }
             }
         } catch (IOException error) {
-            logger.error("Error on forwarding code output", error);
+            if (!error.getMessage().equals("Stream closed")) {
+                logger.error("Error on forwarding code output", error);
+            }
         } finally {
             if (sendPort != null) {
                 try {

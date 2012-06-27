@@ -47,6 +47,8 @@ public class CodeProxy {
             IbisCapabilities.CLOSED_WORLD);
 
     private final WorkerInfo info;
+    
+    private final AmuseConfigOptions amuseConfig;
 
     // collects mpi profiling data. only used if multiple nodes are used.
     private final MPIProfilingCollector mpiProfilingCollector;
@@ -71,6 +73,8 @@ public class CodeProxy {
 
     public CodeProxy(WorkerInfo info) throws Exception {
         this.info = info;
+        
+        this.amuseConfig = new AmuseConfigOptions(info.getAmuseHome());
 
         // hostname used for MPI
         String hostname = InetAddress.getLocalHost().getHostAddress();
@@ -125,7 +129,7 @@ public class CodeProxy {
             message.finish();
 
             if (info.getInterfaceType() == null || info.getInterfaceType().equals("sockets")) {
-                codeInterface = new SocketCodeInterface(info, localIbises, wideAreaIbis);
+                codeInterface = new SocketCodeInterface(info, amuseConfig, localIbises, wideAreaIbis);
             } else if (info.getInterfaceType().equals("jni")) {
                 codeInterface = new JNICodeInterface(info);
             } else {
@@ -341,19 +345,18 @@ public class CodeProxy {
             } else if (arguments[i].equals("--number-of-nodes")) {
                 i++;
                 info.setNrOfNodes(Integer.parseInt(arguments[i]));
-            } else if (arguments[i].equals("--mpiexec")) {
-                i++;
-                info.setMpiexec(arguments[i]);
-            } else if (arguments[i].equals("--mpdboot")) {
-                i++;
-                info.setMpdboot(arguments[i]);
-                
             } else if (arguments[i].equals("--stdout")) {
                 i++;
                 info.setStdoutFile(arguments[i]);
             } else if (arguments[i].equals("--stderr")) {
                 i++;
                 info.setStderrFile(arguments[i]);
+            } else if (arguments[i].equals("--python-code")) {
+                i++;
+                info.setIsPythonCode(Boolean.parseBoolean(arguments[i]));
+            } else if (arguments[i].equals("--copy-worker-code")) {
+                i++;
+                info.setCopyWorkerCode(Boolean.parseBoolean(arguments[i]));
             } else {
                 System.err.println("Unknown option: " + arguments[i]);
                 System.exit(1);

@@ -47,15 +47,18 @@ public class SocketCodeInterface implements CodeInterface {
     private OutputForwarder err;
 
     private final WorkerInfo info;
+    private final AmuseConfigOptions amuseConfig;
 
     private final String[] hostnames;
     private final int[] ports;
-    
+
     private final Ibis wideAreaIbis;
 
-    SocketCodeInterface(WorkerInfo info, IbisIdentifier[] localIbises, Ibis wideAreaIbis) throws CodeException {
+    SocketCodeInterface(WorkerInfo info, AmuseConfigOptions amuseConfig, IbisIdentifier[] localIbises, Ibis wideAreaIbis)
+            throws CodeException {
         this.wideAreaIbis = wideAreaIbis;
         this.info = info;
+        this.amuseConfig = amuseConfig;
         int next = 0;
         int nrOfProcesses = info.getNrOfProcesses();
 
@@ -98,21 +101,18 @@ public class SocketCodeInterface implements CodeInterface {
     }
 
     public void init() throws CodeException {
-        if (info.getMpdboot() != null) {
-            RunProcess p = new RunProcess(info.getMpdboot(), "--chkup");
-            p.run();
-            logger.info("run mpdboot --chkup, result = " + p.getExitStatus());
-            logger.info("stdout = " + new String(p.getStdout()));
-            logger.info("stderr = " + new String(p.getStderr()));
+        if (info.copyWorkerCode()) {
+            //executable in cwd
+            executable = new File(info.getCodeName());
+        } else {
+            executable = new File(info.getAmuseHome() + File.separator + info.getCodeDir() + File.separator
+                    + info.getCodeName());
         }
-
-        executable = new File(info.getAmuseHome() + File.separator + info.getCodeDir() + File.separator
-                + info.getCodeName());
         if (!executable.isFile()) {
             throw new CodeException("Cannot find executable for code " + info.getCodeName() + ": " + executable);
         }
 
-        if (!executable.canExecute()) {
+        if (!executable.canExecute() && ! info.copyWorkerCode()) {
             throw new CodeException(executable + " is not executable");
         }
 
@@ -155,21 +155,28 @@ public class SocketCodeInterface implements CodeInterface {
 
             builder.environment().put("OMPI_IBIS_PROFILING_PORT_FILE", portFile.getAbsolutePath());
 
-            if (info.getMpiexec() == null || info.getMpiexec().equalsIgnoreCase("none")) {
-                logger.info("not using mpiexec (as it is not set, or set to 'none')");
+            if (!amuseConfig.isMpiexecEnabled()) {
+                logger.info("not using mpiexec (as it is disabled)");
                 if (info.getNrOfProcesses() > 1) {
-                    throw new CodeException( info.getNrOfProcesses() + "requested, but mpiexec not set, or set to 'none'");
+                    throw new CodeException(info.getNrOfProcesses() + "requested, but mpiexec disabled");
                 }
-                builder.command(executable.toString(), Integer.toString(serverSocket.socket().getLocalPort()));
             } else if (info.getNrOfNodes() == 1) {
-                // no need for machine file
-                builder.command(info.getMpiexec(), "-n", Integer.toString(info.getNrOfProcesses()),
-                        executable.toString(), Integer.toString(serverSocket.socket().getLocalPort()));
-
+                // no need for machine file, set number of processes.
+                builder.command(amuseConfig.getMpiexec(), "-n", Integer.toString(info.getNrOfProcesses()));
             } else {
-                builder.command(info.getMpiexec(), "-machinefile", hostFile.getAbsolutePath(), executable.toString(),
-                        Integer.toString(serverSocket.socket().getLocalPort()));
+                // use machine file
+                builder.command(amuseConfig.getMpiexec(), "-machinefile", hostFile.getAbsolutePath());
             }
+
+            if (info.copyWorkerCode()) {
+                // run executable via amuse.sh script to set python path and
+                // interpreter
+                builder.command().add(new File(amuseConfig.getAmuseHome(), "amuse.sh").getAbsolutePath());
+            }
+
+            // executable and port options
+            builder.command().add(executable.toString());
+            builder.command().add(Integer.toString(serverSocket.socket().getLocalPort()));
 
             // make sure there is an "output" directory for a code to put output
             // in
@@ -192,7 +199,8 @@ public class SocketCodeInterface implements CodeInterface {
             logger.info("connection established");
 
         } catch (IOException e) {
-            throw new CodeException("Cannot initialize socket code interface for " + info.getID() + ": " + e.getMessage(), e);
+            throw new CodeException("Cannot initialize socket code interface for " + info.getID() + ": "
+                    + e.getMessage(), e);
         }
     }
 

@@ -1807,21 +1807,25 @@ class IbisChannel(MessageChannel):
         self.id = 0
         
         if not legacy_interface_type is None:
-            self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
-        else:
-            exe_name = self.worker_code_prefix + self.name_of_the_worker + self.worker_code_suffix
-            self.full_name_of_the_worker = exe_name
+            #worker specified by type. Figure out where this file is
+            #mostly (only?) used by dynamic python codes
+            directory_of_this_module = os.path.dirname(inspect.getfile(legacy_interface_type))
+            worker_path = os.path.join(directory_of_this_module, self.name_of_the_worker)
+            self.full_name_of_the_worker = os.path.normpath(os.path.abspath(worker_path))
+           
+            self.name_of_the_worker = os.path.basename(self.full_name_of_the_worker)
             
-        logging.getLogger("channel").debug("full name of worker is %s", self.full_name_of_the_worker)
+        else:
+            #worker specified by executable (usually already absolute)
+            self.full_name_of_the_worker = os.path.normpath(os.path.abspath(self.name_of_the_worker))
         
         global_options = GlobalOptions()
         
-        logging.getLogger("channel").debug("amuse root dir is %s", global_options.amuse_rootdirectory)
+        relative_worker_path = os.path.relpath(self.full_name_of_the_worker, global_options.amuse_rootdirectory)
             
-        worker_path = os.path.relpath(self.full_name_of_the_worker, global_options.amuse_rootdirectory)
+        self.worker_dir = os.path.dirname(relative_worker_path)
             
-        self.worker_dir = os.path.dirname(worker_path)
-            
+        logging.getLogger("channel").debug("name of the worker is %s", self.name_of_the_worker)
         logging.getLogger("channel").debug("worker dir is %s", self.worker_dir)
             
         self._is_inuse = False
@@ -1835,23 +1839,7 @@ class IbisChannel(MessageChannel):
         logging.getLogger("channel").debug("hostname = %s, checking for worker", self.hostname)
         
         MessageChannel.check_if_worker_is_up_to_date(self, object)
-    
-    def get_full_name_of_the_worker(self, type):
-        if os.path.isabs(self.name_of_the_worker):
-            if os.path.exists(self.name_of_the_worker):
-                if not os.access(self.name_of_the_worker, os.X_OK):
-                    raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(self.name_of_the_worker))
-       
-                return self.name_of_the_worker
-        
-        exe_name = self.worker_code_prefix + self.name_of_the_worker + self.worker_code_suffix
-        
-            
-        directory_of_this_module = os.path.dirname(inspect.getfile(type))
-        full_name_of_the_worker = os.path.join(directory_of_this_module, exe_name)
-        full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-        return full_name_of_the_worker
-
+   
     def start(self):
         logging.getLogger("channel").debug("connecting to daemon")
         
@@ -1877,11 +1865,13 @@ class IbisChannel(MessageChannel):
         except:
             raise exceptions.CodeException("Could not connect to Ibis Daemon at " + str(self.daemon_port))
         
+        self.socket.setblocking(1)
+        
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         
         self.socket.sendall('TYPE_WORKER'.encode('utf-8'))
         
-        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers, self.number_of_nodes]}
+        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers, self.number_of_nodes], 'bool': [self.copy_worker_code]}
         
         message = SocketMessage(10101010, 1, arguments);
 
@@ -1914,6 +1904,10 @@ class IbisChannel(MessageChannel):
     @option(type="int", sections=("channel",))
     def number_of_nodes(self):
         return 1
+    
+    @option(type="boolean", sections=("channel",))
+    def copy_worker_code(self):
+        return False
        
     def stop(self):
         logging.getLogger("channel").info("stopping worker %s", self.name_of_the_worker)
@@ -1972,4 +1966,20 @@ class IbisChannel(MessageChannel):
         return message.to_result(handle_as_array)
     
     def nonblocking_recv_message(self, tag, handle_as_array):
-        raise exceptions.CodeException("Nonblocking receive not supported by IbisChannel")
+        #       raise exceptions.CodeException("Nonblocking receive not supported by IbisChannel")
+        request = SocketMessage().nonblocking_receive(self.socket)
+        
+        def handle_result(function):
+            self._is_inuse = False
+        
+            message = function()
+            
+            if message.error:
+                raise exceptions.CodeException("Error in worker: " + message.strings[0])
+                
+            return message.to_result(handle_as_array)
+    
+        request.add_result_handler(handle_result)
+        
+        return request
+    

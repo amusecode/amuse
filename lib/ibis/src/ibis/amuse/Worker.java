@@ -48,7 +48,9 @@ public class Worker implements Runnable, StateListener {
     private final int nrOfWorkers;
 
     private final int nrOfNodes;
-
+    
+    private final boolean copyWorkerCode;
+    
     private final String id;
 
     private final Ibis ibis;
@@ -121,6 +123,8 @@ public class Worker implements Runnable, StateListener {
 
         nrOfWorkers = initRequest.getInteger(0);
         nrOfNodes = initRequest.getInteger(1);
+        
+        copyWorkerCode = initRequest.getBoolean(0);
 
         // get rid of "ugly" parts of id
 
@@ -156,7 +160,7 @@ public class Worker implements Runnable, StateListener {
         // finish initializing worker
         try {
             
-            job = deployment.deploy(codeName, codeDir, hostname, stdoutFile, stderrFile, id, nrOfWorkers, nrOfNodes);
+            job = deployment.deploy(codeName, codeDir, hostname, stdoutFile, stderrFile, id, nrOfWorkers, nrOfNodes, copyWorkerCode);
             
             synchronized(this) {
                 this.job = job;

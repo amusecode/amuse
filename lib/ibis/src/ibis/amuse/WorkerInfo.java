@@ -24,15 +24,15 @@ public class WorkerInfo implements Serializable {
 
     private String amuseHome;
 
-    private String mpiexec;
-
-    private String mpdboot;
-
     private String interfaceType;
 
     private String stdoutFile;
 
     private String stderrFile;
+    
+    private boolean isPythonCode;
+    
+    private boolean copyWorkerCode;
 
     String getID() {
         return id;
@@ -82,22 +82,6 @@ public class WorkerInfo implements Serializable {
         this.amuseHome = amuseHome;
     }
 
-    String getMpiexec() {
-        return mpiexec;
-    }
-
-    void setMpiexec(String mpiexec) {
-        this.mpiexec = mpiexec;
-    }
-
-    String getMpdboot() {
-        return mpdboot;
-    }
-
-    void setMpdboot(String mpdboot) {
-        this.mpdboot = mpdboot;
-    }
-
     String getInterfaceType() {
         return interfaceType;
     }
@@ -120,5 +104,21 @@ public class WorkerInfo implements Serializable {
 
     void setStderrFile(String stderrFile) {
         this.stderrFile = stderrFile;
+    }
+
+    boolean isPythonCode() {
+        return isPythonCode;
+    }
+    
+    void setIsPythonCode(boolean isPythonCode) {
+        this.isPythonCode = isPythonCode;
+    }
+    
+    boolean copyWorkerCode() {
+        return copyWorkerCode;
+    }
+    
+    void setCopyWorkerCode(boolean copyWorkerCode) {
+        this.copyWorkerCode = copyWorkerCode;
     }
 }

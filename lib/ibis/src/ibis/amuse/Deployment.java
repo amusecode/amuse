@@ -14,8 +14,6 @@ import ibis.deploy.Experiment;
 import ibis.deploy.Jungle;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
-import ibis.deploy.State;
-import ibis.deploy.StateListener;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.GUI;
@@ -172,8 +170,9 @@ public class Deployment {
         return deploy.getServerAddress();
     }
 
-    public synchronized Job deploy(String codeName, String codeDir, String resourceName, String stdoutFile, String stderrFile,
-            String workerID, int nrOfWorkers, int nrOfNodes) throws Exception {
+    public synchronized Job deploy(String codeName, String codeDir, String resourceName, String stdoutFile,
+            String stderrFile, String workerID, int nrOfWorkers, int nrOfNodes, boolean copyWorkerCode)
+            throws Exception {
         Resource resource = null;
         logger.info("Deploying worker \"" + workerID + "\" on host " + resourceName + " with " + nrOfWorkers
                 + " workers on " + nrOfNodes + " nodes");
@@ -212,24 +211,11 @@ public class Deployment {
                     + "\" in jungle description");
         }
 
-        String mpiexec = resource.getProperties().getProperty("mpiexec");
-
-        if (mpiexec == null) {
-            if (!resourceName.equals("local")) {
-                logger.warn("mpiexec property not set for resource \"" + resourceName + "\" in jungle description");
-            }
-            mpiexec = "mpiexec";
-        }
-
-        String mpdboot = resource.getProperties().getProperty("mpdboot");
-
-        
-        
         // get or create Application for worker
-        Application application = applications.getApplication(codeName);
+        Application application = applications.getApplication(workerID);
 
         if (application == null) {
-            application = new Application(codeName);
+            application = new Application(workerID);
             applications.addApplication(application);
 
             File serverLib = new File(deploy.getHome(), "lib-server");
@@ -254,6 +240,19 @@ public class Deployment {
 
             application.setSystemProperty("ibis.managementclient", "true");
             application.setSystemProperty("ibis.bytescount", "true");
+
+            if (copyWorkerCode) {
+                File codeDirFile = new File(codeDir);
+                application.addInputFile(new File(codeDirFile, codeName));
+
+                if (!codeDirFile.isDirectory()) {
+                    throw new Exception("cannot copy codedir " + codeDir + " as it is not a directory, or does not exist");
+                }
+                
+                for (File file : codeDirFile.listFiles()) {
+                    application.addInputFile(file);
+                }
+            }
         }
 
         // create job description
@@ -278,17 +277,10 @@ public class Deployment {
 
         jobDescription.getApplication().setSystemProperty("java.library.path", absCodeDir);
 
-        if (mpdboot == null) {
-            jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID,
-                    "--amuse-home", remoteAmuseHome, "--code-dir", codeDir, "--number-of-processes",
-                    Integer.toString(nrOfWorkers), "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec",
-                    mpiexec, "--stdout", stdoutFile, "--stderr", stderrFile);
-        } else {
-            jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID,
-                    "--amuse-home", remoteAmuseHome, "--code-dir", codeDir, "--number-of-processes",
-                    Integer.toString(nrOfWorkers), "--number-of-nodes", Integer.toString(nrOfNodes), "--mpiexec",
-                    mpiexec, "--stdout", stdoutFile, "--stderr", stderrFile, "--mpdboot", mpdboot);
-        }
+        jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID, "--amuse-home",
+                remoteAmuseHome, "--code-dir", codeDir, "--number-of-processes", Integer.toString(nrOfWorkers),
+                "--number-of-nodes", Integer.toString(nrOfNodes), "--stdout", stdoutFile, "--stderr", stderrFile,
+                "--copy-worker-code", "" + copyWorkerCode);
 
         Job result = deploy.submitJob(jobDescription, application, resource, null, null);
 

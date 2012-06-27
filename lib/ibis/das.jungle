@@ -21,7 +21,7 @@
 # color               Color (as a HTML color string) used to represent this resource
 
 default.file.adaptors = SftpTrilead,SshTrilerad,Local
-default.java.path = java
+default.java.path = /cm/shared/package/sun-jdk/jdk1.7.0/bin/java
 default.amuse.home=/home/niels/amuse
 default.mpiexec=/cm/shared/apps/openmpi/gcc/64/1.4.4/bin/mpiexec
 
