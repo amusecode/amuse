@@ -126,3 +126,4 @@ typedef struct generalinfo {
     STUFF *stuff;
     GRIDR *gridr;
     } GI;
+

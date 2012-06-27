@@ -11,6 +11,13 @@
 #include "definitions.h"
 #include "functions.h"
 
+#ifdef _WIN32
+double drand48() {
+	return (double) rand() / ((double) RAND_MAX);
+}
+
+#endif
+
 /*
 ** Functions for integration via Simpson's rule
 ** Iteration until precision (TOL) is reached 

@@ -67,7 +67,7 @@ interface.h: interface.py
 	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py ph4Interface -o $@
 
 ph4_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(CODELIB) $(LDFLAGS)
 
 ph4_worker_sockets: worker_code-sockets.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code-sockets.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)

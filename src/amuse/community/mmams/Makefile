@@ -15,23 +15,26 @@ EOS_DIR   = src/mmas2/src/eos
 USM_DIR   = src/mmas2/src/usm
 STD_SRCMMAS_DIRDIR   = src/mmas2/src/std
 GSL_LIBS ?= -lgsl -lgslcblas -lm
+GSL_INC = $(GSL_FLAGS)
 
 #INCLUDES = -I/opt/local/include -Isrc/mmas2/src
 INCLUDES = $(GSL_FLAGS)  -Isrc/mmas2/src
-LIBS = $(GSL_LIBS) \
-	-L$(BUILDDIR)/src/mmas -l_mmas2 \
+LIBS =  -L$(BUILDDIR)/src/mmas -l_mmas2 \
 	-L$(BUILDDIR)/src/eos -leos \
 	-L$(BUILDDIR)/src/usm -lusm \
-	-L$(BUILDDIR)/src/std -lstd
+	-L$(BUILDDIR)/src/std -lstd \
+        $(GSL_LIBS)
 
 OBJECTS = interface.o
 SOURCES = interface.cc
+
+CMAKE_GENERATOR ?= Unix Makefiles
 
 all: $(BUILDDIR)/Makefile  mmas2 mmams_worker
 
 $(BUILDDIR)/Makefile:
 	@-mkdir build
-	cd $(BUILDDIR) && cmake ../src/mmas2
+	cd $(BUILDDIR) && cmake ../src/mmas2 -G "$(CMAKE_GENERATOR)"
 	
 mmas2: $(BUILDDIR)/Makefile
 	make -C $(BUILDDIR)
@@ -68,4 +71,4 @@ clean:
 	rm -rf build
 
 distclean: clean
-	rm -rf ccache
+

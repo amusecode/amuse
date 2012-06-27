@@ -4,7 +4,10 @@
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
+#ifdef _WIN32
+#else
 #include <sys/resource.h>
+#endif
 #include <unistd.h>
 #include <signal.h>
 #include <gsl/gsl_rng.h>

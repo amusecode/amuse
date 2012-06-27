@@ -31,27 +31,27 @@ $(CODELIB): $(CODEOBJS)
 	$(AR) $@ $(CODEOBJS)
 	$(RANLIB) $@
 
-.cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+%.o : ../../ph4/src/%.cc
+	$(CXX) $(CXXFLAGS) -c -o $@ $^ 
 
 #-----------------------------------------------------------------------
 #
 # Special cases:
 
-nstab.co:    nstab.c
-	$(MPICC) $(CFLAGS) -c nstab.c -o nstab.co
+nstab.co:    ../../ph4/src/nstab.c
+	$(MPICC) $(CFLAGS) -c $^ -o nstab.co
 
-f2c.co:    f2c.c
-	$(MPICC) $(CFLAGS) -c f2c.c -o f2c.co
+f2c.co:    ../../ph4/src/f2c.c
+	$(MPICC) $(CFLAGS) -c $^ -o f2c.co
 
-smallN-lib.o:	smallN.cc
-	$(MPICXX) $(CFLAGS) -c smallN.cc -o smallN-lib.o
+smallN-lib.o:	../../ph4/src/smallN.cc
+	$(MPICXX) $(CFLAGS) -c $^ -o smallN-lib.o
 
-kepler-lib.o:	kepler.cc
-	$(MPICXX) $(CFLAGS) -c kepler.cc -o kepler-lib.o
+kepler-lib.o:	../../ph4/src/kepler.cc
+	$(MPICXX) $(CFLAGS) -c $^ -o kepler-lib.o
 
-analyze-lib.o:	analyze.cc
-	$(MPICXX) $(CFLAGS) -c analyze.cc -o analyze-lib.o
+analyze-lib.o:	../../ph4/src/analyze.cc
+	$(MPICXX) $(CFLAGS) -c $^ -o analyze-lib.o
 
 #-----------------------------------------------------------------------
 

@@ -12,7 +12,7 @@ OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += -Wall -g $(OPT)
+CFLAGS   += -Wall -g $(OPT) -I../../ph4/src -I../ph4/src
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi -lm $(MUSE_LD_FLAGS)
 

@@ -20,6 +20,14 @@
 #include "functions.h"
 #include "routines.h"
 
+#ifdef _WIN32
+
+void srand48(int seed) {
+	srand(seed);
+}
+
+#endif
+
 int main(int argc, char **argv) {
 
     /*
