@@ -9,7 +9,7 @@
 #include <my_errors.h>
 #include <utilis.h>
 #include <mpi_types.h>
-
+#include <stdarg.h> 
 #include "sys/time.h"
 
 using namespace std;
@@ -259,10 +259,9 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
 		return HNoLines;
 
 	for(unsigned int i = 0; i < M; i++)
-		fin_data >> x[i] >> y[i] >> z[i]  >> vx[i] >> vy[i] >> vz[i] >> w[i] >> vel[i].w;
-
+		fin_data >> x[i] >> y[i] >> z[i]  >> vx[i] >> vy[i] >> vz[i] >> w[i] >> veldb[i].w;
+     
 	fin_data.close();
-
 	cout<<"\n Read initial conditions file : "<<name<<"\n";
 
 	Utilis use;
@@ -291,10 +290,12 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
       veldb[i].x = vx[i];
       veldb[i].y = vy[i];
       veldb[i].z = vz[i];
-      veldb[i].w = 0.0;
+      veldb[i].w *= veldb[i].w / 2.;
+		vel[i].w = veldb[i].w;
       vel[i].x = veldb[i].x;
       vel[i].y = veldb[i].y;
       vel[i].z = veldb[i].z;
+
    }
  
 	for(unsigned int i = M; i < N; i++){
@@ -305,7 +306,7 @@ HostError cpu_read_external(const string file_name, double4 *pos, float4 *vel, d
       veldb[i].x = 0.0;
       veldb[i].y = 0.0;
       veldb[i].z = 0.0;
-		veldb[i].w = 0.0;
+		veldb[i].w = 1.0e-06;
 		vel[i].x = 0.0;
 		vel[i].y = 0.0;
 		vel[i].z = 0.0;

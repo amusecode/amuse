@@ -14,9 +14,9 @@ HostError InitBlocks(double4 *pos, float4 *vel, unsigned int TPB, unsigned int N
 
 HostError CudaInit(unsigned int *M, int NGPU, int rank, unsigned int *devices, string gpu_name, string path);
 
-HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, float4 **vel_PD, unsigned int N, unsigned int TPB, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass);
+HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, unsigned int N, unsigned int TPB, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass);
 
-HostError Calculate_potential_Energy(double4 *pos_CH, float4 *vel_PH, unsigned int N, unsigned int TPB, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass);
+HostError Calculate_potential_Energy(double4 *pos_CH, double4 *vel_CH, unsigned int N, unsigned int TPB, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass);
 
 HostError isDivisible(unsigned int *N, unsigned int *M, int size, unsigned int NGPU, unsigned int TPB, unsigned int *BFMAX);
 

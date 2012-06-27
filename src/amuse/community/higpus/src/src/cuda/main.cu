@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <string>
 #include <mpi.h>
+#include <stdio.h>
 
 #include <my_errors.h>
 #include <functions.h>
@@ -28,8 +29,9 @@ int main(int argc, char *argv[]){
 	if(rank == 0){
    system("mkdir data");
 	string param;
+	
 	HostSafeCall(check_argv(argc, argv, &param, &warm_start, &warm_start_file, &plummer_core, &plummer_mass));
-
+	
 	if(!warm_start){
 		ofstream generic;
       temp = path + "gpu_memory.dat";
@@ -133,7 +135,7 @@ int main(int argc, char *argv[]){
 
 	if(rank == 0){
 		if(warm_start){
-			FINP = warm_start_file;
+			FINP = path + warm_start_file;
 			CDM = 0;
 			CDV = 0;
 			unsigned int FMAX_old = FMAX;

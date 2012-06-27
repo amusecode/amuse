@@ -171,22 +171,22 @@ int commit_particles(){
    
 	for (unsigned int i=0; i<M; i++){
 	
-		pos_PH[i].w = it->second.mass;
-      pos_PH[i].x = it->second.x;
-      pos_PH[i].y = it->second.y;
-      pos_PH[i].z = it->second.z;
-		vel_CH[i].x = it->second.vx;
-		vel_CH[i].y = it->second.vy;
-		vel_CH[i].z = it->second.vz;
-		vel_CH[i].w = 0.0;
-		pos_CH[i].w = it->second.mass;
-      pos_CH[i].x = it->second.x;
-      pos_CH[i].y = it->second.y;
-      pos_CH[i].z = it->second.z;
+		pos_PH[i].w = it -> second.mass;
+      pos_PH[i].x = it -> second.x;
+      pos_PH[i].y = it -> second.y;
+      pos_PH[i].z = it -> second.z;
+		vel_CH[i].x = it -> second.vx;
+		vel_CH[i].y = it -> second.vy;
+		vel_CH[i].z = it -> second.vz;
+		vel_CH[i].w = it -> (second.soft*second.soft/2.);
+		pos_CH[i].w = it -> second.mass;
+      pos_CH[i].x = it -> second.x;
+      pos_CH[i].y = it -> second.y;
+      pos_CH[i].z = it -> second.z;
 		vel_PH[i].x = vel_CH[i].x;
 		vel_PH[i].y = vel_CH[i].y;
 		vel_PH[i].z = vel_CH[i].z;
-		vel_PH[i].w = it-> second.soft;
+		vel_PH[i].w = it -> (second.soft*second.soft/2.);
 		it++;	
 	}
 	
@@ -206,7 +206,7 @@ int commit_particles(){
       vel_PH[i].x = 0.0;
       vel_PH[i].y = 0.0;
       vel_PH[i].z = 0.0;
-      vel_PH[i].w = 1.0e-6;
+      vel_PH[i].w = 0.0;
    }  
 
 	return 0;
@@ -249,13 +249,13 @@ int evolve_model(double t){
 	return 0;
 }
 
-int set_begin_time(double time_begin){
-    GTIME = time_begin;
-    return 0;
+int set_time_begin(double time_begin){
+   GTIME = time_begin;
+	return 0;
 }
 
 
-int get_begin_time(double *time_begin){
+int get_time_begin(double *time_begin){
    *time_begin = GTIME;
    return 0;
 }
@@ -455,11 +455,10 @@ int get_index_of_next_particle(int index_of_the_particle, int * index_of_the_nex
 }
 
 int delete_particle(int index_of_the_particle){
-    dm_states.erase(index_of_the_particle);
-    particle_id_counter--;
-    return 0;
+   dm_states.erase(index_of_the_particle);
+	particle_id_counter--;
+	return 0;
 }
-
 
 int get_potential(int index_of_the_particle, double * potential){ 
 	*potential = 0.0;
@@ -554,22 +553,22 @@ int recommit_particles(){
 	it = dm_states.begin();
 	
 	for (unsigned int i=0; i<M; i++){
-		pos_PH[i].w = it->second.mass;
-      pos_PH[i].x = it->second.x;
-      pos_PH[i].y = it->second.y;
-      pos_PH[i].z = it->second.z;
-      vel_CH[i].x = it->second.vx;
-      vel_CH[i].y = it->second.vy;
-      vel_CH[i].z = it->second.vz;
-      vel_CH[i].w = 0.0;
-      pos_CH[i].w = it->second.mass;
-		pos_CH[i].x = it->second.x;
-		pos_CH[i].y = it->second.y;
-		pos_CH[i].z = it->second.z;
+		pos_PH[i].w = it -> second.mass;
+      pos_PH[i].x = it -> second.x;
+      pos_PH[i].y = it -> second.y;
+      pos_PH[i].z = it -> second.z;
+      vel_CH[i].x = it -> second.vx;
+      vel_CH[i].y = it -> second.vy;
+      vel_CH[i].z = it -> second.vz;
+      vel_CH[i].w = it -> (second.soft*second.soft/2.);
+      pos_CH[i].w = it -> second.mass;
+		pos_CH[i].x = it -> second.x;
+		pos_CH[i].y = it -> second.y;
+		pos_CH[i].z = it -> second.z;
 		vel_PH[i].x = vel_CH[i].x;
       vel_PH[i].y = vel_CH[i].y;
       vel_PH[i].z = vel_CH[i].z;
-		vel_PH[i].w = it->second.soft;
+		vel_PH[i].w = it -> (second.soft*second.soft/2.);
 		it++;
 	}
    
@@ -589,7 +588,7 @@ int recommit_particles(){
       vel_PH[i].x = 0.0;
       vel_PH[i].y = 0.0;
       vel_PH[i].z = 0.0;
-		vel_PH[i].w = 1.0e-6;
+		vel_PH[i].w = 0.0;
    }
 
 	GTW = GTIME;
@@ -680,22 +679,21 @@ int set_radius(int index_of_the_particle, double radius){
 }
 
 int cleanup_code(){
-    particle_id_counter = 0;
-    delete [] pos_PH;
-    delete [] vel_PH;
-    delete [] pos_CH;
-    delete [] vel_CH;
-    delete [] a_H0;
-    delete [] step;
-    delete [] local_time;
-    dm_states.clear();
-    return 0;
+   delete [] pos_PH;
+   delete [] vel_PH;
+   delete [] pos_CH;
+   delete [] vel_CH;
+   delete [] a_H0;
+   delete [] step;
+   delete [] local_time;
+	dm_states.clear();
+	return 0;
 }
 
 int get_potential_energy(double * potential_energy){
    unsigned int ppG = N/(NGPU*size); 
    HostSafeCall(CudaInit(&GPUMINTHREADS, NGPU, rank, devices, GPUNAME, path));
-   HostSafeCall(Calculate_potential_Energy(pos_CH, vel_PH, N, TPB, NGPU, rank, devices, ppG, potential_energy, plummer_core, plummer_mass));
+   HostSafeCall(Calculate_potential_Energy(pos_CH, vel_CH, N, TPB, NGPU, rank, devices, ppG, potential_energy, plummer_core, plummer_mass));
 	return 0;
 }
 

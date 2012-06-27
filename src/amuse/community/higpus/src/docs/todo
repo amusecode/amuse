@@ -1,6 +1,0 @@
-- per opencl metti un makefile a parte e file a parte (dunque niente ifdef e altre cose), crea la cartella opencl a fianco di cxx e cuda
-- utilizza il visual profiler di cuda e vedi se puo risultare utile
-- metti le stampe in binario
-- aggiusta quel 5.0e-5 nel corrector (a volte è dannoso)
-- la AllReduce del calcolo dell'energia non serve (basta che ce l'abbia il rank 0)
-- aggiungi un controllo per farsi tornare su un file eventualmente il nome dei nodi dei singoli rank (scrivi su un file a parte)

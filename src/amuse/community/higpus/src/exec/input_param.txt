@@ -11,4 +11,4 @@
 0       // rescale to the center of mass 1 = true, 0 = false !
 0       // rescale to the center of velocity 1 = true, 0 = false !
 random.dat  // input file for positions, velocities and masses (it must be created in THIS order) !
-Tesla C2050#  // GPU to use (the name must be terminated with the character #) !
+GeForce GTX 480#  // GPU to use (the name must be terminated with the character #) !

@@ -29,9 +29,9 @@ __global__ void reposition (double4 *ac, double4 *af, unsigned int offset, unsig
 
 __device__ void AddPlummerEnergy(double4 dr, double *pot, double *b, double *M, double mul);
 
-__global__ void energy(double4 *posCD, double4 *velCD, float4 *velPD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass);
+__global__ void energy(double4 *posCD, double4 *velCD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass);
 
-__global__ void potential_energy(double4 *posD, float4 *velPD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass);
+__global__ void potential_energy(double4 *posD, double4 *velCD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass);
 
 __device__ void AddPlummer(double4 dr, float4 dv, float4 da, double4 *acc, double4 *jrk, double4 *snp, double *b, double *M, double mul);
 

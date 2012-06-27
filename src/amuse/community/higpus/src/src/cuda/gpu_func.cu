@@ -385,7 +385,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 	      HostSafeCall(AcquireEnergy(&E0, path));
 	}
 	else{
-	   HostSafeCall(Calculate_Energy(pos_CD, vel_CD, vel_PD, N, TPB, NGPU, rank, devices, ppG, &E0, plummer_core, plummer_mass));
+	   HostSafeCall(Calculate_Energy(pos_CD, vel_CD, N, TPB, NGPU, rank, devices, ppG, &E0, plummer_core, plummer_mass));
 	}
 
 	ofstream stream;
@@ -403,7 +403,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 		output_name = to_char(temp);
 		stream.open(output_name, ios::out);
 		for(unsigned int i = 0; i < M; i++)
-			stream<<pos_CH[i].x<<"  "<<pos_CH[i].y<<"  "<<pos_CH[i].z<<"  "<<vel_CH[i].x<<"  "<<vel_CH[i].y<<"  "<<vel_CH[i].z<<"  "<<pos_CH[i].w<<endl;
+			stream<<pos_CH[i].x<<"  "<<pos_CH[i].y<<"  "<<pos_CH[i].z<<"  "<<vel_CH[i].x<<"  "<<vel_CH[i].y<<"  "<<vel_CH[i].z<<"  "<<pos_CH[i].w<<"  "<<vel_CH[i].w<<endl;
 		stream.close();
 	}
 
@@ -662,7 +662,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 			CheckBlocks(step, M, path);
 			double E;
 			get_times(&start);
-			HostSafeCall(Calculate_Energy(pos_CD, vel_CD, vel_PD, N, TPB, NGPU, rank, devices, ppG, &E, plummer_core, plummer_mass));
+			HostSafeCall(Calculate_Energy(pos_CD, vel_CD, N, TPB, NGPU, rank, devices, ppG, &E, plummer_core, plummer_mass));
 			get_times(&end);
 			set_times(end-start, &(Times[nextsize].energy_time));
 
@@ -700,7 +700,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 				stream.open(output_name, ios::out);
 				stream<<scientific<<setprecision(16);
 				for(unsigned int i = 0; i < M; i++)
-					stream<<pos_CH[i].x<<"  "<<pos_CH[i].y<<"  "<<pos_CH[i].z<<"  "<<vel_CH[i].x<<"  "<<vel_CH[i].y<<"  "<<vel_CH[i].z<<"  "<<pos_CH[i].w<<endl;
+					stream<<pos_CH[i].x<<"  "<<pos_CH[i].y<<"  "<<pos_CH[i].z<<"  "<<vel_CH[i].x<<"  "<<vel_CH[i].y<<"  "<<vel_CH[i].z<<"  "<<pos_CH[i].w<<"  "<<vel_CH[i].w<<endl;
 				stream.close();
 				out_index++;
 			}
@@ -712,7 +712,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 
 }
 
-HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, float4 **vel_PD, unsigned int N, unsigned int THREADS, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass){
+HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, unsigned int N, unsigned int THREADS, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass){
 
 	double *E [NGPU];
 	double *EH = new double [N*NGPU];
@@ -729,13 +729,13 @@ HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, float4 **vel_PD, 
 	}
 
 	int BLOCKS = N/THREADS;
-	int SHARED = THREADS*(sizeof(double4) + sizeof(float4));
+	int SHARED = THREADS*(2 * sizeof(double4));
 
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaThreadSynchronize());
 		int istart = ppG*(i+rank*NGPU);
-		energy<<<BLOCKS, THREADS, SHARED>>>(pos_CD[i], vel_CD[i], vel_PD[i], E[i], N, istart, ppG, plummer_core, plummer_mass);
+		energy<<<BLOCKS, THREADS, SHARED>>>(pos_CD[i], vel_CD[i], E[i], N, istart, ppG, plummer_core, plummer_mass);
 	}
 
 	for(unsigned int i = 0; i < NGPU; i++){
@@ -767,11 +767,11 @@ HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, float4 **vel_PD, 
 	return HNoError;
 }
 
-HostError Calculate_potential_Energy(double4 *pos_CH, float4 *vel_PH, unsigned int N, unsigned int THREADS, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass){
+HostError Calculate_potential_Energy(double4 *pos_CH, double4 *vel_CH, unsigned int N, unsigned int THREADS, unsigned int NGPU, int rank, unsigned int *devices, unsigned int ppG, double *Energy, double plummer_core, double plummer_mass){
 
 	double *E [NGPU];
 	double4 **pos_CD = new double4* [NGPU];
-	float4 **vel_PD = new float4* [NGPU];
+	double4 **vel_CD = new double4* [NGPU];
 	double *EH = new double [N*NGPU];
 	double *Empi = new double [N];
 
@@ -784,20 +784,20 @@ HostError Calculate_potential_Energy(double4 *pos_CH, float4 *vel_PH, unsigned i
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaMalloc(( void**)&E[i], N*sizeof(double)));
 		DeviceSafeCall(cudaMalloc((void **)&pos_CD[i],  N*sizeof(double4)));
-		DeviceSafeCall(cudaMalloc((void **)vel_PD[i],  N*sizeof(float)));
+		DeviceSafeCall(cudaMalloc((void **)vel_CD[i],  N*sizeof(double4)));
       
 		DeviceSafeCall(cudaMemcpy( pos_CD[i], pos_CH,  N*sizeof(double4),    cudaMemcpyHostToDevice ));
-	   DeviceSafeCall(cudaMemcpy( vel_PD[i], vel_PH,  N*sizeof(float),    cudaMemcpyHostToDevice ));
+	   DeviceSafeCall(cudaMemcpy( vel_CD[i], vel_CH,  N*sizeof(double4),    cudaMemcpyHostToDevice ));
 	}
 
 	int BLOCKS = N/THREADS;
-	int SHARED = THREADS*(sizeof(double4) + sizeof(float4));
+	int SHARED = THREADS * (2 * sizeof(double4));
 
 	for(unsigned int i = 0; i < NGPU; i++){
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaThreadSynchronize());
 		int istart = ppG*(i+rank*NGPU);
-		potential_energy<<<BLOCKS, THREADS, SHARED>>>(pos_CD[i], vel_PD[i], E[i], N, istart, ppG, plummer_core, plummer_mass);
+		potential_energy<<<BLOCKS, THREADS, SHARED>>>(pos_CD[i], vel_CD[i], E[i], N, istart, ppG, plummer_core, plummer_mass);
 	}
 
 	for(unsigned int i = 0; i < NGPU; i++){
@@ -824,7 +824,7 @@ HostError Calculate_potential_Energy(double4 *pos_CH, float4 *vel_PH, unsigned i
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaFree(E[i]));
 		DeviceSafeCall(cudaFree(pos_CD[i]));
-	   DeviceSafeCall(cudaFree(vel_PD[i]));
+	   DeviceSafeCall(cudaFree(vel_CD[i]));
 	}
 
 	return HNoError;
@@ -1019,7 +1019,6 @@ HostError CheckBlocks(double *step, unsigned int M, string path){
 
 	MPISafeCall(MPI_Comm_rank(MPI_COMM_WORLD, &local_rank));
    
-   for(unsigned int i = 0; i < M; i++)
 	if(local_rank == 0){
       ofstream blocks;
 		temp = path + "Blocks.dat";

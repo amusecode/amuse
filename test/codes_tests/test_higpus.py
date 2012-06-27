@@ -42,9 +42,9 @@ class HiGPUsInterfaceTests(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(HiGPUsInterface)
         instance.initialize_code()
         for x in [0.101, 4.0]:
-            error = instance.set_eps(x)
+            error = instance.set_eta4(x)
             self.assertEquals(error, 0)            
-            value, error = instance.get_eps()
+            value, error = instance.get_eta4()
             self.assertEquals(error, 0)
             self.assertEquals(x, value)
         instance.cleanup_code()
@@ -64,7 +64,8 @@ class HiGPUsInterfaceTests(TestWithMPI):
             [2.3,3.3,4.3,5.3],
             [2.4,3.4,4.4,5.4],
             [2.5,3.5,4.5,5.5],
-            [2.6,3.6,4.6,5.6])
+            [2.6,3.6,4.6,5.6],
+            [0.001,0.001,0.001,0.001])
         error = instance.commit_particles()
         retrieved_state = instance.get_state(0)
         self.assertEquals(11.0,  retrieved_state['mass'])
@@ -98,7 +99,6 @@ class HiGPUsInterfaceTests(TestWithMPI):
         instance.initialize_code()
         instance.set_number_of_Threads(32)
         instance.set_number_of_GPU(1)
-        instance.set_eps(0.0)
         instance.set_gpu_name("GeForce GTX 480")
         error = instance.commit_parameters()
         
@@ -109,6 +109,7 @@ class HiGPUsInterfaceTests(TestWithMPI):
             [0.0,0.0,0.0],
             [0.0,0.0,0.0],
             [0.0,1.0,0.0],
+            [0.0,0.0,0.0],
             [0.0,0.0,0.0],
             [0.0,0.0,0.0] )
         instance.commit_particles()
@@ -133,12 +134,11 @@ class HiGPUsInterfaceTests(TestWithMPI):
         instance.initialize_code()
         instance.set_number_of_Threads(32)
         instance.set_number_of_GPU(1)
-        instance.set_eps(0.1)
         instance.set_gpu_name("GeForce GTX 480")
         error = instance.commit_parameters()
         
-        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-        id2,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
+        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0, soft = 0.1)
+        id2,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0, soft = 0.1)
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
@@ -157,12 +157,11 @@ class HiGPUsInterfaceTests(TestWithMPI):
         instance.initialize_code()
         instance.set_number_of_Threads(32)
         instance.set_number_of_GPU(1)
-        instance.set_eps(0.0)
         instance.set_gpu_name("GeForce GTX480")
         error = instance.commit_parameters()
         
-        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-        id2,errorcode = instance.new_particle(mass = 1.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
+        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0, soft = 0.0)
+        id2,errorcode = instance.new_particle(mass = 1.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0, soft = 0.0)
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
@@ -190,13 +189,14 @@ class TestHiGPUs(TestWithMPI):
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
+        sun.soft =  units.m (0.0)
 
         earth = stars[1]
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371.) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800.,0.0)))
-        
+        earth.soft = units.m (0.0)
         return stars
 
 
@@ -205,7 +205,6 @@ class TestHiGPUs(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(HiGPUs, convert_nbody)
         instance.initialize_code()
     
-        instance.parameters.softening = 0.000001 | units.AU
         instance.parameters.eta_6 = 0.01
         instance.commit_parameters()
         stars = self.new_system_of_sun_and_earth()
@@ -276,6 +275,7 @@ class TestHiGPUs(TestWithMPI):
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
+        particles.soft = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] | nbody_system.length
         instance.particles.add_particles(particles)
         
         instance.commit_particles()
@@ -290,7 +290,6 @@ class TestHiGPUs(TestWithMPI):
     def test4(self):
         instance = self.new_instance_of_an_optional_code(HiGPUs)
         instance.initialize_code()
-        instance.parameters.softening = 0.0000001 | nbody_system.length
         instance.commit_parameters()  
 
         particles = datamodel.Particles(2)
@@ -298,6 +297,7 @@ class TestHiGPUs(TestWithMPI):
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        particles.soft = [0.0, 0.0] | nbody_system.length
         instance.particles.add_particles(particles)
         
         instance.commit_particles()
@@ -333,7 +333,6 @@ class TestHiGPUs(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(HiGPUs)
         instance.initialize_code()
     
-        instance.parameters.softening = 0.000001 | nbody_system.length
         instance.parameters.eta_6 = 0.01
         instance.commit_parameters()
 
@@ -366,12 +365,14 @@ class TestHiGPUs(TestWithMPI):
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | nbody_system.length
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]] | nbody_system.speed
-        
+        particles.soft = [0.0, 0.0] | nbody_system.length
+
         particle = datamodel.Particles(1)
         particle.mass = 0.000003003 | nbody_system.mass
         particle.radius =  0.0001 | nbody_system.length
         particle.position = [0.0, 1.0, 0.0] | nbody_system.length
         particle.velocity = [-1.0, 0.0, 0.0] | nbody_system.speed
+        particles.soft = 0.0 | nbody_system.length
         
         instance = self.new_instance_of_an_optional_code(HiGPUs)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
@@ -401,12 +402,11 @@ class TestHiGPUs(TestWithMPI):
     def test7(self):
        
         instance = self.new_instance_of_an_optional_code(HiGPUs)
-        instance.parameters.softening = 0.5  | nbody_system.length
+        instance.parameters.eta_6 = 0.5  | nbody_system.length
         
         instance.commit_parameters()        
         
-        self.assertEquals( instance.parameters.softening ,  0.5  | nbody_system.length)
-        self.assertEquals( instance.parameters.eta_6 ,  0.4)
+        self.assertEquals( instance.parameters.eta_6 ,  0.5)
         self.assertEquals( instance.parameters.eta_4 ,  0.01)
         self.assertEquals( instance.parameters.start_time ,  0.0 | nbody_system.time) 
         self.assertEquals( instance.parameters.r_core_plummer ,  0.0 | nbody_system.length)

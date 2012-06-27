@@ -206,17 +206,16 @@ __forceinline__ __device__ void AddPlummerEnergy(double4 dr, double *pot, double
 }
 
 
-__global__ void energy(double4 *posCD, double4 *velCD, float4 *velPD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass){
+__global__ void energy(double4 *posCD, double4 *velCD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass){
 
 	unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	extern __shared__ double4 shPosition[];
 	double4 *shPos = (double4*)shPosition;
-   float4 *shVel = (float4*)&shPos[blockDim.x];
+   double4 *shVel = (double4*)&shPos[blockDim.x];
 	
 	double4 myposition = posCD[i];
 	double4 myvelocity = velCD[i];
-   float myEpsilon = velPD[i].w;
 
 	double kin = 0.0, pE = 0.0;
 	int k = 0, j;
@@ -229,14 +228,14 @@ __global__ void energy(double4 *posCD, double4 *velCD, float4 *velPD, double *E,
 	while(k < ppG){
       j = 0;
       shPos[threadIdx.x] = posCD[k + threadIdx.x + istart];
-      shVel[threadIdx.x] = velPD[k + threadIdx.x + istart];
+      shVel[threadIdx.x] = velCD[k + threadIdx.x + istart];
 		__syncthreads();
 
       while(j < blockDim.x){
          double4 dr = {shPos[j].x - myposition.x, shPos[j].y - myposition.y, shPos[j].z - myposition.z, 0.0};
          double distance = (dr.x * dr.x + dr.y * dr.y + dr.z * dr.z);
          if(distance != 0.0)
-            pE -= 0.5 * myposition.w * shPos[j].w * rsqrt(distance + myEpsilon * shVel[j].w);
+            pE -= 0.5 * myposition.w * shPos[j].w * rsqrt(distance + (myvelocity.w + shVel[j].w));
       j++;
       }
    __syncthreads();
@@ -248,16 +247,16 @@ __global__ void energy(double4 *posCD, double4 *velCD, float4 *velPD, double *E,
 	E[i] = kin + pE;
 }
 
-__global__ void potential_energy(double4 *posCD, float4 *velPD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass){
+__global__ void potential_energy(double4 *posCD, double4 *velCD, double *E, unsigned int N, unsigned int istart, unsigned int ppG, double plummer_core, double plummer_mass){
 
 	unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	extern __shared__ double4 shPosition[];
 	double4 *shPos = (double4*)shPosition;
-   float4 *shVel = (float4*)&shPos[blockDim.x];
+   double4 *shVel = (double4*)&shPos[blockDim.x];
 
 	double4 myposition = posCD[i];
-   float myEpsilon = velPD[i].w;
+   double myEpsilon = velCD[i].w;
 
 	double pE = 0.0;
 	int k = 0, j;
@@ -266,14 +265,14 @@ __global__ void potential_energy(double4 *posCD, float4 *velPD, double *E, unsig
 	while(k < ppG){
 		j = 0;
 		shPos[threadIdx.x] = posCD[k + threadIdx.x + istart];
-		shVel[threadIdx.x] = velPD[k + threadIdx.x + istart];
+		shVel[threadIdx.x] = velCD[k + threadIdx.x + istart];
 		__syncthreads();
 
 		while(j < blockDim.x){
 			double4 dr = {shPos[j].x - myposition.x, shPos[j].y - myposition.y, shPos[j].z - myposition.z, 0.0};
 			double distance = (dr.x * dr.x + dr.y * dr.y + dr.z * dr.z);
 			if(distance != 0.0)
-				pE -= 0.5 * myposition.w * shPos[j].w * rsqrt(distance + myEpsilon * shVel[j].w);
+				pE -= 0.5 * myposition.w * shPos[j].w * rsqrt(distance + (myEpsilon + shVel[j].w));
 			j++;	
 		}
 		__syncthreads();
@@ -383,40 +382,42 @@ __global__  void evaluation(unsigned int N,
       __syncthreads();
 
      while(j < blockDim.x){
+	     float3 dr = {shPos[j].x - myPosition.x, shPos[j].y - myPosition.y, shPos[j].z - myPosition.z};
+		  float distance = (dr.x * dr.x + dr.y * dr.y + dr.z * dr.z);
+		  if(distance != 0.0){
+		  
+			  distance += (myVelocity.w + shVel[j].w);
+           float sqrdist = shPos[j].w * rsqrtf(distance*distance*distance);
+           distance = 1.0f/distance;
 
-		  float3 dr = {shPos[j].x - myPosition.x, shPos[j].y - myPosition.y, shPos[j].z - myPosition.z};
-        float distance = (dr.x * dr.x + dr.y * dr.y + dr.z * dr.z) + myVelocity.w * shVel[j].w;
-        float sqrdist = shPos[j].w * rsqrtf(distance*distance*distance);
-        distance = 1.0f/distance;
+           float3 dv = {shVel[j].x - myVelocity.x, shVel[j].y - myVelocity.y, shVel[j].z - myVelocity.z};
+           float3 da = {shAcc[j].x - myAccelera.x, shAcc[j].y - myAccelera.y, shAcc[j].z - myAccelera.z};
 
-        float3 dv = {shVel[j].x - myVelocity.x, shVel[j].y - myVelocity.y, shVel[j].z - myVelocity.z};
-        float3 da = {shAcc[j].x - myAccelera.x, shAcc[j].y - myAccelera.y, shAcc[j].z - myAccelera.z};
+           float alpha = (dv.x * dr.x + dv.y * dr.y + dv.z * dr.z)*distance;
+           float beta = (dv.x*dv.x + dv.y*dv.y + dv.z*dv.z + dr.x*da.x + dr.y*da.y + dr.z*da.z)*distance + alpha*alpha;
+           beta *= -3.0f * sqrdist;
 
-        float alpha = (dv.x * dr.x + dv.y * dr.y + dv.z * dr.z)*distance;
-        float beta = (dv.x*dv.x + dv.y*dv.y + dv.z*dv.z + dr.x*da.x + dr.y*da.y + dr.z*da.z)*distance + alpha*alpha;
-        beta *= -3.0f * sqrdist;
+           float scalar3 = -3.0f * alpha * sqrdist;
 
-        float scalar3 = -3.0f * alpha * sqrdist;
+           float3 au = {sqrdist*dv.x + scalar3 * dr.x, sqrdist*dv.y + scalar3 * dr.y, sqrdist*dv.z + scalar3 * dr.z};
 
-        float3 au = {sqrdist*dv.x + scalar3 * dr.x, sqrdist*dv.y + scalar3 * dr.y, sqrdist*dv.z + scalar3 * dr.z};
+           acc.x = acc.x + dr.x*sqrdist;
+           acc.y = acc.y + dr.y*sqrdist;
+           acc.z = acc.z + dr.z*sqrdist;
 
-        acc.x = acc.x + dr.x*sqrdist;
-        acc.y = acc.y + dr.y*sqrdist;
-        acc.z = acc.z + dr.z*sqrdist;
+           jrk.x += au.x;
+           jrk.y += au.y;
+           jrk.z += au.z;
 
-        jrk.x += au.x;
-        jrk.y += au.y;
-        jrk.z += au.z;
+           alpha *= -6.0f;
 
-        alpha *= -6.0f;
-
-        snp.x += sqrdist * da.x + beta * dr.x + au.x * alpha;
-        snp.y += sqrdist * da.y + beta * dr.y + au.y * alpha;
-        snp.z += sqrdist * da.z + beta * dr.z + au.z * alpha;
-
+           snp.x += sqrdist * da.x + beta * dr.x + au.x * alpha;
+           snp.y += sqrdist * da.y + beta * dr.y + au.y * alpha;
+           snp.z += sqrdist * da.z + beta * dr.z + au.z * alpha;
+        }
         j++;
-	  }
-
+	     
+     }
 	  __syncthreads();
      i += blockDim.x;
 	}

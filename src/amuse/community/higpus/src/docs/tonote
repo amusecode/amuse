@@ -1,8 +1,0 @@
-- i file della simulazione vanno eliminati a MANO : il make clean non li tocca
-- non c'è molto controllo sul warm start : NON bisogna cambiare i parametri di input_param.txt alla ripartenza
-        altrimenti non si può assicurare cosa succede : attenzione anche a quando si raggiunge il limite di
-        file stampabili (deciso da input_param.txt)
-- meglio mettere un DTPRINT che è il massimo dt possibile (DTMAX)
-- il programma DOVREBBE girare su nodi tutti uguali a quello del rank 0 (c'è poco controllo) e sul singolo rank
-        devono esserci possibilmente gpus tutte uguali.
-
