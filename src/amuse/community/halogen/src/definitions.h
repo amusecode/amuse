@@ -4,6 +4,11 @@
 ** Some definitions for halogen4muse
 */
 
+#ifdef _WIN32
+double drand48(void);
+void srand48(long seed);
+#endif
+
 #define NGRIDR 2001
 #define NGRIDDF 101
 #define NINTMIN 5
