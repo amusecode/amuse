@@ -15,7 +15,6 @@ EOS_DIR   = src/mmas2/src/eos
 USM_DIR   = src/mmas2/src/usm
 STD_SRCMMAS_DIRDIR   = src/mmas2/src/std
 GSL_LIBS ?= -lgsl -lgslcblas -lm
-GSL_INC = $(GSL_FLAGS)
 
 #INCLUDES = -I/opt/local/include -Isrc/mmas2/src
 INCLUDES = $(GSL_FLAGS)  -Isrc/mmas2/src
@@ -34,7 +33,7 @@ all: $(BUILDDIR)/Makefile  mmas2 mmams_worker
 
 $(BUILDDIR)/Makefile:
 	@-mkdir build
-	cd $(BUILDDIR) && cmake ../src/mmas2 -G "$(CMAKE_GENERATOR)"
+	cd $(BUILDDIR) && cmake ../src/mmas2 -G "$(CMAKE_GENERATOR)" -DGSL_FLAGS=$(GSL_FLAGS)
 	
 mmas2: $(BUILDDIR)/Makefile
 	make -C $(BUILDDIR)

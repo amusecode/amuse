@@ -5,7 +5,7 @@
 #include<fstream>
 #include<cmath>
 #include<ctime>
-#include<unistd.h>
+//#include<unistd.h>
 #include<typeinfo>
 #include<cstring>
 #include"mpi.h"

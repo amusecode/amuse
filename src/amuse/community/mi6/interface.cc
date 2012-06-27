@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include <unistd.h>
+//#include <unistd.h>
 //~#include <vector>
 #include <map>
 
