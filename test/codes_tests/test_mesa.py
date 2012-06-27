@@ -2,7 +2,7 @@ from amuse.test.amusetest import TestWithMPI, get_path_to_results
 import sys
 import os.path
 from subprocess import PIPE, Popen
-from numpy import pi
+import numpy
 from math import ceil
 
 from amuse.community.mesa.interface import MESA, MESAInterface
@@ -12,6 +12,7 @@ from amuse.units import units
 from amuse.datamodel import Particles
 from amuse.datamodel import Particle
 from amuse.rfi import channel
+from amuse.ext.spherical_model import EnclosedMassInterpolator
 
 class TestMESAInterface(TestWithMPI):
     
@@ -408,27 +409,19 @@ class TestMESA(TestWithMPI):
     
     def test5(self):
         print "Testing evolve_model for particle set..."
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = self.new_instance(MESA)
-        #channel.MessageChannel.DEBUGGER = None
-        if instance is None:
-            print "MESA was not built. Skipping test."
-            return
         masses = [0.5, 1.0] | units.MSun
         max_age = 0.6 | units.Myr
         number_of_stars=len(masses)
         stars =  Particles(number_of_stars)
-        for i, star in enumerate(stars):
-            star.mass = masses[i]
+        stars.mass = masses
         instance.initialize_code()
-        instance.commit_parameters() 
         self.assertEqual(instance.parameters.max_age_stop_condition, 1e6 | units.Myr)
         instance.parameters.max_age_stop_condition = max_age
         self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
         instance.particles.add_particles(stars)
         instance.commit_particles()
         from_code_to_model = instance.particles.new_channel_to(stars)
-        from_code_to_model.copy()
         instance.evolve_model(end_time = 0.5 | units.Myr)
         from_code_to_model.copy()
         #print stars
@@ -473,7 +466,7 @@ class TestMESA(TestWithMPI):
         radius2.prepend(0|units.m)
         delta_radius_cubed = (radius1**3 - radius2**3)
         self.assertAlmostEquals(instance.particles[0].get_density_profile() / 
-            (delta_mass/(4./3.*pi*delta_radius_cubed)), [1]*479, places=3)
+            (delta_mass/(4./3.*numpy.pi*delta_radius_cubed)), [1]*479, places=3)
         self.assertAlmostEquals(instance.particles[1].get_mu_profile(), [0.62]*985 | units.amu, places=1)
         instance.stop()
     
@@ -578,7 +571,7 @@ class TestMESA(TestWithMPI):
         inner_radius = outer_radius[:-1]
         inner_radius.prepend(0|units.m)
         delta_radius_cubed = (outer_radius**3 - inner_radius**3)
-        integrated_mass = (4./3.*pi*delta_radius_cubed*instance.particles[0].get_density_profile()).sum()
+        integrated_mass = (4./3.*numpy.pi*delta_radius_cubed*instance.particles[0].get_density_profile()).sum()
         self.assertAlmostRelativeEqual(integrated_mass, star.mass*mass_factor, places = 3)
         instance.stop()
     
@@ -912,6 +905,29 @@ class TestMESA(TestWithMPI):
         self.assertAlmostRelativeEqual(star.age, 1.8e5 | units.yr)
         self.assertAlmostRelativeEqual(star.mass, 1.0002 | units.MSun)
         print star.as_set()
+        instance.stop()
+    
+    def slowtest19a(self):
+        print "Testing MESA core mass"
+        instance = self.new_instance(MESA)
+        star = instance.particles.add_particle(Particle(mass=3|units.MSun))
+        star.evolve_for(330 | units.Myr)
+        for i in range(10):
+            star.evolve_for(10 | units.Myr)
+            index = numpy.searchsorted(star.get_chemical_abundance_profiles(number_of_species=1)[0], 1.0e-4)
+            h_poor_mass = EnclosedMassInterpolator(radii=star.get_radius_profile(), densities=star.get_density_profile()).enclosed_mass[index].as_quantity_in(units.MSun)
+            print h_poor_mass, star.core_mass
+            self.assertAlmostEqual(star.core_mass, h_poor_mass, 2)
+        instance.stop()
+    
+    def test19b(self):
+        print "Testing MESA core mass (short version of slowtest19a)"
+        instance = self.new_instance(MESA)
+        star = instance.particles.add_particle(Particle(mass=3|units.MSun))
+        star.evolve_one_step()
+        index = numpy.searchsorted(star.get_chemical_abundance_profiles(number_of_species=1)[0], 1.0e-4)
+        h_poor_mass = EnclosedMassInterpolator(radii=star.get_radius_profile(), densities=star.get_density_profile()).enclosed_mass[index].as_quantity_in(units.MSun)
+        self.assertAlmostEqual(star.core_mass, h_poor_mass, 2)
         instance.stop()
     
 
