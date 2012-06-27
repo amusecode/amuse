@@ -697,74 +697,82 @@ class TestStellarModel2SPH(TestWithMPI):
         with_core = True # set to False to do a comparison run without a core (True)
         hydro_code = Gadget2 # Fi -or- Gadget2
         
-        stellar_evolution = self.new_instance(MESA)
-        if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
-            return
-        stars =  Particles(1)
-        stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_code() 
-        stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.commit_particles()
-        try:
-            while True:
-                stellar_evolution.evolve_model()
-        except AmuseException as ex:
-            self.assertEqual(str(ex), "Error when calling 'evolve' of a 'MESA', errorcode is -14, error "
-            "is 'Evolve terminated: Maximum number of backups reached.'")
+        test_pickle_file = os.path.join(get_path_to_results(), "star2sph_test_14.pkl")
+        if not os.path.exists(test_pickle_file):
+            stellar_evolution = self.new_instance(MESA)
+            star = stellar_evolution.particles.add_particle(Particle(mass=5.0 | units.MSun))
+            while star.radius < (200 | units.RSun):
+                star.evolve_for(10 * star.time_step)
+            print star.core_mass
+            pickle_stellar_model(star, test_pickle_file)
+            stellar_evolution.stop()
         
-        outer_radii = stellar_evolution.particles[0].get_radius_profile()
-        outer_radii.prepend(0.0 | units.m)
-        midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
-        temperature = stellar_evolution.particles[0].get_temperature_profile()
-        mu          = stellar_evolution.particles[0].get_mu_profile()
-        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
+        number_of_sph_particles = 10000
+        print "Creating initial conditions from a MESA stellar evolution model"
         
-        number_of_sph_particles = 3000
-        print "Creating initial conditions from a MESA stellar evolution model:"
-        print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
-        
-        
-        stellar_model_in_SPH = convert_stellar_model_to_SPH(
-            stellar_evolution.particles[0], 
+        converter = StellarModel2SPH(
+            None, 
             number_of_sph_particles, 
             seed = 12345,
-            with_core_particle = with_core
+            pickle_file = test_pickle_file,
+            with_core_particle = with_core,
+            target_core_mass = 0.9 | units.MSun
         )
-        if len(stellar_model_in_SPH.core_particle):
+        converter.unpickle_stellar_structure()
+        original_mass = converter.mass
+        stellar_model_in_SPH = converter.result
+        
+        if with_core:
             print "Created", len(stellar_model_in_SPH.gas_particles), 
             print "SPH particles and one 'core-particle':\n", stellar_model_in_SPH.core_particle
+            print stellar_model_in_SPH.gas_particles.mass.sum()
             core_radius = stellar_model_in_SPH.core_radius
         else:
             print "Only SPH particles created."
             core_radius = 1.0 | units.RSun
-        print "Setting gravitational smoothing to:", core_radius
+        print "Setting gravitational smoothing to:", core_radius.as_quantity_in(units.RSun)
         
-        stellar_evolution.stop()
-        
-        t_end = 1.0e2 | units.s
-        print "Evolving to:", t_end
+        t_end = 1.0e4 | units.s
         n_steps = 100
         
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, constants.G, t_end)
         hydro_code = hydro_code(unit_converter)
-        
         try:
             hydro_code.parameters.timestep = t_end / n_steps
         except Exception as exc:
             if not "parameter is read-only" in str(exc): raise
-        
         hydro_code.parameters.epsilon_squared = core_radius**2
         hydro_code.gas_particles.add_particles(stellar_model_in_SPH.gas_particles)
-        if len(stellar_model_in_SPH.core_particle):
-            hydro_code.dm_particles.add_particles(stellar_model_in_SPH.core_particle)
+        if with_core:
+            hydro_code.dm_particles.add_particle(stellar_model_in_SPH.core_particle)
         
-        self.assertAlmostRelativeEqual(stars.mass, hydro_code.particles.total_mass(), places=7)
+        self.assertAlmostRelativeEqual(original_mass, hydro_code.particles.total_mass(), places=7)
         
+        sph_midpoints = hydro_code.gas_particles.position.lengths()
+        radial_comparison_plot(
+            converter.midpoints_profile[1:-1], converter.specific_internal_energy_profile, 
+            sph_midpoints, hydro_code.gas_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_14_internal_energy.png"),
+            y_label = "internal energy"
+        )
+        radial_comparison_plot(
+            converter.midpoints_profile[1:-1], converter.density_profile, 
+            sph_midpoints, hydro_code.gas_particles.rho, 
+            os.path.join(get_path_to_results(), "star2sph_test_14_density.png"), 
+            y_label = "density"
+        )
+        radial_comparison_plot(
+            converter.midpoints_profile[1:-1], converter.specific_internal_energy_profile * converter.density_profile**(-2.0/3.0), 
+            sph_midpoints, hydro_code.gas_particles.u * hydro_code.gas_particles.rho**(-2.0/3.0), 
+            os.path.join(get_path_to_results(), "star2sph_test_14_entropy.png"), 
+            y_label = "entropy"
+        )
         times = [] | units.s
         kinetic_energies =   [] | units.J
         potential_energies = [] | units.J
         thermal_energies =   [] | units.J
+        
+        print "Evolving to:", t_end
         for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
             hydro_code.evolve_model(time)
             times.append(time)
@@ -777,10 +785,11 @@ class TestStellarModel2SPH(TestWithMPI):
             os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e2_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e2_gadget_thermal_energy_evolution.png"))
-        internal_energy_comparison_plot(
-            midpoints, specific_internal_energy, 
+        radial_comparison_plot(
+            converter.midpoints_profile[1:-1], converter.specific_internal_energy_profile, 
             sph_midpoints, hydro_code.gas_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e2_gadget_internal_energy.png")
+            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e2_gadget_internal_energy.png"), 
+            y_label = "internal energy"
         )
         hydro_code.stop()
         print "All done!\n"
@@ -802,7 +811,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertEqual(converter.species_names, ['h1', 'he3', 'he4'])
         self.assertEqual(converter.density_profile, [2.0, 2.0, 2.0, 1.0] | units.MSun/units.RSun**3)
         self.assertEqual(converter.radius_profile, [1.0/8.0, 1.0/4.0, 1.0/2.0, 1.0] | units.RSun)
-        self.assertEqual(converter.temperature_profile, [1e7, 1e6, 1e5, 1e4] | units.K)
+#~        self.assertEqual(converter.temperature_profile, [1e7, 1e6, 1e5, 1e4] | units.K)
         self.assertEqual(converter.mu_profile, [0.8, 0.6, 0.6, 1.3] | units.amu)
         self.assertEqual(converter.composition_profile, [[0.0, 0.7, 0.7, 0.7], 
             [0.05, 0.01, 0.01, 0.01], [0.95, 0.29, 0.29, 0.29]])
@@ -1028,7 +1037,7 @@ def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname)
     print "\nPlot of composition profiles was saved to: ", figname
     pyplot.close()
 
-def internal_energy_comparison_plot(radii_SE, u_SE, radii_SPH, u_SPH, figname):
+def radial_comparison_plot(radii_SE, u_SE, radii_SPH, u_SPH, figname, y_label="quantity"):
     if not HAS_MATPLOTLIB:
         return
     pyplot.figure(figsize = (7, 5))
@@ -1036,11 +1045,14 @@ def internal_energy_comparison_plot(radii_SE, u_SE, radii_SPH, u_SPH, figname):
         label='stellar evolution model')
     semilogy(radii_SPH, u_SPH, 'go', label='SPH model')
     xlabel('radius')
-    ylabel('internal energy')
-    pyplot.legend()
+    ylabel(y_label)
+    pyplot.legend(loc="lower center")
     pyplot.savefig(figname)
-    print "\nPlot of internal energy profiles was saved to: ", figname
+    print "\nPlot of", y_label, "profiles was saved to: ", figname
     pyplot.close()
+
+def internal_energy_comparison_plot(radii_SE, u_SE, radii_SPH, u_SPH, figname):
+    radial_comparison_plot(radii_SE, u_SE, radii_SPH, u_SPH, figname, y_label="internal energy")
 
 def energy_plot(time, E_kin, E_pot, E_therm, figname):
     if not HAS_MATPLOTLIB:
