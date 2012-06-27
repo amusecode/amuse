@@ -33,6 +33,10 @@ along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <valarray>
 
+#ifndef M_PI
+#define M_PI           3.14159265358979323846
+#endif
+
 using namespace std;
 
 // constructor

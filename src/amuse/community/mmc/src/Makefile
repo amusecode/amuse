@@ -35,7 +35,7 @@ FC      = $(MPIFC)
 
 #==========================
 #c-stuff
-CC=/usr/bin/gcc
+CC?=/usr/bin/gcc
 #CC=icc
 HEADERS=.
 LIBS=rand.o

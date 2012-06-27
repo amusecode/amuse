@@ -3,7 +3,7 @@
 #
 
 class interpreters(object):
-    python = '@PYTHON@' 
+    python = r'@PYTHON@' 
 
 class compilers(object):
     cxx = '@CXX@' 

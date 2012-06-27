@@ -253,7 +253,9 @@ namespace Starlab {
   extern double erf(double);
   extern double erfc(double);
 
+#ifdef _MSC_VER
   inline real      rint(real x)			{return floor((x) + 0.5);}
+#endif
 #endif
 
 #undef max

@@ -3,6 +3,10 @@
 
 #include "amuse_interface.h"
 
+#ifndef M_PI
+#define M_PI           3.14159265358979323846
+#endif
+
 using namespace std;
 
 //initialise parameters that are usually read in from file

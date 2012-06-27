@@ -17,6 +17,10 @@
 
 #include "stdinc.h"
 
+#ifdef _WIN32
+#define NO_CPU_TIME
+#endif
+
 #ifndef NO_CPU_TIME
 #   include <sys/times.h>
     struct tms buffer;
