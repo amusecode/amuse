@@ -26,6 +26,10 @@ http://www.sns.ias.edu/~eisenste/hop/hop_doc.html */
 /* To give info to the user: INFORM("info"); */
 #define INFORM(string) printf(string); fflush(stdout)
 
+#ifndef HUGE
+#define HUGE 3.40282e+38
+#endif
+
 int ReadSimulationFile(KD, FILE *);
 
 void smDensityTH(SMX smx,int pi,int nSmooth,int *pList,float *fList);

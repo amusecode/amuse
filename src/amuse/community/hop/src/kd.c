@@ -15,7 +15,10 @@ the input and output routines. */
 #include <stdlib.h>
 #include <math.h>
 #include <sys/time.h>
+#ifdef _WIN32
+#else
 #include <sys/resource.h>
+#endif
 #include <assert.h>
 #include "kd.h"
 /* #include "tipsydefs.h" */ /* Don't need this, since I removed kdReadTipsy()*/
@@ -26,8 +29,11 @@ the input and output routines. */
 
 void kdTime(KD kd,int *puSecond,int *puMicro)
 {
+#ifdef _WIN32
+	kd->uSecond = 0.0;
+	kd->uMicro = 0.0;
+#else
 	struct rusage ru;
-
 	getrusage(0,&ru);
 	*puMicro = ru.ru_utime.tv_usec - kd->uMicro;
 	*puSecond = ru.ru_utime.tv_sec - kd->uSecond;
@@ -37,6 +43,7 @@ void kdTime(KD kd,int *puSecond,int *puMicro)
 		}
 	kd->uSecond = ru.ru_utime.tv_sec;
 	kd->uMicro = ru.ru_utime.tv_usec;
+#endif
 	}
 
 

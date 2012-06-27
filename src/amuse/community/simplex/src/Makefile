@@ -109,7 +109,7 @@ $(OBJ)amuse_interface_gl.o: $(SRC)amuse_interface_gl.cpp $(OBJ)amuse_interface.o
 	$(MPICXX) -o$(OBJ)amuse_interface_gl.o $(MYINCLUDE) $(MACRODEFS) -c $(SRC)amuse_interface_gl.cpp $(CXXCFLAGS)
 
 clean:
-	rm -rf $(OBJ)*.o $(BIN)SimpleX
+	rm -rf $(OBJ)*.o $(BIN)SimpleX $(BIN)SimpleX.exe
 
 veryclean: clean
 	@cd $(HEALPIX_PATH)/src ; \
