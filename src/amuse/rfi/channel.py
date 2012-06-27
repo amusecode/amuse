@@ -622,6 +622,10 @@ class MessageChannel(OptionalAttributes):
     def worker_code_prefix(self):
         return ''
         
+    @option(type='string', sections=("channel",))
+    def worker_code_directory(self):
+        return ''
+        
     @option(type='boolean', sections=("channel",))
     def must_check_if_worker_is_up_to_date(self):
         return True
@@ -657,6 +661,14 @@ Please do a 'make clean; make' in the root directory.
         
         tried_workers = []
         found = False
+        
+        if len(self.worker_code_directory) > 0 and os.path.exists(self.worker_code_directory):
+            full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
+            full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+            found = os.path.exists(full_name_of_the_worker)
+            if not found:
+                tried_workers.append(full_name_of_the_worker)
+                
         current_type=type
         while not found:
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))

@@ -67,7 +67,9 @@ class GenerateInstallIni(Command):
         installinilines = []
         installinilines.append('[channel]')
         installinilines.append('must_check_if_worker_is_up_to_date=0')
-        #installinilines.append('worker_code_suffix=".so"')
+        installinilines.append('worker_code_directory={0}'.format(os.path.join(data_dir, 'bin')))
+        if sys.platform == 'win32':
+            installinilines.append('worker_code_suffix=".exe"')
         installinilines.append('[data]')
         installinilines.append('input_data_root_directory={0}'.format(os.path.join(data_dir, 'data')))
         installinilines.append('output_data_root_directory=amuse-data')
@@ -396,10 +398,6 @@ class CodeCommand(Command):
                 #self.announce("will copy worker: {0}".format(name), level = log.INFO)
                 if os.path.isfile(path) and os.access(path, os.X_OK):
                     if worker_code_re.match(name):
-                        # add .so so that the egg install tools
-                        # will set the executable flags on the workers 
-                        # (executable flags are set on .dll, .so and .py files)
-                        # exename = name + '.so' 
                         topath = os.path.join(lib_builddir, name)
                         self.copy_file(path, topath)
                     else:
