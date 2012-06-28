@@ -14,7 +14,14 @@ ATHENA_DIR = src/athena$(VERSION)
 CC = $(MPICC)
 CFLAGS   += -g  
 CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -ldl -lm
+UNAME = $(shell uname)
+
+ifneq (,$(findstring MINGW,$(UNAME)))
+  LDFLAGS += -lm
+else
+  LDFLAGS += -ldl -lm
+endif
+
 
 BUILDDIR = build
 SELFGRAV_BUILDDIR = build_selfgrav
