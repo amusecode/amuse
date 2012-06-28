@@ -125,7 +125,7 @@ packages.extend(['amuse.test.suite.' + x for x in find_packages('test')])
 packages.extend(['amuse.examples.' + x for x in find_packages('examples')])
 
 package_data = {
-    'amuse.rfi': ['*.template'],
+    'amuse.rfi.tools': ['*.template'],
     'amuse.test.suite.core_tests': [
         '*.txt', '*.dyn', '*.ini', 
         '*.nemo',

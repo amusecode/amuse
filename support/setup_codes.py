@@ -49,7 +49,8 @@ class GenerateInstallIni(Command):
         self.root = None
         
     def finalize_options(self):
-        self.set_undefined_options('install',
+        self.set_undefined_options(
+            'install',
             ('build_lib', 'build_dir'),
             ('install_data', 'install_data'),
             ('root', 'root'),
@@ -67,7 +68,7 @@ class GenerateInstallIni(Command):
         installinilines = []
         installinilines.append('[channel]')
         installinilines.append('must_check_if_worker_is_up_to_date=0')
-        installinilines.append('worker_code_directory={0}'.format(os.path.join(data_dir, 'bin')))
+        #installinilines.append('worker_code_directory={0}'.format(os.path.join(data_dir, 'bin')))
         if sys.platform == 'win32':
             installinilines.append('worker_code_suffix=".exe"')
         installinilines.append('[data]')
@@ -378,8 +379,15 @@ class CodeCommand(Command):
             )
         
     def copy_worker_codes_to_build_dir(self):
-        worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?')
+        if sys.platform == 'win32':
+            worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?(.exe)?')
+        else:
+            worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?')
         
+        lib_binbuilddir = os.path.join(self.build_lib, 'amuse', '_workers')
+        if not os.path.exists(lib_binbuilddir):
+            self.mkpath(lib_binbuilddir)
+            
         for srcdir in self.makefile_src_paths():
             reldir = os.path.relpath(srcdir, self.codes_src_dir)
             temp_builddir = os.path.join(self.codes_dir, reldir)
@@ -398,7 +406,7 @@ class CodeCommand(Command):
                 #self.announce("will copy worker: {0}".format(name), level = log.INFO)
                 if os.path.isfile(path) and os.access(path, os.X_OK):
                     if worker_code_re.match(name):
-                        topath = os.path.join(lib_builddir, name)
+                        topath = os.path.join(lib_binbuilddir, name)
                         self.copy_file(path, topath)
                     else:
                         self.announce("will not copy executable: {0}, it does not match the worker pattern".format(name), level = log.WARN)

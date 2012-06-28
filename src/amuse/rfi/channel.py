@@ -679,9 +679,21 @@ Please do a 'make clean; make' in the root directory.
                 tried_workers.append(full_name_of_the_worker)
                 current_type = current_type.__bases__[0]
                 if current_type.__bases__[0] is object:
-                    raise exceptions.CodeException("The worker application does not exists, it should be at: \n{0}".format('\n'.join(tried_workers)))
+                    break
             else:
                 found = True
+        
+        if not found:
+            directory_of_this_module = os.path.dirname(os.path.dirname(__file__))
+            full_name_of_the_worker = os.path.join(directory_of_this_module, '_workers', exe_name)
+            full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+            
+            found = os.path.exists(full_name_of_the_worker)
+            if not found:
+                raise exceptions.CodeException("The worker application does not exists, it should be at: \n{0}".format('\n'.join(tried_workers)))
+            else:
+                found = True
+            
         return full_name_of_the_worker
     
     def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):

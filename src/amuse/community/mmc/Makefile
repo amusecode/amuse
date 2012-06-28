@@ -18,7 +18,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 SRCINC = -I./src
 
-all: worker_code
+all: mmc_worker
 
 clean:
 	$(RM) -f *.o *.pyc worker_code.f90  
@@ -43,7 +43,7 @@ interface.f90 src/amuse_interface2.f: makeinterface.py
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py mmcInterface -o $@
 
-worker_code: worker_code.f90 $(OBJS) $(CODELIB) 
+mmc_worker: worker_code.f90 $(OBJS) $(CODELIB) 
 	$(MPIFC) $(FCFLAGS) $(OBJS) $(SRCINC) $< $(CODELIB) -o $@
 
 interface.o: interface.f90 
