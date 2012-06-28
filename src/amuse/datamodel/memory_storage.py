@@ -444,6 +444,8 @@ class InMemoryAttribute(object):
             return InMemoryVectorQuantityAttribute(name, shape, input.unit)
         elif hasattr(input, 'as_set'):
             return InMemoryLinkedAttribute(name, shape, input.as_set()._original_set())
+        elif input is None:
+            return InMemoryLinkedAttribute(name, shape, None)
         else:
             array = numpy.asanyarray(input)
             dtype = array.dtype
@@ -568,10 +570,11 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
         InMemoryAttribute.__init__(self, name)
         
         self.linked_set = linked_set
-        if len(linked_set) == 0:
+        if self.linked_set is None or len(linked_set) == 0:
            dtype = 'uint64'
         else:
            dtype = linked_set.get_all_keys_in_store().dtype
+           
         self.values = numpy.ma.masked_all(
             shape,
             dtype = dtype
@@ -583,15 +586,19 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
     
     def set_values(self, indices, values):
         if hasattr(values, 'get_all_keys_in_store'):
+            if self.linked_set is None:
+                self.linked_set = values._original_set()
             keys = values.get_all_keys_in_store()
             mask = ~values.get_valid_particles_mask()
             keys = numpy.ma.array(keys, dtype=self.values.dtype)
             keys.mask = mask
             self.values[indices] = keys
         elif values is None:
-                self.values[indices] = ma.masked
+            self.values[indices] = ma.masked
         elif hasattr(values, 'as_set'):
             values = values.as_set()
+            if self.linked_set is None:
+                self.linked_set = values._original_set()
             keys = values.get_all_keys_in_store()
             mask = ~values.get_valid_particles_mask()
             keys = numpy.ma.array(keys, dtype=self.values.dtype)

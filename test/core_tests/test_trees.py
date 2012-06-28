@@ -276,4 +276,32 @@ class TestChildTree(amusetest.TestCase):
             stack.extend(reversed(x.get_children()))
             
         self.assertEquals(masses, [0,2,6,5,1,4,3,7,8,9] | units.kg)
+         
+    def test5(self):
         
+        particles = Particles(10)
+        particles.mass = list(range(10)) | units.kg
+        particles[0].child1 = particles[1]
+        particles[0].child2 = particles[2]
+        particles[1].child1 = particles[3]
+        particles[1].child2 = particles[4]
+    
+        x = particles.as_binary_tree()
+        roots = list(x.iter_branches())
+    
+        self.assertEquals(len(roots), 1)
+        binary = roots[0]
+        output = ''
+        for level, node in binary.iter_levels():
+            output += '..' * level
+            output += str(node.particle.mass.value_in(units.kg))
+            output += '\n'
+        
+        print output
+        self.assertEquals(output, """0.0
+..1.0
+....3.0
+....4.0
+..2.0
+""")
+

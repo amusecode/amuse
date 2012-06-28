@@ -502,7 +502,13 @@ class AbstractParticleSet(AbstractSet):
         keys = particles.get_all_keys_in_store()
         values = particles.get_values_in_store(keys, attributes)
         values = map(self._convert_from_entities_or_quantities, values)
-        self.add_particles_to_store(keys, attributes, values)
+        converted = []
+        for x in values:
+            if hasattr(x,'_as_masked_subset_in') and x._original_set() is particles._original_set():
+                converted.append(x._as_masked_subset_in(self))
+            else:
+                converted.append(x)
+        self.add_particles_to_store(keys, attributes, converted)
         return ParticlesSubset(self._original_set(), keys)
     
     

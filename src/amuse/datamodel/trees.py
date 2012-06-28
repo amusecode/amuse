@@ -24,7 +24,6 @@ class BinaryTreesOnAParticleSet(object):
         binaries = self._binaries()
         binaries_children1 = self._get_descendant_nodes(self.particles_set, self.name_of_firstchild_attribute)
         binaries_children2 = self._get_descendant_nodes(self.particles_set, self.name_of_secondchild_attribute)
-    
         singles = (self.particles_set - (self.roots() + binaries_children1 + binaries_children2))
         return singles
     
@@ -32,7 +31,6 @@ class BinaryTreesOnAParticleSet(object):
         binaries = self._binaries()
         binaries_children1 = self._get_inner_nodes(binaries, self.name_of_firstchild_attribute)
         binaries_children2 = self._get_inner_nodes(binaries, self.name_of_secondchild_attribute)
-        
         return (binaries - (binaries_children1 + binaries_children2))
         
     def _binaries(self):
@@ -220,6 +218,21 @@ class ChildTreeOnParticleSet(object):
             
             stack.extend(reversed(children))
             
+    
+    def iter_events(self):
+        stack = [('start', x) for x in (reversed(list(self.iter_children())))]
+        while len(stack) > 0:
+            event, current = stack.pop()
+            yield event,current
+            if event == 'end':
+                continue
+            stack.append( ('end', current, ) ) 
+            
+            children = list(current.iter_children())
+            
+            stack.extend([('start', x) for x in (reversed(list(self.iter_children())))])
+            
+            
     def iter_descendant_leafs(self):
         stack = list(reversed(list(self.iter_children())))
         while len(stack) > 0:
@@ -246,6 +259,19 @@ class ChildTreeOnParticleSet(object):
     def iter_children(self):
         for particle in self._children():
             yield ChildTreeOnParticle(particle, self.names_of_child_attributes)
+            
+        
+    def iter_levels(self):
+        level = -1
+        
+        for event, particle in self.iter_events():
+            if event == 'start':
+                level += 1
+                yield level, particle
+            else:
+                level -= 1
+    
+    
     
     def get_children(self):
         return list(self.iter_children())
@@ -354,3 +380,28 @@ class ChildTreeOnParticle(object):
         
     def __iter__(self):
         return self.iter_children()
+        
+    def iter_levels(self):
+        level = -1
+        
+        for event, particle in self.iter_events():
+            if event == 'start':
+                level += 1
+                yield level, particle
+            else:
+                level -= 1
+    
+    def iter_events(self):
+        stack = [('start', self,), ]
+        while len(stack) > 0:
+            event, current = stack.pop()
+            yield event,current
+            if event == 'end':
+                continue
+            stack.append( ('end', current, ) ) 
+            
+            children = list(current.iter_children())
+            
+            stack.extend([('start', x) for x in reversed(children)])
+            
+      

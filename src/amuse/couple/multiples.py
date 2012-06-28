@@ -98,7 +98,8 @@ class Multiples(object):
         self.root_to_tree = {}
         if gravity_constant is None:
             gravity_constant = nbody_system.G
-            
+        
+        self.multiples = datamodel.Particles()
         self.gravity_constant = gravity_constant
         
     @property
@@ -276,7 +277,11 @@ class Multiples(object):
         raise Exception(
             "Did not finish the small-N simulation before end time {0}".format(end_time)
         )
-        
+    
+    def print_multiples(self):
+        for x in self.root_to_tree.values():
+            print_simple_multiple(x)
+            
     def manage_encounter(self, star1, star2, stars, gravity_stars):
 
         # Manage an encounter between star1 and star2.  stars is the
@@ -423,7 +428,6 @@ class Multiples(object):
     
     
 def openup_tree(star, tree, particles_in_encounter):
-
     # List the leaves.
 
     leaves = tree.get_descendants_subset()
@@ -690,6 +694,15 @@ def print_pair_of_stars(s, star1, star2):
     print_elements(s, a, e, r, E*m1*m2/(m1+m2))
     print_multiple(star1)
     print_multiple(star2)
+    
+def print_simple_multiple(node):
+    for level, x in node.iter_levels():
+        output = ''
+        output += '..' * level
+        particle = x
+        output += "{0} (mass={1})".format(particle.key, particle.mass)
+        print output
+
 
 def scale_top_level_list(
         singles, multiples, 

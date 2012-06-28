@@ -130,6 +130,7 @@ def run_smallN(
             # all binaries below each.
 
             print "smallN binaries:"; sys.stdout.flush()
+            print particles
             x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
             roots = list(x.iter_roots())
             for r in roots:
