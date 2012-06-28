@@ -135,8 +135,8 @@ Index: athena/src/athena4.1/src/output.c
 Index: athena/src/athena4.1/Makeoptions.in
 ===================================================================
 --- athena.orig/src/athena4.1/Makeoptions.in	2012-06-28 11:10:31.301182591 +0200
-+++ athena/src/athena4.1/Makeoptions.in	2012-06-28 11:29:25.714948694 +0200
-@@ -25,7 +25,13 @@
++++ athena/src/athena4.1/Makeoptions.in	2012-06-28 16:05:15.536588610 +0200
+@@ -25,12 +25,22 @@
  FFTWINC =
  BLOCKINC = 
  BLOCKLIB = 
@@ -151,3 +151,12 @@ Index: athena/src/athena4.1/Makeoptions.in
  
  ifeq (@FFT_MODE@,FFT_ENABLED)
    BLOCKINC = -I fftsrc
+   FFTWLIB = -L/usr/lib -lfftw3
+   FFTWINC = -I/usr/include
++ifdef FFTW_FLAGS
++  FFTWLIB = $(FFTW_LIBS)
++  FFTWINC = $(FFTW_FLAGS)
++endif
+ endif
+ 
+ ifeq (@MPI_MODE@,MPI_PARALLEL)

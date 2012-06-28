@@ -50,8 +50,10 @@ SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 ATHENA_OBJS = $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o $(ATHENA_DIR)/src/*/*.o))
 
-FFTWLIB = -L/usr/lib -lfftw3
-FFTWINC = -I/usr/include
+FFTW_LIBS ?= -L/usr/lib -lfftw3
+FFTW_FLAGS ?= -I/usr/include
+FFTWLIB = $(FFTW_LIBS)
+FFTWINC = $(FFTW_FLAGS)
  
 .PHONY : download
 
@@ -83,6 +85,7 @@ download:
 clean:
 	$(RM) -f *.so *.o *.selfgrav_o *.pyc worker_code.cc worker_code.h 
 	$(RM) -f *~ athena_worker  athena_worker_selfgrav athena_worker_mhd
+	$(RM) -f athena_worker_scalar
 	$(RM) -f worker_code-sockets.cc athena_worker_sockets
 	$(RM) -f $(CODELIB) $(AMUSE_OBJS_SELFGRAV)
 	$(RM) -f *.mhd_o
