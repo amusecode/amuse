@@ -654,8 +654,7 @@ void idata::check_encounters()
 	    // Refine the test here before managing the close
 	    // encounter.
 
-	    // Default rmin is <m>/<v^2>.  Should replace it here with
-	    // (m1+m2)/(v2-v1)^2.
+	    // Default rmin is <m>/<v^2>.
 
 	    int jclose1 = jdat->inverse_id[close1];
 	    int jclose2 = jdat->inverse_id[close2];
@@ -665,7 +664,7 @@ void idata::check_encounters()
 	    for (int k = 0; k < 3; k++)
 		v2 += pow(jdat->vel[jclose2][k]-jdat->vel[jclose1][k], 2);
 
-	    PRC(r); PRC(rmin); PRC(mtot/v2); PRL(r*v2/mtot);
+	    // PRC(r); PRC(rmin); PRC(mtot/v2); PRL(r*v2/mtot);
 
 	    jdat->close1 = close1;
 	    jdat->close2 = close2;

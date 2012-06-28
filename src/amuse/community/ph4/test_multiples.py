@@ -347,9 +347,9 @@ def compress_binary_components(comp1, comp2, scale):
             apo = a*(1+e)
         else:
             peri = a*(e-1)
-            apo = 2*a		# OK - used ony to reset scale
+            apo = 2*a			    # OK - used only to reset scale
         limit = peri + 0.01*(apo-peri)
-        if scale < limit: scale = limit
+        if scale < limit: scale = limit	    # the best we can do
 
         if M < 0:
             # print 'approaching'
@@ -410,6 +410,61 @@ def compress_binary_components(comp1, comp2, scale):
         offset_particle_tree(comp1, newpos1-pos1, newvel1-vel1)
         offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
 
+def compress_nodes(node_list, scale):
+
+    # Compress the top-level nodes in node_list to lie within diameter
+    # scale.  Rescale velocities to conserve total energy (but
+    # currently not angular momentum -- TODO).
+
+    # Compute the center of mass position and velocity of the
+    # top-level system.
+
+    mtot = 0.0 | units.nbody_system.mass
+    cmpos = node_list[0].pos - node_list[0].pos
+    # cmpos = zeros(3) | units.nbody_system.length?
+    cmvel = node_list[0].vel - node_list[0].vel
+    # cmvel = zeros(3) | units.nbody_system.speed?
+    for n in node_list:
+        mtot += n.mass
+        cmpos += n.mass*n.pos
+        cmvel += n.mass*n.vel
+    cmpos /= mtot
+    cmvel /= mtot
+
+    # Compute the size, potential, and kinetic energy of the system in
+    # the center of mass frame.
+
+    size = 0.0
+    pot = 0.0
+    kin = 0.0
+    for i in range(len(node_list)):
+        m = node_list[i].mass.number
+        posi = node_list[i].pos
+        pos = (posi-cmpos).number
+        vel = (node_list[i].vel-cmvel).number
+        r2 = inner(pos,pos)
+        if r2 > size: size = r2
+        kin += m*inner(vel,vel)
+        dpot = 0.0
+        for j in range(i+1,len(node_list)):
+            mj = node_list[j].mass.number
+            dposj = (node_list[j].pos-posi).number
+            dpot -= mj/sqrt(inner(dposj,dposj))
+        pot += m*dpot
+    size = sqrt(size)
+    kin /= 2
+
+    if size > 0.5*scale.number:
+
+        # Compress the system and increase the velocities (relative to
+        # the center of mass) to preserve the energy.
+
+        fac = 0.5*scale.number/size
+        vfac = sqrt(1-(1/fac-1)*pot/kin)
+        for n in node_list:
+            n.pos = cmpos + fac*(n.pos-cmpos)
+            n.vel = cmvel + vfac*(n.vel-cmvel)
+
 def print_elements(s, a, e, r, E):
     print '%s elements  a = %.4e  e = %.5f  r = %.4e  E = %.4e' \
 	  % (s, a.number, e, r.number, E.number)
@@ -443,9 +498,9 @@ def scale_top_level_list(binaries, scale,
 
     # The smallN particles were followed until their interaction could
     # be unambiguously classified as over.  They may now be very far
-    # apart.  Input binaries is an object describing the final
-    # hierarchical structure of the interacting particles in smallN.
-    # It consists of a flat tree of binary trees.
+    # apart.  First argument binaries is an object describing the
+    # final hierarchical structure of the interacting particles in
+    # smallN.  It consists of a flat tree of binary trees.
 
     # Scale the positions and velocities of the top-level nodes to
     # bring them within a sphere of diameter scale, conserving energy
@@ -462,13 +517,14 @@ def scale_top_level_list(binaries, scale,
     #                   energy, but this doesn't preserve angular
     #                   momentum TODO - also reduce children? TODO
 
-    # TODO
-
     # Figure out the tree structure.
 
     singles = binaries.particles_not_in_a_multiple()
     multiples = binaries.roots()
     top_level_nodes = singles + multiples
+
+    # -----------------------------------------------------------------
+    # Rescape the top-level nodes.
 
     ls = len(singles)
     lm = len(multiples)
@@ -501,7 +557,7 @@ def scale_top_level_list(binaries, scale,
         # We might also want to scale the daughter nodes.  Note as
         # above that, if the daughters are binaries (or multiples),
         # they must be stable, so it is always OK to move them to
-        # periastron.
+        # periastron.  TODO.
 
         comp1 = top_level_nodes[0]
         comp2 = top_level_nodes[1]
@@ -513,17 +569,19 @@ def scale_top_level_list(binaries, scale,
 
     else:
 
-        # Now we have three or more top-level nodes.  We don't know
-        # how to compress them in a conservative way.  For now, we
-        # will conserve energy and think later about how to preserve
+        # We have three or more top-level nodes.  We don't know how
+        # to compress them in a conservative way.  For now, we will
+        # conserve energy and think later about how to preserve
         # angular momentum.  TODO
 
         print lt, 'top-level nodes'; sys.stdout.flush()
+        compress_nodes(top_level_nodes, scale)
 
+    # -----------------------------------------------------------------
     # Recompute the external field, compute the tidal error, and
-    # absorb it into the top-level energy.  Optional code.
-    # Alternatively, we can simply absorb the tidal error into the
-    # dEmult correction returned for bookkeeping purposes.
+    # absorb it into the top-level energy (TODO).  Alternatively, we
+    # can simply absorb the tidal error into the dEmult correction
+    # returned for bookkeeping purposes.
 
     dEmult = 0.0
 
@@ -532,9 +590,10 @@ def scale_top_level_list(binaries, scale,
     dphi = phi_external_final - phi_external_init
     print 'dphi =', dphi
 
-    # Correction code parallels that above, but we must repeat it
-    # here, since we have to complete the rescaling before the
-    # tidal correction can be computed and applied.
+    # Account for the tidal error by absorbing it into the top-level
+    # motion or ading it to dEmult.  Repetitive code is necessary
+    # because we have to complete the rescaling before the tidal
+    # correction can be computed and applied.
 
     if lt == 1:
 
@@ -546,7 +605,8 @@ def scale_top_level_list(binaries, scale,
     elif lt == 2:
 
         # Absorb dphi into the relative motion of the top-level nodes,
-        # using kepler.  Alternatively, add dphi to dEmult.
+        # using kepler.  TODO.  Alternatively, just add include dphi
+        # in dEmult.
 
         comp1 = top_level_nodes[0]
         comp2 = top_level_nodes[1]
@@ -555,8 +615,8 @@ def scale_top_level_list(binaries, scale,
     else:
 
         # Absorb dphi into the relative motion of the top-level nodes,
-        # simply by scaling their velocities.  Need to improve this.
-        # TODO  Alternatively, add dphi to dEmult.
+        # simply by scaling their velocities.  (Need to improve this.)
+        # TODO.  Alternatively, just include dphi in dEmult.
 
         print lt, 'top-level nodes'; sys.stdout.flush()
         dEmult += dphi
@@ -596,8 +656,8 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     star1_in_memory = star1.as_particle_in_set(stars)	# pointers
     star2_in_memory = star2.as_particle_in_set(stars)
     
-    # 1a. Copy the current position and velocity to mememory (need to
-    #     create a better call for this, for example:
+    # 1a. Copy the current position and velocity to mememory
+    #     (need to create a better call for this, for example:
     #     star1.copy_to(star1_in_memory)
 
     star1_in_memory.position = star1.position
@@ -669,7 +729,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
 
     # 4. Run the small-N encounter in the center of mass frame.
 
-    # Probably desirable to make this a true scattering experiment by
+    # May be desirable to make this a true scattering experiment by
     # separating star1 and star2 to a larger distance before starting
     # smallN.  TODO
 
@@ -709,12 +769,12 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     # 5bb. Compress the top-level nodes before adding them to the
     #      gravity code.  Also recompute the external potential and
     #      absorb the tidal error into the top-level nodes of the
-    #      encounter list.  Fially, add the change in top-level energy
-    #      of the interacting subset into dEmult, so E(ph4) + dEmult
-    #      should be conserved.
+    #      encounter list.  Finally, add the change in top-level
+    #      energy of the interacting subset into dEmult, so E(ph4) +
+    #      dEmult should be conserved.
 
     dEmult += scale_top_level_list(binaries, initial_scale,
-                         stars, klist, phi_external_init)
+                                   stars, klist, phi_external_init)
 
     # 5c. Update the positions and velocities of the stars (leaves) in
     #     the encounter; copy the position and velocity attributes of
@@ -949,8 +1009,8 @@ def test_multiples(infile = None, number_of_stars = 40,
     
     # Tree structure on the stars dataset:
 
-    stars.child1 = 0 | units.object_key
-    stars.child2 = 0 | units.object_key
+    stars.child1 = None # 0 | units.object_key
+    stars.child2 = None # 0 | units.object_key
     
     while time < end_time:
         time += delta_t
