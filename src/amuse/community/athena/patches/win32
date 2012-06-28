@@ -116,3 +116,19 @@ Index: athena/src/athena4.1/src/main.c
    if(chdir(name))
      ath_error("[change_rundir]: Cannot change directory to \"%s\"\n",name);
  
+Index: athena/src/athena4.1/src/output.c
+===================================================================
+--- athena.orig/src/athena4.1/src/output.c	2010-09-23 23:57:59.000000000 +0200
++++ athena/src/athena4.1/src/output.c	2012-06-28 10:57:24.535311900 +0200
+@@ -80,9 +80,11 @@
+  * VARIABLE TYPE AND STRUCTURE DEFINITIONS: none
+  *============================================================================*/
+ 
++#ifndef _WIN32
+ #ifndef __POWERPC__
+ #define HAVE_DLFCN
+ #endif
++#endif
+ 
+ #include <ctype.h>
+ #include <math.h>
