@@ -237,8 +237,11 @@ int initialize_code(){
   four_pi_G = -1.0;
 #endif
   last_dt_above_zero = 0.0;
-
-  par_open("/dev/null"); /* to trick athena into thinking it has opened a parameter file, will not work on windows */
+#ifdef _WIN32
+  par_open("nul"); 
+#else
+  par_open("/dev/null"); /* to trick athena into thinking it has opened a parameter file */
+#endif
 
   par_sets("job","problem_id", "amuse", "all amuse runs");
   is_restart = 0;
