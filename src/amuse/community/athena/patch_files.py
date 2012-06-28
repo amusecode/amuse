@@ -22,6 +22,8 @@ def which(executablename):
         return stdoutstring
     
 def is_quilt_installed():
+    if sys.platform == 'win32':
+        return False
     path = which('quilt')
     if path is None:
         return False
