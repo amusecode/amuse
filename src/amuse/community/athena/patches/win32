@@ -1,0 +1,68 @@
+Index: athena/src/athena4.1/src/main.c
+===================================================================
+--- athena.orig/src/athena4.1/src/main.c	2010-09-23 23:57:59.000000000 +0200
++++ athena/src/athena4.1/src/main.c	2012-06-28 10:36:23.825044270 +0200
+@@ -38,7 +38,11 @@
+ #include <unistd.h>
+ #include <sys/stat.h>
+ #include <sys/time.h>
++
++#ifndef _WIN32
+ #include <sys/times.h>
++#endif
++
+ #include <sys/types.h>
+ #include "defs.h"
+ #include "athena.h"
+@@ -106,10 +110,13 @@
+ 
+   time_t start, stop;
+   int have_time = time(&start);  /* Is current calendar time (UTC) available? */
++
+   int zones;
+   double cpu_time, zcs;
++#ifndef _WIN32
+   long clk_tck = sysconf(_SC_CLK_TCK);
+   struct tms tbuf;
++#endif //_WIN32
+   clock_t time0,time1, have_times;
+   struct timeval tvs, tve;
+   Real dt_done;
+@@ -462,10 +469,16 @@
+   }
+ 
+   gettimeofday(&tvs,NULL);
++  
++#ifndef _WIN32
+   if((have_times = times(&tbuf)) > 0)
+     time0 = tbuf.tms_utime + tbuf.tms_stime;
+   else
+     time0 = clock();
++#else //_WIN32
++  time0 = clock();
++#endif //_WIN32
++
+ 
+ /* Force output of everything (by passing last argument of data_output = 1) */
+ 
+@@ -628,6 +641,8 @@
+ /* Get time used */
+ 
+   gettimeofday(&tve,NULL);
++
++#ifndef _WIN32
+   if(have_times > 0) {
+     times(&tbuf);
+     time1 = tbuf.tms_utime + tbuf.tms_stime;
+@@ -638,6 +653,11 @@
+     cpu_time = (time1 > time0 ? (double)(time1 - time0) : 1.0)/
+       (double)CLOCKS_PER_SEC;
+   }
++#else //_WIN32
++    time1 = clock();
++    cpu_time = (time1 > time0 ? (double)(time1 - time0) : 1.0)/
++      (double)CLOCKS_PER_SEC;
++#endif //_WIN32
+ 
+ /* Calculate and print the zone-cycles/cpu-second on this processor */
+ 
