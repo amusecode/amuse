@@ -136,6 +136,7 @@ int AMUSE_SimpleX::add_vertex(long *id, double x,double y,double z,double rho,
   temp_flux_list.push_back(flux);
   temp_u_list.push_back(uInt);
   temp_dudt_list.push_back(0.0);
+  temp_metallicity_list.push_back(metallicity);
 
   return 0;
 
@@ -169,6 +170,7 @@ int AMUSE_SimpleX::add_site(long *id, double x,double y,double z,double rho,
     tempSite.set_neigh_dist(1.);
     tempSite.set_internalEnergy(uInt);
     tempSite.set_dinternalEnergydt(0.0);
+    tempSite.set_metallicity(metallicity);
     
     sites.push_back( tempSite );
     numSites++;

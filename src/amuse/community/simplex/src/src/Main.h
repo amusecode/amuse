@@ -23,10 +23,10 @@ This file contains the header file for the main routine
 #ifndef MAIN_H
 #define MAIN_H
 
+#include "mpi.h"
 #include "Common.h"
 #include "SimpleX.h"
 
-#include "mpi.h"
 
 using namespace std;
 

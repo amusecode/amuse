@@ -26,10 +26,10 @@ along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SIMPLEX_H
 #define SIMPLEX_H
 
+#include "mpi.h"
 #include "rates.h"
 #include "Common.h"
 #include "Structs.h"
-#include "mpi.h"
 #include <gsl/gsl_rng.h>  //random number generator
 #include "configfile.h"   //keyvalue input file
 
@@ -449,6 +449,9 @@ class SimpleX{
     vector< float > temp_dudt_list;
     //! Temporary list of clumping factors that are read in
     vector< float > temp_clumping_list;
+    //! Temporary list of metallicity
+    vector<float> temp_metallicity_list;
+    
     //! Cross section of hydrogen
     vector<double> cross_H;
     //! The photon excess energy used to heat the gas

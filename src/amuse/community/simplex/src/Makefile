@@ -16,8 +16,8 @@ HDF5_LIBS  ?= -L$(HDF5_PATH)/lib -lhdf5 -lz
 HDF5_PLUGIN_FLAGS = -I$(HDF5_PLUGIN)
 
 GSL_PATH = /usr/local/scisoft
-GSL_FLAGS ?= -I$(GSL_PATH)/
-GSL_LIBS ?= -L$(GSL_PATH)/lib -lgslcblas -lgsl 
+GSL_FLAGS = -I$(GSL_PATH)/include
+GSL_LIBS = -L$(GSL_PATH)/lib -lgslcblas -lgsl 
 
 SRC=./src/
 OBJ=./obj/

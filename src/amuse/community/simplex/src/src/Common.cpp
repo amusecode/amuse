@@ -20,9 +20,8 @@ messages and random number generators
  *
  *******************/
 
-
-#include "Common.h"
 #include "Structs.h"
+#include "Common.h"
 
 
 using namespace std;

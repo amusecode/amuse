@@ -21,8 +21,8 @@ radiative transfer calculations at every site.
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-#include "Common.h"
 #include "mpi.h"
+#include "Common.h"
 
 using namespace std;
 

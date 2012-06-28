@@ -1,6 +1,12 @@
 #ifndef TREE_STRUCTURES_H
 #define TREE_STRUCTURES_H
 
+#ifdef INDIE
+  #include "structs.h"
+#else
+  #include "Structs.h"
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -13,11 +19,7 @@
 
 #include "octree.h"
 
-#ifdef INDIE
-  #include "structs.h"
-#else
-  #include "Structs.h"
-#endif
+
 
 
 

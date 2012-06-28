@@ -569,6 +569,7 @@ void SimpleX::read_vertex_list(){
   temp_u_list.resize(numSites);
   temp_dudt_list.resize(numSites);
   temp_clumping_list.resize(numSites);
+  temp_metallicity_list.resize(numSites);
   
   //structures needed for reading in the values from hdf5
   arr_1D<float> double_arr;
@@ -5911,42 +5912,46 @@ void SimpleX::assign_read_properties(){
   for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
     if( it->get_process() == COMM_RANK){
       if( !it->get_border() ){
-	//get the number density and flux from list that was 
-	//created when reading the input
-	it->set_n_HI( temp_n_HI_list[ it->get_vertex_id() ] );
-	//set ionised fraction
-	it->set_n_HII( temp_n_HII_list[ it->get_vertex_id() ] );
-	//set internal energy
-	it->set_internalEnergy( temp_u_list[ it->get_vertex_id() ] );
-	//set temperature
-  double mu = compute_mu( *it );
-  float T = static_cast<float>( u_to_T( temp_u_list[ it->get_vertex_id() ],  mu ) );
-  it->set_temperature( T );
-  
-	//set dudt
-	it->set_dinternalEnergydt( temp_dudt_list[ it->get_vertex_id() ] );
+  //get the number density and flux from list that was 
+  //created when reading the input
+        it->set_n_HI( temp_n_HI_list[ it->get_vertex_id() ] );
+  //set ionised fraction
+        it->set_n_HII( temp_n_HII_list[ it->get_vertex_id() ] );
+  //set internal energy
+        it->set_internalEnergy( temp_u_list[ it->get_vertex_id() ] );
+  //set temperature
+        double mu = compute_mu( *it );
+        float T = static_cast<float>( u_to_T( temp_u_list[ it->get_vertex_id() ],  mu ) );
+        it->set_temperature( T );
 
-	//set number of ionising photons
-	if(temp_flux_list[ it->get_vertex_id() ] > 0.0){
+  //set dudt
+        it->set_dinternalEnergydt( temp_dudt_list[ it->get_vertex_id() ] );
 
-	  //site is source
-	  it->set_source(1);
+        //metallicity
+        it->set_metallicity( temp_metallicity_list[it->get_vertex_id() ] );
 
-	  //create flux array
-	  it->create_flux(numFreq);
-	  //put total number of ionsing photons in first bin
-	  it->set_flux( 0, temp_flux_list[ it->get_vertex_id() ] );
-	}else{
-	  //site is no source
-	  it->set_source(0);
-	}
+  //set number of ionising photons
+        if(temp_flux_list[ it->get_vertex_id() ] > 0.0){
+
+    //site is source
+          it->set_source(1);
+
+    //create flux array
+          it->create_flux(numFreq);
+    //put total number of ionsing photons in first bin
+          it->set_flux( 0, temp_flux_list[ it->get_vertex_id() ] );
+        }else{
+    //site is no source
+          it->set_source(0);
+        }
 
       }else{
-	it->set_n_HI( 0.0 );
-	it->set_n_HII( 0.0 );
-	it->set_source( 0 );
-	it->set_internalEnergy( 0.0 );
-  it->set_temperature( 0.0 );
+        it->set_n_HI( 0.0 );
+        it->set_n_HII( 0.0 );
+        it->set_source( 0 );
+        it->set_internalEnergy( 0.0 );
+        it->set_temperature( 0.0 );
+        it->set_metallicity( 0.0 );
       }
     }
   }
@@ -5955,7 +5960,7 @@ void SimpleX::assign_read_properties(){
   if(temp_clumping_list.size() > 0){
     for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
       if( it->get_process() == COMM_RANK && !it->get_border()){
-	it->set_clumping( temp_clumping_list[ it->get_vertex_id() ] );
+        it->set_clumping( temp_clumping_list[ it->get_vertex_id() ] );
       }
     }
   }
@@ -5974,6 +5979,8 @@ void SimpleX::assign_read_properties(){
   vector< float >().swap( temp_dudt_list );
   temp_clumping_list.clear();
   vector< float >().swap( temp_clumping_list );
+  temp_metallicity_list.clear();
+  vector< float >().swap( temp_metallicity_list );
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Assigned number density and flux to sites " << endl;
@@ -6576,17 +6583,24 @@ double SimpleX::cooling_rate( Site& site ){
     C += recomb_cooling_coeff_HII_caseB( site.get_temperature() ) * n_e * n_HII * site.get_clumping();;
   }
 
+
+
   //collisional ionisation cooling
   C += coll_ion_cooling_coeff_HI( site.get_temperature() ) * n_e * n_HI;
 
+
   //collisional de-excitation cooling
   C += coll_excit_cooling_coeff_HI( site.get_temperature() ) * n_e * n_HI;
+  
 
   //free-free cooling
   C += ff_cooling_coeff( site.get_temperature() ) * n_e * n_HII;
 
+
   //metal cooling (including helium for the moment)
   if(metal_cooling){
+    
+    double total = 0.0;
         
     //loop over metal line cooling curves
     for(unsigned int j=1; j<curves.size();j++){// j=1 because hydrogen is not taken into account here (but explicitly above)
@@ -6594,15 +6608,34 @@ double SimpleX::cooling_rate( Site& site ){
       // abundance*cooling/rate
       if(withH[j]){
 	      C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * n_H * site.get_metallicity();
+        total += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * n_H * site.get_metallicity();
       }else{
         C += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * n_e * site.get_metallicity();
+        total += abundances[j]*curves[j].get_value(site.get_temperature()) * n_H * n_e * site.get_metallicity();
       }
     }
+    // if(site.get_metallicity() > 0.0 ){
+    //   
+    //   cout << " nH: " << n_H << endl;
+    //   cout << " nHI: " << n_HI << endl;
+    //   cout << " nHII: " << n_HII << endl;
+    //   cout << " nE: " << n_e << endl;
+    //   
+    //   cout << " Recombination cooling: " << recomb_cooling_coeff_HII_caseB( site.get_temperature() ) * n_e * n_HII * site.get_clumping() << endl;
+    //   cout << " Collisional ionisation cooling: " << coll_ion_cooling_coeff_HI( site.get_temperature() ) * n_e * n_HI << endl;
+    //   cout << " Collisional excitation cooling: " << coll_excit_cooling_coeff_HI( site.get_temperature() ) * n_e * n_HI << endl;
+    //   cout << " Free-free cooling: " << ff_cooling_coeff( site.get_temperature() ) * n_e * n_HII << endl;
+    //   
+    //   cout << " Metal cooling: " << total << " metallicity: " << site.get_metallicity() << endl;
+    //   cout << " Cooling: " << C * site.get_volume() * UNIT_V << endl;
+    //   
+    //   exit(-1);
+    // }
   }
   
-
   //total cooling rate in cell
   double cooling = C * site.get_volume() * UNIT_V;
+
 
   return cooling;
 
@@ -6663,6 +6696,9 @@ double SimpleX::T_to_u( const double& T, const double& mu ){
 //update the temperature state of the gas
 // function returns the heating/cooling time
 double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, const double& t_end ){
+
+  // double uBefore = site.get_internalEnergy();
+  // double Tbefore = site.get_temperature();
 
   //range of temperatures between which the rates are valid
   double T_min = 10.;
@@ -6743,6 +6779,14 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
 
   }
 
+
+  // double uAfter = site.get_internalEnergy();
+  // double Tafter = site.get_temperature();
+
+  // cout << " Temperature: " << Tbefore << " " << Tafter << endl;
+  // cout << " Energy     : " << uBefore << " " << uAfter <<  " " << duDtAdiabatic << endl;
+  // exit(-1);
+    
   return t_heat;
 
 }
@@ -6760,7 +6804,7 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
 vector<double> SimpleX::solve_rate_equation( Site& site ){
 
   static int count = 0;
-
+  
   //calculate number density and optical depth at beginning of time step
   double n_H = ( (double) site.get_n_HI() + (double) site.get_n_HII() ) * UNIT_D;
 
@@ -6817,7 +6861,7 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
       initial_photo_ionisations += initial_N_retained_H[f];
 
       if(initial_photo_ionisations != initial_photo_ionisations ){
-	cerr << initial_photo_ionisations << " " << initial_N_retained_H[f] << " " << initial_tau[f] << " " << N_in_total[f] << endl;
+      	cerr << initial_photo_ionisations << " " << initial_N_retained_H[f] << " " << initial_tau[f] << " " << N_in_total[f] << endl;
       }
 
     }
@@ -6853,29 +6897,29 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
       double t_eq = t_ion*t_rec/(t_ion + t_rec);
 
       if(t_eq != t_eq){
-	cerr << endl << " (" << COMM_RANK << ") NAN detected! t_eq: " << t_eq << " t_ion: " << t_ion << " t_rec: " << t_rec << endl;
-	cerr << "  initial_N_retained_H[0]: " << initial_N_retained_H[0]
-	     << "  initial_tau[0]: " << initial_tau[0] << endl;
-	cerr << "  initial_N_HI " << initial_N_HI << " initial_N_HII " << initial_N_HII << endl;
-	cerr << "  initial_neutral_fraction: " << initial_N_HI/(initial_N_HI+initial_N_HII)
-	     << " N_in_total[0]: " << N_in_total[0]
-	     << " n_H: " << n_H << endl;
+        cerr << endl << " (" << COMM_RANK << ") NAN detected! t_eq: " << t_eq << " t_ion: " << t_ion << " t_rec: " << t_rec << endl;
+        cerr << "  initial_N_retained_H[0]: " << initial_N_retained_H[0]
+          << "  initial_tau[0]: " << initial_tau[0] << endl;
+        cerr << "  initial_N_HI " << initial_N_HI << " initial_N_HII " << initial_N_HII << endl;
+        cerr << "  initial_neutral_fraction: " << initial_N_HI/(initial_N_HI+initial_N_HII)
+          << " N_in_total[0]: " << N_in_total[0]
+          << " n_H: " << n_H << endl;
 
-	cerr << "  initial_N_retained_total[0] = (1.0 - exp(-"<<initial_tau[0]<<")) * "<< N_in_total[0] <<" " << endl;
-	cerr << "  volume " << site.get_volume() * UNIT_V << " N_HII + initial_numIonised " 
-	     << + initial_numIonised << " fclump " 
-	     << site.get_clumping() << " alpha " << recomb_coeff_HII_caseB( site.get_temperature() ) << endl;
-	cerr << "  coll_ion " <<  initial_coll_ionisations << endl; 
-	cerr << "  tot_ions " <<  tot_ions << endl;
-	cerr << " UNIT_T " << UNIT_T << endl;
-	exit(1);
+        cerr << "  initial_N_retained_total[0] = (1.0 - exp(-"<<initial_tau[0]<<")) * "<< N_in_total[0] <<" " << endl;
+        cerr << "  volume " << site.get_volume() * UNIT_V << " N_HII + initial_numIonised " 
+          << + initial_numIonised << " fclump " 
+          << site.get_clumping() << " alpha " << recomb_coeff_HII_caseB( site.get_temperature() ) << endl;
+        cerr << "  coll_ion " <<  initial_coll_ionisations << endl; 
+        cerr << "  tot_ions " <<  tot_ions << endl;
+        cerr << " UNIT_T " << UNIT_T << endl;
+        exit(1);
 
       }
        
       //subcycling is necessary when the RT time step is larger than 
       //some factor times ionisation time scale or recombination time scale 
       if( UNIT_T > subcycle_frac*t_eq ){
-	Nsteps = (unsigned long int) ceil( UNIT_T/(subcycle_frac*t_eq));
+      	Nsteps = (unsigned long int) ceil( UNIT_T/(subcycle_frac*t_eq));
       }
 
       //keep track of the total number of photo-ionisations
@@ -7274,6 +7318,7 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
     N_in_total[f] /= UNIT_I;
     N_out_total[f] /= UNIT_I;
   }
+
 
   return N_out_total;
 
@@ -7852,16 +7897,16 @@ void SimpleX::radiation_transport( const unsigned int& run ){
     for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
       if( !it->get_border() && it->get_process() == COMM_RANK ) {
 
-	//solve the rate equation to determine ionisations and recombinations
+        //solve the rate equation to determine ionisations and recombinations
         vector<double> N_out = solve_rate_equation( *it );
 
-	if(!diffuseTransport){
-	  //transport photons with ballistic transport or DCT
-	  non_diffuse_transport( *it, N_out );
-	} else {
-	  //transport photons diffusely
-	  diffuse_transport( *it, N_out );
-	}
+        if(!diffuseTransport){
+          //transport photons with ballistic transport or DCT
+          non_diffuse_transport( *it, N_out );
+        } else {
+          //transport photons diffusely
+          diffuse_transport( *it, N_out );
+        }
 
       }//if not in border   
     }//for all sites
@@ -7876,8 +7921,8 @@ void SimpleX::radiation_transport( const unsigned int& run ){
 
       for( unsigned int j=0; j<numPixels; j++ ) { 
         for(short int f=0; f<numFreq; f++){
-	  //double inten = (double) it->get_intensityIn(j) + (double) it->get_intensityOut(j);
-	  //float inten = it->get_intensityIn(f,j);
+	        //double inten = (double) it->get_intensityIn(j) + (double) it->get_intensityOut(j);
+	        //float inten = it->get_intensityIn(f,j);
           it->set_intensityOut( f, j, it->get_intensityIn(f,j) );
           it->set_intensityIn( f, j, 0.0 );
 
