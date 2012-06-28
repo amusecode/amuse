@@ -387,13 +387,13 @@ class MPIMessage(AbstractMessage):
             offsets = numpy.empty(length * total, dtype='i')
             self.mpi_receive(comm,[offsets, MPI.INT])
             
-            bytes = numpy.empty((offsets[-1] + 1), dtype=numpy.uint8)
-            self.mpi_receive(comm,[bytes,  MPI.CHARACTER])
+            data_bytes = numpy.empty((offsets[-1] + 1), dtype=numpy.uint8)
+            self.mpi_receive(comm,[data_bytes,  MPI.CHARACTER])
             
             strings = []
             begin = 0
             for end in offsets:
-                strings.append(bytes[begin:end].tostring())
+                strings.append(data_bytes[begin:end].tostring())
                 begin = end + 1
             return strings
         else:
@@ -1329,14 +1329,14 @@ class SocketMessage(AbstractMessage):
         
         while nbytes > 0:
 	    chunk = min(nbytes, 10240)
-            bytes = thesocket.recv(chunk, socket.MSG_WAITALL)
+            data_bytes = thesocket.recv(chunk, socket.MSG_WAITALL)
             
-            if len(bytes) == 0:
+            if len(data_bytes) == 0:
                 raise exceptions.CodeException("lost connection to code")
             
-            result.append(bytes)
-            nbytes -= len(bytes)
-            #logging.getLogger("channel").debug("got %d bytes, result length = %d", len(bytes), len(result))
+            result.append(data_bytes)
+            nbytes -= len(data_bytes)
+            #logging.getLogger("channel").debug("got %d bytes, result length = %d", len(data_bytes), len(result))
             
         return "".join(result)
      
@@ -1390,9 +1390,9 @@ class SocketMessage(AbstractMessage):
         if count > 0:
             nbytes = count * 4 # size of int
             
-            bytes = self._receive_all(nbytes, socket)
+            data_bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.copy(numpy.frombuffer(bytes, dtype='int32'))
+            result = numpy.copy(numpy.frombuffer(data_bytes, dtype='int32'))
             
             return result
         else:
@@ -1402,9 +1402,9 @@ class SocketMessage(AbstractMessage):
         if count > 0:
             nbytes = count * 8 # size of long
             
-            bytes = self._receive_all(nbytes, socket)
+            data_bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.copy(numpy.frombuffer(bytes, dtype='int64'))
+            result = numpy.copy(numpy.frombuffer(data_bytes, dtype='int64'))
             
             return result
         else:
@@ -1415,9 +1415,9 @@ class SocketMessage(AbstractMessage):
         if count > 0:
             nbytes = count * 4 # size of float
             
-            bytes = self._receive_all(nbytes, socket)
+            data_bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.copy(numpy.frombuffer(bytes, dtype='f4'))
+            result = numpy.copy(numpy.frombuffer(data_bytes, dtype='f4'))
             
             return result
         else:
@@ -1428,9 +1428,9 @@ class SocketMessage(AbstractMessage):
         if count > 0:
             nbytes = count * 8 # size of double
             
-            bytes = self._receive_all(nbytes, socket)
+            data_bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.copy(numpy.frombuffer(bytes, dtype='f8'))
+            result = numpy.copy(numpy.frombuffer(data_bytes, dtype='f8'))
             
             return result
         else:
@@ -1441,9 +1441,9 @@ class SocketMessage(AbstractMessage):
         if count > 0:
             nbytes = count * 1 # size of boolean/byte
             
-            bytes = self._receive_all(nbytes, socket)
+            data_bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.copy(numpy.frombuffer(bytes, dtype='b'))
+            result = numpy.copy(numpy.frombuffer(data_bytes, dtype='b'))
             
             return result
         else:
@@ -1457,8 +1457,8 @@ class SocketMessage(AbstractMessage):
             strings = []
             
             for i in range(count):
-                bytes = self._receive_all(lengths[i], socket)
-                strings.append(bytes.decode('utf-8'))
+                data_bytes = self._receive_all(lengths[i], socket)
+                strings.append(str(data_bytes.decode('utf-8')))
             
             return strings
         else:
@@ -1501,42 +1501,45 @@ class SocketMessage(AbstractMessage):
     
     def send_doubles(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array, dtype='f8')
-            socket.sendall(buffer.tostring())
+            data_buffer = numpy.array(array, dtype='f8')
+            socket.sendall(data_buffer.tostring())
             
     def send_ints(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array, dtype='int32')
-            socket.sendall(buffer.tostring())
+            data_buffer = numpy.array(array, dtype='int32')
+            socket.sendall(data_buffer.tostring())
             
     def send_floats(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array, dtype='f4')
-            socket.sendall(buffer.tostring())
+            data_buffer = numpy.array(array, dtype='f4')
+            socket.sendall(data_buffer.tostring())
             
     def send_strings(self, socket, array):
         header = []
-        bytes = []
+        data_bytes = []
         
         for i in range(len(array)):
+            
+            logging.getLogger("channel").info("sending string %s", array[i])
+            
             utf8_string = array[i].encode('utf-8')
             header.append(len(utf8_string))
-            bytes.append(utf8_string)
+            data_bytes.append(utf8_string)
   
         self.send_ints(socket, header);
         
-        for i in range(len(bytes)):
-            socket.sendall(bytes[i])
+        for i in range(len(data_bytes)):
+            socket.sendall(data_bytes[i])
         
     def send_booleans(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array, dtype='b')
-            socket.sendall(buffer.tostring())
+            data_buffer = numpy.array(array, dtype='b')
+            socket.sendall(data_buffer.tostring())
 
     def send_longs(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array, dtype='int64')
-            socket.sendall(buffer.tostring())
+            data_buffer = numpy.array(array, dtype='int64')
+            socket.sendall(data_buffer.tostring())
         
 class SocketChannel(MessageChannel):
     
@@ -1798,10 +1801,10 @@ class IbisChannel(MessageChannel):
     def __init__(self, name_of_the_worker, legacy_interface_type=None, **options):
         MessageChannel.__init__(self, **options)
         
-        #logging.basicConfig(level=logging.WARN)
+        logging.basicConfig(level=logging.WARN)
         #logging.getLogger("channel").setLevel(logging.DEBUG)
         
-        logging.getLogger("channel").debug("initializing IbisChannel with options %s", options)
+        #logging.getLogger("channel").debug("initializing IbisChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker + "_sockets"
         
