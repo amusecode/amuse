@@ -713,6 +713,7 @@ static void two_body(hdyn *b, real time, real radius)
     if (!yd) return;
 
     kepler *k = hdyn_to_kepler(b);
+    // k->print_all(cout);
 
     if (k->get_energy() >= 0) {
 	k->transform_to_time(time);
@@ -731,7 +732,6 @@ static void two_body(hdyn *b, real time, real radius)
 		real peri = k->get_apastron();
 		k->advance_to_radius(peri + 0.999*(radius-peri));
 		k->advance_to_radius(radius);
-	    
 	    }
 	}
     }
@@ -788,14 +788,17 @@ int smallN_evolve(hdyn *b,
     int n_leaves = 0;
     for_all_leaves(hdyn, b, bi) n_leaves++;
 
+    // cout << "In smallN_evolve: "; PRL(n_leaves);
+
     if (n_leaves == 1)
 	return 0;
     else if (n_leaves == 2) {
-	cout << "smallN: two-body encounter" << endl << flush;
+	// cout << "smallN: two-body encounter" << endl << flush;
 	two_body(b, t_end, sqrt(break_r2));
 	return 0;
     }
 
+    // cout << "smallN: direct integration" << endl << flush;
     int n_steps = 0;
     for_all_daughters(hdyn, b, bi)
 	bi->init_pred();
