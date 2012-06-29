@@ -582,7 +582,11 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
         
         
     def get_values(self, indices):
-        return self.linked_set._masked_subset(self.values[indices])
+        if self.linked_set is None:
+            import particles
+            return particles.ParticlesMaskedSubset(None, self.values[indices])
+        else:
+            return self.linked_set._masked_subset(self.values[indices])
     
     def set_values(self, indices, values):
         if hasattr(values, 'get_all_keys_in_store'):
