@@ -420,11 +420,11 @@ def compress_nodes(node_list, scale):
     # Compute the center of mass position and velocity of the
     # top-level system.
 
-    mtot = 0.0 | units.nbody_system.mass
+    mtot = 0.0 | nbody_system.mass
     cmpos = node_list[0].pos - node_list[0].pos
-    # cmpos = zeros(3) | units.nbody_system.length?
+    # cmpos = zeros(3) | nbody_system.length?
     cmvel = node_list[0].vel - node_list[0].vel
-    # cmvel = zeros(3) | units.nbody_system.speed?
+    # cmvel = zeros(3) | nbody_system.speed?
     for n in node_list:
         mtot += n.mass
         cmpos += n.mass*n.pos
