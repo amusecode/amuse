@@ -231,6 +231,8 @@ class Multiples(object):
                     print '\n--------------------------------------------------'
                     self.print_multiples()
                     print self.gravity_code.particles
+                else:
+                    print "ignoring collision", vr , EPS*r*v
             
         self.gravity_code.synchronize_model()
         self.channel_from_code_to_memory.copy()
@@ -353,6 +355,11 @@ class Multiples(object):
         stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
         roots_of_trees = binaries.roots()
         
+        # Set radii to reflect multiple structure.  This is probably not
+        # the best place to do it...
+            
+        set_radii(particles_in_encounter)
+
         total_energy_of_stars_to_add, phi_correction \
             = scale_top_level_list(stars_not_in_a_multiple,
                                    roots_of_trees,
@@ -766,11 +773,15 @@ def print_simple_multiple(node):
         print output
 
 def set_radius_recursive(node):
-    if node.is_leaf(): return
-    rmax = 0.|nbody_system.length
+    if node.is_leaf(): 
+        return
+    
+    rmax = zero
+    
     for child in node.iter_children():
         set_radius_recursive(child)
         rmax = max(rmax, child.particle.radius)
+        
     node.particle.radius = rmax
     # Need to include binary sma...
 
@@ -805,11 +816,6 @@ def scale_top_level_list(
     #                   momentum TODO - also reduce children? TODO
 
     top_level_nodes = singles + multiples
-
-    # Set radii to reflect multiple structure.  This is probably not
-    # the best place to do it...
-        
-    set_radii(top_level_nodes)
 
     # Figure out the tree structure.
 

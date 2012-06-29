@@ -412,7 +412,8 @@ def compress_binary_components(comp1, comp2, scale):
         offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
 
 def compress_nodes(node_list, scale):
-
+    if 1:
+        return #turned-off new implementation in in couple multples
     # Compress the top-level nodes in node_list to lie within diameter
     # scale.  Rescale velocities to conserve total energy (but
     # currently not angular momentum -- TODO).

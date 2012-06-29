@@ -50,7 +50,13 @@ def test_ph4(infile = None, number_of_stars = 40,
              n_workers = 1, use_gpu = 1, gpu_worker = 1,
              accuracy_parameter = 0.1,
              softening_length = -1 | nbody_system.length,
-             manage_encounters = 1):
+             manage_encounters = 1, random_seed = 1234):
+
+    if random_seed <= 0:
+        numpy.random.seed()
+        random_seed = numpy.random.randint(1, pow(2,31)-1)
+    numpy.random.seed(random_seed)
+    print "random seed =", random_seed
 
     if infile != None: print "input file =", infile
     print "end_time =", end_time.number
@@ -247,14 +253,9 @@ if __name__ == '__main__':
         else:
             print "unexpected argument", o
 
-    if random_seed <= 0:
-        numpy.random.seed()
-        random_seed = numpy.random.randint(1, pow(2,31)-1)
-    numpy.random.seed(random_seed)
-    print "random seed =", random_seed
 
     assert is_mpd_running()
     test_ph4(infile, N, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
              accuracy_parameter, softening_length,
-             manage_encounters)
+             manage_encounters, random_seed)
