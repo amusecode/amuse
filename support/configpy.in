@@ -23,6 +23,7 @@ class compilers(object):
     gsl_libs = '@GSL_LIBS@'
     
     gfortran_version = '@GFORTRAN_VERSION@'
+    ifort_version = '@IFORT_VERSION@'
        
 
 class mpi(object):

@@ -714,6 +714,7 @@ CUDA_TK
 OPENMP_FCFLAGS
 OPENMP_CFLAGS
 HAVE_OPENMP
+IFORT_VERSION
 GFORTRAN_VERSION
 MPI_FCLIBS
 MPI_FCFLAGS
@@ -5200,8 +5201,8 @@ fi
     if test "x$ax_gcc_version_option" != "xno"; then :
 
 
-	    { $as_echo "$as_me:${as_lineno-$LINENO}: checking checking gfortran version" >&5
-$as_echo_n "checking checking gfortran version... " >&6; }
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: checking gfortran version" >&5
+$as_echo_n "checking gfortran version... " >&6; }
         ax_cv_gcc_version="`$FC -v 2>&1 |  grep gcc\ version | cut -d\  -f3`"
         if test "x$ax_cv_gcc_version" = "x"; then :
 
@@ -5220,6 +5221,32 @@ fi
 fi
 
 fi
+
+
+
+  IFORT_VERSION=""
+
+  if test "x$FC" = "xifort"; then :
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking ifort version" >&5
+$as_echo_n "checking ifort version... " >&6; }
+        ax_cv_ifort_version="`$FC -v 2>&1 | grep Version | cut -d\  -f2`"
+        if test "x$ax_cv_ifort_version" = "x"; then :
+
+          ax_cv_ifort_version=""
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: could not determine version" >&5
+$as_echo "could not determine version" >&6; }
+
+else
+
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_ifort_version" >&5
+$as_echo "$ax_cv_ifort_version" >&6; }
+fi
+
+      IFORT_VERSION=$ax_cv_ifort_version
+
+fi
+
 
 
 

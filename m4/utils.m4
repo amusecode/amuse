@@ -26,7 +26,7 @@ AC_DEFUN([AX_GFORTRAN_VERSION], [
   
     AS_IF([test "x$ax_gcc_version_option" != "xno"],[
       
-	    AC_MSG_CHECKING([checking gfortran version])
+	    AC_MSG_CHECKING([gfortran version])
         ax_cv_gcc_version="`$FC -v 2>&1 |  grep gcc\ version | cut -d\  -f3`"
         AS_IF([test "x$ax_cv_gcc_version" = "x"],[
           ax_cv_gcc_version=""
@@ -39,6 +39,25 @@ AC_DEFUN([AX_GFORTRAN_VERSION], [
   ])
   AC_SUBST([GFORTRAN_VERSION])
 ])
+
+
+AC_DEFUN([AX_IFORT_VERSION], [
+  IFORT_VERSION=""
+ 
+  AS_IF([test "x$FC" = "xifort"],[
+        AC_MSG_CHECKING([ifort version])
+        ax_cv_ifort_version="`$FC -v 2>&1 | grep Version | cut -d\  -f2`"
+        AS_IF([test "x$ax_cv_ifort_version" = "x"],[
+          ax_cv_ifort_version=""
+          AC_MSG_RESULT([could not determine version])
+        ], [
+          AC_MSG_RESULT([$ax_cv_ifort_version])])
+      
+      IFORT_VERSION=$ax_cv_ifort_version
+  ])
+  AC_SUBST([IFORT_VERSION])
+])
+
 
 
 #

@@ -295,8 +295,15 @@ class TestInterface(TestWithMPI):
     
         if is_configured:
             if not config.compilers.gfortran_version:
-                return True
-            
+                if not hasattr(config.compilers, 'ifort_version') or not config.compilers.ifort_version:
+                    return True
+                try:
+                    parts = [int(x) for x in config.compilers.ifort_version.split('.')]
+                except:
+                    parts = []
+                    
+                return parts[0] > 9  
+                
             try:
                 parts = [int(x) for x in config.compilers.gfortran_version.split('.')]
             except:
@@ -413,7 +420,7 @@ class TestInterface(TestWithMPI):
         
     def check_fortran_version(self):
         if not self.is_fortan_version_up_to_date():
-            self.skip('cannot compile fortran socket modules with old gcc compilers (missing C support)')
+            self.skip('cannot compile fortran socket modules with old fortran compilers (missing C support)')
             
     def check_not_in_mpiexec(self):
         """
