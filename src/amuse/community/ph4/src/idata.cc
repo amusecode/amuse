@@ -157,25 +157,23 @@ void idata::get_partial_acc_and_jerk()
     // pointers only need be recomputed after setup() is called, which
     // sets lnn = NULL.
 
-    static real *lpot, *ldnn;
-    static real2 lacc, ljerk;
+    real *lpot, *ldnn;
+    real2 lacc, ljerk;
 
-    if (lnn == NULL) {
-	if (jdat->mpi_size == 1) {
-	    lnn = inn;
-	    ldnn = idnn;
-	    lpot = ipot;
-	    lacc = iacc;
-	    ljerk = ijerk;
-	} else {
-	    lnn = pnn;
-	    ldnn = pdnn;
-	    lpot = ppot;
-	    lacc = pacc;
-	    ljerk = pjerk;
-	}
+    if (jdat->mpi_size == 1) {
+        lnn = inn;
+        ldnn = idnn;
+        lpot = ipot;
+        lacc = iacc;
+        ljerk = ijerk;
+    } else {
+        lnn = pnn;
+        ldnn = pdnn;
+        lpot = ppot;
+        lacc = pacc;
+        ljerk = pjerk;
     }
-
+    
     // Define the j-domains.  These only need be recomputed if nj
     // changes.
 

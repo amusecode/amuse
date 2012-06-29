@@ -33,9 +33,9 @@ void scheduler::initialize(jdata *jd)	// (re)initialize based on the
 					// time step data in jd
 {
     const char *in_function = "scheduler::initialize";
-    if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     if (jd) {
+        if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 	jdat = jd;
 	jdat->sched = this;
 	if (jdat->idat)
@@ -43,6 +43,7 @@ void scheduler::initialize(jdata *jd)	// (re)initialize based on the
 	else
 	    cout << "scheduler::initialize: jdata has no idata pointer"
 		 << endl << flush;
+        if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
     }
 
     if (jdat) {
