@@ -119,7 +119,7 @@
      &  nttotfuv,ntminfuv,ntmaxfuv,ntavgfuv
       LOGICAL usequad,usesph,fixthalo,selfgrav,adaptive_eps, directsum,  &
      &  isotherm
-      REAL bh_tol,eps,rsize,rmin,tnow,tpos,tbegin,dtime,tiny,                   &
+      REAL bh_tol,eps,rsize,rmin,tnow,tpos,dtime,tiny,                   &
      &  etot,mtot,ektot,amvec,cmpos,cmvel,eptot,mstar,                   &
      &  mgas,snheat,nn_tol,esofttot,enerror
       
@@ -137,7 +137,7 @@
       COMMON/forcecom/ nttot,ntmin,ntmax,ntavg,nttotfuv,ntminfuv,        &
      &  ntmaxfuv,ntavgfuv
       COMMON/softcom/ nstot,nsmin,nsmax,nsavg
-      COMMON/timecom/ tnow,tpos,tbegin
+      COMMON/timecom/ tnow,tpos
       COMMON/misccom/ tiny
       COMMON/enrgycom/ mtot,etot,ektot,eptot,mstar,mgas,snheat,esofttot, &
      &  enerror,amvec(ndim),cmpos(ndim),cmvel(ndim)

@@ -16,6 +16,8 @@ end subroutine
 
 subroutine muse_init
  include 'globals.h'
+ real tbegin
+ common /amusecom/ tbegin
  
 ! call startout
 
@@ -103,6 +105,8 @@ subroutine muse_reset(time)
  include 'globals.h'
  real time
  integer dum,dumm(2),muse_find_particle
+ real tbegin
+ common /amusecom/ tbegin
 
  nbodies=0
  nsph=0
@@ -179,11 +183,15 @@ end subroutine
 subroutine muse_set_begin_time(time)
  include 'globals.h'
  real :: time
+ real tbegin
+ common /amusecom/ tbegin
  tbegin = time
 end subroutine
 
 function muse_get_begin_time()
  include 'globals.h'
+ real tbegin
+ common /amusecom/ tbegin
  real :: muse_get_begin_time
  muse_get_begin_time = tbegin
 end function
@@ -322,7 +330,7 @@ subroutine muse_stepsys(tend,sync)
  integer :: set_stopping_condition_particle_index
  integer :: reset_stopping_conditions
  
- integer :: max_number_of_steps
+ integer :: max_number_of_steps=0
  integer :: timeout
  real :: stop_boxsize
  real :: minimum_density_parameter, maximum_density_parameter

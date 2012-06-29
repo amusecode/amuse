@@ -79,7 +79,7 @@ end function
 
 function get_begin_time(t) result(ret)
   integer :: ret
-  real*8 :: t
+  real*8 :: t,muse_get_begin_time
   t = muse_get_begin_time(t)
   ret = 0
 end function

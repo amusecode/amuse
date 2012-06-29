@@ -772,7 +772,7 @@ class TestFi(TestWithMPI):
         particles.vz =  0 | nbody_system.speed
         particles.mass = 1.0 | nbody_system.mass
 
-        instance = Fi()
+        instance = Fi(redirection="none")
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
         self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
