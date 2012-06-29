@@ -234,8 +234,9 @@ class GalactICsImplementation(object):
             print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path(), "getfreqs")], 
                 cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate())
             
-            print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path(), "diskdf")], 
-                cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate(in_diskdf))
+            if self._generate_disk_flag:
+                print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path(), "diskdf")], 
+                    cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate(in_diskdf))
             return 0
         except Exception as ex:
             print "Exception occurred in commit_parameters:", ex
