@@ -35,7 +35,8 @@ class TestSimpleMultiples(TestWithMPI):
         result.parameters.cm_index = 2001
         return result
         
-    def new_binary(self, mass1, mass2, semi_major_axis, eccentricity = 0, keyoffset = 0):
+    def new_binary(self, mass1, mass2, semi_major_axis,
+                   eccentricity = 0, keyoffset = 0):
         total_mass = mass1 + mass2
         mass_fraction_particle_1 = mass1 / (total_mass)
     
@@ -175,8 +176,7 @@ class TestSimpleMultiples(TestWithMPI):
         stars.radius = 0.005 | nbody_system.length
         print stars
         code.particles.add_particles(stars)
-        
-        
+
         multiples_code = multiples.Multiples(code, self.new_smalln)
         total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
         multiples_code.evolve_model(0.1|nbody_system.time)
@@ -196,4 +196,52 @@ class TestSimpleMultiples(TestWithMPI):
         print error
         self.assertTrue(error < 1e-5)
         #self.assertTrue(False)
+
+    def test4(self):
+        code = Hermite()
+        stars = datamodel.Particles()
+        binary1 = self.new_binary(
+            1.0 | nbody_system.mass,
+            1.0 | nbody_system.mass,
+            1.0 | nbody_system.length,
+            keyoffset = 1
+        )
+        binary2 = self.new_binary(
+            1.0 | nbody_system.mass,
+            1.0 | nbody_system.mass,
+            0.2 | nbody_system.length,
+            keyoffset = 3
+        )
+        binary1.position += [5.0,0,0] | nbody_system.length
+        binary2.position -= [5.0,0,0] | nbody_system.length
+        stars.add_particles(binary1)
+        stars.add_particles(binary2)
+        stars.radius = 0.25 | nbody_system.length
+        print stars
+        code.particles.add_particles(stars)
+
+        multiples_code = multiples.Multiples(code, self.new_smalln)
+        total_energy0 = multiples_code.kinetic_energy \
+            		+ multiples_code.potential_energy \
+			- multiples_code.multiples_energy_correction
+        multiples_code.evolve_model(0.1|nbody_system.time)
+        multiples_code.print_multiples()
+        total_energy1 =  multiples_code.kinetic_energy \
+            		+ multiples_code.potential_energy \
+			- multiples_code.multiples_energy_correction
+
+        error = abs((total_energy1 - total_energy0)/total_energy0)
+        
+        self.assertTrue(error < 1e-7)
+        multiples_code.evolve_model(0.6|nbody_system.time)
+        multiples_code.print_multiples()
+        total_energy2 = multiples_code.kinetic_energy \
+			+ multiples_code.potential_energy \
+			- multiples_code.multiples_energy_correction
+
+        error = abs((total_energy2 - total_energy0)/total_energy0)
+        
+        print code.particles
+        print error
+        self.assertTrue(error < 1e-5)
         
