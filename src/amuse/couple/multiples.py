@@ -49,14 +49,13 @@ def print_log(s, gravity, E0 = zero):
           % (s, gravity.get_time().number, M.number, (E/E0 - 1))
     print "%senergies = %.10f %.10f %.10f" \
           % (' '*(2+len(s)), E.number, U.number, T.number)
-        
     #print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
     #	(s+"%%", time.number, M.number, T.number, U.number, \
     #    E.number, Ebin.number, Rv.number, Q.number)
     sys.stdout.flush()
     return E
 
-def get_component_binary_elements(comp1, comp2):
+def get_component_binary_elements(comp1, comp2, peri = 0):
     try:
         comp1.mass.value_in(units.kg) # see if SI units, throw exception if not
         unit_converter \
@@ -76,12 +75,19 @@ def get_component_binary_elements(comp1, comp2):
     a,e = kep.get_elements()
     r = kep.get_separation()
     E,J = kep.get_integrals()	# per unit reduced mass, note
+    if peri:
+        M,th = kep.get_angles()
+        if M < 0:
+            kep.advance_to_periastron()
+        else:
+            kep.return_to_periastron()
+    t = kep.get_time()
     kep.stop()
 
-    return mass,a,e,r,E
+    return mass,a,e,r,E,t
 
-def get_cm_binary_elements(p):
-    return get_component_binary_elements(p.child1, p.child2)
+def get_cm_binary_elements(p, peri = 0):
+    return get_component_binary_elements(p.child1, p.child2, peri)
 
 class Multiples(object):
 
@@ -186,7 +192,7 @@ class Multiples(object):
                 EPS = 0.01		# proceed only if the stars are
                 if vr < EPS*r*v:	# approaching (or nearly so)
 
-                    print ''
+                    print '\n'+'~'*60
                     print 'stopping condition set at time', time
                     print 'r =', r, ' v =', v, ' v.r =', vr
 
@@ -228,9 +234,9 @@ class Multiples(object):
                         self.multiples_energy_correction, \
                         'dE =', (energy - start_energy) \
                                  - self.multiples_energy_correction
-                    print '\n--------------------------------------------------'
                     self.print_multiples()
                     print self.gravity_code.particles
+                    print '\n'+'~'*60
                 else:
                     print "ignoring collision", vr , EPS*r*v
             
@@ -254,11 +260,11 @@ class Multiples(object):
         # module data.  Return value is the energy correction due to
         # multiples.
 
-        # Currently we don't include neighbors in the integration and the
-        # size limitation on any final multiple is poorly implemented.
+        # Currently we don't include neighbors in the integration
+        # and the size limitation on any final multiple is poorly
+        # implemented.
 
-        print '\nin manage_encounter'; sys.stdout.flush()
-
+        #print '\nin manage_encounter'; sys.stdout.flush()
         #print ''
         #find_nnn(star1_in_memory, star2_in_memory, stars)
         #find_nnn(star2_in_memory, star1_in_memory, stars)
@@ -281,6 +287,9 @@ class Multiples(object):
             stars - collided_stars,
             G = self.gravity_constant
         )
+
+        #mass,a,e,r,E,t = get_component_binary_elements(star1, star2, peri=1)
+        #print 'tperi =', t
         
         # 2. Create a particle set to perform the close encounter
         #    calculation.
@@ -386,8 +395,7 @@ class Multiples(object):
                  - total_energy_of_stars_to_remove) + phi_correction
 
         #print "NUMBER OF TREES:", len(self.root_to_tree)
-
-        print '\nleaving manage_encounter'; sys.stdout.flush()
+        #print '\nleaving manage_encounter'; sys.stdout.flush()
     
     def resolve_collision(
             self,
@@ -396,7 +404,7 @@ class Multiples(object):
             delta_t = 10 | nbody_system.time,
         ):
 
-        print '\nin resolve_collision'; sys.stdout.flush()
+        #print '\nin resolve_collision'; sys.stdout.flush()
 
         resolve_collision_code = self.resolve_collision_code_creation_function()
         time = 0 | nbody_system.time
@@ -442,7 +450,6 @@ class Multiples(object):
                 channel.copy()
                 resolve_collision_code.stop()
 
-                print particles
                 return start_energy, energy
 
         resolve_collision_code.stop()
@@ -532,7 +539,8 @@ def find_nnn(star1, star2, stars):	# print next nearest neighbor
 
     return nnn
 
-def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G):
+def potential_energy_in_field(particles, field_particles,
+                              smoothing_length_squared = zero, G = constants.G):
     """
     Returns the total potential energy of the particles in the particles set.
 
@@ -588,9 +596,9 @@ def compress_binary_components(comp1, comp2, scale):
     sep12 = ((pos2-pos1)**2).sum()
 
     if sep12 > scale*scale:
-        print '\ncompressing components', int(comp1.id), \
-              'and', int(comp2.id), 'to separation', scale.number
-        sys.stdout.flush()
+        #print '\ncompressing components', int(comp1.id), \
+        #      'and', int(comp2.id), 'to separation', scale.number
+        #sys.stdout.flush()
         mass1 = comp1.mass
         mass2 = comp2.mass
         total_mass = mass1 + mass2
@@ -621,16 +629,20 @@ def compress_binary_components(comp1, comp2, scale):
                                 rel_vel[0], rel_vel[1], rel_vel[2])
         M,th = kep.get_angles()
         a,e = kep.get_elements()
+        #print 'a, e =', a, e
         if e < 1:
             peri = a*(1-e)
             apo = a*(1+e)
         else:
             peri = a*(e-1)
-            apo = 2*a		# OK - used only to reset scale
+            apo = peri+a		# OK - used only to reset scale
         limit = peri + 0.01*(apo-peri)
         if scale < limit:
+            #print 'changed scale from', scale, 'to', limit
             scale = limit
-            print 'changed separation to', scale
+
+        #print 'scale =', scale, 'sep =', kep.get_separation(), 'M =', M
+        #kep.print_all()
 
         if M < 0:
             kep.advance_to_periastron()
@@ -640,12 +652,6 @@ def compress_binary_components(comp1, comp2, scale):
                 kep.advance_to_radius(scale)
             else:
                 kep.return_to_radius(scale)
-
-        # a,e = kep.get_elements()
-        # r = kep.get_separation()
-        # E,J = kep.get_integrals()
-        # print 'kepler: a,e,r =', a.number, e.number, r.number
-        # print 'E, J =', E, J
 
         # Note: if periastron > scale, we are now just past periastron.
 
@@ -705,10 +711,16 @@ def compress_nodes(node_list, scale):
     # the center of mass frame.
 
     size = 0.0
+    sepmin = 1.e10
+    rijmin = 1.e10
+    radsum = 0.0
+    imin = -1
+    jmin = -1
     pot = 0.0
     kin = 0.0
     for i in range(len(node_list)):
         m = node_list[i].mass.number
+        rad = node_list[i].radius.number
         posi = node_list[i].position
         pos = (posi-cmpos).number
         vel = (node_list[i].velocity-cmvel).number
@@ -718,19 +730,37 @@ def compress_nodes(node_list, scale):
         dpot = 0.0
         for j in range(i+1,len(node_list)):
             mj = node_list[j].mass.number
+            radj = node_list[j].radius.number
             dposj = (node_list[j].position-posi).number
+            rij = math.sqrt(numpy.inner(dposj,dposj))
+            if sepmin > rij-rad-radj:
+                radsum = rad + radj
+                imin = i
+                jmin = j
+                sepmin = rij - radsum
+                rijmin = rij
             dpot -= mj/math.sqrt(numpy.inner(dposj,dposj))
         pot += m*dpot
     size = math.sqrt(size)
     kin /= 2
 
-    if size > 0.5*scale.number:
+    #fac = 0.5*scale.number/size	# scale to radius
+    #fac = scale.number/rijmin		# scale to distance
+    fac = radsum/rijmin			# scale to zero separation
 
-        # Compress the system and increase the velocities (relative to
-        # the center of mass) to preserve the energy.
+    # Compress (or expand) the system and increase (or decrease) the
+    # velocities (relative to the center of mass) to preserve the
+    # energy.  If fac > 1, expansion is always OK if E > 0, which it
+    # should be at this point (but check anyway...).
 
-        fac = 0.5*scale.number/size
-        vfac = math.sqrt(1-(1/fac-1)*pot/kin)
+    vfac2 = 1-(1/fac-1)*pot/kin
+    if vfac2 < 0:
+        print "Can't expand top level system to rjjmin > ri+rj"
+        f = pot/(kin+pot)
+        vfac2 = 0.0
+    else:
+        vfac = math.sqrt(vfac2)
+    if fac > 0.0:
         for n in node_list:
             n.position = cmpos + fac*(n.position-cmpos)
             n.velocity = cmvel + vfac*(n.velocity-cmvel)
@@ -748,7 +778,7 @@ def print_multiple(m, level=0):
     print '    '*level, '  pos =', m.position.number
     print '    '*level, '  vel =', m.velocity.number
     if not m.child1 is None and not m.child2 is None:
-        M,a,e,r,E = get_component_binary_elements(m.child1, m.child2)
+        M,a,e,r,E,t = get_component_binary_elements(m.child1, m.child2)
         print_elements('   '+'    '*level+'binary', a, e, r, E,
                        (E*m.child1.mass*m.child2.mass/M))
     if not m.child1 is None:
@@ -759,7 +789,7 @@ def print_multiple(m, level=0):
 def print_pair_of_stars(s, star1, star2):
     m1 = star1.mass
     m2 = star2.mass
-    M,a,e,r,E = get_component_binary_elements(star1, star2)
+    M,a,e,r,E,t = get_component_binary_elements(star1, star2)
     print_elements(s, a, e, r, E, E*m1*m2/(m1+m2))
     print_multiple(star1)
     print_multiple(star2)
@@ -772,18 +802,63 @@ def print_simple_multiple(node):
         output += "{0} (mass={1})".format(particle.key, particle.mass)
         print output
 
+def print_energies(stars):
+
+    # Brute force N^2 over top level, pure python...
+
+    top_level = stars.select(is_not_a_child, ["is_a_child"])
+
+    mass = 0
+    kinetic = 0
+    potential = 0
+    for t in top_level:
+        m = t.mass.number
+        x = t.x.number
+        y = t.y.number
+        z = t.z.number
+        vx = t.vx.number
+        vy = t.vy.number
+        vz = t.vz.number
+        mass += m
+        kinetic += 0.5*m*(vx**2+vy**2+vz**2)
+        dpot = 0
+        for tt in top_level:
+            if tt != t:
+                mm = tt.mass.number
+                xx = tt.x.number-x
+                yy = tt.y.number-y
+                zz = tt.z.number-z
+                dpot -= mm/math.sqrt(xx**2+yy**2+zz**2)
+        potential += 0.5*m*dpot
+            
+    print 'len(stars) =', len(stars)
+    print 'len(top_level) =', len(top_level)
+    print 'mass =', mass
+    print 'kinetic =', kinetic
+    print 'potential =', potential
+    print 'energy =', kinetic+potential
+    sys.stdout.flush()
+
 def set_radius_recursive(node):
-    if node.is_leaf(): 
-        return
-    
+    if node.is_leaf(): return
+
+    # Propagate child radii upward.
+
     rmax = zero
-    
     for child in node.iter_children():
         set_radius_recursive(child)
         rmax = max(rmax, child.particle.radius)
-        
+
+    # Include binary information.
+
     node.particle.radius = rmax
-    # Need to include binary sma...
+    try:
+        if not node.particle.child1 == None:
+            mass,a,e,r,E,t = get_cm_binary_elements(node.particle)
+            if e < 1:
+                node.particle.radius = max(3*a, node.particle.radius)
+    except:
+        pass
 
 def set_radii(top_level_nodes):
     for n in top_level_nodes.as_binary_tree().iter_children():
@@ -823,8 +898,7 @@ def scale_top_level_list(
     lm = len(multiples)
     lt = ls + lm
 
-    print '\nin scale_top_level_list'
-    print 'ls =', ls, ' lm =', lm, ' lt =', lt
+    print 'scale_top_level_list:  ls =', ls, ' lm =', lm, ' lt =', lt
     sys.stdout.flush()
 
     if lt == 1:
@@ -845,9 +919,6 @@ def scale_top_level_list(
             compress_binary_components(comp1, comp2, scale)
             print '\nscaled binary node:'
             print_multiple(root)
-            
-            dr = (root.child1.position - root.child2.position).length()
-            root.radius = dr
 
     elif lt == 2:
 
@@ -875,10 +946,10 @@ def scale_top_level_list(
         # will conserve energy and think later about how to preserve
         # angular momentum.  TODO
 
-        print lt, '\nunscaled top-level nodes'; sys.stdout.flush()
+        print lt, 'unscaled top-level nodes'; sys.stdout.flush()
         print top_level_nodes
         compress_nodes(top_level_nodes, scale)
-        print lt, '\nscaled top-level nodes'; sys.stdout.flush()
+        print lt, 'scaled top-level nodes'; sys.stdout.flush()
         print top_level_nodes
 
     # Recompute the external field, compute the tidal error, and
@@ -938,40 +1009,3 @@ def scale_top_level_list(
     #print 'final etot =', total_energy_of_stars_to_add
 
     return total_energy_of_stars_to_add, phi_correction
-
-def print_energies(stars):
-
-    # Brute force N^2 over top level, pure python...
-
-    top_level = stars.select(is_not_a_child, ["is_a_child"])
-
-    mass = 0
-    kinetic = 0
-    potential = 0
-    for t in top_level:
-        m = t.mass.number
-        x = t.x.number
-        y = t.y.number
-        z = t.z.number
-        vx = t.vx.number
-        vy = t.vy.number
-        vz = t.vz.number
-        mass += m
-        kinetic += 0.5*m*(vx**2+vy**2+vz**2)
-        dpot = 0
-        for tt in top_level:
-            if tt != t:
-                mm = tt.mass.number
-                xx = tt.x.number-x
-                yy = tt.y.number-y
-                zz = tt.z.number-z
-                dpot -= mm/math.sqrt(xx**2+yy**2+zz**2)
-        potential += 0.5*m*dpot
-            
-    print 'len(stars) =', len(stars)
-    print 'len(top_level) =', len(top_level)
-    print 'mass =', mass
-    print 'kinetic =', kinetic
-    print 'potential =', potential
-    print 'energy =', kinetic+potential
-    sys.stdout.flush()

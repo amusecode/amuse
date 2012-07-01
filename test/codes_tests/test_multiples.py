@@ -1,3 +1,7 @@
+# Run with
+#
+# nosetests-2.7 --nocapture --nologcapture -w test/codes_tests --tests=test_multiples 
+
 from amuse.test.amusetest import TestWithMPI
 
 import os
@@ -16,8 +20,6 @@ from amuse.units import constants
 from amuse import datamodel
 from amuse.ic import plummer
 from amuse.couple import multiples
-
-
 
 class TestSimpleMultiples(TestWithMPI):
 
@@ -203,7 +205,7 @@ class TestSimpleMultiples(TestWithMPI):
         binary1 = self.new_binary(
             1.0 | nbody_system.mass,
             1.0 | nbody_system.mass,
-            1.0 | nbody_system.length,
+            0.1 | nbody_system.length,
             keyoffset = 1
         )
         binary2 = self.new_binary(
@@ -212,8 +214,8 @@ class TestSimpleMultiples(TestWithMPI):
             0.2 | nbody_system.length,
             keyoffset = 3
         )
-        binary1.position += [5.0,0,0] | nbody_system.length
-        binary2.position -= [5.0,0,0] | nbody_system.length
+        binary1.position += [1.0,0.0,0] | nbody_system.length
+        binary2.position -= [1.0,0.0,0] | nbody_system.length
         stars.add_particles(binary1)
         stars.add_particles(binary2)
         stars.radius = 0.25 | nbody_system.length
@@ -233,7 +235,7 @@ class TestSimpleMultiples(TestWithMPI):
         error = abs((total_energy1 - total_energy0)/total_energy0)
         
         self.assertTrue(error < 1e-7)
-        multiples_code.evolve_model(0.6|nbody_system.time)
+        multiples_code.evolve_model(2.0|nbody_system.time)
         multiples_code.print_multiples()
         total_energy2 = multiples_code.kinetic_energy \
 			+ multiples_code.potential_energy \
@@ -243,5 +245,4 @@ class TestSimpleMultiples(TestWithMPI):
         
         print code.particles
         print error
-        self.assertTrue(error < 1e-5)
-        
+        self.assertTrue(error < 1e-6)
