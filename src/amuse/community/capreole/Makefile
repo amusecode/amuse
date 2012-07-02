@@ -87,11 +87,11 @@ capreole_worker_sockets: $(NOMPILIBS) worker-sockets.F90 $(BUILDDIR)/interface.o
 capreole_worker_mpi: $(MPILIBS) worker_mpi.f90 $(MPI_BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SCINC) $^ -o $@ $(MPILIBS) $(SCLIBS)
 
-capreole_worker_gl: $(NOMPILIBS) glworker.f90 $(MPI_BUILDDIR)/interface.o
+#capreole_worker_gl: $(NOMPILIBS) glworker.f90 $(BUILDDIR)/interface.o
 #	make -C src clean
-	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(FC) $(FFLAGS) $(SCINC) $^ -o $@  $(GLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(THREADLIB) $(NOMPILIBS) $(SCLIBS)
+#	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
+#	$(FC) $(FFLAGS) $(SCINC) $^ -o $@  $(GLOBJECTS) \
+#	$(GLLIB)  $(X11LIB) $(THREADLIB) $(NOMPILIBS) $(SCLIBS)
 
 worker.f90: interface.py 
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
