@@ -148,9 +148,10 @@ class HalogenInterfaceTests(TestWithMPI):
         )
         process.communicate()
         
-        stdoutput = subprocess.Popen(["diff", "test.IC.ascii", "test_stand_alone.IC.ascii"], 
-            cwd = instance.get_output_directory(), stdout = subprocess.PIPE).communicate()[0]
-        self.assertEquals(stdoutput, "")
+        self.compare_files(
+            os.path.join(instance.get_output_directory(), "test.IC.ascii"),
+            os.path.join(instance.get_output_directory(), "test_stand_alone.IC.ascii")
+        )
         stdoutput = subprocess.Popen(["diff", "test.out", "test_stand_alone.out"], 
             cwd = instance.get_output_directory(), stdout = subprocess.PIPE).communicate()[0]
         self.assertTrue("< N/A (executed by AMUSE)" in stdoutput)
@@ -159,8 +160,28 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEquals(instance.cleanup_code(), 0)
         instance.stop()
     
+    def compare_files(self, filename1, filename2):
+        with open(filename1) as stream1:
+            lines1 = stream1.readlines()
+        with open(filename2) as stream2:
+            lines2 = stream2.readlines()
 
-
+        self.assertTrue(len(lines1), len(lines2))
+        for line1, line2 in zip(lines1, lines2):
+            columns1 = line1.split()
+            columns2 = line2.split()
+            self.assertTrue(len(columns1), len(columns2))
+            if (len(columns1)) == 0:
+                continue
+            self.assertEquals(int(columns1[0]), int(columns2[0]))
+            for column1, column2 in zip(columns1[1:], columns2[1:]):
+                self.assertAlmostRelativeEquals(
+                    float(column1),
+                    float(column2),
+                    8
+                )
+                
+            
 class HalogenTests(TestWithMPI):
     
     default_unit_converter = nbody_system.nbody_to_si(1.0 | units.kpc, 1.0e6 | units.MSun)
