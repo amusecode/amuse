@@ -734,7 +734,7 @@ class TestEVtwin(TestWithMPI):
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
         self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([422790.6330, 36382.1271, 11259.1953] | units.yr), 3)
-        self.assertAlmostEqual(instance.particles.time_step, [507348.7596, 43180.1460, 13511.0343] | units.yr, 3)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, [507348.7596, 43180.1460, 13511.0343] | units.yr, 7)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
         instance.stop()
     
