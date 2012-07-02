@@ -188,7 +188,7 @@ class TestSimpleMultiples(TestWithMPI):
         error = abs((total_energy1 - total_energy0)/total_energy0)
         
         self.assertTrue(error < 1e-7)
-        multiples_code.evolve_model(0.6|nbody_system.time)
+        multiples_code.evolve_model(0.2|nbody_system.time)
         multiples_code.print_multiples()
         total_energy2 =  multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
 
