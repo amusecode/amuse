@@ -26,7 +26,14 @@ class TestSPHRayInterface(TestWithMPI):
     
         if is_configured:
             if not config.compilers.gfortran_version:
-                return True
+                if not hasattr(config.compilers, 'ifort_version') or not config.compilers.ifort_version:
+                    return True
+                try:
+                    parts = [int(x) for x in config.compilers.ifort_version.split('.')]
+                except:
+                    parts = []
+                    
+                return parts[0] > 9  
             
             try:
                 parts = [int(x) for x in config.compilers.gfortran_version.split('.')]
@@ -431,7 +438,14 @@ class TestSPHRay(TestWithMPI):
     
         if is_configured:
             if not config.compilers.gfortran_version:
-                return True
+                if not hasattr(config.compilers, 'ifort_version') or not config.compilers.ifort_version:
+                    return True
+                try:
+                    parts = [int(x) for x in config.compilers.ifort_version.split('.')]
+                except:
+                    parts = []
+                    
+                return parts[0] > 9  
             
             try:
                 parts = [int(x) for x in config.compilers.gfortran_version.split('.')]
