@@ -1902,6 +1902,7 @@ class IbisChannel(MessageChannel):
         
         if result.error:
             logging.getLogger("channel").error("Could not start worker: %s", result.strings[0])
+            self.socket = None
             raise exceptions.CodeException("Could not start worker for " + self.name_of_the_worker + ": " + result.strings[0])
         
         logging.getLogger("channel").info("worker %s initialized", self.name_of_the_worker)
