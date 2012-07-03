@@ -33,11 +33,18 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         LiteratureReferencesMixIn.__init__(self)
         
     @option(type="string", sections=('data',))
+    def amuse_root_directory(self):
+        """
+        The root directory of AMUSE, used as default root for all data directories
+        """
+        return get_amuse_root_dir()
+        
+    @option(type="string", sections=('data',))
     def input_data_root_directory(self):
         """
         The root directory of the input data, read only directories
         """
-        return os.path.join(get_amuse_root_dir(), 'data')
+        return os.path.join(self.amuse_root_directory, 'data')
         
     @option(type="string", sections=('data',))
     def output_data_root_directory(self):
@@ -45,7 +52,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         The root directory of the output data,
         read - write directory
         """
-        return os.path.join(get_amuse_root_dir(), 'data')
+        return os.path.join(self.amuse_root_directory, 'data')
         
     def get_data_directory(self):
         """
@@ -67,9 +74,8 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 
     @option(type="string", sections=('data'))
     def default_path_to_MESA_data(self):
-        dir = os.path.dirname(__file__)
-        return os.path.join(dir, 'src', 'mesa', 'data')
-
+        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'mesa', 'src', 'mesa', 'data')
+    
     @legacy_function
     def set_MESA_paths():
         """
