@@ -244,7 +244,7 @@ public class Daemon implements RegistryEventHandler {
                 logDir = new File(arguments[i]);
             } else if (arguments[i].equals("-r") || arguments[i].equals("--runtime")) {
                 i++;
-                port = Integer.parseInt(arguments[i]);
+                runtime = Integer.parseInt(arguments[i]);
             } else if (arguments[i].equals("-h") || arguments[i].equals("--help")) {
                 printUsage();
                 return;
