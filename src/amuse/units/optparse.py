@@ -75,7 +75,7 @@ class IndentedHelpFormatter(optparse.IndentedHelpFormatter):
             
         if option.help:
             help_text = self.expand_default(option)
-            help_text = self.expand_unit(option)
+            help_text = self.expand_unit(option, help_text)
             help_lines = textwrap.wrap(help_text, self.help_width)
             result.append("%*s%s\n" % (indent_first, "", help_lines[0]))
             result.extend(["%*s%s\n" % (self.help_position, "", line)
@@ -84,16 +84,16 @@ class IndentedHelpFormatter(optparse.IndentedHelpFormatter):
             result.append("\n")
         return "".join(result)
     
-    def expand_unit(self, option):
+    def expand_unit(self, option, help_text):
         if self.parser is None or not self.unit_tag:
-            return option.help
+            return help_text
 
         if option.unit is None:
-            return option.help
+            return help_text
         
         unit = option.unit
 
-        return option.help.replace(self.unit_tag, str(unit))
+        return help_text.replace(self.unit_tag, str(unit))
     
     
     

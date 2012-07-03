@@ -56,4 +56,13 @@ class TestQuantities(amusetest.TestCase):
         options, args = x.parse_args(['bla'])
         self.assertAlmostRelativeEquals(options.mass, 1.5 | units.MSun)
         self.assertEquals(args[0], 'bla')
-
+        
+    def test6(self):
+        x = optparse.OptionParser()
+        x.add_option('-m', unit = units.MSun, help = "(default: %default, unit: %unit)", default = '1.5', dest = "mass", type = float)
+        helpstr = x.format_help()
+        
+        print helpstr
+        self.assertTrue('unit: MSun)' in helpstr)
+        self.assertTrue('(default: 1' in helpstr)
+        
