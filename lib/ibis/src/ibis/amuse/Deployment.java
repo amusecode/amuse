@@ -36,10 +36,13 @@ public class Deployment {
     private final File amuseHome;
     private final File ibisDir;
     private final File logDir;
+    
+    private final int runtime;
 
     public Deployment(boolean verbose, boolean keepSandboxes, boolean useGui, boolean useHubs, File[] jungleFiles,
-            String[] hubs, File logDir) throws Exception {
+            String[] hubs, File logDir, int runtime) throws Exception {
         this.logDir = logDir;
+        this.runtime = runtime;
 
         jungle = new Jungle();
         if (jungleFiles.length == 0) {
@@ -263,7 +266,7 @@ public class Deployment {
 
         jobDescription.setProcessCount(nrOfNodes);
         jobDescription.setResourceCount(nrOfNodes);
-        jobDescription.setRuntime(60);
+        jobDescription.setRuntime(runtime);
         jobDescription.getApplication().setName(codeName);
         jobDescription.setPoolName("amuse");
         jobDescription.setStdoutFile(new File(logDir, workerID + ".out.txt"));

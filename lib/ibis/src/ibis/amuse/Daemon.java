@@ -55,6 +55,8 @@ public class Daemon implements RegistryEventHandler {
     public static final int DEFAULT_PORT = 61575;
 
     public static final File DEFAULT_LOG_DIR = new File(System.getProperty("java.io.tmpdir"), "ibis-amuse-logs");
+    
+    public static final int DEFAULT_RUNTIME = 60;
 
     public static PortType portType = new PortType(PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
             PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT, PortType.CONNECTION_MANY_TO_ONE);
@@ -73,7 +75,7 @@ public class Daemon implements RegistryEventHandler {
     private final OutputManager outputManager;
 
     public Daemon(int port, boolean verbose, boolean keepSandboxes, boolean gui, boolean useHubs, File[] jungleFiles,
-            String[] hubs, File logDir) throws Exception {
+            String[] hubs, File logDir, int runtime) throws Exception {
         logDir.mkdirs();
         if (!logDir.isDirectory()) {
             throw new Exception("log dir (" + logDir + ") is not a directory, and cannot be created");
@@ -88,7 +90,7 @@ public class Daemon implements RegistryEventHandler {
                 new FileAppender(new PatternLayout("%d{HH:mm:ss} %-5p [%t] %c - %m%n"), new File(logDir,
                         "deploy.log.txt").getPath(), false));
 
-        deployment = new Deployment(verbose, keepSandboxes, gui, useHubs, jungleFiles, hubs, logDir);
+        deployment = new Deployment(verbose, keepSandboxes, gui, useHubs, jungleFiles, hubs, logDir, runtime);
 
         Properties properties = new Properties();
         properties.put("ibis.server.address", deployment.getServerAddress());
@@ -203,6 +205,7 @@ public class Daemon implements RegistryEventHandler {
                 + "-j | --jungle-file [FILE]\tName of jungle configuration file\n"
                 + "-h | --hub [RESOURCE_NAME]\tStart a hub on the given resource\n"
                 + "-l | --log-dir [DIR]\t\tSet location of logging files\n" + "\t\t\t\t(defaults to \""
+                + "-r | --runtime [MINUTES]\t\tRuntime of jobs (default: " + DEFAULT_RUNTIME + ")\n"
                 + DEFAULT_LOG_DIR + "\")\n" + "-n | --no-hubs\t\t\tDo not start any hubs automatically\n"
                 + "\t\t\t\t(except when specified via --hub option)\n" + "-h | --help\t\t\tThis message");
     }
@@ -216,6 +219,7 @@ public class Daemon implements RegistryEventHandler {
         ArrayList<File> jungleFiles = new ArrayList<File>();
         ArrayList<String> hubs = new ArrayList<String>();
         File logDir = DEFAULT_LOG_DIR;
+        int runtime = DEFAULT_RUNTIME;
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-p") || arguments[i].equals("--port")) {
@@ -238,6 +242,9 @@ public class Daemon implements RegistryEventHandler {
             } else if (arguments[i].equals("-l") || arguments[i].equals("--log-dir")) {
                 i++;
                 logDir = new File(arguments[i]);
+            } else if (arguments[i].equals("-r") || arguments[i].equals("--runtime")) {
+                i++;
+                port = Integer.parseInt(arguments[i]);
             } else if (arguments[i].equals("-h") || arguments[i].equals("--help")) {
                 printUsage();
                 return;
@@ -250,7 +257,7 @@ public class Daemon implements RegistryEventHandler {
 
         try {
             Daemon daemon = new Daemon(port, verbose, keepSandboxes, gui, startHubs, jungleFiles.toArray(new File[0]),
-                    hubs.toArray(new String[0]), logDir);
+                    hubs.toArray(new String[0]), logDir, runtime);
 
             Runtime.getRuntime().addShutdownHook(new Shutdown(daemon));
 
