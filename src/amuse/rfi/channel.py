@@ -1784,6 +1784,9 @@ class IbisChannel(MessageChannel):
     
     stderrHandler = None
     
+    socket = None
+
+    
     @classmethod
     def getStdoutID(cls):
         if IbisChannel.stdoutHandler is None:
@@ -1844,7 +1847,6 @@ class IbisChannel(MessageChannel):
         logging.getLogger("channel").debug("worker dir is %s", self.worker_dir)
             
         self._is_inuse = False
-        self.socket = None
       
 
     def check_if_worker_is_up_to_date(self, object):
@@ -1878,6 +1880,7 @@ class IbisChannel(MessageChannel):
         try:
             self.socket.connect((self.daemon_host, self.daemon_port))
         except:
+            self.socket = None
             raise exceptions.CodeException("Could not connect to Ibis Daemon at " + str(self.daemon_port))
         
         self.socket.setblocking(1)
@@ -1925,11 +1928,13 @@ class IbisChannel(MessageChannel):
         return False
        
     def stop(self):
-        logging.getLogger("channel").info("stopping worker %s", self.name_of_the_worker)
-        self.socket.close()
+        if self.socket is not None:
+            logging.getLogger("channel").info("stopping worker %s", self.name_of_the_worker)
+            self.socket.close()
+            self.socket = None
 
     def is_active(self):
-        return True    
+        return self.socket is not None 
     
     def is_inuse(self):
         return self._is_inuse
