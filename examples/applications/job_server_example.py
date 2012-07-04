@@ -1,4 +1,4 @@
-from job_server import JobServer
+from amuse.ext.job_server import JobServer
 from time import sleep
 
 def somework(x):
