@@ -544,6 +544,7 @@ class TestInterface(TestWithMPI):
         time.sleep(1.0)
 
         pool.wait()
+        pool.wait()
 
         self.assertEquals(len(finished_requests), 2)
         self.assertEquals(len(pool), 0)
