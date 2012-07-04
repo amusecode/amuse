@@ -228,8 +228,7 @@ class AsyncRequestsPool(object):
         if len(sockets) > 0:
             readable, w_, x_ = select.select(sockets, [], [])
             indices_to_delete =[]
-            if len(readable) > 0:
-                read_socket = readable[0]
+            for read_socket in readable:
                 
                 index = sockets.index(read_socket)
                 
