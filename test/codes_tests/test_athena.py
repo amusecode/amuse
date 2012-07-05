@@ -1096,7 +1096,7 @@ class TestAthena(TestWithMPI):
         instance.stop()
     
     
-    def test12(self): 
+    def test13(self): 
         converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
             1 | units.parsec,
             1 | units.Myr,
