@@ -1195,17 +1195,22 @@ class Gadget2Doc(object):
 
 class Gadget2(GravitationalDynamics):
     
+    NoConverter = Object()
+    
     __doc__ = Gadget2Doc()
     
     def __init__(self, unit_converter = None, mode = 'normal', **options):
         self.mode = mode
         legacy_interface = Gadget2Interface(mode = mode, **options)
+        
         if unit_converter is None:
             unit_converter = ConvertBetweenGenericAndSiUnits(
                 3.085678e21 | units.cm,   # 1.0 kpc
                 1.989e43 | units.g,       # 1.0e10 solar masses
                 1e5 | units.cm / units.s) # 1 km/sec
-    
+        elif unit_converter is self.NoConverter:
+            unit_converter = None
+            
         self.stopping_conditions = StoppingConditions(self)
     
         GravitationalDynamics.__init__(
