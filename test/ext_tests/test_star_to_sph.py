@@ -1,4 +1,6 @@
 import os.path
+import numpy
+
 from amuse.test.amusetest import get_path_to_results, TestWithMPI
 try:
     from matplotlib import pyplot
@@ -7,8 +9,9 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-from amuse.support.exceptions import AmuseException
+from amuse.support.exceptions import AmuseException, AmuseWarning
 from amuse.community.mesa.interface import MESA
+from amuse.community.evtwin.interface import EVtwin
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.fi.interface import Fi
 from amuse.ext.star_to_sph import *
@@ -21,6 +24,7 @@ from amuse.datamodel import Particles
 from amuse.datamodel import Particle
 from amuse.datamodel import ParticlesSuperset
 from amuse.datamodel import Grid
+
 class TestStellarModel2SPH(TestWithMPI):
     
     class StarParticleWithStructure(Particle):
@@ -1022,6 +1026,52 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertTrue(set(sph_particles.get_attribute_names_defined_in_store()) >
             set(["h1", "he3", "he4", "c12"]))
     
+    def test20(self):
+        print "Test convert_stellar_model_to_SPH with with_core_particle"
+        star = self.StarParticleWithStructure(number_of_species = 4)
+        number_of_sph_particles = 100 # only few particles for test speed-up
+        
+        self.assertRaises(AmuseException, convert_stellar_model_to_SPH, 
+            star, 
+            number_of_sph_particles, 
+            seed = 12345,
+            with_core_particle = True, 
+            expected_message = "Requested model has with_core_particle=True, but no target_core_mass specified."
+        )
+        
+        star.core_mass = 0.5 | units.MSun
+        self.assertRaises(AmuseException, convert_stellar_model_to_SPH, 
+            star, 
+            number_of_sph_particles, 
+            seed = 12345,
+            with_core_particle = True, 
+            expected_message = "Requested target_core_mass of 0.5 MSun is out of range."
+        )
+        
+        stellar_evolution = EVtwin()
+        star = stellar_evolution.particles.add_particle(Particle(mass=5|units.MSun))
+        model = convert_stellar_model_to_SPH(
+            star, 
+            number_of_sph_particles, 
+            seed = 12345,
+            with_core_particle = True,
+            target_core_mass = 0.5 | units.MSun
+        )
+        stellar_evolution.stop()
+        core = model.core_particle
+        sph_particles = model.gas_particles
+        
+        self.assertEqual(len(sph_particles), number_of_sph_particles)
+        self.assertTrue(isinstance(core, Particle))
+        
+        self.assertEqual(core.radius, model.core_radius)
+        self.assertEqual(core.position, [0, 0, 0] | units.m)
+        self.assertAlmostEqual(core.mass + sph_particles.total_mass(), 5.0 | units.MSun)
+        self.assertIsOfOrder(core.mass, 0.5 | units.MSun)
+        
+        self.assertEqual(set(sph_particles.get_attribute_names_defined_in_store()), 
+            set(["mass", "x", "y", "z", "vx", "vy", "vz", "u", "h_smooth", 
+                "h1", "he4", "c12", "n14", "o16", "ne20", "mg24", "si28", "fe56", "mu"]))
 
 def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname):
     if not HAS_MATPLOTLIB:

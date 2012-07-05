@@ -33,12 +33,13 @@ class EnclosedMassInterpolator(object):
         self.enclosed_mass = self.four_thirds_pi * self.enclosed_mass
     
     def get_index(self, value, sorted_vector):
-        out_of_bounds = numpy.logical_or(sorted_vector[0] > value, value > sorted_vector[-1])
+        value = value.value_in(sorted_vector.unit)
+        out_of_bounds = numpy.logical_or(sorted_vector.number[0] > value, value > sorted_vector.number[-1])
         if out_of_bounds.any():
-            value = numpy.compress(numpy.array([out_of_bounds]).flatten(), value.number) | value.unit
+            value = numpy.compress(numpy.array([out_of_bounds]).flatten(), value) | sorted_vector.unit
             raise AmuseException("Can't find a valid index. {0} is not in "
                 "the range [{1}, {2}].".format(value, sorted_vector[0], sorted_vector[-1]))
-        index = numpy.searchsorted(sorted_vector, value)
+        index = numpy.searchsorted(sorted_vector.number, value)
         return numpy.maximum(index - 1, 0)
     
     def get_enclosed_mass(self, radius):
@@ -137,7 +138,7 @@ class UniformSphericalDistribution(object):
                 z[select_sphere][0:self.number_of_particles])
     
     def sobol(self):
-        x, y, z = i4_sobol_generate(3, 2*self.number_of_particles, 2)
+        x, y, z = i4_sobol_generate(3, 2*self.number_of_particles, 2) * 2.0 - 1.0
         return self._cutout_sphere(x, y, z)
     
     def glass(self):
@@ -305,10 +306,11 @@ def new_spherical_particle_distribution(number_of_particles,
     particles.mass = particle_mass
     x, y, z = UniformSphericalDistribution(number_of_particles, **keyword_arguments).result
     # Now scale the uniformly distributed particle positions to match the radial density profile
-    f_scale = radii.unit.new_quantity(numpy.empty_like(x))
     r_old = numpy.sqrt(x*x + y*y + z*z)
     dtype = [('r_old', 'float64'), ('x', 'float64'), ('y', 'float64'), ('z', 'float64')]
     sorted = numpy.sort(numpy.array(zip(r_old, x, y, z), dtype=dtype), order='r_old')
+    if sorted['r_old'][0] == 0.0:
+        sorted['r_old'][0] = 1.0
     f_scale = interpolator.get_radius_for_enclosed_mass(
         (numpy.arange(0.5, number_of_particles + 0.5) | units.none) * particle_mass) / sorted['r_old']
     particles.x = f_scale * sorted['x']

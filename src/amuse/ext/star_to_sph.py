@@ -15,6 +15,8 @@ from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.console import set_printing_strategy
 from amuse.datamodel import Particles, Particle
 
+__all__ = ["StellarModel2SPH", "convert_stellar_model_to_SPH", "pickle_stellar_model"]
+
 StellarModelInSPH = namedtuple('StellarModelInSPH', ['gas_particles', 'core_particle', 'core_radius'])
 
 class StellarModel2SPH(object):
@@ -98,6 +100,12 @@ class StellarModel2SPH(object):
         self.midpoints_profile   = structure['midpoints_profile']
     
     def setup_core_parameters(self):
+        if self.target_core_mass is None:
+            if hasattr(self.particle, "core_mass"):
+                self.target_core_mass = self.particle.core_mass
+            else:
+                raise AmuseException("Requested model has with_core_particle=True, but no target_core_mass specified.")
+        
         self.original_entropy = (self.gamma - 1.0) * (self.specific_internal_energy_profile * 
             self.density_profile**(1.0-self.gamma))
         
@@ -131,7 +139,6 @@ class StellarModel2SPH(object):
         interpolator.initialize(self.radius_profile, self.density_profile)
         self.core_mass = self.mass - interpolator.enclosed_mass[-1]
         self.core_radius = self.radius_profile[max_i] / 2.8
-        print "core mass in DM particle:", self.core_mass.as_quantity_in(units.MSun)
         self.mass = self.mass - self.core_mass
     
     def construct_model_with_core(self, i_edge, m_enc_edge, gamma):
@@ -181,13 +188,14 @@ class StellarModel2SPH(object):
         index = numpy.searchsorted(sorted_vector, value)
         return max(index - 1, 0)
     
-    def get_indices(self,values,sorted_vector):
-        if values.amin() < sorted_vector[0] or values.amax()>sorted_vector[-1]:
-            raise AmuseException("Can't find a valid index.  not in "
+    def get_indices(self, values, sorted_vector):
+        values = numpy.array(values.value_in(sorted_vector.unit))
+        sorted_vector = sorted_vector.number
+        if values.min() < sorted_vector[0] or values.max() > sorted_vector[-1]:
+            raise AmuseException("Can't find a valid index. Value not in "
                 "the range [{0}, {1}].".format(sorted_vector[0], sorted_vector[-1]))
-        indices=numpy.maximum(numpy.searchsorted(sorted_vector,values)-1,0)
+        indices = numpy.maximum(numpy.searchsorted(sorted_vector, values) - 1, 0)
         return indices
-
     
     def calculate_interpolation_coefficients(self, radial_positions):
 #        indices = numpy.array([self.get_index(r, self.midpoints_profile) for r in radial_positions])
@@ -200,10 +208,10 @@ class StellarModel2SPH(object):
         indices, delta = self.calculate_interpolation_coefficients(radial_positions)
         one_minus_delta = 1 - delta
         
-        extended = self.specific_internal_energy_profile[:1]
-        extended.extend(self.specific_internal_energy_profile)
+        extended = self.specific_internal_energy_profile.copy()
+        extended.prepend(self.specific_internal_energy_profile[0])
         extended.append(self.specific_internal_energy_profile[-1])
-        interpolated_energies = delta*extended[indices] + one_minus_delta*extended[indices+1]
+        interpolated_energies = extended[indices]*delta + extended[indices+1]*one_minus_delta
         
         if do_composition_too:
             comp = [] 
@@ -212,14 +220,14 @@ class StellarModel2SPH(object):
                 extended.extend(species)
                 extended.append(species[-1])
                 extended = numpy.asarray(extended)
-                comp.append(delta*extended[indices] + one_minus_delta*extended[indices+1])
+                comp.append(extended[indices]*delta + extended[indices+1]*one_minus_delta)
             
             comp = numpy.asarray(comp)
             
-            extended = self.mu_profile[:1]
-            extended.extend(self.mu_profile)
+            extended = self.mu_profile.copy()
+            extended.prepend(self.mu_profile[0])
             extended.append(self.mu_profile[-1])
-            mu = delta*extended[indices] + one_minus_delta*extended[indices+1]
+            mu = extended[indices]*delta + extended[indices+1]*one_minus_delta
             
             return interpolated_energies, comp.transpose(), mu
         else:

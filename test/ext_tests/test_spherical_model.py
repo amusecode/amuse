@@ -71,16 +71,18 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.total_mass(), 1 | units.kg)
         select_half_radius = numpy.where(r_squared < (0.5 | units.m)**2)
         self.assertAlmostEqual(particles.mass[select_half_radius].sum(), 1.0/8.0 | units.kg, places=3)
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
     
     def test7(self):
         print "Test new_spherical_particle_distribution with total_mass specified"
-        particles = new_spherical_particle_distribution(42, radii = [2,4,3,1] | units.m, 
+        particles = new_spherical_particle_distribution(4200, radii = [2,4,3,1] | units.m, 
             densities = [80, 30, 50, 100] | (units.kg/units.m**3), total_mass = 10000 | units.kg)
-        self.assertEqual(len(particles), 42)
+        self.assertEqual(len(particles), 4200)
         self.assertAlmostEqual(particles.total_mass(), 10000 | units.kg)
         r_squared = particles.position.lengths_squared()
         self.assertTrue(numpy.all( r_squared < (4.0 | units.m)**2))
         self.assertFalse(numpy.all( r_squared < (3.5 | units.m)**2 ))
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
     
     def test8(self):
         print "Test new_spherical_particle_distribution without radii, densities tables"
@@ -106,13 +108,14 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertTrue(numpy.all( r_squared < (1.5 | units.m)**2))
         self.assertFalse(numpy.all( r_squared < (1.4 | units.m)**2 ))
         
-        particles = new_spherical_particle_distribution(142, radii = rad, densities = rho)
-        self.assertEqual(len(particles), 142)
+        particles = new_spherical_particle_distribution(14200, radii = rad, densities = rho)
+        self.assertEqual(len(particles), 14200)
         interpolator = EnclosedMassInterpolator(rad, rho)
         self.assertAlmostEqual(particles.total_mass(), interpolator.get_enclosed_mass(max(rad)))
         r_squared = particles.position.lengths_squared()
         self.assertTrue(numpy.all( r_squared < max(rad)**2 ))
         self.assertFalse(numpy.all( r_squared < (0.9*max(rad))**2 ))
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
         
     def test10(self):
         numpy.random.seed(12345)
@@ -134,6 +137,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.total_mass(), 1 | units.kg)
         select_half_radius = numpy.where(r_squared < (0.5 | units.m)**2)
         self.assertAlmostEqual(particles.mass[select_half_radius].sum(), 1.0/8.0 | units.kg, places=2)
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
     
 
 class TestXEnclosedMassInterpolator(TestCase):
