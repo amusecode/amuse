@@ -8,6 +8,7 @@ from amuse.community.athena.interface import AthenaInterface, Athena
 from amuse.units.quantities import VectorQuantity
 from amuse.units import generic_unit_system
 from amuse.units import units
+from amuse.units import generic_unit_converter
 from amuse import datamodel
 
 class TestAthenaInterface(TestWithMPI):
@@ -1093,5 +1094,51 @@ class TestAthena(TestWithMPI):
             [0.0, 0.125] | generic_unit_system.energy_density)
         instance.initialize_grid()
         instance.stop()
+    
+    
+    def test12(self): 
+        converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
+            1 | units.parsec,
+            1 | units.Myr,
+            1 | units.MSun
+        )
+        instance=self.new_instance(Athena, unit_converter = converter)
+        instance.initialize_code()
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.3)
         
+        instance.parameters.mesh_size = (10 , 20, 40)
+        instance.parameters.mesh_length = [1.0, 1.0, 1.0] | units.parsec
+        instance.parameters.x_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.y_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.z_boundary_conditions = ("periodic", "periodic")
+        
+        instance.commit_parameters()
+        
+        density = units.MSun / (units.parsec ** 3)
+        momentum =  units.MSun / (units.Myr * units.parsec ** 2 )
+        energy =  units.MSun / (units.parsec * units.Myr ** 2)
+        
+        grid = datamodel.Grid.create((10,20,40), [1.0, 1.0, 1.0] | units.parsec )
+        
+        grid.rho = 0.4 | density
+        grid.rhovx = 0.1 | momentum
+        grid.rhovy = 0.2 | momentum
+        grid.rhovz = 0.3 | momentum
+        grid.energy = 0.5 | energy
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+        print instance.grid[0].rho
+        self.assertAlmostRelativeEquals(instance.grid[0].rho, 0.4 | density)
+        self.assertAlmostRelativeEquals(instance.grid[0].rhovx,  0.1 | momentum)
+        self.assertAlmostRelativeEquals(instance.grid[0].rhovy,  0.2 | momentum)
+        self.assertAlmostRelativeEquals(instance.grid[0].rhovz,  0.3 | momentum)
+        self.assertAlmostRelativeEquals(instance.grid[0].energy,  0.5 | energy)
+        self.assertEquals(instance.grid.rho.number.ndim, 3)
+        
+        self.assertEquals(len(list(instance.itergrids())), 1)
+        
+        instance.stop()
+
         

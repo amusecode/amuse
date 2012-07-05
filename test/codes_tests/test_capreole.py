@@ -7,6 +7,8 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.capreole.interface import CapreoleInterface
 from amuse.community.capreole.interface import Capreole
 from amuse.units import generic_unit_system
+from amuse.units import generic_unit_converter
+from amuse.units import units
 from amuse import datamodel
 class TestMPIInterface(TestWithMPI):
     
@@ -425,6 +427,51 @@ class TestCapreole(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.grid.rhovx, grid.rho *  instance.model_time * acc_grid.ax,2);
         self.assertAlmostRelativeEquals(instance.grid.rhovy, grid.rho *  instance.model_time * acc_grid.ay,2);
         self.assertAlmostRelativeEquals(instance.grid.rhovz, grid.rho *  instance.model_time * acc_grid.az,2);
+        instance.stop()
+    
+    def test4(self):
+        converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
+            1 | units.parsec,
+            1 | units.Myr,
+            1 | units.MSun
+        )
+        instance=self.new_instance(Capreole, unit_converter = converter)
+        instance.initialize_code()
+        instance.parameters.mesh_size = (3,3,3)
+        instance.parameters.length_x = 1.0 | units.parsec
+        instance.parameters.length_y = 1.0 | units.parsec
+        instance.parameters.length_z = 1.0 | units.parsec
+        instance.parameters.x_boundary_conditions = "periodic","periodic"
+        instance.parameters.y_boundary_conditions = "periodic","periodic"
+        instance.parameters.z_boundary_conditions = "periodic","periodic"
+        
+        instance.commit_parameters()
+        density = units.MSun / (units.parsec ** 3)
+        grid = datamodel.Grid(3,3,3)
+        grid.rho = 0.1 | density
+        grid.rhovx = 0.0 | units.MSun / (units.Myr * units.parsec ** 2 )
+        grid.rhovy = 0.0 | units.MSun / (units.Myr * units.parsec ** 2 )
+        grid.rhovz = 0.0 | units.MSun / (units.Myr * units.parsec ** 2 )
+        grid.energy = 1.0 | units.MSun / (units.parsec * units.Myr ** 2)
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+            
+        result = instance.initialize_grid()
+        
+        print instance.grid[1].rho
+        self.assertAlmostRelativeEquals(instance.grid[1][1][0].rho, 0.1 | density)
+        for x in instance.grid[1].rho.value_in(density).flatten():
+            self.assertAlmostRelativeEquals(x, 0.1)
+            
+        instance.evolve_model(1.0 | units.Myr)
+        
+        for x in instance.grid.rho.value_in(density).flatten():
+            self.assertAlmostRelativeEquals(x, 0.1)
+    
+        instance.evolve_model(10.0 | units.Myr)
+        for x in instance.grid.rho.value_in(density).flatten():
+            self.assertAlmostRelativeEquals(x, 0.1)
         instance.stop()
     
     

@@ -23,10 +23,11 @@ class AbstractGrid(AbstractSet):
             return self._convert_to_entities_or_quantities(self.get_values_in_store(key, [attribute])[0])
             
     def _set_value_of_attribute(self, key, attribute, value):             
-	        if attribute in self._derived_attributes: 	 	 
-	            return self._derived_attributes[attribute].set_value_for_entity(self, key, value) 	 	 
-	        else: 	 	 
-	            return self.set_values_in_store(key, [attribute], value)
+        if attribute in self._derived_attributes: 	 	 
+            return self._derived_attributes[attribute].set_value_for_entity(self, key, value) 	 	 
+        else:
+            return self.set_values_in_store(key, [attribute], value)
+            
     def _get_values_for_entity(self, key, attributes):
         return self.get_values_in_store(key, attributes)
         

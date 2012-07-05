@@ -152,6 +152,8 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
             result = attribute #UnitsConvertionMethod(attribute, self.converter)
         elif isinstance(attribute, datamodel.AbstractParticleSet):
             result = attribute #datamodel.ParticlesWithUnitsConverted(attribute, self.converter)
+        elif isinstance(attribute, datamodel.AbstractGrid):
+            result = attribute 
         elif isinstance(attribute, quantities.Quantity):
             result = self.converter.from_target_to_source(attribute)
         elif isinstance(attribute, CodeMethodWrapper):
