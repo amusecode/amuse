@@ -189,5 +189,7 @@ class JobServer(object):
     
     def __del__(self):
       self.waitall()
+      if self.job_list:
+        print "Warning: unfinished jobs in JobServer"
       for code in self.idle_codes:
         code.stop()
