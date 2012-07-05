@@ -29,6 +29,7 @@ import cPickle as pickle
 from amuse.rfi.channel import AsyncRequestsPool
 import inspect
 from collections import deque
+import threading
 
 def dump_and_encode(x):
   return pickle.dumps(x,0)
@@ -115,26 +116,32 @@ class JobServer(object):
       self.channel_type=channel_type
       self.retry_jobs=retry_jobs
       self._finished_jobs=deque()
-      print "connecting hosts",
-      i=0
+      print "connecting %i hosts"%len(hosts),
+      threads=[]
       for host in hosts:
-        i+=1; print i,
-        try: 
-          code=CodeInterface(channel_type=self.channel_type,
-                                             hostname=host,
-                                             copy_worker_code=True,redirection="none") 
-        except Exception as ex:
-          print
-          print "startup failed on", host
-          print ex
-        else:
-          self.idle_codes.append(code)
-      print
+        kwargs=dict( channel_type=self.channel_type,hostname=host,
+                     copy_worker_code=True,redirection="none" )
+        threads.append( threading.Thread(target=self._startup,kwargs=kwargs) )
+      for thread in threads:
+        thread.start()
+      print "... waiting"
+      for thread in threads:
+        thread.join()               
       if preamble is not None:
         for code in self.idle_codes:
           code.exec_(preamble)          
       self.pool=AsyncRequestsPool()
-      print "AMUSE JobServer launched with", len(self.idle_codes),"threads"
+      print "\nAMUSE JobServer launched with", len(self.idle_codes),"threads"
+    
+    def _startup(self, *args,**kwargs):
+      try: 
+        code=CodeInterface(*args,**kwargs) 
+      except Exception as ex:
+        print
+        print "startup failed on", kwargs['hostname']
+        print ex
+      else:
+          self.idle_codes.append(code)      
     
     def submit_job(self,f,args=(),kwargs={}):
       job=Job(f,args,kwargs)
