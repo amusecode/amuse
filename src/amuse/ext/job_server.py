@@ -116,21 +116,25 @@ class JobServer(object):
       self.channel_type=channel_type
       self.retry_jobs=retry_jobs
       self._finished_jobs=deque()
-      print "connecting %i hosts"%len(hosts),
-      threads=[]
-      for host in hosts:
-        kwargs=dict( channel_type=self.channel_type,hostname=host,
-                     copy_worker_code=True,redirection="none" )
-        threads.append( threading.Thread(target=self._startup,kwargs=kwargs) )
-      for thread in threads:
-        thread.start()
-      print "... waiting"
-      for thread in threads:
-        thread.join()               
-      if preamble is not None:
-        for code in self.idle_codes:
-          code.exec_(preamble)          
+      self.preamble=preamble
       self.pool=AsyncRequestsPool()
+
+      print "connecting %i hosts"%len(hosts),
+      if channel_type=="mpi":
+        for host in hosts:
+          self._startup( channel_type=self.channel_type,hostname=host,
+                           copy_worker_code=True,redirection="none" )
+      else:  
+        threads=[]
+        for host in hosts:
+          kwargs=dict( channel_type=self.channel_type,hostname=host,
+                         copy_worker_code=True,redirection="none" )
+          threads.append( threading.Thread(target=self._startup,kwargs=kwargs) )
+        for thread in threads:
+          thread.start()
+        print "... waiting"
+        for thread in threads:
+          thread.join()               
       print "\nAMUSE JobServer launched with", len(self.idle_codes),"threads"
     
     def _startup(self, *args,**kwargs):
@@ -141,7 +145,9 @@ class JobServer(object):
         print "startup failed on", kwargs['hostname']
         print ex
       else:
-          self.idle_codes.append(code)      
+        if self.preamble is not None:
+          code.exec_(self.preamble)          
+        self.idle_codes.append(code)      
     
     def submit_job(self,f,args=(),kwargs={}):
       job=Job(f,args,kwargs)
