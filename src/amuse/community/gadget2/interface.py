@@ -1195,7 +1195,7 @@ class Gadget2Doc(object):
 
 class Gadget2(GravitationalDynamics):
     
-    NoConverter = Object()
+    NoConverter = object()
     
     __doc__ = Gadget2Doc()
     
