@@ -2077,6 +2077,10 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     
     def unconverted_set(self):
         return self._private.particles
+    
+    
+    def can_extend_attributes(self):
+        return self._private.particles.can_extend_attributes()
         
     def add_particles_to_store(self, keys, attributes = [], values = []):
         converted_values = []
