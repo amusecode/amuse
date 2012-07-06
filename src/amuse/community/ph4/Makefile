@@ -83,6 +83,6 @@ ph4_worker_gpu_sockets: worker_code-sockets.cc interface.h $(CODELIB_GPU) $(OBJS
 
 clean:
 	$(RM) -r -f *.so *.dSYM *.o *.mpio *.pyc worker_code.cc interface.h 
-	$(RM) -f *~ ph4_worker ph4_worker_gpu  ph4_worker_sockets worker_code.cc
-	$(RM) -f worker_code-sockets.cc
+	$(RM) -f *~ ph4_worker ph4_worker_gpu ph4_worker_sockets ph4_worker_gpu_sockets
+	$(RM) -f worker_code.cc worker_code-sockets.cc
 	make -C src clean
