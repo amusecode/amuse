@@ -114,11 +114,10 @@ class Job(object):
       self.err=None
 
 class JobServer(object):
-    def __init__(self,hosts,channel_type="mpi",preamble=None, retry_jobs=True, no_wait=True):
-      self.hosts=hosts
+    def __init__(self,hosts=[],channel_type="mpi",preamble=None, retry_jobs=True, no_wait=True):
+      self.hosts=[]
       self.job_list=deque()
       self.idle_codes=[]
-      self.channel_type=channel_type
       self.retry_jobs=retry_jobs
       self._finished_jobs=deque()
       self.preamble=preamble
@@ -128,23 +127,28 @@ class JobServer(object):
       self.no_wait=no_wait
       self.last_finished_job=None
 
+      self.add_hosts(hosts=hosts,channel_type=channel_type)
+      
+   
+    def add_hosts(self,hosts=[],channel_type="mpi"):
+      self.hosts.append(hosts)
       print "JobServer: connecting %i hosts"%len(hosts),
       if channel_type=="mpi":
         for host in hosts:
           self.number_starting_codes+=1
-          self._startup( channel_type=self.channel_type,hostname=host,
+          self._startup( channel_type=channel_type,hostname=host,
                            copy_worker_code=True,redirection="none" )
       else:  
         threads=[]
         for host in hosts:
-          kwargs=dict( channel_type=self.channel_type,hostname=host,
+          kwargs=dict( channel_type=channel_type,hostname=host,
                          copy_worker_code=True,redirection="none" )
           threads.append( threading.Thread(target=self._startup,kwargs=kwargs) )
         for thread in threads:
           self.number_starting_codes+=1
           thread.daemon=True
           thread.start()
-        if not no_wait:  
+        if not self.no_wait:  
           print "... waiting"
           for thread in threads:
             thread.join()
@@ -152,7 +156,7 @@ class JobServer(object):
           print "... waiting for first available host"
           while self.number_available_codes==0 and self.number_starting_codes>0:
             sleep(0.1)
-      if no_wait:
+      if self.no_wait:
         print "\nAMUSE JobServer launched"
       else:    
         print "\nAMUSE JobServer launched with", len(self.idle_codes),"hosts"
