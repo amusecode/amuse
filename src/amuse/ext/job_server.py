@@ -21,15 +21,20 @@ wait for all to finish, loop over all:
 it is essential that the function which are to be executed remotely are pickleable, i.e. they must not be 
 derived from the main module. Easy way to achieve this is to import them from a seperate file.    
 
+2 issues to be fixed:
+ - blocking startup of hosts may prevent threads shutting down, leading to freeze at end of script
+   (so manual kill necessary) 
+ - thread function _startup contains references to JobServer, hence del jobserver will actually not be called
+   until the situation of issue 1 is resolved (so the warning given there is useless) 
+
 """
-
-
 from amuse.rfi.core import *
 import cPickle as pickle
 from amuse.rfi.channel import AsyncRequestsPool
 import inspect
 from collections import deque
 import threading
+from time import sleep
 
 def dump_and_encode(x):
   return pickle.dumps(x,0)
@@ -104,12 +109,12 @@ class Job(object):
       self.f=f
       self.args=args
       self.kwargs=kwargs
-      self._result=None
+      self.result=None
       self.request=None
       self.err=None
 
 class JobServer(object):
-    def __init__(self,hosts,channel_type="mpi",preamble=None, retry_jobs=True):
+    def __init__(self,hosts,channel_type="mpi",preamble=None, retry_jobs=True, no_wait=True):
       self.hosts=hosts
       self.job_list=deque()
       self.idle_codes=[]
@@ -118,10 +123,15 @@ class JobServer(object):
       self._finished_jobs=deque()
       self.preamble=preamble
       self.pool=AsyncRequestsPool()
+      self.number_available_codes=0
+      self.number_starting_codes=0
+      self.no_wait=no_wait
+      self.last_finished_job=None
 
-      print "connecting %i hosts"%len(hosts),
+      print "JobServer: connecting %i hosts"%len(hosts),
       if channel_type=="mpi":
         for host in hosts:
+          self.number_starting_codes+=1
           self._startup( channel_type=self.channel_type,hostname=host,
                            copy_worker_code=True,redirection="none" )
       else:  
@@ -131,23 +141,42 @@ class JobServer(object):
                          copy_worker_code=True,redirection="none" )
           threads.append( threading.Thread(target=self._startup,kwargs=kwargs) )
         for thread in threads:
+          self.number_starting_codes+=1
+          thread.daemon=True
           thread.start()
-        print "... waiting"
-        for thread in threads:
-          thread.join()               
-      print "\nAMUSE JobServer launched with", len(self.idle_codes),"threads"
+        if not no_wait:  
+          print "... waiting"
+          for thread in threads:
+            thread.join()
+        else:
+          print "... waiting for first available host"
+          while self.number_available_codes==0 and self.number_starting_codes>0:
+            sleep(0.1)
+      if no_wait:
+        print "\nAMUSE JobServer launched"
+      else:    
+        print "\nAMUSE JobServer launched with", len(self.idle_codes),"hosts"
     
     def _startup(self, *args,**kwargs):
       try: 
         code=CodeInterface(*args,**kwargs) 
       except Exception as ex:
-        print
-        print "startup failed on", kwargs['hostname']
+        self.number_starting_codes-=1
+        print "JobServer: startup failed on", kwargs['hostname']
         print ex
       else:
         if self.preamble is not None:
-          code.exec_(self.preamble)          
+          code.exec_(self.preamble)
         self.idle_codes.append(code)      
+        self.number_available_codes+=1
+        if self.no_wait:
+          if self.number_available_codes & (self.number_available_codes-1) ==0:
+            print "JobServer:",self.number_available_codes,"hosts now available" 
+          self.number_starting_codes-=1
+          if self.number_starting_codes==0:
+            print "JobServer: in total", self.number_available_codes,"hosts available" 
+        if self.job_list: 
+          self._add_job(self.job_list.popleft(), self.idle_codes.pop())        
     
     def submit_job(self,f,args=(),kwargs={}):
       job=Job(f,args,kwargs)
@@ -158,23 +187,24 @@ class JobServer(object):
 
     def wait(self):
       if self._finished_jobs:
+        self.last_finished_job=self._finished_jobs.popleft()
         return True
-      elif len(self.pool)==0:
+      elif len(self.pool)==0 and not self.job_list:
         return False
       else:
+        while len(self.pool)==0 and self.job_list:
+          sleep(0.1)
+          if self.number_available_codes>0:
+            raise Exception("JobServer: this should not happen")    
+          if self.number_starting_codes==0:
+            raise Exception("JobServer: no codes available")
         self.pool.wait()
+        self.last_finished_job=self._finished_jobs.popleft()
         return True
 
     def waitall(self):
-      while len(self.pool)>0:
+      while len(self.pool)>0 or self.job_list:
         self.pool.wait()
-
-    @property
-    def last_finished_job(self):
-      if self._finished_jobs:
-        return self._finished_jobs.popleft()
-      else:
-        return None
     
     @property
     def finished_jobs(self):
@@ -189,6 +219,7 @@ class JobServer(object):
         if self.retry_jobs:
           self.job_list.append( job)
         del code
+        self.number_available_codes-=1
       else:
         if self.job_list:
           self._add_job( self.job_list.popleft(), code)
@@ -203,6 +234,8 @@ class JobServer(object):
     def __del__(self):
       self.waitall()
       if self.job_list:
-        print "Warning: unfinished jobs in JobServer"
+        print "JobServer: Warning: unfinished jobs"
       for code in self.idle_codes:
         code.stop()
+      if self.number_starting_codes>0:
+        print "JobServer: Warning: some hosts startup threads possibly blocking"
