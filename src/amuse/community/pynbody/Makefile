@@ -47,6 +47,6 @@ clean:
 	rm -f *.pyc; (cd PyNbody; python setup.py clean -a)
 	rm -f pynbody_worker pynbody_worker_sockets
 
-clean_all:
+distclean: clean
 	rm -f *.pyc; rm -rf PyNbody
 

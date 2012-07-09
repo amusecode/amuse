@@ -21,8 +21,10 @@ all: mikkola_worker
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ worker_code worker_code.f90
+	$(RM) *~ worker_code worker_code.f90 *.mod mikkola_worker
 	make -C src clean
+
+distclean: clean
 
 $(CODELIB):
 	make -C src all

@@ -23,7 +23,7 @@ all: mmc_worker
 clean:
 	$(RM) -f *.o *.pyc worker_code.f90  
 	$(RM) -f *~ worker_code worker_code.f90 interface.f90
-	$(RM) -f *.tmp
+	$(RM) -f *.tmp mmc_worker
 	$(RM) $(MMC_DATA_DIR)/*.dat
 	$(RM) -f mmc.mod
 	$(RM) -f src/amuse_interface2.f
