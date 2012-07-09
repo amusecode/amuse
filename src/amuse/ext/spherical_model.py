@@ -33,13 +33,12 @@ class EnclosedMassInterpolator(object):
         self.enclosed_mass = self.four_thirds_pi * self.enclosed_mass
     
     def get_index(self, value, sorted_vector):
-        value = value.value_in(sorted_vector.unit)
-        out_of_bounds = numpy.logical_or(sorted_vector.number[0] > value, value > sorted_vector.number[-1])
+        out_of_bounds = numpy.logical_or(sorted_vector[0] > value, value > sorted_vector[-1])
         if out_of_bounds.any():
-            value = numpy.compress(numpy.array([out_of_bounds]).flatten(), value) | sorted_vector.unit
+            value = numpy.compress(numpy.array([out_of_bounds]).flatten(), value.number) | value.unit
             raise AmuseException("Can't find a valid index. {0} is not in "
                 "the range [{1}, {2}].".format(value, sorted_vector[0], sorted_vector[-1]))
-        index = numpy.searchsorted(sorted_vector.number, value)
+        index = numpy.searchsorted(sorted_vector.number, value.value_in(sorted_vector.unit))
         return numpy.maximum(index - 1, 0)
     
     def get_enclosed_mass(self, radius):
