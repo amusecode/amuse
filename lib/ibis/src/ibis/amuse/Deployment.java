@@ -163,7 +163,7 @@ public class Deployment {
         Resource result;
 
         do {
-            if (nextMachine < 1 || nextMachine > resources.length) {
+            if (nextMachine < 1 || nextMachine >= resources.length) {
                 nextMachine = 0;
             }
             result = resources[nextMachine++];
