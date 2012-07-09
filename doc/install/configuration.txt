@@ -1,0 +1,107 @@
+=================
+Configuring AMUSE
+=================
+
+Introduction
+~~~~~~~~~~~~
+In AMUSE a configuration script is used to for two purposes; to run 
+on different operating systems and to set compile time options. The 
+AMUSE framework has been built on Linux, AIX and OS X systems, it 
+also runs on Windows. AMUSE can be configured to run with or without 
+MPI, GPU (CUDA) and openmp. In this document we will provide a short 
+overview of the configuration options and their effects.
+
+
+Basic
+~~~~~
+The basic configuration of AMUSE uses MPI as the communication 
+channel, does not build any GPU enabled codes (or GPU enabled 
+versions) and uses openmp if available.  The configuration script
+can be run as::
+
+    > ./configure
+    
+To get a list of options and important environment variablse run 
+```configure``` with the help flag::
+
+    > ./configure --help
+    
+A very important variable for the configuration script is the 
+location of the python executable. The python executable is searched 
+for in the PATH and you can override it by setting the ```PYTHON``` 
+environment variable::
+
+    > ./configure PYTHON=/path/to/libraries/python
+ 
+The configuration script will look for dependent libraries in 
+default locations of the system and, if defined, also in directories 
+under the ```PREFIX``` environment variable. If you installed the 
+prerequisites with the AMUSE installion scripts (see 
+:doc:`howto-install-prerequisites`), the configuration script should 
+find all the packages installed. For most libraries the 
+```PREFIX/lib``` or ```PREFIX/lib64``` is searched before the system 
+path. You can override the ```PREFIX``` environment variable::
+   
+    > ./configure PREFIX=/path/to/libraries/root
+
+GPU
+~~~
+
+Currently all codes in AMUSE capable of using the GPU are based 
+on CUDA. To run these codes you will need CUDA libraries and drivers.
+Once these have been installed you can run configure like so::
+
+    > ./configure --enable-cuda
+
+The configuration script will look for the ```nvcc``` compiler and the 
+cuda libraries, in well known paths. Unfortunately it often will not find
+the cuda tools and you have to specify the some environment variables or
+configuration options. 
+
+If the configuration script cannot find the nvcc compiler (or if it 
+finds the wrong one) you can specify the nvcc compiler with the 
+```NVCC``` environment variable::
+
+    > ./configure --enable-cuda NVCC=/path/to/nvcc
+    
+The configure script also searches for the nvcc compiler in the 
+```$CUDA_TK/bin``` directory::
+
+    > ./configure --enable-cuda CUDA_TK=/opt/nvidia
+    
+The configure script looks for cuda and cudart libraries in 
+```$NVCC/../lib``` or ```$NVCC/../lib64```, if your libraries cannot 
+be found there you can override the library path with::
+
+    > ./configure --enable-cuda --with-cuda-libdirs=/path/to/cuda/lib
+    
+Using ```--with-cuda-libdirs``` will always override the local 
+search paths and should also work if you have an old version of cuda 
+in ```/usr/lib```.
+
+Finally, if all else fails, you can edit the ```config.mk``` file 
+after configure has finished. The important variables in the file are:
+
+ * CUDA_ENABLED, valid values are "yes" or "no".
+ * NVCC, absolute path to the nvcc executable.
+ * CUDA_TK, directory of the cuda toolkit installation
+ * CUDA_LIBS, library flags the add in the linking stage (-L/path -lcuda -lcudart)
+ 
+Please remember that the ```config.mk``` file is overwritten 
+every time configure is run.
+
+Sapporo library version
+-----------------------
+ 
+The Sapporo library will be build when CUDA is enabled. The Sapporo 
+library implements the GRAPE6 API on GPU hardware. AMUSE is shipped 
+with two versions of the Sapporo library:
+
+ * An older version ```sapporo_light``` that runs on most CUDA devices but is not maintained any longer
+ * The latests version ```sapporo``` that runs on modern GPU harware. This version should also run on 
+   OpenCL devices but this is still a work in progress.
+
+By default AMUSE will use the older ```sapporo_light``` version, to enable
+the latests version do::
+
+    > ./configure --enable-cuda --enable-sapporo2
