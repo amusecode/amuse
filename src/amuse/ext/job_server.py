@@ -114,7 +114,8 @@ class Job(object):
       self.err=None
 
 class JobServer(object):
-    def __init__(self,hosts=[],channel_type="mpi",preamble=None, retry_jobs=True, no_wait=True):
+    def __init__(self,hosts=[],channel_type="mpi",preamble=None, retry_jobs=True, 
+                   no_wait=True,verbose=True):
       self.hosts=[]
       self.job_list=deque()
       self.idle_codes=[]
@@ -126,13 +127,17 @@ class JobServer(object):
       self.number_starting_codes=0
       self.no_wait=no_wait
       self.last_finished_job=None
+      self.verbose=verbose
+      if self.verbose:
+          print "AMUSE JobServer launching"
 
       self.add_hosts(hosts=hosts,channel_type=channel_type)
       
    
     def add_hosts(self,hosts=[],channel_type="mpi"):
       self.hosts.append(hosts)
-      print "JobServer: connecting %i hosts"%len(hosts),
+      if self.verbose:
+        print "JobServer: connecting %i hosts"%len(hosts),
       if channel_type=="mpi":
         for host in hosts:
           self.number_starting_codes+=1
@@ -149,17 +154,21 @@ class JobServer(object):
           thread.daemon=True
           thread.start()
         if not self.no_wait:  
-          print "... waiting"
+          if self.verbose:
+            print "... waiting"
           for thread in threads:
             thread.join()
         else:
-          print "... waiting for first available host"
+          if self.verbose:
+            print "... waiting for first available host"
           while self.number_available_codes==0 and self.number_starting_codes>0:
             sleep(0.1)
       if self.no_wait:
-        print "\nAMUSE JobServer launched"
+        if self.verbose:
+          print "JobServer: launched"
       else:    
-        print "\nAMUSE JobServer launched with", len(self.idle_codes),"hosts"
+        if self.verbose:
+          print "JobServer: launched with", len(self.idle_codes),"hosts"
     
     def _startup(self, *args,**kwargs):
       try: 
@@ -171,18 +180,24 @@ class JobServer(object):
       else:
         if self.preamble is not None:
           code.exec_(self.preamble)
-        self.idle_codes.append(code)      
+        self.idle_codes.append(code)   
+           
         self.number_available_codes+=1
         if self.no_wait:
           if self.number_available_codes & (self.number_available_codes-1) ==0:
-            print "JobServer:",self.number_available_codes,"hosts now available" 
+            if self.verbose:
+              print "JobServer: hosts now available:",self.number_available_codes
           self.number_starting_codes-=1
           if self.number_starting_codes==0:
-            print "JobServer: in total", self.number_available_codes,"hosts available" 
+            if self.verbose:
+              print "JobServer: hosts in total:", self.number_available_codes
         if self.job_list: 
           self._add_job(self.job_list.popleft(), self.idle_codes.pop())        
     
     def submit_job(self,f,args=(),kwargs={}):
+      if len(self.pool)==0 and not self.job_list:
+        if self.verbose:
+          print "JobServer: submitting first job on queue"
       job=Job(f,args,kwargs)
       self.job_list.append( job)
       if self.idle_codes: 
@@ -194,6 +209,8 @@ class JobServer(object):
         self.last_finished_job=self._finished_jobs.popleft()
         return True
       elif len(self.pool)==0 and not self.job_list:
+        if self.verbose:
+          print "JobServer: no more jobs on queue or running"        
         return False
       else:
         while len(self.pool)==0 and self.job_list:
@@ -227,8 +244,11 @@ class JobServer(object):
       else:
         if self.job_list:
           self._add_job( self.job_list.popleft(), code)
+          if not self.job_list:
+            if self.verbose:
+              print "JobServer: last job dispatched"
         else:
-          self.idle_codes.append(code)  
+          self.idle_codes.append(code)
       self._finished_jobs.append(job)
     
     def _add_job(self,job,code):
