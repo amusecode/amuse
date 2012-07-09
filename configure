@@ -1469,7 +1469,7 @@ Optional Packages:
   --with-jdk=PATH         Try to use 'PATH/include' to find the JNI headers.
                           If PATH is not specified, look for a Java
                           Development Kit at JAVA_HOME.
-  --with-cuda-libdir=PFX   Directory where libcuda.so is installed (optional)
+   --with-cuda-libdir=PFX   Directory where libcuda.so is installed (optional)
   --with-sapporo          Use sapporo library in given directory
   --with-opencl=PFX       Prefix where OpenCl has been installed
   --with-fftw=PFX         Prefix where FFTW has been installed
@@ -5285,7 +5285,7 @@ fi
 if test "${with_cuda_libdir+set}" = set; then :
   withval=$with_cuda_libdir; cuda_libdir="$withval"
 else
-  cuda_libdir="."
+  cuda_libdir="no"
 fi
 
 
@@ -5307,7 +5307,7 @@ else
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy="$PATH:/usr/local/cuda/cuda/bin:/usr/local/cuda/bin:$CUDA_TK/bin:/opt/cuda/cuda/bin:/opt/cuda/bin
+as_dummy="$CUDA_TK/bin:$PATH:/usr/local/cuda/cuda/bin:/usr/local/cuda/bin:/opt/cuda/cuda/bin:/opt/cuda/bin
         "
 for as_dir in $as_dummy
 do
@@ -5438,7 +5438,7 @@ $as_echo_n "checking directories for -lcudart... " >&6; }
     if eval \${ac_cv_lib_$ac_lib_var+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  for dir in "" $CUDA_TK/lib $CUDA_TK/lib64
+  for dir in  "" $CUDA_TK/lib64 $CUDA_TK/lib
     do
         ac_cache_save_LIBS="$LIBS"
         if test "X$dir" = "X"; then
@@ -5502,6 +5502,12 @@ $as_echo "not found" >&6; }
         save_LIBS="$LIBS"
         CUDA_PATH=
         CUDA_LIBS=''
+	if test x"$cuda_libdir" != xno; then :
+
+            CUDA_LIBS="-L$cuda_libdir -lcuda $CUDART_LIBS"
+
+else
+
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking directories for -lcuda" >&5
 $as_echo_n "checking directories for -lcuda... " >&6; }
     #
@@ -5513,7 +5519,7 @@ $as_echo_n "checking directories for -lcuda... " >&6; }
     if eval \${ac_cv_lib_$ac_lib_var+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  for dir in "" $cuda_libdir /usr/lib /usr/lib64 /usr/lib/nvidia /usr/lib64/nvidia /usr/lib/nvidia-current /usr/lib64/nvidia-current $CUDA_TK/lib $CUDA_TK/lib64
+  for dir in  "" $CUDA_TK/lib64 $CUDA_TK/lib /usr/lib64 /usr/lib /usr/lib64/nvidia /usr/lib/nvidia /usr/lib/nvidia-current /usr/lib64/nvidia-current
     do
         ac_cache_save_LIBS="$LIBS"
         if test "X$dir" = "X"; then
@@ -5574,6 +5580,7 @@ $as_echo "not found" >&6; }
 
         LIBS="$save_LIBS"
 
+fi
 
 fi
 

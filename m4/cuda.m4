@@ -27,8 +27,10 @@ AC_DEFUN([AX_CUDA],[
 	]
     )
     AC_ARG_WITH(
-        cuda-libdir, [  --with-cuda-libdir=PFX   Directory where libcuda.so is installed (optional)],
-            cuda_libdir="$withval", cuda_libdir=".")
+        cuda-libdir, 
+        [   --with-cuda-libdir=PFX   Directory where libcuda.so is installed (optional)],
+        cuda_libdir="$withval", 
+        cuda_libdir="no")
             
     AC_ARG_VAR([CUDA_TK], [CUDA toolkit directory])
 
@@ -38,7 +40,7 @@ AC_DEFUN([AX_CUDA],[
         [NVCC], 
         nvcc,
         [no],
-        $PATH:/usr/local/cuda/cuda/bin:/usr/local/cuda/bin:$CUDA_TK/bin:/opt/cuda/cuda/bin:/opt/cuda/bin
+        $CUDA_TK/bin:$PATH:/usr/local/cuda/cuda/bin:/usr/local/cuda/bin:/opt/cuda/cuda/bin:/opt/cuda/bin
         )
         
         
@@ -56,8 +58,7 @@ AC_DEFUN([AX_CUDA],[
         
         
         AC_CHECK_FILE([$CUDA_TK/lib], [],
-        [AC_MSG_ERROR([cuda toolkit path is incorrect, must have lib directory])], 
-        [])
+        [AC_MSG_ERROR([cuda toolkit path is incorrect, must have lib directory])])
         
         
         
@@ -67,7 +68,7 @@ AC_DEFUN([AX_CUDA],[
         AC_FIND_LIB(
             [cudart],
             [main],
-            [$CUDA_TK/lib $CUDA_TK/lib64],
+            [$CUDA_TK/lib64 $CUDA_TK/lib],
             [CUDART_LIBS=$LIBS],
             [AC_MSG_ERROR([cannot find cuda runtime libraries in $CUDA_TK/lib $CUDA_TK/lib64])]
         )
@@ -76,15 +77,18 @@ AC_DEFUN([AX_CUDA],[
         save_LIBS="$LIBS"
         CUDA_PATH=[]
         CUDA_LIBS=''
+	AS_IF([test x"$cuda_libdir" != xno],[
+            CUDA_LIBS="-L$cuda_libdir -lcuda $CUDART_LIBS"
+	],[
         AC_FIND_LIB(
             [cuda],
             [main],
-            [$cuda_libdir /usr/lib /usr/lib64 /usr/lib/nvidia /usr/lib64/nvidia /usr/lib/nvidia-current /usr/lib64/nvidia-current $CUDA_TK/lib $CUDA_TK/lib64],
+            [$CUDA_TK/lib64 $CUDA_TK/lib /usr/lib64 /usr/lib /usr/lib64/nvidia /usr/lib/nvidia /usr/lib/nvidia-current /usr/lib64/nvidia-current ],
             [CUDA_LIBS="$LIBS $CUDART_LIBS"],
             [AC_MSG_ERROR([cannot find cuda library])]
         )
         LIBS="$save_LIBS"
-       
+       ])
     ])
 
     AC_SUBST(WITH_CUDA)
