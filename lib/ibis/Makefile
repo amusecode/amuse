@@ -1,7 +1,7 @@
 AMUSE_DIR?=../..
 -include ${AMUSE_DIR}/config.mk
 
-VERSION = -20120328-snapshot
+VERSION = -20120709-snapshot
 
 CODEDIR = deploy${VERSION}
 DOWNLOAD_FROM_WEB = ./downloadhttp.py

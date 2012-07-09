@@ -7,7 +7,7 @@ import time
 import urllib
 
 class DownloadIbisDeployFromWebpage(object):
-    url_template = "http://www.cs.vu.nl/ibis/downloads/deploy{version}.zip"
+    url_template = "http://www.cs.vu.nl/~niels/downloads/deploy{version}.zip"
     filename_template = "deploy{version}.zip"
     unpacked_dir_template = "deploy{version}"
     version = ""
