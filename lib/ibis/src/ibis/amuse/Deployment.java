@@ -36,7 +36,7 @@ public class Deployment {
     private final File amuseHome;
     private final File ibisDir;
     private final File logDir;
-    
+
     private final int runtime;
 
     public Deployment(boolean verbose, boolean keepSandboxes, boolean useGui, boolean useHubs, File[] jungleFiles,
@@ -160,11 +160,38 @@ public class Deployment {
             return resources[0];
         }
 
-        if (nextMachine < 1 || nextMachine > resources.length) {
-            nextMachine = 1;
+        Resource result;
+
+        do {
+            result = resources[nextMachine++];
+            if (nextMachine < 1 || nextMachine > resources.length) {
+                nextMachine = 0;
+            }
+        } while (result.getName().equals("local"));
+
+        return result;
+    }
+
+    /**
+     * Return a random machine. Will not return local local unless there is only
+     * one machine
+     * 
+     * @return a resource selected at random
+     */
+    private synchronized Resource getRandomMachine() {
+        Resource[] resources = jungle.getResources();
+
+        if (resources.length == 0) {
+            return null;
+        } else if (resources.length == 1) {
+            return resources[0];
         }
 
-        Resource result = resources[nextMachine++];
+        Resource result;
+        do {
+            int selected = (int) (Math.random() * resources.length);
+            result = resources[selected];
+        } while (result.getName().equals("local"));
 
         return result;
     }
@@ -184,9 +211,12 @@ public class Deployment {
             resourceName = "local";
         }
         if (resourceName.equals("random")) {
+            resource = getRandomMachine();
+
             Resource[] resources = jungle.getResources();
             int selected = (int) (Math.random() * resources.length);
             resource = resources[selected];
+
             resourceName = resource.getName();
             logger.info("Randomly selected resource " + resourceName);
         } else if (resourceName.equals("roundrobin")) {
@@ -249,9 +279,10 @@ public class Deployment {
                 application.addInputFile(new File(codeDirFile, codeName));
 
                 if (!codeDirFile.isDirectory()) {
-                    throw new Exception("cannot copy codedir " + codeDir + " as it is not a directory, or does not exist");
+                    throw new Exception("cannot copy codedir " + codeDir
+                            + " as it is not a directory, or does not exist");
                 }
-                
+
                 for (File file : codeDirFile.listFiles()) {
                     application.addInputFile(file);
                 }
