@@ -163,10 +163,10 @@ public class Deployment {
         Resource result;
 
         do {
-            result = resources[nextMachine++];
             if (nextMachine < 1 || nextMachine > resources.length) {
                 nextMachine = 0;
             }
+            result = resources[nextMachine++];
         } while (result.getName().equals("local"));
 
         return result;
