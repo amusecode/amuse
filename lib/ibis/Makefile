@@ -58,4 +58,6 @@ clean:
 	
 distclean: clean
 	$(RM) -r deploy
+	$(RM) -r deploy-*
+	
 
