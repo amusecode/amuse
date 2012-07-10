@@ -311,7 +311,7 @@ acc=fixedhaloacc(pos)
 tide=fixedhalotidalfield(pos)
 dens=-(tide(1)+tide(4)+tide(6))/4/3.14159265358979
  r=sqrt(sum(pos**2))
- write(*,'(6g16.8)'), r,pot,acc,dens
+ write(*,'(6g16.8)')  r,pot,acc,dens
 
  call endfixedhalo
 end subroutine

@@ -3,7 +3,7 @@ include ${AMUSE_DIR}/config.mk
 
 CODELIB = libbhtree.a
 
-CXXFLAGS += -Wall -DTREE -DNOGRAPHICS 
+CXXFLAGS += -DTREE -DNOGRAPHICS 
 
 OBJ = BHTC.o nbody.o BHtree.o gravity.o pgetopt.o second.o
 

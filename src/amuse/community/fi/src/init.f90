@@ -264,7 +264,7 @@ subroutine initsys
 end subroutine
 
 subroutine ethdotinit   
-  include'globals.h'
+  include 'globals.h'
    
   if(sph_visc.EQ.'bulk') call terror(' bulk visc. not implemented ')
            

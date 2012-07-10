@@ -48,7 +48,7 @@ function heateff2( t, fuv, ne)
 end function
 
 function ffcooling(temp,p)
-  include'globals.h'
+  include 'globals.h'
   integer p
   real ffcooling,temp
   real gff,ffconst,xe
@@ -63,7 +63,7 @@ subroutine heco(heating,cooling,eth,p)
   use IonMod
   use HeatingMod
   use H2coolMod
-  include'globals.h'
+  include 'globals.h'
   real cooling,heating,eth,nh
   real ttemp,temp,xelec,grainc,h2f,xh
   real heateff,heateff2

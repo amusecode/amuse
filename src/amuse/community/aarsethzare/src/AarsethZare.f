@@ -315,7 +315,6 @@ c      TIME = (0.5D0*(SUMQP - CONST) - TAU)/ENERGY
      &                  '  R2 =',E9.1,
      &                  '  A =',E12.4,'  E =',0P,F7.3,'  NREG =',I3,
      &                  '  DE/E =',E9.1,'  DEtot/Etot =',E9.1)
-          CALL FLUSH(6)
 c
 c         copy the final parameters
           DO 85 L = 1,3

@@ -25,7 +25,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 all: $(ALL)
 
 $(CODELIB):
-	make -C src all CXX=$(MPICXX)
+	make -C src all CXX='$(MPICXX)'
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py SmallNInterface -o $@

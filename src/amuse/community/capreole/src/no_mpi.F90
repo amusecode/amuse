@@ -15,6 +15,9 @@ module my_mpi
 
   use file_admin, only: log_unit, results_dir
 
+#ifdef __IBMC__
+  USE XLFUTILITY, only: hostnm => hostnm_ , flush => flush_
+#endif
 #ifdef XLF
   USE XLFUTILITY, only: hostnm => hostnm_ , flush => flush_
 #endif

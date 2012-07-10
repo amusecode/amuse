@@ -396,7 +396,7 @@ ppos=0.
   pot=0.
   pacc=0.
   call pmgravaccpot(ppos,ppot=pot,pacc=pacc)
-  write(*,*),sqrt(sum((ppos)**2)),sqrt(sum(pacc**2))
+  write(*,*) sqrt(sum((ppos)**2)),sqrt(sum(pacc**2))
  enddo
 
 end

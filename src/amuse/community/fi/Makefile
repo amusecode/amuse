@@ -38,6 +38,7 @@ FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 
 PIC=#-fPIC
 
+F77FLAGS =
 # gfortran flags
 $(info  $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- ))
 $(info  $(findstring gfortran, $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- )))
@@ -48,6 +49,11 @@ endif
 
 ifeq ($(findstring f95, $(notdir $(FORTRAN))), f95)
 FFLAGS = $(FCFLAGS) -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
+endif
+
+ifeq ($(findstring xlf, $(notdir $(FORTRAN))), xlf)
+FFLAGS = $(FCFLAGS) -qreal-size=8 -O3 $(PIC)
+F77FLAGS += -qfixed
 endif
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
@@ -89,7 +95,7 @@ $(BUILDDIR)/Makefile:
 	
 $(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
 	-mkdir $(BUILDDIR)
-	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src 
+	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
 fi_worker: worker.f90 interface.o $(BUILDDIR)/libfi.a
 	$(MPIFC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SCLIBS)
@@ -99,7 +105,7 @@ fi_worker_sockets: worker-sockets.f90 interface.o $(BUILDDIR)/libfi.a
 	$(LIBS) $(SCLIBS) $(FSLIBS)
 
 fi_worker_gl: glworker.f90 interface.o $(BUILDDIR)/libfi.a
-	make -C $(BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src 
+	make -C $(BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 	$(MPIFC) $(FFLAGS) $(SCINC) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SCLIBS)
 
@@ -109,14 +115,14 @@ $(PERIODIC_BUILDDIR)/Makefile:
 	
 $(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile 
 	$(PYTHON) ./patch_globals_dot_h.py --periodic
-	make -C $(PERIODIC_BUILDDIR) amuse_interface FFLAGS="-I./$(PERIODIC_BUILDDIR) $(FFLAGS)" FC="$(FC)" VPATH=../src 
+	make -C $(PERIODIC_BUILDDIR) amuse_interface FFLAGS="-I./$(PERIODIC_BUILDDIR) $(FFLAGS)" FC="$(FC)" VPATH=../src   F77FLAGS="$(F77FLAGS)"
 	$(PYTHON) ./patch_globals_dot_h.py
 	
 fi_worker_periodic: worker.f90 interface.po $(PERIODIC_BUILDDIR)/libfi.a
 	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SCINC) worker.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SCLIBS) $(FFTW_LIBS)
 
 fi_worker_periodic_gl: glworker.f90 interface.po $(PERIODIC_BUILDDIR)/libfi.a
-	make -C $(PERIODIC_BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src 
+	make -C $(PERIODIC_BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 	$(MPIFC) $(FFLAGS) $(SCINC) glworker.f90 interface.po -o $@  $(PGLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SCLIBS)
 

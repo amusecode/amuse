@@ -68,7 +68,7 @@ contains
     cpu_seconds=cpu_seconds+real(cputime2-cputime1)
     cputime1=cputime2
     cpu_minutes = cpu_minutes + int(cpu_seconds) / 60
-    cpu_seconds = MOD ( cpu_seconds , 60.0 )
+    cpu_seconds = MOD ( cpu_seconds , 60.0d0 )
     cpu_hours = cpu_hours + cpu_minutes / 60
     cpu_minutes = MOD ( cpu_minutes , 60 )
     
@@ -82,7 +82,7 @@ contains
     clock_seconds=clock_seconds+real(cntr2-cntr1)/real(countspersec)
     cntr1=cntr2
     clock_minutes = clock_minutes + int(clock_seconds) / 60
-    clock_seconds = MOD ( clock_seconds , 60.0 )
+    clock_seconds = MOD ( clock_seconds , 60.0d0 )
     clock_hours = clock_hours + clock_minutes / 60
     clock_minutes = MOD ( clock_minutes , 60 )
     

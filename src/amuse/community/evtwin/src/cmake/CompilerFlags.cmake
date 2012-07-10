@@ -99,6 +99,10 @@ elseif (Fortran_COMPILER_NAME STREQUAL "ifort")
       set (LIB_FLAGS "-fPIC")
     endif (WANT_LIBRARY)
 
+elseif (Fortran_COMPILER_NAME MATCHES "xlf.*")
+   ##set (CMAKE_Fortran_FLAGS "-brename:flush,flush_")
+   set (CMAKE_Fortran_FLAGS "-qextname")
+
 else (Fortran_COMPILER_NAME STREQUAL "gfortran")
 
    message ("CMAKE_Fortran_COMPILER full path: " ${CMAKE_Fortran_COMPILER})

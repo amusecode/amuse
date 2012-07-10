@@ -40,6 +40,9 @@ module my_mpi
 #ifdef XLF
   USE XLFUTILITY, only: hostnm => hostnm_ , flush => flush_
 #endif
+#ifdef __IBMC__
+  USE XLFUTILITY, only: hostnm => hostnm_ , flush => flush_
+#endif
 
 #ifdef IFORT
   USE IFPORT, only: hostnm, flush
@@ -96,7 +99,9 @@ contains
     character(len=10) :: filename        ! name of the log file
     character(len=4) :: number
     integer :: ierror
+#ifdef SUN
     integer :: hostnm
+#endif
     character(len=100) :: hostname
  
     call mpi_basic

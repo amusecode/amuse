@@ -36,25 +36,6 @@ function internal__redirect_outputs(stdoutfile, stderrfile)
     
     call mpi_comm_rank(MPI_COMM_WORLD, mpi_rank1, mpi_err1)
     
-    if (stdoutfile .NE. 'none' ) then
-        
-        close(UNIT=6)
-        if (stdoutfile .NE. '/dev/null') then
-            write (fullname, '(A,".",I3.3)')  stdoutfile, mpi_rank1
-            open(unit=6, file=trim(fullname), access="append")
-        end if
-    end if
-    
-    if (stderrfile .NE. 'none') then
-        close(UNIT=0)
-        
-        if (stderrfile .NE. '/dev/null') then
-            write( fullname, '(A,".",I3.3)' )  stderrfile, mpi_rank1
-            open(unit=0, file=trim(fullname), access="APPEND")
-        end if
-        
-    end if
-    
     internal__redirect_outputs = 0
 end function
 """

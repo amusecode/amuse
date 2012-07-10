@@ -17,6 +17,9 @@ module protection
   use abundances, only: mu
   use atomic, only: boltzm, gamma1
   use geometry, only: presfunc
+#ifdef __IBMC__
+  USE XLFUTILITY, only: flush => flush_
+#endif
 
   implicit none
 

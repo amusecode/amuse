@@ -44,7 +44,7 @@ subroutine lnsrch(n,xold,fold,g,p,x,y,f,stpmax,check,func, fvec, fjac)
    integer :: n
    logical :: check
    real(double) :: f,fold,stpmax,g(n),p(n),x(n),y(n),xold(n),func,alf,tolx
-   real(double) :: fvec(n),fjac(n)
+   real(double) :: fvec(n),fjac(n,n)
    parameter (alf=1.d-4,tolx=3.d-16)
    external func
    ! USES func
@@ -266,10 +266,12 @@ subroutine newt2d(x,y,check, xa)
    logical :: check
    real(double) :: x(2),y(2),xa(9), tolf,tolmin,tolx,stpmx
    parameter (maxits=200,tolf=1.d-12,tolmin=1.d-12,tolx=3.d-16,stpmx=100.d0)
-   ! USES fdjac,fmin,lnsrch,lubksb,ludcmp
+   !uses fdjac,fmin,lnsrch,lubksb,ludcmp
    integer :: i,its,j,indx(2)
    real(double) :: d,den,f,fold,stpmax,sum,temp,test,fvec(2),fjac(2,2),g(2),p(2),xold(2),fmin
+   external fmin
    
+
    f=fmin(x,y,fvec,fjac, xa)
    test=0.d0
    do i=1,2

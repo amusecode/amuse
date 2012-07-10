@@ -7,6 +7,11 @@ MPIF90 ?= $(MPIFC)
 
 FORTRAN ?= gfortran
 
+F77FLAGS = 
+ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
+F77FLAGS += -qfixed
+endif
+
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
@@ -25,11 +30,11 @@ clean:
 	$(RM) -f forsockets.mod
 
 sse_worker:	worker_code.f90  SSE_muse_interface.o  $(OBJ)
-	make -C src sse CMPLR=$(FORTRAN)
+	make -C src sse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
 	$(MPIF90) -v $^ -o $@ 
 
 sse_worker_sockets: worker_code-sockets.f90  SSE_muse_interface.o  $(OBJ)
-	make -C src sse CMPLR=$(FORTRAN)
+	make -C src sse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
 	$(MPIF90) $(FSINC) $^ -o $@ $(FSLIBS) 
 
 
@@ -40,4 +45,4 @@ worker_code-sockets.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py SSEInterface -o $@
 
 .f.o: $<                                                                 
-	$(FORTRAN) -c $(FFLAGS) -o $@ $< 
+	$(FORTRAN) -c $(F77FLAGS) $(FFLAGS) -o $@ $< 

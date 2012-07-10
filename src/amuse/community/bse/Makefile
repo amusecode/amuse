@@ -3,11 +3,17 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= mpif90
+MPIFC ?= mpif90
 FORTRAN ?= gfortran
 
 FSLIB ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
 FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
+
+F77FLAGS = 
+ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
+F77FLAGS += -qfixed
+endif
+
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -31,12 +37,12 @@ clean:
 	$(RM) -f forsockets.mod
 	
 bse_worker:	worker_code.f90  BSE_code.o  $(BSEOBJ)
-	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS)"
-	$(MPIF90) $(FFLAGS) $^ -o $@ 
+	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS) $(F77FLAGS)"
+	$(MPIFC) $(FFLAGS) $^ -o $@ 
 	
 bse_worker_sockets:	worker_code-sockets.f90  BSE_code.o  $(BSEOBJ)
 	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS)"
-	$(MPIF90) $(FFLAGS) $(FSINC) $^ -o $@ $(FSLIB)
+	$(MPIFC) $(FFLAGS) $(FSINC) $^ -o $@ $(FSLIB)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py BSEInterface -o $@
@@ -45,4 +51,4 @@ worker_code-sockets.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py BSEInterface -o $@
 
 .f.o: $<
-	$(FORTRAN) -c $(FFLAGS) -o $@ $< 
+	$(FORTRAN) -c $(F77FLAGS) $(FFLAGS) -o $@ $< 

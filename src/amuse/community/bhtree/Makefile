@@ -3,7 +3,7 @@ AMUSE_DIR?=../../../..
 
 MPICXX ?= mpicxx
 
-CFLAGS   += -Wall -g -fPIC -DTOOLBOX  $(MUSE_INCLUDE_DIR)
+CFLAGS   += -DTOOLBOX  $(MUSE_INCLUDE_DIR)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 

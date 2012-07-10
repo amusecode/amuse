@@ -56,8 +56,7 @@ MPI_FLAGS = -DMPI #
 # Compiler: ifort (Intel) best tested
 FC = ifort # Intel compiler
 
-MPIF90 ?= mpif90
-MPIFC = $(MPIF90) # MPI compiler
+MPIFC ?= mpif90
 
 # F90 options (ifort)
 IFORTFLAGS = -O -g -traceback -ip -fpp1 -DIFORT

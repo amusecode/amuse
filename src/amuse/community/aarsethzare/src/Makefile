@@ -1,6 +1,5 @@
 FC ?= mpif90
 
-FCFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 CODELIB = libaarsethzare.a
@@ -10,6 +9,11 @@ CODEOBJS = AarsethZare.o transform.o
 AR = ar ruv
 RANLIB = ranlib
 RM = rm
+
+ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
+FCFLAGS += -qfixed
+endif
+
 
 all: $(CODELIB) 
 
@@ -22,5 +26,7 @@ $(CODELIB): $(CODEOBJS)
 	$(RANLIB) $@
 
 %.o: %.f90
+	$(FC) $(FCFLAGS) -c -o $@ $<
+%.o: %.f
 	$(FC) $(FCFLAGS) -c -o $@ $<
 

@@ -52,7 +52,7 @@ save:
 		cp -p $$f $$f.save; done
 
 $(CODELIB):
-	make -C src all CXX=$(MPICXX)
+	make -C src all CXX='$(MPICXX)'
 
 $(CODELIB_GPU):
 	make -C src gpulib CXX=$(MPICXX)

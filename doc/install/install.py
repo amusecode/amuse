@@ -519,8 +519,6 @@ _commands = {
 }
 
 if __name__ == '__main__':
-    print "Files are installed in: ", INSTALL.prefix
-    print "Files are downloaded to: ", INSTALL.temp_dir
     print ""
     
     if INSTALL.fortran90_compiler is None or INSTALL.fortran77_compiler is None:
@@ -544,7 +542,6 @@ setenv F77 gfortran
         print "Fortran 77 compiler used will be: ", INSTALL.fortran77_compiler
     
     print ""
-    INSTALL.setup_temp_dir()
     do = []
     names = []
     flag = False
@@ -557,13 +554,21 @@ setenv F77 gfortran
         else:
             if x == '--hydra':
                 INSTALL.use_hydra_process_manager = True
-            if x == '--gforker':
+            elif x == '--gforker':
                 INSTALL.use_gforker_process_manager = True
-            if flag:
+            elif x.startswith('--prefix='):
+                INSTALL.prefix = x[len('--prefix='):]
+            elif flag:
                 if x.startswith('no-'):
                     skip.append(x[3:])
                 else:
                     names.append(x)
+
+    print "Files are installed in: ", INSTALL.prefix
+    print "Files are downloaded to: ", INSTALL.temp_dir
+
+    INSTALL.setup_temp_dir()
+
     for x in do:
         _commands[x](names, skip)
     

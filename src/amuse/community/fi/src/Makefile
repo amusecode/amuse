@@ -66,7 +66,7 @@ all: $(APPS)
 	$(FC) $(FFLAGS) $(SCINC)  -c -o $@ $< 
 
 %.o: %.f globals.h Makefile
-	$(FC) $(FFLAGS) $(SCINC) -c -o $@ $< 
+	$(FC) $(F77FLAGS) $(FFLAGS) $(SCINC) -c -o $@ $< 
 
 stars3d.o: stars3d.f90 mem.o
 	$(FC) $(FFLAGS) $(GLINCLUDE) -c -o $@ $<

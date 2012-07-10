@@ -3,9 +3,9 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= mpif90
+MPIFC ?= mpif90
 FORTRAN ?= gfortran
-FC = $(MPIF90)
+FC = $(MPIFC)
 
 SRC=src
 BUILDDIR = build
@@ -76,7 +76,7 @@ $(MPI_BUILDDIR)/Makefile:
 	cp $(SRC)/Makefile $(MPI_BUILDDIR)/Makefile
 	
 $(MPILIBS): $(MPI_BUILDDIR)/Makefile
-	make -C $(MPI_BUILDDIR) amuse_interface_mpi  VPATH=../src F90FLAGS1="$(FFLAGS)" FC="$(FC)"
+	make -C $(MPI_BUILDDIR) amuse_interface_mpi  VPATH=../src F90FLAGS1="$(FFLAGS)" FC="$(FC)" MPIFC="$(MPIFC)"
 	
 capreole_worker: $(NOMPILIBS) worker.f90 $(BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2)  -I$(BUILDDIR) $(SCINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS)
