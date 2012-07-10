@@ -80,7 +80,7 @@ $(OBJ): $(INCLUDEPATH)/*.h
 
 #testkernel.ptx: 
 
-ifeq ($(CUDA_ENABLED),"yes")
+ifneq (,findstring($(CUDA_ENABLED),"yes"))
 sapporohostclass.o : include/kernels4th.ptxh include/kernels6thDP.ptxh include/kernelsG5DS.ptxh include/kernelsG5SP.ptxh sapporohostclass.h sapdevclass.h $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernels4th.ptx : $(INCLUDEPATH)/defines.h
 $(CUDAKERNELSPATH)/kernels4thDP.ptx : $(INCLUDEPATH)/defines.h
