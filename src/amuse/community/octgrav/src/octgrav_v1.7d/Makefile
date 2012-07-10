@@ -49,7 +49,7 @@ LIBS = $(CUDA_LIBDIRS) $(CUDA_LIBS)
 all: $(OCTLIB) $(PROG) 
 
 $(PROG): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -L. -l$(OCTLIB)
+	$(CXX) $(CXXFLAGS) $^ -o $@ -L. -l$(OCTLIB) $(LIBS)
 
 $(OCTLIB): $(LIBOBJS) $(CUOBJS)
 	ar qv lib$@.a $^

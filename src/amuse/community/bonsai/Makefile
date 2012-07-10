@@ -65,10 +65,10 @@ worker_code.h: interface.py
 
 
 bonsai_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS) -o $@ $(SCLIBS)
+	$(MPICXX) $(CXXFLAGS) -o $@ $(SCLIBS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS)
 
 bonsai_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS) -o $@ $(SCLIBS)
+	$(MPICXX) $(CXXFLAGS) -o $@ $(SCLIBS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS)
 
 .cpp.o: $<
 	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $< 

@@ -76,7 +76,7 @@ $(CODELIB): $(OBJ) $(CUDAPTX)
 
 
 $(PROG): $(OBJ)
-	$(LD) $(LDFLAGS) $^ -o $@ $(SCLIBS)
+	$(LD) $^ -o $@ $(SCLIBS) $(LDFLAGS)
 
 %.o: $(SRCPATH)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
