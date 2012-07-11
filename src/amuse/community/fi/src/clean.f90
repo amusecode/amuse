@@ -108,22 +108,24 @@ subroutine partremoval
   include 'globals.h'
   integer i,lastsph,lastdm,laststar,lastbh 
   integer onsph,onstar,onbh,onbodies
-  i=1
 
   pordercount=pordercount+1
+  
+  do i=1,nsph
+    if(mass(i).LT.tiny) then
+      removedidssph(nremovals+1) = nbexist(i)
+      nremovals=nremovals+1
+    endif
+  enddo
   
   lastsph=nsph
   lastdm=nbodies-nstar
   laststar=nbodies-nbh
   lastbh=nbodies
+  i=1
   do while(i.LE.lastsph) 
     if(mass(i).LT.tiny) then
-! AVE, AMUSE
-! keep a record of the removed ids
-      removedidssph(nremovals+1) = nbexist(i)
-      nremovals=nremovals+1
-! ---
-      if(i .LT. lastsph) then
+      if(mass(lastsph).GE.tiny) then
         call copysph(lastsph,i)
         mass(lastsph)=0
       endif
@@ -168,6 +170,8 @@ subroutine partremoval
       i=i+1
     endif 
   enddo
+  
+  if(nsph.NE.nremovals+lastsph) call terror('partremoval count mismatch')
    
   nsph=lastsph
   nstar=lastbh-lastdm ! bh is also a star
