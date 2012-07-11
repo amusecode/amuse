@@ -133,7 +133,7 @@ class InstallPrerequisites(object):
             ['gmp'],                    #names of prerequisites
             '3.1.1' ,                   #version string
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
-            'http://mpfr.loria.fr/mpfr-current/', #download url, filename is appended
+            'http://mpfr.loria.fr/mpfr-3.1.1/', #download url, filename is appended
             self.mpfr_build             #method to use for building
           ) ,
         ]
@@ -304,14 +304,14 @@ class InstallPrerequisites(object):
             self.run_application(x, path)
     
     def mpfr_build(self, path):
-        temp_patch_file = os.path.join(self.temp_dir, "mpfr-allpatches")
-        if not os.path.exists(temp_patch_file):
-            print "Downloading mpfr-allpatches"
-            urllib.urlretrieve("http://www.mpfr.org/mpfr-3.1.1/allpatches", temp_patch_file)
-            print "...Finished"
+        #temp_patch_file = os.path.join(self.temp_dir, "mpfr-allpatches")
+        #if not os.path.exists(temp_patch_file):
+        #    print "Downloading mpfr-allpatches"
+        #    urllib.urlretrieve("http://www.mpfr.org/mpfr-3.1.1/allpatches", temp_patch_file)
+        #    print "...Finished"
         
         commands = []
-        commands.append(['patch', '-N', '-Z', '-p1', '-i', temp_patch_file])
+        #commands.append(['patch', '-N', '-Z', '-p1', '-i', temp_patch_file])
         command = [
           './configure',
           '--prefix='+self.prefix,
