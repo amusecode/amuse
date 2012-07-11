@@ -110,8 +110,8 @@ end function
 function fccoco(n,G0,Z,Pe)
  real :: n,G0,Z,Pe,xia,fccoco
 
- xia=e2solve(4./3.*n/1.e6/G0*(1+24.8*Z)) 
- fccoco=MAX(0.d0,1-xiA*1.e3/n0/xifuv/1.66/Z/sqrt(Pe/1.d4))**3
+ xia=e2solve(4./3.*n/1.d6/G0*(1+24.8*Z)) 
+ fccoco=MAX(0.d0,1-xiA*1.d3/n0/xifuv/1.66/Z/sqrt(Pe/1.d4))**3
 end function
 
         SUBROUTINE ENXB(N,X,EN)
