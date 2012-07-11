@@ -307,7 +307,7 @@ class InstallPrerequisites(object):
         temp_patch_file = os.path.join(self.temp_dir, "mpfr-allpatches")
         if not os.path.exists(temp_patch_file):
             print "Downloading mpfr-allpatches"
-            urllib.urlretrieve("http://www.mpfr.org/mpfr-3.1.0/allpatches", temp_patch_file)
+            urllib.urlretrieve("http://www.mpfr.org/mpfr-3.1.1/allpatches", temp_patch_file)
             print "...Finished"
         
         commands = []
