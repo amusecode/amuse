@@ -340,7 +340,10 @@ end subroutine
 subroutine stepsystem(n)
   include 'globals.h'
   integer n
-  
+! for AMUSE
+! reset the record of the removed ids
+    nremovals = 0
+! ---
   call step
   print*,'<stepsystem> step completed:',n
   call outstate(n)

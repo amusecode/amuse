@@ -67,11 +67,6 @@ program glfi
   print *,' ...start loop...'
   call viewer
   do n=n1+1,nsteps
-  
-! for AMUSE
-! reset the record of the removed ids
-    nremovals = 0
-! ---
     call stepsystem(n)
   enddo
   print*,'*** GAME OVER ***'
