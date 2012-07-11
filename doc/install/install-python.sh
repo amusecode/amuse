@@ -7,7 +7,7 @@
 #
 
 #APPVER=2.5.4
-APPVER=2.7.2
+APPVER=2.7.3
 #APPVER=2.7.1
 APPFILE=Python-${APPVER}.tar.bz2
 APP_DIR=Python-${APPVER}

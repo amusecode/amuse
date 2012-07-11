@@ -131,7 +131,7 @@ class InstallPrerequisites(object):
           ( # NOTE: When library version is changed, url to 'allpatches' in self.mpfr_build must be changed too!
             'mpfr' ,                    #name to refer by
             ['gmp'],                    #names of prerequisites
-            '3.1.0' ,                   #version string
+            '3.1.1' ,                   #version string
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
             'http://mpfr.loria.fr/mpfr-current/', #download url, filename is appended
             self.mpfr_build             #method to use for building
