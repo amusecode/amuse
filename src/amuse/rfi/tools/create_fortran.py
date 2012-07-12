@@ -47,6 +47,9 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
     def specification(self):
         raise exceptions.AmuseException("No specification set, please set the specification first")
     
+    @late
+    def underscore_functions_from_specification_classes(self):
+        return []
     
     @late
     def dtype_to_spec(self):
@@ -263,13 +266,24 @@ class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
                 self.out + '(' + self.index_string(0) + ')' + ' = '
         else:    
             self.out + 'CALL ' 
-        self.out +  self.specification.name + '('
+        self.out +  self.specification.name
+        if self.must_add_underscore_to_function(self.specification):
+            self.out + '_'
+        self.out + '('
         
     def output_casestmt_start(self):
         self.out + 'CASE(' + self.specification.id + ')'
         
     def output_casestmt_end(self):
         self.out.n() 
+        
+    def must_add_underscore_to_function(self, x):
+           
+        for cls in self.underscore_functions_from_specification_classes:
+            if hasattr(cls, x.name):
+                return True
+        
+        return False
         
         
 class MakeAFortranStringOfALegacyGlobalSpecification(GenerateASourcecodeString):
@@ -325,9 +339,15 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
     def length_of_the_header(self):
         return 2 + self.number_of_types
         
+    @late
+    def underscore_functions_from_specification_classes(self):
+        return []
+        
         
     def output_sourcecode_for_function(self):
-        return GenerateAFortranStringOfAFunctionSpecification()
+        result = GenerateAFortranStringOfAFunctionSpecification()
+        result.underscore_functions_from_specification_classes = self.underscore_functions_from_specification_classes
+        return result
    
     def start(self):
         self.output_character_index_function()
@@ -376,6 +396,18 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                     spec = self.dtype_to_spec[specification.result_type]
                     type = spec.type
                 self.out.lf() +  type + ' :: ' + specification.name
+                
+                if self.must_add_underscore_to_function(x):
+                    self.out + '_'
+        
+    
+    def must_add_underscore_to_function(self, x):
+           
+        for cls in self.underscore_functions_from_specification_classes:
+            if hasattr(cls, x.specification.name):
+                return True
+        
+        return False
         
     def output_allocate_arrays(self):
         maximum_number_of_inputvariables_of_a_type = 255
@@ -676,7 +708,11 @@ class GenerateAFortranStubStringFromASpecificationClass\
         return dtype_to_spec
   
     @late
-    def ignore_functions_from_specification_class(self):
+    def ignore_functions_from_specification_classes(self):
+        return []
+        
+    @late
+    def underscore_functions_from_specification_classes(self):
         return []
         
     def output_sourcecode_for_function(self):
@@ -701,7 +737,7 @@ class GenerateAFortranStubStringFromASpecificationClass\
         if x.specification.name.startswith("internal__"):
             return False
             
-        for cls in self.ignore_functions_from_specification_class:
+        for cls in self.ignore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
                 return False
         

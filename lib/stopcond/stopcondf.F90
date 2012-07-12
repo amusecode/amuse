@@ -29,6 +29,7 @@ module StoppingConditions
     double precision :: minimum_internal_energy_parameter = -1.0
     double precision :: maximum_internal_energy_parameter = DBL_MAX
     integer :: sc_mpi_size;
+    integer :: sc_mpi_rank;
 
 contains
     
@@ -254,6 +255,169 @@ function set_stopping_condition_particle_index(index, index_in_the_condition, id
     set_stopping_condition_particle_index = 0
 end function
 
+
+
+function set_stopping_condition_timeout_parameter(value) 
+    double precision, intent(in) :: value
+    integer :: set_stopping_condition_timeout_parameter
+    if(value < 0.0) then
+	set_stopping_condition_timeout_parameter = -1
+	return
+    end if
+    timeout_parameter = value
+    set_stopping_condition_timeout_parameter = 0
+end function
+
+function get_stopping_condition_timeout_parameter(value)
+    integer :: get_stopping_condition_timeout_parameter
+    double precision, intent(out) :: value
+    value = timeout_parameter
+    get_stopping_condition_timeout_parameter = 0
+end function
+
+function set_stopping_condition_number_of_steps_parameter(value) 
+    integer, intent(in) :: value
+    integer :: set_stopping_condition_number_of_steps_parameter
+    if(value < 0.0) then
+	set_stopping_condition_number_of_steps_parameter = -1
+	return
+    end if
+    number_of_steps_parameter = value
+    set_stopping_condition_number_of_steps_parameter = 0
+end function
+
+function get_stopping_condition_number_of_steps_parameter(value)
+    integer :: get_stopping_condition_number_of_steps_parameter
+    integer, intent(out) :: value
+    value = number_of_steps_parameter
+    get_stopping_condition_number_of_steps_parameter = 0
+end function
+
+function set_stopping_condition_out_of_box_parameter(value) 
+    double precision, intent(in) :: value
+    integer :: set_stopping_condition_out_of_box_parameter
+    out_of_box_parameter = value
+    set_stopping_condition_out_of_box_parameter = 0
+end function
+
+function get_stopping_condition_out_of_box_parameter(value) 
+    integer :: get_stopping_condition_out_of_box_parameter
+    double precision, intent(out) :: value
+    value = out_of_box_parameter
+    get_stopping_condition_out_of_box_parameter = 0
+end function
+
+function set_stopping_condition_minimum_density_parameter(value) 
+    double precision, intent(in) :: value
+    integer :: set_stopping_condition_minimum_density_parameter
+    minimum_density_parameter = value
+    set_stopping_condition_minimum_density_parameter = 0
+end function
+
+function get_stopping_condition_minimum_density_parameter(value) 
+    integer :: get_stopping_condition_minimum_density_parameter
+    double precision, intent(out) :: value
+    value = minimum_density_parameter
+    get_stopping_condition_minimum_density_parameter = 0
+end function
+
+function set_stopping_condition_maximum_density_parameter(value) 
+    double precision, intent(in) :: value
+    integer :: set_stopping_condition_maximum_density_parameter
+    maximum_density_parameter = value
+    
+    if(value < 0.0) then
+	maximum_density_parameter = DBL_MAX
+    else
+	maximum_density_parameter = value
+    end if
+    set_stopping_condition_maximum_density_parameter = 0
+end function
+
+function get_stopping_condition_maximum_density_parameter(value) 
+    integer :: get_stopping_condition_maximum_density_parameter
+    double precision, intent(out) :: value
+    value = maximum_density_parameter
+    get_stopping_condition_maximum_density_parameter = 0
+end function
+
+
+
+function set_stopping_condition_minimum_internal_energy_parameter(value) 
+    double precision, intent(in) :: value
+    integer :: set_stopping_condition_minimum_internal_energy_parameter
+    minimum_internal_energy_parameter = value
+    set_stopping_condition_minimum_internal_energy_parameter = 0
+end function
+
+function get_stopping_condition_minimum_internal_energy_parameter(value) 
+    integer :: get_stopping_condition_minimum_internal_energy_parameter
+    double precision, intent(out) :: value
+    value = minimum_internal_energy_parameter
+    get_stopping_condition_minimum_internal_energy_parameter = 0
+end function
+
+function set_stopping_condition_maximum_internal_energy_parameter(value) 
+    double precision, intent(in) :: value
+    integer :: set_stopping_condition_maximum_internal_energy_parameter
+    maximum_internal_energy_parameter = value
+    
+    if(value < 0.0) then
+	maximum_internal_energy_parameter = DBL_MAX
+    else
+	maximum_internal_energy_parameter = value
+    end if
+    set_stopping_condition_maximum_internal_energy_parameter = 0
+end function
+
+function get_stopping_condition_maximum_internal_energy_parameter(value) 
+    integer :: get_stopping_condition_maximum_internal_energy_parameter
+    double precision, intent(out) :: value
+    value = maximum_internal_energy_parameter
+    get_stopping_condition_maximum_internal_energy_parameter = 0
+end function
+
+
+#if defined( MPILIB ) && !defined(NOMPI)
+
+
+function mpi_setup_stopping_conditions()
+    integer :: mpi_setup_stopping_conditions
+    sc_mpi_size = 1
+    mpi_setup_stopping_conditions = 0
+end function
+
+function mpi_collect_stopping_conditions()
+    integer :: mpi_collect_stopping_conditions
+    mpi_collect_stopping_conditions = 0
+end function
+
+function mpi_distribute_stopping_conditions()
+    integer :: mpi_distribute_stopping_conditions
+    mpi_distribute_stopping_conditions = 0
+end function
+
+#else
+
+
+function mpi_setup_stopping_conditions()
+    integer :: mpi_setup_stopping_conditions
+    sc_mpi_size = 1
+    mpi_setup_stopping_conditions = 0
+end function
+
+function mpi_collect_stopping_conditions()
+    integer :: mpi_collect_stopping_conditions
+    mpi_collect_stopping_conditions = 0
+end function
+
+function mpi_distribute_stopping_conditions()
+    integer :: mpi_distribute_stopping_conditions
+    mpi_distribute_stopping_conditions = 0
+end function
+
+#endif
+
 #if 0
 //------------
 
@@ -264,135 +428,7 @@ int is_condition_enabled() {
 
 
 
-int set_stopping_condition_timeout_parameter(double value) {
-    if(value < 0.0) {
-	return -1;
-    }
-    timeout_parameter = value;
-    return 0;
-}
 
-int set_stopping_condition_timeout_parameter_(double *value) {
-    return set_stopping_condition_timeout_parameter(*value);
-}
-
-int get_stopping_condition_timeout_parameter(double * value) {
-    *value = timeout_parameter;
-    return 0;
-}
-
-int get_stopping_condition_timeout_parameter_(double * value) {
-    return get_stopping_condition_timeout_parameter(value);
-}
-
-int set_stopping_condition_number_of_steps_parameter(int value) {
-    if (value<1) {
-	return -1;
-    }
-    number_of_steps_parameter = value;
-    return 0;
-}
-
-int set_stopping_condition_number_of_steps_parameter_(int *value) {
-    return set_stopping_condition_number_of_steps_parameter(*value);
-}
-
-
-int get_stopping_condition_number_of_steps_parameter(int *value) {
-    *value = number_of_steps_parameter;
-    return 0;
-}
-
-int get_stopping_condition_number_of_steps_parameter_(int *value) {
-    return get_stopping_condition_number_of_steps_parameter(value);
-}
-
-int set_stopping_condition_out_of_box_parameter(double value) {
-    out_of_box_parameter = value;
-    return 0;
-}
-
-int set_stopping_condition_out_of_box_parameter_(double *value) {
-    return set_stopping_condition_out_of_box_parameter(*value);
-}
-
-int get_stopping_condition_out_of_box_parameter(double *value) {
-    *value = out_of_box_parameter;
-    return 0;
-}
-
-int get_stopping_condition_out_of_box_parameter_(double *value) {
-    return get_stopping_condition_out_of_box_parameter(value);
-}
-
-
-int set_stopping_condition_minimum_density_parameter(double value) {
-    minimum_density_parameter = value;
-    return 0;
-}
-int set_stopping_condition_minimum_density_parameter_(double *value) {
-    return set_stopping_condition_minimum_density_parameter(*value);
-}
-int get_stopping_condition_minimum_density_parameter(double *value) {
-    *value = minimum_density_parameter;
-    return 0;
-}
-int get_stopping_condition_minimum_density_parameter_(double *value) {
-    return get_stopping_condition_minimum_density_parameter(value);
-}
-
-int set_stopping_condition_maximum_density_parameter(double value) {
-    if (value < 0.0) {
-        maximum_density_parameter = DBL_MAX;
-    } else {
-        maximum_density_parameter = value;
-    }
-    return 0;
-}
-int set_stopping_condition_maximum_density_parameter_(double *value) {
-    return set_stopping_condition_maximum_density_parameter(*value);
-}
-int get_stopping_condition_maximum_density_parameter(double *value) {
-    *value = maximum_density_parameter;
-    return 0;
-}
-int get_stopping_condition_maximum_density_parameter_(double *value) {
-    return get_stopping_condition_maximum_density_parameter(value);
-}
-
-int set_stopping_condition_minimum_internal_energy_parameter(double value) {
-    minimum_internal_energy_parameter = value;
-    return 0;
-}
-int set_stopping_condition_minimum_internal_energy_parameter_(double *value) {
-    return set_stopping_condition_minimum_internal_energy_parameter(*value);
-}
-int get_stopping_condition_minimum_internal_energy_parameter(double *value) {
-    *value = minimum_internal_energy_parameter;
-    return 0;
-}
-int get_stopping_condition_minimum_internal_energy_parameter_(double *value) {
-    return get_stopping_condition_minimum_internal_energy_parameter(value);
-}
-
-int set_stopping_condition_maximum_internal_energy_parameter(double value) {
-    if (value < 0.0) {
-        maximum_internal_energy_parameter = DBL_MAX;
-    } else {
-        maximum_internal_energy_parameter = value;
-    }
-    return 0;
-}
-int set_stopping_condition_maximum_internal_energy_parameter_(double *value) {
-    return set_stopping_condition_maximum_internal_energy_parameter(*value);
-}
-int get_stopping_condition_maximum_internal_energy_parameter(double *value) {
-    *value = maximum_internal_energy_parameter;
-    return 0;
-}
-int get_stopping_condition_maximum_internal_energy_parameter_(double *value) {
-    return get_stopping_condition_maximum_internal_energy_parameter(value);
-}
 
 
 #if defined( MPILIB ) && !defined(NOMPI)

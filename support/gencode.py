@@ -76,6 +76,7 @@ class ParseCommandLine(object):
             default="c",
             dest="type",
             help="TYPE of the code to generate. Can be one of c, h, H, f90 or py. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper (Defaults to c)")
+        
         self.parser.add_option(
             "-m",
             "--mode",
@@ -83,18 +84,28 @@ class ParseCommandLine(object):
             default="mpi",
             dest="mode",
             help="MODE of the code to generate. Can be <mpi>, <stub>, <dir> or <socket>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). <dir> will create a directory ann populate it with the files needed to build a code. (Defaults to mpi)")
+        
         self.parser.add_option(
             "-o",
             "--output",
             default="-",
             dest="output",
             help="Name of the OUTPUT file. Use - for standard out. ")
+        
         self.parser.add_option(
             "-i",
             "--ignore",
             default="",
             dest="ignore",
             help="Name of the classes to ignore, functions defined on these classes will not generate code. Comma separated list")
+    
+        self.parser.add_option(
+            "-u",
+            "--underscore",
+            default="",
+            dest="underscore",
+            help="Name of the classes to underscore the functions of, for XL fortran compilers")
+    
         self.parser.add_option(
             "-x",
             "--executable",
@@ -109,9 +120,14 @@ class ParseCommandLine(object):
     def parse_options(self):
         (self.options, self.arguments) = self.parser.parse_args()
         if self.options.ignore:
-            self.options.ignore_classes = list(self.parse_ignore_classe())
+            self.options.ignore_classes = list(self.parse_ignore_classes())
         else:
             self.options.ignore_classes = []
+            
+        if self.options.underscore:
+            self.options.underscore_classes = list(self.parse_underscore_classes())
+        else:
+            self.options.underscore_classes = []
         
         self.options.name_of_implementation_class = None 
         self.options.name_of_module_or_python_file = None 
@@ -136,7 +152,7 @@ class ParseCommandLine(object):
             except Exception as exception:
                 self.show_error_and_exit(exception)
     
-    def parse_ignore_classe(self):
+    def parse_ignore_classes(self):
         names = self.options.ignore.split(',')
         for name in names:
             index_of_module_classname_split = name.rfind('.')
@@ -146,6 +162,17 @@ class ParseCommandLine(object):
             __import__(modulename)
             class_to_ignore = getattr(sys.modules[modulename], classname)
             yield class_to_ignore
+        
+    def parse_underscore_classes(self):
+        names = self.options.underscore.split(',')
+        for name in names:
+            index_of_module_classname_split = name.rfind('.')
+            modulename = name[:index_of_module_classname_split]
+            classname = name[index_of_module_classname_split+1:]
+            
+            __import__(modulename)
+            class_to_underscore = getattr(sys.modules[modulename], classname)
+            yield class_to_underscore
         
     
     def start(self):
@@ -226,7 +253,8 @@ def make_file(settings):
         builder.specification_class = specification_class
         if not implementation_class is None:
             builder.implementation_factory = implementation_class
-        builder.ignore_functions_from_specification_class = settings.ignore_classes
+        builder.ignore_functions_from_specification_classes = settings.ignore_classes
+        builder.underscore_functions_from_specification_classes = settings.underscore_classes
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
     

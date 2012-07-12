@@ -58,3 +58,39 @@ class TestGenerateAFortranStubStringFromASpecificationClass(amusetest.TestCase):
         self.assertNotContainsString(outputstring, "internal__")
     
         
+class TestGenerateAFortranSourcecodeStringFromASpecificationClass(amusetest.TestCase):
+    
+    def assertContainsString(self, string, substring):
+        index = string.find(substring)
+        if index < 0:
+            self.fail("{0} not found in {1}".format(substring, string))
+            
+    def assertNotContainsString(self, string, substring):
+        index = string.find(substring)
+        if index >= 0:
+            self.fail("{0} found in {1}".format(substring, string))
+        
+    def test1(self):
+        x = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
+        x.specification_class = ForTestingInterface
+        x.start()
+        outputstring = x.result        
+        self.assertContainsString(outputstring, "integer :: echo_int")
+        self.assertContainsString(outputstring, "integer :: echo_double")
+        self.assertContainsString(outputstring, "echo_int(")
+        self.assertContainsString(outputstring, "echo_double(")
+        
+    def test2(self):
+        x = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
+        x.specification_class = ForTestingInterface
+        x.underscore_functions_from_specification_classes = [ForTestingInterface]
+        x.start()
+        outputstring = x.result        
+        self.assertContainsString(outputstring, "integer :: echo_int_")
+        self.assertContainsString(outputstring, "integer :: echo_double_")
+        self.assertContainsString(outputstring, "echo_int_(")
+        self.assertContainsString(outputstring, "echo_double_(")
+    
+    
+        
+

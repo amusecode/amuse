@@ -725,7 +725,11 @@ class GenerateACHeaderStringFromASpecificationClass\
     (GenerateASourcecodeStringFromASpecificationClass):
 
     @late
-    def ignore_functions_from_specification_class(self):
+    def ignore_functions_from_specification_classes(self):
+        return []
+        
+    @late
+    def underscore_functions_from_specification_classes(self):
         return []
         
     @late
@@ -740,7 +744,7 @@ class GenerateACHeaderStringFromASpecificationClass\
         if x.specification.name.startswith("internal__"):
             return False
             
-        for cls in self.ignore_functions_from_specification_class:
+        for cls in self.ignore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
                 return False
         

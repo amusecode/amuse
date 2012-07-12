@@ -203,7 +203,7 @@ class TestInterface(TestWithMPI):
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
         uc.make_extern_c = True
-        uc.ignore_functions_from_specification_class = [stopping_conditions.StoppingConditionInterface]
+        uc.ignore_functions_from_specification_classes = [stopping_conditions.StoppingConditionInterface]
         header =  uc.result
 
         uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()

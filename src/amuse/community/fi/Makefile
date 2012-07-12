@@ -39,21 +39,23 @@ FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 PIC=#-fPIC
 
 F77FLAGS =
+UNDERSCORE_CLASSES = 
 # gfortran flags
 $(info  $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- ))
 $(info  $(findstring gfortran, $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- )))
 ifneq (,$(findstring gfortran, $(notdir $(FORTRAN))))
-FFLAGS = $(FCFLAGS) -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
+FFLAGS = $(FCFLAGS) -fdefault-real-8 -fdefault-double-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
 endif
 
 
 ifeq ($(findstring f95, $(notdir $(FORTRAN))), f95)
-FFLAGS = $(FCFLAGS) -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
+FFLAGS = $(FCFLAGS) -fdefault-real-8 -fdefault-double-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
 endif
 
 ifeq ($(findstring xlf, $(notdir $(FORTRAN))), xlf)
 FFLAGS = $(FCFLAGS) -qreal-size=8 -O3 $(PIC)
 F77FLAGS += -qfixed
+UNDERSCORE_CLASSES = -u amuse.support.codes.stopping_conditions.StoppingConditionInterface
 endif
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
@@ -129,13 +131,13 @@ fi_worker_periodic_gl: glworker.f90 interface.po $(PERIODIC_BUILDDIR)/libfi.a
 
 
 worker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
-	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@
+	$(CODE_GENERATOR) --type=f90 $(UNDERSCORE_CLASSES) $< FiInterface -o $@
 
 worker-sockets.f90: interface.py $(AMUSE_INTERFACE_DEPS)
-	$(CODE_GENERATOR) --type=f90 --mode=sockets $< FiInterface -o $@
+	$(CODE_GENERATOR) --type=f90 $(UNDERSCORE_CLASSES) --mode=sockets $< FiInterface -o $@
 
 glworker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
-	$(CODE_GENERATOR) --type=f90 $< GlFiInterface -o $@
+	$(CODE_GENERATOR) --type=f90 $(UNDERSCORE_CLASSES) $< GlFiInterface -o $@
 
 interface.po:interface.f90
 	$(MPIFC) $(FFLAGS) -I./$(PERIODIC_BUILDDIR) -c -o $@ $<

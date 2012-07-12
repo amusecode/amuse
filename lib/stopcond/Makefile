@@ -12,7 +12,7 @@ OBJS = stopcond.o
 OBJSF = stopcondf.o
 OBJSMPI = stopcond.mo
 
-all:$(LIBNAME) $(LIBNAMEMPI)
+all:$(LIBNAME) $(LIBNAMEMPI) $(LIBFNAME)
 
 CFLAGS += -O2
 
@@ -21,8 +21,8 @@ $(LIBNAME): $(OBJS)
 	ranlib $(LIBNAME)
 	
 $(LIBFNAME): $(OBJSF)
-	ar -r  $(LIBNAME) $(OBJSF)
-	ranlib $(LIBNAME)
+	ar -r  $(LIBFNAME) $(OBJSF)
+	ranlib $(LIBFNAME)
 
 $(LIBNAMEMPI): $(OBJSMPI)
 	ar -r  $(LIBNAMEMPI) $(OBJSMPI)
