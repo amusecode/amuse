@@ -11,25 +11,62 @@ module StoppingConditions
     double precision :: DBL_MAX
     parameter(DBL_MAX =  HUGE(0.0d0))
     
-    integer :: type_of_stopping_condition_set(0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
-    integer :: index_of_particle_in_stopping_condition(&
+    integer, private :: type_of_stopping_condition_set(0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
+    integer, private :: index_of_particle_in_stopping_condition(&
 &      0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET,&
 &      0:MAX_NUMBER_OF_PARTICLES_PER_INDEX)
 
-    integer*8 :: enabled_conditions = 0
-    integer*8 :: set_conditions = 0
-    integer*8 :: supported_conditions = 0
-    integer*8 :: number_of_stopping_conditions_set = 0
+    integer*8, private:: enabled_conditions = 0
+    integer*8, private :: set_conditions = 0
+    integer*8, private :: supported_conditions = 0
+    integer*8, private :: number_of_stopping_conditions_set = 0
 
-    double precision :: timeout_parameter = 4.0
-    double precision :: out_of_box_parameter = 0.0
-    integer*8 :: number_of_steps_parameter = 1
-    double precision :: minimum_density_parameter = -1.0
-    double precision :: maximum_density_parameter = DBL_MAX
-    double precision :: minimum_internal_energy_parameter = -1.0
-    double precision :: maximum_internal_energy_parameter = DBL_MAX
-    integer :: sc_mpi_size;
-    integer :: sc_mpi_rank;
+    double precision, private :: timeout_parameter = 4.0
+    double precision, private :: out_of_box_parameter = 0.0
+    integer*8, private :: number_of_steps_parameter = 1
+    double precision, private :: minimum_density_parameter = -1.0
+    double precision, private :: maximum_density_parameter = DBL_MAX
+    double precision, private :: minimum_internal_energy_parameter = -1.0
+    double precision, private :: maximum_internal_energy_parameter = DBL_MAX
+    integer, private :: sc_mpi_size;
+    integer, private :: sc_mpi_rank;
+    
+    INTEGER :: COLLISION_DETECTION_BITMAP
+    INTEGER :: PAIR_DETECTION_BITMAP
+    INTEGER :: ESCAPER_DETECTION_BITMAP
+    INTEGER :: TIMEOUT_DETECTION_BITMAP
+    INTEGER :: NUMBER_OF_STEPS_DETECTION_BITMAP
+    INTEGER :: OUT_OF_BOX_DETECTION_BITMAP
+    INTEGER :: DENSITY_LIMIT_DETECTION_BITMAP
+    INTEGER :: INTERNAL_ENERGY_LIMIT_DETECTION_BITMAP
+
+    INTEGER :: COLLISION_DETECTION
+    INTEGER :: PAIR_DETECTION
+    INTEGER :: ESCAPER_DETECTION
+    INTEGER :: TIMEOUT_DETECTION
+    INTEGER :: NUMBER_OF_STEPS_DETECTION
+    INTEGER :: OUT_OF_BOX_DETECTION
+    INTEGER :: DENSITY_LIMIT_DETECTION
+    INTEGER :: INTERNAL_ENERGY_LIMIT_DETECTION
+
+    PARAMETER (COLLISION_DETECTION_BITMAP=1)
+    PARAMETER (PAIR_DETECTION_BITMAP=2)
+    PARAMETER (ESCAPER_DETECTION_BITMAP=4)
+    PARAMETER (TIMEOUT_DETECTION_BITMAP=8)
+    PARAMETER (NUMBER_OF_STEPS_DETECTION_BITMAP=16)
+    PARAMETER (OUT_OF_BOX_DETECTION_BITMAP=32)
+    PARAMETER (DENSITY_LIMIT_DETECTION_BITMAP=64)
+    PARAMETER (INTERNAL_ENERGY_LIMIT_DETECTION_BITMAP=128)
+
+    PARAMETER (COLLISION_DETECTION=0)
+    PARAMETER (PAIR_DETECTION=1)
+    PARAMETER (ESCAPER_DETECTION=2)
+    PARAMETER (TIMEOUT_DETECTION=3)
+    PARAMETER (NUMBER_OF_STEPS_DETECTION=4)
+    PARAMETER (OUT_OF_BOX_DETECTION=5)
+    PARAMETER (DENSITY_LIMIT_DETECTION=6)
+    PARAMETER (INTERNAL_ENERGY_LIMIT_DETECTION=7)
+
 
 contains
     
@@ -129,6 +166,7 @@ function has_stopping_condition(type, result)
     integer, intent(in) :: type
     integer, intent(out) :: result
     integer :: has_stopping_condition
+    
     if(IAND(ISHFT(1 , type) , supported_conditions) > 0) then
         result = 1
     else
@@ -150,13 +188,15 @@ function get_stopping_condition_info(index, type, number_of_particles)
         return
     end if
     
-    number_of_particles = 1    
+    number_of_particles = 0
     do i = 0, MAX_NUMBER_OF_PARTICLES_PER_INDEX
         id = index_of_particle_in_stopping_condition(index, i);
         if (id >= 0) then
+        
+            index_of_particle_in_stopping_condition(index, i) = -1;
+            index_of_particle_in_stopping_condition(index, number_of_particles) = id;
             number_of_particles = number_of_particles + 1;
-        else
-            exit
+            
         end if
     end do
     
@@ -184,7 +224,7 @@ function get_stopping_condition_particle_index(index, index_in_the_condition, in
     end if
     
     
-    index_of_particle = index_of_particle_in_stopping_condition(index, index_in_the_condition + 1)
+    index_of_particle = index_of_particle_in_stopping_condition(index, index_in_the_condition)
     get_stopping_condition_particle_index = 0
 end function
 

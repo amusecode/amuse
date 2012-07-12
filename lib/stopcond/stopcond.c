@@ -133,8 +133,9 @@ int has_stopping_condition_(int *type, int *result) {
 int get_stopping_condition_info(int index, int * type, int *number_of_particles) {
     int i, id;
     
-    if (index >= number_of_stopping_conditions_set)
+    if (index >= number_of_stopping_conditions_set) {
         return -1;
+    }
     
     *number_of_particles = 0;
     for (i = 0; i < MAX_NUMBER_OF_PARTICLES_PER_INDEX; i++){
@@ -157,11 +158,13 @@ int get_stopping_condition_info_(int *index, int *type, int *number_of_particles
 }
 
 int get_stopping_condition_particle_index(int index, int index_in_the_condition, int *index_of_particle) {
-    if(index >= number_of_stopping_conditions_set)
+    if(index >= number_of_stopping_conditions_set) {
         return -1;
+    }
     
-    if(index_in_the_condition >= MAX_NUMBER_OF_PARTICLES_PER_INDEX)
+    if(index_in_the_condition >= MAX_NUMBER_OF_PARTICLES_PER_INDEX) {
         return -1;
+    }
     
     *index_of_particle = index_of_particle_in_stopping_condition[index * MAX_NUMBER_OF_PARTICLES_PER_INDEX + index_in_the_condition];
     return 0;

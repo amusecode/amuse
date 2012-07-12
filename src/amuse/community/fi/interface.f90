@@ -1,9 +1,14 @@
+MODULE AmuseInterface
+    use MuseHelpers
+    
+CONTAINS
+
 function initialize_code() result(ret)
-  include "../../../../lib/stopcond/stopcond.inc"
+  use StoppingConditions
   integer :: ret
-  integer :: set_support_for_condition, error
+  integer :: error
   call muse_start
-  call muse_reset
+  call muse_reset(0.0)
   call muse_set_time(0.0)
   error = set_support_for_condition(TIMEOUT_DETECTION)
   error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
@@ -17,7 +22,7 @@ function cleanup_code() result(ret)
   integer :: ret
   call muse_end
   call muse_start
-  call muse_reset
+  call muse_reset(0.0)
   ret=0
 end function
 
@@ -29,7 +34,7 @@ function commit_particles() result(ret)
 end function
 
 function recommit_particles() result(ret)
-  integer :: ret,muse_reinitialize
+  integer :: ret
   ret=muse_reinitialize()
 end function
 
@@ -46,26 +51,24 @@ function recommit_parameters() result(ret)
 end function
 
 function get_number_of_particles(n) result(ret)
-  integer n,muse_get_nbodies,ret
+  integer n,ret
   n=muse_get_nbodies() 
   ret=0
 end function
 
 function get_index_of_first_particle(id) result(ret)
   integer :: id,ret
-  integer :: muse_index_of_first_particle
   ret=muse_index_of_first_particle(id)
 end function
 
 function get_index_of_next_particle(id,id1) result(ret)
   integer :: id,id1,ret
-  integer :: muse_index_of_next_particle
   ret=muse_index_of_next_particle(id,id1)
 end function
 
 function get_time(t) result(ret)
   integer :: ret
-  real*8 :: t,muse_get_time
+  real*8 :: t
   t=muse_get_time()
   ret=0
 end function
@@ -79,8 +82,8 @@ end function
 
 function get_begin_time(t) result(ret)
   integer :: ret
-  real*8 :: t,muse_get_begin_time
-  t = muse_get_begin_time(t)
+  real*8 :: t
+  t = muse_get_begin_time()
   ret = 0
 end function
 
@@ -93,7 +96,7 @@ function evolve_model(tend) result(ret)
 end function
 
 function synchronize_model() result(ret)
-  integer :: ret,amuse_synchronize_model
+  integer :: ret
   real*8 :: dum1,dum2,dum3 
   ret=amuse_synchronize_model()
 end function
@@ -132,12 +135,22 @@ end function
 
 
 function new_dm_particle(ids,mass,x,y,z,vx,vy,vz,eps) result(ret)
-  integer :: ids,ret,oldnp,muse_get_nbodies
-  integer :: new_id, add_dm_particle
+  integer :: ids,ret,oldnp
   real*8 :: mass,eps,x,y,z,vx,vy,vz
+  integer :: idsa(1)
+  real*8 :: massa(1),epsa(1),xa(1),ya(1),za(1),vxa(1),vya(1),vza(1)
   ids=new_id()
   oldnp=muse_get_nbodies()
-  ret=add_dm_particle(ids,mass,x,y,z,vx,vy,vz,eps,1)
+  idsa = ids
+  massa = mass
+  xa = x
+  ya = y
+  za = z
+  vxa = vx
+  vya = vy
+  vza = vz
+  epsa = eps
+  ret=add_dm_particle(idsa,massa,xa,ya,za,vxa,vya,vza,epsa,1)
   if(ret.EQ.oldnp+1) then
     ret=0
   else
@@ -146,12 +159,25 @@ function new_dm_particle(ids,mass,x,y,z,vx,vy,vz,eps) result(ret)
 end function
 
 function new_sph_particle(ids,mass,x,y,z,vx,vy,vz,u,eps) result(ret)
-  integer :: ids,ret,oldnp,muse_get_nsph
-  integer :: new_id, add_sph_particle
+  integer :: ids,ret,oldnp
   real*8 :: mass,eps,x,y,z,vx,vy,vz,u
+  integer :: idsa(1)
+  real*8 :: massa(1),epsa(1),xa(1),ya(1),za(1),vxa(1),vya(1),vza(1),ua(1)
   ids=new_id()
   oldnp=muse_get_nsph()
-  ret=add_sph_particle(ids,mass,x,y,z,vx,vy,vz,eps,u,1)
+  
+  idsa = ids
+  massa = mass
+  xa = x
+  ya = y
+  za = z
+  vxa = vx
+  vya = vy
+  vza = vz
+  epsa = eps
+  ua = u
+  
+  ret=add_sph_particle(idsa,massa,xa,ya,za,vxa,vya,vza,epsa,ua,1)
   if(ret.EQ.oldnp+1) then
     ret=0
   else
@@ -160,12 +186,24 @@ function new_sph_particle(ids,mass,x,y,z,vx,vy,vz,u,eps) result(ret)
 end function
 
 function new_star_particle(ids,mass,x,y,z,vx,vy,vz,tf,eps) result(ret)
-  integer :: ids,ret,oldnp,muse_get_nstar
-  integer :: new_id, add_star_particle
+  integer :: ids,ret,oldnp
   real*8 :: mass,eps,x,y,z,vx,vy,vz,tf
+  integer :: idsa(1)
+  real*8 :: massa(1),epsa(1),xa(1),ya(1),za(1),vxa(1),vya(1),vza(1),tfa(1)
   ids=new_id()
   oldnp=muse_get_nstar()
-  ret=add_star_particle(ids,mass,x,y,z,vx,vy,vz,eps,tf,1)
+  idsa = ids
+  massa = mass
+  xa = x
+  ya = y
+  za = z
+  vxa = vx
+  vya = vy
+  vza = vz
+  epsa = eps
+  tfa = tf
+  
+  ret=add_star_particle(idsa,massa,xa,ya,za,vxa,vya,vza,epsa,tfa,1)
   if(ret.EQ.oldnp+1) then
     ret=0
   else
@@ -175,7 +213,7 @@ end function
 
 function add_dm_particle(ids,mass,x,y,z,vx,vy,vz,eps,npart) result(n)
   integer :: npart
-  integer :: ids(npart),n,muse_get_nbodies
+  integer :: ids(npart),n
   real*8 :: mass(npart),x(npart),y(npart),z(npart), &
     vx(npart),vy(npart),vz(npart),eps(npart)
   call muse_add_particle_dm(ids,mass,x,y,z,vx,vy,vz,eps,npart)
@@ -184,7 +222,7 @@ end function
 
 function add_star_particle(ids,mass,x,y,z,vx,vy,vz,eps,tf,npart) result(n)
   integer :: npart
-  integer :: ids(npart),n,muse_get_nstar
+  integer :: ids(npart),n
   real*8 :: mass(npart),x(npart),y(npart),z(npart), &
     vx(npart),vy(npart),vz(npart),eps(npart),tf(npart)
   call muse_add_particle_star(ids,mass,x,y,z,vx,vy,vz,eps,tf,npart)
@@ -193,7 +231,7 @@ end function
 
 function add_sph_particle(ids,mass,x,y,z,vx,vy,vz,eps,u,npart) result(n)
   integer :: npart
-  integer :: ids(npart),n,muse_get_nsph
+  integer :: ids(npart),n
   real*8 :: mass(npart),x(npart),y(npart),z(npart), &
     vx(npart),vy(npart),vz(npart),eps(npart),u(npart)
   call muse_add_particle_sph(ids,mass,x,y,z,vx,vy,vz,eps,u,npart)
@@ -201,132 +239,132 @@ function add_sph_particle(ids,mass,x,y,z,vx,vy,vz,eps,u,npart) result(n)
 end function
 
 function set_state(id,mass,x,y,z,vx,vy,vz,eps) result(ret)
-  integer id,ret,amuse_set_state
+  integer id,ret
   real*8 mass,eps,x,y,z,vx,vy,vz 
   ret=amuse_set_state(id,mass,x,y,z,vx,vy,vz,eps)
 end function
 
 function set_state_sph(id,mass,x,y,z,vx,vy,vz,u,eps) result(ret)
-  integer id,ret,amuse_set_state_sph
+  integer id,ret
   real*8 mass,eps,x,y,z,vx,vy,vz,u 
   ret=amuse_set_state_sph(id,mass,x,y,z,vx,vy,vz,eps,u)
 end function
 
 function set_state_star(id,mass,x,y,z,vx,vy,vz,tf,eps) result(ret)
-  integer id,ret,amuse_set_state_star
+  integer id,ret
   real*8 mass,eps,x,y,z,vx,vy,vz,tf 
   ret=amuse_set_state_star(id,mass,x,y,z,vx,vy,vz,eps,tf)
 end function
 
 function get_state(id,mass,x,y,z,vx,vy,vz,eps) result(ret)
-  integer :: id,ret,amuse_get_state
+  integer :: id,ret
   real*8 :: mass,x,y,z,vx,vy,vz,eps
   ret=amuse_get_state(id,mass,x,y,z,vx,vy,vz,eps)
 end function
 
 function get_state_sph(id,mass,x,y,z,vx,vy,vz,u,eps) result(ret)
-  integer :: id,ret,amuse_get_state_sph
+  integer :: id,ret
   real*8 :: mass,x,y,z,vx,vy,vz,eps,u
   ret=amuse_get_state_sph(id,mass,x,y,z,vx,vy,vz,eps,u)
 end function
 
 function get_state_star(id,mass,x,y,z,vx,vy,vz,tf,eps) result(ret)
-  integer :: id,ret,amuse_get_state_star
+  integer :: id,ret
   real*8 :: mass,x,y,z,vx,vy,vz,eps,tf
   ret=amuse_get_state_star(id,mass,x,y,z,vx,vy,vz,eps,tf)
 end function
 
 function set_mass(id,mass) result(ret)
-  integer id,ret,amuse_set_mass
+  integer id,ret
   real*8 mass 
   ret=amuse_set_mass(id,mass)
 end function
 function set_radius(id,r) result(ret)
-  integer id,ret,amuse_set_epsgrav
+  integer id,ret
   real*8 :: r
   ret=amuse_set_epsgrav(id,r)
 end function
 function set_smoothing_length(id,eps) result(ret)
-  integer id,ret,amuse_set_hsmooth
+  integer id,ret
   real*8 eps
   ret=amuse_set_hsmooth(id,eps)
 end function
 function set_position(id,x,y,z) result(ret)
-  integer id,ret,amuse_set_position
+  integer id,ret
   real*8 x,y,z 
   ret=amuse_set_position(id,x,y,z)
 end function
 function set_velocity(id,vx,vy,vz) result(ret)
-  integer id,ret,amuse_set_velocity
+  integer id,ret
   real*8 vx,vy,vz 
   ret=amuse_set_velocity(id,vx,vy,vz)
 end function
 function set_internal_energy(id,u) result(ret)
-  integer id,ret,amuse_set_internal_energy
+  integer id,ret
   real*8 u 
   ret=amuse_set_internal_energy(id,u)
 end function
 function set_star_tform(id,tf) result(ret)
-  integer id,ret,amuse_set_star_tform
+  integer id,ret
   real*8 tf 
   ret=amuse_set_star_tform(id,tf)
 end function
 
 function get_mass(id,mass) result(ret)
-  integer :: id,ret,amuse_get_mass
+  integer :: id,ret
   real*8 :: mass
   ret=amuse_get_mass(id,mass)
 end function
 function get_radius(id,eps) result(ret)
-  integer id,ret,amuse_get_epsgrav
+  integer id,ret
   real*8 :: eps
   ret=amuse_get_epsgrav(id,eps)
 end function
 function get_smoothing_length(id,eps) result(ret)
-  integer :: id,ret,amuse_get_hsmooth
+  integer :: id,ret
   real*8 :: eps
   ret=amuse_get_hsmooth(id,eps)
 end function
 function get_density(id,density) result(ret)
-  integer :: id,ret,amuse_get_density
+  integer :: id,ret
   real*8 :: density
   ret=amuse_get_density(id,density)
 end function
 
 function get_pressure(id,pressure) result(ret)
-  integer :: id,ret,amuse_get_pressure
+  integer :: id,ret
   real*8 :: pressure
   ret=amuse_get_pressure(id,pressure)
 end function
 
 function get_position(id,x,y,z) result(ret)
-  integer :: id,ret,amuse_get_position
+  integer :: id,ret
   real*8 :: x,y,z
   ret=amuse_get_position(id,x,y,z)
 end function
 function get_velocity(id,vx,vy,vz) result(ret)
-  integer :: id,ret,amuse_get_velocity
+  integer :: id,ret
   real*8 :: vx,vy,vz
   ret=amuse_get_velocity(id,vx,vy,vz)
 end function
 function get_internal_energy(id,u) result(ret)
-  integer :: id,ret,amuse_get_internal_energy
+  integer :: id,ret
   real*8 :: u
   ret=amuse_get_internal_energy(id,u)
 end function
 function get_dinternal_energy_dt(id,dudt) result(ret)
-  integer :: id,ret,amuse_get_dinternal_energy_dt
+  integer :: id,ret
   real*8 :: dudt
   ret=amuse_get_dinternal_energy_dt(id,dudt)
 end function
 function get_star_tform(id,tf) result(ret)
-  integer :: id,ret,amuse_get_star_tform
+  integer :: id,ret
   real*8 :: tf
   ret=amuse_get_star_tform(id,tf)
 end function
 
 function delete_particle(id) result(ret)
-  integer id,ret,muse_remove_particle
+  integer id,ret
   ret=muse_remove_particle(id)
 end function
 
@@ -346,7 +384,7 @@ function get_potential_at_point(eps, x, y, z, phi, n) result(ret)
 end function
 
 function get_potential(id, phi) result(ret)
-  integer:: ret, id,amuse_get_potential
+  integer:: ret, id
   real*8 :: phi
   ret = amuse_get_potential(id, phi)
 end function
@@ -792,7 +830,7 @@ function set_dtime(x) result(ret)
 end function
 
 function set_time_step(time_step) result(ret)
-  integer :: ret,set_dtime
+  integer :: ret
   real*8 :: time_step
   ret=set_dtime(time_step)
 end function
@@ -805,7 +843,7 @@ function get_dtime(x) result(ret)
 end function
 
 function get_time_step(time_step) result(ret)
-  integer :: ret,get_dtime
+  integer :: ret
   real*8 :: time_step
   ret=get_dtime(time_step) 
 end function
@@ -1317,33 +1355,16 @@ end function
 
 function get_number_of_sph_particles_removed(x)
   integer :: get_number_of_sph_particles_removed
-  integer :: amuse_get_number_of_sph_particles_removed
   integer, intent(out) :: x
   get_number_of_sph_particles_removed = amuse_get_number_of_sph_particles_removed(x)
 end function
 
 function get_id_of_removed_sph_particle(x, id_of_removed_particle)
   integer :: get_id_of_removed_sph_particle
-  integer :: amuse_get_id_of_removed_sph_particle
   integer, intent(in) :: x
   integer, intent(out) :: id_of_removed_particle
   get_id_of_removed_sph_particle = amuse_get_id_of_removed_sph_particle(x, id_of_removed_particle)
 end function
 
-! dummies:
-! (only necessary to be able to compile using old muse style interface files)
-
-subroutine call_external_acc(eps,x,y,z,ax,ay,az,n)
-  integer n
-  double precision :: eps(n), x(n),y(n),z(n)
-  double precision :: ax(n),ay(n),az(n)
-
-end subroutine
-
-subroutine call_external_pot(eps,x,y,z,phi,n)
-  integer n
-  double precision :: eps(n), x(n),y(n),z(n)
-  double precision :: phi(n)
-
-end subroutine
+END MODULE
 

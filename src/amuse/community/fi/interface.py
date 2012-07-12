@@ -26,6 +26,7 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
     set_acceleration=None
     get_acceleration=None
     
+    use_modules=['StoppingConditions','AmuseInterface']
     
     MODE_NORMAL = 'normal'
     MODE_PERIODIC_BOUNDARIES   = 'periodic'

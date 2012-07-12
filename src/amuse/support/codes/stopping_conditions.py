@@ -313,6 +313,7 @@ class StoppingCondition(object):
         return self.conditions.code.is_stopping_condition_enabled(self.type) == 1
         
     def is_supported(self):
+        print "self.type", self.type
         return self.conditions.code.has_stopping_condition(self.type) == 1
 
     def is_set(self):

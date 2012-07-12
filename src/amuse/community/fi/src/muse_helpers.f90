@@ -1,3 +1,6 @@
+MODULE MuseHelpers
+CONTAINS
+
 subroutine muse_start
   include 'globals.h'
   real*8 rtime, dum
@@ -104,7 +107,7 @@ end function
 subroutine muse_reset(time)
  include 'globals.h'
  real time
- integer dum,dumm(2),muse_find_particle
+ integer dum,dumm(2)
  real tbegin
  common /amusecom/ tbegin
 
@@ -146,7 +149,7 @@ subroutine muse_reset(time)
  !must set dum to zero before calling muse_find_particle, 
  !not all fortran versions will reset
  !the parameters to zero
- dum=muse_find_particle(dum, -1,-1,-1,dumm)
+ dum=muse_find_particle(dum, -1,-1,dumm)
 
  input=0
  input(1:4)=1  ! mass+pos+vel+eps
@@ -305,33 +308,20 @@ function muse_get_time_step() result(dt)
 end function
 
 subroutine muse_stepsys(tend,sync)
+ use StoppingConditions
  include 'globals.h'
- include 'stopcond.inc'
+ 
  real :: tend
  integer :: p
  integer :: sync
- integer :: is_any_condition_set
- integer :: is_stopping_condition_enabled
  integer :: is_number_of_steps_detection_enabled
  integer :: is_timeout_detection_enabled
  integer :: is_out_of_box_detection_enabled
  integer :: is_density_limit_detection_enabled
  integer :: is_internal_energy_limit_detection_enabled
  
- integer :: get_stopping_condition_number_of_steps_parameter 
- integer :: get_stopping_condition_timeout_parameter 
- integer :: get_stopping_condition_out_of_box_parameter
- integer :: get_stopping_condition_minimum_density_parameter
- integer :: get_stopping_condition_maximum_density_parameter
- integer :: get_stopping_condition_minimum_internal_energy_parameter
- integer :: get_stopping_condition_maximum_internal_energy_parameter
- integer :: next_index_for_stopping_condition
- integer :: set_stopping_condition_info
- integer :: set_stopping_condition_particle_index
- integer :: reset_stopping_conditions
- 
  integer :: max_number_of_steps=0
- integer :: timeout
+ real :: timeout
  real :: stop_boxsize
  real :: minimum_density_parameter, maximum_density_parameter
  real :: minimum_internal_energy_parameter, maximum_internal_energy_parameter
@@ -525,52 +515,6 @@ subroutine muse_get_hydro_state(x,y,z,vx,vy,vz, &
   
 end subroutine
 
-subroutine external_gravity(option)
- include 'globals.h'
- character*4 option
- integer, parameter :: bunchsize=1024
- real :: l_eps(bunchsize), l_pos(bunchsize,3), &
-         l_phi(bunchsize), l_acc(bunchsize,3)
- integer i,ndone,todo
-
- ndone=0
- do while(ndone.LT.npactive)
-
-    todo=MIN(bunchsize,npactive-ndone)
-
-    l_eps(1:todo)=epsgrav(pactive(ndone+1:ndone+todo))
-    l_pos(1:todo,1:3)=pos(pactive(ndone+1:ndone+todo),1:3)
-    l_acc(1:todo,1:3)=0
-    l_phi(1:todo)=0
-
-    select case (option)
-    case('acc ')
-      call call_external_acc(l_eps(1), &
-           l_pos(1,1),l_pos(1,2),l_pos(1,3), &
-           l_acc(1,1),l_acc(1,2),l_acc(1,3), todo)
-    case('pot ')
-      call call_external_pot(l_eps(1), &
-             l_pos(1,1),l_pos(1,2),l_pos(1,3), &
-             l_phi(1), todo)
-    case default
-      call call_external_acc(l_eps(1), &
-             l_pos(1,1),l_pos(1,2),l_pos(1,3), &
-             l_acc(1,1),l_acc(1,2),l_acc(1,3), todo)
-      call call_external_pot(l_eps(1), &
-             l_pos(1,1),l_pos(1,2),l_pos(1,3), &
-             l_phi(1), todo)
-    end select
-
-    acc(pactive(ndone+1:ndone+todo),1:3)= &
-            acc(pactive(ndone+1:ndone+todo),1:3)+l_acc(1:todo,1:3)	   
-    phi(pactive(ndone+1:ndone+todo))= &
-            phi(pactive(ndone+1:ndone+todo))+l_phi(1:todo)	   
-
-    ndone=ndone+todo
-
- enddo
-
-end subroutine
 
 subroutine muse_set_nstar(ns)
  include 'globals.h'
@@ -634,14 +578,14 @@ end function
 
 subroutine muse_get_state(id,m,x,y,z,vx,vy,vz,e)
   include 'globals.h'
-  integer :: id,dum,amuse_get_state
+  integer :: id,dum
   real*8 :: m,x,y,z,vx,vy,vz,e
   dum=amuse_get_state(id,m,x,y,z,vx,vy,vz,e)
 end subroutine
  
 function amuse_get_state(id,m,x,y,z,vx,vy,vz,e) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: m,x,y,z,vx,vy,vz,e
 
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
@@ -663,7 +607,7 @@ end function
 
 function amuse_get_state_sph(id,m,x,y,z,vx,vy,vz,e,u) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: m,x,y,z,vx,vy,vz,e,u
 
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
@@ -694,7 +638,7 @@ end function
 
 function amuse_get_state_star(id,m,x,y,z,vx,vy,vz,e,tf) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: m,x,y,z,vx,vy,vz,e,tf
 
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
@@ -721,7 +665,7 @@ end function
 
 function amuse_set_state(id,m,x,y,z,vx,vy,vz,e) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: m,x,y,z,vx,vy,vz,e
 
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
@@ -743,7 +687,7 @@ end function
 
 function amuse_set_state_sph(id,m,x,y,z,vx,vy,vz,e,u) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: m,x,y,z,vx,vy,vz,e,u
 
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
@@ -782,7 +726,7 @@ end function
 
 function amuse_set_state_star(id,m,x,y,z,vx,vy,vz,e,tf) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: m,x,y,z,vx,vy,vz,e,tf
 
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
@@ -809,7 +753,7 @@ end function
 
 function amuse_get_mass(id,m) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: m
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -822,7 +766,7 @@ function amuse_get_mass(id,m) result(ret)
 end function
 function amuse_get_epsgrav(id,e) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: e
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -835,7 +779,7 @@ function amuse_get_epsgrav(id,e) result(ret)
 end function
 function amuse_get_hsmooth(id,h) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: h
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -848,7 +792,7 @@ function amuse_get_hsmooth(id,h) result(ret)
 end function
 function amuse_get_density(id, density) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: density
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -862,7 +806,7 @@ end function
 
 function amuse_get_pressure(id, pressure) result(ret)
    include 'globals.h'
-   integer :: id, ret, p, muse_find_particle
+   integer :: id, ret, p
    real*8 :: pressure
    p = muse_find_particle(pordercount, id, nbodies, nbexist)
    if(p.EQ.0) then
@@ -881,7 +825,7 @@ end function
 
 function amuse_get_position(id,x,y,z) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: x,y,z
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -898,7 +842,7 @@ end function
 function amuse_get_potential(id, phi_) result(ret)
   include 'globals.h'
   real*8 :: phi_
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
 
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -916,7 +860,7 @@ end function
 
 function amuse_get_velocity(id,vx,vy,vz) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: vx,vy,vz
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -931,7 +875,7 @@ function amuse_get_velocity(id,vx,vy,vz) result(ret)
 end function
 function amuse_get_internal_energy(id,u) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: u
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -952,7 +896,7 @@ function amuse_get_internal_energy(id,u) result(ret)
 end function
 function amuse_get_dinternal_energy_dt(id,u) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: u
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -973,7 +917,7 @@ function amuse_get_dinternal_energy_dt(id,u) result(ret)
 end function
 function amuse_get_star_tform(id,tf) result(ret)
   include 'globals.h'
-  integer :: id,ret,p,muse_find_particle
+  integer :: id,ret,p
   real*8 :: tf
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -991,7 +935,7 @@ end function
 
 function amuse_set_mass(id,m) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: m
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -1004,7 +948,7 @@ function amuse_set_mass(id,m) result(ret)
 end function
 function amuse_set_epsgrav(id,e) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: e
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -1017,7 +961,7 @@ function amuse_set_epsgrav(id,e) result(ret)
 end function
 function amuse_set_hsmooth(id,h) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: h
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -1030,7 +974,7 @@ function amuse_set_hsmooth(id,h) result(ret)
 end function
 function amuse_set_position(id,x,y,z) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: x,y,z
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -1045,7 +989,7 @@ function amuse_set_position(id,x,y,z) result(ret)
 end function
 function amuse_set_velocity(id,vx,vy,vz) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: vx,vy,vz
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -1060,7 +1004,7 @@ function amuse_set_velocity(id,vx,vy,vz) result(ret)
 end function
 function amuse_set_internal_energy(id,u) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: u
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -1089,7 +1033,7 @@ function amuse_set_internal_energy(id,u) result(ret)
 end function
 function amuse_set_star_tform(id,tf) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
   real*8 :: tf
   p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
@@ -1108,7 +1052,7 @@ end function
 
 function muse_remove_particle(id) result(ret)
   include 'globals.h'
-  integer :: id,p,ret,muse_find_particle
+  integer :: id,p,ret
 
   if(syncflag.NE.0) then
     ret=-2
@@ -1138,7 +1082,6 @@ end function
 function muse_index_of_next_particle(id,id1) result(ret)
   include 'globals.h'
   integer id,id1,p,ret
-  integer muse_find_particle
   if(nbodies.LT.1) then
     ret=-1
     return
@@ -1957,3 +1900,71 @@ function amuse_get_id_of_removed_sph_particle(x, id_of_removed_particle)
   amuse_get_id_of_removed_sph_particle = 0
   id_of_removed_particle=removedidssph(x+1)
 end function
+
+END MODULE
+
+
+! dummies:
+! (only necessary to be able to compile using old muse style interface files)
+
+subroutine call_external_acc(eps,x,y,z,ax,ay,az,n)
+  integer n
+  real :: eps(n), x(n),y(n),z(n)
+  real :: ax(n),ay(n),az(n)
+
+end subroutine
+
+subroutine call_external_pot(eps,x,y,z,phi,n)
+  integer n
+  real :: eps(n), x(n),y(n),z(n)
+  real :: phi(n)
+
+end subroutine
+
+
+subroutine external_gravity(option)
+ include 'globals.h'
+ character*4 option
+ integer, parameter :: bunchsize=1024
+ real :: l_eps(bunchsize), l_pos(bunchsize,3), &
+         l_phi(bunchsize), l_acc(bunchsize,3)
+ integer i,ndone,todo
+
+ ndone=0
+ do while(ndone.LT.npactive)
+
+    todo=MIN(bunchsize,npactive-ndone)
+
+    l_eps(1:todo)=epsgrav(pactive(ndone+1:ndone+todo))
+    l_pos(1:todo,1:3)=pos(pactive(ndone+1:ndone+todo),1:3)
+    l_acc(1:todo,1:3)=0
+    l_phi(1:todo)=0
+
+    select case (option)
+    case('acc ')
+      call call_external_acc(l_eps(1), &
+           l_pos(1,1),l_pos(1,2),l_pos(1,3), &
+           l_acc(1,1),l_acc(1,2),l_acc(1,3), todo)
+    case('pot ')
+      call call_external_pot(l_eps(1), &
+             l_pos(1,1),l_pos(1,2),l_pos(1,3), &
+             l_phi(1), todo)
+    case default
+      call call_external_acc(l_eps(1), &
+             l_pos(1,1),l_pos(1,2),l_pos(1,3), &
+             l_acc(1,1),l_acc(1,2),l_acc(1,3), todo)
+      call call_external_pot(l_eps(1), &
+             l_pos(1,1),l_pos(1,2),l_pos(1,3), &
+             l_phi(1), todo)
+    end select
+
+    acc(pactive(ndone+1:ndone+todo),1:3)= &
+            acc(pactive(ndone+1:ndone+todo),1:3)+l_acc(1:todo,1:3)	   
+    phi(pactive(ndone+1:ndone+todo))= &
+            phi(pactive(ndone+1:ndone+todo))+l_phi(1:todo)	   
+
+    ndone=ndone+todo
+
+ enddo
+
+end subroutine

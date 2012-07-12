@@ -40,13 +40,29 @@ codestringF = """
       IMPLICIT NONE
       include "stopcond.inc"
       INTEGER :: initialize_code
-      INTEGER :: set_supported_conditions
+      INTEGER :: set_support_for_condition
       INTEGER :: return
       initialize_code = 0
-      return = set_supported_conditions(IOR(COLLISION_DETECTION_BITMAP, PAIR_DETECTION_BITMAP))
+      return = set_support_for_condition(COLLISION_DETECTION)
+      return = set_support_for_condition(PAIR_DETECTION)
       RETURN
       END
+"""
 
+codestringFModule = """
+MODULE AmuseInterface
+CONTAINS
+      FUNCTION initialize_code()
+      use StoppingConditions
+      IMPLICIT NONE
+      INTEGER :: initialize_code
+      INTEGER :: return
+      initialize_code = 0
+      return = set_support_for_condition(COLLISION_DETECTION)
+      return = set_support_for_condition(PAIR_DETECTION)
+      RETURN
+      END
+END MODULE
 """
 
 class ForTestingInterface(CodeInterface, stopping_conditions.StoppingConditionInterface):
@@ -54,7 +70,6 @@ class ForTestingInterface(CodeInterface, stopping_conditions.StoppingConditionIn
         CodeInterface.__init__(self, exefile, **options)
 
     include_headers = ['stopcond.h']
-
     @legacy_function
     def initialize_code():
         function = LegacyFunctionSpecification()  
@@ -96,6 +111,10 @@ class ForTestingInterface(CodeInterface, stopping_conditions.StoppingConditionIn
         function.can_handle_array = True
         return function  
 
+
+class ForTestingInterfaceFortranModule(ForTestingInterface):
+    use_modules = ['StoppingConditions', 'AmuseInterface']
+    
 class ForTesting(InCodeComponentImplementation):
     def __init__(self, exefile, **options):
         self.stopping_conditions = stopping_conditions.StoppingConditions(self)
@@ -329,7 +348,7 @@ class TestInterface(TestWithMPI):
     
 
 
-class TestInterfaceF(TestWithMPI):
+class _AbstractTestInterfaceFortran(TestWithMPI):
     
     def get_mpif90_name(self):
         try:
@@ -368,6 +387,15 @@ class TestInterfaceF(TestWithMPI):
         if not os.path.exists(objectname): # or process.poll() == 1:
             raise Exception("Could not compile {0}, error = {1} ({2})".format(objectname, stderr, ' '.join(arguments)))
     
+    def get_libname(self):
+        return 'stopcond'
+        
+    def get_codestring(self):
+        return CodeStringF
+        
+    def get_interface_class(self):
+        return ForTestingInterface
+        
     def f90_build(self, exename, objectnames):
         rootdir = self.get_amuse_root_dir()
         
@@ -375,7 +403,7 @@ class TestInterfaceF(TestWithMPI):
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)
-        arguments.extend(["-L{0}/lib/stopcond".format(rootdir),"-lstopcond"])
+        arguments.extend(["-L{0}/lib/stopcond".format(rootdir),"-l"+self.get_libname()])
         print 'build command:'
         print ' '.join(arguments)
         process = subprocess.Popen(
@@ -394,10 +422,10 @@ class TestInterfaceF(TestWithMPI):
         interfacefile = os.path.join(path,"interfacef90.o")
         self.exefile = os.path.join(path,"fortran_worker")
         
-        self.f90_compile(codefile, codestringF)
+        self.f90_compile(codefile, self.get_codestring())
         
         uf = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
-        uf.specification_class = ForTestingInterface
+        uf.specification_class = self.get_interface_class()
         string =  uf.result
         
         #print string
@@ -406,7 +434,7 @@ class TestInterfaceF(TestWithMPI):
         self.f90_build(self.exefile, [interfacefile, codefile] )
     
     def setUp(self):
-        super(TestInterfaceF, self).setUp()
+        super(_AbstractTestInterfaceFortran, self).setUp()
         print "building"
         self.build_worker()
 
@@ -507,4 +535,27 @@ class TestInterfaceF(TestWithMPI):
         self.assertRaises(AmuseException, instance.stopping_conditions.escaper_detection.enable, expected_message=
             "Can't enable stopping condition 'escaper_detection', since 'ForTesting' does not support this condition.")
         instance.stop()
+    
+
+class TestInterfaceF(_AbstractTestInterfaceFortran):
+    
+    def get_libname(self):
+        return 'stopcond'
+        
+    def get_codestring(self):
+        return codestringF
+        
+    def get_interface_class(self):
+        return ForTestingInterface
+    
+class TestInterfaceFModule(_AbstractTestInterfaceFortran):
+    
+    def get_libname(self):
+        return 'stopcondf'
+        
+    def get_codestring(self):
+        return codestringFModule
+        
+    def get_interface_class(self):
+        return ForTestingInterfaceFortranModule
     
