@@ -107,14 +107,16 @@ end subroutine
 subroutine partremoval
   include 'globals.h'
   integer i,lastsph,lastdm,laststar,lastbh 
-  integer onsph,onstar,onbh,onbodies
-
-  pordercount=pordercount+1
+  integer onsph,onstar,onbh
+  integer nnewremovals
   
+  pordercount=pordercount+1
+  nnewremovals=0
   do i=1,nsph
     if(mass(i).LT.tiny) then
       removedidssph(nremovals+1) = nbexist(i)
       nremovals=nremovals+1
+      nnewremovals=nnewremovals+1
     endif
   enddo
   
@@ -171,7 +173,7 @@ subroutine partremoval
     endif 
   enddo
   
-  if(nsph.NE.nremovals+lastsph) call terror('partremoval count mismatch')
+  if(nsph.NE.nnewremovals+lastsph) call terror('partremoval count mismatch')
    
   nsph=lastsph
   nstar=lastbh-lastdm ! bh is also a star
