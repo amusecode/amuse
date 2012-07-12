@@ -1,4 +1,7 @@
 MODULE MuseHelpers
+ use StoppingConditions
+
+
 CONTAINS
 
 subroutine muse_start
@@ -159,7 +162,7 @@ subroutine muse_reset(time)
  input(19)=1   ! csound 
  input(13)=0   ! hsmooth
  
-end
+end subroutine
 
 
 subroutine muse_end
@@ -308,7 +311,6 @@ function muse_get_time_step() result(dt)
 end function
 
 subroutine muse_stepsys(tend,sync)
- use StoppingConditions
  include 'globals.h'
  
  real :: tend
@@ -1901,7 +1903,8 @@ function amuse_get_id_of_removed_sph_particle(x, id_of_removed_particle)
   id_of_removed_particle=removedidssph(x+1)
 end function
 
-END MODULE
+
+END MODULE MuseHelpers
 
 
 ! dummies:

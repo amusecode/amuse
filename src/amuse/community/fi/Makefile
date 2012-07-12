@@ -52,7 +52,7 @@ FFLAGS = $(FCFLAGS) -fdefault-real-8  -O3 -ffree-line-length-256 -frecord-marker
 endif
 
 ifeq ($(findstring xlf, $(notdir $(FORTRAN))), xlf)
-FFLAGS = $(FCFLAGS) -qreal-size=8 -O3 $(PIC)
+FFLAGS = -qrealsize=8 -O2 $(PIC)
 F77FLAGS += -qfixed
 endif
 

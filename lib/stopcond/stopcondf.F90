@@ -16,14 +16,14 @@ module StoppingConditions
 &      0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET,&
 &      0:MAX_NUMBER_OF_PARTICLES_PER_INDEX)
 
-    integer*8, private:: enabled_conditions = 0
-    integer*8, private :: set_conditions = 0
-    integer*8, private :: supported_conditions = 0
-    integer*8, private :: number_of_stopping_conditions_set = 0
+    integer*4, private:: enabled_conditions = 0
+    integer*4, private :: set_conditions = 0
+    integer*4, private :: supported_conditions = 0
+    integer*4, private :: number_of_stopping_conditions_set = 0
 
     double precision, private :: timeout_parameter = 4.0
     double precision, private :: out_of_box_parameter = 0.0
-    integer*8, private :: number_of_steps_parameter = 1
+    integer*4, private :: number_of_steps_parameter = 1
     double precision, private :: minimum_density_parameter = -1.0
     double precision, private :: maximum_density_parameter = DBL_MAX
     double precision, private :: minimum_internal_energy_parameter = -1.0

@@ -36,7 +36,7 @@ $(LIBNAMEMPI): $(OBJSMPI)
 	$(CC) $(CFLAGS) -c -o $@ $<
 	
 %.o: %.F90
-	$(CC) $(FCFLAGS) -c -o $@ $<
+	$(FC) $(FCFLAGS) -c -o $@ $<
 
 clean:
 	rm -Rf *.o *.lo *.a *.mo
