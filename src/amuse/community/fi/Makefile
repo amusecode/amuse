@@ -98,15 +98,15 @@ $(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
 	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
 fi_worker: worker.f90 $(BUILDDIR)/libfi.a interface.o 
-	$(MPIFC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SCLIBS)
+	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDDIR) worker.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SCLIBS)
 
 fi_worker_sockets: worker-sockets.f90 interface.o $(BUILDDIR)/libfi.a
-	$(MPIFC) $(FFLAGS) $(SCINC) $(FSINC) worker-sockets.f90 interface.o -o $@ $(BUILDDIR)/libfi.a \
+	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDIR) $(FSINC) worker-sockets.f90 interface.o -o $@ $(BUILDDIR)/libfi.a \
 	$(LIBS) $(SCLIBS) $(FSLIBS)
 
 fi_worker_gl: glworker.f90 interface.o $(BUILDDIR)/libfi.a
 	make -C $(BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
-	$(MPIFC) $(FFLAGS) $(SCINC) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
+	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDDIR) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SCLIBS)
 
 $(PERIODIC_BUILDDIR)/Makefile:
