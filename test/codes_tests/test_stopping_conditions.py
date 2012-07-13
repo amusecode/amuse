@@ -46,7 +46,7 @@ codestringF = """
       return = set_support_for_condition(COLLISION_DETECTION)
       return = set_support_for_condition(PAIR_DETECTION)
       RETURN
-      END
+      END FUNCTION
 """
 
 codestringFModule = """
@@ -61,7 +61,7 @@ CONTAINS
       return = set_support_for_condition(COLLISION_DETECTION)
       return = set_support_for_condition(PAIR_DETECTION)
       RETURN
-      END
+      END FUNCTION
 END MODULE
 """
 
