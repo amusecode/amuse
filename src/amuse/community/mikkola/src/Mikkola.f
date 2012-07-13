@@ -1306,7 +1306,7 @@ c       end of I-loop
         FA=FY
         K=L-1
         FY=(EP(K)/FS)**(1.d0/FLOAT(L+K))
-        FY=min(FY,1.4) !1.4 ~ 1/0.7 ; where 0.7 = initial reduction factor
+        FY=min(FY,1.4d0) !1.4 ~ 1/0.7 ; where 0.7 = initial reduction factor
         IF(.NOT.((L.NE.2.AND.FY.LT.Odot7*FA).OR.FY.GT.Odot7))THEN
         H=H*FY
                JTI=JTI+1

@@ -807,7 +807,7 @@ c (unless the more massive one is a Small body)
       end if
 c
 c Write message to info file (I=0 implies collision with the central body)
-  10  open (23, file=outfile, status='old', access='append', err=10)
+  10  open (23, file=outfile, status='old', position='append', err=10)
 c
       if (opt(3).eq.1) then
         call mio_jd2y (time,year,month,t1)
@@ -999,7 +999,7 @@ c
 c
 c Write compressed output to file
 
-  50  open (22, file=outfile, status='old', access='append', err=50)
+  50  open (22, file=outfile, status='old', position='append', err=50)
       write (22,'(a1,a2,i2,a62,i1)') char(12),'6a',algor,header(1:62),
      %  opt(4)
       do j = 2, nbod
@@ -1440,7 +1440,7 @@ c is in progress, store details
      %        .or.(d2min.le.d2hit)) then
               nclo = nclo + 1
               if (nclo.gt.CMAX) then
- 230            open (23,file=outfile,status='old',access='append',
+ 230            open (23,file=outfile,status='old',position='append',
      %            err=230)
                 write (23,'(/,2a,/,a)') mem(121)(1:lmem(121)),
      %            mem(132)(1:lmem(132)),mem(82)(1:lmem(82))
@@ -4938,7 +4938,8 @@ c
 c
 c If required, output the stored close encounter details
       if (nstored.ge.100.or.ceflush.eq.0) then
-  10    open (22, file=outfile(2), status='old', access='append',err=10)
+  10    open (22, file=outfile(2), status='old', position='append'
+     %     ,err=10)
         do k = 1, nstored
           write (22,'(a1,a2,a70)') char(12),'6b',c(k)(1:70)
         end do
@@ -4949,7 +4950,8 @@ c
 c If new encounter minima have occurred, decide whether to stop integration
       stopflag = 0
       if (opt(1).eq.1.and.nclo.gt.0) then
-  20    open (23, file=outfile(3), status='old', access='append',err=20)
+  20    open (23, file=outfile(3), status='old', position='append'
+     %        ,err=20)
 c If time style is Gregorian date then...
         tmp0 = tclo(1)
         if (opt(3).eq.1) then
@@ -5450,7 +5452,7 @@ c Check if information file exists, and append a continuation message
         inquire (file=outfile(3), exist=test)
         if (.not.test) call mio_err (6,mem(81),lmem(81),mem(88),
      %    lmem(88),' ',1,outfile(3),80)
- 320    open(23,file=outfile(3),status='old',access='append',err=320)
+ 320    open(23,file=outfile(3),status='old',position='append',err=320)
       else
 c
 c If new integration, check information file doesn't exist, and then create it
@@ -6139,7 +6141,7 @@ c Create the format list, FOUT, used when outputting the orbital elements
       if (len.ge.10) write (fout(3:4),'(i2)') len
 c
 c Open the orbital-elements output file
-  10  open (21, file=outfile, status='old', access='append', err=10)
+  10  open (21, file=outfile, status='old', position='append', err=10)
 c
 c------------------------------------------------------------------------------
 c
@@ -6399,7 +6401,7 @@ c Flag each object which is ejected, and set its mass to zero
           s(3,j) = 0.d0
 c
 c Write message to information file
-  20      open  (23,file=outfile,status='old',access='append',err=20)
+  20      open  (23,file=outfile,status='old',position='append',err=20)
           if (opt(3).eq.1) then
             call mio_jd2y (time,year,month,t1)
             flost = '(1x,a8,a,i10,1x,i2,1x,f8.5)'
@@ -6507,7 +6509,7 @@ c Update total number of bodies and number of Big bodies
 c
 c If no massive bodies remain, stop the integration
       if (nbig.lt.1) then
-  10    open (23,file=outfile,status='old',access='append',err=10)
+  10    open (23,file=outfile,status='old',position='append',err=10)
         write (23,'(2a)') mem(81)(1:lmem(81)),mem(124)(1:lmem(124))
         close (23)
         stop

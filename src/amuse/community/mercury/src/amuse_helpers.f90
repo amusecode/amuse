@@ -735,9 +735,10 @@ end function
        rcen,rmax,en,am,cefac,ndump,nfun,nbod,nbig,m,xh,vh,s,rho,rceh, &
        stat,id,ngf,opt,opflag,ngflag,outfile,dumpfile,mem,lmem,onestep, &
        coord,bcoord)
+
 !
+      use StoppingConditions
       implicit none
-      include "stopcond.inc"
       include 'amuse_mercury.inc'
       
 !
@@ -760,14 +761,9 @@ end function
       real*8 ixvclo(6,CMAX),jxvclo(6,CMAX),a(NMAX)
       integer clock_init, clock_current
       integer count_rate, count_max
-      integer is_any_condition_set
-      integer is_stopping_condition_enabled
       integer is_timeout_detection_enabled
-      integer get_stopping_condition_timeout_parameter 
-      integer next_index_for_stopping_condition
-      integer set_stopping_condition_info
       integer stopping_index
-      integer reset_stopping_conditions, error
+      integer error
       double precision timeout
 
       external onestep,coord,bcoord

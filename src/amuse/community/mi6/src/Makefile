@@ -4,7 +4,7 @@ AMUSE_DIR?=../../../../..
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX ?= mpicxx
-CXXFLAGS = -Wall -O3 -ffast-math -funroll-loops -fomit-frame-pointer
+CXXFLAGS ?= -Wall -O3 -ffast-math -funroll-loops -fomit-frame-pointer
 
 SAPPORO_LIBS ?= -L$(AMUSE_DIR)/lib/sapporo_light -lsapporo
 CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart

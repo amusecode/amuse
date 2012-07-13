@@ -19,6 +19,9 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         .. [#] Chambers J. E., 1999, MNRAS, 304, 793
         .. [#] Widsom J. & Holman M., 1991, AJ, 102, 1528
     """
+
+    use_modules = ['StoppingConditions', 'AmuseInterface']
+
     def __init__(self, **args):
         CodeInterface.__init__(self, name_of_the_worker = 'mercury_worker',**args)
         LiteratureReferencesMixIn.__init__(self)

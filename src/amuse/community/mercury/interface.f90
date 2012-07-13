@@ -1,6 +1,9 @@
+module AmuseInterface
+contains
+
 function initialize_code() result(ret)
   use amuse_mercuryMod
-  include "stopcond.inc"
+  use StoppingConditions
   integer :: ret
   integer :: set_support_for_condition, error
   error = set_support_for_condition(TIMEOUT_DETECTION)
@@ -82,6 +85,7 @@ function new_central_particle(id,mass,radius,j2,j4,j6,Lx,Ly,Lz) result(ret)
   use amuse_mercuryMod
   integer :: ret,id
   real*8 :: mass, radius, oblateness(3), spin(3)
+  real*8 :: j2, j4, j6, Lx, Lz, Ly
   oblateness(1)=j2;oblateness(2)=j4;oblateness(3)=j6
   spin(1)=Lx;spin(2)=Ly;spin(3)=Lz
   ret=set_central_body(mass=mass, radius=radius, oblateness=oblateness,spin=spin)
@@ -317,3 +321,5 @@ function get_number_of_orbiters(norbiters) result(ret)
   integer :: ret,norbiters
   ret=get_number_of_particles(norbiters)
 end function  
+
+end module

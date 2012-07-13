@@ -2,7 +2,7 @@ MPICXX ?= mpicxx
 MPICC ?= mpicc
 
 ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
-CCFLAGS += -qlanglvl=stdc99
+CCFLAGS += -qlanglvl=extc99
 else
 CCFLAGS += -std=c99
 endif
@@ -46,8 +46,8 @@ huayno_worker: clean __init__.py worker_code.cc worker_code.h $(OBJS)
 huayno_worker_sockets: clean __init__.py worker_code-sockets.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code-sockets.cc $(OBJS) -o $@ $(LIBS)
 
-huayno_worker_mp: CCFLAGS   += -fopenmp
-huayno_worker_mp: CXXFLAGS   += -fopenmp
+huayno_worker_mp: CCFLAGS   += $(OPENMP_CFLAGS) 
+huayno_worker_mp: CXXFLAGS   += $(OPENMP_CFLAGS)
 huayno_worker_mp: clean __init__.py worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OBJS) -o $@ $(LIBS)
 

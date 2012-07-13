@@ -134,7 +134,7 @@ c Get initial conditions and integration parameters
 c
 c If this is a new integration, integrate all the objects to a common epoch.
       if (opflag.eq.-2) then
-  20    open (23,file=outfile(3),status='old',access='append',err=20)
+  20    open (23,file=outfile(3),status='old',position='append',err=20)
         write (23,'(/,a)') mem(55)(1:lmem(55))
         write (*,'(a)') mem(55)(1:lmem(55))
         call mxx_sync (time,tstart,h0,tol,jcen,nbod,nbig,m,xh,vh,s,rho,
@@ -185,7 +185,7 @@ c Do a final data dump
      %  id,ngf,epoch,opt,opflag,dumpfile,mem,lmem)
 c
 c Calculate and record the overall change in energy and ang. momentum
-  50  open  (23, file=outfile(3), status='old', access='append',
+  50  open  (23, file=outfile(3), status='old', position='append',
      %  err=50)
       write (23,'(/,a)') mem(57)(1:lmem(57))
       call mxx_en (jcen,nbod,nbig,m,xh,vh,s,en(2),am(2))

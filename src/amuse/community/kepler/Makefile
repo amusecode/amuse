@@ -12,7 +12,7 @@ OPT	  = # -O4 don't use O4 it is not defined on normal gcc, but has special mean
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += -Wall -g $(OPT)
+CFLAGS   += $(OPT)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
@@ -25,7 +25,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 all: $(ALL)
 
 $(CODELIB):
-	make -C src all CXX=$(MPICXX)
+	make -C src all CXX='$(MPICXX)'
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py KeplerInterface -o $@

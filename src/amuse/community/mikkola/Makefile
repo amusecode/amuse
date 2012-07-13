@@ -6,10 +6,15 @@ AMUSE_DIR?=../../../..
 MPIFC ?= mpif90
 FC    = $(MPIFC)
 
-FFLAGS   += -Wall -g
+FFLAGS   += 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
+
+F77FLAGS = 
+ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
+F77FLAGS += -qfixed -qextname=flush
+endif
 
 CODELIB = src/libMikkola.a
 
@@ -27,13 +32,13 @@ clean:
 distclean: clean
 
 $(CODELIB):
-	make -C src all
+	make -C src all F77FLAGS="$(F77FLAGS)"
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MikkolaInterface -o $@
 
 mikkola_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIF90) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
+	$(MPIFC) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 %.o: %.f90
 	$(FC) $(FFLAGS) -c -o $@ $<

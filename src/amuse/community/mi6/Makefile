@@ -18,6 +18,24 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 CODELIB = src/libmi6.a
 CODELIB_GPU = src/libmi6_gpu.a
 
+ifneq (,$(findstring g++, $(notdir $(CXX))))
+CXXFLAGS += -O3 -ffast-math -funroll-loops -fomit-frame-pointer
+endif
+
+
+ifeq ($(findstring gcc, $(notdir $(CXX))), gcc)
+CXXFLAGS += -O3 -ffast-math -funroll-loops -fomit-frame-pointer
+endif
+
+ifeq ($(findstring xlC, $(notdir $(CXX))), xlC)
+CXXFLAGS += -qunroll  
+endif
+
+ifeq ($(findstring ifort, $(notdir $(CXX))), ifort)
+CXXFLAGS += -O3 -ffast-math -funroll-loops -fomit-frame-pointer
+endif
+
+
 OBJS = interface.o
 
 all: mi6_worker 

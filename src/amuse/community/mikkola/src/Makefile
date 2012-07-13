@@ -6,7 +6,8 @@ AMUSE_DIR?=../../../../..
 MPIFC ?= mpif90
 FC    = $(MPIFC)
 
-FFLAGS   += -Wall -g -O4
+FFLAGS   += -O3
+FFLAGS   += $(F77FLAGS)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 CODELIB = libMikkola.a

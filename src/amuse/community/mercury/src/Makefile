@@ -16,10 +16,10 @@ EXECUTABLES = mercury
 OBJT = $(SRCE:.for=.o)
 
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondf
 
 %.o: %.for Makefile
-	$(CMPLR) $(FFLAGS) $(SCINC) -c -o $@ $< 
+	$(CMPLR) $(F77FLAGS) $(FFLAGS) $(SCINC) -c -o $@ $< 
 
 %.o: %.f90 Makefile
 	$(CMPLR) $(FFLAGS) $(SCINC) -c -o $@ $< 

@@ -10,7 +10,7 @@ OPT	  = # -O4 don't use O4 but O2 or something
 GPU	  = -DGPU
 CXX	  ?= mpicxx
 MPICXX ?= mpicxx
-CFLAGS   += -g -Wall $(OPT)
+CFLAGS   += $(OPT)
 CXXFLAGS += $(CFLAGS) 
 
 CODELIB = libkepler.a
