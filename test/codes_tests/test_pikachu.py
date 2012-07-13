@@ -15,7 +15,7 @@ class TestPikachuInterface(TestWithMPI):
     
     def test1(self):
         print "Test PikachuInterface initialization"
-        instance = PikachuInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(PikachuInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
@@ -23,7 +23,7 @@ class TestPikachuInterface(TestWithMPI):
     
     def xtest2(self):
         print "Test PikachuInterface new_particle / get_state"
-        instance = PikachuInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(PikachuInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         
@@ -49,7 +49,7 @@ class TestPikachuInterface(TestWithMPI):
     
     def xtest4(self):
         print "Test PikachuInterface particle property getters/setters"
-        instance = PikachuInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(PikachuInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals([1, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
@@ -87,7 +87,7 @@ class TestPikachuInterface(TestWithMPI):
     
     def xtest5(self):
         print "Test PikachuInterface parameters"
-        instance = PikachuInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(PikachuInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
         
         # Pikachu has separate epsilon_squared parameters for different interactions!
@@ -154,7 +154,7 @@ class TestPikachu(TestWithMPI):
     
     def xtest1(self):
         print "Testing Pikachu initialization"
-        instance = Pikachu(self.default_converter, **default_options)
+        instance = self.new_instance_of_an_optional_code(Pikachu, self.default_converter, **default_options)
         instance.initialize_code()
         instance.commit_parameters()
         instance.cleanup_code()
@@ -162,7 +162,7 @@ class TestPikachu(TestWithMPI):
     
     def xtest2(self):
         print "Testing Pikachu parameters"
-        instance = Pikachu(self.default_converter, **default_options)
+        instance = self.new_instance_of_an_optional_code(Pikachu, self.default_converter, **default_options)
         instance.initialize_code()
         
         self.assertEquals(instance.parameters.epsilon_squared, 
@@ -215,7 +215,7 @@ class TestPikachu(TestWithMPI):
     
     def xtest3(self):
         print "Testing Pikachu particles"
-        instance = Pikachu(self.default_converter, **default_options)
+        instance = self.new_instance_of_an_optional_code(Pikachu, self.default_converter, **default_options)
         instance.initialize_code()
         instance.commit_parameters()
         instance.particles.add_particles(self.new_sun_earth_system())
@@ -244,7 +244,7 @@ class TestPikachu(TestWithMPI):
         print particles
         
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Pikachu(converter, **default_options)
+        instance = self.new_instance_of_an_optional_code(Pikachu, converter, **default_options)
         instance.initialize_code()
         instance.parameters.smbh_mass = 0.0 | units.MSun
         instance.commit_parameters()
@@ -270,7 +270,7 @@ class TestPikachu(TestWithMPI):
     def xtest6(self):
         print "Testing Pikachu evolve_model, earth-sun system, no SMBH"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Pikachu(converter, **default_options)
+        instance = self.new_instance_of_an_optional_code(Pikachu, converter, **default_options)
         instance.initialize_code()
         instance.parameters.smbh_mass = 0.0 | units.MSun
         instance.commit_parameters()

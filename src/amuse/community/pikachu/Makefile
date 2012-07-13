@@ -28,7 +28,22 @@ CODELIB_GPU_LARGE_N = src/libpikachu_gpu_large_n.a
 OBJ = interface.o
 LARGE_N_OBJ = interface_large_n.o
 
-all: pikachu_worker 
+all: $(CUDA_TK) pikachu_worker 
+
+$(CUDA_TK):
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "pikachu code"
+	@echo "------------"
+	@echo "CUDA_TK variable is not set to a valid path,"
+	@echo "please set the CUDA_TK variable to the directory"
+	@echo "where you installed CUDA"
+	@echo "the CUDA_TK directory must contain a bin directory with the <nvcc> executable"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
 
 clean:
 	rm -f *.o *.pyc worker_code.cc worker_code.h 
