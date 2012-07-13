@@ -9,27 +9,27 @@ module StoppingConditions
     parameter(MAX_NUMBER_OF_PARTICLES_PER_INDEX = 256)
     
     double precision :: DBL_MAX
-    parameter(DBL_MAX =  HUGE(0.0d0))
+    parameter(DBL_MAX = 1.d308)
     
-    integer, private :: type_of_stopping_condition_set(0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
-    integer, private :: index_of_particle_in_stopping_condition(&
+    integer, private, save :: type_of_stopping_condition_set(0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
+    integer, private, save :: index_of_particle_in_stopping_condition(&
 &      0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET,&
 &      0:MAX_NUMBER_OF_PARTICLES_PER_INDEX)
 
-    integer*4, private:: enabled_conditions = 0
-    integer*4, private :: set_conditions = 0
-    integer*4, private :: supported_conditions = 0
-    integer*4, private :: number_of_stopping_conditions_set = 0
+    integer*4, private, save :: enabled_conditions = 0
+    integer*4, private, save :: set_conditions = 0
+    integer*4, private, save :: supported_conditions = 0
+    integer*4, private, save :: number_of_stopping_conditions_set = 0
 
-    double precision, private :: timeout_parameter = 4.0
-    double precision, private :: out_of_box_parameter = 0.0
-    integer*4, private :: number_of_steps_parameter = 1
-    double precision, private :: minimum_density_parameter = -1.0
-    double precision, private :: maximum_density_parameter = DBL_MAX
-    double precision, private :: minimum_internal_energy_parameter = -1.0
-    double precision, private :: maximum_internal_energy_parameter = DBL_MAX
-    integer, private :: sc_mpi_size;
-    integer, private :: sc_mpi_rank;
+    double precision, private, save :: timeout_parameter = 4.0
+    double precision, private, save :: out_of_box_parameter = 0.0
+    integer*4, private, save :: number_of_steps_parameter = 1
+    double precision, private, save :: minimum_density_parameter = -1.0
+    double precision, private, save :: maximum_density_parameter = DBL_MAX
+    double precision, private, save :: minimum_internal_energy_parameter = -1.0
+    double precision, private, save :: maximum_internal_energy_parameter = DBL_MAX
+    integer, private, save :: sc_mpi_size;
+    integer, private, save :: sc_mpi_rank;
     
     INTEGER :: COLLISION_DETECTION_BITMAP
     INTEGER :: PAIR_DETECTION_BITMAP

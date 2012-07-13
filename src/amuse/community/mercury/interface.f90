@@ -5,7 +5,7 @@ function initialize_code() result(ret)
   use amuse_mercuryMod
   use StoppingConditions
   integer :: ret
-  integer :: set_support_for_condition, error
+  integer :: error
   error = set_support_for_condition(TIMEOUT_DETECTION)
   ret=mercury_init()
 end function  
