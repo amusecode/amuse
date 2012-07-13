@@ -287,15 +287,30 @@ class GalactICsImplementation(object):
             if self._generate_halo_flag:
                 in_halo  = self.generate_in_halo_string()
                 halo_file = open(os.path.join(self._cwd, "halo"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path(), "genhalo")], 
-                    cwd = self._cwd, stdin = PIPE, stdout = halo_file, stderr = PIPE).communicate(in_halo))
+                process = Popen(
+                        [os.path.join(self._bin_path(), "genhalo")], 
+                        cwd = self._cwd,
+                        stdin = PIPE,
+                        stdout = halo_file,
+                        stderr = PIPE)
+                stdout, stderr = process.communicate(in_halo)
+                if process.returncode != 0:
+                    print "error:", error
+                    return -1 
                 halo_file.close()
                 
                 halo1_file = open(os.path.join(self._cwd, "halo1"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path(), "energysort"), "dbh.dat", "halo", "halo"], 
-                    cwd = self._cwd, stdin = PIPE, stdout = halo1_file, stderr = PIPE).communicate())
+                process = Popen(
+                        [os.path.join(self._bin_path(), "energysort"), "dbh.dat", "halo", "halo"], 
+                        cwd = self._cwd,
+                        stdin = PIPE,
+                        stdout = halo1_file,
+                        stderr = PIPE)
+                stdout, stderr = process.communicate()
+                if process.returncode != 0:
+                    print "error:", error
+                    return -1 
                 halo1_file.close()
-                if stderr: print stderr; return -1
                 concatenation_cmd.append("halo1")
             
             galaxy_file = open(os.path.join(self._cwd, "galaxy"), "wb")

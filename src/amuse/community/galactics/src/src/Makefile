@@ -1,7 +1,7 @@
 #Makefile for particle generators of the combined df - June 8/94 - JJD
 #
 .f.o:
-	$(F77) $(FFLAGS) -c $*.f
+	$(F77)  $(FFLAGS) -c $*.f
 
 F77?=gfortran
 CC?=gcc
@@ -16,7 +16,7 @@ LIBS = -lm
 
 #Replace FFLAGS and FLIBS above with the following for linux:
 #FFLAGS = -ffixed-line-length-0 -O -fno-backslash
-FFLAGS += -O3 -132 -nofor-main
+#FFLAGS += -O3 -132 -nofor-main
 #FLIBS  = -L/usr/X11R6/lib64/ -lX11
 #FLIBS  = -L/usr/X11R6/lib/ -lX11
 

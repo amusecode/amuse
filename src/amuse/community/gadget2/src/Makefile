@@ -90,7 +90,7 @@ include makefile_options
 #--------------------------------------- Select some defaults
 
 CC       =  $(MPICC)  # sets the C-compiler
-OPTIMIZE =  -O2 -Wall -g # sets optimization and warning flags
+OPTIMIZE =  -O2 -g # sets optimization and warning flags
 MPICHLIB =  # will be included by the linker -lmpich
 
 

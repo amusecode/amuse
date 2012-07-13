@@ -59,7 +59,8 @@
              frr = 0.0
              do i=1,lmax/2+1
                  l = 2*(i-1)
-                 frr = frr + (l+1)*p(i)*apot(i,nr)/redge*(redge/r)**(l+2)
+                 frr = frr + (l+1)*p(i)*apot(i,nr) / 
+     +                    redge*(redge/r)**(l+2)
              enddo
              fth = 0.0
              do i=2,lmax/2+1

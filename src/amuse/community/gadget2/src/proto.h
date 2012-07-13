@@ -162,7 +162,9 @@ void   pmforce_periodic(void);
 int    pmpotential_nonperiodic(int grnr);
 void   pmpotential_periodic(void);
 
+#ifdef NOPOW
 double pow(double, double);  /* on some old DEC Alphas, the correct prototype for pow() is missing, even when math.h is included */
+#endif
 
 void   read_file(char *fname, int readTask, int lastTask);
 void   read_header_attributes_in_hdf5(char *fname);
