@@ -19,8 +19,10 @@ NVCCFLAGS += -Xcompiler="-Wall"
 #NVCCFLAGS := -O0 -g -D_DEBUG -deviceemu -maxrregcount=32 $(CUDAINCLUDE)
 CUDA_LIBS = -lcudart  -L $(CUDAPATH)/lib -L $(CUDAPATH)/lib64
 
+OPENMP_CFLAGS ?= -fopenmp
+
 CXXFLAGS  +=  -I./ON_neib -I./  $(CUDAINCLUDE)
-LDFLAGS   +=  -fopenmp
+LDFLAGS   +=  $(OPENMP_CFLAGS)
 LDGPUGLAGS := $(LDFLAGS) $(CUDA_LIBS)
 
 OBJS = hacs64_amuse.o \

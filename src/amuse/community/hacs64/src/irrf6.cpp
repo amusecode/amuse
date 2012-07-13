@@ -208,7 +208,9 @@ namespace irrf6
 				const int j = list[i][jx];
 
 				const Predictor &pj = pred[j];
+#ifdef __GNUC__
         __builtin_prefetch(&pred[list[i][jx+1]]);
+#endif
 
         const dvec3 dr = pj.pos - pi.pos;
         const dvec3 dv = pj.vel - pi.vel;

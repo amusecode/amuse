@@ -64,7 +64,7 @@ $(CUDA_TK):
 
 
 $(CODELIB):
-	make -C src all CXX=$(MPICXX)
+	make -C src all CXX='$(MPICXX)'
 
 
 $(BUILDDIRCPU)/Makefile: $(SRCDIR)/Makefile 
@@ -72,7 +72,7 @@ $(BUILDDIRCPU)/Makefile: $(SRCDIR)/Makefile
 	cp $(SRCDIR)/Makefile $(BUILDDIRCPU)/Makefile
 
 $(CODELIBCPU): $(BUILDDIRCPU)/Makefile
-	make -C $(BUILDDIRCPU) cpu CXX=$(MPICXX) VPATH=../src
+	make -C $(BUILDDIRCPU) cpu CXX='$(MPICXX)' VPATH=../src
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py Hacs64Interface -o $@

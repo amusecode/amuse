@@ -1,4 +1,4 @@
-CFLAGS   += -Wall -g
+CFLAGS   += 
 CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 

@@ -13,7 +13,7 @@ EXE     = $(BASE)$(EXT)
 # Compiler stuff
 
 CC	?= gcc
-CFLAGS	= -O3 -Wall
+CFLAGS	+= 
 LIBS	= -lm
 
 # Object definition

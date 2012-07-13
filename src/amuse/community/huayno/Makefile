@@ -1,8 +1,12 @@
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 
-CCFLAGS += -g -O2 -Wall -std=c99
-CXXFLAGS += -O2 -Wall 
+ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
+CCFLAGS += -qlanglvl=stdc99
+else
+CCFLAGS += -std=c99
+endif
+CXXFLAGS += 
 LIBS += -lm
 INCLUDE =
 
