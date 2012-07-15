@@ -208,6 +208,7 @@ if [ ! -e "pipsinstalled"  ]; then
     touch "pipsinstalled" || exit $?
 fi
 
+touch "ytinstalled" || exit $?
 if [ ! -e "ytinstalled"  ]; then
 
     rm -Rf yt-hg || exit $?
