@@ -561,9 +561,14 @@ class Site_Update{
   //! get the flux in the site
   const float& get_flux() const{ return flux; }
 
+  //! assign metallicity to site
+  void set_metallicity(const float& Z){ metallicity = Z; }
+  //! get the metallicity in the site
+  const float& get_metallicity() const{ return metallicity; }
+
   //! assign ballistic 
   void set_ballistic(const unsigned int& ballistic_){ ballistic = ballistic_; }
-  //! get the flux in the site
+  //! get the ballistic in the site
   const unsigned int& get_ballistic() const{ return ballistic; }
 
 
@@ -577,6 +582,7 @@ class Site_Update{
   float internalEnergy;             //!< internalEnergy in site
   float dinternalEnergydt;          //!< dudt in site
   float flux;                       //!< Flux of the site in case it's a source
+  float metallicity;
   unsigned int ballistic;           //!< Ballistic transport or direction conserving?
 
  public:

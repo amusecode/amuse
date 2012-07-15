@@ -6010,6 +6010,7 @@ void SimpleX::return_physics(){
 	  it->set_n_HII( site_properties[ i ].get_n_HII() ); 
 	  it->set_ballistic( site_properties[ i ].get_ballistic() );
 	  it->set_internalEnergy( site_properties[ i ].get_internalEnergy() );
+    it->set_metallicity( site_properties[ i ].get_metallicity() );
 	  //set temperature
     double mu = compute_mu( *it );
     float T = static_cast<float>( u_to_T( it->get_internalEnergy(),  mu ) );
@@ -6755,6 +6756,18 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
       dt = t_end - t;
     }
 
+    // if( site.get_vertex_id() == 85 ){
+    //   
+    //   cerr << " Density: " << ( site.get_n_HI() + site.get_n_HII() ) * UNIT_D
+    //        << " Metallicity: " << site.get_metallicity() 
+    //        << " Temperature: " << site.get_temperature() 
+    //        << " Internal energy: " << u 
+    //        << " Cooling rate per unit mass: " << C/(N_H * m_H) 
+    //        << " du: " << du 
+    //        << " dt: " << dt 
+    //        << endl;
+    // }
+    
     //change in internal energy in total time 
     du *= dt;
 
@@ -6772,6 +6785,7 @@ double SimpleX::update_temperature( Site& site, const vector<double>& N_ion, con
   	//set temperature
     float T = static_cast<float>( u_to_T( u,  mu ) );
     site.set_temperature( T );
+
 
 
     //add time step to total time

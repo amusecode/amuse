@@ -197,6 +197,7 @@ Site_Update::Site_Update(){
     n_HII = 0.0; 
     internalEnergy = 0.0;
     dinternalEnergydt = 0.0;
+    metallicity = 0.0;
     //flux = 0.0;            
     ballistic = 0;
   
@@ -225,6 +226,7 @@ Site& Site::operator=(const Site_Update& p2){
   n_HII          = p2.n_HII;
   internalEnergy = p2.internalEnergy;
   dinternalEnergydt = p2.dinternalEnergydt;
+  metallicity    = p2.metallicity;
   //flux         = p2.flux;
   ballistic      = (bool) p2.ballistic;
 
@@ -267,6 +269,7 @@ Site_Update& Site_Update::operator=(const Site& p2){
   n_HII          = p2.n_HII;
   internalEnergy = p2.internalEnergy;
   dinternalEnergydt = p2.dinternalEnergydt;
+  metallicity    = p2.metallicity;
   //flux           = p2.flux;
   ballistic      = (unsigned int) p2.ballistic;
 

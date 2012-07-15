@@ -235,9 +235,9 @@ void AMUSE_SimpleX::convert_units(){
 // compute the physical properties of the sites
 int AMUSE_SimpleX::initialize(double current_time) {
   
-  if(COMM_RANK == 0){
-    cerr << "AMUSE_SimpleX: initialising...";
-  }
+  // if(COMM_RANK == 0){
+  //   cerr << "AMUSE_SimpleX: initialising...";
+  // }
 
   if(rec_rad){
     numFreq++;
@@ -314,9 +314,9 @@ int AMUSE_SimpleX::initialize(double current_time) {
   remove_border_simplices();
   syncflag=0;
  
-  if(COMM_RANK == 0){
-    cerr << " Done" << endl;
-  }
+  // if(COMM_RANK == 0){
+  //   cerr << " Done" << endl;
+  // }
  
   return 0;
   
@@ -344,9 +344,9 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
     reinitialize();
   }
   
-  if(COMM_RANK == 0){
-    cerr << "AMUSE_SimpleX: performing radiation transport...";
-  }
+  // if(COMM_RANK == 0){
+  //   cerr << "AMUSE_SimpleX: performing radiation transport...";
+  // }
     
   if(COMM_RANK == 0){
     //cerr << "start sweeping" << endl;
@@ -368,9 +368,9 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
     syncflag=1;     
   }
   
-  if(COMM_RANK == 0){
-    cerr << " Done" << endl;
-  }
+  // if(COMM_RANK == 0){
+  //   cerr << " Done" << endl;
+  // }
   
   return 0;
 
@@ -380,9 +380,9 @@ int AMUSE_SimpleX::evolve(double t_target, int sync) {
 //store everything in the simulation and recompute triangulation and physics
 int AMUSE_SimpleX::reinitialize(){
 
-  if(COMM_RANK == 0){
-    cerr << "AMUSE_SimpleX: recomputing triangulation...";
-  }
+  // if(COMM_RANK == 0){
+  //   cerr << "AMUSE_SimpleX: recomputing triangulation...";
+  // }
   
    //make sure that the vectors that will be filled are empty 
     site_intensities.clear();
@@ -485,9 +485,9 @@ int AMUSE_SimpleX::reinitialize(){
     
     remove_border_simplices();
       
-    if(COMM_RANK == 0){
-      cerr << " Done" << endl;
-    }
+    // if(COMM_RANK == 0){
+    //   cerr << " Done" << endl;
+    // }
     
   syncflag=0;
   return 0;
