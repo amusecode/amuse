@@ -65,9 +65,11 @@ class InMemoryAttributeStorage(AttributeStorage):
                 self.mapping_from_attribute_to_quantities[attribute] = storage
         
             storage.increase_to_length(len(self.particle_keys) + len(keys))
-            storage.set_values(slice(len(self.particle_keys), len(self.particle_keys) + len(keys)), values_to_set)
-            
-        
+            try:
+                storage.set_values(slice(len(self.particle_keys), len(self.particle_keys) + len(keys)), values_to_set)
+            except Exception as ex:
+                raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
+                
         old_length = len(self.particle_keys)
         for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.iteritems()):
             attribute_values.increase_to_length(len(self.particle_keys) + len(keys))
