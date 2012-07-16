@@ -3,6 +3,7 @@ from amuse.units import generic_unit_system
 from amuse.units import quantities
 from amuse.units.quantities import is_quantity
 from amuse.units.core import unit
+from amuse.units import core
 from amuse.units import units
 from amuse.support.options import OptionalAttributes, option
 
@@ -18,6 +19,10 @@ import numpy
 from amuse import datamodel
 from amuse.datamodel import parameters
 from amuse.datamodel import incode_storage
+
+class ConvertArgumentsException(core.IncompatibleUnitsException):
+    formatstring = "{0}"
+
 
 class OldObjectsBindingMixin(object):
 
@@ -476,24 +481,30 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
         for index, argument in enumerate(list_arguments):
             parameter = input_parameters[index]
-            if self.units[index] == self.NO_UNIT:
-                arg = argument
-                if is_quantity(arg):
-                    result[parameter] = arg.value_in(units.none)
-                else:
-                    result[parameter] = arg
-            elif self.units[index] == self.INDEX:
-                result[parameter] = argument
-            elif type(self.units[index]) == self.LINK:
-                result[parameter] = self.units[index].convert_argument_value(method, self, argument)
-            else:
-                if self.units[index].is_none() and not hasattr(argument,'unit'):
+            try:
+                if self.units[index] == self.NO_UNIT:
+                    arg = argument
+                    if is_quantity(arg):
+                        result[parameter] = arg.value_in(units.none)
+                    else:
+                        result[parameter] = arg
+                elif self.units[index] == self.INDEX:
                     result[parameter] = argument
+                elif type(self.units[index]) == self.LINK:
+                    result[parameter] = self.units[index].convert_argument_value(method, self, argument)
                 else:
-                    if not self.units[index].base and not is_quantity(argument):
+                    if self.units[index].is_none() and not hasattr(argument,'unit'):
                         result[parameter] = argument
                     else:
-                        result[parameter] = argument.value_in(self.units[index])
+                        if not self.units[index].base and not is_quantity(argument):
+                            result[parameter] = argument
+                        else:
+                            result[parameter] = argument.value_in(self.units[index])
+            except core.IncompatibleUnitsException as ex:
+                raise ConvertArgumentsException("error while converting parameter '{0}', error: {1}".format(parameter, ex))
+            except Exception as ex:
+                raise exceptions.AmuseException("error while converting parameter '{0}', error: {1}".format(parameter, ex))
+        
         return (), result
 
     def convert_result(self, method, result):

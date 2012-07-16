@@ -45,6 +45,7 @@ end subroutine
 
 subroutine muse_finalize_init
  include 'globals.h'
+ real*8 dum1,dum2,dum3
 
  if(usepm) then
 	 if(verbosity.GT.0) print*,' ...initPM...'
@@ -53,12 +54,25 @@ subroutine muse_finalize_init
  
  call postprocessread
 	
- call initpos
+ !call initpos
+ 
+ call activateparts
+ 
+ otimestp(pactive(1:npactive))=itimestp(pactive(1:npactive))
 	     
  call inittimestep
                 		
- call outstate(0)
-
+ !call outstate(0)
+ !call muse_energies(1,dum1,dum2,dum3)
+ 
+  ! the postprocessread call will result in potential energies, but
+  ! these do not account for the smoothing lengths
+  ! doing the next two call is needed but will change the initial 
+  ! energy book-keeping (probably for the better but needs
+  ! some thought before activated!):
+  !call zeropot
+  !call gravity('pot ')
+ call diagnostics()
 
 end subroutine
 
@@ -74,6 +88,7 @@ end function
 function muse_reinitialize() result(ret)
   include 'globals.h'
   integer ret
+  real*8 dum1,dum2,dum3
   
   if(syncflag.NE.0) then
     ret=-1
@@ -99,9 +114,15 @@ function muse_reinitialize() result(ret)
   rho(1:nsph)=0
   call postprocessread
 
-  call initpos
+  !call initpos
+  call activateparts
+ 
+  otimestp(pactive(1:npactive))=itimestp(pactive(1:npactive))
+	     
   
   call inittimestep
+  
+  call muse_energies(1,dum1,dum2,dum3)
   
   if(verbosity.GT.0) print*,' **warning: check results reinit**' 
   ret=0

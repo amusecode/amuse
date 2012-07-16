@@ -601,6 +601,7 @@ class TestFi(TestWithMPI):
         print convert_nbody.to_nbody(instance.potential_energy)
         print convert_nbody.to_nbody(instance.thermal_energy)
         print convert_nbody.to_nbody(instance.total_energy)
+        print convert_nbody.to_nbody( (instance.dm_particles|instance.star_particles|instance.gas_particles).potential_energy(smoothing_length_squared = instance.parameters.epsilon_squared))
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    1.7204 | nbody_system.energy, 3)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.2935 | nbody_system.energy, 3)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0500 | nbody_system.energy)
@@ -1472,5 +1473,135 @@ class TestFi(TestWithMPI):
         gas_particles=instance.gas_particles.copy()
         
         self.assertEqual(u,gas_particles.u)
+        
+        
+    def test29(self):
+        instance=Fi()
+        instance.initialize_code()
+        instance.parameters.use_hydro_flag = 0
+        instance.parameters.self_gravity_flag = 1
+        instance.parameters.epsilon_squared = 0.000000001 |  nbody_system.length**2
+        instance.parameters.timestep = 0.2 | nbody_system.time
+        
+        x0 = 0.5 | nbody_system.length
+        
+        p1 = instance.star_particles.add_particle(datamodel.Particle(
+            x = x0,
+            y = 0.0 | nbody_system.length,
+            z = 0.0 | nbody_system.length,
+            vx = 0.0 | nbody_system.speed,
+            vy = 0.0 | nbody_system.speed,
+            vz = 0.0 | nbody_system.speed,
+            mass = 0.01 | nbody_system.mass,
+            
+        )) 
+        p2 = instance.star_particles.add_particle(datamodel.Particle(
+            x = 10| nbody_system.length,
+            y = 0.0 | nbody_system.length,
+            z = 0.0 | nbody_system.length,
+            vx = 0.0 | nbody_system.speed,
+            vy = 0.0 | nbody_system.speed,
+            vz = 0.0 | nbody_system.speed,
+            mass = 100 | nbody_system.mass,
+            
+        )) 
+        #run more than one innerloop step in fi
+        e0 = instance.kinetic_energy + instance.potential_energy
+        instance.evolve_model(0.5|nbody_system.time)
+        e1 = instance.kinetic_energy + instance.potential_energy
+        self.assertAlmostRelativeEquals(e0, e1, 4)
+        print instance.star_particles[0].position.x
+        
+        self.assertAlmostRelativeEquals(instance.star_particles[0].position.x, 0.588896329162| nbody_system.length, 12)
+        
+        for i in range(10):
+            p3 = instance.star_particles.add_particle(datamodel.Particle(
+                x = 100| nbody_system.length,
+                y = 0.0 | nbody_system.length,
+                z = 0.0 | nbody_system.length,
+                vx = 0.0 | nbody_system.speed,
+                vy = 0.0 | nbody_system.speed,
+                vz = 0.0 | nbody_system.speed,
+                mass = 100 | nbody_system.mass,
+                
+            )) 
+            instance.recommit_particles()
+            instance.star_particles.remove_particle(p3)
+            instance.recommit_particles()
+        
+        e11 = instance.kinetic_energy + instance.potential_energy
+        self.assertAlmostRelativeEquals(e1, e1, 8)
+        instance.evolve_model(1.0|nbody_system.time)
+        e2 = instance.kinetic_energy + instance.potential_energy
+        self.assertAlmostRelativeEquals(e0, e1, 4)
+        self.assertAlmostRelativeEquals(instance.star_particles[0].position.x, 1.06498184266 | nbody_system.length, 11)
+       
+    def test30(self):
+        instance=Fi()
+        instance.initialize_code()
+        instance.parameters.use_hydro_flag = 0
+        instance.parameters.self_gravity_flag = 1
+        instance.parameters.epsilon_squared = 0.000000001 |  nbody_system.length**2
+        instance.parameters.timestep = 0.2 | nbody_system.time
+        instance.parameters.verbosity = 0
+        
+        x0 = 0.5 | nbody_system.length
+        
+        p1 = instance.star_particles.add_particle(datamodel.Particle(
+            x = x0,
+            y = 0.0 | nbody_system.length,
+            z = 0.0 | nbody_system.length,
+            vx = 0.0 | nbody_system.speed,
+            vy = 0.0 | nbody_system.speed,
+            vz = 0.0 | nbody_system.speed,
+            mass = 0.01 | nbody_system.mass,
+            
+        )) 
+        p2 = instance.star_particles.add_particle(datamodel.Particle(
+            x = 10| nbody_system.length,
+            y = 0.0 | nbody_system.length,
+            z = 0.0 | nbody_system.length,
+            vx = 0.0 | nbody_system.speed,
+            vy = 0.0 | nbody_system.speed,
+            vz = 0.0 | nbody_system.speed,
+            mass = 100 | nbody_system.mass,
+            
+        )) 
+        instance.commit_particles()
+        e0 = instance.kinetic_energy + instance.potential_energy
+        print "e0:", e0
+        for i in range(10):
+            p3 = instance.star_particles.add_particle(datamodel.Particle(
+                x = 100| nbody_system.length,
+                y = 0.0 | nbody_system.length,
+                z = 0.0 | nbody_system.length,
+                vx = 0.0 | nbody_system.speed,
+                vy = 0.0 | nbody_system.speed,
+                vz = 0.0 | nbody_system.speed,
+                mass = 100 | nbody_system.mass,
+                
+            )) 
+            instance.recommit_particles()
+            instance.star_particles.remove_particle(p3)
+            instance.recommit_particles()
+        #run more than one innerloop step in fi
+        instance.evolve_model(0.5|nbody_system.time)
+        
+        e1 = instance.kinetic_energy + instance.potential_energy
+        self.assertAlmostRelativeEquals(e0, e1, 4)
+        print instance.star_particles[0].position.x
+        
+        self.assertAlmostRelativeEquals(instance.star_particles[0].position.x, 0.588896329162| nbody_system.length, 12)
+        
+        instance.evolve_model(1.0|nbody_system.time)
+        e2 = instance.kinetic_energy + instance.potential_energy
+        self.assertAlmostRelativeEquals(e0, e2,4)
+        self.assertAlmostRelativeEquals(instance.star_particles[0].position.x, 1.06493331332 | nbody_system.length, 11)
+       
+        
+        
+        
+
+        
         
         
