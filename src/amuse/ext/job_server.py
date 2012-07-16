@@ -180,7 +180,6 @@ class JobServer(object):
       else:
         if self.preamble is not None:
           code.exec_(self.preamble)
-        self.idle_codes.append(code)   
            
         self.number_available_codes+=1
         if self.no_wait:
@@ -192,7 +191,10 @@ class JobServer(object):
             if self.verbose:
               print "JobServer: hosts in total:", self.number_available_codes
         if self.job_list: 
-          self._add_job(self.job_list.popleft(), self.idle_codes.pop())        
+          self._add_job(self.job_list.popleft(), code)
+        else:
+          self.idle_codes.append(code)   
+  
     
     def submit_job(self,f,args=(),kwargs={}):
       if len(self.pool)==0 and not self.job_list:
