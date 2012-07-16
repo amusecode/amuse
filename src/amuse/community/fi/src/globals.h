@@ -69,7 +69,7 @@
      &  directsum,selfgrav,fixthalo,adaptive_eps,gdgop
       COMMON/sph_param/ epsgas,gamma,alpha,beta,epssph,courant,removgas, &
      &  consthsm,nsmtol,nsmooth,smoothinput,consph,sphinit,uentropy,     &
-     &  isotherm,eps_is_h,hupdatemethod,sph_visc
+     &  isotherm,eps_is_h,balsara,hupdatemethod,sph_visc
       COMMON/rad_param/ graineff,crionrate,heat_par1,heat_par2,cool_par, &
      &  optdepth
       COMMON/cosmo_param/ comove
@@ -165,7 +165,7 @@
       CHARACTER*2 symmetry
       CHARACTER*4 sph_visc
       INTEGER nsph,nsmooth,nstar
-      LOGICAL sphinit,starform, uentropy,eps_is_h
+      LOGICAL sphinit,starform, uentropy,eps_is_h,balsara
       REAL deldr2i,alpha,beta,epssph,gamma,gamma1,courant,wsmooth,       &
      &  dwsmooth,teth,ethtot,epsgas,consthsm,                            &
      &  nsmtol,massres,tstarform,tsnfeedback

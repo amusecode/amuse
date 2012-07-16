@@ -383,7 +383,7 @@ write(uboddump) n
    directsum,selfgrav,fixthalo,adaptive_eps,gdgop
       write(uboddump)  epsgas,gamma,alpha,beta,epssph,courant,removgas, &
    consthsm,nsmtol,nsmooth,smoothinput,consph,sphinit,uentropy, &
-   isotherm,eps_is_h,hupdatemethod,sph_visc
+   isotherm,eps_is_h,balsara,hupdatemethod,sph_visc
       write(uboddump)  graineff,crionrate,heat_par1,heat_par2,cool_par,    &
    optdepth
       write(uboddump)  comove
@@ -491,7 +491,7 @@ read(uboddump) n
    directsum,selfgrav,fixthalo,adaptive_eps,gdgop
       read(uboddump)  epsgas,gamma,alpha,beta,epssph,courant,removgas, &
    consthsm,nsmtol,nsmooth,smoothinput,consph,sphinit,uentropy, &
-   isotherm,eps_is_h,hupdatemethod,sph_visc
+   isotherm,eps_is_h,balsara,hupdatemethod,sph_visc
       read(uboddump)  graineff,crionrate,heat_par1,heat_par2,cool_par,    &
    optdepth
       read(uboddump)  comove

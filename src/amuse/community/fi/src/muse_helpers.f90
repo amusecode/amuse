@@ -1342,6 +1342,17 @@ subroutine amuse_get_eps_is_h(x)
   x=eps_is_h
 end subroutine
 
+subroutine amuse_set_balsara(x)
+  include 'globals.h'
+  logical,intent(in) :: x
+  balsara=x
+end subroutine
+subroutine amuse_get_balsara(x)
+  include 'globals.h'
+  logical, intent(out) :: x
+  x=balsara
+end subroutine
+
 
 
 ! integer

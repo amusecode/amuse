@@ -30,6 +30,7 @@ subroutine set_parameters_to_defaults
   epssph=0.01
   courant=0.3
   eps_is_h=.TRUE.
+  balsara=.FALSE.
   consthsm=0.2
   nsmooth=64
   nsmtol=0.1
@@ -132,6 +133,7 @@ subroutine write_parameters(restart)
   write(upars,*) "epssph:   ",  epssph
   write(upars,*) "courant:   ",  courant
   write(upars,*) "eps_is_h:   ",  eps_is_h 
+  write(upars,*) "balsara:   ",  balsara 
   write(upars,*) "consthsm:   ",  consthsm
   write(upars,*) "nsmooth:   ",  nsmooth
   write(upars,*) "nsmtol:   ",  nsmtol
@@ -345,6 +347,8 @@ subroutine read_parameters(restart)
         if(restart.EQ.0) read(line,*,iostat=ierr) courant        
       case ("eps_is_h")
         if(restart.EQ.0) read(line,*,iostat=ierr) eps_is_h       
+      case ("balsara")
+        if(restart.EQ.0) read(line,*,iostat=ierr) balsara       
       case ("consthsm")
         if(restart.EQ.0) read(line,*,iostat=ierr) consthsm       
       case ("nsmooth")

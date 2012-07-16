@@ -171,12 +171,15 @@ subroutine pentdot(p,n)
  include 'globals.h'
  integer n,p
  real h,ppos(3),pvel(3),lrho,lcsound,ldentdt,imumax
+ real lhsmdivv,lhsmcurlv
   h=hsmooth(p)
   ppos=pos(p,1:3)
   pvel=veltpos(p,1:3)
   lrho=rho(p)
   lcsound=csound(p)
-  call entdot(n,h,ppos,pvel,lrho,lcsound,ldentdt,imumax)
+  lhsmdivv=hsmdivv(p)
+  lhsmcurlv=hsmcurlv(p)
+  call entdot(n,h,ppos,pvel,lrho,lcsound,ldentdt,imumax,lhsmdivv,lhsmcurlv)
   dentdt(p)=ldentdt
   mumaxdvh(p)=imumax
 end
@@ -185,30 +188,37 @@ subroutine paccsphco(p,n)
  include 'globals.h'
  integer n,p
  real h,ppos(3),pvel(3),pacc(3),lrho,lcsound,ldrhodh
+ real lhsmdivv,lhsmcurlv
   h=hsmooth(p)
   ppos=pos(p,1:3)
   pvel=veltpos(p,1:3)
   lrho=rho(p)
   ldrhodh=drhodh(p)
   lcsound=csound(p)
-  call accsphco(n,h,ppos,pvel,pacc,lrho,lcsound,ldrhodh)
+  lhsmdivv=hsmdivv(p)
+  lhsmcurlv=hsmcurlv(p)
+  call accsphco(n,h,ppos,pvel,pacc,lrho,lcsound,ldrhodh,lhsmdivv,lhsmcurlv)
   acc(p,1:3)=acc(p,1:3)+pacc(1:3)
 end
 
 
-subroutine entdot(n,hsm,ppos,pvel,lrho,lcsound,dent,tmuij)
+subroutine entdot(n,hsm,ppos,pvel,lrho,lcsound,dent,tmuij,lhsmdivv,lhsmcurlv)
  include 'globals.h' 
  integer,intent(in) :: n
  real,dimension(3),intent(in) :: ppos,pvel
  real,intent(in) :: hsm,lrho,lcsound
+ real,intent(in) :: lhsmdivv,lhsmcurlv
  real,intent(inout) :: dent,tmuij
  integer :: i,nb,iwsm,iwsm1
  real :: dx,dy,dz,wnorm,distnorm,hsminv,dr2p,drw,drw1,tmass,dr2,dr2i,wsm
  real :: dwmass,dwmass1,dwsm,dwsm1,dwmnbi,dwnorm,wmass,muij,eij,piij
  real :: vdotdr,hsmavg
+ real :: fbalsara1,fbalsara2
  dent=0
  tmuij=0
  if(lrho.EQ.0) return
+ fbalsara1=1.
+ if(abs(lhsmcurlv).GT.0) fbalsara1=abs(lhsmdivv)/(abs(lhsmdivv)+abs(lhsmcurlv))
  if(symmetry.EQ.'hk') then
   hsminv=1./hsm
   dwnorm=piinv*hsminv**5
@@ -252,6 +262,11 @@ subroutine entdot(n,hsm,ppos,pvel,lrho,lcsound,dent,tmuij)
   if(vdotdr.GT.0.) muij=0.
   piij=(-alpha*muij*(max(lcsound,csound(nb)))+beta*muij**2)/ &
                                                  (min(lrho,rho(nb)))
+  if(balsara) then
+    fbalsara2=1
+    if(abs(hsmcurlv(nb)).GT.0) fbalsara2=abs(hsmdivv(nb))/(abs(hsmdivv(nb))+abs(hsmcurlv(nb)))
+    piij=piij*0.5*(fbalsara1+fbalsara2)
+  endif
 ! gadget visc
 !  if(dr2.NE.0) muij=vdotdr/sqrt(dr2)
 !  if(vdotdr.GT.0..OR.dr2.EQ.0) muij=0.
@@ -296,6 +311,11 @@ subroutine entdot(n,hsm,ppos,pvel,lrho,lcsound,dent,tmuij)
    if(vdotdr.GT.0.) muij=0.
    piij=(-alpha*muij*(max(lcsound,csound(nb)))+beta*muij**2)/ &
                                                  (min(lrho,rho(nb)))
+   if(balsara) then
+     fbalsara2=1
+     if(abs(hsmcurlv(nb)).GT.0) fbalsara2=abs(hsmdivv(nb))/(abs(hsmdivv(nb))+abs(hsmcurlv(nb)))
+     piij=piij*0.5*(fbalsara1+fbalsara2)
+   endif
    eij=vdotdr*0.5*piij
    dent=dent+eij*mass(nb)*dwmass
    tmuij=MAX(tmuij,ABS(muij))
@@ -304,19 +324,23 @@ subroutine entdot(n,hsm,ppos,pvel,lrho,lcsound,dent,tmuij)
  dent=dent*gamma1/(lrho**gamma1)
 end
 
-subroutine accsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh)
+subroutine accsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh,lhsmdivv,lhsmcurlv)
  include 'globals.h' 
  integer,intent(in) :: n
  real,dimension(3),intent(in) :: ppos,pvel
  real,dimension(3),intent(inout) :: pacc
  real,intent(in) :: hsm,lrho,lcsound,ldrhodh
+ real,intent(in) :: lhsmdivv,lhsmcurlv
  integer :: i,nb,iwsm,iwsm1
  real :: dx,dy,dz,wnorm,distnorm,hsminv,dr2p,drw,drw1,tmass,dr2,dr2i,wsm
  real :: dwmass,dwmass1,dwsm,dwsm1,dwmnbi,dwnorm,wmass,muij,eij,piij
  real :: vdotdr,hsmavg,aij,aijmass,fi,fnbi
+ real :: fbalsara1,fbalsara2
 
  pacc=0
  if(lrho.EQ.0) return
+ fbalsara1=1.
+ if(abs(lhsmcurlv).GT.0) fbalsara1=abs(lhsmdivv)/(abs(lhsmdivv)+abs(lhsmcurlv))
  hsminv=1./hsm
  dwnorm=piinv*hsminv**5
  distnorm=hsminv*hsminv*deldr2i
@@ -359,11 +383,15 @@ subroutine accsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh)
   if(vdotdr.GT.0.) muij=0.
   piij=(-alpha*muij*(max(lcsound,csound(nb)))+beta*muij**2)/ &
                                                   (min(lrho,rho(nb)))
+   if(balsara) then
+     fbalsara2=1
+     if(abs(hsmcurlv(nb)).GT.0) fbalsara2=abs(hsmdivv(nb))/(abs(hsmdivv(nb))+abs(hsmcurlv(nb)))
+     piij=piij*0.5*(fbalsara1+fbalsara2)
+   endif
 !  gadget visc
 !  if(dr2.NE.0) muij=vdotdr/sqrt(dr2)
 !  if(vdotdr.GT.0..OR.dr2.EQ.0) muij=0.
 !  piij=-alpha*muij*(lcsound+csound(nb)-3*muij)/(lrho+rho(nb))
- 		  
   fi=1/(1+ldrhodh*hsm/3/(rhomin+lrho))
   fnbi=1/(1+drhodh(nb)*hsmooth(nb)/3/(rhomin+rho(nb)))
   
@@ -382,34 +410,41 @@ subroutine pentdotaccsphco(p,n)
  include 'globals.h'
  integer n,p
  real h,ppos(3),pvel(3),pacc(3),lrho,lcsound,ldrhodh,ldentdt,imumax
+ real lhsmdivv,lhsmcurlv
   h=hsmooth(p)
   ppos=pos(p,1:3)
   pvel=veltpos(p,1:3)
   lrho=rho(p)
   ldrhodh=drhodh(p)
   lcsound=csound(p)
-  call entdotaccsphco(n,h,ppos,pvel,pacc,lrho,lcsound,ldrhodh,ldentdt,imumax)
+  lhsmdivv=hsmdivv(p)
+  lhsmcurlv=hsmcurlv(p)  
+  call entdotaccsphco(n,h,ppos,pvel,pacc,lrho,lcsound,ldrhodh,ldentdt,imumax,lhsmdivv,lhsmcurlv)
   acc(p,1:3)=acc(p,1:3)+pacc(1:3)
   dentdt(p)=ldentdt
   mumaxdvh(p)=imumax
 end
 
 
-subroutine entdotaccsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh,dent,tmuij)
+subroutine entdotaccsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh,dent,tmuij,lhsmdivv,lhsmcurlv)
  include 'globals.h' 
  integer,intent(in) :: n
  real,dimension(3),intent(in) :: ppos,pvel
  real,intent(inout) :: pacc(3),dent,tmuij
  real,intent(in) :: hsm,lrho,lcsound,ldrhodh
+ real,intent(in) :: lhsmdivv,lhsmcurlv
  integer :: i,nb,iwsm,iwsm1
  real :: dx,dy,dz,wnorm,distnorm,hsminv,dr2p,drw,drw1,tmass,dr2,dr2i,wsm
  real :: dwmass,dwmass1,dwsm,dwsm1,dwmnbi,dwnorm,wmass,muij,eij,piij
  real :: vdotdr,hsmavg,aij,aijmass,fi,fnbi
+ real :: fbalsara1,fbalsara2
 
  pacc=0
  dent=0
  tmuij=0
  if(lrho.EQ.0) return
+ fbalsara1=1.
+ if(abs(lhsmcurlv).GT.0) fbalsara1=abs(lhsmdivv)/(abs(lhsmdivv)+abs(lhsmcurlv))
  hsminv=1./hsm
  dwnorm=piinv*hsminv**5
  distnorm=hsminv*hsminv*deldr2i
@@ -453,6 +488,11 @@ subroutine entdotaccsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh,dent,tmuij)
   if(vdotdr.GT.0.) muij=0.
   piij=(-alpha*muij*(max(lcsound,csound(nb)))+beta*muij**2)/ &
                                                   (min(lrho,rho(nb)))
+  if(balsara) then
+    fbalsara2=1
+    if(abs(hsmcurlv(nb)).GT.0) fbalsara2=abs(hsmdivv(nb))/(abs(hsmdivv(nb))+abs(hsmcurlv(nb)))
+    piij=piij*0.5*(fbalsara1+fbalsara2)
+  endif
 !  gadget visc
 !  if(dr2.NE.0) muij=vdotdr/sqrt(dr2)
 !  if(vdotdr.GT.0..OR.dr2.EQ.0) muij=0.
@@ -601,13 +641,16 @@ subroutine pethdotaccsphco(p,n)
  include 'globals.h'
  integer n,p
  real h,ppos(3),pvel(3),pacc(3),lrho,lcsound,ldrhodh,ldethdt,imumax
+ real lhsmdivv,lhsmcurlv
   h=hsmooth(p)
   ppos=pos(p,1:3)
   pvel=veltpos(p,1:3)
   lrho=rho(p)
   ldrhodh=drhodh(p)
   lcsound=csound(p)
-  call ethdotaccsphco(n,h,ppos,pvel,pacc,lrho,lcsound,ldrhodh,ldethdt,imumax)
+  lhsmdivv=hsmdivv(p)
+  lhsmcurlv=hsmcurlv(p)
+  call ethdotaccsphco(n,h,ppos,pvel,pacc,lrho,lcsound,ldrhodh,ldethdt,imumax,lhsmdivv,lhsmcurlv)
   acc(p,1:3)=acc(p,1:3)+pacc(1:3)
 !  if(.NOT.isotherm) dethdt(p)=ldethdt
   dethdt(p)=ldethdt
@@ -618,30 +661,37 @@ subroutine pethdotco(p,n)
  include 'globals.h'
  integer n,p
  real h,ppos(3),pvel(3),pacc(3),lrho,lcsound,ldrhodh,ldethdt,imumax
+ real lhsmdivv,lhsmcurlv
   h=hsmooth(p)
   ppos=pos(p,1:3)
   pvel=veltpos(p,1:3)
   lrho=rho(p)
   ldrhodh=drhodh(p)
   lcsound=csound(p)
-  call ethdotaccsphco(n,h,ppos,pvel,pacc,lrho,lcsound,ldrhodh,ldethdt,imumax)
+  lhsmdivv=hsmdivv(p)
+  lhsmcurlv=hsmcurlv(p)  
+  call ethdotaccsphco(n,h,ppos,pvel,pacc,lrho,lcsound,ldrhodh,ldethdt,imumax,lhsmdivv,lhsmcurlv)
 !  acc(p,1:3)=acc(p,1:3)+pacc(1:3)
   dethdt(p)=ldethdt
   mumaxdvh(p)=imumax
 end
 
 
-subroutine ethdotaccsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh,deth,tmuij)
+subroutine ethdotaccsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh,deth,tmuij,lhsmdivv,lhsmcurlv)
  include 'globals.h' 
  integer,intent(in) :: n
  real,dimension(3),intent(in) :: ppos,pvel
  real,intent(inout) :: pacc(3),deth,tmuij
  real,intent(in) :: hsm,lrho,lcsound,ldrhodh
+ real,intent(in) :: lhsmdivv,lhsmcurlv
  integer :: i,nb,iwsm,iwsm1
  real :: dx,dy,dz,wnorm,distnorm,hsminv,dr2p,drw,drw1,tmass,dr2,dr2i,wsm
  real :: dwmass,dwmass1,dwsm,dwsm1,dwmnbi,dwnorm,wmass,muij,eij,piij
  real :: vdotdr,hsmavg,aij,aijmass,fi,fnbi
+ real :: fbalsara1,fbalsara2
 
+ fbalsara1=1.
+ if(abs(lhsmcurlv).GT.0) fbalsara1=abs(lhsmdivv)/(abs(lhsmdivv)+abs(lhsmcurlv))
  pacc=0
  deth=0
  tmuij=0
@@ -689,7 +739,12 @@ subroutine ethdotaccsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh,deth,tmuij)
   if(vdotdr.GT.0.) muij=0.
   piij=(-alpha*muij*(max(lcsound,csound(nb)))+beta*muij**2)/ &
                                                   (min(lrho,rho(nb)))
- 		  
+  if(balsara) then
+    fbalsara2=1
+    if(abs(hsmcurlv(nb)).GT.0) fbalsara2=abs(hsmdivv(nb))/(abs(hsmdivv(nb))+abs(hsmcurlv(nb)))
+    piij=piij*0.5*(fbalsara1+fbalsara2)
+  endif
+
 !  fi=1/(1+ldrhodh*hsm/3/(rhomin+lrho))
 !  fnbi=1/(1+drhodh(nb)*hsmooth(nb)/3/(rhomin+rho(nb)))
   fi=(rhomin+lrho)/((rhomin+lrho)+ldrhodh*hsm/3.)

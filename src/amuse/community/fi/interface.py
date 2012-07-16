@@ -726,6 +726,21 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function.result_type = 'i'
         return function;
 
+    @legacy_function   
+    def set_balsara():
+        """ set_balsara([0,1]): use Balsara viscosity limiter if 1"""        
+        function = LegacyFunctionSpecification()  
+        function.addParameter('balsara_flag', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_balsara():
+        """ set_balsara([0,1]): use Balsara viscosity limiter if 1"""        
+        function = LegacyFunctionSpecification()  
+        function.addParameter('balsara_flag', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
 
 # integers
     @legacy_function
@@ -1829,6 +1844,14 @@ class Fi(GravitationalDynamics):
             "eps_is_h_flag",
             "Eps-is-h flag. True means: set gas particles gravitational epsilon to h (SPH smoothing length).",
             True
+        )
+
+        object.add_boolean_parameter(
+            "get_balsara",
+            "set_balsara",
+            "balsara_flag",
+            "balsara flag. True means: use Balsara viscosity limiter.",
+            False
         )
         
         

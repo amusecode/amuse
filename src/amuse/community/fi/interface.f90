@@ -690,6 +690,20 @@ function get_eps_is_h(flag) result(ret)
   ret=0
 end function
 
+function set_balsara(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_balsara(.TRUE.)
+  if(flag.EQ.0) call amuse_set_balsara(.FALSE.)
+  ret=0
+end function
+function get_balsara(flag) result(ret)
+  integer :: ret,flag
+  logical :: x
+  flag=0
+  call amuse_get_balsara(x) 
+  if(x) flag=1
+  ret=0
+end function
 
 ! integers
 

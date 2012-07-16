@@ -164,7 +164,7 @@ program snapreader
   ltot=ltot+l 
  enddo
  close(1)
- write(*,'("wrote ",i," sources with ",g8.2," of total luminosity")'),nsources,lout/ltot
+ write(*,'("wrote ",i," sources with ",g9.2," of total luminosity")'),nsources,lout/ltot
 
     print*, 'convert to GABE unit'
 

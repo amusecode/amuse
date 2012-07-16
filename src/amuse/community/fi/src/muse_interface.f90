@@ -30,7 +30,7 @@ subroutine initparameters
      &    tbubble,sne_eff, tsnbeg, rhomax
         INTEGER nsmooth
 	LOGICAL smoothinput, consph, sphinit, uentropy, isotherm,        &
-     &    eps_is_h
+     &    eps_is_h,balsara
         CHARACTER*4 feedback
         CHARACTER*10 sfmode
         CHARACTER*4 hupdatemethod
@@ -38,7 +38,7 @@ subroutine initparameters
 
         COMMON/sph_param/epsgas, gamma, alpha, beta, epssph, courant,    & 
      &    removgas,consthsm, nsmtol, nsmooth, smoothinput, consph,       &
-     &    sphinit, uentropy, isotherm,eps_is_h,                          &
+     &    sphinit, uentropy, isotherm,eps_is_h,balsara,                  &
      &    hupdatemethod,sph_visc
         COMMON/rad_param/graineff,crionrate,heat_par1,heat_par2,         &
      &    cool_par, optdepth
