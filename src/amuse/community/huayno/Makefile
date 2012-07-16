@@ -1,7 +1,7 @@
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 
-ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
+ifneq (,$(findstring xlc, $(notdir $(CC))))
 CCFLAGS += -qlanglvl=extc99
 else
 CCFLAGS += -std=c99
