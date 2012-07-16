@@ -29,7 +29,7 @@ class TestFiInterface(TestWithMPI):
                     ('directsum',0),('selfgrav',1),('fixthalo',0),
                     ('adaptive_eps',0),('gdgop',1),('smoothinput',0),
                     ('consph',1),('sphinit',1),('uentropy',1),('isotherm',0),
-                    ('eps_is_h',1)]:
+                    ('eps_is_h',1),('balsara',0)]:
             result,err=getattr(instance, 'get_'+x)()
             self.assertEquals( (x,result),(x,l))
             err=getattr(instance, 'set_'+x)(1)
@@ -432,7 +432,7 @@ class TestFi(TestWithMPI):
         for bool_par in ['radiation_flag','star_formation_flag',
             'square_root_timestep_flag','freeform_timestep_flag','quadrupole_moments_flag',
             'direct_sum_flag','fixed_halo_flag','adaptive_smoothing_flag','smooth_input_flag',
-            'isothermal_flag']:
+            'isothermal_flag','balsara_flag']:
             self.assertEquals(False, getattr(instance.parameters, bool_par))
             setattr(instance.parameters, bool_par, True)
             self.assertEquals(True, getattr(instance.parameters, bool_par))

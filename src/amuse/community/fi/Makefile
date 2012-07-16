@@ -20,7 +20,7 @@ PGLOBJECTS=$(PERIODIC_BUILDDIR)/fthread.o $(PERIODIC_BUILDDIR)/stars3d.o $(PERIO
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
 GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
 
-X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
+X11LIB = -L/usr/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
 FFTW_LIBS ?= -lfftw3  -lfftw3_threads
 
@@ -30,7 +30,7 @@ PTHREADLIB = -L. -lpthread $(PERIODIC_BUILDDIR)/libpt.a
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondf
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
-OPENMP_FCFLAGS?=# -openmp -openmp_report0 
+OPENMP_FCFLAGS=# -openmp -openmp_report0 
 
 
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
@@ -65,7 +65,7 @@ endif
 #FFLAGS= -fdefault-real-8 -O -ffree-line-length-256 -frecord-marker=4 $(PIC)
 
 
-#FFLAGS+= $(OPENMP_FCFLAGS) 
+FFLAGS+= $(OPENMP_FCFLAGS) 
 
 FFLAGS+= -I. -I..
 
@@ -100,8 +100,8 @@ $(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
 fi_worker: worker.f90 $(BUILDDIR)/libfi.a interface.o 
 	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDDIR) worker.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SCLIBS)
 
-fi_worker_sockets: worker-sockets.f90 interface.o $(BUILDDIR)/libfi.a
-	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDIR) $(FSINC) worker-sockets.f90 interface.o -o $@ $(BUILDDIR)/libfi.a \
+fi_worker_sockets: worker-sockets.f90 $(BUILDDIR)/libfi.a interface.o 
+	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDDIR) $(FSINC) worker-sockets.f90 interface.o -o $@ $(BUILDDIR)/libfi.a \
 	$(LIBS) $(SCLIBS) $(FSLIBS)
 
 fi_worker_gl: glworker.f90 interface.o $(BUILDDIR)/libfi.a
@@ -147,6 +147,7 @@ clean:
 	make -C src purge
 	$(RM) -f *.o *.po *.pyc *.bck worker worker.f90 glworker glworker.f90
 	$(RM) -f fi_worker_periodic fi_worker_gl fi_worker
+	$(RM) -f fi_worker_periodic_gl
 	$(RM) -f fi_worker_sockets worker-sockets.f90
 	$(RM) -f worker_code_periodic worker_code
 	$(RM) -f forsockets.mod
