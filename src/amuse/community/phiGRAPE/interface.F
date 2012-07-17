@@ -625,7 +625,6 @@ C====================================================================
 
 C     AMUSE STOPPING CONDITION SUPPORT
       error = set_support_for_condition(COLLISION_DETECTION)
-      error = set_support_for_condition(PAIR_DETECTION)
       error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
       error = set_support_for_condition(TIMEOUT_DETECTION)
 

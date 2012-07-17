@@ -72,19 +72,21 @@ void jdata::set_manage_encounters(int m)
     // conditions.  Use this instead of jd.manage_emcounters = ...
 
     // AMUSE STOPPING CONDITIONS SUPPORT
-    int is_collision_detection_enabled, is_pair_detection_enabled;
+    int is_collision_detection_enabled;
     is_stopping_condition_enabled(COLLISION_DETECTION,
 				  &is_collision_detection_enabled);
-    is_stopping_condition_enabled(PAIR_DETECTION,
-				  &is_pair_detection_enabled);
-    if (is_collision_detection_enabled
-	|| is_pair_detection_enabled) manage_encounters = 4;	// unnecessary
+				  
+    if (is_collision_detection_enabled) {
+	manage_encounters = 4;	// unnecessary
+    }
 
-    if (manage_encounters == 4 && m != 4)
-	if (mpi_rank == 0)
+    if (manage_encounters == 4 && m != 4){
+	if (mpi_rank == 0) {
 	    cout << "warning: setting manage_encounters = " << m
 		 << " overrides default stopping condition"
 		 << endl << flush;
+	}
+    }
 
     manage_encounters = m;
 }
@@ -663,7 +665,7 @@ void jdata::advance()
 bool jdata::advance_and_check_encounter()
 {
     bool status = false;
-    int collision_detection_enabled, pair_detection_enabled;
+    int collision_detection_enabled;
     advance();
 
     // Optionally manage close encounters.  AMUSE stopping conditions
@@ -686,18 +688,6 @@ bool jdata::advance_and_check_encounter()
         return status;
     }
     
-    is_stopping_condition_enabled(PAIR_DETECTION,
-				  &pair_detection_enabled);
-    if (pair_detection_enabled) {
-        if (close1 >= 0) {
-            int stopping_index = next_index_for_stopping_condition();
-            set_stopping_condition_info(stopping_index, PAIR_DETECTION);
-            set_stopping_condition_particle_index(stopping_index, 0, close1);
-            set_stopping_condition_particle_index(stopping_index, 1, close2);
-            status = true;
-        }
-        return status;
-    }
     
     if (!manage_encounters || eps2 > 1.0e-99 || manage_encounters == 4)
         return false;

@@ -36,7 +36,7 @@ int get_stopping_condition_maximum_internal_energy_parameter(double *value);
 #define MAX_NUMBER_OF_PARTICLES_PER_INDEX        10
 
 #define COLLISION_DETECTION  0
-#define PAIR_DETECTION       1
+#define PAIR_DETECTION       1 /* WILL BE REMOVED */
 #define ESCAPER_DETECTION    2
 #define TIMEOUT_DETECTION    3
 #define NUMBER_OF_STEPS_DETECTION      4

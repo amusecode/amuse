@@ -492,34 +492,6 @@ class TestHermite(TestWithMPI):
                 [True])
         instance.stop()
     
-    def test9(self):
-        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-    
-        instance = Hermite(convert_nbody)
-        instance.initialize_code()
-        instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.parameters.pair_factor = 1e14
-        stars = self.new_system_of_sun_and_earth()
-        earth = stars[1]
-                
-        instance.particles.add_particles(stars)
-        instance.stopping_conditions.pair_detection.enable()
-        instance.evolve_model(365.0 | units.day)
-        self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
-        instance.particles.copy_values_of_all_attributes_to(stars)
-        
-        position_at_start = earth.position.value_in(units.AU)[0]
-        position_after_full_rotation = earth.position.value_in(units.AU)[0]
-        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
-    
-        print instance.model_time
-        
-        print instance.stopping_conditions.pair_detection.particles(0).key
-        print instance.stopping_conditions.pair_detection.particles(1).key
-        
-        instance.cleanup_code()
-        
-        instance.stop()
         
     def test10(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)

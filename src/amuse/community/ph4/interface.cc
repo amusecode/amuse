@@ -39,7 +39,6 @@ int initialize_code()
 
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
-    set_support_for_condition(PAIR_DETECTION);
     //mpi_setup_stopping_conditions();
     
     jd->set_manage_encounters(4);	// 4 ==> enable AMUSE suport

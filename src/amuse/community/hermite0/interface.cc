@@ -91,8 +91,6 @@ real einit = 0;                        // initial total energy of the system
 bool init_flag = false;
 real t_dia = 0;
 real eps2 = 0;
-real pair_detect_factor = 1.0;   //look for bound particles in a sphere with radius 
-                                 //particle radius times this factor 
 
 bool flag_collision = true;
 bool reeval = false;
@@ -372,7 +370,6 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     int n = 0;
     int error;
     int is_collision_detection_enabled;
-    int is_pair_detection_enabled;
 
     if(mpi_rank == 0){
         n = ident.size();
@@ -408,9 +405,6 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     
     error = is_stopping_condition_enabled(COLLISION_DETECTION, 
 					  &is_collision_detection_enabled);
-    error = is_stopping_condition_enabled(PAIR_DETECTION, 
-					  &is_pair_detection_enabled);
-
     for (int i = istart; i < iend ; i+= mpi_size)
       {
         for (int j = i+1; j < n ; j++)             // rji[] is the vector from
@@ -449,35 +443,7 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
                 }
               }
             }
-	    if(is_pair_detection_enabled) {
-              //fprintf(stdout, 'doing pairdetection\n');
-              real rsum = radius[i] + radius[j];
-              if (r2 <= rsum*rsum * pair_detect_factor) {
-                //added by mcello
-                //escape velocity criterium, usual E = V + T=0 
-                //but for kinetic energy we use reduced mass: 
-                //T = T1 + T2 = 0.5 * m1*m2/M v^2 (rel vel w.r.t. C.O.M)
-                if (mass[i]+mass[j]/sqrt(r2 + eps2) > 0.5 * v2) {
-                  int stopping_index = next_index_for_stopping_condition();
-                  if(stopping_index < 0)
-                    {
-                    
-                    }
-                  else
-                  {
-                      set_stopping_condition_info(stopping_index, PAIR_DETECTION);
-                      if (mass[i] >= mass[j]) {
-                        set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
-                        set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
-                      }
-                      else {
-                        set_stopping_condition_particle_index(stopping_index, 0, ident[j]);
-                        set_stopping_condition_particle_index(stopping_index, 1, ident[i]);
-                      }
-                  }
-                }
-              }
-            }
+	   
             
             r2 += eps2;                            // | rji |^2 + eps^2
             real r = sqrt(r2);                     // | rji |
@@ -875,15 +841,6 @@ int get_n_steps()
   return nsteps;
 }
 
-int get_pair_detect_factor(double *pdf) {
-  *pdf = pair_detect_factor;
-  return 0;
-}
-
-int set_pair_detect_factor(double pdf) {
-  pair_detect_factor = pdf;
-  return 0;
-}
 
 static int max_identifier = 0;
 
@@ -1251,7 +1208,6 @@ int initialize_code()
     
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
-    set_support_for_condition(PAIR_DETECTION);
     set_support_for_condition(TIMEOUT_DETECTION);
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
     set_support_for_condition(OUT_OF_BOX_DETECTION);

@@ -572,36 +572,6 @@ class TestPhigrape(TestWithMPI):
                 [True])
         instance.stop()
 
-    def test12(self):
-        particles = datamodel.Particles(2)
-        particles.x = [
-            0.0,1.0, 
-            #5,7,
-            #10,12,
-            #15,17,
-            #20,22
-        ] | nbody_system.length
-        particles.y = 0 | nbody_system.length
-        particles.z = 0 | nbody_system.length
-        particles.radius = 0.75 | nbody_system.length
-        particles.vx =  0 | nbody_system.speed
-        particles.vy =  0 | nbody_system.speed
-        particles.vz =  0 | nbody_system.speed
-        particles.mass = 1.0 | nbody_system.mass
-       
-        instance = PhiGRAPE(**default_test_options)
-        instance.initialize_code()
-        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
-        instance.particles.add_particles(particles) 
-        instance.stopping_conditions.pair_detection.enable()
-        instance.evolve_model(1.5 | nbody_system.time)
-        self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 2 )
-        p0 =  instance.stopping_conditions.pair_detection.particles(0)[0]
-        p1 =  instance.stopping_conditions.pair_detection.particles(1)[0]
-        self.assertNotEquals(p0, p1)
-        self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
-        instance.stop()
 
     def test13(self):
         particles = datamodel.Particles(2)

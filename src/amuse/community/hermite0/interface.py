@@ -116,41 +116,6 @@ class HermiteInterface(CodeInterface,
         return function
     
 
-    @legacy_function
-    def get_pair_detect_factor():
-        """
-        Get pair detection sphere radius factor (units particle radius).
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('pair_detect_factor', dtype='float64',
-                              direction=function.OUT,
-            description = "pair detection radius ")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            the parameter was set
-        -1 - ERROR
-            could not set parameter
-        """
-        return function
-
-    @legacy_function
-    def set_pair_detect_factor():
-        """
-        Set pair detection sphere radius factor (units particle radius).
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('pair_detect_factor', dtype='float64',
-                              direction=function.IN,
-            description = "pair detection radius ")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            the parameter was set
-        -1 - ERROR
-            could not set parameter
-        """
-        return function
     
 
 class HermiteDoc(object):
@@ -197,13 +162,6 @@ class Hermite(GravitationalDynamics):
             "dt_dia", 
             "time interval between diagnostics output", 
             default_value = 1.0 | nbody_system.time
-        )
-        object.add_method_parameter(
-            "get_pair_detect_factor",
-            "set_pair_detect_factor",
-            "pair_factor",
-            "radius factor for pair detection", 
-            default_value = 1.0
         )
         object.add_method_parameter(
             "get_begin_time",

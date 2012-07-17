@@ -82,7 +82,6 @@ int initialize_code()
     // AMUSE STOPPING CONDITIONS SUPPORT
         set_support_for_condition(COLLISION_DETECTION);
 #if 0
-        set_support_for_condition(PAIR_DETECTION);
         set_support_for_condition(TIMEOUT_DETECTION);
         set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
         set_support_for_condition(OUT_OF_BOX_DETECTION);
@@ -1021,11 +1020,8 @@ namespace hacs64
     reset_stopping_conditions();    
 
     int is_collision_detection_enabled;
-    int is_pair_detection_enabled;
     is_stopping_condition_enabled(COLLISION_DETECTION, 
         &is_collision_detection_enabled);
-    is_stopping_condition_enabled(PAIR_DETECTION, 
-        &is_pair_detection_enabled);
 
 #if 0
     is_collision_detection_enabled = false;
@@ -1074,10 +1070,6 @@ namespace hacs64
       }
 
 
-      if (is_pair_detection_enabled)
-      {
-        assert(false);
-      }
     }
 
   }
