@@ -42,6 +42,7 @@ public:
     int node_org;
 
     double mass;
+    double radius;
     double pot;
     double pot_short;
     double r2_ngh_FS;
@@ -62,6 +63,7 @@ public:
 	have_ngh = 0;
 	index = 0;
 	mass = 0.0;
+	radius = 0.0;
 	pot = 0.0;
 	pot_short = 0.0;
 	pos = 0.0;
@@ -86,6 +88,7 @@ public:
 	have_ngh = p.have_ngh;
 	index = p.index;
 	mass = p.mass;
+	radius = p.radius;
 	pot = p.pot;
 	pot_short = p.pot_short;
 	pos = p.pos;

@@ -1,4 +1,5 @@
 import numpy
+import os.path
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import nbody_system, units, constants
@@ -8,7 +9,9 @@ from amuse.community.pikachu.interface import PikachuInterface, Pikachu
 from amuse.ic.plummer import new_plummer_model
 
 
-default_options = dict(redirection="none", mode='normal')
+default_options = dict(mode='normal')
+#~default_options = dict(redirection="none", mode='normal')
+#~default_options = dict(debugger="gdb", mode='normal')
 #~default_options = dict(redirection="none", mode='large_n')
 
 class TestPikachuInterface(TestWithMPI):
@@ -17,24 +20,33 @@ class TestPikachuInterface(TestWithMPI):
         print "Test PikachuInterface initialization"
         instance = self.new_instance_of_an_optional_code(PikachuInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
+        
+        directory, error = instance.get_kernel_directory()
+        self.assertEquals(0, error)
+        self.assertEquals("./", directory)
+        self.assertEquals(0, instance.set_kernel_directory(instance.default_kernel_directory))
+        directory, error = instance.get_kernel_directory()
+        self.assertEquals(error, 0)
+        self.assertEquals(directory, os.path.join(instance.amuse_root_directory, "src", "amuse", "community", "pikachu"))
+        
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
     
-    def xtest2(self):
+    def test2(self):
         print "Test PikachuInterface new_particle / get_state"
         instance = self.new_instance_of_an_optional_code(PikachuInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.set_kernel_directory(instance.default_kernel_directory))
         self.assertEquals(0, instance.commit_parameters())
         
-        id, error = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+        id, error = instance.new_particle(mass = 11.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0, radius = 1.0)
         self.assertEquals(0, error)
         self.assertEquals(1, id)
-        id, error = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
+        id, error = instance.new_particle(mass = 21.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0, radius = 2.0)
         self.assertEquals(0, error)
         self.assertEquals(2, id)
         self.assertEquals(0, instance.commit_particles())
-        
         retrieved_state1 = instance.get_state(1)
         retrieved_state2 = instance.get_state(2)
         self.assertEquals(0,  retrieved_state1['__result'])
@@ -47,10 +59,11 @@ class TestPikachuInterface(TestWithMPI):
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
     
-    def xtest4(self):
+    def test3(self):
         print "Test PikachuInterface particle property getters/setters"
         instance = self.new_instance_of_an_optional_code(PikachuInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.set_kernel_directory(instance.default_kernel_directory))
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals([1, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
         self.assertEquals([2, 0], instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values())
@@ -90,6 +103,7 @@ class TestPikachuInterface(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(PikachuInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
         
+        self.assertEquals(0, instance.set_kernel_directory(instance.default_kernel_directory))
         # Pikachu has separate epsilon_squared parameters for different interactions!
         self.assertEquals([0, 0], instance.get_eps2_fs_fs().values())
         self.assertEquals([0, 0], instance.get_eps2_fs_bh().values())
@@ -146,13 +160,12 @@ class TestPikachu(TestWithMPI):
     def new_sun_earth_system(self):
         particles = Particles(2)
         particles.mass = [1.0, 3.0037e-6] | units.MSun
-        particles.radius = 1.0 | units.RSun
         particles.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.km / units.s
         particles[1].vy = (constants.G * particles.total_mass() / (1.0 | units.AU)).sqrt()
         return particles
     
-    def xtest1(self):
+    def test1(self):
         print "Testing Pikachu initialization"
         instance = self.new_instance_of_an_optional_code(Pikachu, self.default_converter, **default_options)
         instance.initialize_code()
@@ -213,7 +226,7 @@ class TestPikachu(TestWithMPI):
         
         instance.stop()
     
-    def xtest3(self):
+    def test3(self):
         print "Testing Pikachu particles"
         instance = self.new_instance_of_an_optional_code(Pikachu, self.default_converter, **default_options)
         instance.initialize_code()
@@ -222,7 +235,6 @@ class TestPikachu(TestWithMPI):
         instance.commit_particles()
         
         self.assertAlmostEquals(instance.particles.mass, [1.0, 3.0037e-6] | units.MSun)
-        self.assertAlmostEquals(instance.particles.radius, 1.0 | units.RSun)
         self.assertAlmostEquals(instance.particles.position, 
             [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU)
         self.assertAlmostEquals(instance.particles.velocity, 

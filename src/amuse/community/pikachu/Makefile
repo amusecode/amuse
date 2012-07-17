@@ -46,7 +46,7 @@ $(CUDA_TK):
 	@make -s --no-print-directory -C . raise_error
 
 clean:
-	rm -f *.o *.pyc worker_code.cc worker_code.h 
+	rm -f *.o *.pyc *.ptx worker_code.cc worker_code.h 
 	rm -f pikachu_worker pikachu_worker_large_n
 	make -C $(SEQ_LIB) clean
 	make -C src clean

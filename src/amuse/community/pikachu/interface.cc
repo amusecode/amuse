@@ -34,8 +34,7 @@ using namespace std;
 
 
 // Globals
-double current_time = 0.0;
-static double begin_time = 0;
+static double begin_time = 0.0;
 
 map<int, dynamics_state> particle_buffer;        // for initialization only
 map<int, int> local_index_map;
@@ -43,9 +42,14 @@ map<int, int> reverse_index_map;
 int particle_id_counter = 0;
 bool particles_initialized = false;
 bool debug = false;
+bool energy_up_to_date = false;
 
 Nbody_System *nbody_system = 0;
 char output_dir[STRINGSIZE];
+char kernel_dir[STRINGSIZE];
+char kernel_dir_bogus[STRINGSIZE];
+char *fake_argv[1];
+double Ekin, Epot, Etot;
 double Egr = 0.0;
 double Emerge = 0.0;
 double eps2_FS_FS, eps2_FS_BH, eps2_BH_BH;
@@ -69,11 +73,30 @@ void close_program(){
     MPI_Finalize();
 }
 
+int get_kernel_directory(char **kernel_directory){
+    *kernel_directory = kernel_dir;
+    return 0;
+}
+int set_kernel_directory(char *kernel_directory){
+    int length = strlen(kernel_directory);
+    if (length >= STRINGSIZE) {
+        return -1;
+    }
+    strcpy(kernel_dir, kernel_directory);
+    strcpy(kernel_dir_bogus, kernel_directory);
+    strcat(kernel_dir_bogus, "/bogus");
+    return 0;
+}
+
 void set_default_parameters() {
     strcpy(output_dir, "./");
+    strcpy(kernel_dir, "./");
+    strcpy(kernel_dir_bogus, "./bogus");
+    fake_argv[0] = kernel_dir_bogus;
     
     NBH_GLB = NBH_LOC = 0;
     NDEAD_GLB = 0;
+    NBH_GLB_ORG = NBH_GLB + NDEAD_GLB;
     
     nbody_system->dt_glb = 1.0 / 2048;
     nbody_system->Tsys = 0.0;
@@ -103,6 +126,10 @@ void set_default_parameters() {
 //~####################################
 //~##    sqrt(MFS/eps) * dt = r_cut  ##
 //~####################################
+    
+    quad_flag = 0; // Nathan: "This was missing in the example parameter file, therefore it was used unitialized!"
+    Ncrit = 8; // Nathan: "Idem, but I don't think this is actually used anywhere..."
+    Nleaf = 8; // Nathan: "Idem, but I don't think this is actually used anywhere..."
 }
 
 int initialize_code() {
@@ -124,7 +151,7 @@ int initialize_code() {
 
     nbody_system = new Nbody_System;
     
-    set_support_for_condition(COLLISION_DETECTION);
+    //~set_support_for_condition(COLLISION_DETECTION);
     set_default_parameters();
     return 0;
 }
@@ -148,6 +175,28 @@ int new_particle(int *particle_identifier, double mass,
     return 0;
 }
 
+void erase_particle(Particle *part){
+    part->have_ngh = 0;
+    part->index = 0;
+    part->mass = 0.0;
+    part->radius = 0.0;
+    part->pot = 0.0;
+    part->pot_short = 0.0;
+    part->pos = 0.0;
+    part->vel = 0.0;
+    part->acc = 0.0;
+    part->acc_long = 0.0;
+    part->acc_short = 0.0;
+    part->type = star;
+    part->idx_ngh_FS = -1;
+    part->r2_ngh_FS = -0.0;
+    part->idx_ngh_BH = -1;
+    part->r2_ngh_BH = -0.0;
+    part->Nj = 0;
+    part->node_org = -1;
+    part->prt_next = NULL;
+}
+
 int delete_particle(int particle_identifier) {
     map<int, int>::iterator particle_iter = local_index_map.find(particle_identifier);
     if (particle_iter != local_index_map.end()){
@@ -155,6 +204,7 @@ int delete_particle(int particle_identifier) {
         local_index_map.erase(particle_iter);
         particle_iter = reverse_index_map.find(index);
         reverse_index_map.erase(particle_iter);
+        erase_particle(&(nbody_system->prt_loc[index]));
         return 0;
     }
     
@@ -167,13 +217,9 @@ int delete_particle(int particle_identifier) {
 }
 
 
-
 int commit_particles() {
-    NFS_GLB = particle_buffer.size();
-    NBH_GLB = 0;
-    
+    NFS_LOC = NFS_GLB = particle_buffer.size();
     NFS_GLB_ORG = NFS_GLB + NDEAD_GLB;
-    NBH_GLB_ORG = NBH_GLB + NDEAD_GLB;
     
     int i = 0;
     local_index_map.clear();
@@ -183,7 +229,7 @@ int commit_particles() {
         local_index_map.insert(pair<int, int>((*iter).first, i)); // identifier -> index
         reverse_index_map.insert(pair<int, int>(i, (*iter).first)); // index -> identifier
         nbody_system->prt_loc[i].mass = (*iter).second.mass;
-        //~nbody_system->prt_loc[i].radius = (*iter).second.radius;
+        nbody_system->prt_loc[i].radius = (*iter).second.radius;
         nbody_system->prt_loc[i].pos = Vector3((*iter).second.x, (*iter).second.y, (*iter).second.z);
         nbody_system->prt_loc[i].vel = Vector3((*iter).second.vx, (*iter).second.vy, (*iter).second.vz);
         nbody_system->prt_loc[i].index = i;
@@ -201,50 +247,63 @@ int commit_particles() {
     nbody_system->hard_system.set(eps2_FS_FS, eps2_FS_BH, eps2_BH_BH,
         rcut_out_FS_FS, rcut_out_FS_BH, rcut_out_BH_BH,
         eta_s, eta_FS, eta_BH, mass_min);
+    nbody_system->hard_system.dump();
+    
+    nbody_system->initialize_division();
+    
+    // assign particles (prt_loc and BH_glb)
+    // determine NBH_LOC and NFS_LOC
+    // sum of NBH_LOC + NFS_LOC over all nodes is NFS_GLB+NBH_GLB
+    nbody_system->divide_particles();
+    cerr<<"finish nbody_system->divide_particles()"<<endl;
+    
+    nbody_system->calc_soft_forces(fake_argv);
+    //nbody_system->dump_tree_strcture(); // for the check of the tree strcture using jeroen's code
+    cerr<<"finish nbody_system->calc_soft_forces();"<<endl;
+    
+    nbody_system->calc_energy(0);
+    
+    //~nbody_system->write_file(output_dir);
     
     particles_initialized = true;
     return 0;
 }
 
 void push_particle_data_back_to_buffer(){
-    //~map<int, int>::iterator iter;
-    //~int i;
-    //~for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
-        //~i = iter->second;
-        //~dynamics_state state;
-        //~state.mass = prt[i].mass;
-        //~state.radius = prt[i].radius;
-        //~state.x = prt[i].pos[0];
-        //~state.y = prt[i].pos[1];
-        //~state.z = prt[i].pos[2];
-        //~state.vx = prt[i].vel[0];
-        //~state.vy = prt[i].vel[1];
-        //~state.vz = prt[i].vel[2];
-        //~particle_buffer.insert(pair<int, dynamics_state>(iter->first, state));
-    //~}
-    //~local_index_map.clear();
-    //~reverse_index_map.clear();
+    map<int, int>::iterator iter;
+    int i;
+    for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
+        i = iter->second;
+        dynamics_state state;
+        state.mass = nbody_system->prt_loc[i].mass;
+        state.radius = nbody_system->prt_loc[i].radius;
+        state.x = nbody_system->prt_loc[i].pos[0];
+        state.y = nbody_system->prt_loc[i].pos[1];
+        state.z = nbody_system->prt_loc[i].pos[2];
+        state.vx = nbody_system->prt_loc[i].vel[0];
+        state.vy = nbody_system->prt_loc[i].vel[1];
+        state.vz = nbody_system->prt_loc[i].vel[2];
+        particle_buffer.insert(pair<int, dynamics_state>(iter->first, state));
+        erase_particle(&(nbody_system->prt_loc[i]));
+    }
+    local_index_map.clear();
+    reverse_index_map.clear();
 }
 
 int recommit_particles() {
-    //~push_particle_data_back_to_buffer();
-    //~if (particles_initialized) {
-        //~particles_initialized = false;
-        //~delete[] prt;
-        //~delete[] prt_old;
-        //~delete[] address;
-        //~delete[] address_old;
-    //~}
+    if (particles_initialized) {
+        push_particle_data_back_to_buffer();
+        particles_initialized = false;
+    }
     return commit_particles();
 }
 
 int cleanup_code() {
-    if (particles_initialized) {
-        particles_initialized = false;
-        //~delete[] prt;
-        //~delete[] prt_old;
-        //~delete[] address;
-        //~delete[] address_old;
+    if (particles_initialized){
+        map<int, int>::iterator iter;
+        for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
+            erase_particle(&(nbody_system->prt_loc[iter->second]));
+        }
     }
     local_index_map.clear();
     reverse_index_map.clear();
@@ -255,18 +314,19 @@ int cleanup_code() {
 
 int evolve_model(double time) {
     // AMUSE STOPPING CONDITIONS SUPPORT
-    int is_collision_detection_enabled = 0;
-    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
-    reset_stopping_conditions();
+    //~int is_collision_detection_enabled = 0;
+    //~is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
+    //~reset_stopping_conditions();
     
-    while (current_time < time) {
+    int after_stellar_evolution = 0;
+    nbody_system->Tend = time;
+    long long int loop_end = (long long int) ((time - nbody_system->Tsys) / nbody_system->dt_glb) + 1;
+    for(long long int loop = 0; loop < loop_end; loop++){
+        nbody_system->evolve(output_dir, fake_argv, after_stellar_evolution);
     }
-    current_time = time;
-    
+    energy_up_to_date = false;
     return 0;
 }
-
-
 
 bool found_particle(int particle_identifier, int *index){
     if (particles_initialized) {
@@ -289,17 +349,11 @@ void get_identifier_of_particle_with_index(int index, int *particle_identifier){
 }
 
 int get_index_of_first_particle(int *particle_identifier) {
-    //*index_of_the_particle = prt.front();
     return -2; // Not implemented
 }
 int get_index_of_next_particle(int particle_identifier, int *next_particle_identifier) {
     return -2; // Not implemented
 }
-
-//~int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_particle2) {
-    //~return -2; // Not implemented
-//~}
-
 
 
 // simulation property getters:
@@ -307,9 +361,10 @@ int get_total_mass(double *total_mass) {
     // calculate only on the root mpi process, not on others
     if (MYRANK == 0) {
         *total_mass = 0.0;
-        //~for (int i=0; i<Ntot; i++) {
-            //~*total_mass += prt[i].mass;
-        //~}
+        map<int, int>::iterator iter;
+        for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
+            *total_mass += nbody_system->prt_loc[iter->second].mass;
+        }
     }
     return 0;
 }
@@ -317,7 +372,7 @@ int get_total_radius(double *total_radius) {
     return -2; // Not implemented
 }
 int get_time(double *time) {
-    *time = current_time;
+    *time = nbody_system->Tsys;
     return 0;
 }
 
@@ -335,16 +390,19 @@ int get_center_of_mass_position(double *x, double *y, double *z){
     // calculate only on the root mpi process, not on others
     if (MYRANK == 0) {
         *x = *y = *z = 0.0;
-        double m = 0.0;
-        get_total_mass(&m);
-        //~for (int i=0; i<Ntot; i++) {
-            //~*x += prt[i].mass * prt[i].pos[0];
-            //~*y += prt[i].mass * prt[i].pos[1];
-            //~*z += prt[i].mass * prt[i].pos[2];
-        //~}
-        //~*x /= m;
-        //~*y /= m;
-        //~*z /= m;
+        double total_mass = 0.0;
+        map<int, int>::iterator iter;
+        int i;
+        for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
+            i = iter->second;
+            total_mass += nbody_system->prt_loc[i].mass;
+            *x += nbody_system->prt_loc[i].mass * nbody_system->prt_loc[i].pos[0];
+            *y += nbody_system->prt_loc[i].mass * nbody_system->prt_loc[i].pos[1];
+            *z += nbody_system->prt_loc[i].mass * nbody_system->prt_loc[i].pos[2];
+        }
+        *x /= total_mass;
+        *y /= total_mass;
+        *z /= total_mass;
     }
     return 0;
 }
@@ -352,29 +410,40 @@ int get_center_of_mass_velocity(double *vx, double *vy, double *vz) {
     // calculate only on the root mpi process, not on others
     if (MYRANK == 0) {
         *vx = *vy = *vz = 0.0;
-        double m = 0.0;
-        get_total_mass(&m);
-        //~for (int i=0; i<Ntot; i++) {
-            //~*vx += prt[i].mass * prt[i].vel[0];
-            //~*vy += prt[i].mass * prt[i].vel[1];
-            //~*vz += prt[i].mass * prt[i].vel[2];
-        //~}
-        //~*vx /= m;
-        //~*vy /= m;
-        //~*vz /= m;
+        double total_mass = 0.0;
+        map<int, int>::iterator iter;
+        int i;
+        for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
+            i = iter->second;
+            total_mass += nbody_system->prt_loc[i].mass;
+            *vx += nbody_system->prt_loc[i].mass * nbody_system->prt_loc[i].vel[0];
+            *vy += nbody_system->prt_loc[i].mass * nbody_system->prt_loc[i].vel[1];
+            *vz += nbody_system->prt_loc[i].mass * nbody_system->prt_loc[i].vel[2];
+        }
+        *vx /= total_mass;
+        *vy /= total_mass;
+        *vz /= total_mass;
     }
     return 0;
 }
 int get_kinetic_energy(double *kinetic_energy) {
-    //~*kinetic_energy = Ek1;
+    if (!energy_up_to_date) {
+        nbody_system->calc_energy(Ekin, Epot, Etot);
+        energy_up_to_date = true;
+    }
+    *kinetic_energy = Ekin;
     return 0;
 }
 int get_potential_energy(double *potential_energy) {
-    //~*potential_energy = Ep1;
+    if (!energy_up_to_date) {
+        nbody_system->calc_energy(Ekin, Epot, Etot);
+        energy_up_to_date = true;
+    }
+    *potential_energy = Epot;
     return 0;
 }
 int get_number_of_particles(int *number_of_particles) {
-    //~*number_of_particles = Ntot - Ndead;
+    *number_of_particles = NFS_GLB + NBH_GLB;
     return 0;
 }
 
@@ -385,7 +454,7 @@ int get_number_of_particles(int *number_of_particles) {
 int set_mass(int particle_identifier, double mass) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        //~prt[index].mass = mass;
+        nbody_system->prt_loc[index].mass = mass;
         return 0;
     }
     return -3; // Not found!
@@ -393,34 +462,31 @@ int set_mass(int particle_identifier, double mass) {
 int get_mass(int particle_identifier, double *mass) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        //~*mass = prt[index].mass;
+        *mass = nbody_system->prt_loc[index].mass;
         return 0;
     }
     return -3; // Not found!
 }
 int set_radius(int particle_identifier, double radius) {
-    //~int index;
-    //~if (found_particle(particle_identifier, &index)){
-        //~prt[index].radius = radius;
-        //~return 0;
-    //~}
-    //~return -3; // Not found!
-    return -2; // Not implemented
+    int index;
+    if (found_particle(particle_identifier, &index)){
+        nbody_system->prt_loc[index].radius = radius;
+        return 0;
+    }
+    return -3; // Not found!
 }
 int get_radius(int particle_identifier, double * radius) {
-    //~int index;
-    //~if (found_particle(particle_identifier, &index)){
-        //~*radius = prt[index].radius;
-        //~return 0;
-    //~}
-    //~return -3; // Not found!
-    return -2; // Not implemented
+    int index;
+    if (found_particle(particle_identifier, &index)){
+        *radius = nbody_system->prt_loc[index].radius;
+        return 0;
+    }
+    return -3; // Not found!
 }
 int set_position(int particle_identifier, double x, double y, double z) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        //~prt[index].pos = Vector3(x, y, z);
-        //~prt[index].pos_pre = Vector3(x, y, z);
+        nbody_system->prt_loc[index].pos = Vector3(x, y, z);
         return 0;
     }
     return -3; // Not found!
@@ -428,9 +494,9 @@ int set_position(int particle_identifier, double x, double y, double z) {
 int get_position(int particle_identifier, double *x, double *y, double *z) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        //~*x = prt[index].pos_pre[0];
-        //~*y = prt[index].pos_pre[1];
-        //~*z = prt[index].pos_pre[2];
+        *x = nbody_system->prt_loc[index].pos[0];
+        *y = nbody_system->prt_loc[index].pos[1];
+        *z = nbody_system->prt_loc[index].pos[2];
         return 0;
     }
     return -3; // Not found!
@@ -438,8 +504,7 @@ int get_position(int particle_identifier, double *x, double *y, double *z) {
 int set_velocity(int particle_identifier, double vx, double vy, double vz) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        //~prt[index].vel = Vector3(vx, vy, vz);
-        //~prt[index].vel_pre = Vector3(vx, vy, vz);
+        nbody_system->prt_loc[index].vel = Vector3(vx, vy, vz);
         return 0;
     }
     return -3; // Not found!
@@ -447,9 +512,9 @@ int set_velocity(int particle_identifier, double vx, double vy, double vz) {
 int get_velocity(int particle_identifier, double *vx, double *vy, double *vz) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        //~*vx = prt[index].vel_pre[0];
-        //~*vy = prt[index].vel_pre[1];
-        //~*vz = prt[index].vel_pre[2];
+        *vx = nbody_system->prt_loc[index].vel[0];
+        *vy = nbody_system->prt_loc[index].vel[1];
+        *vz = nbody_system->prt_loc[index].vel[2];
         return 0;
     }
     return -3; // Not found!
@@ -459,11 +524,10 @@ int set_state(int particle_identifier, double mass,
         double vx, double vy, double vz, double radius) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        //~prt[index].mass = mass;
-        //~prt[index].pos = Vector3(x, y, z);
-        //~prt[index].vel = Vector3(vx, vy, vz);
-        //~prt[index].pos_pre = Vector3(x, y, z);
-        //~prt[index].vel_pre = Vector3(vx, vy, vz);
+        nbody_system->prt_loc[index].mass = mass;
+        nbody_system->prt_loc[index].radius = radius;
+        nbody_system->prt_loc[index].pos = Vector3(x, y, z);
+        nbody_system->prt_loc[index].vel = Vector3(vx, vy, vz);
         return 0;
     }
     return -3; // Not found!
@@ -473,13 +537,14 @@ int get_state(int particle_identifier, double *mass,
         double *vx, double *vy, double *vz, double *radius) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        //~*mass = prt[index].mass;
-        //~*x = prt[index].pos_pre[0];
-        //~*y = prt[index].pos_pre[1];
-        //~*z = prt[index].pos_pre[2];
-        //~*vx = prt[index].vel_pre[0];
-        //~*vy = prt[index].vel_pre[1];
-        //~*vz = prt[index].vel_pre[2];
+        *mass = nbody_system->prt_loc[index].mass;
+        *radius = nbody_system->prt_loc[index].radius;
+        *x = nbody_system->prt_loc[index].pos[0];
+        *y = nbody_system->prt_loc[index].pos[1];
+        *z = nbody_system->prt_loc[index].pos[2];
+        *vx = nbody_system->prt_loc[index].vel[0];
+        *vy = nbody_system->prt_loc[index].vel[1];
+        *vz = nbody_system->prt_loc[index].vel[2];
         return 0;
     }
     return -3; // Not found!
@@ -492,9 +557,9 @@ int set_acceleration(int particle_identifier, double ax, double ay, double az) {
 int get_acceleration(int particle_identifier, double *ax, double *ay, double *az) {
     int index;
     if (found_particle(particle_identifier, &index)){
-        //~*ax = prt[index].acc_pre[0];
-        //~*ay = prt[index].acc_pre[1];
-        //~*az = prt[index].acc_pre[2];
+        *ax = nbody_system->prt_loc[index].acc[0];
+        *ay = nbody_system->prt_loc[index].acc[1];
+        *az = nbody_system->prt_loc[index].acc[2];
         return 0;
     }
     return -3; // Not found!
@@ -514,7 +579,7 @@ int get_eps2(double *epsilon_squared) {
     return -2;
 }
 int commit_parameters() {
-    current_time = begin_time;
+    nbody_system->Tsys = begin_time;
     
     if(rsearch_FS_FS < rcut_out_FS_FS || rsearch_FS_BH < rcut_out_FS_BH || rsearch_BH_BH < rcut_out_BH_BH){
         return -1;
@@ -528,7 +593,7 @@ int commit_parameters() {
         rcut_out_FS_FS, rcut_out_FS_BH, rcut_out_BH_BH,
         rsearch_FS_FS, rsearch_FS_BH, rsearch_BH_BH,
         theta2, Ncrit, Nleaf, quad_flag);
-    
+    nbody_system->soft_system.dump();
     return 0;
 }
 int recommit_parameters() {

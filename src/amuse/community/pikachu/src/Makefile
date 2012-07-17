@@ -36,7 +36,7 @@ CODELIB_GPU_LARGE_N = libpikachu_gpu_large_n.a
 all: copy hybrid_seq.out $(CODELIB_GPU) $(CODELIB_GPU_LARGE_N)
 
 copy: $(SEQ_LIBDIR)/*.ptx
-	cp $(SEQ_LIBDIR)/*.ptx ./
+	cp $(SEQ_LIBDIR)/*.ptx ../
 
 $(CODELIB_GPU): $(OBJS_SEQ)
 	$(RM) $@

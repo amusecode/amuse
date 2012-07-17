@@ -47,6 +47,29 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
         """
         return os.path.join(self.output_data_root_directory, 'pikachu', 'output')
     
+    @option(type="string", sections=('data',))
+    def default_kernel_directory(self):
+        """
+        The default directory containing the Sequoia kernels
+        """
+        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'pikachu')
+    
+    @legacy_function
+    def get_kernel_directory():
+        function = LegacyFunctionSpecification()
+        function.addParameter('kernel_directory', dtype='string', direction=function.OUT,
+            description = "Name of the Sequoia kernel directory")
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def set_kernel_directory():
+        function = LegacyFunctionSpecification()
+        function.addParameter('kernel_directory', dtype='string', direction=function.IN,
+            description = "Name of the Sequoia kernel directory")
+        function.result_type = 'int32'
+        return function
+    
     @legacy_function
     def get_gravity_at_point():
         """
@@ -95,6 +118,13 @@ class Pikachu(GravitationalDynamics):
     def define_parameters(self, object):
         GravitationalDynamics.define_parameters(self, object)
         self.stopping_conditions.define_parameters(object)
+        object.add_method_parameter(
+            "get_kernel_directory", 
+            "set_kernel_directory",
+            "kernel_directory", 
+            "Name of the Sequoia kernel directory", 
+            default_value = self.default_kernel_directory
+        )
     
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
