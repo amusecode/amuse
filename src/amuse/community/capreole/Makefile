@@ -78,13 +78,13 @@ $(MPI_BUILDDIR)/Makefile:
 $(MPILIBS): $(MPI_BUILDDIR)/Makefile
 	make -C $(MPI_BUILDDIR) amuse_interface_mpi  VPATH=../src F90FLAGS1="$(FFLAGS)" FC="$(FC)" MPIFC="$(MPIFC)"
 	
-capreole_worker: $(NOMPILIBS) worker.f90 $(BUILDDIR)/interface.o
+capreole_worker: $(NOMPILIBS) worker_code.f90 $(BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2)  -I$(BUILDDIR) $(SCINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS)
 	
-capreole_worker_sockets: $(NOMPILIBS) worker-sockets.F90 $(BUILDDIR)/interface.o
+capreole_worker_sockets: $(NOMPILIBS) worker_code_sockets.F90 $(BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $(FSINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS) $(FSLIB)
 
-capreole_worker_mpi: $(MPILIBS) worker_mpi.f90 $(MPI_BUILDDIR)/interface.o
+capreole_worker_mpi: $(MPILIBS) worker_code_mpi.f90 $(MPI_BUILDDIR)/interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SCINC) $^ -o $@ $(MPILIBS) $(SCLIBS)
 
 #capreole_worker_gl: $(NOMPILIBS) glworker.f90 $(BUILDDIR)/interface.o
@@ -93,22 +93,19 @@ capreole_worker_mpi: $(MPILIBS) worker_mpi.f90 $(MPI_BUILDDIR)/interface.o
 #	$(FC) $(FFLAGS) $(SCINC) $^ -o $@  $(GLOBJECTS) \
 #	$(GLLIB)  $(X11LIB) $(THREADLIB) $(NOMPILIBS) $(SCLIBS)
 
-worker.f90: interface.py 
+worker_code.f90: interface.py 
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 	
-worker-sockets.F90: interface.py 
+worker_code_sockets.F90: interface.py 
 	$(CODE_GENERATOR) --type=f90 --mode=sockets $< $(CLASSNAME) -o $@
 
-worker_mpi.f90: interface.py 
+worker_code_mpi.f90: interface.py 
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
-
-glworker.f90: interface.py 
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(CODE_GENERATOR) --type=f90 $< $(GLCLASSNAME) -o $@
 
 clean:
 	make -C src clean
 	$(RM) -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90 worker-sockets.F90 worker-sockets.f90
+	$(RM) -f worker_code.f90 worker_code_sockets.F90 worker_code_mpi.f90
 	$(RM) -f capreole_worker capreole_worker_mpi capreole_worker_gl worker_mpi.f90 capreole_worker_sockets
 	$(RM) -Rf build build_mpi
 	$(RM) -f forsockets.mod

@@ -29,11 +29,11 @@ clean:
 	$(RM) -f sse_worker sse_worker_sockets worker_code-sockets.f90
 	$(RM) -f forsockets.mod
 
-sse_worker:	worker_code.f90  SSE_muse_interface.o  $(OBJ)
+sse_worker:	worker_code.f90  interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
 	$(MPIF90) -v $^ -o $@ 
 
-sse_worker_sockets: worker_code-sockets.f90  SSE_muse_interface.o  $(OBJ)
+sse_worker_sockets: worker_code-sockets.f90  interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
 	$(MPIF90) $(FSINC) $^ -o $@ $(FSLIBS) 
 

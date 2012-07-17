@@ -15,7 +15,7 @@ MUSE_INCLUDE_DIR = -I$(CODEPATH) -I$(CUDA_TK)/include
 
 CXXFLAGS+= $(MUSE_INCLUDE_DIR) 
 
-OBJS = integrator.o octgrav_code.o 
+OBJS = integrator.o interface.o 
 
 AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py

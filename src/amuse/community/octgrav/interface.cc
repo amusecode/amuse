@@ -1,5 +1,5 @@
 #include <iostream>
-#include "octgrav_code.h"
+#include "interface.h"
 #include "worker_code.h"
 #include <vector>
 #include <algorithm>

@@ -8,7 +8,7 @@ class OctgravInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDy
                Implementation in CUDA", 2010, Proc. C. Sc., 1, 1119; and main MUSE paper, arXiv/0807.1996
     """
 
-    include_headers = ['octgrav_code.h', 'parameters.h', 'worker_code.h', 'local.h', 'stopcond.h']
+    include_headers = ['interface.h', 'parameters.h', 'worker_code.h', 'local.h', 'stopcond.h']
 
     def __init__(self, convert_nbody = None, **options):
         CodeInterface.__init__(self, name_of_the_worker="octgrav_worker", **options)

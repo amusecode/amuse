@@ -50,25 +50,26 @@ $(APP):
 
 clean:
 	$(RM) *.so *.o *.pyc worker.cc worker.h worker_gl.cc worker_gl.h
+	$(RM) worker_code.cc worker_code.h worker_code_gl.cc worker_code_gl.h
 	$(RM) simplex_worker simplex_worker_gl *~
 	cd $(SRCDIR) && $(MAKE) clean
 
 distclean: clean
 	cd $(SRCDIR) && $(MAKE) veryclean
 	
-worker.cc: interface.py
+worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c $< SimpleXInterface -o $@
 
-worker.h: interface.py
+worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $< SimpleXInterface -o $@
 
-worker_gl.cc: interface.py
+worker_code_gl.cc: interface.py
 	$(CODE_GENERATOR) --type=c $< GlSimpleXInterface -o $@
 
-worker_gl.h: interface.py
+worker_code_gl.h: interface.py
 	$(CODE_GENERATOR) --type=H $< GlSimpleXInterface -o $@
 
-simplex_worker: worker.cc worker.h $(OBJS)
+simplex_worker: worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $^ -o $@ $(LIBS)
 
 #simplex_worker_gl: worker_gl.cc worker_gl.h $(OBJS) $(GLOBJS)

@@ -50,7 +50,7 @@ LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 #	$(SRCDIR)/timestep.c
 #  ^^^ original timestepping ^^^
 
-INTERFACE_OBJ = gadget_code.o
+INTERFACE_OBJ = interface.o
 INTERFACE_SRC  = $(INTERFACE_OBJ:.o=.cc)
 
 all:	gadget2_worker
@@ -94,7 +94,7 @@ gadget2_worker: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDI
 gadget2_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PROFLIBS) $(ALLVARS)
 	
-gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options
+interface.o: interface.cc $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) -c -o $@ $< $(SCLIBS) $(GSL_LIBS)
 
 
@@ -109,13 +109,13 @@ $(PERIODIC_BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options
 $(PERIODIC_BUILDDIR)/libgadget.a:  $(PERIODIC_BUILDDIR)/Makefile $(PERIODIC_BUILDDIR)/makefile_options
 	make -C $(PERIODIC_BUILDDIR) all OPT="$(PERIODIC_OPT)" VPATH=../src
 	
-gadget2_worker_periodic: worker_code.cc worker_code.h gadget_code.po $(PERIODIC_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC -DNOGRAVITY $(SCINC) $(GSL_FLAGS) $< gadget_code.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a  $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o
+gadget2_worker_periodic: worker_code.cc worker_code.h interface.po $(PERIODIC_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC -DNOGRAVITY $(SCINC) $(GSL_FLAGS) $< interface.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a  $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o
 
-gadget2_worker_periodic_sockets: worker_code-sockets.cc worker_code.h gadget_code.po $(PERIODIC_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC -DNOGRAVITY $(SCINC) $(GSL_FLAGS) $< gadget_code.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PROFLIBS) $(PERIODIC_BUILDDIR)/allvars.o
+gadget2_worker_periodic_sockets: worker_code-sockets.cc worker_code.h interface.po $(PERIODIC_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC -DNOGRAVITY $(SCINC) $(GSL_FLAGS) $< interface.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PROFLIBS) $(PERIODIC_BUILDDIR)/allvars.o
 	
-gadget_code.po: gadget_code.cc $(SRCDIR)/makefile_options
+interface.po: interface.cc $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) -DPERIODIC -DNOGRAVITY -c -o $@ $< $(SCLIBS) $(GSL_LIBS)
 	
 
@@ -130,13 +130,13 @@ $(NOGRAVITY_BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options
 $(NOGRAVITY_BUILDDIR)/libgadget.a:  $(NOGRAVITY_BUILDDIR)/Makefile $(NOGRAVITY_BUILDDIR)/makefile_options
 	make -C $(NOGRAVITY_BUILDDIR) all OPT="$(NOGRAVITY_OPT)" VPATH=../src
 
-gadget2_worker_nogravity: worker_code.cc worker_code.h gadget_code.ngo $(NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DNOGRAVITY $(SCINC) $(GSL_FLAGS) $< gadget_code.ngo -o $@  $(NOGRAVITY_BUILDDIR)/libgadget.a  $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(NOGRAVITY_BUILDDIR)/allvars.o
+gadget2_worker_nogravity: worker_code.cc worker_code.h interface.ngo $(NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
+	$(MPICXX) $(CXXFLAGS) -DNOGRAVITY $(SCINC) $(GSL_FLAGS) $< interface.ngo -o $@  $(NOGRAVITY_BUILDDIR)/libgadget.a  $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(NOGRAVITY_BUILDDIR)/allvars.o
 
-gadget2_worker_nogravity_sockets: worker_code-sockets.cc worker_code.h gadget_code.ngo $(NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DNOGRAVITY $(SCINC) $(GSL_FLAGS) $< gadget_code.ngo -o $@  $(NOGRAVITY_BUILDDIR)/libgadget.a $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PROFLIBS) $(NOGRAVITY_BUILDDIR)/allvars.o
+gadget2_worker_nogravity_sockets: worker_code-sockets.cc worker_code.h interface.ngo $(NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
+	$(MPICXX) $(CXXFLAGS) -DNOGRAVITY $(SCINC) $(GSL_FLAGS) $< interface.ngo -o $@  $(NOGRAVITY_BUILDDIR)/libgadget.a $(SCLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PROFLIBS) $(NOGRAVITY_BUILDDIR)/allvars.o
 
-gadget_code.ngo: gadget_code.cc $(SRCDIR)/makefile_options
+interface.ngo: interface.cc $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $(GSL_FLAGS) -DNOGRAVITY -c -o $@ $< $(SCLIBS) $(GSL_LIBS)
 
 

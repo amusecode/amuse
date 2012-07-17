@@ -25,7 +25,7 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         .. [#] Springel V., Yoshida N., White S. D. M., 2001, New Astronomy, 6, 51  (GADGET-1)
         .. [#] Durier F., Dalla Vecchia C., 2011, MNRAS (Time integration scheme fix)
     """
-    include_headers = ['gadget_code.h', 'worker_code.h', 'stopcond.h']
+    include_headers = ['interface.h', 'worker_code.h', 'stopcond.h']
     
     MODE_NORMAL = 'normal'
     MODE_PERIODIC_BOUNDARIES   = 'periodic'

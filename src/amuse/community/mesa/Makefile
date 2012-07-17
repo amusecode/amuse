@@ -75,10 +75,10 @@ distclean: clean
 	$(RM) -Rf src.*
 	$(RM) -Rf .pc
 
-mesa_worker:	worker_code.f90 MESA_code.o $(STAR_WORK_OBJS)
+mesa_worker:	worker_code.f90 interface.o $(STAR_WORK_OBJS)
 	$(MPIF90) $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)
 
-mesa_worker_sockets: worker_code-sockets.f90 MESA_code.o $(STAR_WORK_OBJS)
+mesa_worker_sockets: worker_code-sockets.f90 interface.o $(STAR_WORK_OBJS)
 	$(MPIF90) $(FFLAGS) $(FCopenmp) $(FSINC) $^ -o $@ $(LOAD_MESA_STAR) $(FSLIBS)
 
 worker_code.f90: interface.py
@@ -92,6 +92,6 @@ $(MESA_LIB):  $(MESA_DIR)/install
 	cp -f ./test_jina.f $(MESA_DIR)/jina/test/src/test_jina.f
 	cd $(MESA_DIR); ./install
 
-MESA_code.o: MESA_code.f $(MESA_LIB)
+interface.o: interface.f $(MESA_LIB)
 	make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FFLAGS)"
 	$(WORK_COMPILE) -I$(INCLUDE_DIR) -I$(MESA_MAKE_DIR) -o $@ $<

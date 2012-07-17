@@ -1,5 +1,5 @@
 #include <iostream>
-#include "bhtree_code.h"
+#include "interface.h"
 #include "worker_code.h"
 //#include "local.h"
 #include <vector>

@@ -14,7 +14,7 @@ BHTC_EXTRAS	= $(BUILDDIR)/nbody.o
 BUILDDIR = build
 GPU_BUILDDIR = build_gpu
 
-OBJS = bhtree_code.o 
+OBJS = interface.o 
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -76,9 +76,6 @@ bhtree_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 bhtree_worker_g6: worker_code.cc worker_code.h $(GPUCODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(GPUCODELIB) -o $@ $(SCLIBS) $(G6LIBS)
 	
-bhtree_worker_gpu: worker_code.cc worker_code.h $(GPUCODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS)  $(GPULIBS) $(GPUCODELIB) -o $@ $(SCLIBS) $(GPULIBS)
-
 worker_code-sockets.cc: interface.py
 	$(CODE_GENERATOR) --type=c --mode=sockets interface.py BHTreeInterface -o $@
 

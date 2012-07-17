@@ -38,6 +38,7 @@ $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 clean:
 	rm -f *.pyc make.log
 	rm -f mpi_code.f90 worker_code evtwin_worker twin_library_v2.mod mesh.mod evtwin_worker_sockets worker_code-sockets.f90 forsockets.mod
+	rm -f worker_code.f90
 	rm -f $(BUILDDIR)/CMakeCache.txt
 	rm -rf $(BUILDDIR)/CMakeFiles
 	rm -rf $(BUILDDIR)/Makefile
@@ -47,7 +48,7 @@ distclean:
 	make -C src distclean
 	/bin/rm -f *.pyc
 
-evtwin_worker: mpi_code.f90 $(SRC)
+evtwin_worker: worker_code.f90 $(SRC)
 	make -s --no-print-directory -C $(BUILDDIR)
 	$(MPIFC) -I$(BUILDDIR) $< -o $@ $(EVTWINLIB)
 
@@ -55,7 +56,7 @@ evtwin_worker_sockets: worker_code-sockets.f90 $(SRC)
 	make -s --no-print-directory -C $(BUILDDIR)
 	$(MPIFC) -I$(BUILDDIR) $(FSINC) $< -o $@ $(EVTWINLIB) $(FSLIBS)
 
-mpi_code.f90: interface.py
+worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
 	
 worker_code-sockets.f90: interface.py

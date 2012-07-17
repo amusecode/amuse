@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 #include <math.h>
-#include "gadget_code.h"
+#include "interface.h"
 #include "worker_code.h"
 //AMUSE STOPPING CONDITIONS
 #include "stopcond.h"

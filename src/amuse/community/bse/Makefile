@@ -36,11 +36,11 @@ clean:
 	$(RM) -f worker_code-sockets.f90 bse_worker_sockets
 	$(RM) -f forsockets.mod
 	
-bse_worker:	worker_code.f90  BSE_code.o  $(BSEOBJ)
+bse_worker:	worker_code.f90  interface.o  $(BSEOBJ)
 	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS) $(F77FLAGS)"
 	$(MPIFC) $(FFLAGS) $^ -o $@ 
 	
-bse_worker_sockets:	worker_code-sockets.f90  BSE_code.o  $(BSEOBJ)
+bse_worker_sockets:	worker_code-sockets.f90  interface.o  $(BSEOBJ)
 	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS)"
 	$(MPIFC) $(FFLAGS) $(FSINC) $^ -o $@ $(FSLIB)
 
