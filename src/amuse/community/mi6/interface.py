@@ -1,7 +1,15 @@
 from amuse.community import *
-from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
-class MI6Interface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
+from amuse.community.interface.gd import GravitationalDynamicsInterface
+from amuse.community.interface.gd import GravitationalDynamics
+from amuse.community.interface.gd import GravityFieldInterface
+
+class MI6Interface(
+    CodeInterface, 
+    GravitationalDynamicsInterface, 
+    LiteratureReferencesMixIn, 
+    StoppingConditionInterface,
+    GravityFieldInterface):
     """
     MI6 - Masaki's Integrator 6th order
     N-body module with mixed 4th and 6th order Hermite integration scheme, aimed 
@@ -36,35 +44,7 @@ class MI6Interface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefe
             print "Warning: unknown mode: '{0}' - using default ('{1}').".format(mode, self.MODE_CPU)
             return 'mi6_worker'
 
-    @legacy_function
-    def get_gravity_at_point():
-        """
-        Determine the gravitational force at a given point
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for par in ['eps', 'x', 'y', 'z']:
-            function.addParameter(par, dtype='float64', direction=function.IN)
-        for par in ['ax', 'ay', 'az']:
-            function.addParameter(par, dtype='float64', direction=function.OUT)
-        function.addParameter('length', 'int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_potential_at_point():
-        """
-        Determine the potential at a given point
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for par in ['eps', 'x', 'y', 'z']:
-            function.addParameter(par, dtype='float64', direction=function.IN)
-        function.addParameter('phi', dtype='float64', direction=function.OUT)
-        function.addParameter('length', 'int32', function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
+   
     @legacy_function
     def get_eps2_fs_fs():
         function = LegacyFunctionSpecification()
@@ -406,20 +386,6 @@ class MI6(GravitationalDynamics):
         object.add_method("get_smbh_mass", (), (nbody_system.mass, object.ERROR_CODE))
         object.add_method("set_smbh_mass", (nbody_system.mass,), (object.ERROR_CODE,))
         
-#~        object.add_method(
-#~            'get_potential_at_point',
-#~            (nbody_system.length, nbody_system.length,
-#~             nbody_system.length, nbody_system.length),
-#~            (nbody_system.potential, object.ERROR_CODE)
-#~        )
-#~
-#~        object.add_method(
-#~            'get_gravity_at_point',
-#~            (nbody_system.length, nbody_system.length,
-#~             nbody_system.length, nbody_system.length),
-#~            (nbody_system.acceleration, nbody_system.acceleration,
-#~             nbody_system.acceleration, object.ERROR_CODE)
-#~        )
     
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)

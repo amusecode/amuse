@@ -1,10 +1,19 @@
 import os
 import numpy
-from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
+
+from amuse.community.interface.gd import GravitationalDynamicsInterface
+from amuse.community.interface.gd import GravitationalDynamics
+from amuse.community.interface.gd import OneParticleGravityFieldInterface
 from amuse.community import *
 from amuse.support.options import option
 
-class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
+class Gadget2Interface(
+    CodeInterface, 
+    GravitationalDynamicsInterface, 
+    LiteratureReferencesMixIn, 
+    StoppingConditionInterface,
+    OneParticleGravityFieldInterface
+    ):
     """
     GADGET-2 computes gravitational forces with a hierarchical tree 
     algorithm (optionally in combination with a particle-mesh 
@@ -2020,18 +2029,7 @@ class Gadget2(GravitationalDynamics):
             (generic_unit_system.length, object.ERROR_CODE)
         )
         
-        object.add_method(
-            'get_gravity_at_point',
-            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length),
-            (generic_unit_system.acceleration, generic_unit_system.acceleration, generic_unit_system.acceleration, object.ERROR_CODE)
-        )
-        
-        object.add_method(
-            'get_potential_at_point',
-            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length),
-            (generic_unit_system.potential, object.ERROR_CODE)
-        )
-        
+       
         object.add_method(
             'get_hydro_state_at_point',
             (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,

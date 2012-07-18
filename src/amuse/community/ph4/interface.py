@@ -1,6 +1,7 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravitationalDynamicsInterface
+from amuse.community.interface.gd import GravityFieldInterface
 
 # *** This script, together with the defaults in
 # *** GravitationalDynamicsInterface, will be used to generate both
@@ -10,7 +11,8 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 class ph4Interface(CodeInterface,
                    GravitationalDynamicsInterface,
-                   StoppingConditionInterface):
+                   StoppingConditionInterface,
+                   GravityFieldInterface):
     """
     Parallel, GPU-accelerated, N-body integration module with block
     time steps, using a 4th-order Hermite integration scheme.
@@ -232,29 +234,7 @@ class ph4Interface(CodeInterface,
         function.result_type = 'int32'
         return function
         
-    @legacy_function    
-    def get_gravity_at_point():
-        function = LegacyFunctionSpecification()  
-        for x in ['eps','x','y','z']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        for x in ['ax','ay','az']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
-        function.result_type = 'i' 
-        function.must_handle_array = True
-        return function
-
-    @legacy_function    
-    def get_potential_at_point():
-        function = LegacyFunctionSpecification()  
-        for x in ['eps','x','y','z']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        for x in ['phi']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
-        function.result_type = 'i' 
-        function.must_handle_array = True
-        return function
+   
 
 class ph4(GravitationalDynamics):
 

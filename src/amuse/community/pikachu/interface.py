@@ -1,7 +1,9 @@
 from amuse.community import *
-from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
+from amuse.community.interface.gd import GravitationalDynamicsInterface
+from amuse.community.interface.gd import GravitationalDynamics
+from amuse.community.interface.gd import GravityFieldInterface
 
-class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
+class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface, GravityFieldInterface):
     """
     Pikachu - a.k.a. P^3 Tree
     Hybrid N-body module, combining a tree (Barnes & Hut) to approximate long-range 
@@ -289,6 +291,7 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
             unit = nbody_system.length)
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def set_rsearch_FS_FS():
         function = LegacyFunctionSpecification()
@@ -304,6 +307,7 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
             unit = nbody_system.length)
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def set_rsearch_FS_BH():
         function = LegacyFunctionSpecification()
@@ -319,40 +323,12 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
             unit = nbody_system.length)
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def set_rsearch_BH_BH():
         function = LegacyFunctionSpecification()
         function.addParameter('rsearch_BH_BH', dtype='float64', direction=function.IN,
             unit = nbody_system.length)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_gravity_at_point():
-        """
-        Determine the gravitational force at a given point
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for par in ['eps', 'x', 'y', 'z']:
-            function.addParameter(par, dtype='float64', direction=function.IN)
-        for par in ['ax', 'ay', 'az']:
-            function.addParameter(par, dtype='float64', direction=function.OUT)
-        function.addParameter('length', 'int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_potential_at_point():
-        """
-        Determine the potential at a given point
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for par in ['eps', 'x', 'y', 'z']:
-            function.addParameter(par, dtype='float64', direction=function.IN)
-        function.addParameter('phi', dtype='float64', direction=function.OUT)
-        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     

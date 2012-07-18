@@ -9,6 +9,8 @@ from amuse.community.interface import common
 
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
+
+
 class GravitationalDynamicsInterface(common.CommonCodeInterface):
 
     @legacy_function
@@ -667,53 +669,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         """
         return function
 
-    @legacy_function
-    def get_gravity_at_point():
-        """
-        Determine the gravitational force on a given point
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('eps', dtype='float64', direction=function.IN,
-            description = "The smoothing parameter")
-        function.addParameter('x', dtype='float64', direction=function.IN,
-            description = "The position vector of the point")
-        function.addParameter('y', dtype='float64', direction=function.IN,
-            description = "The position vector of the point")
-        function.addParameter('z', dtype='float64', direction=function.IN,
-            description = "The position vector of the point")
-        function.addParameter('forcex', dtype='float64', direction=function.OUT,
-            description = "Force created by the particles in the code at the given position")
-        function.addParameter('forcey', dtype='float64', direction=function.OUT,
-            description = "Force created by the particles in the code at the given position")
-        function.addParameter('forcez', dtype='float64', direction=function.OUT,
-            description = "Force created by the particles in the code at the given position")
-        function.result_type = 'int32'
-        function.can_handle_array = True
-        function.result_doc = """
-         0 - OK
-            Force could be calculated
-        -1 - ERROR
-            No force calculation supported
-        """
-        return function
-
-
-    @legacy_function
-    def get_potential_at_point():
-        """
-        Determine the potential on a given point
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('eps', dtype='float64', direction=function.IN,
-         description = "The smoothing factor, may be ignored by the code")
-        function.addParameter('x', dtype='float64', direction=function.IN)
-        function.addParameter('y', dtype='float64', direction=function.IN)
-        function.addParameter('z', dtype='float64', direction=function.IN)
-        function.addParameter('phi', dtype='float64', direction=function.OUT)
-        function.can_handle_array = True
-        function.result_type = 'int32'
-        return function
-
+   
     @legacy_function
     def get_number_of_particles():
         """
@@ -781,8 +737,122 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
     
     def invoke_state_change2(self):
         pass
+        
+class GravityFieldInterface(object):
+    """
+    Codes implementing the gravity field interface provide functions to
+    calculate the force and potential energy fields at any point.
+    """
+    
+    @legacy_function    
+    def get_gravity_at_point():
+        """
+        Get the gravitational acceleration at the given points. To calculate the force on
+        bodies at those points, multiply with the mass of the bodies
+        """
+        function = LegacyFunctionSpecification()  
+        for x in ['eps','x','y','z']:
+            function.addParameter(
+              x, 
+              dtype='float64', 
+              direction=function.IN,
+              unit=nbody_system.length
+            )
+        for x in ['ax','ay','az']:
+            function.addParameter(
+                x, 
+                dtype='float64', 
+                direction=function.OUT,     
+                unit=nbody_system.acceleration
+            )
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
+        function.result_type = 'int32' 
+        function.must_handle_array = True
+        return function
+        
+    @legacy_function    
+    def get_potential_at_point():
+        """
+        Determine the gravitational potential on any given point
+        """
+        function = LegacyFunctionSpecification()  
+        for x in ['eps','x','y','z']:
+            function.addParameter(
+                x, 
+                dtype='float64', 
+                direction=function.IN,
+                unit=nbody_system.length
+            )
+        for x in ['phi']:
+            function.addParameter(
+                x, 
+                dtype='float64', 
+                direction=function.OUT,
+                unit=nbody_system.potential
+            )
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
 
-class GdAutoDoc(object):
+
+class OneParticleGravityFieldInterface(object):
+    """
+    Codes implementing the gravity field interface provide functions to
+    calculate the force and potential energy fields at any point.
+    """
+    
+    @legacy_function    
+    def get_gravity_at_point():
+        """
+        Get the gravitational acceleration at the given points. To calculate the force on
+        bodies at those points, multiply with the mass of the bodies
+        """
+        function = LegacyFunctionSpecification()  
+        for x in ['eps','x','y','z']:
+            function.addParameter(
+              x, 
+              dtype='float64', 
+              direction=function.IN,
+              unit=nbody_system.length
+            )
+        for x in ['ax','ay','az']:
+            function.addParameter(
+                x, 
+                dtype='float64', 
+                direction=function.OUT,     
+                unit=nbody_system.acceleration
+            )
+        function.result_type = 'int32' 
+        function.can_handle_array = True
+        return function
+        
+    @legacy_function    
+    def get_potential_at_point():
+        """
+        Determine the gravitational potential on any given point
+        """
+        function = LegacyFunctionSpecification()  
+        for x in ['eps','x','y','z']:
+            function.addParameter(
+                x, 
+                dtype='float64', 
+                direction=function.IN,
+                unit=nbody_system.length
+            )
+        for x in ['phi']:
+            function.addParameter(
+                x, 
+                dtype='float64', 
+                direction=function.OUT,
+                unit=nbody_system.potential
+            )
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
+
+
+class GravitationalDynamicsDocumentation(object):
 
     def __get__(self, instance, owner):
 
@@ -794,7 +864,7 @@ class GdAutoDoc(object):
 class GravitationalDynamics(common.CommonCode):
     NBODY = object()
 
-    __doc__ = GdAutoDoc()
+    __doc__ = GravitationalDynamicsDocumentation()
 
     def __init__(self, legacy_interface, unit_converter = None,  **options):
         self.unit_converter = unit_converter
@@ -1029,18 +1099,7 @@ class GravitationalDynamics(common.CommonCode):
             )
         )
 
-        object.add_method(
-            'get_gravity_at_point',
-            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
-            (nbody_system.acceleration, nbody_system.acceleration, nbody_system.acceleration, object.ERROR_CODE)
-        )
-
-        object.add_method(
-            'get_potential_at_point',
-            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
-            (nbody_system.potential, object.ERROR_CODE)
-        )
-        
+       
         object.add_method(
             'commit_particles',
             (),

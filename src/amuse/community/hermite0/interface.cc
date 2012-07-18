@@ -1325,8 +1325,11 @@ int get_potential_at_point(double eps, double x, double y, double z, double *phi
     return 0;
 }
 
-int get_gravity_at_point(double eps, double x,double y, double z,
-                         double *Fx, double *Fy, double *Fz)
+int get_gravity_at_point(
+    double eps, 
+    double x,double y, double z,
+    double *ax, double *ay, double *az
+    )
 {
     if(mpi_rank)     { // calculate only on the root mpi process, not on others
         return 0;
@@ -1334,7 +1337,9 @@ int get_gravity_at_point(double eps, double x,double y, double z,
     int n = ident.size();
     double rx, ry, rz, r3, r2, r, F;
 
-    *Fx = 0;*Fy = 0;*Fz = 0;
+    *ax = 0;
+    *ay = 0;
+    *az = 0;
 
     for (int i = 0; i<n; i++)
     {
@@ -1345,9 +1350,9 @@ int get_gravity_at_point(double eps, double x,double y, double z,
         r = sqrt(r2);
         r3 = r2*r;
         F = mass[i]/r3;
-        *Fx += F * rx;
-        *Fy += F * ry;
-        *Fz += F * rz;
+        *ax += F * rx;
+        *ay += F * ry;
+        *az += F * rz;
     }
 
     return 0;

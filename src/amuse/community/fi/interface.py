@@ -1,10 +1,17 @@
 import os
 import numpy
-from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
+from amuse.community.interface.gd import GravitationalDynamicsInterface
+from amuse.community.interface.gd import GravitationalDynamics
+from amuse.community.interface.gd import GravityFieldInterface
 from amuse.community import *
 from amuse.support.options import option
 
-class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):   
+class FiInterface(
+    CodeInterface,
+    GravitationalDynamicsInterface,
+    LiteratureReferencesMixIn,
+    StoppingConditionInterface,
+    GravityFieldInterface):   
     """
     FI is a parallel TreeSPH code for galaxy simulations. Extensively 
     rewritten, extended and parallelized it is a development from code from 
@@ -385,29 +392,6 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         function.addParameter('number_of_particles', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
-
-    @legacy_function    
-    def get_gravity_at_point():
-        function = LegacyFunctionSpecification()  
-        for x in ['eps','x','y','z']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        for x in ['ax','ay','az']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
-        function.result_type = 'i' 
-        function.must_handle_array = True
-        return function
-
-    @legacy_function    
-    def get_potential_at_point():
-        function = LegacyFunctionSpecification()  
-        for x in ['eps','x','y','z']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('phi', dtype='d', direction=function.OUT)
-        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
-        function.result_type = 'i' 
-        function.must_handle_array = True
-        return function
 
     @legacy_function    
     def get_hydro_state_at_point():
@@ -2537,18 +2521,6 @@ class Fi(GravitationalDynamics):
                 nbody_system.time,
                 object.ERROR_CODE
             )
-        )
-        
-        object.add_method(
-            'get_gravity_at_point',
-            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
-            (nbody_system.acceleration, nbody_system.acceleration, nbody_system.acceleration, object.ERROR_CODE)
-        )
-        
-        object.add_method(
-            'get_potential_at_point',
-            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
-            (nbody_system.potential, object.ERROR_CODE)
         )
         
         object.add_method(

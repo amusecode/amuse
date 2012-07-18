@@ -1,8 +1,14 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
+from amuse.community.interface.gd import OneParticleGravityFieldInterface
 
-class BHTreeInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, StoppingConditionInterface):
+class BHTreeInterface(
+    CodeInterface,
+    LiteratureReferencesMixIn,
+    GravitationalDynamicsInterface,
+    StoppingConditionInterface,
+    OneParticleGravityFieldInterface):
     """
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
@@ -298,19 +304,6 @@ class BHTree(GravitationalDynamics):
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
         
-        object.add_method(
-            'get_gravity_at_point',
-            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
-            (nbody_system.acceleration, nbody_system.acceleration, nbody_system.acceleration, object.ERROR_CODE)
-        )
-        
-        object.add_method(
-            'get_potential_at_point',
-            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
-            (nbody_system.potential, object.ERROR_CODE)
-        )
-
-
         object.add_method(
             "get_time_step",
             (),

@@ -139,9 +139,10 @@ class TestHacs64Interface(TestWithMPI):
         instance.new_particle([10,10],[-1,1],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         instance.commit_particles()
         
-        retr, error = instance.get_potential_at_point(0.01, 0,0,0)
-        print retr
-        self.assertEqual(error, -1) # TODO: Not IMPLEMENTED yet
+        self.assertFalse(hasattr(instance, "get_potential_at_point"))
+        #retr, error = instance.get_potential_at_point(0.01, 0,0,0)
+        #@print retr
+        #self.assertEqual(error, -1) # TODO: Not IMPLEMENTED yet
         
         #self.assertEqual(retr['phi'], -20.0)
         instance.cleanup_code()
