@@ -20,6 +20,7 @@ class ParametersAttributeDocumenter(AttributeDocumenter):
     objtype = 'parametersattribute'
     directivetype = 'attribute'
     member_order = 60
+    
 
     # must be higher than AttributeDocumenter
     priority = 11
@@ -87,6 +88,7 @@ class ParametersAttributeDocumenter(AttributeDocumenter):
 
         Returns True if successful, False if an error occurred.
         """
+        self._datadescriptor = False
         try:
             __import__(self.modname)
             parent = None
