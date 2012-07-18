@@ -299,12 +299,8 @@ int recommit_particles() {
 }
 
 int cleanup_code() {
-    if (particles_initialized){
-        map<int, int>::iterator iter;
-        for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
-            erase_particle(&(nbody_system->prt_loc[iter->second]));
-        }
-    }
+    delete nbody_system;
+    dev_close();
     local_index_map.clear();
     reverse_index_map.clear();
     particle_buffer.clear();

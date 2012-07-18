@@ -4,7 +4,7 @@ import os.path
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import nbody_system, units, constants
-from amuse.datamodel import Particles
+from amuse.datamodel import Particles, Particle
 from amuse.community.pikachu.interface import PikachuInterface, Pikachu
 
 from amuse.ic.plummer import new_plummer_model
@@ -297,3 +297,124 @@ class TestPikachu(TestWithMPI):
         
         instance.cleanup_code()
         instance.stop()
+    
+    def xtest6(self):
+        print "Testing effect of Pikachu parameter epsilon_squared"
+        converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        particles = self.new_sun_earth_system()
+        particles.rotate(0.0, 0.0, -math.pi/4)
+        particles.move_to_center()
+        
+        tan_initial_direction = particles[1].vy/particles[1].vx
+        self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))
+        tan_final_direction =  []
+        
+        instance = self.new_instance_of_an_optional_code(Pikachu, converter, **default_options)
+        instance.initialize_code()       
+        instance.parameters.timestep = 0.005 | units.yr
+        instance.parameters.rcut_out_star_star = 1.0 | units.AU
+        for log_eps2 in range(-9,10,2):
+            instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
+            instance.particles.add_particles(particles)
+            instance.evolve_model(0.25 | units.yr)
+            tan_final_direction.append(instance.particles[1].velocity[1]/
+                instance.particles[1].velocity[0])
+            instance.reset()
+        instance.stop()
+        print tan_final_direction
+        # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
+        self.assertAlmostEquals(tan_final_direction[0], math.tan(3 * math.pi / 4.0), 2)
+        # Large values of epsilon_squared should result in ~ no interaction
+        self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
+        # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
+        delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
+        self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
+    
+    def test6a(self):
+        print "Testing effect of Pikachu parameter epsilon_squared"
+        converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        particles = self.new_sun_earth_system()
+        particles.rotate(0.0, 0.0, -math.pi/4)
+        particles.move_to_center()
+        
+        tan_initial_direction = particles[1].vy/particles[1].vx
+        self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))
+        tan_final_direction =  []
+        for log_eps2 in range(-9,10,2):
+            instance = self.new_instance_of_an_optional_code(Pikachu, converter, **default_options)
+            instance.initialize_code()       
+            instance.parameters.timestep = 0.005 | units.yr
+            instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
+            instance.commit_parameters()
+            instance.particles.add_particles(particles)
+            instance.commit_particles()
+            instance.evolve_model(0.25 | units.yr)
+            tan_final_direction.append(instance.particles[1].velocity[1]/
+                instance.particles[1].velocity[0])
+            instance.cleanup_code()
+            instance.stop()
+        # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
+        self.assertAlmostEquals(tan_final_direction[0], math.tan(3 * math.pi / 4.0), 2)
+        # Large values of epsilon_squared should result in ~ no interaction
+        self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
+        # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
+        delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
+        self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
+    
+    def test7(self):
+        print "Testing Pikachu states"
+        stars = new_plummer_model(100)
+        black_hole = Particle()
+        black_hole.mass = 1.0 | nbody_system.mass
+        black_hole.radius =  0.0 | nbody_system.length
+        black_hole.position = [0.0, 0.0, 0.0] | nbody_system.length
+        black_hole.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
+        
+        print "First do everything manually:"
+        instance = self.new_instance_of_an_optional_code(Pikachu, **default_options)
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+#~        instance.parameters.rcut_out_star_star = 1.0 | nbody_system.length
+        instance.parameters.timestep = 0.001 | nbody_system.time
+        instance.commit_parameters()
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.particles.remove_particle(stars[0])
+        instance.particles.add_particle(black_hole)
+        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        instance.recommit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.evolve_model(0.001 | nbody_system.time)
+        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        instance.synchronize_model()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.cleanup_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        instance.stop()
+        
+        print "initialize_code(), commit_parameters(), (re)commit_particles(), " \
+            "synchronize_model(), and cleanup_code() should be called " \
+            "automatically before editing parameters, new_particle(), get_xx(), and stop():"
+        instance = self.new_instance_of_an_optional_code(Pikachu, **default_options)
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.parameters.timestep = 0.001 | nbody_system.time
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.particles.add_particles(stars)
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.particles.remove_particle(stars[0])
+        instance.particles.add_particle(black_hole)
+        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.evolve_model(0.001 | nbody_system.time)
+        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.stop()
+        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
+    
