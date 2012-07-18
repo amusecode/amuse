@@ -98,15 +98,16 @@ class TestPikachuInterface(TestWithMPI):
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
     
-    def xtest5(self):
+    def test4(self):
         print "Test PikachuInterface parameters"
         instance = self.new_instance_of_an_optional_code(PikachuInterface, **default_options)
         self.assertEquals(0, instance.initialize_code())
         
         self.assertEquals(0, instance.set_kernel_directory(instance.default_kernel_directory))
+        
         # Pikachu has separate epsilon_squared parameters for different interactions!
-        self.assertEquals([0, 0], instance.get_eps2_fs_fs().values())
-        self.assertEquals([0, 0], instance.get_eps2_fs_bh().values())
+        self.assertEquals([1.0e-8, 0], instance.get_eps2_fs_fs().values())
+        self.assertEquals([1.0e-8, 0], instance.get_eps2_fs_bh().values())
         self.assertEquals([0, 0], instance.get_eps2_bh_bh().values())
         self.assertEquals(-2, instance.get_eps2()['__result']) # Not implemented (would be ambiguous)
         
@@ -118,10 +119,9 @@ class TestPikachuInterface(TestWithMPI):
         self.assertEquals([0.4, 0], instance.get_eps2_bh_bh().values())
         self.assertEquals(-2, instance.set_eps2(0.1)) # Not implemented (would be ambiguous)
         
-        self.assertEquals([1.0e-4, 0], instance.get_eta_s().values())
-        self.assertEquals([0.1, 0], instance.get_eta_fs().values())
-        self.assertEquals([0.4, 0], instance.get_eta_smbh().values())
-        self.assertEquals([0.4, 0], instance.get_eta_imbh().values())
+        self.assertEquals([0.005, 0], instance.get_eta_s().values())
+        self.assertEquals([0.025, 0], instance.get_eta_fs().values())
+        self.assertEquals([0.025, 0], instance.get_eta_smbh().values())
         
         self.assertEquals(0, instance.set_eta_s(0.01))
         self.assertEquals([0.01, 0], instance.get_eta_s().values())
@@ -129,23 +129,6 @@ class TestPikachuInterface(TestWithMPI):
         self.assertEquals([0.02, 0], instance.get_eta_fs().values())
         self.assertEquals(0, instance.set_eta_smbh(0.03))
         self.assertEquals([0.03, 0], instance.get_eta_smbh().values())
-        self.assertEquals(0, instance.set_eta_imbh(0.04))
-        self.assertEquals([0.04, 0], instance.get_eta_imbh().values())
-        
-        self.assertEquals(0, instance.set_max_relative_energy_error(1.0e-6))
-        self.assertEquals([1.0e-6, 0], instance.get_max_relative_energy_error().values())
-        self.assertEquals(0, instance.set_maximum_timestep(1.0e-6))
-        self.assertEquals([1.0e-6, 0], instance.get_maximum_timestep().values())
-        
-        self.assertEquals(0, instance.set_smbh_mass(0.1))
-        self.assertEquals([0.1, 0], instance.get_smbh_mass().values())
-        
-        self.assertEquals([0, 0], instance.get_include_smbh_flag().values())
-        self.assertEquals(0, instance.set_include_smbh_flag(1))
-        self.assertEquals([1, 0], instance.get_include_smbh_flag().values())
-        self.assertEquals([1, 0], instance.get_calculate_postnewtonian().values())
-        self.assertEquals(0, instance.set_calculate_postnewtonian(0))
-        self.assertEquals([0, 0], instance.get_calculate_postnewtonian().values())
         
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
@@ -173,25 +156,31 @@ class TestPikachu(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
-    def xtest2(self):
+    def test2(self):
         print "Testing Pikachu parameters"
         instance = self.new_instance_of_an_optional_code(Pikachu, self.default_converter, **default_options)
         instance.initialize_code()
         
         self.assertEquals(instance.parameters.epsilon_squared, 
-            instance.unit_converter.to_si(0.0 | nbody_system.length**2))
-        self.assertEquals(instance.parameters.timestep_parameter, 0.1)
+            instance.unit_converter.to_si(1.0e-8 | nbody_system.length**2))
+        self.assertEquals(instance.parameters.timestep_parameter, 0.025)
         
-        for par, value in [('epsilon_squared_star_star', 0.0 | nbody_system.length**2), 
-                ('epsilon_squared_star_blackhole', 0.0 | nbody_system.length**2), 
+        for par, value in [('epsilon_squared_star_star', 1.0e-8 | nbody_system.length**2), 
+                ('epsilon_squared_star_blackhole', 1.0e-8 | nbody_system.length**2), 
                 ('epsilon_squared_blackhole_blackhole', 0.0 | nbody_system.length**2),
-                ('initial_timestep_parameter', 1.0e-4),
-                ('timestep_parameter_stars', 0.1),
-                ('timestep_parameter_supermassive_black_holes', 0.4),
-                ('timestep_parameter_intermediate_mass_black_holes', 0.4),
-                ('max_relative_energy_error', 5.0e-5),
-                ('maximum_timestep', 1.0/1024.0 | nbody_system.time),
-                ('smbh_mass', 1.0 | nbody_system.mass)]:
+                ('initial_timestep_parameter', 0.005),
+                ('timestep_parameter_stars', 0.025),
+                ('timestep_parameter_black_holes', 0.025),
+                ('timestep', 1.0/2048.0 | nbody_system.time),
+                ('search_factor', 3.0),
+                ('velocity_dispersion', 0.707106781 | nbody_system.speed),
+                ('rcut_out_star_star', 2.0e-3 | nbody_system.length),
+                ('rcut_out_star_blackhole', 2.0e-2 | nbody_system.length),
+                ('rcut_out_blackhole_blackhole', 1.0e5 | nbody_system.length),
+                ('rsearch_star_star', 0.0 | nbody_system.length),
+                ('rsearch_star_blackhole', 0.0 | nbody_system.length),
+                ('rsearch_blackhole_blackhole', 0.0 | nbody_system.length),
+                ('opening_angle', 0.4)]:
             self.assertEquals(instance.unit_converter.to_si(value), 
                 getattr(instance.parameters, par))
                 
@@ -215,14 +204,18 @@ class TestPikachu(TestWithMPI):
         instance.parameters.timestep_parameter = 0.01
         self.assertEquals(instance.parameters.timestep_parameter, 0.01)
         
-        self.assertEquals(instance.parameters.include_smbh, False)
-        instance.parameters.include_smbh = True
-        self.assertEquals(instance.parameters.include_smbh, True)
-        self.assertEquals(instance.parameters.calculate_postnewtonian, True)
-        instance.parameters.calculate_postnewtonian = False
-        self.assertEquals(instance.parameters.calculate_postnewtonian, False)
+        self.assertEquals(instance.parameters.calculate_quadrupole_moments, False)
+        instance.parameters.calculate_quadrupole_moments = True
+        self.assertEquals(instance.parameters.calculate_quadrupole_moments, True)
         
-        self.assertEquals(instance.parameters.drink, "Vodka martini. Shaken, not stirred.")
+        instance.commit_parameters()
+        p = instance.parameters
+        self.assertAlmostRelativeEquals(p.rsearch_star_star, 
+            p.rcut_out_star_star + p.search_factor * p.velocity_dispersion * p.timestep, 10)
+        self.assertAlmostRelativeEquals(p.rsearch_star_blackhole, 
+            p.rcut_out_star_blackhole + p.search_factor * p.velocity_dispersion * p.timestep, 10)
+        self.assertAlmostRelativeEquals(p.rsearch_blackhole_blackhole, 
+            p.rcut_out_blackhole_blackhole + p.search_factor * p.velocity_dispersion * p.timestep, 10)
         
         instance.stop()
     

@@ -110,9 +110,9 @@ void set_default_parameters() {
     vel_disp = 0.707106781;
     search_factor = 3.0;
     
-    rsearch_FS_FS = rcut_out_FS_FS + search_factor * vel_disp * nbody_system->dt_glb;
-    rsearch_FS_BH = rcut_out_FS_BH + search_factor * vel_disp * nbody_system->dt_glb;
-    rsearch_BH_BH = rcut_out_BH_BH + search_factor * vel_disp * nbody_system->dt_glb;
+    rsearch_FS_FS = 0.0;
+    rsearch_FS_BH = 0.0;
+    rsearch_BH_BH = 0.0;
     
     eps2_FS_FS = 1.0e-8;
     eps2_FS_BH = 1.0e-8;
@@ -578,16 +578,155 @@ int set_eps2(double epsilon_squared) {
 int get_eps2(double *epsilon_squared) {
     return -2;
 }
+int set_eps2_fs_fs(double epsilon_squared_fs_fs) {
+    eps2_FS_FS = epsilon_squared_fs_fs;
+    return 0;
+}
+int get_eps2_fs_fs(double *epsilon_squared_fs_fs) {
+    *epsilon_squared_fs_fs = eps2_FS_FS;
+    return 0;
+}
+int set_eps2_fs_bh(double epsilon_squared_fs_smbh) {
+    eps2_FS_BH = epsilon_squared_fs_smbh;
+    return 0;
+}
+int get_eps2_fs_bh(double *epsilon_squared_fs_smbh) {
+    *epsilon_squared_fs_smbh = eps2_FS_BH;
+    return 0;
+}
+int set_eps2_bh_bh(double epsilon_squared_bh_bh) {
+    eps2_BH_BH = epsilon_squared_bh_bh;
+    return 0;
+}
+int get_eps2_bh_bh(double *epsilon_squared_bh_bh) {
+    *epsilon_squared_bh_bh = eps2_BH_BH;
+    return 0;
+}
+int set_eta_s(double eta_s_in) {
+    eta_s = eta_s_in;
+    return 0;
+}
+int get_eta_s(double *eta_s_out) {
+    *eta_s_out = eta_s;
+    return 0;
+}
+int set_eta_fs(double eta_fs_in) {
+    eta_FS = eta_fs_in;
+    return 0;
+}
+int get_eta_fs(double *eta_fs_out) {
+    *eta_fs_out = eta_FS;
+    return 0;
+}
+int set_eta_smbh(double eta_smbh_in) {
+    eta_BH = eta_smbh_in;
+    return 0;
+}
+int get_eta_smbh(double *eta_smbh_out) {
+    *eta_smbh_out = eta_BH;
+    return 0;
+}
+int set_time_step(double time_step) {
+    nbody_system->dt_glb = time_step;
+    return 0;
+}
+int get_time_step(double *time_step) {
+    *time_step = nbody_system->dt_glb;
+    return 0;
+}
+int set_search_factor(double search_factor_in) {
+    search_factor = search_factor_in;
+    return 0;
+}
+int get_search_factor(double *search_factor_out) {
+    *search_factor_out = search_factor;
+    return 0;
+}
+int set_vel_disp(double vel_disp_in) {
+    vel_disp = vel_disp_in;
+    return 0;
+}
+int get_vel_disp(double *vel_disp_out) {
+    *vel_disp_out = vel_disp;
+    return 0;
+}
+int set_rcut_out_FS_FS(double rcut_out_FS_FS_in) {
+    rcut_out_FS_FS = rcut_out_FS_FS_in;
+    return 0;
+}
+int get_rcut_out_FS_FS(double *rcut_out_FS_FS_out) {
+    *rcut_out_FS_FS_out = rcut_out_FS_FS;
+    return 0;
+}
+int set_rcut_out_FS_BH(double rcut_out_FS_BH_in) {
+    rcut_out_FS_BH = rcut_out_FS_BH_in;
+    return 0;
+}
+int get_rcut_out_FS_BH(double *rcut_out_FS_BH_out) {
+    *rcut_out_FS_BH_out = rcut_out_FS_BH;
+    return 0;
+}
+int set_rcut_out_BH_BH(double rcut_out_BH_BH_in) {
+    rcut_out_BH_BH = rcut_out_BH_BH_in;
+    return 0;
+}
+int get_rcut_out_BH_BH(double *rcut_out_BH_BH_out) {
+    *rcut_out_BH_BH_out = rcut_out_BH_BH;
+    return 0;
+}
+int set_rsearch_FS_FS(double rsearch_FS_FS_in) {
+    rsearch_FS_FS = rsearch_FS_FS_in;
+    return 0;
+}
+int get_rsearch_FS_FS(double *rsearch_FS_FS_out) {
+    *rsearch_FS_FS_out = rsearch_FS_FS;
+    return 0;
+}
+int set_rsearch_FS_BH(double rsearch_FS_BH_in) {
+    rsearch_FS_BH = rsearch_FS_BH_in;
+    return 0;
+}
+int get_rsearch_FS_BH(double *rsearch_FS_BH_out) {
+    *rsearch_FS_BH_out = rsearch_FS_BH;
+    return 0;
+}
+int set_rsearch_BH_BH(double rsearch_BH_BH_in) {
+    rsearch_BH_BH = rsearch_BH_BH_in;
+    return 0;
+}
+int get_rsearch_BH_BH(double *rsearch_BH_BH_out) {
+    *rsearch_BH_BH_out = rsearch_BH_BH;
+    return 0;
+}
+int set_theta_for_tree(double theta) {
+    theta2 = theta*theta;
+    return 0;
+}
+int get_theta_for_tree(double *theta) {
+    *theta = sqrt(theta2);
+    return 0;
+}
+int set_calculate_quadrupole_moments(int calculate_quadrupole_moments) {
+    quad_flag = calculate_quadrupole_moments;
+    return 0;
+}
+int get_calculate_quadrupole_moments(int *calculate_quadrupole_moments) {
+    *calculate_quadrupole_moments = quad_flag;
+    return 0;
+}
+
 int commit_parameters() {
     nbody_system->Tsys = begin_time;
+    
+    if(search_factor > 0.0){
+        rsearch_FS_FS = rcut_out_FS_FS + search_factor * vel_disp * nbody_system->dt_glb;
+        rsearch_FS_BH = rcut_out_FS_BH + search_factor * vel_disp * nbody_system->dt_glb;
+        rsearch_BH_BH = rcut_out_BH_BH + search_factor * vel_disp * nbody_system->dt_glb;
+    }
     
     if(rsearch_FS_FS < rcut_out_FS_FS || rsearch_FS_BH < rcut_out_FS_BH || rsearch_BH_BH < rcut_out_BH_BH){
         return -1;
     }
-    
-    rsearch_FS_FS = rcut_out_FS_FS + search_factor * vel_disp * nbody_system->dt_glb;
-    rsearch_FS_BH = rcut_out_FS_BH + search_factor * vel_disp * nbody_system->dt_glb;
-    rsearch_BH_BH = rcut_out_BH_BH + search_factor * vel_disp * nbody_system->dt_glb;
     
     nbody_system->soft_system.set(eps2_FS_FS, eps2_FS_BH, eps2_BH_BH,
         rcut_out_FS_FS, rcut_out_FS_BH, rcut_out_BH_BH,
@@ -597,7 +736,14 @@ int commit_parameters() {
     return 0;
 }
 int recommit_parameters() {
-    return commit_parameters();
+    int result = commit_parameters();
+    if (particles_initialized && result == 0) {
+        nbody_system->hard_system.set(eps2_FS_FS, eps2_FS_BH, eps2_BH_BH,
+            rcut_out_FS_FS, rcut_out_FS_BH, rcut_out_BH_BH,
+            eta_s, eta_FS, eta_BH, mass_min);
+        nbody_system->hard_system.dump();
+    }
+    return result;
 }
 
 
@@ -622,7 +768,7 @@ int get_potential_at_point(double *eps, double *x, double *y, double *z, double 
         // since the code would think it is calculating force on itself, and ignore it.
         tmp_index[i] = -1;
         tmp_mass_in[i] = 0.0;
-        //~tmp_eps2_in[i] = eps[i]*eps[i] + eps2_fs_fs;
+        //~tmp_eps2_in[i] = eps[i]*eps[i] + eps2_FS_FS;
         tmp_pos_in[i][0] = x[i];
         tmp_pos_in[i][1] = y[i];
         tmp_pos_in[i][2] = z[i];
@@ -687,7 +833,7 @@ int get_gravity_at_point(double *eps, double *x, double *y, double *z,
         // since the code would think it is calculating force on itself, and ignore it.
         tmp_index[i] = -1;
         tmp_mass_in[i] = 0.0;
-        //~tmp_eps2_in[i] = eps[i]*eps[i] + eps2_fs_fs;
+        //~tmp_eps2_in[i] = eps[i]*eps[i] + eps2_FS_FS;
         tmp_pos_in[i][0] = x[i];
         tmp_pos_in[i][1] = y[i];
         tmp_pos_in[i][2] = z[i];
@@ -735,12 +881,6 @@ int get_gravity_at_point(double *eps, double *x, double *y, double *z,
     }
     delete[] acc;
     return 0;
-}
-
-
-int get_time_step(double *time_step) {
-    *time_step = -1;
-    return 0; // Not implemented
 }
 
 
