@@ -1,3 +1,4 @@
+import math
 import numpy
 import os.path
 
@@ -237,8 +238,8 @@ class TestPikachu(TestWithMPI):
         instance.stop()
     
     
-    def xtest5(self):
-        print "Testing Pikachu evolve_model, 2 particles, no SMBH"
+    def test4(self):
+        print "Testing Pikachu evolve_model, 2 particles"
         particles = Particles(2)
         particles.mass = 1.0 | units.MSun
         particles.radius = 1.0 | units.RSun
@@ -246,12 +247,12 @@ class TestPikachu(TestWithMPI):
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.km / units.s
         particles[1].vy = (constants.G * (2.0 | units.MSun) / (2.0 | units.AU)).sqrt()
         particles.move_to_center()
-        print particles
         
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = self.new_instance_of_an_optional_code(Pikachu, converter, **default_options)
         instance.initialize_code()
-        instance.parameters.smbh_mass = 0.0 | units.MSun
+        instance.parameters.timestep = 0.0125 * math.pi * particles[0].x / particles[0].vy
+        instance.parameters.rcut_out_star_star = 10.0 | units.AU
         instance.commit_parameters()
         instance.particles.add_particles(particles)
         instance.commit_particles()
@@ -272,12 +273,13 @@ class TestPikachu(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
-    def xtest6(self):
-        print "Testing Pikachu evolve_model, earth-sun system, no SMBH"
+    def test5(self):
+        print "Testing Pikachu evolve_model, earth-sun system"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = self.new_instance_of_an_optional_code(Pikachu, converter, **default_options)
         instance.initialize_code()
-        instance.parameters.smbh_mass = 0.0 | units.MSun
+        instance.parameters.timestep = 0.005 | units.yr
+        instance.parameters.rcut_out_star_star = 1.0 | units.AU
         instance.commit_parameters()
         instance.particles.add_particles(self.new_sun_earth_system())
         instance.commit_particles()
