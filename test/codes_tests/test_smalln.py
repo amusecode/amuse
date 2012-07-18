@@ -92,8 +92,9 @@ class TestSmallNInterface(TestWithMPI):
         smalln.new_particle([10,10],[-1,1],[0,0], [0,0], [0,0], [0,0], [0,0], [1,1])
         retrieved_state = smalln.get_state(1)
         
-        retr = smalln.get_potential_at_point(0.01, 0, 0, 0)
-        self.assertEqual(retr['__result'], -1)
+        self.assertFalse(hasattr(smalln, 'get_potential_at_point'))
+        #retr = smalln.get_potential_at_point(0.01, 0, 0, 0)
+        #self.assertEqual(retr['__result'], -1)
         smalln.cleanup_code()
         smalln.stop()
        
