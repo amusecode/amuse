@@ -166,11 +166,10 @@ class CalculateFieldForCodesUsingReinitialize(AbstractCalculateFieldForCodes):
         self.code = code
       
     def _setup_code(self):
-        self.code.initialize_code()
         return self.code()
         
     def _cleanup_code(self, code):
-        code.cleanup_code()
+        code.reset()
         
 class CalculateFieldForCodesUsingRemove(AbstractCalculateFieldForCodes):
     """
