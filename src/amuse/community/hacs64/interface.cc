@@ -18,11 +18,11 @@ inline double SQR(const double x) {return x*x;}
 
 static double begin_time = 0;
 
-#ifndef __MACOSX_
+#ifndef __APPLE__
 #define __LINUX__
 #endif
 
-#ifdef __MACOSX__
+#ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
 #include <xmmintrin.h>
 inline void fpe_catch() {
@@ -37,7 +37,6 @@ void fpe_catch(void)
 	feenableexcept(FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW);
 }
 #else
-crap
 void fpe_catch(void) {}
 #endif
 

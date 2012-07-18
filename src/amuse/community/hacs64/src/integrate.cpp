@@ -1,11 +1,11 @@
 
 #include "hacs64.h"
 
-#ifndef __MACOSX_
+#ifndef __APPLE__
 #define __LINUX__
 #endif
 
-#ifdef __MACOSX__
+#ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
 #include <xmmintrin.h>
 inline void fpe_catch() {
@@ -19,7 +19,6 @@ void fpe_catch(void) {
 	feenableexcept(FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW);
 }
 #else
-crap
 void fpe_catch(void) {}
 #endif
 
