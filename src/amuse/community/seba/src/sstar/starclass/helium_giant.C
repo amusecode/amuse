@@ -14,7 +14,6 @@
 helium_giant::helium_giant(super_giant & g) : single_star(g) {
 
     delete &g;
-
 //    real second_dredge_up_time = next_update_age 
 //                          * min(1., relative_mass
 //			  / cnsts.parameters(super_giant2neutron_star));
@@ -23,21 +22,34 @@ helium_giant::helium_giant(super_giant & g) : single_star(g) {
 //    next_update_age = helium_time();
 //    relative_age = next_update_age - remaining_time;
     
-    real age = helium_giant_age_core_mass_relation(core_mass, relative_mass, metalicity);
-    if (relative_age > age) {
-        cerr<<"helium_giant_relative_age < relative_age, wat nu?"<<endl;
+    relative_mass = get_total_mass();
+    real age = helium_giant_age_core_mass_relation(core_mass, relative_mass);
+
+    real mc_SN = maximum_helium_giant_core_mass(relative_mass);
+    real mc_max = min(get_total_mass(), 1.45*get_total_mass()-0.31);
+    mc_max = min(mc_SN, mc_max);
+    if (core_mass > mc_max) {
+        cerr<<"helium_giant_relative_age > next_update_age, in other words"<<endl;
+        cerr<<"core_mass > mc_max in constructor"<<endl;
+        PRC(mc_max);PRC(relative_mass);PRL(core_mass);
+        cerr<<"I'll follow HPT in setting mc equal to mc_max"<<endl;
+        core_mass = mc_max;
+        age = helium_giant_end_time(relative_mass);
     }
+    
     relative_age = age;
     last_update_age = relative_age;
     adjust_next_update_age();
+    
     
     // (SPZ+GN: 27 Jul 2000)
     // core mass has been set in super_giant before constructor is called.
     instantaneous_element();
     evolve_core_mass();
     small_envelope_perturbation();   
-    
+
     update();
+
     post_constructor();
  }
 
@@ -61,81 +73,9 @@ helium_giant::helium_giant(helium_star & h) : single_star(h) {
 
 }
 
-#if 0
-void helium_giant::instantaneous_element() {
-
-  real m_tot = get_total_mass();
-
-  real temp = log10(m_tot)
-            * (0.4509 - 0.1085*log10(m_tot)) + 4.7143;
-  luminosity  = 8.33*temp - 36.8;
-  temp = 1.e-3*pow(10., temp);
-  luminosity  = pow(10., luminosity);
-  effective_radius = radius = 33.45*sqrt(luminosity)/(temp*temp);
-  core_radius = 0.2*radius;
-  
-  if (envelope_mass > 0) {
-    if (m_tot>=2.7)
-      radius = 12./get_total_mass();
-    else if (m_tot>=2.0) 
-      radius *= 250;
-    else if (m_tot>=1.0) 
-      radius *= 150;
-    else radius *= 6;
-  }
-  else {
-    effective_radius = radius = core_radius;
-  }
-}
-#endif
-
-#if 0
-void helium_giant::evolve_element(const real end_time) {
-
-        real dt = end_time - current_time;
-        current_time = end_time;
-        relative_age += dt;
-  
-        real m_tot = get_total_mass();
-
-        if (relative_age<=next_update_age) {
-            real tmp = log10(m_tot)
-                * (0.4509 - 0.1085*log10(m_tot)) + 4.7143;
-            luminosity  = pow(10., 8.33*tmp - 36.8);
-            tmp = pow(1.e-3*pow(10., tmp), 2);
-            radius = 33.45*sqrt(luminosity)/tmp;
-            core_radius = 0.2*radius;
-
-//		Helium giant branch.
-//		Imitate: Habets, GMHJ, 1986, A&A 167, 61.
-            if (envelope_mass > cnsts.safety(minimum_mass_step)) {
-                  if (m_tot>=2.7)
-                     radius = 12./get_total_mass();
-                  else if (m_tot>=2.0) 
-                     radius *= 250;
-                  else if (m_tot>=1.0) 
-                     radius *= 150;
-                  else radius *= 6;
-            }
-            else {
-               radius = core_radius;
-            }
-         }
-         else {
-            stellar_wind(dt);
-            create_remnant();
-            return;
-         }
-
-         update();
-         stellar_wind(dt);
-
-}
-#endif
-
 // Adjust radius & luminosity at relative_age
 void helium_giant::instantaneous_element() {
-    
+
     luminosity       = helium_giant_luminosity_core_mass_relation(relative_age, relative_mass, metalicity);
     radius           = helium_giant_radius(luminosity, relative_mass, get_total_mass(), metalicity);
     //effective_radius = max(effective_radius, radius);
@@ -145,10 +85,10 @@ void helium_giant::instantaneous_element() {
 // Evolve a helium_giant upto time argument according to
 // the new 2000 models.
 void helium_giant::evolve_element(const real end_time) {
+
     real dt = end_time - current_time;
     current_time = end_time;
     relative_age += dt;
-    
     
     if (relative_age<=next_update_age) {
         instantaneous_element();
@@ -189,7 +129,7 @@ void helium_giant::adjust_next_update_age() {
 
     //next_update_age /= cnsts.parameters(helium_star_lifetime_fraction);
     
-    real t_Heg = helium_giant_end_time(relative_mass, metalicity);
+    real t_Heg = helium_giant_end_time(relative_mass);
     
     if(relative_age>t_Heg) {
         cerr << "WARNING: relative_age > t_Heg in helium_giant"<<endl;
@@ -200,7 +140,7 @@ void helium_giant::adjust_next_update_age() {
 }
 
 
-real helium_giant::helium_giant_end_time(const real mass, const real z) {
+real helium_giant::helium_giant_end_time(const real mass) {
     
     //stop evolving star if the core mass reaches
     // max(m_Ch = cnsts.parameters(Chandrasekar_mass),
@@ -208,12 +148,8 @@ real helium_giant::helium_giant_end_time(const real mass, const real z) {
     // min(get_total_mass(), 1.45*get_total_mass()-0.31)
     real mc_max = min(get_total_mass(), 1.45*get_total_mass()-0.31);
     mc_max = min(maximum_helium_giant_core_mass(mass), mc_max);
-    
-    if (relative_mass > mc_max) {
-        cerr<<"in helium_giant::helium_giant_end_time relative_mass > mc_max, wat nu? meteen door naar remnant? voor massieve sterren skip ik de agb nu  "<<endl;   
-    }
-    
-    real t_Heg = helium_giant_age_core_mass_relation(mc_max, mass, z);
+        
+    real t_Heg = helium_giant_age_core_mass_relation(mc_max, mass);
     real t_Hems  = helium_main_sequence_time_for_solar_metalicity(mass);
     return max(t_Hems,t_Heg);
 }
@@ -252,22 +188,20 @@ void helium_giant::create_remnant(const real mass) {
            type = Carbon_Dwarf;
 #endif // (SPZ+GN: 27 Jul 2000)
 
-    
     stellar_type type;
     real mc_SN = maximum_helium_giant_core_mass(mass);
     real mc_max = min(min(get_total_mass(), 1.45*get_total_mass()-0.31), mc_SN);
     
-    // if mc_max equals 1.45*get_total_mass()-0.31
-    // shell burning stops before whole envelope is converted into C and O
-    if (mc_max < get_total_mass()){
-        cerr<<"Warning: not homogeneous WD"<<endl;
-        type = Carbon_Dwarf;
-    }
-    
-    // if mc_max equals get_total_mass()
-    // core mass reaches outside of star, no envelope anymore
-    else if (mc_max < cnsts.parameters(Chandrasekar_mass)){
-        if (relative_mass < 1.6)
+    if (mc_max < cnsts.parameters(Chandrasekar_mass)){
+        // if mc_max equals 1.45*get_total_mass()-0.31
+        // shell burning stops before whole envelope is converted into C and O
+        if (mc_max < get_total_mass()){
+            cerr<<"Warning: not homogeneous WD"<<endl;
+            type = Carbon_Dwarf;
+        }
+        // mc_max equals total mass
+        // core mass reaches outside of star, no envelope anymore
+        else if (relative_mass < 1.6)
             type = Carbon_Dwarf;
         else if (relative_mass <= 2.25)
             type = Oxygen_Dwarf;
@@ -288,20 +222,25 @@ void helium_giant::create_remnant(const real mass) {
     }
  
 	switch (type) {
-	  case Black_Hole : star_transformation_story(Black_Hole);
-                            new black_hole(*this); 
-                            break;
-          case Neutron_Star : star_transformation_story(Neutron_Star);
-			    new neutron_star(*this);
-                            break;
-          case Disintegrated : star_transformation_story(Disintegrated);
-			       new disintegrated(*this);
-			       break;
-          case Carbon_Dwarf : star_transformation_story(Carbon_Dwarf);
-	                      new white_dwarf(*this);
-                              break;
-          default :   cerr << "helium_star::create_remnant()" <<endl;
-                      cerr << "star_type not recognized." << endl;
+        case Black_Hole : star_transformation_story(Black_Hole);
+                new black_hole(*this); 
+                break;
+        case Neutron_Star : star_transformation_story(Neutron_Star);
+                new neutron_star(*this);
+                break;
+        case Disintegrated : star_transformation_story(Disintegrated);
+			    new disintegrated(*this);
+			    break;
+        case Carbon_Dwarf : star_transformation_story(Carbon_Dwarf);
+	            new white_dwarf(*this);
+                break;
+        case Oxygen_Dwarf : star_transformation_story(Oxygen_Dwarf);
+                new white_dwarf(*this);
+                break;
+            
+        default :   cerr << "helium_giant::create_remnant()" <<endl;
+                    cerr << "star_type not recognized." << endl;
+                    exit(-1);
        }
 
 }
@@ -310,21 +249,27 @@ void helium_giant::create_remnant(const real mass) {
 star* helium_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
 
       mdot = relative_mass*dt/get_binary()->get_donor_timescale();
-
       mdot = mass_ratio_mdot_limit(mdot);
       
       if (mdot<envelope_mass)
-	 envelope_mass -= mdot;
+        envelope_mass -= mdot;
       else {
-	 mdot = envelope_mass;
-	 envelope_mass = 0;
-	
-	 if (core_mass <= cnsts.parameters(minimum_helium_star)) {
-	    star_transformation_story(Carbon_Dwarf);
-	    return dynamic_cast(star*, new white_dwarf(*this));
-	 }
+        mdot = envelope_mass;
+        envelope_mass = 0;	
+        // if (core_mass <= cnsts.parameters(minimum_helium_star)) {
+        //    star_transformation_story(Carbon_Dwarf);
+        //    return dynamic_cast(star*, new white_dwarf(*this));
+        // }
+        real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
+        if(mc_bagb >= 1.6) {      
+              star_transformation_story(Oxygen_Dwarf);
+              return dynamic_cast(star*, new white_dwarf(*this));
+        }
+        else {
+              star_transformation_story(Carbon_Dwarf);	   
+              return dynamic_cast(star*, new white_dwarf(*this));
+        }          
       }
-
       return this;
 }
 
@@ -376,6 +321,7 @@ star* helium_giant::reduce_mass(const real mdot) {
 
 
 real helium_giant::add_mass_to_accretor(const real mdot) {
+    cerr<<"He_g::add_mass_to_accretor is used?"<<endl;
 
         if (mdot<0) {
 
@@ -405,6 +351,7 @@ real helium_giant::add_mass_to_accretor(const real mdot) {
      }
 
 real helium_giant::add_mass_to_accretor(real mdot, const real dt) {
+    cerr<<"He_g::add_mass_to_accretor is used?"<<endl;
 
         if (mdot<0) {
 
@@ -429,7 +376,8 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt) {
      }
 
 real helium_giant::accretion_limit(const real mdot, const real dt) {
-       
+    cerr<<"He_g::accretion_limit is used?"<<endl;
+
      real mdot_limit = mdot;
 
      real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
@@ -443,19 +391,57 @@ real helium_giant::accretion_limit(const real mdot, const real dt) {
 
 }
 
+// Star is rejuvenated by accretion.
+// Age adjustment especially for accretion from other stars.
+// No information from stellar evolution tracks is included.
 void helium_giant::adjust_accretor_age(const real mdot,
 				       const bool rejuvenate) {
+    cerr<<"sub_giant::adjust_accretor_age is currently not used"<<endl;
+    
+    real m_rel_new;
+    real m_tot_new = get_total_mass() + mdot;
+    if (m_tot_new>relative_mass)
+        m_rel_new = m_tot_new;
+    else m_rel_new = relative_mass;
+    
+    real t_hems_old = helium_main_sequence_time_for_solar_metalicity(relative_mass); 
+    real dt_Heg_old = helium_giant_end_time(relative_mass) - t_hems_old;
 
-      real frac = (1-pow(mdot/(get_total_mass()+mdot),
-			     cnsts.parameters(rejuvenation_exponent)));
-      last_update_age *= frac;
-      relative_age *= frac;
+    real t_hems_new = helium_main_sequence_time_for_solar_metalicity(m_rel_new);    
+    //He star+giant not a function of metalicity for now
+    real t_Heg_new = helium_giant_end_time(m_rel_new);
+    real dt_Heg_new = t_Heg_new - t_hems_new; 
+    
+    real dtime = relative_age - t_hems_old;
+    
+    // (GN+SPZ May  4 1999) update last_update_age
+    last_update_age = t_hems_new;
+    relative_age = t_hems_new 
+    + dtime*(dt_Heg_new/dt_Heg_old);
+    
+    if (rejuvenate)
+        relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
+    
+    if (relative_age < last_update_age + cnsts.safety(minimum_timestep)){
+        cerr<<"In helium_giant::adjust_accretor_age relative age updated on HeGiant, but < last_update_age"<<endl;
+    }
+    relative_age = max(relative_age, 
+                       last_update_age + cnsts.safety(minimum_timestep)); 
+    relative_age = min(relative_age, t_Heg_new);
 
-     }
+    // next_update_age should not be reset here
+    // next_update_age = t_ms_new + t_hg_new;
+    
+//    real frac = (1-pow(mdot/(get_total_mass()+mdot),
+//			     cnsts.parameters(rejuvenation_exponent)));
+//      last_update_age *= frac;
+//      relative_age *= frac;
+}
 
 // see helium_star.C
 real helium_giant::zeta_adiabatic() {
     cerr<<"helium_giant::zeta_adiabatic: include difference for He HG and He SG star"<<endl;
+    cerr<<"He_g::zeta_adiabatic is used?"<<endl;
 
      real z = 0;
 //      Hjellming and Webbink 1987 ApJ, 318, 804
@@ -477,6 +463,7 @@ real helium_giant::zeta_adiabatic() {
 
 real helium_giant::zeta_thermal() {
     cerr<<"helium_giant::zeta_thermal: include difference for He HG and He SG star"<<endl;
+    cerr<<"He_g::zeta_thermal is used?"<<endl;
 
     real z = -2;
 
@@ -500,6 +487,7 @@ real helium_giant::CO_core_mass() {
   return min(core_mass, get_total_mass());
 }
 #endif
+#if 0
 void helium_giant::stellar_wind(const real dt) {
 
 //  PRL(last_update_age);
@@ -540,8 +528,10 @@ void helium_giant::stellar_wind(const real dt) {
     reduce_mass(wind_mass);
   return;
 }
+#endif
 
 real helium_giant::gyration_radius_sq() {
+    cerr<<"He_s::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }
@@ -579,6 +569,7 @@ real helium_giant::temperature() {
 
 
 bool helium_giant::giant_star() {
+    cerr<<"He_s::giant_star is used?"<<endl;
 
   if (envelope_mass > cnsts.safety(minimum_mass_step))
     return TRUE;
@@ -588,6 +579,7 @@ bool helium_giant::giant_star() {
 }
 
 bool helium_giant::remnant() {
+    cerr<<"He_g::remnant is used?"<<endl;
 
   if (envelope_mass > cnsts.safety(minimum_mass_step))
     return FALSE;
@@ -596,8 +588,36 @@ bool helium_giant::remnant() {
 
 }
 
-real helium_giant::helium_giant_age_core_mass_relation(const real m_core, const real mass,
-                                            const real z){
+
+//Eq. 84
+real helium_giant::helium_giant_luminosity_core_mass_relation(const real time, const real mass, const real z){
+    real A_He = AGB_A_He_estimator();
+    real t_Hems = helium_main_sequence_time_for_solar_metalicity(mass);
+    real l_tHems = terminal_helium_main_sequence_luminosity(mass);
+    real p = helium_giant_p_parameter();
+    real D = helium_giant_D_factor(mass);
+    real l_x = helium_giant_x_luminosity(mass);
+    real t_x = specific_time_boundary(mass, A_He, t_Hems, l_tHems, D, p, l_x);
+    real l_He;
+    if (time  <= t_x){
+        real t_inf1 = specific_time_limit(A_He, t_Hems,
+                                          D, l_tHems, p);
+        real arg = (p-1)*A_He*D*(t_inf1-time);   
+        l_He = D * pow(arg, p/(1-p));      
+    }
+    else {        
+        real q = helium_giant_q_parameter();
+        real B = helium_giant_B_factor();
+        real t_inf2 = specific_time_limit(A_He, t_x,
+                                          B, l_x, q);
+        real arg = (q-1)*A_He*B*(t_inf2-time);   
+        l_He = B * pow(arg, q/(1-q));
+    }  
+    return l_He; 
+}
+
+
+real helium_giant::helium_giant_age_core_mass_relation(const real m_core, const real mass){
     real age;  
     real p = helium_giant_p_parameter();
     real D = helium_giant_D_factor(mass);
@@ -614,8 +634,8 @@ real helium_giant::helium_giant_age_core_mass_relation(const real m_core, const 
     else{
         real q = helium_giant_q_parameter();
         real B = helium_giant_B_factor();
-        real t_x = specific_time_boundary2(mass, z, A_He, t_Hems, l_tHems, D, p);
         real l_x = helium_giant_x_luminosity(mass);
+        real t_x = specific_time_boundary(mass, A_He, t_Hems, l_tHems, D, p, l_x);
         real t_inf2 = specific_time_limit(A_He, t_x,
                                            B, l_x, q);
         age = t_inf2 - pow(m_core, 1.-q)/A_He/B/(q-1.);
@@ -625,20 +645,19 @@ real helium_giant::helium_giant_age_core_mass_relation(const real m_core, const 
 
 
 void helium_giant::evolve_core_mass(const real time,
-                                 const real mass,
-                                 const real z) {
-    COcore_mass = helium_giant_core_mass(time, mass, z);
+                                 const real mass) {
+    COcore_mass = helium_giant_core_mass(time, mass);
     if(!update_core_and_envelope_mass(COcore_mass)) {
         cerr << "Update core mass failed in helium_giant()"<<endl;
     }
 }
 
 void helium_giant::evolve_core_mass() {
-    evolve_core_mass(relative_age, relative_mass, metalicity);
+    evolve_core_mass(relative_age, relative_mass);
 }
 
 //related to Eq. 84
-real helium_giant::helium_giant_core_mass(const real time, const real mass, const real z){
+real helium_giant::helium_giant_core_mass(const real time, const real mass){
     
     
     real A_He = AGB_A_He_estimator();
@@ -646,17 +665,17 @@ real helium_giant::helium_giant_core_mass(const real time, const real mass, cons
     real l_tHems = terminal_helium_main_sequence_luminosity(mass);
     real p = helium_giant_p_parameter();
     real D = helium_giant_D_factor(mass);
-    real t_x = specific_time_boundary2(mass, z, A_He, t_Hems, l_tHems, D, p);
+    real l_x = helium_giant_x_luminosity(mass);
+    real t_x = specific_time_boundary(mass, A_He, t_Hems, l_tHems, D, p, l_x);
     real m_core;
     
     if (time  <= t_x){
         real t_inf1 = specific_time_limit(A_He, t_Hems,
                                           D, l_tHems, p);
         real arg = (p-1)*A_He*D*(t_inf1-time);   
-        m_core = pow(arg, 1.0/(1-p));      
+        m_core = pow(arg, 1.0/(1-p));     
     }
     else {
-        real l_x = helium_giant_x_luminosity(mass);
         real q = helium_giant_q_parameter();
         real B = helium_giant_B_factor();
         real t_inf2 = specific_time_limit(A_He, t_x,
@@ -673,6 +692,21 @@ real helium_giant::maximum_helium_giant_core_mass(const real mass) {
     return mc_max;
 }
 
+
+
+void helium_giant::small_envelope_perturbation(){
+    real mu = small_envelope_mu(luminosity, get_total_mass(), core_mass);
+    if(mu < 1.){
+        real lum_c = small_envelope_core_luminosity();
+        luminosity = perturb_luminosity(luminosity, lum_c, get_total_mass(), core_mass, mu);
+        real rad_c = small_envelope_core_radius();
+        if(rad_c < radius){
+            radius = perturb_radius(radius, rad_c, get_total_mass(), core_mass, mu);
+        }
+    }
+}
+
+
 //Eq.98
 real helium_giant::small_envelope_mu(const real lum, const real mass_tot, const real m_core){
     // the function parameter lum is not needed here, 
@@ -684,7 +718,9 @@ real helium_giant::small_envelope_mu(const real lum, const real mass_tot, const 
 }
 
 real helium_giant::co_core_radius(const real m_core){
-    real r_c = white_dwarf_radius(m_core, 0.);
+    // due to small nucleair burning layer 
+    // r_c > white_dwarf_radius
+    real r_c = 5.*white_dwarf_radius(m_core, 0.);
     return r_c;
 }
 
@@ -694,7 +730,7 @@ real helium_giant::co_core_radius(){
 
 
 real helium_giant::small_envelope_core_radius(const real m_core){
-    real r_c = 5.*white_dwarf_radius(m_core, 0. );
+    real r_c = white_dwarf_radius(m_core, 0. );
     return r_c;
 }
 

@@ -1,7 +1,7 @@
 // 
 // single_star.C
 //
-#include <fstream>
+#include <fstream.h>
 #include "single_star.h"
 #include "proto_star.h"
 //#include "main_sequence.h"
@@ -73,7 +73,7 @@ single_star * new_single_star(stellar_type type,	// All defaults are
 
   element->post_constructor();
 
-  element->get_seba_counters()->add_sstar++;
+  //element->get_seba_counters()->add_sstar++;
 
   return element;
 }
@@ -148,8 +148,7 @@ single_star::single_star(single_star & rv) : star(rv) {
 }
 
 void single_star::post_constructor() {
-
-//(GN+SPZ Apr 28 1999) stars with M < 8 Msun have wind per phase:
+    //(GN+SPZ Apr 28 1999) stars with M < 8 Msun have wind per phase:
   update_wind_constant();
 
     // MEmory refrsh to prevent helium star to become white dwarf with
@@ -157,31 +156,33 @@ void single_star::post_constructor() {
     // Not clear yet if companion and binary must also be updated?
     // (SPZ+GN, 10 Nov 1998)
       if (is_binary_component())
-         get_binary()->refresh_memory();
+          get_binary()->refresh_memory();
       else
-	 refresh_memory();
-//    refresh_memory();
-    
+          refresh_memory();
+
+
     if (is_binary_component() && get_binary()->get_bin_type()==Detached)
       get_binary()->set_first_contact(false);
 
-    if (is_binary_component())
-      get_binary()->dump("SeBa.data", true);
-    else 
+    if (is_binary_component()){
+        get_binary()->dump("SeBa.data", true);
+    }
+    else {
+    }
 // (GN May 12 1999) skrews up output
 //    {
 //      dump("SeBa.data", true);
 //      cerr << endl;
 //    }
-  
+
 
     if (remnant()) {
-      if (is_binary_component())
-	get_binary()->dump("binev.data", false);
+        if (is_binary_component()){
+  	get_binary()->dump("binev.data", false);
+        }
       else
 	dump("binev.data", false);
     }
-
 }
 
 void single_star::initialize(int id, real z, real t_cur,
@@ -254,42 +255,6 @@ real single_star::helium_core_radius() {
 
 #endif
 
-real single_star::helium_giant_time(const real mass, const real t_ms, const real z) {
-
-    real l_bms = base_main_sequence_luminosity(mass, z);
-    cerr <<"HElium_giant time(..)"<<endl;
-    real l_he = helium_giant_luminosity(mass);
-
-    return t_ms*l_bms/(l_he*(pow(mass, 0.42) + 0.8));
-}
-
-real single_star::helium_giant_time(const real t_ms, const real z) {
-
-    real l_bms = base_main_sequence_luminosity(z);
-    cerr <<"HElium_giant time"<<endl;
-    real l_he  = helium_giant_luminosity();
-
-    return t_ms*l_bms/(l_he*(pow(relative_mass, 0.42) + 0.8));
-}
-
-
-real single_star::base_giant_time(const real mass, const real t_ms) {
-
-    real t_gs  = 0.15*t_ms;
-    real l_g   = giant_luminosity(mass);
-    real l_agb = agb_luminosity(mass);
-
-    return t_gs*pow(l_g/l_agb, 0.855);
-}
-
-real single_star::base_giant_time(const real t_ms) {
-
-    real t_gs  = 0.15*t_ms;
-    real l_g   = giant_luminosity();
-    real l_agb = agb_luminosity();
-
-    return t_gs*pow(l_g/l_agb, 0.855);
-}
 
 real single_star::nucleair_evolution_time(const real mass,
 					  const real z) {
@@ -297,8 +262,7 @@ real single_star::nucleair_evolution_time(const real mass,
     //  real t_bagb = base_AGB_time(mass, z);
     //  real t_tagb = t_bagb + t_du;
 
-    real t_du = dredge_up_time(mass, z);
-    real t_tagb = t_du;
+    real t_tagb = TAGB_time(mass, z);
     return t_tagb;
 }
 
@@ -310,102 +274,6 @@ real single_star::nucleair_evolution_time() {
     return t_nuc;
 }
 
-
-real single_star::giant_luminosity(const real mass) {
-
-    real l_g = (2.15 + 0.22*pow(mass, 3.))*pow(mass, 2)
-           / (5.0e-6*pow(mass, 4.)+1.4e-2*mass*mass + 1.);
-
-    return l_g;
-}
-
-real single_star::giant_luminosity() {
-  
-    real l_g = (2.15 + 0.22*pow(relative_mass, 3.))
-           *  pow(relative_mass, 2)
-           / (5.0e-6*pow(relative_mass, 4.)
-           +  1.4e-2*relative_mass*relative_mass + 1.);
-
-    return l_g;
-}
-
-real single_star::helium_giant_luminosity(const real mass) {
-
-  // Prescription according to EFT89.
-  //real l_bms = base_main_sequence_luminosity(mass);
-  //return 0.763*pow(mass, 0.46)*l_bms
-  //  + 50.0/pow(mass, 0.1);
-
-  // Changed (SPZ+GN:09/98) as in Tout et all. 97.
-  cerr <<"call L_BGC from ::helium_giant_lum()"<<endl;
-  real l_g = base_giant_branch_luminosity(mass);
-  real l_HeI = base_agb_luminosity(l_g, mass);
-  real l_He = 49*pow(mass, 0.364) + 0.86*pow(mass, 4.);
-
-  return min(l_He, l_HeI);
-}
-
-real single_star::helium_giant_luminosity() {
-
-  //	Helium core bunring giant.
-  //real l_bms = base_main_sequence_luminosity();
-  //return 0.763*pow(relative_mass, 0.46)*l_bms
-  //  + 50.0/pow(relative_mass, 0.1);
-
-  // Changed (SPZ+GN:09/98) as in Tout et all. 97.
-  cerr <<"call L_BGC from ::helium_giant_lum() II"<<endl;
-  real l_g = base_giant_branch_luminosity(relative_mass);
-  real l_HeI = base_agb_luminosity(l_g, relative_mass);
-  real l_He = 49*pow(relative_mass, 0.364)
-            +  0.86*pow(relative_mass, 4.);
-
-  return min(l_He, l_HeI);
-
-}
-
-real single_star::base_agb_luminosity(const real l_g) {
-
-  // EFT89 method.
-  //return l_g + 2.e3;
-  
-  // Changed (SPZ+GN:09/98) as in Tout et all. 97.
-  real l_agb=2454.7;
-  if (relative_mass >
-      cnsts.parameters(upper_ZAMS_mass_for_degenerate_core)) 
-    l_agb = 6.5*pow(min(relative_mass, 20.), 3.25);
-  
-  return max(l_agb, l_g);
-}
-
-real single_star::base_agb_luminosity(const real l_g,
-				      const real mass) {
-
-  real l_agb=2454.7;
-  if (mass >
-      cnsts.parameters(upper_ZAMS_mass_for_degenerate_core)) 
-    l_agb = 6.5*pow(min(mass, 20.), 3.25);
-  
-  return max(l_agb, l_g);
-}
-
-real single_star::agb_luminosity(const real mass) {
-
-  return mass*(4.0e3 + 5.0e2*mass);
-}
-
-real single_star::agb_luminosity() {
- 
-  return relative_mass*(4.0e3 + 5.0e2*relative_mass);
-}
-
-real single_star::maximum_luminosity(const real mass) {
-
-  return 4000*mass + 500*pow(mass,2);
-}
-
-real single_star::maximum_luminosity() {
-  return 4000*relative_mass + 500*pow(relative_mass,2);
-}
      
 // Helium core lifetime.
 // Tabulation method is better since it depends on the mass
@@ -438,12 +306,11 @@ real single_star::helium_time() {
 real single_star::temperature() {
     // Effective radius is the radius of the star as it really is.
     // radius is the equilibrium radius of the star.
-    //return 1000*pow(1130.*luminosity/(radius*radius), 0.25); // in [1000K]
+   //return 1000*pow(1130.*luminosity/(radius*radius), 0.25); // in [1000K]
 
 
     real T_eff = cnsts.parameters(Tsun)
              * pow(luminosity/pow(effective_radius, 2), 0.25); // in [K]
-    cerr<<"in single_star::temperature effective_radius or radius?"<<endl;
     return T_eff;
 }
 
@@ -591,7 +458,7 @@ void single_star::dump(ostream & s, bool brief) {
       s << "1\n ";
       s << get_element_type() << " " << s1 << " " << s2 << " "
         << s3 << " " << s4 << " " << s5 << " " << s6 << endl;
-//#if 0      
+      
       s << " " << identity
 	<< " " << metalicity
 	<< " " << current_time
@@ -609,7 +476,7 @@ void single_star::dump(ostream & s, bool brief) {
 	<< " " << magnetic_field
 	<< " " << rotation_period
 	<< endl;
-//#endif
+
       s.precision(STD_PRECISION);
 #if 0
       PRC(identity);
@@ -929,50 +796,52 @@ star* single_star::merge_elements(star* str) {
   real m_conserved = get_total_mass() + str->get_total_mass();
 
   if (str->get_element_type()!=Main_Sequence) {
-
-      // adding two cores of giants together should not result in
-      // rejuvenation.
-      // previous method appeared to make mergers too old.
-      // (SPZ+GN:11 Oct 1998)
-      
+    // adding two cores of giants together should not result in
+    // rejuvenation.
+    // previous method appeared to make mergers too old.
+    // (SPZ+GN:11 Oct 1998)
       add_mass_to_core(str->get_core_mass());
 
-    if ((str->get_element_type()==Neutron_Star ||
-	 str->get_element_type()==Black_Hole)   &&
-	core_mass < cnsts.parameters(helium2neutron_star)) {
-      real dm = cnsts.parameters(helium2neutron_star) - core_mass;
-      core_mass = cnsts.parameters(helium2neutron_star);
-      if (envelope_mass<dm)
-	envelope_mass = 0;
-      else
-	envelope_mass -= dm;
+      if ((str->get_element_type()==Neutron_Star ||
+	     str->get_element_type()==Black_Hole)   &&
+	     core_mass < cnsts.parameters(helium2neutron_star)) {
+          real dm = cnsts.parameters(helium2neutron_star) - core_mass;
+          core_mass = cnsts.parameters(helium2neutron_star);
+          if (envelope_mass<dm){
+                envelope_mass = 0;
+          }
+          else{
+                envelope_mass -= dm;
+          }
+      }
+
+            //		What to do here is put in SPH!
+      if (str->get_envelope_mass()>0) {
+            add_mass_to_accretor(0.5*str->get_envelope_mass());
+      }
+
+    }
+    else {
+        add_mass_to_accretor(str->get_total_mass());
     }
 
-    //		What to do here is put in SPH!
-    if (str->get_envelope_mass()>0) 
-      add_mass_to_accretor(0.5*str->get_envelope_mass());
+    PRC(get_total_mass());PRL(m_conserved);
+    if (get_total_mass()-m_conserved > 1.e-11) {
+        cerr.precision(HIGH_PRECISION);
+        cerr << "ERROR: Mass is not conserved in single_star::merge elements()"
+        << endl;
 
-  }
-  else {
+        PRC(get_total_mass());PRC(m_conserved);
+        PRL(get_total_mass()-m_conserved);
 
-    add_mass_to_accretor(str->get_total_mass());
-  }
+        exit(-1);
+    }
 
-  if (get_total_mass()-m_conserved > 1.e-11) {
-    cerr.precision(HIGH_PRECISION);
-    cerr << "ERROR: Mass is not conserved in single_star::merge elements()"
-	 << endl;
-
-    PRC(get_total_mass());PRC(m_conserved);
-    PRL(get_total_mass()-m_conserved);
+    spec_type[Merger]=Merger;
+    adjust_next_update_age();
     
-    exit(-1);
-  }
 
-  spec_type[Merger]=Merger;
-  adjust_next_update_age();
 
-  
   // Redundant: in core mass addition star is no rejuvenated but aged.
   // addition of envelope mass causes rejuvenation.
   // (SPZ+GN:27 Sep 1998)
@@ -982,20 +851,20 @@ star* single_star::merge_elements(star* str) {
   //}
 
 
-  if (get_relative_mass() >= cnsts.parameters(massive_star_mass_limit) &&
-	hydrogen_envelope_star()) 
-      merged_star =  reduce_mass(envelope_mass);
-  else {
-
-    instantaneous_element();
-    // calling evolve element may cause segmentation fault if star changes.
+   if (get_relative_mass() >= cnsts.parameters(massive_star_mass_limit) &&
+       hydrogen_envelope_star()){ 
+       merged_star =  reduce_mass(envelope_mass);
+   }
+   else {
+       instantaneous_element();
+       // calling evolve element may cause segmentation fault if star changes.
       //evolve_element(current_time);
-  }
+   }
 
-  cerr << "Merged star: "<<endl;
-  merged_star->dump(cerr, false);
+    cerr << "Merged star: "<<endl;
+    merged_star->dump(cerr, false);
 
-  return merged_star;
+    return merged_star;
 }
 
 // Determine mass transfer stability according to
@@ -1121,7 +990,6 @@ real single_star::zeta_thermal() {
 
 // add two cores. Is performed in ::merge_elements();
 void single_star::add_mass_to_core(const real mdot) {
-
   if (mdot<=0) {
     cerr << "single_star::add_mass_to_core(mdot=" << mdot << ")"<<endl;
     cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
@@ -1145,10 +1013,6 @@ void single_star::add_mass_to_core(const real mdot) {
 // Check mass-transfer timescales before use.
 real single_star::add_mass_to_accretor(const real mdot) {
 
-//  cerr << "add_mass_to_accretor"<<endl;
-//  PRL(mdot);
-//  dump(cerr, false);
-  
   if (mdot<=0) {
     cerr << "single_star::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
     cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
@@ -1158,12 +1022,13 @@ real single_star::add_mass_to_accretor(const real mdot) {
     return 0;
   }
   else {
-    adjust_accretor_age(mdot);
+    // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
+    //adjust_accretor_age(mdot);
     envelope_mass += mdot;
     accreted_mass += mdot;
     
-    if (relative_mass<get_total_mass()) 
-      update_relative_mass(get_total_mass());
+    //if (relative_mass<get_total_mass()) 
+    //  update_relative_mass(get_total_mass());
     
     set_spec_type(Accreting);
     
@@ -1175,10 +1040,6 @@ real single_star::add_mass_to_accretor(const real mdot) {
 
 real single_star::add_mass_to_accretor(real mdot, const real dt) {
 
-//  cerr << "add_mass_to_accretor"<<endl;
-//  PRL(mdot);
-//  dump(cerr, false);
-
   if (mdot<0) {
     cerr << "single_star::add_mass_to_accretor(mdot=" << mdot 
 	 << ", dt=" << dt << ")"<<endl;
@@ -1188,12 +1049,13 @@ real single_star::add_mass_to_accretor(real mdot, const real dt) {
 
   mdot = accretion_limit(mdot, dt);
 
-  adjust_accretor_age(mdot);
+  // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
+  // adjust_accretor_age(mdot);
   envelope_mass += mdot;
   accreted_mass += mdot;
 
-  if (relative_mass<get_total_mass()) 
-    update_relative_mass(get_total_mass());
+//  if (relative_mass<get_total_mass()) 
+//    update_relative_mass(get_total_mass());
 
   adjust_accretor_radius(mdot, dt);
   
@@ -1226,8 +1088,6 @@ void single_star::update() {
 //  last_update_age = relative_age;
 
   detect_spectral_features();
-
-  cerr << "General update dump"<<endl;
   dump(cerr, false);
 
 }
@@ -1370,8 +1230,8 @@ real single_star::rejuvenation_fraction(const real mdot_fr) {
 
       // no rejuvenation if companion has no hydrogen envelope.
       if(is_binary_component() &&
-	 !get_companion()->hydrogen_envelope_star()) 
-	rejuvenation = 1;
+         !get_companion()->hydrogen_envelope_star()) 
+        rejuvenation = 1;
 
       return rejuvenation;
 }
@@ -1491,7 +1351,7 @@ void single_star::update_wind_constant() {
   wind_constant = max(wind_constant, 0.0);
 #endif
     cerr<<"single_star::update_wind_constant is used, not defined properly"<<endl;
-    wind_constant =0.0;
+    wind_constant = 0.0;
 }
 
 
@@ -1589,7 +1449,6 @@ real single_star::helium_ignition_luminosity(const real mass,
 
   real l_HeI; 
   real m_HeF = helium_flash_mass(z);
-  PRC(m_HeF);
   if(mass < m_HeF) {
     real l_HeF = (smc.b(11, z) + smc.b(12, z)*pow(m_HeF, 3.8))
              / (smc.b(13, z) + pow(m_HeF, 2));
@@ -1677,18 +1536,6 @@ bool single_star::high_mass_star() {
   return high_mass_star(relative_mass, metalicity);
 }
 
-// Eq.4 (base_giant_branch_time(mass, z);
-// Supersedes ::hertzsprung_gap_time(mass, t_ms) in single star
-real single_star::hertzsprung_gap_time(const real mass, const real z) {
-  
-  real t_Hg = base_giant_branch_time(mass, z);
-  return t_Hg;
-}
-
-real single_star::hertzsprung_gap_time() {
-
-  return hertzsprung_gap_time(get_relative_mass(), get_metalicity());
-}
 
 // Eq.4
 // supersedes real single_star::base_giant_branch_time(const real mass,
@@ -1837,32 +1684,6 @@ real single_star::stars_with_main_sequence_hook(const real mass,
   return mu;
 }
 
-real single_star::base_main_sequence_luminosity(const real mass, const real z) {
-    real teller = smc.c(1,z)*pow(mass, 5.5) + smc.c(2,z)*pow(mass,11);
-    real noemer = smc.c(3,z) + pow(mass,3) + smc.c(4,z)*pow(mass,5) + smc.c(5,z)*pow(mass,7) + smc.c(6,z)*pow(mass,8) +                        smc.c(7,z)*pow(mass,9.5);
-    return teller/noemer;
-}
-/*// identical to EFT
-real single_star::base_main_sequence_luminosity(const real mass) {
-
-  real l_bms;
-  if (mass<=1.093) {
-    l_bms =  (1.107*pow(mass, 3.)+ 240.7*pow(mass, 9.))
-          /  (1. + 281.9*pow(mass, 4.));
-  }
-  else {
-    l_bms =  (13990.*pow(mass, 5.))
-          / (pow(mass, 4.) + 2151.*pow(mass, 2)+3908.*mass +9536.);
-  }
-   
-  return l_bms;
-}*/
-
-real single_star::base_main_sequence_luminosity(const real z) {
-
-  return base_main_sequence_luminosity(relative_mass, z);
-}
-
 
 // Eq.8
 real single_star::terminal_main_sequence_luminosity(const real mass, 
@@ -1914,319 +1735,6 @@ real single_star::base_main_sequence_radius(const real mass, const real z) {
     return teller/noemer;
 }
 
-
-
-
-/*// EFT fits
-real single_star::base_main_sequence_radius(const real mass) { 
-
-  real log_mass = log10(mass);
-
-  real alpha, beta, gamma;
-  real r_zams;
-
-  if (mass > 1.334) {
-
-    alpha = 0.1509 + 0.1709*log_mass;
-    beta  = 0.06656 - 0.4805*log_mass;
-    gamma = 0.007395 + 0.5083*log_mass;
-
-    r_zams = (0.7388*pow(mass, 1.679) - 1.968*pow(mass, 2.887))
-      / (1.0 - 1.821*pow(mass, 2.337));
-
-  } else {
-    
-    alpha = 0.08353 + 0.0565*log_mass;
-    beta  = 0.01291 + 0.2226*log_mass;
-    gamma = 0.1151 + 0.06267*log_mass;
-
-    r_zams = pow(mass, 1.25) * (0.1148 + 0.8604*pow(mass, 2))
-                             / (0.04651 + pow(mass, 2));
-  }
-
-  return r_zams;
-}
-*/
-
-//Eq.12
-real single_star::main_sequence_luminosity(const real time, 
-					     const real mass,
-					     const real z) {
-
-  real l_zams = base_main_sequence_luminosity(mass, z);
-  real l_tams = terminal_main_sequence_luminosity(mass, z);
-  real log_l_tz = log10(l_tams/l_zams);
-  real tau = time/main_sequence_time(mass, z);
-  real al = alpha_l_coefficient(mass, z);
-  real bl = beta_l_coefficient(mass, z);
-  //Eq. 18
-  real eta = 10;
-  if (z<=0.0009) {
-    if (mass>=1.1)
-       eta = 20;
-    else if(mass>1)
-      eta = 10 + 100 * (mass-1);
-  }
-
-  real log_l_ratio = al*tau + bl*pow(tau, eta) 
-                   + (log_l_tz - al - bl)*pow(tau, 2) 
-                   - zams_luminosity_correction(time, mass, z);
-  real lms = l_zams*pow(10., log_l_ratio);
-
-  return lms;
-}
-
-//Eq.13
-real single_star::main_sequence_radius(const real time, 
-					 const real mass,
-					 const real z) {
-
-  real r_zams = base_main_sequence_radius(mass,z);
-  real r_tams = terminal_main_sequence_radius(mass, z);
-  real log_r_tz = log10(r_tams/r_zams);
-  real tau = time/main_sequence_time(mass, z);
-  real ar = alpha_r_coefficient(mass, z);
-  real br = beta_r_coefficient(mass, z);
-  real gr = gamma_r_coefficient(mass, z);
-
-  real log_r_ratio = ar*tau + br*pow(tau, 10) + gr*pow(tau, 40) 
-                   + (log_r_tz - ar - br - gr)*pow(tau, 3) 
-                   - zams_radius_correction(time, mass, z);
-  real r_ms = r_zams*pow(10., log_r_ratio);
-
-  real X = get_hydrogen_fraction(z);
-
-  if (mass<0.1)
-    r_ms = max(r_ms, 0.0258*pow(1+X, 5./3.)/pow(mass, 1./3.));
-
-  return r_ms;
-}
-
-// Eq.16
-real single_star::zams_luminosity_correction(const real t, 
-					     const real mass, 
-					     const real z) {
-
-  real a33 = smc.a(33,z);  // No fitting parameters provided by HPT2000
-                           // only that: 1.25 < a17 < 1.6
-
-  real dl = 0;
-  real m_hook = main_sequence_hook_mass(z);
-
-  if (mass>=a33) {
-    dl = min(smc.a(34, z)/pow(mass, smc.a(35, z)), 
-	     smc.a(36, z)/pow(mass, smc.a(37, z)));
-  }
-  else if (mass>m_hook) {
-    real B = min(smc.a(34, z)/pow(a33, smc.a(35, z)), 
-		 smc.a(36, z)/pow(a33, smc.a(37, z)));
-    dl = B*pow( (mass - m_hook) / (a33 - m_hook), 0.4 );
-  }
-
-  real eps = 0.01;
-  real t_hook = main_sequence_hook_time(mass, z);
-  //Eq. 14
-  real tau_1 = min(1., t/t_hook);
-  //Eq. 15
-  real tau_2 = max(0., min(1., (t - (1-eps)*t_hook)/(eps*t_hook)));
-
-  real l_correction = dl*(pow(tau_1, 2)-pow(tau_2, 2));
-  return l_correction;
-}
-
-
-// Eq.17
-real single_star::zams_radius_correction(const real t, 
-					 const real mass, 
-					 const real z) {
-
-  real dr = 0;
-  real m_hook = main_sequence_hook_mass(z);
-  if (mass>=2) {
-    dr =  (smc.a(38, z) + smc.a(39, z)*pow(mass, 3.5))
-       /  (smc.a(40, z)*pow(mass, 3.0) + pow(mass, smc.a(41, z))) 
-       - 1;
-  }
-  else if (mass>smc.a(42, z)) {
-    real B = (smc.a(38, z) + smc.a(39, z)*pow(2., 3.5))
-      /  (smc.a(40, z)*pow(2., 3.0) + pow(2., smc.a(41, z))) 
-      - 1;
-    /*dr = smc.a(43, z) + smc.a(B-smc.a(43, z), z)
-      * smc.a(42, z) 
-      * pow((mass - smc.a(42, z)) / smc.a(2-smc.a(42, z), z), 
-	    smc.a(42, z));*/
-    dr = smc.a(43, z) + (B-smc.a(43,z))* 
-	pow((mass-smc.a(42,z))/(2-smc.a(42,z)), smc.a(44,z));
-  }
-  else if (mass>m_hook) {
-    dr = smc.a(43, z) * sqrt((mass - m_hook) / (smc.a(42, z) - m_hook));
-  }
-
-  real eps = 0.01;
-  real t_hook = main_sequence_hook_time(mass, z);
-  //Eq. 14
-  real tau_1 = min(1., t/t_hook);
-  //Eq.15
-  real tau_2 = max(0., min(1., (t - (1-eps)*t_hook)/(eps*t_hook)));
-
-  real r_correction = dr *(pow(tau_1, 3)-pow(tau_2, 3));
-
-  return r_correction;
-}
-
-
-// Eq. 19
-real single_star::alpha_l_coefficient(const real mass, 
-				      const real z) {
-
-  real alpha_l;
-  if (mass >= 2){
-      alpha_l = (smc.a(45, z) + smc.a(46, z)*pow(mass, smc.a(48, z)))
-      / (pow(mass, 0.4) + smc.a(47, z)*pow(mass, 1.9));
-  }
-  else if (mass >= smc.a(53,z)){
-      real alpha_l_2 = alpha_l_coefficient(2., z); 
-      alpha_l = smc.a(51, z) + (alpha_l_2 - smc.a(51, z))*(mass - smc.a(53, z))/(2 - smc.a(53, z));
-  }
-  else if(mass>=smc.a(52, z))
-    alpha_l = smc.a(50, z) + (smc.a(51, z) - smc.a(50, z))*(mass - smc.a(52, z))
-      / (smc.a(53, z) - smc.a(52, z));
-  else if(mass>=0.7)
-    alpha_l = 0.3 + (smc.a(50, z) - 0.3)*(mass - 0.7)
-      / (smc.a(52, z) - 0.7);
-  else if(mass>=0.5)
-    alpha_l = smc.a(49, z) + 5.*(0.3-smc.a(49, z))*(mass - 0.5);
-  else 
-    alpha_l = smc.a(49, z);
-  
-  return alpha_l;
-}
- 
-//Eq.20
-real single_star::beta_l_coefficient(const real mass, 
-				     const real z) {
-
-  real beta_l = max(0., smc.a(54, z) - smc.a(55, z)*pow(mass, smc.a(56, z)));
-  if (mass>smc.a(57, z) && beta_l>0) {
-    real B = max(0., smc.a(54, z) 
-		- smc.a(55, z)*pow(smc.a(57, z), smc.a(56, z)));
-    beta_l = max(0., B * (1 - 10*(mass-smc.a(57, z)))); //CHECK!
-  }
-  
-  return beta_l;
-}
-
-//Eq.21a Eq.21b
-real single_star::alpha_r_coefficient(const real mass, 
-				      const real z) {
-
-  real alpha_r;
-  if (mass<=smc.a(67, z) && mass>=smc.a(66, z)) {
-    alpha_r = smc.a(58, z)*pow(mass, smc.a(60, z))
-            / (smc.a(59, z) + pow(mass, smc.a(61, z)));
-  }
-  else if (mass>smc.a(67, z)) {
-
-    real C = alpha_r_coefficient(smc.a(67, z), z);
-    alpha_r = (C + smc.a(65, z)*(mass - smc.a(67, z)));
-  }
-  else if(mass<smc.a(66, z) && mass >=smc.a(68, z)) {
-
-    real B = alpha_r_coefficient(smc.a(66, z), z);
-    alpha_r = smc.a(64, z) + (B - smc.a(64, z))*(mass - smc.a(68, z))
-            / (smc.a(66, z) - smc.a(68, z));
- }
-  else if(mass<smc.a(68, z) && mass>=0.65) 
-     alpha_r = smc.a(63, z) + (smc.a(64, z) - smc.a(63, z))*(mass - 0.65)
-            / (smc.a(68, z) - 0.65);
-  else if(mass<0.65 && mass>=0.50){
-      alpha_r = smc.a(62, z) + (smc.a(63, z) 
-            - smc.a(62, z))*(mass - 0.50) / 0.15;
-  }
-  else if(mass<0.50)
-    alpha_r = smc.a(62, z);
-  else {
-    cerr << "WARNING: ill defined real "
-	 << "alpha_r_coefficient(const real mass, const real z) " << endl;
-    PRC(mass);PRL(z);
-    dump(cerr, false);
-    cerr << flush;
-    exit(-1);
-  }
-
-  return alpha_r;
-}
-
-//Eq.22a Eq.22b
-real single_star::beta_r_coefficient(const real mass, 
-				       const real z) {
-
-  real beta_r;
-  if (mass>=2 && mass<=16) {
-    beta_r = smc.a(69, z)*pow(mass, 3.5)
-           / (smc.a(70, z) + pow(mass, smc.a(71, z)));
-  }
-  else if (mass>16) {
-    real C = beta_r_coefficient(16, z)+1.0;      
-    beta_r = C + smc.a(73, z)*(mass - 16);
-  }
-  else if (mass<2 && mass>=smc.a(74, z)) { 
-    real B = beta_r_coefficient(2, z)+1.0;
-    beta_r = smc.a(72, z) + (B - smc.a(72, z))
-           * (mass - smc.a(74, z))/(2 - smc.a(74, z));
-  }
-  else if (mass<smc.a(74, z) && mass>1)
-    beta_r = 1.06 + (smc.a(72, z) - 1.06)*(mass - 1.0)/(smc.a(74, z) - 1.0);
-  else if (mass<=1)
-    beta_r = 1.06;
-  else {
-    cerr << "WARNING: ill defined real "
-	 << "beta_r_coefficient(const real mass, const real z) " << endl;
-    cerr << flush;
-    exit(-1);
-  }
-  return beta_r - 1;
-}
-    
-//Eq.23 
-real single_star::gamma_r_coefficient(const real mass, 
-				      const real z) {
-  real gamma_r;
-  if (mass<=1) {
-
-    gamma_r = smc.a(76, z) + smc.a(77, z)
-            * pow(mass - smc.a(78, z), smc.a(79, z));
-  }
-  else if (mass<=smc.a(75, z)) {
-    
-    real B = gamma_r_coefficient(1, z);
-    gamma_r = B + (smc.a(80, z) - B)
-            * pow( (mass - 1)/(smc.a(75, z) - 1), smc.a(81, z));
-  }
-  else if (mass<smc.a(75, z) + 0.1) {
-
-    real C;
-    if (smc.a(75, z)<=1)
-      C = gamma_r_coefficient(1, z);
-    else
-      C = smc.a(80, z);
-
-    gamma_r = C - 10*(mass - smc.a(75, z))*C;
-  }
-  else {
-    gamma_r = 0;
-  }
-  
-  if (mass>smc.a(75, z) + 0.1)
-    gamma_r = 0;
-
-  if (gamma_r <0) {
-      cerr<<"WARNING in single_star::gamma_r_coefficient: gamma_r < 0"<<endl;
-  }
-    
-  return max(0., gamma_r);
-}
-
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Sub giant branch
@@ -2252,7 +1760,6 @@ real single_star::giant_branch_radius(const real l_hb,
   return r_hb;
 }
 
-// Further functions have not been tested properly (SPZ: 31 May 2001)
 
 // Eq.51
 real single_star::minimum_horizontal_branch_luminosity(const real mass, 
@@ -2294,45 +1801,43 @@ real single_star::base_horizontal_branch_luminosity(const real mass,
 
 // Eq.55
 real single_star::minimum_blue_loop_radius(const real mass, 
-					   const real mass_tot, const real z) {
-// watch out when changing this function, because
-// for mass>max(12.0, m_FGB) r_mhe = min(r_mhe, r_agb(L_HeI))
-// for m_FGB<mass<12.0 unclear what we should do with r_agb(L_HeI)
+                                           const real mass_tot, const real z) {
+    // watch out when changing this function, because
+    // for mass>max(12.0, m_FGB) r_mhe = min(r_mhe, r_agb(L_HeI))
+    // for m_FGB<mass<12.0 unclear what we should do with r_agb(L_HeI)
     // maybe r_agb(L_HeI)> r_mHe for normal metallicities
     
-  real b24 = smc.b(24,z);
-  real b25 = smc.b(25,z);
-  real b26 = smc.b(26,z);
-  real b27 = smc.b(27,z);
-  real b28 = smc.b(28,z);
-
+    real b24 = smc.b(24,z);
+    real b25 = smc.b(25,z);
+    real b26 = smc.b(26,z);
+    real b27 = smc.b(27,z);
+    real b28 = smc.b(28,z);
     
-  real r_mHe = (b24*mass_tot + pow(b25*mass_tot, b26)*pow(mass_tot, b28))
-             / (b27 + pow(mass_tot, b28));
-
-  real m_HeF = helium_flash_mass(z); 
-  if(mass<m_HeF) { 
-      cerr<<"R_mHe mu should be a function of mass!!"<<endl;
-    real mu = mass/m_HeF;
-    real l_bhb = base_horizontal_branch_luminosity(mass, z);
-    real r_hb = giant_branch_radius(l_bhb, mass_tot, z);
-    real l_HeF = base_horizontal_branch_luminosity(m_HeF, z);
-    real r_HeF = giant_branch_radius(l_HeF, m_HeF, z);
-    real r_mHe_HeF = (b24*m_HeF + pow(b25*m_HeF, b26)*pow(m_HeF, b28))
-      / (b27 + pow(m_HeF, b28)); 
-    r_mHe = r_hb * pow(r_mHe_HeF/r_HeF, mu);
-  }
+    
+    real r_mHe = (b24*mass_tot + pow(b25*mass_tot, b26)*pow(mass_tot, b28))
+    / (b27 + pow(mass_tot, b28));
+    
+    real m_HeF = helium_flash_mass(z); 
+    if(mass<m_HeF) { 
+        real mu = mass_tot/m_HeF;
+        real l_bhb = base_horizontal_branch_luminosity(mass, z);
+        real r_hb = giant_branch_radius(l_bhb, mass_tot, z);
+        real l_HeF = base_horizontal_branch_luminosity(m_HeF, z);
+        real r_HeF = giant_branch_radius(l_HeF, m_HeF, z);
+        real r_mHe_HeF = (b24*m_HeF + pow(b25*m_HeF, b26)*pow(m_HeF, b28))
+        / (b27 + pow(m_HeF, b28)); 
+        r_mHe = r_hb * pow(r_mHe_HeF/r_HeF, mu);
+    }
     //these lines are not in the HPT2000 article, but they are in the HPT2000 code
     //in case a massive star skips the blue loop phase, 
     // the stellar radius should continue smoothly
     if (mass >= max(12.0, helium_ignition_mass(z))){
-        // in this mass range r_x = r_HeI = r_mHe
-        // in case the star skips the blue loop phase, 
-        // r_mHe should be the minimum of r_mHe and r_agb
+        // In this mass range r_x = r_HeI = r_mHe.
+        // In case the star skips the blue loop phase, 
+        // r_mHe should be the minimum of r_mHe and r_agb.
         real l_HeI = helium_ignition_luminosity(mass, z);
         real r_agb = AGB_radius(l_HeI, mass, mass_tot, z);
         r_mHe = min(r_agb, r_mHe);
-        cerr<<"WARNING in single_star::r_mHe is set to min(r_mHe, r_agb)"<<endl;
     }
     if (mass > helium_ignition_mass(z) && mass <12.0){
         real l_HeI = helium_ignition_luminosity(mass, z);
@@ -2343,7 +1848,7 @@ real single_star::minimum_blue_loop_radius(const real mass,
         }
     }
     
-  return r_mHe;
+    return r_mHe;
 }
 
 
@@ -2396,64 +1901,6 @@ real single_star::base_AGB_luminosity(const real mass, const real z) {
     }
   return l_bagb;
 }
-
-real single_star::base_AGB_radius(const real mass, const real z) {
-    cerr<<"single_star::base_AGB_radius is this an obsolete function?? "<<endl;
-    cerr<<"it's incorrect; it needs get_total_mass"<<endl;
-    real l_bagb = base_AGB_luminosity(mass, z);
-  PRC(l_bagb);
-  real r_bagb = AGB_radius(l_bagb, mass, mass, z);
-  PRC(r_bagb);
-
-  return r_bagb;
-}
-
-
-real single_star::f_bl(const real mass, const real mass_tot, const real z) {
-  real b48 = smc.b(48,z);
-  real b49 = smc.b(49,z);
-
-  real r_mHe = minimum_blue_loop_radius(mass, mass_tot, z);
-  real l_HeI = helium_ignition_luminosity(mass, z);
-  real r_agb = AGB_radius(l_HeI, mass, mass_tot, z);
-  real ratio = 1- r_mHe / r_agb;
-  if (ratio < 0) {
-      ratio = 0;
-      cerr<<"WARNING in single_star::f_bl: ratio 1-r_mHe / r_agb< 0"<<endl;
-  }
-  real f = pow(mass, b48) * pow(ratio, b49);
-  return f;
-}
-
-// Eq.58
-real single_star::blue_phase_timescale(const real mass, const real mass_tot, const real z) {
-
-  real b45 = smc.b(45,z);
-
-  real t_bl = 1;
-  real m_HeF = helium_flash_mass(z);
-  real m_FGB = helium_ignition_mass(z);
-  real m_HeF_FGB = m_HeF/m_FGB;
-  real b46 = -1*smc.b(46,z) * log10(m_HeF_FGB);
-  
-  if(mass>=m_HeF && mass<=m_FGB) {
-    real c_bl = (1 - b45*pow(m_HeF_FGB, 0.4805428)) ;
-    t_bl = b45*pow(mass/m_FGB, 0.414) + c_bl*pow(log10(mass/m_FGB)/log10(m_HeF_FGB), b46);
-  }
-  else if(mass>m_FGB) {
-    t_bl = (1-smc.b(47,z))*f_bl(mass, mass_tot, z)/f_bl(m_FGB, m_FGB, z);
-  }
-    if (t_bl > 1.0){
-        cerr<<"WARNING in single_star::blue_phase_timescale: t_bl > 1"<<endl;
-    }
-    else if (t_bl < 0.0){
-        cerr<<"WARNING in single_star::blue_phase_timescale: t_bl < 0"<<endl;
-    }
-    
-  t_bl = min(1.0, max(0.0, t_bl));  
-  return t_bl;
-}
-
 
 
 //
@@ -2616,7 +2063,8 @@ real single_star::FGB_luminosity_core_mass_relation(const real time,
   real l_bgb = base_giant_branch_luminosity(mass, z);
   real D = sub_giant_D_factor(mass, z);
   real p = sub_giant_p_parameter(mass, z); 
-  real t_x = specific_time_boundary2(mass, z, A_H, t_bgb, l_bgb, D, p);
+  real l_x = FGB_x_luminosity(mass,z);
+  real t_x = specific_time_boundary(mass, A_H, t_bgb, l_bgb, D, p, l_x);
   real l_sg; 
   
   if (time  <= t_x){
@@ -2627,7 +2075,6 @@ real single_star::FGB_luminosity_core_mass_relation(const real time,
         l_sg = D * pow(arg, p/(1-p));      
   }
   else {
-      real l_x = FGB_x_luminosity(mass,z);
       real q = sub_giant_q_parameter(mass, z);
       real B = sub_giant_B_factor(mass);
       real t_inf2 = specific_time_limit(A_H, t_x,
@@ -2637,44 +2084,6 @@ real single_star::FGB_luminosity_core_mass_relation(const real time,
   }  
   return l_sg; 
 }
-
-#if 0
-//Eq.34AGB
-real single_star::AGB_luminosity_core_mass_relation(const real time, 
-						    const real mass, 
-						    const real z) {
-   real A_He = AGB_A_He_estimator();
-  real mc_co = 
-
-  real p = sub_giant_p_parameter(mass, z);
-  real D = sub_giant_D_factor(mass, z);
-  real t_bgb = base_giant_branch_time(mass, z);
-  real l_bgb = base_giant_branch_luminosity(mass, z);
-
-  real t_inf = specific_time_limit(A_H, t_bgb,
-				   D, l_bgb, p);
-
-  real arg = (p-1)*A_H*D*(t_inf-time);
-  real l_sg = D * pow(arg, p/(1-p));
-  return l_sg; 
-}
-#endif
-
-// //Eq.68 (or near)
-// real single_star::AGB_luminosity_core_mass_relation(const real m_core, 
-// 						    const real mass) {
-// 
-//   cerr << "AGB_core_mass_luminosity_relation(const real m_core)"
-//        << endl; 
-//   cerr << "For core-mass luminosty relation, THIS function should be used!"<<endl;
-// 
-//   real A_He = AGB_A_He_estimator();
-//   cerr<<"Using sub_giant_D_factor without metalicity as function parameter"<<endl;
-//   real D = sub_giant_D_factor(mass);
-//   real lum = D*m_core/A_He;
-//   
-//   return lum;
-// }
 
 real single_star::FGB_luminosity_core_mass_relation(const real m_core, 
 						    const real mass) {
@@ -2687,52 +2096,33 @@ real single_star::FGB_luminosity_core_mass_relation(const real m_core,
   return lum;
 }
 
-#if 0
-real single_star::sub_giant_integration_constant(const real mass, 
-						 const real z) {
-
-  cerr <<"call L_BGC from ::sub_giant_integration_con...()"<<endl;
-
-  real t_bgb = base_giant_branch_time(mass, z);
-  real l_bgb = base_giant_branch_luminosity(mass, z);
-  real A_H = sub_giant_Ah_estimator(mass);
-  real D = sub_giant_D_factor(mass, z);
-  real p = sub_giant_p_parameter(mass, z);
-  real q = sub_giant_q_parameter(mass, z);
-
-  real t_inf = t_bgb + pow(D/l_bgb, (p-1)/p)/(A_H*D*(p-1));
-
-  return t_inf;
-}
-#endif
-
 // Eq.39 see also Eq.34
-real single_star::sub_giant_core_mass(const real time,
-				      const real mass, 
-				      const real z) {
-  real t_bgb = base_giant_branch_time(mass, z);
-  real p = sub_giant_p_parameter(mass, z);
-  real D = sub_giant_D_factor(mass, z);
-  real l_bgb = base_giant_branch_luminosity(mass, z);
-  real A_H = sub_giant_Ah_estimator(mass);
-  real t_x = specific_time_boundary2(mass, z, A_H, t_bgb, l_bgb, D, p);
-
-  real m_core;
-  if(time<=t_x) {
-    real t_inf1 = specific_time_limit(A_H, t_bgb,
-				      D, l_bgb, p);
-    m_core = pow((p-1)*A_H*D*(t_inf1-time), 1./(1-p));
-  }
-  else {
-    real B = sub_giant_B_factor(mass);
-    real q = sub_giant_q_parameter(mass, z);
-    real l_x = FGB_x_luminosity(mass,z);
-    real t_inf2 = specific_time_limit(A_H, t_x,
-				      B, l_x, q);
-    m_core= pow((q-1)*A_H*B*(t_inf2-time), 1./(1-q));
-  }
-  return m_core;
-}
+//real single_star::sub_giant_core_mass(const real time,
+//				      const real mass, 
+//				      const real z) {
+//  real t_bgb = base_giant_branch_time(mass, z);
+//  real p = sub_giant_p_parameter(mass, z);
+//  real D = sub_giant_D_factor(mass, z);
+//  real l_bgb = base_giant_branch_luminosity(mass, z);
+//  real A_H = sub_giant_Ah_estimator(mass);
+//  real l_x = FGB_x_luminosity(mass,z);
+//  real t_x = specific_time_boundary(mass, z, A_H, t_bgb, l_bgb, D, p, l_x);
+//
+//  real m_core;
+//  if(time<=t_x) {
+//    real t_inf1 = specific_time_limit(A_H, t_bgb,
+//				      D, l_bgb, p);
+//    m_core = pow((p-1)*A_H*D*(t_inf1-time), 1./(1-p));
+//  }
+//  else {
+//    real B = sub_giant_B_factor(mass);
+//    real q = sub_giant_q_parameter(mass, z);
+//    real t_inf2 = specific_time_limit(A_H, t_x,
+//				      B, l_x, q);
+//    m_core= pow((q-1)*A_H*B*(t_inf2-time), 1./(1-q));
+//  }
+//  return m_core;
+//}
 
 // Eq.39 see also Eq.34
 real single_star::determine_core_mass(const real time,
@@ -2744,7 +2134,8 @@ real single_star::determine_core_mass(const real time,
   
   real D = sub_giant_D_factor(mass, z);
   real p = sub_giant_p_parameter(mass, z);
-  real t_x = specific_time_boundary2(mass, z, A, t_b, l_b, D, p);
+  real l_x = FGB_x_luminosity(mass,z);
+  real t_x = specific_time_boundary(mass, A, t_b, l_b, D, p, l_x);
   real m_core;
   if(time<=t_x) {
     real t_inf1 = specific_time_limit(A, t_b,
@@ -2754,7 +2145,6 @@ real single_star::determine_core_mass(const real time,
   else {
     real B = sub_giant_B_factor(mass);
     real q = sub_giant_q_parameter(mass, z);
-    real l_x = FGB_x_luminosity(mass,z);
     real t_inf2 = specific_time_limit(A, t_x,
 				      B, l_x, q);
     m_core= pow((q-1)*A*B*(t_inf2-time), 1./(1-q));
@@ -2768,166 +2158,75 @@ real single_star::determine_core_mass(const real time,
 // Core helium burning (horizontal branch)
 //
 
-
-//Not implemented yet (SPZ: 28 May 2001)
-// Eq.47
-//OBSOLETE FUNCTION
-real single_star::horizontal_branch_mass_radius_proportionality(const real mass,
-								const real z) {
-  real zeta = get_zeta(z);
-
-  real hbmrp = 0.30506 + zeta*(0.0805 
-		       + zeta*(0.0897 
-                       + zeta*(0.0878 
-                       + zeta*0.02222)));
-
-  return hbmrp;
-}
-
 //Eq.37
-real single_star::sub_giant_luminosity(const real time,
-				       const real mass, 
-				       const real z) {
-
-  real A_H = sub_giant_Ah_estimator(mass);
-  real D = sub_giant_D_factor(mass, z);
-  real p = sub_giant_p_parameter(mass, z);
-  real t_bgb = base_giant_branch_time(mass, z);
-  real l_bgb = base_giant_branch_luminosity(mass, z);
-  real t_inf = specific_time_limit(A_H, t_bgb,
-				   D, l_bgb, p);
-
-  real l_sg = D * pow((p-1)*A_H*D*(t_inf-time), p/(1-p));
-  return l_sg;
-}
-
-#if 0
-//Eq.40
-real single_star::specific_lower_time_limit(const real mass,
-					    const real z,
-					    const real A) {
-
-  real D = sub_giant_D_factor(mass, z);
-  real t_bgb = base_giant_branch_time(mass, z);
-  real l_bgb = base_giant_branch_luminosity(mass, z);
-  real p = sub_giant_p_parameter(mass, z);
- 
-  real t_inf1 = t_bgb + pow(D/l_bgb, (p-1)/p) / ((p-1)*A*D);
-
-  return t_inf1;
-}
-#endif
+//real single_star::sub_giant_luminosity(const real time,
+//				       const real mass, 
+//				       const real z) {
+//
+//  real A_H = sub_giant_Ah_estimator(mass);
+//  real D = sub_giant_D_factor(mass, z);
+//  real p = sub_giant_p_parameter(mass, z);
+//  real t_bgb = base_giant_branch_time(mass, z);
+//  real l_bgb = base_giant_branch_luminosity(mass, z);
+//  real t_inf = specific_time_limit(A_H, t_bgb,
+//				   D, l_bgb, p);
+//
+//  real l_sg = D * pow((p-1)*A_H*D*(t_inf-time), p/(1-p));
+//  return l_sg;
+//}
 
 // Eq.41
 real single_star::specific_time_boundary(const real mass,
-                                         const real z,
-                                         const real A,
-                                         const real t_b,
-                                         const real l_b) { 
-    
-    real D = sub_giant_D_factor(mass, z);
-    real p = sub_giant_p_parameter(mass, z);
-    
-    real t_inf1 = specific_time_limit(A, t_b,
-                                      D, l_b, p);
-    real l_x = FGB_x_luminosity(mass, z);
-    real t_x = t_inf1 - (t_inf1-t_b)*pow(l_b/l_x, (p-1.)/p);
-    return t_x;
-}
-// Eq.41
-real single_star::specific_time_boundary2(const real mass,
-                                         const real z,
                                          const real A,
                                          const real t_b,
                                          const real l_b,
                                          const real D, 
-                                         const real p) { 
+                                         const real p,
+                                         const real l_x) { 
     
     real t_inf1 = specific_time_limit(A, t_b,
                                       D, l_b, p);
-    real l_x = FGB_x_luminosity(mass, z);
+//    real l_x = FGB_x_luminosity(mass, z);
     real t_x = t_inf1 - (t_inf1-t_b)*pow(l_b/l_x, (p-1.)/p);
     return t_x;
 }
-
-#if 0
-// Eq.42 
-real single_star::specific_upper_time_limit(const real mass,
-					    const real z) {
-
-  real t_x = specific_time_boundary(mass, z);
-  real B = sub_giant_B_factor(mass);
-  real q = sub_giant_q_parameter(mass, z);
-  real A_H = sub_giant_Ah_estimator(mass);
-  real l_x = helper_x_luminosity(mass, z);
-  real t_x = specific_time_boundary(mass, z, A_H,
-				  t_bgb,
-				  l_bgb) { 
- 
-
-  PRC(t_x);PRC(B);PRC(q);PRC(A_H);PRL(l_x);
-
-  cerr <<"Used Lx and Tx in specific_upper_time_limit(const real mass,..."<<endl;
-
-  real t_inf2 = t_x + pow(B/l_x, (q-1)/q)
-              /       ((q-1)*B*A_H);
-
-  return t_inf2;
-}
-#endif
-
-#if 0
-real single_star::specific_upper_time_limit(const real mass,
-					    const real z, 
-					    const real A,
-					    const real t_b, 
-					    const real l_b) {
-
-  real p = sub_giant_p_parameter(mass, z);
-  real l_x = helper_x_luminosity(mass, z);
- 
-  real tau_1 = specific_lower_time_limit(mass, z, A);
-  real t_x = tau_1 - (tau_1 - t_b)*pow(l_b/l_x, (p-1)/p);
-
-  return t_x;
-}
-#endif
-
 
 
 // Eq.43
 real single_star::helium_ignition_time(const real mass, 
 				       const real z) {
 
-  real l_HeI = helium_ignition_luminosity(mass, z);
-  real l_x = FGB_x_luminosity(mass, z);
-
-  real A_H = sub_giant_Ah_estimator(mass);
-  real t_bgb = base_giant_branch_time(mass, z);
-  real l_bgb = base_giant_branch_luminosity(mass, z);
-  real D = sub_giant_D_factor(mass, z);
-  real p = sub_giant_p_parameter(mass, z);
-    
   real t_HeI;
-  if (l_x>=l_HeI) {
-    real t_inf1 = specific_time_limit(A_H, t_bgb,
-				      D, l_bgb, p);
-    
-    t_HeI = t_inf1 - pow(D/l_HeI, (p-1.)/p) / ((p-1.)*A_H*D);
+  real t_bgb = base_giant_branch_time(mass, z);
+  if( mass > helium_ignition_mass(z)){
+        t_HeI = t_bgb;
   }
-  else {
-    real B = sub_giant_B_factor(mass);
-    real q = sub_giant_q_parameter(mass, z);
-    real t_x = specific_time_boundary2(mass, z, A_H, t_bgb, l_bgb, D, p);
-    real t_inf2 = specific_time_limit(A_H, t_x,
-				      B, l_x, q);
+  else{
+      real l_HeI = helium_ignition_luminosity(mass, z);
+      real l_x = FGB_x_luminosity(mass, z);
+
+      real A_H = sub_giant_Ah_estimator(mass);
+      real l_bgb = base_giant_branch_luminosity(mass, z);
+      real D = sub_giant_D_factor(mass, z);
+      real p = sub_giant_p_parameter(mass, z);
+        
+      if (l_x>=l_HeI) {
+        real t_inf1 = specific_time_limit(A_H, t_bgb,
+                          D, l_bgb, p);
+        
+        t_HeI = t_inf1 - pow(D/l_HeI, (p-1.)/p) / ((p-1.)*A_H*D);
+      }
+      else {
+        real B = sub_giant_B_factor(mass);
+        real q = sub_giant_q_parameter(mass, z);
+        real t_x = specific_time_boundary(mass, A_H, t_bgb, l_bgb, D, p, l_x);
+        real t_inf2 = specific_time_limit(A_H, t_x,
+                          B, l_x, q);
 
 
-    t_HeI = t_inf2 - pow(B/l_HeI, (q-1.)/q) / ((q-1.)*A_H*B);
-  }
-  if(mass > helium_ignition_mass(z)){
-      t_HeI = t_bgb;
-  }
+        t_HeI = t_inf2 - pow(B/l_HeI, (q-1.)/q) / ((q-1.)*A_H*B);
+      }
+  }  
   return t_HeI;
 }
 
@@ -2970,105 +2269,6 @@ real single_star::giant_branch_core_mass(const real time,
     m_core = mc_bgb + tau * (mc_HeI - mc_bgb);
   
   return m_core;
-}
-
-real single_star::helper_x_luminosity(const real mass, 
-				      const real z) {
-
-  real l_x;
-  if (intermediate_mass_star(mass, z)){
-    l_x = minimum_horizontal_branch_luminosity(mass, z);
-  }
-  else if(high_mass_star(mass, z)){
-    l_x = helium_ignition_luminosity(mass, z);
-  }
-  else{
-    l_x = base_horizontal_branch_luminosity(mass, z);
-  }
-
-  return l_x;
-}
-
-// Eq.60
-real single_star::helper_x_radius(const real mass, 
-				  const real mass_tot, const real z) {
-
-    real r_x;
-    if (low_mass_star(mass, z)) {
-        r_x = base_horizontal_branch_radius(mass, mass_tot, z);
-    }
-    else if (intermediate_mass_star(mass, z)) {
-        real l_mHe = minimum_horizontal_branch_luminosity(mass, z);
-        r_x = giant_branch_radius(l_mHe, mass_tot, z);
-    }
-    else {
-        r_x = helium_ignition_radius(mass, mass_tot, z);
-    }
-    return r_x;
-}
-
-real single_star::helper_y_luminosity(const real mass, 
-				      const real mass_tot, const real z) {
-
-    real l_y;
-    real m_FGB = helium_ignition_mass(z);
-    real l_bagb = base_AGB_luminosity(mass, z);
-  
-    if(mass<m_FGB){
-        l_y = l_bagb;
-    }
-    else {       
-        real tau_y = relative_age_at_end_of_blue_phase(mass, mass_tot, z);
-        real tau_x = relative_age_at_start_of_blue_phase(mass, mass_tot, z);
-        
-        //safety
-        if(tau_y>=tau_x && tau_y<=1) {
-          cerr <<"In helper_y_luminosity(): tau ok"<<endl;
-        } 
-        else{
-          cerr<<"In helper_y_luminosity(): tau not ok"<<endl;
-        }
-        
-        real r_mHe = minimum_blue_loop_radius(mass, mass_tot, z);
-        real r_x = helper_x_radius(mass, mass_tot, z);
-        cerr<<"r_x in helper_y_luminosity needs mass_tot"<<endl;
-        real xi = min(2.5, max(0.4, r_mHe/r_x));
-        real lambda = pow((tau_y - tau_x)/(1 - tau_x), xi);
-        real l_x = helper_x_luminosity(mass, z);
-        l_y = l_x*pow(l_bagb/l_x, lambda); 
-  }
-  return l_y;
-}
-
-real single_star::helper_y_radius(const real mass, 
-				  const real mass_tot, const real z) {
-
-    real l_y = helper_y_luminosity(mass, mass_tot, z);
-    real r_y = AGB_radius(l_y, mass, mass_tot, z);
-
-    return r_y;
-}
- 
-//Eq. Tau_x
-real single_star::relative_age_at_start_of_blue_phase(const real mass, 
-						      const real mass_tot, const real z) {
-
-  real tau_x = 0;
-  if(intermediate_mass_star(mass, z))
-    tau_x = 1 - blue_phase_timescale(mass, mass_tot, z);
-
-  return tau_x;
-}
-
-//Eq. Tau_y
-real single_star::relative_age_at_end_of_blue_phase(const real mass, 
-						    const real mass_tot, const real z) {
-
-  real tau_y = 1;
-  if(high_mass_star(mass, z))
-    tau_y = blue_phase_timescale(mass, mass_tot, z);
-
-  return tau_y;
 }
 
 
@@ -3114,121 +2314,6 @@ real single_star::core_helium_burning_timescale() {
   return t_cHe;
 }
 
-// Eq.61
-real single_star::core_helium_burning_luminosity(const real time, 
-						 const real mass, 
-                         const real mass_tot,
-						 const real z) {
-
-  real t_HeI = helium_ignition_time(mass, z); //#eq.43
-  real t_He = core_helium_burning_timescale(mass, z);
-  real tau = (time - t_HeI)/t_He;
-  real tau_x = relative_age_at_start_of_blue_phase(mass, mass_tot, z);
-  real l_x = helper_x_luminosity(mass, z);
-  real l_cHe;
-  
-  //tau can be slightly larger than one 
-  //as t_He is precise to 1e-17 and t_HeI to 1e-16 
-  if (tau > 1.0 && tau < 1.0 + cnsts.safety(tiny)) {
-      tau=1.0;
-  }
-  
-  if(tau>=tau_x && tau<=1.0) {
-      real r_mHe = minimum_blue_loop_radius(mass, mass_tot, z);
-      real r_x = helper_x_radius(mass, mass_tot,z);
-      cerr<<"r_x in  core_helium_burning_luminosity needs mass_tot"<<endl;
-      real m_FGB = helium_ignition_mass(z);
-      
-      
-      if (mass >= max(12.0, m_FGB) && abs(r_x-r_mHe) >cnsts.safety(tiny)){
-                cerr<<"warning in single_star::l_cheb"<<endl;
-                cerr<<"erase this function"<<endl;
-      }
- 
-    real xi = min(2.5, max(0.4, r_mHe/r_x));
-    real lambda = pow((tau - tau_x)/(1 - tau_x), xi);
-    real l_bagb = base_AGB_luminosity(mass, z);
-    l_cHe = l_x*pow(l_bagb/l_x, lambda);     
-  }
-  else if (tau>=0.0 && tau<tau_x) {
-      real lambda = pow((tau_x - tau)/tau_x, 3);
-      real l_HeI = helium_ignition_luminosity(mass, z);
-      l_cHe = l_x*pow(l_HeI/l_x, lambda); 
-  }
-  else {
-      cerr << "WARNING: tau not within allowed interval [0, 1]"<<endl;
-      cerr << "in single_star::core_helium_burning_luminosity(...)"<<endl;
-      cerr.precision(HIGH_PRECISION);
-      PRI(4);PRC(time);PRC(tau_x);PRL(tau);
-      PRC(t_HeI);PRL(t_He);
-      cerr.precision(STD_PRECISION);
-      cerr << flush;
-      exit(-1);
-  }
-
-  return l_cHe;
-}
-
-// Eq.64
-real single_star::core_helium_burning_radius(const real time, 
-					     const real mass, 
-                         const real mass_tot,                    
-					     const real z,
-                         const real lum) {
-    real t_HeI = helium_ignition_time(mass, z); //#eq.43    
-    real t_He = core_helium_burning_timescale(mass, z);
-    real tau = (time - t_HeI)/t_He;
-    real tau_x = relative_age_at_start_of_blue_phase(mass, mass_tot, z);
-    real tau_y = relative_age_at_end_of_blue_phase(mass, mass_tot, z);
-    
-    //tau can be slightly larger than one 
-    //as t_He is precise to 1e-17 and t_HeI to 1e-16 
-    if (tau >1.0 && tau < 1.0+cnsts.safety(tiny)){
-        tau = 1.0;
-    }
-    
-    real r_cHe;
-    if (tau>=0 && tau<tau_x) {
-        r_cHe = giant_branch_radius(lum, mass_tot, z);
-    } 
-    else if(tau>=tau_y && tau<=1.0) {
-        r_cHe = AGB_radius(lum, mass, mass_tot, z);
-    }
-    else if (tau>=tau_x && tau<tau_y) {
-        real r_mHe = minimum_blue_loop_radius(mass, mass_tot, z);
-        real r_x = helper_x_radius(mass, mass_tot, z);
-        real r_y = helper_y_radius(mass, mass_tot, z);
-        real dt = tau_y-tau_x;
-        real r_min, rho;
-        
-        if (mass >= max(12.0, helium_ignition_mass(z)) && abs(r_x-r_mHe) > cnsts.safety(tiny)){
-                cerr<<"warning in single_star::r_cheb"<<endl;
-                cerr<<"erase this function"<<endl;
-        }
-        cerr<<"what the hell do I mean with previous line????"<<endl;
-        
-        if (r_mHe < r_x){
-            r_min = r_mHe;
-            rho = pow(log(r_y/r_min), ONE_THIRD) * (tau - tau_x)/dt
-            - pow(log(r_x/r_min), ONE_THIRD) * (tau_y - tau)/dt;
-        }
-        else {
-            r_min = r_x;
-            rho = pow(log(r_y/r_min), ONE_THIRD) * (tau - tau_x)/dt;   
-        }
-        r_cHe = r_min*exp(pow(abs(rho), 3));
-    }
-    else {
-        cerr << "WARNING: tau not within allowed interval [0, 1]"<<endl;
-        cerr << "in single_star::core_helium_burning_radius(...)"<<endl;
-        PRI(4);PRC(time);PRC(tau_x);PRC(tau_y);PRL(tau);
-        cerr << flush;
-        exit(-1);
-    }
-
-    return r_cHe;
-}
-
 // Eq.66
 real single_star::base_AGB_core_mass(const real mass, const real z) {
 
@@ -3245,7 +2330,7 @@ real single_star::base_AGB_core_mass(const real mass, const real z) {
 real single_star::helium_ignition_core_mass(const real mass, 
 					    const real z) {
 
-  cerr << "real single_star::helium_ignition_core_mass(...)"<<endl;
+
 
   real mc_HeI;
   if (low_mass_star()) {
@@ -3269,51 +2354,10 @@ real single_star::helium_ignition_core_mass(const real mass,
   return mc_HeI;
 }
 
-// Eq.67
-real single_star::core_helium_burning_core_mass(const real time,
-						const real mass, 
-						const real z) {
-
-  real mc_bagb = base_AGB_core_mass(mass, z);
-  real mc_HeI = helium_ignition_core_mass(mass, z);
-
-  real t_HeI = helium_ignition_time(mass, z); 
-  real t_He  = core_helium_burning_timescale(mass, z);
-  real tau = (time - t_HeI)/t_He;
-
-  real m_core = (1-tau)*mc_HeI + tau*mc_bagb;
-  return m_core;
-}
-
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Shell helium burning and exhausted Hydrogen core (AGB)
 //
-
-#if 0
-// Eq.42 
-real single_star::specific_AGB_upper_time_limit(const real mass,
-						const real z) {
-
-  real A_H = sub_giant_Ah_estimator(mass);
-  real B = sub_giant_B_factor(mass);
-  real q = sub_giant_q_parameter(mass, z);
-  real t_bagb = ;
-  real l_bagb = ;
-  real t_x = specific_time_boundary(mass, z, A_H,
-				    t_bagb, l_bagb);
- 
-
-  real l_x = helper_x_luminosity(mass, z);
-
-  cerr <<"Used Lx and Tx in specific_upper_time_limit(const real mass,..."<<endl;
-
-  real t_inf2 = t_x + pow(B/l_x, (q-1)/q)
-              /       ((q-1)*B*A_H);
-
-  return t_inf2;
-}
-#endif
 
 // Eq.36, Eq.42, Eq.70 
 real single_star::specific_time_limit(const real A,
@@ -3323,125 +2367,17 @@ real single_star::specific_time_limit(const real A,
 				      const real pq) {
 
   real t_inf = t_min + pow(DB/l_min, (pq-1)/pq)/((pq-1)*DB*A);
-
   return t_inf;
 }
-
-#if 0
-real single_star::specific_AGB_time_boundary(const real mass,
-					 const real z) {
-
-  real t_bgb = base_giant_branch_time(mass, z);
-  real l_bgb = base_giant_branch_luminosity(mass, z);
-  real p = sub_giant_p_parameter(mass, z);
-  real l_x = helper_x_luminosity(mass, z);
-  real A_He = AGB_A_He_estimator();
-
-  real tau_1 = specific_lower_time_limit(mass, z, A_He);
-
-  real t_x = tau_1 - (tau_1 - t_bgb)*pow(l_bgb/l_x, (p-1)/p);
-
-  return t_x;
-}
-#endif
 
 //Eq.68
 real single_star::AGB_A_He_estimator() {
 
     real A_He = 7.66E-5;
-    A_He=8.E-5;
+    //A_He=8.E-5;
     return A_He;
 }
 
-real single_star::TPAGB_AH_He_estimator() {
-
-  real AH_He = 1.27E-5;
-
-  return AH_He;
-}
-
-// Eq.69
-real single_star::dredge_up_core_mass(const real mass, 
-				      const real z) {
-
-  real mc_bagb = base_AGB_core_mass(mass, z);
-  real mc_du;
-  if(mc_bagb > 0.8 && mc_bagb < 2.25){
-      mc_du = 0.44*mc_bagb + 0.448;
-  }
-  else{
-      mc_du = mc_bagb;
-  }
-  return mc_du;
-}
-
-// Eq.70
-real single_star::dredge_up_time(const real mass, const real z) {
-
-  real t_du;   
-  real l_du = dredge_up_luminosity(mass, z);
-  real l_x = FGB_x_luminosity(mass, z);
-  real t_bagb = base_AGB_time(mass, z);
-  real l_bagb = base_AGB_luminosity(mass, z);
-  real A_He = AGB_A_He_estimator();    // [Msun/(Lsun Myear)]
-  real p = sub_giant_p_parameter(mass, z);
-  real D = sub_giant_D_factor(mass, z);
-    
-  if(l_du<=l_x) {
-    real t_inf1 = specific_time_limit(A_He, t_bagb,
-				      D, l_bagb, p);
-    t_du = t_inf1 - pow(D/l_du, (p-1)/p)/((p-1)*D*A_He);
-  }
-  else {
-    real B = sub_giant_B_factor(mass);
-    real q = sub_giant_q_parameter(mass, z);
-    real t_x=specific_time_boundary2(mass, z, A_He, t_bagb, l_bagb, D, p);
-    real t_inf2 = specific_time_limit(A_He, t_x, B, l_x, q);
-    t_du = t_inf2 - pow(B/l_du, (q-1)/q)/((q-1)*B*A_He);
-  }
-  return t_du;
-}
-
-//Eq.70
-real single_star::dredge_up_luminosity(const real mass, const real z) {
-
-  real mc_du = dredge_up_core_mass(mass, z);
-  real l_du = AGB_luminosity(mc_du, mass, z);
-
-  return l_du;
-}
-
-#if 0
-// Eq.70  see also Eq.42 
-real single_star::terminal_pulse_time(const real mass,
-				      const real z) {
-
- 
-  real t_x = specific_time_boundary(mass, z);
-  real B = sub_giant_B_factor(mass);
-  real q = sub_giant_q_parameter(mass, z);
-  real A_He = AGB_A_He_estimator();
-
-  real l_du = dredge_up_luminosity(mass, z);
-  real t_du = dredge_up_time(mass, z);
-
-  real t_inf2 = t_du + pow(B/l_du, (q-1)/q)/((q-1)*B*A_He);
-  return t_inf2;
-}
-#endif
-
-//Eq.37AGB
-real single_star::AGB_luminosity(const real m_core,
-				 const real mass, 
-				 const real z) {
-  real B = sub_giant_B_factor(mass);
-  real D = sub_giant_D_factor(mass, z);
-  real p = sub_giant_p_parameter(mass, z);
-  real q = sub_giant_q_parameter(mass, z);
-  real l_agb = min(B*pow(m_core, q), D*pow(m_core, p));
-
-  return l_agb;
-}
 
 // Eq.74
 real single_star::AGB_radius(const real lum, const real mass,
@@ -3476,16 +2412,6 @@ real single_star::AGB_radius(const real lum, const real mass,
   return r_agb;
 }
 
-// Eq.75
-real single_star::maximum_AGB_core_mass(const real mass,
-					const real z) {
-
-    real mc_bagb = base_AGB_core_mass(mass, z);
-    real m_Ch = cnsts.parameters(Chandrasekar_mass);
-    real mc_max = max(m_Ch, 0.773*mc_bagb - 0.35);
-    return mc_max;
-}
-
 
 real single_star::base_AGB_time(const real mass, const real z) {
 
@@ -3495,6 +2421,180 @@ real single_star::base_AGB_time(const real mass, const real z) {
     return t_bagb;
     
 }
+
+
+real single_star::TAGB_time(const real mass, const real z) {
+    real t_tagb;
+    real mc_max = maximum_AGB_core_mass(mass,z);
+    
+    //core should minimally grow 5% on the AGB
+    real A_He = AGB_A_He_estimator();
+    real t_bagb = base_AGB_time(mass, z);
+    real l_bagb = base_AGB_luminosity(mass, z);
+    real mc_bagb = determine_core_mass(t_bagb, mass, z, 
+                                       A_He, t_bagb, l_bagb);
+    mc_max = max(mc_max, 1.05*mc_bagb);
+    
+    real mc_du = dredge_up_core_mass(mass, z);
+    real m_x = FGB_x_mass(mass,z);
+    real D = sub_giant_D_factor(mass, z); 
+    real p = sub_giant_p_parameter(mass, z);
+    
+    
+    if (mc_max <= mc_du) {
+        real t_bagb = base_AGB_time(mass, z);
+        real A_He = AGB_A_He_estimator();
+        real l_bagb = base_AGB_luminosity(mass, z);
+        if (mc_max <= m_x){
+            real t_inf1 = specific_time_limit(A_He, t_bagb,
+                                              D, l_bagb, p);
+            t_tagb = t_inf1 - pow(mc_max,1-p)/(p-1)/A_He/D; 
+        }
+        else{
+            real B = sub_giant_B_factor(mass);
+            real q = sub_giant_q_parameter(mass, z);
+            real l_x = FGB_x_luminosity(mass,z);
+            real t_x = specific_time_boundary(mass, A_He, t_bagb, l_bagb, D, p, l_x);
+            real t_inf2 = specific_time_limit(A_He, t_x,
+                                              B, l_x, q);
+            
+            t_tagb = t_inf2 - pow(mc_max, 1-q)/(q-1)/A_He/B; 
+        }
+    }
+    else{
+        //stop evolving star if the core mass reaches
+        // m_Ch = cnsts.parameters(Chandrasekar_mass) or
+        // mc_ignite_CO = 0.773*mc_bagb - 0.35 or
+        // get_total_mass()
+        mc_max = min(mc_max, get_total_mass());
+        
+        real lambda =  min(0.9, 0.3+0.001*pow(mass, 5)); // Eq.73
+        mc_max = (mc_max - lambda* mc_du) / (1.0 - lambda);
+        
+        real AH_He = TPAGB_AH_He_estimator();
+        real t_du = dredge_up_time(mass, z);
+        real l_du = AGB_luminosity(mc_du, mass, z); 
+        real l_x = FGB_x_luminosity(mass,z);
+        
+        if (l_du <= l_x) {
+            if (mc_max <= m_x){
+                real t_inf1 = specific_time_limit(AH_He, t_du,
+                                                  D, l_du, p);
+                t_tagb = t_inf1 - pow(mc_max,1-p)/(p-1)/AH_He/D;  
+            }
+            else{
+                real B = sub_giant_B_factor(mass);
+                real q = sub_giant_q_parameter(mass, z);
+                
+                real l_x = FGB_x_luminosity(mass,z);            
+                real t_x = specific_time_boundary(mass, AH_He, t_du, l_du, D, p, l_x);
+                real t_inf2 = specific_time_limit(AH_He, t_x,
+                                                  B, l_x, q);
+                t_tagb = t_inf2 - pow(mc_max, 1-q)/(q-1)/AH_He/B; 
+            }
+        }
+        else {
+            real B = sub_giant_B_factor(mass);
+            real q = sub_giant_q_parameter(mass, z);
+            real t_inf2 = specific_time_limit(AH_He, t_du,
+                                              B, l_du, q);
+            t_tagb = t_inf2 - pow(mc_max, 1-q)/(q-1)/AH_He/B;
+            
+            if(mc_max<=m_x) {
+                cerr<<"ERROR in super_giant::TAGB_time"<<endl;
+                cerr<<"mc_max <= m_x need tinf1"<<endl;
+            }
+            
+        }
+    }
+    return max(t_bagb,t_tagb);
+}
+
+
+// Eq.69
+real single_star::dredge_up_core_mass(const real mass, 
+                                      const real z) {
+    
+    real mc_bagb = base_AGB_core_mass(mass, z);
+    real mc_du;
+    if(mc_bagb > 0.8 && mc_bagb < 2.25){
+        mc_du = 0.44*mc_bagb + 0.448;
+    }
+    else{
+        mc_du = mc_bagb;
+    }
+    return mc_du;
+}
+
+
+real single_star::TPAGB_AH_He_estimator() {
+    
+    real AH_He = 1.27E-5;
+    
+    return AH_He;
+}
+
+
+// Eq.75
+real single_star::maximum_AGB_core_mass(const real mass,
+                                        const real z) {
+    
+    real mc_bagb = base_AGB_core_mass(mass, z);
+    real m_Ch = cnsts.parameters(Chandrasekar_mass);
+    real mc_max = max(m_Ch, 0.773*mc_bagb - 0.35);
+    return mc_max;
+}
+
+//Eq.37AGB
+real single_star::AGB_luminosity(const real m_core,
+                                 const real mass, 
+                                 const real z) {
+    real B = sub_giant_B_factor(mass);
+    real D = sub_giant_D_factor(mass, z);
+    real p = sub_giant_p_parameter(mass, z);
+    real q = sub_giant_q_parameter(mass, z);
+    real l_agb = min(B*pow(m_core, q), D*pow(m_core, p));
+    
+    return l_agb;
+}
+
+
+// Eq.70
+real single_star::dredge_up_time(const real mass, const real z) {
+    
+    real t_du;   
+    real l_du = dredge_up_luminosity(mass, z);
+    real l_x = FGB_x_luminosity(mass, z);
+    real t_bagb = base_AGB_time(mass, z);
+    real l_bagb = base_AGB_luminosity(mass, z);
+    real A_He = AGB_A_He_estimator();    // [Msun/(Lsun Myear)]
+    real p = sub_giant_p_parameter(mass, z);
+    real D = sub_giant_D_factor(mass, z);
+    
+    if(l_du<=l_x) {
+        real t_inf1 = specific_time_limit(A_He, t_bagb,
+                                          D, l_bagb, p);
+        t_du = t_inf1 - pow(D/l_du, (p-1)/p)/((p-1)*D*A_He);
+    }
+    else {
+        real B = sub_giant_B_factor(mass);
+        real q = sub_giant_q_parameter(mass, z);
+        real t_x=specific_time_boundary(mass, A_He, t_bagb, l_bagb, D, p, l_x);
+        real t_inf2 = specific_time_limit(A_He, t_x, B, l_x, q);
+        t_du = t_inf2 - pow(B/l_du, (q-1)/q)/((q-1)*B*A_He);
+    }
+    return t_du;
+}
+
+//Eq.70
+real single_star::dredge_up_luminosity(const real mass, const real z) {
+    
+    real mc_du = dredge_up_core_mass(mass, z);
+    real l_du = AGB_luminosity(mc_du, mass, z);
+    
+    return l_du;
+}
+
 
 
 //
@@ -3558,37 +2658,24 @@ real single_star::terminal_helium_main_sequence_luminosity(const real mass){
     return L_hezams * (1.45 + alpha);
 }
 
-    
-    
+
 //Eq. 84
-real single_star::helium_giant_luminosity_core_mass_relation(const real time, const real mass, const real z){
-    
-    real A_He = AGB_A_He_estimator();
-    real t_Hems = helium_main_sequence_time_for_solar_metalicity(mass);
-    real l_tHems = terminal_helium_main_sequence_luminosity(mass);
-    real p = helium_giant_p_parameter();
-    real D = helium_giant_D_factor(mass);
-    real t_x = specific_time_boundary2(mass, z, A_He, t_Hems, l_tHems, D, p);
-    real l_He;
-    
-    if (time  <= t_x){
-        real t_inf1 = specific_time_limit(A_He, t_Hems,
-                                          D, l_tHems, p);
-        real arg = (p-1)*A_He*D*(t_inf1-time);   
-        l_He = D * pow(arg, p/(1-p));      
+real single_star::helium_giant_luminosity_from_core_mass(const real m_core, const real mass, const real z){
+    real l_He; 
+    real m_x = helium_giant_x_mass(mass);
+    if (m_core  <= m_x){
+        real p = helium_giant_p_parameter();
+        real D = helium_giant_D_factor(mass);
+        l_He = D * pow(m_core, p);      
     }
-    else {
-        real l_x = helium_giant_x_luminosity(mass);
-        
+    else {        
         real q = helium_giant_q_parameter();
         real B = helium_giant_B_factor();
-        real t_inf2 = specific_time_limit(A_He, t_x,
-                                          B, l_x, q);
-        real arg = (q-1)*A_He*B*(t_inf2-time);   
-        l_He = B * pow(arg, q/(1-q));      
+        l_He = B * pow(m_core, q);
     }  
     return l_He; 
 }
+
 
 //Eq.85
 real single_star::helium_giant_radius(const real lum, const real mass, const real mass_tot, const real z){
@@ -3648,23 +2735,6 @@ real single_star::helium_giant_q_parameter() {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Small envelope behaviour 
 //
-//    
-//real single_star::small_envelope_core_luminosity(){
-//    cerr<<"single_star::small_envelope_core() should not be used"<<endl;  
-//    return 0;  
-//}
-//
-//real single_star::small_envelope_core_radius(){
-//    cerr<<"single_star::small_envelope_core_radius() should not be used"<<endl;  
-//    return 0;  
-//}
-//    
-//    
-//real single_star::helium_core_radius(){
-//    cerr<<"single_star::helium_core_radius() should not be used"<<endl;  
-//    return 0;  
-//}
-
     
 void single_star::small_envelope_perturbation(){
     real mu = small_envelope_mu(luminosity, get_total_mass(), core_mass);
@@ -3772,34 +2842,24 @@ real single_star::update_core_and_envelope_mass(const real m_core) {
   
   bool successful_update = false;
   real dm_core = m_core-core_mass;
-  real dm_tot = get_total_mass()-m_core;
-    if(m_core<=core_mass || m_core>get_total_mass()) {
-        cerr<<"WARNING single_star::update_core_and_envelope_mass: transition not smooth"<<endl;
-    }
 
-  if (dm_core >= 0.0 - cnsts.safety(tiny) && dm_tot >= 0.0-cnsts.safety(tiny)){
+  if (m_core > get_total_mass()){
+    dm_core = get_total_mass()-core_mass;
+    cerr << "single_star::update_core_and_envelope_mass limits new core mass to total mass." << endl;
+  }
+    
+  if (dm_core >= 0.0 - cnsts.safety(tiny)){
     envelope_mass -= dm_core; 
     core_mass += dm_core;
-
     successful_update = true;
   }
   else {
-
-    cerr << "WARNING: void update_core_and_envelope_mass(m_core)"<< endl;
-    if(m_core < core_mass) {
+      cerr << "WARNING: void update_core_and_envelope_mass(m_core)"<< endl;
       cerr << "    old core mass exceeds new core mass." << endl;
-      PRC(m_core);
+      PRC(m_core);PRC(core_mass);PRL(get_total_mass());
       dump(cerr, false);
       exit(-1);
-    }
-    else {
-      cerr << "    new core mass exceeds total mass." << endl;
-      PRC(m_core);
-      dump(cerr, false);
-      exit(-1);
-    }
   }
-
   return successful_update;
 }
 
@@ -3807,23 +2867,16 @@ real single_star::update_core_and_envelope_mass_TPAGB(const real m_core) {
     //difference with update_core_and_envelope_mass is in the fact that on the TPAGB
     // the core mass can decrease during the second dredge_up 
     bool successful_update = false;
-    real dm_tot = get_total_mass()-m_core;
-    if(m_core>get_total_mass()) {
-        cerr<<"WARNING single_star::update_core_and_envelope_TPAGB: transition not smooth"<<endl;
+    real dm_core = m_core - core_mass;
+    
+    if (m_core > get_total_mass()){
+        dm_core = get_total_mass() - core_mass;
+        cerr << "single_star::update_core_and_envelope_mass limits new core mass to total mass." << endl;
     }
-    if (dm_tot >= 0.0 - cnsts.safety(tiny)){
-        real dm_core = m_core - core_mass;
-        envelope_mass -= dm_core; 
-        core_mass += dm_core;
-        successful_update = true;
-    }
-    else {
-        cerr << "WARNING: void update_core_and_envelope_mass(m_core)"<< endl;
-        cerr << "    new core mass exceeds total mass." << endl;
-        PRC(m_core);
-        dump(cerr, false);
-        exit(-1);
-    }
-
+    
+    envelope_mass -= dm_core; 
+    core_mass += dm_core;
+    successful_update = true;
+    
     return successful_update;
 }

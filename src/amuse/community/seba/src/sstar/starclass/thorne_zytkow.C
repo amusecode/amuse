@@ -41,7 +41,11 @@ thorne_zytkow::thorne_zytkow(main_sequence & m) : single_star(m) {
       real t_ms = main_sequence_time();
       real t_giant = t_ms + hertzsprung_gap_time()
                           + base_giant_branch_time();
-      real t_he = helium_giant_time(t_ms, metalicity);
+    cerr<<"helium_giant_time not in use anymore, find equivalent"<<endl;  
+    //real t_he = helium_giant_time(t_ms, metalicity);
+    real t_he = t_giant;
+    
+    
       relative_age = t_giant + t_he;
       adjust_next_update_age();
 

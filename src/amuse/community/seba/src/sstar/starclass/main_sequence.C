@@ -22,8 +22,8 @@ main_sequence::main_sequence(proto_star & p) : single_star(p) {
        last_update_age = 0;
        relative_age = 0;
        relative_mass = envelope_mass + core_mass;
-       envelope_mass = relative_mass;// - 0.01;
-       core_mass = 0.0; //0.01;
+       envelope_mass = relative_mass; //- 0.01;
+       core_mass = 0.0;//0.01;
     
        adjust_next_update_age();
        update_wind_constant();
@@ -32,6 +32,7 @@ main_sequence::main_sequence(proto_star & p) : single_star(p) {
        update();
 
        post_constructor();
+
 }
 
 void main_sequence::update() {
@@ -45,7 +46,6 @@ void main_sequence::update() {
 }
 
 void main_sequence::update_wind_constant() {
-    cerr<<"enter main_sequence::update_wind_constant"<<endl;
 #if 0
     // wind_constant is fraction of envelope lost in nuclear lifetime
     // of stars. Should be updated after mass accretion
@@ -192,7 +192,7 @@ real main_sequence::bolometric_correction()
 // main_sequence stars do not have a compact core.
 // for convenience the core is set to a small value.
 real main_sequence::main_sequence_core_mass()
-{
+{ cerr<<"ms::ms_core_mass is used?"<<endl;
     real m_core = 0.01;
     m_core = max(core_mass, m_core);
     if (m_core > get_total_mass()) m_core = get_total_mass();
@@ -270,41 +270,97 @@ real main_sequence::add_mass_to_accretor(real mdot, const real dt) {
 }
 #endif
 
-// used for RLOF
-star* main_sequence::subtrac_mass_from_donor(const real dt, real& mdot)
-{
-  //  cerr << " main_sequence::subtrac_mass_from_donor"<<endl;
-
-  mdot = relative_mass*dt/get_binary()->get_donor_timescale();
-
-  mdot = mass_ratio_mdot_limit(mdot);
-
-  if (envelope_mass <= mdot) {
-    mdot = envelope_mass;
-    envelope_mass = 0;
-    //star_transformation_story(Helium_Star);
-    //return dynamic_cast(star*, new helium_star(*this));
-      cerr<<"ERROR!!:constructor helium_star(main_sequence) is commented out"<<endl;
-  }
-
-  if (low_mass_star()) { // only when mass transfer timescale = nuc?
-    // after mass is subtracted star becomes lower mass star
-    // (SPZ+GN:24 Sep 1998)
-    adjust_donor_age(mdot);
-    update_relative_mass(relative_mass-mdot);
-  }
-
-  adjust_donor_radius(mdot);
+// add mass to accretor
+// is a separate function (see single_star.C) because rejuvenation
+real main_sequence::add_mass_to_accretor(const real mdot) {
     
-  envelope_mass -= mdot;
-  return this;
-  
+    if (mdot<=0) {
+        cerr << "main_sequence::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
+        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+        cerr << "Action: No action!" << endl;
+        
+        return 0;
+    }
+    
+    adjust_accretor_age(mdot, true);
+    envelope_mass += mdot;
+    accreted_mass += mdot;
+    if (relative_mass<get_total_mass()) 
+        relative_mass = get_total_mass();
+    
+    adjust_next_update_age();
+    set_spec_type(Accreting);
+    
+    return mdot;
 }
 
+real main_sequence::add_mass_to_accretor(real mdot, const real dt) {
+    if (mdot<0) {
+        cerr << "main_sequence::add_mass_to_accretor(mdot=" << mdot 
+        << ", dt=" << dt << ")"<<endl;
+        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+        cerr << "Action: put mdot to zero!" << endl;
+        return 0;
+    }
+    
+    mdot = accretion_limit(mdot, dt);
+    adjust_accretor_age(mdot, true);
+    if (relative_mass<get_total_mass() + mdot) 
+        relative_mass = get_total_mass() + mdot;
+    
+    envelope_mass += mdot;
+    accreted_mass += mdot;
+    
+    adjust_next_update_age();
+    adjust_accretor_radius(mdot, dt);
+    
+    set_spec_type(Accreting);
+    return mdot;
+}
+
+// used for RLOF
+star* main_sequence::subtrac_mass_from_donor(const real dt, real& mdot)
+{     
+    mdot = relative_mass*dt/get_binary()->get_donor_timescale();
+    mdot = mass_ratio_mdot_limit(mdot);
+
+//  if (envelope_mass <= mdot) {
+//    mdot = envelope_mass;
+//    envelope_mass = 0;
+//    //star_transformation_story(Helium_Star);
+//    //return dynamic_cast(star*, new helium_star(*this));
+//      cerr<<"ERROR!!:constructor helium_star(main_sequence) is commented out"<<endl;
+//  }
+
+//    if (low_mass_star()) { // only when mass transfer timescale = nuc?
+//        // after mass is subtracted star becomes lower mass star
+//        // (SPZ+GN:24 Sep 1998)
+//        adjust_donor_age(mdot);
+//        update_relative_mass(relative_mass-mdot);
+//    }
+    
+    adjust_age_after_wind_mass_loss(mdot, true);
+    envelope_mass -= mdot;
+    if (relative_mass > get_total_mass()){
+        update_relative_mass(get_total_mass());
+    }
+
+    if (relative_mass < cnsts.parameters(minimum_main_sequence)) {
+        // Main_sequence star will not continue core hydrogen burning.
+        star_transformation_story(Brown_Dwarf);
+        return dynamic_cast(star*, new brown_dwarf(*this));
+    }
+
+    adjust_donor_radius(mdot);
+    return this;  
+}
+
+
 star* main_sequence::merge_elements(star* str) {
+    cerr<<"ms::merge_elements is used?"<<endl;
 
       star* merged_star = this;
-
+    
       add_mass_to_core(str->get_core_mass());
 
       //core_mass += str->get_core_mass();
@@ -326,24 +382,24 @@ star* main_sequence::merge_elements(star* str) {
          case Helium_Star: 
          case Helium_Giant: 
          case Carbon_Dwarf: 
-  	 case Oxygen_Dwarf:
+         case Oxygen_Dwarf:
          case Helium_Dwarf: 
-	      if (relative_mass <
+	     if (relative_mass <
 		  cnsts.parameters(massive_star_mass_limit)) {
 		star_transformation_story(Hertzsprung_Gap);
 
-		// (GN+SPZ May  4 1999) should return now
-		//  merged_star = dynamic_cast(star*, 
-		//  new hertzsprung_gap(*this));
-		//  dump(cerr, false);
+            // (GN+SPZ May  4 1999) should return now
+            //  merged_star = dynamic_cast(star*, 
+            //  new hertzsprung_gap(*this));
+            //  dump(cerr, false);
 
-		// Chose relative_age to be next update age!
-		// otherwise sub_giants become unhappy.
-cerr << "Merge MS+wd"<<endl;		
-PRC(relative_age);PRC(next_update_age);
-//		relative_age = next_update_age;
-		
-		return dynamic_cast(star*, new hertzsprung_gap(*this));
+            // Chose relative_age to be next update age!
+            // otherwise sub_giants become unhappy.
+            cerr << "Merge MS+wd"<<endl;		
+            PRC(relative_age);PRC(next_update_age);
+            //		relative_age = next_update_age;
+            
+             return dynamic_cast(star*, new hertzsprung_gap(*this));
 	      }
 	      else {
 		star_transformation_story(Hyper_Giant);
@@ -368,11 +424,11 @@ PRC(relative_age);PRC(next_update_age);
 }
            
 // Star is rejuvenated by accretion.
+// Age adjustment especially for accretion from other stars.
+// No information from stellar evolution tracks is included.
 void main_sequence::adjust_accretor_age(const real mdot,
 					const bool rejuvenate=true) {
     
-  //  cerr << "main_sequence::adjust_accretor_age(mdot = " << mdot<<")"<<endl;
-  
       real m_rel_new;
       real m_tot_new = get_total_mass() + mdot;
       if (m_tot_new>relative_mass)
@@ -386,7 +442,9 @@ void main_sequence::adjust_accretor_age(const real mdot,
       relative_age *= (t_ms_new/t_ms_old);
       if (rejuvenate)
          relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
-    
+ 
+      relative_age = min(relative_age, t_ms_new);
+
       // next_update_age should not be reset here,
       // is done in add_mass_to_accretor, where also relative_mass
       // is updated (SPZ+GN: 1 Oct 1998)
@@ -394,14 +452,16 @@ void main_sequence::adjust_accretor_age(const real mdot,
 
    }
 
+// Age adjustment especially for (wind) mass loss
+// It is part of the single star evolution, 
+// so it can include information from tracks
 void main_sequence::adjust_age_after_wind_mass_loss(const real mdot,
                                         const bool rejuvenate=true) {
     real m_rel_new;
     real m_tot_new = get_total_mass() - mdot;
-    //if (m_tot_new<relative_mass)
-    //    m_rel_new = m_tot_new;
-    //else m_rel_new = relative_mass;
-    m_rel_new = m_tot_new;
+    if (m_tot_new<relative_mass)
+        m_rel_new = m_tot_new;
+    else m_rel_new = relative_mass;
     
     real t_ms_old = main_sequence_time();
     real z_new = get_metalicity();
@@ -409,7 +469,8 @@ void main_sequence::adjust_age_after_wind_mass_loss(const real mdot,
     
     relative_age *= (t_ms_new/t_ms_old);
     if (rejuvenate)
-        relative_age *= rejuvenation_fraction(-1. * mdot/m_tot_new); 
+        relative_age *= rejuvenation_fraction(-1. * mdot/m_tot_new);     
+    relative_age = min(relative_age, t_ms_new);
     
     // next_update_age should not be reset here,
     // is done in add_mass_to_accretor, where also relative_mass
@@ -424,6 +485,7 @@ void main_sequence::adjust_age_after_wind_mass_loss(const real mdot,
 // reducing relative_mass
 // (SPZ+GN:25 Sep 1998)
 void main_sequence::adjust_donor_age(const real mdot) { 
+    cerr<<"ms::adjust_donor_age is used?"<<endl;
 
       real m_rel_new = get_relative_mass() - mdot;
 
@@ -438,6 +500,7 @@ void main_sequence::adjust_donor_age(const real mdot) {
 // Used for determining mass_transfer_timescale.
 // Increasing zeta stabilizes binary.
 real main_sequence::zeta_adiabatic() {
+    cerr<<"ms::zeta_adiabatic is used?"<<endl;
 
       real z;
 
@@ -460,6 +523,7 @@ real main_sequence::zeta_adiabatic() {
 // Used for determining mass_transfer_timescale.
 // (SPZ+GN: 1 Oct 1998)
 real main_sequence::zeta_thermal() {
+    cerr<<"ms::zeta_thermal is used?"<<endl;
 
       real z = -1;
 
@@ -517,49 +581,9 @@ void main_sequence::detect_spectral_features() {
 	spec_type[Blue_Straggler]=Blue_Straggler;
    }
 
-#if 0
-real main_sequence::stellar_radius(const real mass, const real age) {
-
-      real alpha, beta, gamma, delta, kappa, lambda;
-
-      real log_mass = log10(mass);
-
-      if (mass>1.334) {
-         alpha = 0.1509 + 0.1709*log_mass;
-         beta  = 0.06656 - 0.4805*log_mass;
-         gamma = 0.007395 + 0.5083*log_mass;
-         delta = (0.7388*pow(mass, 1.679)
-               - 1.968*pow(mass, 2.887))
-               / (1.0 - 1.821*pow(mass, 2.337));
-      }
-      else {
-         alpha = 0.08353 + 0.0565*log_mass;
-         beta  = 0.01291 + 0.2226*log_mass;
-         gamma = 0.1151 + 0.06267*log_mass;
-         delta = pow(mass, 1.25)
-               * (0.1148 + 0.8604*mass*mass)
-               / (0.04651 + mass*mass);
-      }
-
-      if (mass<1.334) {
-         kappa  = 0.2594 + 0.1348*log_mass;
-         lambda = 0.144 - 0.8333*log_mass;
-      }
-      else {
-         kappa  = 0.092088 + 0.059338*log_mass;
-         lambda = -0.05713 + log_mass*(0.3756 -0.1744);
-      }
-
-      real t_ms = main_sequence_time(mass);
-      real ff    = age/t_ms;
-      real r_ms  = delta*pow(10., (ff*(ff*(ff*gamma + beta) + alpha)));
-
-      return r_ms;
-   }
-#endif
-
 // Fit to Claret & Gimenez 1990, ApSS 196,215, (SPZ+GN:24 Sep 1998)
 real main_sequence::gyration_radius_sq() {
+    cerr<<"ms::gyration_radius_sq is used?"<<endl;
 
   real m = get_total_mass();
 
@@ -587,6 +611,7 @@ real main_sequence::gyration_radius_sq() {
 real main_sequence::nucleair_evolution_timescale() {
   // t_nuc = 10^10 [years] Msun/Lsun.
   // Assumed that 0.1 Msun is thermalized.
+    cerr<<"ms::nucleair_evolution_timescale is used?"<<endl;
 
   real fused_mass = 0.1*relative_mass;
 
@@ -617,11 +642,10 @@ void main_sequence::instantaneous_element() {
 // Evolve a main_sequence star upto time argument according to
 // the new 2000 models.
 void main_sequence::evolve_element(const real end_time) {
-
-     real dt = end_time - current_time;
+    real dt = end_time - current_time;
     current_time = end_time;
     relative_age += dt;
-
+    
     if (relative_mass < cnsts.parameters(minimum_main_sequence)) {
       // Main_sequence star will not ignite core hydrogen burning.
 
@@ -632,7 +656,7 @@ void main_sequence::evolve_element(const real end_time) {
 
     if (relative_age <= next_update_age) {
 
-      instantaneous_element();
+      instantaneous_element(); 
 
     } else {
 
@@ -640,7 +664,6 @@ void main_sequence::evolve_element(const real end_time) {
 	// lifetime.
 
 	//if (relative_mass < cnsts.parameters(massive_star_mass_limit)) {
-
             star_transformation_story(Hertzsprung_Gap);
             new hertzsprung_gap(*this);
             return;
@@ -654,6 +677,7 @@ void main_sequence::evolve_element(const real end_time) {
 
     update();
     //stellar_wind(dt);
+
 }
 
 
@@ -680,4 +704,296 @@ real main_sequence::get_evolve_timestep() {
 
 
 
+real main_sequence::base_main_sequence_luminosity(const real mass, const real z) {
+    real teller = smc.c(1,z)*pow(mass, 5.5) + smc.c(2,z)*pow(mass,11);
+    real noemer = smc.c(3,z) + pow(mass,3) + smc.c(4,z)*pow(mass,5) + smc.c(5,z)*pow(mass,7) + smc.c(6,z)*pow(mass,8) + smc.c(7,z)*pow(mass,9.5);
+    return teller/noemer;
+}
+
+real main_sequence::base_main_sequence_luminosity(const real z) {
+    
+    return base_main_sequence_luminosity(relative_mass, z);
+}
+
+
+//Eq.12
+real main_sequence::main_sequence_luminosity(const real time, 
+                                           const real mass,
+                                           const real z) {
+    
+    real l_zams = base_main_sequence_luminosity(mass, z);
+    real l_tams = terminal_main_sequence_luminosity(mass, z);
+    real log_l_tz = log10(l_tams/l_zams);
+    real tau = time/main_sequence_time(mass, z);
+    real al = alpha_l_coefficient(mass, z);
+    real bl = beta_l_coefficient(mass, z);
+    //Eq. 18
+    real eta = 10;
+    if (z<=0.0009) {
+        if (mass>=1.1)
+            eta = 20;
+        else if(mass>1)
+            eta = 10 + 100 * (mass-1);
+    }
+    
+    real log_l_ratio = al*tau + bl*pow(tau, eta) 
+    + (log_l_tz - al - bl)*pow(tau, 2) 
+    - zams_luminosity_correction(time, mass, z);
+    real lms = l_zams*pow(10., log_l_ratio);
+    
+    return lms;
+}
+
+
+//Eq.13
+real main_sequence::main_sequence_radius(const real time, 
+                                       const real mass,
+                                       const real z) {
+    
+    real r_zams = base_main_sequence_radius(mass,z);
+    real r_tams = terminal_main_sequence_radius(mass, z);
+    real log_r_tz = log10(r_tams/r_zams);
+    real tau = time/main_sequence_time(mass, z);
+    real ar = alpha_r_coefficient(mass, z);
+    real br = beta_r_coefficient(mass, z);
+    real gr = gamma_r_coefficient(mass, z);
+    
+    real log_r_ratio = ar*tau + br*pow(tau, 10) + gr*pow(tau, 40) 
+    + (log_r_tz - ar - br - gr)*pow(tau, 3) 
+    - zams_radius_correction(time, mass, z);
+    real r_ms = r_zams*pow(10., log_r_ratio);
+    
+    real X = get_hydrogen_fraction(z);
+    
+    if (mass<0.1)
+        r_ms = max(r_ms, 0.0258*pow(1+X, 5./3.)/pow(mass, 1./3.));
+    
+    return r_ms;
+}
+
+
+// Eq.16
+real main_sequence::zams_luminosity_correction(const real t, 
+                                             const real mass, 
+                                             const real z) {
+    
+    real a33 = smc.a(33,z);  // No fitting parameters provided by HPT2000
+    // only that: 1.25 < a17 < 1.6
+    
+    real dl = 0;
+    real m_hook = main_sequence_hook_mass(z);
+    
+    if (mass>=a33) {
+        dl = min(smc.a(34, z)/pow(mass, smc.a(35, z)), 
+                 smc.a(36, z)/pow(mass, smc.a(37, z)));
+    }
+    else if (mass>m_hook) {
+        real B = min(smc.a(34, z)/pow(a33, smc.a(35, z)), 
+                     smc.a(36, z)/pow(a33, smc.a(37, z)));
+        dl = B*pow( (mass - m_hook) / (a33 - m_hook), 0.4 );
+    }
+    
+    real eps = 0.01;
+    real t_hook = main_sequence_hook_time(mass, z);
+    //Eq. 14
+    real tau_1 = min(1., t/t_hook);
+    //Eq. 15
+    real tau_2 = max(0., min(1., (t - (1-eps)*t_hook)/(eps*t_hook)));
+    
+    real l_correction = dl*(pow(tau_1, 2)-pow(tau_2, 2));
+    return l_correction;
+}
+
+
+// Eq.17
+real main_sequence::zams_radius_correction(const real t, 
+                                         const real mass, 
+                                         const real z) {
+    
+    real dr = 0;
+    real m_hook = main_sequence_hook_mass(z);
+    if (mass>=2) {
+        dr =  (smc.a(38, z) + smc.a(39, z)*pow(mass, 3.5))
+        /  (smc.a(40, z)*pow(mass, 3.0) + pow(mass, smc.a(41, z))) 
+        - 1;
+    }
+    else if (mass>smc.a(42, z)) {
+        real B = (smc.a(38, z) + smc.a(39, z)*pow(2., 3.5))
+        /  (smc.a(40, z)*pow(2., 3.0) + pow(2., smc.a(41, z))) 
+        - 1;
+        /*dr = smc.a(43, z) + smc.a(B-smc.a(43, z), z)
+         * smc.a(42, z) 
+         * pow((mass - smc.a(42, z)) / smc.a(2-smc.a(42, z), z), 
+         smc.a(42, z));*/
+        dr = smc.a(43, z) + (B-smc.a(43,z))* 
+        pow((mass-smc.a(42,z))/(2-smc.a(42,z)), smc.a(44,z));
+    }
+    else if (mass>m_hook) {
+        dr = smc.a(43, z) * sqrt((mass - m_hook) / (smc.a(42, z) - m_hook));
+    }
+    
+    real eps = 0.01;
+    real t_hook = main_sequence_hook_time(mass, z);
+    //Eq. 14
+    real tau_1 = min(1., t/t_hook);
+    //Eq.15
+    real tau_2 = max(0., min(1., (t - (1-eps)*t_hook)/(eps*t_hook)));
+    
+    real r_correction = dr *(pow(tau_1, 3)-pow(tau_2, 3));
+    
+    return r_correction;
+}
+
+
+// Eq. 19
+real main_sequence::alpha_l_coefficient(const real mass, 
+                                      const real z) {
+    
+    real alpha_l;
+    if (mass >= 2){
+        alpha_l = (smc.a(45, z) + smc.a(46, z)*pow(mass, smc.a(48, z)))
+        / (pow(mass, 0.4) + smc.a(47, z)*pow(mass, 1.9));
+    }
+    else if (mass >= smc.a(53,z)){
+        real alpha_l_2 = alpha_l_coefficient(2., z); 
+        alpha_l = smc.a(51, z) + (alpha_l_2 - smc.a(51, z))*(mass - smc.a(53, z))/(2 - smc.a(53, z));
+    }
+    else if(mass>=smc.a(52, z))
+        alpha_l = smc.a(50, z) + (smc.a(51, z) - smc.a(50, z))*(mass - smc.a(52, z))
+        / (smc.a(53, z) - smc.a(52, z));
+    else if(mass>=0.7)
+        alpha_l = 0.3 + (smc.a(50, z) - 0.3)*(mass - 0.7)
+        / (smc.a(52, z) - 0.7);
+    else if(mass>=0.5)
+        alpha_l = smc.a(49, z) + 5.*(0.3-smc.a(49, z))*(mass - 0.5);
+    else 
+        alpha_l = smc.a(49, z);
+    
+    return alpha_l;
+}
+
+//Eq.20
+real main_sequence::beta_l_coefficient(const real mass, 
+                                     const real z) {
+    
+    real beta_l = max(0., smc.a(54, z) - smc.a(55, z)*pow(mass, smc.a(56, z)));
+    if (mass>smc.a(57, z) && beta_l>0) {
+        real B = max(0., smc.a(54, z) 
+                     - smc.a(55, z)*pow(smc.a(57, z), smc.a(56, z)));
+        beta_l = max(0., B * (1 - 10*(mass-smc.a(57, z)))); //CHECK!
+    }
+    
+    return beta_l;
+}
+
+//Eq.21a Eq.21b
+real main_sequence::alpha_r_coefficient(const real mass, 
+                                      const real z) {
+    
+    real alpha_r;
+    if (mass<=smc.a(67, z) && mass>=smc.a(66, z)) {
+        alpha_r = smc.a(58, z)*pow(mass, smc.a(60, z))
+        / (smc.a(59, z) + pow(mass, smc.a(61, z)));
+    }
+    else if (mass>smc.a(67, z)) {
+        
+        real C = alpha_r_coefficient(smc.a(67, z), z);
+        alpha_r = (C + smc.a(65, z)*(mass - smc.a(67, z)));
+    }
+    else if(mass<smc.a(66, z) && mass >=smc.a(68, z)) {
+        
+        real B = alpha_r_coefficient(smc.a(66, z), z);
+        alpha_r = smc.a(64, z) + (B - smc.a(64, z))*(mass - smc.a(68, z))
+        / (smc.a(66, z) - smc.a(68, z));
+    }
+    else if(mass<smc.a(68, z) && mass>=0.65) 
+        alpha_r = smc.a(63, z) + (smc.a(64, z) - smc.a(63, z))*(mass - 0.65)
+        / (smc.a(68, z) - 0.65);
+    else if(mass<0.65 && mass>=0.50){
+        alpha_r = smc.a(62, z) + (smc.a(63, z) 
+                                  - smc.a(62, z))*(mass - 0.50) / 0.15;
+    }
+    else if(mass<0.50)
+        alpha_r = smc.a(62, z);
+    else {
+        cerr << "WARNING: ill defined real "
+        << "alpha_r_coefficient(const real mass, const real z) " << endl;
+        PRC(mass);PRL(z);
+        dump(cerr, false);
+        cerr << flush;
+        exit(-1);
+    }
+    
+    return alpha_r;
+}
+
+//Eq.22a Eq.22b
+real main_sequence::beta_r_coefficient(const real mass, 
+                                     const real z) {
+    
+    real beta_r;
+    if (mass>=2 && mass<=16) {
+        beta_r = smc.a(69, z)*pow(mass, 3.5)
+        / (smc.a(70, z) + pow(mass, smc.a(71, z)));
+    }
+    else if (mass>16) {
+        real C = beta_r_coefficient(16, z)+1.0;      
+        beta_r = C + smc.a(73, z)*(mass - 16);
+    }
+    else if (mass<2 && mass>=smc.a(74, z)) { 
+        real B = beta_r_coefficient(2, z)+1.0;
+        beta_r = smc.a(72, z) + (B - smc.a(72, z))
+        * (mass - smc.a(74, z))/(2 - smc.a(74, z));
+    }
+    else if (mass<smc.a(74, z) && mass>1)
+        beta_r = 1.06 + (smc.a(72, z) - 1.06)*(mass - 1.0)/(smc.a(74, z) - 1.0);
+    else if (mass<=1)
+        beta_r = 1.06;
+    else {
+        cerr << "WARNING: ill defined real "
+        << "beta_r_coefficient(const real mass, const real z) " << endl;
+        cerr << flush;
+        exit(-1);
+    }
+    return beta_r - 1;
+}
+
+//Eq.23 
+real main_sequence::gamma_r_coefficient(const real mass, 
+                                      const real z) {
+    real gamma_r;
+    if (mass<=1) {
+        
+        gamma_r = smc.a(76, z) + smc.a(77, z)
+        * pow(mass - smc.a(78, z), smc.a(79, z));
+    }
+    else if (mass<=smc.a(75, z)) {
+        
+        real B = gamma_r_coefficient(1, z);
+        gamma_r = B + (smc.a(80, z) - B)
+        * pow( (mass - 1)/(smc.a(75, z) - 1), smc.a(81, z));
+    }
+    else if (mass<smc.a(75, z) + 0.1) {
+        
+        real C;
+        if (smc.a(75, z)<=1)
+            C = gamma_r_coefficient(1, z);
+        else
+            C = smc.a(80, z);
+        
+        gamma_r = C - 10*(mass - smc.a(75, z))*C;
+    }
+    else {
+        gamma_r = 0;
+    }
+    
+    if (mass>smc.a(75, z) + 0.1)
+        gamma_r = 0;
+    
+    if (gamma_r <0) {
+        cerr<<"WARNING in main_sequence::gamma_r_coefficient: gamma_r < 0"<<endl;
+    }
+    
+    return max(0., gamma_r);
+}
 

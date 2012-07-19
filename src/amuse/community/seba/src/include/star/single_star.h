@@ -147,35 +147,18 @@ class  single_star : public star
       //        real  main_sequence_time(const real);
       //        real  hertzsprung_gap_time(const real);
       //        real  hertzsprung_gap_time(const real, const real);
-        real  helium_giant_time(const real, const real);
-        real  helium_giant_time(const real, const real, const real);
+      //  real  helium_giant_time(const real, const real);
+      //  real  helium_giant_time(const real, const real, const real);
         real  nucleair_evolution_time();
         real  nucleair_evolution_time(const real, const real);
       //        real  base_giant_branch_time(const real);
       //        real  base_giant_branch_time(const real, const real);
-        real  base_giant_time(const real);
-        real  base_giant_time(const real, const real);
         real  helium_time();
         real  get_evolve_timestep();
 
         real mass_transfer_timescale(mass_transfer_type &type);
 
 //		Luminosities
-      //        real  base_main_sequence_luminosity(const real);
-      //        real  base_main_sequence_luminosity();
-      //        real  base_giant_branch_luminosity();
-      //        real  base_giant_branch_luminosity(const real);
-        real  giant_luminosity();
-        real  giant_luminosity(const real);
-        real  base_agb_luminosity(const real);
-        real  base_agb_luminosity(const real, const real);
-        real  agb_luminosity();
-        real  agb_luminosity(const real);
-        real  helium_giant_luminosity();
-        real  helium_giant_luminosity(const real);
-        real  maximum_luminosity();
-        real  maximum_luminosity(const real);
-
         real  bolometric_correction();
         bool  remnant() {return false;}   // default: not a remnant.
         bool  magnetic() {return false;}  // default: no magnetic stellar wind.
@@ -305,43 +288,15 @@ class  single_star : public star
 					    const real z); 
       real stars_with_main_sequence_hook(const real mass,
 					 const real z); 
-      real base_main_sequence_luminosity(const real mass, const real z);
-      real base_main_sequence_luminosity(const real z);
-
       real terminal_main_sequence_luminosity(const real mass,
 					     const real z);  
       real terminal_main_sequence_radius(const real mass,
 					 const real z);  
       //real base_main_sequence_radius(const real mass);
       real base_main_sequence_radius(const real mass, const real z);
-      real main_sequence_luminosity(const real time,
-				    const real mass,
-				    const real z);  
-      real main_sequence_radius(const real time,
-				const real mass,
-				const real z);  
-      real zams_luminosity_correction(const real time,
-				      const real mass,
-				      const real z);  
-      real zams_radius_correction(const real time,
-				  const real mass,
-				  const real z);  
-      // Not double checked
-      real alpha_l_coefficient(const real mass,
-			       const real z);  
-      real beta_l_coefficient(const real mass,
-			      const real z);  
-      real alpha_r_coefficient(const real mass,
-			       const real z);  
-      real beta_r_coefficient(const real mass,
-			      const real z);   
-      real gamma_r_coefficient(const real mass,
-			       const real z);   
 
       //++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // Hertzsprung-gap
-      real hertzsprung_gap_time(const real mass, const real z);
-      real hertzsprung_gap_time();
 
 
       //++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -349,11 +304,10 @@ class  single_star : public star
       real giant_branch_radius(const real l_hb,
 			       const real mass_tot, 
 			       const real z);
-
-      real minimum_blue_loop_radius(const real mass, const real mass_tot, const real z);
-      real base_horizontal_branch_luminosity(const real mass, const real z);
-      real minimum_horizontal_branch_luminosity(const real mass, const real z);
-
+        real minimum_blue_loop_radius(const real mass, const real mass_tot, const real z);
+        real base_horizontal_branch_luminosity(const real mass, const real z);
+        real minimum_horizontal_branch_luminosity(const real mass, const real z);
+        
       //++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // Core helium burning without envelope (helium star)
       real helium_main_sequence_time_for_solar_metalicity(const real mass);
@@ -362,8 +316,8 @@ class  single_star : public star
       real helium_main_sequence_luminosity(const real time, const real mass);
       real helium_main_sequence_radius(const real time, const real mass, const real mass_tot);
       real terminal_helium_main_sequence_luminosity(const real mass);
-      real helium_giant_luminosity_core_mass_relation(
-                                 const real time, const real mass, const real z);
+      real helium_giant_luminosity_from_core_mass(
+                                const real m_core, const real mass, const real z);
       real helium_giant_radius(const real lum, const real mass, 
                                  const real mass_tot, const real z);
       real helium_giant_x_mass(const real mass);
@@ -399,7 +353,7 @@ class  single_star : public star
       //      void evolve_core_mass(const real) {}
 
       //++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      // Core helium burning with envelope (sub giant)
+      // Shell hydrogen burning with envelope (sub giant)
       real hydrogen_rate_constant(const real mass); 
       real sub_giant_Ah_estimator(const real mass); 
       real sub_giant_B_factor(const real mass); 
@@ -410,11 +364,9 @@ class  single_star : public star
 				 const real z);
       real sub_giant_q_parameter(const real mass, 
 				 const real z);
-      real sub_giant_integration_constant(const real mass, 
-					  const real z);
-      real sub_giant_core_mass(const real time,
-			       const real mass, 
-      			       const real z);
+//      real sub_giant_core_mass(const real time,
+//			       const real mass, 
+//      			       const real z);
       real determine_core_mass(const real time,
 			       const real mass, 
 			       const real z, 
@@ -434,31 +386,20 @@ class  single_star : public star
 					     const real z);
       real FGB_luminosity_core_mass_relation(const real m_core, 
 					     const real mass);
-      real horizontal_branch_mass_radius_proportionality(const real mass,
-							 const real z);
 
-      real sub_giant_luminosity(const real time,
-				const real mass, 
-				const real z);
-      real specific_lower_time_limit(const real mass,
-				     const real z,
-				     const real A);
-      real specific_time_x_factor(const real mass,
-				  const real z);
+//      real sub_giant_luminosity(const real time,
+//				const real mass, 
+//				const real z);
+//      real specific_time_x_factor(const real mass,
+//				  const real z);
 
       real specific_time_boundary(const real mass,
-				  const real z,
-				  const real A,
-				  const real t_b,
-				  const real l_b);
-
-      real specific_time_boundary2(const real mass,
-                                    const real z,
                                     const real A,
                                     const real t_b,
                                     const real l_b, 
                                     const real D,
-                                    const real p);
+                                    const real p,
+                                    const real l_x);
         
   //      real specific_time_boundary(const real mass,
   //				  const real z);
@@ -473,14 +414,6 @@ class  single_star : public star
       //           real (single_star::*fptr_time)(const real, const real),
       //           real (single_star::*fptr_luminosity)(const real, const real));
 
-      //      real specific_upper_time_limit(const real mass,
-      //				     const real z);
-      real specific_upper_time_limit(const real mass,
-      				     const real z,
-				     const real A,
-				     const real t_b,
-				     const real l_b);
-
       real helium_ignition_time(const real mass, 
 				const real z);
       real helium_ignition_time();
@@ -492,66 +425,28 @@ class  single_star : public star
       				  const real z);
       real base_horizontal_branch_radius(const real mass, 
 					 const real mass_tot, const real z);
-      real helper_x_luminosity(const real mass, 
-			       const real z);
-      real core_helium_burning_luminosity(const real time, 
-					  const real mass, 
-                      const real mass_tot,                    
-					  const real z); //Eq.61
-      real core_helium_burning_radius(const real time, 
-				      const real mass, 
-                      const real mass_tot,                
-				      const real z,
-                      const real lum); // Eq.64
-      real core_helium_burning_core_mass(const real time,
-					 const real mass, 
-					 const real z); //Eq.67
       real core_helium_burning_timescale(const real mass, 
 					 const real z); //Eq.57
       real core_helium_burning_timescale();
 
-      real helper_x_radius(const real mass, 
-			   const real mass_tot, const real z);
-      real helper_y_luminosity(const real mass, 
-                               const real mass_tot, const real z);
-      real helper_y_radius(const real mass, 
-                           const real mass_tot, const real z);
-      real relative_age_at_start_of_blue_phase(const real mass, 
-					       const real mass_tot, const real z);
-      real relative_age_at_end_of_blue_phase(const real mass, 
-					     const real mass_tot, const real z);
-
       real base_AGB_luminosity(const real mass, const real z); // Eq.56
-      real base_AGB_radius(const real mass, const real z);
-/*      real AGB_luminosity_core_mass_relation(const real m_core, 
-					     const real mass);//Eq.68*/
       real base_AGB_time(const real mass, const real z);
       real base_AGB_time();
-
-      real f_bl(const real mass, const real mass_tot, const real z);
-      real blue_phase_timescale(const real mass, const real mass_tot, const real z); //Eq.58
 
       real AGB_A_He_estimator(); //Eq.68
       real AGB_radius(const real lum, const real mass, const real mass_tot, const real z);
 
-      real dredge_up_time(const real mass, const real z);// Eq.70
-      real terminal_pulse_time(const real mass, const real z);// Eq.70
-      real maximum_AGB_core_mass(const real mass,
-				 const real z); //Eq.75
-
       real base_AGB_core_mass(const real mass, const real z); // Eq.66
+      real TAGB_time(const real mass, const real z);
       real dredge_up_core_mass(const real mass, const real z);
-      real AGB_luminosity(const real CO_core_mass, const real mass, 
-			  const real z); //Eq.37
-      //real dredge_up_core_mass(const real mcore);
-      real dredge_up_luminosity(const real mass, const real z);
-
-      real specific_AGB_upper_time_limit(const real mass,
-					 const real z);
-      real specific_AGB_time_boundary(const real mass,
-				      const real z);
       real TPAGB_AH_He_estimator();
-
+      real maximum_AGB_core_mass(const real mass,
+                               const real z); //Eq.75
+      real AGB_luminosity(const real CO_core_mass, const real mass, 
+                        const real z); //Eq.37
+      real dredge_up_time(const real mass, const real z);// Eq.70
+      real dredge_up_luminosity(const real mass, const real z);
+  
     };
 
 // Shorthand for conversion from node pointer to star pointer:

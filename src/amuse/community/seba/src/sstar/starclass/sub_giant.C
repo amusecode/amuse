@@ -79,31 +79,45 @@ star* sub_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
          mdot = envelope_mass;
          envelope_mass = 0;
 
-	// (SPZ+GN: 27 Jul 2000)
-	// non degenerate core < helium_dwarf_mass_limit always(!) become
-	// white dwarfs
-	 if (get_total_mass() < cnsts.parameters(helium_dwarf_mass_limit) &&
-	     relative_mass < cnsts.parameters(
-		             upper_ZAMS_mass_for_degenerate_core)) {
-	   star_transformation_story(Helium_Dwarf);
-	   return dynamic_cast(star*, new white_dwarf(*this));
-	 } 
-	 else {
-	   star_transformation_story(Helium_Star);
-	   return dynamic_cast(star*, new helium_star(*this));
-	 }
+        // (SPZ+GN: 27 Jul 2000)
+        // non degenerate core < helium_dwarf_mass_limit always(!) become
+        // white dwarfs
+        // if (get_total_mass() < cnsts.parameters(helium_dwarf_mass_limit) &&
+        //     relative_mass < cnsts.parameters(
+        //                 upper_ZAMS_mass_for_degenerate_core)) {
+        //   star_transformation_story(Helium_Dwarf);
+        //   return dynamic_cast(star*, new white_dwarf(*this));
+        // } 
+        // else {
+        //   star_transformation_story(Helium_Star);
+        //   return dynamic_cast(star*, new helium_star(*this));
+        // }
+
+          real m_HeF = helium_flash_mass(metalicity);
+          if (get_total_mass() < m_HeF){
+              star_transformation_story(Helium_Dwarf);
+              return dynamic_cast(star*, new white_dwarf(*this));
+          }
+          else {
+              star_transformation_story(Helium_Star);
+              return dynamic_cast(star*, new helium_star(*this));
+          }
       }
 
-// (GN+SPZ Apr 29 1999)
+      // (GN+SPZ Apr 29 1999)
       adjust_donor_radius(mdot);
 
       envelope_mass -= mdot;
       return this;
    }
 
+
+// Star is rejuvenated by accretion.
+// Age adjustment especially for accretion from other stars.
+// No information from stellar evolution tracks is included.
 void sub_giant::adjust_accretor_age(const real mdot,
 				    const bool rejuvenate=true) {
-
+     cerr<<"sub_giant::adjust_accretor_age is currently not used"<<endl;
      real tend_hg_old = hertzsprung_gap_time();
      real dt_bgb_old = helium_ignition_time() - tend_hg_old ;
 
@@ -113,12 +127,13 @@ void sub_giant::adjust_accretor_age(const real mdot,
      //For now, we keep metalicity constant (SPZ: 29 May 2001)
      real z_new = metalicity;
      real tend_hg_new = hertzsprung_gap_time(m_rel_new, z_new);
-     real dt_bgb_new = helium_ignition_time(m_rel_new, z_new) - tend_hg_new;
+     real t_HeI = helium_ignition_time(m_rel_new, z_new);
+     real dt_bgb_new = t_HeI - tend_hg_new;
 
      real dtime = relative_age - tend_hg_old;
 
-     // For relative_mass > 20.97184... (see hertzsprung_gap.C)
-     // sub_giants can not exist. (SPZ+GN:10 Oct 1998)
+     // For relative_mass > helium_ignition_mass(z) ~ 13Msolar
+     // sub_giants can not exist. (SPZ+GN:10 Oct 1998, SilT:7 Oct 2009)
      
      if (dt_bgb_new>0) {
 
@@ -126,12 +141,17 @@ void sub_giant::adjust_accretor_age(const real mdot,
        last_update_age = tend_hg_new;
        relative_age = tend_hg_new 
                     + dtime*(dt_bgb_new/dt_bgb_old);
+
        if (rejuvenate) {
            relative_age *= rejuvenation_fraction(mdot/m_tot_new);
        }
 
+       if (relative_age < last_update_age + cnsts.safety(minimum_timestep)){
+             cerr<<"In sub_giant::adjust_accretor_age relative age updated on SG, but < last_update_age"<<endl;
+       }
        relative_age = max(relative_age, 
 			  last_update_age  + cnsts.safety(minimum_timestep));
+       relative_age = min(relative_age, t_HeI);
      }
      else {
        // Relative_age should be set to the predicted next update age.
@@ -143,12 +163,11 @@ void sub_giant::adjust_accretor_age(const real mdot,
      // next_update_age should not be reset here
      // next_update_age = tend_hg_new+t_bgb_new;
 
-   }
+}
+
+
 
 void sub_giant::adjust_next_update_age() {
-
-  cerr << "sub_giant::adjust_next_update_age()"<<endl;
-  PRC(relative_age);
 
   real t_bgb = base_giant_branch_time(relative_mass, metalicity);
   if(relative_age!=t_bgb) {
@@ -161,8 +180,6 @@ void sub_giant::adjust_next_update_age() {
   }
 
   real t_HeI = helium_ignition_time();
-  PRC(t_bgb);PRC(t_HeI);PRC(relative_age);PRL(next_update_age);
-  
   next_update_age = t_HeI;
 }
 
@@ -177,12 +194,14 @@ void sub_giant::detect_spectral_features() {
 }
 
 real sub_giant::gyration_radius_sq() {
+    cerr<<"subg::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(convective_star_gyration_radius_sq); 
 }
 
 
 real sub_giant::zeta_adiabatic() {
+    cerr<<"subg::zeta_adiabatic is used?"<<endl;
 
 // (GN+SPZ Apr 28 1999) fit from Lev Yungelson private communication
 // for giants with not too convective envelope = radiative envelope
@@ -213,7 +232,7 @@ real sub_giant::zeta_adiabatic() {
 
 // Values of zeta are changed (SPZ+GN:28 Sep 1998)
 real sub_giant::zeta_thermal() {
-  //cerr<<"real single_star::zeta_thermal()"<<endl;
+    cerr<<"subg::zeta_thermal is used?"<<endl;
 
   real z;
   if (low_mass_star())
@@ -225,8 +244,6 @@ real sub_giant::zeta_thermal() {
 }
 
 void sub_giant::update_wind_constant() {
-    cerr<<"enter sub_giant::update_wind_constant"<<endl;
-
 #if 0  
 // (GN+SPZ Apr 28 1999) new fits to Maeder, de Koter and common sense
 // wind_constant is fraction of envelope lost in nuclear lifetime
@@ -360,8 +377,6 @@ void sub_giant::evolve_element(const real end_time) {
       real dt = end_time - current_time;
       current_time = end_time;
       relative_age += dt;
-      dump(cerr, false);
-
 
       if (relative_age<=next_update_age) {
           instantaneous_element();
@@ -426,7 +441,9 @@ real sub_giant::helium_core_radius(const real mass, const real m_core, const rea
         r_c = helium_star_radius_for_solar_metalicity(m_core);
     }
     else{
-        r_c = white_dwarf_radius(m_core, 0.);
+        // due to small nucleair burning layer 
+        // r_c > white_dwarf_radius
+        r_c = 5.*white_dwarf_radius(m_core, 0.);
     }
     return r_c;
 }
@@ -441,7 +458,7 @@ real sub_giant::small_envelope_core_radius(const real mass, const real m_core, c
         r_c = helium_star_radius_for_solar_metalicity(m_core);
     }
     else{
-        r_c = 5.*white_dwarf_radius(m_core, 0.);
+        r_c = white_dwarf_radius(m_core, 0.);
     }
     return r_c;
 }

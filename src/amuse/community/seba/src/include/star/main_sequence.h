@@ -65,7 +65,9 @@ class main_sequence : public single_star {
         star* reduce_mass(const real);
         void adjust_accretor_age(const real mdot, const bool rejuvenate);
         void adjust_age_after_wind_mass_loss(const real mdot, const bool rejuvenate);
-	
+        real  add_mass_to_accretor(const real);
+        real  add_mass_to_accretor(real, const real);
+
 
 //		Mass transfer stability
         real zeta_adiabatic();
@@ -84,6 +86,34 @@ class main_sequence : public single_star {
 	//friend helium_star::helium_star(main_sequence &);
 
     real get_evolve_timestep();
+    real base_main_sequence_luminosity(const real mass, const real z);
+    real base_main_sequence_luminosity(const real z);
+    real main_sequence_luminosity(const real time,
+                                  const real mass,
+                                  const real z);  
+    real main_sequence_radius(const real time,
+                              const real mass,
+                              const real z);  
+    real zams_luminosity_correction(const real time,
+                                    const real mass,
+                                    const real z);  
+    real zams_radius_correction(const real time,
+                                const real mass,
+                                const real z);  
+    real alpha_l_coefficient(const real mass,
+                             const real z);  
+    real beta_l_coefficient(const real mass,
+                            const real z);  
+    real alpha_r_coefficient(const real mass,
+                             const real z);  
+    real beta_r_coefficient(const real mass,
+                            const real z);   
+    real gamma_r_coefficient(const real mass,
+                             const real z);   
+    
+    
+    
+    
 
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -99,6 +129,5 @@ class main_sequence : public single_star {
 #endif 		// _MAIN_SEQUENCE
 
 
-        //real stellar_radius(const real, const real);
 	//real add_mass_to_accretor(const real);
 	//real add_mass_to_accretor(real, const real);

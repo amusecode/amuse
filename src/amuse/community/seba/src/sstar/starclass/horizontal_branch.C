@@ -18,7 +18,9 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
         relative_mass = get_total_mass();
         relative_age = helium_ignition_time(relative_mass, metalicity);
     }    
-    
+    real t_HeI = helium_ignition_time(relative_mass, metalicity); 
+    PRC(relative_mass);PRC(get_total_mass());PRC(relative_age);PRL(t_HeI);
+
     
 // (GN+SPZ May  4 1999) last update age is time of previous type change
     last_update_age = next_update_age;
@@ -31,6 +33,9 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
     
     update();
     post_constructor();
+    t_HeI = helium_ignition_time(relative_mass, metalicity); 
+    PRC(relative_mass);PRC(get_total_mass());PRC(relative_age);PRL(t_HeI);
+
 }
 
 horizontal_branch::horizontal_branch(hertzsprung_gap & h) : single_star(h) {
@@ -80,7 +85,11 @@ star* horizontal_branch::subtrac_mass_from_donor(const real dt,
       return this;
    }
 
+// Star is rejuvenated by accretion.
+// Age adjustment especially for accretion from other stars.
+// No information from stellar evolution tracks is included.
 void horizontal_branch::adjust_accretor_age(const real mdot, const bool rejuvenate=true) {
+     cerr<<"sub_giant::adjust_accretor_age is currently not used"<<endl;
 
       real m_rel_new;
       real m_tot_new = get_total_mass() + mdot;
@@ -102,17 +111,25 @@ void horizontal_branch::adjust_accretor_age(const real mdot, const bool rejuvena
                    + dtime*(dt_cHe_new/dt_cHe_old);
       if (rejuvenate)
          relative_age *= rejuvenation_fraction(mdot/m_tot_new);
-
+     
+      if (relative_age < last_update_age + cnsts.safety(minimum_timestep)){
+         cerr<<"In horizontal_branch::adjust_accretor_age relative age updated on HB, but < last_update_age"<<endl;
+      }
+    
       relative_age = max(relative_age, 
 			 last_update_age + cnsts.safety(minimum_timestep));
+      relative_age = min(relative_age, t_HeI_new + dt_cHe_new);
 
 }
 
 real horizontal_branch::zeta_adiabatic() {
-      return 15;	
+    cerr<<"hb::zeta_adiabatic is used?"<<endl;
+
+    return 15;	
    }
 
 real horizontal_branch::zeta_thermal() {
+    cerr<<"hb::zeta_thermal is used?"<<endl;
       return 15;
    }
 
@@ -131,13 +148,12 @@ void horizontal_branch::adjust_next_update_age() {
 }
 
 real horizontal_branch::gyration_radius_sq() {
+    cerr<<"hb::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }
 
 void horizontal_branch::update_wind_constant() {
-    cerr<<"enter horizontal_branch::update_wind_constant"<<endl;
-
 #if 0  
 // (GN+SPZ Apr 28 1999) new fits to Maeder, de Koter and common sense
 // wind_constant is fraction of envelope lost in nuclear lifetime
@@ -281,10 +297,6 @@ void horizontal_branch::update() {
 //  last_update_age = relative_age;
 
   detect_spectral_features();
-
-  cerr << "General update dump"<<endl;
-  dump(cerr, false);
-
 }
 
 // Evolve a horizontal branch star upto time argument according to
@@ -373,4 +385,277 @@ real horizontal_branch::small_envelope_core_luminosity(const real time,
 }
 real horizontal_branch::small_envelope_core_luminosity(){
     return small_envelope_core_luminosity(relative_age, relative_mass, core_mass, metalicity);
+}
+
+
+// Eq.61
+real horizontal_branch::core_helium_burning_luminosity(const real time, 
+                                                 const real mass, 
+                                                 const real mass_tot,
+                                                 const real z) {
+    
+    real t_HeI = helium_ignition_time(mass, z); //#eq.43
+    real t_He = core_helium_burning_timescale(mass, z);
+    real tau = (time - t_HeI)/t_He;
+    real tau_x = relative_age_at_start_of_blue_phase(mass, z);
+    real l_x = helper_x_luminosity(mass, z);
+    real l_cHe;
+    
+    //tau can be slightly larger than one 
+    //as t_He is precise to 1e-17 and t_HeI to 1e-16 
+    if (tau > 1.0 && tau < 1.0 + cnsts.safety(tiny)) {
+        tau=1.0;
+    }
+    
+    if(tau>=tau_x && tau<=1.0) {
+        real r_mHe = minimum_blue_loop_radius(mass, mass_tot, z);
+        real r_x = helper_x_radius(mass, mass_tot,z);
+        real m_FGB = helium_ignition_mass(z);
+        
+        
+        if (mass >= max(12.0, m_FGB) && abs(r_x-r_mHe) >cnsts.safety(tiny)){
+            cerr<<"warning in single_star::l_cheb"<<endl;
+            cerr<<"erase this function"<<endl;
+        }
+        
+        real xi = min(2.5, max(0.4, r_mHe/r_x));
+        real lambda = pow((tau - tau_x)/(1 - tau_x), xi);
+        real l_bagb = base_AGB_luminosity(mass, z);
+        l_cHe = l_x*pow(l_bagb/l_x, lambda);     
+    }
+    else if (tau>=0.0 && tau<tau_x) {
+        real lambda = pow((tau_x - tau)/tau_x, 3);
+        real l_HeI = helium_ignition_luminosity(mass, z);
+        l_cHe = l_x*pow(l_HeI/l_x, lambda); 
+    }
+    else {
+        cerr << "WARNING: tau not within allowed interval [0, 1]"<<endl;
+        cerr << "in single_star::core_helium_burning_luminosity(...)"<<endl;
+        cerr.precision(HIGH_PRECISION);
+        PRI(4);PRC(time);PRC(tau_x);PRL(tau);
+        PRC(t_HeI);PRL(t_He);
+        cerr.precision(STD_PRECISION);
+        cerr << flush;
+        exit(-1);
+    }
+    
+    return l_cHe;
+}
+
+// Eq.64
+real horizontal_branch::core_helium_burning_radius(const real time, 
+                                             const real mass, 
+                                             const real mass_tot,                    
+                                             const real z,
+                                             const real lum) {
+    real t_HeI = helium_ignition_time(mass, z); //#eq.43    
+    real t_He = core_helium_burning_timescale(mass, z);
+    real tau = (time - t_HeI)/t_He;
+    real tau_x = relative_age_at_start_of_blue_phase(mass, z);
+    real tau_y = relative_age_at_end_of_blue_phase(mass, z);
+    
+    //tau can be slightly larger than one 
+    //as t_He is precise to 1e-17 and t_HeI to 1e-16 
+    if (tau >1.0 && tau < 1.0+cnsts.safety(tiny)){
+        tau = 1.0;
+    }
+    
+    real r_cHe;
+    if (tau>=0 && tau<tau_x) {
+        r_cHe = giant_branch_radius(lum, mass_tot, z);
+    } 
+    else if(tau>=tau_y && tau<=1.0) {
+        r_cHe = AGB_radius(lum, mass, mass_tot, z);
+    }
+    else if (tau>=tau_x && tau<tau_y) {
+        real r_mHe = minimum_blue_loop_radius(mass, mass_tot, z);
+        real r_x = helper_x_radius(mass, mass_tot, z);
+        real r_y = helper_y_radius(mass, mass_tot, z);
+        real dt = tau_y-tau_x;
+        real r_min, rho;
+                
+        if (r_mHe < r_x){
+            r_min = r_mHe;
+            rho = pow(log(r_y/r_min), ONE_THIRD) * (tau - tau_x)/dt
+            - pow(log(r_x/r_min), ONE_THIRD) * (tau_y - tau)/dt;
+        }
+        else {
+            r_min = r_x;
+            rho = pow(log(r_y/r_min), ONE_THIRD) * (tau - tau_x)/dt;   
+        }
+        r_cHe = r_min*exp(pow(abs(rho), 3));
+    }
+    else {
+        cerr << "WARNING: tau not within allowed interval [0, 1]"<<endl;
+        cerr << "in single_star::core_helium_burning_radius(...)"<<endl;
+        PRI(4);PRC(time);PRC(tau_x);PRC(tau_y);PRL(tau);
+        cerr << flush;
+        exit(-1);
+    }
+    
+    return r_cHe;
+}
+
+
+real horizontal_branch::helper_x_luminosity(const real mass, 
+                                      const real z) {
+    
+    real l_x;
+    if (intermediate_mass_star(mass, z)){
+        l_x = minimum_horizontal_branch_luminosity(mass, z);
+    }
+    else if(high_mass_star(mass, z)){
+        l_x = helium_ignition_luminosity(mass, z);
+    }
+    else{
+        l_x = base_horizontal_branch_luminosity(mass, z);
+    }
+    
+    return l_x;
+}
+
+// Eq.60
+real horizontal_branch::helper_x_radius(const real mass, 
+                                  const real mass_tot, const real z) {
+    
+    real r_x;
+    if (low_mass_star(mass, z)) {
+        r_x = base_horizontal_branch_radius(mass, mass_tot, z);
+    }
+    else if (intermediate_mass_star(mass, z)) {
+        real l_mHe = minimum_horizontal_branch_luminosity(mass, z);
+        r_x = giant_branch_radius(l_mHe, mass_tot, z);
+    }
+    else {
+        r_x = helium_ignition_radius(mass, mass_tot, z);
+    }
+    return r_x;
+}
+
+real horizontal_branch::helper_y_luminosity(const real mass, 
+                                      const real mass_tot, const real z) {
+    
+    real l_y;
+    real m_FGB = helium_ignition_mass(z);
+    real l_bagb = base_AGB_luminosity(mass, z);
+    
+    if(mass<m_FGB){
+        l_y = l_bagb;
+    }
+    else {       
+        real tau_y = relative_age_at_end_of_blue_phase(mass, z);
+        real tau_x = relative_age_at_start_of_blue_phase(mass, z);
+        
+        real r_mHe = minimum_blue_loop_radius(mass, mass_tot, z);
+        real r_x = helper_x_radius(mass, mass_tot, z);
+        real xi = min(2.5, max(0.4, r_mHe/r_x));
+        real lambda = pow((tau_y - tau_x)/(1 - tau_x), xi);
+        real l_x = helper_x_luminosity(mass, z);
+        l_y = l_x*pow(l_bagb/l_x, lambda); 
+    }
+    return l_y;
+}
+
+real horizontal_branch::helper_y_radius(const real mass, 
+                                  const real mass_tot, const real z) {
+    
+    real l_y = helper_y_luminosity(mass, mass_tot, z);
+    real r_y = AGB_radius(l_y, mass, mass_tot, z);
+    
+    return r_y;
+}
+
+
+// Eq.67
+real horizontal_branch::core_helium_burning_core_mass(const real time,
+                                                const real mass, 
+                                                const real z) {
+    
+    real mc_bagb = base_AGB_core_mass(mass, z);
+    real mc_HeI = helium_ignition_core_mass(mass, z);
+    
+    real t_HeI = helium_ignition_time(mass, z); 
+    real t_He  = core_helium_burning_timescale(mass, z);
+    real tau = (time - t_HeI)/t_He;
+    
+    real m_core = (1-tau)*mc_HeI + tau*mc_bagb;
+    return m_core;
+}
+
+
+//Eq. Tau_x
+real horizontal_branch::relative_age_at_start_of_blue_phase(const real mass, 
+                                                      const real z) {
+    
+    real tau_x = 0;
+    if(intermediate_mass_star(mass, z))
+        tau_x = 1 - blue_phase_timescale(mass, z);
+    
+    return tau_x;
+}    
+
+//Eq. Tau_y
+real horizontal_branch::relative_age_at_end_of_blue_phase(const real mass, 
+                                                    const real z) {
+    
+    real tau_y = 1;
+    if(high_mass_star(mass, z))
+        tau_y = blue_phase_timescale(mass, z);
+    
+    return tau_y;
+}
+
+
+// Eq.58
+real horizontal_branch::blue_phase_timescale(const real mass, const real z) {
+    
+    real b45 = smc.b(45,z);
+    
+    real t_bl = 1;
+    real m_HeF = helium_flash_mass(z);
+    real m_FGB = helium_ignition_mass(z);
+    real m_HeF_FGB = m_HeF/m_FGB;
+    real b46 = -1*smc.b(46,z) * log10(m_HeF_FGB);
+    
+    if(mass>=m_HeF && mass<=m_FGB) {
+        real c_bl = (1 - b45*pow(m_HeF_FGB, 0.414));
+        t_bl = b45*pow(mass/m_FGB, 0.414) + c_bl*pow(log10(mass/m_FGB)/log10(m_HeF_FGB), b46);
+    }
+    else if(mass>m_FGB) {
+        t_bl = (1-smc.b(47,z))*f_bl(mass, z)/f_bl(m_FGB, z);
+    }
+    
+    if (t_bl > 1.0){
+        cerr<<"WARNING in single_star::blue_phase_timescale: t_bl > 1"<<endl;
+        PRC(mass);PRC(m_FGB);PRC(m_HeF);PRL(t_bl);
+        exit(-1);
+    }
+    else if (t_bl < 0.0){
+        cerr<<"WARNING in single_star::blue_phase_timescale: t_bl < 0"<<endl;
+        PRC(mass);PRC(m_FGB);PRL(t_bl);
+        exit(-1);
+    }
+    
+    t_bl = min(1.0, max(0.0, t_bl));  
+    return t_bl;
+}
+
+
+real horizontal_branch::f_bl(const real mass, const real z) {
+    real b48 = smc.b(48,z);
+    real b49 = smc.b(49,z);
+    
+    // r_mHe & r_agb are not functions of mass_tot (get_total_mass()) 
+    // in accordance with HPT, 
+    // otherwise things go wrong for stars that loose much mass
+    real r_mHe = minimum_blue_loop_radius(mass, mass, z);
+    real l_HeI = helium_ignition_luminosity(mass, z);
+    real r_agb = AGB_radius(l_HeI, mass, mass, z);
+    real ratio = 1- r_mHe / r_agb;
+    if (ratio < 0) {
+        ratio = 0;
+        cerr<<"WARNING in single_star::f_bl: ratio 1-r_mHe / r_agb< 0"<<endl;
+    }
+    real f = pow(mass, b48) * pow(ratio, b49);    
+    return f;
 }

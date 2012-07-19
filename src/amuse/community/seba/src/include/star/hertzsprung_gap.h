@@ -51,14 +51,12 @@ class hertzsprung_gap : public single_star
         void adjust_age_after_wind_mass_loss(const real mdot, const bool rejuvenate);
         void adjust_next_update_age();
         void update_wind_constant();
+        real  add_mass_to_accretor(const real);
+        real  add_mass_to_accretor(real, const real);
 
 //           Mass transfer Stability.
         real zeta_adiabatic();
         real zeta_thermal();
-
-//           Core mass determination
-	real TAMS_helium_core_mass();
-      //	void evolve_core_mass(const real dt);
 
 //	     Spectral type feature detection.
         void detect_spectral_features();
@@ -94,6 +92,10 @@ class hertzsprung_gap : public single_star
 				  const real z);
       real hertzsprung_gap_radius(const real time);
       real hertzsprung_gap_radius();
+        
+      real hertzsprung_gap_time(const real mass, const real z);
+      real hertzsprung_gap_time();
+
 
       // Metalicity dependent hertzsprun-gap core mass
       // has not been implemented yet. (SPZ: 28 May 2001)
@@ -126,5 +128,4 @@ class hertzsprung_gap : public single_star
 
 #endif 		// _HERTZSPRUNG_GAP
 
-//real stellar_radius(const real, const real);
 //        void adjust_initial_star();

@@ -23,7 +23,7 @@
              cerr<<"error constructor HG: relative_mass != get_total_mass()"<<endl;   
          }
          
-// (GN+SPZ May  4 1999) last update age is time of previous type change
+      // (GN+SPZ May  4 1999) last update age is time of previous type change
       last_update_age = next_update_age;
 
       adjust_next_update_age();
@@ -90,44 +90,138 @@ star* hertzsprung_gap::reduce_mass(const real mdot) {
         }
     }
     return this;
-   }
-
+}
 
 star* hertzsprung_gap::subtrac_mass_from_donor(const real dt, real& mdot) {
-//cerr<<"real hertzsprung_gap::subtrac_mass_from_donor( dt= "<<dt<<")"<<endl;
-
+    
       mdot = relative_mass*dt/get_binary()->get_donor_timescale();
-
       mdot = mass_ratio_mdot_limit(mdot);
 
       if (envelope_mass<=mdot) {
-//	  cerr << "Transform hertzsprung_gap star into Heliun stars"<<endl;
          mdot = envelope_mass;
          envelope_mass = 0;
 
-	// (SPZ+GN: 27 Jul 2000)
-	// non degenerate core < helium_dwarf_mass_limit always(!) become
-	// white dwarfs
-	if (get_total_mass() < cnsts.parameters(helium_dwarf_mass_limit) &&
-	    relative_mass < cnsts.parameters(
-			    upper_ZAMS_mass_for_degenerate_core)) {
-	  star_transformation_story(Helium_Dwarf);
-	  return dynamic_cast(star*, new white_dwarf(*this));
-	} 
-	else {
-	  star_transformation_story(Helium_Star);
-	  return dynamic_cast(star*, new helium_star(*this));
-	}
+        // (SPZ+GN: 27 Jul 2000)
+        // non degenerate core < helium_dwarf_mass_limit always(!) become
+        // white dwarfs
+        //if (get_total_mass() < cnsts.parameters(helium_dwarf_mass_limit) &&
+        //    relative_mass < cnsts.parameters(
+        //            upper_ZAMS_mass_for_degenerate_core)) {
+        //  star_transformation_story(Helium_Dwarf);
+        //  return dynamic_cast(star*, new white_dwarf(*this));
+        //} 
+        //else {
+        //  star_transformation_story(Helium_Star);
+        //  return dynamic_cast(star*, new helium_star(*this));
+        //}
+        
+          real m_HeF = helium_flash_mass(metalicity);
+          if (get_total_mass() < m_HeF){
+              star_transformation_story(Helium_Dwarf);
+              return dynamic_cast(star*, new white_dwarf(*this));
+          }
+          else {
+              star_transformation_story(Helium_Star);
+              return dynamic_cast(star*, new helium_star(*this));
+              
+          }
       }
+    
+    
+    real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
+    real m_FGB = helium_ignition_mass(metalicity);
 
-// (GN+SPZ Apr 29 1999) 
-      adjust_donor_radius(mdot);
+    if ( core_mass > mc_bgb || relative_mass > m_FGB){
+        //the evolution of m_core, luminosity, timescales decouples from M
+        // relative mass is no longer kept at same value as total mass
+        envelope_mass -= mdot;
+    }
+    else{
+        adjust_age_after_wind_mass_loss(mdot, true);
+        envelope_mass -= mdot;
+        if (relative_mass > get_total_mass()){
+            update_relative_mass(get_total_mass());
+        }
+    }
+    
+    adjust_donor_radius(mdot);
+    return this;    
+}
 
-      envelope_mass -= mdot;
-      return this;
-   }
 
-//  relative age adjusted lineairly with accreted mass.
+
+// add mass to accretor
+// is a separate function (see single_star.C) because rejuvenation
+real hertzsprung_gap::add_mass_to_accretor(const real mdot) {
+    
+    if (mdot<=0) {
+        cerr << "hertzsprung_gap::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
+        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+        cerr << "Action: No action!" << endl;
+        
+        return 0;
+    }
+    
+    real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
+    real m_FGB = helium_ignition_mass(metalicity);
+    
+    if ( core_mass > mc_bgb || relative_mass > m_FGB){
+        //the evolution of m_core, luminosity, timescales decouples from M
+        // relative mass is no longer kept at same value as total mass
+        envelope_mass -= mdot;
+        accreted_mass += mdot;
+    }
+    else{
+        adjust_accretor_age(mdot, true);
+        envelope_mass -= mdot;
+        accreted_mass += mdot;
+        if (relative_mass < get_total_mass()){
+            update_relative_mass(get_total_mass());
+        }
+    }
+    
+    set_spec_type(Accreting);    
+    return mdot;
+}
+
+real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt) {
+    if (mdot<0) {
+        cerr << "hertzsprung_gap::add_mass_to_accretor(mdot=" << mdot 
+        << ", dt=" << dt << ")"<<endl;
+        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+        cerr << "Action: put mdot to zero!" << endl;
+        return 0;
+    }
+    
+    mdot = accretion_limit(mdot, dt);
+    
+    real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
+    real m_FGB = helium_ignition_mass(metalicity);
+    
+    if ( core_mass > mc_bgb || relative_mass > m_FGB){
+        //the evolution of m_core, luminosity, timescales decouples from M
+        // relative mass is no longer kept at same value as total mass
+        envelope_mass -= mdot;
+        accreted_mass += mdot;
+    }
+    else{
+        adjust_accretor_age(mdot, true);
+        envelope_mass -= mdot;
+        accreted_mass += mdot;
+        if (relative_mass < get_total_mass()){
+            update_relative_mass(get_total_mass());
+        }
+    }
+    
+    adjust_accretor_radius(mdot, dt);
+    
+    set_spec_type(Accreting);
+    return mdot;
+}
+
+// Star is rejuvenated by accretion.
+// Age adjustment especially for accretion from other stars.
+// No information from stellar evolution tracks is included.
 void hertzsprung_gap::adjust_accretor_age(const real mdot, const bool rejuvenate=true) {
 
       real m_rel_new;
@@ -143,34 +237,41 @@ void hertzsprung_gap::adjust_accretor_age(const real mdot, const bool rejuvenate
       real t_ms_new = main_sequence_time(m_rel_new, z_new);
 
       //For now, we keep metalicity constant (SPZ: 29 May 2001)
-      real t_hg_new = hertzsprung_gap_time(m_rel_new, z_new) - t_ms_new;
+      real t_bgb = hertzsprung_gap_time(m_rel_new, z_new); 
+      real t_hg_new = t_bgb - t_ms_new;
 
       real dtime = relative_age - t_ms_old;
 
-// (GN+SPZ May  4 1999) update last_update_age
-//      last_update_age = t_ms_new;
-    
+      // (GN+SPZ May  4 1999) update last_update_age
+      last_update_age = t_ms_new;    
       relative_age = t_ms_new 
                    + dtime*(t_hg_new/t_hg_old);
     
       if (rejuvenate)
-         relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
+           relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
 
+      if (relative_age < last_update_age + cnsts.safety(minimum_timestep)){
+            cerr<<"In hertzsprung_gap::adjust_accretor_age relative age updated on HG, but < last_update_age"<<endl;
+      }
       relative_age = max(relative_age, 
 			 last_update_age + cnsts.safety(minimum_timestep)); 
+    
+      relative_age = min(relative_age, t_bgb);
 
-      // next_update_age should not be reset here
-      // next_update_age = t_ms_new + t_hg_new;
+        // next_update_age should not be reset here
+        // next_update_age = t_ms_new + t_hg_new;
 }
 
+// Age adjustment especially for (wind) mass loss
+// It is part of the single star evolution, 
+// so it can include information from tracks
 void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const bool rejuvenate=true) {
     
     real m_rel_new;
     real m_tot_new = get_total_mass() - mdot;
-//    if (m_tot_new>relative_mass)
-//        m_rel_new = m_tot_new;
-//    else m_rel_new = relative_mass;
-    m_rel_new = m_tot_new; 
+    if (m_tot_new<relative_mass)
+        m_rel_new = m_tot_new;
+    else m_rel_new = relative_mass;
     
     real t_ms_old = main_sequence_time();
     real t_hg_old = hertzsprung_gap_time() - t_ms_old;
@@ -178,7 +279,8 @@ void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const boo
     real z_new = get_metalicity();
     real t_ms_new = main_sequence_time(m_rel_new, z_new);
     //For now, we keep metalicity constant (SPZ: 29 May 2001)
-    real t_hg_new = hertzsprung_gap_time(m_rel_new, z_new) - t_ms_new;
+    real t_bgb = hertzsprung_gap_time(m_rel_new, z_new); 
+    real t_hg_new = t_bgb - t_ms_new;
     
     real dtime = relative_age - t_ms_old;
     
@@ -191,11 +293,12 @@ void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const boo
         relative_age *= rejuvenation_fraction(-1.*mdot/m_tot_new); 
     
     if (relative_age < last_update_age + cnsts.safety(minimum_timestep)){
-        cerr<<"relative age updated on HG, but < last_update_age"<<endl;
+        cerr<<"In hertzsprung_gap::adjust_age_after_wind_mass_loss relative age updated on HG, but < last_update_age"<<endl;
     }
     relative_age = max(relative_age, 
                        last_update_age + cnsts.safety(minimum_timestep)); 
-    
+    relative_age = min(relative_age, t_bgb);
+
     // next_update_age should not be reset here
     // next_update_age = t_ms_new + t_hg_new;
 }
@@ -204,7 +307,7 @@ void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const boo
 // Adiabatic response function for hertzsprung_gap star.
 // Polynomial fit to Hjellming and Webbink 1987 ApJ, 318, 804
 real hertzsprung_gap::zeta_adiabatic() {
-//cerr<<"real hertzsprung_gap::zeta_adiabatic(): " << endl;
+cerr<<"hg::zeta_adiabatic is used?"<<endl;
 
 #if 0
       real z;
@@ -234,6 +337,7 @@ real hertzsprung_gap::zeta_adiabatic() {
 
 // Thermal response function for hertzsprung_gap star.
 real hertzsprung_gap::zeta_thermal() {
+    cerr<<"hg::zeta_thermal is used?"<<endl;
 
       real z;
 
@@ -278,83 +382,17 @@ void hertzsprung_gap::detect_spectral_features() {
 	spec_type[Emission]=Emission;
    }
 
-#if 0
-real hertzsprung_gap::stellar_radius(const real mass, const real age_max) {
-
-      real alpha, beta, gamma, delta;
-      real t_ms   = main_sequence_time(mass);
-      real age = max(t_ms, age_max);            // Safety
-      real t_hg   = hertzsprung_gap_time(t_ms);
-
-      real log_mass = log10(mass);
-
-      if (mass>1.334) {
-         alpha = 0.1509 + 0.1709*log_mass;
-         beta  = 0.06656 - 0.4805*log_mass;
-         gamma = 0.007395 + 0.5083*log_mass;
-         delta = (0.7388*pow(mass, 1.679)
-               - 1.968*pow(mass, 2.887))
-               / (1.0 - 1.821*pow(mass, 2.337));
-       }
-       else {
-          alpha = 0.08353 + 0.0565*log_mass;
-          beta  = 0.01291 + 0.2226*log_mass;
-          gamma = 0.1151 + 0.06267*log_mass;
-          delta = pow(mass, 1.25)
-                * (0.1148 + 0.8604*mass*mass)
-                / (0.04651 + mass*mass);
-       }
-
-       real l_g    = giant_luminosity(mass);
-
-       real rt = delta*pow(10., (alpha + beta + gamma));
-       real rg = (0.25*pow(l_g, 0.4) + 0.8*pow(l_g, 0.67))
-               / pow(mass, 0.27);
-       real ff = (age - t_ms)/t_hg;
-       real r_hg = rt*pow(rg/rt, ff);
-
-       return r_hg;
-   }
-#endif
-
 
 // Stellar Gyration radii squared for detmination of
 // angular momentum.
 // Implemented by (SPZ+GN: 1 Oct 1998)
 real hertzsprung_gap::gyration_radius_sq() {
+    cerr<<"hg::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }
 
-// Helium core at the terminal-age main-sequence
-// (SPZ+GN: 1 Oct 1998)
-real hertzsprung_gap::TAMS_helium_core_mass() {
-
-  // (SPZ+GN: 28 Jul 2000)
-  // old Eggleton 2000 (ToBeBook) fit to core mass.
-  real mc = (0.11*pow(relative_mass,1.2)
-	  + 7.e-5*pow(relative_mass,4))
-          / (1+ 2e-4*pow(relative_mass, 3));
-
-  // (SPZ+GN: 28 Jul 2000)
-  // produces lower mass core betwee 0 and 20 Msun.
-  // is fine for low mass (<5Msun) stars but too small for 
-  // high mass (>8Msun) stars.
-  //  real mc = (0.05 + 0.08*pow(relative_mass,1.2)
-  //          + 7.e-5*pow(relative_mass,4))
-  //          / (1+ 2e-4*pow(relative_mass, 3));
-
-  // (SPZ+GN: 31 Jul 2000)
-  // TAMS core mass must be smaller than get_total_mass to 
-  // assure that it becomes a helium star decently.
-  return min(max(mc,core_mass), 
-	     get_total_mass()-cnsts.safety(minimum_mass_step));
-
-}
-
 void hertzsprung_gap::update_wind_constant() {
-    cerr<<"enter hertzsprung_gap::update_wind_constant"<<endl;
-
 #if 0
 // (GN+SPZ Apr 28 1999) new fits to Maeder, de Koter and common sense
 // wind_constant is fraction of envelope lost in nuclear lifetime
@@ -471,6 +509,8 @@ void hertzsprung_gap::instantaneous_element() {
     
     //      effective_radius = max(effective_radius, radius);
    effective_radius = radius;
+    real t_HeI = helium_ignition_time(relative_mass, metalicity); 
+    PRC(relative_mass);PRC(get_total_mass());PRC(relative_age);PRL(t_HeI);
 }
 
 // Evolve a main_sequence star upto time argument according to
@@ -487,7 +527,6 @@ void hertzsprung_gap::evolve_element(const real end_time) {
           small_envelope_perturbation();
       }
       else {
-        dump(cerr, false);
         if (relative_mass <= helium_ignition_mass(metalicity) ){
 	        star_transformation_story(Sub_Giant);
             new sub_giant(*this);
@@ -544,9 +583,9 @@ real hertzsprung_gap::terminal_hertzsprung_gap_radius(const real mass,
                 cerr<<"WARNING in hertzsprung_gap:: terminal_hertzsprung_gap_radius: R_AGB(L_HeI) < R_mHe, skipping blue loop?"<<endl;
             }
         }
-        if (blue_phase_timescale(mass, mass_tot, z) < cnsts.safety(tiny) && abs(r_ehg-r_agb)> cnsts.safety(tiny)) {
-            cerr<<"WARNING in hertzsprung_gap:: terminal_hertzsprung_gap_radius: t_bl <0, but r_ehg != r_agb)"<<endl;; 
-        }
+//        if (blue_phase_timescale(mass, mass_tot, z) < cnsts.safety(tiny) && abs(r_ehg-r_agb)> cnsts.safety(tiny)) {
+//            cerr<<"WARNING in hertzsprung_gap:: terminal_hertzsprung_gap_radius: t_bl <0, but r_ehg != r_agb)"<<endl;; 
+//        }
         
     }  
     return r_ehg;
@@ -576,16 +615,11 @@ real hertzsprung_gap::hertzsprung_gap_luminosity(const real time,
   real t_ms = main_sequence_time(mass, z);
   real t_bgb = base_giant_branch_time(mass, z);
   real tau = (time - t_ms)/(t_bgb - t_ms);
-  PRC(time);PRC(t_ms);PRC(t_bgb);PRL(tau);
 
   real l_ehg = terminal_hertzsprung_gap_luminosity(mass, z);
   real l_tms = terminal_main_sequence_luminosity(mass, z);
 
-  PRC(l_ehg);PRC(l_tms);PRC(tau);
-
   real l_hg = l_tms * pow(l_ehg/l_tms, tau);
-  PRL(l_hg);
-
   return l_hg;
 }
 
@@ -639,6 +673,20 @@ void hertzsprung_gap::evolve_core_mass(const real time,
   }
 }
 
+// Eq.4 (base_giant_branch_time(mass, z);
+// Supersedes ::hertzsprung_gap_time(mass, t_ms) in single star
+real hertzsprung_gap::hertzsprung_gap_time(const real mass, const real z) {
+    
+    real t_Hg = base_giant_branch_time(mass, z);
+    return t_Hg;
+}
+
+real hertzsprung_gap::hertzsprung_gap_time() {
+    
+    return hertzsprung_gap_time(get_relative_mass(), get_metalicity());
+}
+
+
 void hertzsprung_gap::evolve_core_mass() {
 
   evolve_core_mass(relative_age, relative_mass, metalicity);
@@ -654,16 +702,13 @@ real hertzsprung_gap::terminal_hertzsprung_gap_core_mass(const real mass,
   if (mass < m_HeF) {
     real l_bgb = base_giant_branch_luminosity(mass, z);
     m_core = FGB_core_mass_luminosity_relation(l_bgb, mass, z);
-    PRL(m_core);
   }
   else if (mass >= m_FGB) {
     real mc_HeI = helium_ignition_core_mass(mass, z);//sect.5.3: Eq.67
-    PRL(mc_HeI);
     m_core = mc_HeI;
   }
   else {
     real mc_bgb = base_giant_branch_core_mass(mass, z); //Eq.44    
-    PRL(mc_bgb);
     m_core = mc_bgb;
 
   }
@@ -685,10 +730,6 @@ real hertzsprung_gap::hertzsprung_gap_core_mass(const real time,
   real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
   real m_core = (tau + rho*(1-tau)) *  mc_ehg;
   
-  if (m_core < core_mass) {
-      cerr<<"On hertzsprung_gap::hertzsprung_gap_core_mass new m_core smaller than core_mass "<<endl;
-  }
-  m_core = max(m_core, core_mass);
   return m_core;
 }
 
@@ -699,7 +740,9 @@ real hertzsprung_gap::helium_core_radius(const real mass, const real m_core, con
         r_c = helium_star_radius_for_solar_metalicity(m_core);
     }
     else{
-        r_c = white_dwarf_radius(m_core, 0.);
+        // due to small nucleair burning layer 
+        // r_c > white_dwarf_radius
+        r_c = 5.* white_dwarf_radius(m_core, 0.);
     }
     return r_c;
 }
@@ -715,9 +758,7 @@ real hertzsprung_gap::small_envelope_core_radius(const real mass, const real m_c
         r_c = helium_star_radius_for_solar_metalicity(m_core);
     }
     else{
-        cerr<<"hg:he_core_rad should return wd radius, new or old one?"<<endl;
-        cerr<<"warning core_radius = 5* wd radius, though remnant has radius wd radius"<<endl; 
-        r_c = 5.*white_dwarf_radius(m_core, 0.);
+        r_c = white_dwarf_radius(m_core, 0.);
     }
     return r_c;
 }

@@ -69,7 +69,7 @@ class black_hole : public single_star {
         real sudden_mass_loss();
 
 	real get_radius();
-	real get_effective_radius() {return get_radius();}
+	//real get_effective_radius() {return get_radius();}
 
 	// Friend functions.
 	     // poor guy.

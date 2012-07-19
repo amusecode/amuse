@@ -315,6 +315,7 @@ void double_star::dump(ostream & s, bool brief) {
     else {
 	primary_roche_lobe   = roche_radius(semi, m1, m2);
 	secondary_roche_lobe = roche_radius(semi, m2, m1);
+
     }
     
     //    if(identity>0)
@@ -328,6 +329,8 @@ void double_star::dump(ostream & s, bool brief) {
       << binary_age << " "
       << semi << " "
       << eccentricity << "     ";
+
+
 
 	s << stp->get_identity() << " "	  
 	  << stp->get_element_type() << " "
@@ -343,10 +346,10 @@ void double_star::dump(ostream & s, bool brief) {
 	  << sts->get_effective_radius() << " "
 	  << log10(sts->temperature()) << " "
 	  << sts->get_core_mass() 
-	  //      << sts->get_effective_radius()/secondary_roche_lobe
+////	  //      << sts->get_effective_radius()/secondary_roche_lobe
 	  << endl;
 
-
+   
       //get_initial_primary()->dump(s, brief);
       //      s << "    ";
       //    get_initial_secondary()->dump(s, brief);
@@ -354,6 +357,7 @@ void double_star::dump(ostream & s, bool brief) {
     
   }
   else {
+
       if(bin_type!=Merged) {
 
       int n_elements = no_of_elements();
@@ -1036,18 +1040,23 @@ void double_star::evolve_element(const real end_time)
 	  // However, we may have ignored some aspects of binary evolution 
 	  // in the passed.
 
-	  if (current_time>=end_time)
+	  if (current_time>=end_time){
 	    evolve_the_binary(end_time);
+	  }
 	  else {
 	    evolve_the_binary(current_time);
 	  }
 
 	} while (binary_age<end_time);
-    else if (end_time == 0)
+	
+    else if (end_time == 0){
       try_zero_timestep();
-    else // (SPZ: 21 Mar 2001): added the circularizaton in case....
+    }
+    else {// (SPZ: 21 Mar 2001): added the circularizaton in case....
      circularize();
+    }
 }
+
 
 void double_star::try_zero_timestep() {
 
@@ -1098,7 +1107,6 @@ void double_star::try_zero_timestep() {
 }
 
 void double_star::evolve_the_binary(const real end_time) {
-
 //	Evolve both stars synchonously.
 
      real dt, old_binary_age;
@@ -1129,13 +1137,14 @@ void double_star::evolve_the_binary(const real end_time) {
 
 	recursive_binary_evolution(dt, binary_age+dt);
         calculate_velocities();
-        time_done += binary_age-old_binary_age; 
+        time_done += binary_age-old_binary_age;
      }
      while(time_done<ageint);
 }
 
 void double_star::recursive_binary_evolution(real dt,
                                 const real end_time) {
+
 //	Evolve two stars synchronously.
 //	If one star start filling its Roche-lobe
 //	return one time-step and search for the moment
@@ -1177,16 +1186,17 @@ void double_star::recursive_binary_evolution(real dt,
        
      star *p = get_primary();
      star *s = get_secondary();
-     if (p) 
+     if (p) {
        p->evolve_element(binary_age);
+     }
 
-     if (bin_type!=Merged && s) 
+     if (bin_type!=Merged && s) {
 	  s->evolve_element(binary_age);
-
+     }
+     
      p = s = NULL;
 
      if (bin_type!=Merged && bin_type!=Disrupted) {
-
        circularize();
 
        real rl_p = roche_radius(get_primary());
@@ -1238,7 +1248,6 @@ void double_star::recursive_binary_evolution(real dt,
 	   cerr << " (donor, accretor) = (" << donor->get_identity()
 		<< ", " << accretor->get_identity()
 		<< ")";
-	 
 	 // set the mass transfer timescale to the
 	 // timescale of the newly determined donor
 	 // implemented (SPZ+GN:23 Sep 1998)
@@ -1301,7 +1310,7 @@ void double_star::recursive_binary_evolution(real dt,
 	      cerr << endl;
 	      dump(cerr, false);
 	    }
-	    
+
 	    bin_type = Semi_Detached;
 	    
 	    if (!first_contact) {
@@ -1449,6 +1458,7 @@ void double_star::recursive_binary_evolution(real dt,
        real max_dt = end_time - binary_age;
        recursive_binary_evolution(max_dt, end_time);
      }
+
 }
 
 
@@ -1743,7 +1753,6 @@ void double_star::spiral_in(star* larger,
 //	stars are merged.
 
      if (bin_type!=Merged && bin_type!=Disrupted) {
-
         real mcore_l = larger->get_core_mass();
         real menv_l = larger->get_envelope_mass();
         real mtot_l = mcore_l + menv_l;
@@ -1773,7 +1782,6 @@ void double_star::spiral_in(star* larger,
        real ser = smaller->get_effective_radius();
 
        // SPZ July 2002: why is there a difference bewteen sr and ser?
-
 	// Merger
         if (lrc>=rl_l || sr>=rl_s) 	{
 
@@ -1789,6 +1797,10 @@ void double_star::spiral_in(star* larger,
 	  real sma_smaller = ser / roche_radius(1, smaller->get_total_mass(),
 						larger->get_core_mass());
 	  real sma_post_ce = Starlab::max(sma_larger, sma_smaller);
+
+      //SilT + GN October 2009 in new tracks sma_post_ce can be larger
+      // than semi!!
+      sma_post_ce = Starlab::min(sma_post_ce, semi);
 
 	  real mass_lost = (mtot_l*mtot_s/(2*sma_post_ce) 
                              - mtot_l*mtot_s/(2*semi))
@@ -1811,11 +1823,9 @@ void double_star::spiral_in(star* larger,
 	   cerr << "Merger double_star::spiral_in()"<<endl;
 	   dump(cerr, false);
 
-
 	   //           larger->set_core_mass(mcl_old);
 	   //           larger->set_envelope_mass(mel_old);
 	   larger = larger->reduce_mass(mass_lost);
-
 	   if (mtot_l>mtot_s) 
 	     merge_elements(larger, smaller);
            else 
@@ -1846,12 +1856,14 @@ void double_star::spiral_in(star* larger,
 
 void double_star::merge_elements(star* consumer,
                                  star* dinner) {
+cerr<<"double_star::merge_elements"<<endl;
 
 //cerr<<"void double_star::merge_elements()"<<endl;
 //cerr<<"bin: "<<identity<<endl;
 
   bin_type = Merged;
 
+#if 0
   if (!get_use_hdyn()) {
     consumer->set_velocity(velocity); 
     dinner->set_velocity(velocity);
@@ -1861,6 +1873,7 @@ void double_star::merge_elements(star* consumer,
     semi = 0;
     dinner->set_envelope_mass(0);
     dinner->set_core_mass(0);
+
   }
   else {
     // solved in dstar_to_dyn merge_elements
@@ -1871,6 +1884,7 @@ cerr << "Merger is: "<<endl;
   dump(cerr, false);
   dump("SeBa.data", true);
 
+#endif
   //get_seba_counters()->mergers++;
 
 }
@@ -1878,6 +1892,7 @@ cerr << "Merger is: "<<endl;
 // This function is not used at the moment.
 // But should be used.
 // Mass loss must be performed for both
+
 // stars simultaniously.
 void double_star::perform_wind_loss(const real dt) {
 

@@ -45,9 +45,9 @@ void proto_star::instantaneous_element() {
 	    		* (0.1148 + 0.8604*relative_mass*relative_mass)
 		    / (0.04651 + relative_mass*relative_mass);
     }
-    // check if this is still correct!!
-    // as base_main_sequence_luminosity changed from EFT to Tout 1996
-    luminosity = base_main_sequence_luminosity(core_mass);
+    cerr<<"check if this is still correct!!"<<endl;
+    cerr<<"as base_main_sequence_luminosity changed from EFT to Tout 1996"<<endl;
+    //luminosity = base_main_sequence_luminosity(core_mass);
     core_radius = delta;
 
     // proto stars are real big!

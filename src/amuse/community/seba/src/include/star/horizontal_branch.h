@@ -65,6 +65,35 @@ class horizontal_branch : public single_star {
       void evolve_core_mass();
       void update();
     
+    
+    real core_helium_burning_luminosity(const real time, 
+                                        const real mass, 
+                                        const real mass_tot,                    
+                                        const real z); //Eq.61
+    real core_helium_burning_radius(const real time, 
+                                    const real mass, 
+                                    const real mass_tot,                
+                                    const real z,
+                                    const real lum); // Eq.64
+    real helper_x_luminosity(const real mass, 
+                             const real z);
+    real helper_x_radius(const real mass, 
+                         const real mass_tot, const real z);
+    real helper_y_luminosity(const real mass, 
+                             const real mass_tot, const real z);
+    real helper_y_radius(const real mass, 
+                         const real mass_tot, const real z);
+    real core_helium_burning_core_mass(const real time,
+                                       const real mass, 
+                                       const real z); //Eq.67
+    real relative_age_at_start_of_blue_phase(const real mass, 
+                                             const real z);
+    real relative_age_at_end_of_blue_phase(const real mass, 
+                                           const real z);
+    real blue_phase_timescale(const real mass, const real z); //Eq.58
+    real f_bl(const real mass, const real z);
+
+
     //Small envelope behaviour
     real small_envelope_core_luminosity(const real time, 
                              const real mass, const real m_core, const real z);

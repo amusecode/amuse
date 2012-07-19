@@ -32,17 +32,9 @@ class super_giant : public single_star {
       protected:
 
         real McL_core_mass;
-        real AGB_COcore_mass(const real time, const real mass, 
-			     const real z); //Eq.39
-        real TAGB_time(const real mass, const real z);
         void evolve_core_mass(const real time,
 			      const real mass,
 			      const real z);
-
-  //        real TPAGB_COcore_mass(const real time,
-  //			       const real mass, 
-  //			       const real z); //Eq.39 
-
 
       public :
 
@@ -85,13 +77,14 @@ class super_giant : public single_star {
 
     real helium_core_radius(const real time, const real mass, const real mass_tot, const real m_core, const real z);
     real helium_core_radius(); 
-    
+
+
+
 
 };
 #endif 		// _SUPER_GIANT
 
 
-//	real stellar_radius(const real, const real);
 //	void adjust_initial_star();
 //	real helium_core_mass();
 //	void evolve_without_wind(const real); 
