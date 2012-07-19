@@ -95,6 +95,8 @@ class double_star : public star
 	mass_transfer_type get_current_mass_transfer_type()
 	  {return current_mass_transfer_type;}
 
+        void set_current_mass_transfer_type(mass_transfer_type type)	{current_mass_transfer_type = type;}
+
         real get_evolve_timestep();
  
         void set_bin_type(binary_type type)	{bin_type = type;}

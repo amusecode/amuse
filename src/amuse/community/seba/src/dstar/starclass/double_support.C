@@ -7,16 +7,16 @@
 
 binary_type extract_binary_type_string(const char *type) {
 
-  if (!strcmp("synchronized", type))        return Synchronized;
+  if (!strcmp("synchronized", type))          return Synchronized;
   else if (!strcmp("strong_encounter", type)) return Strong_Encounter;
-  else if (!strcmp("detached", type))       return Detached;
-  else if(!strcmp("semi_detached", type))   return Semi_Detached;
-  else if(!strcmp("contact", type))         return Contact;
-  else if(!strcmp("common_envelope", type)) return Common_Envelope;
-  else if(!strcmp("double_spiral_in", type)) return Double_Spiral_In;
-  else if(!strcmp("merged", type))          return Merged;
-  else if(!strcmp("disrupted", type))       return Disrupted;
-  else if(!strcmp("spiral_in", type))       return Spiral_In;
+  else if (!strcmp("detached", type))         return Detached;
+  else if(!strcmp("semi_detached", type))     return Semi_Detached;
+  else if(!strcmp("contact", type))           return Contact;
+  else if(!strcmp("common_envelope", type))   return Common_Envelope;
+  else if(!strcmp("double_spiral_in", type))  return Double_Spiral_In;
+  else if(!strcmp("merged", type))            return Merged;
+  else if(!strcmp("disrupted", type))         return Disrupted;
+  else if(!strcmp("spiral_in", type))         return Spiral_In;
   
   return Unknown_Binary_Type;
 
@@ -27,11 +27,11 @@ const char* type_string(binary_type tpe) {
   switch(tpe) {
   case Strong_Encounter:	return "strong_encounter";
   case Synchronized:		return "synchronized";
-  case Detached:			return "detached";
+  case Detached:		return "detached";
   case Semi_Detached:		return "semi_detached";
   case Contact:			return "contact";
   case Common_Envelope:		return "common_envelope";
-  case Double_Spiral_In:		return "double_spiral_in";
+  case Double_Spiral_In:	return "double_spiral_in";
   case Merged:			return "merged";
   case Disrupted:		return "disrupted";
   case Spiral_In:		return "spiral_in";

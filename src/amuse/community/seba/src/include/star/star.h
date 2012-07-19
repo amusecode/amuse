@@ -110,7 +110,9 @@ class  star : public starbase
 
         virtual mass_transfer_type get_current_mass_transfer_type() {
 	  return Unknown;} 
-	
+      
+        virtual void set_current_mass_transfer_type(mass_transfer_type) {} 
+
         virtual void  set_velocity(const real){}
         virtual void  set_anomal_velocity(const vec){}
 	virtual void  set_effective_radius(const real){}

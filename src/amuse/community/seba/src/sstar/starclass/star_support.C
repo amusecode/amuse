@@ -528,6 +528,7 @@ char* type_string(mass_transfer_type type) {
     case AML_driven:		return "AML_driven";
     case Thermal:		return "Thermal";
     case Dynamic:		return "Dynamic";
+    case Darwin:                return "Darwin";
     default:			return "unknown_mass_transfer_type";
   }
 }
@@ -540,6 +541,7 @@ char* type_short_string(mass_transfer_type type) {
     case AML_driven:		return "aml";
     case Thermal:		return "th";
     case Dynamic:		return "dyn";
+    case Darwin:                return "dar";
     default:			return "???";
   }
 }

@@ -673,6 +673,8 @@ void double_star::semi_detached(star* donor,
     cerr << "semi_deatched not stable => ::common_envelope" << endl; 
     
     //    dynamic_mass_transfer();
+    // (GN+SilT Mar  2 2011)
+    current_mass_transfer_type = Darwin;
     tidal_instability();
   }
   else if (get_current_mass_transfer_type()==Dynamic) {
@@ -688,6 +690,7 @@ void double_star::semi_detached(star* donor,
       cerr << "stable mass transfer => ::perform_mass_transfer" << endl; 
     }
 
+    dump(cerr, false);
     perform_mass_transfer(dt, donor, accretor);
   }
 
@@ -832,6 +835,12 @@ void double_star::perform_mass_transfer(const real dt,
 //	Adjust binary parameter according to the model
 //	Take account of mass lost and transfered from the donor to the
 //	accretor.
+
+  // (GN+SilT Mar  2 2011) new dumping regime
+  if (!first_contact) {
+
+    dump("SeBa.data", true);
+  }
 
 
   if (REPORT_TRANFER_STABILITY) {
@@ -1232,8 +1241,15 @@ void double_star::recursive_binary_evolution(real dt,
 	// set the mass transfer timescale to the
 	// timescale of the newly determined donor
 	// implemented (SPZ+GN:23 Sep 1998)
+	mass_transfer_type prev_mt = current_mass_transfer_type;
+
 	set_donor_timescale(donor);
+	//PRC(prev_mt);PRL(current_mass_transfer_type);
+	if (prev_mt > 0 && prev_mt < 4 && current_mass_transfer_type != prev_mt) first_contact = false;
+
 	determine_minimal_timestep();
+	//PRL(first_contact);
+	//PRC(prev_mt);PRL(current_mass_transfer_type);
 
 	// Check for Contact
 	if (rp >= rl_p &&  rs >= rl_s){       
@@ -1297,20 +1313,25 @@ void double_star::recursive_binary_evolution(real dt,
 	    if (REPORT_RECURSIVE_EVOLUTION)
 	      cerr << "\tFirst contact" << endl;
 	    
-	    first_contact=true;
 	    donor->first_roche_lobe_contact_story(accretor->get_element_type());
 
 	    cerr << "First Roche-lobe contact for: ";
 
 	    put_state();
-	    cerr << endl;
-	    dump("SeBa.data", true);
+	    // (GN+SilT Mar  2 2011)
+	    // do dump later, so that we know exactly what type of MT
+	    // (i.e. Spiral_In, Common_Envelope etc...
+	    //cerr << endl;
+	    //dump("SeBa.data", true);
 	  }
 // (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
 //dump("SeBa.data", true);
 	    
 	  semi_detached(donor, accretor, dt);
 	  
+	  // (GN+SilT Mar  2 2011)
+	  first_contact=true;
+
 	  star *p = get_primary();
 	  star *s = get_secondary();
 	  if (p) p->evolve_element(binary_age);
@@ -1359,10 +1380,13 @@ void double_star::recursive_binary_evolution(real dt,
 	  dump(cerr, false);
 	}
 
-	if (dt>minimal_timestep) {
+	// (GN+SilT Mar  2 2011)
+	// NEEDS TO BE CHECKED WITH SPZ
+	//if (dt>minimal_timestep) {
 
-	  refresh_memory();
-	}
+	current_mass_transfer_type = Unknown;
+	refresh_memory();
+	  //}
 
 	recursive_binary_evolution(dt, end_time);
 
@@ -1390,6 +1414,11 @@ void double_star::recursive_binary_evolution(real dt,
 	get_secondary()->
 	  set_effective_radius(get_secondary()->get_radius());
 	
+	//PRC(dt);PRL(minimal_timestep);
+
+	current_mass_transfer_type = Unknown;
+
+	//PRL(current_mass_transfer_type);
 	refresh_memory();
 // (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
 //dump("SeBa.data", true);
@@ -1404,6 +1433,8 @@ void double_star::recursive_binary_evolution(real dt,
 	       << end_time - binary_age << ")." << endl;
 	}
 	
+	//if (max_dt == 0 && dt > 2 * minimum_timestep) first_contact = false;
+
 	recursive_binary_evolution(max_dt, end_time);
 
 	return;
@@ -1424,6 +1455,8 @@ void double_star::recursive_binary_evolution(real dt,
       get_primary()->set_spec_type(Accreting, false);
       get_secondary()->set_spec_type(Accreting, false);
   
+      current_mass_transfer_type = Unknown;
+
       refresh_memory();
       real max_dt = end_time - binary_age;
       recursive_binary_evolution(max_dt, end_time);
@@ -1493,8 +1526,6 @@ void double_star::tidal_instability() {
     if (get_primary()->giant_star()) {
       if (get_secondary()->giant_star()) 
 	double_spiral_in();
-      // (SPZ+GN:2002Dec4)
-      // based on: Nelemans 2003 (to be written)
       else if(cnsts.parameters(use_angular_momentum_tidal))
 	angular_momentum_envelope_ejection(get_primary(), get_secondary());
       else
@@ -1577,6 +1608,12 @@ void double_star::dynamic_mass_transfer() {
 // if one of the cores fills its Roche-lobe a merger occurs.
 // The merger product loses some mass.
 void double_star::double_spiral_in() {
+
+       // (GN+SilT Mar  2 2011) new dumping regime
+       bin_type = Double_Spiral_In;
+       dump("SeBa.data", true);
+       current_mass_transfer_type = Unknown;
+
 
        star *p = get_primary();
        star *s = get_secondary();
@@ -1722,6 +1759,13 @@ void double_star::spiral_in(star* larger,
 //	donor's envelope.
 //	If two stars are in contact after the common envelope,
 //	stars are merged.
+
+      // (GN+SilT Mar  2 2011) new dumping regime
+      bin_type = Spiral_In;
+      dump("SeBa.data", true);
+      current_mass_transfer_type = Unknown;
+
+
 
      if (bin_type!=Merged && bin_type!=Disrupted) {
         real mcore_l = larger->get_core_mass();
@@ -2168,6 +2212,11 @@ void double_star::angular_momentum_envelope_ejection(star* larger,
 						     star* smaller) {
   
 //  cerr << "double_star::angular_momentum_envelope_ejection()"<<endl;
+  // (GN+SilT Mar  2 2011) new dumping regime
+  bin_type = Common_Envelope;
+  dump("SeBa.data", true);
+  current_mass_transfer_type = Unknown;
+
 
   if (bin_type!=Merged && bin_type!=Disrupted) {
  
@@ -2422,9 +2471,37 @@ real double_star::zeta(star * donor,
 
        real a_fr, new_semi;
        real beta = cnsts.parameters(specific_angular_momentum_loss);
-       a_fr  = pow(old_donor_mass*old_accretor_mass
-             / (new_donor_mass*new_accretor_mass), 2);
-       new_semi = semi*pow(M_new/M_old, 2*beta + 1)*a_fr;
+
+       if (!accretor->remnant()) {
+
+	 // General case: semi-conservative mass transfer.
+	 a_fr  = pow(old_donor_mass*old_accretor_mass
+		  / (new_donor_mass*new_accretor_mass), 2);
+	 new_semi = semi * pow(M_new/M_old, 2*beta + 1) * a_fr;	
+       }
+       else {
+
+	 // Special case: mass transfer to compact object as accretor.
+	 //               Two possibilities:
+	 //               1) eta>0: mass lost as wind from accretor.
+	 //               2) eta==0: exponential spiral-in.
+	 
+	 real eta = ma_dot/md_dot; 
+
+	 if (eta>0) {
+
+	   a_fr  = (new_donor_mass/old_donor_mass)
+	         * pow(new_accretor_mass/old_accretor_mass, 1/eta);
+	   new_semi = semi * (M_old/M_new)/pow(a_fr, 2); 
+	 }
+	 else {
+
+	   a_fr  = exp(2*(new_donor_mass-old_donor_mass)
+		       /new_accretor_mass); 
+	   new_semi = semi * (M_old/M_new)*a_fr
+	            / pow(new_donor_mass/old_donor_mass, 2);
+	 }
+       }
        
        real a_dot=0;
 

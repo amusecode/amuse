@@ -201,6 +201,7 @@ star* sub_giant::reduce_mass(const real mdot) {
 
     if (envelope_mass<=mdot) {
         envelope_mass = 0;
+	
 	 
 //        // (SPZ+GN: 27 Jul 2000)
 //        // non degenerate core < helium_dwarf_mass_limit always(!) become
@@ -217,7 +218,7 @@ star* sub_giant::reduce_mass(const real mdot) {
 //        }
 //        
         real m_HeF = helium_flash_mass(metalicity);
-        if (relative_mass< m_HeF){
+        if (relative_mass< m_HeF || core_mass < cnsts.parameters(minimum_helium_star)){
             star_transformation_story(Helium_Dwarf);
             return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
         }
@@ -256,7 +257,7 @@ star* sub_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
         // }
 
           real m_HeF = helium_flash_mass(metalicity);
-          if (relative_mass< m_HeF){
+          if (relative_mass< m_HeF || core_mass < cnsts.parameters(minimum_helium_star)){
               star_transformation_story(Helium_Dwarf);
               return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
           }

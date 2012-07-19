@@ -57,7 +57,7 @@ enum star_type_spec {NAC=0, Emission, Blue_Straggler, Barium,
 enum luminosity_class {I=0, II, III, IV, V,
 		       no_luminosity_class};
 				 
-enum mass_transfer_type {Unknown=0, Nuclear, AML_driven, Thermal, Dynamic};
+enum mass_transfer_type {Unknown=0, Nuclear, AML_driven, Thermal, Dynamic, Darwin};
 
 enum supernova_type {NAT=0, SN_Ia, SN_Ib, SN_Ic, 
 		     SN_II, SN_IIL, SN_IIP, SN_IV,

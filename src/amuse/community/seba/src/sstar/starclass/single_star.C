@@ -208,8 +208,14 @@ void single_star::post_constructor() {
   if (is_binary_component() && 
       get_binary()->get_bin_type() != Merged &&
       get_binary()->get_bin_type() != Disrupted) {
-    get_binary()->set_bin_type(Detached);
+
     get_binary()->set_first_contact(false);
+
+    if (remnant() || !hydrogen_envelope_star()) {
+      get_binary()->set_bin_type(Detached);
+      get_binary()->set_current_mass_transfer_type(Unknown);
+      
+    }
   }
 
   if (is_binary_component() && 
@@ -218,9 +224,10 @@ void single_star::post_constructor() {
   }
 
   if (remnant()) {
-    if (is_binary_component())
+    if (is_binary_component()) {
       get_binary()->dump("binev.data", false);
-    else
+    }
+   else
       dump("binev.data", false);
   }
 
