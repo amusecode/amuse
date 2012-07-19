@@ -128,6 +128,8 @@ local bool read_binary_params(ifstream& in, real &m_prim,
   return true;
 }
 
+//const char * SeBa_Filename() {return "SeBa.data";)
+
 /*-----------------------------------------------------------------------------
  *  binev  --
  *-----------------------------------------------------------------------------
@@ -144,7 +146,9 @@ local bool  evolve_binary(dyn * bi,
   real dt, time=start_time;
   ds->evolve_element(time);
   
-  ds->dump("SeBa.data", true);
+  char SeBa_outfile[] = "SeBa.data";
+  //char SeBa_outfile[] = SeBa_Filename();
+  ds->dump(SeBa_outfile, true);
 
   if (!bi->is_root() &&
       bi->get_parent()->is_root()) 
@@ -167,7 +171,7 @@ local bool  evolve_binary(dyn * bi,
     }
     while (time<end_time);
 
-  ds->dump("SeBa.data", true);
+  ds->dump(SeBa_outfile, true);
   ds->set_star_story(NULL);
     
   rmtree(bi, false);

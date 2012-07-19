@@ -8,7 +8,6 @@
 //  //Dummy function in order to allow compilation.
 //}
 
-
 real stellar_evolution_constants::mathematics(mathematical_constant pm) {
 
     switch(pm) {
