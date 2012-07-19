@@ -151,7 +151,7 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                     cerr<<"TPAGB helium accretion add_mass_to_accretor mc_co < mc_du ?"<<endl;
                     exit(-1);
                 }
-//                // for now nothing, in the next phase of evolve_element star makes the transition to the next phase  
+//                // for now nothing, the next time evolve_element is entered, star makes the transition to the next phase  
 //                if(relative_age > next_update_age){
 //                }
             }                
@@ -285,7 +285,7 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
                 cerr<<"TPAGB helium accretion add_mass_to_accretor mc_co < mc_du ?"<<endl;
                 exit(-1);
             }
-//                // for now nothing, in the next phase of evolve_element star makes the transition to the next phase  
+//                // for now nothing, the next time evolve_element is entered, star makes the transition to the next phase  
 //            if(relative_age > next_update_age){
 //            }
         }                

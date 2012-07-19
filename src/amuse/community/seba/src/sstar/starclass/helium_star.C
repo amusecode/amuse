@@ -431,8 +431,8 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
     }
     else{
         //for the moment assume helium accretion
-        // for the moment no helium_accretion_limit and adjust_accretor_radius
-        
+        // for the moment no adjust_accretor_radius
+        mdot = accretion_limit(mdot, dt);
         adjust_accretor_age(mdot, true);
         envelope_mass += mdot;
         adjust_next_update_age();
