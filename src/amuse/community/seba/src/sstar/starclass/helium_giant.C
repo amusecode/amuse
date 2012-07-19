@@ -168,6 +168,7 @@ real helium_giant::helium_giant_end_time(const real mass, const real mass_tot) {
     //core should minimally grow 5% as a helium giant
     real t_hems = helium_main_sequence_time_for_solar_metalicity(mass);   
     real mco_hems = helium_giant_core_mass(t_hems, mass);  //co core mass
+//    PRC(mass_tot);PRC(1.45*mass_tot-0.31);PRC(mc_max);PRL(1.05*mco_hems);    
     mc_max = max(mc_max, 1.05*mco_hems);
     
     real t_Heg = helium_giant_age_core_mass_relation(mc_max, mass);
@@ -222,6 +223,11 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
         if (mc_core < mass_tot){
             cerr<<"Warning: not homogeneous WD"<<endl;
             type = Carbon_Dwarf;
+            
+            if(!update_core_and_envelope_mass(get_total_mass())) {
+                cerr << "Update core mass failed in helium_giant()"<<endl;
+            }
+
         }
         // mc_core equals total mass
         // core mass reaches outside of star, no envelope anymore
