@@ -2117,37 +2117,22 @@ real double_star::mdot_according_to_roche_radius_change(star* donor,
 //      themal time-scale.
 // New implementations (SPZ+GN:22 Sep 1998)
 real double_star::mdot_according_to_roche_radius_change(star* donor,
-							star* accretor) {
+							star* accretor, const real z_star) {
   real mdot = 0;
   if (bin_type != Merged && bin_type != Disrupted) {
 
+    real m_don_rel = donor->get_relative_mass();
     real m_don = donor->get_total_mass();
     real m_acc = accretor->get_total_mass();
-
-    real zeta_th = donor->zeta_thermal();
-    real rl = roche_radius(donor);
-    
-    //    real dm = 0.01*min(m_don, m_acc);
-    // we use minimum_mass_step also in ::zeta
-// (GN+SPZ May  3 1999) in real mass transfer timestep we use 
-// delta m \sim timestep_factor * relative_mass
-// so
-//    real dm = cnsts.safety(minimum_mass_step);
-//    dm can become larger than donor mass.
-//    real dm = cnsts.safety(timestep_factor) * donor->get_relative_mass();
-    real dm = cnsts.safety(timestep_factor) * donor->get_total_mass();
-
-    real rl_2 = roche_radius(semi, m_don-dm, m_acc+dm);
 
     real J_mb = mb_angular_momentum_loss();
     real J_gwr = gwr_angular_momentum_loss(m_don, m_acc, semi);
 
     // Note: dm must be negative, because we talk about the mass losing star
-    real zeta_dimensionless_lobe = (rl_2 - rl)*m_don/(-1.*dm*rl);
-    mdot = m_don*abs((2*(J_mb+J_gwr))
-	 / (2*(m_don/m_acc-1.) - zeta_th + zeta_dimensionless_lobe));
-
-   real mdot_analytic = m_don*J_gwr/(m_don/m_acc - 2./3);
+   real mtt = m_don_rel * abs((J_mb + J_gwr));
+   real zeta_l = zeta(donor, accretor, mtt, true);
+   mdot = m_don*abs((2*(J_mb+J_gwr))
+	 / (2*(m_don/m_acc-1.) - z_star + zeta_l));
 
   }
 
@@ -2451,7 +2436,8 @@ void double_star::recall_memory() {
 // Call of zeta explicitly gives the donor timescale as parameter
 real double_star::zeta(star * donor, 
                        star * accretor,
-		       const real md_timescale) {
+		              const real md_timescale,
+		              bool no_aml ) {
 //	Find zeta Roche-lobe.
   
      if (bin_type!=Merged && bin_type!=Disrupted) {
@@ -2510,21 +2496,23 @@ real double_star::zeta(star * donor,
 	 }
        }
        
-       real a_dot=0;
-
-       real magnetic_braking_aml = mb_angular_momentum_loss();
-       real grav_rad_aml =  gwr_angular_momentum_loss(get_primary()
-						      ->get_total_mass(),
-						      get_secondary()
-						      ->get_total_mass(),
-						      semi);
-
-       //       PRC(magnetic_braking_aml);PRL(grav_rad_aml);
-       //       PRC(dt);PRC(semi);
-       a_dot = 2*dt*semi*(magnetic_braking_aml+grav_rad_aml);
-       //       PRC(a_dot);
-       new_semi += a_dot;
-       //PRL(a_dot);
+       if (!no_aml){
+           real a_dot=0;
+    
+           real magnetic_braking_aml = mb_angular_momentum_loss();
+           real grav_rad_aml =  gwr_angular_momentum_loss(get_primary()
+    						      ->get_total_mass(),
+    						      get_secondary()
+    						      ->get_total_mass(),
+    						      semi);
+    
+           //       PRC(magnetic_braking_aml);PRL(grav_rad_aml);
+           //       PRC(dt);PRC(semi);
+           a_dot = 2*dt*semi*(magnetic_braking_aml+grav_rad_aml);
+           //       PRC(a_dot);
+           new_semi += a_dot;
+           //PRL(a_dot);
+       }
        
        real rl = roche_radius(donor);
 
