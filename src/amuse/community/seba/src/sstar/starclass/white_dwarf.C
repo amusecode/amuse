@@ -433,6 +433,12 @@ real white_dwarf::accretion_limit(const real mdot, const real dt) {
      }
 #endif
 
+real  white_dwarf::accretion_limit(const real mdot, const real dt) {
+    //needed for double_star::zeta
+    return accretion_limit(mdot, dt, true);
+}
+
+
 real  white_dwarf::accretion_limit(const real mdot, const real dt, bool hydrogen) {
 
   if (dt < 0) return mdot;
