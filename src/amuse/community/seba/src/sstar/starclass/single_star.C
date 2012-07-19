@@ -1107,13 +1107,6 @@ void single_star::detect_spectral_features() {
 // Livio, M., Warner, B., 1984, The Observatory 104, 152.
 real single_star::accrete_from_stellar_wind(const real mdot, const real dt) {
 
-    cerr<<"single_star::accrete_from_stellar_wind"<<endl;
-    cerr.precision(HIGH_PRECISION);
-    PRC(relative_mass);PRL(get_total_mass());
-    PRC(mdot);PRL(dt);
-    cerr.precision(STD_PRECISION);
-
-    
   real alpha_wind = 0.5;
   real v_wind = get_companion()->wind_velocity();
 
@@ -1400,13 +1393,22 @@ real single_star::get_evolve_timestep() {
                       next_update_age - relative_age - 0.5 * cnsts.safety(minimum_timestep));   
 
     //temper LBV massloss rate
-    real timestep_lbv = timestep;
+//    real timestep_lbv = timestep;
 //    real x_lbv = 1.0E-5*radius*sqrt(luminosity);
-//    if(hydrogen_envelope_star() && luminosity > 6.0E5 && x_lbv > 1.0){
+//    if(hydrogen_envelope_star() && luminosity > 6.0E5 && x_lbv > 1.0){// dm 1% of m_env
 //        timestep_lbv = 0.1* envelope_mass *pow(x_lbv -1.0, -3.0) / (luminosity/6.0E5 -1.0) /1.0E6;
 //    }
     
-   timestep = min(timestep, timestep_lbv);             
+//   timestep = min(timestep, timestep_lbv);             
+
+    //temper WR massloss rate
+//    real timestep_wr = timestep;
+//    real mu = (get_total_mass()-core_mass)/get_total_mass() * min(5.0,max(1.2, pow(luminosity/7.E4,-0.5)));
+//    if ( mu < 1.){ //dm 1% of m_env
+//        timestep_wr = envelope_mass / (1.-mu) / 1.38 * pow(get_total_mass(), -2.87);
+//    }
+//    timestep = min(timestep, timestep_wr);             
+    
    return max(timestep, cnsts.safety(minimum_timestep));
     
 }

@@ -680,18 +680,7 @@ void super_giant::update_wind_constant() {
         dm_lbv = 0.1 * pow(x_lbv-1.0, 3)*(luminosity/6.0E5-1.0);
     }
         
-    PRC(dm_lbv);PRC(dm_dj);PRC(dm_r);PRL(dm_wr);
     wind_constant = max(max(max(max(dm_wr, dm_dj), dm_r), dm_vw), 0.0) +dm_lbv;
-    
-    if(dm_wr > dm_dj && dm_wr > dm_r && dm_wr > dm_vw) cerr<<"AGB: WR_like"<<endl;
-    else if (dm_dj > dm_r && dm_dj > dm_vw) cerr<< "AGB: de Jager"<<endl;
-    else if (dm_r >dm_vw) cerr<<"AGB: Reimers"<<endl;
-    else {
-        cerr<< "AGB:Vassiliadis & Wood" <<endl;
-        PRL(dm_wr);
-    }
-    
-    
     
 }
 

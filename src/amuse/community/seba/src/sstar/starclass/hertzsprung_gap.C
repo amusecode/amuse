@@ -162,10 +162,9 @@ real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
     
     if(hydrogen){
         // hydrogen accretion
-        real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
         real m_FGB = helium_ignition_mass(metalicity);
         
-            if ( core_mass > mc_bgb || relative_mass > m_FGB){
+            if ( relative_mass > m_FGB){
             //the evolution of m_core, luminosity, timescales decouples from M
             // relative mass is no longer kept at same value as total mass
             envelope_mass -= mdot;
@@ -215,9 +214,6 @@ real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
             relative_age = next_update_age;
             evolve_core_mass();
         }
-        
-        cerr<<"How to handle hg::add_mass_to_accretor  m_core = max(m_core, m_core_old); on hg? in case of mass loss"<<endl;
-        cerr<<"I think not. m_core = max() is in case of mass loss, that's in previous stages and not important here"<<endl;    
     }
 
     set_spec_type(Accreting);            
@@ -237,11 +233,9 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
     if(hydrogen){
         //hydrogen accretion
         mdot = accretion_limit(mdot, dt);
-        
-        real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
         real m_FGB = helium_ignition_mass(metalicity);
         
-        if ( core_mass > mc_bgb || relative_mass > m_FGB){
+        if ( relative_mass > m_FGB){
             //the evolution of m_core, luminosity, timescales decouples from M
             // relative mass is no longer kept at same value as total mass
             envelope_mass -= mdot;
@@ -293,13 +287,9 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
             real m_rel= get_relative_mass_from_core_mass("Mc_ehg", core_mass, relative_mass, metalicity);
             update_relative_mass(m_rel);
             last_update_age = main_sequence_time(relative_mass, metalicity);
-            relative_age = next_update_age;
+            relative_age = next_update_age;            
             evolve_core_mass();
         }
-        
-        cerr<<"How to handle hg::add_mass_to_accretor  m_core = max(m_core, m_core_old); on hg? in case of mass loss"<<endl;
-        // //according to HPT this is important in case of mass loss  
-        // m_core = max(m_core, m_core_old);    
         
         cerr<<"hg::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
         //adjust_accretor_radius(mdot, dt);
@@ -644,14 +634,8 @@ void hertzsprung_gap::update_wind_constant() {
         dm_lbv = 0.1 * pow(x_lbv-1.0, 3)*(luminosity/6.0E5-1.0);
     }
     
-    PRC(dm_lbv);PRC(dm_v);PRC(dm_dj);PRC(dm_r);PRL(dm_wr);
     wind_constant = max(max(max(dm_wr, dm_dj_v), dm_r), 0.0) + dm_lbv;
-    
-    if(dm_wr > dm_dj_v && dm_wr > dm_r) cerr<<"HG: WR_like"<<endl;
-    else if (dm_r > dm_dj_v) cerr<<"HG: Reimers"<<endl;
-    else if (dm_dj_v == dm_dj) cerr<< "HG: de Jager"<<endl;
-    cerr<<"HG: Vink"<<endl;   
-    
+        
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -897,7 +881,7 @@ real hertzsprung_gap::hertzsprung_gap_core_mass(const real time,
   real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
   real m_core = (tau + rho*(1-tau)) *  mc_ehg;
 
-  // according to HPT this is important in case of mass loss  
+  // according to HPT this is important in case of mass loss 
   m_core = max(m_core, m_core_old);    
   
   return m_core;

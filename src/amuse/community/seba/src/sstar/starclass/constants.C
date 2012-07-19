@@ -403,7 +403,7 @@ real stellar_evolution_constants::safety(safety_parameter ps) {
           break;                                   // 2.5 works fine but slow
     case maximum_recursive_calls:            return 1000;
           break;
-      case tiny:                             return 5e-13;
+      case tiny:                             return 1e-4;
           break;
     case number_of_steps:                   return 10;
         break;

@@ -515,12 +515,9 @@ void horizontal_branch::update_wind_constant() {
     //Reduced WR-like mass loss for small H-envelope mass
     real mu = (get_total_mass()-core_mass)/get_total_mass() * min(5.0,max(1.2, pow(luminosity/7.E4,-0.5)));
     real dm_wr = 0;
-    real sil, sil_frac;
     if ( mu < 1.){
         //factor (1.-mu) should be checked e.g. with resulting # BH in binaries
         dm_wr = 1.38E-08 * pow(get_total_mass(), 2.87) * (1.-mu);
-        sil = 1.E-13 * pow(luminosity, 1.5)* (1.-mu) ;
-        sil_frac = dm_wr/ sil;
     }
     
     
@@ -533,14 +530,7 @@ void horizontal_branch::update_wind_constant() {
     }
     
     
-    PRC(dm_lbv);PRC(dm_v);PRC(dm_dj);PRC(dm_r);PRL(dm_wr);
     wind_constant = max(max(max(dm_wr, dm_dj_v), dm_r), 0.0) + dm_lbv;
-    
-    
-    if(dm_wr > dm_dj_v && dm_wr > dm_r) cerr<<"HG: WR_like"<<endl;
-    else if (dm_r > dm_dj_v) cerr<<"HG: Reimers"<<endl;
-    else if (dm_dj_v == dm_dj) cerr<< "HG: de Jager"<<endl;
-    cerr<<"HG: Vink"<<endl;   
     
 }
 

@@ -200,6 +200,10 @@ void helium_star::evolve_element(const real end_time) {
     if (relative_mass < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not ignite core helium burning.
         cerr<<"Warning: not homogeneous WD"<<endl;
+        if(!update_core_and_envelope_mass(get_total_mass())) {
+            cerr << "Update core mass failed in helium_star()"<<endl;
+        }
+        
         star_transformation_story(Helium_Dwarf);
         new white_dwarf(*this, Helium_Dwarf);
         return;
@@ -310,6 +314,10 @@ star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
     if (relative_mass < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not continue core helium burning.
         cerr<<"Warning: not homogeneous WD"<<endl;
+        if(!update_core_and_envelope_mass(get_total_mass())) {
+            cerr << "Update core mass failed in helium_star()"<<endl;
+        }
+        
         star_transformation_story(Helium_Dwarf);
         return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
     }
@@ -327,6 +335,10 @@ star* helium_star::reduce_mass(const real mdot) {
     if (relative_mass < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not continue core helium burning.
         cerr<<"Warning: not homogeneous WD"<<endl;
+       if(!update_core_and_envelope_mass(get_total_mass())) {
+           cerr << "Update core mass failed in helium_star()"<<endl;
+       }
+           
         star_transformation_story(Helium_Dwarf);
         return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
     }

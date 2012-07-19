@@ -113,7 +113,7 @@ void main_sequence::update_wind_constant() {
     // wind_constant is in solar masses per year
     // Should be updated after mass accretion
     // (ST: 17 Sep 2009)
-    real sil =envelope_mass;
+    
     // Nieuwenhuijzen & de Jager 1990
     // Massive stars
     real dm_dj = 0;
@@ -156,8 +156,6 @@ void main_sequence::update_wind_constant() {
             cerr<<"possible for low metallicities"<<endl;
             dm_v = 0;
             wind_constant = dm_dj;
-            PRC(dm_v);PRL(dm_dj);
-            cerr<< "MS: de Jager"<<endl;
         }
         else {
             if (temp <= Tjump-T_smooth){
@@ -201,23 +199,15 @@ void main_sequence::update_wind_constant() {
             
             dm_v = pow(10, arg_dm_v);   
             wind_constant = dm_v;
-            PRC(dm_v);PRL(dm_dj);
-            cerr<<"MS: Vink"<<endl;
-
             
             if (temp < 8000){
                 // line driven winds no longer efficient
                 // see Achmad et al 1997
                 dm_v = dm_v * 200. / (8200.-temp);
                 wind_constant = max(max(dm_v, dm_dj), 0.);
-                PRC(dm_v);PRL(dm_dj);
-                if (dm_dj > dm_v) cerr<< "MS: de Jager"<<endl;
-                else cerr<<"MS: Vink"<<endl;
-
             }
         }
     }    
-    
 }
 
 
@@ -350,6 +340,7 @@ real main_sequence::add_mass_to_accretor(const real mdot, bool hydrogen) {
         //for the moment assume helium accretion
         
         //core_mass += mdot; //no core yet
+        envelope_mass += mdot;
         accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
@@ -410,6 +401,7 @@ real main_sequence::add_mass_to_accretor(real mdot, const real dt, bool hydrogen
         //for the moment assume helium accretion
         
         //core_mass += mdot; //no core yet
+        envelope_mass += mdot;
         accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
@@ -771,6 +763,7 @@ void main_sequence::instantaneous_element() {
 // Evolve a main_sequence star upto time argument according to
 // the new 2000 models.
 void main_sequence::evolve_element(const real end_time) {
+    PRC(get_total_mass());PRL(relative_mass);
     
     real dt = end_time - current_time;
     current_time = end_time;
@@ -839,13 +832,12 @@ real main_sequence::get_evolve_timestep() {
                         t_goal - relative_age - 0.5 * cnsts.safety(minimum_timestep));   
 
     //temper LBV massloss rate
-    real timestep_lbv = timestep;
-    real x_lbv = 1.0E-5*radius*sqrt(luminosity);
-    if(hydrogen_envelope_star() && luminosity > 6.0E5 && x_lbv > 1.0){
-        timestep_lbv = 0.1* envelope_mass *pow(x_lbv -1.0, -3.0) / (luminosity/6.0E5 -1.0) /1.0E6;
-    }
-    
-    timestep = min(timestep, timestep_lbv);             
+//    real timestep_lbv = timestep;
+//    real x_lbv = 1.0E-5*radius*sqrt(luminosity);
+//    if(hydrogen_envelope_star() && luminosity > 6.0E5 && x_lbv > 1.0){
+//        timestep_lbv = 0.1* envelope_mass *pow(x_lbv -1.0, -3.0) / (luminosity/6.0E5 -1.0) /1.0E6;
+//    }    
+//    timestep = min(timestep, timestep_lbv);             
     
     
     return max(timestep, cnsts.safety(minimum_timestep));
