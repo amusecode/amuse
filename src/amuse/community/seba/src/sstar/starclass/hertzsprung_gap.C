@@ -253,8 +253,9 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
     }
     else{
         //for the moment assume helium accretion
-        // for the moment no helium_accretion_limit and adjust_accretor_radius
+        // for the moment no adjust_accretor_radius
         
+        mdot = accretion_limit_eddington(mdot, dt);
         core_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         

@@ -701,6 +701,15 @@ real single_star::accretion_limit(const real mdot, const real dt) {
 
 }
 
+real single_star::accretion_limit_eddington(const real mdot, const real dt) {
+        real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
+
+        if(mdot>=eddington) return eddington;
+
+        return mdot;
+}
+
+
 void single_star::adjust_donor_radius(const real delta_m) {
 
 

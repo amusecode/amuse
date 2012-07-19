@@ -447,7 +447,7 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
         //hydrogen accretion
         // is treated in the same way as helium accretion..
 
-        mdot = accretion_limit(mdot, dt);
+        mdot = accretion_limit_eddington(mdot, dt);
         
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         // adjust_accretor_age(mdot);
@@ -467,7 +467,7 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
     else{
         //for the moment assume helium accretion
         // for the moment no adjust_accretor_radius
-        mdot = accretion_limit(mdot, dt);
+        mdot = accretion_limit_eddington(mdot, dt);
         
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         //adjust_accretor_age(mdot);
@@ -487,15 +487,13 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
 
 
 real helium_giant::accretion_limit(const real mdot, const real dt) {
+cerr<<"helium_giant::accretion_limit not used"<<endl;
 
      real mdot_limit = mdot;
 
      real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
      if (mdot>=eddington)
        mdot_limit =  eddington;
-
-     if (envelope_mass<=0)
-       mdot_limit = 0.;
 
      return mdot_limit;
 

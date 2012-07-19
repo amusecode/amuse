@@ -191,6 +191,7 @@ class  single_star : public star
         real accretion_limit(const real, const real);
         real expansionA(const real);
         real expansionB(const real);
+        real accretion_limit_eddington(const real, const real);
 
         void update();
         void detect_spectral_features();

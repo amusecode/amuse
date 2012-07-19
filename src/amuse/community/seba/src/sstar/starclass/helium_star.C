@@ -409,7 +409,7 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
     if(hydrogen){
         //hydrogen accretion
         // is treated in the same way as helium accretion..
-        mdot = accretion_limit(mdot, dt);
+        mdot = accretion_limit_eddington(mdot, dt);
 
         adjust_accretor_age(mdot, true);
         // (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
@@ -432,7 +432,7 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
     else{
         //for the moment assume helium accretion
         // for the moment no adjust_accretor_radius
-        mdot = accretion_limit(mdot, dt);
+        mdot = accretion_limit_eddington(mdot, dt);
         adjust_accretor_age(mdot, true);
         envelope_mass += mdot;
         adjust_next_update_age();
@@ -443,6 +443,8 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
  }
 
 real helium_star::accretion_limit(const real mdot, const real dt) {
+cerr<<"helium_star::accretion_limit not used"<<endl;
+
         real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
 
         if(mdot>=eddington) return eddington;

@@ -51,13 +51,14 @@ local void evolve_star_until_next_time(node* bi, const real out_time, const int 
     bi->get_starbase()->dump(starev, false);  
     real current_time = ((star*)bi->get_starbase())->get_current_time();
     real time_step    =  bi->get_starbase()->get_evolve_timestep();
+time_step = Starlab::max(time_step/n_steps, cnsts.safety(minimum_timestep));
 
-    while (out_time>current_time+time_step ) {
+    while (out_time>current_time+time_step) {
         bi->get_starbase()->evolve_element(current_time+time_step);
         bi->get_starbase()->dump(starev, false);                
         current_time = ((star*)bi->get_starbase())->get_current_time();
         time_step    =  bi->get_starbase()->get_evolve_timestep();
-        
+    time_step = Starlab::max(time_step/n_steps, cnsts.safety(minimum_timestep));
         star_state ss(dynamic_cast(star*, bi->get_starbase()));
     }
     
@@ -106,7 +107,7 @@ int main(int argc, char ** argv)
     real  t_end;
     
     int n_steps = 1;
-    int n_steps_per_phase = 10;
+    int n_steps_per_phase = 1;
     int n_init = 0;
     int n =1;
     char* input_filename;
