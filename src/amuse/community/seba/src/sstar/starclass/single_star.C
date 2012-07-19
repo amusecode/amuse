@@ -2748,6 +2748,9 @@ real single_star::r_helper(const real rad, const real rad_c, const real mass_tot
 // (SPZ+GN: 27 Jul 2000) Gijs sais is better: Nelemans et al 2000
 real single_star::white_dwarf_radius(real mass, real time) {
     
+    //safety
+    if (time < 1) time = 1;
+
     real r;
     if (mass < 0.8) { 
         real a,b;

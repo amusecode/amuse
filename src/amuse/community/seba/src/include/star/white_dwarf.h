@@ -68,6 +68,7 @@ class white_dwarf : public single_star {
 
 //		Mass transfer stability
         real zeta_thermal();
+        real zeta_adiabatic();
         real gyration_radius_sq();
 
         friend neutron_star::neutron_star(white_dwarf&);

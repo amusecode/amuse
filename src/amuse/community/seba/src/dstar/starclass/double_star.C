@@ -1759,7 +1759,7 @@ void double_star::spiral_in(star* larger,
         real menv_l = larger->get_envelope_mass();
         real mtot_l = mcore_l + menv_l;
 
-//	PRC(mcore_l);PRC(menv_l);PRL(mtot_l);
+	PRC(mcore_l);PRC(menv_l);PRL(mtot_l);
 
 	// What is accreted by the accretor should be reduce in the donor.
 	// (SPZ:  2 Jun 1999)
@@ -1776,12 +1776,16 @@ void double_star::spiral_in(star* larger,
 	real a_spi = semi*(mcore_l/mtot_l)/(1. + (2.*menv_l
                    / (alpha_lambda *r_lobe*mtot_s)));
        
+	PRL(a_spi);
+
         real rl_l = roche_radius(a_spi, mcore_l, mtot_s);
         real rl_s = roche_radius(a_spi, mtot_s, mcore_l);
 
        real lrc = larger->get_core_radius();
        real sr = smaller->get_radius();
        real ser = smaller->get_effective_radius();
+
+       PRC(rl_l);PRC(lrc);PRC(rl_s);PRL(sr);
 
        // SPZ July 2002: why is there a difference bewteen sr and ser?
 	// Merger
@@ -1864,6 +1868,8 @@ cerr<<"double_star::merge_elements"<<endl;
 //cerr<<"bin: "<<identity<<endl;
 
   bin_type = Merged;
+  dump(cerr, false);
+  dump("SeBa.data", true);
 
 #if 0
   if (!get_use_hdyn()) {

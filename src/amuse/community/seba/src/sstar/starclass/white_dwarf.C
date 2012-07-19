@@ -484,6 +484,14 @@ real white_dwarf::zeta_thermal() {
      return -cnsts.mathematics(one_third);
 }
 
+real white_dwarf::zeta_adiabatic() {
+
+     // Based on white dwarf mass radius relation.
+     // zeta = (m/r)dr/dm;
+  
+     return -cnsts.mathematics(one_third);
+}
+
 star* white_dwarf::merge_elements(star* str) {
 
      envelope_mass = 0;		//Destroy disc.
