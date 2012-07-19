@@ -71,7 +71,7 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
             real m_HeF = helium_flash_mass(metalicity);
             real t_bgb = base_giant_branch_time(relative_mass, metalicity);
 	    // (GN Oct 26 2010) for mergers: core_mass can be > max degenerate He core --> jump to next block
-            if (relative_mass < m_HeF && core_mass <  helium_ignition_core_mass(relative_mass, metalicity)){
+            if (relative_mass < m_HeF && core_mass <  helium_ignition_core_mass(0.5, metalicity)){
                 real l_bgb = base_giant_branch_luminosity(relative_mass, metalicity);
                 real A_H = sub_giant_Ah_estimator(relative_mass);                    
                 relative_age = determine_age(core_mass, relative_mass, metalicity, A_H, t_bgb, l_bgb);
