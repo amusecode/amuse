@@ -4,6 +4,7 @@ CFLAGS    += -O
 
 EXE	= starev
 DIRS	= node std sstar dstar
+#DIRS	= node std sstar dstar rdc
 
 all:	lib $(EXE)
 

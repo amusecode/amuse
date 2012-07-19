@@ -108,7 +108,7 @@ local inline char *get_version(const char *cvs_id)
 
     if (!cvs_id) return NULL;
 
-    char *start = strstr(cvs_id, "Revision:");
+    const char *start = strstr(cvs_id, "Revision:");
     if (!start) return NULL;
 
     start += 9;
@@ -116,7 +116,7 @@ local inline char *get_version(const char *cvs_id)
 
     if (start - cvs_id > strlen(cvs_id)) return NULL;
 
-    char *end = start;
+    const char *end = start;
     while (*end > ' ') end++;
 
     if (*end == ' ') {
