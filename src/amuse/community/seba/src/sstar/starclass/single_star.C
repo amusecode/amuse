@@ -2770,7 +2770,6 @@ real single_star::helium_giant_radius(const real lum, const real mass, const rea
     real L_tHems = terminal_helium_main_sequence_luminosity(mass); 
     real R1 = Rzhe * pow(lum/L_tHems, 0.2) + 0.02*(exp(lum/lambda)-exp(L_tHems/lambda));//He Hg
     real R2 = 0.08*pow(lum, 0.75); //He GB
-    PRC(R1);PRL(R2);
     return min(R1, R2);    
 }
     
