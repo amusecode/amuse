@@ -424,7 +424,6 @@ void double_star::adjust_binary_after_wind_loss(star * donor,
         real M_new = get_total_mass();
         real new_donor_mass = donor->get_total_mass();
         real new_accretor_mass = accretor->get_total_mass();
-
         if (md_dot>0 && ma_dot>=0) {
 	  // real alpha = 1 - ma_dot/md_dot;
           // semi *= pow(pow(new_donor_mass/old_donor_mass, 1-alpha)
@@ -434,7 +433,7 @@ void double_star::adjust_binary_after_wind_loss(star * donor,
 	   real eta =  ma_dot/md_dot;
            semi *= pow(pow(new_donor_mass/old_donor_mass, eta)
                 *  new_accretor_mass/old_accretor_mass, -2)
-                *  M_old/M_new;
+                *  M_old/M_new; 
         }
      }
      else {
@@ -480,11 +479,11 @@ void double_star::circularize() {
             real new_ecc = circ_semi/peri_new - 1;
 //cerr<<"old: "<<" "<<semi<<" "<<eccentricity<<" "<<pericenter<<endl;
 //cerr<<"new: "<<circ_semi<<" "<<new_ecc<<" "<<peri_new<<endl;
-            if(new_ecc<=0) {
+            if(new_ecc<=0) { 
               semi=circ_semi;
               eccentricity = 0;
             }
-            else {
+            else { 
               semi = circ_semi/(1 - new_ecc*new_ecc);
               eccentricity = new_ecc;
             }
@@ -861,6 +860,7 @@ void double_star::perform_mass_transfer(const real dt,
 
      if (md_dot>0) {
         real ma_dot = accretor->add_mass_to_accretor(md_dot, donor->hydrogen_envelope_star(), dt);
+
         real M_new = get_total_mass();
         real new_donor_mass = donor->get_total_mass();
         real new_accretor_mass = accretor->get_total_mass();
@@ -882,7 +882,6 @@ void double_star::perform_mass_transfer(const real dt,
 	  //               Two possibilities:
 	  //               1) eta>0: mass lost as wind from accretor.
 	  //               2) eta==0: exponential spiral-in.
-	  
 	   real eta = ma_dot/md_dot; 
 	   if (eta>0) {
 	     a_fr  = (new_donor_mass/old_donor_mass)
@@ -1627,9 +1626,13 @@ void double_star::double_spiral_in() {
        real menv_s = s->get_envelope_mass();
        real mtot_s = mcore_s + menv_s;
 
-       real r_p = roche_radius(p);
-       real r_s = roche_radius(s);
+       real r_p = p->get_radius();
+       real r_s = s->get_radius();
 
+        //real r_l_p = roche_radius(p);
+        //real r_l_s = roche_radius(s);
+	//PRC(r_l_p);PRC(r_p);PRC(r_l_s);PRL(r_s); 	
+		
        real alpha_lambda = cnsts.parameters(common_envelope_efficiency)
 	                 * cnsts.parameters(envelope_binding_energy);
 
@@ -1941,7 +1944,6 @@ void double_star::angular_momentum_loss(const real dt) {
 //	Magnetic breaking takes place if the binary eccentricity
 //	becomes smaller than COROTATION_E_LIMIT due to tidal circularization.
 void double_star::magnetic_stellar_wind(const real dt) {
-
 //cerr<<"void double_star::magnetic_stellar_wind(dt="<<dt<<)"<<endl;
 
     real magnetic_braking_aml = mb_angular_momentum_loss();
@@ -2254,9 +2256,6 @@ void double_star::angular_momentum_envelope_ejection(star* larger,
 	  real rl_l = roche_radius(a_f, M_core, m_new);
 	  real rl_s = roche_radius(a_f, m_new, M_core);
 
-
-//	  PRC(rl_l);PRL(larger->get_core_radius());
-//	  PRC(rl_s);PRL(smaller->get_radius());
 
 	// Merger
 	// Note that we hare want the equilibrium radius of the accretor
