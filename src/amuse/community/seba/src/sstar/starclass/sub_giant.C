@@ -401,6 +401,8 @@ real sub_giant::zeta_adiabatic() {
   else if (relative_mass > 5)
     r_dconv = 1.33*pow(relative_mass,1.93);
     
+    //(SilT Sep 1 2010) Need factor 1.5 with new HPT tracks in order to get
+   // stable mass transfer on early giant branch  
     r_dconv = 1.5* r_dconv;
   if (radius < r_dconv) {
 

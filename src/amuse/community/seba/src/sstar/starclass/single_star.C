@@ -10,7 +10,7 @@
 // Only to make SPZDCH star known to this file 
 #include "SPZDCH_star.h"
 
-#define REPORT_MASS_TRANSFER_TIMESCALE true
+#define REPORT_MASS_TRANSFER_TIMESCALE false
 
 single_star * new_single_star(stellar_type type,	// All defaults are
 			      int  id,			// now specified in
@@ -692,10 +692,6 @@ real single_star::accretion_limit(const real mdot, const real dt) {
   accretion = max(accretion, 0.);
   real mdot_max = mdot_kh*pow(accretion, 1./expansionA(relative_mass));
   mdot_max = max(mdot_max, 0.);	
-
-
-
-PRL(pow(accretion, 1./expansionA(relative_mass)));
   return min(mdot, mdot_max);
 
 
