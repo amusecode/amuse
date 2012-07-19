@@ -10,7 +10,7 @@
 // Only to make SPZDCH star known to this file 
 #include "SPZDCH_star.h"
 
-#define REPORT_MASS_TRANSFER_TIMESCALE false
+#define REPORT_MASS_TRANSFER_TIMESCALE true
 
 single_star * new_single_star(stellar_type type,	// All defaults are
 			      int  id,			// now specified in
@@ -389,16 +389,21 @@ real single_star::nucleair_evolution_timescale() {
 //
 //  real t_nuc = cnsts.parameters(energy_to_mass_in_internal_units)
 //             * fused_mass/luminosity;
-//
+//  
 //  real t_kh = kelvin_helmholds_timescale();
 //
 //  return sqrt(t_nuc * t_kh);
-  
 
 // (GN+SPZ Apr 28 1999) giant lifetime is ~ 10% of ms life time
+//  return 0.1*main_sequence_time();
 
-  return 0.1*main_sequence_time();
 
+// (GN+SilT August 5 2010) t_nuc ~ delta t * R/ delta R
+// old prescription gave long timescales which destables the mass transfer
+     real t_nuc = radius * (current_time - previous.current_time)/(radius -
+previous.radius);
+    if (t_nuc < 0) t_nuc = 0.1*main_sequence_time();
+    return t_nuc;
 }
 
 real single_star::dynamic_timescale() {
@@ -675,9 +680,10 @@ real single_star::mass_ratio_mdot_limit(real mdot) {
 real single_star::accretion_limit(const real mdot, const real dt) {
 
   // Conservative mass transfer.
-  // return mdot;
+//   return mdot;
 
   // Non-conservative mass transfer.
+  // Based on Pols & Marinus,1994, A&A,288, 475
   real r_rl = get_binary()->roche_radius(this);
   real mdot_kh = dt*relative_mass/kelvin_helmholds_timescale();
   real accretion = log10(r_rl/effective_radius)
@@ -686,7 +692,10 @@ real single_star::accretion_limit(const real mdot, const real dt) {
   accretion = max(accretion, 0.);
   real mdot_max = mdot_kh*pow(accretion, 1./expansionA(relative_mass));
   mdot_max = max(mdot_max, 0.);	
-  
+
+
+
+PRL(pow(accretion, 1./expansionA(relative_mass)));
   return min(mdot, mdot_max);
 
 
@@ -717,9 +726,9 @@ void single_star::adjust_donor_radius(const real delta_m) {
 
 }
 
-
 // Adding mass to a star causes it to expand.
 void single_star::adjust_accretor_radius(const real mdot, const real dt) {
+// Based on Pols & Marinus,1994, A&A,288, 475
 
   // function returns directly: effective radius is used to determine RLOF.
   // Allowing accretor to grow in size results in contact systems.
@@ -730,7 +739,6 @@ void single_star::adjust_accretor_radius(const real mdot, const real dt) {
   
 
   //cerr<<"void star::adjust_accretor_radius()"<<endl;
-
   if (mdot>0) {
     real mdot_kh = relative_mass*dt/kelvin_helmholds_timescale();
 
@@ -744,7 +752,8 @@ void single_star::adjust_accretor_radius(const real mdot, const real dt) {
     real r_l = get_binary()->roche_radius(this);
     effective_radius = max(min(r_l, effective_radius), 
 			   radius*pow(10, pow(10, r_fr)));
-  }
+  
+  } 
 }
 
 
@@ -881,15 +890,12 @@ star* single_star::merge_elements(star* str) {
 // Determine mass transfer stability according to
 // `zeta' discription.
 real single_star::mass_transfer_timescale(mass_transfer_type &type) {
-
   type = Unknown;
-  
   real z_l=0, mass_ratio = 1;
   if (is_binary_component()) {
     mass_ratio = get_companion()->get_total_mass()/get_total_mass();
     z_l = get_binary()->zeta(this, get_companion());
   }
-
   real z_ad = zeta_adiabatic();
   real z_th = zeta_thermal();
 
@@ -950,7 +956,6 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
 
 //		Stellar stability functions.
 real single_star::zeta_adiabatic() {
-
 // (GN+SPZ Apr 28 1999) this is used by sub_giant: all stars with HW87
 // all stars should have their own actually...(when we have time)
 
@@ -2476,6 +2481,34 @@ real single_star::helium_ignition_core_mass(const real mass,
   return mc_HeI;
 }
 
+// function needed for possible track hydrogen accreting helium star can turn into horizontal branch star, not implemented currently
+
+// Eq.67
+//real single_star::core_helium_burning_core_mass_from_helium_star(const real time,
+//                                                const real mass, 
+//                                                const real z,
+//                                                const real mc) {
+
+//real single_star::core_helium_burning_core_mass_from_helium_star(const real mass, 
+//                                                const real z) {
+//    
+//    real mc_bagb = base_AGB_core_mass(mass, z);
+//    real mc_HeI = helium_ignition_core_mass(mass, z);
+    
+// //    real t_hems = helium_main_sequence_time_for_solar_metalicity(mc);//helium_core_mass
+// //    real tau = time / t_hems;    
+// //cerr<<"evt relative age setten, zodat tau niet nodig, en dan later relative age setten als fractie van cheb time"<<endl;
+
+//    real tau = relative_age;
+//    PRL(tau);
+//
+//    real m_core = (1-tau)*mc_HeI + tau*mc_bagb;
+//    return m_core;
+//    
+//}
+
+
+
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Shell helium burning and exhausted Hydrogen core (AGB)
@@ -2859,7 +2892,6 @@ real single_star::helium_giant_q_parameter() {
 //related to Eq. 84
 real single_star::helium_giant_initial_core_mass(const real mass, const real z ){
     // z is not used, needed for conformity with linear_function_inversion
-    PRC(z);PRL(z);
     real A_He = AGB_A_He_estimator();
     real t_Hems = helium_main_sequence_time_for_solar_metalicity(mass);
     real time = t_Hems; //only difference with helium_giant::helium_giant_core_mass
@@ -3110,115 +3142,3 @@ real single_star::linear_function_inversion(real (single_star::*fptr)(real, cons
 
     return gx;
 }
-
-
-real single_star::get_relative_mass_from_core_mass(const char * input_filename, const real m_c, const real m_r, const real z){
-    const real z_table[7] = {0.0001, 0.0003, 0.001, 0.004, 0.01, 0.02, 0.03};
-    string z_table_name[7] = {"0.0001", "0.0003", "0.001", "0.004", "0.01", "0.02", "0.03"}; 
-        
-    real m_rel;    
-    if (input_filename == "Mc_HeMS.txt"){
-        m_rel = get_relative_mass_from_table(input_filename, m_c, m_r, z);
-        return m_rel;
-    }
-    
-    if (z < 0.0001 || z > 0.03){
-        cerr<<"single_star::get_relative_mass_from_core_mass metalicity is out of range"<<endl;
-        exit(-1);
-    }
-    
-    char * file_c;
-    string file_s;
-    real dz = z - z_table[0];
-    if (dz == 0){
-        file_s = string(input_filename) + "_z="+z_table_name[0]+".txt";
-        file_c = new char [file_s.size()+1];
-        strcpy(file_c, file_s.c_str());
-        m_rel = get_relative_mass_from_table(file_c, m_c, m_r, z);
-    }
-    else {
-        int i = 1;
-        while (i < 7 && dz > 0){
-            dz = z - z_table[i];
-            if (dz == 0){
-                file_s = string(input_filename)+"_z="+z_table_name[i]+".txt";
-                file_c = new char [file_s.size()+1];
-                strcpy(file_c, file_s.c_str());
-                m_rel = get_relative_mass_from_table(file_c, m_c, m_r, z);
-            }
-            
-            else if (dz < 0){
-                file_s = string(input_filename)+"_z="+z_table_name[i-1]+".txt";
-                file_c = new char [file_s.size()+1];
-                strcpy(file_c, file_s.c_str());
-                real m_rel1 = get_relative_mass_from_table(file_c, m_c, m_r, z_table[i-1]);
-                
-                string file_s2 = string(input_filename)+"_z="+z_table_name[i]+".txt";
-                char * file_c2 =  new char [file_s2.size()+1];
-                strcpy(file_c2, file_s2.c_str());
-                real m_rel2 = get_relative_mass_from_table(file_c2, m_c, m_r, z_table[i]);
-                delete[] file_c2;
-                
-                //interpolate between nearest neigbours in metallicity
-                m_rel = lineair_interpolation(z, z_table[i-1], z_table[i], m_rel1, m_rel2);
-                
-            }
-            i++;
-        }
-    }
-    delete[] file_c;
-    return m_rel;
-}
-
-real single_star::get_relative_mass_from_table(const char * input_filename, const real m_c, const real m_r, const real z){
-    ifstream infile(input_filename, ios::in);
-    if (!infile.is_open() || infile.eof()){
-        cerr << "error: couldn't read file " << input_filename <<endl;
-        exit(-1);
-        
-    }
-    
-    real m_rel, m_core;
-    real m_rel_old, m_core_old;
-    infile >> m_rel_old >> m_core_old;
-    infile >> m_rel >> m_core;
-
-    // assumption that in all tabels mc either increases or decreases with m_rel     
-    int factor = 1;
-    if (m_core_old > m_core)
-        factor = -1;
-    
-    real dm_core = (m_c - m_core) * factor;
-    real dm_core_old = (m_c - m_core_old) * factor;
-    
-
-    if ( dm_core_old < 0){
-        cerr<<"single_star::get_relative_mass_from_core_mass core_mass value is not included in table"<<endl;
-        PRC(input_filename);
-        PRC(m_c);PRC(m_core_old);PRL(m_core);
-        exit(-1);
-    }
-    
-    while (dm_core > 0){
-        m_rel_old = m_rel;
-        m_core_old = m_core;
-        dm_core_old = dm_core;
-        
-        infile >> m_rel >> m_core;        
-        dm_core = (m_c - m_core) *factor;
-        
-        if (infile.eof()){
-            cerr<<"single_star::get_relative_mass_from_core_mass core_mass is to large for table"<<endl;
-            PRC(m_c);PRC(m_core_old);PRL(m_core);
-            PRC(m_rel_old);PRL(m_rel);
-            exit(-1);
-        }
-    }
-    
-    //interpolate between nearest neigbours in relative mass
-    m_rel = lineair_interpolation(m_c, m_core_old, m_core, m_rel_old, m_rel);
-
-    return m_rel;
-}
-    
-    

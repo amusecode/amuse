@@ -374,7 +374,15 @@ real helium_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
         if (accreted_mass > 0.05 * get_total_mass()){
             cerr << "WARNING: accreted hydrogen mass more than 5% of helium star"<<endl;
         }
-        adjust_next_update_age();
+        adjust_next_update_age();      
+
+//        possible track hydrogen accreting helium star can turn into horizontal branch star
+//        not implemented currently
+//        core_mass = get_total_mass();
+//        envelope_mass = mdot;
+//        star_transformation_story(Horizontal_Branch);
+//        new horizontal_branch(*this);
+//        return mdot;
     }
     else{
         //for the moment assume helium accretion 
@@ -401,8 +409,8 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
     if(hydrogen){
         //hydrogen accretion
         // is treated in the same way as helium accretion..
-
         mdot = accretion_limit(mdot, dt);
+
         adjust_accretor_age(mdot, true);
         // (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
         //	update_wind_constant();
@@ -413,6 +421,13 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         }
         adjust_next_update_age();
 
+//        possible track hydrogen accreting helium star can turn into horizontal branch star
+//        not implemented currently
+//        core_mass = get_total_mass();
+//        envelope_mass = mdot;
+//        star_transformation_story(Horizontal_Branch);
+//        new horizontal_branch(*this);
+//        return mdot;
     }
     else{
         //for the moment assume helium accretion
@@ -428,7 +443,6 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
  }
 
 real helium_star::accretion_limit(const real mdot, const real dt) {
-
         real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
 
         if(mdot>=eddington) return eddington;

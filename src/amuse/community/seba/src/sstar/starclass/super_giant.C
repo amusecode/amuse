@@ -132,7 +132,7 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                     cerr<<"on TPAGB add_mass_to_accretor core_mass not equal to co_core_mass"<<endl;
                     exit(-1);
                 }
-                
+
                 // only neccessary for AGB & He giant accretor as  
                 // next_update_age is a function of total mass
                 // as the maximal core mass can be the total mass
@@ -169,7 +169,7 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 }
                 if(relative_age > next_update_age){
                     cerr<<"create_rem"<<endl;
-                    
+
                     //original mrel < 2.25
                     // updating mrel only usefull if new mrel > 2.25
                     
@@ -344,7 +344,8 @@ PRL(next_update_age);
                 relative_age = t_inf2 - pow(McL_core_mass, 1.-q)/AH_He/B/(q-1.);
                 last_update_age = t_bagb;
                 
-            }                    
+            }
+                                
             if(relative_age < t_du){
                 //this should not be possible
                 cerr<<"TPAGB helium accretion add_mass_to_accretor mc_co < mc_du ?"<<endl;
@@ -598,6 +599,28 @@ void super_giant::adjust_next_update_age() {
 
   next_update_age = t_tagb;
 }
+
+
+real super_giant::zeta_adiabatic() {
+//   		Hjellming and Webbink 1987 ApJ, 318, 804
+    real x = core_mass/get_total_mass();
+    real A = -0.220823;
+    real B = -2.84699;
+    real C = 32.0344;
+    real D = -75.6863;
+    real E = 57.8109;
+
+// (GN+SPZ Apr 28 1999) not for (sub) giants    
+//  if (low_mass_star())
+//    z = -cnsts.mathematics(one_third);
+//  else 
+    return A + x*(B + x*(C + x*(D + x*E)));
+
+}
+
+
+
+
 
 
 real super_giant::zeta_thermal() {

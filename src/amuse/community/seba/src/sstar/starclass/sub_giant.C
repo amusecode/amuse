@@ -18,7 +18,6 @@ sub_giant::sub_giant(hertzsprung_gap & h) : single_star(h) {
   instantaneous_element();
   evolve_core_mass();
   small_envelope_perturbation();   
-
   update();
 
   post_constructor();
@@ -402,6 +401,7 @@ real sub_giant::zeta_adiabatic() {
   else if (relative_mass > 5)
     r_dconv = 1.33*pow(relative_mass,1.93);
     
+    r_dconv = 1.5* r_dconv;
   if (radius < r_dconv) {
 
     return 4;
@@ -554,7 +554,6 @@ void sub_giant::evolve_element(const real end_time) {
       else {
           //		sub_giant lifetime exceeded. Transform star into
           //		horizontal branch star.
-
           star_transformation_story(Horizontal_Branch);
           new horizontal_branch(*this);
           return;

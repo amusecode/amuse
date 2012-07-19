@@ -105,13 +105,14 @@
 #ifdef TOOLBOX
 
 local bool read_binary_params(ifstream& in, real &m_prim, 
-			      real &m_sec, real &sma, real &ecc) {
+			      real &m_sec, real &sma, real &ecc, real &z) {
 
     m_prim = 1000;
     m_sec = 1000;
     sma = 0;
     ecc = 0;
-    while (m_prim>100.0 || m_sec>100.0 || ecc<0 || ecc>1){   
+    z = 1;
+    while (m_prim>100.0 || m_sec>100.0 || ecc<0 || ecc>1 || z < 0.0001 || z > 0.03){   
       if(in.eof())
         return false;
     
@@ -119,12 +120,12 @@ local bool read_binary_params(ifstream& in, real &m_prim,
     //  int id, tpp, tps; 
     //  real time, Rlp, Rls;
     
-      in >> sma >> ecc >> m_prim >> m_sec;
+      in >> sma >> ecc >> m_prim >> m_sec >> z;
       //  in >>id >> time >> sma >> ecc 
       //     >> tpp >> m_prim >> Rlp >> tps >> m_sec >> Rls;
     }
     
-    PRC(m_prim);PRC(m_sec);PRC(sma);PRL(ecc);
+    PRC(m_prim);PRC(m_sec);PRC(sma);PRC(ecc);PRL(z);
   return true;
 }
 
@@ -205,10 +206,13 @@ int main(int argc, char ** argv) {
     real  m_sec;
     real  sma;
     real  ecc = 0;
+    real z=0;
 
     real m_tot = 1;
     real r_hm = 1;
     real t_hc = 1;
+    real metal= cnsts.parameters(Zsun);
+
 
     char *mfc = new char[64];
     mass_function mf = mf_Power_Law;
@@ -246,7 +250,7 @@ int main(int argc, char ** argv) {
 
     extern char *poptarg;
     int c;
-    const char *param_string = "n:N:RDSM:m:x:F:f:A:a:y:G:g:E:e:v:U:u:Q:q:T:t:I:w:P:p:n:s:";
+    const char *param_string = "n:N:RDSM:m:x:F:f:A:a:y:G:g:E:e:v:U:u:Q:q:T:t:I:w:P:p:n:s:z:";
 
     while ((c = pgetopt(argc, argv, param_string)) != -1)
 	switch(c) {
@@ -312,6 +316,9 @@ int main(int argc, char ** argv) {
 	              break;
 	    case 's': input_seed = atoi(poptarg);
 		      break;
+        case 'z': metal = atof(poptarg);
+                break;
+		      
             case '?': params_to_usage(cerr, argv[0], param_string);
 		      exit(1);
 	}
@@ -368,13 +375,19 @@ int main(int argc, char ** argv) {
     for (int i=0; i<n; i++) {
 
       if(I_flag) {
-	if(read_binary_params(infile, m_prim, m_sec, sma, ecc)) 
+	if(read_binary_params(infile, m_prim, m_sec, sma, ecc, z)) 
 	  n=i+2;
 	else
 	  break;
-
       }
       else if (random_initialization) {
+    	if (metal < 0.0001 || metal > 0.03){
+                cerr<<"Parameters are not within valid range"<<endl;    
+                cerr<<"0.0001 <= z <= 0.03"<<endl;
+                return 0; 
+    	   }    	   
+    	   
+        z = metal;
 
 	mkrandom_binary(m_min, m_max, mf, m_exp,
 			q_min, q_max, qf, q_exp,
@@ -390,17 +403,18 @@ int main(int argc, char ** argv) {
         	}
       }		
       else {        
-           if (m_max<=100.0 && m_min<=100.0 && e_min >= 0 && e_min <= 1){
+           if (m_max<=100.0 && m_min<=100.0 && e_min >= 0 && e_min <= 1 && metal >= 0.0001 && metal <= 0.03){
             	m_prim = m_max;
             	m_sec  = m_min;
             	sma    = a_min;
             	ecc    = e_min;
             	n = 1;
+            	z = metal;
             }
             else{
                 cerr<<"Parameters are not within valid range"<<endl;    
                 cerr<<"0.1 <= M <= 100 "<<endl;
-//                cerr<<"0.0001 <= z <= 0.03"<<endl;
+                cerr<<"0.0001 <= z <= 0.03"<<endl;
                 cerr<<" 0 <= e <= 1"<<endl;
                 return 0;
             }
@@ -415,8 +429,7 @@ int main(int argc, char ** argv) {
       root->get_starbase()->set_stellar_evolution_scaling(m_prim, r_hm, t_hc);
       the_binary = root->get_oldest_daughter();
       add_secondary(the_binary, m_sec/m_prim);
-
-      addstar(root, start_time, type);
+      addstar(root, start_time, type, z);
 //      root->get_starbase()->set_seba_counters(new_seba_counters);
 
 //      pp(root, cerr);

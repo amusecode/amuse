@@ -54,6 +54,7 @@ class super_giant : public single_star {
     real get_evolve_timestep();
     
 //           Mass transfer stability.
+        real zeta_adiabatic();
         real zeta_thermal();
 	real gyration_radius_sq();
 	

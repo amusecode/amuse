@@ -43,6 +43,45 @@ horizontal_branch::horizontal_branch(hertzsprung_gap & h) : single_star(h) {
       
 }
 
+// possible track hydrogen accreting helium star can turn into horizontal branch star
+//not implemented currently
+//horizontal_branch::horizontal_branch(helium_star & h) : single_star(h) {
+//
+//    delete &h;
+//    
+//    real t_hems = helium_main_sequence_time_for_solar_metalicity(core_mass);
+//    relative_age = relative_age / t_hems;  
+//    PRL(relative_age);
+//    
+//   
+//    real m_rel_min = max(helium_flash_mass(metalicity), base_AGB_relative_mass(core_mass, metalicity));
+//    real m_rel_max = cnsts.parameters(maximum_main_sequence);//different than HPT, that calculate
+//    //for which m_rel holds core_mass = helium_ignition_core_mass(relative_mass, metalicity)
+//    
+//    PRL(helium_ignition_core_mass(helium_flash_mass(metalicity), metalicity));
+//    
+//    
+//    real (single_star::*fptr)(const real, real) = &single_star::core_helium_burning_core_mass_from_helium_star;        
+//    real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, m_rel_min, m_rel_max);             
+//    update_relative_mass(m_rel);
+//    
+//  
+//    real t_HeI = helium_ignition_time(relative_mass, metalicity);
+//    real t_eagb = t_HeI + core_helium_burning_timescale(relative_mass, metalicity); 
+//
+//    relative_age *=  t_eagb;  
+//    adjust_next_update_age();
+//    last_update_age = t_HeI;
+//    
+//    instantaneous_element();
+//    evolve_core_mass();
+//    small_envelope_perturbation();   
+//
+//    update();
+//    post_constructor();
+//      
+//}
+
 
 //		general mass transfer utilities.
 // Increase donor mass and possibly relative_mass of donor.

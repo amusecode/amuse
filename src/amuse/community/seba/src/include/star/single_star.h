@@ -229,11 +229,6 @@ class  single_star : public star
       real update_core_and_envelope_mass(const real m_core);
       real update_core_and_envelope_mass_TPAGB(const real m_core);
       real update_COcore_mass(const real mco_core);
-//      real get_relative_mass_from_core_mass(char * input_filename, const real m_c,
-//                                    const real m_r, const real z);
-      real get_relative_mass_from_core_mass(const char * input_filename, const real m_c,
-                                                    const real m_r, const real z);
-        real get_relative_mass_from_table(const char * input_filename, const real m_c, const real m_r, const real z);
 
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -248,6 +243,13 @@ class  single_star : public star
       real helium_ignition_radius(const real mass, const real mass_tot, const real z);
       real helium_ignition_core_mass(const real mass, 
 				     const real z); // Eq.67
+
+//      real core_helium_burning_core_mass_from_helium_star(const real time,
+//                                                const real mass, 
+//                                                const real z,
+//                                                const real mc);
+//      real core_helium_burning_core_mass_from_helium_star(const real mass, 
+//                                                const real z);
 
       bool low_mass_star(const real mass, 
 			 const real z);

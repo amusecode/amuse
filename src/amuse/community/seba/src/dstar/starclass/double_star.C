@@ -1257,6 +1257,7 @@ void double_star::recursive_binary_evolution(real dt,
 
 
 	    if (!first_contact) {
+	    bin_type = Contact;
 
 	      if (REPORT_RECURSIVE_EVOLUTION) 
 		cerr << "\tFirst contact" << endl;
@@ -1279,10 +1280,14 @@ void double_star::recursive_binary_evolution(real dt,
 	      cerr << endl;
 	      dump(cerr, false);
 	    }
+// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
+//dump("SeBa.data", true);
 
-	    bin_type = Contact;
 	    contact_binary(dt);   // used to be called: common_envelope(dt);
 	    refresh_memory();
+// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
+//dump("SeBa.data", true);
+
 	    if (binary_age>=end_time)
 	      return;
 	    else {
@@ -1291,7 +1296,6 @@ void double_star::recursive_binary_evolution(real dt,
 	      //	      dt = min(end_time - binary_age,
 	      //		       determine_dt(end_time, binary_age));
 	      recursive_binary_evolution(max_dt, end_time);
-//dump("SeBa.data", true);
 	      return;
 	    }
 	  }
@@ -1321,14 +1325,15 @@ void double_star::recursive_binary_evolution(real dt,
 	      //get_seba_counters()->first_rlof++;
 
 	     }
-	    
-//	    dump(cerr, false);
+// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
 //dump("SeBa.data", true);
-	    semi_detached(donor, accretor, dt);
+	    
+    	    semi_detached(donor, accretor, dt);
             //was binary_in_contact(dt) with redundant safeties.
-//	    dump(cerr, false);
 	      
               refresh_memory();
+// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
+//dump("SeBa.data", true);
               if (binary_age>=end_time) return;
 
 	      dt = minimal_timestep;
@@ -1345,7 +1350,7 @@ void double_star::recursive_binary_evolution(real dt,
 	      recursive_binary_evolution(dt, end_time);
 	      return;
            }
-           else {
+           else {// semi detached and dt >= minimal_timestep
 	     if (REPORT_RECURSIVE_EVOLUTION) {
 		cerr << "\tTotal recall" << endl;
 		put_state();
@@ -1389,7 +1394,6 @@ void double_star::recursive_binary_evolution(real dt,
 	   //get_seba_counters()->detached++;
 	   
            recursive_binary_evolution(dt, end_time);
-//dump("SeBa.data", true);
 
 	   return;
         }
@@ -1415,10 +1419,9 @@ void double_star::recursive_binary_evolution(real dt,
 	    set_effective_radius(get_secondary()->get_radius());
 
 	  refresh_memory();
+// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
+//dump("SeBa.data", true);
 
-	  // Gijs Returns
-//	  cerr << "Gijs Returns but continue...." << endl;
-//	  dump(cerr, false);
 
 	  real max_dt = end_time - binary_age;
 	  if (max_dt < end_time - binary_age) {
@@ -1430,7 +1433,6 @@ void double_star::recursive_binary_evolution(real dt,
 	  }
 	      
 	   recursive_binary_evolution(max_dt, end_time);
-//dump("SeBa.data", true);
 
 	   return;
         }
@@ -1454,10 +1456,7 @@ void double_star::recursive_binary_evolution(real dt,
        refresh_memory();
        real max_dt = end_time - binary_age;
        recursive_binary_evolution(max_dt, end_time);
-//dump("SeBa.data", true);
-
      }
-
 }
 
 

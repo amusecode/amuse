@@ -213,18 +213,6 @@ void main_sequence::update_wind_constant() {
     }
     else 
         wind_constant = dm_dj;
-
-    //    \dot{M}(Z)~Z^{0.86}\dot{M}(Z=Zsun)
-    // Metalicity dependend stelar wind by 
-    // Meynet & Maeder 2005 and  Vink et al 2001
-    // http://adsabs.harvard.edu/abs/2001A%26A...369..574V 
-    // At the moment calibrated between 20 and 60Msun.
-    //cerr << "Before correcting for metalicity";
-    //cerr << "id="<< get_identity()<<" wc="<< wind_constant<< endl;
-    real zfw = pow(get_metalicity()/cnsts.parameters(solar_metalicity), 0.86);
-    //cerr << "After correcting for metalicity: " << zfw << endl;
-    wind_constant *= zfw;
-    //cerr << "after: id="<< get_identity()<<" wc="<< wind_constant<< endl;
 }
 
 
@@ -777,17 +765,9 @@ void main_sequence::evolve_element(const real end_time) {
 
 	// Main sequence star's age exceeds hydrogen core burning
 	// lifetime.
-
-	//if (relative_mass < cnsts.parameters(massive_star_mass_limit)) {
-            star_transformation_story(Hertzsprung_Gap);
-            new hertzsprung_gap(*this);
-            return;
-	//} else {
-
-        //    star_transformation_story(Hyper_Giant);
-        //    new hyper_giant(*this);
-        //    return;
-	//}
+        star_transformation_story(Hertzsprung_Gap);
+        new hertzsprung_gap(*this);
+        return;
     }
 
     update();
