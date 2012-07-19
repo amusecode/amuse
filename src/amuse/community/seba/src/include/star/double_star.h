@@ -194,7 +194,7 @@ class double_star : public star
 //     		I/O functions.
 
 	void dump(ostream &, bool brief = true);
-	void dump(const char*, bool);
+	void dump(char*, bool);
         void put_element();
         void print_status();
         void print_roche();

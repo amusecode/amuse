@@ -379,7 +379,7 @@ void double_star::dump(ostream & s, bool brief) {
   }
 }
 
-void double_star::dump(const char * filename, bool brief) {
+void double_star::dump(char * filename, bool brief) {
 
 
   ofstream s(filename, ios::app|ios::out);
