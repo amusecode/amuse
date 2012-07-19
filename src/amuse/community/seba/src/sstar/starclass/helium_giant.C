@@ -396,8 +396,6 @@ real helium_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
     if(hydrogen){
         // hydrogen accretion
         // is treated in the same way as helium accretion..
-        // for the moment no adjust_accretor_radius
-        mdot = accretion_limit(mdot, dt);
 
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         //adjust_accretor_age(mdot);
@@ -419,8 +417,6 @@ real helium_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
     }
     else{
         //for the moment assume helium accretion
-        // for the moment no adjust_accretor_radius
-        mdot = accretion_limit(mdot, dt);
 
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         //adjust_accretor_age(mdot);
@@ -470,7 +466,8 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
     }
     else{
         //for the moment assume helium accretion
-        // for the moment no helium_accretion_limit and adjust_accretor_radius
+        // for the moment no adjust_accretor_radius
+        mdot = accretion_limit(mdot, dt);
         
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         //adjust_accretor_age(mdot);
