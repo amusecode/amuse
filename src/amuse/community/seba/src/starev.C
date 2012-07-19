@@ -29,12 +29,18 @@
 
 #ifdef TOOLBOX
 local bool read_single_params(ifstream& in, real &mass, real &time, real &metal) {
-    if(in.eof())
-        return false;
+    mass = 0;
+    metal = 0;
     
-    // reading from input file
-    in >> mass>>time>>metal;
-    PRC(mass);PRC(time);PRL(metal);
+    while (mass < 0.5 || mass > 100 || metal < 0.0001 || metal > 0.03){
+        if(in.eof())
+            return false;
+        
+        // reading from input file
+        in >> mass>>time>>metal;
+        PRC(mass);PRC(time);PRL(metal);
+    }
+    
     return true;
 }
 
@@ -45,74 +51,27 @@ local void evolve_star_until_next_time(node* bi, const real out_time, const int 
     //f1=fopen("binev.data", "a");    
     //fprintf(f1, "something");
     //fclose(f1);
-    ofstream silvia("data/silvia.data", ios::app|ios::out);
-    bi->get_starbase()->dump(silvia, false);  
+    ofstream starev("data/starev.data", ios::app|ios::out);
+    bi->get_starbase()->dump(starev, false);  
     real current_time = ((star*)bi->get_starbase())->get_current_time();
     real time_step    =  bi->get_starbase()->get_evolve_timestep();
 
-    //    while (out_time>current_time+time_step ) {
-    //        
-    //        bi->get_starbase()->evolve_element(current_time+time_step);
-    //        bi->get_starbase()->dump(silvia, false);        
-    //        bi->get_starbase()->evolve_element(
-    //            Starlab::min(current_time+time_step+EPSILON, out_time));
-    //        bi->get_starbase()->dump(silvia, false);
-    //        
-    //        current_time = ((star*)bi->get_starbase())->get_current_time();
-    //        time_step    =  bi->get_starbase()->get_evolve_timestep();
-    //        
-    //        star_state ss(dynamic_cast(star*, bi->get_starbase()));
-    //	     //	     put_state(ss, cerr);
-    //
-    //	     // print_star(bi->get_starbase(), cerr);
-    //
-    //	     //	     int p = cerr.precision(HIGH_PRECISION);
-    //	     //	     bi->get_starbase()->dump(cerr, false);
-    //	     //	     cerr.precision(p);
-    //    }
-    int i;
     while (out_time>current_time+time_step ) {
-        i=0;
-        while (out_time>current_time+time_step  && time_step > 0.0001) {
-            i++;
-            time_step = time_step/n_steps;
-            bi->get_starbase()->evolve_element(current_time+time_step);
-            bi->get_starbase()->dump(silvia, false);
-            current_time = ((star*)bi->get_starbase())->get_current_time();
-            time_step    =  bi->get_starbase()->get_evolve_timestep();
-            if (i > 2000){
-                PRC(i); PRC(current_time);PRL(time_step); 
-             }
-            
-        }    
-        PRC(i);
+        
         bi->get_starbase()->evolve_element(current_time+time_step);
-        bi->get_starbase()->dump(silvia, false);
-        
-        
-        bi->get_starbase()->evolve_element(
-            Starlab::min(current_time+time_step+EPSILON, out_time));
-        bi->get_starbase()->dump(silvia, false);
-        
+        bi->get_starbase()->dump(starev, false);                
         current_time = ((star*)bi->get_starbase())->get_current_time();
         time_step    =  bi->get_starbase()->get_evolve_timestep();
+        
         star_state ss(dynamic_cast(star*, bi->get_starbase()));
-    
     }
+    
       
     bi->get_starbase()->evolve_element(out_time);
-    bi->get_starbase()->dump(silvia, false);
+    bi->get_starbase()->dump(starev, false);
     bi->get_starbase()->dump(cerr, false);
     print_star(bi->get_starbase(), cerr);
-    silvia.close();
-/*
-cerr<< "ov: " << bi->get_starbase()->get_element_type() 
-        << " " <<bi->get_starbase()->get_total_mass() << " t= "
-        << ((star*)bi->get_starbase())->get_current_time() << " "
-        << ((star*)bi->get_starbase())->get_current_time()
-           +bi->get_starbase()->get_evolve_timestep() << " -> "
-        << out_time << endl;
-*/
+    starev.close();
 }
 
 /*-----------------------------------------------------------------------------
@@ -134,7 +93,7 @@ cerr<< "ov: " << bi->get_starbase()->get_element_type()
  */
 int main(int argc, char ** argv)
     {
-    stellar_type type = Main_Sequence;
+        stellar_type type = Main_Sequence;
     char * star_type_string;
     int  c;
 
@@ -152,7 +111,7 @@ int main(int argc, char ** argv)
     real  t_end;
     
     int n_steps = 1;
-    int n_steps_per_phase = 1.;
+    int n_steps_per_phase = 10;
     int n_init = 0;
     int n =1;
     char* input_filename;
@@ -244,10 +203,18 @@ int main(int argc, char ** argv)
         
     }*/
     else { 
-        m_tot = mass;
-        t_end = endtime;
-        z = metal;
-        n = 1;//if no input file, then evolve only 1 star
+        if (mass >= 0.5 && mass<=100.0 && metal >= 0.0001 && metal <= 0.03 ){
+            m_tot = mass;
+            t_end = endtime;
+            z = metal;
+            n = 1;//if no input file, then evolve only 1 star
+        }
+        else{
+            cerr<<"Parameters are not within valid range"<<endl;    
+            cerr<<"0.5 <= M <= 100 "<<endl;
+            cerr<<"0.0001 <= z <= 0.03"<<endl;
+            return 0;
+        }
      }
     root= mknode(1);
     //root->set_mass(1);
@@ -266,12 +233,8 @@ int main(int argc, char ** argv)
 
     //    put_node(root);
 
-    real dt, time = 0;
     real delta_t = t_end/((real)n_steps);
-    real out_time, current_time; 
-    real time1, time2;
-    real previous_time;
-    int  nstps=0;
+    real out_time; 
     for_all_daughters(node, root, bi) {
        out_time = 0;
        do {

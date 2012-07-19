@@ -17,51 +17,6 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
     // (GN+SPZ May  4 1999) last update age is time of previous type change
     last_update_age = next_update_age;
 
-    real m_HeF = helium_flash_mass(metalicity);
-    if ( relative_mass< m_HeF){
-        cerr.precision(HIGH_PRECISION);
-        PRC(helium_ignition_core_mass(relative_mass, metalicity));
-        PRC(helium_ignition_core_mass(get_total_mass(), metalicity));
-        PRL(core_mass);
-        
-        PRC(helium_ignition_time(relative_mass, metalicity));
-        PRC(helium_ignition_time(get_total_mass(), metalicity));
-        PRL(relative_age);
-        
-        PRC(helium_ignition_luminosity(relative_mass, metalicity));
-        PRC(helium_ignition_luminosity(get_total_mass(), metalicity));
-        PRL(luminosity);
-        cerr.precision(STD_PRECISION);
-        
-        update_relative_mass(get_total_mass());
-        PRL(relative_age);
-        real sil1 = relative_age;
-        real sil2 = helium_ignition_time(relative_mass, metalicity);
-        relative_age = helium_ignition_time(relative_mass, metalicity);
-        last_update_age =  helium_ignition_time(relative_mass, metalicity);
-        PRL(relative_age);
-        PRC(relative_mass);PRC(get_total_mass());PRC(relative_age);PRL(m_HeF);
-        cerr<<"WARNING! in constructor CHeB core_mass is set"<<endl;
-        real m_core = core_helium_burning_core_mass(relative_age, relative_mass, metalicity); 
-        if (m_core > get_total_mass()){
-            cerr<<"phase transition"<<endl;
-            core_mass=get_total_mass();
-            envelope_mass = 0;            
-//            reduce_mass(1.);
-//            transition happens later in evolve_element  
-            return;
-        }
-        
-        else{
-            cerr<<"no phase transition"<<endl;
-            real dm = m_core - core_mass;
-            envelope_mass -= dm;
-            core_mass += dm;
-            
-        }
-    }    
-    
-
     adjust_next_update_age();
     instantaneous_element();
     evolve_core_mass();
@@ -124,7 +79,6 @@ real horizontal_branch::add_mass_to_accretor(const real mdot, bool hydrogen) {
             update_relative_mass(relative_mass + mdot);
             
             //adjust age part
-            //separate function?
             real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
             real mc_HeI = helium_ignition_core_mass(relative_mass, metalicity);
             
@@ -193,16 +147,14 @@ real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydr
         
     }
     else{
-        cerr<<"cheb::add_mass_to_accretor  helium accretion limit?"<<endl;    
-        //mdot = accretion_limit(mdot, dt);
-
         //for the moment assume helium accretion
+        // for the moment no helium_accretion_limit and adjust_accretor_radius
+
         core_mass += mdot;
         accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
         //adjust age part
-        //separate function?
         real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
         real mc_HeI = helium_ignition_core_mass(relative_mass, metalicity);
         
@@ -240,11 +192,6 @@ real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydr
             PRL(core_mass);
             exit(-1);
         }
-        
-        cerr<<"cheb::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
-        //adjust_accretor_radius(mdot, dt);
-
-        
     }
     set_spec_type(Accreting);
     return mdot;
@@ -362,7 +309,6 @@ void horizontal_branch::adjust_next_update_age() {
 }
 
 real horizontal_branch::gyration_radius_sq() {
-    cerr<<"hb::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }
@@ -438,9 +384,7 @@ void horizontal_branch::update_wind_constant() {
         
         
         if (rad_acc >0.5 || temp > 50000) {
-            cerr<<"vink approaches LBV, stop?"<<endl;  
-            cerr<<"transition needed?"<<endl;
-            cerr<<"possible for low metallicities"<<endl;
+            //vink approaches LBV, stop? transition needed? possible for low metallicities
             dm_v = 0;
             dm_dj_v = dm_dj;
         }
@@ -546,6 +490,9 @@ void horizontal_branch::instantaneous_element() {
                       get_total_mass(),
 				      metalicity,
                       luminosity);
+    // don't do:
+    //effective_radius = radius
+    //because of small_envelope_perturbation
 
 }
 
@@ -605,7 +552,8 @@ void horizontal_branch::evolve_element(const real end_time) {
       }
       update();
       stellar_wind(dt);
-   }
+    
+}
 
 void horizontal_branch::evolve_core_mass(const real time,
 					 const real mass,
@@ -859,11 +807,11 @@ real horizontal_branch::core_helium_burning_core_mass(const real time,
     
     real t_HeI = helium_ignition_time(mass, z); 
     real t_He  = core_helium_burning_timescale(mass, z);
-    real tau = (time - t_HeI)/t_He;
-    
+    real tau = (time - t_HeI)/t_He;    
     real m_core = (1-tau)*mc_HeI + tau*mc_bagb;
-    
+
     return m_core;
+    
 }
 
 

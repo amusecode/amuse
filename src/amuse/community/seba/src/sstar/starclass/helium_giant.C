@@ -81,8 +81,10 @@ void helium_giant::instantaneous_element() {
 
     luminosity       = helium_giant_luminosity_core_mass_relation(relative_age, relative_mass, metalicity);
     radius           = helium_giant_radius(luminosity, relative_mass, get_total_mass(), metalicity);
-    //effective_radius = max(effective_radius, radius);
-    effective_radius = radius;
+
+    // don't do:
+    //effective_radius = max(effective_radius, radius)
+    //because of small_envelope_perturbation
 }
 
 // Evolve a helium_giant upto time argument according to
@@ -132,7 +134,7 @@ void helium_giant::update() {
   detect_spectral_features();
 // (GN+SPZ May  4 1999) last_update_age now used as time of last type change
 //  last_update_age = relative_age;
-  effective_radius = radius;
+  effective_radius = max(radius, effective_radius);
 }
 
 // should only be used in constructors.
@@ -375,7 +377,6 @@ star* helium_giant::reduce_mass(const real mdot) {
 #if 0
 // bool hydrogen not used currently
 real helium_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    cerr<<"He_g::add_mass_to_accretor is used?"<<endl;
 
         if (mdot<0) {
 
@@ -406,7 +407,6 @@ real helium_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
 
 // bool hydrogen not used currently
 real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
-    cerr<<"He_g::add_mass_to_accretor is used?"<<endl;
 
         if (mdot<0) {
 
@@ -690,7 +690,6 @@ void helium_giant::stellar_wind(const real dt) {
 #endif
 
 real helium_giant::gyration_radius_sq() {
-    cerr<<"He_s::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }

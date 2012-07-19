@@ -335,7 +335,7 @@ void black_hole::accrete_from_envelope(const real dt) {
 }
 
 real black_hole::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    cerr<<"For black holes no difference currently between hydrogen/helium/.. accretion"<<endl;
+    //For black holes no difference currently between hydrogen/helium/.. accretion
 
 //		Increase envelope_mass of black hole.
       envelope_mass += mdot;
@@ -345,6 +345,7 @@ real black_hole::add_mass_to_accretor(const real mdot, bool hydrogen) {
    }
 
 real black_hole::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+    //For black holes no difference currently between hydrogen/helium/.. accretion
 
       mdot = accretion_limit(mdot, dt);
 

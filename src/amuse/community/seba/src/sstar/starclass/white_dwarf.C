@@ -366,8 +366,9 @@ real white_dwarf::add_mass_to_accretor(const real mdot, bool hydrogen) {
 	   return 0;
         }
 
-    cerr<<"For white dwarfs no difference currently between hydrogen/helium/.. accretion"<<endl;
-        adjust_accretor_age(mdot);
+    //For white dwarfs no difference currently between hydrogen/helium/.. accretion
+
+    adjust_accretor_age(mdot);
         envelope_mass += mdot;
         relative_mass = max(relative_mass, get_total_mass());
 
@@ -387,7 +388,7 @@ real white_dwarf::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
 	   mdot = 0;
         }
 
-    cerr<<"For white dwarfs no difference currently between hydrogen/helium/.. accretion"<<endl;
+    //For white dwarfs no difference currently between hydrogen/helium/.. accretion
 	
 // (GN+SPZ May  3 1999)
 	real mu =1;
@@ -498,7 +499,7 @@ real white_dwarf::zeta_adiabatic() {
 
      // Based on white dwarf mass radius relation.
      // zeta = (m/r)dr/dm;
-  
+
      return -cnsts.mathematics(one_third);
 }
 

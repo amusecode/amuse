@@ -191,14 +191,14 @@ void single_star::initialize(int id, real z, real t_cur,
 			     real m_core, real co_core) {
 
   real m_env = m_tot - m_core;
-  if (m_rel<=0 || m_rel>cnsts.parameters(maximum_main_sequence)) {
-    cerr << "Mass of initial star is prefered to be "
-	 << "\nwithin reasonable limits <0, "
-	 << cnsts.parameters(maximum_main_sequence)
-	 << "] \nbut found (mass = " << m_rel << ")" << endl;
-    if (m_rel<=0)
-      exit (-1);
-  }
+//  if (m_rel<=0 || m_rel>cnsts.parameters(maximum_main_sequence)) {
+//    cerr << "Mass of initial star is prefered to be "
+//	 << "\nwithin reasonable limits <0, "
+//	 << cnsts.parameters(maximum_main_sequence)
+//	 << "] \nbut found (mass = " << m_rel << ")" << endl;
+//    if (m_rel<=0)
+//      exit (-1);
+//  }
 
   identity = id;
   luminosity = 0.01;
@@ -982,7 +982,8 @@ void single_star::add_mass_to_core(const real mdot) {
 // Increase donor mass and possibly relative_mass of donor.
 // Check mass-transfer timescales before use.
 real single_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    cerr<<"single_star::add_mass_to_accretor should not be used"<<endl;
+    cerr<<"currently single_star::add_mass_to_accretor should not be used"<<endl;
+    exit(-1);
     
   if (mdot<=0) {
     cerr << "single_star::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
@@ -1024,7 +1025,9 @@ real single_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
 }
 
 real single_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
-    cerr<<"single_star::add_mass_to_accretor should not be used"<<endl;
+    cerr<<"currently single_star::add_mass_to_accretor should not be used"<<endl;
+    exit(-1);
+    
   if (mdot<0) {
     cerr << "single_star::add_mass_to_accretor(mdot=" << mdot 
 	 << ", dt=" << dt << ")"<<endl;
@@ -2954,10 +2957,11 @@ real single_star::update_COcore_mass(const real mco_core) {
 real single_star::get_relative_mass_from_core_mass(const char * input_filename, const real m_c, const real m_r, const real z){
     const real z_table[7] = {0.0001, 0.0003, 0.001, 0.004, 0.01, 0.02, 0.03};
     string z_table_name[7] = {"0.0001", "0.0003", "0.001", "0.004", "0.01", "0.02", "0.03"}; 
-    
+        
     real m_rel;    
     if (input_filename == "Mc_HeMS.txt"){
         m_rel = get_relative_mass_from_table(input_filename, m_c, m_r, z);
+        return m_rel;
     }
     
     if (z < 0.0001 || z > 0.03){

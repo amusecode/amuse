@@ -450,8 +450,8 @@ real double_star::angular_momentum() {
         real mp = get_primary()->get_total_mass()*cnsts.parameters(solar_mass);
         real ms = get_secondary()->get_total_mass()*cnsts.parameters(solar_mass);
         real a =  semi*cnsts.parameters(solar_radius);
-
-        return omega*mp*ms*a*a*(1-eccentricity*eccentricity)/(mp+ms);
+        // (SilT: 6 Jan 2010) square root over (1-eccentricy*eccentricy) was missing
+        return omega*mp*ms*a*a*sqrt(1-eccentricity*eccentricity)/(mp+ms);
      }
 
 void double_star::circularize() {

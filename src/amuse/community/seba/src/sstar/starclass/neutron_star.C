@@ -141,8 +141,9 @@ neutron_star::neutron_star(helium_giant & h) : single_star(h) {
 // (GN+SPZ May  4 1999) last update age is time of previous type change
       last_update_age = next_update_age;
 
-      bool hit_companion = super_nova();
-      post_supernova_story();
+        bool hit_companion = false;
+        //      bool hit_companion = super_nova();
+        //      post_supernova_story();
 
       refresh_memory();
       instantaneous_element();
@@ -183,8 +184,10 @@ neutron_star::neutron_star(white_dwarf & w) : single_star(w) {
 // (GN+SPZ May  4 1999) last update age is time of previous type change
       last_update_age = next_update_age;
 
-      bool hit_companion = super_nova();
-      post_supernova_story();
+        bool hit_companion = false;
+        //      bool hit_companion = super_nova();
+        //      post_supernova_story();
+    
 
       refresh_memory();
       instantaneous_element();
@@ -470,6 +473,7 @@ star* neutron_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 }
 
 real neutron_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
+    //For neutron stars no difference currently between hydrogen/helium/.. accretion
 
       envelope_mass += mdot;
       relative_mass = max(relative_mass, get_total_mass());
@@ -483,9 +487,9 @@ real neutron_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
 // the compact object.
 // So no magnetic field decay here.
 real neutron_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+    //For neutron stars no difference currently between hydrogen/helium/.. accretion
 
      if (DEBUG) cerr<<"neutron_star::add_mass_to_accretor "<<dt<<endl;
-    cerr<<"For neutron stars no difference currently between hydrogen/helium/.. accretion"<<endl;
 
      mdot = accretion_limit(mdot, dt);
      envelope_mass += mdot;

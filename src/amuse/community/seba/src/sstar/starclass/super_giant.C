@@ -232,7 +232,9 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         
     }
     else{
-        //for the moment assume helium accretion will not change a star from being a EAGB or TPAGB
+        //for the moment assume helium accretion, will not change a star from being a EAGB or TPAGB
+        // for the moment no helium_accretion_limit and adjust_accretor_radius
+
         real t_du = dredge_up_time(relative_mass, metalicity);    
         real t_bagb = base_AGB_time(relative_mass, metalicity);
         
@@ -589,7 +591,6 @@ real super_giant::zeta_thermal() {
    }
 
 real super_giant::gyration_radius_sq() {
-    cerr<<"supg::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(convective_star_gyration_radius_sq); 
 }

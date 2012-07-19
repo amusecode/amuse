@@ -187,7 +187,6 @@ real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
         update_relative_mass(relative_mass + mdot);
         
         //adjust age part
-        //separate function?
         real mc_ehg = terminal_hertzsprung_gap_core_mass(relative_mass, metalicity);
         real m5_25 = pow(relative_mass, 5.25);            
         real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
@@ -254,16 +253,14 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
         
     }
     else{
-        cerr<<"hg::add_mass_to_accretor  helium accretion limit?"<<endl;    
-        //mdot = accretion_limit(mdot, dt);
-
         //for the moment assume helium accretion
+        // for the moment no helium_accretion_limit and adjust_accretor_radius
+        
         core_mass += mdot;
         accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
         //adjust age part
-        //separate function?
         real mc_ehg = terminal_hertzsprung_gap_core_mass(relative_mass, metalicity);
         real m5_25 = pow(relative_mass, 5.25);            
         real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
@@ -290,10 +287,6 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
             relative_age = next_update_age;            
             evolve_core_mass();
         }
-        
-        cerr<<"hg::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
-        //adjust_accretor_radius(mdot, dt);
-
     }
     set_spec_type(Accreting);
     return mdot;
@@ -469,7 +462,6 @@ void hertzsprung_gap::detect_spectral_features() {
 // angular momentum.
 // Implemented by (SPZ+GN: 1 Oct 1998)
 real hertzsprung_gap::gyration_radius_sq() {
-    cerr<<"hg::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }
@@ -544,9 +536,7 @@ void hertzsprung_gap::update_wind_constant() {
         
         
         if (rad_acc >0.5 || temp > 50000) {
-            cerr<<"vink approaches LBV, stop?"<<endl;  
-            cerr<<"transition needed?"<<endl;
-            cerr<<"possible for low metallicities"<<endl;
+            // vink approaches LBV, stop? transition needed? possible for low metallicities
             dm_v = 0;
             dm_dj_v = dm_dj;
         }
@@ -601,7 +591,9 @@ void hertzsprung_gap::update_wind_constant() {
                 dm_dj_v = max(max(dm_v, dm_dj), 0.);
             }
         }
-    }    
+    }   
+    else
+        dm_dj_v = dm_dj;
     
     
     // Reimers 1975
@@ -649,9 +641,6 @@ void hertzsprung_gap::instantaneous_element() {
                                                   relative_mass, metalicity);
     radius           = hertzsprung_gap_radius(relative_age, relative_mass, 
                                               get_total_mass(), metalicity);
-    
-    //      effective_radius = max(effective_radius, radius);
-   effective_radius = radius;
 }
 
 // Evolve a main_sequence star upto time argument according to

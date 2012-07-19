@@ -107,19 +107,24 @@
 local bool read_binary_params(ifstream& in, real &m_prim, 
 			      real &m_sec, real &sma, real &ecc) {
 
-  if(in.eof())
-    return false;
-
-  // reading from input file
-  int id, tpp, tps; 
-  real time, Rlp, Rls;
-
-  in >> sma >> ecc >> m_prim >> m_sec;
-  //  in >>id >> time >> sma >> ecc 
-  //     >> tpp >> m_prim >> Rlp >> tps >> m_sec >> Rls;
-
-      PRC(m_prim);PRC(m_sec);PRC(sma);PRL(ecc);
-
+    m_prim = 0;
+    m_sec = 0;
+    sma = 0;
+    ecc = 0;
+    while (m_prim<0.5 || m_prim>100.0 || m_sec<0.5 || m_sec>100.0 || ecc<0 || ecc>1){   
+      if(in.eof())
+        return false;
+    
+      // reading from input file
+    //  int id, tpp, tps; 
+    //  real time, Rlp, Rls;
+    
+      in >> sma >> ecc >> m_prim >> m_sec;
+      //  in >>id >> time >> sma >> ecc 
+      //     >> tpp >> m_prim >> Rlp >> tps >> m_sec >> Rls;
+    }
+    
+    PRC(m_prim);PRC(m_sec);PRC(sma);PRL(ecc);
   return true;
 }
 
@@ -359,26 +364,44 @@ int main(int argc, char ** argv) {
     for (int i=0; i<n; i++) {
 
       if(I_flag) {
-
 	if(read_binary_params(infile, m_prim, m_sec, sma, ecc)) 
 	  n=i+2;
 	else
 	  break;
 
       }
-      else if (random_initialization) 
+      else if (random_initialization) {
 
 	mkrandom_binary(m_min, m_max, mf, m_exp,
 			q_min, q_max, qf, q_exp,
 			a_min, a_max, af, a_exp,
 			e_min, e_max, ef, e_exp,
-			m_prim, m_sec, sma, ecc);
-      else {
-	m_prim = m_max;
-	m_sec  = m_min;
-	sma    = a_min;
-	ecc    = e_min;
-	n = 1;
+    		m_prim, m_sec, sma, ecc);
+        	while (m_prim<0.5 || m_prim>100.0 || m_sec<0.5 || m_sec>100.0 || ecc<0 || ecc>1){   
+            	mkrandom_binary(m_min, m_max, mf, m_exp,
+            			q_min, q_max, qf, q_exp,
+            			a_min, a_max, af, a_exp,
+            			e_min, e_max, ef, e_exp,
+                		m_prim, m_sec, sma, ecc);
+                		cerr<<"hier dus"<<endl;
+            	exit(-1);	
+        	}
+      }		
+      else {        
+           if (m_max >= 0.5 && m_max<=100.0 && m_min >= 0.5 && m_min<=100.0 && e_min >= 0 && e_min <= 1){
+            	m_prim = m_max;
+            	m_sec  = m_min;
+            	sma    = a_min;
+            	ecc    = e_min;
+            	n = 1;
+            }
+            else{
+                cerr<<"Parameters are not within valid range"<<endl;    
+                cerr<<"0.5 <= M <= 100 "<<endl;
+//                cerr<<"0.0001 <= z <= 0.03"<<endl;
+                cerr<<" 0 <= e <= 1"<<endl;
+                return 0;
+            }
       }
 
 //      PRC(m_prim);PRC(m_sec/m_prim);PRC(sma);PRL(ecc);

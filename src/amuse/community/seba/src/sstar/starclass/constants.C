@@ -403,9 +403,11 @@ real stellar_evolution_constants::safety(safety_parameter ps) {
           break;                                   // 2.5 works fine but slow
     case maximum_recursive_calls:            return 1000;
           break;
-      case tiny:                             return 1e-4;
+      case tiny:                             return 1e-3;
           break;
-    case number_of_steps:                   return 10;
+    case number_of_steps:                   return 10;// error on mass smaller than a few percent
+          // for M > 40 need n>=20 to get an error < ~7%
+          // possibly other values for non_solar metallicities
         break;
         default:
 	     cerr << "\nNo recognized option in "

@@ -69,7 +69,6 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
             update_relative_mass(relative_mass + mdot);
             
             //adjust age part
-            //separate function?  
             real m_HeF = helium_flash_mass(metalicity);
             real t_bgb = base_giant_branch_time(relative_mass, metalicity);
             if (relative_mass < m_HeF){
@@ -157,16 +156,14 @@ real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
         adjust_accretor_radius(mdot, dt);
             }
     else{        
-        cerr<<"sg::add_mass_to_accretor  helium accretion limit?"<<endl;    
-        //mdot = accretion_limit(mdot, dt);
-
         //for the moment assume helium accretion
+        // for the moment no helium_accretion_limit and adjust_accretor_radius
+
         core_mass += mdot;
         accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
         //adjust age part
-        //separate function?  
         real m_HeF = helium_flash_mass(metalicity);
         real t_bgb = base_giant_branch_time(relative_mass, metalicity);
         if (relative_mass < m_HeF){
@@ -215,17 +212,24 @@ real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
                 exit(-1);
             }
             if (tau > 1.){
+                cerr<<"yep here"<<endl;
                 real m_rel= get_relative_mass_from_core_mass("Mc_HeI_IHM", core_mass, relative_mass, metalicity);
+                PRC(core_mass -mdot);PRC(core_mass);PRC(mc_bgb);PRC(mc_HeI);PRC(relative_mass);PRL(m_rel);
+                
                 update_relative_mass(m_rel);
                 last_update_age = base_giant_branch_time(relative_mass, metalicity);
                 relative_age = next_update_age;
+                
+                real t_bgb = base_giant_branch_time(relative_mass, metalicity);
+                real l_bgb = base_giant_branch_luminosity(relative_mass, metalicity);
+                real A_H = sub_giant_Ah_estimator(relative_mass);
+                real m_core = determine_core_mass(relative_age, relative_mass, metalicity, 
+                                                 A_H, t_bgb, l_bgb);
+                
+                
                 evolve_core_mass();
             }
         } 
-        cerr<<"sg::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
-        //adjust_accretor_radius(mdot, dt);
-
-        
     }
     set_spec_type(Accreting);
     return mdot;
@@ -393,7 +397,6 @@ void sub_giant::detect_spectral_features() {
 }
 
 real sub_giant::gyration_radius_sq() {
-    cerr<<"subg::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(convective_star_gyration_radius_sq); 
 }

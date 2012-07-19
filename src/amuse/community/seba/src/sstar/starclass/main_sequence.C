@@ -151,9 +151,7 @@ void main_sequence::update_wind_constant() {
 
         
         if (rad_acc >0.5 || temp > 50000) {
-            cerr<<"vink approaches LBV, stop?"<<endl;  
-            cerr<<"transition needed?"<<endl;
-            cerr<<"possible for low metallicities"<<endl;
+            //vink approaches LBV, stop? transition needed? possible for low metallicities
             dm_v = 0;
             wind_constant = dm_dj;
         }
@@ -207,7 +205,9 @@ void main_sequence::update_wind_constant() {
                 wind_constant = max(max(dm_v, dm_dj), 0.);
             }
         }
-    }    
+    }
+    else 
+        wind_constant = dm_dj;
 }
 
 
@@ -345,7 +345,6 @@ real main_sequence::add_mass_to_accretor(const real mdot, bool hydrogen) {
         update_relative_mass(relative_mass + mdot);
         
         //alike void main_sequence::adjust_accretor_age
-            
         real m_rel_new;
         real m_tot_new = get_total_mass() + mdot;
         if (m_tot_new>relative_mass)
@@ -394,12 +393,9 @@ real main_sequence::add_mass_to_accretor(real mdot, const real dt, bool hydrogen
         
     }
     else{
-        
-        cerr<<"ms::add_mass_to_accretor  helium accretion limit?"<<endl;    
-        //mdot = accretion_limit(mdot, dt);
+        // for the moment assume helium accretion
+        // for the moment no helium_accretion_limit and adjust_accretor_radius
 
-        //for the moment assume helium accretion
-        
         //core_mass += mdot; //no core yet
         envelope_mass += mdot;
         accreted_mass += mdot;
@@ -426,13 +422,6 @@ real main_sequence::add_mass_to_accretor(real mdot, const real dt, bool hydrogen
         // is done in add_mass_to_accretor, where also relative_mass
         // is updated (SPZ+GN: 1 Oct 1998)
         // next_update_age = t_ms_new; 
-        
-        
-        
-        
-        cerr<<"ms::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
-        //adjust_accretor_radius(mdot, dt);
-
 
     }
     set_spec_type(Accreting);        
@@ -661,9 +650,11 @@ real main_sequence::zeta_thermal() {
    }
 
 star* main_sequence::reduce_mass(const real mdot) {
-
     adjust_age_after_wind_mass_loss(mdot, true);
     envelope_mass -= mdot;
+    
+    PRC(relative_mass);PRL(get_total_mass());
+    
     if (relative_mass > get_total_mass()){
         update_relative_mass(get_total_mass());
     }
@@ -705,7 +696,7 @@ void main_sequence::detect_spectral_features() {
 
 // Fit to Claret & Gimenez 1990, ApSS 196,215, (SPZ+GN:24 Sep 1998)
 real main_sequence::gyration_radius_sq() {
-    cerr<<"ms::gyration_radius_sq is used?"<<endl;
+
 
   real m = get_total_mass();
 
@@ -763,7 +754,6 @@ void main_sequence::instantaneous_element() {
 // Evolve a main_sequence star upto time argument according to
 // the new 2000 models.
 void main_sequence::evolve_element(const real end_time) {
-    PRC(get_total_mass());PRL(relative_mass);
     
     real dt = end_time - current_time;
     current_time = end_time;
@@ -829,7 +819,7 @@ real main_sequence::get_evolve_timestep() {
     //  return max(next_update_age - relative_age, 0.0001);
     
     real timestep = min((t_goal - last_update_age )/ cnsts.safety(number_of_steps), 
-                        t_goal - relative_age - 0.5 * cnsts.safety(minimum_timestep));   
+                        next_update_age - relative_age - 0.5 * cnsts.safety(minimum_timestep));   
 
     //temper LBV massloss rate
 //    real timestep_lbv = timestep;
@@ -1110,6 +1100,10 @@ real main_sequence::gamma_r_coefficient(const real mass,
         
         gamma_r = smc.a(76, z) + smc.a(77, z)
         * pow(mass - smc.a(78, z), smc.a(79, z));
+        PRC(smc.a(76,z));
+        PRC(smc.a(77,z));
+        PRC(smc.a(78,z));
+        PRC(smc.a(79,z));
     }
     else if (mass<=smc.a(75, z)) {
         
@@ -1136,6 +1130,8 @@ real main_sequence::gamma_r_coefficient(const real mass,
     
     if (gamma_r <0) {
         cerr<<"WARNING in main_sequence::gamma_r_coefficient: gamma_r < 0"<<endl;
+        PRC(mass); PRC(smc.a(75,z));PRC(relative_mass);PRL(get_total_mass());
+        exit(-1);
     }
     
     return max(0., gamma_r);

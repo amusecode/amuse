@@ -637,7 +637,6 @@ void helium_star::stellar_wind(const real dt) {
 
 #endif
 real helium_star::gyration_radius_sq() {
-    cerr<<"He_s::gyration_radius_sq is used?"<<endl;
 
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }
