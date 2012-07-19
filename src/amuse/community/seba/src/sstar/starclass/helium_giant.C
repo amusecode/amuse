@@ -94,6 +94,23 @@ void helium_giant::evolve_element(const real end_time) {
         instantaneous_element();
         evolve_core_mass();
         small_envelope_perturbation();
+        
+        if(envelope_mass == 0){
+            real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
+            if(mc_bagb >= 1.6) {
+                
+                star_transformation_story(Oxygen_Dwarf);
+                //return dynamic_cast(star*, new white_dwarf(*this));
+                new white_dwarf(*this);
+                return;
+            }
+            else {
+                star_transformation_story(Carbon_Dwarf);	   
+                //return dynamic_cast(star*, new white_dwarf(*this));
+                new white_dwarf(*this);
+                return;
+            }                 
+        }       
     }
     else {
         create_remnant(relative_mass, get_total_mass());

@@ -311,6 +311,13 @@ void horizontal_branch::evolve_element(const real end_time) {
           instantaneous_element();
           evolve_core_mass();
           small_envelope_perturbation();   
+          
+          if (envelope_mass == 0){
+              star_transformation_story(Helium_Star);
+              new helium_star(*this);
+              //return dynamic_cast(star*, new helium_star(*this));
+              return;
+          }
       }
     else {
         // Core mass remains unchanged: second dredge-up    

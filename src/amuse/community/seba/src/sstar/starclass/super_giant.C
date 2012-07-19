@@ -392,6 +392,35 @@ void super_giant::evolve_element(const real end_time) {
             evolve_core_mass(relative_age, relative_mass, metalicity);
             instantaneous_element();
             small_envelope_perturbation();   
+            
+            if (envelope_mass == 0){
+                real t_du = dredge_up_time(relative_mass, metalicity);    
+                if (relative_age < t_du){    
+                    real m_tot = core_mass;
+                    core_mass = COcore_mass;
+                    envelope_mass = m_tot - core_mass;
+                    
+                    star_transformation_story(Helium_Giant);
+                    //return dynamic_cast(star*, new helium_giant(*this));
+                    new helium_giant(*this);
+                    return;
+                }
+                else {
+                    real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
+                    if(mc_bagb >= 1.6) {
+                        star_transformation_story(Oxygen_Dwarf);
+                        //return dynamic_cast(star*, new white_dwarf(*this));
+                        new white_dwarf(*this);
+                        return;
+                    }
+                    else {
+                        star_transformation_story(Carbon_Dwarf);	   
+                        //return dynamic_cast(star*, new white_dwarf(*this));
+                        new white_dwarf(*this);
+                        return;
+                    }     
+                }
+            }
         }
         else {
             create_remnant(relative_mass, get_total_mass(), metalicity);

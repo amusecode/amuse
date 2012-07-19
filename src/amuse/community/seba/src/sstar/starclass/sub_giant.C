@@ -383,6 +383,22 @@ void sub_giant::evolve_element(const real end_time) {
           instantaneous_element();
           evolve_core_mass();
           small_envelope_perturbation();   
+          
+          if (envelope_mass == 0){
+              real m_HeF = helium_flash_mass(metalicity);
+              if (get_total_mass() < m_HeF){
+                  star_transformation_story(Helium_Dwarf);
+                  //return dynamic_cast(star*, new white_dwarf(*this));
+                  new white_dwarf(*this);
+                  return;
+              }
+              else {
+                  star_transformation_story(Helium_Star);
+                  //return dynamic_cast(star*, new helium_star(*this));
+                  new helium_star(*this);
+                  return;
+              }
+          }
       }
       else {
           //		sub_giant lifetime exceeded. Transform star into

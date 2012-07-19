@@ -93,7 +93,6 @@ star* hertzsprung_gap::reduce_mass(const real mdot) {
 }
 
 star* hertzsprung_gap::subtrac_mass_from_donor(const real dt, real& mdot) {
-    
       mdot = relative_mass*dt/get_binary()->get_donor_timescale();
       mdot = mass_ratio_mdot_limit(mdot);
 
@@ -509,8 +508,6 @@ void hertzsprung_gap::instantaneous_element() {
     
     //      effective_radius = max(effective_radius, radius);
    effective_radius = radius;
-    real t_HeI = helium_ignition_time(relative_mass, metalicity); 
-    PRC(relative_mass);PRC(get_total_mass());PRC(relative_age);PRL(t_HeI);
 }
 
 // Evolve a main_sequence star upto time argument according to
@@ -521,10 +518,25 @@ void hertzsprung_gap::evolve_element(const real end_time) {
       relative_age += dt;
     
       if (relative_age<=next_update_age) {
-
           instantaneous_element();
           evolve_core_mass();
           small_envelope_perturbation();
+          
+          if (envelope_mass == 0){
+              real m_HeF = helium_flash_mass(metalicity);
+              if (get_total_mass() < m_HeF){
+                  star_transformation_story(Helium_Dwarf);
+                  //return dynamic_cast(star*, new white_dwarf(*this));
+                  new white_dwarf(*this);
+                  return;
+              }
+              else {
+                  star_transformation_story(Helium_Star);
+                  //return dynamic_cast(star*, new helium_star(*this));
+                  new helium_star(*this);
+                  return;
+              }
+          }
       }
       else {
         if (relative_mass <= helium_ignition_mass(metalicity) ){

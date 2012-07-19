@@ -2804,13 +2804,13 @@ real single_star::update_core_and_envelope_mass(const real m_core) {
   
   bool successful_update = false;
   real dm_core = m_core-core_mass;
-
+ 
   if (m_core > get_total_mass()){
-    dm_core = get_total_mass()-core_mass;
     cerr << "single_star::update_core_and_envelope_mass limits new core mass to total mass." << endl;
-  }
-    
-  if (dm_core >= 0.0 - cnsts.safety(tiny)){
+    envelope_mass = 0;
+    core_mass = get_total_mass();
+  }    
+  else if (dm_core >= 0.0 - cnsts.safety(tiny)){
     envelope_mass -= dm_core; 
     core_mass += dm_core;
     successful_update = true;
@@ -2829,17 +2829,18 @@ real single_star::update_core_and_envelope_mass_TPAGB(const real m_core) {
     //difference with update_core_and_envelope_mass is in the fact that on the TPAGB
     // the core mass can decrease during the second dredge_up 
     bool successful_update = false;
-    real dm_core = m_core - core_mass;
     
     if (m_core > get_total_mass()){
-        dm_core = get_total_mass() - core_mass;
         cerr << "single_star::update_core_and_envelope_mass limits new core mass to total mass." << endl;
+        envelope_mass = 0;
+        core_mass = get_total_mass();
     }
-    
-    envelope_mass -= dm_core; 
-    core_mass += dm_core;
+    else{
+        real dm_core = m_core - core_mass;
+        envelope_mass -= dm_core; 
+        core_mass += dm_core;
+    }
     successful_update = true;
-    
     return successful_update;
 }
 
