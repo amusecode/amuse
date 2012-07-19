@@ -5,6 +5,7 @@
 #include "horizontal_branch.h"
 #include "sub_giant.h"
 #include "hertzsprung_gap.h"
+#include "main_sequence.h"
 
 // ANSI C++ first creates the base class before the dreived classes are
 // created.
@@ -41,6 +42,37 @@ horizontal_branch::horizontal_branch(hertzsprung_gap & h) : single_star(h) {
     update();
     post_constructor();
       
+}
+
+
+// (GN+ SilT Feb 2011): new constructor for merger products of
+// main sequence plus WD/He stars
+horizontal_branch::horizontal_branch(main_sequence & m) : single_star(m) {
+
+  delete &m; 
+
+  last_update_age = next_update_age;
+
+  // Proper adding of core mass
+  if (is_binary_component()) {
+
+    if (get_companion()->get_core_mass() > 0)
+      add_mass_to_accretor(get_companion()->get_core_mass(), false);
+
+    // this should not happen....(or hardly) for WD
+    // but helium stars have He envelope and CO core....
+    if (get_companion()->get_envelope_mass() > 0)
+      add_mass_to_accretor(get_companion()->get_envelope_mass(), get_companion()->hydrogen_envelope_star());
+  }
+
+  adjust_next_update_age();
+
+  instantaneous_element();
+  evolve_core_mass();
+  small_envelope_perturbation();   
+  update();
+
+  post_constructor();
 }
 
 // possible track hydrogen accreting helium star can turn into horizontal branch star

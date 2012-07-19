@@ -38,9 +38,10 @@ sub_giant::sub_giant(main_sequence & m) : single_star(m) {
     if (get_companion()->get_core_mass() > 0)
       add_mass_to_accretor(get_companion()->get_core_mass(), false);
 
-    // this should not happen....(or hardly)
+    // this should not happen....(or hardly) for WD
+    // but helium stars have He envelope and CO core....
     if (get_companion()->get_envelope_mass() > 0)
-      add_mass_to_accretor(get_companion()->get_core_mass(), true);
+      add_mass_to_accretor(get_companion()->get_envelope_mass(), get_companion()->hydrogen_envelope_star());
   }
 
   adjust_next_update_age();
@@ -105,7 +106,7 @@ real sub_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
         mdot = accretion_limit_eddington(mdot, dt);
         core_mass += mdot;
         update_relative_mass(relative_mass + mdot);
-        
+
 	update_age = true;
     }
 
@@ -153,13 +154,15 @@ real sub_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
             real tau = (core_mass -mc_bgb) / (mc_HeI - mc_bgb);
             relative_age = t_bgb + tau * (t_HeI - t_bgb);
             last_update_age = t_bgb;
-            
+
             if (tau < 0.){
                 real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
                 real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
+		PRL(m_rel);
                 update_relative_mass(m_rel);
-                last_update_age = base_giant_branch_time(relative_mass, metalicity);
+                last_update_age = base_giant_branch_time(relative_mass, metalicity);		
                 relative_age = last_update_age;
+		PRL(relative_age);
                 evolve_core_mass();
 
             }
@@ -566,6 +569,7 @@ real sub_giant::get_evolve_timestep() {
 void sub_giant::evolve_core_mass(const real time,
 				 const real mass,
 				 const real z) {
+
   real mc_sg = sub_giant_core_mass(time, mass, z);
   if(!update_core_and_envelope_mass(mc_sg)) {
       cerr << "Update core mass failed in sub_giant()"<<endl;

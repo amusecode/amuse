@@ -435,12 +435,23 @@ star* main_sequence::merge_elements(star* str) {
          case Helium_Giant: 
          case Carbon_Dwarf: 
          case Oxygen_Dwarf:
-         case Helium_Dwarf: 
-    		star_transformation_story(Sub_Giant);
+         case Helium_Dwarf:
+ 
+	   if (str->get_total_mass() > helium_ignition_core_mass(helium_ignition_mass(get_metalicity()), get_metalicity())) {
 
-            relative_age = next_update_age;
-            return dynamic_cast(star*, new sub_giant(*this));
-      
+	     star_transformation_story(Horizontal_Branch);
+	     
+	     relative_age = next_update_age;
+	     return dynamic_cast(star*, new horizontal_branch(*this));
+	   } 
+	   else {
+
+	     star_transformation_story(Sub_Giant);
+	     
+	     relative_age = next_update_age;
+	     return dynamic_cast(star*, new sub_giant(*this));
+	   }
+
          case Thorn_Zytkow :
     	 case Xray_Pulsar:
          case Radio_Pulsar:

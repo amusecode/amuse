@@ -43,8 +43,6 @@ real super_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
     bool update_age = false;
     real t_du_old = dredge_up_time(relative_mass, metalicity);    
     
-    PRL(hydrogen);
-
     if(hydrogen){
         //hydrogen accretion
         mdot = accretion_limit(mdot, dt);
