@@ -84,6 +84,11 @@ real SPZDCH_star::accretion_limit(const real mdot, const real dt) {
 
         return 0;
      }
+     
+real SPZDCH_star::mdot_limit(const real dt){
+    return 0;    
+}
+     
 
 star* SPZDCH_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 

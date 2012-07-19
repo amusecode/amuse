@@ -74,6 +74,7 @@ class helium_giant : public single_star {
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
         real accretion_limit(const real, const real);
+        real mdot_limit(const real);
 
 //        void adjust_accretor_age(const real, const bool=true);
         void adjust_next_update_age();

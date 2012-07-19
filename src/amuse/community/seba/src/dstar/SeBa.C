@@ -80,8 +80,8 @@
 ////                        -R the number of binaries indicated.
 ////                        oterwise one binary is simulated with
 ////                        -M, -m, -a, -e as initial conditions.
-////            -T or -t  binary end time. [35] Myr
-////            -z select metallicity of binaries to be simulated. 
+////            -T or -t  binary end time. [13500] Myr
+////            -z select metallicity of binaries to be simulated. [0.02] Solar
 //   Note:  libnode.a is referenced for the routines which produce the 
 //          mass function
 //

@@ -359,12 +359,16 @@ real black_hole::accretion_limit(const real mdot, const real dt) {
       return min(eddington, mdot);
 }
 
+real black_hole::mdot_limit(const real dt){
+
+      real mdot = accretion_limit(envelope_mass, dt);
+      return mass_ratio_mdot_limit(mdot);    
+}
+
 // A black hole is generally not a donor.
 star* black_hole::subtrac_mass_from_donor(const real dt, real& mdot) {
 
-      mdot = accretion_limit(envelope_mass, dt);
-      mdot = mass_ratio_mdot_limit(mdot);
-
+      mdot =  mdot_limit(dt);
       envelope_mass -= mdot;
       return this;
 }

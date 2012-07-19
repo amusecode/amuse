@@ -343,10 +343,18 @@ void white_dwarf::common_envelope(const real mdot) {
 
 #endif
 
-star* white_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
-        mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
-        mdot = mass_ratio_mdot_limit(mdot);
+//used by subtrac_mass_from_donor and double_star::perform_mass_transfer
+real white_dwarf::mdot_limit(const real dt){
+    real mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
+    return mass_ratio_mdot_limit(mdot);
+    
+}
 
+
+star* white_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
+    
+    mdot = mdot_limit(dt);
+    
         if (mdot<=envelope_mass)
            envelope_mass -= mdot;
         else {
@@ -434,7 +442,7 @@ real white_dwarf::accretion_limit(const real mdot, const real dt) {
 #endif
 
 real  white_dwarf::accretion_limit(const real mdot, const real dt) {
-    //needed for double_star::zeta
+    //needed for double_star::zeta and double_star::perform_mass_transfer
     return accretion_limit(mdot, dt, true);
 }
 

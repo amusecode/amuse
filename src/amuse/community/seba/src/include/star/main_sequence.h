@@ -61,6 +61,7 @@ class main_sequence : public single_star {
 
 	
 //		Mass transfer utilities.
+        real mdot_limit(const real);
         star* subtrac_mass_from_donor(const real, real&);
         star* reduce_mass(const real);
         void adjust_accretor_age(const real mdot, const bool rejuvenate);

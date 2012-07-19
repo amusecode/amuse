@@ -65,6 +65,7 @@ class helium_star : public single_star {
 	 
 //		Mass transfer utilities.
 	 real accretion_limit(const real, const real);
+     real mdot_limit(const real);
      star* subtrac_mass_from_donor(const real, real&);
 	 star* reduce_mass(const real);
 	 real add_mass_to_accretor(real, bool, const real = -1.);

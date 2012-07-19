@@ -41,6 +41,7 @@ class SPZDCH_star : public single_star {
          void stellar_wind(const real dt);
 
 //            Mass transfer utilities.
+        real mdot_limit(const real);
 	 star* subtrac_mass_from_donor(const real, real&);
          real accretion_limit(const real, const real);
 

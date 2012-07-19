@@ -219,6 +219,9 @@ class  star : public starbase
         virtual real mass_transfer_timescale(mass_transfer_type&)
 	                                     {return 0;}
         virtual real accretion_limit(const real, const real) {return 0;}
+        virtual real accretion_limit_eddington(const real, const real) {return 0;}
+        virtual real mass_ratio_mdot_limit(real) {return 0;}
+        virtual real mdot_limit(const real) {return 0;}
         virtual star* reduce_mass(const real) {return NULL;}
         virtual star* subtrac_mass_from_donor(const real, real&){return NULL;}
 

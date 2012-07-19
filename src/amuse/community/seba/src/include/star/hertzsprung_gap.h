@@ -41,6 +41,7 @@ class hertzsprung_gap : public single_star
 
 //           Mass transfer utilities.
         star* reduce_mass(const real);
+        real mdot_limit(const real);
         star* subtrac_mass_from_donor(const real, real&);
 	//        void adjust_accretor_age(const real mdot, const bool rejuvenate);
         void adjust_age_after_mass_loss(const real mdot, const bool rejuvenate);

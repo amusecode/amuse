@@ -273,12 +273,18 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
 
 }
 
+//used by subtrac_mass_from_donor and double_star::perform_mass_transfer
+real helium_giant::mdot_limit(const real dt){
+    real mdot = relative_mass*dt/get_binary()->get_donor_timescale();
+    return mass_ratio_mdot_limit(mdot);
+    
+}
+
 
 star* helium_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
 
-    mdot = relative_mass*dt/get_binary()->get_donor_timescale();
-      mdot = mass_ratio_mdot_limit(mdot);
-      
+    mdot = mdot_limit(dt);
+          
     if (mdot<envelope_mass){
         envelope_mass -= mdot;
         // next_update_age is a function of total mass

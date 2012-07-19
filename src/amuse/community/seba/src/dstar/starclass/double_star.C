@@ -419,11 +419,10 @@ void double_star::adjust_binary_after_wind_loss(star * donor,
         real old_accretor_mass = accretor->get_total_mass();
 
         real ma_dot = accretor->accrete_from_stellar_wind(md_dot, dt);
-        donor = donor->reduce_mass(md_dot);
-
-        real M_new = get_total_mass();
-        real new_donor_mass = donor->get_total_mass();
-        real new_accretor_mass = accretor->get_total_mass();
+        real M_new = M_old - md_dot + ma_dot;
+        real new_donor_mass = old_donor_mass - md_dot;
+        real new_accretor_mass = old_accretor_mass + ma_dot; 
+        
         if (md_dot>0 && ma_dot>=0) {
 	  // real alpha = 1 - ma_dot/md_dot;
           // semi *= pow(pow(new_donor_mass/old_donor_mass, 1-alpha)
@@ -435,6 +434,7 @@ void double_star::adjust_binary_after_wind_loss(star * donor,
                 *  new_accretor_mass/old_accretor_mass, -2)
                 *  M_old/M_new; 
         }
+        donor = donor->reduce_mass(md_dot);
      }
      else {
        donor = donor->reduce_mass(md_dot);
@@ -835,93 +835,97 @@ void double_star::perform_mass_transfer(const real dt,
 //	Take account of mass lost and transfered from the donor to the
 //	accretor.
 
-  // (GN+SilT Mar  2 2011) new dumping regime
-  if (!first_contact) {
-
-    dump("SeBa.data", true);
-    first_contact = true;
-  }
-
-
-  if (REPORT_TRANFER_STABILITY) {
-    cerr<<"enter perform_mass_transfer("<<dt<<", "
-        <<donor->get_element_type()<<", "<<accretor->get_element_type()
-	<<") semi= "<< semi<<endl;
-  }
-
+// (GN+SilT Mar  2 2011) new dumping regime
+    if (!first_contact) {
+    
+        dump("SeBa.data", true);
+        first_contact = true;
+    }
+    
+    
+    if (REPORT_TRANFER_STABILITY) {
+        cerr<<"enter perform_mass_transfer("<<dt<<", "
+            <<donor->get_element_type()<<", "<<accretor->get_element_type()
+        <<") semi= "<< semi<<endl;
+    }
+    
 //      Mass loss according to AM accretor.
-     real M_old = get_total_mass();
-     real old_donor_mass = donor->get_total_mass();
-     real old_accretor_mass = accretor->get_total_mass();
-     //real q_old = old_accretor_mass/old_donor_mass;
+    real M_old = get_total_mass();
+    real old_donor_mass = donor->get_total_mass();
+    real old_accretor_mass = accretor->get_total_mass();
+    
+    // (SilT 13 Apr 2012) Only calculate md_dot, subtract the mass later 
+    // so that in the SeBa output the correct separation is given
+    real md_dot = donor->mdot_limit(dt);
+    md_dot = min(md_dot, donor->get_envelope_mass());
 
-     real md_dot=0;
-     donor = donor->subtrac_mass_from_donor(dt, md_dot);
+    if (md_dot>0) {
 
-     if (md_dot>0) {
         real ma_dot = accretor->add_mass_to_accretor(md_dot, donor->hydrogen_envelope_star(), dt);
-
-        real M_new = get_total_mass();
-        real new_donor_mass = donor->get_total_mass();
-        real new_accretor_mass = accretor->get_total_mass();
-        //real q_new = new_accretor_mass/new_donor_mass;
-
+    
+        real M_new = M_old - md_dot + ma_dot;
+        real new_donor_mass = old_donor_mass - md_dot;
+        real new_accretor_mass = old_accretor_mass + ma_dot;
+        //PRC(M_new);PRC(new_donor_mass);PRC(new_accretor_mass);
+    
         real a_fr;
-	if (!accretor->remnant()) {
-
-	  // General case: semi-conservative mass transfer.
-           a_fr  = pow(old_donor_mass*old_accretor_mass
-                 / (new_donor_mass*new_accretor_mass), 2);
-           semi *= pow(M_new/M_old,
-		       2*cnsts.parameters(specific_angular_momentum_loss)
-		       + 1)*a_fr;	
-	}
-	else {
-
-	  // Special case: mass transfer to compact object as accretor.
-	  //               Two possibilities:
-	  //               1) eta>0: mass lost as wind from accretor.
-	  //               2) eta==0: exponential spiral-in.
-	   real eta = ma_dot/md_dot; 
-	   if (eta>0) {
-	     a_fr  = (new_donor_mass/old_donor_mass)
-	           * pow(new_accretor_mass/old_accretor_mass, 1/eta);
-	     semi *= (M_old/M_new)/pow(a_fr, 2); 
-           }
-           else {
-	     a_fr  = exp(2*(new_donor_mass-old_donor_mass)
-			 /new_accretor_mass); 
-	     semi *= (M_old/M_new)*a_fr
-	           / pow(new_donor_mass/old_donor_mass, 2);
-           }
-	   
-	   //   Let outer component accrete from mass lost of inner binary.
-	   //	Routine block for triple evolution.
-	   //	Tricky but fun!
-	   //   if (is_binary_component()) {
-	   if (is_star_in_binary()) {
-	     real mdot_triple = M_old - M_new;
-	     if (mdot_triple>0) {
-	       get_binary()->adjust_triple_after_wind_loss(this,
-							   mdot_triple, dt);
-	     }
-	     else if (is_binary_component()) {
-	       if(mdot_triple<0) {
-		 cerr << "enter perform_mass_transfer(" << dt << ", "
-		      << donor->get_element_type()<<", "
-		      <<accretor->get_element_type()
-		      <<")"<<endl;
-		 cerr<<"Mass lost during non-conservative mass transfer is negative."
-		     <<"mlost ="<<mdot_triple<<endl;
-	       }
-	     }
-	     else {
-	       cerr<<"Presumed binary component is not a binary root, "
-		   << "nor a hierarchical root"<<endl;
-	     }
-	   }
-	}
-     }
+        if (!accretor->remnant()) {
+            // General case: semi-conservative mass transfer.
+            a_fr  = pow(old_donor_mass*old_accretor_mass
+                    / (new_donor_mass*new_accretor_mass), 2);
+            semi *= pow(M_new/M_old,
+                2*cnsts.parameters(specific_angular_momentum_loss)
+                + 1)*a_fr;	
+        }
+        else {
+            // Special case: mass transfer to compact object as accretor.
+            //               Two possibilities:
+            //               1) eta>0: mass lost as wind from accretor.
+            //               2) eta==0: exponential spiral-in.
+            real eta = ma_dot/md_dot; 
+            if (eta>0) {
+                a_fr  = (new_donor_mass/old_donor_mass)
+                    * pow(new_accretor_mass/old_accretor_mass, 1/eta);
+                semi *= (M_old/M_new)/pow(a_fr, 2); 
+            }
+            else {
+                a_fr  = exp(2*(new_donor_mass-old_donor_mass)
+            	 /new_accretor_mass); 
+                semi *= (M_old/M_new)*a_fr
+                    / pow(new_donor_mass/old_donor_mass, 2);
+            }
+        
+            //   Let outer component accrete from mass lost of inner binary.
+            //	Routine block for triple evolution.
+            //	Tricky but fun!
+            //   if (is_binary_component()) 
+            if (is_star_in_binary()) {
+                real mdot_triple = M_old - M_new;
+                if (mdot_triple>0) {
+                    get_binary()->adjust_triple_after_wind_loss(this,
+            					   mdot_triple, dt);
+                }
+                else if (is_binary_component()) {
+                    if(mdot_triple<0) {
+                        cerr << "enter perform_mass_transfer(" << dt << ", "
+                        << donor->get_element_type()<<", "
+                        <<accretor->get_element_type()
+                        <<")"<<endl;
+                        cerr<<"Mass lost during non-conservative mass transfer is negative."
+                        <<"mlost ="<<mdot_triple<<endl;
+                    }
+                }
+            else {
+                cerr<<"Presumed binary component is not a binary root, "
+                << "nor a hierarchical root"<<endl;
+            }
+        }
+    }
+    // md_dot2 is equal to md_dot
+    real md_dot2 = 0 ;
+    donor = donor->subtrac_mass_from_donor(dt, md_dot2);
+//    PRC(md_dot);PRC(md_dot2);
+}
 
 #if 0
   switch(current_mass_transfer_type) {

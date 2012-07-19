@@ -460,10 +460,18 @@ bool neutron_star::super_nova() {
      return hit_companion;
 }
 
+//used by subtrac_mass_from_donor and double_star::perform_mass_transfer
+
+real neutron_star::mdot_limit(const real dt){
+ 
+    return mass_ratio_mdot_limit(accretion_limit(envelope_mass, dt));
+}
+
+
 
 star* neutron_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 
-      mdot = mass_ratio_mdot_limit(accretion_limit(envelope_mass, dt));
+      mdot = mdot_limit(dt);
 
       //		The disc may lose mass.
       envelope_mass -= mdot;

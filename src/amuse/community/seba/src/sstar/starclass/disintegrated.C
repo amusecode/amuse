@@ -168,6 +168,16 @@ real disintegrated::mass_transfer_timescale(mass_transfer_type
 	
      return cnsts.safety(minimum_timestep);
      }
+     
+     
+real disintegrated::mdot_limit(const real dt){
+        cerr << "disintegrated::mdot_limit(dt="
+	     << dt << ")" << endl;
+        cerr << "Disintegrated cannot be donor star!"<<endl;
+
+    return 0;    
+}
+     
 
 star* disintegrated::subtrac_mass_from_donor(const real dt, real& mdot) {
 

@@ -205,11 +205,18 @@ star* thorne_zytkow::reduce_mass(const real mdot) {
     return this;
 }
 
+//used by subtrac_mass_from_donor and double_star::perform_mass_transfer
+real thorne_zytkow::mdot_limit(const real dt){
+    real mdot = relative_mass*dt/get_binary()->get_donor_timescale();
+    return mass_ratio_mdot_limit(mdot);
+    
+}
+
+
 star* thorne_zytkow::subtrac_mass_from_donor(const real dt, real& mdot) {
 
-      real mdot_max = relative_mass*dt/get_binary()->get_donor_timescale();
-      mdot = mass_ratio_mdot_limit(mdot_max);
-
+    mdot = mdot_limit(dt);
+    
       if (envelope_mass<mdot) {
 
 	mdot = envelope_mass;

@@ -61,6 +61,7 @@ class super_giant : public single_star {
         real  add_mass_to_accretor(real, bool, const real = -1. );
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
+        real mdot_limit(const real);
         void adjust_accretor_age(const real, const bool=true);
         void adjust_next_update_age();
 	void update_wind_constant();
