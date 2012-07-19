@@ -1,4 +1,4 @@
-//// starev: evolve a single star.
+/// starev: evolve a single star.
 ////         creates a single star and evolves it in time.
 ////
 //// Options:    -c    comment to put in the starbase log structure.

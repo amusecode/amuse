@@ -19,7 +19,7 @@ black_hole::black_hole(hyper_giant & w) : single_star(w) {
       suddenly_lost_mass = 0;
       real m_tot = get_total_mass();
 
-      core_mass = black_hole_mass();
+      core_mass = black_hole_mass(core_mass);
       envelope_mass = m_tot - core_mass;
       
 // (GN+SPZ May  4 1999) last update age is time of previous type change
@@ -55,7 +55,7 @@ black_hole::black_hole(super_giant & g) : single_star(g) {
     
       suddenly_lost_mass = 0;
       real m_tot = get_total_mass();
-      core_mass = black_hole_mass();
+      core_mass = black_hole_mass(core_mass);
       envelope_mass = m_tot - core_mass;
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
@@ -126,7 +126,7 @@ black_hole::black_hole(helium_giant & h) : single_star(h) {
 
       suddenly_lost_mass = 0;
       real m_tot = get_total_mass();
-      core_mass = black_hole_mass();
+      core_mass = black_hole_mass(m_tot);
       envelope_mass = m_tot - core_mass;
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
@@ -285,7 +285,7 @@ real black_hole::aic_binding_energy() {
       return GM2_RC2*core_mass/(4.25e-6*cnsts.parameters(solar_mass));
    }
 
-real black_hole::black_hole_mass() {
+real black_hole::black_hole_mass(const real MHe) {
 
   // Relation used if helium2black_hole=15 and
   //                  super_giant2black_hole=40
@@ -295,7 +295,7 @@ real black_hole::black_hole_mass() {
 // (GN+SPZ May 12 1999) was nice try, but seemt to be a bit unrealistic
 // Try simple MBH = frac * MHe with frac = 0.5
 
-  real m = 0.5 * get_total_mass();
+  real m = 0.5 * MHe;
 
   return m;
 #if 0
@@ -414,11 +414,10 @@ bool black_hole::super_nova() {
       suddenly_lost_mass = envelope_mass;
 
       bool hit_companion = FALSE;
-      //real mass_correction =
-      //sqrt(cnsts.parameters(kanonical_neutron_star_mass)/core_mass);
+      real mass_correction =
+      sqrt(cnsts.parameters(kanonical_neutron_star_mass)/core_mass);
       
-      real v_kick  = cnsts.super_nova_kick(no_velocity_kick);
-                     // mass_correction*random_kick();
+      real v_kick  = mass_correction*cnsts.super_nova_kick();
       real theta_kick = acos(1-2*random_angle(0, 1));
       real phi_kick   = random_angle(0, cnsts.mathematics(two_pi));
 

@@ -88,12 +88,12 @@ real stellar_evolution_constants::super_nova_kick(
   // selected kick distribution imparted to a newly formed neutron star
   // in a supernova. 
     switch(pk) {
-        case internally_decided_velocity_kick:
         case no_velocity_kick:              return 0;
              break;                                
 	case Maxwellian_velocity_kick:      return
 					    random_maxwellian_velocity(v_disp);
              break;
+        case internally_decided_velocity_kick:
 	case Paczynski_velocity_kick:       return
 					    random_paczynski_velocity(v_disp);
              break;
@@ -177,7 +177,7 @@ real stellar_evolution_constants::parameters(pulsar_initial_conditions pp) {
              break;                               
         case kanonical_neutron_star_mass:        return 1.34;   // [msun]
              break;                                
-	case maximum_neutron_star_mass:          return 2.0;    // [Msun]
+	case maximum_neutron_star_mass:          return 1.8;    // [Msun]
              break;                                
 	case minimum_neutron_star_mass:          return 0.0925; // [Msun]
              break;                              // Newtonian polytrope 
@@ -210,7 +210,7 @@ real stellar_evolution_constants::parameters(stellar_mass_limits pm) {
              break;                                
 	case carbon_dwarf_mass_limit:            return 1.2;
              break;
-	case Chandrasekar_mass:                  return 1.44;
+	case Chandrasekar_mass:                  return 1.38;
              break;                                
 	case helium2neutron_star:                return 2.2;
              break;                                

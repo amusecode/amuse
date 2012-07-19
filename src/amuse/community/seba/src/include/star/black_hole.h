@@ -30,7 +30,7 @@ class black_hole : public single_star {
 
 	real suddenly_lost_mass;
 
-	real black_hole_mass();
+	real black_hole_mass(const real);
 
       public :
          black_hole(hyper_giant &);

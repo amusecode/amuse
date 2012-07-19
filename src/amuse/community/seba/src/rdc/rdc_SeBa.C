@@ -166,10 +166,12 @@ ostream& operator<<(ostream& s, SeBa_hist& hi) {
     s << "\t" << hi.semi << " " << hi.ecc; 
     //   s << "\t" << hi.id_prim << " " << hi.tpe_prim 
     s << "\t" << hi.tpe_prim 
-              << " " << hi.m_prim << " " << hi.r_prim;
+      << " " << hi.m_prim << " " << hi.r_prim 
+      << " " << hi.temp_prim << " " << hi.mcore_prim;
    //    s << "\t" << hi.id_sec << " " << hi.tpe_sec 
     s << "\t" << hi.tpe_sec 
-              << " " << hi.m_sec << " " << hi.r_sec;
+      << " " << hi.m_sec << " " << hi.r_sec
+      << " " << hi.temp_sec << " " << hi.mcore_sec;
     s << endl;
 
     return s;
@@ -208,10 +210,12 @@ void SeBa_hist::put_single_reverse(ostream& s) {
      s << "\t" << semi << " " << ecc; 
      //     s << "\t" << id_sec << " " << tpe_sec << " " 
      s << "\t" << tpe_sec << " " 
-               << m_sec << " " << r_sec;
+       << m_sec << " " << r_sec
+       << temp_sec << " " << mcore_sec;
      //     s << "\t" << id_prim << " " <<tpe_prim << " " 
      s << "\t" <<tpe_prim << " " 
-               << m_prim << " " << r_prim;
+       << m_prim << " " << r_prim
+       << temp_prim << " " << mcore_prim;
      s << endl;
  }
 

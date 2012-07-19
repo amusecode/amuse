@@ -566,6 +566,7 @@ void horizontal_branch::update_wind_constant() {
     // eq 8.4 in Gijs' thesis Chapter 8
     //Reduced WR-like mass loss for small H-envelope mass
     //real mu = (get_total_mass()-core_mass)/get_total_mass() * min(5.0,max(1.2, pow(luminosity/7.E4,-0.5)));
+    //PRL(mu);
     real dm_wr = 0;
     //if ( mu < 1.){
     //    //factor (1.-mu) should be checked e.g. with resulting # BH in binaries
@@ -580,9 +581,10 @@ void horizontal_branch::update_wind_constant() {
     if(luminosity > 6.0E5 && x_lbv > 1.0) {
         dm_lbv = 0.1 * pow(x_lbv-1.0, 3)*(luminosity/6.0E5-1.0);
     }
-    
-    
+
     wind_constant = max(max(max(dm_wr, dm_dj_v), dm_r), 0.0) + dm_lbv;
+
+    //PRC(luminosity);PRC(dm_wr);PRC(dm_dj_v);PRC(dm_r);PRC(dm_lbv);PRL(wind_constant);
     
 }
 

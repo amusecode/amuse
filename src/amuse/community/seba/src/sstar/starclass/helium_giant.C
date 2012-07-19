@@ -262,7 +262,7 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
         if (mass < 1.6) 
             type = Disintegrated;
         else {
-            if (mc_SN <= 7.)
+            if (mc_SN <  cnsts.parameters(COcore2black_hole))
                 type = Neutron_Star;
             else
                 type = Black_Hole;
@@ -322,7 +322,7 @@ star* helium_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
           
         if (core_mass >= cnsts.parameters(Chandrasekar_mass)){
             real mc_SN = maximum_helium_giant_core_mass(relative_helium_mass);
-            if (mc_SN <= 7.){
+            if (mc_SN < cnsts.parameters(COcore2black_hole)){
                 star_transformation_story(Neutron_Star);
                 return dynamic_cast(star*, new neutron_star(*this));
             }
@@ -382,7 +382,7 @@ star* helium_giant::reduce_mass(const real mdot) {
         
         if (core_mass >= cnsts.parameters(Chandrasekar_mass)){
             real mc_SN = maximum_helium_giant_core_mass(relative_helium_mass);
-            if (mc_SN <= 7.){
+            if (mc_SN < cnsts.parameters(COcore2black_hole)){
                 star_transformation_story(Neutron_Star);
                 return dynamic_cast(star*, new neutron_star(*this));
             }

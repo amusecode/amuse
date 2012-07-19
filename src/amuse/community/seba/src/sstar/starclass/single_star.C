@@ -1326,6 +1326,8 @@ void single_star::stellar_wind(const real dt) {
     update_wind_constant();
     real wind_mass = wind_constant * dt * 1E6;  
     
+    //PRC(wind_constant);PRC(dt);PRL(wind_mass);
+
     if (wind_mass > 0){    
         // (GN+SPZ Apr 28 1999) wind induced helium star formation can happen
         // because stellar_wind is last function in evolve_element
