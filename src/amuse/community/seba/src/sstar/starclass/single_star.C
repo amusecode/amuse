@@ -180,10 +180,10 @@ void single_star::post_constructor() {
 
     if (remnant()) {
         if (is_binary_component()){
-  	get_binary()->dump("binev.data", false);
+	  get_binary()->dump("binev.data", false);
         }
-      else
-	dump("binev.data", false);
+	else
+	  dump("binev.data", false);
     }
 }
 
@@ -409,6 +409,7 @@ real single_star::nucleair_evolution_timescale() {
 // old prescription gave long timescales which destables the mass transfer
      real t_nuc = radius * (current_time - previous.current_time)/(radius -
 previous.radius);
+
     if (t_nuc < 0) t_nuc = 0.1*main_sequence_time();
     return t_nuc;
 }
@@ -692,7 +693,9 @@ real single_star::accretion_limit(const real mdot, const real dt) {
 
   // Non-conservative mass transfer.
   // Based on Pols & Marinus,1994, A&A,288, 475
-  real r_rl = get_binary()->roche_radius(this);
+  real r_rl = effective_radius;
+  if (is_binary_component())
+    r_rl = get_binary()->roche_radius(this);
   real mdot_kh = dt*relative_mass/kelvin_helmholds_timescale();
   real accretion = log10(r_rl/effective_radius)
                  / pow(10, expansionB(relative_mass));
@@ -765,9 +768,10 @@ void single_star::adjust_accretor_radius(const real mdot, const real dt) {
 // (GN+SPZ Apr 28 1999) radius is equilibrium radius
 //    effective_radaius = radius = radius*pow(10, pow(10, r_fr));
 
-    real r_l = get_binary()->roche_radius(this);
-    effective_radius = max(min(r_l, effective_radius), 
-			   radius*pow(10, pow(10, r_fr)));
+    
+    if (is_binary_component())
+      effective_radius= min(effective_radius, get_binary()->roche_radius(this));
+    effective_radius = max(effective_radius, radius*pow(10, pow(10, r_fr)));
   
   } 
 }
@@ -961,9 +965,10 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
 
   if (low_mass_star()) {
 
-    real mdot = get_binary()
-              ->mdot_according_to_roche_radius_change(this,
-						      get_companion());
+    real mdot = 0;
+    if (is_binary_component())
+      mdot = get_binary()
+              ->mdot_according_to_roche_radius_change(this, get_companion());
     if (mdot > 0) {
 
       real mtt_rl = get_relative_mass()/mdot;
@@ -1031,9 +1036,10 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
 
   if (low_mass_star()) {
 
-    real mdot = get_binary()
-              ->mdot_according_to_roche_radius_change(this,
-						      get_companion());
+    real mdot = 0;
+    if (is_binary_component())
+      mdot = get_binary()
+              ->mdot_according_to_roche_radius_change(this, get_companion());
     if (mdot>0) {
       real mtt_rl = get_relative_mass()/mdot;
       if(mtt>mtt_rl) {
