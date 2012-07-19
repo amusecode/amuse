@@ -77,8 +77,7 @@ class double_star : public star
         ~double_star() {}
 
         virtual  istream& scan_star_story(istream&);
-        virtual  ostream& print_star_story(ostream&,
-					   int short_output = 0);
+        virtual  ostream& print_star_story(ostream&, int short_output = 0);
 
         int get_identity()		{return identity;}
         void set_identity(const int i)		{identity=i;}
