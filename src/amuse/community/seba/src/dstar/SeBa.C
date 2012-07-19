@@ -242,8 +242,9 @@ int main(int argc, char ** argv) {
     real end_time   = 13500;//35;
 
     char* input_filename;
-    char* output_filename = "SeBa.data";
-    //output_filename = new char "SeBa.data";
+    char* output_filename;
+    output_filename = "SeBa.data";
+    //char output_filename = new char "SeBa.data";
 
     int input_seed=0; 
     char seedlog[64];
