@@ -456,11 +456,12 @@ void horizontal_branch::update_wind_constant() {
     
     // Nieuwenhuijzen & de Jager 1990
     // Massive stars
+    // devided by two to get reasonable single wolf rayet stars
     real dm_dj = 0;
     if (luminosity > 4000.) {
         real x = min(1.0, (luminosity - 4000.0)/500.0);
         dm_dj = x * 9.6310E-15 * pow(radius, 0.81) * pow(luminosity, 1.24) * 
-        pow(get_total_mass(), 0.16)*pow(metalicity/cnsts.parameters(solar_metalicity), 0.5);
+        pow(get_total_mass(), 0.16)*pow(metalicity/cnsts.parameters(solar_metalicity), 0.5)/2.;
     }
     
     // Vink 2000, 2001
@@ -564,12 +565,12 @@ void horizontal_branch::update_wind_constant() {
     //based on Nugis & Lamers
     // eq 8.4 in Gijs' thesis Chapter 8
     //Reduced WR-like mass loss for small H-envelope mass
-    real mu = (get_total_mass()-core_mass)/get_total_mass() * min(5.0,max(1.2, pow(luminosity/7.E4,-0.5)));
+    //real mu = (get_total_mass()-core_mass)/get_total_mass() * min(5.0,max(1.2, pow(luminosity/7.E4,-0.5)));
     real dm_wr = 0;
-    if ( mu < 1.){
-        //factor (1.-mu) should be checked e.g. with resulting # BH in binaries
-        dm_wr = 1.38E-08 * pow(get_total_mass(), 2.87) * (1.-mu);
-    }
+    //if ( mu < 1.){
+    //    //factor (1.-mu) should be checked e.g. with resulting # BH in binaries
+    //    dm_wr = 1.38E-08 * pow(get_total_mass(), 2.87) * (1.-mu);
+    //}
     
     
     
