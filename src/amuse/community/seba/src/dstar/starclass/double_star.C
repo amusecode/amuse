@@ -861,13 +861,11 @@ void double_star::perform_mass_transfer(const real dt,
 	if (!accretor->remnant()) {
 
 	  // General case: semi-conservative mass transfer.
-	  
            a_fr  = pow(old_donor_mass*old_accretor_mass
                  / (new_donor_mass*new_accretor_mass), 2);
            semi *= pow(M_new/M_old,
 		       2*cnsts.parameters(specific_angular_momentum_loss)
 		       + 1)*a_fr;	
-
 	}
 	else {
 
@@ -1179,14 +1177,8 @@ void double_star::recursive_binary_evolution(real dt,
        
      star *p = get_primary();
      star *s = get_secondary();
-     if (p) {
-       p->evolve_element(binary_age);
-     }
-
-     if (bin_type!=Merged && s) {
-	  s->evolve_element(binary_age);
-     }
-     
+     if (p) p->evolve_element(binary_age);
+     if (bin_type!=Merged && s)  s->evolve_element(binary_age);
      p = s = NULL;
 
      if (bin_type!=Merged && bin_type!=Disrupted) {
@@ -1284,6 +1276,11 @@ void double_star::recursive_binary_evolution(real dt,
 //dump("SeBa.data", true);
 
 	    contact_binary(dt);   // used to be called: common_envelope(dt);
+        star *p = get_primary();
+        star *s = get_secondary();
+        if (p) p->evolve_element(binary_age);
+        if (bin_type!=Merged && s)  s->evolve_element(binary_age);
+        p = s = NULL;
 	    refresh_memory();
 // (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
 //dump("SeBa.data", true);
@@ -1291,7 +1288,6 @@ void double_star::recursive_binary_evolution(real dt,
 	    if (binary_age>=end_time)
 	      return;
 	    else {
-	      refresh_memory();
 	      real max_dt = end_time - binary_age;
 	      //	      dt = min(end_time - binary_age,
 	      //		       determine_dt(end_time, binary_age));
@@ -1330,8 +1326,12 @@ void double_star::recursive_binary_evolution(real dt,
 	    
     	    semi_detached(donor, accretor, dt);
             //was binary_in_contact(dt) with redundant safeties.
-	      
-              refresh_memory();
+            star *p = get_primary();
+            star *s = get_secondary();
+            if (p) p->evolve_element(binary_age);
+            if (bin_type!=Merged && s)  s->evolve_element(binary_age);
+            p = s = NULL;	      
+            refresh_memory();
 // (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
 //dump("SeBa.data", true);
               if (binary_age>=end_time) return;
