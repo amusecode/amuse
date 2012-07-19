@@ -32,9 +32,8 @@ neutron_star::neutron_star(super_giant & g) : single_star(g) {
 // (GN+SPZ May  4 1999) last update age is time of previous type change
       last_update_age = next_update_age;
 
-    bool hit_companion = false;
-//      bool hit_companion = super_nova();
-//      post_supernova_story();
+      bool hit_companion = super_nova();
+      post_supernova_story();
 
       refresh_memory();
       instantaneous_element();
@@ -141,9 +140,8 @@ neutron_star::neutron_star(helium_giant & h) : single_star(h) {
 // (GN+SPZ May  4 1999) last update age is time of previous type change
       last_update_age = next_update_age;
 
-        bool hit_companion = false;
-        //      bool hit_companion = super_nova();
-        //      post_supernova_story();
+    bool hit_companion = super_nova();
+    post_supernova_story();
 
       refresh_memory();
       instantaneous_element();
@@ -184,9 +182,8 @@ neutron_star::neutron_star(white_dwarf & w) : single_star(w) {
 // (GN+SPZ May  4 1999) last update age is time of previous type change
       last_update_age = next_update_age;
 
-        bool hit_companion = false;
-        //      bool hit_companion = super_nova();
-        //      post_supernova_story();
+        bool hit_companion = super_nova();
+        post_supernova_story();
     
 
       refresh_memory();

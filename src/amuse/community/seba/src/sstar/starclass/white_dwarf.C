@@ -14,8 +14,10 @@ white_dwarf::white_dwarf(super_giant & g, stellar_type wd_type) : single_star(g)
       white_dwarf_type = wd_type;
     
       real m_tot    = get_total_mass();
-      core_mass     = min(0.99*cnsts.parameters(kanonical_neutron_star_mass),
+//    (GN+SilT Mar 2010) was cnsts.parameters(kanonical_neutron_star_mass)
+      core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
 			  core_mass); 
+
       envelope_mass = m_tot - core_mass;
       accreted_mass = 0;
 

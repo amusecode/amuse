@@ -148,6 +148,7 @@ single_star::single_star(single_star & rv) : star(rv) {
 
 }
 
+#if 0
 void single_star::post_constructor() {
     //(GN+SPZ Apr 28 1999) stars with M < 8 Msun have wind per phase:
   update_wind_constant();
@@ -185,6 +186,46 @@ void single_star::post_constructor() {
 	dump("binev.data", false);
     }
 }
+
+#endif
+
+void single_star::post_constructor() {
+
+  //(GN+SPZ Apr 28 1999) stars with M < 8 Msun have wind per phase:
+  update_wind_constant();
+
+  // MEmory refrsh to prevent helium star to become white dwarf with
+  // zero-mass core.
+  // Not clear yet if companion and binary must also be updated?
+  // (SPZ+GN, 10 Nov 1998)
+  if (is_binary_component())
+    get_binary()->refresh_memory();
+  else
+    refresh_memory();
+  //    refresh_memory();
+    
+  //    if (is_binary_component() && get_binary()->get_bin_type()==Detached)
+  if (is_binary_component() && 
+      get_binary()->get_bin_type() != Merged &&
+      get_binary()->get_bin_type() != Disrupted) {
+    get_binary()->set_bin_type(Detached);
+    get_binary()->set_first_contact(false);
+  }
+
+  if (is_binary_component() && 
+      get_binary()->roche_radius(this) > radius) {
+    get_binary()->dump("SeBa.data", true);
+  }
+
+  if (remnant()) {
+    if (is_binary_component())
+      get_binary()->dump("binev.data", false);
+    else
+      dump("binev.data", false);
+  }
+
+}
+
 
 void single_star::initialize(int id, real z, real t_cur,
 			     real t_rel, real m_rel, real m_tot,
@@ -645,8 +686,9 @@ real single_star::accretion_limit(const real mdot, const real dt) {
   accretion = max(accretion, 0.);
   real mdot_max = mdot_kh*pow(accretion, 1./expansionA(relative_mass));
   mdot_max = max(mdot_max, 0.);	
-
+  
   return min(mdot, mdot_max);
+
 
   // (SPZ+GN: 26 Jul 2000) Test Kelvin Helmholtz accretion
   // (GN Jul 28 1999) test non conservative Algol evolution
@@ -686,8 +728,8 @@ void single_star::adjust_accretor_radius(const real mdot, const real dt) {
 //(GN+SPZ Apr 28 1999) star do bloat however... bloating on again
 //  return;
   
+
   //cerr<<"void star::adjust_accretor_radius()"<<endl;
-  //cerr<<"pre radius: "<<radius<<" "<<effective_radius<<endl;
 
   if (mdot>0) {
     real mdot_kh = relative_mass*dt/kelvin_helmholds_timescale();
@@ -702,9 +744,9 @@ void single_star::adjust_accretor_radius(const real mdot, const real dt) {
     real r_l = get_binary()->roche_radius(this);
     effective_radius = max(min(r_l, effective_radius), 
 			   radius*pow(10, pow(10, r_fr)));
-             
   }
 }
+
 
 real single_star::expansionA(const real m) {
 

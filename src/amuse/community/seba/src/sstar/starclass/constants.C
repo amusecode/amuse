@@ -328,7 +328,7 @@ real stellar_evolution_constants::parameters(model_parameter pm) {
 	      break;                          // (alpha_ce)
         case envelope_binding_energy:                  return 0.5;
 	      break;                          // (lambda)
-	case specific_angular_momentum_loss:           return 3.;
+	case specific_angular_momentum_loss:           return 2.5;
 	      break;                          // (beta)
         case dynamic_mass_transfer_gamma:               return 1.75;
               break;			      // (gamma)

@@ -454,7 +454,7 @@ real double_star::angular_momentum() {
         real ms = get_secondary()->get_total_mass()*cnsts.parameters(solar_mass);
         real a =  semi*cnsts.parameters(solar_radius);
         // (SilT: 6 Jan 2010) square root over (1-eccentricy*eccentricy) was missing
-        return omega*mp*ms*a*a*sqrt(1-eccentricity*eccentricity)/(mp+ms);
+        return omega*mp*ms*a*a*sqrt(1-eccentricity*eccentricity)/(mp+ms);         
      }
 
 void double_star::circularize() {
@@ -849,7 +849,6 @@ void double_star::perform_mass_transfer(const real dt,
      real md_dot=0;
      donor = donor->subtrac_mass_from_donor(dt, md_dot);
 
-
      if (md_dot>0) {
         real ma_dot = accretor->add_mass_to_accretor(md_dot, dt, donor->hydrogen_envelope_star());
 
@@ -867,7 +866,8 @@ void double_star::perform_mass_transfer(const real dt,
                  / (new_donor_mass*new_accretor_mass), 2);
            semi *= pow(M_new/M_old,
 		       2*cnsts.parameters(specific_angular_momentum_loss)
-		       + 1)*a_fr;
+		       + 1)*a_fr;	
+
 	}
 	else {
 
@@ -2450,11 +2450,7 @@ real double_star::zeta(star * donor,
        			 cnsts.safety(minimum_mass_step));
        //       real md_dot = min(donor->get_envelope_mass(), 
        //			 cnsts.safety(minimum_mass_step));
-       
-         real m1 = donor->get_total_mass();
-           real m2 = accretor->get_total_mass();
-       real primary_roche_lobe   = roche_radius(semi, m1, m2);      
-       
+              
        real dt = md_dot * donor_timescale/donor->get_relative_mass();
        real ma_dot = accretor->accretion_limit(md_dot, dt);
 
