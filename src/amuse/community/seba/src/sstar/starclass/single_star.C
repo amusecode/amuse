@@ -1,7 +1,7 @@
 // 
 // single_star.C
 //
-#include <fstream.h>
+#include <fstream>
 #include "single_star.h"
 #include "proto_star.h"
 //#include "main_sequence.h"
