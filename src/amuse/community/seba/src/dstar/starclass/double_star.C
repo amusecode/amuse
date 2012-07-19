@@ -840,6 +840,7 @@ void double_star::perform_mass_transfer(const real dt,
   if (!first_contact) {
 
     dump("SeBa.data", true);
+    first_contact = true;
   }
 
 
@@ -1330,7 +1331,9 @@ void double_star::recursive_binary_evolution(real dt,
 	  semi_detached(donor, accretor, dt);
 	  
 	  // (GN+SilT Mar  2 2011)
-	  first_contact=true;
+	  //first_contact=true; 
+	  // (GN+SilT Apr 19 2011)
+	  // Goes wrong with Common-envelope etc. Need to set in ::perform_mass_transfer...
 
 	  star *p = get_primary();
 	  star *s = get_secondary();
