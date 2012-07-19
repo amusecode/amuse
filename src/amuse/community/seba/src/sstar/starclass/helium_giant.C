@@ -230,7 +230,7 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
 
         // mc_core equals total mass
         // core mass reaches outside of star, no envelope anymore
-        if (mass < 1.6)
+        if (mass < 1.6 || mass_tot < 1.1)
             type = Carbon_Dwarf;
         else if (mass <= 2.25)
             type = Oxygen_Dwarf;
@@ -371,15 +371,14 @@ star* helium_giant::reduce_mass(const real mdot) {
                 return dynamic_cast(star*, new black_hole(*this));
             }
         }
-        else if(relative_helium_mass >= 1.6) {   
+        else if(relative_helium_mass < 1.6 || get_total_mass() < 1.1) {   
+            star_transformation_story(Carbon_Dwarf);	   
+            return dynamic_cast(star*, new white_dwarf(*this, Carbon_Dwarf));
+        }
+        else {         
             star_transformation_story(Oxygen_Dwarf);
             return dynamic_cast(star*, new white_dwarf(*this, Oxygen_Dwarf));
         }
-        else {
-            star_transformation_story(Carbon_Dwarf);	   
-            return dynamic_cast(star*, new white_dwarf(*this, Carbon_Dwarf));
-            
-        }     
     }
     return this;
 }
