@@ -778,7 +778,7 @@ real helium_giant::small_envelope_mu(const real lum, const real mass_tot, const 
     
     real mc_max = min(mass_tot, 1.45*mass_tot-0.31);    
     real mu = 5.*(mc_max-m_core) / mc_max;
-    mu = Starlab::max(mu,0);
+    mu = Starlab::max(mu,0.);
     return mu;
 }
 
