@@ -197,6 +197,8 @@ void white_dwarf::evolve_element(const real end_time) {
 // done in add_mass_to_accretor
 //        accrete_from_envelope(dt);
 
+	//PRC(core_mass);PRL(envelope_mass);
+
         if (core_mass > cnsts.parameters(Chandrasekar_mass) ||
 	    core_mass <= cnsts.safety(minimum_mass_step)) {
             // || accreted_mass > 0.2) {
@@ -247,6 +249,8 @@ void white_dwarf::evolve_element(const real end_time) {
 	// (GN+SPZ May  3 1999) critical mass for nova (Livio 1993; Saas-Fee)
 	   real m_crit = 1.7e-4*pow(get_total_mass(),-0.7)
 	               * pow(69.9*radius,2.8); // radius in 10^9 cm
+
+	   //PRC(m_crit);PRL(envelope_mass);
 
 	if (envelope_mass >= m_crit) 
 	   thermo_nucleair_flash(dt);
@@ -378,9 +382,23 @@ real white_dwarf::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
 	  effective_radius = min(10., get_binary()->roche_radius(this));
 	}
 
+	//PRC(mdot);PRC(hydrogen);PRL(dt);
+	//PRL(eddington_limit(radius, dt, mu));
 
-        mdot = accretion_limit(mdot, dt);
+        mdot = accretion_limit(mdot, dt, hydrogen);
 
+	//PRL(mdot);
+
+
+	// (Madelon+GN May 16 2011)
+	// Implement accretion to core via retention efficiencies
+	// Everything is dealt with in ::accretion_limit so
+	// just add mdot to core
+
+	  core_mass += mdot;
+	  accreted_mass += mdot;
+
+#if 0
 // (GN+SPZ May  3 1999) test helium accretion and steady burning accumulate
 // helium on core of wd. Steady burning between maximum_steady_burning
 // and minimum_steady_burning 
@@ -398,9 +416,12 @@ real white_dwarf::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
 	  core_mass += mdot;
 	  accreted_mass += mdot;
 	}
- 
+#endif
+
+	//PRC(accreted_mass);PRC(core_mass);PRL(envelope_mass);
+
         adjust_accretor_age(mdot);
-        envelope_mass += mdot;
+        //envelope_mass += mdot;
 	relative_mass = max(relative_mass, get_total_mass());
 
 	set_spec_type(Accreting);
@@ -420,13 +441,173 @@ real white_dwarf::accretion_limit(const real mdot, const real dt) {
      }
 #endif
 
-real  white_dwarf::accretion_limit(const real mdot, const real dt) {
+real  white_dwarf::accretion_limit(const real mdot, const real dt, bool hydrogen) {
 
   if (dt < 0) return mdot;
 
-  return min(maximum_steady_burning(dt), mdot);  
+  // (GN+Madelon May 12 2011) implement retention efficiencies
+  //return min(maximum_steady_burning(dt), mdot);  
+
+  real dmdt = 1.e-6*mdot/dt;
+  //PRL(dmdt);
+
+  real eta = retention_efficiency(dmdt, get_total_mass(), hydrogen);
+  //PRL(eta);
+  
+  return mdot*eta;
+}
+
+
+real white_dwarf::retention_efficiency(real dmdt, real M_WD, bool hydrogen) {
+
+  real eta = 1.;
+  //PRC(dmdt);PRC(M_WD);PRL(hydrogen);
+
+  if (hydrogen) {
+
+    real eta_H = retention_H(dmdt, M_WD);
+    real eta_He = retention_He(eta_H*dmdt, M_WD);
+    //PRC(eta_H);PRL(eta_He);
+    eta = eta_H*eta_He;
+    
+  } else {
+
+    eta = retention_He(dmdt, M_WD);
+  }
+
+  //PRL(eta);
+  return eta;
+}
+
+
+
+// (Madelon+GN May 16 2011)
+// Retention efficiencies according to Nomoto
+real white_dwarf::retention_H(real dmdt, real M_WD) {
+
+  if (dmdt < 1.e-7 || M_WD < 0.6) return 0.;
+
+
+  real logdmdt = log10(dmdt); 
+  real eta = 1.;
+  //PRC(logdmdt);
+
+  if (M_WD > 1.2) { // interpolate between M_WD 1.2 and 1.4
+
+
+    //First do eta(dmdt, M=1.4)
+    real M_cr = -6.1;
+    real M_st = -6.6;
+    
+    real eta_top = 1.;
+    if (logdmdt > M_cr) 
+      eta_top = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
+
+    if (logdmdt < M_st)
+      eta_top = 2.5*logdmdt + 17.5;
+
+    //Now do eta(dmdt, M=1.2)
+    M_cr = -6.2;
+    M_st = -6.7;
+
+    real eta_bottom = 1.;
+    if (logdmdt > M_cr) 
+      eta_bottom = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
+
+    if (logdmdt < M_st)
+      eta_bottom = 3.33*logdmdt + 23.3;
+	 
+    eta = lineair_interpolation(M_WD, 1.2, 1.4, eta_bottom, eta_top);
+
+  } else if (M_WD > 1.0) { // interpolate between M_WD 1.0 and 1.2
+    //first do eta(dmdt, M=1.2)
+    real M_cr = -6.2;
+    real M_st = -6.7;
+
+    real eta_top = 1.;
+    if (logdmdt > M_cr) 
+      eta_top = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
+
+    if (logdmdt < M_st)
+      eta_top = 3.33*logdmdt + 23.3;
+	 
+    //next do eta(dmdt, M=1.0)
+    M_cr = -6.4;
+    M_st = -6.9;
+
+    real eta_bottom = 1.;
+    if (logdmdt > M_cr) 
+      eta_bottom = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
+
+    if (logdmdt < M_st)
+      eta_bottom = 10.*logdmdt + 70.;
+	 
+    eta = lineair_interpolation(M_WD, 1.0, 1.2, eta_bottom, eta_top);
+
+  } else if (M_WD > 0.8) { // interpolate between M_WD 0.8 and 1.0
+    //first do eta(dmdt, M=1.0)
+    real M_cr = -6.4;
+    real M_st = -6.9;
+
+    real eta_top = 1.;
+    if (logdmdt > M_cr) 
+      eta_top = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
+
+    if (logdmdt < M_st)
+      eta_top = 10.*logdmdt + 70.;
+
+    //next do eta(dmdt, M=0.8)
+    M_cr = -6.5;
+    M_st = -7.1;
+
+    real eta_bottom = 1.;
+    if (logdmdt > M_cr) 
+      eta_bottom = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
+
+    eta = lineair_interpolation(M_WD, 0.8, 1.0, eta_bottom, eta_top);
+
+  
+  } else if (M_WD > 0.6) { // interpolate between M_WD 0.6 and 0.8
+    //first do eta(dmdt, M=0.8)
+    real M_cr = -6.5;
+    real M_st = -7.1;
+
+    real eta_top = 1.;
+    if (logdmdt > M_cr) 
+      eta_top = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
+	 
+    //next do eta(dmdt, M=0.6)
+    M_cr = -6.8;
+    M_st = -7.7;
+
+    real eta_bottom = 1.;
+    if (logdmdt > M_cr) 
+      eta_bottom = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
+	 
+    eta = lineair_interpolation(M_WD, 0.6, 0.8, eta_bottom, eta_top);
+
+  }
+
+  return eta;
 
 }
+
+real white_dwarf::retention_He(real dmdt, real M_WD) {
+  
+  real logdmdt = log10(dmdt);
+  real eta = 0.;
+
+  if (logdmdt > -7.8 && logdmdt < -5.9) 
+    eta = -0.175 * pow(logdmdt+5.35,2) + 1.05;
+
+  if (logdmdt > -5.9 && logdmdt < -5.0) eta =  1.;
+
+  return eta;
+
+}
+
+
+
 
 // (GN Mar 30 1999) steady burning limit 
 // (Sienkewicz 1980, described in van den Heuvel et al. 1992)
@@ -440,7 +621,7 @@ real  white_dwarf::maximum_steady_burning(const real dt) {
 real  white_dwarf::minimum_steady_burning(const real dt) {
 
 // Fit to Iben & Tutukov 1989
-  return 1.8e-7*pow(get_total_mass(),2.7)*dt;
+  return 1.8e-1*pow(get_total_mass(),2.7)*dt;
 
 }
 

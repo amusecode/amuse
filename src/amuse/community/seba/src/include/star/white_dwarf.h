@@ -61,7 +61,11 @@ class white_dwarf : public single_star {
 //              Mass transfer utilities.
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
-        real accretion_limit(const real, const real); 
+        real accretion_limit(const real, const real, bool=true); 
+        real retention_efficiency(real, real, bool);
+        real retention_H(real, real);
+        real retention_He(real, real);
+
         real minimum_steady_burning(const real); 
         real maximum_steady_burning(const real); 
         real add_mass_to_accretor(real, bool, const real = -1.);

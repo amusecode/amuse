@@ -2248,10 +2248,16 @@ void double_star::angular_momentum_envelope_ejection(star* larger,
 	  PRL(pow(M_tot/M_core, 2));
 	  PRL((M_tot + m_new)/(M_core + m_new));
 	  PRL(exp(-2. * M_env/m_new));
+	  PRL(a_f);
+
 	}
 
 	  real rl_l = roche_radius(a_f, M_core, m_new);
 	  real rl_s = roche_radius(a_f, m_new, M_core);
+
+
+	  PRC(rl_l);PRL(larger->get_core_radius());
+	  PRC(rl_s);PRL(smaller->get_radius());
 
 	// Merger
 	// Note that we hare want the equilibrium radius of the accretor
