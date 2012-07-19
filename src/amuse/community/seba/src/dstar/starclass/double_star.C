@@ -604,14 +604,16 @@ void double_star::set_donor_timescale(star* donor,
     donor_timescale = donor->get_companion()->kelvin_helmholds_timescale();
     current_mass_transfer_type = Unknown;
   }
-  else
+  else{
+    if(!first_contact){
+        //!first_contact resets donor timescale every new fase of mass transfer
+        donor_timescale = donor->get_companion()->kelvin_helmholds_timescale();  
+    }  
     donor_timescale =
-      donor->mass_transfer_timescale(current_mass_transfer_type);
-  
+      donor->mass_transfer_timescale(current_mass_transfer_type); 
+  }
   donor_identity = donor->get_identity();
   donor_type = donor->get_element_type();
-
-  
 }
 
 #if 0
@@ -2054,7 +2056,7 @@ real double_star::mdot_according_to_roche_radius_change(star* donor,
 //	Mass lost from donor due to loss of angular momentum by
 //	magnetic braking and gravitational wave-radiation.
 //	mass-transfer timescale becomes comparable to
-//	themal time-scale.
+//	thermal time-scale.
 
 //cerr<<"real double_star::mdot_according_to_roche_radius_change() = ";
         real mdot = 0;
@@ -2423,8 +2425,13 @@ void double_star::recall_memory() {
 // method: transfer planet and see how the compaion would react.
 // then compute respons of orbit and compute zeta
 // Problem:
-// Non conservative mass transfer can lead to stabilization (?!)
-// of the orbit and thus conservative mass transfer
+// Non conservative mass transfer can lead to stabilization 
+// of the orbit and thus stable transfer
+// (GN + SilT: 12 Nov 2010)
+// calculate zeta for two donor timescales and take minimum
+// 1) t_donor = t_kh_accretor  -> conservative mass transfer
+// 2) t_donor = t_kh_donor -> could be non-conservative and stabilizing mt
+ 
 real double_star::zeta(star * donor, 
                        star * accretor) {
 //	Find zeta Roche-lobe.
@@ -2507,6 +2514,68 @@ real double_star::zeta(star * donor,
        else {
 	 zeta = d_lnr/d_lnm;
        }
+
+        if (!first_contact){
+            // in case non-conservative mass transfer stabilizes the orbit
+               real donor_timescale_nc = donor->kelvin_helmholds_timescale();
+               real dt = md_dot * donor_timescale_nc/donor->get_relative_mass();
+               real ma_dot = accretor->accretion_limit(md_dot, dt);
+        
+               real M_old = get_total_mass();
+               real old_donor_mass = donor->get_total_mass();
+               real old_accretor_mass = accretor->get_total_mass();
+               real q_old = old_accretor_mass/old_donor_mass;
+        
+               real M_new = get_total_mass() - md_dot +  ma_dot;
+               real new_donor_mass = donor->get_total_mass() - md_dot;
+               real new_accretor_mass = accretor->get_total_mass() + ma_dot;
+               real q_new = new_accretor_mass/new_donor_mass;
+        
+               real a_fr, new_semi;
+               real beta = cnsts.parameters(specific_angular_momentum_loss);
+               a_fr  = pow(old_donor_mass*old_accretor_mass
+                     / (new_donor_mass*new_accretor_mass), 2);
+               new_semi = semi*pow(M_new/M_old, 2*beta + 1)*a_fr;
+               
+               real a_dot=0;
+        
+               real magnetic_braking_aml = mb_angular_momentum_loss();
+               real grav_rad_aml =  gwr_angular_momentum_loss(get_primary()
+        						      ->get_total_mass(),
+        						      get_secondary()
+        						      ->get_total_mass(),
+        						      semi);
+               //       PRC(magnetic_braking_aml);PRL(grav_rad_aml);
+               //       PRC(dt);PRC(semi);
+               a_dot = 2*dt*semi*(magnetic_braking_aml+grav_rad_aml);
+               //       PRC(a_dot);
+               new_semi += a_dot;
+               //PRL(a_dot);
+               
+               real rl = roche_radius(donor);
+        
+               real rl_d = roche_radius(new_semi,
+        				new_donor_mass,
+        				new_accretor_mass);
+        
+        
+        //       PRC(new_semi);PRC(rl_d);PRL(rl);
+               real d_lnr = (rl_d - rl)/rl;
+               real d_lnm = (new_donor_mass - donor->get_total_mass()) 
+        	          /  donor->get_total_mass();
+               
+               real zeta_nc;
+               if(d_lnm==0) {
+            	 cerr << "WARNING: d_lnm (= " << d_lnm << ") has an illegal value"
+            	      << endl;
+            	 zeta_nc = 0;
+            	 dump(cerr, true);
+               }
+               else {
+            	 zeta_nc = d_lnr/d_lnm;
+               }
+               zeta = min(zeta, zeta_nc);
+        }
 
        //       PRC(M_old);PRL(M_new);
        //       PRC(old_donor_mass);PRL(new_donor_mass);

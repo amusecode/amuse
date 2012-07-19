@@ -158,7 +158,9 @@ local bool  evolve_binary(dyn * bi,
 
     do {
 
-      dt = ds->get_evolve_timestep() + cnsts.safety(minimum_timestep);
+      //dt = ds->get_evolve_timestep() + cnsts.safety(minimum_timestep);
+      dt =
+      Starlab::max(ds->get_evolve_timestep(),cnsts.safety(minimum_timestep));
       time = Starlab::min(time+dt, end_time);
 
       ds->evolve_element(time);

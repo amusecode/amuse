@@ -442,15 +442,15 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
 
  }
 
-//real helium_star::accretion_limit(const real mdot, const real dt) {
-//cerr<<"helium_star::accretion_limit not used"<<endl;
-//
-//        real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
-//
-//        if(mdot>=eddington) return eddington;
-//
-//        return mdot;
-//}
+real helium_star::accretion_limit(const real mdot, const real dt) {
+//needed in double_star::zeta(donor, accretor)
+
+        real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
+
+        if(mdot>=eddington) return eddington;
+
+        return mdot;
+}
 
 
 // Star is rejuvenated by accretion.
