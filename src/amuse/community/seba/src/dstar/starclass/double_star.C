@@ -861,7 +861,6 @@ void double_star::perform_mass_transfer(const real dt,
 
      if (md_dot>0) {
         real ma_dot = accretor->add_mass_to_accretor(md_dot, donor->hydrogen_envelope_star(), dt);
-
         real M_new = get_total_mass();
         real new_donor_mass = donor->get_total_mass();
         real new_accretor_mass = accretor->get_total_mass();
@@ -2256,8 +2255,8 @@ void double_star::angular_momentum_envelope_ejection(star* larger,
 	  real rl_s = roche_radius(a_f, m_new, M_core);
 
 
-	  PRC(rl_l);PRL(larger->get_core_radius());
-	  PRC(rl_s);PRL(smaller->get_radius());
+//	  PRC(rl_l);PRL(larger->get_core_radius());
+//	  PRC(rl_s);PRL(smaller->get_radius());
 
 	// Merger
 	// Note that we hare want the equilibrium radius of the accretor

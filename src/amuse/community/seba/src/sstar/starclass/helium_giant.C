@@ -89,7 +89,7 @@ void helium_giant::evolve_element(const real end_time) {
     real dt = end_time - current_time;
     current_time = end_time;
     relative_age += dt;
-        
+    
     if (relative_age<=next_update_age) {
         instantaneous_element();
         evolve_core_mass();
@@ -212,6 +212,13 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
     if (mass_tot < cnsts.parameters(Chandrasekar_mass)){
         // if mc_core equals 1.45*mass-0.31
         // shell burning stops before whole envelope is converted into C and O
+        if (core_mass < mass_tot){
+           	PRC(core_mass);PRC(mass_tot);PRL(mass);
+            if(!update_core_and_envelope_mass(get_total_mass())) {
+                cerr << "Update core mass failed in helium_giant()"<<endl;
+            }
+        }
+        
 //      if (1.45*mass-0.31 < mass){
 //            cerr<<"Warning: not homogeneous WD"<<endl;
 //            type = Carbon_Dwarf;
@@ -220,10 +227,11 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
 //                cerr << "Update core mass failed in helium_giant()"<<endl;
 //            }
 //        }
+
+
         // mc_core equals total mass
         // core mass reaches outside of star, no envelope anymore
-       	PRC(mass_tot);PRL(mass);
-			  if (mass < 1.6)
+        if (mass < 1.6)
             type = Carbon_Dwarf;
         else if (mass <= 2.25)
             type = Oxygen_Dwarf;
