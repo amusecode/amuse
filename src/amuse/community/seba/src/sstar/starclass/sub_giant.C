@@ -373,12 +373,9 @@ void sub_giant::adjust_accretor_age(const real mdot,
 void sub_giant::adjust_next_update_age() {
 
   real t_bgb = base_giant_branch_time(relative_mass, metalicity);
-  if(relative_age < t_bgb - cnsts.safety(tiny) || relative_age > t_bgb + cnsts.safety(tiny)) {
 
+  if(relative_age < t_bgb - cnsts.safety(tiny) || relative_age > t_bgb + cnsts.safety(tiny)) {
     cerr << "WARNING: relative_age != t_Hg in sub_giant"<<endl;
-    cerr.precision(HIGH_PRECISION);
-    PRC(t_bgb);PRL(relative_age);
-    cerr.precision(STD_PRECISION);
     relative_age = t_bgb;
   }
 

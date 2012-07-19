@@ -48,7 +48,7 @@ class hertzsprung_gap : public single_star
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
         void adjust_accretor_age(const real mdot, const bool rejuvenate);
-        void adjust_age_after_wind_mass_loss(const real mdot, const bool rejuvenate);
+        void adjust_age_after_mass_loss(const real mdot, const bool rejuvenate);
         void adjust_next_update_age();
         void update_wind_constant();
         real  add_mass_to_accretor(const real, bool);

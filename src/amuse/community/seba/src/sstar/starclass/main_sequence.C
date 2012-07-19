@@ -454,7 +454,7 @@ star* main_sequence::subtrac_mass_from_donor(const real dt, real& mdot)
 //        update_relative_mass(relative_mass-mdot);
 //    }
     
-    adjust_age_after_wind_mass_loss(mdot, true);
+    adjust_age_after_mass_loss(mdot, true);
     envelope_mass -= mdot;
     if (relative_mass > get_total_mass()){
         update_relative_mass(get_total_mass());
@@ -471,16 +471,78 @@ star* main_sequence::subtrac_mass_from_donor(const real dt, real& mdot)
 }
 
 
+//star* main_sequence::merge_elements(star* str) {
+//
+//      star* merged_star = this;
+//    
+//      add_mass_to_core(str->get_core_mass());
+//
+//      //core_mass += str->get_core_mass();
+//      //if (relative_mass<get_total_mass())
+//      //   update_relative_mass(get_total_mass());
+//
+//      if (str->get_envelope_mass()>0) 
+//         add_mass_to_accretor(str->get_envelope_mass(), str->hydrogen_envelope_star());
+//
+//      spec_type[Merger]=Merger;
+//
+//      switch(str->get_element_type()) {
+//	 case Hyper_Giant:
+//         case Hertzsprung_Gap: 	
+//         case Sub_Giant: 	
+//         case Horizontal_Branch: 
+//         case Super_Giant: 
+//         case Carbon_Star: 
+//         case Helium_Star: 
+//         case Helium_Giant: 
+//         case Carbon_Dwarf: 
+//         case Oxygen_Dwarf:
+//         case Helium_Dwarf: 
+//	     if (relative_mass <
+//		  cnsts.parameters(massive_star_mass_limit)) {
+//		star_transformation_story(Hertzsprung_Gap);
+//
+//            // (GN+SPZ May  4 1999) should return now
+//            //  merged_star = dynamic_cast(star*, 
+//            //  new hertzsprung_gap(*this));
+//            //  dump(cerr, false);
+//
+//            // Chose relative_age to be next update age!
+//            // otherwise sub_giants become unhappy.
+//            cerr << "Merge MS+wd"<<endl;		
+//            PRC(relative_age);PRC(next_update_age);
+//            //		relative_age = next_update_age;
+//            
+//             return dynamic_cast(star*, new hertzsprung_gap(*this));
+//	      }
+//	      else {
+//		star_transformation_story(Hyper_Giant);
+//		//  merged_star = dynamic_cast(star*, 
+//		//  new wolf_rayet(*this));
+//		return dynamic_cast(star*, new hyper_giant(*this));
+//	      }
+//         case Thorn_Zytkow :
+//	 case Xray_Pulsar:
+//         case Radio_Pulsar:
+//         case Neutron_Star :
+//         case Black_Hole   : 
+//              star_transformation_story(Thorn_Zytkow);
+//	      // merged_star = dynamic_cast(star*, 
+//	      // new thorne_zytkow(*this));
+//	      return dynamic_cast(star*, new thorne_zytkow(*this));
+//	      default:	   instantaneous_element();
+//      }
+//      
+//      return merged_star;
+//
+//}
+
 star* main_sequence::merge_elements(star* str) {
-    cerr<<"ms::merge_elements is used?"<<endl;
 
       star* merged_star = this;
-    
-      add_mass_to_core(str->get_core_mass());
 
-      //core_mass += str->get_core_mass();
-      //if (relative_mass<get_total_mass())
-      //   update_relative_mass(get_total_mass());
+      if (str->get_core_mass() > 0)
+        add_mass_to_core(str->get_core_mass());
 
       if (str->get_envelope_mass()>0) 
          add_mass_to_accretor(str->get_envelope_mass(), str->hydrogen_envelope_star());
@@ -488,7 +550,6 @@ star* main_sequence::merge_elements(star* str) {
       spec_type[Merger]=Merger;
 
       switch(str->get_element_type()) {
-	 case Hyper_Giant:
          case Hertzsprung_Gap: 	
          case Sub_Giant: 	
          case Horizontal_Branch: 
@@ -499,9 +560,7 @@ star* main_sequence::merge_elements(star* str) {
          case Carbon_Dwarf: 
          case Oxygen_Dwarf:
          case Helium_Dwarf: 
-	     if (relative_mass <
-		  cnsts.parameters(massive_star_mass_limit)) {
-		star_transformation_story(Hertzsprung_Gap);
+    		star_transformation_story(Hertzsprung_Gap);
 
             // (GN+SPZ May  4 1999) should return now
             //  merged_star = dynamic_cast(star*, 
@@ -510,33 +569,25 @@ star* main_sequence::merge_elements(star* str) {
 
             // Chose relative_age to be next update age!
             // otherwise sub_giants become unhappy.
-            cerr << "Merge MS+wd"<<endl;		
-            PRC(relative_age);PRC(next_update_age);
-            //		relative_age = next_update_age;
-            
-             return dynamic_cast(star*, new hertzsprung_gap(*this));
-	      }
-	      else {
-		star_transformation_story(Hyper_Giant);
-		//  merged_star = dynamic_cast(star*, 
-		//  new wolf_rayet(*this));
-		return dynamic_cast(star*, new hyper_giant(*this));
-	      }
+            relative_age = next_update_age;
+            return dynamic_cast(star*, new hertzsprung_gap(*this));
+      
          case Thorn_Zytkow :
-	 case Xray_Pulsar:
+    	 case Xray_Pulsar:
          case Radio_Pulsar:
          case Neutron_Star :
          case Black_Hole   : 
               star_transformation_story(Thorn_Zytkow);
-	      // merged_star = dynamic_cast(star*, 
-	      // new thorne_zytkow(*this));
-	      return dynamic_cast(star*, new thorne_zytkow(*this));
-	      default:	   instantaneous_element();
+    	      // merged_star = dynamic_cast(star*, 
+    	      // new thorne_zytkow(*this));
+    	      return dynamic_cast(star*, new thorne_zytkow(*this));
+	      default:	   instantaneous_element(); //ms+ms
       }
       
       return merged_star;
 
 }
+
            
 // Star is rejuvenated by accretion.
 // Age adjustment especially for accretion from other stars.
@@ -555,8 +606,8 @@ void main_sequence::adjust_accretor_age(const real mdot,
       real t_ms_new = main_sequence_time(m_rel_new, z_new);
 
       relative_age *= (t_ms_new/t_ms_old);
-      if (rejuvenate)
-         relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
+//      if (rejuvenate)
+//         relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
  
       relative_age = min(relative_age, t_ms_new);
 
@@ -570,7 +621,7 @@ void main_sequence::adjust_accretor_age(const real mdot,
 // Age adjustment especially for (wind) mass loss
 // It is part of the single star evolution, 
 // so it can include information from tracks
-void main_sequence::adjust_age_after_wind_mass_loss(const real mdot,
+void main_sequence::adjust_age_after_mass_loss(const real mdot,
                                         const bool rejuvenate=true) {
     real m_rel_new;
     real m_tot_new = get_total_mass() - mdot;
@@ -655,7 +706,7 @@ real main_sequence::zeta_thermal() {
    }
 
 star* main_sequence::reduce_mass(const real mdot) {
-    adjust_age_after_wind_mass_loss(mdot, true);
+    adjust_age_after_mass_loss(mdot, true);
     envelope_mass -= mdot;
     
     if (relative_mass > get_total_mass()){

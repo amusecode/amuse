@@ -47,11 +47,7 @@ local bool read_single_params(ifstream& in, real &mass, real &time, real &metal)
 
 /*-------------------------------------------------------------------------*/
 local void evolve_star_until_next_time(node* bi, const real out_time, const int n_steps) {
-    //FILE *f1;
-    //f1=fopen("binev.data", "a");    
-    //fprintf(f1, "something");
-    //fclose(f1);
-    ofstream starev("data/starev.data", ios::app|ios::out);
+    ofstream starev("starev.data", ios::app|ios::out);
     bi->get_starbase()->dump(starev, false);  
     real current_time = ((star*)bi->get_starbase())->get_current_time();
     real time_step    =  bi->get_starbase()->get_evolve_timestep();

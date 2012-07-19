@@ -82,7 +82,7 @@ star* hertzsprung_gap::reduce_mass(const real mdot) {
         envelope_mass -= mdot;
     }
     else{
-        adjust_age_after_wind_mass_loss(mdot, true);
+        adjust_age_after_mass_loss(mdot, true);
         envelope_mass -= mdot;
         if (relative_mass > get_total_mass()){
             update_relative_mass(get_total_mass());
@@ -135,7 +135,7 @@ star* hertzsprung_gap::subtrac_mass_from_donor(const real dt, real& mdot) {
         envelope_mass -= mdot;
     }
     else{
-        adjust_age_after_wind_mass_loss(mdot, true);
+        adjust_age_after_mass_loss(mdot, true);
         envelope_mass -= mdot;
         if (relative_mass > get_total_mass()){
             update_relative_mass(get_total_mass());
@@ -151,7 +151,7 @@ star* hertzsprung_gap::subtrac_mass_from_donor(const real dt, real& mdot) {
 // add mass to accretor
 // is a separate function (see single_star.C) because rejuvenation
 real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    
+
     if (mdot<=0) {
         cerr << "hertzsprung_gap::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
         cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
@@ -316,21 +316,36 @@ void hertzsprung_gap::adjust_accretor_age(const real mdot, const bool rejuvenate
       real dtime = relative_age - t_ms_old;
 
       // (GN+SPZ May  4 1999) update last_update_age
-      last_update_age = t_ms_new;    
-      relative_age = t_ms_new 
-                   + dtime*(t_hg_new/t_hg_old);
-    
-      if (rejuvenate)
-           relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
+      last_update_age = t_ms_new; 
+   
+//      relative_age = t_ms_new 
+//                   + dtime*(t_hg_new/t_hg_old);
+//
+//      if (rejuvenate)
+//           relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
+//
 
-      if (relative_age < last_update_age + cnsts.safety(minimum_timestep)){
-            cerr<<"In hertzsprung_gap::adjust_accretor_age relative age updated on HG, but < last_update_age"<<endl;
-      }
+
+    // rejuvenation based on keeping mc constant and finding relative age for new mass
+    real mc_ehg = terminal_hertzsprung_gap_core_mass(relative_mass, metalicity);
+    real m5_25 = pow(relative_mass, 5.25);    
+    real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
+
+    real mc_ehg_new = terminal_hertzsprung_gap_core_mass(m_rel_new, z_new);
+    real m5_25_new = pow(m_rel_new, 5.25);
+    real rho_new = (1.586 + m5_25_new) / (2.434 + 1.02*m5_25_new);
+
+    
+    relative_age = t_ms_new + t_hg_new * ((1-rho)/(1-rho_new) * mc_ehg/mc_ehg_new * (relative_age - t_ms_old) / t_hg_old + 
+                (rho*mc_ehg - rho_new * mc_ehg_new)/ (1-rho_new) / mc_ehg_new);
+                
+                
       relative_age = max(relative_age, 
 			 last_update_age + cnsts.safety(minimum_timestep)); 
     
       relative_age = min(relative_age, t_bgb);
-
+      
+      
         // next_update_age should not be reset here
         // next_update_age = t_ms_new + t_hg_new;
 }
@@ -338,7 +353,7 @@ void hertzsprung_gap::adjust_accretor_age(const real mdot, const bool rejuvenate
 // Age adjustment especially for (wind) mass loss
 // It is part of the single star evolution, 
 // so it can include information from tracks
-void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const bool rejuvenate=true) {
+void hertzsprung_gap::adjust_age_after_mass_loss(const real mdot, const bool rejuvenate=true) {
 
     real m_rel_new;
     real m_tot_new = get_total_mass() - mdot;
@@ -359,18 +374,18 @@ void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const boo
     
     // (GN+SPZ May  4 1999) update last_update_age
     last_update_age = t_ms_new;
+    //following HPT tracks only update the relative_age relative to the length of the phase
+
     relative_age = t_ms_new + dtime*(t_hg_new/t_hg_old);
-    
-    if (rejuvenate){
-        real mdot_fr = -1.*mdot/m_tot_new;
-        real rejuvenation = (1-pow(mdot_fr,
-                                   cnsts.parameters(rejuvenation_exponent)));
-        relative_age *= rejuvenation; 
-    
-    }
-    if (relative_age < last_update_age + cnsts.safety(minimum_timestep)){
-        cerr<<"In hertzsprung_gap::adjust_age_after_wind_mass_loss relative age updated on HG, but < last_update_age"<<endl;
-    }
+//    if (rejuvenate){
+//        real mdot_fr = -1.*mdot/m_tot_new;
+//        real rejuvenation = (1-pow(mdot_fr,
+//                                   cnsts.parameters(rejuvenation_exponent)));
+//        relative_age *= rejuvenation; 
+//    
+//    }
+//    
+
     relative_age = max(relative_age, 
                        last_update_age + cnsts.safety(minimum_timestep)); 
     relative_age = min(relative_age, t_bgb);
@@ -785,7 +800,6 @@ real hertzsprung_gap::hertzsprung_gap_radius(const real time,
   real r_thg = terminal_hertzsprung_gap_radius(mass, mass_tot, z);
  
   real r_hg = r_tms * pow(r_thg/r_tms, tau);
-
   return r_hg;
 }
 
@@ -860,7 +874,7 @@ real hertzsprung_gap::hertzsprung_gap_core_mass(const real time,
 						const real mass,
 						const real z, const real m_core_old) {
 
-  real t_ms = main_sequence_time();
+  real t_ms = main_sequence_time(mass, z);
   real t_bgb = base_giant_branch_time(mass, z);
   real tau = (time - t_ms)/(t_bgb - t_ms);
   

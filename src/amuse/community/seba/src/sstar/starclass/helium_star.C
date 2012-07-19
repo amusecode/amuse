@@ -305,7 +305,7 @@ star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
     //  //return dynamic_cast(star*, new white_dwarf(*this));
     //}
 
-    adjust_age_after_wind_mass_loss(mdot, true);
+    adjust_age_after_mass_loss(mdot, true);
     envelope_mass -= mdot;
     if (relative_mass > get_total_mass()){
         update_relative_mass(get_total_mass());
@@ -326,7 +326,7 @@ star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 
 star* helium_star::reduce_mass(const real mdot) {
 
-    adjust_age_after_wind_mass_loss(mdot, true);
+    adjust_age_after_mass_loss(mdot, true);
     envelope_mass -= mdot;
     if (relative_mass > get_total_mass()){
         update_relative_mass(get_total_mass());
@@ -390,7 +390,7 @@ star* helium_star::reduce_mass(const real mdot) {
 // Age adjustment especially for (wind) mass loss
 // It is part of the single star evolution, 
 // so it can include information from tracks
-void helium_star::adjust_age_after_wind_mass_loss(const real mdot,
+void helium_star::adjust_age_after_mass_loss(const real mdot,
                                                     const bool rejuvenate=true) {
     real m_tot_new = get_total_mass() - mdot;
     real m_rel_new;

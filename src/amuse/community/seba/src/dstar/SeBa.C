@@ -383,8 +383,6 @@ int main(int argc, char ** argv) {
             			a_min, a_max, af, a_exp,
             			e_min, e_max, ef, e_exp,
                 		m_prim, m_sec, sma, ecc);
-                		cerr<<"hier dus"<<endl;
-            	exit(-1);	
         	}
       }		
       else {        

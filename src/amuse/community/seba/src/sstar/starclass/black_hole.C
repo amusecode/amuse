@@ -63,9 +63,8 @@ black_hole::black_hole(super_giant & g) : single_star(g) {
 
       relative_age = 0;
 
-    bool hit_companion = false;
- //     bool hit_companion = super_nova();
- //     post_supernova_story(); 
+     bool hit_companion = super_nova();
+     post_supernova_story(); 
  
       instantaneous_element();
       update();
@@ -135,9 +134,8 @@ black_hole::black_hole(helium_giant & h) : single_star(h) {
 
       relative_age = 0;
 
-    bool hit_companion = false;
-    //     bool hit_companion = super_nova();
-    //     post_supernova_story(); 
+         bool hit_companion = super_nova();
+         post_supernova_story(); 
 
       instantaneous_element();
       update();
@@ -170,9 +168,8 @@ black_hole::black_hole(neutron_star & n) : single_star(n) {
 
       relative_age = 0;
 
-    bool hit_companion = false;
-    //     bool hit_companion = super_nova();
-    //     post_supernova_story(); 
+     bool hit_companion = super_nova();
+     post_supernova_story(); 
 
       instantaneous_element();
 
@@ -456,7 +453,11 @@ bool black_hole::super_nova() {
       return hit_companion;
     }
     
-    else if(get_binary()->get_bin_type() == Disrupted ||
+    else if(is_binary_component()) {  //+++
+        
+        // Supernova is performed by the binary evolution
+        
+        if(get_binary()->get_bin_type() == Disrupted ||
 	    get_binary()->get_bin_type() == Merged) {
 
       get_companion()->set_spec_type(Accreting, false);
@@ -533,6 +534,7 @@ bool black_hole::super_nova() {
 	velocity = v_sn;
          }
       }
+    } // +++    
     envelope_mass = 0;
 
     return hit_companion;

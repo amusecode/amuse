@@ -339,6 +339,8 @@ void double_star::dump(ostream & s, bool brief) {
 	  << log10(stp->temperature()) << " "
 	  << stp->get_core_mass() << "     "
       //<< stp->get_effective_radius()/primary_roche_lobe  << "    "
+//      << primary_roche_lobe << "  "
+//      << stp->get_radius()<< "      "
 
 	  << sts->get_identity() << " "	  
 	  << sts->get_element_type() << " "
@@ -347,6 +349,8 @@ void double_star::dump(ostream & s, bool brief) {
 	  << log10(sts->temperature()) << " "
 	  << sts->get_core_mass() << " "
       //<< sts->get_effective_radius()/secondary_roche_lobe
+//      << secondary_roche_lobe << "  "
+//      << sts->get_radius()
 	  << endl;
 
    
@@ -438,7 +442,6 @@ void double_star::adjust_binary_after_wind_loss(star * donor,
        donor->get_companion()->set_spec_type(Accreting, false);
      }
 
-//cerr<<" a-->"<<semi<<endl;
 }
 
 real double_star::angular_momentum() {
@@ -586,7 +589,6 @@ real double_star::determine_dt(const real ageint, const real time_done) {
 void double_star::set_donor_timescale(star* donor,
 				      bool first) { // default = false
   
-//cerr << "set donor timescale"<<endl;
 
   if (first) {
 //    donor_timescale = donor->nucleair_evolution_timescale();
@@ -607,7 +609,6 @@ void double_star::set_donor_timescale(star* donor,
   donor_identity = donor->get_identity();
   donor_type = donor->get_element_type();
 
-//cerr << "donor timescale set"<<endl;
   
 }
 
@@ -632,7 +633,6 @@ void double_star::binary_in_contact(const real dt) {
         semi_detached(get_secondary(), get_primary(), dt);
      }
 
-//     cerr<<"leave: binary_in_contact"<<endl;
 }
 
 bool double_star::ready_for_mass_transfer(star* donor) {
@@ -668,7 +668,6 @@ void double_star::semi_detached(star* donor,
                                 real dt) {
 //	Binary is semi-detached.
 //	Donor should lose mass while the accretor should accrete.
-//    cerr << "semi_detached" <<endl;
 
   if (!stable(donor)) {
     cerr << "semi_deatched not stable => ::common_envelope" << endl; 
@@ -703,7 +702,6 @@ void double_star::contact(star* donor,
 //	Both stars in contact.
 //	W Uma (stable) system or spiral-in may occur.
 
-//    cerr<<"double_star::contact()"<<endl;
 //      Mass loss according to AM accretor.
      real M_old = get_total_mass();
      real old_donor_mass = donor->get_total_mass();
@@ -825,7 +823,6 @@ void double_star::update_binary_parameters() {
 
      get_primary()->set_previous_radius(get_primary()->get_radius());
      get_secondary()->set_previous_radius(get_secondary()->get_radius());
-//cerr<<"leave: double_star::update_binary_parameters()"<<endl;
 }
 #endif
 
@@ -892,7 +889,6 @@ void double_star::perform_mass_transfer(const real dt,
 	           / pow(new_donor_mass/old_donor_mass, 2);
            }
 	   
-	   //cerr<<"new_semi: "<< a_fr<<" " <<semi<<endl;
 	   //   Let outer component accrete from mass lost of inner binary.
 	   //	Routine block for triple evolution.
 	   //	Tricky but fun!
@@ -1114,13 +1110,10 @@ void double_star::evolve_the_binary(const real end_time) {
      real ageint = end_time - binary_age;
 
      do {
-       //cerr<<"evolve_the_binary loop "; PRC(end_time); PRL(ageint);
        
         determine_minimal_timestep();
         dt = determine_dt(ageint, time_done);
 
-// 	PRC(ageint);PRC(time_done);PRL(dt);
-	
         recursive_counter = 0;             
         old_binary_age = binary_age;
 	
@@ -1252,9 +1245,7 @@ void double_star::recursive_binary_evolution(real dt,
 	 // timescale of the newly determined donor
 	 // implemented (SPZ+GN:23 Sep 1998)
 	 set_donor_timescale(donor);
-	 //	 cerr <<"dts"<<endl;
 	 determine_minimal_timestep();
-	 //	 cerr <<"dt min"<<endl;
 
 	 // a bit more carefull before announcing contact (SPZ:  2 Jun 1999)
           if (rp >= rl_p &&       // removed since (SPZ+GN:19 Nov 1998)
@@ -1300,6 +1291,7 @@ void double_star::recursive_binary_evolution(real dt,
 	      //	      dt = min(end_time - binary_age,
 	      //		       determine_dt(end_time, binary_age));
 	      recursive_binary_evolution(max_dt, end_time);
+//dump("SeBa.data", true);
 	      return;
 	    }
 	  }
@@ -1331,6 +1323,7 @@ void double_star::recursive_binary_evolution(real dt,
 	     }
 	    
 //	    dump(cerr, false);
+//dump("SeBa.data", true);
 	    semi_detached(donor, accretor, dt);
             //was binary_in_contact(dt) with redundant safeties.
 //	    dump(cerr, false);
@@ -1396,6 +1389,8 @@ void double_star::recursive_binary_evolution(real dt,
 	   //get_seba_counters()->detached++;
 	   
            recursive_binary_evolution(dt, end_time);
+//dump("SeBa.data", true);
+
 	   return;
         }
         else {
@@ -1435,6 +1430,8 @@ void double_star::recursive_binary_evolution(real dt,
 	  }
 	      
 	   recursive_binary_evolution(max_dt, end_time);
+//dump("SeBa.data", true);
+
 	   return;
         }
      }
@@ -1457,6 +1454,8 @@ void double_star::recursive_binary_evolution(real dt,
        refresh_memory();
        real max_dt = end_time - binary_age;
        recursive_binary_evolution(max_dt, end_time);
+//dump("SeBa.data", true);
+
      }
 
 }
@@ -1858,11 +1857,9 @@ void double_star::spiral_in(star* larger,
 
 void double_star::merge_elements(star* consumer,
                                  star* dinner) {
-cerr<<"double_star::merge_elements"<<endl;
 
-//cerr<<"void double_star::merge_elements()"<<endl;
-//cerr<<"bin: "<<identity<<endl;
-
+cerr<<"void double_star::merge_elements()"<<endl;
+cerr<<"bin: "<<identity<<endl;
   bin_type = Merged;
   dump(cerr, false);
   dump("SeBa.data", true);
@@ -1890,7 +1887,6 @@ cerr << "Merger is: "<<endl;
 
 #endif
   //get_seba_counters()->mergers++;
-
 }
 
 // This function is not used at the moment.

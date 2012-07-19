@@ -70,7 +70,7 @@ class helium_star : public single_star {
      real add_mass_to_accretor(const real, bool);
 	 real add_mass_to_accretor(real, const real, bool);
      void adjust_accretor_age(const real, const bool=true);
-     void adjust_age_after_wind_mass_loss(const real mdot,
+     void adjust_age_after_mass_loss(const real mdot,
                                           const bool rejuvenate);
     
     

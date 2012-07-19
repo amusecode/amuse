@@ -572,12 +572,11 @@ void super_giant::adjust_next_update_age() {
     
   real t_tagb = TAGB_time(relative_mass, get_total_mass(), metalicity);
 
-  if(relative_age>t_tagb) {
-    cerr << "WARNING: relative_age > t_tagb in super_giant"<<endl;
-    exit(-1);
-    //relative_age = t_tagb;
+  if(relative_age < t_tagb - cnsts.safety(tiny) || relative_age > t_tagb + cnsts.safety(tiny)) {
+    cerr << "WARNING: relative_age != t_tagb in super_giant"<<endl;
+    relative_age = t_tagb;
   }
-    
+
   next_update_age = t_tagb;
 }
 
