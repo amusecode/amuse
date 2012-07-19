@@ -234,7 +234,7 @@ void helium_star::create_remnant() {
 
 star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 //    for a helium star relative_helium_mass = get_total_mass()  
-
+    
     mdot = relative_mass*dt/get_binary()->get_donor_timescale();
     mdot = mass_ratio_mdot_limit(mdot);
 
@@ -250,6 +250,7 @@ star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 
     adjust_age_after_mass_loss(mdot, true);
     envelope_mass -= mdot;
+    adjust_next_update_age();
     
     if (get_total_mass() < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not continue core helium burning.
@@ -265,9 +266,9 @@ star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 }
 
 star* helium_star::reduce_mass(const real mdot) {
-
     adjust_age_after_mass_loss(mdot, true);
     envelope_mass -= mdot;
+    adjust_next_update_age();
     
     if (get_total_mass() < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not continue core helium burning.
@@ -373,13 +374,14 @@ real helium_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
         if (accreted_mass > 0.05 * get_total_mass()){
             cerr << "WARNING: accreted hydrogen mass more than 5% of helium star"<<endl;
         }
-
+        adjust_next_update_age();
     }
     else{
         //for the moment assume helium accretion 
         
         adjust_accretor_age(mdot, true);
-        envelope_mass += mdot;        
+        envelope_mass += mdot;
+        adjust_next_update_age();
     }
 
     set_spec_type(Accreting);
@@ -409,7 +411,7 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         if (accreted_mass > 0.05 * get_total_mass()){
             cerr << "WARNING: accreted hydrogen mass more than 5% of helium star"<<endl;
         }
-        
+        adjust_next_update_age();
 
     }
     else{
@@ -418,7 +420,7 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         
         adjust_accretor_age(mdot, true);
         envelope_mass += mdot;
-
+        adjust_next_update_age();
     }
     set_spec_type(Accreting);
     return mdot;

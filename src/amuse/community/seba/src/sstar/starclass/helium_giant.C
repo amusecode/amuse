@@ -47,6 +47,7 @@ helium_giant::helium_giant(super_giant & g) : single_star(g) {
 
     instantaneous_element();
     evolve_core_mass();
+    cerr<<"constructor"<<endl;
     small_envelope_perturbation();       
     update();
     post_constructor();
@@ -57,7 +58,7 @@ helium_giant::helium_giant(helium_star & h) : single_star(h) {
     delete &h;
     
 // (GN+SPZ May  4 1999) last update age is time of previous type change
-    last_update_age = next_update_age;    
+    last_update_age = next_update_age;
     update_relative_helium_mass(get_total_mass());
 
     instantaneous_element();
@@ -145,7 +146,6 @@ void helium_giant::update() {
 void helium_giant::adjust_next_update_age() {
 
     //next_update_age /= cnsts.parameters(helium_star_lifetime_fraction);
-    
     real t_Heg = helium_giant_end_time(relative_helium_mass, get_total_mass());
     
 //    if(relative_age>t_Heg) {
@@ -166,19 +166,18 @@ real helium_giant::helium_giant_end_time(const real mass, const real mass_tot) {
     real mc_max = min(mass_tot, 1.45*mass_tot-0.31);
     mc_max = min(maximum_helium_giant_core_mass(mass), mc_max);
     
-    
     //core should minimally grow 5% as a helium giant
     real t_hems = helium_main_sequence_time_for_solar_metalicity(mass);   
     real mco_hems = helium_giant_core_mass(t_hems, mass);  //co core mass
     mc_max = max(mc_max, 1.05*mco_hems);
     
     real t_Heg = helium_giant_age_core_mass_relation(mc_max, mass);
+    
     real t_Hems  = helium_main_sequence_time_for_solar_metalicity(mass);
     if (t_Hems > t_Heg){
         cerr<<"In helium_giant_end_time t_Hems > t_Heg"<<endl;
         exit(-1);
     }
-    
     return t_Heg;
 }
 
@@ -273,7 +272,6 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
 
 
 star* helium_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
-
       mdot = relative_mass*dt/get_binary()->get_donor_timescale();
       mdot = mass_ratio_mdot_limit(mdot);
       
@@ -799,10 +797,12 @@ real helium_giant::maximum_helium_giant_core_mass(const real mass) {
 
 void helium_giant::small_envelope_perturbation(){
     real mu = small_envelope_mu(luminosity, get_total_mass(), core_mass);
+    PRC(mu);
     if(mu < 1.){
         real lum_c = small_envelope_core_luminosity();
         luminosity = perturb_luminosity(luminosity, lum_c, get_total_mass(), core_mass, mu);
         real rad_c = small_envelope_core_radius();
+        PRC(rad_c);
         if(rad_c < radius){
             radius = perturb_radius(radius, rad_c, get_total_mass(), core_mass, mu);
         }
@@ -818,6 +818,7 @@ real helium_giant::small_envelope_mu(const real lum, const real mass_tot, const 
     
     real mc_max = min(mass_tot, 1.45*mass_tot-0.31);    
     real mu = 5.*(mc_max-m_core) / mc_max;
+    PRC(mass_tot);PRC(mc_max);PRC(m_core);PRC(mu);
     return mu;
 }
 
