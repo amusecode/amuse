@@ -373,7 +373,7 @@ void sub_giant::adjust_accretor_age(const real mdot,
 void sub_giant::adjust_next_update_age() {
 
   real t_bgb = base_giant_branch_time(relative_mass, metalicity);
-  if(relative_age!=t_bgb) {
+  if(relative_age < t_bgb - cnsts.safety(tiny) || relative_age > t_bgb + cnsts.safety(tiny)) {
 
     cerr << "WARNING: relative_age != t_Hg in sub_giant"<<endl;
     cerr.precision(HIGH_PRECISION);
@@ -599,6 +599,7 @@ real sub_giant::get_evolve_timestep() {
             dt_mdot = core_mass / ( q * luminosity * A_H)  * r_bgb /radius * 1.0;
         }
     }
+        
     return max(min(timestep, dt_mdot), cnsts.safety(minimum_timestep));
     
 }
@@ -651,7 +652,7 @@ real sub_giant::helium_core_radius(const real mass, const real m_core, const rea
     else{
         // due to small nucleair burning layer 
         // r_c > white_dwarf_radius
-        r_c = 5.*white_dwarf_radius(m_core, 0.);
+        r_c = 5.*white_dwarf_radius(m_core, 10000.);
     }
     return r_c;
 }
@@ -666,7 +667,7 @@ real sub_giant::small_envelope_core_radius(const real mass, const real m_core, c
         r_c = helium_star_radius_for_solar_metalicity(m_core);
     }
     else{
-        r_c = white_dwarf_radius(m_core, 0.);
+        r_c = white_dwarf_radius(m_core, 10000.);
     }
     return r_c;
 }

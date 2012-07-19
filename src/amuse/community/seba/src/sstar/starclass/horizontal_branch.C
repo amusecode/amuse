@@ -298,7 +298,7 @@ void horizontal_branch::adjust_next_update_age() {
   real t_HeI = helium_ignition_time();
   real dt_cHe = core_helium_burning_timescale();
 
-  if(relative_age!=t_HeI) {
+  if(relative_age < t_HeI - cnsts.safety(tiny) || relative_age > t_HeI + cnsts.safety(tiny)) {
     cerr << "WARNING: relative_age != t_HeI in horizontal_branch"<<endl;
     cerr.precision(HIGH_PRECISION);
     PRC(relative_age);PRL(t_HeI);

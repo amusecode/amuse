@@ -32,15 +32,15 @@ local bool read_single_params(ifstream& in, real &mass, real &time, real &metal)
     mass = 0;
     metal = 0;
     
-    while (mass < 0.5 || mass > 100 || metal < 0.0001 || metal > 0.03){
+    while (mass > 100 || metal < 0.0001 || metal > 0.03){
         if(in.eof())
             return false;
         
         // reading from input file
         in >> mass>>time>>metal;
-        PRC(mass);PRC(time);PRL(metal);
     }
-    
+
+    PRC(mass);PRC(time);PRL(metal);
     return true;
 }
 
@@ -57,7 +57,6 @@ local void evolve_star_until_next_time(node* bi, const real out_time, const int 
     real time_step    =  bi->get_starbase()->get_evolve_timestep();
 
     while (out_time>current_time+time_step ) {
-        
         bi->get_starbase()->evolve_element(current_time+time_step);
         bi->get_starbase()->dump(starev, false);                
         current_time = ((star*)bi->get_starbase())->get_current_time();
@@ -203,7 +202,7 @@ int main(int argc, char ** argv)
         
     }*/
     else { 
-        if (mass >= 0.5 && mass<=100.0 && metal >= 0.0001 && metal <= 0.03 ){
+        if (mass<=100.0 && metal >= 0.0001 && metal <= 0.03 ){
             m_tot = mass;
             t_end = endtime;
             z = metal;
@@ -211,7 +210,7 @@ int main(int argc, char ** argv)
         }
         else{
             cerr<<"Parameters are not within valid range"<<endl;    
-            cerr<<"0.5 <= M <= 100 "<<endl;
+            cerr<<"M <= 100 "<<endl;
             cerr<<"0.0001 <= z <= 0.03"<<endl;
             return 0;
         }

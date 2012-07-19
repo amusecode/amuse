@@ -111,7 +111,7 @@ local bool read_binary_params(ifstream& in, real &m_prim,
     m_sec = 0;
     sma = 0;
     ecc = 0;
-    while (m_prim<0.5 || m_prim>100.0 || m_sec<0.5 || m_sec>100.0 || ecc<0 || ecc>1){   
+    while (m_prim>100.0 || m_sec>100.0 || ecc<0 || ecc>1){   
       if(in.eof())
         return false;
     
@@ -208,7 +208,7 @@ int main(int argc, char ** argv) {
 
     char *mfc = new char[64];
     mass_function mf = mf_Power_Law;
-    real m_min = 0.5;
+    real m_min = 0.1;
     real m_max = 100;
     real m_exp = -2.35;
     char *qfc = new char[64];
@@ -377,7 +377,7 @@ int main(int argc, char ** argv) {
 			a_min, a_max, af, a_exp,
 			e_min, e_max, ef, e_exp,
     		m_prim, m_sec, sma, ecc);
-        	while (m_prim<0.5 || m_prim>100.0 || m_sec<0.5 || m_sec>100.0 || ecc<0 || ecc>1){   
+        	while (m_prim>100.0 || m_sec>100.0 || ecc<0 || ecc>1){   
             	mkrandom_binary(m_min, m_max, mf, m_exp,
             			q_min, q_max, qf, q_exp,
             			a_min, a_max, af, a_exp,
@@ -388,7 +388,7 @@ int main(int argc, char ** argv) {
         	}
       }		
       else {        
-           if (m_max >= 0.5 && m_max<=100.0 && m_min >= 0.5 && m_min<=100.0 && e_min >= 0 && e_min <= 1){
+           if (m_max<=100.0 && m_min<=100.0 && e_min >= 0 && e_min <= 1){
             	m_prim = m_max;
             	m_sec  = m_min;
             	sma    = a_min;
@@ -397,7 +397,7 @@ int main(int argc, char ** argv) {
             }
             else{
                 cerr<<"Parameters are not within valid range"<<endl;    
-                cerr<<"0.5 <= M <= 100 "<<endl;
+                cerr<<"0.1 <= M <= 100 "<<endl;
 //                cerr<<"0.0001 <= z <= 0.03"<<endl;
                 cerr<<" 0 <= e <= 1"<<endl;
                 return 0;

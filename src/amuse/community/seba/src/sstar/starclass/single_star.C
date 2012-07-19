@@ -1074,7 +1074,7 @@ void single_star::update() {
   // (GN+SPZ Apr 28 1999)
   // effective_radius can be larger than  radius
   // (SPZ:  8 Jul 2001) 
-  // except for horzontal branch stars
+  // except for horizontal branch stars
   effective_radius = max(radius,effective_radius);
 
 
@@ -1083,7 +1083,7 @@ void single_star::update() {
 //  last_update_age = relative_age;
 
   detect_spectral_features();
-  dump(cerr, false);
+  //dump(cerr, false);
 
 }
 
@@ -2837,7 +2837,9 @@ real single_star::r_helper(const real rad, const real rad_c, const real mass_tot
 
 // (SPZ+GN: 27 Jul 2000) Gijs sais is better: Nelemans et al 2000
 real single_star::white_dwarf_radius(real mass, real time) {
-    
+    //safety
+    if (time < 1) time = 1;
+ 
     real r;
     if (mass < 0.8) { 
         real a,b;

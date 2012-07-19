@@ -419,7 +419,6 @@ void helium_star::adjust_age_after_wind_mass_loss(const real mdot,
 // add mass to accretor
 // is a separate function (see single_star.C) because rejuvenation
 real helium_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
-
     if (mdot<0) {
        cerr << "helium_star::add_mass_to_accretor(mdot=" 
             << mdot << ")"<<endl;
@@ -429,7 +428,7 @@ real helium_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
 
     if(hydrogen){
         // hydrogen accretion
-        cerr<<"hydrogen accretion on helium star! adjust routine"<<endl;
+        // is treated in the same way as helium accretion..
 
         adjust_accretor_age(mdot, true);
         // (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
@@ -466,7 +465,7 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
     
     if(hydrogen){
         //hydrogen accretion
-        cerr<<"hydrogen accretion on helium star!"<<endl;
+        // is treated in the same way as helium accretion..
 
         mdot = accretion_limit(mdot, dt);
         adjust_accretor_age(mdot, true);

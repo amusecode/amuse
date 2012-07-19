@@ -283,9 +283,9 @@ void white_dwarf::accrete_from_envelope(const real dt) {
 
 void white_dwarf::thermo_nucleair_flash(const real dt) {
 
-cerr<<"void white_dwarf::thermo_nucleair_flash() mass="
-    << envelope_mass<<" "<<get_core_mass()<<endl;
-cerr<<" "<<get_total_mass()<<endl;
+//cerr<<"void white_dwarf::thermo_nucleair_flash() mass="
+//    << envelope_mass<<" "<<get_core_mass()<<endl;
+//cerr<<" "<<get_total_mass()<<endl;
 
         real mdot = accretion_limit(envelope_mass, dt);
         if (is_binary_component() && 
@@ -293,17 +293,17 @@ cerr<<" "<<get_total_mass()<<endl;
 	    get_binary()->get_bin_type()!=Disrupted) {
 //		Spiral in or dwarf nova
 
-	  cerr << "Perform binary action"<<endl;
-	  cerr << "       "<<get_total_mass()<<" a = "
-                           <<get_binary()->get_semi();
+//	  cerr << "Perform binary action"<<endl;
+//	  cerr << "       "<<get_total_mass()<<" a = "
+//                           <<get_binary()->get_semi();
 
 	  if (get_binary()->roche_radius(this)<=1.0) //was 2.5 
 	    common_envelope(mdot);
 	  else 
 	    nova(mdot);
 
-	  cerr<<" -->"<< get_total_mass()<<" a = "
-                      << get_binary()->get_semi()<<endl;
+//	  cerr<<" -->"<< get_total_mass()<<" a = "
+//                      << get_binary()->get_semi()<<endl;
         }
 
       envelope_mass -= mdot;
@@ -339,8 +339,7 @@ void white_dwarf::common_envelope(const real mdot) {
 }
 
 star* white_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
-    cerr<<"white_dwarf::subtrac_mass_from_donor wrong relative_mass is used to determine mdot"<<endl;
-        mdot = relative_mass*dt/get_binary()->get_donor_timescale();
+        mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
         mdot = mass_ratio_mdot_limit(mdot);
 
         if (mdot<=envelope_mass)
@@ -467,16 +466,14 @@ real  white_dwarf::minimum_steady_burning(const real dt) {
 
 void white_dwarf::adjust_accretor_age(const real mdot,
 				      const bool rejuvenate) {
-    cerr<<"white_dwarf::adjust_accretor_age wrong relative_mass is used to determine the new age"<<endl;
-
-        real m_rel_new;
-        real m_tot_new = get_total_mass() + mdot;
-        if (m_tot_new>relative_mass)
-           m_rel_new = m_tot_new;
-        else m_rel_new = relative_mass;
+//        real m_rel_new;
+//        real m_tot_new = get_total_mass() + mdot;
+//        if (m_tot_new>relative_mass)
+//           m_rel_new = m_tot_new;
+//        else m_rel_new = relative_mass;
 
     real t_nuc_old = 0.;//nucleair_evolution_time();
-	real z_new = get_metalicity();
+//	real z_new = get_metalicity();
     real t_nuc_new = 0.;//nucleair_evolution_time(m_rel_new, m_tot_new, z_new);
 
         real dtime = relative_age - t_nuc_old;

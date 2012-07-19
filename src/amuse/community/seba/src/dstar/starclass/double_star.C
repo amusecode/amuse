@@ -517,9 +517,9 @@ void double_star::determine_minimal_timestep() {
      minimal_timestep = cnsts.safety(timestep_factor)*donor_timescale;
 
      if(minimal_timestep<cnsts.safety(minimum_timestep)) {
-        cerr << " minimal_timestep < safety minimum ";
-	cerr << " in double_star::determine_minimal_timestep: ";
-        cerr << minimal_timestep << endl;
+//        cerr << " minimal_timestep < safety minimum ";
+//	cerr << " in double_star::determine_minimal_timestep: ";
+//        cerr << minimal_timestep << endl;
         minimal_timestep = cnsts.safety(minimum_timestep);
      }
 }
@@ -1759,8 +1759,6 @@ void double_star::spiral_in(star* larger,
         real menv_l = larger->get_envelope_mass();
         real mtot_l = mcore_l + menv_l;
 
-	PRC(mcore_l);PRC(menv_l);PRL(mtot_l);
-
 	// What is accreted by the accretor should be reduce in the donor.
 	// (SPZ:  2 Jun 1999)
 	//real m_acc = smaller->accretion_limit(m_env_l, 
@@ -1776,7 +1774,6 @@ void double_star::spiral_in(star* larger,
 	real a_spi = semi*(mcore_l/mtot_l)/(1. + (2.*menv_l
                    / (alpha_lambda *r_lobe*mtot_s)));
        
-	PRL(a_spi);
 
         real rl_l = roche_radius(a_spi, mcore_l, mtot_s);
         real rl_s = roche_radius(a_spi, mtot_s, mcore_l);
@@ -1784,8 +1781,6 @@ void double_star::spiral_in(star* larger,
        real lrc = larger->get_core_radius();
        real sr = smaller->get_radius();
        real ser = smaller->get_effective_radius();
-
-       PRC(rl_l);PRC(lrc);PRC(rl_s);PRL(sr);
 
        // SPZ July 2002: why is there a difference bewteen sr and ser?
 	// Merger
@@ -2459,15 +2454,10 @@ real double_star::zeta(star * donor,
        			 cnsts.safety(minimum_mass_step));
        //       real md_dot = min(donor->get_envelope_mass(), 
        //			 cnsts.safety(minimum_mass_step));
-       PRC(md_dot);PRC(donor_timescale);PRC(donor->get_element_type());PRL(donor->get_relative_mass()); 
        
          real m1 = donor->get_total_mass();
            real m2 = accretor->get_total_mass();
-       real primary_roche_lobe   = roche_radius(semi, m1, m2);
-       PRC(donor->get_effective_radius());PRC(donor->get_radius());PRL(primary_roche_lobe);
-       PRC(m1);PRL(m2);
-       PRL(semi);
-       
+       real primary_roche_lobe   = roche_radius(semi, m1, m2);      
        
        real dt = md_dot * donor_timescale/donor->get_relative_mass();
        real ma_dot = accretor->accretion_limit(md_dot, dt);

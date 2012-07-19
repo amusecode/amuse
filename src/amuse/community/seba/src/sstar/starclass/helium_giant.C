@@ -81,8 +81,7 @@ void helium_giant::instantaneous_element() {
 
     luminosity       = helium_giant_luminosity_core_mass_relation(relative_age, relative_mass, metalicity);
     radius           = helium_giant_radius(luminosity, relative_mass, get_total_mass(), metalicity);
-
-    // don't do:
+    // don't do here:
     //effective_radius = max(effective_radius, radius)
     //because of small_envelope_perturbation
 }
@@ -438,7 +437,6 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
 // Increase donor mass and possibly relative_mass of donor.
 // Check mass-transfer timescales before use.
 real helium_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    
     if (mdot<=0) {
         cerr << "helium_giant::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
         cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
@@ -450,7 +448,7 @@ real helium_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
         
     if(hydrogen){
         // hydrogen accretion
-        cerr<<"hydrogen accretion on helium star! adjust routine"<<endl;
+        // is treated in the same way as helium accretion..
 
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         //adjust_accretor_age(mdot);
@@ -498,6 +496,8 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
     
     if(hydrogen){
         //hydrogen accretion
+        // is treated in the same way as helium accretion..
+
         mdot = accretion_limit(mdot, dt);
         
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
@@ -601,7 +601,6 @@ void helium_giant::adjust_accretor_age(const real mdot,
 
 // see helium_star.C
 real helium_giant::zeta_adiabatic() {
-    cerr<<"helium_giant::zeta_adiabatic: include difference for He HG and He SG star"<<endl;
 
      real z = 0.;
 //      Hjellming and Webbink 1987 ApJ, 318, 804
@@ -622,7 +621,6 @@ real helium_giant::zeta_adiabatic() {
    }
 
 real helium_giant::zeta_thermal() {
-    cerr<<"helium_giant::zeta_thermal: include difference for He HG and He SG star"<<endl;
 
     real z = -2;
 
@@ -895,7 +893,7 @@ real helium_giant::small_envelope_mu(const real lum, const real mass_tot, const 
 real helium_giant::co_core_radius(const real m_core){
     // due to small nucleair burning layer 
     // r_c > white_dwarf_radius
-    real r_c = 5.*white_dwarf_radius(m_core, 0.);
+    real r_c = 5.*white_dwarf_radius(m_core, 10000.);
     return r_c;
 }
 
@@ -905,7 +903,7 @@ real helium_giant::co_core_radius(){
 
 
 real helium_giant::small_envelope_core_radius(const real m_core){
-    real r_c = white_dwarf_radius(m_core, 0. );
+    real r_c = white_dwarf_radius(m_core, 10000. );
     return r_c;
 }
 

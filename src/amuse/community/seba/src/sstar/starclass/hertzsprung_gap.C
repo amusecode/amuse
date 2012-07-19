@@ -885,7 +885,7 @@ real hertzsprung_gap::helium_core_radius(const real mass, const real m_core, con
     else{
         // due to small nucleair burning layer 
         // r_c > white_dwarf_radius
-        r_c = 5.* white_dwarf_radius(m_core, 0.);
+        r_c = 5.* white_dwarf_radius(m_core, 10000.);
     }
     return r_c;
 }
@@ -901,7 +901,7 @@ real hertzsprung_gap::small_envelope_core_radius(const real mass, const real m_c
         r_c = helium_star_radius_for_solar_metalicity(m_core);
     }
     else{
-        r_c = white_dwarf_radius(m_core, 0.);
+        r_c = white_dwarf_radius(m_core, 10000.);
     }
     return r_c;
 }

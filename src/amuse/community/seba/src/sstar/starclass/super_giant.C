@@ -931,7 +931,7 @@ real super_giant::helium_core_radius(const real time, const real mass, const rea
         //TPAGB
         // due to small nucleair burning layer 
         // r_c > white_dwarf_radius
-        r_c = 5.*white_dwarf_radius(m_core, 0.); 
+        r_c = 5.*white_dwarf_radius(m_core, 10000.); 
     }
     return r_c;
 }
@@ -956,7 +956,7 @@ real super_giant::small_envelope_core_radius(const real time, const real mass, c
     }
     else{    
         //TPAGB
-        r_c = white_dwarf_radius(m_core, 0.); 
+        r_c = white_dwarf_radius(m_core, 10000.); 
     }
     return r_c;
 }

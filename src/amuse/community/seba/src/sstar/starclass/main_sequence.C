@@ -42,6 +42,11 @@ void main_sequence::update() {
 //  last_update_age = relative_age;
 
   detect_spectral_features();
+    
+    // (SilT Jan 19 2010)
+    // effective_radius can be larger than  radius
+    effective_radius = max(radius,effective_radius);
+    
 
 }
 
@@ -653,8 +658,6 @@ star* main_sequence::reduce_mass(const real mdot) {
     adjust_age_after_wind_mass_loss(mdot, true);
     envelope_mass -= mdot;
     
-    PRC(relative_mass);PRL(get_total_mass());
-    
     if (relative_mass > get_total_mass()){
         update_relative_mass(get_total_mass());
     }
@@ -747,8 +750,11 @@ void main_sequence::instantaneous_element() {
   radius           = main_sequence_radius(relative_age, 
 					  relative_mass, metalicity);
     
-  //effective_radius = max(effective_radius, radius);
-  effective_radius = radius;
+  // effective_radius = radius;
+  effective_radius = max(effective_radius, radius);
+  // eventhough the MS radius decreases slightly at the very end of the MS phase, we r_eff=max(r,r_eff)
+  // to keep the effect of bloating for mass changes
+  // because of the time steps we always reach the maximum radius on the MS 
 }
 
 // Evolve a main_sequence star upto time argument according to
@@ -767,6 +773,7 @@ void main_sequence::evolve_element(const real end_time) {
 	return;
     }
 
+    
     if (relative_age <= next_update_age) {
 
       instantaneous_element(); 
@@ -813,7 +820,6 @@ real main_sequence::get_evolve_timestep() {
         t_goal = t_rad;
     }
     
-    
     // (GN + SilT Nov 23 2009) go to end of phase in a maximum of 2 steps
     // in stead of going to 90% of phase until the timestep is smaller than minimum_timestep
     //  return max(next_update_age - relative_age, 0.0001);
@@ -828,6 +834,8 @@ real main_sequence::get_evolve_timestep() {
 //        timestep_lbv = 0.1* envelope_mass *pow(x_lbv -1.0, -3.0) / (luminosity/6.0E5 -1.0) /1.0E6;
 //    }    
 //    timestep = min(timestep, timestep_lbv);             
+    
+    
     
     
     return max(timestep, cnsts.safety(minimum_timestep));
@@ -1100,10 +1108,6 @@ real main_sequence::gamma_r_coefficient(const real mass,
         
         gamma_r = smc.a(76, z) + smc.a(77, z)
         * pow(mass - smc.a(78, z), smc.a(79, z));
-        PRC(smc.a(76,z));
-        PRC(smc.a(77,z));
-        PRC(smc.a(78,z));
-        PRC(smc.a(79,z));
     }
     else if (mass<=smc.a(75, z)) {
         
@@ -1127,13 +1131,7 @@ real main_sequence::gamma_r_coefficient(const real mass,
     
     if (mass>smc.a(75, z) + 0.1)
         gamma_r = 0;
-    
-    if (gamma_r <0) {
-        cerr<<"WARNING in main_sequence::gamma_r_coefficient: gamma_r < 0"<<endl;
-        PRC(mass); PRC(smc.a(75,z));PRC(relative_mass);PRL(get_total_mass());
-        exit(-1);
-    }
-    
+        
     return max(0., gamma_r);
 }
 
