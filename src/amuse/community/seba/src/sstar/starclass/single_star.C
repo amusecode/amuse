@@ -1401,7 +1401,7 @@ real single_star::get_evolve_timestep() {
 
     //temper LBV massloss rate
     real timestep_lbv = timestep;
-    real x_lbv = 1.0E-5*radius*sqrt(luminosity);
+//    real x_lbv = 1.0E-5*radius*sqrt(luminosity);
 //    if(hydrogen_envelope_star() && luminosity > 6.0E5 && x_lbv > 1.0){
 //        timestep_lbv = 0.1* envelope_mass *pow(x_lbv -1.0, -3.0) / (luminosity/6.0E5 -1.0) /1.0E6;
 //    }
@@ -2833,9 +2833,6 @@ real single_star::r_helper(const real rad, const real rad_c, const real mass_tot
 // (SPZ+GN: 27 Jul 2000) Gijs sais is better: Nelemans et al 2000
 real single_star::white_dwarf_radius(real mass, real time) {
     
-    //safety
-    if (time < 1) time = 1;
-
     real r;
     if (mass < 0.8) { 
         real a,b;
@@ -3018,26 +3015,33 @@ real single_star::get_relative_mass_from_table(const char * input_filename, cons
     }
     
     real m_rel, m_core;
+    real m_rel_old, m_core_old;
+    infile >> m_rel_old >> m_core_old;
     infile >> m_rel >> m_core;
-    real dm_core = m_c - m_core;
-    real m_rel_old, m_core_old, dm_core_old;
+
+    // assumption that in all tabels mc either increases or decreases with m_rel     
+    int factor = 1;
+    if (m_core_old > m_core)
+        factor = -1;
     
+    real dm_core = (m_c - m_core) * factor;
+    real dm_core_old = (m_c - m_core_old) * factor;
     
-    if (dm_core < 0 ){
+
+    if ( dm_core_old < 0){
         cerr<<"single_star::get_relative_mass_from_core_mass core_mass value is not included in table"<<endl;
         PRC(input_filename);
         PRC(m_c);PRC(m_core_old);PRL(m_core);
         exit(-1);
     }
     
-    
-    while (dm_core > 0 ){
+    while (dm_core > 0){
         m_rel_old = m_rel;
         m_core_old = m_core;
-        dm_core_old = m_c - m_core;
+        dm_core_old = dm_core;
         
         infile >> m_rel >> m_core;        
-        dm_core = m_c - m_core;
+        dm_core = (m_c - m_core) *factor;
         
         if (infile.eof()){
             cerr<<"single_star::get_relative_mass_from_core_mass core_mass is to large for table"<<endl;

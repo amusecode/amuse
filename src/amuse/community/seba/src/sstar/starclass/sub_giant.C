@@ -89,7 +89,7 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                     exit(-1);
                 }
                 if(relative_age > next_update_age){
-                    real m_rel= get_relative_mass_from_core_mass("Mc_HeI", core_mass, relative_mass, metalicity);
+                    real m_rel= get_relative_mass_from_core_mass("Mc_HeI_LM", core_mass, relative_mass, metalicity);
                     update_relative_mass(m_rel);
                     last_update_age = base_giant_branch_time(relative_mass, metalicity);
                     relative_age = next_update_age;
@@ -118,7 +118,7 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                     exit(-1);
                 }
                 if (tau > 1.){
-                    real m_rel= get_relative_mass_from_core_mass("Mc_HeI", core_mass, relative_mass, metalicity);
+                    real m_rel= get_relative_mass_from_core_mass("Mc_HeI_IHM", core_mass, relative_mass, metalicity);
                     update_relative_mass(m_rel);
                     last_update_age = base_giant_branch_time(relative_mass, metalicity);
                     relative_age = next_update_age;
@@ -186,7 +186,7 @@ real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
                 exit(-1);
            }
             if(relative_age > next_update_age){
-                real m_rel= get_relative_mass_from_core_mass("Mc_HeI", core_mass, relative_mass, metalicity);
+                real m_rel= get_relative_mass_from_core_mass("Mc_HeI_LM", core_mass, relative_mass, metalicity);
                 update_relative_mass(m_rel);
                 last_update_age = base_giant_branch_time(relative_mass, metalicity);
                 relative_age = next_update_age;   
@@ -215,7 +215,7 @@ real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
                 exit(-1);
             }
             if (tau > 1.){
-                real m_rel= get_relative_mass_from_core_mass("Mc_HeI", core_mass, relative_mass, metalicity);
+                real m_rel= get_relative_mass_from_core_mass("Mc_HeI_IHM", core_mass, relative_mass, metalicity);
                 update_relative_mass(m_rel);
                 last_update_age = base_giant_branch_time(relative_mass, metalicity);
                 relative_age = next_update_age;
@@ -652,7 +652,7 @@ real sub_giant::helium_core_radius(const real mass, const real m_core, const rea
     else{
         // due to small nucleair burning layer 
         // r_c > white_dwarf_radius
-        r_c = 5.*white_dwarf_radius(m_core, 10000.);
+        r_c = 5.*white_dwarf_radius(m_core, 0.);
     }
     return r_c;
 }
@@ -667,7 +667,7 @@ real sub_giant::small_envelope_core_radius(const real mass, const real m_core, c
         r_c = helium_star_radius_for_solar_metalicity(m_core);
     }
     else{
-        r_c = white_dwarf_radius(m_core, 10000.);
+        r_c = white_dwarf_radius(m_core, 0.);
     }
     return r_c;
 }

@@ -134,8 +134,14 @@ real horizontal_branch::add_mass_to_accretor(const real mdot, bool hydrogen) {
             relative_age = t_HeI + tau * t_He;
             last_update_age = t_HeI;
             
-            if (tau < 0.){
-                real m_rel= get_relative_mass_from_core_mass("Mc_HeI", core_mass, relative_mass, metalicity);
+            if (tau < 0.){                
+                real m_rel;
+                real m_HeF = helium_flash_mass(metalicity);
+                if (relative_mass < m_HeF)
+                    m_rel= get_relative_mass_from_core_mass("Mc_HeI_LM", core_mass, relative_mass, metalicity);
+                else 
+                    m_rel= get_relative_mass_from_core_mass("Mc_HeI_IHM", core_mass, relative_mass, metalicity);
+                    
                 update_relative_mass(m_rel);
                 last_update_age = helium_ignition_time(relative_mass, metalicity); 
                 relative_age = last_update_age;  
@@ -206,8 +212,14 @@ real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydr
         relative_age = t_HeI + tau * t_He;
         last_update_age = t_HeI;
         
-        if (tau < 0.){
-            real m_rel= get_relative_mass_from_core_mass("Mc_HeI", core_mass, relative_mass, metalicity);
+        if (tau < 0.){            
+            real m_rel;
+            real m_HeF = helium_flash_mass(metalicity);
+            if (relative_mass < m_HeF)
+                m_HeF = get_relative_mass_from_core_mass("Mc_HeI_LM", core_mass, relative_mass, metalicity);
+            else 
+                m_HeF = get_relative_mass_from_core_mass("Mc_HeI_IHM", core_mass, relative_mass, metalicity);
+                
             update_relative_mass(m_rel);
             last_update_age = helium_ignition_time(relative_mass, metalicity); 
             relative_age = last_update_age;     
