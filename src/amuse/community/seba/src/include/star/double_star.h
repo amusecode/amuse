@@ -170,7 +170,6 @@ class double_star : public star
         bool  stable(star* st=NULL); 
         real zeta(star*, star*, const real);
         real zeta_scaled(star*, star*, const real);
-//        real silly(star*, star*, const real){return 0;}
 	real gyration_radius_sq();
 	
 //		Stellar merging.

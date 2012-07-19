@@ -9,6 +9,7 @@
 ////                   [in units of the virial radius].
 ////             -S    Random seed.
 ////             -s    Initial stellar type [default is main_sequence].
+////		       No capital letters in the input type
 ////             -T or -t end time of the stellar evolution [in Million year].
 ////
 //// Latest version (SPZ:1.0) February 1993.
@@ -90,7 +91,7 @@ time_step = Starlab::max(time_step/n_steps, cnsts.safety(minimum_timestep));
 int main(int argc, char ** argv)
     {
         stellar_type type = Main_Sequence;
-    char * star_type_string;
+    char * star_type_string = new char[64];
     int  c;
 
     bool  t_flag = FALSE;
@@ -149,7 +150,7 @@ int main(int argc, char ** argv)
                       input_seed = atoi(poptarg);
                       break;
             case 's': 
-                strcpy(star_type_string, poptarg);
+                      strcpy(star_type_string, poptarg);
 		      type = extract_stellar_type_string(star_type_string);
                       break;
             case 'N': n_init = atoi(poptarg);

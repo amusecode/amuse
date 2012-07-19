@@ -502,6 +502,7 @@ void single_star::dump(ostream & s, bool brief) {
 	<< " " << velocity
 	<< " " << magnetic_field
 	<< " " << rotation_period
+	<< " " << core_radius
 	<< endl;
 
       s.precision(STD_PRECISION);
