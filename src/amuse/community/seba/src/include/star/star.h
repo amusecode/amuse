@@ -163,7 +163,8 @@ class  star : public starbase
         virtual void set_COcore_mass(const real){}
         virtual void set_envelope_mass(const real){}
         virtual void set_relative_mass(const real){}
-        virtual real zeta(star*, star*, const real, bool no_aml = true){return 0;}
+        virtual real zeta(star*, star*, const real){return 0;}
+        virtual real zeta_scaled(star*, star*, const real){return 0;}
         virtual real zeta_adiabatic(){return 0;}
         virtual real zeta_thermal(){return 0;}
         virtual real angular_momentum() {return 0;}

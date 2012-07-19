@@ -1126,19 +1126,20 @@ void double_star::evolve_the_binary(const real end_time) {
 
         recursive_counter = 0;             
         old_binary_age = binary_age;
-	
+
+        //redundant line 	
         get_primary()->set_previous_radius(get_primary()
 		     ->get_effective_radius());
         get_secondary()->set_previous_radius(get_secondary()
 		       ->get_effective_radius());
 
-	// Stellar wind mass loss is taken care of by the stars themselves.
-	// line removed at 20/08/97 by SPZ
-	// perform_wind_loss(dt);
+    	// Stellar wind mass loss is taken care of by the stars themselves.
+    	// line removed at 20/08/97 by SPZ
+    	// perform_wind_loss(dt);
 
         refresh_memory();
 
-	recursive_binary_evolution(dt, binary_age+dt);
+       	recursive_binary_evolution(dt, binary_age+dt);
         calculate_velocities();
         time_done += binary_age-old_binary_age;
      }
@@ -2115,11 +2116,56 @@ real double_star::mdot_according_to_roche_radius_change(star* donor,
 }
 #endif
 
+#if 0
 //      Mass lost from donor due to loss of angular momentum by
 //      magnetic braking and gravitational wave-radiation.
 //      mass-transfer timescale becomes comparable to
 //      themal time-scale.
 // New implementations (SPZ+GN:22 Sep 1998)
+real double_star::mdot_according_to_roche_radius_change(star* donor,
+							star* accretor) {
+  real mdot = 0;
+  if (bin_type != Merged && bin_type != Disrupted) {
+
+    real m_don = donor->get_total_mass();
+    real m_acc = accretor->get_total_mass();
+
+    real zeta_th = donor->zeta_thermal();
+    real rl = roche_radius(donor);
+    
+    //    real dm = 0.01*min(m_don, m_acc);
+    // we use minimum_mass_step also in ::zeta
+// (GN+SPZ May  3 1999) in real mass transfer timestep we use 
+// delta m \sim timestep_factor * relative_mass
+// so
+//    real dm = cnsts.safety(minimum_mass_step);
+//    dm can become larger than donor mass.
+//    real dm = cnsts.safety(timestep_factor) * donor->get_relative_mass();
+    real dm = cnsts.safety(timestep_factor) * donor->get_total_mass();
+
+    real rl_2 = roche_radius(semi, m_don-dm, m_acc+dm);
+
+    real J_mb = mb_angular_momentum_loss();
+    real J_gwr = gwr_angular_momentum_loss(m_don, m_acc, semi);
+
+    // Note: dm must be negative, because we talk about the mass losing star
+    real zeta_dimensionless_lobe = (rl_2 - rl)*m_don/(-1.*dm*rl);
+    mdot = m_don*abs((2*(J_mb+J_gwr))
+	 / (2*(m_don/m_acc-1.) - zeta_th + zeta_dimensionless_lobe));
+
+   real mdot_analytic = m_don*J_gwr/(m_don/m_acc - 2./3);
+
+  }
+
+  return mdot;
+}
+
+#endif
+
+
+//      Mass lost from donor due to loss of angular momentum by
+//      magnetic braking and gravitational wave-radiation.
+// New implementations (SilT+GN: April 2012)
 real double_star::mdot_according_to_roche_radius_change(star* donor,
 							star* accretor, const real z_star) {
   real mdot = 0;
@@ -2134,7 +2180,7 @@ real double_star::mdot_according_to_roche_radius_change(star* donor,
 
     // Note: dm must be negative, because we talk about the mass losing star
    real mtt = m_don_rel * abs((J_mb + J_gwr));
-   real zeta_l = zeta(donor, accretor, mtt, true);
+   real zeta_l = zeta_scaled(donor, accretor, mtt);
    mdot = m_don*abs((2*(J_mb+J_gwr))
 	 / (2*(m_don/m_acc-1.) - z_star + zeta_l));
 
@@ -2438,12 +2484,12 @@ void double_star::recall_memory() {
 
 // (SilT+GN Feb 2011) new version
 // Call of zeta explicitly gives the donor timescale as parameter
+// does not include aml losses -> otherwise donor_time_scale becomes thermal instead of aml
 real double_star::zeta(star * donor, 
                        star * accretor,
-		              const real md_timescale,
-		              bool no_aml ) {
+		              const real md_timescale) {
+
 //	Find zeta Roche-lobe.
-  
      if (bin_type!=Merged && bin_type!=Disrupted) {
 
 
@@ -2500,23 +2546,21 @@ real double_star::zeta(star * donor,
 	 }
        }
        
-       if (!no_aml){
-           real a_dot=0;
-    
-           real magnetic_braking_aml = mb_angular_momentum_loss();
-           real grav_rad_aml =  gwr_angular_momentum_loss(get_primary()
-    						      ->get_total_mass(),
-    						      get_secondary()
-    						      ->get_total_mass(),
-    						      semi);
-    
-           //       PRC(magnetic_braking_aml);PRL(grav_rad_aml);
-           //       PRC(dt);PRC(semi);
-           a_dot = 2*dt*semi*(magnetic_braking_aml+grav_rad_aml);
-           //       PRC(a_dot);
-           new_semi += a_dot;
-           //PRL(a_dot);
-       }
+//        real a_dot=0;
+//
+//        real magnetic_braking_aml = mb_angular_momentum_loss();
+//        real grav_rad_aml =  gwr_angular_momentum_loss(get_primary()
+//						      ->get_total_mass(),
+//						      get_secondary()
+//						      ->get_total_mass(),
+//						      semi);
+//
+//        //       PRC(magnetic_braking_aml);PRL(grav_rad_aml);
+//        //       PRC(dt);PRC(semi);
+//        a_dot = 2*dt*semi*(magnetic_braking_aml+grav_rad_aml);
+//        //       PRC(a_dot);
+//        new_semi += a_dot;
+//        //PRL(a_dot);
        
        real rl = roche_radius(donor);
 
@@ -2547,6 +2591,122 @@ real double_star::zeta(star * donor,
      // Merged or disrupted.
      return 1;
 }
+
+// (SilT 22 Mar 2012) 
+// return dln(Rl/a)/dlnM in stead of dlnRl/dlnM
+// used in mdot_according_to_roche_radius_change
+// includes aml losses
+real double_star::zeta_scaled(star * donor, 
+                       star * accretor,
+		              const real md_timescale) {
+
+
+//	Find zeta Roche-lobe.
+     if (bin_type!=Merged && bin_type!=Disrupted) {
+
+
+       // Use total mass here as md_dot is only used to determine zeta
+       real md_dot = Starlab::min(donor->get_total_mass(), 
+       			 cnsts.safety(minimum_mass_step));
+       //       real md_dot = min(donor->get_envelope_mass(), 
+       //			 cnsts.safety(minimum_mass_step));
+              
+       real dt = md_dot * md_timescale/donor->get_relative_mass();
+       real ma_dot = accretor->accretion_limit(md_dot, dt);
+
+       real M_old = get_total_mass();
+       real old_donor_mass = donor->get_total_mass();
+       real old_accretor_mass = accretor->get_total_mass();
+       real q_old = old_accretor_mass/old_donor_mass;
+
+       real M_new = get_total_mass() - md_dot +  ma_dot;
+       real new_donor_mass = donor->get_total_mass() - md_dot;
+       real new_accretor_mass = accretor->get_total_mass() + ma_dot;
+       real q_new = new_accretor_mass/new_donor_mass;
+
+       real a_fr, new_semi;
+       real beta = cnsts.parameters(specific_angular_momentum_loss);
+
+       if (!accretor->remnant()) {
+
+	 // General case: semi-conservative mass transfer.
+	 a_fr  = pow(old_donor_mass*old_accretor_mass
+		  / (new_donor_mass*new_accretor_mass), 2);
+	 new_semi = semi * pow(M_new/M_old, 2*beta + 1) * a_fr;	
+       }
+       else {
+
+	 // Special case: mass transfer to compact object as accretor.
+	 //               Two possibilities:
+	 //               1) eta>0: mass lost as wind from accretor.
+	 //               2) eta==0: exponential spiral-in.
+	 
+	 real eta = ma_dot/md_dot; 
+
+	 if (eta>0) {
+
+	   a_fr  = (new_donor_mass/old_donor_mass)
+	         * pow(new_accretor_mass/old_accretor_mass, 1/eta);
+	   new_semi = semi * (M_old/M_new)/pow(a_fr, 2); 
+	 }
+	 else {
+
+	   a_fr  = exp(2*(new_donor_mass-old_donor_mass)
+		       /new_accretor_mass); 
+	   new_semi = semi * (M_old/M_new)*a_fr
+	            / pow(new_donor_mass/old_donor_mass, 2);
+	 }
+       }
+       
+        real a_dot=0;
+
+        real magnetic_braking_aml = mb_angular_momentum_loss();
+        real grav_rad_aml =  gwr_angular_momentum_loss(get_primary()
+						      ->get_total_mass(),
+						      get_secondary()
+						      ->get_total_mass(),
+						      semi);
+
+        //       PRC(magnetic_braking_aml);PRL(grav_rad_aml);
+        //       PRC(dt);PRC(semi);
+        a_dot = 2*dt*semi*(magnetic_braking_aml+grav_rad_aml);
+        //       PRC(a_dot);
+        new_semi += a_dot;
+        //PRL(a_dot);
+       
+       real rl = roche_radius(donor);
+
+       real rl_d = roche_radius(new_semi,
+				new_donor_mass,
+				new_accretor_mass);
+
+//       PRC(new_semi);PRC(rl_d);PRL(rl);
+//       real d_lnr = (rl_d - rl)/rl;
+       real d_lnr_scaled = (rl_d/new_semi - rl/semi)/(rl/semi);
+       real d_lnm = (new_donor_mass - donor->get_total_mass()) 
+	          /  donor->get_total_mass();
+       
+       real zeta;
+       if(d_lnm==0) {
+	 cerr << "WARNING: d_lnm (= " << d_lnm << ") has an illegal value"
+	      << endl;
+	 zeta = 0;
+	 dump(cerr, true);
+       }
+       else {
+//	 zeta = d_lnr/d_lnm;
+    zeta = d_lnr_scaled/d_lnm;
+       }
+
+
+       return zeta;
+     }
+
+     // Merged or disrupted.
+     return 1;
+
+}
+
      
 void double_star::enhance_cluster_profile(cluster_profile& c_prof) {
 

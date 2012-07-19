@@ -619,7 +619,7 @@ void single_star::refresh_memory() {
 
   previous.radius = radius;
   previous.effective_radius = effective_radius;
-  
+
   //             Pulsars
   previous.magnetic_field  = magnetic_field;
   previous.rotation_period = rotation_period;
@@ -738,8 +738,12 @@ void single_star::adjust_donor_radius(const real delta_m) {
   // Effective radius return to equilibrium radius when mass transfer
   // is on nuclear timescale
   // (SPZ+GN:30 Sep 1998)
+  // or the aml timescale
+  // (SilT: 22 Apr 2012)
+
   if (is_binary_component() &&
-      get_binary()->get_current_mass_transfer_type()==Nuclear) {
+      (get_binary()->get_current_mass_transfer_type() == Nuclear | 
+      get_binary()->get_current_mass_transfer_type() == AML_driven)) {
     effective_radius = radius;
   }
 
@@ -932,8 +936,8 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
 
   if (is_binary_component()) {
 
-    z_l_ad = get_binary()->zeta(this, get_companion(), kelvin_helmholds_timescale(), true);
-    z_l_th = get_binary()->zeta(this, get_companion(), nucleair_evolution_timescale(), true);
+    z_l_ad = get_binary()->zeta(this, get_companion(), kelvin_helmholds_timescale());
+    z_l_th = get_binary()->zeta(this, get_companion(), nucleair_evolution_timescale());
   }
 
   real z_ad = zeta_adiabatic();
