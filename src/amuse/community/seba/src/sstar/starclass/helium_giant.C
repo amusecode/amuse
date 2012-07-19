@@ -405,7 +405,15 @@ real helium_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt)
             //if (is_binary_component()) cout<<get_binary()->get_identity();
 	    cerr << "\t WARNING: accreted hydrogen mass more than 5% of helium giant"<<endl;
         }
-        
+	
+	      
+        // For now, rejuvenation of SG, CHeB, AGB or He giant accretor   
+	// only if mtot > relative_mass
+	if (relative_mass<get_total_mass())  {
+	  update_relative_mass(get_total_mass());
+	}	  
+
+	
         // only neccessary for AGB & He giant accretor as  
         // next_update_age is a function of total mass
         // as the maximal core mass can be the total mass
@@ -422,6 +430,13 @@ real helium_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt)
         //adjust_accretor_age(mdot);
         envelope_mass += mdot;
         
+      
+        // For now, rejuvenation of SG, CHeB, AGB or He giant accretor   
+	// only if mtot > relative_mass
+	if (relative_mass<get_total_mass())  {
+	  update_relative_mass(get_total_mass());
+	}	  
+	
         // only neccessary for AGB & He giant accretor as  
         // next_update_age is a function of total mass
         // as the maximal core mass can be the total mass
@@ -763,6 +778,7 @@ real helium_giant::small_envelope_mu(const real lum, const real mass_tot, const 
     
     real mc_max = min(mass_tot, 1.45*mass_tot-0.31);    
     real mu = 5.*(mc_max-m_core) / mc_max;
+    mu = Starlab::max(mu,0);
     return mu;
 }
 
