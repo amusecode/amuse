@@ -141,31 +141,6 @@ real lineair_interpolation(const real x,
 	return y;
 }
 
-// SPZ & SilT Feb 4 2010
-// Added routine for inverting relatively smooth functions
-// Based on linear iterative procedure until satisfied 
-real lineair_function_inversion(real (*fptr)(real), 
-			       const real x_guess, const real y_value) {
-
-  real gx = x_guess;
-  real gy;
-  real xmin = cnsts.parameters(minimum_main_sequence);
-  real xmax = cnsts.parameters(maximum_main_sequence);
-  real ymin = (*fptr)(xmin);
-  real ymax = (*fptr)(xmax);
-  real mu = (xmax-xmin)/(ymax-ymin);
-  real dy = 0;
-  do {
-    gy = (*fptr)(gx);
-    dy = y_value - gy;
-    gx += mu*dy;
-  }
-  while(abs(dy/y_value)>cnsts.safety(minimal_interpolation_accuracy));
-
-  //  cout << gy << " "<< dy<<" "<< gx << endl;
-  return gx;
-}
-
 //		Super nova utilities.
 
 //	Check!!

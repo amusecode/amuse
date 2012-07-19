@@ -181,6 +181,7 @@ enum safety_parameter {timestep_factor,
 		       maximum_timestep,
 		       maximum_recursive_calls,
 		       tiny,
+		       minimum_inversion_precision,
 		       number_of_steps,
 		       minimal_interpolation_accuracy,
                       };

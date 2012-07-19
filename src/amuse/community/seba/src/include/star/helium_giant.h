@@ -35,7 +35,6 @@ class helium_giant : public single_star {
          real relative_helium_mass;
     
       public :
-
          helium_giant(super_giant &);
          helium_giant(helium_star &);
          ~helium_giant() {}
@@ -62,7 +61,8 @@ class helium_giant : public single_star {
         void evolve_core_mass();
         real helium_giant_core_mass(const real time,
                          const real mass);
-         //void stellar_wind(const real);
+         
+        //void stellar_wind(const real);
         real nucleair_evolution_timescale(); 
     
         void update();

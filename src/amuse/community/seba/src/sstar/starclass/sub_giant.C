@@ -65,7 +65,6 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
         else{
             //for the moment assume helium accretion
             core_mass += mdot;
-            accreted_mass += mdot;
             update_relative_mass(relative_mass + mdot);
             
             //adjust age part
@@ -78,24 +77,24 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 last_update_age = t_bgb;
                 
                 if(relative_age < last_update_age ){
-                    real m_rel= get_relative_mass_from_core_mass("Mc_ehg", core_mass, relative_mass, metalicity);
+                    
+                    real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
+                    
+                    real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
                     update_relative_mass(m_rel);
                     last_update_age = base_giant_branch_time(relative_mass, metalicity);
                     relative_age = last_update_age;   
-                    PRL(core_mass);
                     evolve_core_mass();
-                    PRL(core_mass);   
-                    exit(-1);
                 }
                 if(relative_age > next_update_age){
-                    real m_rel= get_relative_mass_from_core_mass("Mc_HeI_LM", core_mass, relative_mass, metalicity);
+                    real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;        
+                    real xmin = cnsts.parameters(minimum_main_sequence);
+                    real xmax = m_HeF;
+                    real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
                     update_relative_mass(m_rel);
                     last_update_age = base_giant_branch_time(relative_mass, metalicity);
                     relative_age = next_update_age;
-                    PRL(core_mass);
                     evolve_core_mass();
-                    PRL(core_mass);                    
-                    exit(-1);
                 }
             }
             else {
@@ -107,17 +106,20 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 last_update_age = t_bgb;
                 
                 if (tau < 0.){
-                    real m_rel= get_relative_mass_from_core_mass("Mc_ehg", core_mass, relative_mass, metalicity);
+                    real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
+                    
+                    real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
                     update_relative_mass(m_rel);
                     last_update_age = base_giant_branch_time(relative_mass, metalicity);
                     relative_age = last_update_age; 
-                    PRL(core_mass);
                     evolve_core_mass();
-                    PRL(core_mass);                    
-                    exit(-1);
                 }
                 if (tau > 1.){
-                    real m_rel= get_relative_mass_from_core_mass("Mc_HeI_IHM", core_mass, relative_mass, metalicity);
+                    
+                    real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;        
+                    real xmin = m_HeF;
+                    real xmax = helium_ignition_mass(metalicity);// m_FGB < m_rel not possibel for gb star
+                    real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
                     update_relative_mass(m_rel);
                     last_update_age = base_giant_branch_time(relative_mass, metalicity);
                     relative_age = next_update_age;
@@ -160,7 +162,6 @@ real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
         // for the moment no helium_accretion_limit and adjust_accretor_radius
 
         core_mass += mdot;
-        accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
         //adjust age part
@@ -173,24 +174,24 @@ real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
             last_update_age = t_bgb;
             
             if(relative_age < last_update_age){
-                real m_rel= get_relative_mass_from_core_mass("Mc_ehg", core_mass, relative_mass, metalicity);
+                real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
+                
+                real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
                 update_relative_mass(m_rel);
                 last_update_age = base_giant_branch_time(relative_mass, metalicity);
                 relative_age = last_update_age;   
-                PRL(core_mass);
                 evolve_core_mass();
-                PRL(core_mass);                
-                exit(-1);
            }
             if(relative_age > next_update_age){
-                real m_rel= get_relative_mass_from_core_mass("Mc_HeI_LM", core_mass, relative_mass, metalicity);
+                real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;        
+                
+                real xmin = cnsts.parameters(minimum_main_sequence);
+                real xmax = m_HeF;
+                real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
                 update_relative_mass(m_rel);
                 last_update_age = base_giant_branch_time(relative_mass, metalicity);
                 relative_age = next_update_age;   
-                PRL(core_mass);
                 evolve_core_mass();
-                PRL(core_mass);                
-                exit(-1);
             }
         }
         else {
@@ -202,31 +203,22 @@ real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
             last_update_age = t_bgb;
             
             if (tau < 0.){
-                real m_rel= get_relative_mass_from_core_mass("Mc_ehg", core_mass, relative_mass, metalicity);
+                real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
+                real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
                 update_relative_mass(m_rel);
                 last_update_age = base_giant_branch_time(relative_mass, metalicity);
                 relative_age = last_update_age;
-                PRL(core_mass);
                 evolve_core_mass();
-                PRL(core_mass);                
-                exit(-1);
+
             }
             if (tau > 1.){
-                cerr<<"yep here"<<endl;
-                real m_rel= get_relative_mass_from_core_mass("Mc_HeI_IHM", core_mass, relative_mass, metalicity);
-                PRC(core_mass -mdot);PRC(core_mass);PRC(mc_bgb);PRC(mc_HeI);PRC(relative_mass);PRL(m_rel);
-                
+                real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;        
+                real xmin = m_HeF;
+                real xmax = helium_ignition_mass(metalicity);// m_FGB < m_rel not possible for gb star
+                real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
                 update_relative_mass(m_rel);
                 last_update_age = base_giant_branch_time(relative_mass, metalicity);
                 relative_age = next_update_age;
-                
-                real t_bgb = base_giant_branch_time(relative_mass, metalicity);
-                real l_bgb = base_giant_branch_luminosity(relative_mass, metalicity);
-                real A_H = sub_giant_Ah_estimator(relative_mass);
-                real m_core = determine_core_mass(relative_age, relative_mass, metalicity, 
-                                                 A_H, t_bgb, l_bgb);
-                
-                
                 evolve_core_mass();
             }
         } 

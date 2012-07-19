@@ -15,6 +15,7 @@ helium_star::helium_star(hertzsprung_gap & h) : single_star(h) {
 
     delete &h;
     lose_envelope_decent();
+    accreted_mass = 0;
     
     // (GN+SPZ May  4 1999) last update age is time of previous type change
     // in NEW relative_age units
@@ -44,6 +45,7 @@ helium_star::helium_star(sub_giant & g) : single_star(g) {
 
     delete &g;
     lose_envelope_decent();
+    accreted_mass = 0;
 
     // (GN+SPZ May  4 1999) last update age is time of previous type change
     // in NEW relative_age units
@@ -73,6 +75,7 @@ helium_star::helium_star(horizontal_branch & h) : single_star(h) {
 
     delete &h;
     lose_envelope_decent();
+    accreted_mass = 0;
 
     relative_age = (relative_age - helium_ignition_time(relative_mass, metalicity)) / core_helium_burning_timescale(relative_mass, metalicity)
      * helium_main_sequence_time_for_solar_metalicity(get_total_mass());
@@ -366,6 +369,10 @@ real helium_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
         //	update_wind_constant();
         
         envelope_mass += mdot;
+        accreted_mass += mdot;
+        if (accreted_mass > 0.05 * get_total_mass()){
+            cerr << "WARNING: accreted hydrogen mass more than 5% of helium star"<<endl;
+        }
 
     }
     else{
@@ -398,22 +405,19 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         // (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
         //	update_wind_constant();
         envelope_mass += mdot;
-
-        cerr<<"Should helium_star::add_mass_to_accretor have adjust_donor_radius?"<<endl;
-        adjust_accretor_radius(mdot, dt);
+        accreted_mass += mdot;
+        if (accreted_mass > 0.05 * get_total_mass()){
+            cerr << "WARNING: accreted hydrogen mass more than 5% of helium star"<<endl;
+        }
+        
 
     }
     else{
         //for the moment assume helium accretion
-        cerr<<"he star::add_mass_to_accretor  helium accretion limit?"<<endl;    
-        mdot = accretion_limit(mdot, dt);
-
+        // for the moment no helium_accretion_limit and adjust_accretor_radius
         
         adjust_accretor_age(mdot, true);
         envelope_mass += mdot;
-
-        cerr<<"he star::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
-        adjust_accretor_radius(mdot, dt);
 
     }
     set_spec_type(Accreting);

@@ -33,7 +33,6 @@ horizontal_branch::horizontal_branch(hertzsprung_gap & h) : single_star(h) {
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
   last_update_age = next_update_age;
-
     adjust_next_update_age();
     instantaneous_element();
     evolve_core_mass();
@@ -49,7 +48,6 @@ horizontal_branch::horizontal_branch(hertzsprung_gap & h) : single_star(h) {
 // Increase donor mass and possibly relative_mass of donor.
 // Check mass-transfer timescales before use.
 real horizontal_branch::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    
     if (mdot<=0) {
         cerr << "horizontal_branch::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
         cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
@@ -73,9 +71,7 @@ real horizontal_branch::add_mass_to_accretor(const real mdot, bool hydrogen) {
         }
         else{
             //for the moment assume helium accretion
-            
             core_mass += mdot;
-            accreted_mass += mdot;
             update_relative_mass(relative_mass + mdot);
             
             //adjust age part
@@ -89,20 +85,22 @@ real horizontal_branch::add_mass_to_accretor(const real mdot, bool hydrogen) {
             last_update_age = t_HeI;
             
             if (tau < 0.){                
-                real m_rel;
+                real xmin, xmax;
                 real m_HeF = helium_flash_mass(metalicity);
-                if (relative_mass < m_HeF)
-                    m_rel= get_relative_mass_from_core_mass("Mc_HeI_LM", core_mass, relative_mass, metalicity);
-                else 
-                    m_rel= get_relative_mass_from_core_mass("Mc_HeI_IHM", core_mass, relative_mass, metalicity);
-                    
+                if (relative_mass < m_HeF){
+                    xmin = cnsts.parameters(minimum_main_sequence);
+                    xmax = m_HeF;
+                }
+                else{ 
+                    xmin = m_HeF;
+                    xmax = cnsts.parameters(maximum_main_sequence);
+                }
+                real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;                        
+                real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
                 update_relative_mass(m_rel);
                 last_update_age = helium_ignition_time(relative_mass, metalicity); 
                 relative_age = last_update_age;  
-                PRL(core_mass);
                 evolve_core_mass();
-                PRL(core_mass);                
-                exit(-1);
             }
             if (tau > 1.){
                 // in principle this is not correct because the helium core has reached it's max in this phase
@@ -110,19 +108,17 @@ real horizontal_branch::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 update_relative_mass(base_AGB_relative_mass(core_mass, metalicity));
                 relative_age = next_update_age;
                 last_update_age = helium_ignition_time(relative_mass, metalicity); 
-                PRL(core_mass);
                 evolve_core_mass();
-                PRL(core_mass);
-                exit(-1);
             }
         }
     }
-    
+
     set_spec_type(Accreting);
     return mdot;
 }
 
 real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+
     if (mdot<0) {
         cerr << "horizontal_branch::add_mass_to_accretor(mdot=" << mdot 
         << ", dt=" << dt << ")"<<endl;
@@ -147,11 +143,11 @@ real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydr
         
     }
     else{
+
         //for the moment assume helium accretion
         // for the moment no helium_accretion_limit and adjust_accretor_radius
 
         core_mass += mdot;
-        accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
         //adjust age part
@@ -163,23 +159,25 @@ real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydr
         real tau = (core_mass - mc_HeI) / (mc_bagb - mc_HeI);
         relative_age = t_HeI + tau * t_He;
         last_update_age = t_HeI;
-        
+
         if (tau < 0.){            
-            real m_rel;
+            real xmin, xmax;
             real m_HeF = helium_flash_mass(metalicity);
-            if (relative_mass < m_HeF)
-                m_HeF = get_relative_mass_from_core_mass("Mc_HeI_LM", core_mass, relative_mass, metalicity);
-            else 
-                m_HeF = get_relative_mass_from_core_mass("Mc_HeI_IHM", core_mass, relative_mass, metalicity);
-                
+            if (relative_mass < m_HeF){
+                xmin = cnsts.parameters(minimum_main_sequence);
+                xmax = m_HeF;
+            }
+            else{ 
+                xmin = m_HeF;
+                xmax = cnsts.parameters(maximum_main_sequence);
+            }
+            
+            real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass; 
+            real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
             update_relative_mass(m_rel);
             last_update_age = helium_ignition_time(relative_mass, metalicity); 
             relative_age = last_update_age;     
-            PRL(core_mass);
             evolve_core_mass();
-            PRL(core_mass);
-            
-            exit(-1);
         }
         if (tau > 1.){
             // in principle this is not correct because the helium core has reached it's max in this phase
@@ -187,10 +185,7 @@ real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydr
             update_relative_mass(base_AGB_relative_mass(core_mass, metalicity));
             relative_age = next_update_age;
             last_update_age = helium_ignition_time(relative_mass, metalicity); 
-            PRL(core_mass);
             evolve_core_mass();
-            PRL(core_mass);
-            exit(-1);
         }
     }
     set_spec_type(Accreting);
@@ -297,7 +292,7 @@ real horizontal_branch::zeta_thermal() {
 void horizontal_branch::adjust_next_update_age() {
   real t_HeI = helium_ignition_time();
   real dt_cHe = core_helium_burning_timescale();
-
+    
   if(relative_age < t_HeI - cnsts.safety(tiny) || relative_age > t_HeI + cnsts.safety(tiny)) {
     cerr << "WARNING: relative_age != t_HeI in horizontal_branch"<<endl;
     cerr.precision(HIGH_PRECISION);
@@ -809,7 +804,6 @@ real horizontal_branch::core_helium_burning_core_mass(const real time,
     real t_He  = core_helium_burning_timescale(mass, z);
     real tau = (time - t_HeI)/t_He;    
     real m_core = (1-tau)*mc_HeI + tau*mc_bagb;
-
     return m_core;
     
 }

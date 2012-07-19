@@ -6,20 +6,23 @@
 #include "helium_star.h"
 #include "helium_giant.h"
 
-
 // (GN+SPZ May  3 1999) only for stars more massive than 
 // super_giant2neutron_star, below become white_dwarf
 // to be done (SPZ+GN: 27 Jul 2000)
 // (ST: 10 Sep 2000)  it's different now with the HPT tracks 
 helium_giant::helium_giant(super_giant & g) : single_star(g) {
 
-    delete &g;    
+    delete &g;   
+    accreted_mass = 0;
     update_relative_helium_mass(get_total_mass());
+    
     relative_age = helium_giant_age_core_mass_relation(core_mass, relative_helium_mass);
     last_update_age = helium_main_sequence_time_for_solar_metalicity(relative_helium_mass); 
     
-    if (relative_age < last_update_age){
-        real m_he_rel= get_relative_mass_from_core_mass("Mc_HeMS.txt", core_mass, relative_helium_mass, metalicity);
+    if (relative_age < last_update_age){     
+        
+        real (single_star::*fptr)(const real, real) = &single_star::helium_giant_initial_core_mass;        
+        real m_he_rel = linear_function_inversion(fptr, relative_mass, core_mass);             
         update_relative_helium_mass(m_he_rel);
         last_update_age = helium_main_sequence_time_for_solar_metalicity(relative_helium_mass);
         relative_age = last_update_age;
@@ -395,6 +398,9 @@ real helium_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
         //adjust_accretor_age(mdot);
         envelope_mass += mdot;
         accreted_mass += mdot;
+        if (accreted_mass > 0.05 * get_total_mass()){
+            cerr << "WARNING: accreted hydrogen mass more than 5% of helium giant"<<endl;
+        }
         
         // only neccessary for AGB & He giant accretor as  
         // next_update_age is a function of total mass
@@ -408,11 +414,11 @@ real helium_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
     }
     else{
         //for the moment assume helium accretion
+        // for the moment no helium_accretion_limit and adjust_accretor_radius
 
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         //adjust_accretor_age(mdot);
         envelope_mass += mdot;
-        accreted_mass += mdot;
         
         // only neccessary for AGB & He giant accretor as  
         // next_update_age is a function of total mass
@@ -445,6 +451,9 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
         // adjust_accretor_age(mdot);
         envelope_mass += mdot;
         accreted_mass += mdot;
+        if (accreted_mass > 0.05 * get_total_mass()){
+            cerr << "WARNING: accreted hydrogen mass more than 5% of helium giant"<<endl;
+        }
         
         // only neccessary for AGB & He giant accretor as  
         // next_update_age is a function of total mass
@@ -452,16 +461,14 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
         // when total mass < chandrasekhar mass      
         adjust_next_update_age();  
         
-        adjust_accretor_radius(mdot, dt);
-        
     }
     else{
         //for the moment assume helium accretion
+        // for the moment no helium_accretion_limit and adjust_accretor_radius
         
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         //adjust_accretor_age(mdot);
         envelope_mass += mdot;
-        accreted_mass += mdot;
         
         // only neccessary for AGB & He giant accretor as  
         // next_update_age is a function of total mass
@@ -754,7 +761,6 @@ void helium_giant::evolve_core_mass() {
 
 //related to Eq. 84
 real helium_giant::helium_giant_core_mass(const real time, const real mass){
-    
     
     real A_He = AGB_A_He_estimator();
     real t_Hems = helium_main_sequence_time_for_solar_metalicity(mass);

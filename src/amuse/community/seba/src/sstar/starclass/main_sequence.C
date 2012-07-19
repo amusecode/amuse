@@ -280,7 +280,6 @@ real main_sequence::add_mass_to_accretor(const real mdot, bool hydrogen) {
         
         //core_mass += mdot; //no core yet
         envelope_mass += mdot;
-        accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
         //alike void main_sequence::adjust_accretor_age
@@ -337,7 +336,6 @@ real main_sequence::add_mass_to_accretor(real mdot, const real dt, bool hydrogen
 
         //core_mass += mdot; //no core yet
         envelope_mass += mdot;
-        accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
         //alike void main_sequence::adjust_accretor_age

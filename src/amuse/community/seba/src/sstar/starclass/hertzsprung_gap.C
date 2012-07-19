@@ -46,6 +46,7 @@ void hertzsprung_gap::adjust_initial_star() {
 #endif
 
 star* hertzsprung_gap::reduce_mass(const real mdot) {
+
     if (envelope_mass<=mdot) {
         envelope_mass = 0;
 
@@ -92,6 +93,7 @@ star* hertzsprung_gap::reduce_mass(const real mdot) {
 }
 
 star* hertzsprung_gap::subtrac_mass_from_donor(const real dt, real& mdot) {
+
       mdot = relative_mass*dt/get_binary()->get_donor_timescale();
       mdot = mass_ratio_mdot_limit(mdot);
 
@@ -183,7 +185,6 @@ real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
     else{
         //for the moment assume helium accretion
         core_mass += mdot;
-        accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
         //adjust age part
@@ -195,19 +196,18 @@ real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
         real t_bgb = base_giant_branch_time(relative_mass, metalicity);
         relative_age = t_ms + tau * (t_bgb - t_ms);
         last_update_age = t_ms;
-        
+
         if (tau < 0.){
-            real m_rel= get_relative_mass_from_core_mass("Mc_init_hg", core_mass, relative_mass, metalicity);
+            real (single_star::*fptr)(const real, real) = &single_star::initial_hertzsprung_gap_core_mass;        
+            real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
             update_relative_mass(m_rel);
             last_update_age = main_sequence_time(relative_mass, metalicity);
             relative_age = last_update_age;     
-            PRL(core_mass);
             evolve_core_mass();
-            PRL(core_mass);
-            exit(-1);
         }
         if (tau > 1.){
-            real m_rel= get_relative_mass_from_core_mass("Mc_ehg", core_mass, relative_mass, metalicity);
+            real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
+            real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
             update_relative_mass(m_rel);
             last_update_age = main_sequence_time(relative_mass, metalicity);
             relative_age = next_update_age;
@@ -220,7 +220,6 @@ real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
 }
 
 real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
-
     if (mdot<0) {
         cerr << "hertzsprung_gap::add_mass_to_accretor(mdot=" << mdot 
         << ", dt=" << dt << ")"<<endl;
@@ -257,7 +256,6 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
         // for the moment no helium_accretion_limit and adjust_accretor_radius
         
         core_mass += mdot;
-        accreted_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
         //adjust age part
@@ -271,17 +269,16 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
         last_update_age = t_ms;
 
         if (tau < 0.){
-            real m_rel= get_relative_mass_from_core_mass("Mc_init_hg", core_mass, relative_mass, metalicity);
+            real (single_star::*fptr)(const real, real) = &single_star::initial_hertzsprung_gap_core_mass;                   
+            real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
             update_relative_mass(m_rel);
             last_update_age = main_sequence_time(relative_mass, metalicity);
             relative_age = last_update_age;     
-            PRL(core_mass);
             evolve_core_mass();
-            PRL(core_mass);
-            exit(-1);
         }
         if (tau > 1.){
-            real m_rel= get_relative_mass_from_core_mass("Mc_ehg", core_mass, relative_mass, metalicity);
+            real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
+            real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
             update_relative_mass(m_rel);
             last_update_age = main_sequence_time(relative_mass, metalicity);
             relative_age = next_update_age;            
@@ -845,47 +842,21 @@ real hertzsprung_gap::hertzsprung_gap_time() {
 }
 
 
-
-//Eq.28
-real hertzsprung_gap::terminal_hertzsprung_gap_core_mass(const real mass, 
-							 const real z) {
-
-  real m_core;
-  real m_HeF = helium_flash_mass(z);
-  real m_FGB = helium_ignition_mass(z);
-  if (mass < m_HeF) {
-    real l_bgb = base_giant_branch_luminosity(mass, z);
-    m_core = FGB_core_mass_luminosity_relation(l_bgb, mass, z);
-  }
-  else if (mass >= m_FGB) {
-    real mc_HeI = helium_ignition_core_mass(mass, z);//sect.5.3: Eq.67
-    m_core = mc_HeI;
-  }
-  else {
-    real mc_bgb = base_giant_branch_core_mass(mass, z); //Eq.44    
-    m_core = mc_bgb;
-
-  }
-  return m_core;
-}
-
 //Eq.30
 real hertzsprung_gap::hertzsprung_gap_core_mass(const real time, 
 						const real mass,
 						const real z, const real m_core_old) {
 
-  real t_ms = main_sequence_time(mass, z);
-  real t_bgb = base_giant_branch_time(mass, z);
-  real tau = (time - t_ms)/(t_bgb - t_ms);
-  
-  real m5_25 = pow(mass, 5.25);
-  real mc_ehg = terminal_hertzsprung_gap_core_mass(mass, z);
-  
-  real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
-  real m_core = (tau + rho*(1-tau)) *  mc_ehg;
+    real t_ms = main_sequence_time(mass, z);
+    real t_bgb = base_giant_branch_time(mass, z);
+    real tau = (time - t_ms)/(t_bgb - t_ms);
 
-  // according to HPT this is important in case of mass loss 
-  m_core = max(m_core, m_core_old);    
+    real mc_ehg = terminal_hertzsprung_gap_core_mass(mass, z);
+    real mc_ihg = initial_hertzsprung_gap_core_mass(mass, z);  
+    real m_core = mc_ihg + (mc_ehg - mc_ihg) * tau;
+        
+    // according to HPT this is important in case of mass loss 
+    m_core = max(m_core, m_core_old);   
   
   return m_core;
 }

@@ -1085,6 +1085,9 @@ void single_star::update() {
   detect_spectral_features();
   //dump(cerr, false);
 
+//    real (single_star::*fptr)() = &single_star::nucleair_evolution_timescale;        
+//    real result = (this->*fptr)();
+//    real test = linear_function_inversion(fptr, relative_mass, core_mass);     
 }
 
 
@@ -1129,8 +1132,7 @@ real single_star::accrete_from_stellar_wind(const real mdot, const real dt) {
 //  PRL(mass_fraction);PRL(mdot);
 
   mass_fraction = min(0.9, mass_fraction);
-
-  return add_mass_to_accretor(mass_fraction*mdot, dt);
+  return add_mass_to_accretor(mass_fraction*mdot, dt, get_companion()->hydrogen_envelope_star());
 }
 
 // Tidal energy dissipation during close encounter.
@@ -1287,7 +1289,6 @@ void single_star::stellar_wind(const real dt) {
 }
 
 void single_star::update_relative_mass(const real new_relative_mass) {
-
   relative_mass = new_relative_mass;
   adjust_next_update_age();
   update_wind_constant();
@@ -1751,6 +1752,48 @@ real single_star::base_main_sequence_radius(const real mass, const real z) {
     real teller = (smc.c(8,z)*pow(mass,2) + smc.c(9,z)*pow(mass,6))*mx + smc.c(10,z)*pow(mass,11) +(smc.c(11,z) +                               smc.c(12,z)*mx)*pow(mass,19);
     real noemer = smc.c(13,z) + smc.c(14,z)*pow(mass,2) + (smc.c(15,z)*pow(mass,8) + pow(mass,18) +                                             smc.c(16,z)*pow(mass,19))*mx;
     return teller/noemer;
+}
+
+
+
+
+//
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Hertzsprung gap stars
+//
+
+// based on Eq. 28
+real single_star::initial_hertzsprung_gap_core_mass(const real mass, const real z){
+    real m5_25 = pow(mass, 5.25);
+    real mc_ehg = terminal_hertzsprung_gap_core_mass(mass, z);
+    
+    real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
+        
+    return mc_ehg*rho; 
+}
+
+
+//Eq.28
+real single_star::terminal_hertzsprung_gap_core_mass(const real mass, 
+                                                         const real z) {
+    
+    real m_core;
+    real m_HeF = helium_flash_mass(z);
+    real m_FGB = helium_ignition_mass(z);
+    if (mass < m_HeF) {
+        real l_bgb = base_giant_branch_luminosity(mass, z);
+        m_core = FGB_core_mass_luminosity_relation(l_bgb, mass, z);
+    }
+    else if (mass >= m_FGB) {
+        real mc_HeI = helium_ignition_core_mass(mass, z);//sect.5.3: Eq.67
+        m_core = mc_HeI;
+    }
+    else {
+        real mc_bgb = base_giant_branch_core_mass(mass, z); //Eq.44    
+        m_core = mc_bgb;
+        
+    }
+    return m_core;
 }
 
 //
@@ -2771,7 +2814,37 @@ real single_star::helium_giant_q_parameter() {
     return q;
 }    
 
+//related to Eq. 84
+real single_star::helium_giant_initial_core_mass(const real mass, const real z ){
+    // z is not used, needed for conformity with linear_function_inversion
+    PRC(z);PRL(z);
+    real A_He = AGB_A_He_estimator();
+    real t_Hems = helium_main_sequence_time_for_solar_metalicity(mass);
+    real time = t_Hems; //only difference with helium_giant::helium_giant_core_mass
+    real l_tHems = terminal_helium_main_sequence_luminosity(mass);
+    real p = helium_giant_p_parameter();
+    real D = helium_giant_D_factor(mass);
+    real l_x = helium_giant_x_luminosity(mass);
+    real t_x = specific_time_boundary(mass, A_He, t_Hems, l_tHems, D, p, l_x);
+    real m_core;
     
+    if (time  <= t_x){
+        real t_inf1 = specific_time_limit(A_He, t_Hems,
+                                          D, l_tHems, p);
+        real arg = (p-1)*A_He*D*(t_inf1-time);   
+        m_core = pow(arg, 1.0/(1-p));     
+    }
+    else {
+        real q = helium_giant_q_parameter();
+        real B = helium_giant_B_factor();
+        real t_inf2 = specific_time_limit(A_He, t_x,
+                                          B, l_x, q);
+        real arg = (q-1)*A_He*B*(t_inf2-time);   
+        m_core = pow(arg, 1.0/(1-q));      
+    }  
+    return m_core;     
+}
+
     
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2886,7 +2959,7 @@ real single_star::update_core_and_envelope_mass(const real m_core) {
   
   bool successful_update = false;
   real dm_core = m_core-core_mass;
- 
+    
   if (m_core > get_total_mass()){
     cerr << "single_star::update_core_and_envelope_mass limits new core mass to total mass." << endl;
     real m_tot = get_total_mass();
@@ -2894,7 +2967,7 @@ real single_star::update_core_and_envelope_mass(const real m_core) {
     core_mass = m_tot;
     successful_update = true;
   }    
-  else if (dm_core >= 0.0 - cnsts.safety(tiny)){
+  else if (dm_core/core_mass >= 0.0 - cnsts.safety(tiny)){
     envelope_mass -= dm_core; 
     core_mass += dm_core;
     successful_update = true;
@@ -2957,6 +3030,46 @@ real single_star::update_COcore_mass(const real mco_core) {
     
     return successful_update;
 }
+
+// SPZ & SilT Feb 4 2010
+// Added routine for inverting relatively smooth functions
+// Based on linear iterative procedure until satisfied 
+real single_star::linear_function_inversion(real (single_star::*fptr)(real, const real), const real x_guess, const real y_value, const real z, const real xmin, const real xmax) {
+    real gx = x_guess;
+    real gy;
+
+    real ymin = (this->*fptr)(xmin, z);
+    real ymax = (this->*fptr)(xmax, z);
+    real mu = (xmax-xmin)/(ymax-ymin);
+    
+    real dy = 0, dy_old = 0;
+    bool within_range = 1; 
+    do {
+        if (gx > xmax || gx < xmin){
+            within_range = 0;
+            gx = min(max(gx, xmin), xmax);
+        }
+        
+        gy = (this->*fptr)(gx, z);//gx
+        dy_old = dy;
+        dy = y_value - gy;
+        gx += mu*dy;
+        if (!within_range && dy_old * dy > 0){
+            // gx lies out of range and the solution does not lie between gx and the previous one     
+            cerr<<"single_star::linear_function_inversion is unable to find a solution"<<endl;
+            exit(-1);
+        }
+        
+    }
+    while(abs(dy/y_value)>cnsts.safety(minimum_inversion_precision));
+    gx -= mu*dy;
+    
+//    PRC(x_guess);PRL(gx);
+//    PRC(y_value);PRL((this->*fptr)(gx, z));
+
+    return gx;
+}
+
 
 real single_star::get_relative_mass_from_core_mass(const char * input_filename, const real m_c, const real m_r, const real z){
     const real z_table[7] = {0.0001, 0.0003, 0.001, 0.004, 0.01, 0.02, 0.03};
@@ -3068,89 +3181,3 @@ real single_star::get_relative_mass_from_table(const char * input_filename, cons
 }
     
     
-
-
-//real single_star::get_relative_mass_from_core_mass(char * input_filename, const real m_c, const real m_r, const real z){
-//    ifstream infile(input_filename, ios::in);
-//    if (!infile.is_open() || infile.eof()){
-//        cerr << "error: couldn't read file " << input_filename <<endl;
-//        exit(-1);
-//        
-//    }
-//    
-//    real m_rel=0., m_core=0.;
-//    real m_rel_old=0., m_core_old=0.;
-//
-//    infile >> m_rel_old >> m_core_old;
-//    infile >> m_rel >> m_core;
-//    real dm_core_old = abs(m_c - m_core_old);
-//    real dm_core = abs(m_c - m_core);
-//
-//    real m_HeF = helium_flash_mass(z);
-//
-//    if (input_filename == "Mc_HeI.txt" && m_r > m_HeF){
-//        //this is the only file for which m_core does not increase with m_rel
-//        // m_rel < m_HeF     m_core decreases with increasing m_rel
-//        // m_rel > m_HeF     m_core increases with increasing m_rel
-//        // in other words: lowest possible m_core at m_HeF
-//        // For a certain m_core, m_rel is not unique, there are two possibilities
-//        // I pick the solution on the same side of m_HeF as m_r
-//        
-//        while(m_rel < m_HeF){
-//            infile >> m_rel >> m_core;        
-//            //do nothing
-//        }
-//        m_rel_old = m_rel;
-//        m_core_old = m_core;
-//        dm_core_old = m_c - m_core;
-//        infile >> m_rel >> m_core;        
-//        dm_core = abs(m_c - m_core);    
-//    }    
-//    
-//    
-//    if (dm_core_old < dm_core ){
-//        cerr<<"single_star::get_relative_mass_from_core_mass core_mass value is not included in table"<<endl;
-//        PRC(input_filename);PRC(m_r);
-//        PRC(m_c);PRC(m_core_old);PRL(m_core);
-//        exit(-1);
-//    }
-//    while (dm_core < dm_core_old){
-//        m_rel_old = m_rel;
-//        m_core_old = m_core;
-//        dm_core_old = m_c - m_core;
-//        infile >> m_rel >> m_core;        
-//        dm_core = abs(m_c - m_core);
-//        if (infile.eof()){
-//            cerr<<"single_star::get_relative_mass_from_core_mass core_mass is to large for table"<<endl;
-//            PRC(m_c);PRC(m_core_old);PRL(m_core);
-//            PRC(m_rel_old);PRL(m_rel);
-//            exit(-1);
-//            
-//        }
-//            
-//    }
-//    
-//    //always pick the relative mass to maximum the core_mass
-//    //choose from nearest neighbours. 
-//    if (m_core_old > m_core){
-//        m_rel=m_rel_old;
-//        dm_core = dm_core_old;
-//        cerr<<"single_star::get_relative_mass_from_core_mass m_core_old > m_core, this should not happen I think"<<endl;
-//    }
-//
-//    //check that this is indeed the right value for m_core, that it is not just the end of the region in which
-//    // m_core decreases with increasing m_rel
-//    if (input_filename == "Mc_HeI.txt" && m_r < m_HeF){
-//        if(dm_core > 0.00001){ 
-//            cerr<<"single_star::get_relative_mass_from_core_mass core_mass is to small for table"<<endl;
-//            PRC(m_c);PRC(m_core_old);PRL(m_core);
-//            PRC(m_rel_old);PRL(m_rel);
-//            exit(-1);
-//        }
-//    }    
-//    if (m_rel == 0){
-//        cerr<<"single_star::get_relative_mass_from_core_mass relative_mass equals zero"<<endl;        
-//        exit(-1);
-//    }
-//    return m_rel;
-//}

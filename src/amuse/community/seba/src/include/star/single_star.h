@@ -222,7 +222,10 @@ class  single_star : public star
         virtual  ostream& print_star_story(ostream&,
 					   int short_output = 0);
 
-
+    real linear_function_inversion(real (single_star::*fptr)(real, const real),
+                        const real x_guess, const real y_value, const real z = 0, 
+                                   const real xmin = cnsts.parameters(minimum_main_sequence), 
+                                   const real xmax = cnsts.parameters(maximum_main_sequence));
       real update_core_and_envelope_mass(const real m_core);
       real update_core_and_envelope_mass_TPAGB(const real m_core);
       real update_COcore_mass(const real mco_core);
@@ -292,7 +295,11 @@ class  single_star : public star
 
       //++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // Hertzsprung-gap
+        real initial_hertzsprung_gap_core_mass(const real mass, const real z);
 
+        
+        real terminal_hertzsprung_gap_core_mass(const real mass, 
+                                                const real z);
 
       //++++++++++++++++++++++++++++++++++++++++++++++++++++++
       //Functions for core helium burning
@@ -321,6 +328,7 @@ class  single_star : public star
       real helium_giant_D_factor(const real mass);
       real helium_giant_p_parameter();
       real helium_giant_q_parameter();
+      real helium_giant_initial_core_mass(const real mass, const real z = 0);
     
      
       //++++++++++++++++++++++++++++++++++++++++++++++++++++++

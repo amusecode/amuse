@@ -67,8 +67,9 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
 
             if (relative_age < t_du){
                 //EAGB
+                cerr<<"eagb"<<endl;
+                PRL(mdot);
                 core_mass += mdot;
-                accreted_mass += mdot;
                 
                 //part to adjust relative_mass
                 real b36 = smc.b(36, metalicity);
@@ -86,13 +87,25 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 //part to adjust age using the co_core_mass
                 real A_He = AGB_A_He_estimator();
                 real l_bagb = base_AGB_luminosity(relative_mass, metalicity);    
+                PRC(last_update_age);
+                PRC(relative_age);
+                PRL(next_update_age);
+                
                 relative_age = determine_age(COcore_mass, relative_mass, metalicity, A_He, t_bagb, l_bagb);
+                PRC(last_update_age);
+                PRC(relative_age);
+                PRL(next_update_age);
+                PRL(relative_age);
+                
+                
                 last_update_age = t_bagb;
                 
                 if(relative_age < last_update_age){
                     relative_age = last_update_age;
                     real mco = determine_core_mass(relative_age, relative_mass, metalicity, 
                                               A_He, t_bagb, l_bagb);
+                    
+                    PRC(mco);PRC(COcore_mass);PRL(core_mass);
                     
                     if(mco >= COcore_mass && mco <= core_mass) {
                         McL_core_mass = mco;
@@ -111,9 +124,9 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
             }
             else{
                 //TPAGB
+                cerr<<"tpagb he accretie"<<endl;
                 core_mass += mdot;
                 COcore_mass += mdot;
-                accreted_mass += mdot;
                 update_relative_mass(relative_mass + mdot);
                 if(core_mass != COcore_mass){
                     cerr<<"on TPAGB add_mass_to_accretor core_mass not equal to co_core_mass"<<endl;
@@ -155,6 +168,8 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                     exit(-1);
                 }
                 if(relative_age > next_update_age){
+                    cerr<<"create_rem"<<endl;
+                    
                     //original mrel < 2.25
                     // updating mrel only usefull if new mrel > 2.25
                     
@@ -172,7 +187,6 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
 //                    real dm = core_mass - mc_max;
 //                    core_mass -= dm;
 //                    COcore_mass -= dm;
-//                    accreted_mass -= dm;
 //                    update_relative_mass(relative_mass - dm);
 //                    if(core_mass != COcore_mass){
 //                        cerr<<"on TPAGB add_mass_to_accretor core_mass not equal to co_core_mass"<<endl;
@@ -189,10 +203,6 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                     exit(-1);
                 }
             }                
-                
-            cerr<<"agb add-mass_to-accretor helium"<<endl;
-            exit(-1);
-            
         }
     }
     
@@ -240,8 +250,10 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         
         if (relative_age < t_du){
             //EAGB
+            PRL(mdot);
+
+            cerr<<"eagb"<<endl;
             core_mass += mdot;
-            accreted_mass += mdot;
             
             //part to adjust relative_mass
             real b36 = smc.b(36, metalicity);
@@ -259,14 +271,25 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
             //part to adjust age using the co_core_mass
             real A_He = AGB_A_He_estimator();
             real l_bagb = base_AGB_luminosity(relative_mass, metalicity);    
+            PRC(last_update_age);
+            PRC(relative_age);
+PRL(next_update_age);
             relative_age = determine_age(COcore_mass, relative_mass, metalicity, A_He, t_bagb, l_bagb);
             last_update_age = t_bagb;
+            
+            PRC(last_update_age);
+            PRC(relative_age);
+            PRL(next_update_age);
+            PRL(relative_age);
+            
+            
             
             if(relative_age < last_update_age){
                 relative_age = last_update_age;
                 real mco = determine_core_mass(relative_age, relative_mass, metalicity, 
                                                A_He, t_bagb, l_bagb);
-                
+                PRC(mco);PRC(COcore_mass);PRL(core_mass);
+
                 if(mco >= COcore_mass && mco <= core_mass) {
                     McL_core_mass = mco;
                     if(!update_COcore_mass(mco)) {
@@ -284,9 +307,9 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         }
         else{
             //TPAGB
+            cerr<<"tpagb he accretie"<<endl;
             core_mass += mdot;
             COcore_mass += mdot;
-            accreted_mass += mdot;
             update_relative_mass(relative_mass + mdot);
             if(core_mass != COcore_mass){
                 cerr<<"on TPAGB add_mass_to_accretor core_mass not equal to co_core_mass"<<endl;
@@ -328,6 +351,8 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
                 exit(-1);
             }
             if(relative_age > next_update_age){
+                cerr<<"create_rem"<<endl;
+
                 //original mrel < 2.25
                 // updating mrel only usefull if new mrel > 2.25
                 
@@ -344,7 +369,6 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
 //                real dm = core_mass - mc_max;
 //                core_mass -= dm;
 //                COcore_mass -= dm;
-//                accreted_mass -= dm;
 //                update_relative_mass(relative_mass - dm);
 //                if(core_mass != COcore_mass){
 //                    cerr<<"on TPAGB add_mass_to_accretor core_mass not equal to co_core_mass"<<endl;
@@ -361,10 +385,6 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
                 exit(-1);
             }
         }                
-        
-        cerr<<"agb add-mass_to-accretor helium"<<endl;
-        exit(-1);
-        
     }
     set_spec_type(Accreting);
     return mdot;

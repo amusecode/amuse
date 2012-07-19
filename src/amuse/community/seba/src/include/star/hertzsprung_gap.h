@@ -97,14 +97,6 @@ class hertzsprung_gap : public single_star
       real hertzsprung_gap_time();
 
 
-      // Metalicity dependent hertzsprun-gap core mass
-      // has not been implemented yet. (SPZ: 28 May 2001)
-      //      real terminal_hertzsprung_gap_core_mass(const real time,
-      //					      const real mass, 
-      //					      const real z);
-      //      real hertzsprung_gap_core_mass(const real time, 
-      //				     const real mass,
-      //				     const real z);
       void evolve_core_mass(const real time,
 			    const real mass,
 			    const real z, const real m_core_old);
@@ -112,8 +104,6 @@ class hertzsprung_gap : public single_star
       real hertzsprung_gap_core_mass(const real time, 
 				     const real mass,
 				     const real z, const real m_core_old);
-      real terminal_hertzsprung_gap_core_mass(const real mass, 
-					      const real z);
 
     //Small envelope behaviour
         real small_envelope_core_luminosity(const real mass, const real m_core, const real z);
