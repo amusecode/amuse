@@ -35,11 +35,6 @@ class hertzsprung_gap : public single_star
         stellar_type get_element_type() {return Hertzsprung_Gap;}
         bool giant_star()             {return true;}
 	
-        bool magnetic() {
-	  return (low_mass_star() && get_total_mass()>=
-		  cnsts.parameters(magnetic_mass_limit))?true:false;
-	}
-
         void instantaneous_element();
         void evolve_element(const real);
         real gyration_radius_sq();

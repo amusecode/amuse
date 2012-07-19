@@ -312,8 +312,8 @@ real stellar_evolution_constants::parameters(model_parameter pm) {
              break;                             // [%] 
 	case star_formation_timescale:                 return 1.0; // [Myr]
              break;                                 // if(<0) abs times KH timescale 
-	case magnetic_mass_limit:                      return 0.7;
-             break;                             // [msun] magnetic if(M<this)
+	case magnetic_mass_limit:                      return 0.3;
+             break;                             // [msun] magnetic if(M>magnetic_mass_limit) for magnetic braking
 	case magnetic_braking_exponent:                return 2.5;
 	      break;                        
 	case corotation_eccentricity:                  return 0.001;

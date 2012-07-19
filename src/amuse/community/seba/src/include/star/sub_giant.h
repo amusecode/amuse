@@ -37,10 +37,6 @@ class sub_giant : public single_star
 
         stellar_type get_element_type() {return Sub_Giant;}
         bool giant_star()             {return true;}
-        bool magnetic() {
-	  return (low_mass_star() && get_total_mass()>=
-		  cnsts.parameters(magnetic_mass_limit))?true:false;
-	}
 
         void instantaneous_element();
         void evolve_element(const real);

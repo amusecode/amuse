@@ -927,12 +927,12 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
     
   type = Unknown;
 
-  real z_l_th = 0, z_l_ad = 0, mass_ratio = 1;
+  real z_l_th = 0, z_l_ad = 0, z_star = 0;
 
   if (is_binary_component()) {
 
-    z_l_ad = get_binary()->zeta(this, get_companion(), kelvin_helmholds_timescale());
-    z_l_th = get_binary()->zeta(this, get_companion(), nucleair_evolution_timescale());
+    z_l_ad = get_binary()->zeta(this, get_companion(), kelvin_helmholds_timescale(), true);
+    z_l_th = get_binary()->zeta(this, get_companion(), nucleair_evolution_timescale(), true);
   }
 
   real z_ad = zeta_adiabatic();
@@ -944,16 +944,19 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
 
     mtt = nucleair_evolution_timescale();
     type = Nuclear;
+    z_star = z_th;
   }
-  else if (z_ad > z_l_ad) {
+  else if (z_ad >= z_l_ad) {
 
     mtt = kelvin_helmholds_timescale();
     type = Thermal;
+    z_star = z_ad;
   }
   else if (z_l_ad > z_ad) {
 
     mtt = sqrt(kelvin_helmholds_timescale()*dynamic_timescale());
     type = Dynamic;
+    z_star = z_ad;    
   }
   else {
     cerr << "No clear indication for mass transfer timescale: "
@@ -961,6 +964,7 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
 
     mtt = kelvin_helmholds_timescale();
     type = Unknown;
+    z_star = z_ad;    
   }
 
   if (low_mass_star()) {
@@ -968,7 +972,7 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
     real mdot = 0;
     if (is_binary_component())
       mdot = get_binary()
-              ->mdot_according_to_roche_radius_change(this, get_companion());
+              ->mdot_according_to_roche_radius_change(this, get_companion(), z_star);
     if (mdot > 0) {
 
       real mtt_rl = get_relative_mass()/mdot;
@@ -994,75 +998,6 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
   return mtt;
 }
 
-#if 0
-// Determine mass transfer stability according to
-// `zeta' discription.
-real single_star::mass_transfer_timescale(mass_transfer_type &type) {
-  type = Unknown;
-  real z_l=0, mass_ratio = 1;
-  if (is_binary_component()) {
-    mass_ratio = get_companion()->get_total_mass()/get_total_mass();
-    z_l = get_binary()->zeta(this, get_companion());
-  }
-  real z_ad = zeta_adiabatic();
-  real z_th = zeta_thermal();
-
-  real mtt;
-  if (z_ad>z_l && z_th>z_l) {
-    //         mtt = 11.*kelvin_helmholds_timescale();
-    mtt = nucleair_evolution_timescale();
-    type = Nuclear;
-  }
-  else if (z_ad>z_l && z_l>z_th) {
-    mtt = kelvin_helmholds_timescale();
-
-    type = Thermal;
-  }
-  else if (z_l>z_ad) {
-    mtt = sqrt(kelvin_helmholds_timescale()*dynamic_timescale());
-    //if (medium_mass_star())
-    //  mtt = 0.09*kelvin_helmholds_timescale();
-    //else
-    //  mtt = sqrt(kelvin_helmholds_timescale()*dynamic_timescale());
-    type = Dynamic;
-  }
-  else {
-    cerr << "No clear indication for mass transfer timescale: "
-	 << "Kelvin-Helmholds time-scale assumed."<<endl;
-
-    mtt = kelvin_helmholds_timescale();
-    type = Unknown;
-  }
-
-  if (low_mass_star()) {
-
-    real mdot = 0;
-    if (is_binary_component())
-      mdot = get_binary()
-              ->mdot_according_to_roche_radius_change(this, get_companion());
-    if (mdot>0) {
-      real mtt_rl = get_relative_mass()/mdot;
-      if(mtt>mtt_rl) {
-	mtt = mtt_rl;
-	type = AML_driven;
-      }
-      
-    }
-  }
-
-  if (REPORT_MASS_TRANSFER_TIMESCALE) {
-    cerr << "single_star::mass_transfer_timescale()" << endl;
-    cerr << "    star id = " << identity
-	 << "  Zeta (lobe, ad, th) = ("
-	 << z_l <<", "<<z_ad<<", "<<z_th<<") : " << endl;
-    cerr << type_string(type);
-    cerr<<":    dm/dt=" <<get_relative_mass()/(mtt*1.e+6)
-	<< " [Msun/yr]" << endl;
-  }
-
-  return mtt;
-}
-#endif
 
 //		Stellar stability functions.
 real single_star::zeta_adiabatic() {
