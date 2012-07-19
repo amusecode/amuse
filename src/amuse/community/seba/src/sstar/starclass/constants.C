@@ -89,12 +89,12 @@ real stellar_evolution_constants::super_nova_kick(
   // selected kick distribution imparted to a newly formed neutron star
   // in a supernova. 
     switch(pk) {
+        case internally_decided_velocity_kick:
         case no_velocity_kick:              return 0;
              break;                                
 	case Maxwellian_velocity_kick:      return
 					    random_maxwellian_velocity(v_disp);
              break;
-        case internally_decided_velocity_kick:
 	case Paczynski_velocity_kick:       return
 					    random_paczynski_velocity(v_disp);
              break;
