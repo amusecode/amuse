@@ -116,7 +116,7 @@ white_dwarf::white_dwarf(helium_star & h, stellar_type wd_type) : single_star(h)
 white_dwarf::white_dwarf(helium_giant & h, stellar_type wd_type) :  single_star(h) {
 
         delete &h;
-    white_dwarf_type = Carbon_Dwarf;
+    white_dwarf_type = wd_type;
 
 	real m_tot    = get_total_mass();
 	core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
