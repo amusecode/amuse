@@ -819,19 +819,25 @@ star* single_star::merge_elements(star* str) {
 
   real m_conserved = get_total_mass() + str->get_total_mass();
 
+
   if (str->get_element_type()!=Main_Sequence) {
     // adding two cores of giants together should not result in
     // rejuvenation.
     // previous method appeared to make mergers too old.
     // (SPZ+GN:11 Oct 1998)
-      add_mass_to_core(str->get_core_mass());
+    //add_mass_to_core(str->get_core_mass());
+      // (GN Oct 25 2010) proper adding of core mass as non-hydrogen via add_mass_to_accretor
+    add_mass_to_accretor(str->get_core_mass(), false);
 
       if ((str->get_element_type()==Neutron_Star ||
 	     str->get_element_type()==Black_Hole)   &&
 	     core_mass < cnsts.parameters(helium2neutron_star)) {
           real dm = cnsts.parameters(helium2neutron_star) - core_mass;
-          core_mass = cnsts.parameters(helium2neutron_star);
+	  add_mass_to_accretor(dm, false);
+
           if (envelope_mass<dm){
+	    // (GN Oct 26 2010) mass not conserved in this case!
+	        m_conserved += dm-envelope_mass;
                 envelope_mass = 0;
           }
           else{
@@ -840,7 +846,7 @@ star* single_star::merge_elements(star* str) {
       }
 
             //		What to do here is put in SPH!
-      if (str->get_envelope_mass()>0) {
+      if (str->get_envelope_mass()>1.e-11) {
             add_mass_to_accretor(0.5*str->get_envelope_mass(), str->hydrogen_envelope_star());
       }
 
@@ -3052,7 +3058,6 @@ real single_star::update_core_and_envelope_mass(const real m_core) {
   else {
       cerr << "WARNING: void update_core_and_envelope_mass(m_core)"<< endl;
       cerr << "    old core mass exceeds new core mass." << endl;
-      PRC(m_core);PRC(core_mass);PRL(get_total_mass());
       dump(cerr, false);
       exit(-1);
   }
@@ -3133,8 +3138,8 @@ real single_star::linear_function_inversion(real (single_star::*fptr)(real, cons
         gx += mu*dy;
         if (!within_range && dy_old * dy > 0){
             // gx lies out of range and the solution does not lie between gx and the previous one     
-            cerr<<"single_star::linear_function_inversion is unable to find a solution"<<endl;
-            exit(-1);
+            cerr << "WARNING!!! single_star::linear_function_inversion is unable to find a solution" << endl;
+	    exit(-1);
         }
         
     }

@@ -193,7 +193,7 @@ int main(int argc, char ** argv) {
     bool U_flag = false;
     bool G_flag = false;
 
-    bool stop_at_merger_or_disruption = true;
+    bool stop_at_merger_or_disruption = false;
     if (stop_at_merger_or_disruption)
         cerr<<"currently bool stop_at_merger_or_disruption = true "<<endl;
     bool stop_at_remnant_formation = false;

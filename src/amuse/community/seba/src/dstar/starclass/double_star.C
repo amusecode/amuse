@@ -1825,6 +1825,7 @@ void double_star::spiral_in(star* larger,
 	   //           larger->set_core_mass(mcl_old);
 	   //           larger->set_envelope_mass(mel_old);
 	   larger = larger->reduce_mass(mass_lost);
+	   
 	   if (mtot_l>mtot_s) 
 	     merge_elements(larger, smaller);
            else 
@@ -1863,7 +1864,6 @@ void double_star::merge_elements(star* consumer,
 //  dump(cerr, false);
   dump("SeBa.data", true);
 
-#if 0
   if (!get_use_hdyn()) {
     consumer->set_velocity(velocity); 
     dinner->set_velocity(velocity);
@@ -1884,7 +1884,6 @@ cerr << "Merger is: "<<endl;
   dump(cerr, false);
   dump("SeBa.data", true);
 
-#endif
   //get_seba_counters()->mergers++;
 }
 

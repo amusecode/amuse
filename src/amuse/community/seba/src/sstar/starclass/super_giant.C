@@ -75,7 +75,7 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 real b38 = smc.b(38, metalicity);     
                 real new_relative_mass =  pow((pow(core_mass, 4.) - b38) / b36, 1./b37);
                 update_relative_mass(new_relative_mass);
-                
+
                 // only neccessary for AGB & He giant accretor as  
                 // next_update_age is a function of total mass
                 // as the maximal core mass can be the total mass
@@ -83,11 +83,13 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 adjust_next_update_age();  
                 
                 //part to adjust age using the co_core_mass
+		// (GN Oct 26 2010) also update t_bagb to new relative_mass!
                 real A_He = AGB_A_He_estimator();
-                real l_bagb = base_AGB_luminosity(relative_mass, metalicity);    
+                real l_bagb = base_AGB_luminosity(relative_mass, metalicity); 
+		t_bagb = base_AGB_time(relative_mass, metalicity);
                 relative_age = determine_age(COcore_mass, relative_mass, metalicity, A_He, t_bagb, l_bagb);
                 last_update_age = t_bagb;
-                
+
                 if(relative_age < last_update_age){
                     relative_age = last_update_age;
                     real mco = determine_core_mass(relative_age, relative_mass, metalicity, 
@@ -109,6 +111,7 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
             }
             else{
                 //TPAGB
+
                 core_mass += mdot;
                 COcore_mass += mdot;
                 update_relative_mass(relative_mass + mdot);

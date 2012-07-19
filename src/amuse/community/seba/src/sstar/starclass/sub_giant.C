@@ -40,6 +40,7 @@ void sub_giant::adjust_initial_star() {
 // Increase donor mass and possibly relative_mass of donor.
 // Check mass-transfer timescales before use.
 real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
+
     if (mdot<=0) {
         cerr << "sub_giant::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
         cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
@@ -69,7 +70,8 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
             //adjust age part
             real m_HeF = helium_flash_mass(metalicity);
             real t_bgb = base_giant_branch_time(relative_mass, metalicity);
-            if (relative_mass < m_HeF){
+	    // (GN Oct 26 2010) for mergers: core_mass can be > max degenerate He core --> jump to next block
+            if (relative_mass < m_HeF && core_mass <  helium_ignition_core_mass(relative_mass, metalicity)){
                 real l_bgb = base_giant_branch_luminosity(relative_mass, metalicity);
                 real A_H = sub_giant_Ah_estimator(relative_mass);                    
                 relative_age = determine_age(core_mass, relative_mass, metalicity, A_H, t_bgb, l_bgb);
@@ -97,6 +99,9 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 }
             }
             else {
+	        // (GN Oct 26 2010) see previous block, rel_mass can be < m_HeF which leads to trouble....
+	        if (relative_mass < m_HeF) relative_mass = m_HeF;
+
                 real mc_bgb = base_giant_branch_core_mass(relative_mass, metalicity);//Eq.44
                 real mc_HeI = helium_ignition_core_mass(relative_mass, metalicity);
                 real t_HeI = helium_ignition_time(relative_mass, metalicity);
@@ -114,15 +119,32 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                     evolve_core_mass();
                 }
                 if (tau > 1.){
-                    
+
+		  real m_FGB = helium_ignition_mass(metalicity);
+		  real mcore_max =  helium_ignition_core_mass(m_FGB, metalicity); 
+		  real m_rel = m_FGB;
+		  // (GN Oct 27 2010) for mergers core_mass can be larger than max core mass of class
+		  // dirty fix: reduce core mass and conserve total mass
+		  if (core_mass > mcore_max) {
+		    
+		    real m_tot = get_total_mass();
+		    core_mass = mcore_max;
+		    envelope_mass = m_tot - core_mass;
+		    
+
+		  } else {
+		    
                     real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;        
                     real xmin = m_HeF;
-                    real xmax = helium_ignition_mass(metalicity);// m_FGB < m_rel not possibel for gb star
-                    real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
-                    update_relative_mass(m_rel);
-                    last_update_age = base_giant_branch_time(relative_mass, metalicity);
-                    relative_age = next_update_age;
-                    evolve_core_mass();
+		    real xmax = m_FGB;// m_FGB < m_rel not possibel for gb star
+                    m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
+
+		  }
+
+		  update_relative_mass(m_rel);
+		  last_update_age = base_giant_branch_time(relative_mass, metalicity);
+		  relative_age = next_update_age;
+		  evolve_core_mass();
                 }
             }  
         }

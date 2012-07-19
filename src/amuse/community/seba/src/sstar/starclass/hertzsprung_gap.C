@@ -28,6 +28,9 @@
 
       adjust_next_update_age();
 
+      // (GN Oct 25 2010) try to fix transition MS -> HG in merger MS + *
+      if (core_mass > 0) add_mass_to_accretor(1e-5, false);
+
       instantaneous_element();
       evolve_core_mass();
       small_envelope_perturbation();   
@@ -169,12 +172,12 @@ real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
             if ( relative_mass > m_FGB){
             //the evolution of m_core, luminosity, timescales decouples from M
             // relative mass is no longer kept at same value as total mass
-            envelope_mass -= mdot;
+            envelope_mass += mdot;
             accreted_mass += mdot;
         }
         else{
             adjust_accretor_age(mdot, true);
-            envelope_mass -= mdot;
+            envelope_mass += mdot;
             accreted_mass += mdot;
             if (relative_mass < get_total_mass()){
                 update_relative_mass(get_total_mass());

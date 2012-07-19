@@ -48,7 +48,7 @@ class white_dwarf : public single_star {
     stellar_type get_element_type() {return white_dwarf_type;}
 
 	 bool remnant() {return true;}
-	 bool hydrogen_envelope_star() {return false;}
+  bool hydrogen_envelope_star() {if (envelope_mass > 0) return true; else return false;}
 
 	 void instantaneous_element();
 	 void evolve_element(const real);

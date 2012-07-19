@@ -740,7 +740,11 @@ real helium_giant::helium_giant_age_core_mass_relation(const real m_core, const 
 
 void helium_giant::evolve_core_mass(const real time,
                     const real mass, const real mass_tot) {
+
     real mco_core = helium_giant_core_mass(time, mass);    
+    // (GN Oct 26 2010) for mergers
+    if (mco_core < core_mass) mco_core = core_mass;
+
         
     if(!update_COcore_mass(mco_core)) {
         cerr << "Update COcore mass failed in helium_giant()"<<endl;
