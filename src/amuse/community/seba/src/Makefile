@@ -3,7 +3,7 @@ LDLIBS	  += -Lsstar -lsstar -Lnode -lnode -Lstd -lstd -lm
 CFLAGS    += -O
 
 EXE	= starev
-DIRS	= node std sstar
+DIRS	= node std sstar dstar
 
 all:	lib $(EXE)
 
