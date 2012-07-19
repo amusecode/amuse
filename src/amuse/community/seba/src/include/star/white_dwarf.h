@@ -28,18 +28,25 @@ class helium_giant;
  *-----------------------------------------------------------------------------
  */
 class white_dwarf : public single_star {
+    protected:
+    
+        stellar_type white_dwarf_type;
+    
       public :
 
-         white_dwarf(hertzsprung_gap &);
-         white_dwarf(sub_giant &);
-         white_dwarf(super_giant &);
-         white_dwarf(helium_star &);
-         white_dwarf(helium_giant &);
+         white_dwarf(hertzsprung_gap &, stellar_type);
+         white_dwarf(sub_giant &, stellar_type);
+         white_dwarf(super_giant &, stellar_type);
+         white_dwarf(helium_star &, stellar_type);
+         white_dwarf(helium_giant &, stellar_type);
          white_dwarf(node* n) : single_star(n) {}
 	 
          ~white_dwarf() {}
 
-	 stellar_type get_element_type();
+    real get_evolve_timestep();
+	 //stellar_type get_element_type();
+    stellar_type get_element_type() {return white_dwarf_type;}
+
 	 bool remnant() {return true;}
 	 bool hydrogen_envelope_star() {return false;}
 
@@ -57,8 +64,8 @@ class white_dwarf : public single_star {
         real accretion_limit(const real, const real); 
         real minimum_steady_burning(const real); 
         real maximum_steady_burning(const real); 
-        real add_mass_to_accretor(const real);
-        real add_mass_to_accretor(real, const real);
+        real add_mass_to_accretor(const real, bool);
+        real add_mass_to_accretor(real, const real, bool);
         void adjust_accretor_age(const real, const bool=true);
         void adjust_next_update_age() {/* do nothing */}
         void accrete_from_envelope(const real);

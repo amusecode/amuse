@@ -46,8 +46,7 @@ helium_star::helium_star(hertzsprung_gap & h) : single_star(h) {
 
     delete &h;
     lose_envelope_decent();
-    relative_mass = get_total_mass();
-    
+    update_relative_mass(get_total_mass());
     
     // (GN+SPZ May  4 1999) last update age is time of previous type change
     // in NEW relative_age units
@@ -77,8 +76,8 @@ helium_star::helium_star(sub_giant & g) : single_star(g) {
 
     delete &g;
     lose_envelope_decent();
-    relative_mass = get_total_mass();
-    
+    update_relative_mass(get_total_mass());
+
     // (GN+SPZ May  4 1999) last update age is time of previous type change
     // in NEW relative_age units
     last_update_age = 0.;
@@ -109,11 +108,11 @@ helium_star::helium_star(horizontal_branch & h) : single_star(h) {
     lose_envelope_decent();
 
     relative_age = (relative_age - helium_ignition_time(relative_mass, metalicity)) / core_helium_burning_timescale(relative_mass, metalicity)
-    * helium_main_sequence_time_for_solar_metalicity(get_total_mass());
+     * helium_main_sequence_time_for_solar_metalicity(get_total_mass());
     
     last_update_age = 0.;//relative_age;
-    relative_mass = get_total_mass();
-
+    update_relative_mass(get_total_mass());
+    
 //    real t_ms = main_sequence_time();
 //    real t_giant = t_ms + hertzsprung_gap_time()
 //                 + base_giant_branch_time();
@@ -200,8 +199,9 @@ void helium_star::evolve_element(const real end_time) {
         
     if (relative_mass < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not ignite core helium burning.
+        cerr<<"Warning: not homogeneous WD"<<endl;
         star_transformation_story(Helium_Dwarf);
-        new white_dwarf(*this);
+        new white_dwarf(*this, Helium_Dwarf);
         return;
     }
     
@@ -215,8 +215,15 @@ void helium_star::evolve_element(const real end_time) {
     }
     
     update();
-    //stellar_wind(dt);
+    stellar_wind(dt);
 }
+
+real helium_star::nucleair_evolution_timescale() {    
+    
+    return helium_main_sequence_time_for_solar_metalicity(relative_mass);
+
+}
+
 
 
 void helium_star::update() {
@@ -302,8 +309,9 @@ star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
     
     if (relative_mass < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not continue core helium burning.
+        cerr<<"Warning: not homogeneous WD"<<endl;
         star_transformation_story(Helium_Dwarf);
-        return dynamic_cast(star*, new white_dwarf(*this));
+        return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
     }
     return this;
 }
@@ -318,8 +326,9 @@ star* helium_star::reduce_mass(const real mdot) {
     
     if (relative_mass < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not continue core helium burning.
+        cerr<<"Warning: not homogeneous WD"<<endl;
         star_transformation_story(Helium_Dwarf);
-        return dynamic_cast(star*, new white_dwarf(*this));
+        return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
     }
     
     //   On the He-MS there is no defined core yet, 
@@ -397,14 +406,18 @@ void helium_star::adjust_age_after_wind_mass_loss(const real mdot,
 
 // add mass to accretor
 // is a separate function (see single_star.C) because rejuvenation
-real helium_star::add_mass_to_accretor(const real mdot) {
+real helium_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
 
-        if (mdot<0) {
-           cerr << "helium_star::add_mass_to_accretor(mdot=" 
-                << mdot << ")"<<endl;
-           cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-	       return 0;
-        }
+    if (mdot<0) {
+       cerr << "helium_star::add_mass_to_accretor(mdot=" 
+            << mdot << ")"<<endl;
+       cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+       return 0;
+    }
+
+    if(hydrogen){
+        // hydrogen accretion
+        cerr<<"hydrogen accretion on helium star! adjust routine"<<endl;
 
         adjust_accretor_age(mdot, true);
         // (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
@@ -412,23 +425,36 @@ real helium_star::add_mass_to_accretor(const real mdot) {
         
         envelope_mass += mdot;
         if (relative_mass<get_total_mass())
-	        update_relative_mass(get_total_mass());
-	
-        set_spec_type(Accreting);
-	
-        return mdot;
+            update_relative_mass(get_total_mass());
 
+    }
+    else{
+        //for the moment assume helium accretion 
+        
+        adjust_accretor_age(mdot, true);
+        envelope_mass += mdot;
+        if (relative_mass<get_total_mass())
+            update_relative_mass(get_total_mass());
+        
+    }
+
+    set_spec_type(Accreting);
+    return mdot;
 }
 
 
-real helium_star::add_mass_to_accretor(real mdot, const real dt) {
+real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
 
-        if (mdot<0) {
-           cerr << "helium_star::add_mass_to_accretor(mdot=" 
-                 << mdot << ")"<<endl;
-           cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-	       return 0;
-        }
+    if (mdot<0) {
+       cerr << "helium_star::add_mass_to_accretor(mdot=" 
+             << mdot << ")"<<endl;
+       cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+       return 0;
+    }
+    
+    if(hydrogen){
+        //hydrogen accretion
+        cerr<<"hydrogen accretion on helium star!"<<endl;
 
         mdot = accretion_limit(mdot, dt);
         adjust_accretor_age(mdot, true);
@@ -441,14 +467,28 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt) {
         cerr<<"Should helium_star::add_mass_to_accretor have adjust_donor_radius?"<<endl;
         adjust_accretor_radius(mdot, dt);
 
-    	set_spec_type(Accreting);
+    }
+    else{
+        //for the moment assume helium accretion
+        cerr<<"he star::add_mass_to_accretor  helium accretion limit?"<<endl;    
+        mdot = accretion_limit(mdot, dt);
 
-        return mdot;
+        
+        adjust_accretor_age(mdot, true);
+        envelope_mass += mdot;
+        if (relative_mass<get_total_mass())
+            update_relative_mass(get_total_mass());
 
-     }
+        cerr<<"he star::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
+        adjust_accretor_radius(mdot, dt);
+
+    }
+    set_spec_type(Accreting);
+    return mdot;
+
+ }
 
 real helium_star::accretion_limit(const real mdot, const real dt) {
-    cerr<<"He_s::accretion_limit is used?"<<endl;
 
         real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
 
@@ -594,8 +634,12 @@ real helium_star::gyration_radius_sq() {
 // (GN+SPZ May  3 1999) NOT USED!, but called by post_constructor
 void helium_star::update_wind_constant() {
 
-  wind_constant = (1 - cnsts.parameters(helium_star_final_core_fraction))
-                      * get_total_mass();
+//  wind_constant = (1 - cnsts.parameters(helium_star_final_core_fraction))
+//                      * get_total_mass();
+
+    // (SilT Nov 24 2009) follow eq 8.4 in Gijs' thesis Chapter 8
+    //based on Nugis & Lamers
+    wind_constant = 1.38E-08 * pow(get_total_mass(), 2.87); 
 }
 
 stellar_type helium_star::get_element_type() {

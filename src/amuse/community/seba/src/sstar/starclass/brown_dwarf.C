@@ -97,7 +97,7 @@ star* brown_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
         return this;
      }
 
-real brown_dwarf::add_mass_to_accretor(const real mdot) {
+real brown_dwarf::add_mass_to_accretor(const real mdot, bool) {
 
     if (mdot<0) {
       cerr << "brown_dwarf::add_mass_to_accretor(mdot="
@@ -116,7 +116,7 @@ real brown_dwarf::add_mass_to_accretor(const real mdot) {
   
 }
 
-real brown_dwarf::add_mass_to_accretor(real mdot, const real dt) {
+real brown_dwarf::add_mass_to_accretor(real mdot, const real dt, bool) {
 
         if (mdot<0) {
            cerr << "brown_dwarf::add_mass_to_accretor(mdot="
@@ -157,7 +157,7 @@ star* brown_dwarf::merge_elements(star* str) {
      real merger_core = str->get_core_mass();
 
      add_mass_to_accretor(str->get_envelope_mass(), 
-			  cnsts.parameters(spiral_in_time));
+			  cnsts.parameters(spiral_in_time), str->hydrogen_envelope_star());
 
      if (relative_mass < get_total_mass() + merger_core)
        relative_mass=get_total_mass() + merger_core;

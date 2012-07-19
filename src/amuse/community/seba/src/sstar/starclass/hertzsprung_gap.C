@@ -66,7 +66,7 @@ star* hertzsprung_gap::reduce_mass(const real mdot) {
         real m_HeF = helium_flash_mass(metalicity);
         if (get_total_mass() < m_HeF){
             star_transformation_story(Helium_Dwarf);
-            return dynamic_cast(star*, new white_dwarf(*this));
+            return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
         }
         else {
             star_transformation_story(Helium_Star);
@@ -116,7 +116,7 @@ star* hertzsprung_gap::subtrac_mass_from_donor(const real dt, real& mdot) {
           real m_HeF = helium_flash_mass(metalicity);
           if (get_total_mass() < m_HeF){
               star_transformation_story(Helium_Dwarf);
-              return dynamic_cast(star*, new white_dwarf(*this));
+              return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
           }
           else {
               star_transformation_story(Helium_Star);
@@ -150,7 +150,7 @@ star* hertzsprung_gap::subtrac_mass_from_donor(const real dt, real& mdot) {
 
 // add mass to accretor
 // is a separate function (see single_star.C) because rejuvenation
-real hertzsprung_gap::add_mass_to_accretor(const real mdot) {
+real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
     
     if (mdot<=0) {
         cerr << "hertzsprung_gap::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
@@ -160,29 +160,72 @@ real hertzsprung_gap::add_mass_to_accretor(const real mdot) {
         return 0;
     }
     
-    real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
-    real m_FGB = helium_ignition_mass(metalicity);
-    
-    if ( core_mass > mc_bgb || relative_mass > m_FGB){
-        //the evolution of m_core, luminosity, timescales decouples from M
-        // relative mass is no longer kept at same value as total mass
-        envelope_mass -= mdot;
-        accreted_mass += mdot;
+    if(hydrogen){
+        // hydrogen accretion
+        real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
+        real m_FGB = helium_ignition_mass(metalicity);
+        
+            if ( core_mass > mc_bgb || relative_mass > m_FGB){
+            //the evolution of m_core, luminosity, timescales decouples from M
+            // relative mass is no longer kept at same value as total mass
+            envelope_mass -= mdot;
+            accreted_mass += mdot;
+        }
+        else{
+            adjust_accretor_age(mdot, true);
+            envelope_mass -= mdot;
+            accreted_mass += mdot;
+            if (relative_mass < get_total_mass()){
+                update_relative_mass(get_total_mass());
+            }
+        }
+        
     }
     else{
-        adjust_accretor_age(mdot, true);
-        envelope_mass -= mdot;
+        //for the moment assume helium accretion
+        core_mass += mdot;
         accreted_mass += mdot;
-        if (relative_mass < get_total_mass()){
-            update_relative_mass(get_total_mass());
+        update_relative_mass(relative_mass + mdot);
+        
+        //adjust age part
+        //separate function?
+        real mc_ehg = terminal_hertzsprung_gap_core_mass(relative_mass, metalicity);
+        real m5_25 = pow(relative_mass, 5.25);            
+        real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
+        real tau = (core_mass / mc_ehg - rho ) / (1. - rho);
+        real t_ms = main_sequence_time();
+        real t_bgb = base_giant_branch_time(relative_mass, metalicity);
+        relative_age = t_ms + tau * (t_bgb - t_ms);
+        last_update_age = t_ms;
+        
+        if (tau < 0.){
+            real m_rel= get_relative_mass_from_core_mass("Mc_init_hg", core_mass, relative_mass, metalicity);
+            update_relative_mass(m_rel);
+            last_update_age = main_sequence_time(relative_mass, metalicity);
+            relative_age = last_update_age;     
+            PRL(core_mass);
+            evolve_core_mass();
+            PRL(core_mass);
+            exit(-1);
         }
+        if (tau > 1.){
+            real m_rel= get_relative_mass_from_core_mass("Mc_ehg", core_mass, relative_mass, metalicity);
+            update_relative_mass(m_rel);
+            last_update_age = main_sequence_time(relative_mass, metalicity);
+            relative_age = next_update_age;
+            evolve_core_mass();
+        }
+        
+        cerr<<"How to handle hg::add_mass_to_accretor  m_core = max(m_core, m_core_old); on hg? in case of mass loss"<<endl;
+        cerr<<"I think not. m_core = max() is in case of mass loss, that's in previous stages and not important here"<<endl;    
     }
-    
-    set_spec_type(Accreting);    
+
+    set_spec_type(Accreting);            
     return mdot;
 }
 
-real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt) {
+real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+
     if (mdot<0) {
         cerr << "hertzsprung_gap::add_mass_to_accretor(mdot=" << mdot 
         << ", dt=" << dt << ")"<<endl;
@@ -191,28 +234,77 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt) {
         return 0;
     }
     
-    mdot = accretion_limit(mdot, dt);
-    
-    real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
-    real m_FGB = helium_ignition_mass(metalicity);
-    
-    if ( core_mass > mc_bgb || relative_mass > m_FGB){
-        //the evolution of m_core, luminosity, timescales decouples from M
-        // relative mass is no longer kept at same value as total mass
-        envelope_mass -= mdot;
-        accreted_mass += mdot;
+    if(hydrogen){
+        //hydrogen accretion
+        mdot = accretion_limit(mdot, dt);
+        
+        real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
+        real m_FGB = helium_ignition_mass(metalicity);
+        
+        if ( core_mass > mc_bgb || relative_mass > m_FGB){
+            //the evolution of m_core, luminosity, timescales decouples from M
+            // relative mass is no longer kept at same value as total mass
+            envelope_mass -= mdot;
+            accreted_mass += mdot;
+        }
+        else{
+            adjust_accretor_age(mdot, true);
+            envelope_mass -= mdot;
+            accreted_mass += mdot;
+            if (relative_mass < get_total_mass()){
+                update_relative_mass(get_total_mass());
+            }
+        }
+        
+        adjust_accretor_radius(mdot, dt);
+        
     }
     else{
-        adjust_accretor_age(mdot, true);
-        envelope_mass -= mdot;
+        cerr<<"hg::add_mass_to_accretor  helium accretion limit?"<<endl;    
+        //mdot = accretion_limit(mdot, dt);
+
+        //for the moment assume helium accretion
+        core_mass += mdot;
         accreted_mass += mdot;
-        if (relative_mass < get_total_mass()){
-            update_relative_mass(get_total_mass());
+        update_relative_mass(relative_mass + mdot);
+        
+        //adjust age part
+        //separate function?
+        real mc_ehg = terminal_hertzsprung_gap_core_mass(relative_mass, metalicity);
+        real m5_25 = pow(relative_mass, 5.25);            
+        real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
+        real tau = (core_mass / mc_ehg - rho ) / (1. - rho);
+        real t_ms = main_sequence_time();
+        real t_bgb = base_giant_branch_time(relative_mass, metalicity);
+        relative_age = t_ms + tau * (t_bgb - t_ms);
+        last_update_age = t_ms;
+
+        if (tau < 0.){
+            real m_rel= get_relative_mass_from_core_mass("Mc_init_hg", core_mass, relative_mass, metalicity);
+            update_relative_mass(m_rel);
+            last_update_age = main_sequence_time(relative_mass, metalicity);
+            relative_age = last_update_age;     
+            PRL(core_mass);
+            evolve_core_mass();
+            PRL(core_mass);
+            exit(-1);
         }
+        if (tau > 1.){
+            real m_rel= get_relative_mass_from_core_mass("Mc_ehg", core_mass, relative_mass, metalicity);
+            update_relative_mass(m_rel);
+            last_update_age = main_sequence_time(relative_mass, metalicity);
+            relative_age = next_update_age;
+            evolve_core_mass();
+        }
+        
+        cerr<<"How to handle hg::add_mass_to_accretor  m_core = max(m_core, m_core_old); on hg? in case of mass loss"<<endl;
+        // //according to HPT this is important in case of mass loss  
+        // m_core = max(m_core, m_core_old);    
+        
+        cerr<<"hg::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
+        //adjust_accretor_radius(mdot, dt);
+
     }
-    
-    adjust_accretor_radius(mdot, dt);
-    
     set_spec_type(Accreting);
     return mdot;
 }
@@ -264,7 +356,7 @@ void hertzsprung_gap::adjust_accretor_age(const real mdot, const bool rejuvenate
 // It is part of the single star evolution, 
 // so it can include information from tracks
 void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const bool rejuvenate=true) {
-    
+
     real m_rel_new;
     real m_tot_new = get_total_mass() - mdot;
     if (m_tot_new<relative_mass)
@@ -283,8 +375,7 @@ void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const boo
     real dtime = relative_age - t_ms_old;
     
     // (GN+SPZ May  4 1999) update last_update_age
-    //last_update_age = t_ms_new;
-    
+    last_update_age = t_ms_new;
     relative_age = t_ms_new + dtime*(t_hg_new/t_hg_old);
     
     if (rejuvenate){
@@ -358,6 +449,7 @@ void hertzsprung_gap::adjust_next_update_age() {
         cerr << "WARNING: relative_age < t_ms in Hertzsprung_gap"<<endl;
         relative_age = t_ms;
     }
+    
     real t_bhg = hertzsprung_gap_time();
     if(t_ms<t_bhg) 
         next_update_age = hertzsprung_gap_time();
@@ -423,59 +515,126 @@ void hertzsprung_gap::update_wind_constant() {
     // Should be updated after mass accretion
     // (ST: 17 Sep 2009)
     
-    // Vink 2000, 20001
+    real dm_dj_v = 0;
+    
+    // Nieuwenhuijzen & de Jager 1990
+    // Massive stars
+    real dm_dj = 0;
+    if (luminosity > 4000.) {
+        real x = min(1.0, (luminosity - 4000.0)/500.0);
+        dm_dj = x * 9.6310E-15 * pow(radius, 0.81) * pow(luminosity, 1.24) * 
+        pow(get_total_mass(), 0.16)*pow(metalicity/cnsts.parameters(solar_metalicity), 0.5);
+    }
+    
+    // Vink 2000, 2001
     // Massive stars, including multi scattering effects
     real dm_v = 0;
-    if (metalicity > cnsts.parameters(solar_metalicity)/30. && metalicity < 3*cnsts.parameters(solar_metalicity)){
+    if (luminosity > 4000 && metalicity > cnsts.parameters(solar_metalicity)/30. && metalicity < 3*cnsts.parameters(solar_metalicity)){
+        real temp = temperature();
         real sigma;//electron scattering cross section
-        if (temperature() >= 35000){
+        if (temp >= 35000){
             sigma = 0.34;
         }
-        else if(temperature() < 30000){
+        else if(temp < 30000){
             sigma = 0.31;
         }
         else {
             sigma = 0.32;
         }
         real rad_acc = 7.66E-5 * sigma * luminosity / get_total_mass();
-        real log_density = -14.94 + 0.85 * log10(metalicity/cnsts.parameters(solar_metalicity)) +3.2*rad_acc;
-        real Tjump = (61.2 + 2.59*log_density)*1000;
+        real log_density = -14.94 + 0.85 * log10(metalicity/cnsts.parameters(solar_metalicity)) +3.1857*rad_acc; //Eq.23 Vink 2001
+        real Tjump = (61.2 + 2.59*log_density)*1000; //Eq.15 Vink 2001
+        real Tjump_low = (100. + 6. * log_density)*1000; //Eq.6 Vink 2000
         real arg_dm_v;
-        if (temperature() >= 12500 && temperature() <= Tjump){
-            arg_dm_v = -6.688 + 2.210*log10(luminosity/1.E5) - 1.339*log10(get_total_mass()/30) 
-            - 1.601*log10(1.3/2.0) + 1.07*log10(temperature()/20000) + 0.85*log10(metalicity/solar_metalicity);
-            dm_v = pow(10, arg_dm_v);
+        real T_smooth = 1500.;
+        real T_smooth_below = 1000.;
+        real cnsts_dm_v[9];
+        real cnsts_dm_v_above[] = {2.6, -6.697, 2.194, -1.313, -1.226, 0.933, 0, -10.92, 0.85};
+        real cnsts_dm_v_below[] = {1.3, -6.688, 2.210, -1.339, -1.601, 1.07, 1.07, 0, 0.85};
+        
+        
+        if (rad_acc >0.5 || temp > 50000) {
+            cerr<<"vink approaches LBV, stop?"<<endl;  
+            cerr<<"transition needed?"<<endl;
+            cerr<<"possible for low metallicities"<<endl;
+            dm_v = 0;
+            dm_dj_v = dm_dj;
         }
-        else if(temperature() >= Tjump && temperature() <= 50000){
-            arg_dm_v = -6.697 + 2.194*log10(luminosity/1.e5) - 1.313*log10(get_total_mass()/30) -1.226*log10(2.6/2.0)
-            +0.933*log10(temperature()/40000) -10.92*pow(log10(temperature()/40000),2)
-            + 0.85*log10(metalicity/cnsts.parameters(solar_metalicity));
-            dm_v = pow(10, arg_dm_v);
+        else {
+            if (temp <= Tjump-T_smooth){
+                // smooth out second instability jump
+                for (int i_t=0; i_t< 9;i_t++){
+                    cnsts_dm_v[i_t] = cnsts_dm_v_below[i_t];
+                }
+                
+                if(temp <= Tjump_low - T_smooth_below){
+                    cnsts_dm_v[0] = 0.7;
+                    cnsts_dm_v[1] = -5.990;
+                }
+                else if (temp < Tjump_low + T_smooth_below){
+                    real scale_T = (Tjump_low+T_smooth_below - temp)/(2*T_smooth_below);
+                    cnsts_dm_v[0] = (1.-scale_T) * cnsts_dm_v_below[0] + scale_T * 0.7;
+                    cnsts_dm_v[1] = (1.-scale_T) * cnsts_dm_v_below[1] + scale_T * -5.990;
+                }
+            }
+            else if(temp > Tjump + T_smooth){
+                for (int i_t=0; i_t< 9;i_t++){
+                    cnsts_dm_v[i_t] = cnsts_dm_v_above[i_t];
+                }
+            }
+            else {
+                //smooth out first instability jump
+                real scale_T = (Tjump+T_smooth - temp)/(2*T_smooth);
+                for (int i_t=0; i_t< 9;i_t++){
+                    cnsts_dm_v[i_t] = scale_T * cnsts_dm_v_below[i_t] 
+                    + (1.-scale_T) * cnsts_dm_v_above[i_t];
+                }
+            }
+            
+            arg_dm_v  = cnsts_dm_v[1] 
+            +cnsts_dm_v[2]*log10(luminosity/1.E5) 
+            +cnsts_dm_v[3]*log10(get_total_mass()/ 30) 
+            +cnsts_dm_v[4]*log10(cnsts_dm_v[0]/2.0)
+            +cnsts_dm_v[5]*log10(temp/40000)
+            +cnsts_dm_v[6]*log10(2.) // (T/20000) below Tjump
+            +cnsts_dm_v[7]*pow(log10(temp/40000),2)
+            +cnsts_dm_v[8]*log10(metalicity/cnsts.parameters(solar_metalicity));
+            
+            dm_v = pow(10, arg_dm_v);   
+            dm_dj_v = dm_v;
+            
+            
+            if (temp < 8000){
+                // line driven winds no longer efficient
+                // see Achmad et al 1997
+                dm_v = dm_v * 200. / (8200.-temp);
+                dm_dj_v = max(max(dm_v, dm_dj), 0.);
+            }
         }
     }    
-    // Nieuwenhuijzen & de Jager 1990
-    // Massive stars
-    real dm_dj = 0;
-    if (luminosity > 4000.) {
-        real x_dj = min(1.0, (luminosity - 4000.0)/500.0);
-        dm_dj = x_dj*9.6310E-15 * pow(radius, 0.81) * pow(luminosity, 1.24) * 
-        pow(get_total_mass(), 0.16)*pow(metalicity/cnsts.parameters(solar_metalicity), 0.5);
-        cerr<< "exponent metallicity dependence de Jager mass loss HG correct?" << endl;
-    }
+    
     
     // Reimers 1975
     // GB like stars
     real neta = 0.5; 
-    cerr <<"Reimers neta correct?"<<endl;
     real dm_r = neta * 4.E-13 * radius * luminosity / get_total_mass();
     
-    // Hamann, Koesterke & Wessolowski 1995
+//    //Schroder & Cuntz
+//    // cool GB like stars
+//    real neta_sc = 8.E-14; 
+//    real surface_gravity = get_total_mass()/ pow(radius, 2);
+//    real dm_sc = neta_sc * 4.E-13 * radius * luminosity / get_total_mass() 
+//           * pow(temperature()/4000, 3.5) * (1 + 1./(4300*surface_gravity));
+    
+    
+    //based on Nugis & Lamers
+    // eq 8.4 in Gijs' thesis Chapter 8
     //Reduced WR-like mass loss for small H-envelope mass
     real mu = (get_total_mass()-core_mass)/get_total_mass() * min(5.0,max(1.2, pow(luminosity/7.E4,-0.5)));
-    real dm_h = 0;
+    real dm_wr = 0;
     if ( mu < 1.){
-        dm_h = 1.0E-13 * pow(luminosity, 1.5) * (1.0-mu);
-        cerr<<"Hamann mass loss: I'm not convinced about the mu dependence of dm_h"<<endl;
+        //factor (1.-mu) should be checked e.g. with resulting # BH in binaries
+        dm_wr = 1.38E-08 * pow(get_total_mass(), 2.87) * (1.-mu);
     }
     
     //LBV
@@ -485,13 +644,13 @@ void hertzsprung_gap::update_wind_constant() {
         dm_lbv = 0.1 * pow(x_lbv-1.0, 3)*(luminosity/6.0E5-1.0);
     }
     
-    PRC(dm_lbv);PRC(dm_v);PRC(dm_dj);PRC(dm_r);PRL(dm_h);
-    wind_constant = max(max(max(max(dm_h, dm_dj), dm_v), dm_r), 0.0) + dm_lbv;
+    PRC(dm_lbv);PRC(dm_v);PRC(dm_dj);PRC(dm_r);PRL(dm_wr);
+    wind_constant = max(max(max(dm_wr, dm_dj_v), dm_r), 0.0) + dm_lbv;
     
-    if(dm_h > dm_dj && dm_h > dm_v && dm_h > dm_r) cerr<<"HG: WR_like"<<endl;
-    else if (dm_dj > dm_v && dm_dj > dm_r) cerr<< "HG: de Jager"<<endl;
-    else if (dm_v > dm_r) cerr<<"HG: Vink"<<endl;   
-    else cerr<<"HG: Reimers"<<endl;
+    if(dm_wr > dm_dj_v && dm_wr > dm_r) cerr<<"HG: WR_like"<<endl;
+    else if (dm_r > dm_dj_v) cerr<<"HG: Reimers"<<endl;
+    else if (dm_dj_v == dm_dj) cerr<< "HG: de Jager"<<endl;
+    cerr<<"HG: Vink"<<endl;   
     
 }
 
@@ -517,7 +676,7 @@ void hertzsprung_gap::evolve_element(const real end_time) {
       real dt = end_time - current_time;
       current_time = end_time;
       relative_age += dt;
-    
+
       if (relative_age<=next_update_age) {
           instantaneous_element();
           evolve_core_mass();
@@ -544,7 +703,7 @@ void hertzsprung_gap::evolve_element(const real end_time) {
       }
 
       update();
-      //stellar_wind(dt);
+      stellar_wind(dt);
 }
 
 

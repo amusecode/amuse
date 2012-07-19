@@ -9,10 +9,10 @@
 #include "helium_star.h"
 #include "helium_giant.h"
 
-white_dwarf::white_dwarf(super_giant & g) : single_star(g) {
-    
+white_dwarf::white_dwarf(super_giant & g, stellar_type wd_type) : single_star(g) {
       delete &g;
-
+      white_dwarf_type = wd_type;
+    
       real m_tot    = get_total_mass();
       core_mass     = min(0.99*cnsts.parameters(kanonical_neutron_star_mass),
 			  core_mass); 
@@ -22,8 +22,8 @@ white_dwarf::white_dwarf(super_giant & g) : single_star(g) {
       lose_envelope_decent();
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
-      last_update_age = next_update_age;
-
+//      last_update_age = next_update_age;
+    last_update_age = 0.;
     relative_age = 0.;//1 + nucleair_evolution_time();
 
       instantaneous_element();
@@ -32,8 +32,9 @@ white_dwarf::white_dwarf(super_giant & g) : single_star(g) {
       post_constructor();
 }
 
-white_dwarf::white_dwarf(sub_giant & s) : single_star(s) {
+white_dwarf::white_dwarf(sub_giant & s, stellar_type wd_type) : single_star(s) {
       delete &s;
+      white_dwarf_type = wd_type;
 
       real m_tot    = get_total_mass();
       core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
@@ -42,7 +43,8 @@ white_dwarf::white_dwarf(sub_giant & s) : single_star(s) {
       accreted_mass = 0;
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
-      last_update_age = next_update_age;
+//      last_update_age = next_update_age;
+    last_update_age = 0.;
 
       lose_envelope_decent();
 
@@ -55,9 +57,10 @@ white_dwarf::white_dwarf(sub_giant & s) : single_star(s) {
 
 }
 
-white_dwarf::white_dwarf(hertzsprung_gap & s) : single_star(s) {
+white_dwarf::white_dwarf(hertzsprung_gap & s, stellar_type wd_type) : single_star(s) {
     
       delete &s;
+      white_dwarf_type = wd_type;
 
       real m_tot    = get_total_mass();
       core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
@@ -66,7 +69,8 @@ white_dwarf::white_dwarf(hertzsprung_gap & s) : single_star(s) {
       accreted_mass = 0;
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
-      last_update_age = next_update_age;
+//      last_update_age = next_update_age;
+    last_update_age = 0.;
 
       lose_envelope_decent();
 
@@ -80,9 +84,10 @@ white_dwarf::white_dwarf(hertzsprung_gap & s) : single_star(s) {
 }
 
 
-white_dwarf::white_dwarf(helium_star & h) : single_star(h) {
+white_dwarf::white_dwarf(helium_star & h, stellar_type wd_type) : single_star(h) {
  
         delete &h;
+    white_dwarf_type = wd_type;
 
 	real m_tot    = get_total_mass();
 	core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
@@ -91,7 +96,8 @@ white_dwarf::white_dwarf(helium_star & h) : single_star(h) {
 	accreted_mass = 0;
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
-        last_update_age = next_update_age;
+//        last_update_age = next_update_age;
+    last_update_age = 0.;
 
 	lose_envelope_decent();
 	
@@ -105,9 +111,10 @@ white_dwarf::white_dwarf(helium_star & h) : single_star(h) {
 }
 
 
-white_dwarf::white_dwarf(helium_giant & h) :  single_star(h) {
+white_dwarf::white_dwarf(helium_giant & h, stellar_type wd_type) :  single_star(h) {
 
         delete &h;
+    white_dwarf_type = Carbon_Dwarf;
 
 	real m_tot    = get_total_mass();
 	core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
@@ -116,7 +123,8 @@ white_dwarf::white_dwarf(helium_giant & h) :  single_star(h) {
 	accreted_mass = 0;
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
-        last_update_age = next_update_age;
+//        last_update_age = next_update_age;
+    last_update_age = 0.;
 
 	lose_envelope_decent();
 
@@ -181,7 +189,7 @@ void white_dwarf::instantaneous_element() {
 
 void white_dwarf::evolve_element(const real end_time) {
 
-        real dt = end_time - current_time;
+         real dt = end_time - current_time;
         current_time = end_time;
         relative_age += dt;
 
@@ -331,7 +339,7 @@ void white_dwarf::common_envelope(const real mdot) {
 }
 
 star* white_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
-
+    cerr<<"white_dwarf::subtrac_mass_from_donor wrong relative_mass is used to determine mdot"<<endl;
         mdot = relative_mass*dt/get_binary()->get_donor_timescale();
         mdot = mass_ratio_mdot_limit(mdot);
 
@@ -348,7 +356,7 @@ star* white_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
         return this;
 }
 
-real white_dwarf::add_mass_to_accretor(const real mdot) {
+real white_dwarf::add_mass_to_accretor(const real mdot, bool hydrogen) {
 
         if (mdot<0) {
            cerr << "white_dwarf::add_mass_to_accretor(mdot="
@@ -358,17 +366,18 @@ real white_dwarf::add_mass_to_accretor(const real mdot) {
 	   return 0;
         }
 
+    cerr<<"For white dwarfs no difference currently between hydrogen/helium/.. accretion"<<endl;
         adjust_accretor_age(mdot);
         envelope_mass += mdot;
-	relative_mass = max(relative_mass, get_total_mass());
+        relative_mass = max(relative_mass, get_total_mass());
 
-	set_spec_type(Accreting);
+        set_spec_type(Accreting);
 	
         return mdot;
 
      }
 
-real white_dwarf::add_mass_to_accretor(real mdot, const real dt) {
+real white_dwarf::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
 
         if (mdot<0) {
            cerr << "white_dwarf::add_mass_to_accretor(mdot="
@@ -378,7 +387,7 @@ real white_dwarf::add_mass_to_accretor(real mdot, const real dt) {
 	   mdot = 0;
         }
 
-	
+    cerr<<"For white dwarfs no difference currently between hydrogen/helium/.. accretion"<<endl;
 	
 // (GN+SPZ May  3 1999)
 	real mu =1;
@@ -457,6 +466,7 @@ real  white_dwarf::minimum_steady_burning(const real dt) {
 
 void white_dwarf::adjust_accretor_age(const real mdot,
 				      const bool rejuvenate) {
+    cerr<<"white_dwarf::adjust_accretor_age wrong relative_mass is used to determine the new age"<<endl;
 
         real m_rel_new;
         real m_tot_new = get_total_mass() + mdot;
@@ -498,7 +508,7 @@ star* white_dwarf::merge_elements(star* str) {
 	
      real merger_core = str->get_core_mass();
 
-     add_mass_to_accretor(str->get_envelope_mass());
+     add_mass_to_accretor(str->get_envelope_mass(), str->hydrogen_envelope_star());
 
      if (relative_mass<get_total_mass() + merger_core)
        relative_mass=get_total_mass() + merger_core;
@@ -530,17 +540,22 @@ real white_dwarf::gyration_radius_sq() {
   return cnsts.parameters(homogeneous_sphere_gyration_radius_sq); 
 }
 
-stellar_type white_dwarf::get_element_type(){
+//stellar_type white_dwarf::get_element_type(){
+//
+//  if (core_mass     < cnsts.parameters(helium_dwarf_mass_limit) &&
+//      relative_mass < cnsts.parameters(upper_ZAMS_mass_for_degenerate_core))
+//    return Helium_Dwarf;
+//  
+//  else if (relative_mass >= cnsts.parameters(super_giant2neutron_star) &&
+//           core_mass > cnsts.parameters(carbon_dwarf_mass_limit))
+//    return Oxygen_Dwarf;
+//  
+//  else 
+//    return Carbon_Dwarf;
+//}
 
-  if (core_mass     < cnsts.parameters(helium_dwarf_mass_limit) &&
-      relative_mass < cnsts.parameters(upper_ZAMS_mass_for_degenerate_core))
-    return Helium_Dwarf;
-  
-  else if (relative_mass >= cnsts.parameters(super_giant2neutron_star) &&
-           core_mass > cnsts.parameters(carbon_dwarf_mass_limit))
-    return Oxygen_Dwarf;
-  
-  else 
-    return Carbon_Dwarf;
+
+real white_dwarf::get_evolve_timestep() {
+        
+    return max(next_update_age - relative_age, 0.0001);
 }
-

@@ -178,7 +178,7 @@ star* disintegrated::subtrac_mass_from_donor(const real dt, real& mdot) {
         return this;
      }
 
-real disintegrated::add_mass_to_accretor(const real mdot) {
+real disintegrated::add_mass_to_accretor(const real mdot, bool hydrogen) {
 
      cerr << "disintegrated::add_mass_to_accretor(mdot="
           << mdot << ")" <<endl;
@@ -187,7 +187,7 @@ real disintegrated::add_mass_to_accretor(const real mdot) {
 
 }
 
-real disintegrated::add_mass_to_accretor(real mdot, const real dt) {
+real disintegrated::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
 
      cerr << "disintegrated::add_mass_to_accretor(mdot="
           << mdot << ", dt=" << dt << ")" <<endl;

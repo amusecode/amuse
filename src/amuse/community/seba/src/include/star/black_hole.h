@@ -41,7 +41,8 @@ class black_hole : public single_star {
          black_hole(node* n) : single_star(n) {suddenly_lost_mass=0;}
 
          ~black_hole() {}
-
+    
+        real get_evolve_timestep();
         stellar_type get_element_type() {return Black_Hole;}
         bool remnant() {return true;}
         bool hydrogen_envelope_star() {return false;}
@@ -54,8 +55,8 @@ class black_hole : public single_star {
         star* reduce_mass(const real);
         real accretion_limit(const real, const real);
         star* subtrac_mass_from_donor(const real, real&);
-        real add_mass_to_accretor(const real);
-        real add_mass_to_accretor(real, const real);
+        real add_mass_to_accretor(const real, bool);
+        real add_mass_to_accretor(real, const real, bool);
         void accrete_from_envelope(const real);
         star* merge_elements(star*);
 
@@ -69,7 +70,7 @@ class black_hole : public single_star {
         real sudden_mass_loss();
 
 	real get_radius();
-	//real get_effective_radius() {return get_radius();}
+	real get_effective_radius() {return get_radius();}
 
 	// Friend functions.
 	     // poor guy.

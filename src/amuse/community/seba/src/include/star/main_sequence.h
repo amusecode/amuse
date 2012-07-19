@@ -65,8 +65,8 @@ class main_sequence : public single_star {
         star* reduce_mass(const real);
         void adjust_accretor_age(const real mdot, const bool rejuvenate);
         void adjust_age_after_wind_mass_loss(const real mdot, const bool rejuvenate);
-        real  add_mass_to_accretor(const real);
-        real  add_mass_to_accretor(real, const real);
+        real  add_mass_to_accretor(const real, bool);
+        real  add_mass_to_accretor(real, const real, bool);
 
 
 //		Mass transfer stability
@@ -129,5 +129,5 @@ class main_sequence : public single_star {
 #endif 		// _MAIN_SEQUENCE
 
 
-	//real add_mass_to_accretor(const real);
-	//real add_mass_to_accretor(real, const real);
+	//real add_mass_to_accretor(const real, bool);
+	//real add_mass_to_accretor(real, const real, bool);

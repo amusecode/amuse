@@ -192,7 +192,7 @@ real thorne_zytkow::helium_core_mass() {
 #endif
 
 //              Mass transfer utilities.
-real thorne_zytkow::add_mass_to_accretor(const real mdot) {
+real thorne_zytkow::add_mass_to_accretor(const real mdot, bool) {
 
       adjust_accretor_age(mdot);
 
@@ -207,7 +207,7 @@ real thorne_zytkow::add_mass_to_accretor(const real mdot) {
       return mdot;
 }
 
-real thorne_zytkow::add_mass_to_accretor(real mdot, const real dt) {
+real thorne_zytkow::add_mass_to_accretor(real mdot, const real dt, bool) {
 
       mdot = accretion_limit(mdot, dt);
 

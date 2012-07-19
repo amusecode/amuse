@@ -167,7 +167,7 @@ real double_star::zeta_thermal() {
     return 0;
 }
 
-real double_star::add_mass_to_accretor(const real mdot) {
+real double_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
     cerr<<"real double_star::add_mass_to_accretor(mdot="<<mdot<<")"<<endl;
 
       if (bin_type==Merged || bin_type==Disrupted) 
@@ -189,8 +189,8 @@ real double_star::add_mass_to_accretor(const real mdot) {
       real mdot_s = mdot*mtt_b/mtt_s;
 
       real M_old = get_total_mass();
-      mdot_p = get_primary()->add_mass_to_accretor(mdot_p);
-      mdot_s = get_secondary()->add_mass_to_accretor(mdot_s);
+      mdot_p = get_primary()->add_mass_to_accretor(mdot_p, hydrogen);
+      mdot_s = get_secondary()->add_mass_to_accretor(mdot_s, hydrogen);
      
       real mdot_left = mdot - (mdot_p + mdot_s);
 
@@ -222,7 +222,7 @@ real double_star::add_mass_to_accretor(const real mdot) {
       
    }
 
-real double_star::add_mass_to_accretor(real mdot, const real dt) {
+real double_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
 cerr<<"real double_star::add_mass_to_accretor(mdot="<<mdot
     <<", dt="<<dt<<")"<<endl;
 
@@ -245,8 +245,8 @@ cerr<<"real double_star::add_mass_to_accretor(mdot="<<mdot
       real mdot_p = mdot*mtt_b/mtt_p;
       real mdot_s = mdot*mtt_b/mtt_s;
 
-      mdot_p = get_primary()->add_mass_to_accretor(mdot_p, dt);
-      mdot_s = get_secondary()->add_mass_to_accretor(mdot_s, dt);
+      mdot_p = get_primary()->add_mass_to_accretor(mdot_p, dt, hydrogen);
+      mdot_s = get_secondary()->add_mass_to_accretor(mdot_s, dt, hydrogen);
 
       real mdot_left = mdot - (mdot_p + mdot_s);
 

@@ -50,12 +50,15 @@ class super_giant : public single_star {
 
 	void instantaneous_element();
 	void evolve_element(const real);
-	void create_remnant(const real, const real, const real);
-
+	void create_remnant(const real, const real, const real, const real);
+    real get_evolve_timestep();
+    
 //           Mass transfer stability.
         real zeta_thermal();
 	real gyration_radius_sq();
 	
+        real  add_mass_to_accretor(const real, bool );
+        real  add_mass_to_accretor(real, const real, bool);
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
         void adjust_accretor_age(const real, const bool=true);
@@ -64,7 +67,7 @@ class super_giant : public single_star {
 
 //              Friend constructors
 	 friend helium_giant::helium_giant(super_giant &);
-         friend white_dwarf::white_dwarf(super_giant &);
+         friend white_dwarf::white_dwarf(super_giant &, stellar_type);
          friend neutron_star::neutron_star(super_giant &);
          friend black_hole::black_hole(super_giant &);
          friend disintegrated::disintegrated(super_giant &);

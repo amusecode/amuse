@@ -52,7 +52,7 @@ black_hole::black_hole(hyper_giant & w) : single_star(w) {
 black_hole::black_hole(super_giant & g) : single_star(g) {
 
       delete &g;
-
+    
       suddenly_lost_mass = 0;
       real m_tot = get_total_mass();
       core_mass = black_hole_mass();
@@ -66,7 +66,7 @@ black_hole::black_hole(super_giant & g) : single_star(g) {
     bool hit_companion = false;
  //     bool hit_companion = super_nova();
  //     post_supernova_story(); 
-
+ 
       instantaneous_element();
       update();
 
@@ -135,8 +135,9 @@ black_hole::black_hole(helium_giant & h) : single_star(h) {
 
       relative_age = 0;
 
-      bool hit_companion = super_nova();
-      post_supernova_story(); 
+    bool hit_companion = false;
+    //     bool hit_companion = super_nova();
+    //     post_supernova_story(); 
 
       instantaneous_element();
       update();
@@ -169,8 +170,9 @@ black_hole::black_hole(neutron_star & n) : single_star(n) {
 
       relative_age = 0;
 
-      bool hit_companion = super_nova();
-      post_supernova_story(); 
+    bool hit_companion = false;
+    //     bool hit_companion = super_nova();
+    //     post_supernova_story(); 
 
       instantaneous_element();
 
@@ -217,14 +219,14 @@ void black_hole::adjust_initial_star() {
 real black_hole::get_radius() {
 
     real r_eff = radius;
-    if (is_binary_component() && get_companion()->get_element_type() != Black_Hole) {
-        real m_sec = get_companion()->get_total_mass();
-        real r_sec = get_companion()->get_radius();
-        real r_tide = r_sec * (1 + pow(get_total_mass()/m_sec,
-                                       cnsts.mathematics(one_third)));
-        r_eff = r_tide;
-
-    }
+//    if (is_binary_component() && get_companion()->get_element_type() != Black_Hole) {
+//        real m_sec = get_companion()->get_total_mass();
+//        real r_sec = get_companion()->get_radius();
+//        real r_tide = r_sec * (1 + pow(get_total_mass()/m_sec,
+//                                       cnsts.mathematics(one_third)));
+//        r_eff = r_tide;
+//
+//    }
 
     return r_eff;
 }
@@ -332,7 +334,8 @@ void black_hole::accrete_from_envelope(const real dt) {
 	set_spec_type(Accreting, false);
 }
 
-real black_hole::add_mass_to_accretor(const real mdot) {
+real black_hole::add_mass_to_accretor(const real mdot, bool hydrogen) {
+    cerr<<"For black holes no difference currently between hydrogen/helium/.. accretion"<<endl;
 
 //		Increase envelope_mass of black hole.
       envelope_mass += mdot;
@@ -341,7 +344,7 @@ real black_hole::add_mass_to_accretor(const real mdot) {
       return mdot;
    }
 
-real black_hole::add_mass_to_accretor(real mdot, const real dt) {
+real black_hole::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
 
       mdot = accretion_limit(mdot, dt);
 
@@ -379,7 +382,7 @@ star* black_hole::merge_elements(star* str) {
       real merger_env = str->get_envelope_mass();
 
       if(get_total_mass()<100) {
-	  add_mass_to_accretor(merger_env);
+	  add_mass_to_accretor(merger_env, str->hydrogen_envelope_star());
 	  core_mass += merger_core;
       }
       else {
@@ -590,8 +593,6 @@ real black_hole::gyration_radius_sq() {
 
 // Angular momentum of homogeneous sphere.
 real black_hole::angular_momentum() {
-  
-  cerr << "black_hole::angular_momentum()"<<endl;
        
   real a = 1;   // Kerr black hole: maximum rotation
   real m = get_total_mass()*cnsts.parameters(solar_mass);
@@ -601,3 +602,8 @@ real black_hole::angular_momentum() {
 }
 
 
+
+real black_hole::get_evolve_timestep() {
+    
+    return max(next_update_age - relative_age, 0.0001);
+}

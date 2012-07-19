@@ -226,8 +226,8 @@ class double_star : public star
         real mass_transfer_timescale(mass_transfer_type &type);
         real zeta_adiabatic();
         real zeta_thermal();
-        real add_mass_to_accretor(const real);
-        real add_mass_to_accretor(real, const real);
+        real add_mass_to_accretor(const real, bool);
+        real add_mass_to_accretor(real, const real, bool);
         real accrete_from_stellar_wind(const real, const real);
         void adjust_triple_after_wind_loss(star*,
                                            const real, const real);

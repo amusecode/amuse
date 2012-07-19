@@ -42,7 +42,8 @@ class neutron_star : public single_star {
          neutron_star(node* n) : single_star(n) {suddenly_lost_mass=0;}
 
          ~neutron_star() {}
-	 
+        
+        real get_evolve_timestep();
         stellar_type get_element_type();
         bool remnant() {return true;}
         bool hydrogen_envelope_star() {return false;}
@@ -58,8 +59,8 @@ class neutron_star : public single_star {
         star* reduce_mass(const real);
         real accretion_limit(const real, const real);
         star* subtrac_mass_from_donor(const real, real&);
-        real add_mass_to_accretor(const real);
-        real add_mass_to_accretor(real, const real);
+        real add_mass_to_accretor(const real, bool);
+        real add_mass_to_accretor(real, const real, bool);
         void accrete_from_envelope(const real);
 
         star* merge_elements(star*);

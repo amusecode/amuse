@@ -13,6 +13,10 @@
 horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
 
     delete &g;
+    
+    // (GN+SPZ May  4 1999) last update age is time of previous type change
+    last_update_age = next_update_age;
+
     real m_HeF = helium_flash_mass(metalicity);
     if ( relative_mass< m_HeF){
         cerr.precision(HIGH_PRECISION);
@@ -29,9 +33,12 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
         PRL(luminosity);
         cerr.precision(STD_PRECISION);
         
-        relative_mass = get_total_mass();
+        update_relative_mass(get_total_mass());
         PRL(relative_age);
+        real sil1 = relative_age;
+        real sil2 = helium_ignition_time(relative_mass, metalicity);
         relative_age = helium_ignition_time(relative_mass, metalicity);
+        last_update_age =  helium_ignition_time(relative_mass, metalicity);
         PRL(relative_age);
         PRC(relative_mass);PRC(get_total_mass());PRC(relative_age);PRL(m_HeF);
         cerr<<"WARNING! in constructor CHeB core_mass is set"<<endl;
@@ -39,8 +46,9 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
         if (m_core > get_total_mass()){
             cerr<<"phase transition"<<endl;
             core_mass=get_total_mass();
-            envelope_mass = 0;
-            reduce_mass(1.);
+            envelope_mass = 0;            
+//            reduce_mass(1.);
+//            transition happens later in evolve_element  
             return;
         }
         
@@ -53,8 +61,6 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
         }
     }    
     
-// (GN+SPZ May  4 1999) last update age is time of previous type change
-    last_update_age = next_update_age;
 
     adjust_next_update_age();
     instantaneous_element();
@@ -63,7 +69,7 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
     
     update();
     post_constructor();
-
+    
 }
 
 horizontal_branch::horizontal_branch(hertzsprung_gap & h) : single_star(h) {
@@ -83,12 +89,172 @@ horizontal_branch::horizontal_branch(hertzsprung_gap & h) : single_star(h) {
       
 }
 
+
+//		general mass transfer utilities.
+// Increase donor mass and possibly relative_mass of donor.
+// Check mass-transfer timescales before use.
+real horizontal_branch::add_mass_to_accretor(const real mdot, bool hydrogen) {
+    
+    if (mdot<=0) {
+        cerr << "horizontal_branch::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
+        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+        
+        set_spec_type(Accreting, false);
+        
+        return 0;
+    }
+    else {
+        
+        if(hydrogen){
+            // hydrogen accretion
+            // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
+            //adjust_accretor_age(mdot);
+            envelope_mass += mdot;
+            accreted_mass += mdot;
+                        
+            //if (relative_mass<get_total_mass()) 
+            //  update_relative_mass(get_total_mass());
+            
+        }
+        else{
+            //for the moment assume helium accretion
+            
+            core_mass += mdot;
+            accreted_mass += mdot;
+            update_relative_mass(relative_mass + mdot);
+            
+            //adjust age part
+            //separate function?
+            real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
+            real mc_HeI = helium_ignition_core_mass(relative_mass, metalicity);
+            
+            real t_HeI = helium_ignition_time(relative_mass, metalicity); 
+            real t_He  = core_helium_burning_timescale(relative_mass, metalicity);
+            real tau = (core_mass - mc_HeI) / (mc_bagb - mc_HeI);
+            relative_age = t_HeI + tau * t_He;
+            last_update_age = t_HeI;
+            
+            if (tau < 0.){
+                real m_rel= get_relative_mass_from_core_mass("Mc_HeI", core_mass, relative_mass, metalicity);
+                update_relative_mass(m_rel);
+                last_update_age = helium_ignition_time(relative_mass, metalicity); 
+                relative_age = last_update_age;  
+                PRL(core_mass);
+                evolve_core_mass();
+                PRL(core_mass);                
+                exit(-1);
+            }
+            if (tau > 1.){
+                // in principle this is not correct because the helium core has reached it's max in this phase
+                // because of accretion, but what happens with the co core?
+                update_relative_mass(base_AGB_relative_mass(core_mass, metalicity));
+                relative_age = next_update_age;
+                last_update_age = helium_ignition_time(relative_mass, metalicity); 
+                PRL(core_mass);
+                evolve_core_mass();
+                PRL(core_mass);
+                exit(-1);
+            }
+        }
+    }
+    
+    set_spec_type(Accreting);
+    return mdot;
+}
+
+real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+    if (mdot<0) {
+        cerr << "horizontal_branch::add_mass_to_accretor(mdot=" << mdot 
+        << ", dt=" << dt << ")"<<endl;
+        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+        return 0;
+    }
+    
+    
+    if(hydrogen){
+        //hydrogen accretion
+        mdot = accretion_limit(mdot, dt);
+        
+        // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
+        // adjust_accretor_age(mdot);
+        envelope_mass += mdot;
+        accreted_mass += mdot;
+        
+        //  if (relative_mass<get_total_mass()) 
+        //    update_relative_mass(get_total_mass());
+        
+        adjust_accretor_radius(mdot, dt);
+        
+    }
+    else{
+        cerr<<"cheb::add_mass_to_accretor  helium accretion limit?"<<endl;    
+        //mdot = accretion_limit(mdot, dt);
+
+        //for the moment assume helium accretion
+        core_mass += mdot;
+        accreted_mass += mdot;
+        update_relative_mass(relative_mass + mdot);
+        
+        //adjust age part
+        //separate function?
+        real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
+        real mc_HeI = helium_ignition_core_mass(relative_mass, metalicity);
+        
+        real t_HeI = helium_ignition_time(relative_mass, metalicity); 
+        real t_He  = core_helium_burning_timescale(relative_mass, metalicity);
+        real tau = (core_mass - mc_HeI) / (mc_bagb - mc_HeI);
+        relative_age = t_HeI + tau * t_He;
+        last_update_age = t_HeI;
+        
+        if (tau < 0.){
+            real m_rel= get_relative_mass_from_core_mass("Mc_HeI", core_mass, relative_mass, metalicity);
+            update_relative_mass(m_rel);
+            last_update_age = helium_ignition_time(relative_mass, metalicity); 
+            relative_age = last_update_age;     
+            PRL(core_mass);
+            evolve_core_mass();
+            PRL(core_mass);
+            
+            exit(-1);
+        }
+        if (tau > 1.){
+            // in principle this is not correct because the helium core has reached it's max in this phase
+            // because of accretion, but what happens with the co core?
+            update_relative_mass(base_AGB_relative_mass(core_mass, metalicity));
+            relative_age = next_update_age;
+            last_update_age = helium_ignition_time(relative_mass, metalicity); 
+            PRL(core_mass);
+            evolve_core_mass();
+            PRL(core_mass);
+            exit(-1);
+        }
+        
+        cerr<<"cheb::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
+        //adjust_accretor_radius(mdot, dt);
+
+        
+    }
+    set_spec_type(Accreting);
+    return mdot;
+}
+
+
+
 star* horizontal_branch::reduce_mass(const real mdot) {
 
       if (envelope_mass<=mdot) {
          envelope_mass = 0;
-         star_transformation_story(Helium_Star);
-         return dynamic_cast(star*, new helium_star(*this));
+          
+//         if (get_total_mass() < cnsts.parameters(minimum_helium_star)) {
+//              // horizontal branch star will not continue core helium burning.
+//              cerr<<"Warning: not homogeneous WD"<<endl;
+//              star_transformation_story(Helium_Dwarf);
+//              return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
+//          }
+//         else{
+             star_transformation_story(Helium_Star);
+             return dynamic_cast(star*, new helium_star(*this));
+//         }
       }
 
       else 
@@ -106,8 +272,16 @@ star* horizontal_branch::subtrac_mass_from_donor(const real dt,
       if (envelope_mass<=mdot) {
          mdot = envelope_mass;
          envelope_mass = 0;
-         star_transformation_story(Helium_Star);
-         return dynamic_cast(star*, new helium_star(*this));
+//         if (relative_mass < cnsts.parameters(minimum_helium_star)) {
+//              // horizontal branch star will not continue core helium burning.
+//              cerr<<"Warning: not homogeneous WD"<<endl;
+//              star_transformation_story(Helium_Dwarf);
+//              return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
+//         }
+//         else{   
+             star_transformation_story(Helium_Star);
+             return dynamic_cast(star*, new helium_star(*this));
+//         }
       }
       else
           envelope_mass -= mdot;
@@ -211,60 +385,133 @@ void horizontal_branch::update_wind_constant() {
     // Should be updated after mass accretion
     // (ST: 17 Sep 2009)
     
-    // Vink 2000, 20001
+    
+    
+    real dm_dj_v = 0;
+    
+    // Nieuwenhuijzen & de Jager 1990
+    // Massive stars
+    real dm_dj = 0;
+    if (luminosity > 4000.) {
+        real x = min(1.0, (luminosity - 4000.0)/500.0);
+        dm_dj = x * 9.6310E-15 * pow(radius, 0.81) * pow(luminosity, 1.24) * 
+        pow(get_total_mass(), 0.16)*pow(metalicity/cnsts.parameters(solar_metalicity), 0.5);
+    }
+    
+    // Vink 2000, 2001
     // Massive stars, including multi scattering effects
     real dm_v = 0;
-    if (metalicity > cnsts.parameters(solar_metalicity)/30. && metalicity < 3*cnsts.parameters(solar_metalicity)){
+    if (luminosity > 4000 && metalicity > cnsts.parameters(solar_metalicity)/30. && metalicity < 3*cnsts.parameters(solar_metalicity)){
+        real temp = temperature();
         real sigma;//electron scattering cross section
-        if (temperature() >= 35000){
+        if (temp >= 35000){
             sigma = 0.34;
         }
-        else if(temperature() < 30000){
+        else if(temp < 30000){
             sigma = 0.31;
         }
         else {
             sigma = 0.32;
         }
         real rad_acc = 7.66E-5 * sigma * luminosity / get_total_mass();
-        real log_density = -14.94 + 0.85 * log10(metalicity/cnsts.parameters(solar_metalicity)) +3.2*rad_acc;
-        real Tjump = (61.2 + 2.59*log_density)*1000;
+        real log_density = -14.94 + 0.85 * log10(metalicity/cnsts.parameters(solar_metalicity)) +3.1857*rad_acc; //Eq.23 Vink 2001
+        real Tjump = (61.2 + 2.59*log_density)*1000; //Eq.15 Vink 2001
+        real Tjump_low = (100. + 6. * log_density)*1000; //Eq.6 Vink 2000
         real arg_dm_v;
-        if (temperature() >= 12500 && temperature() <= Tjump){
-            arg_dm_v = -6.688 + 2.210*log10(luminosity/1.E5) - 1.339*log10(get_total_mass()/30) 
-            - 1.601*log10(1.3/2.0) + 1.07*log10(temperature()/20000) + 0.85*log10(metalicity/solar_metalicity);
-            dm_v = pow(10, arg_dm_v);
+        real T_smooth = 1500.;
+        real T_smooth_below = 1000.;
+        real cnsts_dm_v[9];
+        real cnsts_dm_v_above[] = {2.6, -6.697, 2.194, -1.313, -1.226, 0.933, 0, -10.92, 0.85};
+        real cnsts_dm_v_below[] = {1.3, -6.688, 2.210, -1.339, -1.601, 1.07, 1.07, 0, 0.85};
+        
+        
+        if (rad_acc >0.5 || temp > 50000) {
+            cerr<<"vink approaches LBV, stop?"<<endl;  
+            cerr<<"transition needed?"<<endl;
+            cerr<<"possible for low metallicities"<<endl;
+            dm_v = 0;
+            dm_dj_v = dm_dj;
         }
-        else if(temperature() >= Tjump && temperature() <= 50000){
-            arg_dm_v = -6.697 + 2.194*log10(luminosity/1.e5) - 1.313*log10(get_total_mass()/30) -1.226*log10(2.6/2.0)
-            +0.933*log10(temperature()/40000) -10.92*pow(log10(temperature()/40000),2)
-            + 0.85*log10(metalicity/cnsts.parameters(solar_metalicity));
-            dm_v = pow(10, arg_dm_v);
+        else {
+            if (temp <= Tjump-T_smooth){
+                // smooth out second instability jump
+                for (int i_t=0; i_t< 9;i_t++){
+                    cnsts_dm_v[i_t] = cnsts_dm_v_below[i_t];
+                }
+                
+                if(temp <= Tjump_low - T_smooth_below){
+                    cnsts_dm_v[0] = 0.7;
+                    cnsts_dm_v[1] = -5.990;
+                }
+                else if (temp < Tjump_low + T_smooth_below){
+                    real scale_T = (Tjump_low+T_smooth_below - temp)/(2*T_smooth_below);
+                    cnsts_dm_v[0] = (1.-scale_T) * cnsts_dm_v_below[0] + scale_T * 0.7;
+                    cnsts_dm_v[1] = (1.-scale_T) * cnsts_dm_v_below[1] + scale_T * -5.990;
+                }
+            }
+            else if(temp > Tjump + T_smooth){
+                for (int i_t=0; i_t< 9;i_t++){
+                    cnsts_dm_v[i_t] = cnsts_dm_v_above[i_t];
+                }
+            }
+            else {
+                //smooth out first instability jump
+                real scale_T = (Tjump+T_smooth - temp)/(2*T_smooth);
+                for (int i_t=0; i_t< 9;i_t++){
+                    cnsts_dm_v[i_t] = scale_T * cnsts_dm_v_below[i_t] 
+                    + (1.-scale_T) * cnsts_dm_v_above[i_t];
+                }
+            }
+            
+            arg_dm_v  = cnsts_dm_v[1] 
+            +cnsts_dm_v[2]*log10(luminosity/1.E5) 
+            +cnsts_dm_v[3]*log10(get_total_mass()/ 30) 
+            +cnsts_dm_v[4]*log10(cnsts_dm_v[0]/2.0)
+            +cnsts_dm_v[5]*log10(temp/40000)
+            +cnsts_dm_v[6]*log10(2.) // (T/20000) below Tjump
+            +cnsts_dm_v[7]*pow(log10(temp/40000),2)
+            +cnsts_dm_v[8]*log10(metalicity/cnsts.parameters(solar_metalicity));
+            
+            dm_v = pow(10, arg_dm_v);   
+            dm_dj_v = dm_v;
+            
+            
+            if (temp < 8000){
+                // line driven winds no longer efficient
+                // see Achmad et al 1997
+                dm_v = dm_v * 200. / (8200.-temp);
+                dm_dj_v = max(max(dm_v, dm_dj), 0.);
+            }
         }
     }    
-    // Nieuwenhuijzen & de Jager 1990
-    // Massive stars
-    real dm_dj = 0;
-    if (luminosity > 4000.) {
-        real x_dj = min(1.0, (luminosity -4000.0)/500.0);
-        dm_dj = x_dj * 9.6310E-15 * pow(radius, 0.81) * pow(luminosity, 1.24) * 
-        pow(get_total_mass(), 0.16)*pow(metalicity/cnsts.parameters(solar_metalicity), 0.5);
-        cerr<< "exponent metallicity dependence de Jager mass loss HG correct?" << endl;
-    }
     
     // Reimers 1975
     // GB like stars
     real neta = 0.5; 
-    cerr <<"Reimers neta correct?"<<endl;
     real dm_r = neta * 4.E-13 * radius * luminosity / get_total_mass();
     
-    // Hamann, Koesterke & Wessolowski 1995
+//    //Schroder & Cuntz
+//    // cool GB like stars
+//    real neta_sc = 8.E-14; 
+//    real surface_gravity = pow(radius, 2) / get_total_mass();
+//    real dm_sc = neta_sc * 4.E-13 * radius * luminosity / get_total_mass() 
+//    * pow(temperature()/4000, 3.5) * (1 + 1./(4300*surface_gravity));
+    
+    
+    //based on Nugis & Lamers
+    // eq 8.4 in Gijs' thesis Chapter 8
     //Reduced WR-like mass loss for small H-envelope mass
     real mu = (get_total_mass()-core_mass)/get_total_mass() * min(5.0,max(1.2, pow(luminosity/7.E4,-0.5)));
-    real dm_h = 0;
+    real dm_wr = 0;
+    real sil, sil_frac;
     if ( mu < 1.){
-        dm_h = 1.0E-13 * pow(luminosity, 1.5) * (1.0-mu);
-        cerr<<"Hamann mass loss: I'm not convinced about the mu dependence of dm_h"<<endl;
+        //factor (1.-mu) should be checked e.g. with resulting # BH in binaries
+        dm_wr = 1.38E-08 * pow(get_total_mass(), 2.87) * (1.-mu);
+        sil = 1.E-13 * pow(luminosity, 1.5)* (1.-mu) ;
+        sil_frac = dm_wr/ sil;
     }
+    
+    
     
     //LBV
     real dm_lbv = 0;
@@ -274,14 +521,14 @@ void horizontal_branch::update_wind_constant() {
     }
     
     
-    PRC(dm_lbv);PRC(dm_v);PRC(dm_dj);PRC(dm_r);PRL(dm_h);
-    wind_constant = max(max(max(max(dm_h, dm_dj), dm_v), dm_r), 0.0) + dm_lbv;
-  
-    if(dm_h > dm_dj && dm_h > dm_v && dm_h > dm_r) cerr<<"CHeB: WR_like"<<endl;
-    else if (dm_dj > dm_v && dm_dj > dm_r) cerr<< "CHeB: de Jager"<<endl;
-    else if (dm_v > dm_r) cerr<<"CHeB: Vink"<<endl;   
-    else cerr<<"CHeB: Reimers"<<endl;
+    PRC(dm_lbv);PRC(dm_v);PRC(dm_dj);PRC(dm_r);PRL(dm_wr);
+    wind_constant = max(max(max(dm_wr, dm_dj_v), dm_r), 0.0) + dm_lbv;
     
+    
+    if(dm_wr > dm_dj_v && dm_wr > dm_r) cerr<<"HG: WR_like"<<endl;
+    else if (dm_r > dm_dj_v) cerr<<"HG: Reimers"<<endl;
+    else if (dm_dj_v == dm_dj) cerr<< "HG: de Jager"<<endl;
+    cerr<<"HG: Vink"<<endl;   
     
 }
 
@@ -330,7 +577,7 @@ void horizontal_branch::update() {
 // Evolve a horizontal branch star upto time argument according to
 // the new 2000 models.
 void horizontal_branch::evolve_element(const real end_time) {
-
+    
       real dt = end_time - current_time;
       current_time = end_time;
       relative_age += dt;
@@ -355,7 +602,7 @@ void horizontal_branch::evolve_element(const real end_time) {
          return;
       }
       update();
-      //stellar_wind(dt);
+      stellar_wind(dt);
    }
 
 void horizontal_branch::evolve_core_mass(const real time,
@@ -613,6 +860,7 @@ real horizontal_branch::core_helium_burning_core_mass(const real time,
     real tau = (time - t_HeI)/t_He;
     
     real m_core = (1-tau)*mc_HeI + tau*mc_bagb;
+    
     return m_core;
 }
 
@@ -659,16 +907,12 @@ real horizontal_branch::blue_phase_timescale(const real mass, const real z) {
         t_bl = (1-smc.b(47,z))*f_bl(mass, z)/f_bl(m_FGB, z);
     }
     
-    if (t_bl > 1.0){
-        cerr<<"WARNING in single_star::blue_phase_timescale: t_bl > 1"<<endl;
-        PRC(mass);PRC(m_FGB);PRC(m_HeF);PRL(t_bl);
-        exit(-1);
-    }
-    else if (t_bl < 0.0){
-        cerr<<"WARNING in single_star::blue_phase_timescale: t_bl < 0"<<endl;
-        PRC(mass);PRC(m_FGB);PRL(t_bl);
-        exit(-1);
-    }
+//    if (t_bl > 1.0){
+//        cerr<<"WARNING in single_star::blue_phase_timescale: t_bl > 1"<<endl;
+//    }
+//    else if (t_bl < 0.0){
+//        cerr<<"WARNING in single_star::blue_phase_timescale: t_bl < 0"<<endl;
+//    }
     
     t_bl = min(1.0, max(0.0, t_bl));  
     return t_bl;

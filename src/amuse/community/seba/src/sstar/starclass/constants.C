@@ -393,7 +393,7 @@ real stellar_evolution_constants::safety(safety_parameter ps) {
   switch(ps) {
     case timestep_factor:                      return 0.01;       
           break;                             // 0.01 ok, but big for AM CVns
-    case maximum_binary_update_time_fraction: return 0.1;
+    case maximum_binary_update_time_fraction: return 1.0;// 0.9;
           break;                            // see also star_to_dyn
     case minimum_timestep:                   return 1.e-11; // Do not change!
           break;                                   // == 10*HubbleT*precision
@@ -405,6 +405,8 @@ real stellar_evolution_constants::safety(safety_parameter ps) {
           break;
       case tiny:                             return 5e-13;
           break;
+    case number_of_steps:                   return 10;
+        break;
         default:
 	     cerr << "\nNo recognized option in "
 		     "stellar_evolution_constants::"

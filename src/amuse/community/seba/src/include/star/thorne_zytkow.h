@@ -41,8 +41,8 @@ class thorne_zytkow : public single_star {
          void update();
 
 //           Mass transfer utilities.
-        real add_mass_to_accretor(const real);
-        real add_mass_to_accretor(real , const real);
+        real add_mass_to_accretor(const real, bool);
+        real add_mass_to_accretor(real , const real, bool);
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
   //        void adjust_accretor_age(const real, const bool=true);

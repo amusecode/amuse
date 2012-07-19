@@ -49,8 +49,8 @@ class disintegrated : public single_star {
         star* reduce_mass(const real);
         real mass_transfer_timescale(mass_transfer_type &type);
         star* subtrac_mass_from_donor(const real, real&);
-        real add_mass_to_accretor(const real);
-        real add_mass_to_accretor(real, const real);
+        real add_mass_to_accretor(const real, bool);
+        real add_mass_to_accretor(real, const real, bool);
 
         star* merge_elements(star*);
 

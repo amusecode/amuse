@@ -47,8 +47,8 @@ class brown_dwarf : public single_star {
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
         real accretion_limit(const real, const real); 
-        real add_mass_to_accretor(const real);
-        real add_mass_to_accretor(real, const real);
+        real add_mass_to_accretor(const real, bool);
+        real add_mass_to_accretor(real, const real, bool);
         void adjust_next_update_age() {/* do nothing */}
         void accrete_from_envelope(const real);
 

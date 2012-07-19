@@ -469,7 +469,7 @@ star* neutron_star::subtrac_mass_from_donor(const real dt, real& mdot) {
       return this;
 }
 
-real neutron_star::add_mass_to_accretor(const real mdot) {
+real neutron_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
 
       envelope_mass += mdot;
       relative_mass = max(relative_mass, get_total_mass());
@@ -482,9 +482,10 @@ real neutron_star::add_mass_to_accretor(const real mdot) {
 // enters a stallar envelope (disc) and is finally accreted on
 // the compact object.
 // So no magnetic field decay here.
-real neutron_star::add_mass_to_accretor(real mdot, const real dt) {
+real neutron_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
 
      if (DEBUG) cerr<<"neutron_star::add_mass_to_accretor "<<dt<<endl;
+    cerr<<"For neutron stars no difference currently between hydrogen/helium/.. accretion"<<endl;
 
      mdot = accretion_limit(mdot, dt);
      envelope_mass += mdot;
@@ -506,7 +507,7 @@ real neutron_star::accretion_limit(const real mdot, const real dt) {
 }
 
 #if 0 // Old stuff
-real neutron_star::add_mass_to_accretor(const real mdot) {
+real neutron_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
 
       relative_mass = max(relative_mass, get_total_mass() + mdot);
       envelope_mass += mdot;
@@ -518,7 +519,7 @@ real neutron_star::add_mass_to_accretor(const real mdot) {
 // Neutron star accretes with Eddington limit. The accreted mass first
 // enters a starage envelope (disc) and is finally accreted onte 
 // the compact object.
-real neutron_star::add_mass_to_accretor(real mdot, const real dt) {
+real neutron_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
 
       mdot = accretion_limit(mdot, dt);
       relative_mass = max(relative_mass, get_total_mass() + mdot);
@@ -542,7 +543,7 @@ star* neutron_star::merge_elements(star* str) {
       envelope_mass = 0;
       real merger_core = str->get_core_mass();
 
-      add_mass_to_accretor(str->get_envelope_mass());
+      add_mass_to_accretor(str->get_envelope_mass(), str->hydrogen_envelope_star());
       relative_mass = max(relative_mass, get_total_mass() + merger_core);
       core_mass += merger_core;
 
@@ -1007,4 +1008,9 @@ stellar_type neutron_star::get_element_type() {
 
 
 
+
+real neutron_star::get_evolve_timestep() {
+    
+    return max(next_update_age - relative_age, 0.0001);
+}
 

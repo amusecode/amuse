@@ -43,8 +43,11 @@ class sub_giant : public single_star
 
         void instantaneous_element();
         void evolve_element(const real);
-
+        real get_evolve_timestep();
+        
 //            Mass transfer utilities.
+        real  add_mass_to_accretor(const real, bool );
+        real  add_mass_to_accretor(real, const real, bool);
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
 
@@ -62,7 +65,7 @@ class sub_giant : public single_star
 //              Friend constructors
 	 friend horizontal_branch::horizontal_branch(sub_giant &);
 	 friend helium_star::helium_star(sub_giant &);
-	 friend white_dwarf::white_dwarf(sub_giant &);
+	 friend white_dwarf::white_dwarf(sub_giant &, stellar_type);
 
       void evolve_core_mass(const real time,
 			    const real mass,

@@ -192,7 +192,6 @@ class  star : public starbase
         virtual real  helium_giant_time(const real){return 0;}
         virtual real  base_giant_branch_time(const real){return 0;}
         virtual real  base_giant_time(const real){return 0;}
-     //   virtual real  helium_time(){return 0;}
         virtual void  post_constructor() {}
 	
 
@@ -223,8 +222,8 @@ class  star : public starbase
 
 	virtual void add_mass_to_core(const real) {} 
 
-        virtual real add_mass_to_accretor(real, const real) {return 0;}
-        virtual real add_mass_to_accretor(const real) {return 0;}
+        virtual real add_mass_to_accretor(real, const real, bool) {return 0;}
+        virtual real add_mass_to_accretor(const real, bool) {return 0;}
         virtual void adjust_accretor_age(const real,
 					 const bool rejuvenate=true){}
         virtual void adjust_next_update_age(){}

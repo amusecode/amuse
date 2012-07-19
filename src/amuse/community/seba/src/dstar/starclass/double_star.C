@@ -337,16 +337,16 @@ void double_star::dump(ostream & s, bool brief) {
 	  << m1 << " "
 	  << stp->get_effective_radius() << " "
 	  << log10(stp->temperature()) << " "
-	  << stp->get_core_mass() << "    "
-	  //      << stp->get_effective_radius()/primary_roche_lobe  << "    "
+	  << stp->get_core_mass() << "     "
+      //<< stp->get_effective_radius()/primary_roche_lobe  << "    "
 
 	  << sts->get_identity() << " "	  
 	  << sts->get_element_type() << " "
 	  << m2 << " "
 	  << sts->get_effective_radius() << " "
 	  << log10(sts->temperature()) << " "
-	  << sts->get_core_mass() 
-////	  //      << sts->get_effective_radius()/secondary_roche_lobe
+	  << sts->get_core_mass() << " "
+      //<< sts->get_effective_radius()/secondary_roche_lobe
 	  << endl;
 
    
@@ -726,7 +726,7 @@ void double_star::contact(star* donor,
  *    }
  */
      if (md_dot>0) {
-        real ma_dot = accretor->add_mass_to_accretor(md_dot, dt);
+        real ma_dot = accretor->add_mass_to_accretor(md_dot, dt, donor->hydrogen_envelope_star());
 
         real M_new = get_total_mass();
         real new_donor_mass = donor->get_total_mass();
@@ -854,7 +854,7 @@ void double_star::perform_mass_transfer(const real dt,
 
 
      if (md_dot>0) {
-        real ma_dot = accretor->add_mass_to_accretor(md_dot, dt);
+        real ma_dot = accretor->add_mass_to_accretor(md_dot, dt, donor->hydrogen_envelope_star());
 
         real M_new = get_total_mass();
         real new_donor_mass = donor->get_total_mass();
@@ -1844,7 +1844,8 @@ void double_star::spiral_in(star* larger,
 	  // has not affected the spiral in. (SPZ:  2 Jun 1999)
 	  menv_l -= smaller->add_mass_to_accretor(
                              larger->get_envelope_mass(),
-                             cnsts.parameters(spiral_in_time));
+                             cnsts.parameters(spiral_in_time),
+                             larger->hydrogen_envelope_star());
 	  smaller->set_effective_radius(smaller->get_radius());
 	  larger = larger->reduce_mass(larger->get_envelope_mass());
 
@@ -2271,7 +2272,7 @@ void double_star::angular_momentum_envelope_ejection(star* larger,
 
 	    semi = a_f; 
 	    smaller->add_mass_to_accretor(larger->get_envelope_mass(),
-		     cnsts.parameters(spiral_in_time));
+		     cnsts.parameters(spiral_in_time), larger->hydrogen_envelope_star());
 	    smaller->set_effective_radius(smaller->get_radius());
 
 	    larger = larger->reduce_mass(larger->get_envelope_mass());
@@ -2362,7 +2363,7 @@ void double_star::dynamic_mass_transfer(star* larger, star* smaller) {
 	    PRC(Eorb1);PRC(Eorb2);PRL(Ebind);
 	    cerr << "(Eorb2 - Eorb1)/Ebind = " << (Eorb2 - Eorb1)/Ebind << endl;
 	    smaller->add_mass_to_accretor(larger->get_envelope_mass(),
-		     cnsts.parameters(spiral_in_time));
+		     cnsts.parameters(spiral_in_time), larger->hydrogen_envelope_star());
 	    smaller->set_effective_radius(smaller->get_radius());
 
 	    larger = larger->reduce_mass(larger->get_envelope_mass());
@@ -2458,7 +2459,16 @@ real double_star::zeta(star * donor,
        			 cnsts.safety(minimum_mass_step));
        //       real md_dot = min(donor->get_envelope_mass(), 
        //			 cnsts.safety(minimum_mass_step));
-       PRC(md_dot);PRC(donor_timescale);PRL(donor->get_relative_mass());
+       PRC(md_dot);PRC(donor_timescale);PRC(donor->get_element_type());PRL(donor->get_relative_mass()); 
+       
+         real m1 = donor->get_total_mass();
+           real m2 = accretor->get_total_mass();
+       real primary_roche_lobe   = roche_radius(semi, m1, m2);
+       PRC(donor->get_effective_radius());PRC(donor->get_radius());PRL(primary_roche_lobe);
+       PRC(m1);PRL(m2);
+       PRL(semi);
+       
+       
        real dt = md_dot * donor_timescale/donor->get_relative_mass();
        real ma_dot = accretor->accretion_limit(md_dot, dt);
 

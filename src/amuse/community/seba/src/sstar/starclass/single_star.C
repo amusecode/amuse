@@ -2,6 +2,7 @@
 // single_star.C
 //
 #include <fstream>
+#include <string>
 #include "single_star.h"
 #include "proto_star.h"
 //#include "main_sequence.h"
@@ -785,12 +786,12 @@ star* single_star::merge_elements(star* str) {
 
             //		What to do here is put in SPH!
       if (str->get_envelope_mass()>0) {
-            add_mass_to_accretor(0.5*str->get_envelope_mass());
+            add_mass_to_accretor(0.5*str->get_envelope_mass(), str->hydrogen_envelope_star());
       }
 
     }
     else {
-        add_mass_to_accretor(str->get_total_mass());
+        add_mass_to_accretor(str->get_total_mass(), str->hydrogen_envelope_star());
     }
 
     PRC(get_total_mass());PRL(m_conserved);
@@ -980,8 +981,9 @@ void single_star::add_mass_to_core(const real mdot) {
 //		general mass transfer utilities.
 // Increase donor mass and possibly relative_mass of donor.
 // Check mass-transfer timescales before use.
-real single_star::add_mass_to_accretor(const real mdot) {
-
+real single_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
+    cerr<<"single_star::add_mass_to_accretor should not be used"<<endl;
+    
   if (mdot<=0) {
     cerr << "single_star::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
     cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
@@ -991,30 +993,38 @@ real single_star::add_mass_to_accretor(const real mdot) {
     return 0;
   }
   else {
-    // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
-    //adjust_accretor_age(mdot);
-    envelope_mass += mdot;
-    accreted_mass += mdot;
-    
-    // only neccessary for AGB & He giant accretor as  
-    // next_update_age is a function of total mass
-    // as the maximal core mass can be the total mass
-    // when total mass < chandrasekhar mass      
-    adjust_next_update_age();  
       
-    //if (relative_mass<get_total_mass()) 
-    //  update_relative_mass(get_total_mass());
-    
-    set_spec_type(Accreting);
-    
+      if(hydrogen){
+        // hydrogen accretion
+        // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
+        //adjust_accretor_age(mdot);
+        envelope_mass += mdot;
+        accreted_mass += mdot;
+        
+        // only neccessary for AGB & He giant accretor as  
+        // next_update_age is a function of total mass
+        // as the maximal core mass can be the total mass
+        // when total mass < chandrasekhar mass      
+        adjust_next_update_age();  
+          
+        //if (relative_mass<get_total_mass()) 
+        //  update_relative_mass(get_total_mass());
+        
+        set_spec_type(Accreting);
+      }
+      else{
+          //for the moment assume helium accretion
+          cerr<<"helium accretion"<<endl;
+          
+      }
   }
 
   
   return mdot;
 }
 
-real single_star::add_mass_to_accretor(real mdot, const real dt) {
-
+real single_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+    cerr<<"single_star::add_mass_to_accretor should not be used"<<endl;
   if (mdot<0) {
     cerr << "single_star::add_mass_to_accretor(mdot=" << mdot 
 	 << ", dt=" << dt << ")"<<endl;
@@ -1022,20 +1032,27 @@ real single_star::add_mass_to_accretor(real mdot, const real dt) {
     return 0;
   }
 
-  mdot = accretion_limit(mdot, dt);
+    
+    if(hydrogen){
+      //hydrogen accretion
+      mdot = accretion_limit(mdot, dt);
 
-  // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
-  // adjust_accretor_age(mdot);
-  envelope_mass += mdot;
-  accreted_mass += mdot;
+      // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
+      // adjust_accretor_age(mdot);
+      envelope_mass += mdot;
+      accreted_mass += mdot;
 
-//  if (relative_mass<get_total_mass()) 
-//    update_relative_mass(get_total_mass());
+    //  if (relative_mass<get_total_mass()) 
+    //    update_relative_mass(get_total_mass());
 
-  adjust_accretor_radius(mdot, dt);
-  
-  set_spec_type(Accreting);
-
+      adjust_accretor_radius(mdot, dt);
+      
+      set_spec_type(Accreting);
+    }
+    else{
+        //for the moment assume helium accretion
+        cerr<<"helium accretion"<<endl;        
+    }
   return mdot;
 }
 
@@ -1090,8 +1107,13 @@ void single_star::detect_spectral_features() {
 // Livio, M., Warner, B., 1984, The Observatory 104, 152.
 real single_star::accrete_from_stellar_wind(const real mdot, const real dt) {
 
-//  PRC(mdot);PRL(dt);
+    cerr<<"single_star::accrete_from_stellar_wind"<<endl;
+    cerr.precision(HIGH_PRECISION);
+    PRC(relative_mass);PRL(get_total_mass());
+    PRC(mdot);PRL(dt);
+    cerr.precision(STD_PRECISION);
 
+    
   real alpha_wind = 0.5;
   real v_wind = get_companion()->wind_velocity();
 
@@ -1203,11 +1225,13 @@ real single_star::rejuvenation_fraction(const real mdot_fr) {
       real rejuvenation = (1-pow(mdot_fr,
 				 cnsts.parameters(rejuvenation_exponent)));
 
-      // no rejuvenation if companion has no hydrogen envelope.
-      if(is_binary_component() &&
-         !get_companion()->hydrogen_envelope_star()) 
-        rejuvenation = 1;
-
+//      // no rejuvenation if companion has no hydrogen envelope.
+//      if(is_binary_component() &&
+//         !get_companion()->hydrogen_envelope_star()) {
+//          cerr<<"rejuvenation_fraction without hydrogen accretion should not happen anymore"<<endl;
+//          cerr<<"maybe for helium stars & giants"<<endl;
+//        //rejuvenation = 1;
+//      }
       return rejuvenation;
 }
 
@@ -1242,22 +1266,26 @@ void single_star::stellar_wind(const real dt) {
     // (ST 17 Sep 2009) 
     // wind_constant in solar masses per year
     update_wind_constant();
-    real wind_mass = wind_constant * dt * 1E6; 
+    real wind_mass = wind_constant * dt * 1E6;  
     
-    // (GN+SPZ Apr 28 1999) wind induced helium star formation can happen
-    // because stellar_wind is last function in evolve_element
-    if (wind_mass>=envelope_mass) {
-        wind_mass = envelope_mass;
-        radius = core_radius;
+    if (wind_mass > 0){    
+        // (GN+SPZ Apr 28 1999) wind induced helium star formation can happen
+        // because stellar_wind is last function in evolve_element
+        if (wind_mass>=envelope_mass) {
+            wind_mass = envelope_mass;
+            radius = core_radius;
+        }
+      
+        if (is_binary_component())
+            get_binary()->adjust_binary_after_wind_loss(this, wind_mass, dt);
+        else {
+            // (GN Oct 11 1999) for single stars: previous used for stellar wind! (?)
+            // refresh_memory();
+            reduce_mass(wind_mass);
+        }
     }
-  
-    if (is_binary_component())
-        get_binary()->adjust_binary_after_wind_loss(this, wind_mass, dt);
-    else {
-        // (GN Oct 11 1999) for single stars: previous used for stellar wind! (?)
-        // refresh_memory();
-        reduce_mass(wind_mass);
-    }
+//    else 
+//        cerr<<"No wind mass loss"<<endl;
 
     return;
 }
@@ -1354,7 +1382,6 @@ real single_star::total_energy() {
 }
 
 real single_star::get_evolve_timestep() {
-
 // (GN+SPZ Apr 28 1999) was a bit too small
 //  return max(next_update_age - relative_age
 //	     -0.5*cnsts.safety(minimum_timestep),
@@ -1364,7 +1391,24 @@ real single_star::get_evolve_timestep() {
 // growth of giants at end phase 0.0001 seems to be OK (?)
 //  return max(next_update_age - relative_age - (0.5*0.001), 0.001);
 
-  return max(next_update_age - relative_age, 0.0001);
+
+// (GN + SilT Nov 23 2009) go to end of phase in a maximum of 2 steps
+// in stead of going to 90% of phase until the timestep is smaller than minimum_timestep
+//  return max(next_update_age - relative_age, 0.0001);
+
+  real timestep = min((next_update_age - last_update_age )/ cnsts.safety(number_of_steps), 
+                      next_update_age - relative_age - 0.5 * cnsts.safety(minimum_timestep));   
+
+    //temper LBV massloss rate
+    real timestep_lbv = timestep;
+    real x_lbv = 1.0E-5*radius*sqrt(luminosity);
+//    if(hydrogen_envelope_star() && luminosity > 6.0E5 && x_lbv > 1.0){
+//        timestep_lbv = 0.1* envelope_mass *pow(x_lbv -1.0, -3.0) / (luminosity/6.0E5 -1.0) /1.0E6;
+//    }
+    
+   timestep = min(timestep, timestep_lbv);             
+   return max(timestep, cnsts.safety(minimum_timestep));
+    
 }
 
 
@@ -2121,6 +2165,34 @@ real single_star::determine_core_mass(const real time,
 }
 
 
+real single_star::determine_age(const real m_core, const real mass,
+                                const real z, const real A, 
+                                const real t_b, const real l_b){
+    real age;  
+    real p = sub_giant_p_parameter(mass, z);
+    real D = sub_giant_D_factor(mass, z);
+    
+    real mx = FGB_x_mass(mass, z);
+    if (m_core <= mx){        
+        real t_inf1 = specific_time_limit(A, t_b,
+                                          D, l_b, p);
+        age = t_inf1 - pow(m_core, 1.-p)/A/D/(p-1.);
+    }
+    else{
+        real q = sub_giant_q_parameter(mass, z);
+        real B = sub_giant_B_factor(mass);
+        real l_x = FGB_x_luminosity(mass, z);
+        real t_x = specific_time_boundary(mass, A, t_b, l_b, D, p, l_x);
+        real t_inf2 = specific_time_limit(A, t_x,
+                                          B, l_x, q);
+        age = t_inf2 - pow(m_core, 1.-q)/A/B/(q-1.);
+    }
+    return age;
+}
+
+
+
+
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Core helium burning (horizontal branch)
@@ -2273,6 +2345,19 @@ real single_star::base_AGB_core_mass(const real mass, const real z) {
   return m_core;
 }
 
+// Eq.66 inverted
+real single_star::base_AGB_relative_mass(const real m_core, const real z) {
+    
+    real b36 = smc.b(36,z);
+    real b37 = smc.b(37,z);
+    real b38 = smc.b(38,z);
+    
+    real m_rel = pow((pow(m_core, 4) - b38) / b36, 1/b37); 
+    
+    return m_rel;
+}
+
+
 //sect.5.3: Eq.66-
 real single_star::helium_ignition_core_mass(const real mass, 
 					    const real z) {
@@ -2377,7 +2462,7 @@ real single_star::TAGB_time(const real mass, const real mass_tot, const real z) 
     real t_bagb = base_AGB_time(mass, z);
     real l_bagb = base_AGB_luminosity(mass, z);
     real mc_bagb = determine_core_mass(t_bagb, mass, z, 
-                                       A_He, t_bagb, l_bagb);
+                                       A_He, t_bagb, l_bagb); //co core mass
     mc_max = max(mc_max, 1.05*mc_bagb);
     
     real mc_du = dredge_up_core_mass(mass, z);
@@ -2412,10 +2497,10 @@ real single_star::TAGB_time(const real mass, const real mass_tot, const real z) 
         // mc_ignite_CO = 0.773*mc_bagb - 0.35 or
         // get_total_mass()
         mc_max = min(mc_max, mass_tot);
-        
+
         real lambda =  min(0.9, 0.3+0.001*pow(mass, 5)); // Eq.73
         mc_max = (mc_max - lambda* mc_du) / (1.0 - lambda);
-        
+
         real AH_He = TPAGB_AH_He_estimator();
         real t_du = dredge_up_time(mass, z);
         real l_du = AGB_luminosity(mc_du, mass, z); 
@@ -2798,8 +2883,9 @@ real single_star::update_core_and_envelope_mass(const real m_core) {
  
   if (m_core > get_total_mass()){
     cerr << "single_star::update_core_and_envelope_mass limits new core mass to total mass." << endl;
+    real m_tot = get_total_mass();
     envelope_mass = 0;
-    core_mass = get_total_mass();
+    core_mass = m_tot;
     successful_update = true;
   }    
   else if (dm_core >= 0.0 - cnsts.safety(tiny)){
@@ -2824,8 +2910,9 @@ real single_star::update_core_and_envelope_mass_TPAGB(const real m_core) {
     
     if (m_core > get_total_mass()){
         cerr << "single_star::update_core_and_envelope_mass limits new core mass to total mass." << endl;
+        real m_tot = get_total_mass();
         envelope_mass = 0;
-        core_mass = get_total_mass();
+        core_mass = m_tot;
     }
     else{
         real dm_core = m_core - core_mass;
@@ -2839,7 +2926,8 @@ real single_star::update_core_and_envelope_mass_TPAGB(const real m_core) {
 real single_star::update_COcore_mass(const real mco_core) {
     
     bool successful_update = false;    
-    if(mco_core>=COcore_mass- cnsts.safety(tiny) && mco_core<=get_total_mass()) {
+    if(mco_core>=COcore_mass- cnsts.safety(tiny) &&
+       mco_core<=get_total_mass() + cnsts.safety(tiny)) {
         COcore_mass = mco_core;
         successful_update = true;
     }
@@ -2864,3 +2952,191 @@ real single_star::update_COcore_mass(const real mco_core) {
     return successful_update;
 }
 
+real single_star::get_relative_mass_from_core_mass(const char * input_filename, const real m_c, const real m_r, const real z){
+    const real z_table[7] = {0.0001, 0.0003, 0.001, 0.004, 0.01, 0.02, 0.03};
+    string z_table_name[7] = {"0.0001", "0.0003", "0.001", "0.004", "0.01", "0.02", "0.03"}; 
+    
+    real m_rel;    
+    if (input_filename == "Mc_HeMS.txt"){
+        m_rel = get_relative_mass_from_table(input_filename, m_c, m_r, z);
+    }
+    
+    if (z < 0.0001 || z > 0.03){
+        cerr<<"single_star::get_relative_mass_from_core_mass metalicity is out of range"<<endl;
+        exit(-1);
+    }
+    
+    char * file_c;
+    string file_s;
+    real dz = z - z_table[0];
+    if (dz == 0){
+        file_s = string(input_filename) + "_z="+z_table_name[0]+".txt";
+        file_c = new char [file_s.size()+1];
+        strcpy(file_c, file_s.c_str());
+        m_rel = get_relative_mass_from_table(file_c, m_c, m_r, z);
+    }
+    else {
+        int i = 1;
+        while (i < 7 && dz > 0){
+            dz = z - z_table[i];
+            if (dz == 0){
+                file_s = string(input_filename)+"_z="+z_table_name[i]+".txt";
+                file_c = new char [file_s.size()+1];
+                strcpy(file_c, file_s.c_str());
+                m_rel = get_relative_mass_from_table(file_c, m_c, m_r, z);
+            }
+            
+            else if (dz < 0){
+                file_s = string(input_filename)+"_z="+z_table_name[i-1]+".txt";
+                file_c = new char [file_s.size()+1];
+                strcpy(file_c, file_s.c_str());
+                real m_rel1 = get_relative_mass_from_table(file_c, m_c, m_r, z_table[i-1]);
+                
+                string file_s2 = string(input_filename)+"_z="+z_table_name[i]+".txt";
+                char * file_c2 =  new char [file_s2.size()+1];
+                strcpy(file_c2, file_s2.c_str());
+                real m_rel2 = get_relative_mass_from_table(file_c2, m_c, m_r, z_table[i]);
+                delete[] file_c2;
+                
+                //interpolate between nearest neigbours in metallicity
+                m_rel = lineair_interpolation(z, z_table[i-1], z_table[i], m_rel1, m_rel2);
+                
+            }
+            i++;
+        }
+    }
+    delete[] file_c;
+    return m_rel;
+}
+
+real single_star::get_relative_mass_from_table(const char * input_filename, const real m_c, const real m_r, const real z){
+    ifstream infile(input_filename, ios::in);
+    if (!infile.is_open() || infile.eof()){
+        cerr << "error: couldn't read file " << input_filename <<endl;
+        exit(-1);
+        
+    }
+    
+    real m_rel, m_core;
+    infile >> m_rel >> m_core;
+    real dm_core = m_c - m_core;
+    real m_rel_old, m_core_old, dm_core_old;
+    
+    
+    if (dm_core < 0 ){
+        cerr<<"single_star::get_relative_mass_from_core_mass core_mass value is not included in table"<<endl;
+        PRC(input_filename);
+        PRC(m_c);PRC(m_core_old);PRL(m_core);
+        exit(-1);
+    }
+    
+    
+    while (dm_core > 0 ){
+        m_rel_old = m_rel;
+        m_core_old = m_core;
+        dm_core_old = m_c - m_core;
+        
+        infile >> m_rel >> m_core;        
+        dm_core = m_c - m_core;
+        
+        if (infile.eof()){
+            cerr<<"single_star::get_relative_mass_from_core_mass core_mass is to large for table"<<endl;
+            PRC(m_c);PRC(m_core_old);PRL(m_core);
+            PRC(m_rel_old);PRL(m_rel);
+            exit(-1);
+        }
+    }
+    
+    //interpolate between nearest neigbours in relative mass
+    m_rel = lineair_interpolation(m_c, m_core_old, m_core, m_rel_old, m_rel);
+
+    return m_rel;
+}
+    
+    
+
+
+//real single_star::get_relative_mass_from_core_mass(char * input_filename, const real m_c, const real m_r, const real z){
+//    ifstream infile(input_filename, ios::in);
+//    if (!infile.is_open() || infile.eof()){
+//        cerr << "error: couldn't read file " << input_filename <<endl;
+//        exit(-1);
+//        
+//    }
+//    
+//    real m_rel=0., m_core=0.;
+//    real m_rel_old=0., m_core_old=0.;
+//
+//    infile >> m_rel_old >> m_core_old;
+//    infile >> m_rel >> m_core;
+//    real dm_core_old = abs(m_c - m_core_old);
+//    real dm_core = abs(m_c - m_core);
+//
+//    real m_HeF = helium_flash_mass(z);
+//
+//    if (input_filename == "Mc_HeI.txt" && m_r > m_HeF){
+//        //this is the only file for which m_core does not increase with m_rel
+//        // m_rel < m_HeF     m_core decreases with increasing m_rel
+//        // m_rel > m_HeF     m_core increases with increasing m_rel
+//        // in other words: lowest possible m_core at m_HeF
+//        // For a certain m_core, m_rel is not unique, there are two possibilities
+//        // I pick the solution on the same side of m_HeF as m_r
+//        
+//        while(m_rel < m_HeF){
+//            infile >> m_rel >> m_core;        
+//            //do nothing
+//        }
+//        m_rel_old = m_rel;
+//        m_core_old = m_core;
+//        dm_core_old = m_c - m_core;
+//        infile >> m_rel >> m_core;        
+//        dm_core = abs(m_c - m_core);    
+//    }    
+//    
+//    
+//    if (dm_core_old < dm_core ){
+//        cerr<<"single_star::get_relative_mass_from_core_mass core_mass value is not included in table"<<endl;
+//        PRC(input_filename);PRC(m_r);
+//        PRC(m_c);PRC(m_core_old);PRL(m_core);
+//        exit(-1);
+//    }
+//    while (dm_core < dm_core_old){
+//        m_rel_old = m_rel;
+//        m_core_old = m_core;
+//        dm_core_old = m_c - m_core;
+//        infile >> m_rel >> m_core;        
+//        dm_core = abs(m_c - m_core);
+//        if (infile.eof()){
+//            cerr<<"single_star::get_relative_mass_from_core_mass core_mass is to large for table"<<endl;
+//            PRC(m_c);PRC(m_core_old);PRL(m_core);
+//            PRC(m_rel_old);PRL(m_rel);
+//            exit(-1);
+//            
+//        }
+//            
+//    }
+//    
+//    //always pick the relative mass to maximum the core_mass
+//    //choose from nearest neighbours. 
+//    if (m_core_old > m_core){
+//        m_rel=m_rel_old;
+//        dm_core = dm_core_old;
+//        cerr<<"single_star::get_relative_mass_from_core_mass m_core_old > m_core, this should not happen I think"<<endl;
+//    }
+//
+//    //check that this is indeed the right value for m_core, that it is not just the end of the region in which
+//    // m_core decreases with increasing m_rel
+//    if (input_filename == "Mc_HeI.txt" && m_r < m_HeF){
+//        if(dm_core > 0.00001){ 
+//            cerr<<"single_star::get_relative_mass_from_core_mass core_mass is to small for table"<<endl;
+//            PRC(m_c);PRC(m_core_old);PRL(m_core);
+//            PRC(m_rel_old);PRL(m_rel);
+//            exit(-1);
+//        }
+//    }    
+//    if (m_rel == 0){
+//        cerr<<"single_star::get_relative_mass_from_core_mass relative_mass equals zero"<<endl;        
+//        exit(-1);
+//    }
+//    return m_rel;
+//}

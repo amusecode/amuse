@@ -179,8 +179,8 @@ class  single_star : public star
 //		Mass transfer routines.
 	void add_mass_to_core(const real);
 
-        real  add_mass_to_accretor(const real);
-        real  add_mass_to_accretor(real, const real);
+        real  add_mass_to_accretor(const real, bool );
+        real  add_mass_to_accretor(real, const real, bool);
 //        star* reduce_mass(const real);
         real  rejuvenation_fraction(const real);
 	void  update_relative_mass(const real);
@@ -226,6 +226,12 @@ class  single_star : public star
       real update_core_and_envelope_mass(const real m_core);
       real update_core_and_envelope_mass_TPAGB(const real m_core);
       real update_COcore_mass(const real mco_core);
+//      real get_relative_mass_from_core_mass(char * input_filename, const real m_c,
+//                                    const real m_r, const real z);
+      real get_relative_mass_from_core_mass(const char * input_filename, const real m_c,
+                                                    const real m_r, const real z);
+        real get_relative_mass_from_table(const char * input_filename, const real m_c, const real m_r, const real z);
+
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -362,6 +368,11 @@ class  single_star : public star
 			       const real A,  
 			       const real t_b,  
 			       const real l_b);
+
+      real determine_age(const real m_core, const real mass,
+                         const real z, const real A, 
+                         const real t_b, const real l_b);
+            
       real FGB_x_luminosity(const real mass, const real z);
       real FGB_x_mass(const real mass, const real z);
       real FGB_core_mass_luminosity_relation(const real lum,
@@ -423,6 +434,7 @@ class  single_star : public star
       real AGB_radius(const real lum, const real mass, const real mass_tot, const real z);
 
       real base_AGB_core_mass(const real mass, const real z); // Eq.66
+      real base_AGB_relative_mass(const real m_core, const real z); // Eq.66 inverted
       real TAGB_time(const real mass, const real mass_tot, const real z);
       real dredge_up_core_mass(const real mass, const real z);
       real TPAGB_AH_He_estimator();

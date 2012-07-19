@@ -51,8 +51,8 @@ class hertzsprung_gap : public single_star
         void adjust_age_after_wind_mass_loss(const real mdot, const bool rejuvenate);
         void adjust_next_update_age();
         void update_wind_constant();
-        real  add_mass_to_accretor(const real);
-        real  add_mass_to_accretor(real, const real);
+        real  add_mass_to_accretor(const real, bool);
+        real  add_mass_to_accretor(real, const real, bool);
 
 //           Mass transfer Stability.
         real zeta_adiabatic();
@@ -67,7 +67,7 @@ class hertzsprung_gap : public single_star
 	 friend sub_giant::sub_giant(hertzsprung_gap &);
 	 friend horizontal_branch::horizontal_branch(hertzsprung_gap &);
 	 friend helium_star::helium_star(hertzsprung_gap &);
-	 friend white_dwarf::white_dwarf(hertzsprung_gap &);
+	 friend white_dwarf::white_dwarf(hertzsprung_gap &, stellar_type);
 
 
 

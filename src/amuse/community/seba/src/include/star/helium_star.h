@@ -54,6 +54,8 @@ class helium_star : public single_star {
 
 	 void instantaneous_element();
 	 void evolve_element(const real);
+    real nucleair_evolution_timescale();
+
 	 void update();
 	 //void stellar_wind(const real);
 	 void update_wind_constant();
@@ -65,8 +67,8 @@ class helium_star : public single_star {
 	 real accretion_limit(const real, const real);
      star* subtrac_mass_from_donor(const real, real&);
 	 star* reduce_mass(const real);
-     real add_mass_to_accretor(const real);
-	 real add_mass_to_accretor(real, const real);
+     real add_mass_to_accretor(const real, bool);
+	 real add_mass_to_accretor(real, const real, bool);
      void adjust_accretor_age(const real, const bool=true);
      void adjust_age_after_wind_mass_loss(const real mdot,
                                           const bool rejuvenate);
@@ -81,6 +83,6 @@ class helium_star : public single_star {
         real final_CO_core_mass(const real initial_mass);
 	
 	friend helium_giant::helium_giant(helium_star &);
-	friend white_dwarf::white_dwarf(helium_star &);
+	friend white_dwarf::white_dwarf(helium_star &, stellar_type);
    };
 #endif 		// _HELIUM_STAR
