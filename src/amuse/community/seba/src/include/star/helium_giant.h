@@ -51,7 +51,7 @@ class helium_giant : public single_star {
         real helium_giant_luminosity_core_mass_relation(
                                                     const real time, const real mass, const real z);
         real helium_giant_age_core_mass_relation(const real m_core, const real mass);
-        real helium_giant_end_time(const real mass);  
+        real helium_giant_end_time(const real mass, const real mass_tot);  
         real small_envelope_mu(const real lum, const real mass_tot, const real m_core);
         void small_envelope_perturbation();
     
@@ -66,12 +66,12 @@ class helium_giant : public single_star {
         void update_wind_constant();
         real temperature();
 
-        void create_remnant(const real mass);
+        void create_remnant(const real mass, const real mass_tot);
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
         real accretion_limit(const real, const real);
-        real add_mass_to_accretor(const real);
-        real add_mass_to_accretor(real, const real);
+//        real add_mass_to_accretor(const real);
+//        real add_mass_to_accretor(real, const real);
 
         void adjust_accretor_age(const real, const bool=true);
         void adjust_next_update_age();

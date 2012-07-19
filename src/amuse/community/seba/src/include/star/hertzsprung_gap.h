@@ -107,11 +107,11 @@ class hertzsprung_gap : public single_star
       //				     const real z);
       void evolve_core_mass(const real time,
 			    const real mass,
-			    const real z);
+			    const real z, const real m_core_old);
       void evolve_core_mass();
       real hertzsprung_gap_core_mass(const real time, 
 				     const real mass,
-				     const real z);
+				     const real z, const real m_core_old);
       real terminal_hertzsprung_gap_core_mass(const real mass, 
 					      const real z);
 

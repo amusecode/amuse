@@ -50,7 +50,7 @@ class super_giant : public single_star {
 
 	void instantaneous_element();
 	void evolve_element(const real);
-	void create_remnant(const real, const real);
+	void create_remnant(const real, const real, const real);
 
 //           Mass transfer stability.
         real zeta_thermal();

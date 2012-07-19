@@ -46,7 +46,7 @@ class helium_star : public single_star {
 
          ~helium_star() {}
 
-         bool star_with_COcore() {return true;}   
+         //bool star_with_COcore() {return true;}   
 
 	 stellar_type get_element_type();
 

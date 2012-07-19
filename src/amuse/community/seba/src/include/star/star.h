@@ -192,7 +192,7 @@ class  star : public starbase
         virtual real  helium_giant_time(const real){return 0;}
         virtual real  base_giant_branch_time(const real){return 0;}
         virtual real  base_giant_time(const real){return 0;}
-        virtual real  helium_time(){return 0;}
+     //   virtual real  helium_time(){return 0;}
         virtual void  post_constructor() {}
 	
 

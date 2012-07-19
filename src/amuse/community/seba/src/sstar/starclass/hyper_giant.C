@@ -271,7 +271,7 @@ void hyper_giant::adjust_accretor_age(const real mdot,
 
         real t_ms_new  = main_sequence_time(m_rel_new, metalicity);
 	real z_new = get_metalicity();
-        real t_nuc_new = nucleair_evolution_time(m_rel_new, z_new);
+        real t_nuc_new = nucleair_evolution_time(m_rel_new, m_tot_new, z_new);
         real dt_wr_new = t_nuc_new - t_ms_new;
 
         real dtime = relative_age - t_ms_old;

@@ -192,7 +192,7 @@ real main_sequence::bolometric_correction()
 // main_sequence stars do not have a compact core.
 // for convenience the core is set to a small value.
 real main_sequence::main_sequence_core_mass()
-{ cerr<<"ms::ms_core_mass is used?"<<endl;
+{ cerr<<"ms::ms_core_mass currently not used"<<endl;
     real m_core = 0.01;
     m_core = max(core_mass, m_core);
     if (m_core > get_total_mass()) m_core = get_total_mass();
@@ -201,7 +201,7 @@ real main_sequence::main_sequence_core_mass()
 }
 
 real main_sequence::main_sequence_core_radius()
-{   cerr<<"Is main_sequence_core_radius still valid with HPT tracks? no ms core!"<<endl;
+{   cerr<<"ms::ms_core_radius currently not used"<<endl;
     return min(0.01, radius);
 }
 

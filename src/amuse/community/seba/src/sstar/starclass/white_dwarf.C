@@ -462,7 +462,7 @@ void white_dwarf::adjust_accretor_age(const real mdot,
 
         real t_nuc_old = nucleair_evolution_time();
 	real z_new = get_metalicity();
-        real t_nuc_new = nucleair_evolution_time(m_rel_new, z_new);
+        real t_nuc_new = nucleair_evolution_time(m_rel_new, m_tot_new, z_new);
 
         real dtime = relative_age - t_nuc_old;
 

@@ -155,7 +155,6 @@ local bool  evolve_binary(dyn * bi,
 	  (ds->get_bin_type() == Merged || 
 	   ds->get_bin_type() == Disrupted))
 	return false;
-
       if (stop_at_remnant_formation &&
 	 (ds->get_primary()->remnant() || ds->get_secondary()->remnant()))
 	return false;
@@ -181,7 +180,9 @@ int main(int argc, char ** argv) {
     bool U_flag = false;
     bool G_flag = false;
 
-    bool stop_at_merger_or_disruption = false;
+    bool stop_at_merger_or_disruption = true;
+    if (stop_at_merger_or_disruption)
+        cerr<<"currently bool stop_at_merger_or_disruption = true "<<endl;
     bool stop_at_remnant_formation = false;
     bool random_initialization = false;
     stellar_type type = Main_Sequence;
@@ -416,8 +417,9 @@ int main(int argc, char ** argv) {
    
       evolve_binary(the_binary, start_time, end_time, 
 		    stop_at_merger_or_disruption, stop_at_remnant_formation);
+cerr<<"na evolve_binary"<<endl;
 
-      delete the_binary;
+      //delete the_binary;
       delete root;
 
 

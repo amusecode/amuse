@@ -93,8 +93,13 @@ star* super_giant::reduce_mass(const real mdot) {
           }     
       }
   }
-
-  envelope_mass -= mdot;
+  else {
+      envelope_mass -= mdot;
+      // next_update_age is a function of total mass
+      // as the maximal core mass can be the total mass
+      // when total mass < chandrasekhar mass
+      adjust_next_update_age();        
+  }
   return this;
 }
 
@@ -164,11 +169,17 @@ star* super_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
             }     
         }
     }
+    else{ 
+        envelope_mass -= mdot;
+        // next_update_age is a function of total mass
+        // as the maximal core mass can be the total mass
+        // when total mass < chandrasekhar mass
+        adjust_next_update_age();        
     
-      // (GN+SPZ Apr 29 1999)
-      adjust_donor_radius(mdot);
-
-      envelope_mass -= mdot;
+        // (GN+SPZ Apr 29 1999)
+        adjust_donor_radius(mdot);
+    }
+    
       return this;
 }
 
@@ -188,11 +199,11 @@ void super_giant::adjust_accretor_age(const real mdot,
       real m_rel_new = max(m_tot_new, relative_mass);
 
       real t_bagb_old = base_AGB_time(relative_mass, metalicity);  
-      real dt_tagb_old = TAGB_time(relative_mass, metalicity)-t_bagb_old;
+      real dt_tagb_old = TAGB_time(relative_mass, get_total_mass(), metalicity)-t_bagb_old;
 
       real z_new = get_metalicity();
       real t_bagb_new = base_AGB_time(m_rel_new, z_new); 
-      real t_tagb_new = TAGB_time(m_rel_new, z_new);
+      real t_tagb_new = TAGB_time(m_rel_new, m_tot_new, z_new);
       real dt_tagb_new = t_tagb_new - t_bagb_new; 
   
       real dtime = relative_age - t_bagb_old;
@@ -218,7 +229,7 @@ void super_giant::adjust_accretor_age(const real mdot,
 
 void super_giant::adjust_next_update_age() {
     
-  real t_tagb = TAGB_time(relative_mass, metalicity);
+  real t_tagb = TAGB_time(relative_mass, get_total_mass(), metalicity);
 
   if(relative_age>t_tagb) {
     cerr << "WARNING: relative_age > t_tagb in super_giant"<<endl;
@@ -383,7 +394,7 @@ void super_giant::evolve_element(const real end_time) {
             small_envelope_perturbation();   
         }
         else {
-            create_remnant(relative_mass, metalicity);
+            create_remnant(relative_mass, get_total_mass(), metalicity);
             return;
         }
 
@@ -392,7 +403,7 @@ void super_giant::evolve_element(const real end_time) {
 }
 
 
-void super_giant::create_remnant(const real mass, const real z) {
+void super_giant::create_remnant(const real mass, const real mass_tot, const real z) {
 
     if (is_binary_component()) 
         get_binary()->dump("binev.data", false);
@@ -402,7 +413,7 @@ void super_giant::create_remnant(const real mass, const real z) {
     stellar_type type;
     real mc_bagb = base_AGB_core_mass(mass, z);
     real mc_SN = maximum_AGB_core_mass(mass, z);
-    real mc_max = min(get_total_mass(), mc_SN);
+    real mc_max = min(mass_tot, mc_SN);
 
     // if mc_max equals get_total_mass()
     // core mass reaches outside of star, no envelope anymore
@@ -472,7 +483,11 @@ void super_giant::evolve_core_mass(const real time,
 				      A_He, t_bagb, l_bagb);
   
         if(mco >= COcore_mass && mco <= core_mass) {
-            McL_core_mass = COcore_mass = mco;
+            McL_core_mass = mco;
+            if(!update_COcore_mass(mco)) {
+                cerr << "Update COcore mass failed in super_giant()"<<endl;
+            }
+            
         }
         else {
             cerr << "WARNING: in void super_giant::evolve_core_mass(...)"<<endl;
@@ -485,7 +500,6 @@ void super_giant::evolve_core_mass(const real time,
         // TPAGB
         // Take the growth of the core mass into account for the 
         // third dredge-up
-        cerr<<"Discontinuity in Mc,He"<<endl; 
         real L_du = dredge_up_luminosity(mass, z);
         real L_x = FGB_x_luminosity(mass, z);
         real AH_He = TPAGB_AH_He_estimator();
@@ -518,30 +532,25 @@ void super_giant::evolve_core_mass(const real time,
         mco = mc_du + (1-lambda)*(m_core - mc_du);
         
         
-        if(mco >= COcore_mass) {
-            COcore_mass = mco;
-            McL_core_mass = m_core;
-            real mc_bagb = base_AGB_core_mass(mass, z);
-            if (mc_bagb <= 0.8){
-                if(!update_core_and_envelope_mass(COcore_mass)) {
-                    cerr << "Update core mass failed in super_giant()"<<endl;
-                }
+        if(!update_COcore_mass(mco)) {
+            cerr << "Update COcore mass failed in helium_giant()"<<endl;
+        }
+        
+        McL_core_mass = m_core;
+        real mc_bagb = base_AGB_core_mass(mass, z);
+        if (mc_bagb <= 0.8){
+            if(!update_core_and_envelope_mass(COcore_mass)) {
+                cerr << "Update core mass failed in super_giant()"<<endl;
             }
-            else if (mc_bagb < 2.25){
-                if(!update_core_and_envelope_mass_TPAGB(COcore_mass)) {
-                    cerr << "Update core mass failed in super_giant()"<<endl;
-                }
-            }
-            else {
-                cerr<<"WARNING: in void super_giant::evolve_core_mass"<<endl;
-                cerr<<"mc_bagb >2.25 no TPAGB phase"<<endl;
+        }
+        else if (mc_bagb < 2.25){
+            if(!update_core_and_envelope_mass_TPAGB(COcore_mass)) {
+                cerr << "Update core mass failed in super_giant()"<<endl;
             }
         }
         else {
-            cerr << "WARNING: void super_giant::evolve_core_mass(...)"<<endl;
-            cerr << "New COcore_mass < current CO core mass"<<endl;
-            PRC(mco);PRC(COcore_mass);PRL(core_mass);
-            dump(cerr, false);
+            cerr<<"WARNING: in void super_giant::evolve_core_mass"<<endl;
+            cerr<<"mc_bagb >2.25 no TPAGB phase"<<endl;
         }
     }
 }
@@ -552,7 +561,7 @@ real super_giant::helium_core_radius(const real time, const real mass, const rea
     real t_du = dredge_up_time(mass, z);    
     if(time < t_du){
         //EAGB
-        real t_tagb = TAGB_time(mass, z);
+        real t_tagb = TAGB_time(mass, mass_tot, z);
         real t_bagb = base_AGB_time(mass, z);
         real tau = 3.*(time-t_bagb) / (t_tagb-t_bagb);    
         l_c = helium_giant_luminosity_from_core_mass(COcore_mass, core_mass, z);if (tau < 1.){
@@ -578,7 +587,7 @@ real super_giant::small_envelope_core_radius(const real time, const real mass, c
     real t_du = dredge_up_time(mass, z);    
     if(time < t_du){
         //EAGB
-        real t_tagb = TAGB_time(mass, z);
+        real t_tagb = TAGB_time(mass, mass_tot, z);
         real t_bagb = base_AGB_time(mass, z);
         real tau = 3.*(time-t_bagb) / (t_tagb-t_bagb);    
         l_c = helium_giant_luminosity_from_core_mass(COcore_mass, core_mass, z);
@@ -604,7 +613,7 @@ real super_giant::small_envelope_core_luminosity(const real time, const real mas
     real t_du = dredge_up_time(mass, z);    
     if(time < t_du){
         //EAGB
-        real t_tagb = TAGB_time(mass, z);
+        real t_tagb = TAGB_time(mass, mass_tot, z);
         real t_bagb = base_AGB_time(mass, z);
         real tau = 3.*(time-t_bagb) / (t_tagb-t_bagb);    
         l_c = helium_giant_luminosity_from_core_mass(COcore_mass, core_mass, z);

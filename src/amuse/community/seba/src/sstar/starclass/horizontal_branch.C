@@ -26,7 +26,6 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
     last_update_age = next_update_age;
 
     adjust_next_update_age();
-
     instantaneous_element();
     evolve_core_mass();
     small_envelope_perturbation();   
@@ -46,7 +45,6 @@ horizontal_branch::horizontal_branch(hertzsprung_gap & h) : single_star(h) {
   last_update_age = next_update_age;
 
     adjust_next_update_age();
-
     instantaneous_element();
     evolve_core_mass();
     small_envelope_perturbation();   
@@ -64,8 +62,10 @@ star* horizontal_branch::reduce_mass(const real mdot) {
          return dynamic_cast(star*, new helium_star(*this));
       }
 
-      envelope_mass -= mdot;
-      return this;
+      else 
+          envelope_mass -= mdot;
+      
+    return this;
    }
 
 star* horizontal_branch::subtrac_mass_from_donor(const real dt,
@@ -80,8 +80,8 @@ star* horizontal_branch::subtrac_mass_from_donor(const real dt,
          star_transformation_story(Helium_Star);
          return dynamic_cast(star*, new helium_star(*this));
       }
-
-      envelope_mass -= mdot;
+      else
+          envelope_mass -= mdot;
       return this;
    }
 

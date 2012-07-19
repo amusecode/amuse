@@ -153,12 +153,8 @@ void helium_star::adjust_initial_star() {
 }
 #endif
 
-// Use only in constructors.
 void helium_star::adjust_next_update_age() {
-
-  //next_update_age = cnsts.parameters(helium_star_lifetime_fraction)
-  //                * helium_time();
-  
+    
     next_update_age = helium_main_sequence_time_for_solar_metalicity(relative_mass);
 }
 
@@ -280,31 +276,6 @@ void helium_star::create_remnant() {
 */
      }
 #endif
-
-/*
-real helium_star::helium_time() {
-
-//              Helium Star lifetime from
-     real t_ms = main_sequence_time();
-     real t_he;
-     real m_tot = get_total_mass();
-
-     if (exp_HE_lifetime) {
-//              Iben I., 1967 ??; en Iben and Tutukov, 1985, ApJSS, 58, 661.
-        t_he =  0.56*t_ms/pow(relative_mass, 0.52);
-     }
-     else {
-//              Pols O., 1993, proefschrift, P13, Eq. 2.15
-     if (m_tot<=0.7) t_he = 10.76*pow(m_tot, -3.75);
-     else if(m_tot<=1.6) t_he = 17.1*pow(m_tot, -2.45);
-     else if(m_tot<=4.8) t_he = 11.48*pow(m_tot, -1.6);
-     else                    t_he = 2.37*pow(m_tot, -0.6);
-     }
-
-     if(t_he>t_ms) t_he=t_ms;
-     return t_he;
-}
-*/
 
 star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 
@@ -629,9 +600,9 @@ void helium_star::update_wind_constant() {
 }
 
 stellar_type helium_star::get_element_type() {
-  if (envelope_mass <= 0) 
-    return Carbon_Star;
-  else
+//  if (envelope_mass <= 0) 
+//    return Carbon_Star;
+//  else
     return Helium_Star;
 }
 

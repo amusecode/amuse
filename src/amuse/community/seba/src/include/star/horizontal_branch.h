@@ -36,7 +36,7 @@ class horizontal_branch : public single_star {
 	 
          stellar_type get_element_type() {return Horizontal_Branch;}
 	 bool giant_star()             {return true;}
-         bool star_with_COcore() {return true;}   
+         //bool star_with_COcore() {return true;}   
 
 	 void instantaneous_element();
          void evolve_element(const real);

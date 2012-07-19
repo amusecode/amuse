@@ -143,19 +143,9 @@ class  single_star : public star
         real  nucleair_evolution_timescale();
         real  kelvin_helmholds_timescale();
         real  dynamic_timescale();
-      //        real  main_sequence_time();
-      //        real  main_sequence_time(const real);
-      //        real  hertzsprung_gap_time(const real);
-      //        real  hertzsprung_gap_time(const real, const real);
-      //  real  helium_giant_time(const real, const real);
-      //  real  helium_giant_time(const real, const real, const real);
         real  nucleair_evolution_time();
-        real  nucleair_evolution_time(const real, const real);
-      //        real  base_giant_branch_time(const real);
-      //        real  base_giant_branch_time(const real, const real);
-        real  helium_time();
+        real  nucleair_evolution_time(const real, const real, const real);
         real  get_evolve_timestep();
-
         real mass_transfer_timescale(mass_transfer_type &type);
 
 //		Luminosities
@@ -167,9 +157,7 @@ class  single_star : public star
         bool  star_with_COcore()       {return false;}   
      
         // real helium_core_radius();
-        // void evolve_core_mass(const real) {}
-        real final_core_mass();
-
+ 
         void refresh_memory();
         void recall_memory();
 
@@ -237,7 +225,8 @@ class  single_star : public star
 
       real update_core_and_envelope_mass(const real m_core);
       real update_core_and_envelope_mass_TPAGB(const real m_core);
-      // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      real update_COcore_mass(const real mco_core);
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // The new metalicity dependencies come here:
@@ -437,7 +426,7 @@ class  single_star : public star
       real AGB_radius(const real lum, const real mass, const real mass_tot, const real z);
 
       real base_AGB_core_mass(const real mass, const real z); // Eq.66
-      real TAGB_time(const real mass, const real z);
+      real TAGB_time(const real mass, const real mass_tot, const real z);
       real dredge_up_core_mass(const real mass, const real z);
       real TPAGB_AH_He_estimator();
       real maximum_AGB_core_mass(const real mass,

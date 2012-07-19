@@ -65,8 +65,8 @@ star* sub_giant::reduce_mass(const real mdot) {
             
         }
     }
-
-    envelope_mass -= mdot;
+    else
+        envelope_mass -= mdot;
     return this;
 }
 
@@ -104,10 +104,11 @@ star* sub_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
           }
       }
 
-      // (GN+SPZ Apr 29 1999)
-      adjust_donor_radius(mdot);
+      else{// (GN+SPZ Apr 29 1999)
+          adjust_donor_radius(mdot);
 
-      envelope_mass -= mdot;
+          envelope_mass -= mdot;
+      }
       return this;
    }
 

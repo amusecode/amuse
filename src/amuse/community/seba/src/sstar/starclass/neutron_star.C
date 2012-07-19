@@ -124,6 +124,8 @@ neutron_star::neutron_star(helium_giant & h) : single_star(h) {
 
       delete &h;
 
+
+
       magnetic_field  = cnsts.parameters(pulsar_magnetic_field);
       // log Gauss
       rotation_period = cnsts.parameters(pulsar_pulse_period);
@@ -144,7 +146,6 @@ neutron_star::neutron_star(helium_giant & h) : single_star(h) {
 
       refresh_memory();
       instantaneous_element();
-
       update();
 
       post_constructor();
@@ -227,22 +228,20 @@ void neutron_star::evolve_element(const real end_time) {
 
       if (core_mass>cnsts.parameters(maximum_neutron_star_mass)) {
 
-          if (is_binary_component()){ 
-              get_binary()->dump("binev.data", false);
-          }
-          else{
-              dump("binev.data", false);
-          }
-
-          star_transformation_story(Black_Hole);
-          new black_hole(*this);
-          return;
+	if (is_binary_component()) 
+	  get_binary()->dump("binev.data", false);
+	else
+	  dump("binev.data", false);
+	
+         star_transformation_story(Black_Hole);
+         new black_hole(*this);
+         return;
       }
 
       next_update_age = relative_age + cnsts.safety(maximum_timestep);
 
       update();
-}
+   }
 
 void neutron_star::update() {
 

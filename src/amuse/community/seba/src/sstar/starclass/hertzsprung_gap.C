@@ -664,14 +664,21 @@ real hertzsprung_gap::hertzsprung_gap_radius() {
 
 void hertzsprung_gap::evolve_core_mass(const real time,
 				       const real mass,
-				       const real z) {
+				       const real z, const real m_core_old) {
 
-  real mc_Hg = hertzsprung_gap_core_mass(time, mass, z);
+  real mc_Hg = hertzsprung_gap_core_mass(time, mass, z, m_core_old);
 
     if(!update_core_and_envelope_mass(mc_Hg)) {
     cerr << "Update core mass failed in hertzsprung_gap()"<<endl;
   }
 }
+
+
+void hertzsprung_gap::evolve_core_mass() {
+    
+    evolve_core_mass(relative_age, relative_mass, metalicity, core_mass);
+}
+
 
 // Eq.4 (base_giant_branch_time(mass, z);
 // Supersedes ::hertzsprung_gap_time(mass, t_ms) in single star
@@ -687,10 +694,6 @@ real hertzsprung_gap::hertzsprung_gap_time() {
 }
 
 
-void hertzsprung_gap::evolve_core_mass() {
-
-  evolve_core_mass(relative_age, relative_mass, metalicity);
-}
 
 //Eq.28
 real hertzsprung_gap::terminal_hertzsprung_gap_core_mass(const real mass, 
@@ -718,7 +721,7 @@ real hertzsprung_gap::terminal_hertzsprung_gap_core_mass(const real mass,
 //Eq.30
 real hertzsprung_gap::hertzsprung_gap_core_mass(const real time, 
 						const real mass,
-						const real z) {
+						const real z, const real m_core_old) {
 
   real t_ms = main_sequence_time();
   real t_bgb = base_giant_branch_time(mass, z);
@@ -729,6 +732,9 @@ real hertzsprung_gap::hertzsprung_gap_core_mass(const real time,
   
   real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
   real m_core = (tau + rho*(1-tau)) *  mc_ehg;
+
+  // according to HPT this is important in case of mass loss  
+  m_core = max(m_core, m_core_old);    
   
   return m_core;
 }

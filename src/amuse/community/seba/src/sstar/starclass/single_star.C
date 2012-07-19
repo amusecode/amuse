@@ -256,51 +256,22 @@ real single_star::helium_core_radius() {
 #endif
 
 
-real single_star::nucleair_evolution_time(const real mass,
+real single_star::nucleair_evolution_time(const real mass, const real mass_tot,
 					  const real z) {
 
     //  real t_bagb = base_AGB_time(mass, z);
     //  real t_tagb = t_bagb + t_du;
 
-    real t_tagb = TAGB_time(mass, z);
+    real t_tagb = TAGB_time(mass, mass_tot, z);
     return t_tagb;
 }
 
 
 real single_star::nucleair_evolution_time() {
 
-    real t_nuc = nucleair_evolution_time(relative_mass,
+    real t_nuc = nucleair_evolution_time(relative_mass, get_total_mass(),
                        metalicity);
     return t_nuc;
-}
-
-     
-// Helium core lifetime.
-// Tabulation method is better since it depends on the mass
-// of the core only.
-real single_star::helium_time() {
-
-  real m = get_total_mass();
-
-  // Optional but rather old
-  // Iben and Tutukov, 1985, ApJSS, 58, 661.
-  // t_he =  0.56*t_ms/pow(relative_mass, 0.52);
-  
-  // Helium Star lifetime from 
-  // Pols O.R., 1993,
-  // PhD Thesis, University of Amsterdam, P13, Eq. 2.15
-
-  real t_he = 0;
-  if (m<=0.7) 
-    t_he = 10.76*pow(m, -3.75); 
-  else if(m<=1.6) 
-    t_he = 17.1*pow(m, -2.45); 
-  else if(m<=4.8) 
-    t_he = 11.48*pow(m, -1.6); 
-  else    
-    t_he = 2.37*pow(m, -0.6);
-
-  return t_he;
 }
 
 real single_star::temperature() {
@@ -1027,6 +998,12 @@ real single_star::add_mass_to_accretor(const real mdot) {
     envelope_mass += mdot;
     accreted_mass += mdot;
     
+    // only neccessary for AGB & He giant accretor as  
+    // next_update_age is a function of total mass
+    // as the maximal core mass can be the total mass
+    // when total mass < chandrasekhar mass      
+    adjust_next_update_age();  
+      
     //if (relative_mass<get_total_mass()) 
     //  update_relative_mass(get_total_mass());
     
@@ -1390,21 +1367,6 @@ real single_star::get_evolve_timestep() {
 //  return max(next_update_age - relative_age - (0.5*0.001), 0.001);
 
   return max(next_update_age - relative_age, 0.0001);
-}
-
-// Groenewegen & de Jong 1993, A&A 267,410 
-real single_star::final_core_mass() {
-
-  if (maximum_luminosity() < 15725) {                     // Mc < 0.73
-    return sqrt(maximum_luminosity()/47488. + 0.18) + 0.015;
-  }
-  else {
-    // (SPZ+GN: 26 Jul 2000) was: pow(relative_mass,0.19), but makes
-    //                       white dwarfs too massive.
-    //                       see Nelemans, Y.PZ.V. 2000 A&A (submitted)
-    return  0.46 + maximum_luminosity()/(46818*pow(relative_mass,0.25));
-  }
-
 }
 
 
@@ -2423,7 +2385,7 @@ real single_star::base_AGB_time(const real mass, const real z) {
 }
 
 
-real single_star::TAGB_time(const real mass, const real z) {
+real single_star::TAGB_time(const real mass, const real mass_tot, const real z) {
     real t_tagb;
     real mc_max = maximum_AGB_core_mass(mass,z);
     
@@ -2466,7 +2428,7 @@ real single_star::TAGB_time(const real mass, const real z) {
         // m_Ch = cnsts.parameters(Chandrasekar_mass) or
         // mc_ignite_CO = 0.773*mc_bagb - 0.35 or
         // get_total_mass()
-        mc_max = min(mc_max, get_total_mass());
+        mc_max = min(mc_max, mass_tot);
         
         real lambda =  min(0.9, 0.3+0.001*pow(mass, 5)); // Eq.73
         mc_max = (mc_max - lambda* mc_du) / (1.0 - lambda);
@@ -2880,3 +2842,30 @@ real single_star::update_core_and_envelope_mass_TPAGB(const real m_core) {
     
     return successful_update;
 }
+
+real single_star::update_COcore_mass(const real mco_core) {
+    
+    bool successful_update = false;    
+    if(mco_core>=COcore_mass && mco_core<=get_total_mass()) {
+        COcore_mass = mco_core;
+        successful_update = true;
+    }
+    else {
+        cerr << "WARNING: void update_COcore(mco_core)"<< endl;
+        if(mco_core < COcore_mass) {
+            cerr << "    old COcore mass exceeds new COcore mass." << endl;
+            PRC(mco_core);
+            dump(cerr, false);
+            exit(-1);
+        }
+        else {
+            cerr << "    new COcore mass exceeds total mass." << endl;
+            PRC(mco_core);
+            dump(cerr, false);
+            exit(-1);
+        }
+    }
+    
+    return successful_update;
+}
+
