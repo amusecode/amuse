@@ -449,7 +449,8 @@ void helium_star::adjust_accretor_age(const real mdot,
 // this requires more research (SPZ+GN: 3 Oct 1998)
 real helium_star::zeta_adiabatic() {
 
-  real z = 15;
+  //real z = 15;
+  real z = 4;
   
   return z;
 

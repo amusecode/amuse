@@ -562,12 +562,7 @@ real helium_giant::zeta_adiabatic() {
      	real C = 32.0344;
      	real D = -75.6863;
      	real E = 57.8109;
-
-     	if (get_total_mass()<=0.4)
-        	z = -cnsts.mathematics(one_third);
-     	else
-        	z = A + x*(B + x*(C + x*(D + x*E)));
-
+ 	z = A + x*(B + x*(C + x*(D + x*E)));
      	return z;
       }
 }
