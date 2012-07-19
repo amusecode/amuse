@@ -51,6 +51,21 @@ void brown_dwarf::instantaneous_element() {
      update();
 }
 
+real brown_dwarf::get_evolve_timestep() {
+    // (GN+SPZ Apr 28 1999) was a bit too small
+    //  return max(next_update_age - relative_age
+    //	     -0.5*cnsts.safety(minimum_timestep),
+    //	     cnsts.safety(minimum_timestep));
+    
+    // (GN+SPZ May  5 1999) type change time must be small because of rapid
+    // growth of giants at end phase 0.0001 seems to be OK (?)
+    // return max(next_update_age - relative_age - (0.5*0.001), 0.001);
+
+    return max(next_update_age - relative_age, 0.0001);
+}
+
+
+
 void brown_dwarf::evolve_element(const real end_time) {
 
         real dt = end_time - current_time;

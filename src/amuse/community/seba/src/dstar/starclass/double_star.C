@@ -337,8 +337,8 @@ void double_star::dump(ostream & s, bool brief) {
 	  << m1 << " "
 	  << stp->get_effective_radius() << " "
 	  << log10(stp->temperature()) << " "
-	  << stp->get_core_mass() << "     "
-      //<< stp->get_effective_radius()/primary_roche_lobe  << "    "
+	  << stp->get_core_mass() << " "
+      << stp->get_effective_radius()/primary_roche_lobe  << "    "
 //      << primary_roche_lobe << "  "
 //      << stp->get_radius()<< "      "
 
@@ -348,7 +348,7 @@ void double_star::dump(ostream & s, bool brief) {
 	  << sts->get_effective_radius() << " "
 	  << log10(sts->temperature()) << " "
 	  << sts->get_core_mass() << " "
-      //<< sts->get_effective_radius()/secondary_roche_lobe
+      << sts->get_effective_radius()/secondary_roche_lobe
 //      << secondary_roche_lobe << "  "
 //      << sts->get_radius()
 	  << endl;

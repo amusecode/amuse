@@ -43,6 +43,7 @@ class brown_dwarf : public single_star {
         void instantaneous_element();
         void evolve_element(const real);
         void update();
+    real get_evolve_timestep();
 
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);

@@ -520,7 +520,6 @@ star* super_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
         else {
             real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
             if(mc_bagb >= 1.6) {
-                
                 star_transformation_story(Oxygen_Dwarf);
                 return dynamic_cast(star*, new white_dwarf(*this, Oxygen_Dwarf));
             }
@@ -592,7 +591,7 @@ void super_giant::adjust_next_update_age() {
     
   real t_tagb = TAGB_time(relative_mass, get_total_mass(), metalicity);
 
-  if(relative_age < t_tagb - cnsts.safety(tiny) || relative_age > t_tagb + cnsts.safety(tiny)) {
+  if(relative_age > t_tagb) {
     cerr << "WARNING: relative_age != t_tagb in super_giant"<<endl;
     relative_age = t_tagb;
   }
