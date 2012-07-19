@@ -176,7 +176,9 @@ real super_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
 	if(relative_age < t_du){
 	  //this should not be possible
 	  cerr<<"TPAGB helium accretion add_mass_to_accretor mc_co < mc_du ?"<<endl;
-	  exit(-1);
+	  //exit(-1);
+	  //very dirty fix for mergers
+	  relative_age = t_du;
 	}
 //                // for now nothing, the next time evolve_element is entered, star makes the transition to the next phase  
 //            if(relative_age > next_update_age){
