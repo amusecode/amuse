@@ -161,6 +161,7 @@ local bool  evolve_binary(dyn * bi,
       //dt = ds->get_evolve_timestep() + cnsts.safety(minimum_timestep);
       dt =
       Starlab::max(ds->get_evolve_timestep(),cnsts.safety(minimum_timestep));
+
       time = Starlab::min(time+dt, end_time);
 
       ds->evolve_element(time);
@@ -190,14 +191,12 @@ int main(int argc, char ** argv) {
     bool R_flag = false;
     bool F_flag = false;
     bool I_flag = false;
-    bool O_flag = false;
+    bool O_flag = false;//doesn't work fully as "SeBa.data" is written in the code multiple times
     bool P_flag = false;
     bool U_flag = false;
     bool G_flag = false;
 
     bool stop_at_merger_or_disruption = false;
-    if (stop_at_merger_or_disruption)
-        cerr<<"currently bool stop_at_merger_or_disruption = true "<<endl;
     bool stop_at_remnant_formation = false;
     bool random_initialization = false;
     stellar_type type = Main_Sequence;
@@ -258,7 +257,7 @@ int main(int argc, char ** argv) {
 
     extern char *poptarg;
     int c;
-    const char *param_string = "n:N:RDSM:m:x:F:f:A:a:y:G:g:E:e:v:U:u:Q:q:T:t:I:w:P:p:n:s:z:O:";
+    const char *param_string = "n:N:RDSM:m:x:F:f:A:a:y:G:g:E:e:v:U:u:Q:q:T:t:I:O:w:P:p:n:s:z:";
 
     while ((c = pgetopt(argc, argv, param_string)) != -1)
 	switch(c) {
@@ -464,7 +463,6 @@ int main(int argc, char ** argv) {
       //      star *st     = dynamic_cast(star*, b->get_starbase());
       bool reached_end = evolve_binary(the_binary, start_time, end_time, 
 		    stop_at_merger_or_disruption, stop_at_remnant_formation, output_filename);
-      cerr<<"na evolve_binary"<<endl;
 
       //cerr << ds << endl;
 

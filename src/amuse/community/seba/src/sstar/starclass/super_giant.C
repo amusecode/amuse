@@ -62,20 +62,18 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
         }
         else{
             //for the moment assume helium accretion will not change a star from being a EAGB or TPAGB
-            real t_du = dredge_up_time(relative_mass, metalicity);    
-            real t_bagb = base_AGB_time(relative_mass, metalicity);
-
-            if (relative_age < t_du){
+            real t_du_old = dredge_up_time(relative_mass, metalicity);    
+            if (relative_age < t_du_old){
                 //EAGB
                 core_mass += mdot;
                 
                 //part to adjust relative_mass
                 real b36 = smc.b(36, metalicity);
                 real b37 = smc.b(37, metalicity);
-                real b38 = smc.b(38, metalicity);     
+                real b38 = smc.b(38, metalicity);   
                 real new_relative_mass =  pow((pow(core_mass, 4.) - b38) / b36, 1./b37);
                 update_relative_mass(new_relative_mass);
-
+                
                 // only neccessary for AGB & He giant accretor as  
                 // next_update_age is a function of total mass
                 // as the maximal core mass can be the total mass
@@ -83,12 +81,12 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 adjust_next_update_age();  
                 
                 //part to adjust age using the co_core_mass
-		// (GN Oct 26 2010) also update t_bagb to new relative_mass!
                 real A_He = AGB_A_He_estimator();
-                real l_bagb = base_AGB_luminosity(relative_mass, metalicity); 
-		t_bagb = base_AGB_time(relative_mass, metalicity);
+                real l_bagb = base_AGB_luminosity(relative_mass, metalicity);    
+        	real t_bagb = base_AGB_time(relative_mass, metalicity);
                 relative_age = determine_age(COcore_mass, relative_mass, metalicity, A_He, t_bagb, l_bagb);
                 last_update_age = t_bagb;
+                real t_du = dredge_up_time(relative_mass, metalicity);    
 
                 if(relative_age < last_update_age){
                     relative_age = last_update_age;
@@ -111,7 +109,6 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
             }
             else{
                 //TPAGB
-
                 core_mass += mdot;
                 COcore_mass += mdot;
                 update_relative_mass(relative_mass + mdot);
@@ -134,6 +131,9 @@ real super_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
                 real L_du = dredge_up_luminosity(relative_mass, metalicity);
                 real L_x = FGB_x_luminosity(relative_mass, metalicity);
                 real AH_He = TPAGB_AH_He_estimator();
+         	real t_bagb = base_AGB_time(relative_mass, metalicity);
+                real t_du = dredge_up_time(relative_mass, metalicity);    
+
  
                 if (L_du <= L_x){
                     relative_age = determine_age(McL_core_mass, relative_mass, metalicity, AH_He, t_du, L_du);
@@ -200,11 +200,9 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         //for the moment assume helium accretion, will not change a star from being a EAGB or TPAGB
         // for the moment no adjust_accretor_radius
         mdot = accretion_limit_eddington(mdot, dt);
-
-        real t_du = dredge_up_time(relative_mass, metalicity);    
-        real t_bagb = base_AGB_time(relative_mass, metalicity);
+        real t_du_old = dredge_up_time(relative_mass, metalicity);    
         
-        if (relative_age < t_du){
+        if (relative_age < t_du_old){
             //EAGB
             core_mass += mdot;
             
@@ -224,8 +222,10 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
             //part to adjust age using the co_core_mass
             real A_He = AGB_A_He_estimator();
             real l_bagb = base_AGB_luminosity(relative_mass, metalicity);    
+    		real t_bagb = base_AGB_time(relative_mass, metalicity);
             relative_age = determine_age(COcore_mass, relative_mass, metalicity, A_He, t_bagb, l_bagb);
             last_update_age = t_bagb;
+            real t_du = dredge_up_time(relative_mass, metalicity);    
 
             if(relative_age < last_update_age){
                 relative_age = last_update_age;
@@ -268,6 +268,8 @@ real super_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
             real L_du = dredge_up_luminosity(relative_mass, metalicity);
             real L_x = FGB_x_luminosity(relative_mass, metalicity);
             real AH_He = TPAGB_AH_He_estimator();
+    		real t_bagb = base_AGB_time(relative_mass, metalicity);
+            real t_du = dredge_up_time(relative_mass, metalicity);    
             
             if (L_du <= L_x){
                 relative_age = determine_age(McL_core_mass, relative_mass, metalicity, AH_He, t_du, L_du);
@@ -653,7 +655,8 @@ void super_giant::evolve_element(const real end_time) {
             evolve_core_mass(relative_age, relative_mass, metalicity);
             // then calculate luminosity and radius
             instantaneous_element();
-            small_envelope_perturbation();   
+            small_envelope_perturbation(); 
+
             // if no envelope make transition to remnants
             // just as a procedure: reduce_mass with 1
             if (envelope_mass <= 0){
@@ -870,10 +873,7 @@ real super_giant::helium_core_radius(const real time, const real mass, const rea
         real t_tagb = TAGB_time(mass, mass_tot, z);
         real t_bagb = base_AGB_time(mass, z);
         real tau = 3.*(time-t_bagb) / (t_tagb-t_bagb);    
-        l_c = helium_giant_luminosity_from_core_mass(COcore_mass, core_mass, z);if (tau < 1.){
-            real l_x = terminal_helium_main_sequence_luminosity(m_core);
-            l_c = l_x * pow(l_c/l_x, tau);
-        }
+        l_c = helium_giant_luminosity_from_core_mass(COcore_mass, core_mass, z);
         r_c = helium_giant_radius(l_c, m_core, m_core, z);
     }
     else{    
@@ -897,10 +897,11 @@ real super_giant::small_envelope_core_radius(const real time, const real mass, c
         real t_bagb = base_AGB_time(mass, z);
         real tau = 3.*(time-t_bagb) / (t_tagb-t_bagb);    
         l_c = helium_giant_luminosity_from_core_mass(COcore_mass, core_mass, z);
-        if (tau < 1.){
-            real l_x = terminal_helium_main_sequence_luminosity(m_core);
-            l_c = l_x * pow(l_c/l_x, tau);
-        }
+//        in Hurleys code: (evt ook in super_giant::helium_core_radius())
+//        if (tau < 1.){
+//            real l_x = terminal_helium_main_sequence_luminosity(m_core);
+//            l_c = l_x * pow(l_c/l_x, tau);
+//        }
         r_c = helium_giant_radius(l_c, m_core, m_core, z);
     }
     else{    

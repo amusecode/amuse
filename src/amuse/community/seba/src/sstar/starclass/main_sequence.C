@@ -474,8 +474,11 @@ star* main_sequence::merge_elements(star* str) {
 
       star* merged_star = this;
 
-      if (str->get_core_mass() > 0)
-        add_mass_to_core(str->get_core_mass());
+      if (str->get_core_mass() > 0){
+        //add_mass_to_core(str->get_core_mass());
+        // (SilT Jan 6 2010) proper adding of core mass as non-hydrogen via add_mass_to_accretor
+        add_mass_to_accretor(str->get_core_mass(), false);
+      }
 
       if (str->get_envelope_mass()>0) 
          add_mass_to_accretor(str->get_envelope_mass(), str->hydrogen_envelope_star());

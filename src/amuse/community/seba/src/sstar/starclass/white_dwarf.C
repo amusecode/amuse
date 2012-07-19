@@ -15,7 +15,7 @@ white_dwarf::white_dwarf(super_giant & g, stellar_type wd_type) : single_star(g)
     
       real m_tot    = get_total_mass();
 //    (GN+SilT Mar 2010) was cnsts.parameters(kanonical_neutron_star_mass)
-      core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
+      core_mass     = min(0.999999*cnsts.parameters(Chandrasekar_mass),
 			  core_mass); 
 
       envelope_mass = m_tot - core_mass;
@@ -39,7 +39,7 @@ white_dwarf::white_dwarf(sub_giant & s, stellar_type wd_type) : single_star(s) {
       white_dwarf_type = wd_type;
 
       real m_tot    = get_total_mass();
-      core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
+      core_mass     = min(0.999999*cnsts.parameters(Chandrasekar_mass),
 			  core_mass); 
       envelope_mass = m_tot - core_mass;
       accreted_mass = 0;
@@ -60,12 +60,11 @@ white_dwarf::white_dwarf(sub_giant & s, stellar_type wd_type) : single_star(s) {
 }
 
 white_dwarf::white_dwarf(hertzsprung_gap & s, stellar_type wd_type) : single_star(s) {
-    
       delete &s;
       white_dwarf_type = wd_type;
 
       real m_tot    = get_total_mass();
-      core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
+      core_mass     = min(0.999999*cnsts.parameters(Chandrasekar_mass),
 			  core_mass); 
       envelope_mass = m_tot - core_mass;
       accreted_mass = 0;
@@ -92,7 +91,7 @@ white_dwarf::white_dwarf(helium_star & h, stellar_type wd_type) : single_star(h)
     white_dwarf_type = wd_type;
 
 	real m_tot    = get_total_mass();
-	core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
+	core_mass     = min(0.999999*cnsts.parameters(Chandrasekar_mass),
 			    core_mass); 
 	envelope_mass = m_tot - core_mass;
 	accreted_mass = 0;
@@ -119,7 +118,7 @@ white_dwarf::white_dwarf(helium_giant & h, stellar_type wd_type) :  single_star(
     white_dwarf_type = wd_type;
 
 	real m_tot    = get_total_mass();
-	core_mass     = min(0.99*cnsts.parameters(Chandrasekar_mass),
+	core_mass     = min(0.999999*cnsts.parameters(Chandrasekar_mass),
 			    core_mass); 
 	envelope_mass = m_tot - core_mass;
 	accreted_mass = 0;
@@ -174,7 +173,7 @@ void white_dwarf::instantaneous_element() {
 
 	luminosity = 40;
 	// m_rel may not become larger than M_Ch
-//	real m_rel = min(0.99, core_mass/cnsts.parameters(Chandrasekar_mass));
+//	real m_rel = min(0.999999, core_mass/cnsts.parameters(Chandrasekar_mass));
 
 	// Nauenberg, M, 1972, Apj 175, 417
 	// mu=4.039 is the mean molecular weight.
@@ -233,7 +232,7 @@ void white_dwarf::evolve_element(const real end_time) {
 	}
 
 	
-//	real m_rel = min(0.99, core_mass/cnsts.parameters(Chandrasekar_mass));
+//	real m_rel = min(0.999999, core_mass/cnsts.parameters(Chandrasekar_mass));
 
 	   // Nauenberg, M, 1972, Apj 175, 417
 	   // mu=4.039 is the mean molecular weight.

@@ -826,7 +826,7 @@ star* single_star::merge_elements(star* str) {
     // previous method appeared to make mergers too old.
     // (SPZ+GN:11 Oct 1998)
     //add_mass_to_core(str->get_core_mass());
-      // (GN Oct 25 2010) proper adding of core mass as non-hydrogen via add_mass_to_accretor
+    // (GN Oct 25 2010) proper adding of core mass as non-hydrogen via add_mass_to_accretor
     add_mass_to_accretor(str->get_core_mass(), false);
 
       if ((str->get_element_type()==Neutron_Star ||
@@ -1014,25 +1014,26 @@ real single_star::zeta_thermal() {
   return z;
 }
 
+// not used anymore, use add_mass_to_accretor instead
 // add two cores. Is performed in ::merge_elements();
-void single_star::add_mass_to_core(const real mdot) {
-  if (mdot<=0) {
-    cerr << "single_star::add_mass_to_core(mdot=" << mdot << ")"<<endl;
-    cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-    
-  }
-  else {
-      cerr<<"adjust_accretor_age bool = FALSE, why exactly?"<<endl;
-    adjust_accretor_age(mdot, false);
-    core_mass += mdot;
-    accreted_mass += mdot;
-    
-    if (relative_mass<get_total_mass()) 
-      update_relative_mass(get_total_mass());
-    
-  }
-
-}
+//void single_star::add_mass_to_core(const real mdot) {    
+//  if (mdot<=0) {
+//    cerr << "single_star::add_mass_to_core(mdot=" << mdot << ")"<<endl;
+//    cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+//    
+//  }
+//  else {
+//      cerr<<"adjust_accretor_age bool = FALSE, why exactly?"<<endl;
+//    adjust_accretor_age(mdot, false);
+//    core_mass += mdot;
+//    accreted_mass += mdot;
+//    
+//    if (relative_mass<get_total_mass()) 
+//      update_relative_mass(get_total_mass());
+//    
+//  }
+//
+//}
 
 
 //		general mass transfer utilities.
@@ -2471,7 +2472,7 @@ real single_star::helium_ignition_core_mass(const real mass,
     
   real mc_HeI;
   real m_HeF = helium_flash_mass(z);
-  if (mass < m_HeF){    
+  if (mass < m_HeF){ 
     real l_HeI = helium_ignition_luminosity(mass, z);
     mc_HeI = FGB_core_mass_luminosity_relation(l_HeI, mass, z);}
   else {
@@ -3116,28 +3117,48 @@ real single_star::update_COcore_mass(const real mco_core) {
 // SPZ & SilT Feb 4 2010
 // Added routine for inverting relatively smooth functions
 // Based on linear iterative procedure until satisfied 
-real single_star::linear_function_inversion(real (single_star::*fptr)(real, const real), const real x_guess, const real y_value, const real z, const real xmin, const real xmax) {
+real single_star::linear_function_inversion(real (single_star::*fptr)(real, const real), const real x_guess, const real y_value, const real z, const real xmin, const real xmax) {  
+    
     real gx = x_guess;
     real gy;
 
+    real gx_delta = x_guess*1.05;
+    real gy_delta;
+    
     real ymin = (this->*fptr)(xmin, z);
     real ymax = (this->*fptr)(xmax, z);
     real mu = (xmax-xmin)/(ymax-ymin);
+
+//PRC(x_guess);PRC(y_value);PRC(z);PRC(xmin);PRC(xmax);PRL(mu);
     
     real dy = 0, dy_old = 0;
     bool within_range = 1; 
     do {
+//        within_range = 1;
         if (gx > xmax || gx < xmin){
             within_range = 0;
             gx = min(max(gx, xmin), xmax);
+            PRC(gx);PRC(xmax);PRL(xmin);
         }
         
-        gy = (this->*fptr)(gx, z);//gx
+//        PRC(gy_delta);
+//        PRL(gy);
+
+        gy = (this->*fptr)(gx, z);
+        gx_delta = min(max(gx_delta, xmin), xmax);
+        gy_delta = (this->*fptr)(gx_delta, z);
+        
         dy_old = dy;
         dy = y_value - gy;
+        
+        mu = (gx_delta-gx)/(gy_delta-gy);
         gx += mu*dy;
+        gx_delta = gx*1.05;
+//        PRC(mu);PRC(y_value);PRC(gy);PRL(gx);
+
         if (!within_range && dy_old * dy > 0){
-            // gx lies out of range and the solution does not lie between gx and the previous one     
+            // gx lies out of range and the solution does not lie between gx and the previous one             
+            PRC(dy_old);PRC(dy);PRL(within_range); 
             cerr << "WARNING!!! single_star::linear_function_inversion is unable to find a solution" << endl;
 	    exit(-1);
         }
@@ -3145,9 +3166,6 @@ real single_star::linear_function_inversion(real (single_star::*fptr)(real, cons
     }
     while(abs(dy/y_value)>cnsts.safety(minimum_inversion_precision));
     gx -= mu*dy;
-    
-//    PRC(x_guess);PRL(gx);
-//    PRC(y_value);PRL((this->*fptr)(gx, z));
 
     return gx;
 }

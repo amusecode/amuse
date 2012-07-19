@@ -324,7 +324,7 @@ real stellar_evolution_constants::parameters(model_parameter pm) {
 	      break;                          // overshoot fraction.
         case hydrogen_fraction:                        return 0.7;
               break;                          // X
- 	case common_envelope_efficiency:               return 4;
+ 	case common_envelope_efficiency:               return 4.0;
 	      break;                          // (alpha_ce)
         case envelope_binding_energy:                  return 0.5;
 	      break;                          // (lambda)

@@ -177,8 +177,7 @@ class  single_star : public star
         void adjust_accretor_radius(const real, const real);
 
 //		Mass transfer routines.
-	void add_mass_to_core(const real);
-
+//	void add_mass_to_core(const real);
         real  add_mass_to_accretor(const real, bool );
         real  add_mass_to_accretor(real, const real, bool);
 //        star* reduce_mass(const real);
