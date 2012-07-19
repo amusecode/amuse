@@ -25,16 +25,11 @@ white_dwarf::white_dwarf(super_giant & g, stellar_type wd_type) : single_star(g)
 //      last_update_age = next_update_age;
     last_update_age = 0.;
     relative_age = 0.;//1 + nucleair_evolution_time();
-    PRL(wd_type);
 
       instantaneous_element();
-    PRL(wd_type);
       update();
-    PRL(wd_type);
 
       post_constructor();
-    PRL(wd_type);
-
 }
 
 white_dwarf::white_dwarf(sub_giant & s, stellar_type wd_type) : single_star(s) {

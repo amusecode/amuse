@@ -32,7 +32,8 @@ class helium_giant : public single_star {
      private:
   
          real CO_core_mass();
-
+         real relative_helium_mass;
+    
       public :
 
          helium_giant(super_giant &);
@@ -74,11 +75,10 @@ class helium_giant : public single_star {
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
         real accretion_limit(const real, const real);
-//        real add_mass_to_accretor(const real, bool);
-//        real add_mass_to_accretor(real, const real, bool);
 
-        void adjust_accretor_age(const real, const bool=true);
+//        void adjust_accretor_age(const real, const bool=true);
         void adjust_next_update_age();
+        void update_relative_helium_mass(const real new_relative_helium_mass);
 
         real zeta_adiabatic();
         real zeta_thermal();

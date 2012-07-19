@@ -10,43 +10,11 @@
 #include "super_giant.h"
 #include "hertzsprung_gap.h"
 
-#if 0
-helium_star::helium_star(main_sequence & m) : single_star(m) {
-
-    delete &m;
-
-    lose_envelope_decent();
-
-    adjust_next_update_age();
-// (GN+SPZ May  4 1999) last update age is time of previous type change
-// in NEW relative_age units!!!
-    last_update_age = 0.;
-    relative_age = 0.;
-
-    // core_mass is CO core (SPZ+GN: 27 Jul 2000)
-    real m_tot = get_total_mass();
-    // (SPZ+GN: 28 Jul 2000) was helium core but is now the CO core.
-    core_mass = 0.;
-    final_core_mass = final_CO_core_mass(m_tot);
-    core_mass = COcore_mass = CO_core_mass();
-    envelope_mass =  m_tot - core_mass;
-
-// (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
-//    update_wind_constant();
-
-    instantaneous_element();
-    update();
-
-    post_constructor();
-    
-}
-#endif
 
 helium_star::helium_star(hertzsprung_gap & h) : single_star(h) {
 
     delete &h;
     lose_envelope_decent();
-    update_relative_mass(get_total_mass());
     
     // (GN+SPZ May  4 1999) last update age is time of previous type change
     // in NEW relative_age units
@@ -76,7 +44,6 @@ helium_star::helium_star(sub_giant & g) : single_star(g) {
 
     delete &g;
     lose_envelope_decent();
-    update_relative_mass(get_total_mass());
 
     // (GN+SPZ May  4 1999) last update age is time of previous type change
     // in NEW relative_age units
@@ -109,16 +76,9 @@ helium_star::helium_star(horizontal_branch & h) : single_star(h) {
 
     relative_age = (relative_age - helium_ignition_time(relative_mass, metalicity)) / core_helium_burning_timescale(relative_mass, metalicity)
      * helium_main_sequence_time_for_solar_metalicity(get_total_mass());
+    // if relative_mass is updated, then after previous line
     
     last_update_age = 0.;//relative_age;
-    update_relative_mass(get_total_mass());
-    
-//    real t_ms = main_sequence_time();
-//    real t_giant = t_ms + hertzsprung_gap_time()
-//                 + base_giant_branch_time();
-//    real t_he = helium_giant_time(t_ms, metalicity);
-//    real t_frac = min(0.9,(relative_age - t_giant)/t_he);
-
     
     // (GN+SPZ May  4 1999) last update age is time of previous type change
     // in NEW relative_age uits
@@ -154,37 +114,15 @@ void helium_star::adjust_initial_star() {
 #endif
 
 void helium_star::adjust_next_update_age() {
-    
-    next_update_age = helium_main_sequence_time_for_solar_metalicity(relative_mass);
+//    for a helium star relative_helium_mass = get_total_mass()  
+    next_update_age = helium_main_sequence_time_for_solar_metalicity(get_total_mass());
 }
-
-
-#if 0
-void helium_star::instantaneous_element() {
-
-  
-    real temp;
-    real m_tot = get_total_mass();
-
-    temp = log10(m_tot)
-      * (0.4509 - 0.1085*log10(m_tot)) + 4.7143;
-    luminosity  = 8.33*temp - 36.8;
-    temp = 1.e-3*pow(10., temp);
-    luminosity  = pow(10., luminosity);
-    effective_radius = radius = 33.45*sqrt(luminosity)/(temp*temp);
-    core_radius  = 0.2*radius;
-
-    if (envelope_mass <= 0) {
-      effective_radius = radius  = core_radius;
-    }
-}
-#endif 
 
 // Adjust radius & luminosity at relative_age
 void helium_star::instantaneous_element() {
-    luminosity  = helium_main_sequence_luminosity(relative_age, relative_mass);
-    
-    radius      = helium_main_sequence_radius(relative_age, relative_mass, get_total_mass());
+//    for a helium star relative_helium_mass = get_total_mass()  
+    luminosity  = helium_main_sequence_luminosity(relative_age, get_total_mass());    
+    radius      = helium_main_sequence_radius(relative_age, get_total_mass(), get_total_mass());
 
     //effective_radius = max(effective_radius, radius);
     effective_radius = radius;
@@ -196,8 +134,9 @@ void helium_star::evolve_element(const real end_time) {
     real dt = end_time - current_time;
     current_time = end_time;
     relative_age += dt;
-        
-    if (relative_mass < cnsts.parameters(minimum_helium_star)) {
+
+//    for a helium star relative_helium_mass = get_total_mass()  
+    if (get_total_mass() < cnsts.parameters(minimum_helium_star)) {    
         // Helium Main_sequence star will not ignite core helium burning.
         cerr<<"Warning: not homogeneous WD"<<endl;
         if(!update_core_and_envelope_mass(get_total_mass())) {
@@ -223,8 +162,8 @@ void helium_star::evolve_element(const real end_time) {
 }
 
 real helium_star::nucleair_evolution_timescale() {    
-    
-    return helium_main_sequence_time_for_solar_metalicity(relative_mass);
+//    for a helium star relative_helium_mass = get_total_mass()     
+    return helium_main_sequence_time_for_solar_metalicity(get_total_mass());
 
 }
 
@@ -291,6 +230,7 @@ void helium_star::create_remnant() {
 #endif
 
 star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
+//    for a helium star relative_helium_mass = get_total_mass()  
 
     mdot = relative_mass*dt/get_binary()->get_donor_timescale();
     mdot = mass_ratio_mdot_limit(mdot);
@@ -307,11 +247,8 @@ star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 
     adjust_age_after_mass_loss(mdot, true);
     envelope_mass -= mdot;
-    if (relative_mass > get_total_mass()){
-        update_relative_mass(get_total_mass());
-    }
     
-    if (relative_mass < cnsts.parameters(minimum_helium_star)) {
+    if (get_total_mass() < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not continue core helium burning.
         cerr<<"Warning: not homogeneous WD"<<endl;
         if(!update_core_and_envelope_mass(get_total_mass())) {
@@ -328,11 +265,8 @@ star* helium_star::reduce_mass(const real mdot) {
 
     adjust_age_after_mass_loss(mdot, true);
     envelope_mass -= mdot;
-    if (relative_mass > get_total_mass()){
-        update_relative_mass(get_total_mass());
-    }
     
-    if (relative_mass < cnsts.parameters(minimum_helium_star)) {
+    if (get_total_mass() < cnsts.parameters(minimum_helium_star)) {
         // Helium Main_sequence star will not continue core helium burning.
         cerr<<"Warning: not homogeneous WD"<<endl;
        if(!update_core_and_envelope_mass(get_total_mass())) {
@@ -392,22 +326,19 @@ star* helium_star::reduce_mass(const real mdot) {
 // so it can include information from tracks
 void helium_star::adjust_age_after_mass_loss(const real mdot,
                                                     const bool rejuvenate=true) {
+//    for a helium star relative_helium_mass = get_total_mass()      
     real m_tot_new = get_total_mass() - mdot;
-    real m_rel_new;
-    if (m_tot_new<relative_mass)
-        m_rel_new = m_tot_new;
-    else m_rel_new = relative_mass;
     
-    real t_hems_old = helium_main_sequence_time_for_solar_metalicity(relative_mass); 
-    real t_hems_new = helium_main_sequence_time_for_solar_metalicity(m_rel_new);
+    real t_hems_old = helium_main_sequence_time_for_solar_metalicity(get_total_mass()); 
+    real t_hems_new = helium_main_sequence_time_for_solar_metalicity(m_tot_new);
     
     relative_age *= (t_hems_new/t_hems_old);
-    if (rejuvenate){
-        real mdot_fr = -1.0 * mdot/m_tot_new;
-        real rejuvenation = (1-pow(mdot_fr,
-                                   cnsts.parameters(rejuvenation_exponent)));
-        relative_age *= rejuvenation; 
-    }
+//    if (rejuvenate){
+//        real mdot_fr = -1.0 * mdot/m_tot_new;
+//        real rejuvenation = (1-pow(mdot_fr,
+//                                   cnsts.parameters(rejuvenation_exponent)));
+//        relative_age *= rejuvenation; 
+//    }
     relative_age = min(relative_age, t_hems_new);
 
     // next_update_age should not be reset here,
@@ -435,18 +366,13 @@ real helium_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
         //	update_wind_constant();
         
         envelope_mass += mdot;
-        if (relative_mass<get_total_mass())
-            update_relative_mass(get_total_mass());
 
     }
     else{
         //for the moment assume helium accretion 
         
         adjust_accretor_age(mdot, true);
-        envelope_mass += mdot;
-        if (relative_mass<get_total_mass())
-            update_relative_mass(get_total_mass());
-        
+        envelope_mass += mdot;        
     }
 
     set_spec_type(Accreting);
@@ -472,8 +398,6 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         // (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
         //	update_wind_constant();
         envelope_mass += mdot;
-        if (relative_mass<get_total_mass())
-           update_relative_mass(get_total_mass());
 
         cerr<<"Should helium_star::add_mass_to_accretor have adjust_donor_radius?"<<endl;
         adjust_accretor_radius(mdot, dt);
@@ -487,8 +411,6 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) 
         
         adjust_accretor_age(mdot, true);
         envelope_mass += mdot;
-        if (relative_mass<get_total_mass())
-            update_relative_mass(get_total_mass());
 
         cerr<<"he star::add_mass_to_accretor helium adjust_accretor_radius?"<<endl;   
         adjust_accretor_radius(mdot, dt);
@@ -514,14 +436,11 @@ real helium_star::accretion_limit(const real mdot, const real dt) {
 // No information from stellar evolution tracks is included.
 void helium_star::adjust_accretor_age(const real mdot,
 				      const bool rejuvenate) {
+//    for a helium star relative_helium_mass = get_total_mass()  
     
     real m_tot_new = get_total_mass() + mdot;
-    real m_rel_new;
-    if (m_tot_new>relative_mass)
-        m_rel_new = m_tot_new;
-    else m_rel_new = relative_mass;
-    real t_hems_old = helium_main_sequence_time_for_solar_metalicity(relative_mass); 
-    real t_hems_new = helium_main_sequence_time_for_solar_metalicity(m_rel_new);
+    real t_hems_old = helium_main_sequence_time_for_solar_metalicity(get_total_mass()); 
+    real t_hems_new = helium_main_sequence_time_for_solar_metalicity(m_tot_new);
     
     relative_age *= (t_hems_new/t_hems_old);
     if (rejuvenate)
@@ -530,8 +449,6 @@ void helium_star::adjust_accretor_age(const real mdot,
     relative_age = min(relative_age, t_hems_new);
 
     
-//    relative_age *= (1-pow(mdot/(get_total_mass()+mdot),
-//                           cnsts.parameters(rejuvenation_exponent)));
     
     // next_update_age should not be reset here,
     // is done in add_mass_to_accretor, where also relative_mass

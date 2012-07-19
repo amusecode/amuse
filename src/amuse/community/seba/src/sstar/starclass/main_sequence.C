@@ -254,72 +254,6 @@ real main_sequence::main_sequence_core_radius()
     return min(0.01, radius);
 }
 
-#if 0
-// add mass to accretor
-// is a separate function (see single_star.C) because of the variable
-// stellar wind. The wind_constant must be reset.
-// bool hydrogen not used currently
-real main_sequence::add_mass_to_accretor(const real mdot, bool hydrogen) {
-
-  if (mdot<=0) {
-    cerr << "main_sequence::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
-    cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-    cerr << "Action: No action!" << endl;
-
-    return 0;
-  }
- 
-    adjust_accretor_age(mdot);
-    envelope_mass += mdot;
-    accreted_mass += mdot;
-    if (relative_mass<get_total_mass()) 
-      relative_mass = get_total_mass();
-
-    update_wind_constant();
-    
-    set_spec_type(Accreting);
-  
-    return mdot;
-}
-
-// Proper accretion routine.
-// inpended and consistent.
-// bool hydrogen not used currently
-real main_sequence::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
-  //	error checking is just for safety and debugging purposes.
-  //cerr<<"real single_star::add_mass_to_accretor(mdot="<<mdot<<", dt="<<dt<<")"<<endl;
-
-  if (mdot<0) {
-    cerr << "single_star::add_mass_to_accretor(mdot=" << mdot 
-	 << ", dt=" << dt << ")"<<endl;
-    cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-    cerr << "Action: put mdot to zero!" << endl;
-    return 0;
-  }
-
-  mdot = accretion_limit(mdot, dt);
-  adjust_accretor_age(mdot);
-  if (relative_mass<get_total_mass() + mdot) 
-    relative_mass = get_total_mass() + mdot;
-
-  update_wind_constant();
-
-  envelope_mass += mdot;
-  accreted_mass += mdot;
-
-  adjust_accretor_radius(mdot, dt);
-
-  set_spec_type(Accreting);
-
-  //cerr<<relative_age<<" "<<next_update_age<<" "<<main_sequence_time()<<endl;
-  //cerr<<"accretor radius adjusted "<<effective_radius<<endl;
-
-  //cerr<<"leave add_mass"<<endl;
-  
-  return mdot;
-}
-#endif
-
 // add mass to accretor
 // is a separate function (see single_star.C) because rejuvenation
 real main_sequence::add_mass_to_accretor(const real mdot, bool hydrogen) {
@@ -606,8 +540,8 @@ void main_sequence::adjust_accretor_age(const real mdot,
       real t_ms_new = main_sequence_time(m_rel_new, z_new);
 
       relative_age *= (t_ms_new/t_ms_old);
-//      if (rejuvenate)
-//         relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
+      if (rejuvenate)
+         relative_age *= rejuvenation_fraction(mdot/m_tot_new); 
  
       relative_age = min(relative_age, t_ms_new);
 
@@ -634,12 +568,12 @@ void main_sequence::adjust_age_after_mass_loss(const real mdot,
     real t_ms_new = main_sequence_time(m_rel_new, z_new);
     
     relative_age *= (t_ms_new/t_ms_old);
-    if (rejuvenate){
-        real mdot_fr = -1. * mdot/m_tot_new; 
-        real rejuvenation = (1-pow(mdot_fr,
-                                   cnsts.parameters(rejuvenation_exponent)));
-        relative_age *= rejuvenation;     
-    }
+//    if (rejuvenate){
+//        real mdot_fr = -1. * mdot/m_tot_new; 
+//        real rejuvenation = (1-pow(mdot_fr,
+//                                   cnsts.parameters(rejuvenation_exponent)));
+//        relative_age *= rejuvenation;     
+//    }
     relative_age = min(relative_age, t_ms_new);
     
     // next_update_age should not be reset here,

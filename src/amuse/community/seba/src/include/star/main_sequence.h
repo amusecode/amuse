@@ -129,5 +129,3 @@ class main_sequence : public single_star {
 #endif 		// _MAIN_SEQUENCE
 
 
-	//real add_mass_to_accretor(const real, bool);
-	//real add_mass_to_accretor(real, const real, bool);

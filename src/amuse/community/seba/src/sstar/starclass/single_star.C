@@ -1349,6 +1349,7 @@ void single_star::update_wind_constant() {
 
   wind_constant = max(wind_constant, 0.0);
 #endif
+    
     //single_star::update_wind_constant is not used
     // only by WD, NS, BH who don't have stellar_wind
     wind_constant = 0.0;

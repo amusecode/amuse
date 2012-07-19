@@ -313,7 +313,7 @@ void hertzsprung_gap::adjust_accretor_age(const real mdot, const bool rejuvenate
       real t_bgb = hertzsprung_gap_time(m_rel_new, z_new); 
       real t_hg_new = t_bgb - t_ms_new;
 
-      real dtime = relative_age - t_ms_old;
+//      real dtime = relative_age - t_ms_old;
 
       // (GN+SPZ May  4 1999) update last_update_age
       last_update_age = t_ms_new; 
