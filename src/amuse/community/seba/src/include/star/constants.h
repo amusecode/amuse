@@ -180,8 +180,9 @@ enum safety_parameter {timestep_factor,
 		       minimum_mass_step,
 		       maximum_timestep,
 		       maximum_recursive_calls,
-               tiny,
-               number_of_steps,
+		       tiny,
+		       number_of_steps,
+		       minimal_interpolation_accuracy,
                       };
 
 enum dynamics_update_parameter {stellar_mass_update_limit,

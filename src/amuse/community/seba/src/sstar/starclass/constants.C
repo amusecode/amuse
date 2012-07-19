@@ -205,7 +205,7 @@ real stellar_evolution_constants::parameters(stellar_mass_limits pm) {
              break;                               
 	case upper_ZAMS_mass_for_degenerate_core: return 2.3;
              break;                                
-	case minimum_main_sequence:              return 0.075;
+        case minimum_main_sequence:              return 0.075;  //Msun
              break;                              // for pop III: 0.095 [Msun] 
 	case helium_dwarf_mass_limit:            return 0.45;
              break;                                
@@ -222,7 +222,7 @@ real stellar_evolution_constants::parameters(stellar_mass_limits pm) {
              break;                                
         case super_giant2black_hole:             return 25; // was 40
              break;                                
-	case maximum_main_sequence:              return 100;
+        case maximum_main_sequence:              return 100; // Msun
              break;                               
 	case minimum_helium_star:                return 0.33;
              break;
@@ -411,6 +411,8 @@ real stellar_evolution_constants::safety(safety_parameter ps) {
           // for M > 40 need n>=20 to get an error < ~7%
           // possibly other values for non_solar metallicities
         break;
+    case minimal_interpolation_accuracy:      return 0.01;  // [1%]     
+          break;                             // 0.01 ok, but big for AM CVns
         default:
 	     cerr << "\nNo recognized option in "
 		     "stellar_evolution_constants::"

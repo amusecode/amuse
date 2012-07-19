@@ -10,8 +10,14 @@
 //		Tidal capture routines.
        real tf2_energy_diss(const real eta, const stellar_type);
        real tf3_energy_diss(const real eta, const stellar_type);
+
+//              Interpolation function
        real lineair_interpolation(const real, const real, const real,
 				  const real, const real);
+       real lineair_function_inversion(real (*fptr)(real), 
+	         		       const real x_guess, 
+				       const real y_value);
+
 
 //		Super nova utilities.
        real post_sn_cm_velocity(const real, const real, const real,
