@@ -1785,7 +1785,6 @@ void double_star::spiral_in(star* larger,
 	  //	 *   cnsts.parameters(common_envelope_efficiency)
 	  //         *   cnsts.parameters(envelope_binding_energy)
 	  //	 *   r_lobe));
-
            if (mass_lost>=menv_l) {
               mass_lost = 0.99*menv_l;
            }
@@ -1797,10 +1796,12 @@ void double_star::spiral_in(star* larger,
 	   //           larger->set_envelope_mass(mel_old);
 	   larger = larger->reduce_mass(mass_lost);
 	   
-	   if (mtot_l>mtot_s) 
-	     merge_elements(larger, smaller);
-           else 
-	     merge_elements(smaller, larger);
+	   // (GN Feb 2011) Always have larger be consumer
+	   // else problems with MS + giant mergers
+	   //if (mtot_l>mtot_s) 
+	   merge_elements(larger, smaller);
+           //else 
+	   //  merge_elements(smaller, larger);
         } 
         else {
 	  semi = a_spi;
