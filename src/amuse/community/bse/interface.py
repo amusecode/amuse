@@ -487,6 +487,9 @@ class BSE(common.CommonCode):
         common.CommonCode.define_state(self, object)
         object.add_transition('INITIALIZED','RUN','commit_parameters')
         object.add_method('RUN', 'evolve_binary')
+        
+        object.add_method('RUN','before_get_parameter')
+        object.add_method('RUN','before_set_parameter')
     
         
         

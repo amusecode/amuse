@@ -29,6 +29,9 @@ class State(object):
     def get_to_transitions(self):
         return list(self.to_transitions)
         
+    def is_named(self):
+        return True
+        
 class AllExcept(object):
     
     def __init__(self, states):
@@ -36,6 +39,9 @@ class AllExcept(object):
         self.from_transitions = []
         self.to_transitions = []
     
+    def is_named(self):
+        return False
+        
     def __str__(self):
         return "all except {0}".format(', '.join([str(x) for x in self.states]))
         
@@ -47,7 +53,7 @@ class AllExcept(object):
     
     def add_from_transition(self, transition):
         """add a transition starting at this state"""
-        pass # ignored
+        self.from_transitions.append(transition)
         
     def add_to_transition(self, transition):
         """add a transition to this state"""
@@ -101,6 +107,7 @@ class StateMachine(OptionalAttributes):
         self._do_automatic_state_transitions = True
         self._current_state = State(self, None)
         self.interface = interface
+        self._initial_state = None
 
     @option(type='boolean', sections=['state',])
     def is_enabled(self):
@@ -151,6 +158,7 @@ class StateMachine(OptionalAttributes):
 
     def set_initial_state(self, name):
         self._current_state = self.new_state(name)
+        self._initial_state = self._current_state 
     
     
 
@@ -217,7 +225,74 @@ class StateMachine(OptionalAttributes):
         for transition in transitions:
             transition.do()
     
-    
+    def to_plantuml_string(self):
+        lines = []
+        lines.append('@startuml')
+        initial_state = self._initial_state
+        lines.append('[*] --> {0}'.format(initial_state.name))
+        statenames = list(sorted(self.states.keys()))
+        merged_transitions = {}
+        for name in statenames:
+            state = self.states[name]
+            transitions = state.get_to_transitions()
+            for transition in transitions:
+                if transition.from_state.is_named():
+                    if not transition.method is None:
+                        transitionname = '{0}+{1}'.format(
+                            transition.from_state.name,
+                            transition.to_state.name
+                        )
+                        if transitionname in merged_transitions:
+                            merged_transitions[transitionname][2].add(transition.method.function_name)
+                        else:
+                            merged_transitions[transitionname] = [
+                                transition.from_state.name,
+                                transition.to_state.name,
+                                set([transition.method.function_name])
+                            ]
+                                
+                                
+                        #lines.append('{0} --> {1} : {2}'.format(
+                        #        transition.from_state.name,
+                        #        transition.to_state.name,
+                        #        transition.method.function_name
+                        #    )
+                        #)
+                    else:
+                        
+                        lines.append('{0} -> {1}'.format(
+                                transition.from_state.name,
+                                transition.to_state.name
+                            )
+                        )
+                else:
+                     for x in self.iter_states():
+                        if x == transition.from_state:
+                            continue
+                        if not transition.from_state.matches(x):
+                            continue
+                        if not transition.method is None:
+                            lines.append('{0} --> {1} : {2}'.format(
+                                    x.name,
+                                    transition.to_state.name,
+                                    transition.method.function_name
+                                )
+                            )
+                        else:
+                            lines.append('{0} -> {1}'.format(
+                                    x.name,
+                                    transition.to_state.name,
+                                )
+                            )
+        for fromname, toname, methodnames in merged_transitions.values():
+            lines.append('{0} --> {1} : {2}'.format(
+                    fromname,
+                    toname,
+                    '\\n'.join(methodnames)
+                )
+            )
+        lines.append('@enduml')
+        return '\n'.join(lines)
 
     def get_name_of_current_state(self):
         return self._current_state.name

@@ -599,10 +599,10 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.result_type = 'int32'
         return function
     
-    def invoke_state_change2(self):
-        pass
-    
     def synchronize_model(self):
+        pass
+        
+    def auto_go_to_run(self):
         pass
     
 
@@ -1149,10 +1149,26 @@ class SimpleX(CommonCode):
     def define_state(self, object):
         CommonCode.define_state(self, object)
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
-        object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
-        object.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
-        object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
+        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter')
+        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter')
+        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        object.add_method('RUN', 'before_get_parameter')
+        object.add_method('EDIT', 'before_get_parameter')
+        object.add_method('UPDATE','before_get_parameter')
+        object.add_method('EVOLVED','before_get_parameter')
+        
+        
         object.add_method('EDIT', 'new_particle')
         object.add_method('EDIT', 'delete_particle')
         object.add_transition('EDIT', 'RUN', 'commit_particles')
@@ -1239,11 +1255,30 @@ class SimpleXSplitSet(SimpleX):
         
     def define_state(self, object):
         CommonCode.define_state(self, object)
+        
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
-        object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
-        object.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
-        object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
+        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        object.add_method('RUN', 'before_get_parameter')
+        object.add_method('EDIT', 'before_get_parameter')
+        object.add_method('UPDATE','before_get_parameter')
+        object.add_method('EVOLVED','before_get_parameter')
+        object.add_method('RUNCOMMIT','before_get_parameter')
+        
+        
+        
         object.add_method('EDIT', 'new_particle')
         object.add_method('EDIT', 'delete_particle')
         object.add_transition('EDIT', 'RUNCOMMIT', 'commit_particles')
@@ -1251,7 +1286,7 @@ class SimpleXSplitSet(SimpleX):
         object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
         object.add_transition('RUN','RUNCOMMIT', 'recommit_particles')
-        object.add_transition('RUNCOMMIT','RUN', 'invoke_state_change2')
+        object.add_transition('RUNCOMMIT','RUN', 'auto_go_to_run')
         object.add_transition('RUNCOMMIT', 'EVOLVED', 'evolve_model', False)
 #        object.add_method('EVOLVED', 'evolve_model')
         object.define_state('RUNCOMMIT')

@@ -324,8 +324,6 @@ class BHTree(GravitationalDynamics, GravityFieldCode):
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
         GravityFieldCode.define_state(self, object)
-        
-        object.add_method('EDIT', 'post_init_setters')
 
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)

@@ -9,9 +9,16 @@ from amuse.units import units
 from amuse.datamodel import parameters
 from amuse.support.interface import HandleParameters
 
+class BaseTestModule(object):
+    def before_get_parameter(self):
+        return
+        
+    def before_set_parameter(self):
+        return
+        
 class TestMethodParameterDefintions(amusetest.TestCase):
     def test1(self):
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return 123 | units.m
     
@@ -34,7 +41,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "test_name",
             "a test parameter",
             0.1 | units.m)
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -56,7 +63,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "test_name",
             "a test parameter",
             0.1 | units.no_unit)
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -79,7 +86,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             0.1 | units.m
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -115,7 +122,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             0.1 | units.m
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -152,7 +159,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "bla"
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -189,7 +196,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             11.0 | units.m
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -214,7 +221,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             11.0 | units.m
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -243,7 +250,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             11.0 | units.m
         )
     
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -280,7 +287,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             12.0 | units.m
         )
     
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -314,7 +321,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "a test parameter",
             0.1 | units.m
         )
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -353,7 +360,7 @@ class TestParameters(amusetest.TestCase):
             11.0 | units.m
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123 | units.m
 
             def get_test(self):
@@ -379,7 +386,7 @@ class TestParameters(amusetest.TestCase):
             11.0 | nbody_system.length
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123 | nbody_system.length
 
             def get_test(self):
@@ -420,7 +427,7 @@ class TestParameters(amusetest.TestCase):
             11.0 | nbody_system.length
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123 | units.m
 
             def get_test(self):
@@ -458,7 +465,7 @@ class TestParameters(amusetest.TestCase):
             11.0 | nbody_system.length
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123 | units.m
 
             def get_test(self):
@@ -494,7 +501,7 @@ class TestParameters(amusetest.TestCase):
             11.0 | nbody_system.length
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123.0 | nbody_system.length
 
             def get_test(self):
@@ -534,7 +541,7 @@ class TestParameters(amusetest.TestCase):
             11.0 | nbody_system.length
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123.0 | units.m
             y = 123.0 | nbody_system.length
 
@@ -586,7 +593,7 @@ class TestParameters(amusetest.TestCase):
             "test string"
         )
 
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123.0 | nbody_system.length
 
             def get_nbody(self):
@@ -627,7 +634,7 @@ class TestParameters(amusetest.TestCase):
             12.0 | units.m
         )
     
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123 | units.m
             y = 456 | units.m
     
@@ -675,7 +682,7 @@ class TestParameters(amusetest.TestCase):
             14.0 | units.m
         )
     
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123 | units.m
             y = 456 | units.m
             z = 100 | units.m
@@ -724,7 +731,7 @@ class TestParameters(amusetest.TestCase):
             [11.0, 12.0] | units.m
         )
         
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
             def set_test(self, value):
@@ -765,7 +772,7 @@ class TestParameters(amusetest.TestCase):
             [10, 10, 10] | generic_unit_system.length
         ))
         
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123.0 | generic_unit_system.length
             y = 456.0 | generic_unit_system.length
             z = 789.0 | generic_unit_system.length
@@ -801,7 +808,7 @@ class TestParameters(amusetest.TestCase):
     def test11(self):
         print "Testing ParametersWithUnitsConverted on vector parameters, using add_vector_parameter"
         
-        class TestModule(object):
+        class TestModule(BaseTestModule):
             x = 123.0 | generic_unit_system.length
             y = 456.0 | generic_unit_system.length
             z = 789.0 | generic_unit_system.length

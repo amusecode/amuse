@@ -277,6 +277,9 @@ class SSE(common.CommonCode):
         common.CommonCode.define_state(self, object)
         object.add_transition('INITIALIZED','RUN','commit_parameters')
         object.add_method('RUN', 'evolve_star')
+        
+        object.add_method('RUN', 'before_get_parameter')
+        object.add_method('RUN', 'before_set_parameter')
     
          
     def define_particle_sets(self, object):

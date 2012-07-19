@@ -278,6 +278,12 @@ class StubInterface(object):
         self._dm_particles = Particles()
         self._all_particles = ParticlesSuperset([self._gas_particles, self._dm_particles])
     
+    def before_get_parameter(self):
+        pass
+        
+    def before_set_parameter(self):
+        pass
+        
     def initialize_code(self):
         return 0
     

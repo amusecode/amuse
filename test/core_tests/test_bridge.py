@@ -217,6 +217,12 @@ class ExampleGravityCodeInterface(object):
             return constants.G * sum_of_energies
         return self.particles.potential_energy(smoothing_length_squared=2*self.epsilon_squared)
     
+    def before_set_parameter(self):
+        pass
+        
+    def before_get_parameter(self):
+        pass
+        
     @property
     def kinetic_energy(self):
         return self.particles.kinetic_energy()

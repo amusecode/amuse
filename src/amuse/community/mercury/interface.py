@@ -490,11 +490,7 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_property("get_total_mass")
 
     def define_state(self, object):
-        object.set_initial_state('UNINITIALIZED')
-        object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
-        object.add_method('INITIALIZED', 'invoke_state_change')
-        object.add_transition_to_method('END', 'cleanup_code')
-        object.add_method('END', 'stop')
+        CommonCode.define_state(self, object)
 
 #    def define_state(self, object):
 #        GravitationalDynamics.define_state(self, object)

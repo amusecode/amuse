@@ -274,6 +274,6 @@ class Huayno(GravitationalDynamics):
 
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
-        object.add_method('PARAMETER_CHANGE_B', 'set_eps2_parameter')
+        
         object.add_method('RUN', 'get_kinetic_energy')
         object.add_method('RUN', 'get_potential_energy')

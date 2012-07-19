@@ -344,7 +344,7 @@ class HalogenTests(TestWithMPI):
         self.assertEquals(instance.get_number_of_particles_updated(), 0)
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
         instance.parameters.random_seed = 2
-        self.assertEquals(instance.get_name_of_current_state(), 'PARAMETER_CHANGE_B')
+        self.assertEquals(instance.get_name_of_current_state(), 'CHANGE_PARAMETERS_EDIT')
         self.assertEquals(instance.get_number_of_particles_updated(), 0)
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
         instance.generate_particles()

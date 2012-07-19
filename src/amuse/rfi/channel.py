@@ -635,6 +635,7 @@ class MessageChannel(OptionalAttributes):
             
         name_of_the_compiled_file = self.full_name_of_the_worker
         modificationtime_of_worker = os.stat(name_of_the_compiled_file).st_mtime
+        print name_of_the_compiled_file
         my_class = type(object)
         for x in dir(my_class):
             if x.startswith('__'):

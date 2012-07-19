@@ -396,8 +396,9 @@ class GravityCodeInField(object):
             return
         if (self.verbose):
             print self.code.__class__.__name__, "is evolving to", tend
+        
         self.code.evolve_model(tend)
-        self.code.synchronize_model()
+        
         
         if(self.verbose): 
             print ".. done"

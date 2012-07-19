@@ -735,8 +735,6 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         """
         return function
     
-    def invoke_state_change2(self):
-        pass
         
 class GravityFieldInterface(object):
     """
@@ -885,10 +883,26 @@ class GravitationalDynamics(common.CommonCode):
         object.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
         
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
-        object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
-        object.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
-        object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
+        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        object.add_method('RUN', 'before_get_parameter')
+        object.add_method('EDIT', 'before_get_parameter')
+        object.add_method('UPDATE','before_get_parameter')
+        object.add_method('EVOLVED','before_get_parameter')
+        
+        
         object.add_method('EDIT', 'new_particle')
         object.add_method('EDIT', 'delete_particle')
         object.add_method('UPDATE', 'new_particle')

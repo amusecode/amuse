@@ -239,13 +239,21 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
         self.transitions = []
         self.add_transition(from_state, to_state)
         self.function_name = function_name
+        self.is_determining_method = False
 
     def add_transition(self, from_state, to_state):
         self.transitions.append((from_state, to_state))
 
     def new_method(self, method = None):
         if method == None:
-            method = getattr(self.interface, self.function_name)
+            if self.is_determining_method:
+                raise Exception("A state is defined for a method with name '{0}', but the method is not implemented".format(self.function_name))
+            self.is_determining_method = True
+            try:
+                method = getattr(self.interface, self.function_name)
+            finally:
+                self.is_determining_method = False
+            
         return CodeMethodWrapper(method, self)
 
     def precall(self, method):

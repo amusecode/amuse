@@ -1660,9 +1660,14 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         object.add_method('RUN', 'get_total_mass')
         object.add_method('RUN', 'get_time')
         object.add_method('EDIT', 'get_time')
+        object.add_method('UPDATE', 'get_time')
         object.add_method('INITIALIZED', 'get_time')
-        object.add_method('PARAMETER_CHANGE_A', 'get_time')
-        object.add_method('PARAMETER_CHANGE_B', 'get_time')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'get_time')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'get_time')
+        object.add_method('CHANGE_PARAMETERS_UPDATE', 'get_time')
+        
+        
         object.add_method('RUN', 'get_hydro_state_at_point')
     
         object.add_method('EDIT', 'get_gravity_at_point')

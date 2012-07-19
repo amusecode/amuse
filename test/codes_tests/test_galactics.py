@@ -345,7 +345,7 @@ class GalactICsTests(TestWithMPI):
         self.assertEquals(instance.get_number_of_particles_updated(), 0)
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
         instance.parameters.halo_random_seed = -42.0
-        self.assertEquals(instance.get_name_of_current_state(), 'PARAMETER_CHANGE_B')
+        self.assertEquals(instance.get_name_of_current_state(), 'CHANGE_PARAMETERS_EDIT')
         self.assertEquals(instance.get_number_of_particles_updated(), 0)
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
         instance.generate_particles()
