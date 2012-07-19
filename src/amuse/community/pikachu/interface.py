@@ -2,6 +2,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 
 class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface, GravityFieldInterface):
     """
@@ -333,7 +334,7 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
         return function
     
 
-class Pikachu(GravitationalDynamics):
+class Pikachu(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
@@ -347,6 +348,11 @@ class Pikachu(GravitationalDynamics):
             convert_nbody,
             **options
         )
+        
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
+
 
     def define_parameters(self, object):
         GravitationalDynamics.define_parameters(self, object)

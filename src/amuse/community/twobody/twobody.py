@@ -2,6 +2,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 import copy,numpy
 import numpy as math
 
@@ -527,7 +528,7 @@ class TwoBodyInterface(PythonCodeInterface, GravitationalDynamicsInterface, Grav
     
    
 
-class TwoBody(GravitationalDynamics):
+class TwoBody(GravitationalDynamics, GravityFieldCode):
     
     
     def __init__(self, convert_nbody = None, **options):
@@ -539,6 +540,10 @@ class TwoBody(GravitationalDynamics):
             convert_nbody,
             **options
         )     
+        
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
     
     def get_epsilon_squared(self):
         return zero

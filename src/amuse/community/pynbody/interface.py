@@ -3,7 +3,8 @@ import numpy as np
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
-from amuse.community.interface.gd import OneParticleGravityFieldInterface
+from amuse.community.interface.gd import SinglePointGravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 from amuse.rfi.core import PythonCodeInterface
 
 try:
@@ -301,7 +302,7 @@ class PyNbodyImplementation(object):
 
 
 
-class PyNbodyInterface(PythonCodeInterface, GravitationalDynamicsInterface, OneParticleGravityFieldInterface):
+class PyNbodyInterface(PythonCodeInterface, GravitationalDynamicsInterface, SinglePointGravityFieldInterface):
 
     def __init__(self, **options):
         PythonCodeInterface.__init__(self, PyNbodyImplementation, 'pynbody_worker', **options)
@@ -402,7 +403,7 @@ class PyNbodyInterface(PythonCodeInterface, GravitationalDynamicsInterface, OneP
 
 
 
-class PyNbody(GravitationalDynamics):
+class PyNbody(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, convert_nbody = None, **options):
         nbody_interface = PyNbodyInterface(**options)
@@ -413,6 +414,10 @@ class PyNbody(GravitationalDynamics):
             convert_nbody,
             **options
         )
+        
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
 
 
     def define_parameters(self, object):

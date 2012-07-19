@@ -3,6 +3,7 @@ import numpy
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 from amuse.community import *
 from amuse.support.options import option
 
@@ -1580,7 +1581,7 @@ class FiDoc(object):
     def __get__(self, instance, owner):
         return instance.legacy_doc+"\n\n"+instance.parameters.__doc__
 
-class Fi(GravitationalDynamics):
+class Fi(GravitationalDynamics, GravityFieldCode):
     
     __doc__ = FiDoc()
     
@@ -1624,6 +1625,8 @@ class Fi(GravitationalDynamics):
     
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
+        
         object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         object.add_method('END', 'initialize_code')
 
@@ -1662,7 +1665,6 @@ class Fi(GravitationalDynamics):
         object.add_method('PARAMETER_CHANGE_B', 'get_time')
         object.add_method('RUN', 'get_hydro_state_at_point')
     
-# this should be checked!
         object.add_method('EDIT', 'get_gravity_at_point')
         object.add_method('EDIT', 'get_potential_at_point')
     

@@ -3,7 +3,8 @@ import numpy
 
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
-from amuse.community.interface.gd import OneParticleGravityFieldInterface
+from amuse.community.interface.gd import SinglePointGravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 from amuse.community import *
 from amuse.support.options import option
 
@@ -12,7 +13,7 @@ class Gadget2Interface(
     GravitationalDynamicsInterface, 
     LiteratureReferencesMixIn, 
     StoppingConditionInterface,
-    OneParticleGravityFieldInterface
+    SinglePointGravityFieldInterface
     ):
     """
     GADGET-2 computes gravitational forces with a hierarchical tree 
@@ -1202,7 +1203,7 @@ class Gadget2Doc(object):
     def __get__(self, instance, owner):
         return instance.legacy_interface.__doc__+"\n\n"+instance.parameters.__doc__
 
-class Gadget2(GravitationalDynamics):
+class Gadget2(GravitationalDynamics, GravityFieldCode):
     
     __doc__ = Gadget2Doc()
     
@@ -1260,6 +1261,8 @@ class Gadget2(GravitationalDynamics):
     
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
+        
         object.add_method('EDIT', 'new_dm_particle')
         object.add_method('UPDATE', 'new_dm_particle')
         object.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)

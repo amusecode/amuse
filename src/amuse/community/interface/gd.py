@@ -796,7 +796,7 @@ class GravityFieldInterface(object):
         return function
 
 
-class OneParticleGravityFieldInterface(object):
+class SinglePointGravityFieldInterface(object):
     """
     Codes implementing the gravity field interface provide functions to
     calculate the force and potential energy fields at any point.
@@ -905,8 +905,6 @@ class GravitationalDynamics(common.CommonCode):
         object.add_method('RUN', 'get_mass')
         object.add_method('RUN', 'get_position')
         object.add_method('RUN', 'get_velocity')
-        object.add_method('RUN', 'get_gravity_at_point')
-        object.add_method('RUN', 'get_potential_at_point')
         object.add_method('RUN', 'get_potential_energy')
         object.add_method('RUN', 'get_kinetic_energy')
         
@@ -1215,5 +1213,12 @@ class GravitationalDynamics(common.CommonCode):
         self.cleanup_code()
         self.initialize_code()
         self.parameters.reset_from_memento(parameters)
+        
+
+class GravityFieldCode(object):
+        
+    def define_state(self, object): 
+        object.add_method('RUN', 'get_gravity_at_point')
+        object.add_method('RUN', 'get_potential_at_point')
         
         

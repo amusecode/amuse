@@ -1,14 +1,15 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
-from amuse.community.interface.gd import OneParticleGravityFieldInterface
+from amuse.community.interface.gd import SinglePointGravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 
 class BHTreeInterface(
     CodeInterface,
     LiteratureReferencesMixIn,
     GravitationalDynamicsInterface,
     StoppingConditionInterface,
-    OneParticleGravityFieldInterface):
+    SinglePointGravityFieldInterface):
     """
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
@@ -233,7 +234,7 @@ class BHTreeInterface(
         """
         return function
     
-class BHTree(GravitationalDynamics):
+class BHTree(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
@@ -322,6 +323,8 @@ class BHTree(GravitationalDynamics):
         
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
+        
         object.add_method('EDIT', 'post_init_setters')
 
     def define_particle_sets(self, object):

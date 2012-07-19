@@ -2,6 +2,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 
 class OctgravInterface(
     CodeInterface, 
@@ -87,7 +88,7 @@ class OctgravInterface(
         
 
 
-class Octgrav(GravitationalDynamics):
+class Octgrav(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, convert_nbody = None, **options):
         legacy_interface = OctgravInterface(**options)
@@ -176,10 +177,12 @@ class Octgrav(GravitationalDynamics):
 
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
         
 # this should be checked!
         object.add_method('EDIT', 'get_gravity_at_point')
         object.add_method('EDIT', 'get_potential_at_point')
+        
         
     
     def define_particle_sets(self, object):

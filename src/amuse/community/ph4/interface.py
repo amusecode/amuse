@@ -2,6 +2,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 
 # *** This script, together with the defaults in
 # *** GravitationalDynamicsInterface, will be used to generate both
@@ -236,7 +237,7 @@ class ph4Interface(CodeInterface,
         
    
 
-class ph4(GravitationalDynamics):
+class ph4(GravitationalDynamics,GravityFieldCode):
 
     # The actual module.
 
@@ -249,6 +250,10 @@ class ph4(GravitationalDynamics):
                                        legacy_interface,
                                        convert_nbody,
                                        **keyword_arguments)
+                                       
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
 
     def define_parameters(self, object):
 

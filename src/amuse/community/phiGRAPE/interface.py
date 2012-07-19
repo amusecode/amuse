@@ -6,6 +6,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 
 class PhiGRAPEInterface(
     CodeInterface, 
@@ -154,7 +155,7 @@ class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
 
 
 
-class PhiGRAPE(GravitationalDynamics):
+class PhiGRAPE(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB, use_gl = False, **options):
         nbody_interface = None
@@ -171,6 +172,10 @@ class PhiGRAPE(GravitationalDynamics):
             convert_nbody,
             **options
         )
+                                       
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
 
     def define_parameters(self, object):
         object.add_method_parameter(

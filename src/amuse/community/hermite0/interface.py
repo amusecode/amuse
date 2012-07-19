@@ -1,13 +1,14 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
-from amuse.community.interface.gd import OneParticleGravityFieldInterface
+from amuse.community.interface.gd import SinglePointGravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 
 class HermiteInterface(CodeInterface,
                        LiteratureReferencesMixIn,
                        GravitationalDynamicsInterface,
                        StoppingConditionInterface,
-                       OneParticleGravityFieldInterface):
+                       SinglePointGravityFieldInterface):
     """
     N-body integration module with shared but variable time step
     (the same for all particles but its size changing in time),
@@ -126,7 +127,7 @@ class HermiteDoc(object):
         return instance.legacy_doc+"\n\n"+instance.parameters.__doc__
 
 
-class Hermite(GravitationalDynamics):
+class Hermite(GravitationalDynamics, GravityFieldCode):
 
     __doc__ = HermiteDoc()
 
@@ -143,6 +144,10 @@ class Hermite(GravitationalDynamics):
             **options
         )
 
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
+        
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_eps2",

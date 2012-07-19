@@ -3,6 +3,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 
 class MI6Interface(
     CodeInterface, 
@@ -228,7 +229,7 @@ class MI6Interface(
 
 
 
-class MI6(GravitationalDynamics):
+class MI6(GravitationalDynamics, GravityFieldCode):
 
 ##    __doc__ = MasakiDoc()
 
@@ -244,6 +245,10 @@ class MI6(GravitationalDynamics):
             convert_nbody,
             **options
         )
+        
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        GravityFieldCode.define_state(self, object)
 
     def define_parameters(self, object):
         GravitationalDynamics.define_parameters(self, object)
