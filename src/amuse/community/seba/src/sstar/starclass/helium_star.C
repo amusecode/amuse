@@ -492,7 +492,9 @@ real helium_star::CO_core_mass() {
 }
 #endif
 
-
+#if 0
+// end time is a function of the envelope mass, which is a function as the wind
+// prescription is dependent on the number of steps
 void helium_star::stellar_wind(const real dt) {
 
 //cerr<<"void helium_star::stellar_wind(dt="<<dt<<") = ";
@@ -553,21 +555,33 @@ void helium_star::stellar_wind(const real dt) {
               return;
         //      }
    } 
-
+#endif
 
 real helium_star::gyration_radius_sq() {
 
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }
 
-
-// (GN+SPZ May  3 1999) NOT USED!, but called by post_constructor
 void helium_star::update_wind_constant() {
-
-//  wind_constant = (1 - cnsts.parameters(helium_star_final_core_fraction))
+// (GN+SPZ May  3 1999) NOT USED!, but called by post_constructor // (SilT June 15th 2012) Used again!
+//  wind_constant = (1 - cnsts.parameters(helium_star_final_core_fraction)) 
 //                      * get_total_mass();
+ 
+// (SilT June 15 2012) based on HPT2000
+    // Reimers 1975
+    // GB like stars
+    real neta = 0.5; 
+    real dm_r = neta * 4.E-13 * radius * luminosity / get_total_mass();
+    
+    
+    //HPT2000
+    //Reduced WR-like mass loss for small H-envelope mass
+    real dm_wr = 1.E-13 * pow(luminosity, 1.5);
 
+    wind_constant = max(max(dm_wr, dm_r), 0.0);
 }
+
+
 
 stellar_type helium_star::get_element_type() {
 //  if (envelope_mass <= 0) 

@@ -45,9 +45,10 @@ class helium_giant : public single_star {
         bool hydrogen_envelope_star() {return false;}
         bool star_with_COcore() {return true;}   
 
-        void evolve_element(const real);
         void instantaneous_element();
-    
+        void evolve_element(const real);
+ 	real get_evolve_timestep();
+		   
         real helium_giant_luminosity_core_mass_relation(
                                                     const real time, const real mass, const real z);
         real helium_giant_age_core_mass_relation(const real m_core, const real mass);
@@ -62,7 +63,7 @@ class helium_giant : public single_star {
         real helium_giant_core_mass(const real time,
                          const real mass);
          
-        void stellar_wind(const real);
+        //void stellar_wind(const real);
         real nucleair_evolution_timescale(); 
     
         void update();

@@ -57,7 +57,7 @@ class helium_star : public single_star {
     real nucleair_evolution_timescale();
 
 	 void update();
-	 void stellar_wind(const real);
+	 //void stellar_wind(const real);
 	 void update_wind_constant();
 	 void create_remnant();
 	 bool hydrogen_envelope_star() {return false;}

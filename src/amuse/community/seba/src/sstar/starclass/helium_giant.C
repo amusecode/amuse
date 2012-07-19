@@ -111,6 +111,26 @@ void helium_giant::evolve_element(const real end_time) {
     stellar_wind(dt);
 }
 
+
+// (SilT June 15 2012) needed with new stellar wind based on HPT2000
+real helium_giant::get_evolve_timestep() {
+
+  real timestep = min((next_update_age - last_update_age )/ cnsts.safety(number_of_steps), 
+                      next_update_age - relative_age - 0.5 * cnsts.safety(minimum_timestep));   
+   
+    //extra safety measure
+    // when L and R increase rapidly, so will mdot
+    // useful for stars 0.5-2.5 Msun. 
+    real dt_mdot = timestep;
+    real A_He = AGB_A_He_estimator();
+    real R_hezams = helium_star_radius_for_solar_metalicity(relative_mass);
+    
+    real new_luminosity = helium_giant_luminosity_core_mass_relation(relative_age+timestep, relative_helium_mass, metalicity);
+    real new_radius = helium_giant_radius(new_luminosity, relative_helium_mass, get_total_mass(), metalicity);
+    dt_mdot = core_mass / ( new_luminosity * A_He) * max(R_hezams/new_radius, 0.01);
+   return max(min(timestep, dt_mdot), cnsts.safety(minimum_timestep));
+}
+
 void helium_giant::update_relative_helium_mass(const real new_relative_helium_mass) {
     relative_helium_mass = new_relative_helium_mass;
     adjust_next_update_age();
@@ -554,6 +574,9 @@ real helium_giant::CO_core_mass() {
 }
 #endif
 
+#if 0
+// end time is a function of the envelope mass, which is a function as the wind
+// prescription is dependent on the number of steps
 void helium_giant::stellar_wind(const real dt) {
 
 //  PRL(last_update_age);
@@ -593,6 +616,9 @@ void helium_giant::stellar_wind(const real dt) {
     reduce_mass(wind_mass);
   return;
 }
+#endif
+
+
 
 
 real helium_giant::gyration_radius_sq() {
@@ -600,17 +626,34 @@ real helium_giant::gyration_radius_sq() {
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }
 
-// (GN+SPZ May  3 1999) helium_giants loose complete envelope in wind
+
+
+
+
 void helium_giant::update_wind_constant() {
+ 
+ // (GN+SPZ May  3 1999) helium_giants loose complete envelope in wind-
+ //  wind_constant = (1 - cnsts.parameters(helium_star_final_core_fraction))
+ //                * get_total_mass(); 
+ 
+ // (GN+SPZ May  7 1999) envelope is about 30% of total mass,
+ // we loose 10% of total mass ....
+//  wind_constant = 0.3*envelope_mass;
+     
+// (SilT June 15 2012) based on HPT2000
+//    Reimers 1975
+//     GB like stars
+    real neta = 0.5; 
+    real dm_r = neta * 4.E-13 * radius * luminosity / get_total_mass();
 
-//  wind_constant = (1 - cnsts.parameters(helium_star_final_core_fraction))
-//                * get_total_mass(); 
-
-// (GN+SPZ May  7 1999) envelope is about 30% of total mass,
-// we loose 10% of total mass ....
-  wind_constant = 0.3*envelope_mass;
+    //HPT2000
+    //Reduced WR-like mass loss for small H-envelope mass
+    real dm_wr = 1.E-13 * pow(luminosity, 1.5);
+    
+    wind_constant = max(max(dm_wr, dm_r), 0.0);
     
 }
+
 
 stellar_type helium_giant::get_element_type() {
 
