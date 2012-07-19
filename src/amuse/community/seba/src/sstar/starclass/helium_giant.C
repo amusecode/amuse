@@ -210,17 +210,16 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
 
     stellar_type type;
     real mc_SN = maximum_helium_giant_core_mass(mass);
-    
-    if (mc_core < cnsts.parameters(Chandrasekar_mass)){
+    if (mass_tot < cnsts.parameters(Chandrasekar_mass)){
         // if mc_core equals 1.45*get_total_mass()-0.31
         // shell burning stops before whole envelope is converted into C and O
-        if (mc_core < mass_tot){
-            cerr<<"Warning: not homogeneous WD"<<endl;
-            type = Carbon_Dwarf;
-            
-            if(!update_core_and_envelope_mass(get_total_mass())) {
-                cerr << "Update core mass failed in helium_giant()"<<endl;
-            }
+//      if (1.45*mass_tot-0.31 < mass_tot){
+//            cerr<<"Warning: not homogeneous WD"<<endl;
+//            type = Carbon_Dwarf;
+//            
+//            if(!update_core_and_envelope_mass(get_total_mass())) {
+//                cerr << "Update core mass failed in helium_giant()"<<endl;
+//            }
 
         }
         // mc_core equals total mass
