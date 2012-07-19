@@ -528,36 +528,65 @@ void helium_giant::adjust_accretor_age(const real mdot,
 }
 #endif
 
+
+
+//Eq.85
+// determine whether the star is a helium giant or helium hertzsprung gap star
+ real helium_giant::helium_giant_type(const real lum, const real mass, const real mass_tot, const real z){
+    
+    real lambda = 500*(2.0+pow(mass_tot,5))/pow(mass_tot, 2.5);
+    real Rzhe = helium_star_radius_for_solar_metalicity(mass_tot);
+    real L_tHems = terminal_helium_main_sequence_luminosity(mass); 
+    real R1 = Rzhe * pow(lum/L_tHems, 0.2) + 0.02*(exp(lum/lambda)-exp(L_tHems/lambda));//He Hg
+    real R2 = 0.08*pow(lum, 0.75); //He GB
+ 
+    if (R1 < R2) return 5.;
+    else return 6;
+}
+    
+
+
 // see helium_star.C
 real helium_giant::zeta_adiabatic() {
 
-     real z = 0.;
+     real heg_type = helium_giant_type(luminosity, relative_helium_mass, get_total_mass(), metalicity);
+     if (heg_type ==  5){ // helium hertzsprung 
+     	return 4;
+	}
+     else { // helium giant
+	real z = 0.;
 //      Hjellming and Webbink 1987 ApJ, 318, 804
-     real x = core_mass/get_total_mass();
-     real A = -0.220823;
-     real B = -2.84699;
-     real C = 32.0344;
-     real D = -75.6863;
-     real E = 57.8109;
+     	real x = core_mass/get_total_mass();
+     	real A = -0.220823;
+     	real B = -2.84699;
+     	real C = 32.0344;
+     	real D = -75.6863;
+     	real E = 57.8109;
 
-     if (get_total_mass()<=0.4)
-        z = -cnsts.mathematics(one_third);
-     else
-        z = A + x*(B + x*(C + x*(D + x*E)));
+     	if (get_total_mass()<=0.4)
+        	z = -cnsts.mathematics(one_third);
+     	else
+        	z = A + x*(B + x*(C + x*(D + x*E)));
 
-     return z;
-
-   }
+     	return z;
+      }
+}
 
 real helium_giant::zeta_thermal() {
 
-    real z = -2;
+//    real z = -2;
+//    if (get_core_mass()<=0.4)  // like a white dwarf
+//	z = -cnsts.mathematics(one_third);
+//    return z;
 
-    if (get_core_mass()<=0.4)  // like a white dwarf
-	z = -cnsts.mathematics(one_third);
 
-    return z;
-
+     real heg_type = helium_giant_type(luminosity, relative_helium_mass, get_total_mass(), metalicity);
+     if (heg_type ==  5){ // helium hertzsprung
+     	return -2;
+	}
+     else { // helium giant
+     	return 0; 
+	}
 }
 
 #if 0

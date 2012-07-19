@@ -81,7 +81,9 @@ class helium_giant : public single_star {
         void adjust_next_update_age();
         void update_relative_helium_mass(const real new_relative_helium_mass);
 
-        real zeta_adiabatic();
+        real helium_giant_type(const real lum, const real mass, 
+                                 const real mass_tot, const real z);
+	real zeta_adiabatic();
         real zeta_thermal();
         real gyration_radius_sq();
 
