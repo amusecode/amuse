@@ -65,8 +65,7 @@ class main_sequence : public single_star {
         star* reduce_mass(const real);
         void adjust_accretor_age(const real mdot, const bool rejuvenate);
         void adjust_age_after_mass_loss(const real mdot, const bool rejuvenate);
-        real  add_mass_to_accretor(const real, bool);
-        real  add_mass_to_accretor(real, const real, bool);
+        real  add_mass_to_accretor(real, bool, const real = -1.);
 
 
 //		Mass transfer stability
@@ -81,7 +80,7 @@ class main_sequence : public single_star {
 //              Friend functions.
         friend brown_dwarf::brown_dwarf(main_sequence &);
 	friend hertzsprung_gap::hertzsprung_gap(main_sequence &);
-	friend hyper_giant::hyper_giant(main_sequence &);
+	friend sub_giant::sub_giant(main_sequence &);
 	friend thorne_zytkow::thorne_zytkow(main_sequence &);
 	//friend helium_star::helium_star(main_sequence &);
 

@@ -55,8 +55,7 @@ class black_hole : public single_star {
         star* reduce_mass(const real);
         real accretion_limit(const real, const real);
         star* subtrac_mass_from_donor(const real, real&);
-        real add_mass_to_accretor(const real, bool);
-        real add_mass_to_accretor(real, const real, bool);
+        real add_mass_to_accretor(real, bool, const real = -1.);
         void accrete_from_envelope(const real);
         star* merge_elements(star*);
 

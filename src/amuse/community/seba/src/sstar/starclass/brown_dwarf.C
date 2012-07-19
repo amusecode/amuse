@@ -112,26 +112,8 @@ star* brown_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
         return this;
      }
 
-real brown_dwarf::add_mass_to_accretor(const real mdot, bool) {
 
-    if (mdot<0) {
-      cerr << "brown_dwarf::add_mass_to_accretor(mdot="
-	   << mdot << ")"<<endl;
-      cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-
-      return 0;
-    }
-	  
-    envelope_mass += mdot;
-    relative_mass = max(relative_mass, get_total_mass());
-
-    set_spec_type(Accreting);
-	
-    return mdot;
-  
-}
-
-real brown_dwarf::add_mass_to_accretor(real mdot, const real dt, bool) {
+real brown_dwarf::add_mass_to_accretor(real mdot, bool, const real dt) {
 
         if (mdot<0) {
            cerr << "brown_dwarf::add_mass_to_accretor(mdot="
@@ -152,6 +134,8 @@ real brown_dwarf::add_mass_to_accretor(real mdot, const real dt, bool) {
      }
 
 real brown_dwarf::accretion_limit(const real mdot, const real dt) {
+
+  if (dt < 0) return mdot;
 
         real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
 

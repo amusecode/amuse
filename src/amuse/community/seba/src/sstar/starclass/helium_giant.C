@@ -374,58 +374,7 @@ star* helium_giant::reduce_mass(const real mdot) {
 //		general mass transfer utilities.
 // //Increase donor mass and possibly relative_mass of donor.
 // Check mass-transfer timescales before use.
-real helium_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    if (mdot<=0) {
-        cerr << "helium_giant::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
-        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-        
-        set_spec_type(Accreting, false);
-        
-        return 0;
-    }
-        
-    if(hydrogen){
-        // hydrogen accretion
-        // is treated in the same way as helium accretion..
-
-        // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
-        //adjust_accretor_age(mdot);
-        envelope_mass += mdot;
-        accreted_mass += mdot;
-        if (accreted_mass > 0.05 * get_total_mass()){
-            cerr << "WARNING: accreted hydrogen mass more than 5% of helium giant"<<endl;
-        }
-        
-        // only neccessary for AGB & He giant accretor as  
-        // next_update_age is a function of total mass
-        // as the maximal core mass can be the total mass
-        // when total mass < chandrasekhar mass      
-        adjust_next_update_age();  
-        
-        //if (relative_helium_mass<get_total_mass()) 
-        //  update_relative_helium_mass(get_total_mass());
-        
-    }
-    else{
-        //for the moment assume helium accretion
-
-        // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
-        //adjust_accretor_age(mdot);
-        envelope_mass += mdot;
-        
-        // only neccessary for AGB & He giant accretor as  
-        // next_update_age is a function of total mass
-        // as the maximal core mass can be the total mass
-        // when total mass < chandrasekhar mass      
-        adjust_next_update_age();  
-            
-    }
-    
-    set_spec_type(Accreting);    
-    return mdot;
-}
-
-real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+real helium_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
     if (mdot<0) {
         cerr << "helium_giant::add_mass_to_accretor(mdot=" << mdot 
         << ", dt=" << dt << ")"<<endl;
@@ -476,19 +425,18 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
 }
 
 
+real helium_giant::accretion_limit(const real mdot, const real dt) {
+  // needed in double_star::zeta(donor, accretor)!!
 
-//real helium_giant::accretion_limit(const real mdot, const real dt) {
-//cerr<<"helium_giant::accretion_limit not used"<<endl;
-//
-//     real mdot_limit = mdot;
-//
-//     real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
-//     if (mdot>=eddington)
-//       mdot_limit =  eddington;
-//
-//     return mdot_limit;
-//
-//}
+     real mdot_limit = mdot;
+
+     real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
+     if (mdot>=eddington)
+       mdot_limit =  eddington;
+
+     return mdot_limit;
+
+}
 
 # if 0
 // currently not used

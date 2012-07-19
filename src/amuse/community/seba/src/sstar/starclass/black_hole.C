@@ -336,17 +336,7 @@ void black_hole::accrete_from_envelope(const real dt) {
 	set_spec_type(Accreting, false);
 }
 
-real black_hole::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    //For black holes no difference currently between hydrogen/helium/.. accretion
-
-//		Increase envelope_mass of black hole.
-      envelope_mass += mdot;
-      relative_mass = max(relative_mass, get_total_mass());
-
-      return mdot;
-   }
-
-real black_hole::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+real black_hole::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
     //For black holes no difference currently between hydrogen/helium/.. accretion
 
       mdot = accretion_limit(mdot, dt);
@@ -359,6 +349,8 @@ real black_hole::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
 
 // Accretion is limited by the Eddington luminosity
 real black_hole::accretion_limit(const real mdot, const real dt) {
+
+  if (dt < 0) return mdot;
 
       real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
       if (cnsts.parameters(hyper_critical))

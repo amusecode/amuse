@@ -256,60 +256,7 @@ real main_sequence::main_sequence_core_radius()
 
 // add mass to accretor
 // is a separate function (see single_star.C) because rejuvenation
-real main_sequence::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    
-    if (mdot<=0) {
-        cerr << "main_sequence::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
-        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-        cerr << "Action: No action!" << endl;
-        
-        return 0;
-    }
-    
-    if(hydrogen){
-        // hydrogen accretion
-        adjust_accretor_age(mdot, true);
-        envelope_mass += mdot;
-        accreted_mass += mdot;
-        if (relative_mass<get_total_mass()) 
-            update_relative_mass(get_total_mass());
-        
-    }
-    else{
-        //for the moment assume helium accretion
-        
-        //core_mass += mdot; //no core yet
-        envelope_mass += mdot;
-        update_relative_mass(relative_mass + mdot);
-        
-        //alike void main_sequence::adjust_accretor_age
-        real m_rel_new;
-        real m_tot_new = get_total_mass() + mdot;
-        if (m_tot_new>relative_mass)
-            m_rel_new = m_tot_new;
-        else m_rel_new = relative_mass;
-        
-        real t_ms_old = main_sequence_time();
-        real z_new = get_metalicity();
-        real t_ms_new = main_sequence_time(m_rel_new, z_new);
-        
-        relative_age = relative_age * (t_ms_new/t_ms_old) * rejuvenation_fraction(mdot/m_tot_new) + mdot/0.1/m_tot_new * t_ms_new; 
-        //as core_mass cannot set the relative_age here we simply limit the relative age to the new t_ms
-        relative_age = min(relative_age, t_ms_new);
-        
-        // next_update_age should not be reset here,
-        // is done in add_mass_to_accretor, where also relative_mass
-        // is updated (SPZ+GN: 1 Oct 1998)
-        // next_update_age = t_ms_new; 
-            
-        
-        }
-    
-    set_spec_type(Accreting);    
-    return mdot;
-}
-
-real main_sequence::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+real main_sequence::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
     if (mdot<0) {
         cerr << "main_sequence::add_mass_to_accretor(mdot=" << mdot 
         << ", dt=" << dt << ")"<<endl;
@@ -474,15 +421,6 @@ star* main_sequence::merge_elements(star* str) {
 
       star* merged_star = this;
 
-      if (str->get_core_mass() > 0){
-        //add_mass_to_core(str->get_core_mass());
-        // (SilT Jan 6 2010) proper adding of core mass as non-hydrogen via add_mass_to_accretor
-        add_mass_to_accretor(str->get_core_mass(), false);
-      }
-
-      if (str->get_envelope_mass()>0) 
-         add_mass_to_accretor(str->get_envelope_mass(), str->hydrogen_envelope_star());
-
       spec_type[Merger]=Merger;
 
       switch(str->get_element_type()) {
@@ -491,22 +429,17 @@ star* main_sequence::merge_elements(star* str) {
          case Horizontal_Branch: 
          case Super_Giant: 
          case Carbon_Star: 
+	   cerr << "ERROR merger in which MS is lager than giant" << endl;
+	   exit(-1);
          case Helium_Star: 
          case Helium_Giant: 
          case Carbon_Dwarf: 
          case Oxygen_Dwarf:
          case Helium_Dwarf: 
-    		star_transformation_story(Hertzsprung_Gap);
+    		star_transformation_story(Sub_Giant);
 
-            // (GN+SPZ May  4 1999) should return now
-            //  merged_star = dynamic_cast(star*, 
-            //  new hertzsprung_gap(*this));
-            //  dump(cerr, false);
-
-            // Chose relative_age to be next update age!
-            // otherwise sub_giants become unhappy.
             relative_age = next_update_age;
-            return dynamic_cast(star*, new hertzsprung_gap(*this));
+            return dynamic_cast(star*, new sub_giant(*this));
       
          case Thorn_Zytkow :
     	 case Xray_Pulsar:
@@ -517,7 +450,16 @@ star* main_sequence::merge_elements(star* str) {
     	      // merged_star = dynamic_cast(star*, 
     	      // new thorne_zytkow(*this));
     	      return dynamic_cast(star*, new thorne_zytkow(*this));
-	      default:	   instantaneous_element(); //ms+ms
+
+        default: // ms+ms
+
+	   if (str->get_core_mass() > 0)
+	     exit(-1);
+
+	   if (str->get_envelope_mass()>0) 
+	     add_mass_to_accretor(str->get_envelope_mass(), true);
+
+	   instantaneous_element(); //ms+ms
       }
       
       return merged_star;

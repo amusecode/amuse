@@ -156,74 +156,8 @@ star* hertzsprung_gap::subtrac_mass_from_donor(const real dt, real& mdot) {
 
 // add mass to accretor
 // is a separate function (see single_star.C) because rejuvenation
-real hertzsprung_gap::add_mass_to_accretor(const real mdot, bool hydrogen) {
+real hertzsprung_gap::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
 
-    if (mdot<=0) {
-        cerr << "hertzsprung_gap::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
-        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-        cerr << "Action: No action!" << endl;
-        
-        return 0;
-    }
-    
-    if(hydrogen){
-        // hydrogen accretion
-        real m_FGB = helium_ignition_mass(metalicity);
-        
-            if ( relative_mass > m_FGB){
-            //the evolution of m_core, luminosity, timescales decouples from M
-            // relative mass is no longer kept at same value as total mass
-            envelope_mass += mdot;
-            accreted_mass += mdot;
-        }
-        else{
-            adjust_accretor_age(mdot, true);
-            envelope_mass += mdot;
-            accreted_mass += mdot;
-            if (relative_mass < get_total_mass()){
-                update_relative_mass(get_total_mass());
-            }
-        }
-        
-    }
-    else{
-        //for the moment assume helium accretion
-        core_mass += mdot;
-        update_relative_mass(relative_mass + mdot);
-        
-        //adjust age part
-        real mc_ehg = terminal_hertzsprung_gap_core_mass(relative_mass, metalicity);
-        real m5_25 = pow(relative_mass, 5.25);            
-        real rho = (1.586 + m5_25) / (2.434 + 1.02*m5_25);
-        real tau = (core_mass / mc_ehg - rho ) / (1. - rho);
-        real t_ms = main_sequence_time();
-        real t_bgb = base_giant_branch_time(relative_mass, metalicity);
-        relative_age = t_ms + tau * (t_bgb - t_ms);
-        last_update_age = t_ms;
-
-        if (tau < 0.){
-            real (single_star::*fptr)(const real, real) = &single_star::initial_hertzsprung_gap_core_mass;        
-            real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
-            update_relative_mass(m_rel);
-            last_update_age = main_sequence_time(relative_mass, metalicity);
-            relative_age = last_update_age;     
-            evolve_core_mass();
-        }
-        if (tau > 1.){
-            real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
-            real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
-            update_relative_mass(m_rel);
-            last_update_age = main_sequence_time(relative_mass, metalicity);
-            relative_age = next_update_age;
-            evolve_core_mass();
-        }
-    }
-
-    set_spec_type(Accreting);            
-    return mdot;
-}
-
-real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
     if (mdot<0) {
         cerr << "hertzsprung_gap::add_mass_to_accretor(mdot=" << mdot 
         << ", dt=" << dt << ")"<<endl;
@@ -232,25 +166,20 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
         return 0;
     }
     
+    bool update_age = false;
+
     if(hydrogen){
         //hydrogen accretion
         mdot = accretion_limit(mdot, dt);
-        real m_FGB = helium_ignition_mass(metalicity);
-        
-        if ( relative_mass > m_FGB){
-            //the evolution of m_core, luminosity, timescales decouples from M
-            // relative mass is no longer kept at same value as total mass
-            envelope_mass += mdot;
-            accreted_mass += mdot;
-        }
-        else{
-            adjust_accretor_age(mdot, true);
-            envelope_mass += mdot;
-            accreted_mass += mdot;
-            if (relative_mass < get_total_mass()){
-                update_relative_mass(get_total_mass());
-            }
-        }
+
+	envelope_mass += mdot;
+	accreted_mass += mdot;
+
+	if (relative_mass < get_total_mass()){
+	  update_age = true;
+	  update_relative_mass(get_total_mass());
+	}
+	
         
         adjust_accretor_radius(mdot, dt);
         
@@ -263,6 +192,12 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
         core_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
+	update_age = true;
+    }
+
+
+    if (update_age) {
+
         //adjust age part
         real mc_ehg = terminal_hertzsprung_gap_core_mass(relative_mass, metalicity);
         real m5_25 = pow(relative_mass, 5.25);            
@@ -294,6 +229,7 @@ real hertzsprung_gap::add_mass_to_accretor(real mdot, const real dt, bool hydrog
     return mdot;
 }
 
+#if 0
 // Star is rejuvenated by accretion.
 // Age adjustment especially for accretion from other stars.
 // No information from stellar evolution tracks is included.
@@ -351,6 +287,7 @@ void hertzsprung_gap::adjust_accretor_age(const real mdot, const bool rejuvenate
         // next_update_age should not be reset here
         // next_update_age = t_ms_new + t_hg_new;
 }
+#endif
 
 // Age adjustment especially for (wind) mass loss
 // It is part of the single star evolution, 

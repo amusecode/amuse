@@ -59,8 +59,7 @@ class planet : public star {
         void reduce_donor_mass(const real);
         real subtrac_mass_from_donor(const real);
         real accretion_limit(const real, const real); 
-        real add_mass_to_accretor(const real);
-        real add_mass_to_accretor(real, const real);
+        real add_mass_to_accretor(const real, bool = false, const real = -1.);
         void adjust_accretor_age(const real);
         void adjust_next_update_age() {/* do nothing */}
         void accrete_from_envelope(const real);

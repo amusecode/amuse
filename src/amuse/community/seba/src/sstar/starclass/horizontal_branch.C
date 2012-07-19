@@ -86,77 +86,7 @@ horizontal_branch::horizontal_branch(hertzsprung_gap & h) : single_star(h) {
 //		general mass transfer utilities.
 // Increase donor mass and possibly relative_mass of donor.
 // Check mass-transfer timescales before use.
-real horizontal_branch::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    if (mdot<=0) {
-        cerr << "horizontal_branch::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
-        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-        
-        set_spec_type(Accreting, false);
-        
-        return 0;
-    }
-    else {
-        
-        if(hydrogen){
-            // hydrogen accretion
-            // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
-            //adjust_accretor_age(mdot);
-            envelope_mass += mdot;
-            accreted_mass += mdot;
-                        
-            //if (relative_mass<get_total_mass()) 
-            //  update_relative_mass(get_total_mass());
-            
-        }
-        else{
-            //for the moment assume helium accretion
-            core_mass += mdot;
-            update_relative_mass(relative_mass + mdot);
-            
-            //adjust age part
-            real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
-            real mc_HeI = helium_ignition_core_mass(relative_mass, metalicity);
-            
-            real t_HeI = helium_ignition_time(relative_mass, metalicity); 
-            real t_He  = core_helium_burning_timescale(relative_mass, metalicity);
-            real tau = (core_mass - mc_HeI) / (mc_bagb - mc_HeI);
-            relative_age = t_HeI + tau * t_He;
-            last_update_age = t_HeI;
-            
-            if (tau < 0.){                
-                real xmin, xmax;
-                real m_HeF = helium_flash_mass(metalicity);
-                if (relative_mass < m_HeF){
-                    xmin = cnsts.parameters(minimum_main_sequence);
-                    xmax = m_HeF;
-                }
-                else{ 
-                    xmin = m_HeF;
-                    xmax = cnsts.parameters(maximum_main_sequence);
-                }
-                real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;                        
-                real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
-                update_relative_mass(m_rel);
-                last_update_age = helium_ignition_time(relative_mass, metalicity); 
-                relative_age = last_update_age;  
-                evolve_core_mass();
-            }
-            if (tau > 1.){
-                // in principle this is not correct because the helium core has reached it's max in this phase
-                // because of accretion, but what happens with the co core?
-                update_relative_mass(base_AGB_relative_mass(core_mass, metalicity));
-                relative_age = next_update_age;
-                last_update_age = helium_ignition_time(relative_mass, metalicity); 
-                evolve_core_mass();
-            }
-        }
-    }
-
-    set_spec_type(Accreting);
-    return mdot;
-}
-
-real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+real horizontal_branch::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
 
     if (mdot<0) {
         cerr << "horizontal_branch::add_mass_to_accretor(mdot=" << mdot 
@@ -165,18 +95,22 @@ real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydr
         return 0;
     }
     
+    bool update_age = false;
     
     if(hydrogen){
         //hydrogen accretion
         mdot = accretion_limit(mdot, dt);
         
-        // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
-        // adjust_accretor_age(mdot);
         envelope_mass += mdot;
         accreted_mass += mdot;
         
-        //  if (relative_mass<get_total_mass()) 
-        //    update_relative_mass(get_total_mass());
+        // For now, rejuvenation of SG, CHeB, AGB or He giant accretor   
+	// only if mtot > relative_mass
+	if (relative_mass<get_total_mass())  {
+
+	  update_age = true;
+	  update_relative_mass(get_total_mass());
+	}	  
         
         adjust_accretor_radius(mdot, dt);
         
@@ -190,6 +124,10 @@ real horizontal_branch::add_mass_to_accretor(real mdot, const real dt, bool hydr
         core_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
+	update_age = true;
+    }
+	
+    if (update_age) {
         //adjust age part
         real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
         real mc_HeI = helium_ignition_core_mass(relative_mass, metalicity);

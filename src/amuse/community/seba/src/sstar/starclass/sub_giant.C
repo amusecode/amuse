@@ -4,6 +4,7 @@
 
 #include "sub_giant.h"
 #include "hertzsprung_gap.h"
+#include "main_sequence.h"
 
 // ANSI C++ first creates the base class before the dreived classes are
 // created. 
@@ -14,7 +15,6 @@ sub_giant::sub_giant(hertzsprung_gap & h) : single_star(h) {
 
   last_update_age = next_update_age;
   adjust_next_update_age();
-  PRC(relative_age);PRL(next_update_age);
 
   instantaneous_element();
   evolve_core_mass();
@@ -23,6 +23,36 @@ sub_giant::sub_giant(hertzsprung_gap & h) : single_star(h) {
 
   post_constructor();
 }
+
+// (GN+ SilT Feb 2011): new constructor for merger products of
+// main sequence plus WD/He stars
+sub_giant::sub_giant(main_sequence & m) : single_star(m) {
+
+  delete &m; 
+
+  last_update_age = next_update_age;
+
+  // Proper adding of core mass
+  if (is_binary_component()) {
+
+    if (get_companion()->get_core_mass() > 0)
+      add_mass_to_accretor(get_companion()->get_core_mass(), false);
+
+    // this should not happen....(or hardly)
+    if (get_companion()->get_envelope_mass() > 0)
+      add_mass_to_accretor(get_companion()->get_core_mass(), true);
+  }
+
+  adjust_next_update_age();
+
+  instantaneous_element();
+  evolve_core_mass();
+  small_envelope_perturbation();   
+  update();
+
+  post_constructor();
+}
+
 
 
 #if 0
@@ -40,124 +70,8 @@ void sub_giant::adjust_initial_star() {
 //		general mass transfer utilities.
 // Increase donor mass and possibly relative_mass of donor.
 // Check mass-transfer timescales before use.
-real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    if (mdot<=0) {
-        cerr << "sub_giant::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
-        cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-        
-        set_spec_type(Accreting, false);
-        
-        return 0;
-    }
-    else {
-        
+real sub_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
 
-        if(hydrogen){
-            // hydrogen accretion
-            // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
-            //adjust_accretor_age(mdot);
-            envelope_mass += mdot;
-            accreted_mass += mdot;
-            
-            
-            //if (relative_mass<get_total_mass()) 
-            //  update_relative_mass(get_total_mass());
-        }
-        else{
-            //for the moment assume helium accretion
- 	  //PRC(core_mass);PRL(mdot);
-
-            core_mass += mdot;
-            update_relative_mass(relative_mass + mdot);
-            
-            //adjust age part
-            real m_HeF = helium_flash_mass(metalicity);
-            real t_bgb = base_giant_branch_time(relative_mass, metalicity);
-    	    // (GN Oct 26 2010) for mergers: core_mass can be > max degenerate He core --> jump to next block
-            if (relative_mass < m_HeF && core_mass <  helium_ignition_core_mass(0.5, metalicity)){
-                real l_bgb = base_giant_branch_luminosity(relative_mass, metalicity);
-                real A_H = sub_giant_Ah_estimator(relative_mass);                    
-                relative_age = determine_age(core_mass, relative_mass, metalicity, A_H, t_bgb, l_bgb);
-                last_update_age = t_bgb;
-                
-                if(relative_age < last_update_age ){
-                    real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
-                    
-                    real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
-                    update_relative_mass(m_rel);
-                    last_update_age = base_giant_branch_time(relative_mass, metalicity);
-                    relative_age = last_update_age;   
-                    evolve_core_mass();
-                }
-                if(relative_age > next_update_age){
-                    real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;        
-                    real xmin = cnsts.parameters(minimum_main_sequence);
-                    real xmax = m_HeF;
-                    real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
-                    update_relative_mass(m_rel);
-                    last_update_age = base_giant_branch_time(relative_mass, metalicity);
-                    relative_age = next_update_age;
-                    evolve_core_mass();
-                }
-            }
-            else {
-
-	         // (GN Oct 26 2010) see previous block, rel_mass can be < m_HeF which leads to trouble....
-	        if (relative_mass < m_HeF) relative_mass = m_HeF;
-
-                real mc_bgb = base_giant_branch_core_mass(relative_mass, metalicity);//Eq.44
-                real mc_HeI = helium_ignition_core_mass(relative_mass, metalicity);
-                real t_HeI = helium_ignition_time(relative_mass, metalicity);
-                real tau = (core_mass -mc_bgb) / (mc_HeI - mc_bgb);
-                relative_age = t_bgb + tau * (t_HeI - t_bgb);
-                last_update_age = t_bgb;
-                
-                if (tau < 0.){
-                    real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
-                    
-                    real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
-                    update_relative_mass(m_rel);
-                    last_update_age = base_giant_branch_time(relative_mass, metalicity);
-                    relative_age = last_update_age; 
-                    evolve_core_mass();
-                }
-                if (tau > 1.){
-                    real m_FGB = helium_ignition_mass(metalicity);
-                    real mcore_max =  helium_ignition_core_mass(m_FGB, metalicity); 
-                    real m_rel = m_FGB;
-                    // (GN Oct 27 2010) for mergers core_mass can be larger than max core mass of class
-                    // dirty fix: reduce core mass and conserve total mass
-		    //PRC(relative_mass);PRC(core_mass);PRL(mcore_max);
-                    if (core_mass > mcore_max) {                       
-                        real m_tot = get_total_mass();
-                        core_mass = mcore_max;
-                        envelope_mass = m_tot - core_mass;
-                    } else {
-		    
-                        real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;        
-                        real xmin = m_HeF;
-                        real xmax = m_FGB;// m_FGB < m_rel not possible for gb star
-			PRC(xmin);PRC(xmax);
-                        m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);                            
-			PRL(m_rel);
-                    }
-
-                    update_relative_mass(m_rel);
-                    last_update_age = base_giant_branch_time(relative_mass, metalicity);
-                    relative_age = next_update_age;
-                    evolve_core_mass();
-
-                }
-            }  
-        }
-    }
-    
-    
-    set_spec_type(Accreting);
-    return mdot;
-}
-
-real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
     if (mdot<0) {
         cerr << "sub_giant::add_mass_to_accretor(mdot=" << mdot 
         << ", dt=" << dt << ")"<<endl;
@@ -165,21 +79,25 @@ real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
         return 0;
     }
     
+    bool update_age = false;
     
     if(hydrogen){
         //hydrogen accretion
         mdot = accretion_limit(mdot, dt);
         
-        // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
-        // adjust_accretor_age(mdot);
         envelope_mass += mdot;
         accreted_mass += mdot;
         
-        //  if (relative_mass<get_total_mass()) 
-        //    update_relative_mass(get_total_mass());
-        
+        // For now, rejuvenation of SG, CHeB, AGB or He giant accretor   
+	// only if mtot > relative_mass
+	if (relative_mass<get_total_mass())  {
+
+	  update_age = true;
+	  update_relative_mass(get_total_mass());
+	}	  
+
         adjust_accretor_radius(mdot, dt);
-            }
+    }
     else{        
         //for the moment assume helium accretion
         // for the moment no adjust_accretor_radius
@@ -188,7 +106,11 @@ real sub_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
         core_mass += mdot;
         update_relative_mass(relative_mass + mdot);
         
-        //adjust age part
+	update_age = true;
+    }
+
+    if (update_age) {
+      //adjust age part
         real m_HeF = helium_flash_mass(metalicity);
         real t_bgb = base_giant_branch_time(relative_mass, metalicity);
 
@@ -644,9 +566,7 @@ real sub_giant::get_evolve_timestep() {
 void sub_giant::evolve_core_mass(const real time,
 				 const real mass,
 				 const real z) {
-  PRC(core_mass);PRC(time);PRC(mass);PRL(z);
   real mc_sg = sub_giant_core_mass(time, mass, z);
-  PRL(mc_sg);
   if(!update_core_and_envelope_mass(mc_sg)) {
       cerr << "Update core mass failed in sub_giant()"<<endl;
   }
@@ -678,7 +598,6 @@ real sub_giant::sub_giant_core_mass(const real time,
         real tau = (time- t_bgb)/(t_HeI-t_bgb);
 
         m_core = mc_bgb + (mc_HeI - mc_bgb)* tau;
-	PRC(mc_HeI);PRC(t_HeI);PRC(tau);PRL(m_core);
     }
     return m_core;
 }

@@ -167,62 +167,7 @@ real double_star::zeta_thermal() {
     return 0;
 }
 
-real double_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    cerr<<"real double_star::add_mass_to_accretor(mdot="<<mdot<<")"<<endl;
-
-      if (bin_type==Merged || bin_type==Disrupted) 
-         return 0;
-
-      if (mdot<=0) {
-         cerr << "double_star::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
-         cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-         cerr << "Action: No action!" << endl;
-         return 0;
-      }
-      
-      mass_transfer_type type = Unknown;
-      real mtt_p = get_primary()->mass_transfer_timescale(type);
-      real mtt_s = get_secondary()->mass_transfer_timescale(type);
-      real mtt_b = mass_transfer_timescale(type);
-
-      real mdot_p = mdot*mtt_b/mtt_p;
-      real mdot_s = mdot*mtt_b/mtt_s;
-
-      real M_old = get_total_mass();
-      mdot_p = get_primary()->add_mass_to_accretor(mdot_p, hydrogen);
-      mdot_s = get_secondary()->add_mass_to_accretor(mdot_s, hydrogen);
-     
-      real mdot_left = mdot - (mdot_p + mdot_s);
-
-/*
-//		Spiral in anyway (temporary treatment)
-       real r_lobe = min(primary->get_effective_radius()/semi,
-                         secondary->get_effective_radius()/semi);
-       real a_spi = semi*(primary->get_total_mass()
-                          /(primary->get_total_mass()+mdot))
-                          /(1. + (2.*mdot_left
-                   /      (cnsts.parameters(common_envelope_efficiency)
-		   *       cnsts.parameters(envelope_binding_energy)
-                   *       r_lobe*secondary->get_total_mass())));
-       
-*/
-      //real beta = 3;
-       real M_new = get_total_mass();
-       semi *= pow(M_old/M_new,
-		   2*cnsts.parameters(specific_angular_momentum_loss) + 1);
-
-//       if (a_spi <= get_primary()->get_effective_radius() 
-//                 + secondary->get_effective_radius()) 
-       if(!stable() || semi<get_primary()->get_radius() + get_secondary()->get_radius())
-          merge_elements(get_primary(), get_secondary());
-       //else
-       //   semi = a_spi;
-
-      return mdot_p + mdot_s;
-      
-   }
-
-real double_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+real double_star::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
 cerr<<"real double_star::add_mass_to_accretor(mdot="<<mdot
     <<", dt="<<dt<<")"<<endl;
 

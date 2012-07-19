@@ -31,6 +31,7 @@ class sub_giant : public single_star
       public :
 
 	sub_giant(hertzsprung_gap &);
+	sub_giant(main_sequence &);
         sub_giant(node* n) : single_star(n) {}
         ~sub_giant() {}
 
@@ -46,8 +47,7 @@ class sub_giant : public single_star
         real get_evolve_timestep();
         
 //            Mass transfer utilities.
-        real  add_mass_to_accretor(const real, bool );
-        real  add_mass_to_accretor(real, const real, bool);
+        real  add_mass_to_accretor(real, bool, const real = -1. );
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
 

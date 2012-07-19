@@ -44,8 +44,7 @@ class horizontal_branch : public single_star {
   void evolve_core_mass(const real dt) {cerr<<"void evolve core mass"<<endl;} 
 
 //            Mass transfer utilities.
-        real  add_mass_to_accretor(const real, bool );
-        real  add_mass_to_accretor(real, const real, bool);
+  real  add_mass_to_accretor(real, bool, const real = -1. );
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);
          void adjust_accretor_age(const real, const bool);

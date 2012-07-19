@@ -356,29 +356,7 @@ star* white_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
         return this;
 }
 
-real white_dwarf::add_mass_to_accretor(const real mdot, bool hydrogen) {
-
-        if (mdot<0) {
-           cerr << "white_dwarf::add_mass_to_accretor(mdot="
-                 << mdot << ")"<<endl;
-           cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
-
-	   return 0;
-        }
-
-    //For white dwarfs no difference currently between hydrogen/helium/.. accretion
-
-    adjust_accretor_age(mdot);
-        envelope_mass += mdot;
-        relative_mass = max(relative_mass, get_total_mass());
-
-        set_spec_type(Accreting);
-	
-        return mdot;
-
-     }
-
-real white_dwarf::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+real white_dwarf::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
 
         if (mdot<0) {
            cerr << "white_dwarf::add_mass_to_accretor(mdot="
@@ -443,6 +421,8 @@ real white_dwarf::accretion_limit(const real mdot, const real dt) {
 #endif
 
 real  white_dwarf::accretion_limit(const real mdot, const real dt) {
+
+  if (dt < 0) return mdot;
 
   return min(maximum_steady_burning(dt), mdot);  
 

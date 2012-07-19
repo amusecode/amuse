@@ -161,7 +161,7 @@ class  star : public starbase
         virtual void set_COcore_mass(const real){}
         virtual void set_envelope_mass(const real){}
         virtual void set_relative_mass(const real){}
-        virtual real zeta(star*, star*){return 0;}
+        virtual real zeta(star*, star*, const real){return 0;}
         virtual real zeta_adiabatic(){return 0;}
         virtual real zeta_thermal(){return 0;}
         virtual real angular_momentum() {return 0;}
@@ -222,8 +222,8 @@ class  star : public starbase
 
 	virtual void add_mass_to_core(const real) {} 
 
-        virtual real add_mass_to_accretor(real, const real, bool) {return 0;}
-        virtual real add_mass_to_accretor(const real, bool) {return 0;}
+        virtual real add_mass_to_accretor(real, bool, const real) {return 0;}
+	//        virtual real add_mass_to_accretor(const real, bool) {return 0;}
         virtual void adjust_accretor_age(const real,
 					 const bool rejuvenate=true){}
         virtual void adjust_next_update_age(){}

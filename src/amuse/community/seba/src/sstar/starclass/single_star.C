@@ -678,8 +678,10 @@ real single_star::mass_ratio_mdot_limit(real mdot) {
 // At moment accretor fills own Roche-lobe mass transfer becomes
 // inconservative.
 real single_star::accretion_limit(const real mdot, const real dt) {
+
+  if (dt < 0) return mdot;
   // Conservative mass transfer.
-//   return mdot;
+  //   return mdot;
 
   // Non-conservative mass transfer.
   // Based on Pols & Marinus,1994, A&A,288, 475
@@ -701,11 +703,14 @@ real single_star::accretion_limit(const real mdot, const real dt) {
 }
 
 real single_star::accretion_limit_eddington(const real mdot, const real dt) {
-        real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
 
-        if(mdot>=eddington) return eddington;
 
-        return mdot;
+  if (dt < 0) return mdot;
+  real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
+
+  if(mdot>=eddington) return eddington;
+
+  return mdot;
 }
 
 
@@ -815,6 +820,8 @@ real single_star::expansionB(const real m) {
 // Star is updated.
 star* single_star::merge_elements(star* str) {
 
+  cerr << "Merge element single star" << endl;
+
   star* merged_star = this;
 
   real m_conserved = get_total_mass() + str->get_total_mass();
@@ -897,6 +904,85 @@ star* single_star::merge_elements(star* str) {
     return merged_star;
 }
 
+
+
+// Determine mass transfer stability according to
+// `zeta' discription.
+// New version // (SilT + GN) 10 Feb 2011 z_l depends on timescale  
+// calculate two zeta_l's and compare to appropriate zeta_star
+// use timescale of type of mass transfer to check if this specific kind of mass transfer is stable 
+//    used to be one z_l (with md_timescale = previous md_timescale);
+real single_star::mass_transfer_timescale(mass_transfer_type &type) {
+    
+  type = Unknown;
+
+  real z_l_th = 0, z_l_ad = 0, mass_ratio = 1;
+
+  if (is_binary_component()) {
+
+    z_l_ad = get_binary()->zeta(this, get_companion(), kelvin_helmholds_timescale());
+    z_l_th = get_binary()->zeta(this, get_companion(), nucleair_evolution_timescale());
+  }
+
+  real z_ad = zeta_adiabatic();
+  real z_th = zeta_thermal();
+//  PRC(z_ad);PRC(z_th);PRC(z_l_th);PRL(z_l_ad);
+
+  real mtt;
+  if (z_ad > z_l_th && z_th > z_l_th) {
+
+    mtt = nucleair_evolution_timescale();
+    type = Nuclear;
+  }
+  else if (z_ad > z_l_ad) {
+
+    mtt = kelvin_helmholds_timescale();
+    type = Thermal;
+  }
+  else if (z_l_ad > z_ad) {
+
+    mtt = sqrt(kelvin_helmholds_timescale()*dynamic_timescale());
+    type = Dynamic;
+  }
+  else {
+    cerr << "No clear indication for mass transfer timescale: "
+	 << "Kelvin-Helmholds time-scale assumed."<<endl;
+
+    mtt = kelvin_helmholds_timescale();
+    type = Unknown;
+  }
+
+  if (low_mass_star()) {
+
+    real mdot = get_binary()
+              ->mdot_according_to_roche_radius_change(this,
+						      get_companion());
+    if (mdot > 0) {
+
+      real mtt_rl = get_relative_mass()/mdot;
+      if(mtt>mtt_rl) {
+
+	mtt = mtt_rl;
+	type = AML_driven;
+      }      
+    }
+  }
+
+  if (REPORT_MASS_TRANSFER_TIMESCALE) {
+    cerr << "single_star::mass_transfer_timescale()" << endl;
+    cerr << "    star id = " << identity
+	 << "  Zeta (lobe_ad, lobe_th, ad, th) = ("
+	 << z_l_ad <<", "<< z_l_th<<", "<<z_ad<<", "<<z_th<<") : " << endl;
+    cerr << type_string(type);
+    cerr<<":    dm/dt=" <<get_relative_mass()/(mtt*1.e+6)
+	<< " [Msun/yr]" << endl;
+	
+  }
+
+  return mtt;
+}
+
+#if 0
 // Determine mass transfer stability according to
 // `zeta' discription.
 real single_star::mass_transfer_timescale(mass_transfer_type &type) {
@@ -963,6 +1049,7 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
 
   return mtt;
 }
+#endif
 
 //		Stellar stability functions.
 real single_star::zeta_adiabatic() {
@@ -1036,54 +1123,11 @@ real single_star::zeta_thermal() {
 //}
 
 
-//		general mass transfer utilities.
-// Increase donor mass and possibly relative_mass of donor.
-// Check mass-transfer timescales before use.
-real single_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
+
+real single_star::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
     cerr<<"currently single_star::add_mass_to_accretor should not be used"<<endl;
-    exit(-1);
-    
-  if (mdot<=0) {
-    cerr << "single_star::add_mass_to_accretor(mdot=" << mdot << ")"<<endl;
-    cerr << "mdot (" << mdot << ") smaller than zero!" << endl;
+    PRL(dt);
 
-    set_spec_type(Accreting, false);
-    
-    return 0;
-  }
-  else {
-      
-      if(hydrogen){
-        // hydrogen accretion
-        // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
-        //adjust_accretor_age(mdot);
-        envelope_mass += mdot;
-        accreted_mass += mdot;
-        
-        // only neccessary for AGB & He giant accretor as  
-        // next_update_age is a function of total mass
-        // as the maximal core mass can be the total mass
-        // when total mass < chandrasekhar mass      
-        adjust_next_update_age();  
-          
-        //if (relative_mass<get_total_mass()) 
-        //  update_relative_mass(get_total_mass());
-        
-        set_spec_type(Accreting);
-      }
-      else{
-          //for the moment assume helium accretion
-          cerr<<"helium accretion"<<endl;
-          
-      }
-  }
-
-  
-  return mdot;
-}
-
-real single_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
-    cerr<<"currently single_star::add_mass_to_accretor should not be used"<<endl;
     exit(-1);
     
   if (mdot<0) {
@@ -1190,7 +1234,7 @@ real single_star::accrete_from_stellar_wind(const real mdot, const real dt) {
 //  PRL(mass_fraction);PRL(mdot);
 
   mass_fraction = min(0.9, mass_fraction);
-  return add_mass_to_accretor(mass_fraction*mdot, dt, get_companion()->hydrogen_envelope_star());
+  return add_mass_to_accretor(mass_fraction*mdot, get_companion()->hydrogen_envelope_star(), dt);
 }
 
 // Tidal energy dissipation during close encounter.
@@ -3149,8 +3193,6 @@ real single_star::linear_function_inversion(real (single_star::*fptr)(real, cons
     	    exit(-1);
         }
     }
-PRC(x_guess);PRC(y_value);PRC(xmin);PRC(ymin);PRC(xmax);PRL(ymax);
-PRC(gx);PRC(gy);PRC(gx_old);PRL(gy_old);
     
     real dy = 0, dy_old = 0;
     bool within_range = 1; 

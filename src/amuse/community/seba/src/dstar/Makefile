@@ -24,5 +24,5 @@ lib:	Makefile.inc
 
 clean:	Makefile.inc
 	@for d in $(DIRS) ; do echo '\nmake' $@ in $$d; make -C $$d $@ ; done
-	/bin/rm -f *~ $(EXE) Makefile.inc
+	/bin/rm -f *~ *.a $(EXE) Makefile.inc
 

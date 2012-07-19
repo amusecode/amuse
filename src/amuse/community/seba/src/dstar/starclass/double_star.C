@@ -601,14 +601,10 @@ void double_star::set_donor_timescale(star* donor,
     // the thermal timescale of the ACCRETOR!
     // So, Mdot is computed for conservative mass trasnfer, but
     // on the shortest possible timestep.
-    donor_timescale = donor->get_companion()->kelvin_helmholds_timescale();
+    //donor_timescale = donor->get_companion()->kelvin_helmholds_timescale();
     current_mass_transfer_type = Unknown;
   }
   else{
-    if(!first_contact){
-        //!first_contact resets donor timescale every new fase of mass transfer
-        donor_timescale = donor->get_companion()->kelvin_helmholds_timescale();  
-    }  
     donor_timescale =
       donor->mass_transfer_timescale(current_mass_transfer_type); 
   }
@@ -728,7 +724,7 @@ void double_star::contact(star* donor,
  *    }
  */
      if (md_dot>0) {
-        real ma_dot = accretor->add_mass_to_accretor(md_dot, dt, donor->hydrogen_envelope_star());
+        real ma_dot = accretor->add_mass_to_accretor(md_dot, donor->hydrogen_envelope_star(), dt);
 
         real M_new = get_total_mass();
         real new_donor_mass = donor->get_total_mass();
@@ -854,7 +850,7 @@ void double_star::perform_mass_transfer(const real dt,
      donor = donor->subtrac_mass_from_donor(dt, md_dot);
 
      if (md_dot>0) {
-        real ma_dot = accretor->add_mass_to_accretor(md_dot, dt, donor->hydrogen_envelope_star());
+        real ma_dot = accretor->add_mass_to_accretor(md_dot, donor->hydrogen_envelope_star(), dt);
 
         real M_new = get_total_mass();
         real new_donor_mass = donor->get_total_mass();
@@ -1147,6 +1143,7 @@ void double_star::recursive_binary_evolution(real dt,
 //	Then start to transfer mass.
 
     recursive_counter++;
+
     if (REPORT_RECURSIVE_EVOLUTION) {
       cerr << "recursive_binary_evolution(dt " << dt 
 	   << ", end_time " << end_time << "): " <<bin_type<< endl;
@@ -1155,15 +1152,13 @@ void double_star::recursive_binary_evolution(real dt,
       dump(cerr, false);
     }
       
-    if(recursive_counter>=cnsts.safety(maximum_recursive_calls)) {
+    if(recursive_counter >= cnsts.safety(maximum_recursive_calls)) {
 	cerr << "WARNING: ";
 	cerr << "recursive_binary_evolution(dt " << dt 
 	    << ", end_time " << end_time << "): " <<bin_type<< endl;
 	cerr<<dt<<" "<<binary_age<<" "<<end_time<<endl;
 	cerr << "recursive_counter == " << recursive_counter << endl;
 	dump(cerr);
-
-	//get_seba_counters()->recursive_overflow++;
 
 	return;
     }
@@ -1173,294 +1168,266 @@ void double_star::recursive_binary_evolution(real dt,
     dt = Starlab::min(dt, determine_dt(end_time, binary_age));
     binary_age += dt;
 
-     // Angular momentum loss must be computed here: binary can merge!
-     // However must be before evolve_element of stars, since the first step
-     // of the recursive binev reaches to far, causing the a giant to become
-     // huge: -> merger due to magnetic braking!
-     angular_momentum_loss(dt);
+    // Angular momentum loss must be computed here: binary can merge!
+    // However must be before evolve_element of stars, since the first step
+    // of the recursive binev reaches to far, causing the a giant to become
+    // huge: -> merger due to magnetic braking!
+    angular_momentum_loss(dt);
        
-     star *p = get_primary();
-     star *s = get_secondary();
-     if (p) p->evolve_element(binary_age);
-     if (bin_type!=Merged && s)  s->evolve_element(binary_age);
-     p = s = NULL;
+    star *p = get_primary();
+    star *s = get_secondary();
+    if (p) p->evolve_element(binary_age);
+    if (bin_type!=Merged && s)  s->evolve_element(binary_age);
+    p = s = NULL;
 
-     if (bin_type!=Merged && bin_type!=Disrupted) {
-       circularize();
+    if (bin_type!=Merged && bin_type!=Disrupted) {
+      circularize();
 
-       real rl_p = roche_radius(get_primary());
-       real rl_s = roche_radius(get_secondary());
+      real rl_p = roche_radius(get_primary());
+      real rl_s = roche_radius(get_secondary());
+      
+      real rp = get_primary()->get_radius();
+      real rs = get_secondary()->get_radius();
+      
+      star* donor    = get_primary();
+      star* accretor = get_secondary();
+      
+      // Primary fills Roche-lobe?
+      if (rp >= rl_p) {
+	get_primary()->set_spec_type(Rl_filling);
+	get_primary()->set_spec_type(Accreting, false);
+	get_secondary()->set_spec_type(Accreting);
+      }
+      else
+	get_primary()->set_spec_type(Rl_filling, false);
 
-//       real rp = get_primary()->get_effective_radius();
-//       real rs = get_secondary()->get_effective_radius();
-       real rp = get_primary()->get_radius();
-       real rs = get_secondary()->get_radius();
+      if (rs >= rl_s) {
 
-       star* donor    = get_primary();
-       star* accretor = get_secondary();
+	// secondary is donor
+	donor  = get_secondary();
+	accretor = get_primary();
 
-       // Primary fills Roche-lobe?
-       if (rp >= rl_p) {
-          get_primary()->set_spec_type(Rl_filling);
-	  get_primary()->set_spec_type(Accreting, false);
-          get_secondary()->set_spec_type(Accreting);
-       }
-       else
-	 get_primary()->set_spec_type(Rl_filling, false);
-
-       if (rs >= rl_s) {
-
-	 donor  = get_secondary();
-	 accretor = get_primary();
-
-	 get_secondary()->set_spec_type(Rl_filling);
-	 get_secondary()->set_spec_type(Accreting, false);
-	 get_primary()->set_spec_type(Accreting);
-
-	 // One could check here for contact binary to cause
-	 // the secondary to be the donor.
-       }
-       else
-	 get_secondary()->set_spec_type(Rl_filling, false);
+	get_secondary()->set_spec_type(Rl_filling);
+	get_secondary()->set_spec_type(Accreting, false);
+	get_primary()->set_spec_type(Accreting);
+	
+	// One could check here for contact binary to cause
+	// the secondary to be the donor.
+      }
+      else
+	get_secondary()->set_spec_type(Rl_filling, false);
 
 	 
-       // Donor timescale is determined after donor is determined
-       // which happens further down (SPZ+GN:22 Sep 1998)
-       //force_donor_timescale(donor);
-       //determine_minimal_timestep();
+//  Determines if we really have to do with a mass
+//  transferring binary.
+      if (rp >= rl_p    ||
+	  rs >= rl_s) {
+	if (REPORT_RECURSIVE_EVOLUTION) {
+	  cerr << " (donor, accretor) = (" << donor->get_identity()
+	       << ", " << accretor->get_identity()
+	       << ")";
 
-//		Determines if we really have to do with a mass
-//		transferring binary.
-       if (rp >= rl_p    ||
-           rs >= rl_s) {
-	 if (REPORT_RECURSIVE_EVOLUTION)
-	   cerr << " (donor, accretor) = (" << donor->get_identity()
-		<< ", " << accretor->get_identity()
-		<< ")";
-	 // set the mass transfer timescale to the
-	 // timescale of the newly determined donor
-	 // implemented (SPZ+GN:23 Sep 1998)
-	 set_donor_timescale(donor);
-	 determine_minimal_timestep();
+	}
+	
+	// set the mass transfer timescale to the
+	// timescale of the newly determined donor
+	// implemented (SPZ+GN:23 Sep 1998)
+	set_donor_timescale(donor);
+	determine_minimal_timestep();
 
-	 // a bit more carefull before announcing contact (SPZ:  2 Jun 1999)
-          if (rp >= rl_p &&       // removed since (SPZ+GN:19 Nov 1998)
-	      rs >= rl_s){       //  || bin_type==Contact) {
-	    // Proper implementation if ri = effective_radius()
-	    //	       current_mass_transfer_type == Dynamic) || 
-	    //	      (get_primary()->get_radius()>= rl_s &&
-	    //	       get_secondary()->get_radius()>= rl_s)) {
+	// Check for Contact
+	if (rp >= rl_p &&  rs >= rl_s){       
 
-
-	    if (!first_contact) {
+	  if (!first_contact) {
 	    bin_type = Contact;
 
-	      if (REPORT_RECURSIVE_EVOLUTION) 
-		cerr << "\tFirst contact" << endl;
+	    if (REPORT_RECURSIVE_EVOLUTION) 
+	      cerr << "\tFirst contact" << endl;
+	    
+	    first_contact=true;
 
-	      first_contact=true;
-
-	      // Swithced off for now (SPZ June 2001)
-	      //donor->first_roche_lobe_contact_story(
-		//     accretor->get_element_type());
-	      //accretor->first_roche_lobe_contact_story(
-	       //         donor->get_element_type());
-	      cerr << "First Roche-lobe contact for: ";
-	      put_state();
-	      cerr << endl;
-	      dump("SeBa.data", true);
-	    }
-	    if (REPORT_RECURSIVE_EVOLUTION) {
-	      cerr << "\tContact" << endl;
-	      put_state();
-	      cerr << endl;
-	      dump(cerr, false);
-	    }
-// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
-//dump("SeBa.data", true);
-
-	    contact_binary(dt);   // used to be called: common_envelope(dt);
-        star *p = get_primary();
-        star *s = get_secondary();
-        if (p) p->evolve_element(binary_age);
-        if (bin_type!=Merged && s)  s->evolve_element(binary_age);
-        p = s = NULL;
-	    refresh_memory();
-// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
-//dump("SeBa.data", true);
-
-	    if (binary_age>=end_time)
-	      return;
-	    else {
-	      real max_dt = end_time - binary_age;
-	      //	      dt = min(end_time - binary_age,
-	      //		       determine_dt(end_time, binary_age));
-	      recursive_binary_evolution(max_dt, end_time);
-	      return;
-	    }
+	    cerr << "First Roche-lobe contact for: ";
+	    put_state();
+	    cerr << endl;
+	    dump("SeBa.data", true);
 	  }
-	  else if(dt<=minimal_timestep) {
-	    if (REPORT_RECURSIVE_EVOLUTION) {
-	      cerr << "\tMass transfer" << endl;
-	      put_state();
-	      cerr << endl;
-	      dump(cerr, false);
-	    }
 
-	    bin_type = Semi_Detached;
-	    
-	    if (!first_contact) {
-	      if (REPORT_RECURSIVE_EVOLUTION)
-		cerr << "\tFirst contact" << endl;
-
-	       first_contact=true;
-	       donor->first_roche_lobe_contact_story(
-	              accretor->get_element_type());
-	       cerr << "First Roche-lobe contact for: ";
-	       put_state();
-	       cerr << endl;
-               dump("SeBa.data", true);
-	       // print_roche();
-
-	      //get_seba_counters()->first_rlof++;
-
-	     }
-// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
-//dump("SeBa.data", true);
-	    
-    	    semi_detached(donor, accretor, dt);
-            //was binary_in_contact(dt) with redundant safeties.
-            star *p = get_primary();
-            star *s = get_secondary();
-            if (p) p->evolve_element(binary_age);
-            if (bin_type!=Merged && s)  s->evolve_element(binary_age);
-            p = s = NULL;	      
-            refresh_memory();
-// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
-//dump("SeBa.data", true);
-              if (binary_age>=end_time) return;
-
-	      dt = minimal_timestep;
-	      // minimal_timestep can be too large for just formed helium_star!
-	      //real max_dt = determine_dt(end_time, binary_age);
-	      // Removed (SPZ+GN:24 Sep 1998)
-	      //dt = min(minimal_timestep, max_dt);
-	      //------dt = cnsts.safety(minimum_timestep);  ------
-	      //--------------------------------------------------
-              if (binary_age + dt > end_time ||
-		  (bin_type==Merged || bin_type == Disrupted)) 
-	         dt = end_time - binary_age;
-
-	      recursive_binary_evolution(dt, end_time);
-	      return;
-           }
-           else {// semi detached and dt >= minimal_timestep
-	     if (REPORT_RECURSIVE_EVOLUTION) {
-		cerr << "\tTotal recall" << endl;
-		put_state();
-		cerr << endl;
-		dump(cerr, false);
-	     }
-	     
-              bin_type = Semi_Detached;
-              recall_memory();
-              dt *= 0.5;
-              recursive_binary_evolution(dt, end_time);
-	      return;
-           }
-        }
-        else if(bin_type == Semi_Detached || bin_type == Contact) {
-
-	   bin_type = Detached;
-	   get_primary()->set_spec_type(Rl_filling, false);
-	   get_secondary()->set_spec_type(Rl_filling, false);
-
-	   if (REPORT_RECURSIVE_EVOLUTION) {
-	     cerr << "\tRestep" << endl;
-	     put_state();
-	     cerr << endl;
-	     dump(cerr, false);
-	   }
-
-	   //Removed (22/09/1998)
-	   //force_donor_timescale(donor);
-	   //determine_minimal_timestep();
-	   //(SPZ+GN:24 Sep 1998)
-	   // dt = min(dt, determine_dt(end_time, binary_age));
-	   if (dt>minimal_timestep) {
-	     //if (dt>cnsts.safety(minimum_timestep)) {
-	     refresh_memory();
-	   }
-	   // Half timestep increases converging to Roche-lobe contact.
-	   // but can cause dt = end_time-binary_age.
-	   // dt *= 0.5
-
-	   //get_seba_counters()->detached++;
-	   
-           recursive_binary_evolution(dt, end_time);
-
-	   return;
-        }
-        else {
 	  if (REPORT_RECURSIVE_EVOLUTION) {
-	    cerr << "\tDetached" << endl;
-	     put_state();
-	     cerr << endl;
-	     dump(cerr, false);
-	  }
-
-	  if(bin_type != Detached) {
-	    cerr<< "ERROR in ::recursive bin_type != Detached "<<endl;
-	    cerr<< "where should be Detached"<<endl;
+	    cerr << "\tContact" << endl;
+	    put_state();
+	    cerr << endl;
 	    dump(cerr, false);
-	    bin_type = Detached;
 	  }
-	
-	  // (GN+SPZ May  3 1999) effective_radius 
-	  get_primary()->
-	    set_effective_radius(get_primary()->get_radius());
-	  get_secondary()->
-	    set_effective_radius(get_secondary()->get_radius());
+// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
+//dump("SeBa.data", true);
 
+	  contact_binary(dt);   
+
+	  star *p = get_primary();
+	  star *s = get_secondary();
+	  if (p) p->evolve_element(binary_age);
+	  if (bin_type!=Merged && s)  s->evolve_element(binary_age);
+	  p = s = NULL;
 	  refresh_memory();
 // (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
 //dump("SeBa.data", true);
 
+	  if (binary_age>=end_time)
+	    return;
+	  else {
+	    real max_dt = end_time - binary_age;
 
-	  real max_dt = end_time - binary_age;
-	  if (max_dt < end_time - binary_age) {
-	    cerr << "Time step reduction in double_star::recursive..."
-		 << endl;
-	    cerr << "     max_dt (" << max_dt
-		 << ") < end_time - binary_age ("
-		 << end_time - binary_age << ")." << endl;
+	    recursive_binary_evolution(max_dt, end_time);
+	    return;
 	  }
-	      
-	   recursive_binary_evolution(max_dt, end_time);
+	} // end Contact
+	
+	else if(dt <= minimal_timestep) { // Ready to go!
 
-	   return;
-        }
-     }
-     else {
-       if (REPORT_RECURSIVE_EVOLUTION) {
-	 cerr << "\tTerminated" << endl;
-	 put_state();
-	 cerr << endl;
-	 dump(cerr, false);
-       }
-       get_primary()->set_spec_type(Rl_filling, false);
-       get_secondary()->set_spec_type(Rl_filling, false);
-       // (SPZ+GN: 28 Jul 2000) was a 'Gedoogde bug' but now ok.
-       // merged object should not accrete.
-       get_primary()->set_spec_type(Accreting, false);
-       get_secondary()->set_spec_type(Accreting, false);
+	  if (REPORT_RECURSIVE_EVOLUTION) {
+	    cerr << "\tMass transfer" << endl;
+	    put_state();
+	    cerr << endl;
+	    dump(cerr, false);
+	  }
+	  
+	  bin_type = Semi_Detached;
+	  
+	  if (!first_contact) {
+	    if (REPORT_RECURSIVE_EVOLUTION)
+	      cerr << "\tFirst contact" << endl;
+	    
+	    first_contact=true;
+	    donor->first_roche_lobe_contact_story(accretor->get_element_type());
+
+	    cerr << "First Roche-lobe contact for: ";
+
+	    put_state();
+	    cerr << endl;
+	    dump("SeBa.data", true);
+	  }
+// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
+//dump("SeBa.data", true);
+	    
+	  semi_detached(donor, accretor, dt);
+	  
+	  star *p = get_primary();
+	  star *s = get_secondary();
+	  if (p) p->evolve_element(binary_age);
+	  if (bin_type!=Merged && s)  s->evolve_element(binary_age);
+	  p = s = NULL;	      
+	  refresh_memory();
+// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
+//dump("SeBa.data", true);
+	  if (binary_age>=end_time) return;
+
+	  dt = minimal_timestep;
+
+	  if (binary_age + dt > end_time ||
+	      (bin_type==Merged || bin_type == Disrupted)) 
+	    dt = end_time - binary_age;
+	  
+	  recursive_binary_evolution(dt, end_time);
+	  return;
+	} // end semi_detached and ready to go
+	else {// semi detached and dt >= minimal_timestep --> Total recall
+	
+	  if (REPORT_RECURSIVE_EVOLUTION) {
+	    cerr << "\tTotal recall" << endl;
+	    put_state();
+	    cerr << endl;
+	    dump(cerr, false);
+	  }
+	  
+	  bin_type = Semi_Detached;
+	  recall_memory();
+	  dt *= 0.5;
+	  recursive_binary_evolution(dt, end_time);
+	  return;
+	}
+      } // end Total recall
+      else if(bin_type == Semi_Detached || bin_type == Contact) { // restep
+
+	bin_type = Detached;
+	get_primary()->set_spec_type(Rl_filling, false);
+	get_secondary()->set_spec_type(Rl_filling, false);
+	
+	if (REPORT_RECURSIVE_EVOLUTION) {
+	  cerr << "\tRestep" << endl;
+	  put_state();
+	  cerr << endl;
+	  dump(cerr, false);
+	}
+
+	if (dt>minimal_timestep) {
+
+	  refresh_memory();
+	}
+
+	recursive_binary_evolution(dt, end_time);
+
+	return;
+      }
+      else { // Detached evolution
+
+	if (REPORT_RECURSIVE_EVOLUTION) {
+	  cerr << "\tDetached" << endl;
+	  put_state();
+	  cerr << endl;
+	  dump(cerr, false);
+	}
+
+	if(bin_type != Detached) {
+	  cerr<< "ERROR in ::recursive bin_type != Detached "<<endl;
+	  cerr<< "where should be Detached"<<endl;
+	  dump(cerr, false);
+	  bin_type = Detached;
+	}
+	
+	// (GN+SPZ May  3 1999) effective_radius 
+	get_primary()->
+	  set_effective_radius(get_primary()->get_radius());
+	get_secondary()->
+	  set_effective_radius(get_secondary()->get_radius());
+	
+	refresh_memory();
+// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
+//dump("SeBa.data", true);
+
+
+	real max_dt = end_time - binary_age;
+	if (max_dt < end_time - binary_age) {
+	  cerr << "Time step reduction in double_star::recursive..."
+	       << endl;
+	  cerr << "     max_dt (" << max_dt
+	       << ") < end_time - binary_age ("
+	       << end_time - binary_age << ")." << endl;
+	}
+	
+	recursive_binary_evolution(max_dt, end_time);
+
+	return;
+      } // end Detached
+    } // end evolution surviving binaries 
+    else { // Mergers and disrupted systems
+
+      if (REPORT_RECURSIVE_EVOLUTION) {
+	cerr << "\tTerminated" << endl;
+	put_state();
+	cerr << endl;
+	dump(cerr, false);
+      }
+      get_primary()->set_spec_type(Rl_filling, false);
+      get_secondary()->set_spec_type(Rl_filling, false);
+      // (SPZ+GN: 28 Jul 2000) was a 'Gedoogde bug' but now ok.
+      // merged object should not accrete.
+      get_primary()->set_spec_type(Accreting, false);
+      get_secondary()->set_spec_type(Accreting, false);
   
-       // Merged and disrupted binaries.
-
-       refresh_memory();
-       real max_dt = end_time - binary_age;
-       recursive_binary_evolution(max_dt, end_time);
-     }
+      refresh_memory();
+      real max_dt = end_time - binary_age;
+      recursive_binary_evolution(max_dt, end_time);
+    } 
 }
 
 
@@ -1842,8 +1809,8 @@ void double_star::spiral_in(star* larger,
 	  // has not affected the spiral in. (SPZ:  2 Jun 1999)
 	  menv_l -= smaller->add_mass_to_accretor(
                              larger->get_envelope_mass(),
-                             cnsts.parameters(spiral_in_time),
-                             larger->hydrogen_envelope_star());
+                             larger->hydrogen_envelope_star(),
+                             cnsts.parameters(spiral_in_time));
 	  smaller->set_effective_radius(smaller->get_radius());
 	  larger = larger->reduce_mass(larger->get_envelope_mass());
 
@@ -2265,7 +2232,8 @@ void double_star::angular_momentum_envelope_ejection(star* larger,
 
 	    semi = a_f; 
 	    smaller->add_mass_to_accretor(larger->get_envelope_mass(),
-		     cnsts.parameters(spiral_in_time), larger->hydrogen_envelope_star());
+					  larger->hydrogen_envelope_star(), 
+					  cnsts.parameters(spiral_in_time));
 	    smaller->set_effective_radius(smaller->get_radius());
 
 	    larger = larger->reduce_mass(larger->get_envelope_mass());
@@ -2356,7 +2324,8 @@ void double_star::dynamic_mass_transfer(star* larger, star* smaller) {
 	    PRC(Eorb1);PRC(Eorb2);PRL(Ebind);
 	    cerr << "(Eorb2 - Eorb1)/Ebind = " << (Eorb2 - Eorb1)/Ebind << endl;
 	    smaller->add_mass_to_accretor(larger->get_envelope_mass(),
-		     cnsts.parameters(spiral_in_time), larger->hydrogen_envelope_star());
+					  larger->hydrogen_envelope_star(), 
+					  cnsts.parameters(spiral_in_time));
 	    smaller->set_effective_radius(smaller->get_radius());
 
 	    larger = larger->reduce_mass(larger->get_envelope_mass());
@@ -2420,37 +2389,16 @@ void double_star::recall_memory() {
      donor_timescale = previous.donor_timescale;
 }
 
-// New version of ::zeta (SPZ+GN:22 Sep 1998)
-// To be debugged....?
-// method: transfer planet and see how the compaion would react.
-// then compute respons of orbit and compute zeta
-// Problem:
-// Non conservative mass transfer can lead to stabilization 
-// of the orbit and thus stable transfer
-// (GN + SilT: 12 Nov 2010)
-// calculate zeta for two donor timescales and take minimum
-// 1) t_donor = t_kh_accretor  -> conservative mass transfer
-// 2) t_donor = t_kh_donor -> could be non-conservative and stabilizing mt
- 
+
+// (SilT+GN Feb 2011) new version
+// Call of zeta explicitly gives the donor timescale as parameter
 real double_star::zeta(star * donor, 
-                       star * accretor) {
+                       star * accretor,
+		       const real md_timescale) {
 //	Find zeta Roche-lobe.
   
      if (bin_type!=Merged && bin_type!=Disrupted) {
 
-#if 0       
-       real md_dot, ma_dot;
-       real dt = cnsts.safety(minimum_timestep);
-       if (get_donor_timescale()>0) {
-	 md_dot=donor->get_relative_mass()*dt/get_donor_timescale();
-       }
-       else {
-	 md_dot=cnsts.safety(minimum_mass_step);  //safety
-       }
-       md_dot = min(md_dot, donor->get_envelope_mass())
-	      + cnsts.safety(minimum_mass_step);
-       ma_dot = accretor->accretion_limit(md_dot, dt);
-#endif
 
        // Use total mass here as md_dot is only used to determine zeta
        real md_dot = Starlab::min(donor->get_total_mass(), 
@@ -2458,7 +2406,7 @@ real double_star::zeta(star * donor,
        //       real md_dot = min(donor->get_envelope_mass(), 
        //			 cnsts.safety(minimum_mass_step));
               
-       real dt = md_dot * donor_timescale/donor->get_relative_mass();
+       real dt = md_dot * md_timescale/donor->get_relative_mass();
        real ma_dot = accretor->accretion_limit(md_dot, dt);
 
        real M_old = get_total_mass();
@@ -2515,75 +2463,6 @@ real double_star::zeta(star * donor,
 	 zeta = d_lnr/d_lnm;
        }
 
-        if (!first_contact){
-            // in case non-conservative mass transfer stabilizes the orbit
-               real donor_timescale_nc = donor->kelvin_helmholds_timescale();
-               real dt = md_dot * donor_timescale_nc/donor->get_relative_mass();
-               real ma_dot = accretor->accretion_limit(md_dot, dt);
-        
-               real M_old = get_total_mass();
-               real old_donor_mass = donor->get_total_mass();
-               real old_accretor_mass = accretor->get_total_mass();
-               real q_old = old_accretor_mass/old_donor_mass;
-        
-               real M_new = get_total_mass() - md_dot +  ma_dot;
-               real new_donor_mass = donor->get_total_mass() - md_dot;
-               real new_accretor_mass = accretor->get_total_mass() + ma_dot;
-               real q_new = new_accretor_mass/new_donor_mass;
-        
-               real a_fr, new_semi;
-               real beta = cnsts.parameters(specific_angular_momentum_loss);
-               a_fr  = pow(old_donor_mass*old_accretor_mass
-                     / (new_donor_mass*new_accretor_mass), 2);
-               new_semi = semi*pow(M_new/M_old, 2*beta + 1)*a_fr;
-               
-               real a_dot=0;
-        
-               real magnetic_braking_aml = mb_angular_momentum_loss();
-               real grav_rad_aml =  gwr_angular_momentum_loss(get_primary()
-        						      ->get_total_mass(),
-        						      get_secondary()
-        						      ->get_total_mass(),
-        						      semi);
-               //       PRC(magnetic_braking_aml);PRL(grav_rad_aml);
-               //       PRC(dt);PRC(semi);
-               a_dot = 2*dt*semi*(magnetic_braking_aml+grav_rad_aml);
-               //       PRC(a_dot);
-               new_semi += a_dot;
-               //PRL(a_dot);
-               
-               real rl = roche_radius(donor);
-        
-               real rl_d = roche_radius(new_semi,
-        				new_donor_mass,
-        				new_accretor_mass);
-        
-        
-        //       PRC(new_semi);PRC(rl_d);PRL(rl);
-               real d_lnr = (rl_d - rl)/rl;
-               real d_lnm = (new_donor_mass - donor->get_total_mass()) 
-        	          /  donor->get_total_mass();
-               
-               real zeta_nc;
-               if(d_lnm==0) {
-            	 cerr << "WARNING: d_lnm (= " << d_lnm << ") has an illegal value"
-            	      << endl;
-            	 zeta_nc = 0;
-            	 dump(cerr, true);
-               }
-               else {
-            	 zeta_nc = d_lnr/d_lnm;
-               }
-               zeta = min(zeta, zeta_nc);
-        }
-
-       //       PRC(M_old);PRL(M_new);
-       //       PRC(old_donor_mass);PRL(new_donor_mass);
-       //       PRC(old_accretor_mass);PRL(new_accretor_mass);
-
-       //       PRC(a_dot);PRC(dt);PRC(semi);PRL(new_semi);
-       //       PRC(rl);PRC(rl_d);PRC(d_lnr);PRL(d_lnm);
-       //       PRL(zeta);
 
        return zeta;
      }

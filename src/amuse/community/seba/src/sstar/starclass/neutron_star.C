@@ -471,21 +471,13 @@ star* neutron_star::subtrac_mass_from_donor(const real dt, real& mdot) {
       return this;
 }
 
-real neutron_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
-    //For neutron stars no difference currently between hydrogen/helium/.. accretion
-
-      envelope_mass += mdot;
-      relative_mass = max(relative_mass, get_total_mass());
-      
-      return mdot;
-}
 
 // Accrete on neutron star.
 // Eddington limited. The accreted mass first
 // enters a stallar envelope (disc) and is finally accreted on
 // the compact object.
 // So no magnetic field decay here.
-real neutron_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
+real neutron_star::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
     //For neutron stars no difference currently between hydrogen/helium/.. accretion
 
      if (DEBUG) cerr<<"neutron_star::add_mass_to_accretor "<<dt<<endl;
@@ -500,6 +492,8 @@ real neutron_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
 // Limit the accretion onto the nuetron star by the Eddingtopn limit.
 real neutron_star::accretion_limit(const real mdot, const real dt) {
 
+  if (dt < 0) return mdot;
+
      real eddington = eddington_limit(radius, dt); 
 
    if (cnsts.parameters(hyper_critical))
@@ -509,37 +503,6 @@ real neutron_star::accretion_limit(const real mdot, const real dt) {
 
 }
 
-#if 0 // Old stuff
-real neutron_star::add_mass_to_accretor(const real mdot, bool hydrogen) {
-
-      relative_mass = max(relative_mass, get_total_mass() + mdot);
-      envelope_mass += mdot;
-
-      return mdot;
-   }
-
-// Accrete ont neutron star.
-// Neutron star accretes with Eddington limit. The accreted mass first
-// enters a starage envelope (disc) and is finally accreted onte 
-// the compact object.
-real neutron_star::add_mass_to_accretor(real mdot, const real dt, bool hydrogen) {
-
-      mdot = accretion_limit(mdot, dt);
-      relative_mass = max(relative_mass, get_total_mass() + mdot);
-      envelope_mass += mdot;
-
-      return mdot;
-   }
-
-// Limit the accretion onto the nuetron star by the Eddingtopn limit.
-real neutron_star::accretion_limit(const real mdot, const real dt) {
-
-     real eddington = eddington_limit(radius, dt); 
-//      real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
-
-      return min(mdot, eddington);
-   }
-#endif // End old stuff
 
 star* neutron_star::merge_elements(star* str) {
 

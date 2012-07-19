@@ -7,8 +7,16 @@
 // ANSI C++ first creates the base class before the dreived classes are
 // created.
 
+
+// (GN Feb 2011)
+// Proposal: rewrite TZ as rather simple class in which L and R are determined
+// from eddington accretion onto central NS plus wind loss from envelope
+// base on TZ papers
+
 thorne_zytkow::thorne_zytkow(main_sequence & m) : single_star(m) {
 
+
+  PRL(core_mass);
       delete &m;
 
       // (SPZ: Removed 23March2000)
@@ -16,6 +24,7 @@ thorne_zytkow::thorne_zytkow(main_sequence & m) : single_star(m) {
       if (is_binary_component()) {
 
 	birth_mass      = get_companion()->get_total_mass();
+	core_mass  = birth_mass;
 	if (get_companion()->remnant()) {
 	  magnetic_field  = get_companion()->get_magnetic_field(); 
 	  rotation_period = get_companion()->get_rotation_period();
@@ -25,69 +34,36 @@ thorne_zytkow::thorne_zytkow(main_sequence & m) : single_star(m) {
 	birth_mass    = cnsts.parameters(kanonical_neutron_star_mass);
       }
 
-      //(SPZ:23March2000)
-      // This should have been done in main_sequence::merge_elementes
-//      real m_tot    = max(birth_mass, get_total_mass());
-//      core_mass     = birth_mass;
-//      envelope_mass = m_tot - core_mass;
-//      core_radius   = cnsts.parameters(kanonical_neutron_star_radius);
+      // (GN+SPZ May  4 1999) last update age is time of previous type change
+      //last_update_age = next_update_age;
 
-      wind_constant = envelope_mass;
-      
-// (GN+SPZ May  4 1999) last update age is time of previous type change
-      last_update_age = next_update_age;
+      // (GN+SilT Feb 2011) TZO: start all times from scratch
+      last_update_age = 0.;
+      relative_age = 0.;
+      // next_update_age initialised to 0 (inst. element has next_update_age += ....x
+      next_update_age = 0.;
 
-      // Put star at start of super_giant stage.
-      real t_ms = main_sequence_time();
-      real t_giant = t_ms + hertzsprung_gap_time()
-                          + base_giant_branch_time();
-    cerr<<"helium_giant_time not in use anymore, find equivalent"<<endl;  
-    //real t_he = helium_giant_time(t_ms, metalicity);
-    real t_he = t_giant;
-    
-    
-      relative_age = t_giant + t_he;
-      adjust_next_update_age();
-
+      PRL(core_mass);
       instantaneous_element();
-      update();
 
       post_constructor();
 } 
 
-#if 0
-void thorne_zytkow::adjust_initial_star() {
-
-  if (relative_age<=0) {
-    real t_ms = main_sequence_time();
-    real t_giant = t_ms + hertzsprung_gap_time(t_ms)
-      + base_giant_branch_time(t_ms);
-    real t_he = helium_giant_time(t_ms);
-    relative_age = max(t_giant + t_he, relative_age);
-  }
-}
-#endif
 
 void thorne_zytkow::instantaneous_element() {
 
-  real l_g = giant_luminosity();
-  real t_ms = main_sequence_time();
-  real t_gs = 0.15*t_ms;
-  real t_b  = base_giant_time(t_ms);
 
-  luminosity = l_g*pow(t_gs/(next_update_age
-			     + t_b - relative_age), 1.17);
-  luminosity = min(luminosity, maximum_luminosity());
+  // L is L_Edd onto core
+  luminosity = 3.3e4 * core_mass;
 
-  radius = (0.25*pow(luminosity, 0.4)
-	 + 0.8*pow(luminosity, 0.67))/pow(relative_mass, 0.27);
-  radius = min(radius, 100.);
+  // Radius from L = 4 pi R^2 sig Teff^4
+  real Teff = 3500.; //(Wikipedia Teff Betelgeuse)
 
-  // (SPZ+GN:  1 Aug 2000)
-  // coming from previous type the effective readius should 
-  // remain the same.
-  //    effective_radius = radius;
-  
+  radius = sqrt(luminosity * pow(Teff/cnsts.parameters(Tsun), -4));
+  effective_radius = radius;
+
+  adjust_next_update_age();
+
 }
 
 // evolve a thorne_zytkow star upto time argument according to
@@ -102,6 +78,7 @@ void thorne_zytkow::evolve_element(const real end_time) {
 
 	// (neutron_star) core accretes from envelope.
          accrete_from_envelope(dt);
+
          if (core_mass>cnsts.parameters(maximum_neutron_star_mass)) {
 	   if (is_binary_component()) 
 	     get_binary()->dump("binev.data", false);
@@ -113,21 +90,14 @@ void thorne_zytkow::evolve_element(const real end_time) {
             return;
          }
 
-         real l_g = giant_luminosity();
-         real t_ms = main_sequence_time();
-         real t_gs = 0.15*t_ms;
-         real t_b  = base_giant_time(t_ms);
+	 instantaneous_element();
 
-         luminosity = l_g*pow(t_gs/(next_update_age
-                    + t_b - relative_age), 1.17);
-         luminosity = min(luminosity, maximum_luminosity());
-         radius = (0.25*pow(luminosity, 0.4)
-                + 0.8*pow(luminosity, 0.67))/pow(relative_mass, 0.27);
-
-	 radius = min(radius, 100.);
       }
       else {
 
+	//This should not happen
+	cerr << "TZO has reached next_update_age!!! That should not happen" <<endl;
+	exit(-1);
 	if (is_binary_component()) 
 	  get_binary()->dump("binev.data", false);
 	else
@@ -171,47 +141,26 @@ void thorne_zytkow::accrete_from_envelope(const real dt) {
       envelope_mass -= mdot;
 }
 
-#if 0
+
 void thorne_zytkow::stellar_wind(const real dt) {
 
+      // Enhanced Reimers. NOTE: dt in Myr  
       real wind_mass = 5.5e-7*dt*radius*luminosity/get_total_mass();
       wind_mass = min(wind_mass, envelope_mass);
 
       if (is_binary_component())
          get_binary()->adjust_binary_after_wind_loss(this, wind_mass, dt);
       else
-         reduce_donor_mass(wind_mass);
+         reduce_mass(wind_mass);
    }
-
-real thorne_zytkow::helium_core_mass() {
-
-      real m_core = min(cnsts.parameters(kanonical_neutron_star_mass), get_total_mass());
-
-      return m_core;
-   }
-#endif
 
 //              Mass transfer utilities.
-real thorne_zytkow::add_mass_to_accretor(const real mdot, bool) {
 
-      adjust_accretor_age(mdot);
-
-      envelope_mass += mdot;
-      if (relative_mass<get_total_mass()) {
-	relative_mass = get_total_mass();
-	adjust_next_update_age();
-      }
-
-      set_spec_type(Accreting);
-
-      return mdot;
-}
-
-real thorne_zytkow::add_mass_to_accretor(real mdot, const real dt, bool) {
+real thorne_zytkow::add_mass_to_accretor(real mdot, bool, const real dt) {
 
       mdot = accretion_limit(mdot, dt);
 
-      adjust_accretor_age(mdot);
+      //adjust_accretor_age(mdot);
 
       envelope_mass += mdot;
       if (relative_mass<get_total_mass()) {
@@ -285,63 +234,13 @@ star* thorne_zytkow::subtrac_mass_from_donor(const real dt, real& mdot) {
       return this;
 }
 
-#if 0
-void thorne_zytkow::adjust_accretor_age(const real mdot,
-					const bool rejuvenate) {
-
-      real m_tot_new = get_total_mass() + mdot;
-      real m_rel_new = max(m_tot_new, relative_mass);
-
-      real t_tagb_old = TAGB_time(relative_mass, metalicity);
-      real t_du_old = dredge_up_time(relative_mass, metalicity);
-      PRC(relative_mass);PRC(t_tagb_old);PRL(t_du_old);
-
-      real z_new = get_metalicity();
-      real t_tagb_new = TAGB_time(m_rel_new, z_new);
-      real t_du_new = dredge_up_time(m_rel_new, z_new);
-      PRC(m_rel_new);PRC(t_tagb_new);PRL(t_du_new);
-
-      real dtime = relative_age - t_tagb_old;
-
-      last_update_age = t_tagb_new;
-      relative_age = t_tagb_new
-                   + dtime*(t_du_new/t_du_old);
-      if (rejuvenate)
-         relative_age *= rejuvenation_fraction(mdot/m_tot_new);
-
-       relative_age = max(relative_age, 
-			  last_update_age + cnsts.safety(minimum_timestep));
-      
-
-      // next_update_age should not be reset here
-      // next_update_age = t_nuc;
-   }
-#endif
-
 void thorne_zytkow::adjust_next_update_age() {
 
-      next_update_age = nucleair_evolution_time();
+      real wind_dMdt = 5.5e-7*radius*luminosity/get_total_mass();
+      real dt_wind = 0.1*envelope_mass/wind_dMdt;
+
+      next_update_age += Starlab::min(1.,dt_wind);
    }
-
-#if 0
-real thorne_zytkow::stellar_radius(const real mass, const real age) {
-
-      real t_nuc = nucleair_evolution_time(mass);
-
-      real l_g = giant_luminosity();
-      real t_ms = main_sequence_time();
-      real t_gs = 0.15*t_ms;
-      real t_b  = base_giant_time(t_ms);
-
-      real l_agb = l_g*pow(t_gs/(t_nuc + t_b - age), 1.17);
-      l_agb = min(l_agb, maximum_luminosity(mass));
-
-      real r_agb = (0.25*pow(l_agb, 0.4)
-             + 0.8*pow(l_agb, 0.67))/pow(mass, 0.27);
-
-      return r_agb;
-   }
-#endif
 
 real thorne_zytkow::gyration_radius_sq() {
 
