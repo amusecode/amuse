@@ -127,6 +127,10 @@ void helium_star::instantaneous_element() {
     luminosity  = helium_main_sequence_luminosity(relative_age, get_total_mass());    
     radius      = helium_main_sequence_radius(relative_age, get_total_mass(), get_total_mass());
 
+    if (accreted_mass > 0.05 * get_total_mass()){
+        radius *= 50;    
+    }
+
     //effective_radius = max(effective_radius, radius);
     effective_radius = radius;
 }
@@ -365,7 +369,7 @@ real helium_star::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
     if(hydrogen){
         //hydrogen accretion
         // is treated in the same way as helium accretion..
-        mdot = accretion_limit_eddington(mdot, dt);
+        mdot = accretion_limit(mdot, dt);
 
         adjust_accretor_age(mdot, true);
         // (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
@@ -373,8 +377,10 @@ real helium_star::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
         envelope_mass += mdot;
         accreted_mass += mdot;
         if (accreted_mass > 0.05 * get_total_mass()){
-            cerr << "WARNING: accreted hydrogen mass more than 5% of helium star"<<endl;
+            //if (is_binary_component()) cout<<get_binary()->get_identity();
+	    cerr << "\t WARNING: accreted hydrogen mass more than 5% of helium star"<<endl;
         }
+	
         adjust_next_update_age();
 
 //        possible track hydrogen accreting helium star can turn into horizontal branch star
@@ -388,7 +394,7 @@ real helium_star::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
     else{
         //for the moment assume helium accretion
         // for the moment no adjust_accretor_radius
-        mdot = accretion_limit_eddington(mdot, dt);
+        mdot = accretion_limit(mdot, dt);
         adjust_accretor_age(mdot, true);
         envelope_mass += mdot;
         adjust_next_update_age();
@@ -401,13 +407,7 @@ real helium_star::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
 real helium_star::accretion_limit(const real mdot, const real dt) {
 //needed in double_star::zeta(donor, accretor)
 
-  if (dt < 0) return mdot;
-
-        real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
-
-        if(mdot>=eddington) return eddington;
-
-        return mdot;
+	return accretion_limit_eddington(mdot, dt);
 }
 
 

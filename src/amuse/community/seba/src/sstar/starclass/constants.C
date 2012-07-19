@@ -353,7 +353,8 @@ real stellar_evolution_constants::parameters(model_parameter pm) {
 	      break;
         case rejuvenation_exponent:                    return 1;
 	      break;
-        case spiral_in_time:                           return 0.0005; // Myr
+        case spiral_in_time:                           return 0.00001;//Ricker&Taam07
+							//0.0005; // Myr
 	      break;
         default:
 	     cerr << "\nNo recognized option in "

@@ -54,9 +54,9 @@ class white_dwarf : public single_star {
 	 void evolve_element(const real);
 
          void update();
-         void thermo_nucleair_flash(const real);
-         void nova(const real);
-         void common_envelope(const real);
+//         void thermo_nucleair_flash(const real);
+//        void nova(const real);
+//         void common_envelope(const real);
 
 //              Mass transfer utilities.
         star* reduce_mass(const real);
@@ -66,12 +66,12 @@ class white_dwarf : public single_star {
         real retention_H(real, real);
         real retention_He(real, real);
 
-        real minimum_steady_burning(const real); 
-        real maximum_steady_burning(const real); 
+//        real minimum_steady_burning(const real); 
+//        real maximum_steady_burning(const real); 
         real add_mass_to_accretor(real, bool, const real = -1.);
         void adjust_accretor_age(const real, const bool=true);
         void adjust_next_update_age() {/* do nothing */}
-        void accrete_from_envelope(const real);
+//        void accrete_from_envelope(const real);
 
  
         star* merge_elements(star*);

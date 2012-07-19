@@ -77,6 +77,7 @@ void helium_giant::instantaneous_element() {
 
     luminosity       = helium_giant_luminosity_core_mass_relation(relative_age, relative_helium_mass, metalicity);
     radius           = helium_giant_radius(luminosity, relative_helium_mass, get_total_mass(), metalicity);
+    
     // don't do here:
     //effective_radius = max(effective_radius, radius)
     //because of small_envelope_perturbation
@@ -88,7 +89,7 @@ void helium_giant::evolve_element(const real end_time) {
     real dt = end_time - current_time;
     current_time = end_time;
     relative_age += dt;
-    
+        
     if (relative_age<=next_update_age) {
         instantaneous_element();
         evolve_core_mass();
@@ -162,7 +163,6 @@ real helium_giant::helium_giant_end_time(const real mass, const real mass_tot) {
     //core should minimally grow 5% as a helium giant
     real t_hems = helium_main_sequence_time_for_solar_metalicity(mass);   
     real mco_hems = helium_giant_core_mass(t_hems, mass);  //co core mass
-    //PRC(mass_tot);PRC(1.45*mass_tot-0.31);PRC(mc_max);PRL(1.05*mco_hems);    
     mc_max = max(mc_max, 1.05*mco_hems);
     
     real t_Heg = helium_giant_age_core_mass_relation(mc_max, mass);
@@ -389,15 +389,15 @@ real helium_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt)
     if(hydrogen){
         //hydrogen accretion
         // is treated in the same way as helium accretion..
-
-        mdot = accretion_limit_eddington(mdot, dt);
+        mdot = accretion_limit(mdot, dt);
         
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         // adjust_accretor_age(mdot);
         envelope_mass += mdot;
         accreted_mass += mdot;
         if (accreted_mass > 0.05 * get_total_mass()){
-            cerr << "WARNING: accreted hydrogen mass more than 5% of helium giant"<<endl;
+            //if (is_binary_component()) cout<<get_binary()->get_identity();
+	    cerr << "\t WARNING: accreted hydrogen mass more than 5% of helium giant"<<endl;
         }
         
         // only neccessary for AGB & He giant accretor as  
@@ -410,7 +410,7 @@ real helium_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt)
     else{
         //for the moment assume helium accretion
         // for the moment no adjust_accretor_radius
-        mdot = accretion_limit_eddington(mdot, dt);
+        mdot = accretion_limit(mdot, dt);
         
         // For now, no rejuvenation of SG, CHeB, AGB or He giant accretor   
         //adjust_accretor_age(mdot);
@@ -429,16 +429,9 @@ real helium_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt)
 
 
 real helium_giant::accretion_limit(const real mdot, const real dt) {
-  // needed in double_star::zeta(donor, accretor)!!
-
-     real mdot_limit = mdot;
-
-     real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
-     if (mdot>=eddington)
-       mdot_limit =  eddington;
-
-     return mdot_limit;
-
+  // needed in double_star::zeta(donor, accretor) 
+  
+	return accretion_limit_eddington(mdot, dt);
 }
 
 # if 0

@@ -88,7 +88,7 @@ class double_star : public star
         real get_semi()			{return semi;}
         real get_radius()               {return semi*(1-pow(eccentricity, 2));}
         real get_velocity()		{return velocity;}
-        real get_effective_radius()     {
+	real get_effective_radius()     {
              real r_eff = semi;
              return r_eff;
         }

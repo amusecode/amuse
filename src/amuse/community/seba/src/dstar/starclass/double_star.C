@@ -275,13 +275,13 @@ void double_star::put_state() {
 
 	     real pday = get_period();
 	      if (pday<0.04) 
-		cerr << "   Porb = " << pday*1440 << " minutes";
+		cerr << "   Porb = " << pday*1440 << " minutes"<<endl;
 	      else if (pday<1) 
-		cerr << "   Porb = " << pday*24 << " hours";
+		cerr << "   Porb = " << pday*24 << " hours"<<endl;
 	      else if (pday<365.25) 
-		cerr << "   Porb = " << pday << " days";
+		cerr << "   Porb = " << pday << " days"<<endl;
 	      else
-		cerr << "   Porb = " << pday/365.25 << " years";	      
+		cerr << "   Porb = " << pday/365.25 << " years"<<endl;	      
            }
      }
 
@@ -690,7 +690,7 @@ void double_star::semi_detached(star* donor,
       cerr << "stable mass transfer => ::perform_mass_transfer" << endl; 
     }
 
-    dump(cerr, false);
+   // dump(cerr, false);
     perform_mass_transfer(dt, donor, accretor);
   }
 

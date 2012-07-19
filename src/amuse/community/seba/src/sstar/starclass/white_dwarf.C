@@ -197,8 +197,6 @@ void white_dwarf::evolve_element(const real end_time) {
 // done in add_mass_to_accretor
 //        accrete_from_envelope(dt);
 
-	//PRC(core_mass);PRL(envelope_mass);
-
         if (core_mass > cnsts.parameters(Chandrasekar_mass) ||
 	    core_mass <= cnsts.safety(minimum_mass_step)) {
             // || accreted_mass > 0.2) {
@@ -247,13 +245,11 @@ void white_dwarf::evolve_element(const real end_time) {
 //                    - pow(m_rel, cnsts.mathematics(two_third))));
 
 	// (GN+SPZ May  3 1999) critical mass for nova (Livio 1993; Saas-Fee)
-	   real m_crit = 1.7e-4*pow(get_total_mass(),-0.7)
-	               * pow(69.9*radius,2.8); // radius in 10^9 cm
+	//   real m_crit = 1.7e-4*pow(get_total_mass(),-0.7)
+	//               * pow(69.9*radius,2.8); // radius in 10^9 cm
 
-	   //PRC(m_crit);PRL(envelope_mass);
-
-	if (envelope_mass >= m_crit) 
-	   thermo_nucleair_flash(dt);
+	//if (envelope_mass >= m_crit) 
+	//   thermo_nucleair_flash(dt);
 
 
 //	   if (envelope_mass >= core_mass
@@ -273,7 +269,7 @@ void white_dwarf::update() {
 }
 
 
-
+#if 0 
 void white_dwarf::accrete_from_envelope(const real dt) {
 
      if (envelope_mass>0) {
@@ -285,7 +281,9 @@ void white_dwarf::accrete_from_envelope(const real dt) {
      }
 }
 
+#endif
 
+#if 0
 void white_dwarf::thermo_nucleair_flash(const real dt) {
 
 //cerr<<"void white_dwarf::thermo_nucleair_flash() mass="
@@ -343,6 +341,8 @@ void white_dwarf::common_envelope(const real mdot) {
      }
 }
 
+#endif
+
 star* white_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
         mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
         mdot = mass_ratio_mdot_limit(mdot);
@@ -382,13 +382,7 @@ real white_dwarf::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
 	  effective_radius = min(10., get_binary()->roche_radius(this));
 	}
 
-	//PRC(mdot);PRC(hydrogen);PRL(dt);
-	//PRL(eddington_limit(radius, dt, mu));
-
         mdot = accretion_limit(mdot, dt, hydrogen);
-
-	//PRL(mdot);
-
 
 	// (Madelon+GN May 16 2011)
 	// Implement accretion to core via retention efficiencies
@@ -417,8 +411,6 @@ real white_dwarf::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
 	  accreted_mass += mdot;
 	}
 #endif
-
-	//PRC(accreted_mass);PRC(core_mass);PRL(envelope_mass);
 
         adjust_accretor_age(mdot);
         //envelope_mass += mdot;
@@ -449,10 +441,7 @@ real  white_dwarf::accretion_limit(const real mdot, const real dt, bool hydrogen
   //return min(maximum_steady_burning(dt), mdot);  
 
   real dmdt = 1.e-6*mdot/dt;
-  //PRL(dmdt);
-
   real eta = retention_efficiency(dmdt, get_total_mass(), hydrogen);
-  //PRL(eta);
   
   return mdot*eta;
 }
@@ -461,13 +450,11 @@ real  white_dwarf::accretion_limit(const real mdot, const real dt, bool hydrogen
 real white_dwarf::retention_efficiency(real dmdt, real M_WD, bool hydrogen) {
 
   real eta = 1.;
-  //PRC(dmdt);PRC(M_WD);PRL(hydrogen);
 
   if (hydrogen) {
 
     real eta_H = retention_H(dmdt, M_WD);
     real eta_He = retention_He(eta_H*dmdt, M_WD);
-    //PRC(eta_H);PRL(eta_He);
     eta = eta_H*eta_He;
     
   } else {
@@ -475,7 +462,6 @@ real white_dwarf::retention_efficiency(real dmdt, real M_WD, bool hydrogen) {
     eta = retention_He(dmdt, M_WD);
   }
 
-  //PRL(eta);
   return eta;
 }
 
@@ -490,8 +476,7 @@ real white_dwarf::retention_H(real dmdt, real M_WD) {
 
   real logdmdt = log10(dmdt); 
   real eta = 1.;
-  //PRC(logdmdt);
-
+ 
   if (M_WD > 1.2) { // interpolate between M_WD 1.2 and 1.4
 
 
@@ -608,7 +593,7 @@ real white_dwarf::retention_He(real dmdt, real M_WD) {
 
 
 
-
+#if 0 
 // (GN Mar 30 1999) steady burning limit 
 // (Sienkewicz 1980, described in van den Heuvel et al. 1992)
 real  white_dwarf::maximum_steady_burning(const real dt) {
@@ -624,7 +609,7 @@ real  white_dwarf::minimum_steady_burning(const real dt) {
   return 1.8e-1*pow(get_total_mass(),2.7)*dt;
 
 }
-
+#endif
 
 void white_dwarf::adjust_accretor_age(const real mdot,
 				      const bool rejuvenate) {
