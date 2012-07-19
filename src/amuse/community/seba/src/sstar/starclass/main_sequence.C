@@ -464,11 +464,13 @@ star* main_sequence::merge_elements(star* str) {
 
         default: // ms+ms
 
-	   if (str->get_core_mass() > 0)
-	     exit(-1);
+	  // (GN Feb 24 2011) Brown Dwarfs have core mass!!!
+	  //PRL(str->get_core_mass());
+	  // if (str->get_core_mass() > 0)
+	  //   exit(-1);
 
-	   if (str->get_envelope_mass()>0) 
-	     add_mass_to_accretor(str->get_envelope_mass(), true);
+	  // if (str->get_envelope_mass()>0) 
+	     add_mass_to_accretor(str->get_total_mass(), true);
 
 	   instantaneous_element(); //ms+ms
       }
