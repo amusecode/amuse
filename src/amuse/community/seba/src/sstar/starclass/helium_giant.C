@@ -213,7 +213,6 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
         // if mc_core equals 1.45*mass-0.31
         // shell burning stops before whole envelope is converted into C and O
         if (core_mass < mass_tot){
-           	PRC(core_mass);PRC(mass_tot);PRL(mass);
             if(!update_core_and_envelope_mass(get_total_mass())) {
                 cerr << "Update core mass failed in helium_giant()"<<endl;
             }

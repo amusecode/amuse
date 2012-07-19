@@ -1899,6 +1899,7 @@ real single_star::base_horizontal_branch_luminosity(const real mass,
   real l_HeI = helium_ignition_luminosity(mass,z);
   real mc = FGB_core_mass_luminosity_relation(l_HeI, mass, z);
   real mu = (mass-mc)/(m_HeF-mc);
+  if (mu < 0) mu = 0;
   
   real l_zHe = helium_star_luminosity_for_solar_metalicity(mc);
   real l_min_He = minimum_horizontal_branch_luminosity(m_HeF, z);
@@ -1907,7 +1908,7 @@ real single_star::base_horizontal_branch_luminosity(const real mass,
   real l_bhb = l_zHe + (1+b20)/(1+b20*pow(mu, 1.6479))
              * b18*pow(mu, b19)
              / (1 + a*exp(15*(mass-m_HeF)));
-    
+                
   return l_bhb;
 }
 
