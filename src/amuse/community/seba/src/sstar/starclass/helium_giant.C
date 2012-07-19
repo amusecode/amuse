@@ -60,6 +60,9 @@ helium_giant::helium_giant(helium_star & h) : single_star(h) {
     last_update_age = next_update_age;
     update_relative_helium_mass(get_total_mass());
 
+    //(GN Feb 16 2011) dirty trick to avoid crashes after mergers
+    if (relative_age > next_update_age) relative_age = next_update_age;
+
     instantaneous_element();
     evolve_core_mass();
     small_envelope_perturbation();   
@@ -159,7 +162,7 @@ real helium_giant::helium_giant_end_time(const real mass, const real mass_tot) {
     //core should minimally grow 5% as a helium giant
     real t_hems = helium_main_sequence_time_for_solar_metalicity(mass);   
     real mco_hems = helium_giant_core_mass(t_hems, mass);  //co core mass
-//    PRC(mass_tot);PRC(1.45*mass_tot-0.31);PRC(mc_max);PRL(1.05*mco_hems);    
+    //PRC(mass_tot);PRC(1.45*mass_tot-0.31);PRC(mc_max);PRL(1.05*mco_hems);    
     mc_max = max(mc_max, 1.05*mco_hems);
     
     real t_Heg = helium_giant_age_core_mass_relation(mc_max, mass);
@@ -632,6 +635,8 @@ real helium_giant::helium_giant_luminosity_core_mass_relation(const real time, c
     real l_x = helium_giant_x_luminosity(mass);
     real t_x = specific_time_boundary(mass, A_He, t_Hems, l_tHems, D, p, l_x);
     real l_He;
+
+
     if (time  <= t_x){
         real t_inf1 = specific_time_limit(A_He, t_Hems,
                                           D, l_tHems, p);
@@ -646,6 +651,7 @@ real helium_giant::helium_giant_luminosity_core_mass_relation(const real time, c
         real arg = (q-1)*A_He*B*(t_inf2-time);   
         l_He = B * pow(arg, q/(1-q));
     }  
+
     return l_He; 
 }
 
@@ -708,6 +714,7 @@ real helium_giant::helium_giant_core_mass(const real time, const real mass){
     real l_x = helium_giant_x_luminosity(mass);
     real t_x = specific_time_boundary(mass, A_He, t_Hems, l_tHems, D, p, l_x);
     real m_core;
+
     
     if (time  <= t_x){
         real t_inf1 = specific_time_limit(A_He, t_Hems,
@@ -723,6 +730,7 @@ real helium_giant::helium_giant_core_mass(const real time, const real mass){
         real arg = (q-1)*A_He*B*(t_inf2-time);   
         m_core = pow(arg, 1.0/(1-q));      
     }  
+
     return m_core;     
 }
 

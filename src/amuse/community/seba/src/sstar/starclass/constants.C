@@ -241,8 +241,8 @@ real stellar_evolution_constants::parameters(stellar_mass_limits pm) {
 
 int stellar_evolution_constants::use_common_envelope_method() {
   int cc_parameter = 1; // default (use alpha-gamma)
-   // cc_parameter = 2;     // default (use gamma-gamma)
-   // cc_parameter = 3;     // default (use alpha-alpha)
+     cc_parameter = 2;     // default (use gamma-gamma)
+   //cc_parameter = 3;     // default (use alpha-alpha)
   return cc_parameter;
 }
 

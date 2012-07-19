@@ -158,11 +158,9 @@ real sub_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
             if (tau < 0.){
                 real (single_star::*fptr)(const real, real) = &single_star::terminal_hertzsprung_gap_core_mass;        
                 real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity);     
-		PRL(m_rel);
                 update_relative_mass(m_rel);
                 last_update_age = base_giant_branch_time(relative_mass, metalicity);		
                 relative_age = last_update_age;
-		PRL(relative_age);
                 evolve_core_mass();
 
             }
@@ -182,7 +180,8 @@ real sub_giant::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) {
 		      real (single_star::*fptr)(const real, real) = &single_star::helium_ignition_core_mass;        
 		      real xmin = m_HeF;
 		      real xmax = helium_ignition_mass(metalicity);// m_FGB < m_rel not possible for gb star
-		      real m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
+		      m_rel = linear_function_inversion(fptr, relative_mass, core_mass, metalicity, xmin, xmax);     
+
 		    }
 
                 update_relative_mass(m_rel);
@@ -570,6 +569,7 @@ void sub_giant::evolve_core_mass(const real time,
 				 const real mass,
 				 const real z) {
 
+  
   real mc_sg = sub_giant_core_mass(time, mass, z);
   if(!update_core_and_envelope_mass(mc_sg)) {
       cerr << "Update core mass failed in sub_giant()"<<endl;
@@ -579,6 +579,7 @@ void sub_giant::evolve_core_mass(const real time,
 
 
 void sub_giant::evolve_core_mass() {
+
   evolve_core_mass(relative_age, relative_mass, metalicity);
 }
 
@@ -588,6 +589,7 @@ real sub_giant::sub_giant_core_mass(const real time,
     
     real m_core;
     real t_bgb = base_giant_branch_time(mass, z);
+
     if (mass <= helium_flash_mass(z)){
         real l_bgb = base_giant_branch_luminosity(mass, z);
         real A_H = sub_giant_Ah_estimator(mass);
@@ -601,10 +603,13 @@ real sub_giant::sub_giant_core_mass(const real time,
         real t_HeI = helium_ignition_time(mass,z);
         real tau = (time- t_bgb)/(t_HeI-t_bgb);
 
+	if (tau > 1) tau = 1.; // Safety
+
         m_core = mc_bgb + (mc_HeI - mc_bgb)* tau;
     }
     return m_core;
 }
+
 real sub_giant::helium_core_radius(const real mass, const real m_core, const real z){
     real m_HeF = helium_flash_mass(z);
     real r_c;

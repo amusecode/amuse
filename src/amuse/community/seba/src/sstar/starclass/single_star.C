@@ -854,6 +854,7 @@ star* single_star::merge_elements(star* str) {
 
             //		What to do here is put in SPH!
       if (str->get_envelope_mass()>1.e-11) {
+
             add_mass_to_accretor(0.5*str->get_envelope_mass(), str->hydrogen_envelope_star());
       }
 
@@ -862,7 +863,6 @@ star* single_star::merge_elements(star* str) {
         add_mass_to_accretor(str->get_total_mass(), str->hydrogen_envelope_star());
     }
 
-    PRC(get_total_mass());PRL(m_conserved);
     if (get_total_mass()-m_conserved > 1.e-11) {
         cerr.precision(HIGH_PRECISION);
         cerr << "ERROR: Mass is not conserved in single_star::merge elements()"

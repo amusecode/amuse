@@ -658,6 +658,7 @@ void horizontal_branch::evolve_core_mass(const real time,
 					 const real mass,
 					 const real z) {
 
+
   real mc_hb = core_helium_burning_core_mass(time, mass, z); //Eq.67
   if(!update_core_and_envelope_mass(mc_hb)) {
     cerr << "Update core mass failed in horizontal_branch()"<<endl;
@@ -908,6 +909,7 @@ real horizontal_branch::core_helium_burning_core_mass(const real time,
     real t_He  = core_helium_burning_timescale(mass, z);
     real tau = (time - t_HeI)/t_He;    
     real m_core = (1-tau)*mc_HeI + tau*mc_bagb;
+
     return m_core;
     
 }
