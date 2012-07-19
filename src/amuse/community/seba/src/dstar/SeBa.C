@@ -415,21 +415,36 @@ int main(int argc, char ** argv) {
       //      starbase *s  = b->get_starbase();
       //      star *st     = dynamic_cast(star*, b->get_starbase());
    
-      evolve_binary(the_binary, start_time, end_time, 
+      bool reached_end = evolve_binary(the_binary, start_time, end_time, 
 		    stop_at_merger_or_disruption, stop_at_remnant_formation);
-cerr<<"na evolve_binary"<<endl;
+      cerr<<"na evolve_binary"<<endl;
 
-//      delete the_binary;
+      //cerr << ds << endl;
+
+      //ds->dump(cerr, false);
+
+      if (!reached_end) {
+
+	  the_binary->get_starbase()->dump(cerr, false);
+	  the_binary->get_starbase()->set_star_story(NULL);
+    
+	  rmtree(the_binary, false);
+      }
+
+	  //cerr << the_binary << endl;
+
+      //put_node(root);
+      //cerr << root << endl;
+      delete the_binary;
       delete root;
 
 
-//      the_binary->get_starbase()->dump(cerr, false);
+
 
 //      ((star*)the_binary->get_starbase())->set_seba_counters(new_seba_counters);
 
-      // put_node(root);
 
-//      rmtree(root);
+      //rmtree(root, false);
 
       //delete root->get_starbase()->get_seba_counters();
 
