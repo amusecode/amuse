@@ -240,7 +240,6 @@ void super_giant::adjust_next_update_age() {
 
 
 real super_giant::zeta_thermal() {
-    cerr<<"supg::zeta_thermal is used?"<<endl;
 
   real z = 0.; // (GN+SPZ Apr 29 1999) was -10 in 1998; 
                // was -0.64 somewhere in the past (~1992 or so).
@@ -393,33 +392,11 @@ void super_giant::evolve_element(const real end_time) {
             instantaneous_element();
             small_envelope_perturbation();   
             
+            // if no envelope make transition to remnants
+            // just as a procedure: reduce_mass with 1
             if (envelope_mass == 0){
-                real t_du = dredge_up_time(relative_mass, metalicity);    
-                if (relative_age < t_du){    
-                    real m_tot = core_mass;
-                    core_mass = COcore_mass;
-                    envelope_mass = m_tot - core_mass;
-                    
-                    star_transformation_story(Helium_Giant);
-                    //return dynamic_cast(star*, new helium_giant(*this));
-                    new helium_giant(*this);
-                    return;
-                }
-                else {
-                    real mc_bagb = base_AGB_core_mass(relative_mass, metalicity);
-                    if(mc_bagb >= 1.6) {
-                        star_transformation_story(Oxygen_Dwarf);
-                        //return dynamic_cast(star*, new white_dwarf(*this));
-                        new white_dwarf(*this);
-                        return;
-                    }
-                    else {
-                        star_transformation_story(Carbon_Dwarf);	   
-                        //return dynamic_cast(star*, new white_dwarf(*this));
-                        new white_dwarf(*this);
-                        return;
-                    }     
-                }
+                reduce_mass(1.);
+                return;    
             }
         }
         else {

@@ -1738,6 +1738,8 @@ void double_star::double_spiral_in() {
 	  
 	  semi = post_ce_semi;
 	  p = p->reduce_mass(menv_p);
+	  //I don't know why but sometimes the envelope_mass of the secondary changes, so:
+      menv_s = s->get_envelope_mass();
 	  s = s->reduce_mass(menv_s);
         }
 

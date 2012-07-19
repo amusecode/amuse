@@ -202,7 +202,6 @@ real sub_giant::gyration_radius_sq() {
 
 
 real sub_giant::zeta_adiabatic() {
-    cerr<<"subg::zeta_adiabatic is used?"<<endl;
 
 // (GN+SPZ Apr 28 1999) fit from Lev Yungelson private communication
 // for giants with not too convective envelope = radiative envelope
@@ -233,7 +232,6 @@ real sub_giant::zeta_adiabatic() {
 
 // Values of zeta are changed (SPZ+GN:28 Sep 1998)
 real sub_giant::zeta_thermal() {
-    cerr<<"subg::zeta_thermal is used?"<<endl;
 
   real z;
   if (low_mass_star())
@@ -384,20 +382,11 @@ void sub_giant::evolve_element(const real end_time) {
           evolve_core_mass();
           small_envelope_perturbation();   
           
+          // if no envelope make transition to remnants
+          // just as a procedure: reduce_mass with 1
           if (envelope_mass == 0){
-              real m_HeF = helium_flash_mass(metalicity);
-              if (get_total_mass() < m_HeF){
-                  star_transformation_story(Helium_Dwarf);
-                  //return dynamic_cast(star*, new white_dwarf(*this));
-                  new white_dwarf(*this);
-                  return;
-              }
-              else {
-                  star_transformation_story(Helium_Star);
-                  //return dynamic_cast(star*, new helium_star(*this));
-                  new helium_star(*this);
-                  return;
-              }
+              reduce_mass(1.);
+              return;
           }
       }
       else {

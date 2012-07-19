@@ -399,7 +399,7 @@ real stellar_evolution_constants::safety(safety_parameter ps) {
           break;                                   // == 10*HubbleT*precision
     case minimum_mass_step:                  return 1.e-5;
           break;                                   // Tricky used to be 1.e-7
-    case maximum_timestep:                   return 1; // was 1000  
+    case maximum_timestep:                   return 1000; // was 1000  
           break;                                   // 2.5 works fine but slow
     case maximum_recursive_calls:            return 1000;
           break;

@@ -32,11 +32,12 @@ black_hole::black_hole(hyper_giant & w) : single_star(w) {
       
       instantaneous_element();
       update();
-    
-    if (hit_companion)
+      
+      if (hit_companion)
          direct_hit();
 
       post_constructor();
+
 
       if (is_binary_component()) {
 	get_binary()->set_first_contact(false);
@@ -68,7 +69,7 @@ black_hole::black_hole(super_giant & g) : single_star(g) {
 
       instantaneous_element();
       update();
-    
+
       if (hit_companion)
           direct_hit();
  
@@ -82,7 +83,7 @@ black_hole::black_hole(super_giant & g) : single_star(g) {
       else {
 	dump("binev.data", false);
       }
-}
+  }
 
 black_hole::black_hole(thorne_zytkow & t) : single_star(t) {
 
@@ -121,6 +122,7 @@ black_hole::black_hole(thorne_zytkow & t) : single_star(t) {
 }
 
 black_hole::black_hole(helium_giant & h) : single_star(h) {
+
       delete &h;
 
       suddenly_lost_mass = 0;
@@ -213,7 +215,7 @@ void black_hole::adjust_initial_star() {
 #endif
 
 real black_hole::get_radius() {
-    cerr<<"enter black_hole::get_radius"<<endl;
+
     real r_eff = radius;
     if (is_binary_component() && get_companion()->get_element_type() != Black_Hole) {
         real m_sec = get_companion()->get_total_mass();
@@ -228,6 +230,7 @@ real black_hole::get_radius() {
 }
 
 void black_hole::instantaneous_element() {
+
       next_update_age = relative_age + cnsts.safety(maximum_timestep);
 
       magnetic_field  = 0;
@@ -238,7 +241,6 @@ void black_hole::instantaneous_element() {
       core_radius = effective_radius = radius = 4.25e-6*core_mass;
 
       update();
-
    }
 
 // Not much to evolve about a black hole.
@@ -257,7 +259,6 @@ void black_hole::evolve_element(const real end_time) {
       core_radius = radius = 4.25e-6*core_mass;
 
       update();
-
    }
 
 void black_hole::update() {

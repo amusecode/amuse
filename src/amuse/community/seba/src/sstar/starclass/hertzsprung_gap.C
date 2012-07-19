@@ -71,7 +71,6 @@ star* hertzsprung_gap::reduce_mass(const real mdot) {
         else {
             star_transformation_story(Helium_Star);
             return dynamic_cast(star*, new helium_star(*this));
-
         }
     }
     real mc_bgb = terminal_hertzsprung_gap_core_mass(get_total_mass()-mdot, metalicity);
@@ -288,9 +287,13 @@ void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const boo
     
     relative_age = t_ms_new + dtime*(t_hg_new/t_hg_old);
     
-    if (rejuvenate)
-        relative_age *= rejuvenation_fraction(-1.*mdot/m_tot_new); 
+    if (rejuvenate){
+        real mdot_fr = -1.*mdot/m_tot_new;
+        real rejuvenation = (1-pow(mdot_fr,
+                                   cnsts.parameters(rejuvenation_exponent)));
+        relative_age *= rejuvenation; 
     
+    }
     if (relative_age < last_update_age + cnsts.safety(minimum_timestep)){
         cerr<<"In hertzsprung_gap::adjust_age_after_wind_mass_loss relative age updated on HG, but < last_update_age"<<endl;
     }
@@ -306,7 +309,6 @@ void hertzsprung_gap::adjust_age_after_wind_mass_loss(const real mdot, const boo
 // Adiabatic response function for hertzsprung_gap star.
 // Polynomial fit to Hjellming and Webbink 1987 ApJ, 318, 804
 real hertzsprung_gap::zeta_adiabatic() {
-cerr<<"hg::zeta_adiabatic is used?"<<endl;
 
 #if 0
       real z;
@@ -336,7 +338,6 @@ cerr<<"hg::zeta_adiabatic is used?"<<endl;
 
 // Thermal response function for hertzsprung_gap star.
 real hertzsprung_gap::zeta_thermal() {
-    cerr<<"hg::zeta_thermal is used?"<<endl;
 
       real z;
 
@@ -522,20 +523,11 @@ void hertzsprung_gap::evolve_element(const real end_time) {
           evolve_core_mass();
           small_envelope_perturbation();
           
-          if (envelope_mass == 0){
-              real m_HeF = helium_flash_mass(metalicity);
-              if (get_total_mass() < m_HeF){
-                  star_transformation_story(Helium_Dwarf);
-                  //return dynamic_cast(star*, new white_dwarf(*this));
-                  new white_dwarf(*this);
-                  return;
-              }
-              else {
-                  star_transformation_story(Helium_Star);
-                  //return dynamic_cast(star*, new helium_star(*this));
-                  new helium_star(*this);
-                  return;
-              }
+          // if no envelope make transition to remnants
+          // just as a procedure: reduce_mass with 1
+          if (envelope_mass <= 0){
+              reduce_mass(1.);
+              return;
           }
       }
       else {
@@ -550,6 +542,7 @@ void hertzsprung_gap::evolve_element(const real end_time) {
           return;
 	    }
       }
+
       update();
       //stellar_wind(dt);
 }
@@ -656,7 +649,7 @@ real hertzsprung_gap::hertzsprung_gap_radius(const real time,
   real t_bgb = base_giant_branch_time(mass, z);
   real tau = (time - t_ms)/(t_bgb - t_ms);
     
-  real r_tms = terminal_main_sequence_radius(mass, z);
+  real r_tms = terminal_main_sequence_radius(mass_tot, z);
   real r_thg = terminal_hertzsprung_gap_radius(mass, mass_tot, z);
  
   real r_hg = r_tms * pow(r_thg/r_tms, tau);

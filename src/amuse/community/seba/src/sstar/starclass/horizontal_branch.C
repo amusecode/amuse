@@ -15,12 +15,43 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
     delete &g;
     real m_HeF = helium_flash_mass(metalicity);
     if ( relative_mass< m_HeF){
+        cerr.precision(HIGH_PRECISION);
+        PRC(helium_ignition_core_mass(relative_mass, metalicity));
+        PRC(helium_ignition_core_mass(get_total_mass(), metalicity));
+        PRL(core_mass);
+        
+        PRC(helium_ignition_time(relative_mass, metalicity));
+        PRC(helium_ignition_time(get_total_mass(), metalicity));
+        PRL(relative_age);
+        
+        PRC(helium_ignition_luminosity(relative_mass, metalicity));
+        PRC(helium_ignition_luminosity(get_total_mass(), metalicity));
+        PRL(luminosity);
+        cerr.precision(STD_PRECISION);
+        
         relative_mass = get_total_mass();
+        PRL(relative_age);
         relative_age = helium_ignition_time(relative_mass, metalicity);
+        PRL(relative_age);
+        PRC(relative_mass);PRC(get_total_mass());PRC(relative_age);PRL(m_HeF);
+        cerr<<"WARNING! in constructor CHeB core_mass is set"<<endl;
+        real m_core = core_helium_burning_core_mass(relative_age, relative_mass, metalicity); 
+        if (m_core > get_total_mass()){
+            cerr<<"phase transition"<<endl;
+            core_mass=get_total_mass();
+            envelope_mass = 0;
+            reduce_mass(1.);
+            return;
+        }
+        
+        else{
+            cerr<<"no phase transition"<<endl;
+            real dm = m_core - core_mass;
+            envelope_mass -= dm;
+            core_mass += dm;
+            
+        }
     }    
-    real t_HeI = helium_ignition_time(relative_mass, metalicity); 
-    PRC(relative_mass);PRC(get_total_mass());PRC(relative_age);PRL(t_HeI);
-
     
 // (GN+SPZ May  4 1999) last update age is time of previous type change
     last_update_age = next_update_age;
@@ -32,8 +63,6 @@ horizontal_branch::horizontal_branch(sub_giant & g) : single_star(g) {
     
     update();
     post_constructor();
-    t_HeI = helium_ignition_time(relative_mass, metalicity); 
-    PRC(relative_mass);PRC(get_total_mass());PRC(relative_age);PRL(t_HeI);
 
 }
 
@@ -123,13 +152,12 @@ void horizontal_branch::adjust_accretor_age(const real mdot, const bool rejuvena
 }
 
 real horizontal_branch::zeta_adiabatic() {
-    cerr<<"hb::zeta_adiabatic is used?"<<endl;
 
     return 15;	
    }
 
 real horizontal_branch::zeta_thermal() {
-    cerr<<"hb::zeta_thermal is used?"<<endl;
+
       return 15;
    }
 
@@ -312,10 +340,10 @@ void horizontal_branch::evolve_element(const real end_time) {
           evolve_core_mass();
           small_envelope_perturbation();   
           
-          if (envelope_mass == 0){
-              star_transformation_story(Helium_Star);
-              new helium_star(*this);
-              //return dynamic_cast(star*, new helium_star(*this));
+          // if no envelope make transition to remnants
+          // just as a procedure: reduce_mass with 1
+          if (envelope_mass <= 0){
+              reduce_mass(1.);
               return;
           }
       }
@@ -508,16 +536,15 @@ real horizontal_branch::helper_x_luminosity(const real mass,
                                       const real z) {
     
     real l_x;
-    if (intermediate_mass_star(mass, z)){
-        l_x = minimum_horizontal_branch_luminosity(mass, z);
-    }
-    else if(high_mass_star(mass, z)){
-        l_x = helium_ignition_luminosity(mass, z);
-    }
-    else{
+    if (mass < helium_flash_mass(z)) {
         l_x = base_horizontal_branch_luminosity(mass, z);
     }
-    
+    else if (mass < helium_ignition_mass(z)) {
+        l_x = minimum_horizontal_branch_luminosity(mass, z);
+    }
+    else {
+        l_x = helium_ignition_luminosity(mass, z);
+    }
     return l_x;
 }
 
@@ -526,10 +553,10 @@ real horizontal_branch::helper_x_radius(const real mass,
                                   const real mass_tot, const real z) {
     
     real r_x;
-    if (low_mass_star(mass, z)) {
+    if (mass < helium_flash_mass(z)) {
         r_x = base_horizontal_branch_radius(mass, mass_tot, z);
     }
-    else if (intermediate_mass_star(mass, z)) {
+    else if (mass < helium_ignition_mass(z)) {
         real l_mHe = minimum_horizontal_branch_luminosity(mass, z);
         r_x = giant_branch_radius(l_mHe, mass_tot, z);
     }
@@ -595,7 +622,7 @@ real horizontal_branch::relative_age_at_start_of_blue_phase(const real mass,
                                                       const real z) {
     
     real tau_x = 0;
-    if(intermediate_mass_star(mass, z))
+    if( mass >= helium_flash_mass(z) && mass <= helium_ignition_mass(z))
         tau_x = 1 - blue_phase_timescale(mass, z);
     
     return tau_x;
@@ -606,7 +633,7 @@ real horizontal_branch::relative_age_at_end_of_blue_phase(const real mass,
                                                     const real z) {
     
     real tau_y = 1;
-    if(high_mass_star(mass, z))
+    if (mass > helium_ignition_mass(z))
         tau_y = blue_phase_timescale(mass, z);
     
     return tau_y;

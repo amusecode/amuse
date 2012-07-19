@@ -409,9 +409,6 @@ class  single_star : public star
 
       real base_giant_branch_core_mass(const real mass, 
       				       const real z);
-      real giant_branch_core_mass(const real time, 
-      				  const real mass, 
-      				  const real z);
       real base_horizontal_branch_radius(const real mass, 
 					 const real mass_tot, const real z);
       real core_helium_burning_timescale(const real mass, 

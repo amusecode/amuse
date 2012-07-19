@@ -51,6 +51,7 @@ class helium_star : public single_star {
 	 stellar_type get_element_type();
 
 	 void adjust_next_update_age(); 
+
 	 void instantaneous_element();
 	 void evolve_element(const real);
 	 void update();

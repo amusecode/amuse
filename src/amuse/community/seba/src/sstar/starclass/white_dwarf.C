@@ -24,7 +24,7 @@ white_dwarf::white_dwarf(super_giant & g) : single_star(g) {
 // (GN+SPZ May  4 1999) last update age is time of previous type change
       last_update_age = next_update_age;
 
-      relative_age = 1 + nucleair_evolution_time();
+    relative_age = 0.;//1 + nucleair_evolution_time();
 
       instantaneous_element();
       update();
@@ -33,7 +33,6 @@ white_dwarf::white_dwarf(super_giant & g) : single_star(g) {
 }
 
 white_dwarf::white_dwarf(sub_giant & s) : single_star(s) {
-    
       delete &s;
 
       real m_tot    = get_total_mass();
@@ -47,7 +46,7 @@ white_dwarf::white_dwarf(sub_giant & s) : single_star(s) {
 
       lose_envelope_decent();
 
-      relative_age = 1 + nucleair_evolution_time();
+    relative_age = 0.;//1 + nucleair_evolution_time();
 
       instantaneous_element();
       update();
@@ -71,7 +70,7 @@ white_dwarf::white_dwarf(hertzsprung_gap & s) : single_star(s) {
 
       lose_envelope_decent();
 
-      relative_age = 1 + nucleair_evolution_time();
+    relative_age = 0.;//1 + nucleair_evolution_time();
 
       instantaneous_element();
       update();
@@ -96,7 +95,7 @@ white_dwarf::white_dwarf(helium_star & h) : single_star(h) {
 
 	lose_envelope_decent();
 	
-        relative_age = 1 + nucleair_evolution_time();
+    relative_age = 0.;//1 + nucleair_evolution_time();
 
 	instantaneous_element();
 	update();
@@ -121,7 +120,7 @@ white_dwarf::white_dwarf(helium_giant & h) :  single_star(h) {
 
 	lose_envelope_decent();
 
-        relative_age = 1 + nucleair_evolution_time();
+    relative_age = 0.;//1 + nucleair_evolution_time();
 
 	instantaneous_element();
 	update();
@@ -143,6 +142,9 @@ void white_dwarf::adjust_initial_star() {
   }
         
   if(relative_age<=0)
+      // nucleair_evolution_time() should not be used anymore
+      // should be relative_age = max(current_time, 0.);
+
     relative_age = max(current_time, nucleair_evolution_time());
 
       if (relative_mass>cnsts.parameters(super_giant2neutron_star)) {
@@ -203,19 +205,21 @@ void white_dwarf::evolve_element(const real end_time) {
 	  return;
         }
 
-        real t_nuc = nucleair_evolution_time();
+//    real t_nuc = nucleair_evolution_time();
         next_update_age = relative_age + cnsts.safety(maximum_timestep);
 
-	
-        if (t_nuc>=relative_age) {
+    if (relative_age <= 0.){
+  //      if (t_nuc>=relative_age) {
            luminosity = 40;
-	   relative_age = t_nuc;
+        //relative_age = t_nuc;
+        relative_age = 0.;
+        
         }
         else {
 	  // (GN May  4 1999) fit to Driebe et al 1999
 	  real fit_mass = min(0.6, max(0.18, get_total_mass()));
 	  real l_max = pow(10, (3.83 - 4.77* fit_mass));
-	  luminosity = l_max/pow((relative_age - t_nuc), 1.4);
+	  luminosity = l_max/pow((relative_age), 1.4);
 	}
 
 	
@@ -460,9 +464,9 @@ void white_dwarf::adjust_accretor_age(const real mdot,
            m_rel_new = m_tot_new;
         else m_rel_new = relative_mass;
 
-        real t_nuc_old = nucleair_evolution_time();
+    real t_nuc_old = 0.;//nucleair_evolution_time();
 	real z_new = get_metalicity();
-        real t_nuc_new = nucleair_evolution_time(m_rel_new, m_tot_new, z_new);
+    real t_nuc_new = 0.;//nucleair_evolution_time(m_rel_new, m_tot_new, z_new);
 
         real dtime = relative_age - t_nuc_old;
 

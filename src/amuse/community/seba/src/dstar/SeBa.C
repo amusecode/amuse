@@ -203,7 +203,7 @@ int main(int argc, char ** argv) {
 
     char *mfc = new char[64];
     mass_function mf = mf_Power_Law;
-    real m_min = 0.1;
+    real m_min = 0.5;
     real m_max = 100;
     real m_exp = -2.35;
     char *qfc = new char[64];
@@ -223,7 +223,7 @@ int main(int argc, char ** argv) {
     real e_exp;
 
     real start_time = 0;
-    real end_time   = 35;
+    real end_time   = 13500;//35;
 
     char* input_filename;
 
@@ -419,7 +419,7 @@ int main(int argc, char ** argv) {
 		    stop_at_merger_or_disruption, stop_at_remnant_formation);
 cerr<<"na evolve_binary"<<endl;
 
-      //delete the_binary;
+//      delete the_binary;
       delete root;
 
 

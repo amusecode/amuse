@@ -286,9 +286,8 @@ real main_sequence::add_mass_to_accretor(const real mdot) {
     envelope_mass += mdot;
     accreted_mass += mdot;
     if (relative_mass<get_total_mass()) 
-        relative_mass = get_total_mass();
+        update_relative_mass(get_total_mass());
     
-    adjust_next_update_age();
     set_spec_type(Accreting);
     
     return mdot;
@@ -305,13 +304,11 @@ real main_sequence::add_mass_to_accretor(real mdot, const real dt) {
     
     mdot = accretion_limit(mdot, dt);
     adjust_accretor_age(mdot, true);
-    if (relative_mass<get_total_mass() + mdot) 
-        relative_mass = get_total_mass() + mdot;
-    
     envelope_mass += mdot;
     accreted_mass += mdot;
-    
-    adjust_next_update_age();
+    if (relative_mass<get_total_mass()) 
+        update_relative_mass(get_total_mass());
+        
     adjust_accretor_radius(mdot, dt);
     
     set_spec_type(Accreting);
@@ -468,8 +465,12 @@ void main_sequence::adjust_age_after_wind_mass_loss(const real mdot,
     real t_ms_new = main_sequence_time(m_rel_new, z_new);
     
     relative_age *= (t_ms_new/t_ms_old);
-    if (rejuvenate)
-        relative_age *= rejuvenation_fraction(-1. * mdot/m_tot_new);     
+    if (rejuvenate){
+        real mdot_fr = -1. * mdot/m_tot_new; 
+        real rejuvenation = (1-pow(mdot_fr,
+                                   cnsts.parameters(rejuvenation_exponent)));
+        relative_age *= rejuvenation;     
+    }
     relative_age = min(relative_age, t_ms_new);
     
     // next_update_age should not be reset here,
@@ -500,8 +501,6 @@ void main_sequence::adjust_donor_age(const real mdot) {
 // Used for determining mass_transfer_timescale.
 // Increasing zeta stabilizes binary.
 real main_sequence::zeta_adiabatic() {
-    cerr<<"ms::zeta_adiabatic is used?"<<endl;
-
       real z;
 
       if (get_relative_mass()<=0.4)         // convective envelope
@@ -523,7 +522,6 @@ real main_sequence::zeta_adiabatic() {
 // Used for determining mass_transfer_timescale.
 // (SPZ+GN: 1 Oct 1998)
 real main_sequence::zeta_thermal() {
-    cerr<<"ms::zeta_thermal is used?"<<endl;
 
       real z = -1;
 

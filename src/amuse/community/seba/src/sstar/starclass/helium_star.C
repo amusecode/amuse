@@ -20,13 +20,13 @@ helium_star::helium_star(main_sequence & m) : single_star(m) {
     adjust_next_update_age();
 // (GN+SPZ May  4 1999) last update age is time of previous type change
 // in NEW relative_age units!!!
-    last_update_age = 0;
-    relative_age = 0;
+    last_update_age = 0.;
+    relative_age = 0.;
 
     // core_mass is CO core (SPZ+GN: 27 Jul 2000)
     real m_tot = get_total_mass();
     // (SPZ+GN: 28 Jul 2000) was helium core but is now the CO core.
-    core_mass = 0;
+    core_mass = 0.;
     final_core_mass = final_CO_core_mass(m_tot);
     core_mass = COcore_mass = CO_core_mass();
     envelope_mass =  m_tot - core_mass;
@@ -53,12 +53,12 @@ helium_star::helium_star(hertzsprung_gap & h) : single_star(h) {
     // in NEW relative_age units
     last_update_age = 0.;
     adjust_next_update_age();
-    relative_age = 0;
+    relative_age = 0.;
 
     // core_mass is CO core (SPZ+GN: 27 Jul 2000)
     real m_tot = get_total_mass();
     // (SPZ+GN: 28 Jul 2000) was helium core but is now the CO core.
-    core_mass = COcore_mass = 0;
+    core_mass = COcore_mass = 0.;
     //final_core_mass = final_CO_core_mass(m_tot);
     //core_mass = COcore_mass = CO_core_mass();
     envelope_mass =  m_tot - core_mass;
@@ -83,12 +83,12 @@ helium_star::helium_star(sub_giant & g) : single_star(g) {
     // in NEW relative_age units
     last_update_age = 0.;
     adjust_next_update_age();
-    relative_age = 0;
+    relative_age = 0.;
 
     // core_mass is CO core (SPZ+GN: 27 Jul 2000)
     real m_tot = get_total_mass();
     // (SPZ+GN: 28 Jul 2000) was helium core but is now the CO core.
-    core_mass = COcore_mass = 0;
+    core_mass = COcore_mass = 0.;
     //final_core_mass = final_CO_core_mass(m_tot);
     //core_mass = COcore_mass = CO_core_mass();
     envelope_mass =  m_tot - core_mass;
@@ -107,7 +107,12 @@ helium_star::helium_star(horizontal_branch & h) : single_star(h) {
 
     delete &h;
     lose_envelope_decent();
+
+    relative_age = (relative_age - helium_ignition_time(relative_mass, metalicity)) / core_helium_burning_timescale(relative_mass, metalicity)
+    * helium_main_sequence_time_for_solar_metalicity(get_total_mass());
     
+    last_update_age = 0.;//relative_age;
+    relative_mass = get_total_mass();
 
 //    real t_ms = main_sequence_time();
 //    real t_giant = t_ms + hertzsprung_gap_time()
@@ -115,20 +120,16 @@ helium_star::helium_star(horizontal_branch & h) : single_star(h) {
 //    real t_he = helium_giant_time(t_ms, metalicity);
 //    real t_frac = min(0.9,(relative_age - t_giant)/t_he);
 
+    
     // (GN+SPZ May  4 1999) last update age is time of previous type change
     // in NEW relative_age uits
     adjust_next_update_age();
     //relative_age = t_frac* next_update_age;
     
-    relative_age = (relative_age - helium_ignition_time(relative_mass, metalicity)) / core_helium_burning_timescale(relative_mass, metalicity)
-    * helium_main_sequence_time_for_solar_metalicity(get_total_mass());
-    last_update_age = relative_age;
-    relative_mass = get_total_mass();
-    
     // core_mass is CO core (SPZ+GN: 27 Jul 2000)
     real m_tot = get_total_mass();
     // (SPZ+GN: 28 Jul 2000) was helium core but is now the CO core.
-    core_mass = COcore_mass = 0;
+    core_mass = COcore_mass = 0.;
     //final_core_mass = final_CO_core_mass(m_tot);
     //core_mass = COcore_mass = CO_core_mass();
     envelope_mass =  m_tot - core_mass;
@@ -157,6 +158,7 @@ void helium_star::adjust_next_update_age() {
     
     next_update_age = helium_main_sequence_time_for_solar_metalicity(relative_mass);
 }
+
 
 #if 0
 void helium_star::instantaneous_element() {
@@ -286,7 +288,7 @@ star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
     //  envelope_mass -= mdot;
     //else {
     //  mdot = envelope_mass;
-    //  envelope_mass = 0;
+    //  envelope_mass = 0.;
     //  
     //  //	   star_transformation_story(this,White_Dwarf);
     //  //return dynamic_cast(star*, new white_dwarf(*this));
@@ -323,7 +325,7 @@ star* helium_star::reduce_mass(const real mdot) {
     //   On the He-MS there is no defined core yet, 
     //   no CO star/WD can form yet 
     //   if (envelope_mass<=mdot) {
-    //         envelope_mass = 0;
+    //         envelope_mass = 0.;
     //         //star_transformation_story(Helium_Star);
     //         //return dynamic_cast(star*, new helium_star(*this));
     //      }
@@ -335,7 +337,7 @@ star* helium_star::reduce_mass(const real mdot) {
 //      cerr<<"In helium_star::reduce_mass: what does this part do? only for constructing he star?"<<endl;
 //      real mass_reduced = mdot;
 //      mass_reduced -= envelope_mass;
-//      envelope_mass = 0;
+//      envelope_mass = 0.;
 //      if (core_mass>mass_reduced) {
 //        if (core_mass-mass_reduced<=cnsts.parameters(minimum_helium_star)) {
 //            core_mass -= mass_reduced;
@@ -379,8 +381,12 @@ void helium_star::adjust_age_after_wind_mass_loss(const real mdot,
     real t_hems_new = helium_main_sequence_time_for_solar_metalicity(m_rel_new);
     
     relative_age *= (t_hems_new/t_hems_old);
-    if (rejuvenate)
-        relative_age *= rejuvenation_fraction(-1.0 * mdot/m_tot_new); 
+    if (rejuvenate){
+        real mdot_fr = -1.0 * mdot/m_tot_new;
+        real rejuvenation = (1-pow(mdot_fr,
+                                   cnsts.parameters(rejuvenation_exponent)));
+        relative_age *= rejuvenation; 
+    }
     relative_age = min(relative_age, t_hems_new);
 
     // next_update_age should not be reset here,
@@ -400,16 +406,14 @@ real helium_star::add_mass_to_accretor(const real mdot) {
 	       return 0;
         }
 
-        adjust_accretor_age(mdot);
-        if (relative_mass<get_total_mass() + mdot)
-	        relative_mass = get_total_mass() + mdot;
-
+        adjust_accretor_age(mdot, true);
         // (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
         //	update_wind_constant();
-	
+        
         envelope_mass += mdot;
+        if (relative_mass<get_total_mass())
+	        update_relative_mass(get_total_mass());
 	
-        adjust_next_update_age();
         set_spec_type(Accreting);
 	
         return mdot;
@@ -427,16 +431,13 @@ real helium_star::add_mass_to_accretor(real mdot, const real dt) {
         }
 
         mdot = accretion_limit(mdot, dt);
-        adjust_accretor_age(mdot);
-        if (relative_mass<get_total_mass() + mdot)
-           relative_mass = get_total_mass() + mdot;
-
+        adjust_accretor_age(mdot, true);
         // (GN+SPZ May  3 1999) Langer wind: see helium_star::stellar_wind
         //	update_wind_constant();
-
         envelope_mass += mdot;
-    
-        adjust_next_update_age();
+        if (relative_mass<get_total_mass())
+           update_relative_mass(get_total_mass());
+
         cerr<<"Should helium_star::add_mass_to_accretor have adjust_donor_radius?"<<endl;
         adjust_accretor_radius(mdot, dt);
 
@@ -492,7 +493,6 @@ void helium_star::adjust_accretor_age(const real mdot,
 // Helium stars have radiative envelopes.
 // this requires more research (SPZ+GN: 3 Oct 1998)
 real helium_star::zeta_adiabatic() {
-    cerr<<"He_s::zeta_adiabatic is used?"<<endl;
 
   real z = 15;
   
@@ -501,7 +501,6 @@ real helium_star::zeta_adiabatic() {
 }
 
 real helium_star::zeta_thermal() {
-    cerr<<"He_s::zeta_thermal is used?"<<endl;
 
 // (GN+SPZ May  3 1999) see evolve_element; mass - radius relation
   if (get_total_mass() < 0.2 ) {

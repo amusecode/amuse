@@ -259,16 +259,13 @@ real single_star::helium_core_radius() {
 real single_star::nucleair_evolution_time(const real mass, const real mass_tot,
 					  const real z) {
 
-    //  real t_bagb = base_AGB_time(mass, z);
-    //  real t_tagb = t_bagb + t_du;
-
     real t_tagb = TAGB_time(mass, mass_tot, z);
     return t_tagb;
 }
 
 
 real single_star::nucleair_evolution_time() {
-
+    cerr<<"single_star::nucleair_evolution_time is currently not used (used to be part of wind_constant)"<<endl;
     real t_nuc = nucleair_evolution_time(relative_mass, get_total_mass(),
                        metalicity);
     return t_nuc;
@@ -967,6 +964,7 @@ void single_star::add_mass_to_core(const real mdot) {
     
   }
   else {
+      cerr<<"adjust_accretor_age bool = FALSE, why exactly?"<<endl;
     adjust_accretor_age(mdot, false);
     core_mass += mdot;
     accreted_mass += mdot;
@@ -1457,12 +1455,18 @@ real single_star::helium_ignition_radius(const real mass, const real mass_tot, c
 bool single_star::low_mass_star(const real mass,
 				const real z) {
 
-  bool is_low_mass_star = false;
+    bool is_low_mass_star = false;
 
-  if(mass < helium_flash_mass(z))
-    is_low_mass_star = true;
-
-  return is_low_mass_star;
+    if (!remnant()) {
+        if(relative_mass <= cnsts.parameters(low_mass_star_mass_limit)) 
+            is_low_mass_star = true;
+    }
+    else if (get_total_mass() <=
+             cnsts.parameters(low_mass_star_mass_limit)) {
+        is_low_mass_star = true;
+    }
+    
+    return is_low_mass_star;
 }
  
 bool single_star::low_mass_star() {
@@ -1485,12 +1489,13 @@ bool single_star::medium_mass_star() {
 bool single_star::high_mass_star(const real mass,
 				 const real z) {
 
-  bool is_high_mass_star = false;
-  
-  if (mass > helium_ignition_mass(z))
-    is_high_mass_star = true;
-
-  return is_high_mass_star;
+    if(remnant())
+        return (get_total_mass()>cnsts.parameters(medium_mass_star_mass_limit))
+        ?true :false;
+    else
+        return (get_relative_mass()>cnsts.parameters(medium_mass_star_mass_limit))
+        ?true :false;
+    
 }
 
 bool single_star::high_mass_star() {
@@ -1758,6 +1763,7 @@ real single_star::base_horizontal_branch_luminosity(const real mass,
   real l_bhb = l_zHe + (1+b20)/(1+b20*pow(mu, 1.6479))
              * b18*pow(mu, b19)
              / (1 + a*exp(15*(mass-m_HeF)));
+    
   return l_bhb;
 }
 
@@ -1834,7 +1840,7 @@ real single_star::base_horizontal_branch_radius(const real mass,
   real r_gb = giant_branch_radius(l_bhb, mass_tot, z);
   real r_czahe = helium_star_radius_for_solar_metalicity(mc);
   real r_bhb = (1-f)*r_czahe + f*r_gb;
-
+    
   return r_bhb;
 }
 
@@ -2213,27 +2219,6 @@ real single_star::base_giant_branch_core_mass(const real mass, real z) {
     return mc_bgb;
 }
 
-// Eq.45
-real single_star::giant_branch_core_mass(const real time, 
-					 const real mass, 
-					 const real z) {
-  
-  real t_bgb = base_giant_branch_time(mass, z);
-  real t_HeI = helium_ignition_time(mass, z); 
-  real tau = (time - t_bgb)/(t_HeI-t_bgb);
-
-  real mc_bgb = base_giant_branch_core_mass(mass, z);
-  cerr << "Compute Eq.45 with mc_HeI=1"<<endl;
-  real mc_HeI = 1;
-
-  real m_core;
-  if(!low_mass_star())
-    m_core = mc_bgb + tau * (mc_HeI - mc_bgb);
-  
-  return m_core;
-}
-
-
 // Eq.57
 real single_star::core_helium_burning_timescale(const real mass, 
 						const real z) {
@@ -2291,18 +2276,16 @@ real single_star::base_AGB_core_mass(const real mass, const real z) {
 //sect.5.3: Eq.66-
 real single_star::helium_ignition_core_mass(const real mass, 
 					    const real z) {
-
-
-
+    
   real mc_HeI;
-  if (low_mass_star()) {
+  real m_HeF = helium_flash_mass(z);
+  if (mass < m_HeF){    
     real l_HeI = helium_ignition_luminosity(mass, z);
     mc_HeI = FGB_core_mass_luminosity_relation(l_HeI, mass, z);}
   else {
     //mc_HeI = base_giant_branch_core_mass(mass, z); //Eq.44    
     // should be Eq. 44 but with l_bgb replaced by LHeI 
 
-    real m_HeF = helium_flash_mass(z);
     real l_HeI = helium_ignition_luminosity(m_HeF, z);
     real mc = FGB_core_mass_luminosity_relation(l_HeI, m_HeF,z);
   
@@ -2463,8 +2446,13 @@ real single_star::TAGB_time(const real mass, const real mass_tot, const real z) 
             t_tagb = t_inf2 - pow(mc_max, 1-q)/(q-1)/AH_He/B;
             
             if(mc_max<=m_x) {
-                cerr<<"ERROR in super_giant::TAGB_time"<<endl;
+                cerr<<"ERROR in single_star::TAGB_time"<<endl;
                 cerr<<"mc_max <= m_x need tinf1"<<endl;
+                PRC(mc_bagb);PRC(mc_du);PRL(m_x);
+                PRC(l_du); PRL(l_x);
+                PRC(mc_max);PRC( maximum_AGB_core_mass(mass,z));
+                PRC(relative_mass);PRC(get_total_mass());PRC(core_mass);PRL(COcore_mass);
+                exit(-1);
             }
             
         }
@@ -2809,6 +2797,7 @@ real single_star::update_core_and_envelope_mass(const real m_core) {
     cerr << "single_star::update_core_and_envelope_mass limits new core mass to total mass." << endl;
     envelope_mass = 0;
     core_mass = get_total_mass();
+    successful_update = true;
   }    
   else if (dm_core >= 0.0 - cnsts.safety(tiny)){
     envelope_mass -= dm_core; 
@@ -2847,21 +2836,23 @@ real single_star::update_core_and_envelope_mass_TPAGB(const real m_core) {
 real single_star::update_COcore_mass(const real mco_core) {
     
     bool successful_update = false;    
-    if(mco_core>=COcore_mass && mco_core<=get_total_mass()) {
+    if(mco_core>=COcore_mass- cnsts.safety(tiny) && mco_core<=get_total_mass()) {
         COcore_mass = mco_core;
         successful_update = true;
     }
     else {
         cerr << "WARNING: void update_COcore(mco_core)"<< endl;
-        if(mco_core < COcore_mass) {
+        if(mco_core < COcore_mass- cnsts.safety(tiny)) {
             cerr << "    old COcore mass exceeds new COcore mass." << endl;
-            PRC(mco_core);
+            PRC(mco_core);PRL(COcore_mass);
             dump(cerr, false);
             exit(-1);
         }
         else {
+            cerr.precision(HIGH_PRECISION);
             cerr << "    new COcore mass exceeds total mass." << endl;
-            PRC(mco_core);
+            cerr.precision(STD_PRECISION);
+            PRC(mco_core);PRL(get_total_mass());
             dump(cerr, false);
             exit(-1);
         }

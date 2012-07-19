@@ -51,16 +51,16 @@ class helium_giant : public single_star {
         real helium_giant_luminosity_core_mass_relation(
                                                     const real time, const real mass, const real z);
         real helium_giant_age_core_mass_relation(const real m_core, const real mass);
-        real helium_giant_end_time(const real mass, const real mass_tot);  
+        real helium_giant_end_time(const real mass, const real mass_tot); 
         real small_envelope_mu(const real lum, const real mass_tot, const real m_core);
         void small_envelope_perturbation();
     
         real maximum_helium_giant_core_mass(const real mass);
         void evolve_core_mass(const real time,
-                              const real mass);
+                      const real mass, const real mass_tot);
         void evolve_core_mass();
         real helium_giant_core_mass(const real time,
-                                    const real mass);
+                         const real mass);
         //void stellar_wind(const real);
         void update();
         void update_wind_constant();
