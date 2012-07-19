@@ -678,7 +678,6 @@ real single_star::mass_ratio_mdot_limit(real mdot) {
 // At moment accretor fills own Roche-lobe mass transfer becomes
 // inconservative.
 real single_star::accretion_limit(const real mdot, const real dt) {
-
   // Conservative mass transfer.
 //   return mdot;
 

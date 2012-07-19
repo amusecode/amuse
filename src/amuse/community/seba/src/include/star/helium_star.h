@@ -64,7 +64,7 @@ class helium_star : public single_star {
 	 real temperature();
 	 
 //		Mass transfer utilities.
-	 real accretion_limit(const real, const real);
+//	 real accretion_limit(const real, const real);
      star* subtrac_mass_from_donor(const real, real&);
 	 star* reduce_mass(const real);
      real add_mass_to_accretor(const real, bool);

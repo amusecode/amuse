@@ -138,7 +138,9 @@ local bool read_binary_params(ifstream& in, real &m_prim,
 local bool  evolve_binary(dyn * bi,
                           real start_time, real end_time,
 			  bool stop_at_merger_or_disruption,
-			  bool stop_at_remnant_formation) { 
+			  bool stop_at_remnant_formation,
+			  char* SeBa_outfile) { 
+
 
   double_star* ds = dynamic_cast(double_star*, 
 				 bi->get_starbase());
@@ -147,7 +149,7 @@ local bool  evolve_binary(dyn * bi,
   real dt, time=start_time;
   ds->evolve_element(time);
   
-  char SeBa_outfile[] = "SeBa.data";
+  //char SeBa_outfile[] = "SeBa.data";
   //char SeBa_outfile[] = SeBa_Filename();
   ds->dump(SeBa_outfile, true);
 
@@ -186,6 +188,7 @@ int main(int argc, char ** argv) {
     bool R_flag = false;
     bool F_flag = false;
     bool I_flag = false;
+    bool O_flag = false;
     bool P_flag = false;
     bool U_flag = false;
     bool G_flag = false;
@@ -239,6 +242,8 @@ int main(int argc, char ** argv) {
     real end_time   = 13500;//35;
 
     char* input_filename;
+    char* output_filename = "SeBa.data";
+    //output_filename = new char "SeBa.data";
 
     int input_seed=0; 
     char seedlog[64];
@@ -250,7 +255,7 @@ int main(int argc, char ** argv) {
 
     extern char *poptarg;
     int c;
-    const char *param_string = "n:N:RDSM:m:x:F:f:A:a:y:G:g:E:e:v:U:u:Q:q:T:t:I:w:P:p:n:s:z:";
+    const char *param_string = "n:N:RDSM:m:x:F:f:A:a:y:G:g:E:e:v:U:u:Q:q:T:t:I:w:P:p:n:s:z:O:";
 
     while ((c = pgetopt(argc, argv, param_string)) != -1)
 	switch(c) {
@@ -303,6 +308,9 @@ int main(int argc, char ** argv) {
             case 'I': I_flag = true;
 		      input_filename = poptarg;
 		      break;
+        case 'O': O_flag = true;
+		      output_filename = poptarg;
+		      break;
             case 'w': q_exp = atof(poptarg);
 		      break;
 	    case 'P': P_flag = true;
@@ -318,7 +326,6 @@ int main(int argc, char ** argv) {
 		      break;
         case 'z': metal = atof(poptarg);
                 break;
-		      
             case '?': params_to_usage(cerr, argv[0], param_string);
 		      exit(1);
 	}
@@ -452,9 +459,8 @@ int main(int argc, char ** argv) {
       //      node *b      = root->get_oldest_daughter();
       //      starbase *s  = b->get_starbase();
       //      star *st     = dynamic_cast(star*, b->get_starbase());
-   
       bool reached_end = evolve_binary(the_binary, start_time, end_time, 
-		    stop_at_merger_or_disruption, stop_at_remnant_formation);
+		    stop_at_merger_or_disruption, stop_at_remnant_formation, output_filename);
       cerr<<"na evolve_binary"<<endl;
 
       //cerr << ds << endl;

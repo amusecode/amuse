@@ -486,18 +486,18 @@ real helium_giant::add_mass_to_accretor(real mdot, const real dt, bool hydrogen)
 
 
 
-real helium_giant::accretion_limit(const real mdot, const real dt) {
-cerr<<"helium_giant::accretion_limit not used"<<endl;
-
-     real mdot_limit = mdot;
-
-     real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
-     if (mdot>=eddington)
-       mdot_limit =  eddington;
-
-     return mdot_limit;
-
-}
+//real helium_giant::accretion_limit(const real mdot, const real dt) {
+//cerr<<"helium_giant::accretion_limit not used"<<endl;
+//
+//     real mdot_limit = mdot;
+//
+//     real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
+//     if (mdot>=eddington)
+//       mdot_limit =  eddington;
+//
+//     return mdot_limit;
+//
+//}
 
 # if 0
 // currently not used
