@@ -472,7 +472,7 @@ void double_star::circularize() {
 	            * get_primary()->get_effective_radius()         ||
          pericenter<= cnsts.parameters(tidal_circularization_radius)
 	            * get_secondary()->get_effective_radius())      &&
-        (eccentricity>0 && eccentricity<1.)) /*safety*/         {
+        (eccentricity>=0 && eccentricity<1.)) /*safety*/         {
             real peri_new = cnsts.parameters(tidal_circularization_radius)
 	                  * Starlab::max(get_primary()->get_effective_radius(),
 				    get_secondary()->get_effective_radius());
@@ -491,9 +491,11 @@ void double_star::circularize() {
 //cerr<<"final: "<<semi<<" "<<eccentricity<<endl;
             //semi *= (1-eccentricity*eccentricity);
             //eccentricity = 0;
-	    real rotation_period = cnsts.physics(days)*get_period();
-            get_primary()->set_rotation_period(rotation_period);
-            get_secondary()->set_rotation_period(rotation_period);
+	    
+// (SilT 26 October 2010) Rotation_period should not be set every timestep to synchronisation                    	    
+//	    real rotation_period = cnsts.physics(days)*get_period();
+//            get_primary()->set_rotation_period(rotation_period);
+//            get_secondary()->set_rotation_period(rotation_period);
         }
 //force_circularization();	//	For model E.
 }

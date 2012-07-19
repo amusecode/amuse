@@ -319,15 +319,112 @@ void horizontal_branch::adjust_accretor_age(const real mdot, const bool rejuvena
 
 }
 
-real horizontal_branch::zeta_adiabatic() {
+real horizontal_branch::zeta_adiabatic() {	
+//    return 15;	
 
-    return 15;	
-   }
+    // (SilT 25 October 2010) new tracks require new zeta
+    // definition of horizontal branch changed
+    real m_FGB = helium_ignition_mass(metalicity);
+    real m_HeF = helium_flash_mass(metalicity);
+    if (relative_mass < m_HeF){ //low mass stars   
+        return 4;    
+    }
+    else if (relative_mass < m_FGB){ //intermediate mass stars
+        real t_HeI = helium_ignition_time(relative_mass, metalicity); //#eq.43    
+        real t_He = core_helium_burning_timescale(relative_mass, metalicity);
+        real tau = (relative_age - t_HeI)/t_He;
+        real tau_x = relative_age_at_start_of_blue_phase(relative_mass, metalicity);
+        
+        if (tau < tau_x){ //decent along GB
+            // (GN+SPZ Apr 28 1999) fit from Lev Yungelson private communication
+            // for giants with not too convective envelope = radiative envelope
+
+            real r_dconv = 2.4*pow(relative_mass,1.56);
+            if (relative_mass > 10 )
+                r_dconv = 5.24*pow(relative_mass,1.32);
+            else if (relative_mass > 5)
+                r_dconv = 1.33*pow(relative_mass,1.93);
+    
+            //(SilT Sep 1 2010) Need factor 1.5 with new HPT tracks in order to get
+            // stable mass transfer on early giant branch  
+            r_dconv = 1.5* r_dconv;
+            if (radius < r_dconv)
+                return 4;
+            else {
+                //   		Hjellming and Webbink 1987 ApJ, 318, 804
+                real x = core_mass/get_total_mass();
+                real A = -0.220823;
+                real B = -2.84699;
+                real C = 32.0344;
+                real D = -75.6863;
+                real E = 57.8109;
+                
+                return A + x*(B + x*(C + x*(D + x*E)));
+                
+            }
+        }       
+        else //blue loop phase 
+          return 4;            
+    }
+    else{// high mass stars
+        real t_HeI = helium_ignition_time(relative_mass, metalicity); //#eq.43    
+        real t_He = core_helium_burning_timescale(relative_mass, metalicity);
+        real tau = (relative_age - t_HeI)/t_He;
+        real tau_y = relative_age_at_end_of_blue_phase(relative_mass, metalicity);
+
+        if (tau < tau_y){ //blue phase before reaching the giant branch
+            return 4;
+        }
+        else {// red (super)giant phase
+            //   		Hjellming and Webbink 1987 ApJ, 318, 804
+            real x = core_mass/get_total_mass();
+            real A = -0.220823;
+            real B = -2.84699;
+            real C = 32.0344;
+            real D = -75.6863;
+            real E = 57.8109;
+        
+            return A + x*(B + x*(C + x*(D + x*E)));
+        }        
+    }
+}
 
 real horizontal_branch::zeta_thermal() {
 
-      return 15;
-   }
+//      return 15;
+
+    // (SilT 25 October 2010) new tracks require new zeta
+    // definition of horizontal branch changed
+    real m_FGB = helium_ignition_mass(metalicity);
+    real m_HeF = helium_flash_mass(metalicity);
+    if (relative_mass < m_HeF){ // low mass stars   
+        return 4;
+    }
+    else if (relative_mass < m_FGB){//intermediate mass stars
+        real t_HeI = helium_ignition_time(relative_mass, metalicity); //#eq.43    
+        real t_He = core_helium_burning_timescale(relative_mass, metalicity);
+        real tau = (relative_age - t_HeI)/t_He;
+        real tau_x = relative_age_at_start_of_blue_phase(relative_mass, metalicity);
+        
+        if (tau < tau_x) //decent along GB
+          return 0;            
+        else //blue loop phase 
+            return 4;
+    }
+    else{//high mass stars
+        real t_HeI = helium_ignition_time(relative_mass, metalicity); //#eq.43    
+        real t_He = core_helium_burning_timescale(relative_mass, metalicity);
+        real tau = (relative_age - t_HeI)/t_He;
+        real tau_y = relative_age_at_end_of_blue_phase(relative_mass, metalicity);
+
+        if (tau < tau_y){ //blue phase before reaching the giant branch
+            return -2;
+        }
+        else {// red (super)giant phase
+            return 0;
+        }        
+    }
+}
 
 void horizontal_branch::adjust_next_update_age() {
   real t_HeI = helium_ignition_time();
