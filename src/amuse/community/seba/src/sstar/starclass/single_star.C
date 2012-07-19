@@ -328,6 +328,10 @@ real single_star::temperature() {
 
     real T_eff = cnsts.parameters(Tsun)
              * pow(luminosity/pow(effective_radius, 2), 0.25); // in [K]
+ 
+    // (GN+PimvO Jun  8 2012) safety for mergers
+    if (effective_radius <= 0) T_eff = 1e-99;
+
     return T_eff;
 }
 
