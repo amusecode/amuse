@@ -65,7 +65,7 @@ star* hertzsprung_gap::reduce_mass(const real mdot) {
 //        }
         
         real m_HeF = helium_flash_mass(metalicity);
-        if (get_total_mass() < m_HeF){
+        if (relative_mass < m_HeF){
             star_transformation_story(Helium_Dwarf);
             return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
         }
@@ -116,7 +116,7 @@ star* hertzsprung_gap::subtrac_mass_from_donor(const real dt, real& mdot) {
         //}
         
           real m_HeF = helium_flash_mass(metalicity);
-          if (get_total_mass() < m_HeF){
+          if (relative_mass < m_HeF){
               star_transformation_story(Helium_Dwarf);
               return dynamic_cast(star*, new white_dwarf(*this, Helium_Dwarf));
           }

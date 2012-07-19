@@ -338,7 +338,7 @@ void double_star::dump(ostream & s, bool brief) {
 	  << stp->get_effective_radius() << " "
 	  << log10(stp->temperature()) << " "
 	  << stp->get_core_mass() << " "
-      << stp->get_effective_radius()/primary_roche_lobe  << "    "
+//      << stp->get_effective_radius()/primary_roche_lobe  << "    "
 //      << primary_roche_lobe << "  "
 //      << stp->get_radius()<< "      "
 
@@ -347,8 +347,8 @@ void double_star::dump(ostream & s, bool brief) {
 	  << m2 << " "
 	  << sts->get_effective_radius() << " "
 	  << log10(sts->temperature()) << " "
-	  << sts->get_core_mass() << " "
-      << sts->get_effective_radius()/secondary_roche_lobe
+	  << sts->get_core_mass()
+//      << " " << sts->get_effective_radius()/secondary_roche_lobe
 //      << secondary_roche_lobe << "  "
 //      << sts->get_radius()
 	  << endl;
@@ -1858,10 +1858,10 @@ void double_star::spiral_in(star* larger,
 void double_star::merge_elements(star* consumer,
                                  star* dinner) {
 
-cerr<<"void double_star::merge_elements()"<<endl;
-cerr<<"bin: "<<identity<<endl;
+//cerr<<"void double_star::merge_elements()"<<endl;
+//cerr<<"bin: "<<identity<<endl;
   bin_type = Merged;
-  dump(cerr, false);
+//  dump(cerr, false);
   dump("SeBa.data", true);
 
 #if 0

@@ -589,7 +589,7 @@ real helium_giant::CO_core_mass() {
   return min(core_mass, get_total_mass());
 }
 #endif
-#if 0
+
 void helium_giant::stellar_wind(const real dt) {
 
 //  PRL(last_update_age);
@@ -599,20 +599,19 @@ void helium_giant::stellar_wind(const real dt) {
 //  PRL(dt);
 // (GN+SPZ Apr 28 1999) wind for low mass stars per phase
     real end_time = next_update_age - last_update_age;
-    real prev_rel_time = max(0.,previous.relative_age - last_update_age);
     real relative_time = min(relative_age - last_update_age, end_time);
 
 //    PRL(end_time);
 //    PRL(relative_time);
-//    PRL(prev_rel_time);
 //    PRL(wind_constant);
-    
+    real wind_mass = 0;
+    if (relative_time - dt > 0){
     real wind_mass = wind_constant 
                    * (pow(relative_time/end_time,
 			cnsts.parameters(massive_star_mass_loss_law))
 	           -  pow((relative_time-dt)/end_time,
 			cnsts.parameters(massive_star_mass_loss_law)));
-
+    }
 // (GN+SPZ May  6 1999) try low wind: 
 //    wind_mass = 0.;
 
@@ -630,7 +629,7 @@ void helium_giant::stellar_wind(const real dt) {
     reduce_mass(wind_mass);
   return;
 }
-#endif
+
 
 real helium_giant::gyration_radius_sq() {
 
@@ -645,13 +644,8 @@ void helium_giant::update_wind_constant() {
 
 // (GN+SPZ May  7 1999) envelope is about 30% of total mass,
 // we loose 10% of total mass ....
-//  wind_constant = 0.3*envelope_mass;
+  wind_constant = 0.3*envelope_mass;
     
-// (SilT Nov 24 2009) follow eq 8.4 in Gijs' thesis Chapter 8
-    //based on Nugis & Lamers
- wind_constant = 1.38E-08 * pow(get_total_mass(), 2.87); 
-
-
 }
 
 stellar_type helium_giant::get_element_type() {

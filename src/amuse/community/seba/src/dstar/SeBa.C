@@ -107,8 +107,8 @@
 local bool read_binary_params(ifstream& in, real &m_prim, 
 			      real &m_sec, real &sma, real &ecc) {
 
-    m_prim = 0;
-    m_sec = 0;
+    m_prim = 1000;
+    m_sec = 1000;
     sma = 0;
     ecc = 0;
     while (m_prim>100.0 || m_sec>100.0 || ecc<0 || ecc>1){   
@@ -450,7 +450,7 @@ int main(int argc, char ** argv) {
 
       if (!reached_end) {
 
-	  the_binary->get_starbase()->dump(cerr, false);
+//	  the_binary->get_starbase()->dump(cerr, false);
 	  the_binary->get_starbase()->set_star_story(NULL);
     
 	  rmtree(the_binary, false);
