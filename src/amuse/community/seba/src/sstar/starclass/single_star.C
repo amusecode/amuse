@@ -3114,58 +3114,78 @@ real single_star::update_COcore_mass(const real mco_core) {
     return successful_update;
 }
 
+
 // SPZ & SilT Feb 4 2010
 // Added routine for inverting relatively smooth functions
 // Based on linear iterative procedure until satisfied 
-real single_star::linear_function_inversion(real (single_star::*fptr)(real, const real), const real x_guess, const real y_value, const real z, const real xmin, const real xmax) {  
-    
-    real gx = x_guess;
-    real gy;
+// based on Secant method
+real single_star::linear_function_inversion(real (single_star::*fptr)(real, const real), const real x_guess, const real y_value, const real z, const real xmin, const real xmax) {
+//    real gx = x_guess; // x_guess is currently not used
+    real gx = xmin;
+    real gy = (this->*fptr)(gx, z);//gx;
 
-    real gx_delta = x_guess*1.05;
-    real gy_delta;
-    
+    real gx_old = xmax; 
+    real gy_old = (this->*fptr)(gx_old, z);//gx;
+
+    real gx_new;
+    real gy_new;
+
     real ymin = (this->*fptr)(xmin, z);
     real ymax = (this->*fptr)(xmax, z);
-    real mu = (xmax-xmin)/(ymax-ymin);
+//    real mu = (xmax-xmin)/(ymax-ymin);
+    
 
-//PRC(x_guess);PRC(y_value);PRC(z);PRC(xmin);PRC(xmax);PRL(mu);
+    if (ymin < ymax){
+        if (y_value > ymax || y_value < ymin){
+            PRC(y_value);PRC(ymin);PRL(ymax);
+            cerr << "WARNING!!! single_star::linear_function_inversion is unable to find a solution" << endl;
+    	    exit(-1);
+        }
+    }
+    else{
+        if (y_value < ymax || y_value > ymin){
+            PRC(y_value);PRC(ymin);PRL(ymax);
+            cerr << "WARNING!!! single_star::linear_function_inversion is unable to find a solution" << endl;
+    	    exit(-1);
+        }
+    }
+PRC(x_guess);PRC(y_value);PRC(xmin);PRC(ymin);PRC(xmax);PRL(ymax);
+PRC(gx);PRC(gy);PRC(gx_old);PRL(gy_old);
     
     real dy = 0, dy_old = 0;
     bool within_range = 1; 
     do {
-//        within_range = 1;
-        if (gx > xmax || gx < xmin){
+        gx_new = gx - (gy-y_value) * (gx-gx_old)/ (gy-gy_old);  
+        
+        if (gx_new > xmax || gx_new < xmin){
             within_range = 0;
-            gx = min(max(gx, xmin), xmax);
-            PRC(gx);PRC(xmax);PRL(xmin);
+            gx_new = min(max(gx_new, xmin), xmax);
         }
         
-//        PRC(gy_delta);
-//        PRL(gy);
-
-        gy = (this->*fptr)(gx, z);
-        gx_delta = min(max(gx_delta, xmin), xmax);
-        gy_delta = (this->*fptr)(gx_delta, z);
+        gy_new = (this->*fptr)(gx_new, z);
+//        PRC(gx_new);PRL(gy_new);
         
         dy_old = dy;
-        dy = y_value - gy;
-        
-        mu = (gx_delta-gx)/(gy_delta-gy);
-        gx += mu*dy;
-        gx_delta = gx*1.05;
-//        PRC(mu);PRC(y_value);PRC(gy);PRL(gx);
+        dy = y_value - gy_new;
 
         if (!within_range && dy_old * dy > 0){
-            // gx lies out of range and the solution does not lie between gx and the previous one             
-            PRC(dy_old);PRC(dy);PRL(within_range); 
+            // with secant method this should not be possible
+            // gx lies out of range and the solution does not lie between gx and the previous one     
+            PRC(within_range);PRC(dy_old);PRL(dy);
             cerr << "WARNING!!! single_star::linear_function_inversion is unable to find a solution" << endl;
-	    exit(-1);
+	        exit(-1);
         }
         
+        gy_old = gy;
+        gy = gy_new;
+        gx_old = gx;
+        gx = gx_new; 
+        within_range = 1; 
     }
     while(abs(dy/y_value)>cnsts.safety(minimum_inversion_precision));
-    gx -= mu*dy;
+    
+//    PRC(x_guess);PRL(gx);
+//    PRC(y_value);PRL((this->*fptr)(gx, z));
 
     return gx;
 }

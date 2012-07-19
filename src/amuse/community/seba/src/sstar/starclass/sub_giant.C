@@ -99,7 +99,6 @@ real sub_giant::add_mass_to_accretor(const real mdot, bool hydrogen) {
             else {
 	            // (GN Oct 26 2010) see previous block, rel_mass can be < m_HeF which leads to trouble....
 	            if (relative_mass < m_HeF) relative_mass = m_HeF;
-                cerr<<"m<hef"<<endl;
 
                 real mc_bgb = base_giant_branch_core_mass(relative_mass, metalicity);//Eq.44
                 real mc_HeI = helium_ignition_core_mass(relative_mass, metalicity);
@@ -383,10 +382,10 @@ void sub_giant::adjust_next_update_age() {
 
   real t_bgb = base_giant_branch_time(relative_mass, metalicity);
 
-  if( relative_age < t_bgb - cnsts.safety(tiny)) {
-    cerr << "WARNING: relative_age != t_Hg in sub_giant"<<endl;
-    relative_age = t_bgb;
-  }
+//  if( relative_age < t_bgb - cnsts.safety(tiny)) {
+//    cerr << "WARNING: relative_age != t_Hg in sub_giant"<<endl;
+//    relative_age = t_bgb;
+//  }
 
   real t_HeI = helium_ignition_time();
   next_update_age = t_HeI;

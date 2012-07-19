@@ -143,17 +143,8 @@ void helium_giant::update() {
 // (SPZ+GN:30 Sep 1998)
 // ST:8 Sep 2009 can also be used in other functions.
 void helium_giant::adjust_next_update_age() {
-
-    //next_update_age /= cnsts.parameters(helium_star_lifetime_fraction);
     real t_Heg = helium_giant_end_time(relative_helium_mass, get_total_mass());
-    
-//    if(relative_age>t_Heg) {
-//        cerr << "WARNING: relative_age > t_Heg in helium_giant"<<endl;
-//        relative_age = t_Heg;
-//    }
-
-    next_update_age = t_Heg;
-    
+    next_update_age = t_Heg;    
 }
 
 real helium_giant::helium_giant_end_time(const real mass, const real mass_tot) {

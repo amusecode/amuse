@@ -501,10 +501,11 @@ void super_giant::adjust_next_update_age() {
     
   real t_tagb = TAGB_time(relative_mass, get_total_mass(), metalicity);
 
-  if(relative_age > t_tagb) {
-    cerr << "WARNING: relative_age != t_tagb in super_giant"<<endl;
-    relative_age = t_tagb;
-  }
+//  if(relative_age > t_tagb) {
+// Don't switch this one: for mergers relative_age > t_tagb when this function is called    
+//    cerr << "WARNING: relative_age != t_tagb in super_giant"<<endl;
+//    relative_age = t_tagb;
+//  }
 
   next_update_age = t_tagb;
 }

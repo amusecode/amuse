@@ -81,7 +81,7 @@
 ////                        oterwise one binary is simulated with
 ////                        -M, -m, -a, -e as initial conditions.
 ////            -T or -t  binary end time. [35] Myr
-////
+////            -z select metallicity of binaries to be simulated. 
 //   Note:  libnode.a is referenced for the routines which produce the 
 //          mass function
 //

@@ -667,7 +667,6 @@ star* main_sequence::reduce_mass(const real mdot) {
    }
 
 void main_sequence::adjust_next_update_age() {
-
 // (GN+SPZ May  4 1999) last update age is time of previous type change
       last_update_age = 0;
       next_update_age = main_sequence_time();
