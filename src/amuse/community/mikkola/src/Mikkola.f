@@ -29,7 +29,8 @@
         
         FUNCTION Mikkola_ARWV(TIME,BODY,POS,VEL,INDEX, 
      &                   IWRR,Np,DELTAT,TMAX,stepr,soft,cmet,
-     &                   lightspeed,Ixc,Nbh,BHspin,tolerance) 
+     &                   lightspeed,Ixc,Nbh,BHspin,tolerance, 
+     &                   mergers, nmergers) 
         include 'ARCCOM2e2.CH'
         COMMON/DIAGNOSTICS/GAMMA,H,IWR
         common/justforfun/Tkin,Upot,dSkin,dSpot ! used in diagno
@@ -37,6 +38,7 @@
         INTEGER Mikkola_ARWV
         INTEGER INDEX(Np)
         REAL*8 BODY(Np), POS(3,Np), VEL(3,Np), BHspin(3)
+        INTEGER Mergers(3, Np),nmergers
         real*8 lightspeed
         REAL*8 G0(3),G(3),cmet(3),xw(3),vw(3),xwr(NMX3)!,dum(3)
      &   ,ai(NMX),ei(NMX),unci(NMX),Omi(NMX),ooi(NMX),cmxx(3),cmvx(3)
@@ -47,6 +49,8 @@
 666     CONTINUE ! jump here to start a new simulation in the same run. 
           outfile = "orbit.data"
           icollision=0
+          nmergers = 0
+          mergers = 0
 c          TIME=0.0
 c          DELTAT=1.
           IWR=IWRR ! =1: write some info ( set -1 to not to get that..)
@@ -96,7 +100,7 @@ c                                          stepr is now obsolete
 100       CONTINUE
           call CHAIN EVOLVE
      &   (N,X,V,M,TIME,DELTAT,EPS,NEWREG,KSMX,soft,cmet,clight,Ixc,NBH,
-     & spin,CMXX,CMVX)
+     & spin,CMXX,CMVX, mergers, nmergers)
      
           n_calls=n_calls+1 ! removable !
           if(n_calls.gt.10)deltat=abs(deltat) ! removable!
@@ -194,13 +198,15 @@ c         goto 666
          goto 999 !was 666
          end if
 999      write (*,*) "stop Mikkola"
-          DO i=1,N
+          DO i=1,N+(2*nmergers)
 c             INDEX(i) = index4output(i)=
+              J = index4output(i)
              L=3*(i-1)
              DO K=1,3
-                POS(K,i) = X(L+K)
-                VEL(K,i) = V(L+K) 
-             END DO      
+                POS(K,J) = X(L+K)
+                VEL(K,J) = V(L+K) 
+             END DO 
+             BODY(J)  = M(i)     
           END DO
          END
          
@@ -217,12 +223,14 @@ c-----------------------------------------------------------
 c        THIS IS THE MAIN SUBROUTINE.          
          SUBROUTINE chainevolve ! THIS ROUTINE CHANGED TO A STAND ALONE ONE!
      &  (NN,XX,VX,MX,TIME,DELTAT,TOL,NEWREG,KSMX,soft,cmet,cl,Ixc,NBH,
-     &   spini,CMXX,CMVX)
+     &   spini,CMXX,CMVX, mergers, nmergers)
          INCLUDE 'ARCCOM2e2.CH'
 c         INCLUDE 'mergearc.inc'
          common/collision/icollision,ione,itwo,iwarning
+         common/outputindex/index4output(200),N_ini
          REAL*8 XX(*),VX(*),MX(*),cmet(3),spini(3),CMXX(3),CMVX(3)
          logical newreg
+         INTEGER nmergers, mergers(3, *), tmpione
          save
 
          tnext0=time+deltat    
@@ -249,9 +257,13 @@ c        loppu{humpuuki}
          IF (icollision.NE.0) THEN ! handle a collison
 
             nmerger             = nmerger + 1
-
-            CALL  Merge_i1_i2(time)   ! merge the two particles
-
+            
+            nmergers = nmergers + 1
+            mergers(2,nmergers) = index4output(ione)
+            mergers(3,nmergers) = index4output(itwo)
+            tmpione = ione ! ione will be reset and we need it
+            CALL  Merge_i1_i2(time, nmergers)   ! merge the two particles
+            mergers(1,nmergers) = index4output(tmpione)
             newreg=.TRUE.       ! chain has changed
             NN=N                ! copy new chain
             DO i=1,NN
@@ -273,9 +285,10 @@ c        loppu{humpuuki}
          RETURN
          END
 
-       Subroutine MERGE_I1_I2(time)!time only for write(66....
+       Subroutine MERGE_I1_I2(time, nmergers)!time only for write(66....
         include 'ARCCOM2e2.CH'
         REAL*8 SM(NMX),XR(NMX3),XDR(NMX3),xwr(nmx3),ywr(nmx3)
+        REAL*8 mone, mtwo
          COMMON/collision/icollision,Ione,Itwo,iwarning
          common/outputindex/index4output(200),N_ini
          save
@@ -304,7 +317,26 @@ c --------------------------------------------4 MOVIE -------------------------
            call flush(66)
            end if ! iwr.gt.-2
 c--------------------------------------------------------------------------------
+
+c------------ save child values to the end of the array -------------------------------
+c------------ these will be copied up by the removal of itwo (ione will be the merged product)
+           J = N+((nmergers-1)*2)+1
+           M(J) = M(ione)
+           DO  K=1,3
+                X(3*J-3+K)=X(3*ione-3+K)
+                V(3*J-3+K)=V(3*ione-3+K)
+           end do 
+           J = N+((nmergers-1)*2)+2
+           M(J) = M(itwo)
+           DO  K=1,3
+                X(3*J-3+K)=X(3*itwo-3+K)
+                V(3*J-3+K)=V(3*itwo-3+K)
+           end do 
+c--------------------------------------------------------------------------------
+           
+
            L=0
+           
            DO I=1,ione-1
            SM(I)=M(I)
            DO  K=1,3
@@ -329,19 +361,21 @@ c-------------------------------------------------------------------------------
           XDR(3*I-3+K)=V(3*I-3+k)
           end do
           end do
-          
-          do i=Itwo,N-1
+          i0 = index4output(ione)
+          j0 = index4output(itwo)
+          do i=Itwo, ((N-1) + ((nmergers-1)*2))
           index4output(i)=index4output(i+1)
           end  do
-          
-          DO I=Itwo+1,N
+          index4output(N+((nmergers-1)*2)) = i0
+          index4output(N+((nmergers-1)*2)+1) = j0
+          index4output(ione) = N_ini + nmergers
+          DO I=Itwo+1,(N + ((nmergers)*2))
           sm(i-1)=m(i)
           do k=1,3
           XR(3*I-6+K)=X(3*I-3+k)
           XDR(3*I-6+K)=V(3*I-3+k)
           end do
           end do
-          
 C         MOVE THE REDUCED SYSTEM TO M,X,V
           L=0
 c         New value of the number of bodies.
@@ -349,7 +383,7 @@ c         New value of the number of bodies.
           if(Itwo.le.NofBH)NofBH=NofBH-1 ! # of BH's reduced!
 
 
-          DO 8 I=1,N
+          DO 8 I=1,((N+1) + ((nmergers)*2))
           M(I)=SM(I)
           DO 7 K=1,3
           X(3*i-3+k)=XR(3*i-3+k)
@@ -1709,7 +1743,7 @@ c-----------------------------------------------------
      & Terms(Ii,dX,dW,rij,rdotv,vij2,m(Ii),m(Jx),cl,DF,dfGR,spina,dsp)
             RS=2.d0*(m(i)+m(j))/CL**2
           test=4*RS
-c          write(6,*)rij/RS,sqrt(vij2)/cl,' R  V '
+c          write(6,*)test, rij,sqrt(vij2)/cl,iwarning,' R  V '
 c                         test=.99*Rs
       if(rij.lt.test.and.iwarning.lt.2)
      &  write(6,*)' Near collision: r/RS',rij/RS,i,j

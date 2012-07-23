@@ -140,6 +140,32 @@ class MikkolaInterface(CodeInterface,
         """
         return function
         
+    @legacy_function
+    def get_number_of_particles_added():
+        """
+        Return the number of particles added during the last evolve.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_id_of_added_particle():
+        """
+        Return the id of the new particle in the code
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_add', dtype='int32',
+                              direction=function.IN, 
+                 description = 'index in the added particles list (0-n)')
+        function.addParameter('index_of_particle', dtype='int32',
+                              direction=function.OUT)
+        function.can_handle_array = True
+        function.result_type = 'int32'
+        return function
+        
 class Mikkola(GravitationalDynamics):
 
     def __init__(self, convert_nbody=None, **options):
@@ -234,4 +260,14 @@ class Mikkola(GravitationalDynamics):
         
         GravitationalDynamics.define_properties(self, object)
         object.add_property("get_radiated_gravitational_energy")
-
+    
+    def update_particle_set(self):
+        """
+        update the particle set after changes in the code
+        
+        this implementation needs to move to the
+        amuse.datamodel.incode_storage module, as
+        it uses a lot of internal methods and info!
+        
+        """
+        pass

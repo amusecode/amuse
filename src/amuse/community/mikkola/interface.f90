@@ -8,14 +8,36 @@ DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_z
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vy
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vx
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vz
+integer, DIMENSION(:), ALLOCATABLE :: particle_id_added
 DOUBLE PRECISION :: current_time
 DOUBLE PRECISION :: begin_time
 integer :: maximum_number_of_particles
 integer :: number_of_particles_allocated
 DOUBLE PRECISION :: lightspeed, tolerance, timestep
+integer :: number_of_particles_added
+
 
 CONTAINS
 
+FUNCTION new_particle_id(index_of_the_particle)
+  IMPLICIT NONE
+  INTEGER :: index_of_the_particle, new_particle_id
+  INTEGER :: i
+
+  
+  new_particle_id = -1
+  index_of_the_particle = -1
+  DO i = 1, maximum_number_of_particles
+    IF (particle_id(i).EQ.-1) THEN
+        particle_id(i) = i
+        index_of_the_particle = i
+        new_particle_id = 0
+        number_of_particles_allocated = number_of_particles_allocated + 1
+        RETURN
+    END IF
+  END DO
+END FUNCTION
+  
 FUNCTION commit_parameters()
   IMPLICIT NONE
   INTEGER :: commit_parameters, i
@@ -30,6 +52,8 @@ FUNCTION commit_parameters()
   ALLOCATE(particle_vx(maximum_number_of_particles))
   ALLOCATE(particle_vy(maximum_number_of_particles))
   ALLOCATE(particle_vz(maximum_number_of_particles))
+  
+  ALLOCATE(particle_id_added(maximum_number_of_particles))
 
   DO i = 1, maximum_number_of_particles
     particle_id(i) = -1
@@ -47,18 +71,10 @@ FUNCTION new_particle(index_of_the_particle, m, x, y, z, vx, vy, vz, r)
   DOUBLE PRECISION :: vx, vy, vz
   
   INTEGER :: new_particle, i
+  new_particle = new_particle_id(index_of_the_particle)
   
-  index_of_the_particle = -1
-  DO i = 1, maximum_number_of_particles
-    IF (particle_id(i).EQ.-1) THEN
-        particle_id(i) = i
-        index_of_the_particle = i
-        number_of_particles_allocated = number_of_particles_allocated + 1
-        EXIT
-    END IF
-  END DO
   
-  IF (index_of_the_particle.EQ.-1) THEN
+  IF (new_particle.EQ.-1) THEN
       new_particle = -1
   ELSE
       particle_m(index_of_the_particle) = m
@@ -208,12 +224,15 @@ FUNCTION evolve_model(end_time)
   INTEGER :: evolve_model
   DOUBLE PRECISION :: end_time
   DOUBLE PRECISION :: POS(3,maximum_number_of_particles)
+  INTEGER :: mergers(3, maximum_number_of_particles), nmergers
   DOUBLE PRECISION :: VEL(3,maximum_number_of_particles)
+  DOUBLE PRECISION :: BODY(maximum_number_of_particles)
   INTEGER :: INDEX(maximum_number_of_particles)
   DOUBLE PRECISION :: IWRR, DELTAT, TEND, soft, cmet(3), tolerance
   DOUBLE PRECISION :: BHspin(3)
   INTEGER :: stepr, i, j, Mikkola_ARWV
   INTEGER :: Np, Nbh, Ixc
+  INTEGER :: idparent, idchild1, idchild2, new_index
   Np = number_of_particles_allocated
   Nbh = Np
   j = 1
@@ -225,7 +244,8 @@ FUNCTION evolve_model(end_time)
          POS(3,j) = particle_z(i) 
          VEL(1,j) = particle_vx(i) 
          VEL(2,j) = particle_vy(i) 
-         VEL(3,j) = particle_vz(i) 
+         VEL(3,j) = particle_vz(i)
+         BODY(j) = particle_m(i) 
          j = j + 1
      ENDIF
   ENDDO
@@ -235,18 +255,36 @@ FUNCTION evolve_model(end_time)
   if (DELTAT .LE. 0.0) then
      DELTAT = 0.001 ! if timestep or end_time invalid ensure a valid deltat
   end if  
-  
+  number_of_particles_added  = 0
+  nmergers = 0
 !  TMAX = 12560 ! Maximum integration time
   stepr = 0 ! Not used, should be maximum number of steps
   soft= 0.e-6 ! Softening parameter
   cmet= [1.e-0, 0.e-0, 0.e-0] !?
   Ixc=2 ! time output is exacte (2) or not exact (1, faster)
   BHspin=[0.0, 0.0, 0.0] !spin of the first black hole (between 0 and 1) 
-  evolve_model = Mikkola_ARWV(current_time, particle_m, POS,VEL,INDEX, &
+  evolve_model = Mikkola_ARWV(current_time, BODY, POS,VEL,INDEX, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
-&                lightspeed,Ixc,Nbh,BHspin,tolerance) 
+&                lightspeed,Ixc,Nbh,BHspin,tolerance, &
+&                mergers, nmergers) 
   
   j = 1
+  
+  DO i=1, nmergers
+    idparent = mergers(1,i)
+    idchild1 = mergers(2,i)
+    idchild2 = mergers(3,i)
+    write(*,*) idparent
+    write(*,*) i, idparent, idchild1, idchild2
+    evolve_model = new_particle_id(new_index)
+    if(evolve_model.LT.0) then
+        return
+    endif
+    particle_m(new_index) = BODY(idparent)
+    particle_id_added(i) = new_index
+  ENDDO
+  
+  number_of_particles_added = number_of_particles_added + nmergers
   DO i=1, maximum_number_of_particles
      IF (particle_id(i).NE.-1) THEN
          particle_x(i) = POS(1,j)
@@ -514,6 +552,8 @@ FUNCTION cleanup_code()
       DEALLOCATE(particle_vx)
       DEALLOCATE(particle_vy)
       DEALLOCATE(particle_vz)
+      
+      DEALLOCATE(particle_id_added)
   END IF
   
   number_of_particles_allocated = 0
@@ -579,6 +619,30 @@ FUNCTION get_gravity_at_point(eps, x, y, z, forcex, forcey, forcez)
   get_gravity_at_point=0
 END FUNCTION
 
+
+FUNCTION get_number_of_particles_added(output)
+  IMPLICIT NONE
+  INTEGER :: get_number_of_particles_added
+  INTEGER :: output
+  
+  output = number_of_particles_added
+  get_number_of_particles_added=0
+END FUNCTION
+
+
+FUNCTION get_id_of_added_particle(index_in_list, output)
+  IMPLICIT NONE
+  INTEGER :: get_id_of_added_particle
+  INTEGER :: index_in_list, output
+  if(index_in_list >= number_of_particles_added) then
+    output = -1
+    get_id_of_added_particle = -1
+    return
+  end if
+  output = particle_id_added(index_in_list + 1)
+  
+  get_id_of_added_particle=0
+END FUNCTION
 
 FUNCTION get_acceleration(index_of_the_particle, ax, ay, az)
   IMPLICIT NONE
