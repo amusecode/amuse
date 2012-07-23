@@ -6,7 +6,7 @@ AMUSE_DIR?=../../../..
 MPIFC ?= mpif90
 FC    = $(MPIFC)
 
-FFLAGS   += 
+#FFLAGS   += 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
@@ -15,6 +15,7 @@ F77FLAGS =
 ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
 F77FLAGS += -qfixed -qextname=flush
 endif
+export F77FLAGS
 
 CODELIB = src/libMikkola.a
 

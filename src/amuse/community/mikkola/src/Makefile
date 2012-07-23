@@ -8,7 +8,7 @@ FC    = $(MPIFC)
 
 FFLAGS   += -O3
 FFLAGS   += $(F77FLAGS)
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+LDFLAGS  += -lm 
 
 CODELIB = libMikkola.a
 
