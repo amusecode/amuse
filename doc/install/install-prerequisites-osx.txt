@@ -59,7 +59,7 @@ After installing you will need to configure the code with the following line::
 
     > ./configure --with-fftw=/opt/local \
                   MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90 \
-                  FC=gfortran-mp-4.7 PYTHON=python2.7 \
+                  FC=gfortran-mp-4.5 PYTHON=python2.7 \
                   PREFIX=/opt/local
                   
 .. note::
