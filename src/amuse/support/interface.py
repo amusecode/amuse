@@ -434,9 +434,9 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     def handle_errorcode(self, errorcode):
         if errorcode in self.handler.interface.errorcodes:
-            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}, error is '{3}'".format(self.name, type(self.handler.interface).__name__, errorcode,  self.handler.interface.errorcodes[errorcode]))
+            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}, error is '{3}'".format(self.name, type(self.handler.interface).__name__, errorcode,  self.handler.interface.errorcodes[errorcode]), errorcode)
         elif errorcode < 0:
-            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}".format(self.name, type(self.handler.interface).__name__, errorcode))
+            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}".format(self.name, type(self.handler.interface).__name__, errorcode), errorcode)
         else:
             return errorcode
 

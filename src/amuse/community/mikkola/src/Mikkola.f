@@ -59,7 +59,9 @@ C         Initial values,   UNITS:  G=1
 *     &  outfile,Ixc,Nbh ,spin,tolerance
 c                                          stepr is now obsolete     
           EPS=tolerance 
-          if(Np.lt.2)STOP
+          if(Np.lt.2)then
+            Mikkola_ARWV = -4
+          end if
           ee=soft**2 ! square of soft(ening)
           open(66,file=outfile)
           MASS=0.0
@@ -191,6 +193,11 @@ c           end if ! abs(moi)>2.5
            END IF ! iwr>-1
 234      format(1x,f18.6,1p,600g13.5)
              rs=(m(1)+m(2))*2/clight**2
+             
+         if(N.lt.2)then
+            Mikkola_ARWV = -4
+            goto 999 
+         end if
          IF(TIME.LT.TMAX)then
           GOTO 100
          else
@@ -208,6 +215,9 @@ c             INDEX(i) = index4output(i)=
              END DO 
              BODY(J)  = M(i)     
           END DO
+         if(N.lt.2)then
+            Mikkola_ARWV = -4
+         end if
          END
          
        function cdot(a,b)
@@ -333,7 +343,6 @@ c------------ these will be copied up by the removal of itwo (ione will be the m
                 V(3*J-3+K)=V(3*itwo-3+K)
            end do 
 c--------------------------------------------------------------------------------
-           
 
            L=0
            
@@ -401,7 +410,7 @@ c         New value of the number of bodies.
                     itwo=0
           if(N.eq.1)then
           write(6,*)' Only one body left!'
-          STOP
+          
           end if
 
           RETURN

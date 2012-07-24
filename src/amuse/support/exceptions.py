@@ -21,6 +21,9 @@ class AmuseException(Exception):
     def __str__(self):
         return self.formatstring.format(*self.arguments)
 
+    @property
+    def errorcode(self):
+        return self.arguments[-1]
 
 class AmuseWarning(Warning):
     pass
