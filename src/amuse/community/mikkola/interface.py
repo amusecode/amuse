@@ -92,7 +92,7 @@ class MikkolaInterface(CodeInterface,
         Set the accurancy parameter for the evolve
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('lightspeed', dtype='float64',
+        function.addParameter('tolerance', dtype='float64',
                               direction=function.IN,
             description = "tolerance for the evolve")
         function.result_type = 'int32'
@@ -104,6 +104,85 @@ class MikkolaInterface(CodeInterface,
         """
         return function
     
+    @legacy_function
+    def get_maximum_number_of_particles():
+        """
+        Retrieve the maximum number of particles that can be evolved with this code
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'maximum_number_of_particles', 
+            dtype='int32',
+            direction=function.OUT
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_maximum_number_of_particles():
+        """
+        Change the maximum number of particles that can be evolved with this code
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'maximum_number_of_particles', 
+            dtype='int32',
+            direction=function.IN
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+    
+    @legacy_function
+    def get_evolve_to_exact_time():
+        """
+        Evolve to model to the exact time given in the evolve_model call (can be slower)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'evolve_to_exact_time', 
+            dtype='bool',
+            direction=function.OUT
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_evolve_to_exact_time():
+        """
+        Evolve to model to the exact time given in the evolve_model call (can be slower)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'evolve_to_exact_time', 
+            dtype='bool',
+            direction=function.IN
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
     
     @legacy_function
     def get_radiated_gravitational_energy():
@@ -165,6 +244,25 @@ class MikkolaInterface(CodeInterface,
         function.can_handle_array = True
         function.result_type = 'int32'
         return function
+    
+    @legacy_function
+    def get_children_of_particle():
+        """
+        Return the number of particles added or deleted during the last evolve.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32',
+                              direction=function.IN, 
+                 description = 'index of the parent particle',
+                 unit = INDEX)
+        function.addParameter('child1', dtype='int32', direction=function.OUT,
+                description = 'index of the first child particle, -1 if none',
+                unit = LINK('particles') )
+        function.addParameter('child2', dtype='int32', direction=function.OUT,
+                unit = LINK('particles'))
+        function.can_handle_array = True
+        function.result_type = 'int32'
+        return function
         
 class Mikkola(GravitationalDynamics):
 
@@ -207,7 +305,21 @@ class Mikkola(GravitationalDynamics):
             "set_tolerance",
             "tolerance", 
             "tolerance used in the code", 
-            default_value = 1e13
+            default_value = 1e-13
+        )
+        object.add_method_parameter(
+            "get_maximum_number_of_particles", 
+            "set_maximum_number_of_particles",
+            "maximum_number_of_particles", 
+            "the code will evolve this number of particles, please be sure to account for mergers", 
+            default_value = 100
+        )
+        object.add_method_parameter(
+            "get_evolve_to_exact_time", 
+            "set_evolve_to_exact_time",
+            "evolve_to_exact_time", 
+            "the code will evolve the model to the exact time given in evolve_model", 
+            default_value = True
         )
         
     def define_methods(self, object):
@@ -269,5 +381,17 @@ class Mikkola(GravitationalDynamics):
         amuse.datamodel.incode_storage module, as
         it uses a lot of internal methods and info!
         
-        """
-        pass
+        """  
+        
+        number_of_added_particles = self.get_number_of_particles_added()
+        if number_of_added_particles == 0:
+            return
+        
+        indices_in_update_list = range(number_of_added_particles)
+        indices_to_add = self.get_id_of_added_particle(indices_in_update_list)
+        
+        incode_storage = self.particles._private.attribute_storage
+        
+        if len(indices_to_add) > 0:
+            incode_storage._add_indices(indices_to_add)
+

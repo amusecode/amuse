@@ -8,6 +8,9 @@ DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_z
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vy
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vx
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vz
+INTEGER, DIMENSION(:), ALLOCATABLE :: particle_child1
+INTEGER, DIMENSION(:), ALLOCATABLE :: particle_child2
+LOGICAL, DIMENSION(:), ALLOCATABLE :: particle_is_child
 integer, DIMENSION(:), ALLOCATABLE :: particle_id_added
 DOUBLE PRECISION :: current_time
 DOUBLE PRECISION :: begin_time
@@ -15,6 +18,7 @@ integer :: maximum_number_of_particles
 integer :: number_of_particles_allocated
 DOUBLE PRECISION :: lightspeed, tolerance, timestep
 integer :: number_of_particles_added
+LOGICAL :: evolve_to_exact_time
 
 
 CONTAINS
@@ -52,12 +56,20 @@ FUNCTION commit_parameters()
   ALLOCATE(particle_vx(maximum_number_of_particles))
   ALLOCATE(particle_vy(maximum_number_of_particles))
   ALLOCATE(particle_vz(maximum_number_of_particles))
+  ALLOCATE(particle_child1(maximum_number_of_particles))
+  ALLOCATE(particle_child2(maximum_number_of_particles))
+  ALLOCATE(particle_is_child(maximum_number_of_particles))
   
   ALLOCATE(particle_id_added(maximum_number_of_particles))
 
   DO i = 1, maximum_number_of_particles
     particle_id(i) = -1
   END DO
+  
+  particle_is_child = .FALSE.
+  particle_child1 = 0
+  particle_child2 = 0
+  particle_m = 0
   
   number_of_particles_allocated = 0
   commit_parameters=0
@@ -84,6 +96,9 @@ FUNCTION new_particle(index_of_the_particle, m, x, y, z, vx, vy, vz, r)
       particle_vx(index_of_the_particle) = vx
       particle_vy(index_of_the_particle) = vy
       particle_vz(index_of_the_particle) = vz
+      particle_child1(index_of_the_particle) = 0
+      particle_child2(index_of_the_particle) = 0
+      particle_is_child(index_of_the_particle) = .FALSE.
       new_particle = 0
   END IF
 END FUNCTION
@@ -223,22 +238,24 @@ FUNCTION evolve_model(end_time)
   IMPLICIT NONE
   INTEGER :: evolve_model
   DOUBLE PRECISION :: end_time
-  DOUBLE PRECISION :: POS(3,maximum_number_of_particles)
-  INTEGER :: mergers(3, maximum_number_of_particles), nmergers
-  DOUBLE PRECISION :: VEL(3,maximum_number_of_particles)
-  DOUBLE PRECISION :: BODY(maximum_number_of_particles)
-  INTEGER :: INDEX(maximum_number_of_particles)
+  DOUBLE PRECISION :: POS(3,maximum_number_of_particles*3)
+  INTEGER :: mergers(3, maximum_number_of_particles*3), nmergers
+  DOUBLE PRECISION :: VEL(3,maximum_number_of_particles*3)
+  DOUBLE PRECISION :: BODY(maximum_number_of_particles*3)
+  INTEGER :: INDEX(maximum_number_of_particles*3), REVERSE_INDEX(maximum_number_of_particles*3)
   DOUBLE PRECISION :: IWRR, DELTAT, TEND, soft, cmet(3), tolerance
   DOUBLE PRECISION :: BHspin(3)
   INTEGER :: stepr, i, j, Mikkola_ARWV
-  INTEGER :: Np, Nbh, Ixc
+  INTEGER :: Np, Nbh, Ixc, error
   INTEGER :: idparent, idchild1, idchild2, new_index
-  Np = number_of_particles_allocated
-  Nbh = Np
+  
   j = 1
+  Np = 0
+  REVERSE_INDEX = 0
   DO i=1, maximum_number_of_particles
-     IF (particle_id(i).NE.-1) THEN
-         INDEX(j) = particle_id(i)
+     IF (particle_id(i).NE.-1 .AND. (.NOT. particle_is_child(i))) THEN
+         INDEX(j) = j
+         REVERSE_INDEX(j) = i
          POS(1,j) = particle_x(i) 
          POS(2,j) = particle_y(i) 
          POS(3,j) = particle_z(i) 
@@ -247,9 +264,12 @@ FUNCTION evolve_model(end_time)
          VEL(3,j) = particle_vz(i)
          BODY(j) = particle_m(i) 
          j = j + 1
+         Np = Np + 1
      ENDIF
   ENDDO
   
+  
+  Nbh = Np
   IWRR = -0 !?
   DELTAT = MIN(timestep, end_time - current_time) ! Initial timestep, not used according to Mikkola
   if (DELTAT .LE. 0.0) then
@@ -257,12 +277,18 @@ FUNCTION evolve_model(end_time)
   end if  
   number_of_particles_added  = 0
   nmergers = 0
+  
 !  TMAX = 12560 ! Maximum integration time
   stepr = 0 ! Not used, should be maximum number of steps
   soft= 0.e-6 ! Softening parameter
   cmet= [1.e-0, 0.e-0, 0.e-0] !?
-  Ixc=2 ! time output is exacte (2) or not exact (1, faster)
+  if (evolve_to_exact_time) then
+    Ixc=2 ! time output is exacte (2) or not exact (1, faster)
+  else
+    Ixc=1
+  endif
   BHspin=[0.0, 0.0, 0.0] !spin of the first black hole (between 0 and 1) 
+  
   evolve_model = Mikkola_ARWV(current_time, BODY, POS,VEL,INDEX, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
 &                lightspeed,Ixc,Nbh,BHspin,tolerance, &
@@ -274,27 +300,36 @@ FUNCTION evolve_model(end_time)
     idparent = mergers(1,i)
     idchild1 = mergers(2,i)
     idchild2 = mergers(3,i)
-    write(*,*) idparent
-    write(*,*) i, idparent, idchild1, idchild2
-    evolve_model = new_particle_id(new_index)
-    if(evolve_model.LT.0) then
+    error = new_particle_id(new_index)
+    if(error.LT.0) then
+        evolve_model = -3
         return
     endif
     particle_m(new_index) = BODY(idparent)
+    particle_child1(new_index) =  REVERSE_INDEX(idchild1)
+    particle_child2(new_index) = REVERSE_INDEX(idchild2)
+    REVERSE_INDEX(Np+i) = new_index
     particle_id_added(i) = new_index
   ENDDO
   
   number_of_particles_added = number_of_particles_added + nmergers
-  DO i=1, maximum_number_of_particles
-     IF (particle_id(i).NE.-1) THEN
-         particle_x(i) = POS(1,j)
-         particle_y(i) = POS(2,j)
-         particle_z(i) = POS(3,j)
-         particle_vx(i) = VEL(1,j)
-         particle_vy(i) = VEL(2,j)
-         particle_vz(i) = VEL(3,j) 
-         j = j + 1
-     ENDIF
+  DO i=1, (nmergers + Np)
+      particle_x(REVERSE_INDEX(i)) = POS(1,i)
+      particle_y(REVERSE_INDEX(i)) = POS(2,i)
+      particle_z(REVERSE_INDEX(i)) = POS(3,i)
+      particle_vx(REVERSE_INDEX(i)) = VEL(1,i)
+      particle_vy(REVERSE_INDEX(i)) = VEL(2,i)
+      particle_vz(REVERSE_INDEX(i)) = VEL(3,i)
+  ENDDO
+  
+  
+  DO i=1, nmergers
+    idparent = mergers(1,i)
+    idchild1 = mergers(2,i)
+    idchild2 = mergers(3,i)
+    
+    particle_is_child(REVERSE_INDEX(idchild1)) = .TRUE.
+    particle_is_child(REVERSE_INDEX(idchild2)) = .TRUE.
   ENDDO
   current_time = end_time
 END FUNCTION
@@ -552,6 +587,9 @@ FUNCTION cleanup_code()
       DEALLOCATE(particle_vx)
       DEALLOCATE(particle_vy)
       DEALLOCATE(particle_vz)
+      DEALLOCATE(particle_child1)
+      DEALLOCATE(particle_child2)
+      DEALLOCATE(particle_is_child)
       
       DEALLOCATE(particle_id_added)
   END IF
@@ -581,6 +619,7 @@ FUNCTION initialize_code()
   lightspeed = 1
   tolerance = 1.e-13 ! accuracy parameter to which to integrate
   timestep = 1.0
+  evolve_to_exact_time = .TRUE.
 END FUNCTION
 
 FUNCTION get_potential_energy(potential_energy)
@@ -654,5 +693,53 @@ END FUNCTION
 
 
 
+FUNCTION get_children_of_particle(index_of_the_particle, child1, child2)
+  IMPLICIT NONE
+  INTEGER :: get_children_of_particle
+  INTEGER :: index_of_the_particle, child1, child2
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      get_children_of_particle = -1
+      child1 = 0
+      child2 = 0
+      RETURN
+  ENDIF
+  child1 = particle_child1(index_of_the_particle)
+  child2 = particle_child2(index_of_the_particle)
+  get_children_of_particle=0
+END FUNCTION
+
+
+FUNCTION set_maximum_number_of_particles(inputvalue)
+  IMPLICIT NONE
+  INTEGER :: set_maximum_number_of_particles
+  INTEGER, intent(in) :: inputvalue
+  maximum_number_of_particles = inputvalue
+  set_maximum_number_of_particles=0
+END FUNCTION
+
+FUNCTION get_maximum_number_of_particles(outputvalue)
+  IMPLICIT NONE
+  INTEGER :: get_maximum_number_of_particles
+  INTEGER, intent(out) :: outputvalue
+  outputvalue = maximum_number_of_particles
+  get_maximum_number_of_particles=0
+END FUNCTION
+
+
+FUNCTION set_evolve_to_exact_time(inputvalue)
+  IMPLICIT NONE
+  INTEGER :: set_evolve_to_exact_time
+  LOGICAL, intent(in) :: inputvalue
+  evolve_to_exact_time = inputvalue
+  set_evolve_to_exact_time=0
+END FUNCTION
+
+FUNCTION get_evolve_to_exact_time(outputvalue)
+  IMPLICIT NONE
+  INTEGER :: get_evolve_to_exact_time
+  LOGICAL, intent(out) :: outputvalue
+  outputvalue = evolve_to_exact_time
+  get_evolve_to_exact_time=0
+END FUNCTION
 
 END MODULE 

@@ -360,6 +360,22 @@ class TestMikkola(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.get_mass(4), 2 | units.MSun)
         self.assertAlmostRelativeEquals(instance.get_mass(1), 1 | units.MSun)
         self.assertAlmostRelativeEquals(instance.get_mass(2), 1 | units.MSun)
+        pos1 = quantities.as_vector_quantity(instance.get_position(1))
+        pos2 = quantities.as_vector_quantity(instance.get_position(2))
+        posmerger = quantities.as_vector_quantity(instance.get_position(4))
+        
+        print pos1
+        print pos2
+        print posmerger
+        distance = (pos1-pos2).length()
+        self.assertTrue(distance < 1e-4 | units.RSun)
+        self.assertTrue(distance > 1e-6 | units.RSun)
+        distance = (pos1-posmerger).length()
+        print distance.as_quantity_in(units.RSun)
+        self.assertAlmostRelativeEquals(distance,0.718548184852 | units.RSun, 5)
+        distance = (pos2-posmerger).length()
+        print distance.as_quantity_in(units.RSun)
+        self.assertAlmostRelativeEquals(distance,0.718548184852 | units.RSun, 5)
         instance.update_particle_set()
         print instance.particles[0].mass.as_quantity_in(units.MSun)
         #self.assertEquals(len(instance.particles), 4)
@@ -385,7 +401,6 @@ class TestMikkola(TestWithMPI):
         stars[2].position = [0.3, 0, 0] | units.RSun
         stars[2].velocity = [-0.4, 0.0, 0.0] | units.km/units.s
         
-        
         stars[3].mass = 0.01 | units.MSun
         stars[3].radius = 1.0| units.RSun
         stars[3].position = [6000, 0, 0] | units.RSun
@@ -405,3 +420,204 @@ class TestMikkola(TestWithMPI):
         instance.update_particle_set()
         print instance.particles[0].mass.as_quantity_in(units.MSun)
         #self.assertEquals(len(instance.particles), 4)
+        
+    
+    def test7(self):
+        convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
+        
+        instance = Mikkola(convert_nbody)
+        
+        stars = datamodel.Stars(3)
+        stars[0].mass = 1.0 | units.MSun
+        stars[0].radius = 1.0| units.RSun
+        stars[0].position = [0.0, 0, 0] | units.km
+        stars[0].velocity = [0.0,0.0,0.0] | units.km/units.s
+
+        stars[1].mass = 1.0 | units.MSun
+        stars[1].radius = 1.0| units.RSun
+        stars[1].position = [0.1, 0, 0] | units.RSun
+        stars[1].velocity = [-0.4, 0.0, 0.0] | units.km/units.s
+        
+        
+        stars[2].mass = 0.01 | units.MSun
+        stars[2].radius = 1.0| units.RSun
+        stars[2].position = [6000, 0, 0] | units.RSun
+        stars[2].velocity = [0.0, -10, 0.0] | units.km/units.s
+        
+        
+        instance.particles.add_particles(stars)
+        
+        instance.evolve_model(0.25 | units.yr)
+        
+        self.assertEquals(instance.get_number_of_particles_added(), 1)
+        self.assertEquals(instance.get_id_of_added_particle(0), 4)
+        child1, child2 = instance.get_children_of_particle([4])
+        self.assertEquals(child1[0], instance.particles[0])
+        self.assertEquals(child2[0], instance.particles[1])
+        for i in range(3):
+            child1, child2 = instance.get_children_of_particle([i+1])
+            self.assertEquals(child1[0], None)
+            self.assertEquals(child2[0], None)
+            
+    
+    def test8(self):
+        convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
+        
+        
+        stars = datamodel.Stars(3)
+        stars[0].mass = 1.0 | units.MSun
+        stars[0].radius = 1.0| units.RSun
+        stars[0].position = [0.0, 0, 0] | units.km
+        stars[0].velocity = [0.0,0.0,0.0] | units.km/units.s
+
+        stars[1].mass = 1.0 | units.MSun
+        stars[1].radius = 1.0| units.RSun
+        stars[1].position = [0.1, 0, 0] | units.RSun
+        stars[1].velocity = [-0.4, 0.0, 0.0] | units.km/units.s
+        
+        
+        stars[2].mass = 0.01 | units.MSun
+        stars[2].radius = 1.0| units.RSun
+        stars[2].position = [6000, 0, 0] | units.RSun
+        stars[2].velocity = [0.0, -10, 0.0] | units.km/units.s
+        
+        
+        instance1 = Mikkola(convert_nbody)
+        instance1.particles.add_particles(stars)
+        instance1.evolve_model(0.3 | units.yr)
+        
+        pos11 = quantities.as_vector_quantity(instance1.get_position(1))
+        pos12 = quantities.as_vector_quantity(instance1.get_position(2))
+        posmerger1 = quantities.as_vector_quantity(instance1.get_position(4))
+        instance1.stop()
+        
+        instance2 = Mikkola(convert_nbody)
+        instance2.particles.add_particles(stars)
+        instance2.evolve_model(0.15 | units.yr)
+        self.assertAlmostRelativeEquals(instance2.model_time,0.15 | units.yr)
+        instance2.evolve_model(0.3  | units.yr)
+        self.assertAlmostRelativeEquals(instance2.model_time, 0.3| units.yr)
+        
+        pos21 = quantities.as_vector_quantity(instance2.get_position(1))
+        pos22 = quantities.as_vector_quantity(instance2.get_position(2))
+        posmerger2 = quantities.as_vector_quantity(instance2.get_position(4))
+        print pos11, pos21
+        print pos12, pos22
+        print posmerger1, posmerger2
+        instance2.stop()
+        
+        self.assertAlmostRelativeEquals(pos11, pos21)
+        self.assertAlmostRelativeEquals(pos12, pos22)
+        self.assertAlmostRelativeEquals(posmerger1[0], posmerger2[0], 5)
+        self.assertAlmostRelativeEquals(posmerger1[1], posmerger2[1], 1)
+        
+    def test9(self):
+        convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
+        
+        instance = Mikkola(convert_nbody)
+        
+        stars = datamodel.Stars(4)
+        stars[0].mass = 1.0 | units.MSun
+        stars[0].radius = 1.0| units.RSun
+        stars[0].position = [0.0, 0, 0] | units.km
+        stars[0].velocity = [0.0,0.0,0.0] | units.km/units.s
+
+        stars[1].mass = 1.0 | units.MSun
+        stars[1].radius = 1.0| units.RSun
+        stars[1].position = [0.1, 0, 0] | units.RSun
+        stars[1].velocity = [-0.4, 0.0, 0.0] | units.km/units.s
+        
+        stars[2].mass = 1.0 | units.MSun
+        stars[2].radius = 1.0| units.RSun
+        stars[2].position = [0.3, 0, 0] | units.RSun
+        stars[2].velocity = [-0.4, 0.0, 0.0] | units.km/units.s
+        
+        stars[3].mass = 0.01 | units.MSun
+        stars[3].radius = 1.0| units.RSun
+        stars[3].position = [6000, 0, 0] | units.RSun
+        stars[3].velocity = [0.0, -10, 0.0] | units.km/units.s
+        
+        
+        instance.particles.add_particles(stars)
+        
+        instance.evolve_model(0.15 | units.yr)
+        instance.update_particle_set()
+        self.assertEquals(instance.get_id_of_added_particle(0), 5)
+        self.assertEquals(instance.get_id_of_added_particle(1), 6)
+        instance.evolve_model(0.30 | units.yr)
+        instance.update_particle_set()
+        self.assertEquals(instance.get_number_of_particles_added(), 0)
+        child1, child2 = instance.get_children_of_particle([5])
+        self.assertEquals(child1[0], instance.particles[0])
+        self.assertEquals(child2[0], instance.particles[1])
+        child1, child2 = instance.get_children_of_particle([6])
+        self.assertEquals(child2[0], instance.particles[2])
+        self.assertEquals(child1[0], instance.particles[4])
+    
+    def test10(self):
+        convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
+        
+        instance = Mikkola(convert_nbody)
+        instance.parameters.maximum_number_of_particles = 2
+        stars = datamodel.Stars(3)
+        stars[0].mass = 1.0 | units.MSun
+        stars[0].radius = 1.0| units.RSun
+        stars[0].position = [0.0, 0, 0] | units.km
+        stars[0].velocity = [0.0,0.0,0.0] | units.km/units.s
+
+        stars[1].mass = 1.0 | units.MSun
+        stars[1].radius = 1.0| units.RSun
+        stars[1].position = [0.1, 0, 0] | units.RSun
+        stars[1].velocity = [-0.4, 0.0, 0.0] | units.km/units.s
+        
+        
+        stars[2].mass = 0.01 | units.MSun
+        stars[2].radius = 1.0| units.RSun
+        stars[2].position = [6000, 0, 0] | units.RSun
+        stars[2].velocity = [0.0, -10, 0.0] | units.km/units.s
+        
+        self.assertRaises(exceptions.AmuseException, instance.particles.add_particles, stars)      
+    
+    def test10(self):
+        convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
+        
+        instance = Mikkola(convert_nbody)
+        instance.parameters.maximum_number_of_particles = 3
+        stars = datamodel.Stars(3)
+        stars[0].mass = 1.0 | units.MSun
+        stars[0].radius = 1.0| units.RSun
+        stars[0].position = [0.0, 0, 0] | units.km
+        stars[0].velocity = [0.0,0.0,0.0] | units.km/units.s
+
+        stars[1].mass = 1.0 | units.MSun
+        stars[1].radius = 1.0| units.RSun
+        stars[1].position = [0.1, 0, 0] | units.RSun
+        stars[1].velocity = [-0.4, 0.0, 0.0] | units.km/units.s
+        
+        
+        stars[2].mass = 0.01 | units.MSun
+        stars[2].radius = 1.0| units.RSun
+        stars[2].position = [6000, 0, 0] | units.RSun
+        stars[2].velocity = [0.0, -10, 0.0] | units.km/units.s
+        instance.particles.add_particles(stars)
+        self.assertRaises(exceptions.AmuseException, instance.evolve_model, 0.3 | units.yr)   
+          
+    
+    def test11(self):
+        instance = Mikkola()
+        
+        self.assertTrue(instance.parameters.evolve_to_exact_time)
+        instance.parameters.evolve_to_exact_time = False
+        self.assertFalse(instance.parameters.evolve_to_exact_time)
+        
+        self.assertEquals(instance.parameters.maximum_number_of_particles, 100)
+        instance.parameters.maximum_number_of_particles = 200
+        self.assertEquals(instance.parameters.maximum_number_of_particles, 200)
+        
+        
+        self.assertAlmostRelativeEquals(instance.parameters.tolerance, 1e-13, 6)
+        instance.parameters.tolerance = 1e-10
+        self.assertAlmostRelativeEquals(instance.parameters.tolerance, 1e-10)
+        
+        instance.stop()
+
