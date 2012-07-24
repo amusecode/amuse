@@ -91,15 +91,26 @@ After installing you will need to configure the code with the following line::
     the command openmpicxx is using)
 
 
+.. note::
+
+    The version of openmpi in macports (1.5.5 and before) does not 
+    handle MPI_IN_PLACE calls correctly for Fortran codes. 
+    Unfortunately, this means that **Capreole**, **PhiGrape** and 
+    **Mocassin** will not work with more than one worker on the mac. 
+    Also, **MpiAmrVac**, will give incorrect results in any case. 
+    
+    If you want to run these codes on OS X, please use the amuse install
+    scripts and make sure macports is not on your path.
+    
 GCC
 ---
 By default MacPorts uses the XCode compilers, these compilers have no support
 for fortran, a MacPorts gcc compiler set needs to be installed. We suggest
-installing gcc 4.4:
+installing gcc 4.5:
 
 .. code-block:: sh
     
-    > sudo port install gcc44
+    > sudo port install gcc45
     
 .. note::
     
