@@ -10,7 +10,25 @@ all: download build install test pynbody_worker
 
 download: PyNbody/setup.py
 
+ifdef DOWNLOAD_CODES
 PyNbody/setup.py:
+	make -C . download
+else
+PyNbody/setup.py:
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "DOWNLOAD_CODES is not set. PyNbody will not be downloaded and build."
+	@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
+	@echo "bash> export DOWNLOAD_CODES=1"
+	@echo "csh> setenv DOWNLOAD_CODES 1"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+endif 
+
+download:
 	git clone git://github.com/GuilhermeFerrari/PyNbody.git
 
 build:
