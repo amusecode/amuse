@@ -63,16 +63,16 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $< SimpleXInterface -o $@
 
-worker_code_gl.cc: interface.py
+worker_code-gl.cc: interface.py
 	$(CODE_GENERATOR) --type=c $< GlSimpleXInterface -o $@
 
-worker_code_gl.h: interface.py
+worker_code-gl.h: interface.py
 	$(CODE_GENERATOR) --type=H $< GlSimpleXInterface -o $@
 
 simplex_worker: worker_code.cc worker_code.h $(OBJS)
-	$(MPICXX) $^ -o $@ $(LIBS)
+	$(MPICXX) $< $(OBJS) -o $@ $(LIBS)
 
-#simplex_worker_gl: worker_gl.cc worker_gl.h $(OBJS) $(GLOBJS)
+#simplex_worker_gl: worker_code-gl.cc worker_code-gl.h $(OBJS) $(GLOBJS)
 #	$(MPICXX) $^ -o $@ $(LIBS) $(GLLIBS)
 
 $(OBJDIR)/amuse_interface.o: $(SRCDIR)/src/amuse_interface.cpp $(SRCDIR)/src/amuse_interface.h

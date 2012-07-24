@@ -47,6 +47,7 @@ class assert_failed
     friend std::ostream& operator<<(std::ostream& output, const assert_failed& p)
     {
         output << p.file << ':' << p.line << " assertion failed: '" << p.assertion << "'(" << p.function << ")";
+        return output;
     }
 };
 

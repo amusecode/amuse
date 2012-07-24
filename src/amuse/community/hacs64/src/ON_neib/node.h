@@ -1,5 +1,9 @@
 #include <iostream>
+
+#ifdef HAVE_OMP
 #include <omp.h>
+#endif
+
 #include "particle.h"
 #include "boundary.h"
 
