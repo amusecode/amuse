@@ -10,8 +10,8 @@ will be slow. The packages in MacPorts support different *variants*, each
 *variant* is build differently. The default *variant* of most packages
 does not support fortran and AMUSE needs fortran and fortran enabled
 packages. Below, with all installation commands we will specify the variant.
-AMUSE is tested with the gcc44 variant, gcc43 is known to work also, below,
-we will use gcc44.
+AMUSE is tested with the gcc45 variant, gcc43 and gcc44 have been known 
+to work also. Below, we will use gcc45.
 
 .. note::
     
@@ -29,8 +29,13 @@ we will use gcc44.
     packages with::
     
         port uninstall py26-docutils py26-nose py26-mpi4py py26-h5py py26-numpy hdf5-18 fftw-3 gsl openmpi python26
+        
+    or, for python 2.7::
     
-    To make a clean install of MacPorts, please read the guide at:
+        port uninstall py27-docutils py27-nose py27-mpi4py py27-h5py py27-numpy hdf5-18 fftw-3 gsl openmpi python27
+    
+    To make a clean install of MacPorts, please remove the 
+    MacPorts directory and read the guide at:
     http://guide.macports.org/
     
 All in one
@@ -38,22 +43,53 @@ All in one
 
 You can install all the packages described below in one go with::
 
-    > sudo port install gcc44
+    > sudo port install gcc45
     
-    > sudo port install python26 openmpi \
-    hdf5-18 fftw-3 gsl cmake gmp mpfr \
-    py26-numpy py26-h5py py26-nose py26-docutils +gcc44
+    > sudo port install python27
+    > sudo port install openmpi +gcc45
+    > sudo port install fftw-3 +gcc45
+    > sudo port install hdf5-18 gsl cmake gmp mpfr
+    > sudo port install py27-numpy py27-h5py py27-nose py27-docutils +gcc45
     
-    > sudo port install py26-mpi4py +openmpi
+    > sudo port install py27-mpi4py +openmpi
     
-    > sudo port install py26-matplotlib +gcc44
+    > sudo port install py27-matplotlib +gcc45
     
 After installing you will need to configure the code with the following line::
 
     > ./configure --with-fftw=/opt/local \
                   MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90 \
-                  FC=gfortran-mp-4.4 PYTHON=python2.6 
+                  FC=gfortran-mp-4.7 PYTHON=python2.7 \
+                  PREFIX=/opt/local
+                  
+.. note::
+
+    The ``--with-fftw`` option will ensure that fftw is found in 
+    ``/opt/local`` and not in any other location on OS X. Often, incompatible versions of
+    fftw will be installed in ``/usr/include`` or ``/usr/local/inlude``. These versions may
+    have the wrong processor type (32 vs 64bits) or not contain a fortran API. For both cases
+    compiling ``Fi`` will fail.      
+    In case the configure script does not pick the wanted fftw directories, you
+    can edit the ``config.mk`` file to point to the right version.
     
+
+.. note::
+
+    The ``PREFIX`` variable will make sure some support libraries for 
+    community codes (gsl, gmp and mpfr) are found in ``/opt/local``.
+
+.. note::
+
+    Please, make sure you have no other compile variables specified
+    (like CC or CXX or CFLAGS), unless you have customized MacPorts in
+    any way. Some variable settings will likely give compile errors
+    for the community codes. 
+    
+    For example, BHTree is compiled with openmpicxx and $CXX. 
+    The command in the CXX variable must be compatible 
+    with openmpicxx (you can do ``openmpicxx --show`` to get 
+    the command openmpicxx is using)
+
 
 GCC
 ---
@@ -76,11 +112,11 @@ installing gcc 4.4:
 Python
 ------
 MacPorts supports several python versions in different variants, we will install
-the python26 versions
+the python27 versions
 
 .. code-block:: sh
 
-    > sudo port install python26 +gcc44
+    > sudo port install python27 +gcc45
    
 MPI2
 ----
@@ -90,27 +126,27 @@ openmpi.
 
 To install openmpi, do::
 
-     > sudo port install openmpi +gcc44
+     > sudo port install openmpi +gcc45
 
 HDF5
 ----
 Amuse can work with HDF5 versions 1.6.* and 1.8.3. MacPorts comes
 with HDF5 version 1.8.*. To install it, do::
 
-    > sudo port install hdf5-18 +gcc44 
+    > sudo port install hdf5-18 +gcc45 
 
 FFTW-3
 ------
 MacPorts comes with a FFTW and FFTW-3 package, for AMUSE we need FFTW-3.
 FFTW-3 can be installed with::
 
-    > sudo port install fftw-3 +gcc44
+    > sudo port install fftw-3 +gcc45
 
 GSL
 ---
 GSL is used to build Gadget2, GSL can be installed with::
 
-    > sudo port install gsl +gcc44
+    > sudo port install gsl +gcc45
 
 CMake
 -----
@@ -136,12 +172,12 @@ Python packages
 By this point all libraries and frameworks are installed. We can now
 install python packages (some depend on the installed libraries)::
 
-    > sudo port install py26-numpy py26-h5py py26-nose py26-docutils +gcc44
+    > sudo port install py27-numpy py27-h5py py27-nose py27-docutils +gcc45
 
 If you installed openmpi in the MPI2 step you need to set the
-"openmpi" variant for "py26-mpi4py"::
+"openmpi" variant for "py27-mpi4py"::
 
-    > sudo port install py26-mpi4py +openmpi
+    > sudo port install py27-mpi4py +openmpi
 
 
 Matplotlib
@@ -149,7 +185,7 @@ Matplotlib
 Matplotlib is not required but is very useful for creating graphics, 
 you can install it with::
 
-    > sudo port install py26-matplotlib +gcc44
+    > sudo port install py27-matplotlib +gcc45
     
 
 .. note::
@@ -158,7 +194,7 @@ you can install it with::
     use the right compilers you need to specify these during the
     configure stage of AMUSE.
     
-    See the output for ```configure --help``` for a list of all 
+    See the output for ``configure --help`` for a list of all 
     environment variables you can set.
     
     If you installed openmpi you need to specify the mpi compilers 
