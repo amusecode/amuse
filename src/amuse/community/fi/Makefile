@@ -95,6 +95,7 @@ $(BUILDDIR)/Makefile:
 	
 $(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
 	-mkdir $(BUILDDIR)
+	$(PYTHON) ./patch_globals_dot_h.py
 	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
 fi_worker: worker_code.f90 $(BUILDDIR)/libfi.a interface.o 
