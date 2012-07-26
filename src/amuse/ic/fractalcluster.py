@@ -1,0 +1,1 @@
+from amuse.community.fractalcluster.interface import MakeFractalCluster, new_fractal_cluster_model
