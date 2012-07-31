@@ -49,6 +49,8 @@ public class Worker implements Runnable, StateListener {
 
     private final int nrOfNodes;
     
+    private final int nrOfThreads;
+    
     private final boolean copyWorkerCode;
     
     private final String id;
@@ -123,6 +125,7 @@ public class Worker implements Runnable, StateListener {
 
         nrOfWorkers = initRequest.getInteger(0);
         nrOfNodes = initRequest.getInteger(1);
+        nrOfThreads = initRequest.getInteger(2);
         
         copyWorkerCode = initRequest.getBoolean(0);
 
@@ -160,7 +163,7 @@ public class Worker implements Runnable, StateListener {
         // finish initializing worker
         try {
             
-            job = deployment.deploy(codeName, codeDir, hostname, stdoutFile, stderrFile, id, nrOfWorkers, nrOfNodes, copyWorkerCode);
+            job = deployment.deploy(codeName, codeDir, hostname, stdoutFile, stderrFile, id, nrOfWorkers, nrOfNodes, nrOfThreads, copyWorkerCode);
             
             synchronized(this) {
                 this.job = job;

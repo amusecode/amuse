@@ -1888,7 +1888,7 @@ class IbisChannel(MessageChannel):
         
         self.socket.sendall('TYPE_WORKER'.encode('utf-8'))
         
-        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers, self.number_of_nodes], 'bool': [self.copy_worker_code]}
+        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers, self.number_of_nodes, self.number_of_threads], 'bool': [self.copy_worker_code]}
         
         message = SocketMessage(10101010, 1, arguments);
 
@@ -1922,6 +1922,10 @@ class IbisChannel(MessageChannel):
     @option(type="int", sections=("channel",))
     def number_of_nodes(self):
         return 1
+    
+    @option(type="int", sections=("channel",))
+    def number_of_threads(self):
+        return 0
     
     @option(type="boolean", sections=("channel",))
     def copy_worker_code(self):

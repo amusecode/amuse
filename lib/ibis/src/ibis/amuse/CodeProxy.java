@@ -345,6 +345,9 @@ public class CodeProxy {
             } else if (arguments[i].equals("--number-of-nodes")) {
                 i++;
                 info.setNrOfNodes(Integer.parseInt(arguments[i]));
+            } else if (arguments[i].equals("--number-of-threads")) {
+                i++;
+                info.setNrOfThreads(Integer.parseInt(arguments[i]));
             } else if (arguments[i].equals("--stdout")) {
                 i++;
                 info.setStdoutFile(arguments[i]);

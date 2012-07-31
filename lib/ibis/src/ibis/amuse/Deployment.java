@@ -201,7 +201,7 @@ public class Deployment {
     }
 
     public synchronized Job deploy(String codeName, String codeDir, String resourceName, String stdoutFile,
-            String stderrFile, String workerID, int nrOfWorkers, int nrOfNodes, boolean copyWorkerCode)
+            String stderrFile, String workerID, int nrOfWorkers, int nrOfNodes, int nrOfThreads, boolean copyWorkerCode)
             throws Exception {
         Resource resource = null;
         logger.info("Deploying worker \"" + workerID + "\" on host " + resourceName + " with " + nrOfWorkers
@@ -313,7 +313,7 @@ public class Deployment {
 
         jobDescription.getApplication().setArguments("--code-name", codeName, "--worker-id", workerID, "--amuse-home",
                 remoteAmuseHome, "--code-dir", codeDir, "--number-of-processes", Integer.toString(nrOfWorkers),
-                "--number-of-nodes", Integer.toString(nrOfNodes), "--stdout", stdoutFile, "--stderr", stderrFile,
+                "--number-of-nodes", Integer.toString(nrOfNodes), "--number-of-threads", Integer.toString(nrOfThreads),"--stdout", stdoutFile, "--stderr", stderrFile,
                 "--copy-worker-code", "" + copyWorkerCode);
 
         Job result = deploy.submitJob(jobDescription, application, resource, null, null);

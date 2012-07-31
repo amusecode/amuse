@@ -17,6 +17,8 @@ public class WorkerInfo implements Serializable {
     private int nrOfNodes;
 
     private int nrOfProcesses;
+    
+    private int nrOfThreads;
 
     private String codeName;
 
@@ -56,6 +58,14 @@ public class WorkerInfo implements Serializable {
 
     void setNrOfProcesses(int nrOfProcesses) {
         this.nrOfProcesses = nrOfProcesses;
+    }
+    
+    int getNrOfThreads() {
+        return nrOfThreads;
+    }
+
+    void setNrOfThreads(int nrOfThreads) {
+        this.nrOfThreads = nrOfThreads;
     }
 
     String getCodeName() {

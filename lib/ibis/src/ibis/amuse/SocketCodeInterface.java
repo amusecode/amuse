@@ -102,7 +102,7 @@ public class SocketCodeInterface implements CodeInterface {
 
     public void init() throws CodeException {
         if (info.copyWorkerCode()) {
-            //executable in cwd
+            // executable in cwd
             executable = new File(info.getCodeName());
         } else {
             executable = new File(info.getAmuseHome() + File.separator + info.getCodeDir() + File.separator
@@ -112,7 +112,7 @@ public class SocketCodeInterface implements CodeInterface {
             throw new CodeException("Cannot find executable for code " + info.getCodeName() + ": " + executable);
         }
 
-        if (!executable.canExecute() && ! info.copyWorkerCode()) {
+        if (!executable.canExecute() && !info.copyWorkerCode()) {
             throw new CodeException(executable + " is not executable");
         }
 
@@ -154,6 +154,10 @@ public class SocketCodeInterface implements CodeInterface {
             }
 
             builder.environment().put("OMPI_IBIS_PROFILING_PORT_FILE", portFile.getAbsolutePath());
+
+            if (info.getNrOfThreads() > 0) {
+                builder.environment().put("OMP_NUM_THREADS", Integer.toString(info.getNrOfThreads()));
+            }
 
             if (!amuseConfig.isMpiexecEnabled()) {
                 logger.info("not using mpiexec (as it is disabled)");
