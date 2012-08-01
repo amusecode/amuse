@@ -1,3 +1,6 @@
+AMUSE_DIR?=../../../..
+-include ${AMUSE_DIR}/config.mk
+
 PYTHON ?= python
 
 PYOPENGL_AVAILABLE := $(shell $(PYTHON) -c "import OpenGL"  1>&2 2> /dev/null && echo "yes" || echo "no")
@@ -6,9 +9,9 @@ PYOPENCL_AVAILABLE := $(shell $(PYTHON) -c "import pyopencl"  1>&2 2> /dev/null 
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: download build install test pynbody_worker
+all: code build install test pynbody_worker
 
-download: PyNbody/setup.py
+code: PyNbody/setup.py
 
 ifdef DOWNLOAD_CODES
 PyNbody/setup.py:
