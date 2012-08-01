@@ -578,7 +578,7 @@ class TestMikkola(TestWithMPI):
         
         self.assertRaises(exceptions.AmuseException, instance.particles.add_particles, stars)      
     
-    def test10(self):
+    def test10b(self):
         convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
         
         instance = Mikkola(convert_nbody)
@@ -744,7 +744,7 @@ class TestMikkola(TestWithMPI):
         instance.stop()
         
         # positions will not be the same but distances will be comparable
-        self.assertAlmostRelativeEquals((pos22-pos21).length(), (pos12-pos11).length(), 2)
+        self.assertAlmostRelativeEquals((pos22-pos21).length(), (pos12-pos11).length(), 1)
         
     def test15(self):
         convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))

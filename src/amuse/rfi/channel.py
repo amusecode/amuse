@@ -376,7 +376,7 @@ class MPIMessage(AbstractMessage):
         if total > 0:
             result = numpy.empty(total * length,  dtype='int32')
             self.mpi_receive(comm,[result, MPI.LOGICAL])
-            return result == 1
+            return numpy.logical_not(result == 0)
         else:
             return []
     
