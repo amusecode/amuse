@@ -553,10 +553,10 @@ class BSE(common.CommonCode):
         
         children1 = particles.child1
         children2 = particles.child2
-        children1_arguments = children1.get_values_in_store(children1.get_all_keys_in_store(), single_attributes)
-        children2_arguments = children2.get_values_in_store(children2.get_all_keys_in_store(), single_attributes)
+        children1_arguments = children1.get_values_in_store(children1.get_all_indices_in_store(), single_attributes)
+        children2_arguments = children2.get_values_in_store(children2.get_all_indices_in_store(), single_attributes)
         
-        binaries_arguments = particles.get_values_in_store(particles.get_all_keys_in_store(), binary_attributes)
+        binaries_arguments = particles.get_values_in_store(particles.get_all_indices_in_store(), binary_attributes)
         
         binaries_arguments[1] = self.semi_major_axis_to_orbital_period(binaries_arguments[1] , children1_arguments[2], children2_arguments[2])
         
@@ -582,9 +582,9 @@ class BSE(common.CommonCode):
             children2_results.append(result[index])
             index += 1
         
-        children1.set_values_in_store(children1.get_all_keys_in_store(), single_attributes, children1_results)
-        children2.set_values_in_store(children2.get_all_keys_in_store(), single_attributes, children2_results)
-        particles.set_values_in_store(particles.get_all_keys_in_store(), binary_attributes, result[index:])
+        children1.set_values_in_store(children1.get_all_indices_in_store(), single_attributes, children1_results)
+        children2.set_values_in_store(children2.get_all_indices_in_store(), single_attributes, children2_results)
+        particles.set_values_in_store(particles.get_all_indices_in_store(), binary_attributes, result[index:])
         
         
     def evolve_model(self, end_time = None, keep_synchronous = True):

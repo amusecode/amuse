@@ -327,7 +327,7 @@ class SSE(common.CommonCode):
             particles.age,
             end_time.as_vector_with_length(len(particles)))
         
-        particles.set_values_in_store(particles.get_all_keys_in_store(), attributes, result)
+        particles.set_values_in_store(particles.get_all_indices_in_store(), attributes, result)
         
     def evolve_model(self, end_time = None, keep_synchronous = True):
         if not keep_synchronous:

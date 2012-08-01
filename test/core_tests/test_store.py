@@ -2,6 +2,7 @@ from amuse.test import amusetest
 
 import os
 import numpy
+import time
 
 from amuse import io
 from amuse.io import store
@@ -352,7 +353,9 @@ class TestStoreHDF(amusetest.TestCase):
         self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
         
     def test16(self):
-        
+        import h5py
+        print h5py.version.version
+        print h5py
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test16.hdf5")
         if os.path.exists(output_file):

@@ -410,7 +410,7 @@ class ParticleQueryMethod(object):
     
         index = instance.get_escaper()
     
-    The idex or indices are converted to a particle subset.
+    The index or indices are converted to a particle subset.
     """
     def __init__(self, method, names = (), public_name = None, query_superset=False):
         self.method = method
@@ -568,10 +568,9 @@ class ParticlesAddedUpdateMethod(object):
    
     
     def __init__(self,  get_number_of_particles_added_method = None, get_id_of_added_particles_method = None):
-        self.method = method
         self.get_number_of_particles_added_method = get_number_of_particles_added_method
         self.get_id_of_added_particles_method = get_id_of_added_particles_method
-        self.public_name = public_name
+    
 
     def apply_on_all(self, particles, *list_arguments, **keyword_arguments):
         query_identifiers = None
@@ -742,26 +741,42 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         indices = self.new_particle_method.add_entities(attributes, values)
         
         if len(self.particle_keys) > 0:
+            previous_length = len(self.particle_keys)
             self.particle_keys = numpy.concatenate((self.particle_keys, numpy.array(list(keys))))
             self.code_indices =  numpy.concatenate((self.code_indices, numpy.array(indices)))
+            result = self.code_indices[previous_length:]
         else:
             self.particle_keys = numpy.array(keys)
             self.code_indices = numpy.array(indices)
+            result = self.code_indices
             
         index = 0
         for key in keys:
             self.mapping_from_particle_key_to_index_in_the_code[key] = indices[index]
             self.mapping_from_index_in_the_code_to_particle_key[indices[index]] = key
             index = index + 1
+        
+        return result
 
     def get_indices_of(self, keys):
         indices_in_the_code = []
         if keys is None:
             keys = self.particle_keys
-            
+        
+        notfoundkeys = []
         for particle_key in keys:
-            indices_in_the_code.append(self.mapping_from_particle_key_to_index_in_the_code[particle_key])
-            
+            try:
+                indices_in_the_code.append(self.mapping_from_particle_key_to_index_in_the_code[particle_key])
+            except KeyError:
+                notfoundkeys.append(particle_key)
+          
+        if not len(notfoundkeys) == 0:
+            if len(notfoundkeys) == 1:
+                raise Exception("Key not found in storage: {0}".format(notfoundkeys[0]))
+            else:
+                notfoundkeys = numpy.asarray(notfoundkeys)
+                raise Exception("Keys not found in storage: {0}".format(notfoundkeys))
+                
         return indices_in_the_code
         
    
@@ -778,12 +793,27 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
           
         return result
          
-    def get_values_in_store(self, keys, attributes, by_key = True):
-        if by_key:
-            indices_in_the_code = self.get_indices_of(keys)
-        else:
-            indices_in_the_code = keys
-            
+        
+    def get_positions_of_indices(self, indices):
+        result = []
+        if indices is None:
+            indices = self.code_indices
+        
+        indices_set = set(indices)
+        for index in range(len(self.code_indices)):
+            index_in_code = self.code_indices[index]
+            if index_in_code in indices_set:
+                result.append(index)
+          
+        return result
+        
+    def get_value_of(self, index, attribute):
+        return self.get_value_in_store(index, attribute)
+   
+    def get_values_in_store(self, indices_in_the_code, attributes):
+    
+        if indices_in_the_code is None:
+            indices_in_the_code = self.code_indices
             
         if len(indices_in_the_code) == 0:
             return [[] for attribute in attributes]
@@ -799,35 +829,27 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             results.append(mapping_from_attribute_to_result[attribute])
         return results
         
-    def set_values_in_store(self, keys, attributes, values,  by_key = True):
-        if by_key:
-            indices_in_the_code = self.get_indices_of(keys)
-        else:
-            indices_in_the_code = keys
-        
+    def set_values_in_store(self, indices_in_the_code, attributes, values):
         if len(indices_in_the_code) == 0:
             return
             
         for setter in self.select_setters_for(attributes):
             setter.set_attribute_values(self, attributes, values, indices_in_the_code)
     
-    def remove_particles_from_store(self, keys):
-        indices_in_the_code = self.get_indices_of(keys)
-        
-        if not indices_in_the_code:
+    def remove_particles_from_store(self, indices_in_the_code):
+        if indices_in_the_code is None:
             return
-        
         self.delete_particle_method(indices_in_the_code)
         
-        d = self.mapping_from_particle_key_to_index_in_the_code
-        for key in keys:
-            del d[key]
-        
+        mapping_key = self.mapping_from_particle_key_to_index_in_the_code
+        mapping_index = self.mapping_from_index_in_the_code_to_particle_key
         for i in indices_in_the_code:
-            del self.mapping_from_index_in_the_code_to_particle_key[i]
+            key = mapping_index[i]
+            del mapping_index[i]
+            del mapping_key[key]
         
-         
-        indices_to_delete = self.get_key_indices_of(keys)
+        indices_to_delete = self.get_positions_of_indices(indices_in_the_code)
+        
         self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
         self.code_indices =  numpy.delete(self.code_indices, indices_to_delete)
             
@@ -1022,7 +1044,7 @@ class ParticleSpecificSelectSubsetMethod(object):
             number_of_particles_in_set = self.get_number_of_particles_in_set_method(from_indices)[0]
             indices = self.method(from_indices * number_of_particles_in_set, range(number_of_particles_in_set))
         else:
-            index = self.method(*query_identifiers)
+            index = self.method()
             indices = [index]
             
         keys = set._private.attribute_storage._get_keys_for_indices_in_the_code(indices)  

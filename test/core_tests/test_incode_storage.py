@@ -1,11 +1,5 @@
 from amuse.test import amusetest
-
-
-
-
-
 from amuse.datamodel.incode_storage import *
-
 
 import numpy
 import time
@@ -145,7 +139,8 @@ class TestParticles(amusetest.TestCase):
         
         self.assertFalse(code.get_position_called)
         self.assertFalse(code.get_mass_called)
-        x,y,mass = storage.get_values_in_store([2,3],["x","y","mass"])
+        indices = storage.get_indices_of([2,3])
+        x,y,mass = storage.get_values_in_store(indices,["x","y","mass"])
         self.assertTrue(code.get_position_called)
         self.assertTrue(code.get_mass_called)
         self.assertEquals(x[1], 3 | units.m)
@@ -202,7 +197,8 @@ class TestParticles(amusetest.TestCase):
         
         self.assertEquals(storage.get_defined_attribute_names(), ["mass",])
         
-        index,mass = storage.get_values_in_store([2,3],["index_in_code","mass"])
+        indices = storage.get_indices_of([2,3])
+        index,mass = storage.get_values_in_store(indices,["index_in_code","mass"])
         self.assertTrue(code.get_mass_called)
         print index, mass
         self.assertEquals(index[0], 1)
@@ -262,7 +258,8 @@ class TestParticles(amusetest.TestCase):
         
         storage._remove_indices([1,2,])
         code.number_of_particles = 2
-        index,mass = storage.get_values_in_store([1,4],["index_in_code","mass"])
+        indices = storage.get_indices_of([1,4])
+        index,mass = storage.get_values_in_store(indices,["index_in_code","mass"])
         
         self.assertEquals(index[0], 0)
         self.assertEquals(index[1], 3)
@@ -278,7 +275,8 @@ class TestParticles(amusetest.TestCase):
         code.number_of_particles = 4
         self.assertEquals(len(storage), 4)
         
-        mass, = storage.get_values_in_store(storage.particle_keys,["mass"])
+        indices = storage.get_indices_of(storage.particle_keys)
+        mass, = storage.get_values_in_store(indices,["mass"])
         
         self.assertEquals(mass[0],  1 | units.kg)
         self.assertEquals(mass[1],  4 | units.kg)
@@ -289,7 +287,8 @@ class TestParticles(amusetest.TestCase):
         code.number_of_particles = 3
         self.assertEquals(len(storage), 3)
         
-        mass, = storage.get_values_in_store(storage.particle_keys,["mass"])
+        indices = storage.get_indices_of(storage.particle_keys)
+        mass, = storage.get_values_in_store(indices,["mass"])
         
         self.assertEquals(mass[0],  1 | units.kg)
         self.assertEquals(mass[1],  4 | units.kg)
@@ -348,7 +347,8 @@ class TestParticles(amusetest.TestCase):
         
         self.assertEquals(len(storage), 4)
     
-        mass = storage.get_values_in_store([100,400],["mass",])[0]
+        indices = storage.get_indices_of([100,400])
+        mass = storage.get_values_in_store(indices,["mass",])[0]
         print mass
         self.assertEquals(mass[0], 1.0 | units.kg)
         self.assertEquals(mass[1], 4.0 | units.kg)
@@ -356,104 +356,13 @@ class TestParticles(amusetest.TestCase):
         code.data[0][1] = 1
         code.data[0][2] = 2
     
-        child1,child2 = storage.get_values_in_store([100],['child1', 'child2'])
+        indices = storage.get_indices_of([100])
+        child1,child2 = storage.get_values_in_store(indices,['child1', 'child2'])
         print child1
     
         self.assertEquals(child1[0].number, 200)
         self.assertEquals(child2[0].number, 300)
-    
-        x = Particles(storage  = storage)
-    
-        self.assertEquals(x[0].mass, 1.0 | units.kg)
-        self.assertEquals(x[0].child1.mass, 2.0 | units.kg)
-        self.assertEquals(x[0].child2.mass, 3.0 | units.kg)
-        self.assertEquals(x[1].child1, None)
-        self.assertEquals(x[1].child2, None)
-    
-    
-        code.data[1][1] = 3
-        code.data[1][2] = 2
-    
-        self.assertEquals(x[0].child1, x[1])
-        self.assertEquals(x[0].child1.child1.mass, 4.0 | units.kg)
-        self.assertEquals(x[0].child1.child2.mass, 3.0 | units.kg)
-
-    def test6(self):
-        class Code(object):
-            def __init__(self):
-                self.data = []
-                self.number_of_particles = 0
-                
-            def get_number_of_particles(self):
-                return  self.number_of_particles
-                
-            def get_mass(self,index):
-                data_to_return = [self.data[i][0] for i in index]
-                return units.kg(data_to_return)
-            
-            def get_children(self,index):
-                return [(self.data[i][1]) for i in index], [(self.data[i][2]) for i in index]
-            
-            def new_particle(self, mass):
-                mass = mass.value_in(units.kg)
-                self.data = [[x,-1,-1] for x in mass]
-                self.number_of_particles = len(self.data)
-                return [i for i in range(len(mass))]
-            
-        code = Code()
-    
-        children_getter = ParticleGetAttributesMethod(
-                    code.get_children,
-                    ('child1', 'child2',)
-        )
-        children_getter.index_output_attributes = set(['child1','child2'])
-     
-        storage = InCodeAttributeStorage(
-            code,
-            NewParticleMethod(code.new_particle,("mass",)),
-            None,
-            code.get_number_of_particles,
-            [],
-            [
-                ParticleGetAttributesMethod(code.get_mass,("mass",)),
-                children_getter
-            ],
-            name_of_the_index = "index"
-        )
-        
-        
-        code_particles = Particles(storage  = storage)
-    
-        memory_particles = Particles(keys = 100 * (1 + numpy.arange(10)) )
-        memory_particles.mass = range(10) | units.kg
-    
-        code_particles.add_particles(memory_particles)
-    
-        self.assertEquals(len(code_particles), 10)
-    
-        code.data[0][1] = 1
-        code.data[0][2] = 2
-        code.data[1][1] = 3
-        code.data[1][2] = 4
-    
-        self.assertEquals(code_particles[0].child1, code_particles[1])
-        self.assertEquals(code_particles[0].child1.mass, 1.0 | units.kg)
-        self.assertEquals(code_particles[0].child2.mass, 2.0 | units.kg)
-        self.assertEquals(code_particles[0].child1.key, 200)
-        self.assertEquals(code_particles[0].child2.key, 300)
-        self.assertEquals(code_particles[0].child1.child1.mass, 3.0 | units.kg)
-        self.assertEquals(code_particles[0].child1.child2.mass, 4.0 | units.kg)
-    
-        channel = code_particles.new_channel_to(memory_particles)
-        channel.copy()
-    
-        self.assertEquals(memory_particles[0].child1, memory_particles[1])
-        self.assertEquals(memory_particles[0].child1.mass, 1.0 | units.kg)
-        self.assertEquals(memory_particles[0].child2.mass, 2.0 | units.kg)
-        self.assertEquals(memory_particles[0].child1.child1.mass, 3.0 | units.kg)
-        self.assertEquals(memory_particles[0].child1.child2.mass, 4.0 | units.kg)
-
-    
+      
     def test7(self):
         class Code(object):
             def __init__(self):
@@ -530,89 +439,19 @@ class TestParticles(amusetest.TestCase):
         
         self.assertFalse(code.get_position_called)
         self.assertFalse(code.get_mass_called)
-        x,y,mass = storage.get_values_in_store([2,3],["x","y","mass"])
+        indices = storage.get_indices_of([2,3])
+        x,y,mass = storage.get_values_in_store(indices,["x","y","mass"])
         self.assertTrue(code.get_position_called)
         self.assertTrue(code.get_mass_called)
         self.assertEquals(x[1], 3 | units.m)
         self.assertEquals(mass[1], 15 )
         self.assertEquals(mass[0], 14 )
-        storage.set_values_in_store([2,3],["x","y", "z", "mass"], [[10,11] | units.m , [12,14] | units.m, [12,14] | units.m, [40.0, 50.0]])
-        x,y,mass = storage.get_values_in_store([2,3],["x","y","mass"])
+        storage.set_values_in_store(indices,["x","y", "z", "mass"], [[10,11] | units.m , [12,14] | units.m, [12,14] | units.m, [40.0, 50.0]])
+        x,y,mass = storage.get_values_in_store(indices,["x","y","mass"])
         self.assertEquals(mass[1], 50 )
         self.assertEquals(mass[0], 40 )
-
-    def test8(self):
-        n = 100000
-        keys = numpy.arange(0, n)
-        attributes = ["mass"]
-        values = [numpy.ones(n) | units.kg,]
-       
         
-        class Code(object):
-            def __init__(self):
-                # mass
-                self.data = None
-                self.number_of_particles = 0
-                
-            def get_number_of_particles(self):
-                return  self.number_of_particles
-                
-            def get_mass(self,index):
-                data_to_return = self.data[index]
-                return units.kg(data_to_return)
-                
-            def set_mass(self,index,mass):
-                self.data[index] = mass.value_in(units.kg)
-                
-            def new_particle(self, mass):
-                self.data = mass.value_in(units.kg)
-                self.number_of_particles = len(self.data)
-                return numpy.arange(len(mass))
-                
-        code = Code()
-        instance = InCodeAttributeStorage(
-            code,
-            NewParticleMethod(code.new_particle,("mass",)),
-            None,
-            code.get_number_of_particles,
-            [
-                
-                ParticleSetAttributesMethod(code.set_mass,("mass",)),
-            ],
-            [
-                ParticleGetAttributesMethod(code.get_mass,("mass",)),
-            ],
-            name_of_the_index = "index"
-        )
-        
-        instance.add_particles_to_store(keys, attributes, values)
-        
-        self.assertEquals(len(instance), n)
-        
-        t0 = time.time()
-        all_values = instance.get_values_in_store(keys, ["mass"], by_key = True)
-        t1 = time.time()
-        dt_by_key = t1 - t0
-        
-        t0 = time.time()
-        all_values = instance.get_values_in_store(keys, ["mass"], by_key = False)
-        t1 = time.time()
-        dt_by_index = t1 - t0
-        print dt_by_index, dt_by_key
-        self.assertTrue(dt_by_index < dt_by_key)
-        
-        
-        t0 = time.time()
-        all_values = instance.set_values_in_store(keys, ["mass"], [values[0]],by_key = True)
-        t1 = time.time()
-        dt_by_key = t1 - t0
-        
-        t0 = time.time()
-        all_values = instance.set_values_in_store(keys, ["mass"], [values[0]], by_key = False)
-        t1 = time.time()
-        dt_by_index = t1 - t0
-        print dt_by_index, dt_by_key
-        self.assertTrue(dt_by_index < dt_by_key)
+    
         
         
 

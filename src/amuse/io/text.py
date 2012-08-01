@@ -197,7 +197,7 @@ class TableFormattedText(base.FileFormatProcessor):
             self.attribute_types
         )
         self.set = self.new_set(number_of_particles, keys = keys)
-        self.set.set_values_in_store(self.set.get_all_keys_in_store(), self.attribute_names, quantities)
+        self.set.set_values_in_store(self.set.get_all_indices_in_store(), self.attribute_names, quantities)
         
         self.cursor.forward()
         

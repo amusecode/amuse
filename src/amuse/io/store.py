@@ -192,7 +192,7 @@ class HDF5UnitlessAttribute(HDF5Attribute):
         raise NotImplementedError("Copy of an attribute in hdf5 is not implemented")
 
     def get_value(self, index):
-        return self.dataset[indices]
+        return self.dataset[index]
 
     def remove_indices(self, indices):
         oldlength = len(self.dataset)
@@ -230,7 +230,7 @@ class HDF5LinkedAttribute(HDF5Attribute):
             linked_set = self.loader.load_particles_from_group(referenced_group)
         else:
             linked_set = mapping_from_groupid_to_set[referenced_group.id]
-            
+        print self.keys, self.keys[:], indices
         values = numpy.ma.array(self.keys[:][indices], mask = self.masked[:][indices])
         return linked_set._masked_subset(values)
     
@@ -264,7 +264,6 @@ class HDF5LinkedAttribute(HDF5Attribute):
            return
         newshape = list(self.keys.shape)
         newshape[0] = newlength
-        
         values = numpy.empty(shape=self.keys.shape, dtype=self.keys.dtype)
         values[:] = self.keys[:]
     
@@ -357,12 +356,7 @@ class HDF5AttributeStorage(AttributeStorage):
     def get_defined_attribute_names(self):
         return self.attributesgroup.keys()
     
-    def get_values_in_store(self, particles, attributes, by_key = True):
-        if by_key:
-            indices = self.get_indices_of(particles)
-        else:
-            indices = particles
-            
+    def get_values_in_store(self, indices, attributes):
         results = []
         for attribute in attributes:
             dataset = HDF5Attribute.load_attribute(
@@ -381,11 +375,7 @@ class HDF5AttributeStorage(AttributeStorage):
     def get_all_keys_in_store(self):
         return self.particle_keys
         
-    def set_values_in_store(self, particles, attributes, quantities, by_key = True):
-        if by_key:
-            indices = self.get_indices_of(particles)
-        else:
-            indices = particles
+    def set_values_in_store(self, indices, attributes, quantities):
             
         for attribute, quantity in zip(attributes, quantities):
             if attribute in self.attributesgroup:
@@ -517,8 +507,8 @@ class StoreHDF(object):
                 links_to_resolve
             )
             for x in set(sets_to_store):
-                if hasattr(container, 'shape') and len(container.shape) > 1:
-                    self.store_grid(container, extra_attributes, parent = self.unnamed_references_group())
+                if hasattr(x, 'shape') and len(x.shape) > 1:
+                    self.store_grid(x, extra_attributes, parent = self.unnamed_references_group())
                 else:   
                     self.store_particles(x, {}, self.unnamed_references_group(), mapping_from_setid_to_group, links_to_resolve)
         
@@ -557,14 +547,13 @@ class StoreHDF(object):
             
         keys = particles.get_all_keys_in_store()
         dataset = group.create_dataset("keys", data=keys)
-
+        self.hdf5file.flush()
         self.store_collection_attributes(particles, group, extra_attributes)
         self.store_values(particles, group, links)
             
         mapping_from_setid_to_group[id(particles._original_set())] = group
-        
         self.hdf5file.flush()
-    
+        
     def resolve_links(self, mapping_from_setid_to_group, links):
         sets_to_store = []
         links_to_resolve = []
@@ -608,6 +597,7 @@ class StoreHDF(object):
                 keys = quantity.get_all_keys_in_store()
                 masked = ~quantity.get_valid_particles_mask()
                 links.append([subgroup, quantity.as_set()._original_set()])
+                print keys, type(quantity)
                 subgroup.create_dataset('keys', data=keys)
                 subgroup.create_dataset('masked', data=masked)
                 subgroup.attrs["units"] = "object"

@@ -980,7 +980,7 @@ class TestPH4(TestWithMPI):
         overlay = datamodel.ParticlesOverlay(instance.particles)
         
         overlay.add_particles(particles)
-        all_attributes = overlay.get_values_in_store(overlay.get_all_keys_in_store(), ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz'])
+        all_attributes = overlay.get_values_in_store(overlay.get_all_indices_in_store(), ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz'])
         
         self.assertEquals(all_attributes[0], [1,2] | nbody_system.mass )
         self.assertEquals(instance.particles.mass, [1,2] | nbody_system.mass )

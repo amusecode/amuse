@@ -16,11 +16,11 @@ class AbstractGrid(AbstractSet):
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
     
-    def _get_value_of_attribute(self, key, attribute):
+    def _get_value_of_attribute(self, particle, index, attribute):
         if attribute in self._derived_attributes:
-            return self._derived_attributes[attribute].get_value_for_entity(self, key)
+            return self._derived_attributes[attribute].get_value_for_entity(self, particle, index)
         else:
-            return self._convert_to_entities_or_quantities(self.get_values_in_store(key, [attribute])[0])
+            return self._convert_to_entities_or_quantities(self.get_values_in_store(index, [attribute])[0])
             
     def _set_value_of_attribute(self, key, attribute, value):             
         if attribute in self._derived_attributes: 	 	 
@@ -227,7 +227,7 @@ class GridPoint(object):
             raise AttributeError("Could not assign to attribute {0}.".format(name_of_the_attribute))
     
     def __getattr__(self, name_of_the_attribute):
-        return self.grid._get_value_of_attribute(self.index, name_of_the_attribute)
+        return self.grid._get_value_of_attribute(self, self.index, name_of_the_attribute)
         
 
 class GridInformationChannel(object):

@@ -36,15 +36,18 @@ class InMemoryAttributeStorage(AttributeStorage):
                 )
             )
         
+        self.__version__ = self.__version__ + 1
+        self.index_array = numpy.arange(len(self.particle_keys) + len(keys))
+        
         if len(self.particle_keys) > 0:
+            previous_length = len(self.particle_keys)
             self.append_to_storage(keys, attributes, quantities)
+            return self.index_array[previous_length:]
         else:
             self.setup_storage(keys, attributes, quantities)
+            return self.index_array
     
-        self.__version__ = self.__version__ + 1
         
-        self.index_array = numpy.arange(len(self))
-            
     def setup_storage(self, keys, attributes, quantities):
         self.mapping_from_attribute_to_quantities = {}
         for attribute, quantity in zip(attributes, quantities):
@@ -77,12 +80,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
         self.reindex()
             
-    def get_values_in_store(self, particles, attributes, by_key = True):
-        if by_key:
-            indices = self.get_indices_of(particles)
-        else:
-            indices = particles
-            
+    def get_values_in_store(self, indices, attributes):            
         results = []
         for attribute in attributes:
             storage = self.mapping_from_attribute_to_quantities[attribute]
@@ -93,11 +91,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         
         return results
         
-    def set_values_in_store(self, particles, attributes, list_of_values_to_set, by_key = True):
-        if by_key:
-            indices = self.get_indices_of(particles)
-        else:
-            indices = particles
+    def set_values_in_store(self, indices, attributes, list_of_values_to_set):
         
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
     
@@ -150,27 +144,17 @@ class InMemoryAttributeStorage(AttributeStorage):
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
         
-    def get_value_of(self, particle_key, attribute):
-        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-        
-        index = self.get_indices_of(particle_key)
-        
-        return attribute_values.get_value(index)
+    def get_value_of(self, index, attribute):
+        return self.get_value_in_store(index, attribute)
    
-    def get_indices_of(self, particles):
-        if particles is None:
-            return numpy.arange(0,len(self.particle_keys))
+    def get_indices_of(self, keys):
+        raise NotImplementedError()
         
-        indices = numpy.searchsorted(self.sorted_keys, particles)
-        return self.sorted_indices[indices]
-        
-    def remove_particles_from_store(self, keys):
-        indices = self.get_indices_of(keys)
-        
+    def remove_particles_from_store(self, indices):
+            
         for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.iteritems()):
             attribute_values.remove_indices(indices)
             
-        
         self.particle_keys = numpy.delete(self.particle_keys,indices)
         self.reindex()
     
@@ -201,16 +185,10 @@ class InMemoryAttributeStorage(AttributeStorage):
             results.append(selected_values)
         
         return results
-    
-    
 
-    def get_value_in_store(self, particle_key, attribute, by_key = True):
+
+    def get_value_in_store(self, index, attribute):
         attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-        if by_key:
-            indices = self.get_indices_of(particle_key)
-        else:
-            indices = particle_key
-        
         return attribute_values.get_value(index)
     
     
@@ -312,10 +290,6 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
 
-    def get_value_of(self, particle_key, attribute):
-        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-        index = self.mapping_from_particle_to_index[particle_key]
-        return attribute_values[index]
 
     def get_indices_of(self, particles):
         if particles is None:
@@ -324,9 +298,20 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
         mapping_from_particle_to_index = self.mapping_from_particle_to_index
         result = numpy.zeros(len(particles),dtype='int32')
         index = 0
+        notfoundkeys = []
         for index, particle_key in enumerate(particles):
-            result[index] = mapping_from_particle_to_index[particle_key]
+            try:
+                result[index] = mapping_from_particle_to_index[particle_key]
+            except KeyError:
+                notfoundkeys.append(particle_key)
             index += 1
+        
+        if not len(notfoundkeys) == 0:
+            if len(notfoundkeys) == 1:
+                raise Exception("Key not found in storage: {0}".format(notfoundkeys[0]))
+            else:
+                notfoundkeys = numpy.asarray(notfoundkeys)
+                raise Exception("Keys not found in storage: {0}".format(notfoundkeys))
         
         return result
 
@@ -362,22 +347,26 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
-        
-    def get_value_of(self, particle_key, attribute):
-        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-        
-        index = self.get_indices_of(particle_key)
-        
-        return attribute_values.get_value(index)
    
-    def get_indices_of(self, particles):
-        if particles is None:
-            return numpy.arange(0,len(self.particle_keys))
-        
+    def get_indices_of(self, keys):
+        if keys is None:
+            return self.index_array
+
         if len(self.particle_keys) == 0:
             return ()
-            
-        indices = numpy.searchsorted(self.sorted_keys, particles)
+        
+        indices = numpy.searchsorted(self.sorted_keys, keys)  
+        indices = numpy.where(indices >= len(self.sorted_keys), 0, indices)  
+        foundkeys = self.sorted_keys[indices]
+        are_found = foundkeys == keys
+        are_all_found = numpy.all(are_found)
+        if not are_all_found:
+            arrayedkeys = numpy.asarray(keys)
+            notfoundkeys = arrayedkeys[numpy.logical_not(are_found)]
+            if len(notfoundkeys) == 1:
+                raise Exception("Key not found in storage: {0}".format(notfoundkeys[0]))
+            else:
+                raise Exception("Keys not found in storage: {0}".format(notfoundkeys))
         return self.sorted_indices[indices]
         
         
@@ -388,14 +377,6 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         
 
         
-    def get_value_in_store(self, particle_key, attribute, by_key = True):
-        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
-        if by_key:
-            index = self.get_indices_of(particle_key)
-        else:
-            index = particle_key
-        
-        return attribute_values.get_value(index)
 
 
 def get_in_memory_attribute_storage_factory():
@@ -584,11 +565,16 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
         
         
     def get_values(self, indices):
+        
+        if indices is None:
+            keys = self.values
+        else:
+            keys = self.values[indices]
         if self.linked_set is None:
             import particles
-            return particles.ParticlesMaskedSubset(None, self.values[indices])
+            return particles.ParticlesMaskedSubset(None, keys)
         else:
-            return self.linked_set._masked_subset(self.values[indices])
+            return self.linked_set._masked_subset(keys)
     
     def set_values(self, indices, values):
         if hasattr(values, 'get_all_keys_in_store'):

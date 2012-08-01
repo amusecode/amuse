@@ -253,7 +253,7 @@ class TestNewSinkParticles(TestCase):
         clumps = density_limit_detection.particles().copy_to_memory()
         sph_code.gas_particles.remove_particles(clumps)
         clumps_in_code = sph_code.dm_particles.add_particles(clumps)
-        
+
         sinks.add_sinks(clumps_in_code, sink_radius=0.1|units.kpc)
         self.assertEqual(sinks[1:].sink_radius, 0.1 | units.kpc)
         self.assertEqual(len(sph_code.gas_particles), number_gas_particles - 12)
@@ -264,9 +264,8 @@ class TestNewSinkParticles(TestCase):
         
         sinks.accrete(sph_code.gas_particles)
         self.assertEqual(len(sph_code.gas_particles), number_gas_particles - 66)
-        self.assertAlmostRelativeEqual(sinks.mass, [7, 27, 17, 3, 11, 1] * UnitMass / number_gas_particles, 10)
         self.assertAlmostRelativeEqual(sph_code.particles.total_mass().as_quantity_in(units.MSun), UnitMass, 10)
-        self.assertAlmostRelativeEqual(sph_code.gas_particles.total_mass(), UnitMass - sinks.total_mass(), 10)
+        self.assertAlmostRelativeEqual(sinks.mass, [7.0, 13.0, 15.0, 9.0, 11.0, 11.0] * UnitMass / number_gas_particles, 10)
     
 
 

@@ -74,7 +74,7 @@ UniqueKeyGenerator = RandomNumberUniqueKeyGenerator()
 
 def set_sequential_key_generator(start_number):
     global UniqueKeyGenerator
-    UniqueKeyGenerator = BasicUniqueKeyGenerator(lowest_unique_key = lowest_unique_key)
+    UniqueKeyGenerator = BasicUniqueKeyGenerator(lowest_unique_key = start_number)
     
 def set_random_key_generator(number_of_bits = RandomNumberUniqueKeyGenerator.DEFAULT_NUMBER_OF_BITS):
     global UniqueKeyGenerator
@@ -92,10 +92,10 @@ class AttributeStorage(object):
     def remove_particles_from_store(self, keys):
         pass
         
-    def get_values_in_store(self, particles, attributes, by_key = True):
+    def get_values_in_store(self, indices, attributes):
         pass
         
-    def set_values_in_store(self, particles, attributes, list_of_values_to_set, by_key = True):
+    def set_values_in_store(self, indices, attributes, list_of_values_to_set):
         pass
         
     def get_attribute_names_defined_in_store(self):
@@ -113,8 +113,8 @@ class AttributeStorage(object):
     def __len__(self):
         return 0
         
-    def get_value_in_store(self, particle, attribute):
-        return self.get_values_in_store([particle],[attribute])[0][0]
+    def get_value_in_store(self, index, attribute):
+        return self.get_values_in_store([index],[attribute])[0][0]
     
     
 class DerivedAttribute(object):
@@ -128,7 +128,7 @@ class DerivedAttribute(object):
     def set_values_for_entities(self, particles, value):
         raise exceptions.AmuseException("cannot set value of a DerivedAttribute")
 
-    def get_value_for_entity(self, particles, key):
+    def get_value_for_entity(self, particles, particle, index):
         return None
 
     def set_value_for_entity(self, particles, key, value):
@@ -142,7 +142,7 @@ class VectorAttribute(DerivedAttribute):
         self.attribute_names = attribute_names
     
     def get_values_for_entities(self, instance):
-        values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names, by_key = False)
+        values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names)
           
         unit_of_the_values = None
         
@@ -191,10 +191,10 @@ class VectorAttribute(DerivedAttribute):
         else:
             list_of_values = split
             
-        instance.set_values_in_store(instance.get_all_keys_in_store(), self.attribute_names, list_of_values)
+        instance.set_values_in_store(instance.get_all_indices_in_store(), self.attribute_names, list_of_values)
     
-    def get_value_for_entity(self, instance,  key):
-        values = instance._get_values_for_entity(key, self.attribute_names)
+    def get_value_for_entity(self, instance, particle, index):
+        values = instance._get_values_for_entity(index, self.attribute_names)
           
         unit_of_the_values = None
         is_a_quantity = None
@@ -238,11 +238,11 @@ class CalculatedAttribute(DerivedAttribute):
             self.attribute_names = attribute_names
     
     def get_values_for_entities(self, instance):
-        values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names, by_key = False)
+        values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names)
         return self.function(*values)
     
-    def get_value_for_entity(self, instance,  key):
-        values = instance._get_values_for_entity(key, self.attribute_names)
+    def get_value_for_entity(self, particles,  particle, index):
+        values = particles._get_values_for_entity(index, self.attribute_names)
         return self.function(*values)
         
 
@@ -256,13 +256,14 @@ class FunctionAttribute(DerivedAttribute):
             return self.function(self.particles, *list_arguments, **keyword_arguments)
     
     class BoundParticleFunctionAttribute(object):
-        def  __init__(self, function, particles, key):
+        def  __init__(self, function, particles, particle, index):
             self.function = function
             self.particles = particles
-            self.key = key
+            self.index = index
+            self.particle = particle
             
         def __call__(self, *list_arguments, **keyword_arguments):
-            return self.function(self.particles, self.particles._get_particle(self.key), *list_arguments, **keyword_arguments)
+            return self.function(self.particles, self.particle, *list_arguments, **keyword_arguments)
         
     
     def  __init__(self, particles_function = None, particle_function = None):
@@ -273,8 +274,8 @@ class FunctionAttribute(DerivedAttribute):
         return self.BoundParticlesFunctionAttribute(self.particles_function, particles)
             
    
-    def get_value_for_entity(self, particles, key):
-        return self.BoundParticleFunctionAttribute(self.particle_function, particles, key)
+    def get_value_for_entity(self, particles, particle, index):
+        return self.BoundParticleFunctionAttribute(self.particle_function, particles, particle, index)
 
 
 class CollectionAttributes(object):
@@ -400,25 +401,25 @@ class AbstractSet(object):
         if name_of_the_attribute in self._derived_attributes:
             self._derived_attributes[name_of_the_attribute].set_values_for_entities(self, value)
         else:
-            self.set_values_in_store(self.get_all_keys_in_store(), [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
+            self.set_values_in_store(self.get_all_indices_in_store(), [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
     
-    def _get_value_of_attribute(self, key, attribute):
+    def _get_value_of_attribute(self, particle, index, attribute):
         if attribute in self._derived_attributes:
-            return self._derived_attributes[attribute].get_value_for_entity(self, key)
+            return self._derived_attributes[attribute].get_value_for_entity(self, particle, index)
         else:
-            return self._convert_to_entity_or_quantity(self.get_value_in_store(key, attribute))
+            return self._convert_to_entity_or_quantity(self.get_value_in_store(index, attribute))
             
-    def _get_values_for_entity(self, key, attributes):
-        return [x[0] for x in self.get_values_in_store([key], attributes)]
+    def _get_values_for_entity(self, index, attributes):
+        return [x[0] for x in self.get_values_in_store([index], attributes)]
         
-    def _set_values_for_entity(self, key, attributes, values):
-        return self.set_values_in_store([key], attributes, values)
+    def _set_values_for_entity(self, index, attributes, values):
+        return self.set_values_in_store([index], attributes, values)
     
-    def _set_value_of_attribute(self, key, attribute, value):
+    def _set_value_of_attribute(self, index, attribute, value):
         if attribute in self._derived_attributes:
-            return self._derived_attributes[attribute].set_value_for_entity(self, key, value)
+            return self._derived_attributes[attribute].set_value_for_entity(self, index, value)
         else:
-            return self.set_values_in_store([key], [attribute], [value])
+            return self.set_values_in_store(numpy.asarray([index]), [attribute], [value])
             
             
             
@@ -441,19 +442,18 @@ class AbstractSet(object):
     #
     
     def get_all_values_of_attribute_in_store(self, attribute):
-        return self.get_values_in_store(self.get_all_indices_in_store(), [attribute], by_key = False)[0]
-        #return self.get_values_in_store(self.get_all_keys_in_store(), [attribute], by_key = True)[0]
+        return self.get_values_in_store(self.get_all_indices_in_store(), [attribute])[0]
         
-    def get_values_in_store(self, keys, attributes, by_key = True):
+    def get_values_in_store(self, indices, attributes):
         pass
     
-    def set_values_in_store(self, keys, attributes, values):
+    def set_values_in_store(self, indices, attributes, values):
         pass
         
-    def add_particles_to_store(self, keys, attributes, values):
+    def add_particles_to_store(self, indices, attributes, values):
         pass
         
-    def remove_particles_from_store(self, keys):
+    def remove_particles_from_store(self, indices):
         pass
     
     def get_all_keys_in_store(self):
@@ -639,7 +639,8 @@ class AbstractSet(object):
         """
         attributes = self.get_attribute_names_defined_in_store()
         keys = self.get_all_keys_in_store()
-        values = self.get_values_in_store(keys, attributes)
+        indices = self.get_all_indices_in_store()
+        values = self.get_values_in_store(indices, attributes)
         result = self._factory_for_new_collection()()
         result.add_particles_to_store(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
@@ -702,7 +703,8 @@ class AbstractSet(object):
         [1.0, 2.0, 3.0, 4.0] m
         """
         particles = particles.as_set()
-        new_keys = [] ; new_keys.extend(self.get_all_keys_in_store())
+        new_keys = []
+        new_keys.extend(self.get_all_keys_in_store())
         subtract_keys = particles.get_all_keys_in_store()
         for key in subtract_keys:
             if key in new_keys:
@@ -1004,7 +1006,7 @@ class AbstractSet(object):
 
 
     def get_value_in_store(self, key, attribute):
-        return self.get_values_in_store([key],[attribute])[0][0]
+        return self.get_values_in_store(numpy.asarray([key]),[attribute])[0][0]
     
     
 

@@ -307,7 +307,12 @@ class StoppingCondition(object):
             raise AmuseException("Can't enable stopping condition '{0}', since '{1}' does not support this condition.".format(name, type(self.conditions.code).__name__))
         
     def disable(self):
-        self.conditions.code.disable_stopping_condition(self.type)
+        if self.is_supported():
+            self.conditions.code.disable_stopping_condition(self.type)
+        else:
+            name = [name for name, value in self.conditions.all_conditions() if value is self][0]
+            raise AmuseException("Can't disable stopping condition '{0}', since '{1}' does not support this condition.".format(name, type(self.conditions.code).__name__))
+        
         
     def is_enabled(self):
         return self.conditions.code.is_stopping_condition_enabled(self.type) == 1
@@ -323,7 +328,7 @@ class StoppingCondition(object):
         if len(indices) == 0:
             return []
         types, number_of_particles = self.conditions.code.get_stopping_condition_info(indices)
-    
+        
         result = []
         for index, type, number_of_particles_in_condition in zip(indices, types, number_of_particles):
             if type == self.type and index_in_condition < number_of_particles_in_condition:
@@ -332,12 +337,15 @@ class StoppingCondition(object):
     
     def particles(self, index_in_the_condition=0, particles_set_name="particles"):
         selected = self.get_set_condition_indices(index_in_the_condition)
+        particles = getattr(self.conditions.code,particles_set_name)
         
         if len(selected) == 0:
-            return self.conditions.code.__getattr__(particles_set_name)[0:0]
+            return particles[0:0]
         else:
-            return self.conditions.code.__getattr__(particles_set_name).get_stopping_condition_particle_index(
-                selected, [index_in_the_condition]*len(selected))
+            return particles.get_stopping_condition_particle_index(
+                selected, 
+                [index_in_the_condition]*len(selected)
+            )
         
 class StoppingConditions(object):
 
