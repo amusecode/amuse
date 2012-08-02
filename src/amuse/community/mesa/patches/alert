@@ -21,11 +21,7 @@ Index: mesa/src/mesa/alert/public/alert_lib.f
 +         integer, dimension(8) :: header
           character(*), intent(in) :: message
           logical, parameter :: stop_for_warnings = .false.         
--         logical, parameter :: stop_for_errors = .false.
-+         logical, parameter :: stop_for_errors = .true.
-          alert_info = info
-          if (info > 0) then
-             write(alert_message,'(2a)') 'WARNING: ', trim(message)
+          logical, parameter :: stop_for_errors = .false.
 @@ -55,6 +56,13 @@
              if (stop_for_errors) then
                 write(*,'(a)') 'alert message: ' // trim(alert_message)
