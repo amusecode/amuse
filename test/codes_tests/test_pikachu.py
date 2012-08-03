@@ -298,52 +298,52 @@ class TestPikachu(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
-    def xtest6(self):
-        print "Testing effect of Pikachu parameter epsilon_squared"
+    def test6a(self):
+        print "Testing effect of Pikachu parameter epsilon_squared (using recommit_particles)"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         particles = self.new_sun_earth_system()
-        particles.rotate(0.0, 0.0, -math.pi/4)
+        particles.rotate(0.0, 0.0, math.pi/4)
         particles.move_to_center()
         
         tan_initial_direction = particles[1].vy/particles[1].vx
-        self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))
+        self.assertAlmostEquals(tan_initial_direction, math.tan(-math.pi/4))
         tan_final_direction =  []
         
         instance = self.new_instance_of_an_optional_code(Pikachu, converter, **default_options)
-        instance.initialize_code()       
+        instance.initialize_code()
         instance.parameters.timestep = 0.005 | units.yr
-        instance.parameters.rcut_out_star_star = 1.0 | units.AU
-        for log_eps2 in range(-9,10,2):
+        
+        for log_eps2 in range(-5,6,2):
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
+            instance.particles.remove_particles(instance.particles)
             instance.particles.add_particles(particles)
-            instance.evolve_model(0.25 | units.yr)
+            instance.evolve_model(instance.model_time.as_quantity_in(units.yr) + (0.25 | units.yr))
             tan_final_direction.append(instance.particles[1].velocity[1]/
                 instance.particles[1].velocity[0])
-            instance.reset()
-        instance.stop()
         print tan_final_direction
         # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
-        self.assertAlmostEquals(tan_final_direction[0], math.tan(3 * math.pi / 4.0), 2)
+        self.assertAlmostEquals(tan_final_direction[0], math.tan(math.pi / 4.0), 2)
         # Large values of epsilon_squared should result in ~ no interaction
         self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
         self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
     
-    def test6a(self):
-        print "Testing effect of Pikachu parameter epsilon_squared"
+    def test6b(self):
+        print "Testing effect of Pikachu parameter epsilon_squared (using reset)"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         particles = self.new_sun_earth_system()
-        particles.rotate(0.0, 0.0, -math.pi/4)
+        particles.rotate(0.0, 0.0, math.pi/4)
         particles.move_to_center()
         
         tan_initial_direction = particles[1].vy/particles[1].vx
-        self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))
+        self.assertAlmostEquals(tan_initial_direction, math.tan(-math.pi/4))
         tan_final_direction =  []
-        for log_eps2 in range(-9,10,2):
-            instance = self.new_instance_of_an_optional_code(Pikachu, converter, **default_options)
-            instance.initialize_code()       
-            instance.parameters.timestep = 0.005 | units.yr
+        
+        instance = self.new_instance_of_an_optional_code(Pikachu, converter, **default_options)
+        instance.initialize_code()
+        instance.parameters.timestep = 0.005 | units.yr
+        for log_eps2 in range(-5,6,2):
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
             instance.commit_parameters()
             instance.particles.add_particles(particles)
@@ -351,10 +351,12 @@ class TestPikachu(TestWithMPI):
             instance.evolve_model(0.25 | units.yr)
             tan_final_direction.append(instance.particles[1].velocity[1]/
                 instance.particles[1].velocity[0])
-            instance.cleanup_code()
-            instance.stop()
+            instance.reset()
+        instance.cleanup_code()
+        instance.stop()
+        print tan_final_direction
         # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
-        self.assertAlmostEquals(tan_final_direction[0], math.tan(3 * math.pi / 4.0), 2)
+        self.assertAlmostEquals(tan_final_direction[0], math.tan(math.pi / 4.0), 2)
         # Large values of epsilon_squared should result in ~ no interaction
         self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2

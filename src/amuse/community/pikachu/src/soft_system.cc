@@ -28,6 +28,7 @@ Soft_System::Soft_System(){
     heap_top = cell_tree;
     heap_remainder = NCELL_TREE_LOC_MAX;
     list_len_send = list_len_recv = 0;
+    first = 1;
     cerr<<"Soft_System constructed"<<endl;
 }
 
@@ -581,7 +582,7 @@ void Soft_System::build_tree_on_host_using_sequoia(uint leafNodeIdx[],
 						   float4 boxSizeInfo[],
 						   int n_leafs, 
 						   int n_nodes,
-						   my_dev::dev_mem<int>  &j_adr_buff){
+						   my_dev::dev_mem<int> &j_adr_buff){
     this->clear();
     for(int i_node = 0; i_node < n_nodes; i_node++){
 	int nodeID = leafNodeIdx[i_node];
@@ -653,21 +654,21 @@ void Soft_System::build_tree_and_get_force_using_sequoia(char *argv[],
     /////////////////////////////////////////
     ////////// initialize sequoia ///////////
 
-    static int first = 1;
+    //~static int first = 1;
 
-    static my_dev::context devContext;
-    //Input
-    static my_dev::dev_mem<real4> j_pos_buff;  //Bodies positions
-    static my_dev::dev_mem<int>   j_adr_buff;  //Bodies ids
-    // if NPROC > 1
-    static my_dev::dev_mem<real4> i_pos_buff;  //Bodies positions
-    static my_dev::dev_mem<int>   i_adr_buff;  //Bodies ids
+    //~static my_dev::context devContext;
+    //~//Input
+    //~static my_dev::dev_mem<real4> j_pos_buff;  //Bodies positions
+    //~static my_dev::dev_mem<int>   (*j_adr_buff);  //Bodies ids
+    //~// if NPROC > 1
+    //~static my_dev::dev_mem<real4> i_pos_buff;  //Bodies positions
+    //~static my_dev::dev_mem<int>   i_adr_buff;  //Bodies ids
 
     //Output
-    static my_dev::dev_mem<real4> i_acc_buff; //Bodies Accelerations
-    static my_dev::dev_mem<real>  i_ngh_ds2_buff; //Bodies distance to nearest neighbour squared
-    static my_dev::dev_mem<int>   i_ngh_adr_buff;  //Bodies nearest neighbour
-    static my_dev::dev_mem<int>   i_Nngh_buff;  //Bodies nearest neighbour
+    //~static my_dev::dev_mem<real4> i_acc_buff; //Bodies Accelerations
+    //~static my_dev::dev_mem<real>  i_ngh_ds2_buff; //Bodies distance to nearest neighbour squared
+    //~static my_dev::dev_mem<int>   i_ngh_adr_buff;  //Bodies nearest neighbour
+    //~static my_dev::dev_mem<int>   i_Nngh_buff;  //Bodies nearest neighbour
 
     if(first){
 	char hostname[STRINGSIZE];
@@ -689,20 +690,29 @@ void Soft_System::build_tree_and_get_force_using_sequoia(char *argv[],
 	cerr<<"MYRANK="<<MYRANK<<endl;
 	cerr<<"devID="<<devID<<endl;
 
-	devContext = sequoia_init(argv, devID, theta, eps, rsearch2_FS_FS);
+	devContext = &sequoia_init(argv, devID, theta, eps, rsearch2_FS_FS);
 
-        j_pos_buff.setContext(devContext);
-        j_pos_buff.cmalloc(NPRT_LOC_MAX);
-        j_adr_buff.setContext(devContext);
-        j_adr_buff.cmalloc(NPRT_LOC_MAX);
-        i_acc_buff.setContext(devContext);
-        i_acc_buff.cmalloc(NPRT_LOC_MAX);
-        i_ngh_ds2_buff.setContext(devContext);
-        i_ngh_ds2_buff.cmalloc(NPRT_LOC_MAX);
-        i_ngh_adr_buff.setContext(devContext);
-        i_ngh_adr_buff.cmalloc(NPRT_LOC_MAX);
-        i_Nngh_buff.setContext(devContext);
-        i_Nngh_buff.cmalloc(NPRT_LOC_MAX);
+        j_pos_buff = new my_dev::dev_mem<real4>;
+        j_adr_buff = new my_dev::dev_mem<int>;
+        //~i_pos_buff = new my_dev::dev_mem<real4>;
+        //~i_adr_buff = new my_dev::dev_mem<int>;
+        i_acc_buff = new my_dev::dev_mem<real4>;
+        i_ngh_ds2_buff = new my_dev::dev_mem<real>;
+        i_ngh_adr_buff = new my_dev::dev_mem<int>;
+        i_Nngh_buff = new my_dev::dev_mem<int>;
+        
+        j_pos_buff->setContext(*devContext);
+        j_pos_buff->cmalloc(NPRT_LOC_MAX);
+        j_adr_buff->setContext(*devContext);
+        j_adr_buff->cmalloc(NPRT_LOC_MAX);
+        i_acc_buff->setContext(*devContext);
+        i_acc_buff->cmalloc(NPRT_LOC_MAX);
+        i_ngh_ds2_buff->setContext(*devContext);
+        i_ngh_ds2_buff->cmalloc(NPRT_LOC_MAX);
+        i_ngh_adr_buff->setContext(*devContext);
+        i_ngh_adr_buff->cmalloc(NPRT_LOC_MAX);
+        i_Nngh_buff->setContext(*devContext);
+        i_Nngh_buff->cmalloc(NPRT_LOC_MAX);
 
 	if(NPROC > 1){
 	    // do something
@@ -719,15 +729,15 @@ void Soft_System::build_tree_and_get_force_using_sequoia(char *argv[],
     int NFS_add = 0;
     for(int j=0; j<NALL_LOC; j++){
         if(prt[j].index < NBH_GLB_ORG){continue;}
-        j_pos_buff[NFS_add].w = prt[j].mass;
-        j_pos_buff[NFS_add].x = prt[j].pos[0];
-        j_pos_buff[NFS_add].y = prt[j].pos[1];
-        j_pos_buff[NFS_add].z = prt[j].pos[2];
-  	j_adr_buff[NFS_add] = j;
+        (*j_pos_buff)[NFS_add].w = prt[j].mass;
+        (*j_pos_buff)[NFS_add].x = prt[j].pos[0];
+        (*j_pos_buff)[NFS_add].y = prt[j].pos[1];
+        (*j_pos_buff)[NFS_add].z = prt[j].pos[2];
+  	(*j_adr_buff)[NFS_add] = j;
         NFS_add++;
     }
-    j_pos_buff.h2d(NFS_add);
-    j_adr_buff.h2d(NFS_add);
+    (*j_pos_buff).h2d(NFS_add);
+    (*j_adr_buff).h2d(NFS_add);
 
     ///////////////////////////////////////////////////////////
     ////////// build tree on GPU and get tree info ////////////
@@ -753,7 +763,7 @@ void Soft_System::build_tree_and_get_force_using_sequoia(char *argv[],
     int n_levels;
 
     cerr<<"Nj="<<Nj<<endl;
-    sequoia_setParticlesAndGetGravity_firsthalf_for_neighbour_search(j_pos_buff, j_adr_buff, Nj, j_sort,
+    sequoia_setParticlesAndGetGravity_firsthalf_for_neighbour_search(*j_pos_buff, *j_adr_buff, Nj, j_sort,
 								     leafNodeIdx, node_bodies, n_children,  
 								     boxSizeInfo, boxCenterInfo,
 								     n_leafs, n_nodes);
@@ -765,7 +775,7 @@ void Soft_System::build_tree_and_get_force_using_sequoia(char *argv[],
     tcal_offset = mpi_wtime();
     build_tree_on_host_using_sequoia(leafNodeIdx, node_bodies, n_children, 
 				     boxCenterInfo, boxSizeInfo, 
-				     n_leafs, n_nodes, j_adr_buff);
+				     n_leafs, n_nodes, *j_adr_buff);
     TCAL_TREE_SETUP_LOC = mpi_wtime() - tcal_offset;
 
     tcal_offset = mpi_wtime();
@@ -809,37 +819,37 @@ void Soft_System::build_tree_and_get_force_using_sequoia(char *argv[],
     else{
 	Ni = Nj;
 	bool i_sort = false;
-	sequoia_setParticlesAndGetGravity_lasthalf(j_pos_buff, j_pos_buff, 
-						   j_adr_buff, Ni,
-						   i_sort, i_acc_buff, i_ngh_ds2_buff,
-						   i_ngh_adr_buff, i_Nngh_buff);
+	sequoia_setParticlesAndGetGravity_lasthalf(*j_pos_buff, *j_pos_buff, 
+						   *j_adr_buff, Ni,
+						   i_sort, *i_acc_buff, *i_ngh_ds2_buff,
+						   *i_ngh_adr_buff, *i_Nngh_buff);
     }
-    i_acc_buff.d2h(Ni);
-    i_ngh_ds2_buff.d2h(Ni);
-    i_ngh_adr_buff.d2h(Ni);
-    i_Nngh_buff.d2h(Ni);
+    (*i_acc_buff).d2h(Ni);
+    (*i_ngh_ds2_buff).d2h(Ni);
+    (*i_ngh_adr_buff).d2h(Ni);
+    (*i_Nngh_buff).d2h(Ni);
     if(NPROC > 1){
 	// do something
     }
     else{
-	j_adr_buff.d2h(Ni);
+	(*j_adr_buff).d2h(Ni);
 	for(int i=0; i<Ni; i++){
-	    int adr = j_adr_buff[i];
-	    prt[adr].acc[0] = i_acc_buff[i].x;
-	    prt[adr].acc[1] = i_acc_buff[i].y;
-	    prt[adr].acc[2] = i_acc_buff[i].z;
-	    prt[adr].pot = i_acc_buff[i].w;
-	    prt[adr].r2_ngh_FS = i_ngh_ds2_buff[i] - eps2;
-	    if(i_ngh_adr_buff[i] < 0){
+	    int adr = (*j_adr_buff)[i];
+	    prt[adr].acc[0] = (*i_acc_buff)[i].x;
+	    prt[adr].acc[1] = (*i_acc_buff)[i].y;
+	    prt[adr].acc[2] = (*i_acc_buff)[i].z;
+	    prt[adr].pot = (*i_acc_buff)[i].w;
+	    prt[adr].r2_ngh_FS = (*i_ngh_ds2_buff)[i] - eps2;
+	    if((*i_ngh_adr_buff)[i] < 0){
 		prt[adr].idx_ngh_FS = -1;
 	    }
 	    else{
-		prt[adr].idx_ngh_FS = prt[j_adr_buff[i_ngh_adr_buff[i]]].index;
+		prt[adr].idx_ngh_FS = prt[(*j_adr_buff)[(*i_ngh_adr_buff)[i]]].index;
 	    }
-	    prt[adr].Nj = i_Nngh_buff[i];
+	    prt[adr].Nj = (*i_Nngh_buff)[i];
 	    if(prt[adr].Nj > 0){
 		prt[adr].have_ngh = 1;
-		prt[j_adr_buff[i_ngh_adr_buff[i]]].have_ngh = 1;
+		prt[(*j_adr_buff)[(*i_ngh_adr_buff)[i]]].have_ngh = 1;
 	    }
 	}
     }

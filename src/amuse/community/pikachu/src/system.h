@@ -42,8 +42,33 @@ class Soft_System{
 
 public:
     Particle* prt; // first address of prt_loc in nbody_system
+    int first;
+    my_dev::context* devContext;
+    //Input
+    my_dev::dev_mem<real4>* j_pos_buff;  //Bodies positions
+    my_dev::dev_mem<int>*   j_adr_buff;  //Bodies ids
+    // if NPROC > 1
+    my_dev::dev_mem<real4>* i_pos_buff;  //Bodies positions
+    my_dev::dev_mem<int>*   i_adr_buff;  //Bodies ids
 
+    //Output
+    my_dev::dev_mem<real4>* i_acc_buff; //Bodies Accelerations
+    my_dev::dev_mem<real>*  i_ngh_ds2_buff; //Bodies distance to nearest neighbour squared
+    my_dev::dev_mem<int>*   i_ngh_adr_buff;  //Bodies nearest neighbour
+    my_dev::dev_mem<int>*   i_Nngh_buff;  //Bodies nearest neighbour
+    
     Soft_System();
+    
+    ~Soft_System(){
+        delete[] cell_tree;
+        delete[] pos_list_send;
+        delete[] pos_list_recv;
+        delete[] mass_list_send;
+        delete[] mass_list_recv;
+        delete[] idx_list_send;
+        delete[] idx_list_recv;
+    }
+    
     void init(Particle prt_loc[]);
     void clear();
     void exchange_LET(Vector3 xlow[],
@@ -184,6 +209,15 @@ class Hard_System{
 public:
     Particle_Short *prt_short;
     Hard_System();
+    
+    ~Hard_System(){
+        delete[] prt_short;
+        delete[] Tnext;
+        delete[] adr_time;
+        delete[] prt_comm_send;
+        delete[] prt_comm_recv;
+    }
+    
     void init(); // generate new comunicator for hermite
     void set(const double &_eps2_FS_FS,  
 	     const double &_eps2_FS_BH,  
@@ -286,6 +320,14 @@ public:
 
     Nbody_System();
     
+    ~Nbody_System(){
+        delete[] prt_loc;
+        delete[] BH_glb;
+        delete[] prt_dead_glb;
+        delete[] ngh_list_idx;
+        delete[] ngh_list;
+    }
+
     void read_file(char param_file[],
 		   char output_dir[]);
     

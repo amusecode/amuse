@@ -57,7 +57,7 @@ nbody_system_seq.o: nbody_system.cc system.h const.h
 	$(CCC) -DSMALL -c $(INC_SEQ) $(CFLAGS_SEQ) -o $@ $<
 
 hard_system_seq.o: hard_system.cc system.h const.h  force.h
-	$(CCC) -DSMALL -c -o $@ $<
+	$(CCC) -DSMALL -c $(INC_SEQ) $(CFLAGS_SEQ) -o $@ $<
 
 soft_system_seq.o: soft_system.cc system.h const.h
 	$(CCC) -DSMALL -c $(INC_SEQ) $(CFLAGS_SEQ) -o $@ $<
@@ -70,7 +70,7 @@ nbody_system_seq_large_n.o: nbody_system.cc system.h const.h
 	$(CCC) -c $(INC_SEQ) $(CFLAGS_SEQ) -o $@ $<
 
 hard_system_seq_large_n.o: hard_system.cc system.h const.h  force.h
-	$(CCC) -c -o $@ $<
+	$(CCC) -c $(INC_SEQ) $(CFLAGS_SEQ) -o $@ $<
 
 soft_system_seq_large_n.o: soft_system.cc system.h const.h
 	$(CCC) -c $(INC_SEQ) $(CFLAGS_SEQ) -o $@ $<

@@ -20,6 +20,7 @@
 #include "const.h"
 #include "distribution.h"
 #include "system.h"
+#include "sequoiaInterface.h"
 #include "mpi_interface.h"
 
 #define GLOBAL_VALUE_DEFINE
@@ -295,12 +296,35 @@ int recommit_particles() {
         push_particle_data_back_to_buffer();
         particles_initialized = false;
     }
+    if (nbody_system->soft_system.first == 0) {
+        nbody_system->soft_system.first = 1;
+        cout << "delete nbody_system->soft_system.j_pos_buff" << endl;
+        delete nbody_system->soft_system.j_pos_buff;
+        cout << "delete nbody_system->soft_system.j_adr_buff" << endl;
+        delete nbody_system->soft_system.j_adr_buff;
+        cout << "delete nbody_system->soft_system.i_pos_buff" << endl;
+        //~delete nbody_system->soft_system.i_pos_buff;
+        cout << "delete nbody_system->soft_system.i_adr_buff" << endl;
+        //~delete nbody_system->soft_system.i_adr_buff;
+        cout << "delete nbody_system->soft_system.i_acc_buff" << endl;
+        delete nbody_system->soft_system.i_acc_buff;
+        cout << "delete nbody_system->soft_system.i_ngh_ds2_buff" << endl;
+        delete nbody_system->soft_system.i_ngh_ds2_buff;
+        cout << "delete nbody_system->soft_system.i_ngh_adr_buff" << endl;
+        delete nbody_system->soft_system.i_ngh_adr_buff;
+        cout << "delete nbody_system->soft_system.i_Nngh_buff" << endl;
+        delete nbody_system->soft_system.i_Nngh_buff;
+        sequoia_cleanup();
+    }
     return commit_particles();
 }
 
 int cleanup_code() {
-    delete nbody_system;
-    dev_close();
+    if (nbody_system->soft_system.first == 0) {
+        nbody_system->soft_system.first = 1;
+        sequoia_cleanup();
+    }
+    //~delete nbody_system;
     local_index_map.clear();
     reverse_index_map.clear();
     particle_buffer.clear();
@@ -732,6 +756,7 @@ int commit_parameters() {
     return 0;
 }
 int recommit_parameters() {
+    double current_time = nbody_system->Tsys;
     int result = commit_parameters();
     if (particles_initialized && result == 0) {
         nbody_system->hard_system.set(eps2_FS_FS, eps2_FS_BH, eps2_BH_BH,
@@ -739,6 +764,7 @@ int recommit_parameters() {
             eta_s, eta_FS, eta_BH, mass_min);
         nbody_system->hard_system.dump();
     }
+    nbody_system->Tsys = current_time;
     return result;
 }
 
@@ -823,6 +849,13 @@ int get_gravity_at_point(double *eps, double *x, double *y, double *z,
     double *tmp_phi_out = new double[length];
     int *tmp_nnb_out = new int[length];
     double *tmp_nnb_r2_out = new double[length];
+    
+    
+    // prt.acc (direct)
+    // prt.acc_long (tree)
+    
+    
+    
     
     for (int i=0; i<length; i++) {
         // Make sure there is no particle in the code with the same index, 
