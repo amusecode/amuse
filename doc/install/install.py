@@ -478,6 +478,9 @@ class InstallPrerequisites(object):
             
 class InstallPrerequisitesOnOSX(InstallPrerequisites):
 
+
+   
+          
     def mpich2_build(self, path):
         
         commands = []
@@ -528,9 +531,67 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         
         for x in commands:
             self.run_application(x, path)
+
+class InstallMatplotlib(InstallPrerequisites):
+    
+    @late
+    def applications(self):
+        return (
+               (
+                'freetype' ,                   #name to refer by
+                [],                         #names of prerequisites (unused)
+                '2.4.9' ,                   #version string
+                'freetype-', '.tar.gz',        #pre- and postfix for filename
+                'http://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
+                self.basic_build             #method to use for building - same as for FFTW should work
+              ) ,
+              (
+                'zlib' ,                   #name to refer by
+                [],                         #names of prerequisites (unused)
+                '1.2.7' ,                   #version string
+                'zlib-', '.tar.gz',        #pre- and postfix for filename
+                'http://zlib.net/', #download url, filename is appended
+                self.basic_build             #method to use for building - same as for FFTW should work
+              ) ,
+              (
+                'png' ,                   #name to refer by
+                [],                         #names of prerequisites (unused)
+                '1.5.11' ,                   #version string
+                'libpng-', '.tar.gz',        #pre- and postfix for filename
+                'http://downloads.sourceforge.net/project/libpng/libpng15/older-releases/1.5.11/', #download url, filename is appended
+                self.basic_build             #method to use for building - same as for FFTW should work
+              ),
+              (
+                'matplotlib' ,                   #name to refer by
+                [],                         #names of prerequisites (unused)
+                '1.1.0' ,                   #version string
+                'matplotlib-', '.tar.gz',        #pre- and postfix for filename
+                ' http://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
+                self.matplotlib_build             #method to use for building - same as for FFTW should work
+              ),
+        )
         
+    def basic_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
             
-            
+    def matplotlib_build(self, path):
+        env = os.environ.copy()
+        env['CFLAGS'] ="-I{0}/include -I{0}/include/freetype2".format(self.prefix)
+        env['LDFLAGS'] = "-L{0}/lib".format(self.prefix)
+        self.run_application(['python','setup.py','build'], cwd=path)
+        self.run_application(['python','setup.py','install'], cwd=path)
+      
      
 if IS_ON_OSX:
     INSTALL = InstallPrerequisitesOnOSX()
@@ -588,7 +649,15 @@ setenv F77 gfortran
             do.append(x)
             flag = True
         else:
-            if x == '--hydra':
+            if x == '--matplotlib':
+                INSTALL = InstallMatplotlib()
+                print "----------------------------------------------------------"
+                print "This feature is optional and experimental!"
+                print "----------------------------------------------------------"
+                print
+                print "Will download and install matplotlib"
+                print "plus it most common prerequisites (zlib, png and freetype)"
+            elif x == '--hydra':
                 INSTALL.use_hydra_process_manager = True
             elif x == '--gforker':
                 INSTALL.use_gforker_process_manager = True
