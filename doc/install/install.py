@@ -589,8 +589,8 @@ class InstallMatplotlib(InstallPrerequisites):
         env = os.environ.copy()
         env['CFLAGS'] ="-I{0}/include -I{0}/include/freetype2".format(self.prefix)
         env['LDFLAGS'] = "-L{0}/lib".format(self.prefix)
-        self.run_application(['python','setup.py','build'], cwd=path)
-        self.run_application(['python','setup.py','install'], cwd=path)
+        self.run_application(['python','setup.py','build'], cwd=path, env = env)
+        self.run_application(['python','setup.py','install'], cwd=path, env = env)
       
      
 if IS_ON_OSX:
