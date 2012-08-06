@@ -506,7 +506,7 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         
         self.check_mpich2_install(commands, path)
         
-     def mpfr_build(self, path):
+    def mpfr_build(self, path):
         #temp_patch_file = os.path.join(self.temp_dir, "mpfr-allpatches")
         #if not os.path.exists(temp_patch_file):
         #    print "Downloading mpfr-allpatches"
