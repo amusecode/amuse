@@ -115,10 +115,10 @@ class InstallPrerequisites(object):
           (
             'cmake' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '2.8.3' ,                   #version string
+            '2.8.8' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
             'http://www.cmake.org/files/v2.8/', #download url, filename is appended
-            self.fftw_build             #method to use for building - same as for FFTW should work
+            self.cmake_build             #method to use for building - same as for FFTW should work
           ) ,
           (
             'gmp',                      #name to refer by
@@ -280,6 +280,19 @@ class InstallPrerequisites(object):
           '--prefix='+self.prefix,
           '--enable-shared',
           '--enable-threads'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
+    
+    def cmake_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix
         ]
         commands.append(command)
         commands.append(['make'])
