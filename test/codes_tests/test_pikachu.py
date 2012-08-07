@@ -315,7 +315,8 @@ class TestPikachu(TestWithMPI):
         
         for log_eps2 in range(-5,6,2):
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
-            instance.particles.remove_particles(instance.particles)
+            if len(instance.particles) > 0:
+                instance.particles.remove_particles(instance.particles)
             instance.particles.add_particles(particles)
             instance.evolve_model(instance.model_time.as_quantity_in(units.yr) + (0.25 | units.yr))
             tan_final_direction.append(instance.particles[1].velocity[1]/
