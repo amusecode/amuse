@@ -278,6 +278,13 @@ class TestParticle(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles[0].mass, 2 | units.kg)
         self.assertAlmostRelativeEquals(particles[1].mass, 4 | units.kg)
         
+    def test12(self):
+        particles = datamodel.Particles(keys=[9,10,11,12,13,14])
+        particles.mass = [1,2,3,4,20,21] | units.kg
+        
+        self.assertAlmostRelativeEquals(particles[-3].mass, 4 | units.kg)
+        self.assertAlmostRelativeEquals(particles[-1].mass, 21 | units.kg)
+        
 class TestParticlesSubset(amusetest.TestCase):
     
     def test1(self):
@@ -429,7 +436,15 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles.x, [5,7,3] | units.m)
         self.assertAlmostRelativeEquals(particles.y, [6,8,5] | units.m)
         self.assertAlmostRelativeEquals(subset[0].position2d, [5,6] | units.m)
-                   
+
+    def test14(self):
+        particles = datamodel.Particles(keys=[9,10,11,12,13,14])
+        particles.mass = [1,2,3,4,20,21] | units.kg
+        
+        self.assertAlmostRelativeEquals(particles[-3:].mass, [4,20,21] | units.kg)
+        self.assertAlmostRelativeEquals(particles[-3:-1].mass, [4,20] | units.kg)
+        self.assertAlmostRelativeEquals(particles[::-1].mass, [21,20,4,3,2,1] | units.kg)
+             
 class TestParticlesChannel(amusetest.TestCase):
 
     def test1(self):
@@ -722,6 +737,27 @@ class TestParticlesSuperset(amusetest.TestCase):
         superset.remove_particle(particles1[1])
         self.assertEquals(len(superset), 5)
         self.assertEquals(len(particles1), 3)
+        
+    def test9(self):
+        particles1 = datamodel.Particles(keys=[9,10,11,12])
+        particles1.mass = [1,2,3,4] | units.kg
+        particles2 = datamodel.Particles(keys=[13,14])
+        particles2.mass = [20,21] | units.kg
+        superset = datamodel.ParticlesSuperset([particles1  , particles2], index_to_default_set = 0)
+        
+        self.assertEquals(superset[-1].mass, 21 | units.kg)
+        self.assertEquals(superset[-3].mass, 4 | units.kg)
+        
+    def test10(self):
+        particles1 = datamodel.Particles(keys=[9,10,11,12])
+        particles1.mass = [1,2,3,4] | units.kg
+        particles2 = datamodel.Particles(keys=[13,14])
+        particles2.mass = [20,21] | units.kg
+        superset = datamodel.ParticlesSuperset([particles1  , particles2], index_to_default_set = 0)
+        
+        self.assertAlmostRelativeEquals(superset[-3:].mass, [4,20,21] | units.kg)
+        self.assertAlmostRelativeEquals(superset[-3:-1].mass, [4,20] | units.kg)
+        self.assertAlmostRelativeEquals(superset[::-1].mass, [21,20,4,3,2,1] | units.kg)
         
 class TestParticlesExtra(amusetest.TestCase):
     

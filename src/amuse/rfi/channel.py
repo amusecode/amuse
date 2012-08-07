@@ -1,6 +1,5 @@
 import inspect
 import numpy
-import os
 import os.path
 import cPickle as pickle
 
@@ -9,11 +8,9 @@ import sys
 import struct
 import threading
 import select
-import tempfile
 import atexit
 import time
 
-import select
 import socket
 import array
 
@@ -226,7 +223,7 @@ class AsyncRequestsPool(object):
         sockets = [x.async_request.socket for x in self.requests_and_handlers if not x.async_request.is_mpi_request()]
         indices = [i for i, x in enumerate(self.requests_and_handlers) if not x.async_request.is_mpi_request()]
         if len(sockets) > 0:
-            readable, w_, x_ = select.select(sockets, [], [])
+            readable, _, _ = select.select(sockets, [], [])
             indices_to_delete =[]
             for read_socket in readable:
                 
@@ -425,18 +422,18 @@ class MPIMessage(AbstractMessage):
     
     def send_doubles(self, comm, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='d')
-            self.mpi_send(comm,[buffer, MPI.DOUBLE])
+            sendbuffer = numpy.array(array,  dtype='d')
+            self.mpi_send(comm,[sendbuffer, MPI.DOUBLE])
             
     def send_ints(self, comm, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='int32')
-            self.mpi_send(comm,[buffer, MPI.INT])
+            sendbuffer = numpy.array(array,  dtype='int32')
+            self.mpi_send(comm,[sendbuffer, MPI.INT])
             
     def send_floats(self, comm, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='f')
-            self.mpi_send(comm, [buffer, MPI.FLOAT])
+            sendbuffer = numpy.array(array,  dtype='f')
+            self.mpi_send(comm, [sendbuffer, MPI.FLOAT])
             
     def send_strings(self, comm, array):
         if len(array) == 0:
@@ -446,20 +443,20 @@ class MPIMessage(AbstractMessage):
         self.mpi_send(comm, [offsets, MPI.INT])
         chars=""
         for string in array:
-          chars=string.join((chars,chr(0)))
+            chars=string.join((chars,chr(0)))
         chars=numpy.fromstring(chars,dtype='uint8')
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
     def send_booleans(self, comm, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='int32')
-            self.mpi_send(comm, [buffer, MPI.LOGICAL])
+            sendbuffer = numpy.array(array,  dtype='int32')
+            self.mpi_send(comm, [sendbuffer, MPI.LOGICAL])
             
         
     def send_longs(self, comm, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='int64')
-            self.mpi_send(comm,[buffer, MPI.INTEGER8])    
+            sendbuffer = numpy.array(array,  dtype='int64')
+            self.mpi_send(comm,[sendbuffer, MPI.INTEGER8])    
     
     def string_offsets(self, array):
         offsets = numpy.zeros(len(array), dtype='i')
@@ -594,11 +591,10 @@ class MessageChannel(OptionalAttributes):
         
         fname = run_command_redirected.__file__                
         arguments = [fname , stdoutname, stderrname, full_name_of_the_worker]
-
-	if not command:
-       	    command = sys.executable
-
         
+        if not command:
+            command = sys.executable
+            
         return command, arguments
     
     @classmethod
@@ -927,40 +923,6 @@ class MpiChannel(MessageChannel):
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command = self.python_exe_for_redirection)
                 
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
-    
-    
-    def spawn_old(self):
-        fd_stdin = None
-        fd_stdout = None
-        fd_stderr = None
-        
-        must_close_std_streams = True
-        
-        if must_close_std_streams:
-            fd_stdin = os.dup(0)
-            zero = open('/dev/null','r')
-            os.dup2(zero.fileno(), 0)
-            if not self.redirect_stdout_file == "none":
-                fd_stdout = os.dup(1)
-                zero = open(self.redirect_stdout_file,'a')
-                os.dup2(zero.fileno(), 1)
-            if not self.redirect_stderr_file == "none":
-                fd_stderr = os.dup(2)
-                zero = open(self.redirect_stderr_file,'a')
-                os.dup2(zero.fileno(), 2)
-        try:
-            self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
-            
-        finally: 
-            if must_close_std_streams:
-                os.dup2(fd_stdin, 0)
-                os.close(fd_stdin)
-                if not fd_stdout == None:
-                    os.dup2(fd_stdout, 1)
-                    os.close(fd_stdout)
-                if not fd_stderr == None:
-                    os.dup2(fd_stderr, 2)
-                    os.close(fd_stderr)
             
         
         

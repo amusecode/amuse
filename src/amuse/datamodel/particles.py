@@ -1305,6 +1305,7 @@ class ParticlesSuperset(AbstractParticleSet):
         if hasattr(keys, '__iter__'):
             return self._subset(keys)
         else:
+            index = self.get_all_indices_in_store()[index]
             for set in self._private.particle_sets:
                 length = len(set)
                 if index < (offset+length):
