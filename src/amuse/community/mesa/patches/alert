@@ -1,8 +1,8 @@
 Index: mesa/src/mesa/alert/public/alert_lib.f
 ===================================================================
---- mesa.orig/src/mesa/alert/public/alert_lib.f	2011-12-06 15:39:44.000000000 +0100
-+++ mesa/src/mesa/alert/public/alert_lib.f	2011-12-06 15:53:56.000000000 +0100
-@@ -27,19 +27,20 @@
+--- mesa.orig/src/mesa/alert/public/alert_lib.f
++++ mesa/src/mesa/alert/public/alert_lib.f
+@@ -26,16 +26,17 @@
        ! for interactive debuggers, this is a good place for a breakpoint
        
        ! follows the convention that info > 0 for warnings and < 0 for errors
@@ -22,7 +22,7 @@ Index: mesa/src/mesa/alert/public/alert_lib.f
           character(*), intent(in) :: message
           logical, parameter :: stop_for_warnings = .false.         
           logical, parameter :: stop_for_errors = .false.
-@@ -55,6 +56,13 @@
+@@ -54,6 +55,13 @@
              if (stop_for_errors) then
                 write(*,'(a)') 'alert message: ' // trim(alert_message)
                 write(*,*) ' stopping because of alert'
@@ -38,9 +38,9 @@ Index: mesa/src/mesa/alert/public/alert_lib.f
           end if
 Index: mesa/src/mesa/utils/makefile_header
 ===================================================================
---- mesa.orig/src/mesa/utils/makefile_header	2011-12-06 13:23:07.000000000 +0100
-+++ mesa/src/mesa/utils/makefile_header	2011-12-06 15:56:53.000000000 +0100
-@@ -313,6 +313,7 @@
+--- mesa.orig/src/mesa/utils/makefile_header
++++ mesa/src/mesa/utils/makefile_header
+@@ -313,6 +313,7 @@ FCopenmp =
  endif
  endif
  
