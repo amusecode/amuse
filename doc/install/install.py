@@ -118,7 +118,7 @@ class InstallPrerequisites(object):
             '2.8.8' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
             'http://www.cmake.org/files/v2.8/', #download url, filename is appended
-            self.cmake_build             #method to use for building - same as for FFTW should work
+            self.cmake_build             #method to use for building
           ) ,
           (
             'gmp',                      #name to refer by
