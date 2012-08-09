@@ -501,13 +501,7 @@ def densitycentre_coreradius_coredens(particles):
     y_core=numpy.sum(density*y)/total_density
     z_core=numpy.sum(density*z)/total_density
 
-    rc=numpy.sqrt(
-        numpy.sum(
-            density**2*(
-            (x-x_core)**2+(y-y_core)**2+(z-z_core)**2
-            ) 
-        ) / numpy.sum(density**2)
-    )
+    rc = density * ((x-x_core)**2+(y-y_core)**2+(z-z_core)**2).sqrt() / total_density
     hop.stop()
     
     return [x_core,y_core,z_core],rc,rho
