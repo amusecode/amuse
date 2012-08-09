@@ -480,7 +480,7 @@ def densitycentre_coreradius_coredens(particles):
     >>> particles=new_plummer_sphere(100)
     >>> pos,coreradius,coredens=particles.densitycentre_coreradius_coredens()
     >>> print coreradius
-    0.286582946447 length
+    0.404120092331 length
     """
 
     from amuse.community.hop.interface import Hop
@@ -501,7 +501,7 @@ def densitycentre_coreradius_coredens(particles):
     y_core=numpy.sum(density*y)/total_density
     z_core=numpy.sum(density*z)/total_density
 
-    rc = density * ((x-x_core)**2+(y-y_core)**2+(z-z_core)**2).sqrt() / total_density
+    rc = (density * ((x-x_core)**2+(y-y_core)**2+(z-z_core)**2).sqrt()).sum() / total_density
     hop.stop()
     
     return [x_core,y_core,z_core],rc,rho
