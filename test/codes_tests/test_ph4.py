@@ -1013,3 +1013,30 @@ class TestPH4(TestWithMPI):
         self.assertEquals(len(instance.particles), 2)
         self.assertAlmostRelativeEquals(instance.particles.mass, [1,2] | nbody_system.mass)
 
+
+    def test25(self):
+        
+        particles = datamodel.Particles(
+            mass=[1,2] | nbody_system.mass,
+            x=[-1,1] | nbody_system.length,
+            y=[-1,1] | nbody_system.length,
+            z=[-1,1] | nbody_system.length,
+            vx=[-1,1] | nbody_system.speed,
+            vy=[-1,1] | nbody_system.speed,
+            vz=[-1,1] | nbody_system.speed,
+            id=[3,4]
+        )
+        
+        instance=ph4()
+        
+        instance.particles.add_particles(particles)
+        self.assertEquals(instance.particles.index_in_code, [3,4])
+        instance.commit_particles()
+        instance.particles.remove_particle(particles[1])
+        instance.recommit_particles()
+        self.assertEquals(instance.particles.index_in_code, [3])
+        instance.particles.add_particle(particles[1])
+        instance.recommit_particles()
+        self.assertEquals(instance.particles.index_in_code, [3,4])
+        
+

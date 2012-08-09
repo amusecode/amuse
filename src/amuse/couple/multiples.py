@@ -94,11 +94,11 @@ class Multiples(object):
     def __init__(self, gravity_code, resolve_collision_code_creation_function,
                  gravity_constant = None, **options):
         self.gravity_code = gravity_code
-        self._immemory_particles = self.gravity_code.particles.copy()
-        self._immemory_particles.id = self.gravity_code.particles.index_in_code
+        self._inmemory_particles = self.gravity_code.particles.copy()
+        self._inmemory_particles.id = self.gravity_code.particles.index_in_code
                 
         self.channel_from_code_to_memory = \
-            self.gravity_code.particles.new_channel_to(self._immemory_particles)
+            self.gravity_code.particles.new_channel_to(self._inmemory_particles)
         
         self.resolve_collision_code_creation_function \
             = resolve_collision_code_creation_function
@@ -159,8 +159,7 @@ class Multiples(object):
         
     def evolve_model(self, end_time):
 
-        stopping_condition \
-            = self.gravity_code.stopping_conditions.collision_detection
+        stopping_condition = self.gravity_code.stopping_conditions.collision_detection
         stopping_condition.enable()
         
         start_energy = self.get_total_energy(self.gravity_code)
@@ -218,24 +217,27 @@ class Multiples(object):
                     # We only should copy data from the particles and their
                     # neighbors.  TODO
                     self.channel_from_code_to_memory.copy()
-                
-                    star1 = star1.as_particle_in_set(self._immemory_particles)
-                    star2 = star2.as_particle_in_set(self._immemory_particles)
+                    
+                    star1 = star1.as_particle_in_set(self._inmemory_particles)
+                    star2 = star2.as_particle_in_set(self._inmemory_particles)
                     print 'star1 =', star1.id, ' star2 =', star2.id
                     sys.stdout.flush()
 
                     self.manage_encounter(star1, star2, 
-                                          self._immemory_particles,
+                                          self._inmemory_particles,
                                           self.gravity_code.particles)
 
                     # Recommit reinitializes all particles (redundant
                     # here, since it is done automatically).  Later we
                     # will just recommit and reinitialize a list if
                     # gravity supports it. TODO
-                    self.gravity_code.recommit_particles()
+                    # self.gravity_code.recommit_particles()
+                    
                     self.gravity_code.particles.synchronize_to(
-                        self._immemory_particles) # make star = gravity_stars
-
+                        self._inmemory_particles) # make star = gravity_stars
+                    
+                    self.channel_from_code_to_memory.copy_attribute("index_in_code", "id")
+                    
                     energy = self.get_total_energy(self.gravity_code)
                     print "deltaE multiples:", \
                         self.multiples_energy_correction, \
@@ -293,9 +295,8 @@ class Multiples(object):
 
         collided_stars = datamodel.Particles(particles = (star1, star2))
                
-        total_energy_of_stars_to_remove = collided_stars.kinetic_energy()
-        total_energy_of_stars_to_remove \
-            += collided_stars.potential_energy(G=self.gravity_constant)
+        total_energy_of_stars_to_remove  = collided_stars.kinetic_energy()
+        total_energy_of_stars_to_remove += collided_stars.potential_energy(G=self.gravity_constant)
 
         phi_in_field_of_stars_to_remove = potential_energy_in_field(
             collided_stars, 
@@ -305,7 +306,7 @@ class Multiples(object):
 
         # 2. Create a particle set to perform the close encounter
         #    calculation.
-
+        
         particles_in_encounter = datamodel.Particles(0)
 
         # 3. Add stars to the encounter set, add in components when we
@@ -345,9 +346,12 @@ class Multiples(object):
         print 'semi =', a.number, ' ecc =', e, ' energy =', E.number, \
               ' tperi =', tperi.number
         sys.stdout.flush()
-
-        end_time = 10000.0 | nbody_system.time
-        delta_t = min(10*abs(tperi), 1.0 | nbody_system.time)
+        if self.gravity_code.unit_converter is None:
+            end_time = 10000 | nbody_system.time
+            delta_t = min(10*abs(tperi), 1.0 | nbody_system.time)
+        else:
+            end_time = 10000.0 * abs(tperi)
+            delta_t = abs(tperi)
         self.resolve_collision(particles_in_encounter, end_time, delta_t)
        
         particles_in_encounter.position += cmpos
@@ -425,7 +429,7 @@ class Multiples(object):
         #print '\nin resolve_collision'; sys.stdout.flush()
 
         resolve_collision_code = self.resolve_collision_code_creation_function()
-        time = 0 | nbody_system.time
+        time = 0  * end_time
         #print "\nadding particles to smallN"
         sys.stdout.flush()
         resolve_collision_code.set_time(time);
@@ -496,8 +500,8 @@ def openup_tree(star, tree, particles_in_encounter):
 
     # List the leaves.
 
-    leaves = tree.get_descendants_subset()
-    
+    leaves = tree.get_leafs_subset()
+      
     original_star = tree.particle
 
     # Compare with the position stored when replacing the particles
