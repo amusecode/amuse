@@ -14,8 +14,7 @@ from amuse.support import exceptions
 
 from amuse.datamodel import base
 from amuse.datamodel import rotation
-from amuse.datamodel.particles import ParticlesWithUnitsConverted
-from amuse.datamodel.particles import AbstractParticleSet
+from amuse.datamodel import ParticlesWithUnitsConverted, AbstractParticleSet, Particle
 
 def move_to_center(particles):
     """
@@ -513,6 +512,31 @@ def densitycentre_coreradius_coredens(particles):
     
     return [x_core,y_core,z_core],rc,rho
 
+def new_particle_from_cluster_core(particles):
+    """
+    Uses Hop to find the density centre (core) of a particle distribution
+    and stores the properties of this core on a particle:
+    position, velocity, (core) radius and (core) density.
+    """
+    from amuse.community.hop.interface import Hop
+    hop=Hop()
+    in_hop = hop.particles.add_particles(particles)
+    hop.parameters.density_method = 2
+    hop.parameters.number_of_neighbors_for_local_density = 7
+    hop.calculate_densities()
+    
+    density = in_hop.density.reshape((-1,1))
+    # Reshape makes sure that density can be multiplied with vectors, e.g. position
+    hop.stop()
+    
+    result = Particle()
+    result.density = density.amax()
+    total_density = density.sum()
+    result.position = (density * particles.position).sum(axis=0) / total_density
+    result.velocity = (density * particles.velocity).sum(axis=0) / total_density
+    result.radius = (density * (particles.position - result.position).lengths()).sum(axis=1) / total_density
+    return result
+
 def LagrangianRadii(stars,
                        cm=None,
                        mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1]
@@ -675,6 +699,7 @@ AbstractParticleSet.add_global_function_attribute("rotate", rotation.rotate)
 AbstractParticleSet.add_global_function_attribute("binaries", get_binaries)
 
 AbstractParticleSet.add_global_function_attribute("densitycentre_coreradius_coredens", densitycentre_coreradius_coredens)
+AbstractParticleSet.add_global_function_attribute("new_particle_from_cluster_core", new_particle_from_cluster_core)
 
 AbstractParticleSet.add_global_function_attribute("LagrangianRadii", LagrangianRadii)
 AbstractParticleSet.add_global_function_attribute("find_closest_particle_to", find_closest_particle_to)
