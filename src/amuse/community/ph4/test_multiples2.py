@@ -23,9 +23,9 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    Ebin = gravity.get_binary_energy()
+    Ebin = gravity.multiples_energy_correction
     Etop = T + U
-    E = Etop + Ebin
+    E = Etop - Ebin
     if E0 == 0 | nbody_system.energy: E0 = E
     Rv = -0.5*M*M/U
     Q = -T/U
@@ -175,16 +175,19 @@ def test_ph4(infile = None, number_of_stars = 40,
           "in steps of", delta_t.number
     sys.stdout.flush()
 
-    E0 = print_log(time, gravity)
-    
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
 
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
 
-    multiples_code = multiples.Multiples(gravity, new_smalln)
+    # -----------------------------------------------------------------
+    # Create the coupled code and integrate the system to the desired
+    # time, managing interactions internally.
 
+    multiples_code = multiples.Multiples(gravity, new_smalln)
+    E0 = print_log(time, multiples_code)
+    
     while time < end_time:
         time += delta_t
         multiples_code.evolve_model(time)
@@ -200,8 +203,10 @@ def test_ph4(infile = None, number_of_stars = 40,
 
         channel.copy_attribute("index_in_code", "id")
 
-        print_log(time, gravity, E0)
+        print_log(time, multiples_code, E0)
         sys.stdout.flush()
+
+    #-----------------------------------------------------------------
 
     print ''
     gravity.stop()

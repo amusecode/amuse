@@ -169,7 +169,7 @@ int recommit_particles()
     // idata arrays.  To resize idata, just delete and create a new
     // one.  Resizing jdata is more complicated -- defer for now.
 
-    cout << "recommitting..." << endl << flush;
+    //cout << "recommitting..." << endl << flush;
     if (!jd->use_gpu)
 	jd->predict_all(jd->system_time, true);	// set pred quantities
     else
@@ -384,6 +384,10 @@ int evolve_model(double time)
     // system_time < time[j] + timestep[j].  If synchronization is
     // needed, do it with synchronize_model().  The function breaks
     // out of the jd->advance() loop if an encounter is detected.
+
+    cout << "in evolve_model: "; PRC(time); PRL(jd->nj);
+    for (int j = 0; j < jd->nj; j++)
+	if (jd->id[j] <= 0) {PRC(j); PRC(jd->mass[j]); PRL(jd->id[j]);}
 
     reset_stopping_conditions();    
     jd->UpdatedParticles.clear();

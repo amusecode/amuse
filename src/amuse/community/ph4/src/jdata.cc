@@ -224,7 +224,7 @@ int jdata::add_particle(real pmass, real pradius,
 
     nj++;
 
-    if (1 && system_time > 0 && mpi_rank == 0) {
+    if (0 && system_time > 0 && mpi_rank == 0) {
  	cout << "add_particle: "; PRC(system_time);
  	PRC(pmass); PRC(pid); PRL(nj);
 	cout << "    pos:";
@@ -278,7 +278,7 @@ void jdata::remove_particle(int j)
 
     nj--;
 
-    if (1 && system_time > 0 && mpi_rank == 0) {
+    if (0 && system_time > 0 && mpi_rank == 0) {
  	cout << "remove_particle: "; PRC(system_time);
 	cout << "id = " << id[j] << ",  mass = " << mass[j] << ",  ";
  	PRL(nj);
@@ -679,11 +679,28 @@ bool jdata::advance_and_check_encounter()
 				  &collision_detection_enabled);
     if (collision_detection_enabled) {
         if (coll1 >= 0) {
-            int stopping_index = next_index_for_stopping_condition();
-            set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-            set_stopping_condition_particle_index(stopping_index, 0, coll1);
-            set_stopping_condition_particle_index(stopping_index, 1, coll2);
-            status = true;
+
+	    // Duplicate the check made in multiples.py, to
+	    // avoid returning too many times.
+
+	    int j1 = get_inverse_id(coll1);
+	    int j2 = get_inverse_id(coll2);
+	    real r = 0, v = 0, vr = 0;
+	    for (int k = 0; k < 3; k++) {
+		real dx = pos[j1][k]-pos[j2][k];
+		real dv = vel[j1][k]-vel[j2][k];
+		r += dx*dx;
+		v += dv*dv;
+		vr += dx*dv;
+	    }
+
+	    if (vr < 0.01*sqrt(r*v)) {
+		int stopping_index = next_index_for_stopping_condition();
+		set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+		set_stopping_condition_particle_index(stopping_index, 0, coll1);
+		set_stopping_condition_particle_index(stopping_index, 1, coll2);
+		status = true;
+	    }
         }
         return status;
     }

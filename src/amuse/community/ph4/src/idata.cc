@@ -627,6 +627,7 @@ void idata::check_encounters()
 		// Note no dtmin test.
 
 		real r = rmin/idnn[i];
+
 		if (r > rmax_close) {
 		    rmax_close = r;
 		    imax_close = i;
