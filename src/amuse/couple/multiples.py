@@ -902,6 +902,7 @@ def set_radius_recursive(node):
             mass,a,e,r,E,t = get_cm_binary_elements(node.particle)
             if e < 1:
                 node.particle.radius = max(3*a, node.particle.radius)
+    		# 3 is ~arbitrary
     except:
         pass
 
@@ -1009,7 +1010,6 @@ def scale_top_level_list(
     # dEmult correction returned for bookkeeping purposes.
 
     phi_correction = zero
-
 
     phi_in_field_of_stars_to_add = potential_energy_in_field(
         top_level_nodes, 
