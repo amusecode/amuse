@@ -385,9 +385,11 @@ int evolve_model(double time)
     // needed, do it with synchronize_model().  The function breaks
     // out of the jd->advance() loop if an encounter is detected.
 
-    cout << "in evolve_model: "; PRC(time); PRL(jd->nj);
-    for (int j = 0; j < jd->nj; j++)
-	if (jd->id[j] <= 0) {PRC(j); PRC(jd->mass[j]); PRL(jd->id[j]);}
+    if (jd->mpi_rank == 0) {
+	cout << "in evolve_model: "; PRC(time); PRL(jd->nj);
+	for (int j = 0; j < jd->nj; j++)
+	    if (jd->id[j] <= 0) {PRC(j); PRC(jd->mass[j]); PRL(jd->id[j]);}
+    }
 
     reset_stopping_conditions();    
     jd->UpdatedParticles.clear();

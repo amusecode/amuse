@@ -67,7 +67,7 @@ def test_ph4(infile = None, number_of_stars = 40,
     print "\ninitializing the gravity module"
     sys.stdout.flush()
 
-    # Note that there are actually three GPU options to test:
+    # Note that there are actually three GPU options:
     #
     #	1. use the GPU code and allow GPU use (default)
     #	2. use the GPU code but disable GPU use (-g)
@@ -96,8 +96,12 @@ def test_ph4(infile = None, number_of_stars = 40,
         stars.id = id+1
 
         print "setting particle masses and radii"
-	#stars.mass = (1.0 / number_of_stars) | nbody_system.mass
-        scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
+        if 1:
+            print 'equal masses'
+            scaled_mass = (1.0 / number_of_stars) | nbody_system.mass
+        else:
+            print 'salpeter mass function'
+            scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
         stars.mass = scaled_mass
         stars.radius = 0.02 | nbody_system.length
 

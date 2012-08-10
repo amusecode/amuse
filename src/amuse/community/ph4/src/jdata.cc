@@ -190,7 +190,11 @@ int jdata::add_particle(real pmass, real pradius,
 	}
     }
 
+    int input_pid = pid;
     if (pid < 0) pid = get_particle_id();
+
+    if (mpi_rank == 0 && input_pid >= 0 && pid == 0)
+	cout << "jdata:add_particle: adding pid = 0" << endl << flush;
 
     // Place the new particle at the end of the list.
 
