@@ -39,7 +39,7 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     return E
 
 def new_smalln():
-    result = SmallN()
+    result = SmallN(redirection = "none")
     result.parameters.timestep_parameter = 0.1
     result.parameters.cm_index = 2001
     return result

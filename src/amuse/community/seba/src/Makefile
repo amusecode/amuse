@@ -8,6 +8,10 @@ DIRS	= node std sstar dstar rdc
 
 all:	lib $(EXE)
 
+test:
+	echo $(CXX)
+	echo `which $(CXX)`
+
 Makefile.inc:	Makefile.inc.conf
 	@sed s#__BASE__#$(PWD)#g Makefile.inc.conf >Makefile.inc
 

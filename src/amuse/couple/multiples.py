@@ -450,7 +450,10 @@ class Multiples(object):
 
         print 'energy =', self.get_total_energy(resolve_collision_code)
 
-        delta_t_max = 32*delta_t
+        delta_t_max = 64*delta_t
+        break_scale = 0.1 | nbody_system.length		# TODO
+        resolve_collision_code.set_break_scale(break_scale)
+
         while time < end_time:
 
             time += delta_t
@@ -461,7 +464,7 @@ class Multiples(object):
             print 'energy =', energy
             sys.stdout.flush()
 
-            over = resolve_collision_code.is_over()
+            over = resolve_collision_code.is_over(break_scale)
             if over:
                 print 'smallN: interaction is over at time', time
                 sys.stdout.flush()
@@ -785,16 +788,18 @@ def compress_nodes(node_list, scale):
     # Compress (or expand) the system and increase (or decrease) the
     # velocities (relative to the center of mass) to preserve the
     # energy.  If fac > 1, expansion is always OK if E > 0, which it
-    # should be at this point (but check anyway...).
+    # should be at this point (but check anyway...).  May have E < 0
+    # if we have a system with small negative energy, stopped because
+    # it is too big.
 
     vfac2 = 1-(1/fac-1)*pot/kin
     if vfac2 < 0:
-        print "Can't expand top level system to rjjmin > ri+rj"
+        print "Can't expand top level system to rjmin > ri+rj"
+        print "fac =", fac, " pot =", pot, " kin =", kin
         sys.stdout.flush()
         f = pot/(kin+pot)
         vfac2 = 0.0
-    else:
-        vfac = math.sqrt(vfac2)
+    vfac = math.sqrt(vfac2)
     if fac > 0.0:
         for n in node_list:
             n.position = cmpos + fac*(n.position-cmpos)
@@ -946,6 +951,29 @@ def scale_top_level_list(
 
     print 'scale_top_level_list: ls =', ls, ' lm =', lm, ' lt =', lt
     sys.stdout.flush()
+
+#     if lt == 1 and lm == 1:
+
+#         # Check if we want to change the status of a wide binary.
+
+#         a_max = 0.1 | nbody_system.length	# TODO
+
+#         root = multiples[0]
+#         comp1 = root.child1
+#         comp2 = root.child2
+#         M,a,e,r,E,t = get_component_binary_elements(comp1, comp2)
+#         if a > a_max:
+
+#             singles.add_particle(comp1)
+#             singles.add_particle(comp2)
+#             #multiples.delete_particle(root)	# dangerous, but multiples isn't re-used
+
+#             top_level_nodes = singles 		# + multiples
+#             ls = len(singles)
+#             lm = 0				# len(multiples)
+#             lt = ls + lm
+#             print 'scale_top_level_list: reset ls =', ls, ' lm =', lm, ' lt =', lt
+#             sys.stdout.flush()
 
     if lt == 1:
         if lm == 1:

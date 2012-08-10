@@ -380,6 +380,7 @@ static real structure_check_interval = _INFINITY_;
 
 int set_break_scale(real r) {
     break_scale_sq = r*r;
+    if (break_scale_sq <= 0) break_scale_sq = _INFINITY_;
     return 0;
 }
 
@@ -402,7 +403,7 @@ void myprint(hdyn *b, int level = 0)
 	myprint(bb, level+1);
 }
 
-int evolve_model(double time)
+int evolve_model(double to_time)
 {
     // On return, system_time will be greater than or equal to the
     // specified time.  All particles j will have time[j] <=
@@ -415,15 +416,19 @@ int evolve_model(double time)
     // interaction is over.
 
     // int status = 
-    smallN_evolve(b, time, break_scale_sq, structure_check_interval);
+    smallN_evolve(b, to_time, break_scale_sq, structure_check_interval);
     //myprint(b);
+
+    // Note: return status is currently independent of the termination reason...
 
     return 0;
 }
 
-int is_over(int * over)
+int is_over(int * over, real rlimit, int verbose)
 {
-    *over = (int)check_structure(b, 0);
+    real rlimit2 = rlimit*rlimit;
+    if (rlimit2 <= 0) rlimit2 = _INFINITY_;
+    *over = (int)check_structure(b, rlimit2, verbose);
     return 0;
 }
 

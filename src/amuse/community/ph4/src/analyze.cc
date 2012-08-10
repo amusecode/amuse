@@ -627,7 +627,7 @@ local bool is_stable(hdyn2 *b)
 				   b_in->get_binary_sister()->get_mass(),
 				   cos_i);
 
-    if ((mstable && (!hstable || !astable))
+    if ((mstable && (!hstable || !astable))	// flag discrepancy
 	|| (!mstable && (hstable || astable))) {
 	PRC(hstable); PRC(astable); PRL(mstable);
     }
@@ -646,6 +646,7 @@ local bool check_stability(hdyn2 *b)
     // constructing the tree.
 
     bool stable = false;
+    b->stable = false;
 
     if (b->is_leaf())				// single stars are stable
 	stable = true;
@@ -667,8 +668,9 @@ local bool check_stability(hdyn2 *b)
 	    bool yd_stab = check_stability(yd);
 
 	    if (od_stab && yd_stab)
-		if (b->relative_energy < 0)			 // STORY
+		if (b->relative_energy < 0) {			 // STORY
 		    stable = is_stable(b);
+		}
 	}
     }
 
@@ -678,11 +680,15 @@ local bool check_stability(hdyn2 *b)
 
 local void check_stability_master(hdyn2 *b)
 {
-    for_all_daughters(hdyn2, b, bd)
+    for_all_daughters(hdyn2, b, bd) {
+	//cout << "checking "; PRL(bd->format_label());
+	bd->stable = false;
 	if (bd->is_leaf()) {
 	    if (is_escaper(b, bd)) bd->stable = true;		 // STORY
 	} else
 	    if (check_stability(bd)) bd->stable = true;		 // STORY
+	//PRL(bd->stable);
+    }
 }
 
 
@@ -892,7 +898,7 @@ local hdyn2 *get_tree2(hdyn *bin)
 // without changing state for some specified period of time.
 // Currently, we simply count calls to check_structure, but probably
 // we want to follow the system for some number of outer multiple
-// periods.
+// periods. TODO.
 
 static string last_state;
 static int state_count = 0;
@@ -933,12 +939,14 @@ local inline bool is_over(hdyn2 *b, bool verbose)
 
     if (over) {
 	if (stable) {
-	    if (verbose) cout << "normal termination: "
+	    if (verbose) cout << "is_over: normal termination: "
 			      << last_state << endl << flush;
 	} else {
 	    over = is_quasi_stable(b);
-	    if (over&& verbose) cout << "quasi-stable termination: "
-				     << last_state << endl << flush;
+	    //if (over && verbose)
+	    if (over)
+		cout << "is_over: quasi-stable termination: "
+		     << last_state << endl << flush;
 	}
     }
 
@@ -951,6 +959,7 @@ local inline bool is_over(hdyn2 *b, bool verbose)
 // Externally visible functions:
 
 bool check_structure(hdyn *bin,			// input root node
+		     real rlimit2,		// default = _INFINITY_
                      int verbose)		// default = 1
 {
     if (verbose)
@@ -964,9 +973,13 @@ bool check_structure(hdyn *bin,			// input root node
     string summary, curr_state;
     create_summary_strings(b, summary, curr_state);
 
-    // Print the results.
+
+    cout << "summary: " << summary << endl << flush;
+
 
     if (verbose) {
+
+	// Print the results:
 
 	// Overall structure.
 
@@ -999,6 +1012,15 @@ bool check_structure(hdyn *bin,			// input root node
 	     << " " << bb->get_vel() << endl << flush;
     }
 #endif
+
+    if (!over && rlimit2 < _INFINITY_)		// *same* test as in smallN
+	for_all_daughters(hdyn, bin, bi) {
+	    real r2 = square(bi->get_pos());
+	    if (r2 > rlimit2) {
+		over = true;
+		cout << "is_over: termination at rlimit" << endl << flush;
+	    }
+	}
 
     // Clean up and exit.
 

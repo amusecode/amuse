@@ -849,8 +849,14 @@ int smallN_evolve(hdyn *b,
 	// Check second (size) termination criterion.
 
 	if (n_steps%NCHECK == 0)
-	    for_all_daughters(hdyn, b, bi)
-	        if (square(bi->get_pos()) > break_r2) return 2;
+	    for_all_daughters(hdyn, b, bi) {
+		real r2 = square(bi->get_pos());
+		if (r2 > break_r2) {
+		    cout << "smallN: returning with rmax > break_r"
+			 << endl << flush;
+		    return 2;
+		}
+	    }
 
 	// Check for the start of unperturbed motion.  Use various
 	// thresholds to avoid this check at the end of every step:
@@ -901,12 +907,21 @@ int smallN_evolve(hdyn *b,
 	// Structure analysis:
 
 	if (dt_check > 0 && b->get_system_time() >= t_check) {
-	    bool over = check_structure(b, verbose);
+	    bool over = check_structure(b, break_r2, verbose);
 	    if (over) return 0;
 	    while (b->get_system_time() >= t_check) t_check += dt_check;
 	}
     }
 
+    real rmax2 = 0;
+    for_all_daughters(hdyn, b, bi) {
+	real r2 = square(bi->get_pos());
+	PRC(bi->get_index()); PRL(r2);
+	if (r2 > rmax2) rmax2 = r2;
+    }
+    cout << "smallN: returning with "; PRC(rmax2); PRL(break_r2);
+
+    
     return 1;
 }
 

@@ -215,6 +215,11 @@ class SmallNInterface(CodeInterface,
         function = LegacyFunctionSpecification()
         function.addParameter('over', dtype='int32',
                               direction=function.OUT)
+        function.addParameter('rlimit', dtype='float64',
+                              direction=function.IN, unit = nbody_system.length,
+                              default = 0 )
+        function.addParameter('verbose', dtype='int32',
+                              direction=function.IN, default = 0)
         function.result_type = 'int32'
         return function
 

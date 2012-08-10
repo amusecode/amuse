@@ -201,7 +201,7 @@ int new_particle(int * index_of_the_particle,
 		 double mass, 
 		 double x, double y, double z,
 		 double vx, double vy, double vz, 
-         double radius, int index_to_set)
+		 double radius, int index_to_set)
 {
     // Add a particle to the system.  Let the module set the id, or
     // force the index to index_to_set if >= 0 and allowed.
@@ -377,7 +377,7 @@ int get_potential(int index_of_the_particle, double * pot)
 
 // System-wide operations.
 
-int evolve_model(double time)
+int evolve_model(double to_time)
 {
     // On return, system_time will be greater than or equal to the
     // specified time.  All particles j will have time[j] <=
@@ -386,14 +386,14 @@ int evolve_model(double time)
     // out of the jd->advance() loop if an encounter is detected.
 
     if (jd->mpi_rank == 0) {
-	cout << "in evolve_model: "; PRC(time); PRL(jd->nj);
+	cout << "in evolve_model: "; PRC(to_time); PRL(jd->nj);
 	for (int j = 0; j < jd->nj; j++)
 	    if (jd->id[j] <= 0) {PRC(j); PRC(jd->mass[j]); PRL(jd->id[j]);}
     }
 
     reset_stopping_conditions();    
     jd->UpdatedParticles.clear();
-    while (jd->system_time < time)
+    while (jd->system_time < to_time)
 	if (jd->advance_and_check_encounter()) break;
 
     return 0;
