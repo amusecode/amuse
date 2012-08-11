@@ -168,7 +168,11 @@ class Multiples(object):
         print "Evolve model to:", end_time, " starting at time:", time
         sys.stdout.flush()
 
+        count_resolve_encounter = 0
         count_ignore_encounter = 0
+
+        rlimit = 10./len(self.gravity_code.particles) | nbody_system.length	# TODO
+        print 'rlimit =', rlimit
         
         while time < end_time:
 
@@ -187,7 +191,7 @@ class Multiples(object):
                 star1 = stopping_condition.particles(0)[0]
                 star2 = stopping_condition.particles(1)[0]
 
-                # Note from Steve, 8/12: We seem to pick up a lot of
+                # Note from Steve, 8/12: We pick up a lot of
                 # encounters that are then ignored here.  I have
                 # temporarily duplicated this check in the ph4 module.
 
@@ -225,7 +229,8 @@ class Multiples(object):
 
                     self.manage_encounter(star1, star2, 
                                           self._inmemory_particles,
-                                          self.gravity_code.particles)
+                                          self.gravity_code.particles,
+                                          rlimit)
 
                     # Recommit reinitializes all particles (redundant
                     # here, since it is done automatically).  Later we
@@ -248,12 +253,15 @@ class Multiples(object):
 
                     print '~'*60
                     sys.stdout.flush()
+                    count_resolve_encounter += 1
 
                 else:
                     count_ignore_encounter += 1
                     # print "ignoring encounter", vr , EPS*r*v
-        
-        print '\nIgnored', count_ignore_encounter, 'encounters'
+
+        print ''
+        print 'Resolved', count_resolve_encounter, 'encounters'
+        print 'Ignored', count_ignore_encounter, 'encounters'
         sys.stdout.flush()
 
         self.gravity_code.synchronize_model()
@@ -270,7 +278,18 @@ class Multiples(object):
         for x in self.root_to_tree.values():
             print_simple_multiple(x)
             
-    def manage_encounter(self, star1, star2, stars, gravity_stars):
+    def pretty_print_multiples(self, pre, kT):
+        Nbin = 0
+        Nmul = 0
+        Emul = 0.0 | nbody_system.energy
+        for x in self.root_to_tree.values():
+            Nmul += 1
+            nb,E = another_print_multiple(x, pre, kT)
+            Nbin += nb
+            Emul += E
+        return Nmul, Nbin, Emul
+            
+    def manage_encounter(self, star1, star2, stars, gravity_stars, rlimit):
 
         # Manage an encounter between star1 and star2.  stars is the
         # python memory data set.  gravity_stars points to the gravity
@@ -352,7 +371,8 @@ class Multiples(object):
         else:
             end_time = 10000.0 * abs(tperi)
             delta_t = abs(tperi)
-        self.resolve_collision(particles_in_encounter, end_time, delta_t)
+
+        self.resolve_collision(particles_in_encounter, rlimit, end_time, delta_t)
        
         particles_in_encounter.position += cmpos
         particles_in_encounter.velocity += cmvel
@@ -422,6 +442,7 @@ class Multiples(object):
     def resolve_collision(
             self,
             particles,
+            rlimit,
             end_time = 1000 | nbody_system.time,
             delta_t = 10 | nbody_system.time,
         ):
@@ -451,7 +472,7 @@ class Multiples(object):
         print 'energy =', self.get_total_energy(resolve_collision_code)
 
         delta_t_max = 64*delta_t
-        break_scale = 0.1 | nbody_system.length		# TODO
+        break_scale = rlimit
         resolve_collision_code.set_break_scale(break_scale)
 
         while time < end_time:
@@ -810,7 +831,7 @@ def print_elements(s, a, e, r, Emu, E):
 	.format(s, a, e, r, Emu, E)
     sys.stdout.flush()
 
-def print_multiple(m, level=0):
+def print_multiple(m, level=0):		##### not working? #####
 
     # Recursively print the structure of (multiple) node m.
 
@@ -842,15 +863,43 @@ def print_simple_multiple(node):
         if level == 0: output += 'Multiple '
         output += '    ' * level
         particle = x
-        output += "{0} id = {1} mass = {2}".format(particle.key, particle.id, particle.mass.number)
+        output += "{0} id = {1} mass = {2}".format(particle.key,
+                                                   particle.id,
+                                                   particle.mass.number)
         if not particle.child1 is None:
             child1 = particle.child1
             child2 = particle.child2
             M,a,e,r,E,t = get_component_binary_elements(child1, child2)
             mu = child1.mass*child2.mass/M
-            output += " semi = {0} energy = {1}".format(a.number,(mu*E).number)
+            output += " semi = {0} energy = {1}".format(a.number,
+                                                        (mu*E).number)
         print output
         sys.stdout.flush()
+
+def another_print_multiple(node, pre, kT):
+    is_bin = 1
+    Etot = 0.0 | nbody_system.energy
+    for level, x in node.iter_levels():
+        particle = x
+        init = pre
+        if level == 0: init += 'Multiple '
+        init += '    ' * level
+        id = particle.id
+        M = particle.mass.number
+        print '%s%d m=%.5f' % (init, id, M),
+        if not particle.child1 is None:
+            if level > 0: is_bin = 0
+            child1 = particle.child1
+            child2 = particle.child2
+            M,a,e,r,Emu,t = get_component_binary_elements(child1, child2)
+            mu = child1.mass*child2.mass/M
+            E = Emu*mu
+            Etot += E
+            print 'a=%.6f e=%4f r=%6f E/mu=%.5f E=%.5f E/kT=%.5f' % \
+		(a.number, e, r.number, Emu.number, E.number, E/kT),
+        print ''
+        sys.stdout.flush()
+    return is_bin, Etot
 
 def print_energies(stars):
 
