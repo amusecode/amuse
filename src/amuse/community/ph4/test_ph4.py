@@ -11,11 +11,13 @@ from amuse.units import nbody_system
 from amuse.units import units
 
 from amuse import datamodel
-from amuse.datamodel import particle_attributes
+from amuse.datamodel import particle_attributes as pa
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
+
 def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
+    N = len(gravity.particles)
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
@@ -23,14 +25,28 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     Etop = T + U
     E = Etop + Ebin
     if E0 == 0 | nbody_system.energy: E0 = E
-    Rv = -0.5*M*M/U
+    Rvir = -0.5*M*M/U
     Q = -T/U
+    com = pa.center_of_mass(gravity.particles)
+    comv = pa.center_of_mass_velocity(gravity.particles)
+    dcen,rcore,rhocore = pa.densitycentre_coreradius_coredens(gravity.particles)
+    cmx,cmy,cmz = dcen
+    lagr,mf = pa.LagrangianRadii(gravity.particles, dcen)  # no units!
     print ""
-    print "time =", time.number, " energy = ", E.number, \
-	" dE/E0 = ", (E/E0 - 1)
+    print "time =", time.number, " N =", N, " M =", M.number
+    print "energy = ", E.number, " dE/E0 = ", (E/E0 - 1)
+    print "virial radius, ratio =", Rvir.number, Q
+    print "com position =", com.number
+    print "com velocity =", comv.number
+    print 'dens. center = [ %.8f   %.8f   %.8f]' % \
+	(cmx.number, cmy.number, cmz.number)
+    print "core radius  =", rcore.number
+    print "Lagr. radii:  ", lagr.number
+
     print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
 	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Ebin.number, Rv.number, Q)
+         E.number, Ebin.number, Rvir.number, Q)
+
     sys.stdout.flush()
     return E
 

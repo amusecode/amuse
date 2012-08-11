@@ -14,12 +14,13 @@ from amuse.units import nbody_system
 from amuse.units import units
 
 from amuse import datamodel
-from amuse.datamodel import particle_attributes
+from amuse.datamodel import particle_attributes as pa
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 
-def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
+def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
+    N = len(gravity.particles)
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
@@ -27,15 +28,46 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     Etop = T + U
     E = Etop - Ebin
     if E0 == 0 | nbody_system.energy: E0 = E
-    Rv = -0.5*M*M/U
+    Rvir = -0.5*M*M/U
     Q = -T/U
-    print ""
-    print "time =", time.number, " energy = ", E.number, \
-	" dE/E0 = ", (E/E0 - 1)
-    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
-	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Ebin.number, Rv.number, Q)
+    com = pa.center_of_mass(gravity.particles)
+    comv = pa.center_of_mass_velocity(gravity.particles)
+    dcen,rcore,rhocore = pa.densitycentre_coreradius_coredens(gravity.particles)
+    cmx,cmy,cmz = dcen
+    lagr,mf = pa.LagrangianRadii(gravity.particles, dcen)  # no units!
+
+    print ''
+    print pre+"time=", time.number
+    print pre+"Ntot=", N
+    print pre+"mass=", M.number
+    print pre+"Etot=", E.number
+    print pre+"Ebin=", Ebin.number
+    print pre+"dE/E=", E/E0 - 1
+    print pre+"Rvir=", Rvir.number
+    print pre+"Qvir=", Q
+    cmx,cmy,cmz = com
+    print pre+"cmpos= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    cmx,cmy,cmz = comv
+    print pre+"cmvel= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    cmx,cmy,cmz = dcen
+    print pre+"dcpos= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    print pre+"Rcore=", rcore.number
+    print pre+"Mlagr=",
+    for m in mf: print "%.4f" % (m),
+    print ''
+    print pre+"Rlagr=",
+    for r in lagr.number: print "%.8f" % (r),
+    print ''
+    kT = T/N
+    Nmul,Nbin,Emul = gravity.pretty_print_multiples(pre, kT)
+    print pre+"Nmul=", Nmul
+    print pre+"Nbin=", Nbin
+    print pre+"Emul= %.5f" % (Emul.number)
+    print pre+"Emul/kT= %.5f" % (Emul/kT)
+    print pre+"Emul/E= %.5f" % (Emul/E)
+
     sys.stdout.flush()
+
     return E
 
 def new_smalln():
@@ -189,8 +221,9 @@ def test_ph4(infile = None, number_of_stars = 40,
     # Create the coupled code and integrate the system to the desired
     # time, managing interactions internally.
 
+    pre = "%%% "
     multiples_code = multiples.Multiples(gravity, new_smalln)
-    E0 = print_log(time, multiples_code)
+    E0 = print_log(pre, time, multiples_code)
     
     while time < end_time:
         time += delta_t
@@ -207,7 +240,7 @@ def test_ph4(infile = None, number_of_stars = 40,
 
         channel.copy_attribute("index_in_code", "id")
 
-        print_log(time, multiples_code, E0)
+        E = print_log(pre, time, multiples_code, E0)
         sys.stdout.flush()
 
     #-----------------------------------------------------------------

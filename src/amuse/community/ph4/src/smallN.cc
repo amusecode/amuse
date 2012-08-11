@@ -916,12 +916,10 @@ int smallN_evolve(hdyn *b,
     real rmax2 = 0;
     for_all_daughters(hdyn, b, bi) {
 	real r2 = square(bi->get_pos());
-	PRC(bi->get_index()); PRL(r2);
 	if (r2 > rmax2) rmax2 = r2;
     }
     cout << "smallN: returning with "; PRC(rmax2); PRL(break_r2);
 
-    
     return 1;
 }
 
