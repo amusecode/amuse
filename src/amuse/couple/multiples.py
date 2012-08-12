@@ -162,7 +162,7 @@ class Multiples(object):
         stopping_condition = self.gravity_code.stopping_conditions.collision_detection
         stopping_condition.enable()
         
-        start_energy = self.get_total_energy(self.gravity_code)
+        initial_energy = self.get_total_energy(self.gravity_code)
         
         time = self.gravity_code.model_time
         print "Evolve model to:", end_time, " starting at time:", time
@@ -245,9 +245,9 @@ class Multiples(object):
                     self.channel_from_code_to_memory.copy_attribute("index_in_code", "id")
                     
                     energy = self.get_total_energy(self.gravity_code)
-                    print "deltaE multiples:", \
+                    print "multiples energy correction =", \
                         self.multiples_energy_correction, \
-                        'dE =', (energy - start_energy) \
+                        ' dE =', energy - initial_energy \
                                  - self.multiples_energy_correction
 
                     self.print_multiples()
@@ -461,10 +461,10 @@ class Multiples(object):
         # Channel to copy values from the code to the set in memory.
         channel = resolve_collision_code.particles.new_channel_to(particles)
 
-        start_energy = self.get_total_energy(resolve_collision_code)
+        initial_energy = self.get_total_energy(resolve_collision_code)
 
         print "multiples: number_of_stars =", len(particles), ' ', particles.id
-        print 'multiples: initial energy =', start_energy
+        print 'multiples: initial energy =', initial_energy
         #print particles
         print "multiples: evolving to time =", end_time, 
         print "in steps of", delta_t
@@ -505,7 +505,7 @@ class Multiples(object):
                 channel.copy()
                 resolve_collision_code.stop()
 
-                return start_energy, energy
+                return initial_energy, energy
 
             if delta_t < delta_t_max and time > 0.999999*4*delta_t:
                 delta_t *= 2
