@@ -246,8 +246,8 @@ class Multiples(object):
                     
                     energy = self.get_total_energy(self.gravity_code)
                     print "multiples energy correction =", \
-                        self.multiples_energy_correction, \
-                        ' dE =', energy - initial_energy \
+                        self.multiples_energy_correction
+                    print 'dE =', energy - initial_energy \
                                  - self.multiples_energy_correction
 
                     self.print_multiples()
