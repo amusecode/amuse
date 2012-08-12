@@ -459,18 +459,17 @@ class Multiples(object):
         #print "committing particles to multiples code"
         resolve_collision_code.commit_particles()
 
+        # Channel to copy values from the code to the set in memory.
+        channel = resolve_collision_code.particles.new_channel_to(particles)
+
+        start_energy = self.get_total_energy(resolve_collision_code)
+
         print "multiples: number_of_stars =", len(particles), ' ', particles.id
+        print 'multiples: initial energy =', start_energy
         #print particles
         print "multiples: evolving to time =", end_time, 
         print "in steps of", delta_t
         sys.stdout.flush()
-    
-        start_energy = self.get_total_energy(resolve_collision_code)
-    
-        # Channel to copy values from the code to the set in memory.
-        channel = resolve_collision_code.particles.new_channel_to(particles)
-
-        print 'multiples: energy =', self.get_total_energy(resolve_collision_code)
 
         delta_t_max = 64*delta_t
         break_scale = rlimit
@@ -481,16 +480,16 @@ class Multiples(object):
             time += delta_t
             print 'multiples: evolving to time', time
             sys.stdout.flush()
+
             resolve_collision_code.evolve_model(time)
-            energy = self.get_total_energy(resolve_collision_code)
-            print 'energy =', energy
-            sys.stdout.flush()
 
             # TODO: currently, only smallN has an "is_over()" function.
-
             over = resolve_collision_code.is_over(break_scale)
+
             if over:
                 print 'multiples: interaction is over at time', time
+                energy = self.get_total_energy(resolve_collision_code)
+                print 'multiples: final energy =', energy
                 sys.stdout.flush()
 
                 # Create a tree in the module representing the binary structure.
