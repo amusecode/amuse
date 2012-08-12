@@ -258,7 +258,6 @@ class Multiples(object):
 
                 else:
                     count_ignore_encounter += 1
-                    # print "ignoring encounter", vr , EPS*r*v
 
         print ''
         print 'Resolved', count_resolve_encounter, 'encounters'
