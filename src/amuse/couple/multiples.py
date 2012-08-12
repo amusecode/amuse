@@ -203,11 +203,12 @@ class Multiples(object):
                                  star2.velocity-star1.velocity)
 
                 EPS = 0.01		# proceed only if the stars are
-                if vr < EPS*r*v:	# approaching (or nearly so)
+                if vr < -EPS*r*v:	# clearly approaching
 
                     print '\n'+'~'*60
                     print 'interaction at time', time
-                    print 'top-level: r =', r.number, ' v =', v.number, ' v.r =', vr
+                    print 'top-level: r =', r.number, ' v =', v.number, \
+			  ' v.r =', vr.number
                     sys.stdout.flush()
 
                     energy = self.get_total_energy(self.gravity_code)
