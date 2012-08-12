@@ -792,7 +792,7 @@ class MpiChannel(MessageChannel):
             self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
-           
+        
         if self.check_mpi:
             if not is_mpd_running():
                 raise exceptions.CodeException("The mpd daemon is not running, please make sure it is started before starting this code")
@@ -840,11 +840,11 @@ class MpiChannel(MessageChannel):
         except MPI.Exception as ex:
             return
         
-    @option(type="boolean")
+    @option(type="boolean", sections=("channel",))
     def check_mpi(self):
         return True
         
-    @option(type="boolean")
+    @option(type="boolean", sections=("channel",))
     def debug_with_gdb(self):
         return False
         
