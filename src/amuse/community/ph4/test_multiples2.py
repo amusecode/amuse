@@ -71,12 +71,18 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
 
     return E
 
+
+SMALLN = None
 def new_smalln():
-    result = SmallN(redirection = "none")
-    print 'multiples resolution code is smallN'
-    result.parameters.timestep_parameter = 0.1
-    result.parameters.cm_index = 2001
-    return result
+    SMALLN.reset()
+    return SMALLN
+    
+def init_smalln():
+    global SMALLN
+    SMALLN = SmallN()
+    SMALLN.parameters.timestep_parameter = 0.1
+    SMALLN.parameters.cm_index = 2001
+        
         
 def test_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
@@ -101,6 +107,8 @@ def test_ph4(infile = None, number_of_stars = 40,
     print "\ninitializing the gravity module"
     sys.stdout.flush()
 
+    init_smalln()
+    
     # Note that there are actually three GPU options:
     #
     #	1. use the GPU code and allow GPU use (default)

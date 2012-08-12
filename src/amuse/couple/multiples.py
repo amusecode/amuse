@@ -3,8 +3,6 @@ import numpy
 import collections
 import math
 
-from amuse.community.ph4.interface import ph4 as grav
-from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 
 from amuse import datamodel
@@ -227,12 +225,12 @@ class Multiples(object):
                     star2 = star2.as_particle_in_set(self._inmemory_particles)
                     print 'star1 =', star1.id, ' star2 =', star2.id
                     sys.stdout.flush()
-
+                    
                     self.manage_encounter(star1, star2, 
                                           self._inmemory_particles,
                                           self.gravity_code.particles,
                                           rlimit)
-
+                    
                     # Recommit reinitializes all particles (redundant
                     # here, since it is done automatically).  Later we
                     # will just recommit and reinitialize a list if
@@ -503,7 +501,7 @@ class Multiples(object):
                 #print "resolve_collision_code.particles.radius", \
                 #      resolve_collision_code.particles.radius
                 channel.copy()
-                resolve_collision_code.stop()
+                #resolve_collision_code.stop()
 
                 return initial_energy, energy
 

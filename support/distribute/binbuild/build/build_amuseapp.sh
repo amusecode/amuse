@@ -239,10 +239,13 @@ if [ ! -e "amuseinstalled" ]; then
     
     cd ../../../.. # cd to amuse root directory
     
-    make distclean PYTHON=${PYTHON}
+    #make distclean PYTHON=${PYTHON}
 
-    ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} || exit $?
+    echo ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} 
+    ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
 
+    exit 1
+    
     ${PYTHON} setup.py install || exit $?
 
     make distclean PYTHON=${PYTHON}
