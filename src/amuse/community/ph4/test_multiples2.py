@@ -73,6 +73,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
 
 def new_smalln():
     result = SmallN(redirection = "none")
+    print 'multiples resolution code is smallN'
     result.parameters.timestep_parameter = 0.1
     result.parameters.cm_index = 2001
     return result
@@ -204,6 +205,7 @@ def test_ph4(infile = None, number_of_stars = 40,
     gravity.parameters.use_gpu = use_gpu
     # gravity.parameters.manage_encounters = manage_encounters
 
+    print ''
     print "adding particles"
     # print stars
     sys.stdout.flush()
