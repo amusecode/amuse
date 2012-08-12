@@ -171,7 +171,7 @@ class Multiples(object):
         count_resolve_encounter = 0
         count_ignore_encounter = 0
 
-        rlimit = 4./len(self.gravity_code.particles) | nbody_system.length  # 2 r_90 - TODO
+        rlimit = 8./len(self.gravity_code.particles) | nbody_system.length  # 4 r_90 - TODO
         print 'rlimit =', rlimit
         
         while time < end_time:
