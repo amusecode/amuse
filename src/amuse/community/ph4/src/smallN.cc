@@ -705,33 +705,38 @@ static void log_output(hdyn *b, int n_steps)
 static void two_body(hdyn *b, real time, real radius)
 {
     // Follow the motion of two bodies using kepler.  Advance to time
-    // or (outgoing) radius, whichever is sooner.
+    // or (outgoing) radius, whichever is sooner.  Never go backwards.
 
     hdyn *od = b->get_oldest_daughter();
     if (!od) return;
     hdyn *yd = od->get_younger_sister();
     if (!yd) return;
 
-    kepler *k = hdyn_to_kepler(b);
+    kepler *k = hdyn_to_kepler(b, b->get_system_time());
     // k->print_all(cout);
 
-    if (k->get_energy() >= 0) {
-	k->transform_to_time(time);
-	if (k->get_separation() > radius
-	    && k->get_rel_pos()*k->get_rel_vel() > 0)
-	    k->return_to_radius(radius);
-    } else {
-	real apo = k->get_apastron();
-	if (apo <= radius)
+    if (time > b->get_system_time()) {
+	if (k->get_energy() >= 0) {
 	    k->transform_to_time(time);
-	else {
-	    k->advance_to_radius(radius);
-	    if (k->get_time() > time)
+	    if (k->get_separation() > radius
+		&& k->get_rel_pos()*k->get_rel_vel() > 0) {
+		k->return_to_radius(radius);
+		if (k->get_time() < b->get_system_time())
+		    k->transform_to_time(b->get_system_time());
+	    }
+	} else {
+	    real apo = k->get_apastron();
+	    if (apo <= radius)
 		k->transform_to_time(time);
-	    else if (k->get_rel_pos()*k->get_rel_vel() < 0) {
-		real peri = k->get_apastron();
-		k->advance_to_radius(peri + 0.999*(radius-peri));
+	    else {
 		k->advance_to_radius(radius);
+		if (k->get_time() > time)
+		    k->transform_to_time(time);
+		else if (k->get_rel_pos()*k->get_rel_vel() < 0) {
+		    real peri = k->get_apastron();
+		    k->advance_to_radius(peri + 0.999*(radius-peri));
+		    k->advance_to_radius(radius);
+		}
 	    }
 	}
     }
@@ -788,7 +793,7 @@ int smallN_evolve(hdyn *b,
     int n_leaves = 0;
     for_all_leaves(hdyn, b, bi) n_leaves++;
 
-    // cout << "In smallN_evolve: "; PRL(n_leaves);
+    // cout << "In smallN_evolve: "; PRC(b->get_system_time()); PRL(n_leaves);
 
     if (n_leaves == 1)
 	return 0;

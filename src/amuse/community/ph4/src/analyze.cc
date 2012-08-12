@@ -372,6 +372,8 @@ local void compute_relative_energy(hdyn2 *b)
 	}
 }
 
+#define TOL 1.e-12
+
 local bool is_escaper(hdyn2 *b, hdyn2 *bi)
 {
     // An escaper is a (top-level) particle having positive energy
@@ -384,7 +386,7 @@ local bool is_escaper(hdyn2 *b, hdyn2 *bi)
     vec xi = bi->get_pos();
     vec vi = bi->get_vel();
     float mcm = 0;
-    vec rcm = 0;
+    vec rcm = 0;	// CM of all other top-level  particles
     vec vcm = 0;
     real phicm = 0;
 
@@ -413,7 +415,10 @@ local bool is_escaper(hdyn2 *b, hdyn2 *bi)
     if (esc && mcm > 0) {
 	rcm = rcm/mcm;
 	vcm = vcm/mcm;
-	esc &= ((vi-vcm)*(xi-rcm) > 0
+	real r2 = square(xi-rcm);
+	real v2 = square(vi-vcm);
+	real vr = (vi-vcm)*(xi-rcm);
+	esc &= (vr > -TOL*sqrt(v2*r2)
 		  && 0.5*mi*mcm*square(vi-vcm)/(mi+mcm) + phicm > 0);
     }
 
@@ -930,8 +935,10 @@ local inline bool is_quasi_stable(hdyn2 *b)
 local inline bool is_over(hdyn2 *b, bool verbose)
 {
     bool over = true;
-    for_all_daughters(hdyn2, b, bi)
+    print_recursive(b, false);
+    for_all_daughters(hdyn2, b, bi) {
 	if (!is_escaper(b, bi)) over = false;
+    }
 
     bool stable = true;
     for_all_daughters(hdyn2, b, bi)

@@ -65,6 +65,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
     print pre+"Emul= %.5f" % (Emul.number)
     print pre+"Emul/kT= %.5f" % (Emul/kT)
     print pre+"Emul/E= %.5f" % (Emul/E)
+    print ''
 
     sys.stdout.flush()
 
@@ -224,7 +225,7 @@ def test_ph4(infile = None, number_of_stars = 40,
     pre = "%%% "
     multiples_code = multiples.Multiples(gravity, new_smalln)
     E0 = print_log(pre, time, multiples_code)
-    
+
     while time < end_time:
         time += delta_t
         multiples_code.evolve_model(time)
