@@ -46,16 +46,16 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
     print pre+"Rvir=", Rvir.number
     print pre+"Qvir=", Q
     cmx,cmy,cmz = com
-    print pre+"cmpos= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    print pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
     cmx,cmy,cmz = comv
-    print pre+"cmvel= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    print pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
     cmx,cmy,cmz = dcen
-    print pre+"dcpos= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    print pre+"dcpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
     print pre+"Rcore=", rcore.number
-    print pre+"Mlagr=",
+    print pre+"Mlagr[9]=",
     for m in mf: print "%.4f" % (m),
     print ''
-    print pre+"Rlagr=",
+    print pre+"Rlagr[9]=",
     for r in lagr.number: print "%.8f" % (r),
     print ''
     kT = T/N
@@ -82,7 +82,7 @@ def test_ph4(infile = None, number_of_stars = 40,
              delta_t = 1 | nbody_system.time,
              n_workers = 1, use_gpu = 1, gpu_worker = 1,
              accuracy_parameter = 0.1,
-             softening_length = -1 | nbody_system.length,
+             softening_length = 0.0 | nbody_system.length,
              manage_encounters = 1, random_seed = 1234):
 
     if random_seed <= 0:
@@ -189,11 +189,15 @@ def test_ph4(infile = None, number_of_stars = 40,
 
     #-----------------------------------------------------------------
 
-    if softening_length == -1 | nbody_system.length:
+    if softening_length < 0.0 | nbody_system.length:
+
+        # Use ~interparticle spacing.
+
         eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
 			| nbody_system.length**2
     else:
         eps2 = softening_length*softening_length
+    print 'softening length =', eps2.sqrt()
 
     gravity.parameters.timestep_parameter = accuracy_parameter
     gravity.parameters.epsilon_squared = eps2
