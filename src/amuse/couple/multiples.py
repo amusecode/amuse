@@ -354,7 +354,7 @@ class Multiples(object):
 
         # May be desirable to make this a true scattering experiment
         # by separating star1 and star2 to a larger distance before
-        # starting smallN.  TODO
+        # starting the multiples code.  TODO
 
         total_mass = collided_stars.mass.sum()
         cmpos = collided_stars.center_of_mass()
@@ -452,16 +452,16 @@ class Multiples(object):
 
         resolve_collision_code = self.resolve_collision_code_creation_function()
         time = 0  * end_time
-        #print "\nadding particles to smallN"
+        #print "\nadding particles to multiples code"
         sys.stdout.flush()
         resolve_collision_code.set_time(time);
         resolve_collision_code.particles.add_particles(particles)
-        #print "committing particles to smallN"
+        #print "committing particles to multiples code"
         resolve_collision_code.commit_particles()
 
-        print "smallN: number_of_stars =", len(particles), ' ', particles.id
+        print "multiples: number_of_stars =", len(particles), ' ', particles.id
         #print particles
-        print "smallN: evolving to time =", end_time, 
+        print "multiples: evolving to time =", end_time, 
         print "in steps of", delta_t
         sys.stdout.flush()
     
@@ -470,7 +470,7 @@ class Multiples(object):
         # Channel to copy values from the code to the set in memory.
         channel = resolve_collision_code.particles.new_channel_to(particles)
 
-        print 'energy =', self.get_total_energy(resolve_collision_code)
+        print 'multiples: energy =', self.get_total_energy(resolve_collision_code)
 
         delta_t_max = 64*delta_t
         break_scale = rlimit
@@ -479,16 +479,18 @@ class Multiples(object):
         while time < end_time:
 
             time += delta_t
-            print 'smallN: evolving to time', time
+            print 'multiples: evolving to time', time
             sys.stdout.flush()
             resolve_collision_code.evolve_model(time)
             energy = self.get_total_energy(resolve_collision_code)
             print 'energy =', energy
             sys.stdout.flush()
 
+            # TODO: currently, only smallN has an "is_over()" function.
+
             over = resolve_collision_code.is_over(break_scale)
             if over:
-                print 'smallN: interaction is over at time', time
+                print 'multiples: interaction is over at time', time
                 sys.stdout.flush()
 
                 # Create a tree in the module representing the binary structure.
@@ -970,11 +972,12 @@ def scale_top_level_list(
         scale,
         field, phi_in_field_of_stars_to_remove, gravity_constant):
 
-    # The smallN particles were followed until their interaction could
-    # be unambiguously classified as over.  They may now be very far
-    # apart.  Input binaries is an object describing the final
-    # hierarchical structure of the interacting particles in smallN.
-    # It consists of a flat tree of binary trees.
+    # The multiples code followed the particles until their
+    # interaction could be unambiguously classified as over.  They may
+    # now be very far apart.  Input binaries is an object describing
+    # the final hierarchical structure of the interacting particles in
+    # the multiples code.  It consists of a flat tree of binary trees.
+    # TODO: this is quite specific to smallN.
 
     # Scale the positions and velocities of the top-level nodes to
     # bring them within a sphere of diameter scale, conserving energy
@@ -983,7 +986,7 @@ def scale_top_level_list(
     # offsets are implemented...
 
     # We are currently ignoring any possibility of a physical
-    # collision during the smallN encounter.  TODO
+    # collision during the multiples encounter.  TODO
 
     # Logic: 1 node   - must be a binary, use kepler to reduce to scale
     #        2 nodes  - use kepler, reduce binary children too? TODO
