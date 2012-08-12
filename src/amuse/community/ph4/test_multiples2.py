@@ -136,7 +136,7 @@ def test_ph4(infile = None, number_of_stars = 40,
             print 'salpeter mass function'
             scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
         stars.mass = scaled_mass
-        stars.radius = (stars.mass.number) | nbody_system.length
+        stars.radius = (2*stars.mass.number) | nbody_system.length
 
         print "centering stars"
         stars.move_to_center()
