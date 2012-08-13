@@ -53,7 +53,7 @@ def print_log(s, gravity, E0 = zero):
     sys.stdout.flush()
     return E
 
-def get_component_binary_elements(comp1, comp2, peri = 0):
+def get_component_binary_elements(comp1, comp2, kep, peri = 0):
     try:
         comp1.mass.value_in(units.kg) # see if SI units, throw exception if not
         unit_converter \
@@ -62,8 +62,8 @@ def get_component_binary_elements(comp1, comp2, peri = 0):
     except Exception as ex:
         unit_converter = None
         
-    kep = Kepler(unit_converter, redirection = "none")
-    kep.initialize_code()
+    #kep = Kepler(unit_converter, redirection = "none")
+    #kep.initialize_code()
 
     mass = comp1.mass + comp2.mass
     pos = comp2.position - comp1.position
@@ -80,17 +80,17 @@ def get_component_binary_elements(comp1, comp2, peri = 0):
         else:
             kep.return_to_periastron()
     t = kep.get_time()
-    kep.stop()
+    #kep.stop()
 
     return mass,a,e,r,E,t
 
-def get_cm_binary_elements(p, peri = 0):
-    return get_component_binary_elements(p.child1, p.child2, peri)
+def get_cm_binary_elements(p, kep, peri = 0):
+    return get_component_binary_elements(p.child1, p.child2, kep, peri)
 
 class Multiples(object):
 
     def __init__(self, gravity_code, resolve_collision_code_creation_function,
-                 gravity_constant = None, **options):
+                 kepler_code, gravity_constant = None, **options):
         self.gravity_code = gravity_code
         self._inmemory_particles = self.gravity_code.particles.copy()
         self._inmemory_particles.id = self.gravity_code.particles.index_in_code
@@ -100,6 +100,7 @@ class Multiples(object):
         
         self.resolve_collision_code_creation_function \
             = resolve_collision_code_creation_function
+        self.kepler = kepler_code
         self.multiples_energy_correction \
             = zero * self.gravity_code.kinetic_energy
         self.root_to_tree = {}
@@ -274,7 +275,7 @@ class Multiples(object):
 
     def print_multiples(self):
         for x in self.root_to_tree.values():
-            print_simple_multiple(x)
+            print_simple_multiple(x, self.kepler)
             
     def pretty_print_multiples(self, pre, kT):
         Nbin = 0
@@ -282,7 +283,7 @@ class Multiples(object):
         Emul = 0.0 | nbody_system.energy
         for x in self.root_to_tree.values():
             Nmul += 1
-            nb,E = another_print_multiple(x, pre, kT)
+            nb,E = another_print_multiple(x, self.kepler, pre, kT)
             Nbin += nb
             Emul += E
         return Nmul, Nbin, Emul
@@ -359,7 +360,8 @@ class Multiples(object):
         particles_in_encounter.position -= cmpos
         particles_in_encounter.velocity -= cmvel
 
-        M,a,e,r,E,tperi = get_component_binary_elements(star1, star2, 1)
+        M,a,e,r,E,tperi = get_component_binary_elements(star1, star2, 
+                                                        self.kepler, 1)
         print 'semi =', a.number, ' ecc =', e, ' energy =', E.number, \
               ' tperi =', tperi.number
         sys.stdout.flush()
@@ -408,11 +410,12 @@ class Multiples(object):
         # Set radii to reflect multiple structure.  This is probably not
         # the best place to do it...
             
-        set_radii(particles_in_encounter)
+        set_radii(particles_in_encounter, self.kepler)
 
         total_energy_of_stars_to_add, phi_correction \
             = scale_top_level_list(stars_not_in_a_multiple,
                                    roots_of_trees,
+                                   self.kepler,
                                    initial_scale,
                                    stars - collided_stars, 
                                    phi_in_field_of_stars_to_remove,
@@ -448,6 +451,7 @@ class Multiples(object):
         #print '\nin resolve_collision'; sys.stdout.flush()
 
         resolve_collision_code = self.resolve_collision_code_creation_function()
+
         time = 0  * end_time
         #print "\nadding particles to multiples code"
         sys.stdout.flush()
@@ -643,7 +647,7 @@ def offset_particle_tree(particle, dpos, dvel):
     particle.velocity += dvel
     # print 'offset', int(particle.id), 'by', dpos; sys.stdout.flush()
 
-def compress_binary_components(comp1, comp2, scale):
+def compress_binary_components(comp1, comp2, kep, scale):
 
     # Compress the two-body system consisting of comp1 and comp2 to
     # lie within distance scale of one another.
@@ -668,16 +672,17 @@ def compress_binary_components(comp1, comp2, scale):
         # handle the transformation.  Would be more efficient to
         # define a single kepler at the start of the calculation and
         # reuse it.
-        try:
-            comp1.mass.value_in(units.kg) # see if SI units; exception if not
-            unit_converter = nbody_system.nbody_to_si(
-	                comp1.mass + comp2.mass,
-                        (comp2.position - comp1.position).length())
-        except Exception as ex:
-            unit_converter = None
+#         try:
+#             comp1.mass.value_in(units.kg) # see if SI units; exception if not
+#             unit_converter = nbody_system.nbody_to_si(
+# 	                comp1.mass + comp2.mass,
+#                         (comp2.position - comp1.position).length())
+#         except Exception as ex:
+#             unit_converter = None
             
-        kep = Kepler(unit_converter = unit_converter, redirection = "none")
-        kep.initialize_code()
+#         kep = Kepler(unit_converter = unit_converter, redirection = "none")
+#         kep.initialize_code()
+
         mass = comp1.mass + comp2.mass
         rel_pos = pos2 - pos1
         rel_vel = vel2 - vel1
@@ -714,7 +719,7 @@ def compress_binary_components(comp1, comp2, scale):
 
         new_rel_pos = kep.get_separation_vector()
         new_rel_vel = kep.get_velocity_vector()
-        kep.stop()
+        #kep.stop()
 
         # Enew = 0
         # r2 = 0
@@ -830,7 +835,7 @@ def print_elements(s, a, e, r, Emu, E):
 	.format(s, a, e, r, Emu, E)
     sys.stdout.flush()
 
-def print_multiple(m, level=0):		##### not working? #####
+def print_multiple(m, kep, level=0):		##### not working? #####
 
     # Recursively print the structure of (multiple) node m.
 
@@ -840,23 +845,23 @@ def print_multiple(m, level=0):		##### not working? #####
     print '    '*level, '  vel =', m.velocity.number
     sys.stdout.flush()
     if not m.child1 is None and not m.child2 is None:
-        M,a,e,r,E,t = get_component_binary_elements(m.child1, m.child2)
+        M,a,e,r,E,t = get_component_binary_elements(m.child1, m.child2, kep)
         print_elements('   '+'    '*level+'binary', a, e, r, E,
                        (E*m.child1.mass*m.child2.mass/M))
     if not m.child1 is None:
-        print_multiple(m.child1, level+1)
+        print_multiple(m.child1, kep, level+1)
     if not m.child2 is None:
-        print_multiple(m.child2, level+1)
+        print_multiple(m.child2, kep, level+1)
 
-def print_pair_of_stars(s, star1, star2):
+def print_pair_of_stars(s, star1, star2, kep):
     m1 = star1.mass
     m2 = star2.mass
-    M,a,e,r,E,t = get_component_binary_elements(star1, star2)
+    M,a,e,r,E,t = get_component_binary_elements(star1, star2, kep)
     print_elements(s, a, e, r, E, E*m1*m2/(m1+m2))
     print_multiple(star1)
     print_multiple(star2)
     
-def print_simple_multiple(node):
+def print_simple_multiple(node, kep):
     for level, x in node.iter_levels():
         output = ''
         if level == 0: output += 'Multiple '
@@ -868,14 +873,14 @@ def print_simple_multiple(node):
         if not particle.child1 is None:
             child1 = particle.child1
             child2 = particle.child2
-            M,a,e,r,E,t = get_component_binary_elements(child1, child2)
+            M,a,e,r,E,t = get_component_binary_elements(child1, child2, kep)
             mu = child1.mass*child2.mass/M
             output += " semi = {0} energy = {1}".format(a.number,
                                                         (mu*E).number)
         print output
         sys.stdout.flush()
 
-def another_print_multiple(node, pre, kT):
+def another_print_multiple(node, kep, pre, kT):
     is_bin = 1
     Etot = 0.0 | nbody_system.energy
     for level, x in node.iter_levels():
@@ -890,7 +895,7 @@ def another_print_multiple(node, pre, kT):
             if level > 0: is_bin = 0
             child1 = particle.child1
             child2 = particle.child2
-            M,a,e,r,Emu,t = get_component_binary_elements(child1, child2)
+            M,a,e,r,Emu,t = get_component_binary_elements(child1, child2, kep)
             mu = child1.mass*child2.mass/M
             E = Emu*mu
             Etot += E
@@ -937,14 +942,14 @@ def print_energies(stars):
     print 'energy =', kinetic+potential
     sys.stdout.flush()
 
-def set_radius_recursive(node):
+def set_radius_recursive(node, kep):
     if node.is_leaf(): return
 
     # Propagate child radii upward.
 
     rmax = zero
     for child in node.iter_children():
-        set_radius_recursive(child)
+        set_radius_recursive(child, kep)
         rmax = max(rmax, child.particle.radius)
 
     # Include binary information.
@@ -952,20 +957,20 @@ def set_radius_recursive(node):
     node.particle.radius = rmax
     try:
         if not node.particle.child1 == None:
-            mass,a,e,r,E,t = get_cm_binary_elements(node.particle)
+            mass,a,e,r,E,t = get_cm_binary_elements(node.particle, kep)
             if e < 1:
                 node.particle.radius = max(3*a, node.particle.radius)
     		# 3 is ~arbitrary
     except:
         pass
 
-def set_radii(top_level_nodes):
+def set_radii(top_level_nodes, kep):
     for n in top_level_nodes.as_binary_tree().iter_children():
-        set_radius_recursive(n)
+        set_radius_recursive(n, kep)
 
 def scale_top_level_list(
         singles, multiples, 
-        scale,
+        kep, scale,
         field, phi_in_field_of_stars_to_remove, gravity_constant):
 
     # The multiples code followed the particles until their
@@ -1040,7 +1045,7 @@ def scale_top_level_list(
             #print_multiple(root)
             comp1 = root.child1
             comp2 = root.child2
-            compress_binary_components(comp1, comp2, scale)
+            compress_binary_components(comp1, comp2, kep, scale)
             #print '\nscaled binary node:'
             #print_multiple(root)
 
@@ -1061,7 +1066,7 @@ def scale_top_level_list(
         print "scale_top_level_list: top-level unbound pair"
         #print '\nunscaled top-level pair:'
         #print_pair_of_stars('pair', comp1, comp2)
-        compress_binary_components(comp1, comp2, scale)
+        compress_binary_components(comp1, comp2, kep, scale)
         #print '\nscaled top-level pair:'
         #print_pair_of_stars('pair', comp1, comp2)
 
