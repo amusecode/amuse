@@ -25,7 +25,7 @@ SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 NVCC      = $(CUDA_TK)/bin/nvcc  
 #NVCCFLAGS = -arch sm_20 -ftz=true -prec-div=false -prec-sqrt=false 
 #NVCCFLAGS = -arch sm_20 -g -G 
-NVCCFLAGS = -arch sm_20 
+NVCCFLAGS = -arch sm_20
 
 
 # Use with Mac OS X

@@ -274,7 +274,10 @@ namespace my_dev {
               defaultComputeMode = CU_TARGET_COMPUTE_21;
               break;            
           }
-          break;             
+          break;            
+	case 3:
+		defaultComputeMode = CU_TARGET_COMPUTE_30;
+	       	break;
       }  
    }    
     
@@ -1261,7 +1264,8 @@ namespace my_dev {
           maxArchitecture = 4;
         if(computeMode < architecture)
           maxArchitecture = computeMode;
-        
+  
+  	maxArchitecture = computeMode;	
             
        //Check for double precision, only use it if device supports it
         //Set the architecture
