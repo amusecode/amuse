@@ -27,7 +27,7 @@ NVCC      = $(CUDA_TK)/bin/nvcc
 
 #NVCCFLAGS = -arch sm_12  #<-- gives slightly faster kernels, because of limited DP support
 #NVCCFLAGS ?= -arch sm_20
-NVCCFLAGS ?= -arch=sm_12
+NVCCFLAGS ?= $(NVCC_FLAGS) -arch=sm_12
 
 # Use with Mac OS X
 # NVCCFLAGS = -arch sm_12 -Xcompiler="-Duint=unsigned\ int"

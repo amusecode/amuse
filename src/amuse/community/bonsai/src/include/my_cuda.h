@@ -6,6 +6,11 @@
 
 #include <sys/time.h>
 
+#ifdef __APPLE__
+typedef unsigned int uint;
+#endif
+
+
 //typedef unsigned int uint;
 
 // struct real4 {
