@@ -101,6 +101,7 @@ def test_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
              n_workers = 1, use_gpu = 1, gpu_worker = 1,
+             salpeter = 0,
              accuracy_parameter = 0.1,
              softening_length = 0.0 | nbody_system.length,
              manage_encounters = 1, random_seed = 1234):
@@ -151,13 +152,15 @@ def test_ph4(infile = None, number_of_stars = 40,
         stars.id = id+1
 
         print "setting particle masses and radii"
-        if 1:
+        if salpeter == 0:
             print 'equal masses'
             scaled_mass = (1.0 / number_of_stars) | nbody_system.mass
         else:
             print 'salpeter mass function'
             scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
         stars.mass = scaled_mass
+
+        # Dynamical radii (assumes virial equilibrium):
         stars.radius = (2*stars.mass.number) | nbody_system.length
 
         print "centering stars"
@@ -171,7 +174,8 @@ def test_ph4(infile = None, number_of_stars = 40,
 
     else:
 
-        # Read the input data.  Units are dynamical.
+        # Read the input data.  Units are dynamical (sorry).
+        # Format:  id  mass  pos[3]  vel[3]
 
         print "reading file", infile
 
@@ -204,7 +208,10 @@ def test_ph4(infile = None, number_of_stars = 40,
         stars.mass = mass | nbody_system.mass
         stars.position = pos | nbody_system.length
         stars.velocity = vel | nbody_system.speed
-        stars.radius = 0. | nbody_system.length
+        #stars.radius = 0. | nbody_system.length
+
+        # Dynamical radii (assumes virial equilibrium):
+        stars.radius = (2*stars.mass.number) | nbody_system.length
 
     # print "IDs:", stars.id.number
     sys.stdout.flush()
@@ -274,6 +281,8 @@ def test_ph4(infile = None, number_of_stars = 40,
 
     #-----------------------------------------------------------------
 
+    # Write data to a file.
+
     print ''
     gravity.stop()
 
@@ -286,13 +295,14 @@ if __name__ == '__main__':
     n_workers = 2
     use_gpu = 1
     gpu_worker = 1
+    salpeter = 0
     accuracy_parameter = 0.1
     softening_length = 0  | nbody_system.length
     random_seed = -1
     manage_encounters = 1
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:St:w:")
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(1)
@@ -317,6 +327,8 @@ if __name__ == '__main__':
             N = int(a)
         elif o == "-s":
             random_seed = int(a)
+        elif o == "-S":
+            salpeter = 1
         elif o == "-t":
             t_end = float(a) | nbody_system.time
         elif o == "-w":
@@ -328,5 +340,5 @@ if __name__ == '__main__':
     assert is_mpd_running()
     test_ph4(infile, N, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
-             accuracy_parameter, softening_length,
+             salpeter, accuracy_parameter, softening_length,
              manage_encounters, random_seed)
