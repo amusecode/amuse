@@ -16,14 +16,14 @@ from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 
-def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
+def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
     N = len(gravity.particles)
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    Ebin = gravity.get_binary_energy()
+    Ebin = gravity.multiples_energy_correction
     Etop = T + U
-    E = Etop + Ebin
+    E = Etop - Ebin
     if E0 == 0 | nbody_system.energy: E0 = E
     Rvir = -0.5*M*M/U
     Q = -T/U
@@ -32,20 +32,29 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     dcen,rcore,rhocore = pa.densitycentre_coreradius_coredens(gravity.particles)
     cmx,cmy,cmz = dcen
     lagr,mf = pa.LagrangianRadii(gravity.particles, dcen)  # no units!
-    print ""
-    print "time =", time.number, " N =", N, " M =", M.number
-    print "energy = ", E.number, " dE/E0 = ", (E/E0 - 1)
-    print "virial radius, ratio =", Rvir.number, Q
-    print "com position =", com.number
-    print "com velocity =", comv.number
-    print 'dens. center = [ %.8f   %.8f   %.8f]' % \
-	(cmx.number, cmy.number, cmz.number)
-    print "core radius  =", rcore.number
-    print "Lagr. radii:  ", lagr.number
 
-    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
-	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Ebin.number, Rvir.number, Q)
+    print ''
+    print pre+"time=", time.number
+    print pre+"Ntot=", N
+    print pre+"mass=", M.number
+    print pre+"Etot=", E.number
+    print pre+"Ebin=", Ebin.number
+    print pre+"dE/E=", E/E0 - 1
+    print pre+"Rvir=", Rvir.number
+    print pre+"Qvir=", Q
+    cmx,cmy,cmz = com
+    print pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    cmx,cmy,cmz = comv
+    print pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    cmx,cmy,cmz = dcen
+    print pre+"dcpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    print pre+"Rcore=", rcore.number
+    print pre+"Mlagr[9]=",
+    for m in mf: print "%.4f" % (m),
+    print ''
+    print pre+"Rlagr[9]=",
+    for r in lagr.number: print "%.8f" % (r),
+    print ''
 
     sys.stdout.flush()
     return E

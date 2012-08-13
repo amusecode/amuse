@@ -8,6 +8,7 @@ import unittest
 
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.smalln.interface import SmallN
+from amuse.community.kepler.interface import Kepler
 from amuse.couple import multiples
 
 from amuse.units import nbody_system
@@ -71,7 +72,6 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
 
     return E
 
-
 SMALLN = None
 def new_smalln():
     SMALLN.reset()
@@ -82,7 +82,20 @@ def init_smalln():
     SMALLN = SmallN()
     SMALLN.parameters.timestep_parameter = 0.1
     SMALLN.parameters.cm_index = 2001
+
+def init_kepler(star1, star2):        
+    try:
+        star1.mass.value_in(units.kg) # see if SI units, throw exception if not
+        unit_converter \
+            = nbody_system.nbody_to_si(star1.mass + star2.mass,
+                                       (star2.position-star1.position).length())
+    except Exception as ex:
+        unit_converter = None
         
+    kep = Kepler(unit_converter, redirection = "none")
+    kep.initialize_code()
+
+    return kep
         
 def test_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
@@ -237,7 +250,8 @@ def test_ph4(infile = None, number_of_stars = 40,
     # time, managing interactions internally.
 
     pre = "%%% "
-    multiples_code = multiples.Multiples(gravity, new_smalln)
+    kep = init_kepler(stars[0], stars[1])
+    multiples_code = multiples.Multiples(gravity, new_smalln, kep)
     E0 = print_log(pre, time, multiples_code)
 
     while time < end_time:
@@ -273,7 +287,7 @@ if __name__ == '__main__':
     use_gpu = 1
     gpu_worker = 1
     accuracy_parameter = 0.1
-    softening_length = -1  | nbody_system.length
+    softening_length = 0  | nbody_system.length
     random_seed = -1
     manage_encounters = 1
 
