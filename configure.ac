@@ -17,7 +17,7 @@ AS_IF([test "x$PYTHON" = "x"], [PYTHON=python])
 
 AC_PATH_PROG([PYTHON], [$PYTHON], [])
 AC_ARG_VAR([NVCC], [CUDA compiler command])
-
+AC_ARG_VAR([NVCC_FLAGS], [Extra flags for the CUDA nvcc compiler])
 
 AC_ARG_VAR([JAVA_HOME], [Java sdk directory])
 

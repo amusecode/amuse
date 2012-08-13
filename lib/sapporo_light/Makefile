@@ -1,3 +1,8 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+AMUSE_DIR?=../..
+-include ${AMUSE_DIR}/config.mk
+
 .SUFFIXES: .cu 
 
 CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
@@ -10,7 +15,7 @@ CC   ?= gcc
 NVCC ?= $(CUDAPATH)/bin/nvcc
 
 
-NVCCFLAGS :=  -D_CONSOLE -O0 -g -D_DEBUG  -maxrregcount=32 $(CUDAINCLUDE)
+NVCCFLAGS :=  $(NVCC_FLAGS) -D_CONSOLE -O0 -g -D_DEBUG  -maxrregcount=32 $(CUDAINCLUDE)
 CXXFLAGS  := -g -DNGB $(CUDAINCLUDE)
 LDFLAGS   := 
 
