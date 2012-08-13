@@ -57,7 +57,7 @@ class Cosmology(object):
                  omegar = 8.37e-5, # 4.165E-5/(h*h) includes 3 massless neutrino species, T0 = 2.72528
                  h = 0.705,
                  sigma8 = 0.812,
-                 n=1000): 
+                 n=1000,amax=1.): 
     self.omega=omega
     self.omegal=omegal
     self.omegar=omegar
@@ -66,7 +66,7 @@ class Cosmology(object):
     self.omegam = omega - (omegak + omegar + omegal) 
     self.n=n
     
-    a=(numpy.array(range(self.n+1))/float(self.n))**2
+    a=amax*(numpy.array(range(self.n+1))/float(self.n))**2
     t=[0.]
     dtda=[0.]
     dadt=[0.]
@@ -103,7 +103,7 @@ class Cosmology(object):
     return self.taufroma(1./(z+1.))
   
   def agefroma(self,a):
-    return self.age_lookup.evaluate(a)/self.hubble0
+    return (self.age_lookup.evaluate(a)/self.hubble0)
 
   def taufroma(self,a):
     return self.age_lookup.evaluate(a)
@@ -152,8 +152,9 @@ def convert_quantity_from_comoving_to_physical(original, redshift, hubble_parame
 
 
 if __name__=="__main__":  
-  cosmo=Cosmology()
-  print cosmo.agefroma(1.).in_(units.Myr)
-  print cosmo.afromage(cosmo.agefroma(1.))
+  cosmo=Cosmology(amax=2)
+  print cosmo.agefromz(0.).in_(units.Myr)
+  print cosmo.agefroma(1.).in_(units.Gyr)
+  print cosmo.afromage(cosmo.agefroma(1.5))
 
 
