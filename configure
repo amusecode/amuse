@@ -738,6 +738,7 @@ JAVAC
 JAVA
 JDK
 JAVA_HOME
+NVCC_FLAGS
 NVCC
 PYTHON
 ac_ct_FC
@@ -825,6 +826,7 @@ FC
 FCFLAGS
 PYTHON
 NVCC
+NVCC_FLAGS
 JAVA_HOME
 MPIEXEC
 MPICXX
@@ -1493,6 +1495,7 @@ Some influential environment variables:
   FCFLAGS     Fortran compiler flags
   PYTHON      Python interpreter
   NVCC        CUDA compiler command
+  NVCC_FLAGS  Extra flags for the CUDA nvcc compiler
   JAVA_HOME   Java sdk directory
   MPIEXEC     mpiexec or mpirun location
   MPICXX      MPI C++ compiler command
@@ -5438,7 +5441,7 @@ $as_echo_n "checking directories for -lcudart... " >&6; }
     if eval \${ac_cv_lib_$ac_lib_var+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  for dir in  "" $CUDA_TK/lib64 $CUDA_TK/lib
+  for dir in "" $CUDA_TK/lib64 $CUDA_TK/lib
     do
         ac_cache_save_LIBS="$LIBS"
         if test "X$dir" = "X"; then
@@ -5519,7 +5522,7 @@ $as_echo_n "checking directories for -lcuda... " >&6; }
     if eval \${ac_cv_lib_$ac_lib_var+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  for dir in  "" $CUDA_TK/lib64 $CUDA_TK/lib /usr/lib64 /usr/lib /usr/lib64/nvidia /usr/lib/nvidia /usr/lib/nvidia-current /usr/lib64/nvidia-current
+  for dir in "" $CUDA_TK/lib64 $CUDA_TK/lib /usr/lib64 /usr/lib /usr/lib64/nvidia /usr/lib/nvidia /usr/lib/nvidia-current /usr/lib64/nvidia-current
     do
         ac_cache_save_LIBS="$LIBS"
         if test "X$dir" = "X"; then
