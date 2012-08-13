@@ -52,13 +52,13 @@ def print_log(s, gravity, E0 = zero):
     return E
 
 def get_component_binary_elements(comp1, comp2, kep, peri = 0):
-    try:
-        comp1.mass.value_in(units.kg) # see if SI units, throw exception if not
-        unit_converter \
-            = nbody_system.nbody_to_si(comp1.mass + comp2.mass,
-                                       (comp2.position-comp1.position).length())
-    except Exception as ex:
-        unit_converter = None
+    #try:
+    #    comp1.mass.value_in(units.kg) # see if SI units, throw exception if not
+    #    unit_converter \
+    #        = nbody_system.nbody_to_si(comp1.mass + comp2.mass,
+    #                                   (comp2.position-comp1.position).length())
+    #except Exception as ex:
+    #    unit_converter = None
         
     #kep = Kepler(unit_converter, redirection = "none")
     #kep.initialize_code()
@@ -194,19 +194,22 @@ class Multiples(object):
                 # encounters that are then ignored here.  I have
                 # temporarily duplicated this check in the ph4 module.
 
-                r = numpy.sqrt(numpy.inner(star2.position-star1.position,
-                                           star2.position-star1.position))
-                v = numpy.sqrt(numpy.inner(star2.velocity-star1.velocity,
-                                           star2.velocity-star1.velocity))
-                vr = numpy.inner(star2.position-star1.position,
-                                 star2.velocity-star1.velocity)
-                EPS = 0.01		# proceed only if the stars are
-                if vr < -EPS*r*v:	# clearly approaching
+                r = (star2.position-star1.position).length()
+                v = (star2.velocity-star1.velocity).length()
+                cos_angle = numpy.inner(
+                    (star2.velocity-star1.velocity)/v,
+                    (star2.position-star1.position)/r
+                )
+                angle = numpy.arccos(cos_angle)
+                # proceed only if the stars are moving parallel or toward
+                # each other
+                # we assume all angles more than 80 degrees will
+                # need to check binary from
+                if r < (0.5 * star1.radius + star2.radius) or angle > (numpy.pi * 0.44):
 
                     print '\n'+'~'*60
                     print 'interaction at time', time
-                    print 'top-level: r =', r.number, ' v =', v.number, \
-			  ' v.r =', vr.number
+                    print 'top-level: r =', r, ' v =', v, ' angle =',(angle / numpy.pi) * 180
                     sys.stdout.flush()
 
                     energy = self.get_total_energy(self.gravity_code)
@@ -511,7 +514,7 @@ class Multiples(object):
             if delta_t < delta_t_max and time > 0.999999*4*delta_t:
                 delta_t *= 2
 
-        resolve_collision_code.stop()
+        #resolve_collision_code.stop()
         raise Exception(
             "Did not finish the small-N simulation before end time {0}".
             format(end_time)
@@ -522,6 +525,32 @@ class Multiples(object):
             print "number of multiples: ", len(self.root_to_tree)
             sys.stdout.flush()
 
+    @property
+    def stars(self):
+        result = self._inmemory_particles.copy()
+        for root, tree in self.root_to_tree.iteritems():
+            root_particle = root.as_particle_in_set(self._inmemory_particles)
+            result.remove_particle(root)
+            leaves = tree.get_leafs_subset()
+      
+            original_star = tree.particle
+
+            dx = root_particle.x - original_star.x
+            dy = root_particle.y - original_star.y
+            dz = root_particle.z - original_star.z
+            dvx = root_particle.vx - original_star.vx
+            dvy = root_particle.vy - original_star.vy
+            dvz = root_particle.vz - original_star.vz
+            
+            leaves_in_result = result.add_particles(leaves)
+            leaves_in_result.x += dx
+            leaves_in_result.y += dy
+            leaves_in_result.z += dz
+            leaves_in_result.vx += dvx
+            leaves_in_result.vy += dvy
+            leaves_in_result.vz += dvz
+        return result
+        
 def openup_tree(star, tree, particles_in_encounter):
 
     # List the leaves.
