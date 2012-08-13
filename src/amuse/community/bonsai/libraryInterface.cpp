@@ -22,7 +22,7 @@ long long my_dev::base_mem::maxMemUsage;
 
 vector<float4> bodies_pos;
 vector<float4> bodies_vel;
-vector<float2> bodies_time;
+vector<double2> bodies_time;
 vector<float4> bodies_grav(0);   // (w = potential)
 vector<int>    starids(0);       // list of identifiers
 vector<float>  radii(0);         // list of radii
@@ -62,7 +62,7 @@ int getCurrentStateToHost()
      memcpy(&bodies_pos[0], &bonsai->localTree.bodies_pos[0], sizeof(float4)*n_bodies);
      memcpy(&bodies_vel[0], &bonsai->localTree.bodies_vel[0], sizeof(float4)*n_bodies);
      memcpy(&bodies_grav[0], &bonsai->localTree.bodies_acc1[0], sizeof(float4)*n_bodies);
-     memcpy(&bodies_time[0], &bonsai->localTree.bodies_time[0], sizeof(float2)*n_bodies);
+     memcpy(&bodies_time[0], &bonsai->localTree.bodies_time[0], sizeof(double2)*n_bodies);
      memcpy(&starids[0], &bonsai->localTree.bodies_ids[0], sizeof(int)*n_bodies);
 
 	
@@ -157,6 +157,7 @@ int new_particle(int *id, double mass, double x, double y, double z, double vx, 
 
   double tempTimeStep =  bonsai->getDt();
 
+  //TODO change this into probably t_now to make sure it will do a step to get proper dt in block step mode
   bodies_time[n_bodies].y = t_now + tempTimeStep;
 
 

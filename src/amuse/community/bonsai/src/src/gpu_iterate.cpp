@@ -246,8 +246,12 @@ void octree::iterate() {
     
     
     //Build the tree using the predicted positions
-   // bool rebuild_tree = Nact_since_last_tree_rebuild > 4*this->localTree.n;   
+#ifdef ADAPTIVE_TIMESTEP
+    bool rebuild_tree = Nact_since_last_tree_rebuild > 4*this->localTree.n;   
+#else
     bool rebuild_tree = true;
+#endif
+   // bool rebuild_tree = true;
     
     if(rebuild_tree)
     {
@@ -402,7 +406,7 @@ void octree::predict(tree_structure &tree)
   getTNext.set_arg<int>(0,    &tree.n);
   getTNext.set_arg<cl_mem>(1, tree.bodies_time.p());
   getTNext.set_arg<cl_mem>(2, tnext.p());
-  getTNext.set_arg<float>(3,  NULL, 128); //Dynamic shared memory
+  getTNext.set_arg<double>(3,  NULL, 128); //Dynamic shared memory
   getTNext.setWork(-1, 128, blockSize);
   getTNext.execute();
 
@@ -415,12 +419,27 @@ void octree::predict(tree_structure &tree)
       t_current = fmin(t_current, tnext[i]);
   }
 
+/*
+  bool timeFix = false;
+  if(iter > 0){
+  if(t_current == t_previous){
+	  fprintf(stderr, "TIMEFIX: iter %d  t_current: %lg (%.15f)   t_prev: %lg (%.15f)  \n", iter, t_current, t_current, t_previous, t_previous);
+	  t_current += 1./16384;
+	  fprintf(stderr, "TIMEFIX2: iter %d  t_current: %lg (%.15f)   t_prev: %lg (%.15f) test: %lg  \n", iter, t_current, t_current, t_previous, t_previous, 1./16384);
+	  t_current += 1.0/16384.0;
+	  fprintf(stderr, "TIMEFIX3: iter %d  t_current: %lg (%.15f)   t_prev: %lg (%.15f) test: %lg  \n", iter, t_current, t_current, t_previous, t_previous, 1./16384.0);
+	  timeFix = true;
+
+	  fprintf(stderr, "TIMEFIX4: iter %d  t_current: %lg (%.15f)  (%.15f) (%.15f)  \n", iter, t_current, t_current+1./16384.0, t_current+1./8192., ((double)t_current)+1.0/16384.0);
+  }}
+*/
+
   tree.activeGrpList.zeroMem();      //Reset the active grps
 
   //Set valid list to zero
   predictParticles.set_arg<int>(0,    &tree.n);
-  predictParticles.set_arg<float>(1,  &t_current);
-  predictParticles.set_arg<float>(2,  &t_previous);
+  predictParticles.set_arg<double>(1,  &t_current);
+  predictParticles.set_arg<double>(2,  &t_previous);
   predictParticles.set_arg<cl_mem>(3, tree.bodies_pos.p());
   predictParticles.set_arg<cl_mem>(4, tree.bodies_vel.p());
   predictParticles.set_arg<cl_mem>(5, tree.bodies_acc0.p());
@@ -440,6 +459,33 @@ void octree::predict(tree_structure &tree)
 
   printf("t_previous: %lg t_current: %lg dt: %lg Active groups: %d \n",
          t_previous, t_current, t_current-t_previous, tree.n_active_groups);
+  fprintf(stderr,"t_previous: %lg (%.15f) t_current: %lg (%.15f) dt: %lg (%.15f) Active groups: %d \n",
+         t_previous, t_previous, t_current, t_current, t_current-t_previous, t_current-t_previous, tree.n_active_groups);
+
+
+
+/*
+  if(timeFix){
+	  tree.bodies_time.d2h();
+	  tree.body2group_list.d2h();
+	  
+	  for(int i=0; i < tree.n; i++)
+	  {
+		  fprintf(stderr,"%d\t t.x: %lg (%.15f) \tt.y: %lg (%.15f) \t %d  \n",
+				  i, tree.bodies_time[i].x, tree.bodies_time[i].x,
+				  tree.bodies_time[i].y, tree.bodies_time[i].y, tree.body2group_list[i]);
+	  }
+
+	 tree.active_group_list.d2h();
+	 for(int i=0; i < tree.n_active_groups; i++)
+	 {
+		 fprintf(stderr, "%d\tgrp: %d \n", i, tree.active_group_list[i]);
+	 }
+	exit(0);
+  }
+*/
+
+
 
 }
 //End predict
@@ -451,7 +497,7 @@ void octree::setActiveGrpsFunc(tree_structure &tree)
 
   //Set valid list to zero
   setActiveGrps.set_arg<int>(0,    &tree.n);
-  setActiveGrps.set_arg<float>(1,  &t_current);
+  setActiveGrps.set_arg<double>(1,  &t_current);
   setActiveGrps.set_arg<cl_mem>(2, tree.bodies_time.p());
   setActiveGrps.set_arg<cl_mem>(3, tree.body2group_list.p());
   setActiveGrps.set_arg<cl_mem>(4, tree.activeGrpList.p());
@@ -750,7 +796,7 @@ void octree::approximate_gravity_let(tree_structure &tree, tree_structure &remot
 void octree::correct(tree_structure &tree)
 {
   correctParticles.set_arg<int   >(0, &tree.n);
-  correctParticles.set_arg<float >(1, &t_current);
+  correctParticles.set_arg<double>(1, &t_current);
   correctParticles.set_arg<cl_mem>(2, tree.bodies_time.p());
   correctParticles.set_arg<cl_mem>(3, tree.activePartlist.p());
   correctParticles.set_arg<cl_mem>(4, tree.bodies_vel.p());
@@ -859,7 +905,7 @@ void octree::correct(tree_structure &tree)
   
 
   computeDt.set_arg<int>(0,    &tree.n);
-  computeDt.set_arg<float>(1,  &t_current);
+  computeDt.set_arg<double>(1,  &t_current);
   computeDt.set_arg<float>(2,  &(this->eta));
   computeDt.set_arg<int>(3,    &(this->dt_limit));
   computeDt.set_arg<float>(4,  &(this->eps2));

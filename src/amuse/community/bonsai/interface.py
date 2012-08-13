@@ -265,6 +265,11 @@ class Bonsai(GravitationalDynamics):
             (nbody_system.length**2, object.ERROR_CODE,)
         )
         object.add_method(
+            "get_time",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+        object.add_method(
             "set_eps2",
             (nbody_system.length**2,),
             (object.ERROR_CODE,)

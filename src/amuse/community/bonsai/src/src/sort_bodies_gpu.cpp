@@ -139,7 +139,7 @@ void octree::sort_bodies(tree_structure &tree, bool doDomainUpdate) {
   printf("Corner: %f %f %f idomain fac: %f domain_fac: %f\n", 
          tree.corner.x, tree.corner.y, tree.corner.z, idomain_fac, domain_fac);
   printf("domain fac: %f idomain_fac: %f size: %f MAXLEVELS: %d \n", domain_fac, idomain_fac, size, MAXLEVELS);
- // printf("Test: %f and %f \n", size, tree.domain_fac*(1 << MAXLEVELS));
+  //printf("Test theta: %f  \n", inv_theta);
   
   //Compute the keys
   build_key_list.set_arg<cl_mem>(0,   tree.bodies_key.p());
@@ -272,7 +272,7 @@ void octree::sort_bodies(tree_structure &tree, bool doDomainUpdate) {
   tree.bodies_Pvel.copy(real4Buffer, real4Buffer.get_size()); 
   clFinish(devContext.get_command_queue());     
   
-  my_dev::dev_mem<float2> float2Buffer(devContext);
+  my_dev::dev_mem<double2> float2Buffer(devContext);
   float2Buffer.cmalloc_copy(tree.generalBuffer1.get_pinned(),   
                          tree.generalBuffer1.get_flags(), 
                          tree.generalBuffer1.get_devMem(),
@@ -392,7 +392,7 @@ void octree::desort_bodies(tree_structure &tree) {
   tree.bodies_Pvel.copy(real4Buffer, real4Buffer.get_size()); 
   clFinish(devContext.get_command_queue());     
   
-  my_dev::dev_mem<float2> float2Buffer(devContext);
+  my_dev::dev_mem<double2> float2Buffer(devContext);
   float2Buffer.cmalloc_copy(tree.generalBuffer1.get_pinned(),   
                          tree.generalBuffer1.get_flags(), 
                          tree.generalBuffer1.get_devMem(),

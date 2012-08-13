@@ -1,7 +1,7 @@
 #define IMPBH   //Improved barnes hut opening method
 //#define INDSOFT //Individual softening using cubic spline kernel
 
-
+//#define ADAPTIVE_TIMESTEP  //Uncomment to enable adaptive time-steps, experimental!
 #define _AMUSE_STOPPING_CONDITIONS_
 
 

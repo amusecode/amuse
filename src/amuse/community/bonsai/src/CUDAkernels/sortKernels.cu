@@ -20,8 +20,8 @@ extern "C" __global__ void dataReorderR4(const int n_particles,
 }
 
 extern "C" __global__ void dataReorderF2(const int n_particles,
-                                         float2 *source,
-                                         float2 *destination,
+                                         double2 *source,
+                                         double2 *destination,
                                          uint  *permutation) {
   const int bid =  blockIdx.y *  gridDim.x +  blockIdx.x;
   const int tid = threadIdx.y * blockDim.x + threadIdx.x;

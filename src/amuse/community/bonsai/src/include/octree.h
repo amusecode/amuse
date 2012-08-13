@@ -84,7 +84,7 @@ typedef struct bodyStruct
   real4 acc1;
   real4 Ppos;
   real4 Pvel;
-  float2 time;
+  double2 time;
   int   id;
   int   temp;
 } bodyStruct;
@@ -115,7 +115,7 @@ class tree_structure
     my_dev::dev_mem<real4> bodies_vel;    //Velocities
     my_dev::dev_mem<real4> bodies_acc0;    //Acceleration
     my_dev::dev_mem<real4> bodies_acc1;    //Acceleration
-    my_dev::dev_mem<float2> bodies_time;  //The timestep details (.x=tb, .y=te
+    my_dev::dev_mem<double2> bodies_time;  //The timestep details (.x=tb, .y=te
     my_dev::dev_mem<int>   bodies_ids;
     my_dev::dev_mem<int>   oriParticleOrder;         //Used to restore original particle order
     
@@ -270,7 +270,7 @@ protected:
 
    //Simulation properties
   int   iter;
-  float t_current, t_previous;
+  double t_current, t_previous;
   int   snapshotIter;
   string snapshotFile;
   int nextSnapTime;
@@ -398,7 +398,7 @@ public:
    void set_src_directory(string src_dir);
 
    //Memory used in the whole system, not depending on a certain number of particles
-   my_dev::dev_mem<float> tnext;
+   my_dev::dev_mem<double> tnext;
    my_dev::dev_mem<uint>  nactive;
    //General memory buffers
    my_dev::dev_mem<float3>  devMemRMIN;

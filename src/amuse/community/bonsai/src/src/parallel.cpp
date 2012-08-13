@@ -953,13 +953,13 @@ int octree::exchange_particles_with_overflow_check(tree_structure &tree)
   real4  *velocities      = &tree.bodies_vel[0];  
   real4  *bodiesAcc0      = &tree.bodies_acc0[0];
   real4  *bodiesAcc1      = &tree.bodies_acc1[0];
-  float2 *bodiesTime      = &tree.bodies_time[0];
+  double2 *bodiesTime      = &tree.bodies_time[0];
   int    *bodiesIds       = &tree.bodies_ids[0];
   real4  *predictedBodiesPositions = &tree.bodies_Ppos[0];
   real4  *predictedVelocities      = &tree.bodies_Pvel[0];    
 
   real4  tmpp; 
-  float2 tmpp2;
+  double2 tmpp2;
   int    tmpp3;
   int *firstloc   = new int[nProcs+1];
   int *nparticles = new int[nProcs+1];
