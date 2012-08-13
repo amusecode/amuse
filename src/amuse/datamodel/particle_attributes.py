@@ -664,6 +664,80 @@ def velocity_diff_squared(particles,field_particles):
     dxdydz = transposed_positions - field_particles.velocity
     return (dxdydz**2).sum(-1)
 
+def Qparameter(parts, distfunc=None):
+    """
+    Calculates the minimum spanning tree Q parameter (Cartwright & Whitworth 2004)
+    for a projection of the particle set.
+    
+    :argument distfunc:  distfunc is the distance function which can be used to select
+    the projection plane.
+
+    """
+    from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges
+    if distfunc is None:
+      def distfunc(p,q):
+        return (((p.x-q.x)**2+(p.y-q.y)**2)**0.5).value_in(p.x.unit)
+    N=len(parts)
+  
+    graph=Graph()
+  
+    print "making graph"
+    for p in parts:
+      d=distfunc(p,parts)
+      for i,q in enumerate(parts):
+        if p!=q:
+          graph.add_edge(p,q, d[i] ) 
+
+    all_edges=graph.all_edges()
+  
+    ml=reduce(lambda x,y: x+y[0],all_edges,zero )/len(all_edges)
+  
+    print "constructing MST"
+    mst=MinimumSpanningTreeFromEdges(all_edges)
+  
+    mlmst=reduce(lambda x,y: x+y[0],mst, zero )/len(mst)
+# normalize  
+    mlmst=mlmst/(N*numpy.pi)**0.5*(N-1)
+  
+    print "Q:",mlmst/ml
+    return mlmst/ml
+
+def connected_components(parts, threshold=None, distfunc=None):
+    """
+    return a list of connected component subsets of particles, connected if the distfunc
+    is smaller than the threshold.
+    
+    :argument threshold: value of the threshold. Must have consistent units with distfunc
+    :argument distfunc: distance or weight function. Must have consistent units with threshold
+    """
+    if threshold is None:
+      threshold=1. | parts.x.unit
+    
+    if distfunc is None:
+      def distfunc(p,q):
+        return (((p.x-q.x)**2+(p.y-q.y)**2+(p.z-q.z)**2)**0.5).value_in(threshold.unit)
+  
+    print "making CC"
+    tocheck=range(len(parts))
+    cc=[]
+    while len(tocheck)>0:
+       p=tocheck.pop()
+       stack=[p]
+       currentcc=[p]
+       
+       while len(stack)>0:
+         p=stack.pop()
+         
+         d=distfunc(parts[p],parts[tocheck])
+         toadd=[ tocheck.pop(i) for i in reversed(range(len(tocheck))) if d[i] < threshold.number ]
+         stack.extend(toadd)
+         currentcc.extend(toadd)
+       cc.append(parts[currentcc])  
+         
+    print "done"
+    print "number of CC:",len(cc)
+    return cc
+
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
@@ -697,3 +771,7 @@ AbstractParticleSet.add_global_function_attribute("new_particle_from_cluster_cor
 
 AbstractParticleSet.add_global_function_attribute("LagrangianRadii", LagrangianRadii)
 AbstractParticleSet.add_global_function_attribute("find_closest_particle_to", find_closest_particle_to)
+
+AbstractParticleSet.add_global_function_attribute("Qparameter", Qparameter)
+AbstractParticleSet.add_global_function_attribute("connected_components", connected_components)
+
