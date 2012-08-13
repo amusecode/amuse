@@ -288,6 +288,10 @@ def test_ph4(infile = None, number_of_stars = 40,
 
 if __name__ == '__main__':
 
+    print 'command line: ',
+    for i in range(len(sys.argv)): print sys.argv[i],
+    print ''
+
     infile = None
     N = 100
     t_end = 5.0 | nbody_system.time
@@ -335,7 +339,6 @@ if __name__ == '__main__':
             n_workers = int(a)
         else:
             print "unexpected argument", o
-
 
     assert is_mpd_running()
     test_ph4(infile, N, t_end, delta_t, n_workers,
