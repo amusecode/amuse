@@ -21,9 +21,8 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    Ebin = gravity.multiples_energy_correction
     Etop = T + U
-    E = Etop - Ebin
+    E = Etop
     if E0 == 0 | nbody_system.energy: E0 = E
     Rvir = -0.5*M*M/U
     Q = -T/U
@@ -38,7 +37,6 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
     print pre+"Ntot=", N
     print pre+"mass=", M.number
     print pre+"Etot=", E.number
-    print pre+"Ebin=", Ebin.number
     print pre+"dE/E=", E/E0 - 1
     print pre+"Rvir=", Rvir.number
     print pre+"Qvir=", Q
@@ -184,7 +182,7 @@ def test_ph4(infile = None, number_of_stars = 40,
           "in steps of", delta_t.number
     sys.stdout.flush()
 
-    E0 = print_log(time, gravity)
+    E0 = print_log('', time, gravity)
     
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
@@ -241,7 +239,7 @@ def test_ph4(infile = None, number_of_stars = 40,
                 print "number of stars =", len(stars)
             sys.stdout.flush()
 
-        print_log(time, gravity, E0)
+        print_log('', time, gravity, E0)
         sys.stdout.flush()
 
     print ''
