@@ -35,7 +35,6 @@ struct particle
   DOUBLE pot;
   DOUBLE postime;
   FLOAT timestep;
-  INT level; 
 };
 
 struct jparticle

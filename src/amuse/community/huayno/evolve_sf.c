@@ -373,6 +373,5 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
     fast->last=s.part+fast->n-1;
   }
   if(fast->n+slow->n !=s.n) ENDRUN( "split error 2");
-  for(i=0;i<s.n;i++) s.part[i].level=clevel;
 }
 

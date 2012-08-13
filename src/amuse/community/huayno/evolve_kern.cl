@@ -1,11 +1,3 @@
-#define RVTIMESTEP
-#define RATIMESTEP
-#define RVRARATIO   0.25
-
-#define FLOAT double
-#define FLOAT4 double4
-#define BIGNUM HUGE_VAL
-
 #ifdef cl_khr_fp64
     #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #endif
@@ -13,6 +5,14 @@
 #ifdef cl_amd_fp64
     #pragma OPENCL EXTENSION cl_amd_fp64 : enable
 #endif
+
+#define RVTIMESTEP
+#define RATIMESTEP
+#define RVRARATIO   1.
+
+#define FLOAT double
+#define FLOAT4 double4
+#define BIGNUM HUGE_VAL
 
 __kernel void kick_kernel(
   uint nj, 

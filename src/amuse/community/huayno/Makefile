@@ -1,18 +1,20 @@
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 
+OPENMP_CFLAGS?= -fopenmp
+
 ifneq (,$(findstring xlc, $(notdir $(CC))))
 CCFLAGS += -qlanglvl=extc99
 else
-CCFLAGS += -std=c99
+CCFLAGS += -O2 -std=gnu99
 endif
-CXXFLAGS += 
+CXXFLAGS +=  -O2
 LIBS += -lm
 INCLUDE =
 
 # set OpenCL and STDCL libraries
 OPENCL = /home/inti/libraries/cuda
-STDCL = /home/inti/libraries/coprthr_old
+STDCL = /home/inti/libraries/coprthr
 
 #---------------------------------------------
 
@@ -52,6 +54,7 @@ huayno_worker_mp: clean __init__.py worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OBJS) -o $@ $(LIBS)
 
 huayno_worker_cl: CCFLAGS   += -fopenmp -DEVOLVE_OPENCL
+huayno_worker_cl: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: LIBS += -L$(OPENCL)/lib/x86_64 -lOpenCL -lpthread -ldl -L$(STDCL)/lib -lstdcl
 huayno_worker_cl: INCLUDE += -I$(OPENCL)/include -I$(STDCL)/include
 huayno_worker_cl: clean __init__.py worker_code.cc worker_code.h evolve_kern.clh evolve_cl.o $(OBJS) 
@@ -64,4 +67,4 @@ huayno_worker_cl: clean __init__.py worker_code.cc worker_code.h evolve_kern.clh
 	$(MPICC) $(CCFLAGS) $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
-	awk 'BEGIN{print "const char srcstr[]=" } {print "\""$$0"\\n\""} END{print ";"}' $< > $@
+	awk 'BEGIN{print "const char srcstr[]=" } {if(substr($$0,length($0))=="\\"){$$0=$$0"\\"};print "\""$$0"\\n\""} END{print ";"}' $< > $@

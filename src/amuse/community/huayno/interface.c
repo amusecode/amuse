@@ -30,8 +30,6 @@ int cleanup_code()
         pindex[i] = 0;
     }
     
-    mainsys.n = 0;
-    mainsys.last = 0;
     pcounter=-1;
     mainsys.n=0;
     free(mainsys.part);

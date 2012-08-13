@@ -1,6 +1,7 @@
 #include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 #include "evolve.h"
 #include "evolve_shared.h"
 #include "evolve_sf.h"
@@ -75,7 +76,6 @@ void init_evolve(struct sys s,int inttype)
   {
     s.part[i].postime=0.;
     s.part[i].pot=0.;
-    s.part[i].level=0;
     s.part[i].timestep=HUGE_VAL;
 #ifdef COMPENSATED_SUMMP
     s.part[i].pos_e[0]=0.;s.part[i].pos_e[1]=0.;s.part[i].pos_e[2]=0.;
@@ -90,13 +90,24 @@ void init_evolve(struct sys s,int inttype)
   if (inttype == OK) evolve_ok_init(s);
 }
 
+void evolve_constant(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  clevel++;
+  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
+    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+  deepsteps++;
+  simtime+=dt;
+  dkd(s,zerosys, stime, etime, dt);
+  clevel--;
+}
+
+
 void do_evolve(struct sys s, double dt, int inttype)
 {
   UINT p;
   int i;
   if(dt==0) return;
   for(p=0;p<s.n;p++) s.part[p].postime=0.;
-  for(p=0;p<s.n;p++) s.part[p].level=-1;
   clevel=-1;
   deepsteps=0;
   simtime=0.;
@@ -106,10 +117,14 @@ void do_evolve(struct sys s, double dt, int inttype)
     tstep[i]=0;tcount[i]=0;
     kstep[i]=0;kcount[i]=0;
     dstep[i]=0;dcount[i]=0;
+    cefail[i]=0;cecount[i]=0;
     bsstep[i]=0;jcount[i]=0;
   }
   switch (inttype)
   {
+    case CONSTANT:
+      evolve_constant(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
     case SHARED2:
       evolve_shared2(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
@@ -225,7 +240,7 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
   FLOAT dx[3],dr3,dr2,dr,acci;
   FLOAT acc[3];
 
-#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT) default(none) \
+#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT && !omp_in_parallel()) default(none) \
  private(i,j,dx,dr3,dr2,dr,acc,acci) \
  shared(dt,s1,s2,eps2)
   for(i=0;i<s1.n;i++)
@@ -290,7 +305,7 @@ static void potential_cpu(struct sys s1,struct sys s2)
   FLOAT dx[3],dr2,dr;
   FLOAT pot;
 
-#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT) default(none) \
+#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT && !omp_in_parallel()) default(none) \
  private(i,j,dx,dr2,dr,pot) \
  shared(s1,s2,eps2)
   for(i=0;i<s1.n;i++)
@@ -377,7 +392,7 @@ static void timestep_cpu(struct sys s1, struct sys s2,int dir)
 {
   UINT i,j;
   FLOAT timestep,tau;
-#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT) default(none) \
+#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT && !omp_in_parallel()) default(none) \
  private(i,j,tau,timestep) \
  shared(s1,s2,stdout,dir)
   for(i=0;i<s1.n;i++)

@@ -4,10 +4,15 @@ from amuse.community.interface.gd import GravitationalDynamics
 
 class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface):
     """
-    N-body integration module with individual and variable time step
-    using the Hermite integration scheme.
+    HUAYNO is a code to solve the astrophysical N-body problem. It uses
+    recursive Hamiltonian splitting to generate multiple-timestep integrators
+    which conserve momentum to machine precision. A number of different
+    integrators are available. The code has been developed within the
+    AMUSE environment. It can make use of GPUs - for this an OpenCL
+    version can be compiled.
 
-    .. [#] Pelupessy, I.F., XXX, Portegies Zwart, S.F., to be submitted
+    .. [#] Pelupessy, Federico I.; J\"anes, J\"urgen; Portegies Zwart, Simon, New Astronomy, Volume 17, Issue 8, p. 711-719
+    
     """
     include_headers = ['worker_code.h']
     

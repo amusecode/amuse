@@ -253,7 +253,8 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
 	struct sys c = zerosys, r = zerosys;
 	clevel++;
-	if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
+  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
+    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
 
 #ifdef CC2_SPLIT_CONSISTENCY_CHECKS
 	if (clevel == 0) {
@@ -301,8 +302,8 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
 	// evolve all fast components, 1st time
 	for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-		evolve_cc2(*ci, stime, stime+dt/2, dt/2);
-	}
+    evolve_cc2(*ci, stime, stime+dt/2, dt/2);
+  }
 
 	drift(r, stime+dt/2, dt/2); // drift r, 1st time
 
@@ -328,8 +329,8 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
 	// evolve all fast components, 2nd time
 	for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-		evolve_cc2(*ci, stime+dt/2, etime, dt/2);
-	}
+    evolve_cc2(*ci, stime+dt/2, etime, dt/2);
+  }
 
 	clevel--;
 	free_sys(c.next_cc);
@@ -344,7 +345,8 @@ void evolve_cc2_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
     //LOG("evolve: regular!\n");
     struct sys c = zerosys, r = zerosys;
     clevel++;
-    if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
+    if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
+      ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
 
 #ifdef CC2_SPLIT_CONSISTENCY_CHECKS
     if (clevel == 0) {
