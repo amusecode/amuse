@@ -11,6 +11,7 @@ import time
 import math
 
 from amuse.community.hermite0.interface import Hermite
+from amuse.community.kepler.interface import Kepler
 from amuse.community.smalln.interface import SmallN
 
 from amuse.units import nbody_system
@@ -28,6 +29,20 @@ class TestSimpleMultiples(TestWithMPI):
         result.parameters.timestep_parameter = 0.1
         result.parameters.cm_index = 2001
         return result
+        
+    def new_kepler_si(self):
+        unit_converter = nbody_system.nbody_to_si(
+            1 | units.MSun,
+            1 | units.AU
+        )
+        kepler = Kepler(unit_converter)
+        kepler.initialize_code()
+        return kepler
+        
+    def new_kepler(self):
+        kepler = Kepler()
+        kepler.initialize_code()
+        return kepler
         
     def new_smalln_si(self):
     
@@ -74,7 +89,7 @@ class TestSimpleMultiples(TestWithMPI):
         stars.radius = 0.5 | nbody_system.length
         code.particles.add_particles(stars)
         
-        multiples_code = multiples.Multiples(code, self.new_smalln)
+        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
         print multiples_code.multiples_energy_correction
         total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
         print total_energy0
@@ -110,7 +125,7 @@ class TestSimpleMultiples(TestWithMPI):
         print converter.to_si(stars.velocity)
         print converter.to_si(0.6|nbody_system.time).as_quantity_in(units.Myr)
         
-        multiples_code = multiples.Multiples(code, self.new_smalln)
+        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
         print multiples_code.multiples_energy_correction
         total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
         print total_energy0
@@ -139,7 +154,7 @@ class TestSimpleMultiples(TestWithMPI):
         stars.radius = converter.to_si(0.5 | nbody_system.length)
         code.particles.add_particles(stars)
         
-        multiples_code = multiples.Multiples(code, self.new_smalln_si, gravity_constant = constants.G)
+        multiples_code = multiples.Multiples(code, self.new_smalln_si, self.new_kepler_si(), gravity_constant = constants.G)
         print multiples_code.multiples_energy_correction
         total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
         print total_energy0
@@ -175,11 +190,11 @@ class TestSimpleMultiples(TestWithMPI):
         binary2.velocity += [0,0,0.03] | nbody_system.speed
         stars.add_particles(binary1)
         stars.add_particles(binary2)
-        stars.radius = 0.005 | nbody_system.length
+        stars.radius = 0.0005 | nbody_system.length
         print stars
         code.particles.add_particles(stars)
 
-        multiples_code = multiples.Multiples(code, self.new_smalln)
+        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
         total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
         multiples_code.evolve_model(0.1|nbody_system.time)
         multiples_code.print_multiples()
@@ -218,31 +233,37 @@ class TestSimpleMultiples(TestWithMPI):
         binary2.position -= [1.0,0.0,0] | nbody_system.length
         stars.add_particles(binary1)
         stars.add_particles(binary2)
-        stars.radius = 0.25 | nbody_system.length
+        stars.radius = 0.005 | nbody_system.length
         print stars
         code.particles.add_particles(stars)
 
-        multiples_code = multiples.Multiples(code, self.new_smalln)
-        total_energy0 = multiples_code.kinetic_energy \
-            		+ multiples_code.potential_energy \
-			- multiples_code.multiples_energy_correction
+        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
+        total_energy0 = (
+            multiples_code.kinetic_energy 
+            + multiples_code.potential_energy 
+            - multiples_code.multiples_energy_correction
+        )
         multiples_code.evolve_model(0.1|nbody_system.time)
         multiples_code.print_multiples()
-        total_energy1 =  multiples_code.kinetic_energy \
-            		+ multiples_code.potential_energy \
-			- multiples_code.multiples_energy_correction
+        total_energy1 =  (
+            multiples_code.kinetic_energy
+            + multiples_code.potential_energy
+            - multiples_code.multiples_energy_correction
+        )
 
         error = abs((total_energy1 - total_energy0)/total_energy0)
         
         self.assertTrue(error < 1e-7)
         multiples_code.evolve_model(2.0|nbody_system.time)
         multiples_code.print_multiples()
-        total_energy2 = multiples_code.kinetic_energy \
-			+ multiples_code.potential_energy \
-			- multiples_code.multiples_energy_correction
+        total_energy2 =(
+            multiples_code.kinetic_energy
+            + multiples_code.potential_energy 
+            - multiples_code.multiples_energy_correction
+        )
 
         error = abs((total_energy2 - total_energy0)/total_energy0)
         
         print code.particles
         print error
-        self.assertTrue(error < 1e-6)
+        self.assertTrue(error < 1e-5)

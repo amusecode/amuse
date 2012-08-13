@@ -3,8 +3,6 @@ import numpy
 import collections
 import math
 
-from amuse.community.kepler.interface import Kepler
-
 from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
@@ -89,8 +87,11 @@ def get_cm_binary_elements(p, kep, peri = 0):
 
 class Multiples(object):
 
-    def __init__(self, gravity_code, resolve_collision_code_creation_function,
-                 kepler_code, gravity_constant = None, **options):
+    def __init__(self, 
+                gravity_code,
+                resolve_collision_code_creation_function,
+                kepler_code, 
+                gravity_constant = None, **options):
         self.gravity_code = gravity_code
         self._inmemory_particles = self.gravity_code.particles.copy()
         self._inmemory_particles.id = self.gravity_code.particles.index_in_code
@@ -179,7 +180,6 @@ class Multiples(object):
             sys.stdout.flush()
             self.gravity_code.evolve_model(end_time)
             newtime = self.gravity_code.model_time
-            
             if newtime == time:
                 break
                 
@@ -200,7 +200,6 @@ class Multiples(object):
                                            star2.velocity-star1.velocity))
                 vr = numpy.inner(star2.position-star1.position,
                                  star2.velocity-star1.velocity)
-
                 EPS = 0.01		# proceed only if the stars are
                 if vr < -EPS*r*v:	# clearly approaching
 
