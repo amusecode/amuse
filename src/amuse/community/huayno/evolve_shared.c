@@ -45,8 +45,8 @@ void evolve_shared2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int cal
   }
   else
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
     kdk(s,zerosys, stime, etime, dt);
   }
   clevel--;
@@ -63,8 +63,8 @@ void evolve_shared4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int cal
     evolve_shared4(s,stime, stime+dt/2,dt/2,0);
     evolve_shared4(s,stime+dt/2, etime,dt/2,1);
   } else {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
     dkd4(s, stime, etime, dt);
   }
   clevel--;
@@ -81,8 +81,8 @@ void evolve_shared6(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int cal
     evolve_shared6(s,stime, stime+dt/2,dt/2,0);
     evolve_shared6(s,stime+dt/2, etime,dt/2,1);
   } else {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
     dkd6(s, stime, etime, dt);
   }
   clevel--;
@@ -99,8 +99,8 @@ void evolve_shared8(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int cal
     evolve_shared8(s,stime, stime+dt/2,dt/2,0);
     evolve_shared8(s,stime+dt/2, etime,dt/2,1);
   } else {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
     dkd8(s, stime, etime, dt);
   }
   clevel--;
@@ -117,8 +117,8 @@ void evolve_shared10(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int ca
     evolve_shared10(s,stime, stime+dt/2,dt/2,0);
     evolve_shared10(s,stime+dt/2, etime,dt/2,1);
   } else {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
     dkd10(s, stime, etime, dt);
   }
   clevel--;

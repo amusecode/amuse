@@ -8,6 +8,7 @@
 #include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 #include "evolve.h"
 #include "evolve_kepler.h"
 
@@ -33,7 +34,7 @@ void split_cc(struct sys s, struct sys *c, struct sys *r, DOUBLE dt) {
    */
   int dir=SIGN(dt); 
   dt=fabs(dt); 
-  tstep[clevel]++; // not directly comparable to corresponding SF-split statistics
+  diag->tstep[clevel]++; // not directly comparable to corresponding SF-split statistics
 	struct sys *c_next;
 	c_next = c;
 	*c_next = zerosys;
@@ -53,7 +54,7 @@ void split_cc(struct sys s, struct sys *c, struct sys *r, DOUBLE dt) {
 			for (UINT i = stack_next; i <= rest_next; i++) {
 				// if element is connected to the first element of the stack
 				DOUBLE timestep = (DOUBLE) timestep_ij(s.part+comp_next, s.part+i,dir);
-				tcount[clevel]++;
+				diag->tcount[clevel]++;
                                 if ( timestep <= dt) {
 					// add i to the end of the stack by swapping stack_next and i
 					SWAP( s.part[ stack_next ], s.part[i], struct particle );
@@ -238,23 +239,49 @@ void free_sys(struct sys * s) {
 DOUBLE sys_forces_max_timestep(struct sys s,int dir) {
   DOUBLE ts = 0.0;
   DOUBLE ts_ij;
-  for (UINT i = 0; i < s.n; i++) {
-    for (UINT j = 0; j < s.n; j++) {
-      if (i != j) {
-        ts_ij = (DOUBLE) timestep_ij(s.part+ i, s.part+j,dir);
+  for (UINT i = 0; i < s.n-1; i++) {
+    for (UINT j = i+1; j < s.n; j++) {
+        ts_ij = (DOUBLE) timestep_ij(s.part+ i, s.part+j,dir); // check symm.
         if (ts_ij >= ts) { ts = ts_ij; };
-      }
     }
   }
   return ts;
 }
 
-void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
+void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int do_kepler) {
 
 	struct sys c = zerosys, r = zerosys;
 	clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+
+  if (s.n == 2 && do_kepler) {
+    clevel--;
+    evolve_kepler(s, stime, etime, dt);
+    return;
+  }
+
+// not actually helpful I think; needs testing
+#ifdef CC2_SPLIT_SHORTCUTS
+    int dir=SIGN(dt);
+    DOUBLE initial_timestep = sys_forces_max_timestep(s, dir);
+    if(fabs(dt) > initial_timestep)
+    {
+      int ocl=clevel;
+      DOUBLE dt_step = dt;
+      while (fabs(dt_step) > initial_timestep)
+      { 
+        dt_step = dt_step / 2;
+        clevel++;
+      }
+      LOG("CC2_SPLIT_SHORTCUTS clevel=%d dt/dt_step=%Le\n", ocl, dt / dt_step);
+      for (DOUBLE dt_now = 0; dir*dt_now < dir*(dt-dt_step/2); dt_now += dt_step)
+        evolve_cc2(s, dt_now, dt_now + dt_step, dt_step,do_kepler);
+      clevel=ocl;
+      clevel--;
+      return;
+    }
+#endif
 
 #ifdef CC2_SPLIT_CONSISTENCY_CHECKS
 	if (clevel == 0) {
@@ -296,15 +323,42 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 #endif
 
 	if (IS_ZEROSYSs(c)) {
-		deepsteps++;
-		simtime+=dt;
+		diag->deepsteps++;
+		diag->simtime+=dt;
 	}
 
 	// evolve all fast components, 1st time
-	for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-    evolve_cc2(*ci, stime, stime+dt/2, dt/2);
-  }
+  int ocl=clevel;
 
+  int nc=0; for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) nc++;
+
+	for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
+#ifdef _OPENMP
+  if(nc>1)
+  {
+#pragma omp task firstprivate(ci,stime,dt)
+    {
+      struct sys lsys;
+      lsys.n=ci->n;
+      struct particle* lpart=(struct particle*) malloc(lsys.n*sizeof(struct particle));
+      lsys.part=lpart;lsys.last=lpart+lsys.n-1;
+      for(UINT i=0;i<lsys.n;i++) lsys.part[i]=ci->part[i];
+      clevel=ocl;
+      evolve_cc2(lsys, stime, stime+dt/2, dt/2,do_kepler);
+      for(UINT i=0;i<lsys.n;i++) ci->part[i]=lpart[i];
+      free(lpart);
+      diag->ntasks++;
+    }
+  } else
+#endif
+  {
+      evolve_cc2(*ci, stime, stime+dt/2, dt/2,do_kepler);
+  }
+  }
+#pragma omp taskwait  
+
+  clevel=ocl;
+  
 	drift(r, stime+dt/2, dt/2); // drift r, 1st time
 
 	// kick ci <-> cj
@@ -327,123 +381,35 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
 	drift(r, etime, dt/2); 	// drift r, 2nd time
 
+  ocl=clevel;
 	// evolve all fast components, 2nd time
 	for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-    evolve_cc2(*ci, stime+dt/2, etime, dt/2);
+#ifdef _OPENMP
+  if(nc>1)
+  {
+#pragma omp task firstprivate(ci,stime,etime,dt)
+    {
+      struct sys lsys;
+      lsys.n=ci->n;
+      struct particle* lpart=(struct particle*) malloc(lsys.n*sizeof(struct particle));
+      lsys.part=lpart;lsys.last=lpart+lsys.n-1;
+      for(UINT i=0;i<lsys.n;i++) lsys.part[i]=ci->part[i];
+      clevel=ocl;
+      evolve_cc2(lsys, stime+dt/2, etime, dt/2,do_kepler);
+      for(UINT i=0;i<lsys.n;i++) ci->part[i]=lpart[i];
+      free(lpart);
+      diag->ntasks++;
+    }
+  } else
+#endif
+  {
+      evolve_cc2(*ci, stime, stime+dt/2, dt/2,do_kepler);
   }
+  }
+#pragma omp taskwait  
+
+  clevel=ocl;
 
 	clevel--;
 	free_sys(c.next_cc);
-}
-
-void evolve_cc2_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
-  // TODO use kepler solver only if dt is larger than the orbital period?
-  if (s.n == 2) {
-    //LOG("evolve: called \n");
-    evolve_kepler(s, stime, etime, dt);
-  } else {
-    //LOG("evolve: regular!\n");
-    struct sys c = zerosys, r = zerosys;
-    clevel++;
-    if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-      ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
-
-#ifdef CC2_SPLIT_CONSISTENCY_CHECKS
-    if (clevel == 0) {
-      printf("consistency_checks: ", s.n, clevel);
-    }
-#endif
-
-#ifdef CC2_SPLIT_CONSISTENCY_CHECKS
-    // debug: make a copy of s to verify that the split has been done properly
-    struct sys s_before_split;
-    s_before_split.n = s.n;
-    s_before_split.part = (struct particle*) malloc(s.n*sizeof(struct particle));
-    s_before_split.last = &( s_before_split.part[s.n - 1] );
-    s_before_split.next_cc = NULL;
-    memcpy(s_before_split.part, s.part, s.n*sizeof(struct particle));
-#endif
-
-    split_cc(s, &c, &r, dt);
-    //if (s.n != c.n) LOG_CC_SPLIT(&c, &r); // print out non-trivial splits
-
-#ifdef CC2_SPLIT_CONSISTENCY_CHECKS
-  /*
-      if (s.n != r.n) {
-      LOG("s: ");
-      LOGSYS_ID(s_before_split);
-      LOG("c: ");
-      LOGSYSC_ID(c);
-      LOG("r: ");
-      LOGSYS_ID(r);
-    }
-  */
-    // verify the split
-    split_cc_verify(s_before_split, &c, &r);
-    split_cc_verify_ts(&c, &r, dt);
-    free(s_before_split.part);
-    if (clevel == 0) {
-      printf("ok ");
-    }
-#endif
-
-#ifdef CC2_SPLIT_SHORTCUTS
-    if (s.n == c.n) {
-      int dir=SIGN(dt);
-      DOUBLE initial_timestep = sys_forces_max_timestep(s, dir);
-      DOUBLE dt_step = dt;
-
-      while (fabs(dt_step) > initial_timestep) dt_step = dt_step / 2;
-
-      LOG("CC2_SPLIT_SHORTCUTS clevel=%d dt/dt_step=%Le\n", clevel, dt / dt_step);
-      for (DOUBLE dt_now = 0; dir*dt_now < dir*dt; dt_now += dt_step) {
-        evolve_split_cc2(s, dt_now, dt_now + dt_step,(DOUBLE) dt_step);
-      }
-
-      clevel--;
-      free_sys(c.next_cc);
-      return;
-    }
-#endif
-
-    if (IS_ZEROSYSs(c)) {
-      deepsteps++;
-      simtime+=dt;
-    }
-
-    // evolve all fast components, 1st time
-    for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-      evolve_cc2_kepler(*ci, stime, stime+dt/2, dt/2);
-    }
-
-    drift(r, stime+dt/2, dt/2); // drift r, 1st time
-
-    // kick ci <-> cj
-    for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-      for (struct sys *cj = &c; !IS_ZEROSYS(cj); cj = cj->next_cc) {
-        if (ci != cj) {
-          kick(*ci, *cj, dt);
-          //kick(*cj, *ci, dt);
-        }
-      }
-    }
-
-    // kick c <-> rest
-    for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-      kick(r, *ci, dt);
-      kick(*ci, r, dt);
-    }
-
-    kick(r, r, dt); // kick rest
-
-    drift(r, etime, dt/2);  // drift r, 2nd time
-
-    // evolve all fast components, 2nd time
-    for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-      evolve_cc2_kepler(*ci, stime+dt/2, etime, dt/2);
-    }
-
-    clevel--;
-    free_sys(c.next_cc);
-  }
 }

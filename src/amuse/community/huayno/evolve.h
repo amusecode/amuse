@@ -11,8 +11,8 @@
 #define RATIMESTEP
 #define RARVRATIO   1.
 
-#define MPWORKLIMIT 100
-#define CLWORKLIMIT 10000
+#define MPWORKLIMIT 1000
+#define CLWORKLIMIT 100000
 
 #define MAXLEVEL  64
 
@@ -85,17 +85,26 @@ extern struct sys zerosys;
 extern int fixed_j;
 extern DOUBLE bs_target_error;
 
-/* diagnostics */
-extern DOUBLE simtime;
-extern DOUBLE timetrack;
 extern int clevel;
-extern unsigned long tcount[MAXLEVEL],kcount[MAXLEVEL],dcount[MAXLEVEL],deepsteps;
-extern unsigned long tstep[MAXLEVEL],kstep[MAXLEVEL],dstep[MAXLEVEL];
-extern unsigned long cefail[MAXLEVEL],cecount[MAXLEVEL]; // call/fail counts of the Kepler solver
+/* diagnostics */
+struct diagnostics {
+  DOUBLE simtime;
+  DOUBLE timetrack;
+  unsigned long deepsteps;
+  unsigned long tcount[MAXLEVEL],kcount[MAXLEVEL],dcount[MAXLEVEL];
+  unsigned long tstep[MAXLEVEL],kstep[MAXLEVEL],dstep[MAXLEVEL];
+  unsigned long cefail[MAXLEVEL],cecount[MAXLEVEL]; // call/fail counts of the Kepler solver
+  unsigned long bsstep[MAXLEVEL],jcount[MAXLEVEL]; /* count + jcount of BS evolve */
 #ifdef EVOLVE_OPENCL
-extern unsigned long cpu_step,cl_step,cpu_count,cl_count;
+  unsigned long cpu_step,cl_step,cpu_count,cl_count;
 #endif
-extern unsigned long bsstep[MAXLEVEL],jcount[MAXLEVEL]; /* count + jcount of BS evolve */
+  int ntasks;
+};
+
+extern struct diagnostics global_diag;
+extern struct diagnostics *diag;
+#pragma omp threadprivate(diag,clevel)
+
 
 void init_code();
 void stop_code();

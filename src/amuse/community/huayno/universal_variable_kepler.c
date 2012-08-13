@@ -2,6 +2,7 @@
 #include <tgmath.h>
 #include "evolve.h"
 
+// todo: DOUBLE <-> TOLERANCE if DOUBLE=float ?
 
 #define TOLERANCE  1.e-15
 #define ORDER  4

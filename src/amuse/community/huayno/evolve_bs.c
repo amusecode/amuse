@@ -10,8 +10,6 @@
 int fixed_j=FIXEDJ;
 DOUBLE bs_target_error=BSTOL;
 
-unsigned long bsstep[MAXLEVEL],jcount[MAXLEVEL];
-
 struct bparticle
 {
   DOUBLE pos[3];
@@ -55,8 +53,8 @@ void evolve_bs_adaptive(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int
   }
   else
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
   }
   clevel--;
 }
@@ -149,8 +147,8 @@ static int BulirschStoer(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
     error=error_function(jline[j-1],j1line[j-2]);
     if(j==fixed_j) break;
   }
-  bsstep[clevel]+=1;
-  jcount[clevel]+=j;
+  diag->bsstep[clevel]+=1;
+  diag->jcount[clevel]+=j;
   bsys_to_sys(jline[j-1],tmpsys);
   for(i=0;i<s.n;i++) s.part[i]=tmpsys.part[i];  
 #ifdef COMPENSATED_SUMMP

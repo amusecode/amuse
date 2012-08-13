@@ -17,8 +17,8 @@ void evolve_split_pass(struct sys sys1,struct sys sys2,
   split((FLOAT) dt, sys1, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
   }  
   if(fast.n>0) evolve_split_pass(fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
   if(slow.n>0) kdk(slow,sys2, stime, etime, dt);
@@ -37,8 +37,8 @@ void evolve_split_naive(struct sys sys1,struct sys sys2,
   split((FLOAT) dt, sys1, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
   }  
   if(slow.n>0) kick(slow, join(sys1,sys2), dt/2);
   if(fast.n>0) evolve_split_naive(fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
@@ -58,8 +58,8 @@ void evolve_split_bridge(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, in
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
   }  
   if(slow.n>0 && fast.n>0) kick(slow, fast, dt/2);
   if(slow.n>0 && fast.n>0) kick(fast, slow, dt/2);
@@ -80,8 +80,8 @@ void evolve_split_bridge_dkd(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
   }  
   if(slow.n>0 && fast.n>0) kick(slow, fast, dt/2);
   if(slow.n>0 && fast.n>0) kick(fast, slow, dt/2);
@@ -102,8 +102,8 @@ void evolve_split_hold(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int 
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
   }  
   if(fast.n>0) evolve_split_hold(fast, stime, stime+dt/2, dt/2,0);
   if(slow.n>0) kdk(slow,fast,stime,etime,dt);
@@ -120,8 +120,8 @@ void evolve_split_hold_dkd(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
   }  
   if(fast.n>0) evolve_split_hold_dkd(fast, stime, stime+dt/2, dt/2,0);
   if(slow.n>0) dkd(slow,fast,stime,etime,dt);
@@ -140,8 +140,8 @@ void evolve_split_pass_dkd(struct sys sys1,struct sys sys2,
   split((FLOAT) dt, sys1, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
   }  
   if(fast.n>0) evolve_split_pass_dkd(fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
   if(slow.n>0) dkd(slow,sys2, stime, etime, dt);
@@ -160,8 +160,8 @@ void evolve_split_ppass_dkd(struct sys sys1,struct sys sys2,
   split((FLOAT) dt, sys1, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
+    diag->deepsteps++;
+    diag->simtime+=dt;
   }  
   if(fast.n>0) 
     evolve_split_ppass_dkd(fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
@@ -190,8 +190,8 @@ static void drift_naive(struct sys s, DOUBLE etime)
     s.part[i].postime=etime;
     s.part[i].timestep=HUGE_VAL;
   }
-  dstep[clevel]++;
-  dcount[clevel]+=s.n;
+  diag->dstep[clevel]++;
+  diag->dcount[clevel]+=s.n;
 }
 
 #define K1   ( (14-sqrt((DOUBLE) 19))/108 )
@@ -211,9 +211,9 @@ void evolve_sf_4m5(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
-    timetrack+=fabs(dt);
+    diag->deepsteps++;
+    diag->simtime+=dt;
+    diag->timetrack+=fabs(dt);
   }  
   if(slow.n>0) kick(slow,join(fast,slow), K1*dt);
   if(fast.n>0 && slow.n>0) kick(fast,slow, K1*dt);
@@ -287,9 +287,9 @@ void evolve_sf_4m4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
   {
-    deepsteps++;
-    simtime+=dt;
-    timetrack+=fabs(dt);
+    diag->deepsteps++;
+    diag->simtime+=dt;
+    diag->timetrack+=fabs(dt);
   }  
   if(slow.n>0) kick(slow,join(fast,slow), K1*dt);
   if(fast.n>0 && slow.n>0) kick(fast,slow, K1*dt);

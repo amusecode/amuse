@@ -9,8 +9,6 @@
 #include "evolve_shared.h"
 #include "universal_variable_kepler.h"
 
-unsigned long cefail[MAXLEVEL],cecount[MAXLEVEL];
-
 void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
   clevel++;
   if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
@@ -46,8 +44,10 @@ void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
   if (err != 0) {
     // failsafe kepler solver
     LOG("Kepler solver failed\n");
-    cefail[clevel]++;
+    diag->cefail[clevel]++;
+    clevel--;
     evolve_shared4(s, stime, etime, dt, 1);
+    clevel++;
   } else {
     // translate coordinates from 2-body frame to original frame
     s.part->pos[0] = pos_cm[0] + f1 * dpos[0];
@@ -64,6 +64,6 @@ void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
     s.last->vel[2] = vel_cm[2] - f2 * dvel[2];
     // update statistics
   }
-  cecount[clevel]++;
+  diag->cecount[clevel]++;
   clevel--;
 }

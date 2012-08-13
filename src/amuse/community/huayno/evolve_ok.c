@@ -27,8 +27,8 @@ static void ok_timestep_cpu(struct forces f, DOUBLE dt) {
       //if (f.forc[i].timestep != HUGE_VAL) ENDRUN("timestep??");
       f.forc[i].timestep = timestep_ij(f.forc[i].parti, f.forc[i].partj,dir);
   }
-  tstep[clevel]++;
-  tcount[clevel] += f.n;
+  diag->tstep[clevel]++;
+  diag->tcount[clevel] += f.n;
 }
 
 
@@ -125,8 +125,8 @@ static void ok_kick(struct forces f, DOUBLE dt) {
     }
   }
 
-  kstep[clevel]++;
-  kcount[clevel] += f.n;
+  diag->kstep[clevel]++;
+  diag->kcount[clevel] += f.n;
 }
 
 void evolve_ok2(struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
@@ -136,8 +136,8 @@ void evolve_ok2(struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBL
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
   // all particles are drifted together
   if (f.n == 0) {
-    deepsteps++;
-    simtime += dt;
+    diag->deepsteps++;
+    diag->simtime += dt;
     drift(s, etime, dt);
     clevel--;
     return;

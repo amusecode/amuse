@@ -18,15 +18,10 @@ FLOAT eps2;
 FLOAT dt_param;
 struct sys zerosys ={ 0, NULL,NULL};
 
-/* diagnostics */
-DOUBLE simtime;
-DOUBLE timetrack;
 int clevel;
-unsigned long tcount[MAXLEVEL],kcount[MAXLEVEL],dcount[MAXLEVEL],deepsteps;
-unsigned long tstep[MAXLEVEL],kstep[MAXLEVEL],dstep[MAXLEVEL];
-#ifdef EVOLVE_OPENCL
-unsigned long cpu_step,cl_step,cpu_count,cl_count;
-#endif
+
+struct diagnostics global_diag;
+struct diagnostics *diag;
 
 static void potential(struct sys s1, struct sys s2);
 static void report(struct sys s,DOUBLE etime, int inttype);
@@ -56,6 +51,7 @@ FLOAT system_potential_energy(struct sys s)
 
 void init_code()
 {
+  diag=&global_diag;
 #ifdef EVOLVE_OPENCL
  init_cl();
 #endif
@@ -95,10 +91,59 @@ void evolve_constant(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
   clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
-  deepsteps++;
-  simtime+=dt;
+  diag->deepsteps++;
+  diag->simtime+=dt;
   dkd(s,zerosys, stime, etime, dt);
   clevel--;
+}
+
+void zero_diagnostics(struct diagnostics* diag)
+{
+  diag->deepsteps=0;
+  diag->simtime=0.;
+  diag->timetrack=0.;
+#ifdef EVOLVE_OPENCL
+  diag->cpu_step=0;
+  diag->cl_step=0;
+  diag->cpu_count=0;
+  diag->cl_count=0;
+#endif
+  for(int i=0;i<MAXLEVEL;i++)
+  {
+    diag->tstep[i]=0;diag->tcount[i]=0;
+    diag->kstep[i]=0;diag->kcount[i]=0;
+    diag->dstep[i]=0;diag->dcount[i]=0;
+    diag->cefail[i]=0;diag->cecount[i]=0;
+    diag->bsstep[i]=0;diag->jcount[i]=0;
+  }  
+  diag->ntasks=0;
+}
+
+void sum_diagnostics(struct diagnostics* total,struct diagnostics* diag)
+{
+  total->simtime+=diag->simtime;
+  total->timetrack+=diag->timetrack;
+  total->deepsteps+=diag->deepsteps;
+  for(int i=0;i<MAXLEVEL;i++)
+  {
+    total->tstep[i]+=diag->tstep[i];
+    total->tcount[i]+=diag->tcount[i];
+    total->kstep[i]+=diag->kstep[i];
+    total->kcount[i]+=diag->kcount[i];
+    total->dstep[i]+=diag->dstep[i];
+    total->dcount[i]+=diag->dcount[i];
+    total->cefail[i]+=diag->cefail[i];
+    total->cecount[i]+=diag->cecount[i];
+    total->bsstep[i]+=diag->bsstep[i];
+    total->jcount[i]+=diag->jcount[i]; 
+  }          
+#ifdef EVOLVE_OPENCL
+  total->cpu_step+=diag->cpu_step;
+  total->cl_step+=diag->cl_step;
+  total->cpu_count+=diag->cpu_count;
+  total->cl_count+=diag->cl_count;
+#endif
+  total->ntasks+=diag->ntasks;
 }
 
 
@@ -109,17 +154,7 @@ void do_evolve(struct sys s, double dt, int inttype)
   if(dt==0) return;
   for(p=0;p<s.n;p++) s.part[p].postime=0.;
   clevel=-1;
-  deepsteps=0;
-  simtime=0.;
-  timetrack=0.;
-  for(i=0;i<MAXLEVEL;i++)
-  {
-    tstep[i]=0;tcount[i]=0;
-    kstep[i]=0;kcount[i]=0;
-    dstep[i]=0;dcount[i]=0;
-    cefail[i]=0;cecount[i]=0;
-    bsstep[i]=0;jcount[i]=0;
-  }
+  zero_diagnostics(diag);
   switch (inttype)
   {
     case CONSTANT:
@@ -168,10 +203,21 @@ void do_evolve(struct sys s, double dt, int inttype)
       evolve_split_bridge_dkd(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case CC:
-      evolve_cc2(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
-      break;
     case CC_KEPLER:
-      evolve_cc2_kepler(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+#ifdef _OPENMP
+#pragma omp parallel shared(global_diag,s,dt) copyin(clevel) 
+      {
+        diag=(struct diagnostics *) malloc(sizeof( struct diagnostics));
+        zero_diagnostics(diag);
+#pragma omp single
+#endif
+        evolve_cc2(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, inttype==CC_KEPLER);
+#ifdef _OPENMP
+#pragma omp critical
+        sum_diagnostics(&global_diag,diag);
+      }
+      diag=&global_diag;
+#endif        
       break;
     case OK:
       evolve_ok2(s, zeroforces, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
@@ -230,8 +276,8 @@ void drift(struct sys s, DOUBLE etime, DOUBLE dt)
     s.part[i].postime=etime;
     s.part[i].timestep=HUGE_VAL;
   }
-  dstep[clevel]++;
-  dcount[clevel]+=s.n;
+  diag->dstep[clevel]++;
+  diag->dcount[clevel]+=s.n;
 }
 
 static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
@@ -283,20 +329,21 @@ void kick(struct sys s1, struct sys s2, DOUBLE dt)
 #ifdef EVOLVE_OPENCL
   if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
   {
+#pragma omp critical
     kick_cl(s1,s2,dt);
-    cl_step++;
-    cl_count+=(ULONG) s1.n*s2.n;
+    diag->cl_step++;
+    diag->cl_count+=(ULONG) s1.n*s2.n;
   } else
   {
     kick_cpu(s1,s2,dt);
-    cpu_step++;
-    cpu_count+=(ULONG) s1.n*s2.n;
+    diag->cpu_step++;
+    diag->cpu_count+=(ULONG) s1.n*s2.n;
   }
 #else
   kick_cpu(s1,s2,dt);
 #endif  
-  kstep[clevel]++;
-  kcount[clevel]+=(ULONG) s1.n*s2.n;
+  diag->kstep[clevel]++;
+  diag->kcount[clevel]+=(ULONG) s1.n*s2.n;
 }
 
 static void potential_cpu(struct sys s1,struct sys s2)
@@ -333,6 +380,7 @@ static void potential(struct sys s1, struct sys s2)
 #ifdef EVOLVE_OPENCL
   if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
   {
+#pragma omp critical
     potential_cl(s1,s2);
   } else
   {
@@ -414,6 +462,7 @@ void timestep(struct sys s1, struct sys s2,int dir)
 #ifdef EVOLVE_OPENCL
   if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
   {
+#pragma omp critical
     timestep_cl(s1,s2,dir);
   } else
   {
@@ -422,8 +471,8 @@ void timestep(struct sys s1, struct sys s2,int dir)
 #else
   timestep_cpu(s1,s2,dir);
 #endif  
-  tstep[clevel]++;
-  tcount[clevel]+=(ULONG) s1.n*s2.n;
+  diag->tstep[clevel]++;
+  diag->tcount[clevel]+=(ULONG) s1.n*s2.n;
 }
 
 static void report(struct sys s,DOUBLE etime, int inttype)
@@ -436,23 +485,23 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   printf("interaction counts:\n");
   for(i=0;i<MAXLEVEL;i++)
   {
-    printf(" %4i: %10li %18li, %10li %18li\n",i, kstep[i], kcount[i], dstep[i],dcount[i]);
-    if(kcount[i]>0) maxlevel=i;
-    ttot+=tcount[i];
-    ktot+=kcount[i];
-    dtot+=dcount[i];
-    tstot+=tstep[i];
-    kstot+=kstep[i];
-    dstot+=dstep[i];
+    printf(" %4i: %10li %18li, %10li %18li\n",i, diag->kstep[i], diag->kcount[i], diag->dstep[i],diag->dcount[i]);
+    if(diag->kcount[i]>0) maxlevel=i;
+    ttot+=diag->tcount[i];
+    ktot+=diag->kcount[i];
+    dtot+=diag->dcount[i];
+    tstot+=diag->tstep[i];
+    kstot+=diag->kstep[i];
+    dstot+=diag->dstep[i];
   }    
   printf("total: %18li %18li %18li\n",ktot,dtot,ttot);  
   if(inttype == PASS_DKD || inttype == HOLD_DKD || inttype == PPASS_DKD)
-    printf("equiv: %18li %18li %18li\n",(long int) deepsteps*n*n,2*deepsteps*n,(long int) deepsteps*n*n);
+    printf("equiv: %18li %18li %18li\n",(long int) diag->deepsteps*n*n,2*diag->deepsteps*n,(long int) diag->deepsteps*n*n);
   else
-    printf("equiv: %18li %18li %18li\n",(long int) 2*deepsteps*n*n,deepsteps*n,(long int) deepsteps*n*n);  
+    printf("equiv: %18li %18li %18li\n",(long int) 2*diag->deepsteps*n*n,diag->deepsteps*n,(long int) diag->deepsteps*n*n);  
   printf("ksteps: %18li, dsteps: %18li, tsteps: %18li\n", kstot,dstot,tstot);
   printf("steps: %18li, equiv: %18li, maxlevel: %i\n", 
-    deepsteps,((long) 1)<<maxlevel,maxlevel); 
+    diag->deepsteps,((long) 1)<<maxlevel,maxlevel); 
 
   for(p=0;p<s.n;p++)
   {
@@ -460,12 +509,12 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   }
   printf("postime errors: %u \n",err);
   printf("target time, actual time: %12.8g %12.8g %12.8g\n", 
-           (double) etime,(double) simtime,(double) ((DOUBLE) etime-simtime));
-  printf("time track, ratio: %12.8g %12.8g\n", (double) timetrack,(double) (timetrack/simtime));
+           (double) etime,(double) diag->simtime,(double) ((DOUBLE) etime-diag->simtime));
+  printf("time track, ratio: %12.8g %12.8g\n", (double) diag->timetrack,(double) (diag->timetrack/diag->simtime));
 
 #ifdef EVOLVE_OPENCL
-  printf("cpu step,count: %12li,%18li\n",cpu_step,cpu_count);
-  printf("cl step,count:  %12li,%18li\n",cl_step,cl_count);
+  printf("cpu step,count: %12li,%18li\n",diag->cpu_step,diag->cpu_count);
+  printf("cl step,count:  %12li,%18li\n",diag->cl_step,diag->cl_count);
 #endif
   if(inttype==SHAREDBS)
   {
@@ -473,12 +522,28 @@ static void report(struct sys s,DOUBLE etime, int inttype)
     printf("bs counts:\n");
     for(i=0;i<MAXLEVEL;i++) 
     { 
-      totalbs+=bsstep[i];
-      totalj+=jcount[i];
-      printf("%d: %18li %18li %f\n",i,bsstep[i],jcount[i],jcount[i]/(1.*bsstep[i]+1.e-20));
+      totalbs+=diag->bsstep[i];
+      totalj+=diag->jcount[i];
+      printf("%d: %18li %18li %f\n",i,diag->bsstep[i],diag->jcount[i],diag->jcount[i]/(1.*diag->bsstep[i]+1.e-20));
     }
-    printf(" total, total j, mean j: %18li %18li %f",totalbs,totalj,totalj/(1.*totalbs));
+    printf(" total, total j, mean j: %18li %18li %f\n",totalbs,totalj,totalj/(1.*totalbs));
   }
+  if(inttype==CC_KEPLER)
+  {
+    unsigned long totalcefail,totalcecount;
+    printf("kepler solver counts:\n");
+    for(i=0;i<MAXLEVEL;i++) 
+    { 
+      totalcefail+=diag->cefail[i];
+      totalcecount+=diag->cecount[i];
+      printf("%d: %18li %18li\n",i,diag->cefail[i],diag->cecount[i]);
+    } 
+    printf(" total, total j, mean j: %18li %18li\n",totalcefail,totalcecount);
+  }
+  
+#ifdef _OPENMP
+  printf("openmp tasks: %d\n",diag->ntasks);
+#endif  
   fflush(stdout);
 }
 
