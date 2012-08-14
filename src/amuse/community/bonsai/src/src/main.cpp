@@ -27,6 +27,8 @@ using namespace std;
 
 #include "octree.h"
 
+bool maxlevels_exceeded = false;
+
 void read_dumbp_file_parallel(vector<real4> &bodyPositions, vector<real4> &bodyVelocities,  vector<int> &bodiesIDs,  float eps2,
                      string fileName, int rank, int procs, int &NTotal2, int &NFirst, int &NSecond, int &NThird, octree *tree)  
 {
@@ -726,6 +728,7 @@ int main(int argc, char** argv)
   
   //Start the integration
   tree->iterate();
+  if (maxlevels_exceeded) exit(0);
 
   printf("Finished!!! Took in total: %lg sec\n", tree->get_time()-t0);
   

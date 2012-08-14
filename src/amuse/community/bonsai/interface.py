@@ -279,5 +279,12 @@ class Bonsai(GravitationalDynamics):
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
         
-        self.stopping_conditions.define_particle_set(object)        
+        self.stopping_conditions.define_particle_set(object)
+    
+    def define_errorcodes(self, object):
+        object.add_errorcode(-1, 'Unspecified, other error.')
+        object.add_errorcode(-2, 'Called function is not implemented.')
+        object.add_errorcode(-3, 'A particle with the given index was not found.')
+        object.add_errorcode(-4, 'The tree has become too deep, consider the removal of far away particles to prevent a too large box.')
+    
 

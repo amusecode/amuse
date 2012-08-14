@@ -172,11 +172,14 @@ class TestBonsai(TestWithMPI):
         self.assertAlmostEquals(instance.total_mass, 1.0 | nbody_system.mass)
         
         self.assertRaises(AmuseException, getattr, instance, "total_radius", expected_message = 
-            "Error when calling 'get_total_radius' of a 'Bonsai', errorcode is -2")
+            "Error when calling 'get_total_radius' of a 'Bonsai', errorcode is -2, "
+            "error is 'Called function is not implemented.'")
         self.assertRaises(AmuseException, getattr, instance, "center_of_mass_position", expected_message = 
-            "Error when calling 'get_center_of_mass_position' of a 'Bonsai', errorcode is -2")
+            "Error when calling 'get_center_of_mass_position' of a 'Bonsai', "
+            "errorcode is -2, error is 'Called function is not implemented.'")
         self.assertRaises(AmuseException, getattr, instance, "center_of_mass_velocity", expected_message = 
-            "Error when calling 'get_center_of_mass_velocity' of a 'Bonsai', errorcode is -2")
+            "Error when calling 'get_center_of_mass_velocity' of a 'Bonsai', "
+            "errorcode is -2, error is 'Called function is not implemented.'")
 
         instance.evolve_model(1.0 | nbody_system.time)
         self.assertAlmostEquals(instance.model_time, 1.0 | nbody_system.time)
@@ -247,4 +250,20 @@ class TestBonsai(TestWithMPI):
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
         instance.stop()
+    
+    def test9(self):
+        print "Testing Bonsai tree build exception"
+        plummer = new_plummer_model(50)
+        instance = self.new_instance_of_an_optional_code(Bonsai, **default_options)
+        instance.particles.add_particles(plummer)
+        
+        instance.particles[0].position -= [1e9, 0, 0] | nbody_system.length
+        self.assertRaises(AmuseException, instance.evolve_model, 0.1 | nbody_system.time, expected_message = 
+            "Error when calling 'evolve_model' of a 'Bonsai', errorcode is -4, error is "
+            "'The tree has become too deep, consider the removal of far away particles to prevent a too large box.'")
+        
+        instance.particles.remove_particle(instance.particles[0])
+        instance.evolve_model(0.1 | nbody_system.time)
+        instance.stop()
+    
 

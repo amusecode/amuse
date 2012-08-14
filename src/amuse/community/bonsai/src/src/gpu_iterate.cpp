@@ -15,6 +15,7 @@ using namespace std;
 
 static double de_max = 0;
 static double dde_max = 0;  
+extern bool maxlevels_exceeded;
 
 void octree::makeLET()
 {
@@ -261,6 +262,7 @@ void octree::iterate() {
 
       devContext.startTiming();
       this->build(this->localTree);
+      if (maxlevels_exceeded) return;
       devContext.stopTiming("Tree-construction", 2);
 
       devContext.startTiming();

@@ -1,5 +1,7 @@
 #include "octree.h"
 
+extern bool maxlevels_exceeded;
+
 void octree::allocateParticleMemory(tree_structure &tree)
 {
   //Allocates the memory to hold the particles data
@@ -309,7 +311,9 @@ void octree::build (tree_structure &tree) {
   {
     cerr << "The tree has become too deep, the program will exit. \n";
     cerr << "Consider the removal of far away particles to prevent a too large box. \n";
-    exit(0);
+    maxlevels_exceeded = true;
+    return;
+    //exit(0);
   }
   
   link_tree.setWork(n_nodes, 128);
