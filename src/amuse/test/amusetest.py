@@ -23,7 +23,7 @@ class TestCase(unittest.TestCase):
         literature.TrackLiteratureReferences.suppress_output()
         
     def _check_comparable(self, first, second):
-        if isinstance(first, Quantity) is not isinstance(second, Quantity):
+        if is_quantity(first) is not is_quantity(second):
             # One exception: quantity with none_unit CAN be compared with non-quantity:
             if not to_quantity(first).unit == to_quantity(second).unit:
                 raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
@@ -32,7 +32,7 @@ class TestCase(unittest.TestCase):
     def _convert_to_numeric(self, first, second, in_units):
         if in_units:
             return (first.value_in(in_units), second.value_in(in_units))
-        elif isinstance(first, Quantity) or isinstance(second, Quantity):
+        elif is_quantity(first) or is_quantity(second):
             return (to_quantity(first).value_in(to_quantity(second).unit), 
                 to_quantity(second).value_in(to_quantity(second).unit))
         else:

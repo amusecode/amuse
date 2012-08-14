@@ -1,5 +1,6 @@
 from amuse.support.core import CompositeDictionary
 from amuse.support.core import OrderedDictionary
+from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.units import constants
 from amuse.units import units
@@ -134,6 +135,184 @@ class DerivedAttribute(object):
     def set_value_for_entity(self, particles, key, value):
         raise exceptions.AmuseException("cannot set value of a DerivedAttribute")
 
+class AbstractAttributeValue(object):
+    def __str__(self):
+        return self._values.__str__()
+    
+    def __repr__(self):
+        return self._values.__repr__()
+        
+    def __eq__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values == other._values
+        else:
+            return self._values == other
+    
+    def __len__(self):
+        return len(self.indices)
+    
+    def __add__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values + other._values
+        else:
+            return self._values + other
+        
+    def __radd__(self, other):
+        return  self._values + other
+        
+    def __sub__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values - other._values
+        else:
+            return self._values - other
+        
+    def __rsub__(self, other):
+        return other - self._values
+    
+    def __mul__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values * other._values
+        else:
+            return self._values * other
+        
+    def __rmul__(self, other):
+        return self._values * other
+    
+    #def __imul__(self, other):
+    #    if isinstance(other, Vector):
+    #        newvalues = self._values * other._values
+    #    else:
+    #        newvalues = self._values * other
+    #    self._set_values_for_entities(newvalues)
+    #    return newvalues
+    
+    def __pow__(self, other):
+        return self._values ** other
+
+    def __div__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values / other._values
+        else:
+            return self._values / other
+    
+    def __rdiv__(self, other):
+        return other / self._values
+    
+    def is_quantity(self):
+        return hasattr(self._values, "is_quantity") and self._values.is_quantity()
+    
+    def __getattr__(self, name):
+        #print "getattr", name
+        return getattr(self._values, name)
+    
+     
+    def __neg__(self):
+        return -self._values
+    
+    def __abs__(self):
+        return abs(self._values)
+    
+    def __lt__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values < other._values
+        else:
+            return self._values < other
+
+    def __gt__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values > other._values
+        else:
+            return self._values > other
+        
+    def __ne__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values != other._values
+        else:
+            return self._values != other
+        
+    def __le__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values <= other._values
+        else:
+            return self._values <= other
+    
+    def __ge__(self, other):
+        if isinstance(other, AbstractAttributeValue):
+            return self._values >= other._values
+        else:
+            return self._values >= other
+    
+    def __dir__(self):
+        return dir(self._values)
+    
+class VectorAttributeValue(AbstractAttributeValue):    
+    def __init__(self, collection, indices, attribute_names):
+        self.collection = collection
+        self.indices = indices
+        self.attribute_names = attribute_names
+        self._values
+            
+    @late
+    def _values(self):
+        values = self.collection.get_values_in_store(self.indices, self.attribute_names)
+          
+        unit_of_the_values = None
+        is_a_quantity = None
+        for quantity in values:
+            if unit_of_the_values is None:
+                is_a_quantity = is_quantity(quantity)
+                if is_a_quantity:
+                    unit_of_the_values = quantity.unit
+                break
+    
+        if is_a_quantity:
+            results = []
+            for quantity in values:
+                if unit_of_the_values is None:
+                    unit_of_the_values = quantity.unit
+                results.append(quantity.value_in(unit_of_the_values))
+        else:
+            results = values
+        
+        results = numpy.array(results)
+        for i in range(len(results.shape) - 1, 0, -1):
+            results = numpy.swapaxes(results,0,i)
+        
+        if is_a_quantity:
+            return unit_of_the_values.new_quantity(results)
+        else:
+            return results
+
+    
+    def __getitem__(self, index):
+        
+        return self._values.__getitem__(index)
+    
+    def __setitem__(self, index, value):
+        raise Exception("must implement set item")
+    
+    def _set_values_for_entities(self, value):
+        is_value_a_quantity = is_quantity(value)
+        if is_value_a_quantity:
+            vectors = value.number
+        else:
+            vectors = numpy.asanyarray(value)
+            
+        split = numpy.split(vectors, len(self.attribute_names), axis = vectors.ndim - 1)
+        split = [x.reshape(x.shape[0] if len(x.shape) <= 2 else x.shape[:-1]) for x in split]
+       
+        if is_value_a_quantity:
+            list_of_values = []
+            for i in range(len(self.attribute_names)):
+                values = value.unit.new_quantity(split[i])
+                list_of_values.append(values)
+        else:
+            list_of_values = split
+            
+        self.collection.set_values_in_store(self.indices, self.attribute_names, list_of_values)
+  
+    
+    
 class VectorAttribute(DerivedAttribute):
     """
     Combine multiple attributes into a vecter attribute
@@ -142,10 +321,10 @@ class VectorAttribute(DerivedAttribute):
         self.attribute_names = attribute_names
     
     def get_values_for_entities(self, instance):
-        values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names)
-          
-        unit_of_the_values = None
+        #if 1:
+        #    return VectorAttributeValue(instance, instance.get_all_indices_in_store(), self.attribute_names)
         
+        values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names)
         unit_of_the_values = None
         is_a_quantity = None
         for quantity in values:

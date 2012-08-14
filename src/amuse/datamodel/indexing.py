@@ -165,6 +165,41 @@ def shape_after_index(shape, index):
             raise Exception("Not handled yet")
     else:
         raise Exception("Not handled yet")
-    
-    
+        
+
+def split_numpy_index_over_dimensions(index, dimension_values):
+    """given a numpy index and a list of dimension values (the accepted values
+    per dimension, return the selected values per dimension, values are always 
+    arrays"""
+    result = list(dimension_values)
+    if isinstance(index, int) or isinstance(index, long):
+        result[0] = result[0][index]
+        return result
+    elif isinstance(index, slice):
+        result[0] = result[0][index]
+        return result
+    elif isinstance(index, tuple):
+        if is_all_int(index):
+            for i, x in enumerate(index):
+                result[i] = result[i][x]
+            return result
+        else:
+            number_of_indices = len(index)
+            i = 0
+            for x in index:
+                if isinstance(x, int) or isinstance(x, long):
+                    result[i] = result[i][x]
+                elif x is Ellipsis:
+                    result[i] = result[i]
+                    print len(dimension_values) - number_of_indices
+                    for _ in range(len(dimension_values) - number_of_indices):
+                        i += 1
+                        result[i] = result[i]
+                        number_of_indices += 1
+                elif isinstance(x, slice):
+                    result[i] = result[i][x]
+                i += 1
+            return result
+    else:
+        raise Exception("Not handled yet")
     
