@@ -2,6 +2,8 @@ try:
     from docutils import core
 except ValueError:
     import os
+    import locale
+    os.environ['LC_CTYPE'] = 'C'
     os.environ['LANG'] = 'C'
     from docutils import core
 
