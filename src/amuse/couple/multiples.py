@@ -15,7 +15,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units.quantities import zero
 
-root_index = 1000
+root_index = 100000
 def new_root_index():
     global root_index
     root_index += 1
@@ -171,7 +171,7 @@ class Multiples(object):
         count_resolve_encounter = 0
         count_ignore_encounter = 0
 
-        rlimit = 8./len(self.gravity_code.particles) | nbody_system.length  # 4 r_90 - TODO
+        rlimit = 1./len(self.gravity_code.particles) | nbody_system.length  # .5 r_90 - TODO
         print 'rlimit =', rlimit
         
         while time < end_time:
@@ -279,13 +279,13 @@ class Multiples(object):
         for x in self.root_to_tree.values():
             print_simple_multiple(x, self.kepler)
             
-    def pretty_print_multiples(self, pre, kT):
+    def pretty_print_multiples(self, pre, kT, dcen):
         Nbin = 0
         Nmul = 0
         Emul = 0.0 | nbody_system.energy
         for x in self.root_to_tree.values():
             Nmul += 1
-            nb,E = another_print_multiple(x, self.kepler, pre, kT)
+            nb,E = another_print_multiple(x, self.kepler, pre, kT, dcen)
             Nbin += nb
             Emul += E
         return Nmul, Nbin, Emul
@@ -315,8 +315,9 @@ class Multiples(object):
 
         collided_stars = datamodel.Particles(particles = (star1, star2))
                
-        total_energy_of_stars_to_remove  = collided_stars.kinetic_energy()
-        total_energy_of_stars_to_remove += collided_stars.potential_energy(G=self.gravity_constant)
+        total_energy_of_stars_to_remove = collided_stars.kinetic_energy()
+        total_energy_of_stars_to_remove += \
+            collided_stars.potential_energy(G=self.gravity_constant)
 
         phi_in_field_of_stars_to_remove = potential_energy_in_field(
             collided_stars, 
@@ -435,7 +436,7 @@ class Multiples(object):
         # 5f. Store all trees in memory for later reference
         for tree in binaries.iter_binary_trees():            
             self.root_to_tree[tree.particle] = tree.copy()
-            
+
         self.multiples_energy_correction \
             += (total_energy_of_stars_to_add
                  - total_energy_of_stars_to_remove) + phi_correction
@@ -629,7 +630,8 @@ def find_nnn(star1, star2, stars):	# print next nearest neighbor
     return nnn
 
 def potential_energy_in_field(particles, field_particles,
-                              smoothing_length_squared = zero, G = constants.G):
+                              smoothing_length_squared = zero,
+                              G = constants.G):
     """
     Returns the total potential energy of the particles in the particles set.
 
@@ -647,8 +649,8 @@ def potential_energy_in_field(particles, field_particles,
     quantity<-6.67428e-11 m**2 * kg * s**-2>
     """
     if len(field_particles) == 0:
-        return zero * G
-        
+        return zero * G		# ERROR: this is dimensionally incorrect - Steve
+
     sum_of_energies = zero
     for particle in particles:
         dx = particle.x - field_particles.x
@@ -908,7 +910,7 @@ def print_simple_multiple(node, kep):
         print output
         sys.stdout.flush()
 
-def another_print_multiple(node, kep, pre, kT):
+def another_print_multiple(node, kep, pre, kT, dcen):
     is_bin = 1
     Etot = 0.0 | nbody_system.energy
     for level, x in node.iter_levels():
@@ -918,19 +920,30 @@ def another_print_multiple(node, kep, pre, kT):
         init += '    ' * level
         id = particle.id
         M = particle.mass.number
-        print '%s%d m=%.5f' % (init, id, M),
         if not particle.child1 is None:
             if level > 0: is_bin = 0
             child1 = particle.child1
             child2 = particle.child2
+            idlow = min(child1.id, child2.id)
+            idhigh = max(child1.id, child2.id)
+            print '%s%d (%d,%d) m=%.5f' % (init, id, idlow, idhigh, M),
+            sys.stdout.flush()
             M,a,e,r,Emu,t = get_component_binary_elements(child1, child2, kep)
+            cm = (child1.mass*child1.position + child2.mass*child2.position)/M
             mu = child1.mass*child2.mass/M
             E = Emu*mu
             Etot += E
-            print 'a=%.6f e=%4f r=%6f E/mu=%.5f E=%.5f E/kT=%.5f' % \
-		(a.number, e, r.number, Emu.number, E.number, E/kT),
-        print ''
-        sys.stdout.flush()
+            D = 0.
+            for k in range(3):
+                D += (cm[k].number - dcen[k].number)**2
+            D = numpy.sqrt(D)
+            print 'a=%.6f e=%4f r=%6f D=%.4f E/mu=%.5f E=%.5f E/kT=%.5f' % \
+		(a.number, e, r.number, D, Emu.number, E.number, E/kT)
+            sys.stdout.flush()
+        else:
+            print '%s%d m=%.5f' % (init, id, M)
+            sys.stdout.flush()
+
     return is_bin, Etot
 
 def print_energies(stars):
@@ -1127,10 +1140,10 @@ def scale_top_level_list(
         G = gravity_constant
     )
     
-    #print 'phi_external_final_before =', phi_in_field_of_stars_to_remove
-    #print 'phi_external_final_after =', phi_in_field_of_stars_to_add
+    print 'phi_external_final_before =', phi_in_field_of_stars_to_remove
+    print 'phi_external_final_after =', phi_in_field_of_stars_to_add
     dphi = phi_in_field_of_stars_to_add - phi_in_field_of_stars_to_remove
-    #print 'dphi =', dphi
+    print 'dphi =', dphi
 
     # Correction code parallels that above, but we must repeat it
     # here, since we have to complete the rescaling before the
