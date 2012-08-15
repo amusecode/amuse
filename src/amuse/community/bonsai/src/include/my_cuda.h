@@ -281,6 +281,9 @@ namespace my_dev {
           }
           break;            
 	case 3:
+	  	#ifndef CU_TARGET_COMPUTE_30 
+			#define CU_TARGET_COMPUTE_30 6
+	  	#endif
 		defaultComputeMode = CU_TARGET_COMPUTE_30;
 	       	break;
       }  
