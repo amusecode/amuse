@@ -13,6 +13,7 @@ from amuse.couple import multiples
 
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.units import quantities
 
 from amuse import datamodel
 from amuse.datamodel import particle_attributes as pa
@@ -60,7 +61,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
     for r in lagr.number: print "%.8f" % (r),
     print ''
     kT = T/N
-    Nmul,Nbin,Emul = gravity.pretty_print_multiples(pre, kT)
+    Nmul,Nbin,Emul = gravity.pretty_print_multiples(pre, kT, dcen)
     print pre+"Nmul=", Nmul
     print pre+"Nbin=", Nbin
     print pre+"Emul= %.5f" % (Emul.number)
@@ -160,14 +161,55 @@ def test_ph4(infile = None, number_of_stars = 40,
             scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
         stars.mass = scaled_mass
 
-        # Dynamical radii (assumes virial equilibrium):
-        stars.radius = (2*stars.mass.number) | nbody_system.length
-
         print "centering stars"
         stars.move_to_center()
         print "scaling stars to virial equilibrium"
         stars.scale_to_standard(smoothing_length_squared
                                     = gravity.parameters.epsilon_squared)
+
+
+
+        if 1:
+            nbin = 20
+            mfac = number_of_stars/(number_of_stars+float(nbin))
+            scaled_mass *= mfac
+            stars.mass = scaled_mass
+
+            kep = Kepler(redirection = "none")
+            kep.initialize_code()
+            mbin = 2*scaled_mass
+            amin = (0.1/number_of_stars) | nbody_system.length
+            amax = 4.*amin
+            ecc = 0.1
+
+            id_count = number_of_stars
+            for i in range(0, number_of_stars, number_of_stars/nbin):
+                # star i is CM, becomes component, add other star at end.
+                newstar = datamodel.Particles(1)
+                a = amin + numpy.random.uniform()*(amax-amin)
+                kep.initialize_from_elements(mbin, a, ecc)
+                dr = quantities.AdaptingVectorQuantity()
+                dr.extend(kep.get_separation_vector())
+                dv = quantities.AdaptingVectorQuantity()
+                dv.extend(kep.get_velocity_vector())
+                cm = stars[i]
+                newstar.mass = scaled_mass
+                stars[i].mass = scaled_mass
+                newstar.position = cm.position + 0.5*dr
+                newstar.velocity = cm.velocity + 0.5*dv
+                stars[i].position = cm.position - 0.5*dr
+                stars[i].velocity = cm.velocity - 0.5*dv
+                id_count += 1
+                newstar.id = id_count
+                stars.add_particles(newstar)
+
+            print 'created', nbin, 'binaries'
+            kep.stop()
+
+            number_of_stars += nbin
+
+        # Dynamical radii (assumes virial equilibrium):
+        stars.radius = (2*stars.mass.number) | nbody_system.length
 
         time = 0.0 | nbody_system.time
         sys.stdout.flush()
@@ -288,9 +330,9 @@ def test_ph4(infile = None, number_of_stars = 40,
 
 if __name__ == '__main__':
 
-    print 'command line: ',
+    print 'command line:',
     for i in range(len(sys.argv)): print sys.argv[i],
-    print ''
+    print '\n'
 
     infile = None
     N = 100
