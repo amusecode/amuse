@@ -163,7 +163,17 @@ class Quantity(object):
         """
         value_of_unit_in_another_unit = self.unit.as_quantity_in(another_unit)
         return new_quantity(self.number * value_of_unit_in_another_unit.number, another_unit)
+    
+    def as_string_in(self, another_unit):
+        """
+        Create a string representing the quantity in another unit.
+        The new unit must have the same basic si quantities.
 
+        :argument another_unit: unit to convert quantity to
+        :returns: string representing quantity converted to new unit
+        """
+        return console.DefaultPrintingStrategy().quantity_to_string(self.as_quantity_in(another_unit))
+    
     def value_in(self, unit):
         """
         Return a numeric value (for scalars) or array (for vectors)
