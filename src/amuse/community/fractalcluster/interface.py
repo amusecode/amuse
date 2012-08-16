@@ -80,10 +80,9 @@ class FractalClusterInterface(CodeInterface,  LiteratureReferencesMixIn):
 
 class MakeFractalCluster(object):
     def __init__(self,N=None,masses=None,convert_nbody = None,do_scale=False,
-                     random_seed=None,fractal_dimension=1.6,virial_ratio=0.5):
+                     random_seed=None,fractal_dimension=1.6,virial_ratio=0.5,verbose=True):
         if N is None and masses is not None:
           self.N=len(masses)
-        print N
         if masses is not None and len(masses)!=N:
           print "warning: provided mass array not equal to masses"          
         self.N=N
@@ -93,9 +92,13 @@ class MakeFractalCluster(object):
         self.masses=masses
         self.fractal_dimension=fractal_dimension
         self.virial_ratio=virial_ratio
+        self.verbose=verbose
 
     def new_model(self):
-        frac=FractalClusterInterface(redirection="none")
+        if self.verbose:
+          frac=FractalClusterInterface(redirection="none")
+        else:  
+          frac=FractalClusterInterface()
         frac.set_nstar(self.N)
         frac.set_fractal_dimension(self.fractal_dimension)
         if self.random_seed is not None:
