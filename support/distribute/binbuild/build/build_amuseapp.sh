@@ -179,13 +179,19 @@ if [ ! -e "libsinstalled" ]; then
 fi
 
 
+rm "pipsinstalled"
+
 #${PYTHONHOME}/bin/pip install ipython || exit $?
 if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/easy_install pip
     
     ${PYTHONHOME}/bin/easy_install readline
     
-    ${PYTHONHOME}/bin/easy_install pyzmq
+    export PIP_INSTALL_OPTION=--zmq=${PYTHONHOME}
+    
+    ${PYTHONHOME}/bin/pip install pyzmq || exit $?
+    
+    export PIP_INSTALL_OPTION=
     
     ${PYTHONHOME}/bin/easy_install tornado
     
