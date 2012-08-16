@@ -8,6 +8,7 @@ import unittest
 
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.smalln.interface import SmallN
+from amuse.community.kepler.interface import Kepler
 from amuse.couple import multiples
 
 from amuse.units import nbody_system
@@ -183,7 +184,10 @@ def test_ph4(infile = None, number_of_stars = 40,
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
 
-    multiples_code = multiples.Multiples(gravity, new_smalln)
+    kep = Kepler(redirection = "none")
+    kep.initialize_code()
+    multiples_code = multiples.Multiples(gravity, new_smalln, kep)
+    
 
     while time < end_time:
         time += delta_t
