@@ -812,13 +812,14 @@ class MpiChannel(MessageChannel):
         self._communicated_splitted_message = False
     
     
-    def ensure_mpi_initialized(self):
+    @classmethod
+    def ensure_mpi_initialized(cls):
         if not MPI.Is_initialized():
             if rc.threaded:
                 MPI.Init_thread()
             else:
                 MPI.Init()
-        self.register_finalize_code()
+        cls.register_finalize_code()
 
     @classmethod
     def register_finalize_code(cls):
