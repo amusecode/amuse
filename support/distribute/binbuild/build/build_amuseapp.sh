@@ -147,7 +147,7 @@ export F77=gfortran
 export
 
 if [ ! -e "libsinstalled" ]; then
-    ${PYTHON} build_libraries.py install  || exit $?
+    ${PYTHON} build_libraries.py install || exit $?
     
     #rebuild python
     
@@ -184,6 +184,10 @@ if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/easy_install pip
     
     ${PYTHONHOME}/bin/easy_install readline
+    
+    ${PYTHONHOME}/bin/easy_install pyzmq
+    
+    ${PYTHONHOME}/bin/easy_install tornado
     
     ${PYTHONHOME}/bin/easy_install IPython
     
