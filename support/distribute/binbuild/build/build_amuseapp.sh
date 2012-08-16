@@ -245,10 +245,7 @@ if [ ! -e "amuseinstalled" ]; then
     
     #make distclean PYTHON=${PYTHON}
 
-    echo ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} 
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
-
-    exit 1
     
     ${PYTHON} setup.py install || exit $?
 
