@@ -179,8 +179,6 @@ if [ ! -e "libsinstalled" ]; then
 fi
 
 
-rm "pipsinstalled"
-
 #${PYTHONHOME}/bin/pip install ipython || exit $?
 if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/easy_install pip
