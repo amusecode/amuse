@@ -15,7 +15,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units.quantities import zero
 
-root_index = 100000
+root_index = 10000			# OK for Ninit < 10000
 def new_root_index():
     global root_index
     root_index += 1
@@ -27,42 +27,7 @@ def is_a_parent(child1_key, child2_key):
 def is_not_a_child(is_a_child):
     return is_a_child == 0
 
-def print_log(s, gravity, E0 = zero):
-    M = gravity.total_mass
-    U = gravity.potential_energy
-    T = gravity.kinetic_energy
-    try:
-        Ebin = gravity.get_binary_energy()
-    except:
-        Ebin = zero 
-    Etop = T + U
-    E = Etop + Ebin
-    if E0 == zero: E0 = E
-    Rv = -0.5*M*M/U
-    Q = -T/U
-    print ""
-    print "%s: time = %.10f, mass = %.10f, dE/E0 = %.5e" \
-          % (s, gravity.get_time().number, M.number, (E/E0 - 1))
-    print "%senergies = %.10f %.10f %.10f" \
-          % (' '*(2+len(s)), E.number, U.number, T.number)
-    #print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
-    #	(s+"%%", time.number, M.number, T.number, U.number, \
-    #    E.number, Ebin.number, Rv.number, Q.number)
-    sys.stdout.flush()
-    return E
-
 def get_component_binary_elements(comp1, comp2, kep, peri = 0):
-    #try:
-    #    comp1.mass.value_in(units.kg) # see if SI units, throw exception if not
-    #    unit_converter \
-    #        = nbody_system.nbody_to_si(comp1.mass + comp2.mass,
-    #                                   (comp2.position-comp1.position).length())
-    #except Exception as ex:
-    #    unit_converter = None
-        
-    #kep = Kepler(unit_converter, redirection = "none")
-    #kep.initialize_code()
-
     mass = comp1.mass + comp2.mass
     pos = comp2.position - comp1.position
     vel = comp2.velocity - comp1.velocity
@@ -70,7 +35,7 @@ def get_component_binary_elements(comp1, comp2, kep, peri = 0):
                             vel[0], vel[1], vel[2])
     a,e = kep.get_elements()
     r = kep.get_separation()
-    E,J = kep.get_integrals()	# per unit reduced mass, note
+    E,J = kep.get_integrals()		# per unit reduced mass, note
     if peri:
         M,th = kep.get_angles()
         if M < 0:
@@ -78,7 +43,6 @@ def get_component_binary_elements(comp1, comp2, kep, peri = 0):
         else:
             kep.return_to_periastron()
     t = kep.get_time()
-    #kep.stop()
 
     return mass,a,e,r,E,t
 
@@ -136,6 +100,7 @@ class Multiples(object):
         return self.gravity_code.model_time
         
     # Add?: def gravity.commit_particles()
+
     def get_gravity_at_point(self, radius, x, y, z):
         return self.gravity_code.get_gravity_at_point(radius, x, y, z)
     
@@ -159,7 +124,8 @@ class Multiples(object):
         
     def evolve_model(self, end_time):
 
-        stopping_condition = self.gravity_code.stopping_conditions.collision_detection
+        stopping_condition =\
+            self.gravity_code.stopping_conditions.collision_detection
         stopping_condition.enable()
         
         initial_energy = self.get_total_energy(self.gravity_code)
@@ -171,13 +137,15 @@ class Multiples(object):
         count_resolve_encounter = 0
         count_ignore_encounter = 0
 
-        rlimit = 1./len(self.gravity_code.particles) | nbody_system.length  # .5 r_90 - TODO
+        rlimit = 1./len(self.gravity_code.particles) \
+			| nbody_system.length  # .5 r_90 - TODO
         print 'rlimit =', rlimit
         
         while time < end_time:
 
             print 'calling evolve_model to ', end_time
             sys.stdout.flush()
+
             self.gravity_code.evolve_model(end_time)
             newtime = self.gravity_code.model_time
             if newtime == time:
@@ -192,7 +160,8 @@ class Multiples(object):
 
                 # Note from Steve, 8/12: We pick up a lot of
                 # encounters that are then ignored here.  I have
-                # temporarily duplicated this check in the ph4 module.
+                # temporarily duplicated this check in the ph4
+                # module.
 
                 r = (star2.position-star1.position).length()
                 v = (star2.velocity-star1.velocity).length()
@@ -205,11 +174,13 @@ class Multiples(object):
                 # each other
                 # we assume all angles more than 80 degrees will
                 # need to check binary from
-                if r < (0.5 * star1.radius + star2.radius) or angle > (numpy.pi * 0.44):
+                if r < (0.5 * star1.radius + star2.radius) \
+                        or angle > (numpy.pi * 0.44):
 
                     print '\n'+'~'*60
                     print 'interaction at time', time
-                    print 'top-level: r =', r, ' v =', v, ' angle =',(angle / numpy.pi) * 180
+                    print 'top-level: r =', r, ' v =', v, \
+                        ' angle =', (angle / numpy.pi) * 180
                     sys.stdout.flush()
 
                     energy = self.get_total_energy(self.gravity_code)
@@ -234,16 +205,15 @@ class Multiples(object):
                                           self.gravity_code.particles,
                                           rlimit)
                     
-                    # Recommit reinitializes all particles (redundant
-                    # here, since it is done automatically).  Later we
-                    # will just recommit and reinitialize a list if
-                    # gravity supports it. TODO
-                    # self.gravity_code.recommit_particles()
+                    # Recommit is done automatically and reinitializes
+                    # all particles.  Later we will just reinitialize
+                    # a list if gravity supports it. TODO
                     
                     self.gravity_code.particles.synchronize_to(
                         self._inmemory_particles) # make star = gravity_stars
                     
-                    self.channel_from_code_to_memory.copy_attribute("index_in_code", "id")
+                    self.channel_from_code_to_memory.copy_attribute \
+                        ("index_in_code", "id")
                     
                     energy = self.get_total_energy(self.gravity_code)
                     print "multiples energy correction =", \
@@ -292,14 +262,14 @@ class Multiples(object):
             
     def manage_encounter(self, star1, star2, stars, gravity_stars, rlimit):
 
-        # Manage an encounter between star1 and star2.  stars is the
-        # python memory data set.  gravity_stars points to the gravity
+        # Manage an encounter between star1 and star2.  Stars is the
+        # python memory data set.  Gravity_stars points to the gravity
         # module data.  Return value is the energy correction due to
         # multiples.
 
-        # Currently we don't include neighbors in the integration
+        # *** Currently we don't include neighbors in the integration
         # and the size limitation on any final multiple is poorly
-        # implemented.
+        # implemented. ***
 
         #print '\nin manage_encounter'; sys.stdout.flush()
         #print ''
@@ -345,17 +315,13 @@ class Multiples(object):
         else:
             particles_in_encounter.add_particle(star2)
 
-        #print '\nparticles in encounter (flat tree):'
-        #for p in particles_in_encounter:
-        #    print_multiple(p)
-
         initial_scale = (star1.position - star2.position).length()
 
         # 4. Run the small-N encounter in the center of mass frame.
 
-        # May be desirable to make this a true scattering experiment
-        # by separating star1 and star2 to a larger distance before
-        # starting the multiples code.  TODO
+        # Should make this a true scattering experiment by separating
+        # star1 and star2 to a larger distance before starting the
+        # multiples code.  TODO
 
         total_mass = collided_stars.mass.sum()
         cmpos = collided_stars.center_of_mass()
@@ -365,7 +331,7 @@ class Multiples(object):
 
         M,a,e,r,E,tperi = get_component_binary_elements(star1, star2, 
                                                         self.kepler, 1)
-        print 'semi =', a.number, ' ecc =', e, ' energy =', E.number, \
+        print 'semi =', a.number, ' ecc =', e, ' E/mu =', E.number, \
               ' tperi =', tperi.number
         sys.stdout.flush()
         if self.gravity_code.unit_converter is None:
@@ -375,18 +341,12 @@ class Multiples(object):
             end_time = 10000.0 * abs(tperi)
             delta_t = abs(tperi)
 
-        self.resolve_collision(particles_in_encounter, rlimit, end_time, delta_t)
+        self.resolve_collision(particles_in_encounter, rlimit,
+                               end_time, delta_t)
        
         particles_in_encounter.position += cmpos
         particles_in_encounter.velocity += cmvel
             
-        #print '\nparticles in encounter (after resolve):'
-        #print particles_in_encounter.to_string(['x','y','z',
-        #                                        'vx','vy','vz',
-        #                                        'mass', 'id',
-        #                                        'child1', 'child2'])
-        #sys.stdout.flush()
-
         # 5. Carry out bookkeeping after the encounter and update the
         #    gravity module with the new data.
         
@@ -401,11 +361,11 @@ class Multiples(object):
                                                    "child1", "child2")
 
         # 5bb. Compress the top-level nodes before adding them to the
-        #      gravity code.  Also recompute the external potential and
-        #      absorb the tidal error into the top-level nodes of the
-        #      encounter list.  Fially, add the change in top-level energy
-        #      of the interacting subset into dEmult, so E(ph4) + dEmult
-        #      should be conserved.
+        #      gravity code.  Also recompute the external potential
+        #      and absorb the tidal error into the top-level nodes of
+        #      the encounter list.  Finally, add the change in
+        #      top-level energy of the interacting subset into dEmult,
+        #      so E(ph4) + dEmult should be conserved.
 
         stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
         roots_of_trees = binaries.roots()
@@ -441,26 +401,18 @@ class Multiples(object):
             += (total_energy_of_stars_to_add
                  - total_energy_of_stars_to_remove) + phi_correction
 
-        #print '\nleaving manage_encounter'; sys.stdout.flush()
-    
-    def resolve_collision(
-            self,
-            particles,
-            rlimit,
-            end_time = 1000 | nbody_system.time,
-            delta_t = 10 | nbody_system.time,
-        ):
-
-        #print '\nin resolve_collision'; sys.stdout.flush()
+    def resolve_collision(self,
+                          particles,
+                          rlimit,
+                          end_time = 1000 | nbody_system.time,
+                          delta_t = 10 | nbody_system.time):
 
         resolve_collision_code = self.resolve_collision_code_creation_function()
 
-        time = 0  * end_time
-        #print "\nadding particles to multiples code"
+        time = 0 * end_time
         sys.stdout.flush()
         resolve_collision_code.set_time(time);
         resolve_collision_code.particles.add_particles(particles)
-        #print "committing particles to multiples code"
         resolve_collision_code.commit_particles()
 
         # Channel to copy values from the code to the set in memory.
@@ -515,7 +467,6 @@ class Multiples(object):
             if delta_t < delta_t_max and time > 0.999999*4*delta_t:
                 delta_t *= 2
 
-        #resolve_collision_code.stop()
         raise Exception(
             "Did not finish the small-N simulation before end time {0}".
             format(end_time)
@@ -574,8 +525,6 @@ def openup_tree(star, tree, particles_in_encounter):
     dvx = star.vx - original_star.vx
     dvy = star.vy - original_star.vy
     dvz = star.vz - original_star.vz
-    
-    #print "delta positions:", dx, dy, dz
     
     leaves.x += dx
     leaves.y += dy
@@ -698,21 +647,6 @@ def compress_binary_components(comp1, comp2, kep, scale):
         cmpos = (mass1*pos1+mass2*pos2)/total_mass
         cmvel = (mass1*vel1+mass2*vel2)/total_mass
 
-        # For now, create and delete a temporary kepler process to
-        # handle the transformation.  Would be more efficient to
-        # define a single kepler at the start of the calculation and
-        # reuse it.
-#         try:
-#             comp1.mass.value_in(units.kg) # see if SI units; exception if not
-#             unit_converter = nbody_system.nbody_to_si(
-# 	                comp1.mass + comp2.mass,
-#                         (comp2.position - comp1.position).length())
-#         except Exception as ex:
-#             unit_converter = None
-            
-#         kep = Kepler(unit_converter = unit_converter, redirection = "none")
-#         kep.initialize_code()
-
         mass = comp1.mass + comp2.mass
         rel_pos = pos2 - pos1
         rel_vel = vel2 - vel1
@@ -734,7 +668,6 @@ def compress_binary_components(comp1, comp2, kep, scale):
             scale = limit
 
         #print 'scale =', scale, 'sep =', kep.get_separation(), 'M =', M
-        #kep.print_all()
 
         if M < 0:
             kep.advance_to_periastron()
@@ -749,22 +682,12 @@ def compress_binary_components(comp1, comp2, kep, scale):
 
         new_rel_pos = kep.get_separation_vector()
         new_rel_vel = kep.get_velocity_vector()
-        #kep.stop()
 
-        # Enew = 0
-        # r2 = 0
-        # for k in range(3):
-        #     Enew += 0.5*(new_rel_vel[k].number)**2
-        #     r2 += (new_rel_pos[k].number)**2
-        # rnew = math.sqrt(r2)
-        # Enew -= mass.number/r1
-        # print 'E, Enew, rnew =', E.number, E1, r1
-
-        # Problem: the vectors returned by kepler are lists,
-        # not numpy arrays, and it looks as though we can say
-        # comp1.position = pos, but not comp1.position[k] =
-        # xxx, as we'd like...  Also, we don't know how to
-        # copy a numpy array with units...  TODO
+        # Problem: the vectors returned by kepler are lists, not numpy
+        # arrays, and it looks as though we can say comp1.position =
+        # pos, but not comp1.position[k] = xxx, as we'd like...  Also,
+        # Steve doesn't know how to copy a numpy array with units...
+        # TODO
 
         newpos1 = pos1 - pos1	# stupid trick to create zero vectors
         newpos2 = pos2 - pos2	# with the proper form and units...
@@ -781,8 +704,8 @@ def compress_binary_components(comp1, comp2, kep, scale):
             newvel2[k] = cmvel[k] + (1-frac2)*dvk
 
         # Perform the changes to comp1 and comp2, and recursively
-        # transmit them to the (currently absolute) coordinates of
-        # all lower components.
+        # transmit them to the (currently absolute) coordinates of all
+        # lower components.
 
         offset_particle_tree(comp1, newpos1-pos1, newvel1-vel1)
         offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
@@ -1001,7 +924,7 @@ def set_radius_recursive(node, kep):
             mass,a,e,r,E,t = get_cm_binary_elements(node.particle, kep)
             if e < 1:
                 node.particle.radius = max(3*a, node.particle.radius)
-    		# 3 is ~arbitrary
+    		#			   3 is ~arbitrary
     except:
         pass
 
