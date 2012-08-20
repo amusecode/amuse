@@ -470,7 +470,7 @@ def get_binaries(particles,hardness=10,G = constants.G):
 
     return binaries
 
-def densitycentre_coreradius_coredens(particles):
+def densitycentre_coreradius_coredens(particles,unit_converter=None):
     """
     calculate position of the density centre, coreradius and coredensity
 
@@ -484,7 +484,7 @@ def densitycentre_coreradius_coredens(particles):
     """
 
     from amuse.community.hop.interface import Hop
-    hop=Hop()
+    hop=Hop(unit_converter=unit_converter)
     hop.particles.add_particles(particles)
     hop.parameters.density_method=2
     hop.parameters.number_of_neighbors_for_local_density=7
@@ -533,8 +533,8 @@ def new_particle_from_cluster_core(particles):
 
 def LagrangianRadii(stars,
                        cm=None,
-                       mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1]
-                       ):
+                       mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
+                       unit_converter=None):
     """
     Calculate lagrangian radii. Output is radii, mass fraction 
 
@@ -548,7 +548,7 @@ def LagrangianRadii(stars,
     """
     import bisect
     if cm is None:
-        cm,rcore,rhocore=stars.densitycentre_coreradius_coredens()
+        cm,rcore,rhocore=stars.densitycentre_coreradius_coredens(unit_converter=unit_converter)
     cmx,cmy,cmz=cm
     r2=(stars.x-cmx)**2+(stars.y-cmy)**2+(stars.z-cmz)**2
     a=numpy.argsort(r2.number)
