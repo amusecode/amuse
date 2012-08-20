@@ -13,6 +13,8 @@ from amuse.units import core
 from amuse.units import si
 from amuse.units import constants
 from amuse.units import nbody_system
+from amuse.units import generic_unit_system
+from amuse.units import generic_unit_system as generic
 from amuse.units import nbody_system as nbody
 from amuse.units.quantities import zero
 from amuse.units.quantities import ScalarQuantity

@@ -1,5 +1,5 @@
 from amuse.support.exceptions import AmuseException
-
+from amuse.support import options
 
 registered_printing_strategies = {}
 
@@ -80,6 +80,19 @@ class DefaultPrintingStrategy(PrintingStrategy):
     
 
 
+
+class SimplePrintingStrategy(PrintingStrategy):
+    
+    provided_strategy_names = ['simple']
+    
+    def string_number(self, quantity):
+        print_unit = quantity.unit / quantity.unit.factor
+        return self.numbers_to_string(quantity.as_quantity_in(print_unit))
+    
+    def string_unit(self, quantity):
+        print_unit = (quantity.unit / quantity.unit.factor).to_simple_form()
+        return str(print_unit)
+        
 class NoUnitsPrintingStrategy(PrintingStrategy):
     
     provided_strategy_names = ['no_unit', 'no_units']
@@ -294,6 +307,12 @@ def add_printing_strategy(class_of_the_printing_strategy):
         registered_printing_strategies[x] = class_of_the_printing_strategy
 
 
+class _Defaults(options.OptionalAttributes):
+    
+    @options.option(sections=['output',])
+    def printing_strategy(self):
+        return 'default'
+
 DefaultPrintingStrategy.register()
 NoUnitsPrintingStrategy.register()
 FormalPrintingStrategy.register()
@@ -302,5 +321,6 @@ AstroPrintingStrategy.register()
 SIPrintingStrategy.register()
 CGSPrintingStrategy.register()
 CustomPrintingStrategy.register()
+SimplePrintingStrategy.register()
 
-set_printing_strategy('default')
+set_printing_strategy(_Defaults().printing_strategy)
