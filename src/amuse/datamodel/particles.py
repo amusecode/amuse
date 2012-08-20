@@ -348,7 +348,7 @@ class AbstractParticleSet(AbstractSet):
             else:
                 converted.append(x)
         result.add_particles_to_store(keys, attributes, converted)
-        
+        result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
@@ -1826,6 +1826,7 @@ class ParticlesMaskedSubset(ParticlesSubset):
             else:
                 converted.append(x)
         result.add_particles_to_store(keys, attributes, converted)
+        result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
         return result
         

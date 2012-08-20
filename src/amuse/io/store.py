@@ -471,7 +471,7 @@ class StoreHDF(object):
     GRIDS_GROUP_NAME = "grids"
     UNNAMED_REFERENCES_GROUP_NAME = "referenced"
     
-    def __init__(self, filename, append_to_file=True, open_for_writing = True):
+    def __init__(self, filename, append_to_file=True, open_for_writing = True, copy_history = False):
         if not append_to_file and open_for_writing and os.path.exists(filename):
             os.remove(filename)
             
@@ -489,6 +489,7 @@ class StoreHDF(object):
             else:
                 self.hdf5file = h5py.File(filename,'r')
         
+        self.copy_history = False
         self.mapping_from_groupid_to_set = {}
         
     
@@ -718,6 +719,8 @@ class StoreHDF(object):
         for group_index in container_group.keys():
             group = container_group[group_index]
             container = self.load_from_group(group, default_type)
+            if self.copy_history:
+                container = container.copy_to_memory()
             all_containers[int(group_index) - 1] = container
             
         previous = None
@@ -761,11 +764,21 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         self.append_to_file = append_to_file
     
     def load(self):
-        processor = StoreHDF(self.filename, False, open_for_writing = False)
+        processor = StoreHDF(self.filename, False, open_for_writing = False, copy_history = self.copy_history)
         if len(self.names) > 0:
-            return processor.load_sets(self.names)
+            result = processor.load_sets(self.names)
+            if self.close_file:
+                if not self.copy_history:
+                    for part in result:
+                        part._private.previous = None
+                processor.close()
         else:
-            return processor.load()
+            result = processor.load()
+            if self.close_file:
+                if not self.copy_history:
+                    result._private.previous = None
+                processor.close()
+        return result
         
     def store(self):
         processor = StoreHDF(self.filename, self.append_to_file, open_for_writing = True)
@@ -783,6 +796,19 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         If set to False, the existing file is removed and overwritten.
         Only relevant for write set to file. (default: True)"""
         return True
+    
+    @base.format_option
+    def close_file(self):
+        """If set to True, the file is closed after reading, unless you
+        set copy_history to True no previous versions will be returned"""
+        return False
+        
+    @base.format_option
+    def copy_history(self):
+        """If set to True, the savepoint history is read from file 
+        into memory. By default the history will be kept on file and
+        the file will be kept open"""
+        return False
         
     @base.format_option
     def names(self):

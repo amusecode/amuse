@@ -68,7 +68,7 @@ class AbstractGrid(AbstractSet):
         result = Grid(*self.shape)
         result.set_values_in_store(None, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
-       
+        result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         return result
         
     def samplePoint(self, position, must_return_values_on_cell_center = False):

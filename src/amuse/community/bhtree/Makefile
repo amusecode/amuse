@@ -34,7 +34,17 @@ CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
 GPULIBS  =  $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread
 
-all:	compile bhtree_worker 
+PYTHON_CFLAGS=-I/usr/include/python2.7 -I/usr/include/python2.7 -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv
+PYTHON_LDFLAGS=-lpthread -ldl -lutil -lm -lpython2.7 -Xlinker -export-dynamic
+
+all:	compile bhtree_worker bhtree_worker_python
+
+python_worker.o: python_worker.c
+	$(CXX) $(CXXFLAGS) $(PYTHON_CFLAGS) $(SCINC) -c -o $@ $< 
+	
+bhtree_worker_python: python_worker.o
+	$(MPICXX) $(CXXFLAGS) $(PYTHON_LDFLAGS) $(SCINC) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
+    
 
 compile: $(BHTC)
 

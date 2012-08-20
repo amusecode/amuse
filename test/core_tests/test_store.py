@@ -499,3 +499,25 @@ class TestStoreHDF(amusetest.TestCase):
         loaded = io.read_set_from_file(output_file, "hdf5").previous_state()
         self.assertAlmostRelativeEquals(p.mass[0][1][2], 24)
         self.assertAlmostRelativeEquals(p[0][1][2].mass, 24)
+        
+    def test21(self):
+        
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test15.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        stars = Particles(2)
+        stars.x = 1.0  | units.km
+        stars.md = [[[1,3],[2,4],[3,5]],[[4,6],[5,7],[6,8]]]
+       
+
+        io.write_set_to_file(stars, output_file, "hdf5")
+       
+        
+        loaded = io.read_set_from_file(output_file, "hdf5", close_file = True)
+        self.assertEquals(loaded[0].md, [[1,3],[2,4],[3,5]])
+        self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
+        
+        previous = loaded.previous_state()
+        self.assertEquals(previous, None)
