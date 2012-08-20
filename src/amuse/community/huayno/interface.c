@@ -433,3 +433,15 @@ int get_potential_at_point(double x, double y,double z,
 {
   return -2;
 }
+int get_evolve_statistics(int *ttot, int *ktot, int *dtot, int *tstot, int *kstot, int *dstot)
+{
+  for(int i = 0; i < MAXLEVEL; i++) {
+    *ttot += diag->tcount[i];
+    *ktot += diag->kcount[i];
+    *dtot += diag->dcount[i];
+    *tstot += diag->tstep[i];
+    *kstot += diag->kstep[i];
+    *dstot += diag->dstep[i];
+  }
+  return 0;
+}
