@@ -470,7 +470,7 @@ def get_binaries(particles,hardness=10,G = constants.G):
 
     return binaries
 
-def densitycentre_coreradius_coredens(particles,unit_converter=None):
+def densitycentre_coreradius_coredens(particles,unit_converter=None,number_of_neighbours=7):
     """
     calculate position of the density centre, coreradius and coredensity
 
@@ -487,7 +487,7 @@ def densitycentre_coreradius_coredens(particles,unit_converter=None):
     hop=Hop(unit_converter=unit_converter)
     hop.particles.add_particles(particles)
     hop.parameters.density_method=2
-    hop.parameters.number_of_neighbors_for_local_density=7
+    hop.parameters.number_of_neighbors_for_local_density=number_of_neighbours
     hop.calculate_densities()
 
     density=hop.particles.density
