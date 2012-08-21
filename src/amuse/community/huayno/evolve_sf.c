@@ -10,7 +10,6 @@ void evolve_split_pass(int clevel,struct sys sys1,struct sys sys2,
                          DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,sys1, join(sys1,sys2), SIGN(dt));
 //  if(calc_timestep) timestep(clevel,sys1, sys1, SIGN(dt));
@@ -20,17 +19,15 @@ void evolve_split_pass(int clevel,struct sys sys1,struct sys sys2,
     diag->deepsteps++;
     diag->simtime+=dt;
   }  
-  if(fast.n>0) evolve_split_pass(clevel,fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
+  if(fast.n>0) evolve_split_pass(clevel+1,fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
   if(slow.n>0) kdk(clevel,slow,sys2, stime, etime, dt);
-  if(fast.n>0) evolve_split_pass(clevel,fast, join(slow,sys2), stime+dt/2, etime, dt/2,1);
-  clevel--;
+  if(fast.n>0) evolve_split_pass(clevel+1,fast, join(slow,sys2), stime+dt/2, etime, dt/2,1);
 }
 
 void evolve_split_naive(int clevel,struct sys sys1,struct sys sys2, 
                           DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,sys1, join(sys1,sys2), SIGN(dt));
 //  if(calc_timestep) timestep(clevel,sys1, sys1, SIGN(dt));
@@ -41,18 +38,16 @@ void evolve_split_naive(int clevel,struct sys sys1,struct sys sys2,
     diag->simtime+=dt;
   }  
   if(slow.n>0) kick(clevel,slow, join(sys1,sys2), dt/2);
-  if(fast.n>0) evolve_split_naive(clevel,fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
+  if(fast.n>0) evolve_split_naive(clevel+1,fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
   if(slow.n>0) drift_naive(clevel,join(slow,sys2),stime+dt/2);
-  if(fast.n>0) evolve_split_naive(clevel,fast, join(slow,sys2), stime+dt/2, etime, dt/2,1);
+  if(fast.n>0) evolve_split_naive(clevel+1,fast, join(slow,sys2), stime+dt/2, etime, dt/2,1);
   if(slow.n>0) drift_naive(clevel,join(slow,sys2),etime);
   if(slow.n>0) kick(clevel,slow, join(sys1,sys2), dt/2);
-  clevel--;
 }
 
 void evolve_split_bridge(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
@@ -63,18 +58,16 @@ void evolve_split_bridge(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
   }  
   if(slow.n>0 && fast.n>0) kick(clevel,slow, fast, dt/2);
   if(slow.n>0 && fast.n>0) kick(clevel,fast, slow, dt/2);
-  if(fast.n>0) evolve_split_bridge(clevel,fast, stime, stime+dt/2, dt/2,0); /* note calc_timestep? */
+  if(fast.n>0) evolve_split_bridge(clevel+1,fast, stime, stime+dt/2, dt/2,0); /* note calc_timestep? */
   if(slow.n>0) kdk(clevel,slow,zerosys, stime, etime, dt);
-  if(fast.n>0) evolve_split_bridge(clevel,fast, stime+dt/2, etime, dt/2,1);
+  if(fast.n>0) evolve_split_bridge(clevel+1,fast, stime+dt/2, etime, dt/2,1);
   if(slow.n>0 && fast.n>0) kick(clevel,slow, fast, dt/2);
   if(slow.n>0 && fast.n>0) kick(clevel,fast, slow, dt/2);
-  clevel--;
 }
 
 void evolve_split_bridge_dkd(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
@@ -85,18 +78,16 @@ void evolve_split_bridge_dkd(int clevel,struct sys s, DOUBLE stime, DOUBLE etime
   }  
   if(slow.n>0 && fast.n>0) kick(clevel,slow, fast, dt/2);
   if(slow.n>0 && fast.n>0) kick(clevel,fast, slow, dt/2);
-  if(fast.n>0) evolve_split_bridge_dkd(clevel,fast, stime, stime+dt/2, dt/2,0); /* note calc_timestep? */
+  if(fast.n>0) evolve_split_bridge_dkd(clevel+1,fast, stime, stime+dt/2, dt/2,0); /* note calc_timestep? */
   if(slow.n>0) dkd(clevel,slow,zerosys, stime, etime, dt);
-  if(fast.n>0) evolve_split_bridge_dkd(clevel,fast, stime+dt/2, etime, dt/2,1);
+  if(fast.n>0) evolve_split_bridge_dkd(clevel+1,fast, stime+dt/2, etime, dt/2,1);
   if(slow.n>0 && fast.n>0) kick(clevel,slow, fast, dt/2);
   if(slow.n>0 && fast.n>0) kick(clevel,fast, slow, dt/2);
-  clevel--;
 }
 
 void evolve_split_hold(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
@@ -105,16 +96,14 @@ void evolve_split_hold(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUB
     diag->deepsteps++;
     diag->simtime+=dt;
   }  
-  if(fast.n>0) evolve_split_hold(clevel,fast, stime, stime+dt/2, dt/2,0);
+  if(fast.n>0) evolve_split_hold(clevel+1,fast, stime, stime+dt/2, dt/2,0);
   if(slow.n>0) kdk(clevel,slow,fast,stime,etime,dt);
-  if(fast.n>0) evolve_split_hold(clevel,fast, stime+dt/2, etime, dt/2,1);
-  clevel--;
+  if(fast.n>0) evolve_split_hold(clevel+1,fast, stime+dt/2, etime, dt/2,1);
 }
 
 void evolve_split_hold_dkd(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
@@ -123,17 +112,15 @@ void evolve_split_hold_dkd(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, 
     diag->deepsteps++;
     diag->simtime+=dt;
   }  
-  if(fast.n>0) evolve_split_hold_dkd(clevel,fast, stime, stime+dt/2, dt/2,0);
+  if(fast.n>0) evolve_split_hold_dkd(clevel+1,fast, stime, stime+dt/2, dt/2,0);
   if(slow.n>0) dkd(clevel,slow,fast,stime,etime,dt);
-  if(fast.n>0) evolve_split_hold_dkd(clevel,fast, stime+dt/2, etime, dt/2,1);
-  clevel--;
+  if(fast.n>0) evolve_split_hold_dkd(clevel+1,fast, stime+dt/2, etime, dt/2,1);
 }
 
 void evolve_split_pass_dkd(int clevel,struct sys sys1,struct sys sys2, 
                          DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,sys1, join(sys1,sys2), SIGN(dt));
 //  if(calc_timestep) timestep(clevel,sys1, sys1, SIGN(dt));
@@ -143,17 +130,15 @@ void evolve_split_pass_dkd(int clevel,struct sys sys1,struct sys sys2,
     diag->deepsteps++;
     diag->simtime+=dt;
   }  
-  if(fast.n>0) evolve_split_pass_dkd(clevel,fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
+  if(fast.n>0) evolve_split_pass_dkd(clevel+1,fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
   if(slow.n>0) dkd(clevel,slow,sys2, stime, etime, dt);
-  if(fast.n>0) evolve_split_pass_dkd(clevel,fast, join(slow,sys2), stime+dt/2, etime, dt/2,1);
-  clevel--;
+  if(fast.n>0) evolve_split_pass_dkd(clevel+1,fast, join(slow,sys2), stime+dt/2, etime, dt/2,1);
 }
 
 void evolve_split_ppass_dkd(int clevel,struct sys sys1,struct sys sys2, 
                          DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,sys1, join(sys1,sys2), SIGN(dt));
 //  if(calc_timestep) timestep(clevel,sys1, sys1, SIGN(dt));
@@ -164,16 +149,15 @@ void evolve_split_ppass_dkd(int clevel,struct sys sys1,struct sys sys2,
     diag->simtime+=dt;
   }  
   if(fast.n>0) 
-    evolve_split_ppass_dkd(clevel,fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
+    evolve_split_ppass_dkd(clevel+1,fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
   else  
     drift(clevel,join(slow,sys2),etime,dt/2);
   if(slow.n>0) kick(clevel,slow,join(slow,sys2), dt);
   if(slow.n>0) kick(clevel,sys2,slow, dt);
   if(fast.n>0) 
-    evolve_split_ppass_dkd(clevel,fast, join(slow,sys2), stime+dt/2, etime, dt/2,1);
+    evolve_split_ppass_dkd(clevel+1,fast, join(slow,sys2), stime+dt/2, etime, dt/2,1);
   else  
     drift(clevel,join(slow,sys2),etime,dt/2);
-  clevel--;
 }
 
 
@@ -205,7 +189,6 @@ void evolve_sf_4m5(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
 {
   int i;
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
@@ -222,14 +205,14 @@ void evolve_sf_4m5(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
   if(fast.n>0) 
     for(i=0;i<N1;i++)
     {
-      evolve_sf_4m5(clevel,fast,stime,stime+D1*dt/N1,D1*dt/N1,i==0?0:1);
+      evolve_sf_4m5(clevel+1,fast,stime,stime+D1*dt/N1,D1*dt/N1,i==0?0:1);
       stime+=D1*dt/N1; 
     }
   if(slow.n>0) kick(clevel,slow,join(fast,slow), K2*dt);
   if(fast.n>0 && slow.n>0) kick(clevel,fast,slow, K2*dt);
 
   if(slow.n>0) drift(clevel,slow,stime+D2*dt,D2*dt);
-  if(fast.n>0) evolve_sf_4m5(clevel,fast,stime,stime+D2*dt,D2*dt,1);
+  if(fast.n>0) evolve_sf_4m5(clevel+1,fast,stime,stime+D2*dt,D2*dt,1);
   stime+=D2*dt;
 
   if(slow.n>0) kick(clevel,slow,join(fast,slow), K3*dt);
@@ -239,14 +222,14 @@ void evolve_sf_4m5(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
   if(fast.n>0) 
     for(i=0;i<N1;i++)
     {
-      evolve_sf_4m5(clevel,fast,stime,stime+D3*dt/N1,D3*dt/N1,1);
+      evolve_sf_4m5(clevel+1,fast,stime,stime+D3*dt/N1,D3*dt/N1,1);
       stime+=D3*dt/N1;
     }
   if(slow.n>0) kick(clevel,slow,join(fast,slow), K3*dt);
   if(fast.n>0 && slow.n>0) kick(clevel,fast,slow, K3*dt);
 
   if(slow.n>0) drift(clevel,slow,stime+D2*dt,D2*dt);
-  if(fast.n>0) evolve_sf_4m5(clevel,fast,stime,stime+D2*dt,D2*dt,1);
+  if(fast.n>0) evolve_sf_4m5(clevel+1,fast,stime,stime+D2*dt,D2*dt,1);
   stime+=D2*dt;
 
   if(slow.n>0) kick(clevel,slow,join(fast,slow), K2*dt);
@@ -256,12 +239,11 @@ void evolve_sf_4m5(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
   if(fast.n>0) 
     for(i=0;i<N1;i++)
     {
-      evolve_sf_4m5(clevel,fast,stime,i==N1-1?etime:stime+D1*dt/N1,D1*dt/N1,1);
+      evolve_sf_4m5(clevel+1,fast,stime,i==N1-1?etime:stime+D1*dt/N1,D1*dt/N1,1);
       stime+=D1*dt/N1; 
     }
   if(slow.n>0) kick(clevel,slow,join(fast,slow), K1*dt);
   if(fast.n>0 && slow.n>0) kick(clevel,fast,slow, K1*dt);    
-  clevel--;
 }
 #undef K1
 #undef K2
@@ -281,7 +263,6 @@ void evolve_sf_4m4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
 {
   int i;
   struct sys slow=zerosys,fast=zerosys;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
@@ -298,21 +279,21 @@ void evolve_sf_4m4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
   if(fast.n>0) 
     for(i=0;i<N1;i++)
     {
-      evolve_sf_4m5(clevel,fast,stime,stime+D1*dt/N1,D1*dt/N1,i==0?0:1);
+      evolve_sf_4m5(clevel+1,fast,stime,stime+D1*dt/N1,D1*dt/N1,i==0?0:1);
       stime+=D1*dt/N1; 
     }
   if(slow.n>0) kick(clevel,slow,join(fast,slow), K2*dt);
   if(fast.n>0 && slow.n>0) kick(clevel,fast,slow, K2*dt);
 
   if(slow.n>0) drift(clevel,slow,stime+D2*dt,D2*dt);
-  if(fast.n>0) evolve_sf_4m5(clevel,fast,stime,stime+D2*dt,D2*dt,1);
+  if(fast.n>0) evolve_sf_4m5(clevel+1,fast,stime,stime+D2*dt,D2*dt,1);
   stime+=D2*dt;
 
   if(slow.n>0) kick(clevel,slow,join(fast,slow), K3*dt);
   if(fast.n>0 && slow.n>0) kick(clevel,fast,slow, K3*dt);
 
   if(slow.n>0) drift(clevel,slow,stime+D2*dt,D2*dt);
-  if(fast.n>0) evolve_sf_4m5(clevel,fast,stime,stime+D2*dt,D2*dt,1);
+  if(fast.n>0) evolve_sf_4m5(clevel+1,fast,stime,stime+D2*dt,D2*dt,1);
   stime+=D2*dt;
 
   if(slow.n>0) kick(clevel,slow,join(fast,slow), K2*dt);
@@ -322,12 +303,11 @@ void evolve_sf_4m4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
   if(fast.n>0) 
     for(i=0;i<N1;i++)
     {
-      evolve_sf_4m5(clevel,fast,stime,i==N1-1?etime:stime+D1*dt/N1,D1*dt/N1,1);
+      evolve_sf_4m5(clevel+1,fast,stime,i==N1-1?etime:stime+D1*dt/N1,D1*dt/N1,1);
       stime+=D1*dt/N1; 
     }
   if(slow.n>0) kick(clevel,slow,join(fast,slow), K1*dt);
   if(fast.n>0 && slow.n>0) kick(clevel,fast,slow, K1*dt);    
-  clevel--;
 }
 #undef K1
 #undef K2

@@ -130,8 +130,7 @@ static void ok_kick(int clevel,struct forces f, DOUBLE dt) {
 }
 
 void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
-  if (IS_ZEROFORCES(f) && clevel == -1) { f = ok_main_forces; }
-  clevel++;
+  if (IS_ZEROFORCES(f) && clevel == 0) { f = ok_main_forces; }
   if ((etime == stime) || (dt == 0) || (clevel >= MAXLEVEL))
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
   // all particles are drifted together
@@ -139,14 +138,12 @@ void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE e
     diag->deepsteps++;
     diag->simtime += dt;
     drift(clevel,s, etime, dt);
-    clevel--;
     return;
   }
   if (calc_timestep) ok_timestep_cpu(clevel,f, dt);
   struct forces slowf = zeroforces, fastf = zeroforces;
   ok_split((FLOAT) dt, f, &slowf, &fastf);
-  evolve_ok2(clevel,s, fastf, stime, stime+dt/2, dt/2, 0);
+  evolve_ok2(clevel+1,s, fastf, stime, stime+dt/2, dt/2, 0);
   ok_kick(clevel,slowf, dt);
-  evolve_ok2(clevel,s, fastf, stime+dt/2, etime, dt/2, 1);
-  clevel--;
+  evolve_ok2(clevel+1,s, fastf, stime+dt/2, etime, dt/2, 1);
 }

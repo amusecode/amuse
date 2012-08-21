@@ -37,7 +37,6 @@ void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOU
 {
   FLOAT dtsys;
   int done=0;
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%d/%d\n", etime, stime, dt, clevel,MAXLEVEL);
   if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
@@ -48,15 +47,14 @@ void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOU
   }
   if(done==0)
   {      
-    evolve_bs_adaptive(clevel,s,stime, stime+dt/2,dt/2,0);
-    evolve_bs_adaptive(clevel,s,stime+dt/2, etime,dt/2,1);
+    evolve_bs_adaptive(clevel+1,s,stime, stime+dt/2,dt/2,0);
+    evolve_bs_adaptive(clevel+1,s,stime+dt/2, etime,dt/2,1);
   }
   else
   {
     diag->deepsteps++;
     diag->simtime+=dt;
   }
-  clevel--;
 }
 
 #define FREEBSYS_ARRAY(arr)  for(i=0; arr[i].part!=NULL && i<JMAX; i++) free(arr[i].part);

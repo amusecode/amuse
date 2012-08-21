@@ -86,13 +86,11 @@ void init_evolve(struct sys s,int inttype)
 
 void evolve_constant(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
-  clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
   diag->deepsteps++;
   diag->simtime+=dt;
   dkd(clevel,s,zerosys, stime, etime, dt);
-  clevel--;
 }
 
 void zero_diagnostics(struct diagnostics* diag)
@@ -160,7 +158,7 @@ void do_evolve(struct sys s, double dt, int inttype)
   int i,clevel;
   if(dt==0) return;
   for(p=0;p<s.n;p++) s.part[p].postime=0.;
-  clevel=-1;
+  clevel=0;
   zero_diagnostics(diag);
   switch (inttype)
   {
