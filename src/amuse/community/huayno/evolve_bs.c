@@ -27,29 +27,29 @@ int nsequence(int j)
   return 2*j; 
 }
 
-static int BulirschStoer(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 static DOUBLE error_function(struct bsys s1, struct bsys s2);
 static void aitkenneville(int j, int k, struct bsys* s, struct bsys s_jk, struct bsys s_j1k);
-static void nkdk(int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void ndkd(int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void nkdk(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void ndkd(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
-void evolve_bs_adaptive(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
+void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   FLOAT dtsys;
   int done=0;
   clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%d/%d\n", etime, stime, dt, clevel,MAXLEVEL);
-  if(calc_timestep) timestep(s,s,SIGN(dt));
+  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys=global_timestep(s);
   if(dtsys > fabs(dt))
   {
-    done=BulirschStoer(s, stime, etime, dt);
+    done=BulirschStoer(clevel,s, stime, etime, dt);
   }
   if(done==0)
   {      
-    evolve_bs_adaptive(s,stime, stime+dt/2,dt/2,0);
-    evolve_bs_adaptive(s,stime+dt/2, etime,dt/2,1);
+    evolve_bs_adaptive(clevel,s,stime, stime+dt/2,dt/2,0);
+    evolve_bs_adaptive(clevel,s,stime+dt/2, etime,dt/2,1);
   }
   else
   {
@@ -103,7 +103,7 @@ void bsys_to_sys(struct bsys bs, struct sys s)
   }  
 }
 
-static int BulirschStoer(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   struct bsys bsys_array[JMAX];
   struct bsys bsys_array1[JMAX];
@@ -139,7 +139,7 @@ static int BulirschStoer(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 
     SWAP(jline,j1line, struct bsys*)
     for(i=0;i<s.n;i++) tmpsys.part[i]=s.part[i];  
-    nkdk(nsequence(j),tmpsys,zerosys,stime,etime,dt);
+    nkdk(clevel,nsequence(j),tmpsys,zerosys,stime,etime,dt);
     ALLOCBSYS(jline[0], tmpsys.n)
     sys_to_bsys(tmpsys,jline[0]);
     for(k=1;k<j;k++) aitkenneville(j,k,jline+k,jline[k-1],j1line[k-1]) ;    
@@ -202,36 +202,36 @@ void aitkenneville(int j, int k, struct bsys *s, struct bsys s_jk, struct bsys s
   }
 }
 
-static void nkdk(int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void nkdk(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   int i;
-  if(s2.n>0) kick(s2, s1, dt/2/n);
-  kick(s1,join(s1,s2),dt/2/n);
+  if(s2.n>0) kick(clevel,s2, s1, dt/2/n);
+  kick(clevel,s1,join(s1,s2),dt/2/n);
   for(i=0;i<n-1;i++)
   {  
     stime+=dt/n;
-    drift(s1,stime, dt/n);
-    kick(s1,join(s1,s2),dt/n);
-    if(s2.n>0) kick(s2, s1, dt/n);
+    drift(clevel,s1,stime, dt/n);
+    kick(clevel,s1,join(s1,s2),dt/n);
+    if(s2.n>0) kick(clevel,s2, s1, dt/n);
   }
-  drift(s1,etime, dt/n);
-  kick(s1,join(s1,s2),dt/2/n);
-  if(s2.n>0) kick(s2, s1, dt/2/n);
+  drift(clevel,s1,etime, dt/n);
+  kick(clevel,s1,join(s1,s2),dt/2/n);
+  if(s2.n>0) kick(clevel,s2, s1, dt/2/n);
 }
 
-static void ndkd(int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void ndkd(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   int i;
   stime+=dt/2/n;
-  drift(s1,stime, dt/2/n);
+  drift(clevel,s1,stime, dt/2/n);
   for(i=0;i<n-1;i++)
   {  
-    kick(s1,join(s1,s2),dt/n);
-    if(s2.n>0) kick(s2, s1, dt/n);
+    kick(clevel,s1,join(s1,s2),dt/n);
+    if(s2.n>0) kick(clevel,s2, s1, dt/n);
     stime+=dt/n;
-    drift(s1,stime, dt/n);
+    drift(clevel,s1,stime, dt/n);
   }
-  kick(s1,join(s1,s2),dt/n);
-  if(s2.n>0) kick(s2, s1, dt/n);
-  drift(s1,etime, dt/2/n);
+  kick(clevel,s1,join(s1,s2),dt/n);
+  if(s2.n>0) kick(clevel,s2, s1, dt/n);
+  drift(clevel,s1,etime, dt/2/n);
 }

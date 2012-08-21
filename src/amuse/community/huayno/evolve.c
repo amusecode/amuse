@@ -18,8 +18,6 @@ FLOAT eps2;
 FLOAT dt_param;
 struct sys zerosys ={ 0, NULL,NULL};
 
-int clevel;
-
 struct diagnostics global_diag;
 struct diagnostics *diag;
 
@@ -86,14 +84,14 @@ void init_evolve(struct sys s,int inttype)
   if (inttype == OK) evolve_ok_init(s);
 }
 
-void evolve_constant(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+void evolve_constant(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
   diag->deepsteps++;
   diag->simtime+=dt;
-  dkd(s,zerosys, stime, etime, dt);
+  dkd(clevel,s,zerosys, stime, etime, dt);
   clevel--;
 }
 
@@ -115,12 +113,16 @@ void zero_diagnostics(struct diagnostics* diag)
     diag->dstep[i]=0;diag->dcount[i]=0;
     diag->cefail[i]=0;diag->cecount[i]=0;
     diag->bsstep[i]=0;diag->jcount[i]=0;
+    diag->ntasks[i]=0;diag->taskcount[i]=0;
   }  
-  diag->ntasks=0;
+  diag->taskdrift=0;
+  diag->taskkick=0;
 }
 
 void sum_diagnostics(struct diagnostics* total,struct diagnostics* diag)
 {
+  int tasksum=0;
+  unsigned long taskcountsum=0;
   total->simtime+=diag->simtime;
   total->timetrack+=diag->timetrack;
   total->deepsteps+=diag->deepsteps;
@@ -135,7 +137,9 @@ void sum_diagnostics(struct diagnostics* total,struct diagnostics* diag)
     total->cefail[i]+=diag->cefail[i];
     total->cecount[i]+=diag->cecount[i];
     total->bsstep[i]+=diag->bsstep[i];
-    total->jcount[i]+=diag->jcount[i]; 
+    total->jcount[i]+=diag->jcount[i];
+    total->ntasks[i]+=diag->ntasks[i];tasksum+=diag->ntasks[i]; 
+    total->taskcount[i]+=diag->taskcount[i];taskcountsum+=diag->taskcount[i]; 
   }          
 #ifdef EVOLVE_OPENCL
   total->cpu_step+=diag->cpu_step;
@@ -143,14 +147,17 @@ void sum_diagnostics(struct diagnostics* total,struct diagnostics* diag)
   total->cpu_count+=diag->cpu_count;
   total->cl_count+=diag->cl_count;
 #endif
-  total->ntasks+=diag->ntasks;
+#ifdef _OPENMP
+  printf("%d: %d %li %li %li\n",omp_get_thread_num(),tasksum,diag->taskdrift,
+     diag->taskkick,taskcountsum);
+#endif
 }
 
 
 void do_evolve(struct sys s, double dt, int inttype)
 {
   UINT p;
-  int i;
+  int i,clevel;
   if(dt==0) return;
   for(p=0;p<s.n;p++) s.part[p].postime=0.;
   clevel=-1;
@@ -158,60 +165,64 @@ void do_evolve(struct sys s, double dt, int inttype)
   switch (inttype)
   {
     case CONSTANT:
-      evolve_constant(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      evolve_constant(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
     case SHARED2:
-      evolve_shared2(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared2(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case SHARED4:
-      evolve_shared4(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared4(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case SHARED6:
-      evolve_shared6(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared6(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case SHARED8:
-      evolve_shared8(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared8(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case SHARED10:
-      evolve_shared10(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared10(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case SHAREDBS:
-      evolve_bs_adaptive(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_bs_adaptive(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case PASS:
-      evolve_split_pass(s, zerosys,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_split_pass(clevel,s, zerosys,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case HOLD:
-      evolve_split_hold(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_split_hold(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case BRIDGE:
-      evolve_split_bridge(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_split_bridge(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case NAIVE:
-      evolve_split_naive(s, zerosys,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_split_naive(clevel,s, zerosys,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case HOLD_DKD:
-      evolve_split_hold_dkd(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_split_hold_dkd(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case PASS_DKD:
-      evolve_split_pass_dkd(s, zerosys, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_split_pass_dkd(clevel,s, zerosys, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case PPASS_DKD:
-      evolve_split_ppass_dkd(s, zerosys, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_split_ppass_dkd(clevel,s, zerosys, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case BRIDGE_DKD:
-      evolve_split_bridge_dkd(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_split_bridge_dkd(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case CC:
     case CC_KEPLER:
+    case CC_BS:
+    case CCC:
+    case CCC_KEPLER:
+    case CCC_BS:
 #ifdef _OPENMP
-#pragma omp parallel shared(global_diag,s,dt) copyin(clevel) 
+#pragma omp parallel shared(global_diag,s,dt,clevel) 
       {
         diag=(struct diagnostics *) malloc(sizeof( struct diagnostics));
         zero_diagnostics(diag);
 #pragma omp single
 #endif
-        evolve_cc2(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, inttype==CC_KEPLER);
+        evolve_cc2(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, inttype, 1);
 #ifdef _OPENMP
 #pragma omp critical
         sum_diagnostics(&global_diag,diag);
@@ -220,16 +231,16 @@ void do_evolve(struct sys s, double dt, int inttype)
 #endif        
       break;
     case OK:
-      evolve_ok2(s, zeroforces, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_ok2(clevel,s, zeroforces, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case KEPLER:
-      evolve_kepler(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      evolve_kepler(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
     case FOURTH_M4:
-      evolve_sf_4m4(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_sf_4m4(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case FOURTH_M5:
-      evolve_sf_4m5(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_sf_4m5(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     default:  
       ENDRUN("unknown integrator\n");
@@ -259,7 +270,7 @@ void do_evolve(struct sys s, double dt, int inttype)
   }
 
 
-void drift(struct sys s, DOUBLE etime, DOUBLE dt)
+void drift(int clevel,struct sys s, DOUBLE etime, DOUBLE dt)
 {
   UINT i;
   for(i=0;i<s.n;i++)
@@ -278,6 +289,7 @@ void drift(struct sys s, DOUBLE etime, DOUBLE dt)
   }
   diag->dstep[clevel]++;
   diag->dcount[clevel]+=s.n;
+  diag->taskdrift+=s.n;
 }
 
 static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
@@ -324,7 +336,7 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
   }
 }
 
-void kick(struct sys s1, struct sys s2, DOUBLE dt)
+void kick(int clevel,struct sys s1, struct sys s2, DOUBLE dt)
 {
 #ifdef EVOLVE_OPENCL
   if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
@@ -344,6 +356,7 @@ void kick(struct sys s1, struct sys s2, DOUBLE dt)
 #endif  
   diag->kstep[clevel]++;
   diag->kcount[clevel]+=(ULONG) s1.n*s2.n;
+  diag->taskkick+=(ULONG) s1.n*s2.n;
 }
 
 static void potential_cpu(struct sys s1,struct sys s2)
@@ -457,7 +470,7 @@ static void timestep_cpu(struct sys s1, struct sys s2,int dir)
   }
 }
 
-void timestep(struct sys s1, struct sys s2,int dir)
+void timestep(int clevel,struct sys s1, struct sys s2,int dir)
 {
 #ifdef EVOLVE_OPENCL
   if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
@@ -516,9 +529,9 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   printf("cpu step,count: %12li,%18li\n",diag->cpu_step,diag->cpu_count);
   printf("cl step,count:  %12li,%18li\n",diag->cl_step,diag->cl_count);
 #endif
-  if(inttype==SHAREDBS)
+  if(inttype==SHAREDBS || inttype==CC_BS || inttype==CCC_BS)
   {
-    unsigned long totalbs,totalj;
+    unsigned long totalbs=0,totalj=0;
     printf("bs counts:\n");
     for(i=0;i<MAXLEVEL;i++) 
     { 
@@ -528,9 +541,9 @@ static void report(struct sys s,DOUBLE etime, int inttype)
     }
     printf(" total, total j, mean j: %18li %18li %f\n",totalbs,totalj,totalj/(1.*totalbs));
   }
-  if(inttype==CC_KEPLER)
+  if(inttype==CC_KEPLER || inttype==CCC_KEPLER)
   {
-    unsigned long totalcefail,totalcecount;
+    unsigned long totalcefail=0,totalcecount=0;
     printf("kepler solver counts:\n");
     for(i=0;i<MAXLEVEL;i++) 
     { 
@@ -542,7 +555,18 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   }
   
 #ifdef _OPENMP
-  printf("openmp tasks: %d\n",diag->ntasks);
+  {
+    int totaltasks=0;
+    printf("task counts:\n");
+    for(i=0;i<MAXLEVEL;i++) 
+    { 
+      printf("%d: %18li %18li\n",i,diag->ntasks[i],diag->taskcount[i]);
+      totaltasks+=diag->ntasks[i];
+    } 
+   printf("openmp tasks: %d\n",totaltasks);
+
+  }
+
 #endif  
   fflush(stdout);
 }
@@ -582,19 +606,19 @@ FLOAT global_timestep(struct sys s)
   return mindt;
 }
 
-void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+void kdk(int clevel,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
-  if(s2.n>0) kick(s2, s1, dt/2);
-  kick(s1,join(s1,s2),dt/2);
-  drift(s1,etime, dt);
-  kick(s1,join(s1,s2),dt/2);
-  if(s2.n>0) kick(s2, s1, dt/2);
+  if(s2.n>0) kick(clevel,s2, s1, dt/2);
+  kick(clevel,s1,join(s1,s2),dt/2);
+  drift(clevel,s1,etime, dt);
+  kick(clevel,s1,join(s1,s2),dt/2);
+  if(s2.n>0) kick(clevel,s2, s1, dt/2);
 }
 
-void dkd(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+void dkd(int clevel,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
-  drift(s1,stime+dt/2, dt/2);
-  kick(s1,join(s1,s2),dt);
-  if(s2.n>0) kick(s2, s1, dt);
-  drift(s1,etime, dt/2);
+  drift(clevel,s1,stime+dt/2, dt/2);
+  kick(clevel,s1,join(s1,s2),dt);
+  if(s2.n>0) kick(clevel,s2, s1, dt);
+  drift(clevel,s1,etime, dt/2);
 }

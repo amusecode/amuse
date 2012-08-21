@@ -20,7 +20,7 @@ struct forces zeroforces = {0, NULL, NULL};
   } \
 };
 
-static void ok_timestep_cpu(struct forces f, DOUBLE dt) {
+static void ok_timestep_cpu(int clevel,struct forces f, DOUBLE dt) {
   int dir=SIGN(dt);
   for (UINT i = 0; i < f.n; i++) 
   {
@@ -100,7 +100,7 @@ void evolve_ok_stop() {
   }
 }
 
-static void ok_kick(struct forces f, DOUBLE dt) {
+static void ok_kick(int clevel,struct forces f, DOUBLE dt) {
   FLOAT dx[3],dr3,dr2,dr,acci;
   FLOAT acc[3];
 
@@ -129,7 +129,7 @@ static void ok_kick(struct forces f, DOUBLE dt) {
   diag->kcount[clevel] += f.n;
 }
 
-void evolve_ok2(struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
+void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   if (IS_ZEROFORCES(f) && clevel == -1) { f = ok_main_forces; }
   clevel++;
   if ((etime == stime) || (dt == 0) || (clevel >= MAXLEVEL))
@@ -138,15 +138,15 @@ void evolve_ok2(struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBL
   if (f.n == 0) {
     diag->deepsteps++;
     diag->simtime += dt;
-    drift(s, etime, dt);
+    drift(clevel,s, etime, dt);
     clevel--;
     return;
   }
-  if (calc_timestep) ok_timestep_cpu(f, dt);
+  if (calc_timestep) ok_timestep_cpu(clevel,f, dt);
   struct forces slowf = zeroforces, fastf = zeroforces;
   ok_split((FLOAT) dt, f, &slowf, &fastf);
-  evolve_ok2(s, fastf, stime, stime+dt/2, dt/2, 0);
-  ok_kick(slowf, dt);
-  evolve_ok2(s, fastf, stime+dt/2, etime, dt/2, 1);
+  evolve_ok2(clevel,s, fastf, stime, stime+dt/2, dt/2, 0);
+  ok_kick(clevel,slowf, dt);
+  evolve_ok2(clevel,s, fastf, stime+dt/2, etime, dt/2, 1);
   clevel--;
 }

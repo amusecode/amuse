@@ -138,18 +138,6 @@ class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
 
     def get_eps2(self):
         return self.get_eps2_parameter()
-
-    @legacy_function    
-    def get_evolve_statistics():
-        function = LegacyFunctionSpecification()   
-        function.addParameter('ttot', dtype='i', direction=function.OUT)
-        function.addParameter('ktot', dtype='i', direction=function.OUT)
-        function.addParameter('dtot', dtype='i', direction=function.OUT)
-        function.addParameter('tstot', dtype='i', direction=function.OUT)
-        function.addParameter('kstot', dtype='i', direction=function.OUT)
-        function.addParameter('dstot', dtype='i', direction=function.OUT)
-        function.result_type = 'i'
-        return function
     
 class Huayno(GravitationalDynamics):
 
@@ -167,13 +155,17 @@ class Huayno(GravitationalDynamics):
         CC=11
         CC_KEPLER=12
         OK=13
-#        KEPLER=14
+        KEPLER=14
         SHARED4=15
         SHARED6=18
         SHARED8=19
         SHARED10=20
         SHAREDBS=21
-        
+        CCC=22
+        CCC_KEPLER=23
+        CC_BS=24
+        CCC_BS=25
+                
         @classmethod
         def _list(cls):
               return set([x for x in cls.__dict__.keys() if not x.startswith('_')])

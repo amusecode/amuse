@@ -75,7 +75,11 @@ enum intopt
   SHARED6,    // 18
   SHARED8,    // 19
   SHARED10,   // 20
-  SHAREDBS    // 21
+  SHAREDBS,    // 21
+  CCC,         // 22
+  CCC_KEPLER,  // 23
+  CC_BS,       // 24
+  CCC_BS,       // 25
 };
 
 extern FLOAT eps2;
@@ -85,7 +89,6 @@ extern struct sys zerosys;
 extern int fixed_j;
 extern DOUBLE bs_target_error;
 
-extern int clevel;
 /* diagnostics */
 struct diagnostics {
   DOUBLE simtime;
@@ -98,12 +101,13 @@ struct diagnostics {
 #ifdef EVOLVE_OPENCL
   unsigned long cpu_step,cl_step,cpu_count,cl_count;
 #endif
-  int ntasks;
+  int ntasks[MAXLEVEL],taskcount[MAXLEVEL];
+  unsigned long taskdrift,taskkick;
 };
 
 extern struct diagnostics global_diag;
 extern struct diagnostics *diag;
-#pragma omp threadprivate(diag,clevel)
+#pragma omp threadprivate(diag)
 
 
 void init_code();
@@ -114,13 +118,13 @@ void do_evolve(struct sys s, double dt, int inttype);
 FLOAT system_potential_energy(struct sys s);
 FLOAT system_kinetic_energy(struct sys s);
 
-void drift(struct sys s, DOUBLE etime, DOUBLE dt); /* drift sys */
-void kick(struct sys s1, struct sys s2, DOUBLE dt); /* =kick sys1 for interactions with sys2  */
+void drift(int clevel,struct sys s, DOUBLE etime, DOUBLE dt); /* drift sys */
+void kick(int clevel,struct sys s1, struct sys s2, DOUBLE dt); /* =kick sys1 for interactions with sys2  */
 
-void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-void dkd(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+void kdk(int clevel,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+void dkd(int clevel,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
-void timestep(struct sys s1, struct sys s2,int dir);
+void timestep(int clevel,struct sys s1, struct sys s2,int dir);
 FLOAT timestep_ij(struct particle *i, struct particle *j,int dir);
 FLOAT global_timestep(struct sys s);
 

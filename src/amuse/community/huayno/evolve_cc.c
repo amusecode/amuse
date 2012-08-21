@@ -11,6 +11,7 @@
 #include <omp.h>
 #include "evolve.h"
 #include "evolve_kepler.h"
+#include "evolve_bs.h"
 
 //#define CC_DEBUG // perform (time-consuming, but thorough) CC sanity checks
 
@@ -26,7 +27,7 @@
 #define LOGSYSp_ID(SYS) for (UINT i = 0; i < (SYS)->n; i++) { printf("%u ", (SYS)->part[i].id); } printf("\n");
 #define LOGSYSC_ID(SYS) for (struct sys *_ci = &(SYS); !IS_ZEROSYS(_ci); _ci = _ci->next_cc) {printf("{"); for (UINT i = 0; i < _ci->n; i++) {printf("%u ", _ci->part[i].id); } printf("}\t");} printf("\n");
 
-void split_cc(struct sys s, struct sys *c, struct sys *r, DOUBLE dt) {
+void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) {
   /*
    * split_cc: run a connected component search on sys s with threshold dt,
    * creates a singly-linked list of connected components c and a rest system r
@@ -109,7 +110,7 @@ void split_cc(struct sys s, struct sys *c, struct sys *r, DOUBLE dt) {
 	//LOG("split_cc: rest system size: %d\n", r->n);
 }
 
-void split_cc_verify(struct sys s, struct sys *c, struct sys *r) {
+void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
   /*
    * split_cc_verify: explicit verification if connected components c and rest system r form a correct
    * connected components decomposition of the system.
@@ -177,7 +178,7 @@ void split_cc_verify(struct sys s, struct sys *c, struct sys *r) {
 
 }
 
-void split_cc_verify_ts(struct sys *c, struct sys *r, DOUBLE dt) {
+void split_cc_verify_ts(int clevel,struct sys *c, struct sys *r, DOUBLE dt) {
 
 	DOUBLE ts_ij;
         int dir=SIGN(dt);
@@ -248,17 +249,88 @@ DOUBLE sys_forces_max_timestep(struct sys s,int dir) {
   return ts;
 }
 
-void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int do_kepler) {
+#ifdef COMPENSATED_SUMMP
+#define COMPSUMP(sum,err,delta) \
+  { \
+    DOUBLE a; \
+    a=sum; \
+    err=err+delta; \
+    sum=a+err; \
+    err=err+(a-sum); \
+  }
+#else
+#define COMPSUMP(sum,err,delta)  {sum+=delta;}
+#endif
 
+#ifdef COMPENSATED_SUMMV
+#define COMPSUMV(sum,err,delta) \
+  { \
+    DOUBLE a; \
+    a=sum; \
+    err=err+delta; \
+    sum=a+err; \
+    err=err+(a-sum); \
+  }
+#else
+#define COMPSUMV(sum,err,delta)  {sum+=delta;}
+#endif
+
+void move_system(struct sys s, DOUBLE dpos[3],DOUBLE dvel[3],int dir)
+{
+  for(UINT p=0;p<s.n;p++)
+  {
+    for(int i=0;i<3;i++)
+    {
+        COMPSUMP(s.part[p].pos[i],s.part[p].pos_e[i],dir*dpos[i])
+        COMPSUMV(s.part[p].vel[i],s.part[p].vel_e[i],dir*dvel[i])
+    }
+  }  
+}
+
+void system_center_of_mass(struct sys s, DOUBLE *cmpos, DOUBLE *cmvel)
+{
+  DOUBLE mass=0.,pos[3]={0.,0.,0.},vel[3]={0.,0.,0.};
+  for(UINT p=0;p<s.n;p++)
+  {
+    for(int i=0;i<3;i++)
+    {
+      pos[i]+=(DOUBLE) s.part[p].mass*s.part[p].pos[i];
+      vel[i]+=(DOUBLE) s.part[p].mass*s.part[p].vel[i];
+    }
+    mass+=(DOUBLE) s.part[p].mass;
+  }
+  for(int i=0;i<3;i++)
+  {
+    cmpos[i]=pos[i]/mass;
+    cmvel[i]=vel[i]/mass;
+  }
+}
+
+#define TASKCONDITION   (nc > 1)
+void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int inttype, int recenter) {
+  DOUBLE cmpos[3],cmvel[3];
+  int recentersub=0;
 	struct sys c = zerosys, r = zerosys;
 	clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
 
-  if (s.n == 2 && do_kepler) {
+  if (s.n == 2 && (inttype==CCC_KEPLER || inttype==CC_KEPLER)) {
     clevel--;
-    evolve_kepler(s, stime, etime, dt);
+    evolve_kepler(clevel,s, stime, etime, dt);
     return;
+  }
+
+  if (s.n <= 10 && (inttype==CCC_BS ||inttype==CC_BS)) {
+    clevel--;
+    evolve_bs_adaptive(clevel,s, stime, etime, dt,1);
+    return;
+  }
+
+  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS))
+  {
+     system_center_of_mass(s,cmpos,cmvel);
+     move_system(s,cmpos,cmvel,-1);
   }
 
 // not actually helpful I think; needs testing
@@ -267,17 +339,15 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int do_kepl
     DOUBLE initial_timestep = sys_forces_max_timestep(s, dir);
     if(fabs(dt) > initial_timestep)
     {
-      int ocl=clevel;
       DOUBLE dt_step = dt;
       while (fabs(dt_step) > initial_timestep)
       { 
         dt_step = dt_step / 2;
         clevel++;
       }
-      LOG("CC2_SPLIT_SHORTCUTS clevel=%d dt/dt_step=%Le\n", ocl, dt / dt_step);
+      LOG("CC2_SPLIT_SHORTCUTS clevel=%d dt/dt_step=%Le\n", clevel, dt / dt_step);
       for (DOUBLE dt_now = 0; dir*dt_now < dir*(dt-dt_step/2); dt_now += dt_step)
-        evolve_cc2(s, dt_now, dt_now + dt_step, dt_step,do_kepler);
-      clevel=ocl;
+        evolve_cc2(clevel,s, dt_now, dt_now + dt_step, dt_step,inttype,0);
       clevel--;
       return;
     }
@@ -299,7 +369,7 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int do_kepl
 	memcpy(s_before_split.part, s.part, s.n*sizeof(struct particle));
 #endif
 
-	split_cc(s, &c, &r, dt);
+	split_cc(clevel,s, &c, &r, dt);
 	//if (s.n != c.n) LOG_CC_SPLIT(&c, &r); // print out non-trivial splits
 
 #ifdef CC2_SPLIT_CONSISTENCY_CHECKS
@@ -314,8 +384,8 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int do_kepl
 	}
 */
 	// verify the split
-	split_cc_verify(s_before_split, &c, &r);
-	split_cc_verify_ts(&c, &r, dt);
+	split_cc_verify(clevel,s_before_split, &c, &r);
+	split_cc_verify_ts(clevel,&c, &r, dt);
 	free(s_before_split.part);
 	if (clevel == 0) {
 		printf("ok ");
@@ -328,88 +398,92 @@ void evolve_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int do_kepl
 	}
 
 	// evolve all fast components, 1st time
-  int ocl=clevel;
 
   int nc=0; for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) nc++;
 
+  if(nc>1 || r.n>0) recentersub=1;
+
 	for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
 #ifdef _OPENMP
-  if(nc>1)
+  if( TASKCONDITION )
   {
-#pragma omp task firstprivate(ci,stime,dt)
+      diag->ntasks[clevel]++;
+      diag->taskcount[clevel]+=ci->n;
+#pragma omp task firstprivate(clevel,ci,stime,dt,recentersub) untied
     {
       struct sys lsys;
       lsys.n=ci->n;
       struct particle* lpart=(struct particle*) malloc(lsys.n*sizeof(struct particle));
       lsys.part=lpart;lsys.last=lpart+lsys.n-1;
       for(UINT i=0;i<lsys.n;i++) lsys.part[i]=ci->part[i];
-      clevel=ocl;
-      evolve_cc2(lsys, stime, stime+dt/2, dt/2,do_kepler);
+      evolve_cc2(clevel,lsys, stime, stime+dt/2, dt/2,inttype,recentersub);
       for(UINT i=0;i<lsys.n;i++) ci->part[i]=lpart[i];
       free(lpart);
-      diag->ntasks++;
     }
   } else
 #endif
   {
-      evolve_cc2(*ci, stime, stime+dt/2, dt/2,do_kepler);
+      evolve_cc2(clevel,*ci, stime, stime+dt/2, dt/2,inttype,recentersub);
   }
   }
 #pragma omp taskwait  
-
-  clevel=ocl;
   
-	drift(r, stime+dt/2, dt/2); // drift r, 1st time
+	if(r.n>0) drift(clevel,r, stime+dt/2, dt/2); // drift r, 1st time
 
 	// kick ci <-> cj
 	for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
 		for (struct sys *cj = &c; !IS_ZEROSYS(cj); cj = cj->next_cc) {
 			if (ci != cj) {
-				kick(*ci, *cj, dt);
+				kick(clevel,*ci, *cj, dt);
 				//kick(*cj, *ci, dt);
 			}
 		}
 	}
 
 	// kick c <-> rest
-	for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
-		kick(r, *ci, dt);
-		kick(*ci, r, dt);
+	if(r.n>0) for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
+		kick(clevel,r, *ci, dt);
+		kick(clevel,*ci, r, dt);
 	}
 
-	kick(r, r, dt); // kick rest
+	if(r.n>0) kick(clevel,r, r, dt); // kick rest
 
-	drift(r, etime, dt/2); 	// drift r, 2nd time
+	if(r.n>0) drift(clevel,r, etime, dt/2); 	// drift r, 2nd time
 
-  ocl=clevel;
 	// evolve all fast components, 2nd time
 	for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
 #ifdef _OPENMP
-  if(nc>1)
+  if( TASKCONDITION)
   {
-#pragma omp task firstprivate(ci,stime,etime,dt)
+      diag->ntasks[clevel]++;
+      diag->taskcount[clevel]+=ci->n;
+#pragma omp task firstprivate(clevel,ci,stime,etime,dt,recentersub) untied
     {
       struct sys lsys;
       lsys.n=ci->n;
       struct particle* lpart=(struct particle*) malloc(lsys.n*sizeof(struct particle));
       lsys.part=lpart;lsys.last=lpart+lsys.n-1;
       for(UINT i=0;i<lsys.n;i++) lsys.part[i]=ci->part[i];
-      clevel=ocl;
-      evolve_cc2(lsys, stime+dt/2, etime, dt/2,do_kepler);
+      evolve_cc2(clevel,lsys, stime+dt/2, etime, dt/2,inttype,recentersub);
       for(UINT i=0;i<lsys.n;i++) ci->part[i]=lpart[i];
       free(lpart);
-      diag->ntasks++;
     }
   } else
 #endif
   {
-      evolve_cc2(*ci, stime, stime+dt/2, dt/2,do_kepler);
+      evolve_cc2(clevel,*ci, stime, stime+dt/2, dt/2,inttype,recentersub);
   }
   }
 #pragma omp taskwait  
-
-  clevel=ocl;
+  
+  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS))
+  {
+    for(int i=0;i<3;i++) cmpos[i]+=cmvel[i]*dt;
+    move_system(s,cmpos,cmvel,1);
+  }
 
 	clevel--;
 	free_sys(c.next_cc);
 }
+#undef TASKCONDITION
+

@@ -9,7 +9,7 @@
 #include "evolve_shared.h"
 #include "universal_variable_kepler.h"
 
-void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
+void evolve_kepler(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
   clevel++;
   if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
   if (s.n != 2) ENDRUN("two-body solver was called with sys.n=%u\n", s.n);
@@ -46,7 +46,7 @@ void evolve_kepler(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
     LOG("Kepler solver failed\n");
     diag->cefail[clevel]++;
     clevel--;
-    evolve_shared4(s, stime, etime, dt, 1);
+    evolve_shared4(clevel,s, stime, etime, dt, 1);
     clevel++;
   } else {
     // translate coordinates from 2-body frame to original frame

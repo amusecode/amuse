@@ -7,129 +7,129 @@
 #include <stdlib.h>
 #include "evolve.h"
 
-static void dkd4_S_m4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void dkd4_S_m5(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void dkd4_S_m6(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void kdk4_S_m4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void kdk4_S_m5(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void kdk4_S_m6(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void dkd4_S_m4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void dkd4_S_m5(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void dkd4_S_m6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void kdk4_S_m4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void kdk4_S_m5(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void kdk4_S_m6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
-static void dkd6_SS_m11(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void dkd6_SS_m13(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void kdk6_SS_m11(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void kdk6_SS_m13(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void dkd6_SS_m11(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void dkd6_SS_m13(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void kdk6_SS_m11(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void kdk6_SS_m13(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
-static void dkd8_SS_m21(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void kdk8_SS_m21(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void dkd8_SS_m21(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void kdk8_SS_m21(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
-static void dkd10_SS_m35(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
-static void kdk10_SS_m35(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void dkd10_SS_m35(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void kdk10_SS_m35(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
-static void (*dkd4)(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)=dkd4_S_m6;
-static void (*dkd6)(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)=dkd6_SS_m11;
-static void (*dkd8)(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)=dkd8_SS_m21;
-static void (*dkd10)(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)=dkd10_SS_m35;
+static void (*dkd4)(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)=dkd4_S_m6;
+static void (*dkd6)(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)=dkd6_SS_m11;
+static void (*dkd8)(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)=dkd8_SS_m21;
+static void (*dkd10)(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)=dkd10_SS_m35;
 
-void evolve_shared2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
+void evolve_shared2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   FLOAT dtsys;
   clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
-  if(calc_timestep) timestep(s,s,SIGN(dt));
+  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys=global_timestep(s);
   if(dtsys < fabs(dt))
   {
-    evolve_shared2(s,stime, stime+dt/2,dt/2,0);
-    evolve_shared2(s,stime+dt/2, etime,dt/2,1);
+    evolve_shared2(clevel,s,stime, stime+dt/2,dt/2,0);
+    evolve_shared2(clevel,s,stime+dt/2, etime,dt/2,1);
   }
   else
   {
     diag->deepsteps++;
     diag->simtime+=dt;
-    kdk(s,zerosys, stime, etime, dt);
+    kdk(clevel,s,zerosys, stime, etime, dt);
   }
   clevel--;
 }
 
-void evolve_shared4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
+void evolve_shared4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   FLOAT dtsys;
   clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
-  if(calc_timestep) timestep(s,s,SIGN(dt));
+  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys = global_timestep(s);
   if(dtsys < fabs(dt)) {
-    evolve_shared4(s,stime, stime+dt/2,dt/2,0);
-    evolve_shared4(s,stime+dt/2, etime,dt/2,1);
+    evolve_shared4(clevel,s,stime, stime+dt/2,dt/2,0);
+    evolve_shared4(clevel,s,stime+dt/2, etime,dt/2,1);
   } else {
     diag->deepsteps++;
     diag->simtime+=dt;
-    dkd4(s, stime, etime, dt);
+    dkd4(clevel,s, stime, etime, dt);
   }
   clevel--;
 }
 
-void evolve_shared6(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
+void evolve_shared6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   FLOAT dtsys;
   clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
-  if(calc_timestep) timestep(s,s,SIGN(dt));
+  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys = global_timestep(s);
   if(dtsys < fabs(dt)) {
-    evolve_shared6(s,stime, stime+dt/2,dt/2,0);
-    evolve_shared6(s,stime+dt/2, etime,dt/2,1);
+    evolve_shared6(clevel,s,stime, stime+dt/2,dt/2,0);
+    evolve_shared6(clevel,s,stime+dt/2, etime,dt/2,1);
   } else {
     diag->deepsteps++;
     diag->simtime+=dt;
-    dkd6(s, stime, etime, dt);
+    dkd6(clevel,s, stime, etime, dt);
   }
   clevel--;
 }
 
-void evolve_shared8(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
+void evolve_shared8(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   FLOAT dtsys;
   clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
-  if(calc_timestep) timestep(s,s,SIGN(dt));
+  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys = global_timestep(s);
   if(dtsys < fabs(dt)) {
-    evolve_shared8(s,stime, stime+dt/2,dt/2,0);
-    evolve_shared8(s,stime+dt/2, etime,dt/2,1);
+    evolve_shared8(clevel,s,stime, stime+dt/2,dt/2,0);
+    evolve_shared8(clevel,s,stime+dt/2, etime,dt/2,1);
   } else {
     diag->deepsteps++;
     diag->simtime+=dt;
-    dkd8(s, stime, etime, dt);
+    dkd8(clevel,s, stime, etime, dt);
   }
   clevel--;
 }
 
-void evolve_shared10(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
+void evolve_shared10(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   FLOAT dtsys;
   clevel++;
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
-  if(calc_timestep) timestep(s,s,SIGN(dt));
+  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys = global_timestep(s);
   if(dtsys < fabs(dt)) {
-    evolve_shared10(s,stime, stime+dt/2,dt/2,0);
-    evolve_shared10(s,stime+dt/2, etime,dt/2,1);
+    evolve_shared10(clevel,s,stime, stime+dt/2,dt/2,0);
+    evolve_shared10(clevel,s,stime+dt/2, etime,dt/2,1);
   } else {
     diag->deepsteps++;
     diag->simtime+=dt;
-    dkd10(s, stime, etime, dt);
+    dkd10(clevel,s, stime, etime, dt);
   }
   clevel--;
 }
 
 #define DRIFT(dt) \
   stime += dt; \
-  drift(s, stime, dt);
+  drift(clevel,s, stime, dt);
 
 #define KICK(dt) \
-  kick(s, s, dt);
+  kick(clevel,s, s, dt);
 
 #define SPLIT_4TH_S_M6(EVOLVEA,EVOLVEB,dt) \
 { \
@@ -196,32 +196,32 @@ void evolve_shared10(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int ca
   EVOLVEA(K1*dt) \
 } 
 
-static void dkd4_S_m6(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void dkd4_S_m6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_4TH_S_M6(DRIFT,KICK,dt)
 }
 
-static void kdk4_S_m6(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void kdk4_S_m6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_4TH_S_M6(KICK,DRIFT,dt)
 }
 
-static void dkd4_S_m5(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void dkd4_S_m5(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_4TH_S_M5(DRIFT,KICK,dt)
 }
 
-static void kdk4_S_m5(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void kdk4_S_m5(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_4TH_S_M5(KICK,DRIFT,dt)
 }
 
-static void dkd4_S_m4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void dkd4_S_m4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_4TH_S_M4(DRIFT,KICK,dt)
 }
 
-static void kdk4_S_m4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void kdk4_S_m4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_4TH_S_M4(KICK,DRIFT,dt)
 }
@@ -299,22 +299,22 @@ EVOLVEB(C1*dt) \
 EVOLVEA(C1*dt/2) \
 }
 
-static void dkd6_SS_m11(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void dkd6_SS_m11(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_6TH_SS_M11(DRIFT,KICK,dt)
 }
 
-static void kdk6_SS_m11(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void kdk6_SS_m11(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_6TH_SS_M11(KICK,DRIFT,dt)
 }
 
-static void dkd6_SS_m13(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void dkd6_SS_m13(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_6TH_SS_M13(DRIFT,KICK,dt)
 }
 
-static void kdk6_SS_m13(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void kdk6_SS_m13(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_6TH_SS_M13(KICK,DRIFT,dt)
 }
@@ -378,12 +378,12 @@ EVOLVEB(C1*dt) \
 EVOLVEA(C1*dt/2) \
 }
 
-static void dkd8_SS_m21(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void dkd8_SS_m21(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_8TH_SS_M21(DRIFT,KICK,dt)
 }
 
-static void kdk8_SS_m21(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void kdk8_SS_m21(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_8TH_SS_M21(KICK,DRIFT,dt)
 }
@@ -482,12 +482,12 @@ EVOLVEB(C1*dt) \
 EVOLVEA(C1*dt/2) \
 }
 
-static void dkd10_SS_m35(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void dkd10_SS_m35(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_10TH_SS_M35(DRIFT,KICK,dt)
 }
 
-static void kdk10_SS_m35(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static void kdk10_SS_m35(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   SPLIT_10TH_SS_M35(KICK,DRIFT,dt)
 }
