@@ -534,7 +534,7 @@ def new_particle_from_cluster_core(particles):
 def LagrangianRadii(stars,
                        cm=None,
                        mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
-                       unit_converter=None):
+                       unit_converter=None,number_of_neighbours=7):
     """
     Calculate lagrangian radii. Output is radii, mass fraction 
 
@@ -548,7 +548,8 @@ def LagrangianRadii(stars,
     """
     import bisect
     if cm is None:
-        cm,rcore,rhocore=stars.densitycentre_coreradius_coredens(unit_converter=unit_converter)
+        cm,rcore,rhocore=stars.densitycentre_coreradius_coredens(
+                           unit_converter=unit_converter,number_of_neighbours=number_of_neighbours)
     cmx,cmy,cmz=cm
     r2=(stars.x-cmx)**2+(stars.y-cmy)**2+(stars.z-cmz)**2
     a=numpy.argsort(r2.number)
