@@ -7,7 +7,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 from amuse.support.data import core
 
-class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
+class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     """
     Mercury N-body integrator package, version 6.2.
     Mercury is a general-purpose N-body integration package for problems in 
@@ -26,17 +26,7 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         CodeInterface.__init__(self, name_of_the_worker = 'mercury_worker',**args)
         LiteratureReferencesMixIn.__init__(self)
 
-    @legacy_function
-    def initialize_code():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
-
-    @legacy_function   
-    def cleanup_code():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
+   
 
     @legacy_function    
     def commit_particles():
@@ -44,11 +34,6 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function.result_type = 'i'
         return function
 
-    @legacy_function    
-    def commit_parameters():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
 
     @legacy_function
     def recommit_particles():
@@ -88,14 +73,14 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
     @legacy_function    
     def set_initial_timestep():
         function = LegacyFunctionSpecification()  
-        function.addParameter('time', dtype='d', direction=function.IN)
+        function.addParameter('time', dtype='d', direction=function.IN, unit = units.day)
         function.result_type = 'i'
         return function
 
     @legacy_function    
     def get_initial_timestep():
         function = LegacyFunctionSpecification()  
-        function.addParameter('time', dtype='d', direction=function.OUT)
+        function.addParameter('time', dtype='d', direction=function.OUT, unit = units.day)
         function.result_type = 'i'
         return function
 
@@ -469,11 +454,10 @@ class MercuryWayWard(GravitationalDynamics):
             "current simulation time", 
             default_value = 0.0 | units.day
         )
-
-    def define_parameters(self, object):
+        
         object.add_method_parameter(
-            "set_initial_timestep",
             "get_initial_timestep",
+            "set_initial_timestep",
             "timestep",
             "current simulation time", 
             default_value = 0.0 | units.s
@@ -481,6 +465,7 @@ class MercuryWayWard(GravitationalDynamics):
 
         self.stopping_conditions.define_parameters(object)
 
+    
     def define_properties(self, object):
         object.add_property("get_kinetic_energy")
         object.add_property("get_potential_energy")
