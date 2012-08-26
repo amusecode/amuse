@@ -4,9 +4,9 @@ MPICC ?= mpicc
 OPENMP_CFLAGS?= -fopenmp
 
 ifneq (,$(findstring xlc, $(notdir $(CC))))
-CCFLAGS += -qlanglvl=extc99
+CFLAGS += -qlanglvl=extc99
 else
-CCFLAGS += -O2 -std=gnu99
+CFLAGS += -O2 -std=gnu99
 endif
 CXXFLAGS +=  -O2
 LIBS += -lm
@@ -48,12 +48,12 @@ huayno_worker: clean __init__.py worker_code.cc worker_code.h $(OBJS)
 huayno_worker_sockets: clean __init__.py worker_code-sockets.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code-sockets.cc $(OBJS) -o $@ $(LIBS)
 
-huayno_worker_mp: CCFLAGS   += $(OPENMP_CFLAGS) 
+huayno_worker_mp: CFLAGS   += $(OPENMP_CFLAGS) 
 huayno_worker_mp: CXXFLAGS   += $(OPENMP_CFLAGS)
 huayno_worker_mp: clean __init__.py worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OBJS) -o $@ $(LIBS)
 
-huayno_worker_cl: CCFLAGS   += -fopenmp -DEVOLVE_OPENCL
+huayno_worker_cl: CFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: LIBS += -L$(OPENCL)/lib/x86_64 -lOpenCL -lpthread -ldl -L$(STDCL)/lib -lstdcl
 huayno_worker_cl: INCLUDE += -I$(OPENCL)/include -I$(STDCL)/include
@@ -64,7 +64,7 @@ huayno_worker_cl: clean __init__.py worker_code.cc worker_code.h evolve_kern.clh
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
 
 .c.o: $<
-	$(MPICC) $(CCFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICC) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
 	awk 'BEGIN{print "const char srcstr[]=" } {if(substr($$0,length($0))=="\\"){$$0=$$0"\\"};print "\""$$0"\\n\""} END{print ";"}' $< > $@
