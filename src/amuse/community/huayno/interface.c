@@ -434,7 +434,7 @@ int get_potential_at_point(double x, double y,double z,
   return -2;
 }
 
-int get_evolve_statistics(int *ttot, int *ktot, int *dtot, int *tstot, int *kstot, int *dstot)
+int get_evolve_statistics(long int *ttot,long int *ktot,long int *dtot,long int *tstot,long int *kstot,long int *dstot)
 {
   *ttot=0; *ktot=0; *dtot=0;
   *tstot=0; *kstot=0; *dstot=0;

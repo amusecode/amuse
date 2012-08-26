@@ -142,12 +142,12 @@ class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
     @legacy_function   
     def get_evolve_statistics():
         function = LegacyFunctionSpecification()   
-        function.addParameter('ttot', dtype='i', direction=function.OUT)
-        function.addParameter('ktot', dtype='i', direction=function.OUT)
-        function.addParameter('dtot', dtype='i', direction=function.OUT)
-        function.addParameter('tstot', dtype='i', direction=function.OUT)
-        function.addParameter('kstot', dtype='i', direction=function.OUT)
-        function.addParameter('dstot', dtype='i', direction=function.OUT)
+        function.addParameter('ttot', dtype='int64', direction=function.OUT)
+        function.addParameter('ktot', dtype='int64', direction=function.OUT)
+        function.addParameter('dtot', dtype='int64', direction=function.OUT)
+        function.addParameter('tstot', dtype='int64', direction=function.OUT)
+        function.addParameter('kstot', dtype='int64', direction=function.OUT)
+        function.addParameter('dstot', dtype='int64', direction=function.OUT)
         function.result_type = 'i'
         return function
     
