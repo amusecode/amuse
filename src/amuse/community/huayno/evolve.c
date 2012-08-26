@@ -1,7 +1,9 @@
 #include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include "evolve.h"
 #include "evolve_shared.h"
 #include "evolve_sf.h"
