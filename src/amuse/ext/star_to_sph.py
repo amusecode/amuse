@@ -229,7 +229,7 @@ class StellarModel2SPH(object):
             extended.append(self.mu_profile[-1])
             mu = extended[indices]*delta + extended[indices+1]*one_minus_delta
             
-            return interpolated_energies, comp.transpose(), mu
+            return interpolated_energies, comp.transpose(), mu.as_quantity_in(self.mu_profile.unit)
         else:
             return interpolated_energies, None, None
     
@@ -243,7 +243,7 @@ class StellarModel2SPH(object):
             self.number_of_sph_particles) | self.mass.unit
         sph_particles.velocity = [0,0,0] | units.m/units.s
         # Crude estimate of the smoothing length; the SPH code will calculate the true value itself.
-        sph_particles.h_smooth = self.radius * (self.number_of_sph_particles/50.0)**(-1/3.0)
+        sph_particles.h_smooth = (self.radius * (self.number_of_sph_particles/50.0)**(-1/3.0)).as_quantity_in(self.radius.unit)
         return sph_particles
     
     def relax(self, particles):
@@ -316,7 +316,7 @@ class StellarModel2SPH(object):
             core_particle.velocity = [0.0, 0.0, 0.0] | units.m / units.s
             core_particle.radius = self.core_radius
             return StellarModelInSPH(gas_particles=sph_particles, core_particle=core_particle, core_radius=self.core_radius)
-        return StellarModelInSPH(gas_particles=sph_particles, core_particle=Particle(), core_radius=None)
+        return StellarModelInSPH(gas_particles=sph_particles, core_particle=None, core_radius=None)
 
     
 

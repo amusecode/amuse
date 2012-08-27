@@ -312,8 +312,8 @@ def new_spherical_particle_distribution(number_of_particles,
         sorted['r_old'][0] = 1.0
     f_scale = interpolator.get_radius_for_enclosed_mass(
         (numpy.arange(0.5, number_of_particles + 0.5) | units.none) * particle_mass) / sorted['r_old']
-    particles.x = f_scale * sorted['x']
-    particles.y = f_scale * sorted['y']
-    particles.z = f_scale * sorted['z']
+    particles.x = (f_scale * sorted['x']).as_quantity_in(radii.unit)
+    particles.y = (f_scale * sorted['y']).as_quantity_in(radii.unit)
+    particles.z = (f_scale * sorted['z']).as_quantity_in(radii.unit)
     return particles
     

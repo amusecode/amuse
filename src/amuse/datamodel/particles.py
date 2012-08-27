@@ -243,20 +243,21 @@ class AbstractParticleSet(AbstractSet):
             column = columns[index + 1]
             if hasattr(quantity, 'unit'):
                 column.append(format_str11(str(quantity.unit)))
+                quantity = quantity.number
             else:
-                column.append('none')
+                column.append(format_str11('none'))
                 
             column.append('=' * 11)
             if len(quantity) > split_at * 2:
-                if hasattr(quantity, 'unit'):
-                    if numpy.issubdtype(quantity.number.dtype, float):
-                        values_to_show = list(map(format_float,quantity.number[:split_at]))
+                if hasattr(quantity, 'dtype'):
+                    if numpy.issubdtype(quantity.dtype, float):
+                        values_to_show = list(map(format_float,quantity[:split_at]))
                         values_to_show.append(format_str11('...'))
-                        values_to_show.extend(map(format_float,quantity.number[-split_at:]))
+                        values_to_show.extend(map(format_float,quantity[-split_at:]))
                     else:
-                        values_to_show = list(map(format_str11,quantity.number[:split_at]))
+                        values_to_show = list(map(format_str11,quantity[:split_at]))
                         values_to_show.append(format_str11('...'))
-                        values_to_show.extend(map(format_str11,quantity.number[-split_at:]))
+                        values_to_show.extend(map(format_str11,quantity[-split_at:]))
                 elif hasattr(quantity, 'as_set'):
                     keys = quantity.as_set().key
                     values_to_show = list(map(format_str11,keys[:split_at]))
@@ -267,14 +268,14 @@ class AbstractParticleSet(AbstractSet):
                     values_to_show.append(format_str11('...'))
                     values_to_show.extend(map(format_str11,quantity[-split_at:]))
             else:
-                if hasattr(quantity, 'unit'):
-                    if numpy.issubdtype(quantity.number.dtype, float):
+                if hasattr(quantity, 'dtype'):
+                    if numpy.issubdtype(quantity.dtype, float):
                         try:
-                            values_to_show = map(format_float,quantity.number)
+                            values_to_show = map(format_float,quantity)
                         except ValueError:
-                            values_to_show = map(format_str11,quantity.number)
+                            values_to_show = map(format_str11,quantity)
                     else:
-                        values_to_show = map(format_str11,quantity.number)
+                        values_to_show = map(format_str11,quantity)
                 elif hasattr(quantity, 'as_set'):
                     values_to_show = map(format_str11, quantity.as_set().key)
                 else:
