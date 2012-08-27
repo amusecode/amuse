@@ -72,6 +72,8 @@ typedef struct GridsData_s{
 #endif
 }GridsDataS;
 
+
+
 /*----------------------------------------------------------------------------*/
 /*! \struct ConsS
  *  \brief Conserved variables.
@@ -250,6 +252,18 @@ typedef struct GridOvrlp_s{
 }GridOvrlpS;
 #endif /* STATIC_MESH_REFINEMENT */
 
+
+#ifdef AMUSE
+typedef struct BoundaryCell_s {
+    ConsS ***LeftX1;
+    ConsS ***RightX1;
+    ConsS ***LeftX2;
+    ConsS ***RightX2;
+    ConsS ***LeftX3;
+    ConsS ***RightX3;
+} BoundaryCellS;
+#endif /* AMUSE */
+
 /*----------------------------------------------------------------------------*/
 /*! \struct GridS
  *  \brief 3D arrays of dependent variables, plus grid data, plus particle data,
@@ -315,6 +329,9 @@ typedef struct Grid_s{
   Real *r,*ri;                  /*!< cylindrical scaling factors */ 
 #endif /* CYLINDRICAL */
 
+#ifdef AMUSE
+  BoundaryCellS * boundary;
+#endif
 }GridS;
 
 /*! \fn void (*VGFun_t)(GridS *pG)
