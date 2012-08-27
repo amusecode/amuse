@@ -1,0 +1,153 @@
+#    @WARNING1@
+#    @WARNING2@
+#===============================================================================
+# FILE: Makefile.in
+#
+# PURPOSE: Template for src/Makefile.  When 'configure' is run, a new Makefile
+# will be created (overwriting the last) from this template.
+#
+#-------------------  object files  --------------------------------------------
+CORE_OBJ = ath_array.o \
+           ath_files.o \
+	   ath_log.o \
+           ath_signal.o \
+           baton.o \
+           bvals_mhd.o \
+           bvals_shear.o \
+           cc_pos.o \
+           convert_var.o \
+           dump_binary.o \
+           dump_history.o \
+           dump_tab.o \
+           dump_vtk.o \
+           init_grid.o \
+           init_mesh.o \
+           main.o \
+           new_dt.o \
+           output.o \
+           output_pdf.o \
+           output_pgm.o \
+           output_ppm.o \
+           output_tab.o \
+           output_vtk.o \
+           par.o \
+           problem.o \
+           restart.o \
+           show_config.o \
+	   smr.o \
+           utils.o
+
+FFT_OBJ =
+ifeq (@FFT_MODE@,FFT_ENABLED)
+ifeq (@MPI_MODE@,MPI_PARALLEL)
+   FFT_OBJ = fftsrc/factor.o \
+             fftsrc/fft_2d.o \
+             fftsrc/fft_3d.o \
+             fftsrc/pack_2d.o \
+             fftsrc/pack_3d.o \
+             fftsrc/remap_2d.o \
+             fftsrc/remap_3d.o \
+             fftsrc/ath_fft.o
+else
+   FFT_OBJ = fftsrc/ath_fft.o
+endif
+endif
+
+INTEGRATORS_OBJ = integrators/integrate.o \
+		  integrators/integrate_1d_ctu.o \
+		  integrators/integrate_2d_ctu.o \
+		  integrators/integrate_3d_ctu.o \
+		  integrators/integrate_1d_vl.o \
+		  integrators/integrate_2d_vl.o \
+		  integrators/integrate_3d_vl.o \
+                  integrators/integrate_1d_vl_sr.o \
+                  integrators/integrate_2d_vl_sr.o \
+                  integrators/integrate_3d_vl_sr.o
+
+GRAVITY_OBJ = gravity/bvals_grav.o \
+              gravity/selfg.o \
+              gravity/selfg_fft.o \
+              gravity/selfg_fft_obc.o \
+              gravity/selfg_multigrid.o
+
+MICROPHYS_OBJ = microphysics/conduction.o \
+	        microphysics/diff_dt.o \
+		microphysics/cool.o \
+		microphysics/integrate_diffusion.o \
+		microphysics/get_eta.o \
+                microphysics/resistivity.o \
+		microphysics/viscosity.o
+
+PARTICLES_OBJ = particles/dump_particle_history.o\
+	        particles/feedback.o \
+	        particles/init_particle.o \
+	        particles/integrators_particle.o \
+	        particles/output_particle.o\
+	        particles/bvals_particle.o \
+	        particles/utils_particle.o
+
+RECONSTRUCTION_OBJ = reconstruction/esystem_prim.o \
+		     reconstruction/lr_states_dc.o \
+		     reconstruction/lr_states_plm.o \
+		     reconstruction/lr_states_ppm.o \
+		     reconstruction/lr_states_prim2.o \
+		     reconstruction/lr_states_prim3.o
+
+RSOLVERS_OBJ = rsolvers/esystem_roe.o \
+	       rsolvers/exact.o \
+	       rsolvers/hlle.o \
+	       rsolvers/hllc.o \
+	       rsolvers/hlld.o \
+	       rsolvers/exact_sr.o \
+	       rsolvers/hlle_sr.o \
+	       rsolvers/hllc_sr.o \
+	       rsolvers/hlld_sr.o \
+	       rsolvers/roe.o \
+	       rsolvers/two_shock.o
+
+ALL_OBJ = ${CORE_OBJ} ${FFT_OBJ} ${GRAVITY_OBJ} ${INTEGRATORS_OBJ} ${MICROPHYS_OBJ} ${PARTICLES_OBJ} ${RECONSTRUCTION_OBJ} ${RSOLVERS_OBJ}
+
+#-------------------  macro definitions  ---------------------------------------
+
+BIN = ${EXEDIR}athena
+EXEDIR = ../bin/
+SRC = $(ALL_OBJ:.o=.c)
+
+include ../Makeoptions
+
+#--------------------  implicit rules  -----------------------------------------
+
+.c.o:
+	${CC} ${CFLAGS} -c $<
+
+#---------------------  targets  -----------------------------------------------
+
+all:	compile
+
+.PHONY: compile
+compile: ${BIN}
+
+${BIN}: ${ALL_OBJ}
+	${LDR} $(OPT) -o ${EXEDIR}athena ${ALL_OBJ} ${LIB}
+
+help:
+	@echo This is the Athena Makefile
+	@echo Type 'make compile' to generate Athena executable
+	@echo Type 'make clean'   to remove '*.o' files
+	@echo OBJ=$(OBJ)
+
+.PHONY: clean
+clean:
+	rm -f *.o Makedepend $(BIN)
+
+depend: Makedepend
+
+Makedepend:
+	${CC} -MM ${CFLAGS} ${SRC} > Makedepend
+
+# a few functionality tests of some modules of the code
+par:	par.c
+	$(CC) $(CFLAGS) -DTESTBED -o par par.c
+
+# this forces a rebuild of all objects, if code re-configure'd
+include Makedepend

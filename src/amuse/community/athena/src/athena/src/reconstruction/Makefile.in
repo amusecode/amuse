@@ -1,0 +1,57 @@
+#    @WARNING1@
+#    @WARNING2@
+#===============================================================================
+# FILE: Makefile.in
+#
+# PURPOSE: Template for reconstruction/Makefile.  When 'configure' is run, a new
+# Makefile will be created (overwriting the last) from this template.
+#
+#-------------------  object files  --------------------------------------------
+CORE_OBJ = esystem_prim.o\
+	   lr_states_dc.o \
+	   lr_states_plm.o \
+	   lr_states_ppm.o \
+	   lr_states_prim2.o \
+	   lr_states_prim3.o
+
+OBJ = $(CORE_OBJ)
+
+#-------------------  macro definitions  ---------------------------------------
+
+SRC = $(OBJ:.o=.c)
+
+include ../../Makeoptions
+
+BLOCKINC =
+BLOCKLIB =
+
+#--------------------  implicit rules  -----------------------------------------
+
+.c.o:
+	${CC} ${CFLAGS} -c $<
+
+#---------------------  targets  -----------------------------------------------
+
+all:	compile
+
+.PHONY: compile
+compile: ${OBJ}
+#	ar rcs libplimpton.a ${OBJ}
+
+help:
+	@echo This is the /src/reconstruction Makefile
+	@echo Type 'make compile' to generate reconstruction object files
+	@echo Type 'make clean'   to remove '*.o' files
+	@echo OBJ=$(OBJ)
+
+.PHONY: clean
+clean:
+	rm -f *.o *.a Makedepend
+
+depend: Makedepend
+
+Makedepend:
+	${CC} -MM ${CFLAGS} ${SRC} > Makedepend
+
+# this forces a rebuild of all objects, if code re-configure'd
+include Makedepend

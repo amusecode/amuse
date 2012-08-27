@@ -1,0 +1,96 @@
+<comment>
+problem = SR MHD jet
+author  = 
+journal = 
+config  = --with-gas=hydro --with-problem=jet --enable-special-relativity --with-integrator=vl
+
+<job>
+problem_id      = SRjet     # problem ID: basename of output filenames
+maxout          = 4         # Output blocks number from 1 -> maxout
+num_domains     = 1         # number of Domains in Mesh
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 0.1               # time increment between outputs
+
+<output2>
+out_fmt = bin               # Binary data dump
+dt      = 1.0               # time increment between outputs
+out     = prim              # output primitive variables
+
+<output3>
+out_fmt = ppm
+dt      = 0.1
+out     = d
+id      = d0
+dmin    = 0.01
+dmax    = 61.0
+palette = rainbow
+
+<output4>
+out_fmt = ppm
+dt      = 0.1
+out     = G
+id      = gamma
+dmin    = 0.0
+dmax    = 10.0
+palette = rainbow
+
+<time>
+cour_no         = 0.4       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 100000    # cycle limit
+tlim            = 120.0      # time limit
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 300       # Number of zones in X1-direction
+x1min           = 0.0       # minimum value of X1
+x1max           = 60.0      # maximum value of X1
+bc_ix1          = 2         # boundary condition flag for inner-I (X1)
+bc_ox1          = 2         # boundary condition flag for outer-I (X1)
+NGrid_x1        = 2         # number of MPI blocks in X1
+
+Nx2             = 250       # Number of zones in X2-direction
+x2min           = -25.0     # minimum value of X2
+x2max           = 25.0      # maximum value of X2
+bc_ix2          = 2         # boundary condition flag for inner-J (X2)
+bc_ox2          = 2         # boundary condition flag for outer-J (X2)
+NGrid_x2        = 2         # number of MPI blocks in X2
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = -25.0     # minimum value of X3
+x3max           = 25.0      # maximum value of X3
+bc_ix3          = 2         # boundary condition flag for inner-K (X3)
+bc_ox3          = 2         # boundary condition flag for outer-K (X3)
+
+<domain2>
+level           = 1         # refinement level this Domain (root=0)
+Nx1             = 600       # Number of zones in X1-direction
+Nx2             = 200       # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 0         # i-displacement measured in cells of this level
+jDisp           = 150       # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+<problem>
+gamma   = 1.666666666667     # gamma = C_p/C_v
+
+d  = 10.0
+p  = 1.0e-2
+vx = 0.0
+vy = 0.0
+vz = 0.0
+bx = 0.1
+by = 0.0
+bz = 0.0
+
+djet = 0.1
+pjet = 1.0e-2
+vxjet = 0.99
+vyjet = 0.0
+vzjet = 0.0 
+bxjet = 0.1
+byjet = 0.0
+bzjet = 0.1
+
+rjet = 1.0

@@ -1,0 +1,89 @@
+<comment>
+problem = shock cloud interaction
+author  = M.-S. Shin, G. Snyder, & J.M. Stone
+journal =
+config  = --with-problem=shk_cloud --with-nscalars=1
+
+<job>
+problem_id      = Cloud      # problem ID: basename of output filenames
+maxout          = 4          # Output blocks number from 1 -> maxout
+num_domains     = 1          # number of Domains in Mesh
+
+<time>
+cour_no         = 0.4       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 100000    # cycle limit
+tlim            = 2.0       # time limit
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 0.01              # time increment between outputs
+
+<output2>
+out_fmt = vtk               # VTK data dump
+dt      = 0.01              # time increment between outputs
+
+<output3>
+out_fmt = ppm      # ppm image
+dt      = 0.01     # time step between outputs
+out     = d
+id      = d
+palette = rainbow
+dmin    = 1.0      # min value for imaging color
+dmax    = 20.0     # max value for imaging color
+x3      = 0.0      # x3 value of slice
+
+<output4>
+out_fmt = ppm      # ppm image
+dt      = 0.01     # time step between outputs
+out     = color
+id      = color
+usr_expr_flag = 1
+palette = rainbow
+dmin    = 0.0      # min value for imaging color
+dmax    = 1.0      # max value for imaging color
+x3      = 0.0      # x3 value of slice
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 128       # Number of zones in X1-direction
+x1min           = -3.0      # minimum value of X
+x1max           = 7.0       # maximum value of X
+bc_ix1          = 1         # boundary condition flag for inner-I (X1)
+bc_ox1          = 2         # boundary condition flag for outer-I (X1)
+
+Nx2             = 64        # Number of zones in X2-direction
+x2min           = -2.5      # minimum value of X2
+x2max           = 2.5       # maximum value of X2
+bc_ix2          = 2         # boundary condition flag for inner-J (X2)
+bc_ox2          = 2         # boundary condition flag for outer-J (X2)
+
+Nx3             = 64        # Number of zones in X3-direction
+x3min           = -2.5      # minimum value of X3
+x3max           = 2.5       # maximum value of X3
+bc_ix3          = 2         # boundary condition flag for inner-K (X3)
+bc_ox3          = 2         # boundary condition flag for outer-K (X3)
+
+<domain2>
+level           = 1         # refinement level this Domain (root=0)
+Nx1             = 128       # Number of zones in X1-direction
+Nx2             = 96        # Number of zones in X2-direction
+Nx3             = 96        # Number of zones in X3-direction
+iDisp           = 20        # i-displacement measured in cells of this level
+jDisp           = 16        # j-displacement measured in cells of this level
+kDisp           = 16        # k-displacement measured in cells of this level
+
+<domain3>
+level           = 2         # refinement level this Domain (root=0)
+Nx1             = 196       # Number of zones in X1-direction
+Nx2             = 160       # Number of zones in X2-direction
+Nx3             = 160       # Number of zones in X3-direction
+iDisp           = 48        # i-displacement measured in cells of this level
+jDisp           = 48        # j-displacement measured in cells of this level
+kDisp           = 48        # k-displacement measured in cells of this level
+
+<problem>
+iso_csound      = 1.0 
+gamma           = 1.66667   # gamma = C_p/C_v
+Mach            = 10.0      # Mach number of shock
+drat            = 10        # density ratio of cloud
+iprob           = 1         # selects problem type

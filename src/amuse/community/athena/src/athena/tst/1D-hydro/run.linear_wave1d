@@ -1,0 +1,34 @@
+#! /bin/csh -f
+# Script for running convergence test with linear waves
+# Run script in this directory (tst/1D-hydro)
+#
+# It creates a temporary run directory=tmpdir.LinWave
+#   WARNING: if this directory already exists the script will delete it!!
+#
+# It expects to find the executable in bin (../../../bin from tmpdir.LinWave)
+#
+# It expects to find the input file in tst/1D-hydro (../ from tmpdir.LinWave)
+#
+# Script turns off all output from code except convergence data
+
+set rundir=tmpdir.LinWave
+
+if (-d $rundir) rm -rf $rundir
+mkdir $rundir
+cd $rundir
+
+foreach nx1 (8 16 32 64 128 256 512 1024)
+  foreach wave (0 1 2 3 4)
+    set vflow=0.0
+    if ($wave == 0) set time=1.0
+    if ($wave == 1) set time=2.0
+    if ($wave == 2) set time=2.0
+    if ($wave == 3) set time=2.0
+    if ($wave == 4) set time=1.0
+    if ($wave == 1) set vflow=0.5
+    if ($wave == 2) set vflow=0.5
+    if ($wave == 3) set vflow=0.5
+  ../../../bin/athena -i ../athinput.linear_wave1d problem/wave_flag=$wave time/tlim=$time problem/vflow=$vflow grid/Nx1=$nx1 job/maxout=0 > athena.{$nx1}.log
+    echo 'Finished '{$nx1}' zones'
+  end
+end

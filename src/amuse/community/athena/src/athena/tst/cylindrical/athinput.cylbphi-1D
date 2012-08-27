@@ -1,0 +1,54 @@
+<comment>
+
+problem = Tests involving B_phi only (IN CYLINDRICAL COORDINATES)
+author  = Aaron Skinner
+journal =
+config  = --with-problem=cylbphi --with-coord=cylindrical -with-gas=mhd --enable-hllallwave
+
+<log>
+file_open       = 0             # write to .out file?  otherwise, writes to stdout
+out_level       = 0             # sets output level (default=0)
+
+<job>
+num_domains     = 1             # number of Domains in Mesh
+problem_id      = CylBPhi       # problem ID: basename of output filenames
+maxout          = 2             # Output blocks number from 1 -> maxout
+
+<time>
+cour_no         = 0.8           # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000000      # cycle limit
+tlim            = 10.0          # time limit
+
+<output1>
+out_fmt         = hst           # History data dump
+dt              = 1.0           # time increment between outputs
+
+<output2>
+out_fmt         = bin           # Binary data dump
+dt              = 1.0           # time increment between outputs
+
+<domain1>
+level           = 0             # refinement level this Domain (root=0)
+Nx1             = 128           # Number of zones in X1-direction
+x1min           = 1.0           # minimum value of X1
+x1max           = 2.0           # maximum value of X1
+bc_ix1          = 3             # inner (X1) boundary flag
+bc_ox1          = 3             # outer (X1) boundary flag
+
+Nx2             = 1             # Number of zones in X2-direction
+x2min           = 0.0           # minimum value of X2
+x2max           = 0.0           # maximum value of X2
+
+Nx3             = 1             # Number of zones in X3-direction
+x3min           = 0.0           # minimum value of X3
+x3max           = 0.0           # maximum value of X3
+
+<problem>
+iso_csound      = 1.732         # isothermal sound speed
+gamma           = 1.6666666667  # gamma = C_p/C_v
+omega           = 0.3           # angular velocity
+vz0             = 1.0           # velocity in z-direction
+bphi0           = 1.0           # amplitude of magnetic field in phi-direction
+rho0            = 1.0           # density
+pgas0           = 0.6           # gas pressure
+iprob           = 2             # 1:B_phi=const, 2: B_phi=1/R

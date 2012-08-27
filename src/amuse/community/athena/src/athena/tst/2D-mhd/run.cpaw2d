@@ -1,0 +1,27 @@
+#! /bin/csh -f
+# Script for running convergence test with 2D circularly polarized Alfven wave
+# Run script in this directory (tst/2D-mhd)
+#
+# It creates a temporary run directory=tmpdir.cpaw2d
+#   WARNING: if this directory already exists the script will delete it!!
+#
+# It expects to find the executable in bin (../../../bin from tmpdir.cpaw2d)
+#
+# It expects to find the input file in tst/2D-mhd (../ from tmpdir.cpaw2d)
+#
+# Script turns off all output from code except convergence data
+# Be sure tlim (set here) and code parameters are consistent with time for
+#   one wave period
+
+set rundir=tmpdir.cpaw2d
+
+if (-d $rundir) rm -rf $rundir
+mkdir $rundir
+cd $rundir
+
+foreach nx1 (16 32 64 128 256 512 1024 2048)
+  set nx2 = $nx1
+  @ nx2 /= 2
+  ../../../bin/athena -i ../athinput.cpaw2d domain1/Nx1=$nx1 domain1/Nx2=$nx2 job/maxout=0 time/tlim=1.0 > athena.{$nx1}.log
+    echo 'Finished '{$nx1}' zones'
+end

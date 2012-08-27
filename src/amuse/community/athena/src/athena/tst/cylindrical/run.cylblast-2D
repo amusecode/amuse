@@ -1,0 +1,25 @@
+#! /bin/csh
+# Script for running cylindrical MHD blast tests.
+# Run script in this directory (tst/2D-mhd)
+#
+# It creates a temporary run directory=cylblast
+#
+# It redirects all output to a log file
+#
+# It expects to find the executable in bin (../../../bin/ from cylblast/)
+#
+# It expects to find the input file in (../ from cylblast/)
+
+set rundir=cylblast
+set logfile=0
+
+if (! -d $rundir) then 
+  mkdir $rundir
+endif
+cd $rundir
+
+#  ../../../bin/athena -i ../athinput.blast_B1 log/file_open=$logfile
+  ../../../bin/athena -i ../athinput.blast_B10 log/file_open=$logfile
+#  ../../../bin/athena -i ../athinput.cylblast_B1 log/file_open=$logfile
+  ../../../bin/athena -i ../athinput.cylblast_B10 log/file_open=$logfile
+

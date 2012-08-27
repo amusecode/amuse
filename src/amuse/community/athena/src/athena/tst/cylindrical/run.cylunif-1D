@@ -1,0 +1,26 @@
+#! /bin/csh
+# Script for running 1D rotating cylindrical wind tests.
+# Run script in this directory (tst/1D-hydro)
+#
+# It creates a temporary run directory=cylwindrot
+#
+# It redirects all output to a log file
+#
+# It expects to find the executable in bin (../../../bin/ from cylwindrot)
+#
+# It expects to find the input file in (../ from cylwindrot)
+
+set rundir=cylunif
+set logfile=0
+
+if (! -d $rundir) then 
+  mkdir $rundir
+endif
+cd $rundir
+
+#foreach nx1 (32 64 128 256 512 1024)
+#foreach nx1 (128 256 512)
+foreach nx1 (128 256)
+    ../../../bin/athena -i ../athinput.cylunif log/file_open=$logfile grid/Nx1=$nx1 job/problem_id=CylUnif_$nx1
+    echo 'Finished '{$nx1}'' problem
+end

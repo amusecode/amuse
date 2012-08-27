@@ -1,0 +1,72 @@
+#    @WARNING1@
+#    @WARNING2@
+#===============================================================================
+# FILE: Makefile.in
+#
+# PURPOSE: Template for Makefile; the top level makefile for Athena.  The first
+# target (help) documents the rest.  When 'configure' is run, a new Makefile
+# will be created (overwriting the last) from this template.
+#
+# TO BY-PASS CONFIGURE: copy this file into Makefile, and edit by hand to set
+#   the appropriate object files, compiler options, and library paths.
+#-------------------------------------------------------------------------------
+#
+DIRS = bin
+
+help:
+	@echo "all:       create ($(DIRS)) subdirectory and compile"
+	@echo "dirs:      create ($(DIRS)) subdirectory"
+	@echo "compile:	  compile the code"
+	@echo "clean:     clean /src subdirectory"
+	@echo "test:      run a MHD benchmark"
+
+#-------------------------------------------------------------------------------
+#  target all:
+all:    dirs compile
+
+#-------------------------------------------------------------------------------
+#  target dirs:
+dirs:
+	-@for i in $(DIRS) ; do \
+	(if [ -d $$i ]; \
+	then \
+	    echo DIR $$i exists; \
+	else \
+	    echo DIR $$i created; \
+	    mkdir $$i; \
+	fi); done
+
+#-------------------------------------------------------------------------------
+#  target compile: runs Make in /src and all subdirectories in /src
+compile:
+ifeq (@FFT_MODE@,FFT_ENABLED)
+	(cd src/fftsrc; $(MAKE) compile)
+endif
+	(cd src/gravity; $(MAKE) compile)
+	(cd src/integrators; $(MAKE) compile)
+	(cd src/microphysics; $(MAKE) compile)
+	(cd src/particles; $(MAKE) compile)
+	(cd src/reconstruction; $(MAKE) compile)
+	(cd src/rsolvers; $(MAKE) compile)
+	(cd src; $(MAKE) compile)
+
+#-------------------------------------------------------------------------------
+#  target clean:
+clean:
+	(cd src/fftsrc; $(MAKE) clean)
+	(cd src/gravity; $(MAKE) clean)
+	(cd src/integrators; $(MAKE) clean)
+	(cd src/microphysics; $(MAKE) clean)
+	(cd src/particles; $(MAKE) clean)
+	(cd src/reconstruction; $(MAKE) clean)
+	(cd src/rsolvers; $(MAKE) clean)
+	(cd src; $(MAKE) clean)
+
+#-------------------------------------------------------------------------------
+# test: checks that default configuration runs successfully.  Reports error
+# compared to fiducial solution, and a speed benchmark.  Requires the
+# following steps: > configure
+#                  > make all
+#                  > make test
+test:
+	(cd tst/1D-mhd; ./run.test)

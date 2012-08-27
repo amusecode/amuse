@@ -1,0 +1,86 @@
+<comment>
+problem = Blast wave
+author  = T.A. Gardiner & J.M. Stone
+journal = JCP, 205, 509 (2005) (for MHD version of test)
+config  = --with-gas=hydro --with-problem=blast
+
+<job>
+problem_id      = Blast     # problem ID: basename of output filenames
+maxout          = 3         # Output blocks number from 1 -> maxout
+num_domains     = 1         # number of Domains in Mesh
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 0.001             # time increment between outputs
+
+<output2>
+out_fmt = bin               # Binary data dump
+dt      = 0.01              # time increment between outputs
+
+<output3>
+out_fmt = ppm
+dt      = 0.002
+type    = slice
+out     = d
+id      = d
+dmin    = 0.08
+dmax    = 6.5
+palette = rainbow
+
+<output4>
+out_fmt = ppm
+dt      = 0.002
+type    = slice
+out     = d
+id      = d-lev1
+dmin    = 0.08
+dmax    = 6.5
+palette = rainbow
+
+<time>
+cour_no         = 0.8       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000     # cycle limit
+tlim            = 1.0       # time limit
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 200       # Number of zones in X1-direction
+x1min           = -0.5      # minimum value of X1
+x1max           = 0.5       # maximum value of X1
+bc_ix1          = 4         # boundary condition flag for inner-I (X1)
+bc_ox1          = 4         # boundary condition flag for outer-I (X1)
+
+Nx2             = 300       # Number of zones in X2-direction
+x2min           = -0.75     # minimum value of X2
+x2max           = 0.75      # maximum value of X2
+bc_ix2          = 4         # boundary condition flag for inner-J (X2)
+bc_ox2          = 4         # boundary condition flag for outer-J (X2)
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = -0.5      # minimum value of X3
+x3max           = 0.5       # maximum value of X3
+
+<domain2>
+level           = 1         # refinement level this Domain (root=0)
+Nx1             = 240       # Number of zones in X1-direction
+Nx2             = 240       # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 80        # i-displacement measured in cells of this level
+jDisp           = 180       # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+<domain3>
+level           = 2         # refinement level this Domain (root=0)
+Nx1             = 320       # Number of zones in X1-direction
+Nx2             = 320       # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 240       # i-displacement measured in cells of this level
+jDisp           = 440       # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+<problem>
+gamma           = 1.6666666667   # gamma = C_p/C_v
+iso_csound      = 0.4082482905   # equavalent to sqrt(gamma*p/d) for p=0.1, d=1
+pamb            = 0.1            # ambient pressure
+prat            = 100.0          # Pressure ratio initially
+radius          = 0.1            # Radius of the inner sphere

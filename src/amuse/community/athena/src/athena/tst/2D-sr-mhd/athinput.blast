@@ -1,0 +1,62 @@
+<comment>
+problem = Blast wave
+author  = T.A. Gardiner & J.M. Stone
+journal = JCP, 205, 509 (2005) (for MHD version of test)
+config  = --with-problem=blast
+
+<job>
+problem_id      = Blast      # problem ID: basename of output filenames
+maxout          = 3          # Output blocks number from 1 -> maxout
+num_domains     = 1          # number of Domains in Mesh
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 0.001             # time increment between outputs
+
+<output2>
+out_fmt = bin               # Binary data dump
+dt      = 0.01              # time increment between outputs
+
+<output3>
+out_fmt = ppm
+dt      = 0.002
+type    = slice
+out     = d
+id      = d
+dmin    = 1.0e-4
+dmax    = 0.05
+palette = rainbow
+
+<time>
+cour_no         = 0.4       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000     # cycle limit
+tlim            = 4.0       # time limit
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 200       # Number of zones in X1-direction
+x1min           = -6.0      # minimum value of X1
+x1max           = 6.0       # maximum value of X1
+bc_ix1          = 4         # inner-I (X1) boundary flag
+bc_ox1          = 4         # outer-I (X1) boundary flag
+
+Nx2             = 200       # Number of zones in X2-direction
+x2min           = -6.0     # minimum value of X2
+x2max           = 6.0      # maximum value of X2
+bc_ix2          = 4         # inner-J (X2) boundary flag
+bc_ox2          = 4         # outer-J (X2) boundary flag
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = 0.0       # minimum value of X3
+x3max           = 0.0       # maximum value of X3
+
+<problem>
+gamma           = 1.3333333  # gamma = C_p/C_v
+iso_csound      = 0.40825    # equavalent to sqrt(gamma*p/d) for p=0.1, d=1
+pamb            = 3.0e-5     # ambient pressure
+prat            = 3.333333e4 # Pressure ratio initially
+damb            = 1.0e-4
+drat            = 100.0      # density ratio
+b0              = 0.001        # magnetic field strength
+radius          = 0.8        # Radius of the inner sphere
+angle           = 0          # Angle of B w.r.t. the x-axis (degrees)

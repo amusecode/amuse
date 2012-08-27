@@ -30,16 +30,16 @@ class DownloadAthenaFromWebpage(object):
         
         
     def start(self):
-        if os.path.exists('src'):
-            counter = 0
-            while os.path.exists('src.{0}'.format(counter)):
-                counter += 1
-                if counter > 100:
-                    print "too many backup directories"
-                    break;
-            os.rename('src', 'src.{0}'.format(counter))
-        
-        os.mkdir('src')
+        #if os.path.exists('src'):
+        #    counter = 0
+        #    while os.path.exists('src.{0}'.format(counter)):
+        #        counter += 1
+        #        if counter > 100:
+        #            print "too many backup directories"
+        #           break;
+        #   os.rename('src', 'src.{0}'.format(counter))
+        #
+        #os.mkdir('src')
         
         url = self.url_template.format(version = self.version)
         filename = self.filename_template.format(version = self.version)

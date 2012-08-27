@@ -1,0 +1,118 @@
+<comment>
+problem = Stratified 3D MRI with zero-net vertical flux
+author  = Stone, Hawley, Gammie, & Balbus
+journal =
+config  = --with-problem=strat --with-eos=isothermal --enable-shearing-box
+
+<job>
+problem_id      = Strat      # problem ID: basename of output filenames
+maxout          = 5          # Output blocks number from 1 -> maxout
+num_domains     = 1          # number of Domains in Mesh
+
+<output1>
+out_fmt = rst                # Restart dump
+dt      = 6.2831853e3
+
+<output2>
+out_fmt = hst                # History data dump
+dt      = 6.2831853e1          # time increment between outputs
+
+<output3>
+out_fmt = vtk                # VTK data dump
+dt      = 1.5707963e3        # time increment between outputs
+
+<output4>
+out_fmt = ppm                # ppm data dump
+dt      = 6.2831853e1        # time increment between outputs
+out     = B1c
+id      = B1c
+x2      = 0.0
+
+<output5>
+out_fmt = ppm                # ppm data dump
+dt      = 6.2831853e1        # time increment between outputs
+out     = V3
+id      = V3
+x2      = 0.0
+
+<time>
+cour_no         = 0.4       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 1000000    # cycle limit
+tlim            = 1.88496e6  # time limit (300 orbits)
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 8        # Number of zones in X-direction
+x1min           = -0.5      # minimum value of X
+x1max           = 0.5       # maximum value of X
+bc_ix1          = 4         # boundary condition flag for inner-I (X1)
+bc_ox1          = 4         # boundary condition flag for outer-I (X1)
+NGrid_x1        = 1         # with MPI, number of Grids in X1 coordinate
+AutoWithNProc   = 0         # set to Nproc for auto domain decomposition
+
+Nx2             = 64        # Number of zones in Y-direction
+x2min           = -4.0      # minimum value of Y
+x2max           = 4.0       # maximum value of Y
+bc_ix2          = 4         # boundary condition flag for inner-J (X2)
+bc_ox2          = 4         # boundary condition flag for outer-J (X2)
+NGrid_x2        = 1         # with MPI, number of Grids in X2 coordinate
+AutoWithNProc   = 0         # set to Nproc for auto domain decomposition
+
+Nx3             = 96        # Number of zones in X3-direction
+x3min           = -6.0      # minimum value of X3
+x3max           = 6.0       # maximum value of X3
+bc_ix3          = 4         # boundary condition flag for inner-K (X3)
+bc_ox3          = 4         # boundary condition flag for outer-K (X3)
+NGrid_x3        = 1         # with MPI, number of Grids in X3 coordinate
+AutoWithNProc   = 0         # set to Nproc for auto domain decomposition
+
+<domain2>
+level           = 1         # refinement level this Domain (root=0)
+Nx1             = 16        # Number of zones in X1-direction
+Nx2             = 128       # Number of zones in X2-direction
+Nx3             = 96        # Number of zones in X3-direction
+iDisp           = 0         # i-displacement measured in cells of this level
+jDisp           = 0         # j-displacement measured in cells of this level
+kDisp           = 48        # k-displacement measured in cells of this level
+AutoWithNProc   = 0         # set to Nproc for auto domain decomposition
+NGrid_x1        = 1         # with MPI, number of Grids in X1 coordinate
+NGrid_x2        = 1         # with MPI, number of Grids in X2 coordinate
+NGrid_x3        = 1         # with MPI, number of Grids in X3 coordinate
+
+<domain3>
+level           = 2         # refinement level this Domain (root=0)
+Nx1             = 32        # Number of zones in X1-direction
+Nx2             = 256       # Number of zones in X2-direction
+Nx3             = 160       # Number of zones in X3-direction
+iDisp           = 0         # i-displacement measured in cells of this level
+jDisp           = 0         # j-displacement measured in cells of this level
+kDisp           = 112       # k-displacement measured in cells of this level
+AutoWithNProc   = 0         # set to Nproc for auto domain decomposition
+NGrid_x1        = 1         # with MPI, number of Grids in X1 coordinate
+NGrid_x2        = 1         # with MPI, number of Grids in X2 coordinate
+NGrid_x3        = 1         # with MPI, number of Grids in X3 coordinate
+
+<domain4>
+level           = 3         # refinement level this Domain (root=0)
+Nx1             = 64        # Number of zones in X1-direction
+Nx2             = 512       # Number of zones in X2-direction
+Nx3             = 256       # Number of zones in X3-direction
+iDisp           = 0         # i-displacement measured in cells of this level
+jDisp           = 0         # j-displacement measured in cells of this level
+kDisp           = 256       # k-displacement measured in cells of this level
+AutoWithNProc   = 0         # set to Nproc for auto domain decomposition
+NGrid_x1        = 1         # with MPI, number of Grids in X1 coordinate
+NGrid_x2        = 1         # with MPI, number of Grids in X2 coordinate
+NGrid_x3        = 1         # with MPI, number of Grids in X3 coordinate
+
+<problem>
+iso_csound      = 7.0711e-4  # Isothermal sound speed
+beta            = 100        # Plasma beta
+amp             = 0.025      # dP/P <= amp
+ifield          = 4          # 1 for zero-net-flux Bz, 2 for constant Bz
+ipert           = 1          # 1 for random d,P, 2 for uniform Vx
+
+CASE            = 1          # Diffusivity: uniform (1) or user defined (2)
+
+<log>
+child_out_level=-1

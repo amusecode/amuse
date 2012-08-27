@@ -1,0 +1,58 @@
+#    @WARNING1@
+#    @WARNING2@
+#===============================================================================
+# FILE: Makefile.in
+#
+# PURPOSE: Template for microphysics/Makefile.  When 'configure' is run, a new
+# Makefile will be created (overwriting the last) from this template.
+#
+#-------------------  object files  --------------------------------------------
+CORE_OBJ = conduction.o \
+	   diff_dt.o \
+	   cool.o \
+	   integrate_diffusion.o \
+           get_eta.o \
+           resistivity.o \
+           viscosity.o
+
+OBJ = $(CORE_OBJ)
+
+#-------------------  macro definitions  ---------------------------------------
+
+SRC = $(OBJ:.o=.c)
+
+include ../../Makeoptions
+
+BLOCKINC =
+BLOCKLIB =
+
+#--------------------  implicit rules  -----------------------------------------
+
+.c.o:
+	${CC} ${CFLAGS} -c $<
+
+#---------------------  targets  -----------------------------------------------
+
+all:	compile
+
+.PHONY: compile
+compile: ${OBJ}
+#	ar rcs libplimpton.a ${OBJ}
+
+help:
+	@echo This is the /src/microphysics Makefile
+	@echo Type 'make compile' to generate microphysics object files
+	@echo Type 'make clean'   to remove '*.o' files
+	@echo OBJ=$(OBJ)
+
+.PHONY: clean
+clean:
+	rm -f *.o *.a Makedepend
+
+depend: Makedepend
+
+Makedepend:
+	${CC} -MM ${CFLAGS} ${SRC} > Makedepend
+
+# this forces a rebuild of all objects, if code re-configure'd
+include Makedepend

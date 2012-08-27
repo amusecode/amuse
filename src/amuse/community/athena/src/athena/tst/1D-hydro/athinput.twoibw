@@ -1,0 +1,96 @@
+<comment>
+problem = Two Interacting Blast Waves
+author  = P. Woodward & P. Colella
+journal = J. Comp. Phys. 54, pp. 115-173 (1984)
+config  = --with-gas=hydro --with-problem=twoibw
+
+<job>
+problem_id      = TwoIBW    # problem ID: basename of output filenames
+maxout          = 2         # Output blocks number from 1 -> maxout
+num_domains     = 1         # number of Domains in Mesh
+
+<output1>
+out_fmt = tab               # Tabular data dump
+out     = prim              # variables to be output
+dat_fmt = %12.5e            # Optional data format string
+dt      = 0.0019            # time increment between outputs
+
+<output2>
+out_fmt = hst               # History data dump
+dt      = 0.0019            # time increment between outputs
+
+<time>
+cour_no         = 0.8       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 100000    # cycle limit
+tlim            = 0.038     # time limit
+
+<grid>
+
+Nx1             = 1200       # Number of zones in X1-direction
+x1min           = 0.0       # minimum value of X1
+x1max           = 1.0       # maximum value of X1
+ibc_x1          = 1         # inner (X1) boundary flag
+obc_x1          = 1         # outer (X1) boundary flag
+
+Nx2             = 1         # Number of zones in X2-direction
+x2min           = 0.0       # minimum value of X2
+x2max           = 0.0125    # maximum value of X2
+ibc_x2          = 1         # inner (X2) boundary flag
+obc_x2          = 1         # outer (X2) boundary flag
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = 0.0       # minimum value of X3
+x3max           = 0.0125    # maximum value of X3
+ibc_x3          = 1         # inner (X3) boundary flag
+obc_x3          = 1         # outer (X3) boundary flag
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 400       # Number of zones in X1-direction
+x1min           = 0.0       # minimum value of X1
+x1max           = 1.0       # maximum value of X1
+bc_ix1          = 1         # boundary condition flag for inner-I (X1)
+bc_ox1          = 1         # boundary condition flag for outer-I (X1)
+
+Nx2             = 1         # Number of zones in X2-direction
+x2min           = 0.0       # minimum value of X2
+x2max           = 1.0       # maximum value of X2
+bc_ix2          = 1         # boundary condition flag for inner-J (X2)
+bc_ox2          = 1         # boundary condition flag for outer-J (X2)
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = 0.0       # minimum value of X3
+x3max           = 1.0       # maximum value of X3
+bc_ix3          = 1         # boundary condition flag for inner-K (X3)
+bc_ox3          = 1         # boundary condition flag for outer-K (X3)
+
+<domain2>
+level           = 1         # refinement level this Domain (root=0)
+Nx1             = 400       # Number of zones in X1-direction
+Nx2             = 1         # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 360       # i-displacement measured in cells of this level
+jDisp           = 0         # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+<domain3>
+level           = 2         # refinement level this Domain (root=0)
+Nx1             = 640       # Number of zones in X1-direction
+Nx2             = 1         # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 840       # i-displacement measured in cells of this level
+jDisp           = 0         # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+<domain4>
+level           = 3         # refinement level this Domain (root=0)
+Nx1             = 1120      # Number of zones in X1-direction
+Nx2             = 1         # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 1760      # i-displacement measured in cells of this level
+jDisp           = 0         # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+<problem>
+gamma    = 1.4             # gamma = C_p/C_v
+shk_dir  = 1               # Shock Direction -- (1,2,3) = (x1,x2,x3)

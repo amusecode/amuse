@@ -12,7 +12,7 @@ VERSION = 4.1
 ATHENA_DIR = src/athena$(VERSION)
 
 CC = $(MPICC)
-CFLAGS   += -g  
+CFLAGS   += -DAMUSE -g  
 CXXFLAGS += $(CFLAGS) 
 UNAME = $(shell uname)
 
@@ -27,8 +27,6 @@ BUILDDIR = build
 SELFGRAV_BUILDDIR = build_selfgrav
 MHD_BUILDDIR = build_mhd
 SCALAR_BUILDDIR = build_scalar
-
-
 
 CODELIB = $(BUILDDIR)/bin/libathena.a
 SELFGRAV_CODELIB = $(SELFGRAV_BUILDDIR)/bin/libathena.a
@@ -91,7 +89,9 @@ clean:
 	$(RM) -f *.mhd_o
 	$(RM) -rf *.dSYM
 	$(RM) -rf $(BUILDDIR) $(SELFGRAV_BUILDDIR) $(MHD_BUILDDIR)
-
+	$(RM) -rf $(SCALAR_BUILDDIR)
+	$(PATCH_FILES)
+	
 codeclean: clean
 	make -C $(ATHENA_DIR) clean
 

@@ -1,0 +1,63 @@
+<comment>
+problem = MHD Blast wave, beta=0.02 (CYLINDRICAL)
+author  = E.C. Ostriker, A. Skinner
+journal = JCP, 205, 509 (2005) (for MHD Cartesian version of test)
+config  = --with-problem=cylblast --with-coord=cylindrical --with-gas=mhd --with-flux=hlld 
+
+<log> 
+file_open       = 0             # write to .out file?  otherwise, writes to stdout
+out_level       = 0             # sets output level (default=0)
+
+<job>
+num_domains     = 1             # number of Domains in Mesh
+problem_id      = CylBlast_B10  # problem ID: basename of output filenames
+maxout          = 2             # Output blocks number from 1 -> maxout
+
+<output1>
+out_fmt         = hst           # History data dump 
+dt              = 0.005         # time increment between outputs
+
+<output2>
+out_fmt         = bin           # Binary data dump
+dt              = 0.005         # time increment between outputs
+
+<time>
+cour_no         = 0.8           # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 100000        # cycle limit
+tlim            = 0.02          # time limit
+
+<domain1>
+level           = 0             # refinement level this Domain (root=0)
+Nx1             = 200           # Number of zones in X-direction
+x1min           = 1.0           # minimum value of X1 (radial coord)
+x1max           = 2.0           # maximum value of X1 (radial coord)
+bc_ix1          = 3             # inner-I (R) boundary flag
+bc_ox1          = 3             # outer-I (R) boundary flag
+
+Nx2             = 200           # Number of zones in X2-direction
+x2min           = -0.3333333333 # minimum value of X2 (theta coord; radians)
+x2max           = 0.3333333333  # maximum value of X2 (theta coord; radians)
+bc_ix2          = 3             # inner-J (PHI) boundary flag
+bc_ox2          = 3             # outer-J (PHI) boundary flag
+
+Nx3             = 1             # Number of zones in X3-direction
+x3min           = 0.0           # minimum value of X3
+x3max           = 0.0           # maximum value of X3
+
+NGrid_x1        = 4
+NGrid_x2        = 4
+NGrid_x3        = 1
+
+<problem>
+gamma           = 1.6666666667  # gamma = C_p/C_v
+iso_csound      = 0.4082482905  # equavalent to sqrt(gamma*p/d) for p=0.1, d=1
+pamb            = 0.1           # ambient pressure
+rho0            = 1.0           # Background density
+prat            = 100.0         # Pressure ratio initially
+radius          = 0.125         # Radius of the inner sphere
+b0              = 10.0          # Ambient magnetic field strength
+omega0          = 0.0           # Angular velocity of flow
+r0              = 1.5           # position of center of blast (radius)
+phi0            = 0.0           # position of center of blast (angle)
+z0              = 0.0           # position of center of blast (height)
+angle           = 45            # angle field makes with x-axis (degrees)

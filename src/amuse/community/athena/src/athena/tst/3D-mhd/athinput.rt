@@ -1,0 +1,66 @@
+<comment>
+problem = MHD RT instability
+author  = J.M. Stone & T.A. Gardiner
+journal = Phys. FLuids, (2007)
+config  = --with-problem=rt --with-order=3 --with-flux=hlld --enable-mpi
+
+<job>
+problem_id   = rt          # problem ID: basename of output filenames
+maxout       = 4           # Output blocks number from 1 -> maxout
+num_domains  = 1           # number of Domains in Mesh
+
+<output1>
+out_fmt = hst              # History data dump
+dt      = 0.005            # time increment between outputs
+
+<output2>
+out_fmt = vtk              # Binary data dump
+dt      = 0.1              # time increment between outputs
+
+<output3>
+out_fmt = rst
+dt      = 1.0
+
+<output4>
+out_fmt = ppm
+dt      = 0.005
+out     = d
+id      = d
+dmin    = 0.9
+dmax    = 10.1
+x2      = 0.0
+palette = rainbow
+
+<time>
+cour_no         = 0.4      # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 100000   # cycle limit
+tlim            = 6.0      # time limit
+
+<domain1>
+level           = 0        # refinement level this Domain (root=0)
+Nx1             = 64       # Number of zones in X1-direction
+x1min           = -0.05    # minimum value of X1
+x1max           = 0.05     # maximum value of X1
+bc_ix1          = 4        # boundary condition flag for inner-I (X1)
+bc_ox1          = 4        # boundary condition flag for outer-I (X1)
+
+Nx2             = 64       # Number of zones in X2-direction
+x2min           = -0.05    # minimum value of X2
+x2max           = 0.05     # maximum value of X2
+bc_ix2          = 4        # boundary condition flag for inner-J (X2)
+bc_ox2          = 4        # boundary condition flag for outer-J (X2)
+
+Nx3             = 128      # Number of zones in X3-direction
+x3min           = -0.1     # minimum value of X3
+x3max           = 0.1      # maximum value of X3
+bc_ix3          = 1        # boundary condition flag for inner-K (X3)
+bc_ox3          = 1        # boundary condition flag for outer-K (X3)
+
+<problem>
+gamma = 1.666666667         # gamma = C_p/C_v
+amp   = 0.01
+b0    = 0.05
+iprob = 2           # iprob=4 or 5: rotated B
+angle = 90.0        # only needed for MHD sims
+rhoh  = 10.0        # density of heavy material
+L_rot = 0.02        # width of rotation region (iprob=5)

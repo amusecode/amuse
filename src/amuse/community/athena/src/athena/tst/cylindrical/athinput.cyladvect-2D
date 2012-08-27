@@ -1,0 +1,66 @@
+<comment>
+problem = Advection (CYLINDRICAL)
+author  = A. Skinner
+journal = unpublished
+config  = --with-problem=cyladvect --with-coord=cylindrical
+
+<log>
+file_open       = 0                 # write to .out file?  otherwise, writes to stdout
+out_level       = 0                 # sets output level (default=0)
+
+<job>
+num_domains     = 1                 # number of Domains in Mesh
+problem_id      = CylAdvect         # problem ID: basename of output filenames
+maxout          = 2                 # Output blocks number from 1 -> maxout
+
+<output1>
+out_fmt         = bin               # Binary data dump
+dt              = 0.1               # time increment between outputs
+
+<output2>
+out_fmt         = hst               # History data dump
+dt              = 0.1               # time increment between outputs
+
+<time>
+cour_no         = 0.8               # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 100000            # cycle limit
+tlim            = 1.0               # time limit
+
+<domain1>
+level           = 0                 # refinement level this Domain (root=0)
+Nx1             = 128               # Number of zones in R-direction
+x1min           = 1.0               # minimum value of R
+x1max           = 2.0               # maximum value of R
+bc_ix1          = 1                 # inner (R) boundary flag
+bc_ox1          = 1                 # outer (R) boundary flag
+
+Nx2             = 128               # Number of zones in PHI-direction
+x2min           = -0.39269908169872 # minimum value of PHI
+x2max           = 0.39269908169872  # maximum value of PHI (=pi/4)
+bc_ix2          = 4                 # inner (PHI) boundary flag
+bc_ox2          = 4                 # outer (PHI) boundary flag
+
+Nx3             = 1                 # Number of zones in Z-direction
+x3min           = 0.0               # minimum value of Z
+x3max           = 0.0               # maximum value of Z
+
+NGrid_x1        = 2
+NGrid_x2        = 2
+NGrid_x3        = 1
+
+<problem>
+gamma           = 1.66666666666667  # gamma = C_p/C_v
+omega0          = 0.78539816339745  # uniform background angular velocity (=2*pi)
+rho0            = 1.0               # uniform background gas density
+bz0             = 0.0               # uniform background B-field strength
+vz0             = 0.0               # uniform background z-velocity
+Pgas0           = 1.0               # uniform gas pressure
+amp             = 0.1 #1.0               # amplitude of the pulse
+rad             = 0.1               # size of the pulse
+R0              = 1.5               # (R0,phi0,z0) is the center of the pulse
+phi0            = 0.0               # (R0,phi0,z0) is the center of the pulse
+z0              = 0.0               # (R0,phi0,z0) is the center of the pulse
+iprob           = 3                 # problem number:  1=SQUARE PULSE
+                                    #                  2=SINUSOIDAL IN PHI
+                                    #                  3=GAUSSIAN PULSE
+

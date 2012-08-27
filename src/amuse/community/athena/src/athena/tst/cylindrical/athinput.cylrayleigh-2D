@@ -1,0 +1,62 @@
+<comment>
+problem = Rayleigh Instability Test (CYLINDRICAL)
+author  = A. Skinner
+journal = unpublished
+config  = --with-problem=cylrayleigh --with-coord=cylindrical --with-gas=hydro --with-flux=hllc
+
+<log>
+file_open       = 0             # write to .out file?  otherwise, writes to stdout
+out_level       = 0             # sets output level (default=0)
+
+<job>
+num_domains     = 1                 # number of Domains in Mesh
+problem_id      = CylRayleigh   # problem ID: basename of output filenames
+maxout          = 3             # Output blocks number from 1 -> maxout
+
+<output1>
+out_fmt         = bin           # Binary data dump
+dt              = 10.0          # time increment between outputs
+
+<output2>
+out_fmt         = hst           # History data dump
+dt              = 10.0          # time increment between outputs
+
+<output2>
+out_fmt         = rst           # Restart dump
+dt              = 100.0         # time increment between outputs
+
+<time>
+cour_no         = 0.8           # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000000      # cycle limit
+tlim            = 300.0         # time limit
+
+<domain1>
+level           = 0             # refinement level this Domain (root=0)
+Nx1             = 200           # Number of zones in R-direction
+x1min           = 3.0           # minimum value of R
+x1max           = 7.0           # maximum value of R
+bc_ix1          = 3             # inner (R) boundary flag
+bc_ox1          = 3             # outer (R) boundary flag
+
+Nx2             = 400           # Number of zones in PHI-direction
+x2min           = 0.0           # minimum value of PHI
+x2max           = 1.5707963268  # maximum value of PHI
+bc_ix2          = 4             # inner (PHI) boundary flag
+bc_ox2          = 4             # outer (PHI) boundary flag
+
+Nx3             = 1             # Number of zones in Z-direction
+x3min           = 0.0           # minimum value of Z
+x3max           = 0.0           # maximum value of Z
+
+NGrid_x1        = 4
+NGrid_x2        = 4
+NGrid_x3        = 1
+
+<problem>
+gamma 		= 1.6666666667  # gamma = C_p/C_v
+omega0		= 6.2831853070  # angular flow velocity = 20*PI
+bphi0		= 0.0           # B-field strength (phi-component)
+pgas0		= 1.0           # gas pressure
+rho0		= 200.0         # background density
+kappa		= 2.05          # omega=omega0/R^kappa
+noise_level	= 0.0001        # level of random velocity perturbation

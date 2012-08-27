@@ -1,0 +1,102 @@
+#    @WARNING1@
+#    @WARNING2@
+#===============================================================================
+# FILE: Makeoptions.in
+#
+# PURPOSE: Template for src/Makeoptions.  When 'configure' is run, a new
+# Makeoptions will be created (overwriting the last) from this template.
+#
+# TO BY-PASS CONFIGURE: copy this file into Makeoptions, and edit by hand to
+#   set the appropriate object files, compiler options, and library paths.
+#
+#-------------------  macro definitions  ---------------------------------------
+
+MACHINE = default
+
+#-------------------  default definitions  -------------------------------------
+
+CC  = @CC@
+LDR = @CC@
+OPT = @COMPILER_OPTS@
+CUSTLIBS =
+MPIINC =
+MPILIB =
+FFTWLIB =
+FFTWINC =
+BLOCKINC = 
+BLOCKLIB = 
+CUSTLIBS = -ldl -lm
+
+ifeq (@FFT_MODE@,FFT_ENABLED)
+  BLOCKINC = -I fftsrc
+  FFTWLIB = -L/usr/lib -lfftw3
+  FFTWINC = -I/usr/include
+endif
+
+ifeq (@MPI_MODE@,MPI_PARALLEL)
+  CC = mpicc 
+  LDR = mpicc 
+endif
+
+#-------------------  compiler/library definitions  ----------------------------
+# select using MACHINE=<name> in command line.  For example
+#    ophir> make all MACHINE=ophir
+# New machines can be added to ifeq blocks below.
+
+ifeq ($(MACHINE),ophir)
+  CC = /usr/peyton/intel/10.0/cce/bin/icc
+  LDR = /usr/peyton/intel/10.0/cce/bin/icc
+  OPT = -O3 -xW -ipo -i-static
+  FFTWLIB = -L/scr1/lemaster/fftw-3.1.2/lib -lfftw3
+  FFTWINC = -I/scr1/lemaster/fftw-3.1.2/include
+else
+ifeq ($(MACHINE),peyton-mpi)
+  CC  = /usr/peyton/openmpi/bin/mpicc
+  LDR = /usr/peyton/openmpi/bin/mpicc
+  OPT = -O3 -g
+  MPIINC = -I/usr/peyton/openmpi/include
+  MPILIB = -L/usr/peyton/openmpi/lib -lmpi
+  FFTWLIB = -L/scr0/lemaster/fftw-3.1.2/lib -lfftw3
+  FFTWINC = -I/scr0/lemaster/fftw-3.1.2/include
+else
+ifeq ($(MACHINE),artemis)
+  CC  = mpicc
+  LDR = mpicc
+  OPT = -O3 -xW -ipo -i-static
+  MPIINC =
+  MPILIB = -lmpi
+  FFTWLIB = -L/opt/fftw3/lib64 -lfftw3
+  FFTWINC = -I/opt/fftw3/include
+else
+ifeq ($(MACHINE),aether)
+  CC  = mpicc
+  LDR = mpicc
+  OPT = -O3
+  MPIINC = -I~/lam-7.1.4/include
+  MPILIB = -L~/lam-7.1.4/lib
+else
+ifeq ($(MACHINE),macosx)
+  CC = gcc
+  LDR = gcc
+  OPT = -O3 
+  FFTWLIB = -L/opt/local/lib -lfftw3
+  FFTWINC = -I/opt/local/include
+else
+  abort Unsupported MACHINE=$(MACHINE)
+endif
+endif
+endif
+endif
+endif
+
+ifeq (@MPI_MODE@,NO_MPI_PARALLEL)
+  MPIINC = 
+  MPILIB = 
+endif
+ifeq (@FFT_MODE@,NO_FFT)
+  FFTWINC = 
+  FFTWLIB = 
+endif
+
+CFLAGS = $(OPT) $(BLOCKINC) $(MPIINC) $(FFTWINC)
+LIB = $(BLOCKLIB) $(MPILIB) $(FFTWLIB) $(CUSTLIBS)

@@ -1,0 +1,151 @@
+List of problem generator files in src/prob:
+
+================================================================================
+                              1-D problems
+================================================================================
+
+cpaw1d.c:
+=========
+Circularly Polarized Alfven Wave test of Toth.  This initializes only truly 1D
+tests, that is wave must be in x1-direction only.
+
+linear_wave1d.c:
+================
+Linear Wave convergence test.  Can run 1D, 2D, or 3D problems, but wave must be
+grid-aligned, i.e. along x1-, x2-, or x3-axis respectively.
+
+shkset1d.c:
+===========
+Shock Set -- initializes 1D Riemann problems.  Can run 1D, 2D, or 3D
+problems, but shock must be grid-aligned, i.e. along x1-, x2-, or x3-axis
+respectively.
+
+shu-osher.c
+===========
+Initializes 1D Riemann problem of Shu & Osher.  Only works in 1D (along x1).
+
+twoibw.c:
+=========
+Two Interacting Blast Waves test of Woodward & Colella.  Can run 1D, 2D, or 3D
+problems, but shock must be grid-aligned, i.e. along x1-, x2-, or x3-axis
+respectively.
+
+================================================================================
+                              2-D problems
+================================================================================
+
+blast.c:
+========
+Generates a spherical blast wave in both hydro and MHD.  For MHD, field is
+in x-y plane.  Can be used for 2D and 3D (although B must be in x-y plane).
+
+carbuncle.c
+===========
+Sets up propagating planar shock in 2D/3D to test for carbuncle instability.
+Shock is stable only when --enable-h-correction is used.
+
+cpaw2d.c:
+=========
+Circularly Polarized Alfven Wave test of Toth.  Initializes wavevector at any
+arbitrary angle to grid in 2D.
+
+dmr.c:
+======
+Double Mach Reflection test of Woodward & Colella.  Only works for genuinely
+2D problems in x1-x2 plane.
+
+field_loop.c
+============
+Advection of a passive field-loop in 2D/3D, used to test CT algorithm in GS05.
+
+kh.c
+====
+Initializes two versions of a Kelvin-Helmholtz instability test.
+
+linear_wave2d.c:
+================
+Linear Wave convergence test.  Can run 2D problems, with wavevector at any
+angle in the x1-x2 plane.
+
+lw_implode.c:
+=============
+Liska & Wendroff implosion problem (Sod shocktube in a box).  Only works
+for genuinely 2D problems in x1-x2 plane.
+
+noh.c
+=====
+Strong shock test of Noh, implemented in 2D as described by Liska & Wendroff.
+Consists of convergent radial flow at very high Mach number.
+
+orszag-tang.c:
+==============
+Orszag & Tang MHD vortex problem.  Only works for genuinely 2D problems
+in x1-x2 plane.
+
+pgflow.c
+========
+"Planar Gravitational flow" test.  Sets up an analytic solution for a
+steady flow in a periodic potential.  Code should hold this steady flow.
+Good test of gravitational source terms, especially if flow is set at an
+angle to grid.
+
+rotor.c
+=======
+MHD rotor test of Balsara & Spicer, as improved by Toth.
+
+rt.c
+====
+Rayleigh-Taylor instability problem.  Initializes both 2D and 3D problems,
+with and without a magnetic field.
+
+shk_cloud.c
+===========
+Strong shock incident on a spherical cloud, with and without a magnetic field.
+
+shkset2d.c:
+===========
+Shock Set -- initializes 2D Riemann problems.  Can run 2D problems, with
+wavevector at any angle in the x1-x2 plane.
+
+================================================================================
+                              3-D problems
+================================================================================
+
+blast.c:
+========
+Generates a spherical blast wave in both hydro and MHD.  For MHD, field is
+in x-y plane.  Can be used for 3D, but B must be in x-y plane.
+
+cpaw3d.c:
+=========
+Circularly Polarized Alfven Wave test of Toth.  Initializes wavevector at any
+arbitrary angle to grid in 3D.
+
+field_loop.c
+============
+Advection of a passive field-loop in 2D/3D, used to test CT algorithm in GS07.
+For 3D, cylindrical flux-tube inclined at any angle to grid is allowed.
+
+linear_wave3d.c:
+================
+Linear Wave convergence test.  Can run 3D problems, with wavevector at any
+angle to the grid.
+
+noh.c
+=====
+Strong shock test of Noh, extended to 3D based on 2D problem described by
+Liska & Wendroff.  Consists of convergent radial flow at very high Mach number.
+
+rt.c
+====
+Rayleigh-Taylor instability problem.  Initializes 3D problems,
+with and without a magnetic field.
+
+shk_cloud.c
+===========
+Strong shock incident on a spherical cloud, with and without a magnetic field.
+
+shkset3d.c:
+===========
+Shock Set -- initializes 3D Riemann problems.  Can only run 3D problems, with
+wavevector at any angle.

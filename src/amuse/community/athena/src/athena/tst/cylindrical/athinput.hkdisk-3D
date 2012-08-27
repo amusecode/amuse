@@ -1,0 +1,71 @@
+<comment>
+
+problem = HK Accretion Disk, cylindrical coords
+author  = Kareem
+journal = Hawley & Krolik
+
+<job>num_domains     = 1                 # number of Domains in Mesh
+
+problem_id      = HKDisk      # problem ID: basename of output filenames
+maxout          = 3          # Output blocks number from 1 -> maxout
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 61.0            # time increment between outputs
+
+<output2>
+out_fmt = bin               # Binary data dump
+dt      = 61.0             # time increment between outputs
+
+<output3>
+out_fmt = rst               # Restart data dump
+dt      = 610.0             # time increment between outputs
+
+<output4>
+out_fmt = vtk               # History data dump
+dt      = 61.0              # time increment between outputs
+
+
+<time>
+
+cour_no         = 0.4       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000000     # cycle limit
+tlim            = 60000.0      # time limit
+
+<grid>
+
+Nx1             = 128  	        # Number of zones in X-direction
+x1min           = 4		# minimum value of X1 (radial coord)
+x1max           = 44		# maximum value of X1 (radial coord)
+bc_ix1          = 3		# inner-I (R) boundary flag
+bc_ox1          = 3		# outer-I (R) boundary flag
+
+Nx2             = 32            # Number of zones in X2-direction
+x2min           = -.785398      # minimum value of X2 (theta coord; radians)
+x2max           = .785398       # maximum value of X2 (theta coord; radians)
+bc_ix2          = 4             # inner-J (PHI) boundary flag
+bc_ox2          = 4             # outer-J (PHI) boundary flag
+
+Nx3             = 128            # Number of zones in X3-direction
+x3min           = -20.0         # minimum value of X3
+x3max           = 20.0          # maximum value of X3
+bc_ix3          = 3             # inner-K (Z) boundary flag
+bc_ox3          = 3             # outer-K (Z) boundary flag
+
+<parallel>
+NGrid_x1 = 5
+NGrid_x2 = 2
+NGrid_x3 = 5
+
+<problem>
+
+gamma           = 1.6666666667   # gamma = C_p/C_v
+q               = 1.68
+r0              = 20             # Radius of pressure max
+rhomax          = 300            # Density at pressure max
+r_in            = 8             # Inner radius of torus
+rho0            = 1.0e-2         # Background density
+e0              = 1.0e-4         # Background energy
+dcut            = 1.0            # Density cutoff for magnetic field
+beta            = 100.0          # Value of beta=Pgas/Pb
+seed            = 0.01           # Pressure fluctuations, 1%

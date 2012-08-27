@@ -1,0 +1,39 @@
+#! /bin/csh -f
+# Script for running convergence test with linear waves
+# Run script in this directory (tst/3D-mhd)
+#
+# It creates a temporary run directory=tmpdir.LinWave
+#   WARNING: if this directory already exists the script will delete it!!
+#
+# It expects to find the executable in bin (../../../bin from tmpdir.LinWave)
+#
+# It expects to find the input file in tst/3D-mhd (../ from tmpdir.LinWave)
+#
+# Script turns off all output from code except convergence data
+#
+# Since 3D convergence tests can be very expensive, the script assumes the
+# code is configured with --enable-mpi and it uses 'mpirun -np 2'
+
+set rundir=tmpdir.LinWave
+
+if (-d $rundir) rm -rf $rundir
+mkdir $rundir
+cd $rundir
+
+foreach nx1 (8 16 32 64 128)
+  set nx2 = $nx1
+  @ nx2 /= 2
+  foreach wave (0 1 2 3)
+    set vflow=0.0
+    if ($wave == 0) set time=0.5
+    if ($wave == 1) set time=1.0
+    if ($wave == 2) set time=2.0
+    if ($wave == 3) set time=1.0
+    if ($wave == 4) set time=2.0
+    if ($wave == 5) set time=1.0
+    if ($wave == 6) set time=0.5
+    if ($wave == 3) set vflow=1.0
+ mpirun -np 2 ../../../bin/athena -i ../athinput.linear_wave3d problem/wave_flag=$wave time/tlim=$time problem/vflow=$vflow domain1/Nx1=$nx1 domain1/Nx2=$nx2 domain1/Nx3=$nx2 job/maxout=0 > athena.{$nx1}.log
+    echo 'Finished '{$nx1}' zones'
+  end
+end

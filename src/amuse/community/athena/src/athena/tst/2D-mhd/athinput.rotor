@@ -1,0 +1,69 @@
+<comment>
+problem = First rotor test
+author  = G. Toth
+journal = JCP, vol. 161, pp. 605-662 (2000).
+config  = --with-problem=rotor
+
+<job>
+problem_id   = Rotor        # problem ID: basename of output filenames
+maxout       = 3            # Output blocks number from 1 -> maxout
+num_domains  = 1            # number of Domains in Mesh
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 0.0015            # time increment between outputs
+
+<output2>
+out_fmt = bin               # Binary data dump
+dt      = 0.001             # time increment between outputs
+
+<output3>
+out_fmt = ppm              # ppm images
+dt      = 0.0015           # time increment between outputs
+out     = P
+id      = P
+dmin    = 0.03
+dmax    = 2.0
+palette = rainbow
+
+<time>
+cour_no         = 0.8       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 15000     # cycle limit
+tlim            = 0.15      # time limit
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 200       # Number of zones in X1-direction
+x1min           = -0.5      # minimum value of X1
+x1max           = 0.5       # maximum value of X1
+bc_ix1          = 2         # boundary condition flag for inner-I (X1)
+bc_ox1          = 2         # boundary condition flag for outer-I (X1)
+
+Nx2             = 200       # Number of zones in X2-direction
+x2min           = -0.5      # minimum value of X2
+x2max           = 0.5       # maximum value of X2
+bc_ix2          = 2         # boundary condition flag for inner-J (X2)
+bc_ox2          = 2         # boundary condition flag for outer-J (X2)
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = -0.5      # minimum value of X3
+x3max           = 0.5       # maximum value of X3
+bc_ix3          = 1         # boundary condition flag for inner-K (X3)
+bc_ox3          = 1         # boundary condition flag for outer-K (X3)
+
+<domain2>
+level           = 1         # refinement level this Domain (root=0)
+Nx1             = 200       # Number of zones in X1-direction
+Nx2             = 200       # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 100       # i-displacement measured in cells of this level
+jDisp           = 100       # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+<problem>
+gamma = 1.4        # gamma = C_p/C_v
+v0 = 2.0           # velocity of rotating region
+p0 = 1.0           # pressure
+bx0 = 1.410474     # Bx
+r0 = 0.1           # radius of rotating region
+r1 = -0.115        # smooth solution between r0 and r1.  No smoothing for r1<0

@@ -1,0 +1,25 @@
+#! /bin/csh -f
+# Script for running convergence test with 1D circularly polarized Alfven wave
+# Run script in this directory (tst/1D-mhd)
+#
+# It creates a temporary run directory=tmpdir.cpaw1d
+#   WARNING: if this directory already exists the script will delete it!!
+#
+# It expects to find the executable in bin (../../../bin from tmpdir.cpaw1d)
+#
+# It expects to find the input file in tst/1D-mhd (../ from tmpdir.cpaw1d)
+#
+# Script turns off all output from code except convergence data
+# Be sure tlim (set here) and code parameters are consistent with time for
+#   one wave period
+
+set rundir=tmpdir.cpaw1d
+
+if (-d $rundir) rm -rf $rundir
+mkdir $rundir
+cd $rundir
+
+foreach nx1 (8 16 32 64 128 256 512 1024)
+  ../../../bin/athena -i ../athinput.cpaw1d domain1/Nx1=$nx1 job/maxout=0 time/tlim=1.0 > athena.{$nx1}.log
+    echo 'Finished '{$nx1}' zones'
+end

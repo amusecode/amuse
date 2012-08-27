@@ -1,0 +1,28 @@
+#! /bin/csh -f
+# Script for running convergence test with circularly polarized Alfven waves
+# Run script in this directory (tst/3D-mhd)
+#
+# It creates a temporary run directory=tmpdir.cpaw3d
+#   WARNING: if this directory already exists the script will delete it!!
+#
+# It expects to find the executable in bin (../../../bin from tmpdir.cpaw3d)
+#
+# It expects to find the input file in tst/3D-mhd (../ from tmpdir.cpaw3d)
+#
+# Script turns off all output from code except convergence data
+#
+# Since 3D convergence tests can be very expensive, the script assumes the
+# code is configured with --enable-mpi and it uses 'mpirun -np 2'
+
+set rundir=tmpdir.cpaw3d
+
+if (-d $rundir) rm -rf $rundir
+mkdir $rundir
+cd $rundir
+
+foreach nx1 (16 32 64 128)
+  set nx2 = $nx1
+  @ nx2 /= 2
+ mpirun -np 2 ../../../bin/athena -i ../athinput.cpaw3d time/tlim=1.0 domain1/Nx1=$nx1 domain1/Nx2=$nx2 domain1/Nx3=$nx2 job/maxout=0 > athena.{$nx1}.log
+    echo 'Finished '{$nx1}' zones'
+end

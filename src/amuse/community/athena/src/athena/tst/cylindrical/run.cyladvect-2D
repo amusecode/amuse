@@ -1,0 +1,33 @@
+#! /bin/csh
+# Script for running cylindrical advection tests.
+# Run script in this directory (tst/cylindrical)
+#
+# It creates the directory=cyladvect
+#
+# It redirects all output to a log file
+#
+# It expects to find the executable in bindir
+#
+# It expects to find the input file in inputdir
+
+set bindir=~/svnathena/bin
+set inputdir=~/svnathena/tst/cylindrical
+set outputdir=~/svnathena/bin/cyladvect2
+set logfile=0
+set np=4
+
+if (! -d $outputdir) then 
+  mkdir $outputdir
+endif
+
+recon
+wipe -v
+lamboot -v
+foreach nx1 (32 64 128 256 512)
+  foreach iprob (1)
+    mpirun -np $np $bindir/athena -i $inputdir/athinput.cyladvect-2D log/file_open=$logfile domain1/Nx1=$nx1 domain1/Nx2=$nx1 job/problem_id=CylAdvect_$nx1 problem/iprob=$iprob -d $outputdir
+    echo 'Finished CylAdvect '{$nx1}'x'{$nx1}' problem '{$iprob}''
+  end
+end
+wipe -v
+lamhalt

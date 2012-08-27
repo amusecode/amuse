@@ -1,0 +1,57 @@
+<comment>
+problem = jeans problem (standing wave; stable or unstable)
+author  = E.C. Ostriker
+journal =
+config  = --with-problem=jeans --with-gravity=fft --enable-fft
+
+<job>
+problem_id      = Jeans     # problem ID: basename of output filenames
+maxout          = 3         # Output blocks number from 1 -> maxout
+num_domains     = 1         # number of Domains in Mesh
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 0.01              # time increment between outputs
+
+<output2>
+out_fmt = bin               # Binary data dump
+dt      = 0.01              # time increment between outputs
+
+<output3>
+out_fmt = ppm
+out     = d
+id      = d
+dt      = 0.01             # time increment between outputs
+
+<time>
+cour_no         = 0.8 #0.4 for 3D # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000    # cycle limit
+tlim            = 2.0       # time limit (units lambda/ciso)
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 64        # Number of zones in X-direction
+x1min           = 0.0       # minimum value of X
+x1max           = 0.25      # maximum value of X
+bc_ix1          = 4         # boundary condition flag for inner-I (X1)
+bc_ox1          = 4         # boundary condition flag for outer-I (X1)
+
+Nx2             = 128       # Number of zones in X2-direction
+x2min           = 0.0       # minimum value of X2
+x2max           = 1.0       # maximum value of X2
+bc_ix2          = 4         # boundary condition flag for inner-J (X2)
+bc_ox2          = 4         # boundary condition flag for outer-J (X2)
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = 0.0       # minimum value of X3
+x3max           = 0.1       # maximum value of X3
+bc_ix3          = 4         # boundary condition flag for inner-K (X3)
+bc_ox3          = 4         # boundary condition flag for outer-K (X3)
+
+<problem>
+iso_csound      = 1.0	    # isothermal sound speed (used if ISOTHERMAL)
+gamma = 1.6666666666666667  # gamma = C_p/C_v
+amp             = 1.0e-2    # Initial wave amplitude
+beta		= 1.0	    # Pth/Pmag (if MHD is defined)
+njeans		= 0.5	    # lambda/lambda_jeans
+kdir		= 2	    # direction of wavenumber (1, 2, or 3)

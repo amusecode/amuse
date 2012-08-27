@@ -1,0 +1,62 @@
+#    @WARNING1@
+#    @WARNING2@
+#===============================================================================
+# FILE: Makefile.in
+#
+# PURPOSE: Template for rsolvers/Makefile.  When 'configure' is run, a new
+# Makefile will be created (overwriting the last) from this template.
+#
+#-------------------  object files  --------------------------------------------
+CORE_OBJ = esystem_roe.o\
+	   exact.o \
+	   exact_sr.o \
+	   force.o \
+	   hllc.o \
+	   hlld.o \
+	   hllc_sr.o \
+	   hlle_sr.o \
+	   hlld_sr.o \
+	   hlle.o \
+	   roe.o \
+	   two_shock.o
+
+OBJ = $(CORE_OBJ)
+
+#-------------------  macro definitions  ---------------------------------------
+
+SRC = $(OBJ:.o=.c)
+
+include ../../Makeoptions
+
+BLOCKINC =
+BLOCKLIB =
+
+#--------------------  implicit rules  -----------------------------------------
+
+.c.o:
+	${CC} ${CFLAGS} -c $<
+
+#---------------------  targets  -----------------------------------------------
+
+all:	compile
+
+.PHONY: compile
+compile: ${OBJ}
+
+help:
+	@echo This is the /src/rsolvers Makefile
+	@echo Type 'make compile' to generate rsolvers object files
+	@echo Type 'make clean'   to remove '*.o' files
+	@echo OBJ=$(OBJ)
+
+.PHONY: clean
+clean:
+	rm -f *.o *.a Makedepend
+
+depend: Makedepend
+
+Makedepend:
+	${CC} -MM ${CFLAGS} ${SRC} > Makedepend
+
+# this forces a rebuild of all objects, if code re-configure'd
+include Makedepend

@@ -1,0 +1,193 @@
+#ifndef DEFINITIONS_H
+#define DEFINITIONS_H 
+/*  
+ *  @WARNING1@
+ *  @WARNING2@
+ */
+/*==============================================================================
+ * FILE: defs.h.in
+ *
+ * PURPOSE: Template file for defs.h.  When 'configure' is run, a new defs.h
+ *   file will be created (overwriting the last) from this template in which
+ *   various cpp macros are defined selected from the options available here.  
+ *
+ * TO BY-PASS CONFIGURE: copy this file into defs.h, and edit the cpp macros
+ *   by hand.
+ *============================================================================*/
+
+/*----------------------------------------------------------------------------*/
+/*  macros which define physics and algorithm
+ *  (user modified via configure) */
+
+/* Version identifier when configure was last run */
+#define CONFIGURE_DATE "@A_CONFIGURE_DATE@"
+
+/* Problem generator with which Athena is compiled */
+#define A_PROBLEM "@PROBLEM@"
+
+/* HYDRO or MHD */
+#define @GAS@
+
+/* ADIABATIC or ISOTHERMAL or ... */
+#define @EOS@
+#define EOS_STR "@EOS@"
+
+#if defined(ISOTHERMAL) /* || defined PIECEWISE_POLYTROPE ... */
+#define BAROTROPIC        /* P = P(rho) */
+#elif !defined(ADIABATIC)  /* P = P(eth) = (gamma - 1)*eth */
+#define GENERAL_EOS       /* P = P(rho,eth) */
+#endif
+
+/* Coordinate system: CARTESIAN or CYLINDRICAL */
+#define @COORD@
+
+/* Number of passively advected scalars */
+#define NSCALARS @NSCALARS@
+
+/* Self-gravity */
+#define @SELF_GRAVITY_DEFINE@
+#define @SELF_GRAVITY_ALGORITHM@
+
+/* Particles */
+#define @PARTICLES_ALGORITHM@
+#define @FEEDBACK_DEFINE@
+
+/* resistivity, viscosity, and thermal conduction */
+#define @RESISTIVITY_MODE@
+#define @VISCOSITY_MODE@
+#define @CONDUCTION_MODE@
+
+/* special relativity */
+#define @SPECIAL_RELATIVITY_MODE@
+
+/* order of spatial reconstruction: FIRST_ORDER,
+ * SECOND_ORDER_CHAR, SECOND_ORDER_PRIM, THIRD_ORDER_CHAR, THIRD_ORDER_PRIM */
+#define @ACCURACY@
+
+/* flux type
+ * ROE_FLUX, HLLE_FLUX, HLLC_FLUX, HLLD_FLUX, FORCE_FLUX, EXACT_FLUX,
+ * TWO_SHOCK_FLUX */
+#define @FLUX_DEF@
+
+/* unsplit integrator:
+ * CTU_INTEGRATOR or VL_INTEGRATOR */
+#define @INTEGRATOR_DEF@
+
+/* Real: DOUBLE_PREC or SINGLE_PREC */
+#define @PRECISION@
+
+/* debug mode: DEBUG or OPTIMIZE */
+#define @DEBUG_MODE@
+
+/* Write ghost cells in outputs: WRITE_GHOST_CELLS or NO_WRITE_GHOST_CELLS */
+#define @WRITE_GHOST_MODE@
+
+/* MPI parallelism: MPI_PARALLEL or NO_MPI_PARALLEL */
+#define @MPI_MODE@
+
+/* H-correction: H_CORRECTION or NO_H_CORRECTION */
+#define @H_CORRECTION_MODE@
+
+/* FFT mode: FFT_ENABLED or NO_FFT */
+#define @FFT_MODE@
+
+/* shearing-box: SHEARING_BOX or NO_SHEARING_BOX */
+#define @SHEARING_BOX_MODE@
+
+/* fargo: FARGO or NO_FARGO */
+#define @FARGO_MODE@
+
+/* L/R integration style: HLL_ALL_WAVE or NOT_HLL_ALL_WAVE */
+#define @HLL_ALL_WAVE_MODE@
+
+/* Mesh Refinement mode: STATIC_MESH_REFINEMENT or NO_MESH_REFINEMENT */
+#define @MESH_REFINEMENT@
+
+/* First order flux correction in VL integrator:
+ * FIRST_ORDER_FLUX_CORRECTION or NO_FIRST_ORDER_FLUX_CORRECTION */
+#define @FOFC_MODE@
+
+/*----------------------------------------------------------------------------*/
+/* macros associated with numerical algorithm (rarely modified) */
+
+/* nghost = Number of Ghost Cells 
+ * num_digit = Number of digits in data dump file
+ * MAXLEN = maximum line length in input parameter file
+ */
+
+/* Number of ghost cells must be 5 with particles and 3rd order */
+enum {
+#ifdef PARTICLES 
+#if defined(THIRD_ORDER_CHAR) || defined(THIRD_ORDER_PRIM)
+  nghost = 5,
+#else
+  nghost = 4,
+#endif
+#else
+  nghost = 4,
+#endif
+  num_digit = 4
+};
+#define MAXLEN 256
+
+/*----------------------------------------------------------------------------*/
+/* general purpose macros (never modified) */
+#ifndef MIN
+#define MIN(a,b) ( ((a) < (b)) ? (a) : (b) )
+#endif
+#ifndef MAX
+#define MAX(a,b) ( ((a) > (b)) ? (a) : (b) )
+#endif
+#define SIGN(a) ( ((a) < 0.) ? -1. : 1. )
+#define SQR(x) ( (x)*(x) )
+#define STR(x) #x
+#define SQRT2 1.4142135623730951
+#define ONE_OVER_SQRT2 0.7071067811865475
+#define PI       3.14159265358979323846
+#define ONE_3RD  0.3333333333333333
+#define TWO_3RDS 0.6666666666666667
+#define FOUR_3RDS 1.333333333333333
+#define TINY_NUMBER 1.0e-20
+#define HUGE_NUMBER 1.0e+20
+
+/*----------------------------------------------------------------------------*/
+/* computed macros based on above choices (never modified) */
+
+#ifdef BAROTROPIC /* BAROTROPIC EOS */
+#ifdef HYDRO
+ enum {NWAVE = 4, NVAR = 4 + NSCALARS};
+#endif
+#ifdef MHD
+ enum {NWAVE = 6, NVAR = 7 + NSCALARS};
+#endif
+#else /* ADIABATIC or other EOS */
+#ifdef HYDRO
+ enum {NWAVE = 5, NVAR = 5 + NSCALARS};
+#endif
+#ifdef MHD
+ enum {NWAVE = 7, NVAR = 8 + NSCALARS};
+#endif
+#endif /* EOS */
+
+/*----------------------------------------------------------------------------*/
+
+#ifdef MPI_PARALLEL
+/* Integer constants to identify MPI messages sent in various parts of code */
+enum {LtoR_tag,
+      RtoL_tag,
+      boundary_particle_tag,
+      shearing_sheet_ix1_tag,
+      shearing_sheet_ox1_tag,
+      remapEy_tag,
+      fargo_tag,
+      ch_rundir0_tag,
+      ch_rundir1_tag
+};
+#endif /* MPI_PARALLEL */
+
+#ifdef SHEARING_BOX
+/* integer constants to denote direction of 2D slice in shearing box */
+enum SS2DCoord {xy, xz};
+#endif
+
+#endif /* DEFINITIONS_H */

@@ -1,0 +1,61 @@
+<comment>
+
+problem = planar gravitational flow
+author  = T.A. Gardiner
+journal = unpublished
+config  = --with-gas=hydro --with-problem=pgflow
+
+<job>
+
+problem_id      = PGflow    # problem ID: basename of output filenames
+maxout          = 3         # Output blocks number from 1 -> maxout
+
+<output1>
+out_fmt = tab               # Tabular data dump
+dat_fmt = %12.5e            # Optional data format string
+dt      = 0.1               # time increment between outputs
+
+<output2>
+out_fmt = bin               # Binary data dump
+dt      = 0.1               # time increment between outputs
+
+<output3>
+out_fmt = tab               # Tabular data dump
+dat_fmt = %12.5e            # Optional data format string
+dt      = 0.1               # time increment between outputs
+usr_expr_flag = 1           # output a user-defined expression
+out     = drho
+id      = drho
+
+<time>
+
+cour_no         = 0.8       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 100000    # cycle limit
+tlim            = 10.0      # time limit
+
+<grid>
+
+Nx1             = 100        # Number of zones in X-direction
+x1min           = 0.0        # minimum value of X
+x1max           = 1.0        # maximum value of X
+ibc_x1          = 4          # inner-I (X) boundary flag
+obc_x1          = 4          # outer-I (X) boundary flag
+
+Nx2             = 1          # Number of zones in Y-direction
+x2min           = 0.0        # minimum value of Y
+x2max           = 0.0        # maximum value of Y
+
+Nx3             = 1          # Number of zones in X3-direction
+x3min           = 0.0        # minimum value of X3
+x3max           = 0.0        # maximum value of X3
+
+<problem>
+
+iso_csound      = 1.0                # Isothermal sound speed squared
+gamma           = 1.6666666666666667 # gamma = C_p/C_v
+den             = 1.0                # Density at the left x1-boundary
+pres            = 1.0                # Gas Pressure
+v_par           = 0.1                # velocity in dir. parallel to the force
+grav            = 8.0                # Amplitude of the gravitational force
+root            = 0                  # (0, 1) -> (super, sub)-sonic root
+angle           = 0.0                # Angle of flow with respect to the x1-dir.

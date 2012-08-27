@@ -1,0 +1,104 @@
+<comment>
+
+problem = linear wave convergence
+author  =
+journal =
+config  = --with-problem=par_linearwave2d --with-gas=hydro --with-eos=isothermal --with-nscalars=1 --with-particles=passive
+run     = /usr/peyton/openmpi/bin/mpirun -np 4 athena -i ../tst/particle/athinput.par_linearwave2d
+
+<job>
+
+problem_id      = ParLinWave2d    # problem ID: basename of output filenames
+maxout          = 0          # Output blocks number from 1 -> maxout
+
+<output1>
+out_fmt = hst                # History data dump
+dt      = 0.01               # time increment between outputs
+
+<output2>
+out_fmt = ppm                # ppm images of density
+dt      = 0.01
+dmin    = 0.999999
+dmax    = 1.000001
+out     = d
+id      = d
+palette = jh_colors
+ix3     = 1
+
+<output3>
+out_fmt = ppm                # ppm images of density
+dt      = 0.01
+dmin    = 0.999999
+dmax    = 1.000001
+out     = dpar
+id      = dpar
+palette = jh_colors
+ix3     = 1
+
+<output4>
+out_fmt = ppm                # ppm images of density
+dt      = 0.01
+dmin    = 0.999999
+dmax    = 1.000001
+out     = scalar
+id      = scalar
+usr_expr_flag=1
+palette = jh_colors
+ix3     = 1
+
+<output5>
+out_fmt = lis               # particle list data dump (ONLY for particles)
+dt      = 0.01              # time step between output
+id      = one
+
+<time>
+
+cour_no         = 0.8       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 100000    # cycle limit
+tlim            = 1.061       # time limit
+
+<grid>
+
+Nx1             = 32        # Number of zones in X-direction
+x1min           = 0.0       # minimum value of X
+x1max           = 1.0       # maximum value of X
+ibc_x1          = 4         # inner-I (X) boundary flag
+obc_x1          = 4         # outer-I (X) boundary flag
+
+Nx2             = 32        # Number of zones in X2-direction
+x2min           = 0.0       # minimum value of X2
+x2max           = 1.0       # maximum value of X2
+ibc_x2          = 4         # inner-J (Y) boundary flag
+obc_x2          = 4         # outer-J (Y) boundary flag
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = 0.0       # minimum value of X3
+x3max           = 0.0       # maximum value of X3
+
+<parallel>
+NGrid_x1 = 2
+NGrid_x2 = 2
+NGrid_x3 = 1
+
+<particle>
+
+partypes        = 1         # number of types of particles
+parnumcell      = 1         # number of particles for each type
+
+integrator      = 2         # particle integrator (1: explicit; 2: semi-implicit; 3: fully-implicit)
+interp          = 2         # interpolation scheme (1: CIC; 2: TSC; 3: quadratic polynomial)
+tsmode          = 3         # stopping time calculation mode (1: General; 2: Epstein; 3: fixed);
+
+nshuf           = 2000      # number of time steps to shuffle the particles
+
+<problem>
+
+iso_csound      = 1.0
+
+amp             = 1.0e-4    # Wave Amplitude
+vflow           = 0.0       # Average flow velocity
+nwave1          = 1         # number of waves across Lx
+nwave2          = 1         # number of waves across Ly
+
+tstop           = 0.0       # stopping time
+sample          = 1         # particle sampling method (1: wave; 2: uniform)

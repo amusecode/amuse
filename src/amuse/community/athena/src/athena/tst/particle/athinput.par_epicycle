@@ -1,0 +1,72 @@
+<comment>
+
+problem = particle code test: epicyclic motion
+author  = Xuening Bai
+journal =
+config  = --with-particles=passive --with-gas=hydro --with-eos=isothermal --with-problem=par_epicycle --enable-shearing-box
+make    = make all MACHINE=peyton-mpi
+run     = /usr/peyton/openmpi/bin/mpirun -np 4 athena -i ../tst/particle/athinput.par_epicycle
+
+<job>
+
+problem_id      = ParEpi  # problem ID: basename of output filenames
+maxout          = 0         # Output blocks number from 1 -> maxout
+
+<output1>
+out_fmt = lis               # particle list data dump (ONLY for particles)
+dt      = 0.01              # time step between output
+id      = one
+par_prop = downsamp         # user defined particle selection function
+
+<output2>
+out_fmt = hst               # History data dump
+dt      = 0.05              # time increment between outputs
+
+<time>
+
+cour_no         = 0.4       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 200000    # cycle limit
+tlim            = 80.0       # time limit
+
+<grid>
+
+Nx1             = 8         # Number of zones in X-direction
+x1min           = -2.0      # minimum value of X
+x1max           = 2.0       # maximum value of X
+ibc_x1          = 4         # inner-I (X) boundary flag (periodic)
+obc_x1          = 4         # outer-I (X) boundary flag (periodic)
+
+Nx2             = 8         # Number of zones in X2-direction
+x2min           = -2.0      # minimum value of X2
+x2max           = 2.0       # maximum value of X2
+ibc_x2          = 4         # inner-J (Y) boundary flag (periodic)
+obc_x2          = 4         # outer-J (Y) boundary flag (periodic)
+
+Nx3             = 8         # Number of zones in X3-direction
+x3min           =-2.0       # minimum value of X3
+x3max           = 2.0       # maximum value of X3
+ibc_x3          = 4         # inner-K (Z) boundary flag (outflow)
+obc_x3          = 4         # outer-K (Z) boundary flag (outflow)
+
+<parallel>
+NGrid_x1 = 2
+NGrid_x2 = 2
+NGrid_x3 = 1
+
+<particle>
+
+partypes        = 1         # number of types of particles
+parnumgrid      = 1         # number of particles for each type
+
+integrator      = 2         # particle integrator (1: explicit; 2: semi-implicit; 3: fully-implicit)
+interp          = 2         # interpolation scheme (1: CIC; 2: TSC; 3: QP)
+tsmode          = 3         # stopping time calculation mode (1: General; 2: Epstein; 3: fixed);
+
+nshuf           = -1        # number of time steps to shuffle the particles
+
+<problem>
+
+omega           = 1.0       # angular velocity of rotation
+iso_csound      = 1.0       # sound speed
+tstop           = 1.0e20    # stopping time
+amp             = 0.4       # oscillation amplitude in x1 direction

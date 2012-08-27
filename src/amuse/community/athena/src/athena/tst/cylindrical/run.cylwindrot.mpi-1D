@@ -1,0 +1,35 @@
+#! /bin/csh
+# Script for running 1D rotating cylindrical wind tests.
+#
+# It creates a temporary run directory cylwindrot/1D
+#
+# If logfile=1, it redirects all output to a log file
+#
+# It expects to find the executable in bindir
+#
+# It expects to find the input file in inputdir
+#
+# It redirects all output to outputdir
+
+set bindir=/a1/home/askinner/minerva/bin
+set inputdir=/a1/home/askinner/minerva/tst/1D-hydro
+set outputdir=/net/locutus/askinner/cylwindrot/1D
+set logfile=0
+set np=24
+
+if (! -d $outputdir) then 
+  mkdir $outputdir
+endif
+
+cd $bindir
+
+recon hostfile
+wipe -v hostfile
+lamboot -v hostfile
+foreach nx1 (128 256 512 1024 2048)
+    mpirun -np $np athena -i $inputdir/athinput.cylwindrot log/file_open=$logfile grid/Nx1=$nx1 job/problem_id=CylWindRot_$nx1 -d $outputdir
+    echo 'Finished '{$nx1}'' problem
+end
+wipe -v hostfile
+lamhalt
+

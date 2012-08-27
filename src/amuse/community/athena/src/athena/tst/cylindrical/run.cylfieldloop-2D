@@ -1,0 +1,33 @@
+#! /bin/csh
+# Script for running 2D cylindrical MHD field loop tests.
+# Run script in this directory (tst/2D-mhd)
+#
+# It creates a temporary run directory=cylfieldloop
+#
+# It redirects all output to a log file
+#
+# It expects to find the executable in bin (../../../bin/ from cylfieldloop/)
+#
+# It expects to find the input file in (../ from cylfieldloop/)
+
+set basedir=~/svnathena
+set bindir=$basedir/bin
+set inputdir=$basedir/tst/cylindrical
+set outputdir=$inputdir/cylfieldloop
+set logfile=0
+set np=4
+
+if (! -d $outputdir) then 
+  mkdir $outputdir
+endif
+cd $outputdir
+
+cp $inputdir/hostfile.$np ./hostfile
+
+recon hostfile
+wipe -v hostfile
+lamboot -v hostfile
+mpirun -np $np $bindir/athena -i $inputdir/athinput.cylfieldloop-2D log/file_open=$logfile -d $outputdir
+wipe -v hostfile
+lamhalt
+

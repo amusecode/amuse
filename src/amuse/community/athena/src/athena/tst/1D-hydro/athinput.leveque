@@ -1,0 +1,90 @@
+<comment>
+problem = LeVeque's Sod shocktube in a moving frame, Vx=0.9 everywhere
+author  = R. J. LeVeque
+journal = "Computational Methods for Astrophysical Fluid Flow", p63ff
+config  = --with-gas=hydro --with-problem=shkset1d --with-flux=roe
+
+<job>
+problem_id      = LeVeque   # problem ID: basename of output filenames
+maxout          = 2         # Output blocks number from 1 -> maxout
+num_domains     = 1         # number of Domains in Mesh
+
+<output1>
+out_fmt = tab               # Tabular data dump
+out     = prim              # variables to be output
+dat_fmt = %12.5e            # Optional data format string
+dt      = 0.01              # time increment between outputs
+
+<output2>
+out_fmt = hst               # History data dump
+dt      = 0.01              # time increment between outputs
+
+<time>
+cour_no         = 0.8       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000     # cycle limit
+tlim            = 0.15      # time limit
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 128       # Number of zones in X1-direction
+x1min           = -0.5      # minimum value of X1
+x1max           = 0.5       # maximum value of X1
+bc_ix1          = 2         # boundary condition flag for inner-I (X1)
+bc_ox1          = 2         # boundary condition flag for outer-I (X1)
+
+Nx2             = 1         # Number of zones in X2-direction
+x2min           = 0.0       # minimum value of X2
+x2max           = 1.0       # maximum value of X2
+bc_ix2          = 4         # boundary condition flag for inner-J (X2)
+bc_ox2          = 4         # boundary condition flag for outer-J (X2)
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = 0.0       # minimum value of X3
+x3max           = 1.0       # maximum value of X3
+bc_ix3          = 4         # boundary condition flag for inner-K (X3)
+bc_ox3          = 4         # boundary condition flag for outer-K (X3)
+
+<domain2>
+level           = 1         # refinement level this Domain (root=0)
+Nx1             = 128       # Number of zones in X1-direction
+Nx2             = 1         # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 64        # i-displacement measured in cells of this level
+jDisp           = 0         # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+<domain3>
+level           = 2         # refinement level this Domain (root=0)
+Nx1             = 128       # Number of zones in X1-direction
+Nx2             = 1         # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 192         # i-displacement measured in cells of this level
+jDisp           = 0         # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+<domain4>
+level           = 3         # refinement level this Domain (root=0)
+Nx1             = 128       # Number of zones in X1-direction
+Nx2             = 1         # Number of zones in X2-direction
+Nx3             = 1         # Number of zones in X3-direction
+iDisp           = 448       # i-displacement measured in cells of this level
+jDisp           = 0         # j-displacement measured in cells of this level
+kDisp           = 0         # k-displacement measured in cells of this level
+
+
+<problem>
+gamma   = 1.4             # gamma = C_p/C_v
+shk_dir = 1               # Shock Direction -- (1,2,3) = (x1,x2,x3)
+
+dl  = 3.0                 # density on left half of grid
+pl  = 3.0                 # pressure
+v1l = 0.9                 # X-velocity
+v2l = 0.0                 # Y-velocity
+v3l = 0.0                 # Z-velocity
+
+dr  = 1.0                 # density on right half of grid
+pr  = 1.0                 # pressure
+v1r = 0.9                 # X-velocity
+v2r = 0.0                 # Y-velocity
+v3r = 0.0                 # Z-velocity
+

@@ -1,0 +1,28 @@
+#! /bin/csh -f
+# Script for running test job to make sure code configures and compiles
+# correctly.  Runs linear wave convergence and prints L1 error.
+#
+# Requires following steps (in athena root directory):
+#  > configure
+#  > make all
+#  > make test
+#
+
+set cmpfile=LinWave-errors.0.dat
+set rundir=tmpdir.test
+
+if (-d $rundir) rm -rf $rundir
+mkdir $rundir
+cd $rundir
+
+../../../bin/athena -i ../athinput.linear_wave1d problem/wave_flag=0 time/tlim=0.5 domain1/Nx1=512 job/maxout=0 problem/amp=1.0e-6 >& athena.log
+
+grep zone-cycles athena.log
+
+#  Density is in column 3
+echo -n "L1 norm for density: "
+grep -v ^\#         $cmpfile | awk '{print $4}' 
+
+# clean up
+cd ..
+rm -rf $rundir

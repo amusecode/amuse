@@ -1,0 +1,54 @@
+<comment>
+
+<job>
+problem_id   = Hdrift         # problem ID: basename of output filenames
+maxout       = 3            # Output blocks number from 1 -> maxout
+num_domains  = 1            # number of Domains in Mesh
+
+<time>
+cour_no         = 0.4       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000000  # cycle limit
+tlim            = 5.0       # time limit
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 1.0e-2            # time increment between outputs
+
+<output2>
+out_fmt = vtk               # Binary data dump
+dt      = 0.025             # time increment between outputs
+
+<output3>
+out_fmt = rst
+dt      = 1.0
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 256       # Number of zones in X1-direction
+x1min           = -0.5      # minimum value of X1
+x1max           = 0.5       # maximum value of X1
+bc_ix1          = 4         # boundary condition flag for inner-I (X1)
+bc_ox1          = 4         # boundary condition flag for outer-I (X1)
+NGrid_x1        = 2
+
+Nx2             = 256       # Number of zones in X2-direction
+x2min           = -0.5      # minimum value of X2
+x2max           = 0.5       # maximum value of X2
+bc_ix2          = 4         # boundary condition flag for inner-J (X2)
+bc_ox2          = 4         # boundary condition flag for outer-J (X2)
+NGrid_x2        = 2
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = -0.5e-4   # minimum value of X3
+x3max           = 0.5e-4    # maximum value of X3
+bc_ix3          = 4         # boundary condition flag for inner-K (X3)
+bc_ox3          = 4         # boundary condition flag for outer-K (X3)
+
+<problem>
+gamma           = 1.6666666666666667  # gamma = C_p/C_v
+iso_csound      = 1.0 
+B0              = 1         # magnetic field strength
+dB              = 0.1       # magnetic fluctuation (better to be mediate)
+drho            = 0.1       # density fluctuation (better to be small)
+Q_H             = 1.0
+

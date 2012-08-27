@@ -1,0 +1,76 @@
+<comment>
+
+problem = particle code test: circular flow
+author  = Xuening Bai
+journal =
+config  = --enable-mpi --with-gas=hydro --with-particles=passive --with-eos=isothermal --with-problem=par_circ
+run     = /usr/peyton/openmpi/bin/mpirun -np 4 athena -i ../tst/particle/athinput.par_circ
+
+<job>
+
+problem_id      = ParCirc   # problem ID: basename of output filenames
+maxout          = 0         # Output blocks number from 1 -> maxout
+
+<output1>
+out_fmt = lis               # particle list data dump (ONLY for particles)
+dt      = 0.01              # time step between output
+id      = one
+
+<output2>
+out_fmt = hst               # History data dump
+dt      = 0.5               # time increment between outputs
+
+<time>
+
+cour_no         = 0.4       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000    # cycle limit
+tlim            = 80.0       # time limit
+
+<grid>
+
+Nx1             = 8         # Number of zones in X-direction
+x1min           = 0.0       # minimum value of X
+x1max           = 4.0       # maximum value of X
+ibc_x1          = 4         # inner-I (X) boundary flag (relection)
+obc_x1          = 4         # outer-I (X) boundary flag (relection)
+
+Nx2             = 8         # Number of zones in X2-direction
+x2min           = 0.0       # minimum value of X2
+x2max           = 4.0       # maximum value of X2
+ibc_x2          = 4         # inner-J (Y) boundary flag (outflow)
+obc_x2          = 4         # outer-J (Y) boundary flag (outflow)
+
+Nx3             = 8         # Number of zones in X3-direction
+x3min           = 0.0       # minimum value of X3
+x3max           = 4.0       # maximum value of X3
+ibc_x3          = 1         # inner-K (Z) boundary flag (outflow)
+obc_x3          = 1         # outer-K (Z) boundary flag (outflow)
+
+<parallel>
+NGrid_x1 = 1
+NGrid_x2 = 1
+NGrid_x3 = 1
+
+<particle>
+
+partypes        = 1         # number of types of particles
+parnumgrid      = 1         # number of particles for each type
+
+integrator      = 3         # particle integrator (1: explicit; 2: semi-implicit; 3: fully-implicit)
+interp          = 2         # interpolation scheme (1: CIC; 2: TSC; 3: QP)
+tsmode          = 3         # stopping time calculation mode (1: General; 2: Epstein; 3: fixed);
+
+nshuf           = -1        # number of time steps to shuffle the particles
+
+
+<problem>
+
+iso_csound      = 1.0       # sound speed
+tstop           = 0.0       # stopping time
+omega           = 1.0       # angular velocity of rotation
+theta           = 0.0       # polar angle of omega
+phi             = 0.0       # azimuthal angle of omega
+rad             = 1.0       # radius of particle circulation
+vran            = 1.0       # particle initial random velocity
+seed            = 1         # seed for random number generator
+

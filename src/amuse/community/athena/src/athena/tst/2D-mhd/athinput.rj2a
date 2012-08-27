@@ -1,0 +1,73 @@
+<comment>
+problem = Riemann problem from Figure 2a of Ryu & Jones (1995) in 2D
+author  = D. Ryu & T.W. Jones
+journal = ApJ 442, 228-258 (1995)
+config  = --with-problem=shkset2d
+
+<job>
+problem_id      = RJ2a      # problem ID: basename of output filenames
+maxout          = 3         # Output blocks number from 1 -> maxout
+num_domains     = 1         # number of Domains in Mesh
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 0.002             # time increment between outputs
+
+<output2>
+out_fmt = bin               # Binary data dump
+dt      = 0.002             # time increment between outputs
+
+<output3>
+out_fmt = ppm                # PPM image
+dt      = 0.002              # time increment between outputs
+out     = d
+id      = d
+dmin    = 1.0
+dmax    = 1.7
+palette = idl1
+
+<time>
+cour_no         = 0.8          # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 1000         # cycle limit
+tlim            = 0.0894427    # time limit
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 128       # Number of zones in X1-direction
+x1min           = 0.0      # minimum value of X1
+x1max           = 1.0       # maximum value of X1
+bc_ix1          = 2         # boundary condition flag for inner-I (X1)
+bc_ox1          = 2         # boundary condition flag for outer-I (X1)
+
+Nx2             = 64        # Number of zones in X2-direction
+x2min           = 0.0      # minimum value of X2
+x2max           = 0.5       # maximum value of X2
+bc_ix2          = 2         # boundary condition flag for inner-J (X2)
+bc_ox2          = 2         # boundary condition flag for outer-J (X2)
+
+Nx3             = 1         # Number of zones in X3-direction
+x3min           = -0.5      # minimum value of X3
+x3max           = 0.5       # maximum value of X3
+bc_ix3          = 1         # boundary condition flag for inner-K (X3)
+bc_ox3          = 1         # boundary condition flag for outer-K (X3)
+
+<problem>
+gamma = 1.6666666666666667     # gamma = C_p/C_v
+
+dl              = 1.08         # density on left half of grid
+pl              = 0.95         # pressure
+v1l             = 1.2          # X-velocity
+v2l             = 0.01         # Y-velocity
+v3l             = 0.5          # Z-velocity
+b1l             = 0.5641895835477562  # X-magnetic field
+b2l             = 1.0155412503859613  # Y-magnetic field
+b3l             = 0.5641895835477562  # Z-magnetic field
+
+dr              = 1.0          # density on right half of grid
+pr              = 1.0          # pressure
+v1r             = 0.0          # X-velocity
+v2r             = 0.0          # Y-velocity
+v3r             = 0.0          # Z-velocity
+b1r             = 0.5641895835477562  # X-magnetic field
+b2r             = 1.1283791670955125  # Y-magnetic field
+b3r             = 0.5641895835477562  # Z-magnetic field

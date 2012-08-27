@@ -1,0 +1,27 @@
+#! /bin/csh
+# Script for running 3D cyldrical MHD blast tests.
+#
+# It creates a temporary run directory cylblast/3D
+#
+# If logfile=1, it redirects all output to a log file
+#
+# It expects to find the executable in bindir
+#
+# It expects to find the input file in inputdir
+#
+# It redirects all output to outputdir
+
+set bindir=/a1/home/askinner/minerva/bin
+set inputdir=/a1/home/askinner/minerva/tst/3D-mhd
+set outputdir=/net/locutus/askinner/cylblast/3D
+set logfile=0
+
+if (! -d $outputdir) then 
+  mkdir $outputdir
+endif
+
+cd $bindir
+
+athena -i $inputdir/athinput.cylblast_B1  log/file_open=$logfile -d $outputdir
+athena -i $inputdir/athinput.cylblast_B10 log/file_open=$logfile -d $outputdir
+

@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+#  Example of a PBS script to run Athena on a cluster with MPI
+#
+#PBS -q @hydra
+#PBS -m abe
+#PBS -l walltime=24:00:00
+#PBS -l nodes=4:ppn=2:twog
+#PBS -l pmem=1000mb
+#
+# Some very useful information on bash scripts (as of 1/14/2004)
+# can be found at:  http://tille.soti.org/training/bash/index.html
+
+cd /chimera/jstone/athena/bin/tmpdir
+
+infile="/chimera/jstone/athena/tst/3D-mhd/athinput.field_loop"
+exefile="/chimera/jstone/athena/bin/tmpdir/athena"
+
+# Run the simulation
+/usr/local/bin/mpiexec $exefile -i $infile > Report0 2> Error0
+

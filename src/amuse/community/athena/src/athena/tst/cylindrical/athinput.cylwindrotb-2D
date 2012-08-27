@@ -1,0 +1,55 @@
+<comment>
+problem = 2D Axisymmetric Magnetized Rotating Wind (CYLINDRICAL)
+author  = A. Skinner
+journal = A&A, 152, 121 (1985), T. Sakurai
+config  = --with-problem=cylwindrotb --with-coord=cylindrical --with-gas=mhd (--with-flux=hlld --enable-hllallwave)
+
+<log>
+file_open       = 0                 # write to .out file?  otherwise, writes to stdout
+out_level       = 5                 # sets output level (default=0)
+
+<job>
+num_domains     = 1                 # number of Domains in Mesh
+problem_id      = CylWindRotB       # problem ID: basename of output filenames
+maxout          = 2                 # Output blocks number from 1 -> maxout
+
+<output1>
+out_fmt         = bin               # Binary data dump
+dt              = 1.0               # time increment between outputs
+
+<output2>
+out_fmt         = hst               # History data dump
+dt              = 0.5               # time increment between outputs
+
+<time>
+cour_no         = 0.8               # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 3 #100000            # cycle limit
+tlim            = 5.0               # time limit
+
+<domain1>
+level           = 0                 # refinement level this Domain (root=0)
+Nx1             = 128               # Number of zones in R-direction
+x1min           = 0.4               # minimum value of R
+x1max           = 1.8               # maximum value of R
+bc_ix1          = 3                 # inner (R) boundary flag
+bc_ox1          = 3                 # outer (R) boundary flag
+
+Nx2             = 2                 # Number of zones in PHI-direction
+x2min           = -0.005            # minimum value of PHI
+x2max           = 0.005             # maximum value of PHI
+bc_ix2          = 4                 # inner (PHI) boundary flag
+bc_ox2          = 4                 # outer (PHI) boundary flag
+
+Nx3             = 1                 # Number of zones in Z-direction
+x3min           = 0.0               # minimum value of Z
+x3max           = 0.0               # maximum value of Z
+
+NGrid_x1        = 16
+NGrid_x2        = 1
+NGrid_x3        = 1
+
+<problem>
+gamma           = 1.2               # gamma = C_p/C_v
+omega           = 0.3               # Sakurai's parameter
+theta           = 1.5               # Sakurai's parameter
+vz              = 0.0               # vertical velocity

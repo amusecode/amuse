@@ -1,0 +1,218 @@
+# supermongo (sm) macros to plot Athena 1D .tab files with nested Grids 
+
+# MACRO "read_tab_cons filename". Reads nested grid data for CONSERVED vars
+#  e.g. d_ld_j_k = density at level "l" in domain "d" along x1 at k="k",j="j"
+read_tab_cons	1	data $1
+  define nLevels 1
+  read ROW nLevels 3
+
+  set DIMEN(DomainsPerLevel) = $nLevels.i
+  read ROW DomainsPerLevel 5
+
+  define nGrids 7
+  read ROW nGrids 7
+
+  set DIMEN(n) = 1.i
+  set DIMEN(CurrentLine) = 1.i
+  set DIMEN(LastLine) = 1.i
+  set DIMEN(column) = 1.i
+  set LastLine = {7}
+
+  while {n < nGrids} {
+    set CurrentLine = LastLine + 3
+    lines "$!(CurrentLine)" "$!(CurrentLine)"
+    read {nl 1 nd 2 Nx1 3 Nx2 4 Nx3 5 nvar 6 nscal 7 ngrav 8}
+    set LastLine = CurrentLine + 1
+    set k = {1}
+    while {k <= Nx3} {
+      set j = {1}
+      while {j <= Nx2} {
+        set CurrentLine = LastLine + 1
+        set LastLine = CurrentLine + (Nx1-1)
+        lines "$!(CurrentLine)" "$!(LastLine)"
+        read i_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" 1
+
+        set column = {2}
+        if (Nx2 > 1) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read j_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        if (Nx3 > 1) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read k_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+
+        read x1_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+        if (Nx2 > 1) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read x2_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        if (Nx3 > 1) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read x3_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+
+        read  d_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+        read m1_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+        read m2_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+        read m3_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+
+        if (((nvar-nscal) == 5) || ((nvar-nscal) == 8)) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read e_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        if (((nvar-nscal) == 7) || ((nvar-nscal) == 8)) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read b1_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read b2_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read b3_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        if (nscal > 0) {
+          for i=1,nscal {
+            lines "$!(CurrentLine)" "$!(LastLine)"
+            read s_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+            set column = column + 1
+          }
+        }
+        if (ngrav > 0) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read phi_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        set j = j + 1
+      }
+      set k = k + 1
+    }
+    set n = n + 1
+  }
+
+# MACRO "read_tab_prim filename". Reads nested grid data for PRIMITIVE vars
+#  e.g. d_ld_j_k = density at level "l" in domain "d" along x1 at k="k",j="j"
+read_tab_prim	1	data $1
+  define nLevels 1
+  read ROW nLevels 3
+
+  set DIMEN(DomainsPerLevel) = $nLevels.i
+  read ROW DomainsPerLevel 5
+
+  define nGrids 7
+  read ROW nGrids 7
+
+  set DIMEN(n) = 1.i
+  set DIMEN(CurrentLine) = 1.i
+  set DIMEN(LastLine) = 1.i
+  set DIMEN(column) = 1.i
+  set LastLine = {7}
+
+  while {n < nGrids} {
+    set CurrentLine = LastLine + 3
+    lines "$!(CurrentLine)" "$!(CurrentLine)"
+    read {nl 1 nd 2 Nx1 3 Nx2 4 Nx3 5 nvar 6 nscal 7 ngrav 8}
+    set LastLine = CurrentLine + 1
+    set k = {1}
+    while {k <= Nx3} {
+      set j = {1}
+      while {j <= Nx2} {
+        set CurrentLine = LastLine + 1
+        set LastLine = CurrentLine + (Nx1-1)
+        lines "$!(CurrentLine)" "$!(LastLine)"
+        read i_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" 1
+
+        set column = {2}
+        if (Nx2 > 1) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read j_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        if (Nx3 > 1) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read k_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+
+        read x1_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+        if (Nx2 > 1) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read x2_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        if (Nx3 > 1) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read x3_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+
+        read  d_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+        read v1_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+        read v2_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+        read v3_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+        set column = column + 1
+
+        if (((nvar-nscal) == 5) || ((nvar-nscal) == 8)) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read p_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        if (((nvar-nscal) == 7) || ((nvar-nscal) == 8)) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read b1_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read b2_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read b3_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        if (nscal > 0) {
+          for i=1,nscal {
+            lines "$!(CurrentLine)" "$!(LastLine)"
+            read r_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+            set column = column + 1
+          }
+        }
+        if (ngrav > 0) {
+          lines "$!(CurrentLine)" "$!(LastLine)"
+          read phi_"$!(nl)$!(nd)"_"$!(j)"_"$!(k)" "$!(column)"
+          set column = column + 1
+        }
+        set j = j + 1
+      }
+      set k = k + 1
+    }
+    set n = n + 1
+  }
+
+# MACRO "plot xvar yvar style": plots xvar vs. yvar as line/points for style=0/1
+plot	3	erase
+		limits $1 $2
+		box
+		if ($3 == 0) {connect $1 $2}
+		if ($3 == 1) {points $1 $2}
+ 
+# MACRO "oplot xvar yvar style": over plots xvar vs. yvar
+oplot	3	if ($3 == 0) {connect $1 $2}
+		if ($3 == 1) {points $1 $2}

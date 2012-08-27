@@ -1,0 +1,57 @@
+#    @WARNING1@
+#    @WARNING2@
+#===============================================================================
+# FILE: Makefile.in
+#
+# PURPOSE: Template for gravity/Makefile.  When 'configure' is run, a new
+# Makefile will be created (overwriting the last) from this template.
+#
+#-------------------  object files  --------------------------------------------
+CORE_OBJ = bvals_grav.o \
+	   selfg.o \
+	   selfg_fft.o \
+	   selfg_fft_obc.o \
+	   selfg_multigrid.o
+
+
+OBJ = $(CORE_OBJ)
+
+#-------------------  macro definitions  ---------------------------------------
+
+SRC = $(OBJ:.o=.c)
+
+include ../../Makeoptions
+
+BLOCKINC =
+BLOCKLIB =
+
+#--------------------  implicit rules  -----------------------------------------
+
+.c.o:
+	${CC} ${CFLAGS} -c $<
+
+#---------------------  targets  -----------------------------------------------
+
+all:	compile
+
+.PHONY: compile
+compile: ${OBJ}
+#	ar rcs libplimpton.a ${OBJ}
+
+help:
+	@echo This is the /src/gravity Makefile
+	@echo Type 'make compile' to generate gravity object files
+	@echo Type 'make clean'   to remove '*.o' files
+	@echo OBJ=$(OBJ)
+
+.PHONY: clean
+clean:
+	rm -f *.o *.a Makedepend
+
+depend: Makedepend
+
+Makedepend:
+	${CC} -MM ${CFLAGS} ${SRC} > Makedepend
+
+# this forces a rebuild of all objects, if code re-configure'd
+include Makedepend
