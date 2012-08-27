@@ -1,0 +1,55 @@
+Index: athena/src/athena/src/athena.h
+===================================================================
+--- athena.orig/src/athena/src/athena.h	2010-09-23 19:18:06.000000000 +0200
++++ athena/src/athena/src/athena.h	2012-08-27 13:23:57.435481369 +0200
+@@ -72,6 +72,8 @@
+ #endif
+ }GridsDataS;
+ 
++
++
+ /*----------------------------------------------------------------------------*/
+ /*! \struct ConsS
+  *  \brief Conserved variables.
+@@ -250,6 +252,18 @@
+ }GridOvrlpS;
+ #endif /* STATIC_MESH_REFINEMENT */
+ 
++
++#ifdef AMUSE
++typedef struct BoundaryCell_s {
++    ConsS ***LeftX1;
++    ConsS ***RightX1;
++    ConsS ***LeftX2;
++    ConsS ***RightX2;
++    ConsS ***LeftX3;
++    ConsS ***RightX3;
++} BoundaryCellS;
++#endif /* AMUSE */
++
+ /*----------------------------------------------------------------------------*/
+ /*! \struct GridS
+  *  \brief 3D arrays of dependent variables, plus grid data, plus particle data,
+@@ -315,6 +329,9 @@
+   Real *r,*ri;                  /*!< cylindrical scaling factors */ 
+ #endif /* CYLINDRICAL */
+ 
++#ifdef AMUSE
++  BoundaryCellS * boundary;
++#endif
+ }GridS;
+ 
+ /*! \fn void (*VGFun_t)(GridS *pG)
+Index: athena/src/athena/Makeoptions.in
+===================================================================
+--- athena.orig/src/athena/Makeoptions.in	2012-06-28 16:09:19.000000000 +0200
++++ athena/src/athena/Makeoptions.in	2012-08-27 13:22:01.228615144 +0200
+@@ -17,7 +17,7 @@
+ 
+ CC  = @CC@
+ LDR = @CC@
+-OPT = @COMPILER_OPTS@
++OPT = -DAMUSE @COMPILER_OPTS@
+ CUSTLIBS =
+ MPIINC =
+ MPILIB =

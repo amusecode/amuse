@@ -1,7 +1,7 @@
-Index: athena/src/athena4.1/src/Makefile.in
+Index: athena/src/athena/src/Makefile.in
 ===================================================================
---- athena.orig/src/athena4.1/src/Makefile.in	2010-06-19 20:52:57.000000000 +0200
-+++ athena/src/athena4.1/src/Makefile.in	2011-02-10 10:43:04.000000000 +0100
+--- athena.orig/src/athena/src/Makefile.in	2010-06-19 20:52:57.000000000 +0200
++++ athena/src/athena/src/Makefile.in	2011-02-10 10:43:04.000000000 +0100
 @@ -106,12 +106,13 @@
  	       rsolvers/two_shock.o
  
@@ -34,10 +34,10 @@ Index: athena/src/athena4.1/src/Makefile.in
  help:
  	@echo This is the Athena Makefile
  	@echo Type 'make compile' to generate Athena executable
-Index: athena/src/athena4.1/Makeoptions.in
+Index: athena/src/athena/Makeoptions.in
 ===================================================================
---- athena.orig/src/athena4.1/Makeoptions.in	2010-04-04 18:10:21.000000000 +0200
-+++ athena/src/athena4.1/Makeoptions.in	2011-02-10 10:43:04.000000000 +0100
+--- athena.orig/src/athena/Makeoptions.in	2010-04-04 18:10:21.000000000 +0200
++++ athena/src/athena/Makeoptions.in	2011-02-10 10:43:04.000000000 +0100
 @@ -82,7 +82,9 @@
    FFTWLIB = -L/opt/local/lib -lfftw3
    FFTWINC = -I/opt/local/include

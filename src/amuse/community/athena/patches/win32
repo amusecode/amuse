@@ -1,7 +1,7 @@
-Index: athena/src/athena4.1/src/main.c
+Index: athena/src/athena/src/main.c
 ===================================================================
---- athena.orig/src/athena4.1/src/main.c	2010-09-23 23:57:59.000000000 +0200
-+++ athena/src/athena4.1/src/main.c	2012-06-28 11:10:31.318182701 +0200
+--- athena.orig/src/athena/src/main.c	2010-09-23 23:57:59.000000000 +0200
++++ athena/src/athena/src/main.c	2012-06-28 11:10:31.318182701 +0200
 @@ -38,7 +38,11 @@
  #include <unistd.h>
  #include <sys/stat.h>
@@ -116,10 +116,10 @@ Index: athena/src/athena4.1/src/main.c
    if(chdir(name))
      ath_error("[change_rundir]: Cannot change directory to \"%s\"\n",name);
  
-Index: athena/src/athena4.1/src/output.c
+Index: athena/src/athena/src/output.c
 ===================================================================
---- athena.orig/src/athena4.1/src/output.c	2010-09-23 23:57:59.000000000 +0200
-+++ athena/src/athena4.1/src/output.c	2012-06-28 11:10:31.319182707 +0200
+--- athena.orig/src/athena/src/output.c	2010-09-23 23:57:59.000000000 +0200
++++ athena/src/athena/src/output.c	2012-06-28 11:10:31.319182707 +0200
 @@ -80,9 +80,11 @@
   * VARIABLE TYPE AND STRUCTURE DEFINITIONS: none
   *============================================================================*/
@@ -132,10 +132,10 @@ Index: athena/src/athena4.1/src/output.c
  
  #include <ctype.h>
  #include <math.h>
-Index: athena/src/athena4.1/Makeoptions.in
+Index: athena/src/athena/Makeoptions.in
 ===================================================================
---- athena.orig/src/athena4.1/Makeoptions.in	2012-06-28 11:10:31.301182591 +0200
-+++ athena/src/athena4.1/Makeoptions.in	2012-06-28 16:09:19.728325607 +0200
+--- athena.orig/src/athena/Makeoptions.in	2012-06-28 11:10:31.301182591 +0200
++++ athena/src/athena/Makeoptions.in	2012-06-28 16:09:19.728325607 +0200
 @@ -25,12 +25,22 @@
  FFTWINC =
  BLOCKINC = 

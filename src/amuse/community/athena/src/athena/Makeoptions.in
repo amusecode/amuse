@@ -82,7 +82,9 @@ ifeq ($(MACHINE),macosx)
   FFTWLIB = -L/opt/local/lib -lfftw3
   FFTWINC = -I/opt/local/include
 else
-  abort Unsupported MACHINE=$(MACHINE)
+# -- For AMUSE, removed abort
+# -- removed abort as we will get all options
+# -- through the AMUSE makefile
 endif
 endif
 endif

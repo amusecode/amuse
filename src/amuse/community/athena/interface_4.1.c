@@ -32,6 +32,7 @@ static int has_external_gravitational_potential=0;
 static int mpi_comm_size_interface = 0;
 static Real last_dt_above_zero = 0.0;
 
+
 #ifdef SELF_GRAVITY
   VDFun_t SelfGrav;      /* function pointer to self-gravity, set at runtime */
 #endif
@@ -100,6 +101,28 @@ static DomainS * get_domain_structure_with_index(int index_of_grid)
     }
     return dom;
 }
+
+static void boundary_left_x1_copy(GridS *pGrid)
+{
+    int is = pGrid->is;
+    int js = pGrid->js, je = pGrid->je;
+    int ks = pGrid->ks, ke = pGrid->ke;
+    int i,j,k;
+    #ifdef MHD
+    int ju, ku; /* j-upper, k-upper */
+    #endif
+
+    for (k=ks; k<=ke; k++) {
+        for (j=js; j<=je; j++) {
+            for (i=1; i<=nghost; i++) {
+                //fprintf(stderr, "i,j,k: %d, %d, %d (%d, %d, %d)\n", k, j, is -i, k-ks, j -js, nghost - i);
+                pGrid->U[k][j][is-i] = pGrid->boundary->LeftX1[k-ks][j-js][nghost - i];
+            }
+        }
+    }
+  
+}
+
 
 /*
  * determine i,j,k for x1, x2, x3
@@ -286,7 +309,8 @@ int get_nghost(int * value) {
 }
 
 int commit_parameters(){
-
+  int nl, nd;
+  
   int out_level = par_geti_def("log","out_level",0);
   int err_level = par_geti_def("log","err_level",0);
 
@@ -318,7 +342,33 @@ int commit_parameters(){
 
   init_mesh(&mesh);
   init_grid(&mesh);
-
+  
+  
+  if( par_geti( "domain1", "bc_ix1") == 10) {
+    
+    for (nl=0; nl<(mesh.NLevels); nl++){
+        for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+            if (mesh.Domain[nl][nd].Grid != NULL){
+                fprintf(stderr, "Creating a boundary!\n");
+                mesh.Domain[nl][nd].Grid->boundary = (BoundaryCellS *) calloc(sizeof(BoundaryCellS), 1);
+                if (mesh.Domain[nl][nd].Disp[0] == 0) {                
+                    
+                    fprintf(stderr, "a boundary %p\n",mesh.Domain[nl][nd].Grid->boundary);
+                    mesh.Domain[nl][nd].Grid->boundary->LeftX1 = (ConsS***) calloc_3d_array(
+                        mesh.Domain[nl][nd].Grid->Nx[2],
+                        mesh.Domain[nl][nd].Grid->Nx[1],
+                        nghost,
+                        sizeof(ConsS)
+                    );
+                    bvals_mhd_fun(&mesh.Domain[nl][nd], left_x1,  boundary_left_x1_copy);
+                }
+            }
+        }
+    }
+  }
+  
+ 
+  
   if ((Potentials = (Real***)calloc_3d_array(
     mesh.Domain[0][0].Nx[2] + 2 + (2 * nghost),
     mesh.Domain[0][0].Nx[1] + 2 + (2 * nghost),
@@ -2035,7 +2085,6 @@ int evolve_model(double tlim) {
 #ifdef STATIC_MESH_REFINEMENT
         Prolongate(&mesh);
 #endif
-
         //AMUSE STOPPING CONDITIONS SUPPORT
         if (is_number_of_steps_detection_enabled) {
             number_of_steps_innerloop++;
@@ -2060,6 +2109,95 @@ int evolve_model(double tlim) {
     
     return 0;
 }
+
+
+ConsS *** get_boundary_with_index(GridS * grid, int index_of_boundary)
+{
+    BoundaryCellS * boundary = grid->boundary;
+    switch(index_of_boundary) {
+        case 0:
+            return boundary->LeftX1;
+        case 1:
+            return boundary->RightX1;
+        case 2:
+            return boundary->LeftX2;
+        case 3:
+            return boundary->RightX2;
+        case 4:
+            return boundary->LeftX3;
+        case 5:
+            return boundary->RightX3;
+        default:
+            fprintf(stderr, "Error, incorrect boundary index");
+            return NULL;
+    }
+}
+
+int set_boundary_state(
+    int * i,
+    int * j,
+    int * k,
+    double * rho,
+    double * rhovx, double * rhovy, double * rhovz,
+    double * en,
+    int * index_of_boundary,
+    int * index_of_grid,
+    int number_of_points)
+{
+
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    DomainS * dom = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            ConsS *** U = get_boundary_with_index(grid, index_of_boundary[l]);
+            
+            if (1 || is_on_grid(grid, i0, j0, k0)) // need to make is_on_boundary thingy
+            {
+                //ijk_on_grid(grid, &i0, &j0, &k0);
+                fprintf(stderr, "i,j,k %d, %d, %d\n", i0, j0, k0);
+                U[k0][j0][i0].d = rho[l];
+                U[k0][j0][i0].M1 = rhovx[l];
+                U[k0][j0][i0].M2 = rhovy[l];
+                U[k0][j0][i0].M3 = rhovz[l];
+                U[k0][j0][i0].E = en[l];
+            }
+
+        }
+    }
+
+    return 0;
+}
+
+
+
 
 int get_grid_magnetic_field(
     int * i, int * j, int * k,

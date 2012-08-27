@@ -249,7 +249,12 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         return 0 
         
     def set_boundary(self, xbound1, xbound2, ybound1, ybound2, zbound1, zbound2):
-        map_from_string_to_flag = {"reflective": 1, "outflow":2, "periodic":4}
+        map_from_string_to_flag = {
+            "reflective": 1, 
+            "outflow":2, 
+            "periodic":4,
+            "interface": 10,
+        }
         
         self.par_seti("domain1", "bc_ix1", "%d", map_from_string_to_flag[xbound1], "-")
         self.par_seti("domain1", "bc_ox1", "%d", map_from_string_to_flag[xbound2], "-")
@@ -531,6 +536,21 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
     
     
     
+
+    @legacy_function
+    def set_boundary_state():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('index_of_boundary', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+        
     
 class Athena(InCodeComponentImplementation):
 
@@ -572,6 +592,14 @@ class Athena(InCodeComponentImplementation):
             (object.INDEX, object.INDEX, object.INDEX,
             density, momentum, momentum, momentum, energy,
             object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'set_boundary_state',
+            (object.INDEX, object.INDEX, object.INDEX,
+            density, momentum, momentum, momentum, energy,
+            object.INDEX, object.INDEX),
             (object.ERROR_CODE,)
         )
         
@@ -975,7 +1003,6 @@ class Athena(InCodeComponentImplementation):
         self.stopping_conditions.define_parameters(object)
 
     def commit_parameters(self):
+        self.parameters.send_not_set_parameters_to_code()
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
-    
-    

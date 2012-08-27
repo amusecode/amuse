@@ -1,7 +1,7 @@
-Index: athena/src/athena4.1/src/gravity/bvals_grav.c
+Index: athena/src/athena/src/gravity/bvals_grav.c
 ===================================================================
---- athena.orig/src/athena4.1/src/gravity/bvals_grav.c	2010-09-28 07:02:42.000000000 +0200
-+++ athena/src/athena4.1/src/gravity/bvals_grav.c	2011-10-27 13:00:36.000000000 +0200
+--- athena.orig/src/athena/src/gravity/bvals_grav.c	2010-09-28 07:02:42.000000000 +0200
++++ athena/src/athena/src/gravity/bvals_grav.c	2011-10-27 13:00:36.000000000 +0200
 @@ -27,6 +27,7 @@
  #ifdef SELF_GRAVITY
  
