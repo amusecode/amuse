@@ -737,7 +737,7 @@ JAVAC
 JAVA
 JDK
 JAVA_HOME
-PYTHONDEV_LIBS
+PYTHONDEV_LDFLAGS
 PYTHONDEV_CFLAGS
 PYTHON_DEV
 EGREP
@@ -4346,7 +4346,8 @@ done
 
     PYTHON_DEV='yes'
     PYTHONDEV_CFLAGS=''
-    PYTHONDEV_LIBS=''
+    PYTHONDEV_LDFLAGS=''
+    CYTHON=''
 
 
     if test "x$PYTHONCONFIG" = "x"; then :
@@ -4441,7 +4442,7 @@ fi
     if test "x$PYTHON_DEV" = "xyes"; then :
 
         PYTHONDEV_CFLAGS=`$PYTHONCONFIG --cflags`
-        PYTHONDEV_LIBS=`$PYTHONCONFIG --libs`
+        PYTHONDEV_LDFLAGS=`$PYTHONCONFIG --ldflags`
         save_CFLAGS="$CFLAGS"
         save_CPPFLAGS="$CPPFLAGS"
         CFLAGS="$PYTHONDEV_CFLAGS $save_CFLAGS"
@@ -4453,7 +4454,7 @@ else
 
             PYTHON_DEV="no"
             PYTHONDEV_CFLAGS=''
-            PYTHONDEV_LIBS=''
+            PYTHONDEV_LDFLAGS=''
 
             { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (Python.h)" >&5
 $as_echo "$as_me: WARNING: Cannot find headers (Python.h)" >&2;}
@@ -4463,6 +4464,9 @@ fi
 
         if test "x$PYTHON_DEV" = "xyes"; then :
 
+
+            save_LDFLAGS="$LDFLAGS"
+            LDFLAGS="$PYTHONDEV_LDFLAGS $save_LDFLAGS"
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking if possible to embed python" >&5
 $as_echo_n "checking if possible to embed python... " >&6; }
             cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -4489,7 +4493,7 @@ $as_echo "yes" >&6; }
 else
   PYTHON_DEV="no"
                 PYTHONDEV_CFLAGS=''
-                PYTHONDEV_LIBS=''
+                PYTHONDEV_LDFLAGS=''
 
                 { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -4497,6 +4501,7 @@ $as_echo "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+            LDFLAGS="$save_LDFLAGS"
 
 fi
         CFLAGS="$save_CFLAGS"
@@ -4505,7 +4510,7 @@ fi
 else
 
         PYTHONDEV_CFLAGS=''
-        PYTHONDEV_LIBS=''
+        PYTHONDEV_LDFLAGS=''
 
 fi
 

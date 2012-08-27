@@ -2,8 +2,9 @@
 AC_DEFUN([AC_CHECK_PYTHON_DEV],[
     PYTHON_DEV='yes'
     PYTHONDEV_CFLAGS=''
-    PYTHONDEV_LIBS=''
-            
+    PYTHONDEV_LDFLAGS=''
+    CYTHON=''
+    
     AC_ARG_VAR([PYTHONCONFIG], [Python config script to determine python module compile flags (python-config)])
     AS_IF([test "x$PYTHONCONFIG" = "x"], [PYTHONCONFIG=python-config])
     AC_PATH_PROG([PYTHONCONFIG], [$PYTHONCONFIG], [PYTHON_DEV='no'])
@@ -12,7 +13,7 @@ AC_DEFUN([AC_CHECK_PYTHON_DEV],[
     AC_PATH_PROG([CYTHON], [$CYTHON], [PYTHON_DEV='no'])
     AS_IF([test "x$PYTHON_DEV" = "xyes"], [
         PYTHONDEV_CFLAGS=`$PYTHONCONFIG --cflags`
-        PYTHONDEV_LIBS=`$PYTHONCONFIG --libs`
+        PYTHONDEV_LDFLAGS=`$PYTHONCONFIG --ldflags`
         save_CFLAGS="$CFLAGS"
         save_CPPFLAGS="$CPPFLAGS"
         CFLAGS="$PYTHONDEV_CFLAGS $save_CFLAGS"
@@ -23,11 +24,14 @@ AC_DEFUN([AC_CHECK_PYTHON_DEV],[
             [
             PYTHON_DEV="no"
             PYTHONDEV_CFLAGS=''
-            PYTHONDEV_LIBS=''
+            PYTHONDEV_LDFLAGS=''
             
             AC_MSG_WARN([Cannot find headers (Python.h)])]
         ) 
         AS_IF([test "x$PYTHON_DEV" = "xyes"], [
+        
+            save_LDFLAGS="$LDFLAGS"
+            LDFLAGS="$PYTHONDEV_LDFLAGS $save_LDFLAGS"
             AC_MSG_CHECKING([if possible to embed python])
             AC_LINK_IFELSE(
                 [AC_LANG_PROGRAM([[#include <Python.h>]],
@@ -42,20 +46,21 @@ AC_DEFUN([AC_CHECK_PYTHON_DEV],[
                 [AC_MSG_RESULT([yes])],
                 [PYTHON_DEV="no"
                 PYTHONDEV_CFLAGS=''
-                PYTHONDEV_LIBS=''
+                PYTHONDEV_LDFLAGS=''
                 
                 AC_MSG_RESULT([no])]
             )
+            LDFLAGS="$save_LDFLAGS"
         ])
         CFLAGS="$save_CFLAGS"
         CPPFLAGS="$save_CPPFLAGS"
     ], [
         PYTHONDEV_CFLAGS=''
-        PYTHONDEV_LIBS=''
+        PYTHONDEV_LDFLAGS=''
     ])
     
     AC_SUBST(PYTHON_DEV)
     AC_SUBST(CYTHON)
     AC_SUBST(PYTHONDEV_CFLAGS)
-    AC_SUBST(PYTHONDEV_LIBS)
+    AC_SUBST(PYTHONDEV_LDFLAGS)
 ])
