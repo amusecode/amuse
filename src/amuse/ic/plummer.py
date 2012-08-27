@@ -29,7 +29,7 @@ class MakePlummerModel(object):
 
     def calculate_mass_cuttof_from_radius_cutoff(self, radius_cutoff):
         if radius_cutoff > 99999:
-            return 0.999
+            return 1.0
         scale_factor = 16.0 / (3.0 * pi)
         rfrac = radius_cutoff * scale_factor
         denominator = pow(1.0 + rfrac ** 2, 1.5)
@@ -48,7 +48,6 @@ class MakePlummerModel(object):
 
     def new_positions_spherical_coordinates(self):
         pi2 = pi * 2
-        result = numpy.zeros((self.number_of_particles, 3))
         radius = self.calculate_radius_uniform_distribution()
         theta = numpy.arccos(numpy.random.uniform(-1.0,1.0, (self.number_of_particles,1)))
         phi = numpy.random.uniform(0.0,pi2, (self.number_of_particles,1))
