@@ -9,7 +9,7 @@ PYTHON ?= python
 
 VERSION = 4.1
 
-ATHENA_DIR = src/athena$(VERSION)
+ATHENA_DIR = src/athena
 
 CC = $(MPICC)
 CFLAGS   += -DAMUSE -g  
@@ -57,29 +57,6 @@ FFTWINC = $(FFTW_FLAGS)
 
 all: athena_worker 
 
-ifdef DOWNLOAD_CODES
-$(ATHENA_DIR)/Makefile.in:
-	make -C . download
-else
-$(ATHENA_DIR)/Makefile.in:
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "DOWNLOAD_CODES is not set. Athena will not be downloaded and build."
-	@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
-	@echo "bash> export DOWNLOAD_CODES=1"
-	@echo "csh> setenv DOWNLOAD_CODES 1"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
-endif 
-
-download:
-	$(RM) -Rf .pc
-	$(DOWNLOAD_FROM_WEB) $(VERSION)
-	$(PATCH_FILES)
-
 clean:
 	$(RM) -f *.so *.o *.selfgrav_o *.pyc worker_code.cc worker_code.h 
 	$(RM) -f *~ athena_worker  athena_worker_selfgrav athena_worker_mhd
@@ -99,8 +76,6 @@ distclean: clean
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) -Rf .pc
 	$(RM) *~ athena_worker
-	$(RM) -Rf src
-	$(RM) -Rf src.*
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py AthenaInterface -o $@
