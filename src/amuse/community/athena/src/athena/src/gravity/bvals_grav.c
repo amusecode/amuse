@@ -27,6 +27,7 @@
 #ifdef SELF_GRAVITY
 
 #ifdef MPI_PARALLEL
+#include "../globals.h"
 /* MPI send and receive buffers */
 static double **send_buf = NULL, **recv_buf = NULL;
 static MPI_Request *recv_rq, *send_rq;
@@ -108,8 +109,8 @@ void bvals_grav(DomainS *pD)
   if (pGrid->Nx[0] > 1){
 
 #ifdef MPI_PARALLEL
-    cnt2 = pGrid->Nx2 > 1 ? pGrid->Nx2 + 1 : 1;
-    cnt3 = pGrid->Nx3 > 1 ? pGrid->Nx3 + 1 : 1;
+    cnt2 = pGrid->Nx[1] > 1 ? pGrid->Nx[1] + 1 : 1;
+    cnt3 = pGrid->Nx[2] > 1 ? pGrid->Nx[2]+ 1 : 1;
     cnt = nghost*cnt2*cnt3;
 
 /* MPI blocks to both left and right */
@@ -122,11 +123,11 @@ void bvals_grav(DomainS *pD)
         pD->Comm_Domain, &(recv_rq[1]));
 
       /* pack and send data L and R */
-      pack_ix1(pGrid);
+      pack_Phi_ix1(pGrid);
       ierr = MPI_Isend(send_buf[0], cnt, MPI_DOUBLE, pGrid->lx1_id, RtoL_tag,
         pD->Comm_Domain, &(send_rq[0]));
 
-      pack_ox1(pGrid);
+      pack_Phi_ox1(pGrid);
       ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx1_id, LtoR_tag,
         pD->Comm_Domain, &(send_rq[1]));
 
@@ -135,11 +136,11 @@ void bvals_grav(DomainS *pD)
 
       /* check non-blocking receives and unpack data in any order. */
       ierr = MPI_Waitany(2,recv_rq,&mIndex,MPI_STATUS_IGNORE);
-      if (mIndex == 0) unpack_ix1(pGrid);
-      if (mIndex == 1) unpack_ox1(pGrid);
+      if (mIndex == 0) unpack_Phi_ix1(pGrid);
+      if (mIndex == 1) unpack_Phi_ox1(pGrid);
       ierr = MPI_Waitany(2,recv_rq,&mIndex,MPI_STATUS_IGNORE);
-      if (mIndex == 0) unpack_ix1(pGrid);
-      if (mIndex == 1) unpack_ox1(pGrid);
+      if (mIndex == 0) unpack_Phi_ix1(pGrid);
+      if (mIndex == 1) unpack_Phi_ox1(pGrid);
 
     }
 
@@ -151,7 +152,7 @@ void bvals_grav(DomainS *pD)
         pD->Comm_Domain, &(recv_rq[1]));
 
       /* pack and send data R */
-      pack_ox1(pGrid);
+      pack_Phi_ox1(pGrid);
       ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx1_id, LtoR_tag,
         pD->Comm_Domain, &(send_rq[1]));
 
@@ -163,7 +164,7 @@ void bvals_grav(DomainS *pD)
 
       /* wait on non-blocking receive from R and unpack data */
       ierr = MPI_Wait(&(recv_rq[1]), MPI_STATUS_IGNORE);
-      unpack_ox1(pGrid);
+      unpack_Phi_ox1(pGrid);
 
     }
 
@@ -175,7 +176,7 @@ void bvals_grav(DomainS *pD)
         pD->Comm_Domain, &(recv_rq[0]));
 
       /* pack and send data L */
-      pack_ix1(pGrid);
+      pack_Phi_ix1(pGrid);
       ierr = MPI_Isend(send_buf[0], cnt, MPI_DOUBLE, pGrid->lx1_id, RtoL_tag,
         pD->Comm_Domain, &(send_rq[0]));
 
@@ -187,7 +188,7 @@ void bvals_grav(DomainS *pD)
 
       /* wait on non-blocking receive from L and unpack data */
       ierr = MPI_Wait(&(recv_rq[0]), MPI_STATUS_IGNORE);
-      unpack_ix1(pGrid);
+      unpack_Phi_ix1(pGrid);
 
     }
 #endif /* MPI_PARALLEL */
@@ -206,8 +207,8 @@ void bvals_grav(DomainS *pD)
   if (pGrid->Nx[1] > 1){
 
 #ifdef MPI_PARALLEL
-    cnt1 = pGrid->Nx1 > 1 ? pGrid->Nx1 + 2*nghost : 1;
-    cnt3 = pGrid->Nx3 > 1 ? pGrid->Nx3 + 1 : 1;
+    cnt1 = pGrid->Nx[0] > 1 ? pGrid->Nx[0] + 2*nghost : 1;
+    cnt3 = pGrid->Nx[2] > 1 ? pGrid->Nx[2] + 1 : 1;
     cnt = nghost*cnt1*cnt3;
 
 /* MPI blocks to both left and right */
@@ -220,11 +221,11 @@ void bvals_grav(DomainS *pD)
         pD->Comm_Domain, &(recv_rq[1]));
 
       /* pack and send data L and R */
-      pack_ix2(pGrid);
+      pack_Phi_ix2(pGrid);
       ierr = MPI_Isend(send_buf[0], cnt, MPI_DOUBLE, pGrid->lx2_id, RtoL_tag,
         pD->Comm_Domain, &(send_rq[0]));
 
-      pack_ox2(pGrid);
+      pack_Phi_ox2(pGrid);
       ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx2_id, LtoR_tag,
         pD->Comm_Domain, &(send_rq[1]));
 
@@ -233,11 +234,11 @@ void bvals_grav(DomainS *pD)
 
       /* check non-blocking receives and unpack data in any order. */
       ierr = MPI_Waitany(2,recv_rq,&mIndex,MPI_STATUS_IGNORE);
-      if (mIndex == 0) unpack_ix2(pGrid);
-      if (mIndex == 1) unpack_ox2(pGrid);
+      if (mIndex == 0) unpack_Phi_ix2(pGrid);
+      if (mIndex == 1) unpack_Phi_ox2(pGrid);
       ierr = MPI_Waitany(2,recv_rq,&mIndex,MPI_STATUS_IGNORE);
-      if (mIndex == 0) unpack_ix2(pGrid);
-      if (mIndex == 1) unpack_ox2(pGrid);
+      if (mIndex == 0) unpack_Phi_ix2(pGrid);
+      if (mIndex == 1) unpack_Phi_ox2(pGrid);
 
     }
 
@@ -249,7 +250,7 @@ void bvals_grav(DomainS *pD)
         pD->Comm_Domain, &(recv_rq[1]));
 
       /* pack and send data R */
-      pack_ox2(pGrid);
+      pack_Phi_ox2(pGrid);
       ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx2_id, LtoR_tag,
         pD->Comm_Domain, &(send_rq[1]));
 
@@ -261,7 +262,7 @@ void bvals_grav(DomainS *pD)
 
       /* wait on non-blocking receive from R and unpack data */
       ierr = MPI_Wait(&(recv_rq[1]), MPI_STATUS_IGNORE);
-      unpack_ox2(pGrid);
+      unpack_Phi_ox2(pGrid);
 
     }
 
@@ -273,7 +274,7 @@ void bvals_grav(DomainS *pD)
         pD->Comm_Domain, &(recv_rq[0]));
 
       /* pack and send data L */
-      pack_ix2(pGrid);
+      pack_Phi_ix2(pGrid);
       ierr = MPI_Isend(send_buf[0], cnt, MPI_DOUBLE, pGrid->lx2_id, RtoL_tag,
         pD->Comm_Domain, &(send_rq[0]));
 
@@ -285,7 +286,7 @@ void bvals_grav(DomainS *pD)
 
       /* wait on non-blocking receive from L and unpack data */
       ierr = MPI_Wait(&(recv_rq[0]), MPI_STATUS_IGNORE);
-      unpack_ix2(pGrid);
+      unpack_Phi_ix2(pGrid);
 
     }
 #endif /* MPI_PARALLEL */
@@ -302,7 +303,7 @@ void bvals_grav(DomainS *pD)
     if (my_iproc == 0) {
       ShearingSheet_grav_ix1(pGrid, pDomain);
     }
-    if (my_iproc == (pDomain->NGrid_x1-1)) {
+    if (my_iproc == (pDomain->NGrid[0]-1)) {
       ShearingSheet_grav_ox1(pGrid, pDomain);
     }
 #endif
@@ -315,8 +316,8 @@ void bvals_grav(DomainS *pD)
   if (pGrid->Nx[2] > 1){
 
 #ifdef MPI_PARALLEL
-    cnt1 = pGrid->Nx1 > 1 ? pGrid->Nx1 + 2*nghost : 1;
-    cnt2 = pGrid->Nx2 > 1 ? pGrid->Nx2 + 2*nghost : 1;
+    cnt1 = pGrid->Nx[0] > 1 ? pGrid->Nx[0] + 2*nghost : 1;
+    cnt2 = pGrid->Nx[1] > 1 ? pGrid->Nx[1] + 2*nghost : 1;
     cnt = nghost*cnt1*cnt2;
 
 /* MPI blocks to both left and right */
@@ -329,11 +330,11 @@ void bvals_grav(DomainS *pD)
         pD->Comm_Domain, &(recv_rq[1]));
 
       /* pack and send data L and R */
-      pack_ix3(pGrid);
+      pack_Phi_ix3(pGrid);
       ierr = MPI_Isend(send_buf[0], cnt, MPI_DOUBLE, pGrid->lx3_id, RtoL_tag,
         pD->Comm_Domain, &(send_rq[0]));
 
-      pack_ox3(pGrid);
+      pack_Phi_ox3(pGrid);
       ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx3_id, LtoR_tag,
         pD->Comm_Domain, &(send_rq[1]));
 
@@ -342,11 +343,11 @@ void bvals_grav(DomainS *pD)
 
       /* check non-blocking receives and unpack data in any order. */
       ierr = MPI_Waitany(2,recv_rq,&mIndex,MPI_STATUS_IGNORE);
-      if (mIndex == 0) unpack_ix3(pGrid);
-      if (mIndex == 1) unpack_ox3(pGrid);
+      if (mIndex == 0) unpack_Phi_ix3(pGrid);
+      if (mIndex == 1) unpack_Phi_ox3(pGrid);
       ierr = MPI_Waitany(2,recv_rq,&mIndex,MPI_STATUS_IGNORE);
-      if (mIndex == 0) unpack_ix3(pGrid);
-      if (mIndex == 1) unpack_ox3(pGrid);
+      if (mIndex == 0) unpack_Phi_ix3(pGrid);
+      if (mIndex == 1) unpack_Phi_ox3(pGrid);
 
     }
 
@@ -358,7 +359,7 @@ void bvals_grav(DomainS *pD)
         pD->Comm_Domain, &(recv_rq[1]));
 
       /* pack and send data R */
-      pack_ox3(pGrid);
+      pack_Phi_ox3(pGrid);
       ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx3_id, LtoR_tag,
         pD->Comm_Domain, &(send_rq[1]));
 
@@ -370,7 +371,7 @@ void bvals_grav(DomainS *pD)
 
       /* wait on non-blocking receive from R and unpack data */
       ierr = MPI_Wait(&(recv_rq[1]), MPI_STATUS_IGNORE);
-      unpack_ox3(pGrid);
+      unpack_Phi_ox3(pGrid);
 
     }
 
@@ -382,7 +383,7 @@ void bvals_grav(DomainS *pD)
         pD->Comm_Domain, &(recv_rq[0]));
 
       /* pack and send data L */
-      pack_ix3(pGrid);
+      pack_Phi_ix3(pGrid);
       ierr = MPI_Isend(send_buf[0], cnt, MPI_DOUBLE, pGrid->lx3_id, RtoL_tag,
         pD->Comm_Domain, &(send_rq[0]));
 
@@ -394,7 +395,7 @@ void bvals_grav(DomainS *pD)
 
       /* wait on non-blocking receive from L and unpack data */
       ierr = MPI_Wait(&(recv_rq[0]), MPI_STATUS_IGNORE);
-      unpack_ix3(pGrid);
+      unpack_Phi_ix3(pGrid);
     }
 #endif /* MPI_PARALLEL */
 
@@ -466,7 +467,7 @@ void bvals_grav_init(MeshS *pM)
           case 4: /* Periodic */
             ix1_GBCFun = periodic_Phi_ix1;
 #ifdef MPI_PARALLEL
-            if(pG->lx1_id < 0 && pD->NGrid_x1 > 1){
+            if(pG->lx1_id < 0 && pD->NGrid[0] > 1){
               pG->lx1_id = pD->GData[myN][myM][pD->NGrid[0]-1].ID_Comm_Domain;
 	    }
 #endif /* MPI_PARALLEL */
@@ -506,7 +507,7 @@ void bvals_grav_init(MeshS *pM)
           case 4: /* Periodic */
             ox1_GBCFun = periodic_Phi_ox1;
 #ifdef MPI_PARALLEL
-            if(pG->rx1_id < 0 && pD->NGrid_x1 > 1){
+            if(pG->rx1_id < 0 && pD->NGrid[0] > 1){
               pG->rx1_id = pD->GData[myN][myM][0].ID_Comm_Domain;
             }
 #endif /* MPI_PARALLEL */
@@ -551,7 +552,7 @@ void bvals_grav_init(MeshS *pM)
           case 4: /* Periodic */
             ix2_GBCFun = periodic_Phi_ix2;
 #ifdef MPI_PARALLEL
-            if(pG->lx2_id < 0 && pD->NGrid_x2 > 1){
+            if(pG->lx2_id < 0 && pD->NGrid[1] > 1){
               pG->lx2_id = pD->GData[myN][pD->NGrid[1]-1][myL].ID_Comm_Domain;
             }
 #endif /* MPI_PARALLEL */
@@ -591,7 +592,7 @@ void bvals_grav_init(MeshS *pM)
           case 4: /* Periodic */
             ox2_GBCFun = periodic_Phi_ox2;
 #ifdef MPI_PARALLEL
-            if(pG->rx2_id < 0 && pD->NGrid_x2 > 1){
+            if(pG->rx2_id < 0 && pD->NGrid[1] > 1){
               pG->rx2_id = pD->GData[myN][0][myL].ID_Comm_Domain;
             }
 #endif /* MPI_PARALLEL */
@@ -636,7 +637,7 @@ void bvals_grav_init(MeshS *pM)
           case 4: /* Periodic */
             ix3_GBCFun = periodic_Phi_ix3;
 #ifdef MPI_PARALLEL
-            if(pG->lx3_id < 0 && pD->NGrid_x3 > 1){
+            if(pG->lx3_id < 0 && pD->NGrid[2] > 1){
               pG->lx3_id = pD->GData[pD->NGrid[2]-1][myM][myL].ID_Comm_Domain;
             }
 #endif /* MPI_PARALLEL */
@@ -676,7 +677,7 @@ void bvals_grav_init(MeshS *pM)
           case 4: /* Periodic */
             ox3_GBCFun = periodic_Phi_ox3;
 #ifdef MPI_PARALLEL
-            if(pG->rx3_id < 0 && pD->NGrid_x3 > 1){
+            if(pG->rx3_id < 0 && pD->NGrid[2] > 1){
               pG->rx3_id = pD->GData[0][myM][myL].ID_Comm_Domain;
             }
 #endif /* MPI_PARALLEL */
@@ -1101,7 +1102,7 @@ static void ProlongateLater(GridS *pGrid)
 /*! \fn static void pack_Phi_ix1(GridS *pG)
  *  \brief PACK boundary conditions for MPI_Isend, Inner x1 boundary */
 
-static void pack_Phi_ix1(GridS *pG)
+static void pack_Phi_ix1(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -1113,7 +1114,7 @@ static void pack_Phi_ix1(GridS *pG)
   for (k=ks; k<=ke; k++){
     for (j=js; j<=je; j++){
       for (i=is; i<=is+(nghost-1); i++){
-        *(pSnd++) = pG->Phi[k][j][i];
+        *(pSnd++) = pGrid->Phi[k][j][i];
       }
     }
   }
@@ -1125,7 +1126,7 @@ static void pack_Phi_ix1(GridS *pG)
 /*! \fn static void pack_Phi_ox1(GridS *pG)
  *  \brief PACK boundary conditions for MPI_Isend, Outer x1 boundary */
 
-static void pack_Phi_ox1(GridS *pG)
+static void pack_Phi_ox1(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -1137,7 +1138,7 @@ static void pack_Phi_ox1(GridS *pG)
   for (k=ks; k<=ke; k++){
     for (j=js; j<=je; j++){
       for (i=ie-(nghost-1); i<=ie; i++){
-        *(pSnd++) = pG->Phi[k][j][i];
+        *(pSnd++) = pGrid->Phi[k][j][i];
       }
     }
   }
@@ -1149,7 +1150,7 @@ static void pack_Phi_ox1(GridS *pG)
 /*! \fn static void pack_Phi_ix2(GridS *pG)
  *  \brief PACK boundary conditions for MPI_Isend, Inner x2 boundary */
 
-static void pack_Phi_ix2(GridS *pG)
+static void pack_Phi_ix2(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -1161,7 +1162,7 @@ static void pack_Phi_ix2(GridS *pG)
   for (k=ks; k<=ke; k++){
     for (j=js; j<=js+(nghost-1); j++){
       for (i=is-nghost; i<=ie+nghost; i++){
-        *(pSnd++) = pG->Phi[k][j][i];
+        *(pSnd++) = pGrid->Phi[k][j][i];
       }
     }
   }
@@ -1173,7 +1174,7 @@ static void pack_Phi_ix2(GridS *pG)
 /*! \fn static void pack_Phi_ox2(GridS *pG)
  *  \brief PACK boundary conditions for MPI_Isend, Outer x2 boundary */
 
-static void pack_Phi_ox2(GridS *pG)
+static void pack_Phi_ox2(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -1186,7 +1187,7 @@ static void pack_Phi_ox2(GridS *pG)
   for (k=ks; k<=ke; k++){
     for (j=je-(nghost-1); j<=je; j++){
       for (i=is-nghost; i<=ie+nghost; i++){
-        *(pSnd++) = pG->Phi[k][j][i];
+        *(pSnd++) = pGrid->Phi[k][j][i];
       }
     }
   }
@@ -1198,12 +1199,13 @@ static void pack_Phi_ox2(GridS *pG)
 /*! \fn static void pack_Phi_ix3(GridS *pG)
  *  \brief PACK boundary conditions for MPI_Isend, Inner x3 boundary */
 
-static void pack_Phi_ix3(GridS *pG)
+static void pack_Phi_ix3(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
   int ks = pGrid->ks, ke = pGrid->ke;
   int i,j,k;
+  int ierr, cnt;
   double *pSnd = send_buf[0];
 
 /* Pack only Phi into send buffer */
@@ -1211,7 +1213,7 @@ static void pack_Phi_ix3(GridS *pG)
   for (k=ks; k<=ks+(nghost-1); k++){
     for (j=js-nghost; j<=je+nghost; j++){
       for (i=is-nghost; i<=ie+nghost; i++){
-        *(pSnd++) = pG->Phi[k][j][i];
+        *(pSnd++) = pGrid->Phi[k][j][i];
       }
     }
   }
@@ -1228,7 +1230,7 @@ static void pack_Phi_ix3(GridS *pG)
 /*! \fn static void pack_Phi_ox3(GridS *pG)
  *  \brief PACK boundary conditions for MPI_Isend, Outer x3 boundary */
 
-static void pack_Phi_ox3(GridS *pG)
+static void pack_Phi_ox3(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -1241,7 +1243,7 @@ static void pack_Phi_ox3(GridS *pG)
   for (k=ke-(nghost-1); k<=ke; k++){
     for (j=js-nghost; j<=je+nghost; j++){
       for (i=is-nghost; i<=ie+nghost; i++){
-        *(pSnd++) = pG->Phi[k][j][i];
+        *(pSnd++) = pGrid->Phi[k][j][i];
       }
     }
   }
@@ -1253,7 +1255,7 @@ static void pack_Phi_ox3(GridS *pG)
 /*! \fn static void unpack_Phi_ix1(GridS *pG)
  *  \brief UNPACK boundary conditions after MPI_Irecv, Inner x1 boundary */
 
-static void unpack_Phi_ix1(GridS *pG)
+static void unpack_Phi_ix1(GridS *pGrid)
 {
   int is = pGrid->is;
   int js = pGrid->js, je = pGrid->je;
@@ -1266,7 +1268,7 @@ static void unpack_Phi_ix1(GridS *pG)
   for (k=ks; k<=ke; k++){
     for (j=js; j<=js; j++){
       for (i=is-nghost; i<=is-1; i++){
-        pG->Phi[k][j][i] = *(pRcv++);
+        pGrid->Phi[k][j][i] = *(pRcv++);
       }
     }
   }
@@ -1278,7 +1280,7 @@ static void unpack_Phi_ix1(GridS *pG)
 /*! \fn static void unpack_Phi_ox1(GridS *pG)
  *  \brief UNPACK boundary conditions after MPI_Irecv, Outer x1 boundary */
 
-static void unpack_Phi_ox1(GridS *pG)
+static void unpack_Phi_ox1(GridS *pGrid)
 {
   int ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -1291,7 +1293,7 @@ static void unpack_Phi_ox1(GridS *pG)
   for (k=ks; k<=ke; k++){
     for (j=js; j<=je; j++){
       for (i=ie+1; i<=ie+nghost; i++){
-        pG->Phi[k][j][i] = *(pRcv++);
+        pGrid->Phi[k][j][i] = *(pRcv++);
       }
     }
   }
@@ -1303,7 +1305,7 @@ static void unpack_Phi_ox1(GridS *pG)
 /*! \fn static void unpack_Phi_ix2(GridS *pG)
  *  \brief UNPACK boundary conditions after MPI_Irecv, Inner x2 boundary */
 
-static void unpack_Phi_ix2(GridS *pG)
+static void unpack_Phi_ix2(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js;
@@ -1316,7 +1318,7 @@ static void unpack_Phi_ix2(GridS *pG)
   for (k=ks; k<=ke; k++){
     for (j=js-nghost; j<=js-1; j++){
       for (i=is-nghost; i<=ie+nghost; i++){
-        pG->Phi[k][j][i] = *(pRcv++);
+        pGrid->Phi[k][j][i] = *(pRcv++);
       }
     }
   }
@@ -1328,7 +1330,7 @@ static void unpack_Phi_ix2(GridS *pG)
 /*! \fn static void unpack_Phi_ox2(GridS *pG)
  *  \brief UNPACK boundary conditions after MPI_Irecv, Outer x2 boundary */
 
-static void unpack_Phi_ox2(GridS *pG)
+static void unpack_Phi_ox2(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int je = pGrid->je;
@@ -1341,7 +1343,7 @@ static void unpack_Phi_ox2(GridS *pG)
   for (k=ks; k<=ke; k++){
     for (j=je+1; j<=je+nghost; j++){
       for (i=is-nghost; i<=ie+nghost; i++){
-        pG->Phi[k][j][i] = *(pRcv++);
+        pGrid->Phi[k][j][i] = *(pRcv++);
       }
     }
   }
@@ -1353,7 +1355,7 @@ static void unpack_Phi_ox2(GridS *pG)
 /*! \fn static void unpack_Phi_ix3(GridS *pG)
  *  \brief UNPACK boundary conditions after MPI_Irecv, Inner x3 boundary */
 
-static void unpack_Phi_ix3(GridS *pG)
+static void unpack_Phi_ix3(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -1366,7 +1368,7 @@ static void unpack_Phi_ix3(GridS *pG)
   for (k=ks-nghost; k<=ks-1; k++){
     for (j=js-nghost; j<=je+nghost; j++){
       for (i=is-nghost; i<=ie+nghost; i++){
-        pG->Phi[k][j][i] = *(pRcv++);
+        pGrid->Phi[k][j][i] = *(pRcv++);
       }
     }
   }
@@ -1378,7 +1380,7 @@ static void unpack_Phi_ix3(GridS *pG)
 /*! \fn static void unpack_Phi_ox3(GridS *pG)
  *  \brief UNPACK boundary conditions after MPI_Irecv, Outer x3 boundary */
 
-static void unpack_Phi_ox3(GridS *pG)
+static void unpack_Phi_ox3(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -1391,7 +1393,7 @@ static void unpack_Phi_ox3(GridS *pG)
   for (k=ke+1; k<=ke+nghost; k++){
     for (j=js-nghost; j<=je+nghost; j++){
       for (i=is-nghost; i<=ie+nghost; i++){
-        pG->Phi[k][j][i] = *(pRcv++);
+        pGrid->Phi[k][j][i] = *(pRcv++);
       }
     }
   }
