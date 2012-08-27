@@ -80,8 +80,10 @@
  * VARIABLE TYPE AND STRUCTURE DEFINITIONS: none
  *============================================================================*/
 
+#ifndef _WIN32
 #ifndef __POWERPC__
 #define HAVE_DLFCN
+#endif
 #endif
 
 #include <ctype.h>

@@ -25,12 +25,22 @@ FFTWLIB =
 FFTWINC =
 BLOCKINC = 
 BLOCKLIB = 
-CUSTLIBS = -ldl -lm
+
+UNAME = $(shell uname)
+ifneq (,$(findstring MINGW,$(UNAME)))
+  CUSTLIBS = -lm
+else
+  CUSTLIBS = -ldl -lm
+endif
 
 ifeq (@FFT_MODE@,FFT_ENABLED)
   BLOCKINC = -I fftsrc
   FFTWLIB = -L/usr/lib -lfftw3
   FFTWINC = -I/usr/include
+ifdef FFTW_FLAGS
+  FFTWLIB = $(FFTW_LIBS)
+  FFTWINC = $(FFTW_FLAGS)
+endif
 endif
 
 ifeq (@MPI_MODE@,MPI_PARALLEL)

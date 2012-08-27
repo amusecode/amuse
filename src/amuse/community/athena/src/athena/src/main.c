@@ -38,7 +38,11 @@ static char *athena_version = "version 4.0 - 01-Jul-2010";
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+
+#ifndef _WIN32
 #include <sys/times.h>
+#endif
+
 #include <sys/types.h>
 #include "defs.h"
 #include "athena.h"
@@ -106,10 +110,13 @@ int main(int argc, char *argv[])
 
   time_t start, stop;
   int have_time = time(&start);  /* Is current calendar time (UTC) available? */
+
   int zones;
   double cpu_time, zcs;
+#ifndef _WIN32
   long clk_tck = sysconf(_SC_CLK_TCK);
   struct tms tbuf;
+#endif //_WIN32
   clock_t time0,time1, have_times;
   struct timeval tvs, tve;
   Real dt_done;
@@ -458,14 +465,24 @@ int main(int argc, char *argv[])
   ath_sig_init();        /* Install a signal handler */
   for (nl=1; nl<(Mesh.NLevels); nl++){
     sprintf(level_dir,"lev%d",nl);
+#ifndef _WIN32
     mkdir(level_dir, 0775); /* Create directories for levels > 0 */
+#else //_WIN32
+    mkdir(level_dir); /* Create directories for levels > 0 */
+#endif //_WIN32
   }
 
   gettimeofday(&tvs,NULL);
+  
+#ifndef _WIN32
   if((have_times = times(&tbuf)) > 0)
     time0 = tbuf.tms_utime + tbuf.tms_stime;
   else
     time0 = clock();
+#else //_WIN32
+  time0 = clock();
+#endif //_WIN32
+
 
 /* Force output of everything (by passing last argument of data_output = 1) */
 
@@ -628,6 +645,8 @@ int main(int argc, char *argv[])
 /* Get time used */
 
   gettimeofday(&tve,NULL);
+
+#ifndef _WIN32
   if(have_times > 0) {
     times(&tbuf);
     time1 = tbuf.tms_utime + tbuf.tms_stime;
@@ -638,6 +657,11 @@ int main(int argc, char *argv[])
     cpu_time = (time1 > time0 ? (double)(time1 - time0) : 1.0)/
       (double)CLOCKS_PER_SEC;
   }
+#else //_WIN32
+    time1 = clock();
+    cpu_time = (time1 > time0 ? (double)(time1 - time0) : 1.0)/
+      (double)CLOCKS_PER_SEC;
+#endif //_WIN32
 
 /* Calculate and print the zone-cycles/cpu-second on this processor */
 
@@ -734,9 +758,13 @@ void change_rundir(const char *name)
 
   if(name != NULL && *name != '\0'){
 
-    if(my_id == 0)
+    if(my_id == 0) {
+#ifndef _WIN32
       mkdir(name, 0775); /* May return an error, e.g. the directory exists */
-
+#else //_WIN32
+      mkdir(name); /* May return an error, e.g. the directory exists */
+#endif //_WIN32
+    }
     MPI_Barrier(MPI_COMM_WORLD); /* Wait for rank 0 to mkdir() */
 
     baton_start(MAX_FILE_OP, ch_rundir0_tag);
@@ -764,7 +792,12 @@ void change_rundir(const char *name)
 
   baton_start(MAX_FILE_OP, ch_rundir1_tag);
 
+#ifndef _WIN32
   mkdir(mydir, 0775); /* May return an error, e.g. the directory exists */
+#else //_WIN32
+  mkdir(mydir); /* May return an error, e.g. the directory exists */
+#endif //_WIN32
+
   if(chdir(mydir)){
     ath_perr(-1,"[change_rundir]: Cannot change directory to \"%s\"\n",mydir);
     err = 1;
@@ -785,7 +818,12 @@ void change_rundir(const char *name)
 
   if(name == NULL || *name == '\0') return;
 
+#ifndef _WIN32
   mkdir(name, 0775); /* May return an error, e.g. the directory exists */
+#else
+  mkdir(name); /* May return an error, e.g. the directory exists */
+#endif
+
   if(chdir(name))
     ath_error("[change_rundir]: Cannot change directory to \"%s\"\n",name);
 
