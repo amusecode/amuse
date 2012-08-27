@@ -67,7 +67,6 @@ clean:
 	$(RM) -rf *.dSYM
 	$(RM) -rf $(BUILDDIR) $(SELFGRAV_BUILDDIR) $(MHD_BUILDDIR)
 	$(RM) -rf $(SCALAR_BUILDDIR)
-	$(PATCH_FILES)
 	
 codeclean: clean
 	make -C $(ATHENA_DIR) clean

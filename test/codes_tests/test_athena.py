@@ -1142,3 +1142,63 @@ class TestAthena(TestWithMPI):
         instance.stop()
 
         
+    def test14(self): 
+        instance=self.new_instance(Athena, redirection="none")
+        instance.initialize_code()
+        instance.parameters.mesh_size = (10 , 1, 1)
+        instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = ("interface", "outflow")
+        instance.parameters.stopping_conditions_number_of_steps = 1
+        
+        instance.commit_parameters()
+        
+        grid = datamodel.Grid.create((10,1,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        
+        density = generic_unit_system.density
+        momentum =  generic_unit_system.speed * generic_unit_system.density
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+        
+        
+        grid.rho = 0.01 | density
+        grid.rhovx = 0.1 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.0 | momentum
+        
+        p = 1.0 | (generic_unit_system.mass / (generic_unit_system.length * generic_unit_system.time**2))
+        
+        grid.energy =  p / (instance.parameters.gamma - 1)
+        grid.energy += 0.5 * (grid.rhovx ** 2  + grid.rhovy ** 2 + grid.rhovz ** 2) / grid.rho
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+        instance.stopping_conditions.number_of_steps_detection.enable()
+        for i in range(4):
+            instance.set_boundary_state(
+                i,0,0, 
+                0.02 | density,
+                0.2 | momentum,
+                0.0 | momentum,
+                0.0 | momentum, 
+                p / (instance.parameters.gamma - 1) + (0.5 * (0.2 | momentum)**2 / (0.02 | density)),
+                0,
+                1
+            )
+        instance.initialize_grid()
+        instance.evolve_model(1.0 | generic_unit_system.time)
+        print instance.stopping_conditions.number_of_steps_detection.is_set()
+        rho = instance.grid.rho[...,0,0]
+        self.assertAlmostRelativeEquals(rho[-1], 0.01 | density)
+        self.assertTrue(rho[0] > 0.01 | density)
+        self.assertTrue(instance.grid.rhovx[0,0,0] > 0.1 | momentum)
+        self.assertAlmostRelativeEquals(instance.grid.rhovx[-1,0,0] , 0.1 | momentum)
+        print instance.model_time
+        
+        instance.stopping_conditions.number_of_steps_detection.disable()
+        instance.evolve_model(1.0 | generic_unit_system.time)
+        rho = instance.grid.rho[...,0,0]
+        self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
+        self.assertAlmostRelativeEquals(instance.grid.rhovx[...,0,0], 0.2 | momentum, 8)
+        print instance.model_time
+        
+        instance.stop()
+        
