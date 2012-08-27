@@ -10,6 +10,8 @@ AC_PROG_CC()
 AC_PROG_CXX()
 AC_PROG_FC([],95)
 AS_IF([test "x$FC" = "x"], [AC_MSG_ERROR([No fortran compiler found, please set the FC flag])])
+AX_FC_WORKS()
+AX_FC_ISO_C_BINDING()
 AC_ARG_VAR([PYTHON], [Python interpreter])
 
 
