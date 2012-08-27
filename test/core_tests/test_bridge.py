@@ -245,12 +245,12 @@ class ExampleGravityCodeInterface(object):
         self.particles.az = accelerations[2]
     
     def set_next_timestep(self):
-        self.next_timestep = 0.01 * (self.particles.velocity / 
-            self.particles.acceleration).lengths_squared().amin().sqrt()
+        self.next_timestep = min([0.01 * (self.particles.velocity / 
+            self.particles.acceleration).lengths_squared().amin().sqrt(), 1 | units.yr])
     
     def evolve_model(self, t_end):
         while self.model_time < t_end:
-            dt = min([self.next_timestep, t_end - self.model_time])
+            dt = self.next_timestep
             self.particles.position += self.particles.velocity * dt + 0.5 * self.particles.acceleration * dt**2
             old_acceleration = self.particles.acceleration
             self.set_accelerations()
