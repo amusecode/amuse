@@ -19,6 +19,8 @@ AC_PATH_PROG([PYTHON], [$PYTHON], [])
 AC_ARG_VAR([NVCC], [CUDA compiler command])
 AC_ARG_VAR([NVCC_FLAGS], [Extra flags for the CUDA nvcc compiler])
 
+AC_CHECK_PYTHON_DEV()
+
 AC_ARG_VAR([JAVA_HOME], [Java sdk directory])
 
 AMUSE_CHECK_JDK()
@@ -184,4 +186,9 @@ AS_VERSION_COMPARE([$PYTHON_zlib_VERSION], [1.0],
         [AC_MSG_ERROR([numpy version $PYTHON_zlib_VERSION found, but at least 1.0 needed])]
 )
 AC_CHECK_PYTHON_MODULE(matplotlib)
+
+AC_CHECK_PYTHON_MODULE(Cython, __version__)
+AS_VERSION_COMPARE([$PYTHON_Cython_VERSION], [0.13],
+        [AC_MSG_WARN([Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed])]
+)
 AC_OUTPUT()
