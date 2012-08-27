@@ -506,29 +506,39 @@ def densitycentre_coreradius_coredens(particles,unit_converter=None,number_of_ne
     
     return [x_core,y_core,z_core],rc,rho
 
-def new_particle_from_cluster_core(particles):
+def new_particle_from_cluster_core(particles, unit_converter=None, density_weighting_power=2):
     """
     Uses Hop to find the density centre (core) of a particle distribution
     and stores the properties of this core on a particle:
     position, velocity, (core) radius and (core) density.
+    
+    Particles are assigned weights that depend on the density (as determined by 
+    Hop) to a certain power.
+    The default weighting power is 2, which is most commonly used. Set 
+    density_weighting_power to 1 in order to get the original weighting of 
+    Casertano & Hut (1985, ApJ, 298, 80).
+    
+    :argument unit_converter: Required if the particles are in SI units
+    :argument density_weighting_power: Particle properties are weighted by density to this power
     """
     from amuse.community.hop.interface import Hop
-    hop=Hop()
+    hop = Hop(unit_converter=unit_converter)
     in_hop = hop.particles.add_particles(particles)
     hop.parameters.density_method = 2
     hop.parameters.number_of_neighbors_for_local_density = 7
     hop.calculate_densities()
-    
-    density = in_hop.density.reshape((-1,1))
-    # Reshape makes sure that density can be multiplied with vectors, e.g. position
+    density = in_hop.density.copy()
     hop.stop()
+    
+    weights = (density**density_weighting_power).reshape((-1,1))
+    # Reshape makes sure that density can be multiplied with vectors, e.g. position
     
     result = Particle()
     result.density = density.amax()
-    total_density = density.sum()
-    result.position = (density * particles.position).sum(axis=0) / total_density
-    result.velocity = (density * particles.velocity).sum(axis=0) / total_density
-    result.radius = (density * (particles.position - result.position).lengths()).sum(axis=1) / total_density
+    total_weight = weights.sum()
+    result.position = (weights * particles.position).sum(axis=0) / total_weight
+    result.velocity = (weights * particles.velocity).sum(axis=0) / total_weight
+    result.radius = (weights.flatten() * (particles.position - result.position).lengths()).sum() / total_weight
     return result
 
 def LagrangianRadii(stars,
