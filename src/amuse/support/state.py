@@ -25,8 +25,23 @@ class State(object):
     def add_to_transition(self, transition):
         """add a transition to this state"""
         self.to_transitions.append(transition)
+    
+    def remove_from_transition(self, to_state):
+        index = -1
+        for i, transition in enumerate(self.from_transitions):
+            if transition.to_state is to_state:
+                index = i
+        if index >= 0:
+            del self.from_transitions[index] 
         
-        
+    def remove_to_transition(self, from_state):
+        index = -1
+        for i, transition in enumerate(self.to_transitions):
+            if transition.from_state is from_state:
+                index = i
+        if index >= 0:
+            del self.to_transitions[index] 
+            
     def get_to_transitions(self):
         return list(self.to_transitions)
         
@@ -60,6 +75,17 @@ class AllExcept(object):
         """add a transition to this state"""
         raise Exception('you cannot define a transition to any except one state')
 
+    def remove_from_transition(self, to_state):
+        index = -1
+        for i, transition in enumerate(self.from_transitions):
+            if transition.to_state is to_state:
+                index = i
+        if index >= 0:
+            del self.from_transitions[index] 
+        
+    def remove_to_transition(self, from_state):
+        pass
+            
 
     def get_to_transitions(self):
         """to transitions are the to transitions of all states except this one"""
@@ -138,7 +164,17 @@ class StateMachine(OptionalAttributes):
             to_state.add_to_transition(transition)
     
         return transition
+        
+    def remove_transition(self, from_name, to_name):
+        from_state = self.new_state(from_name)
+        to_state   = self.new_state(to_name)
+        
+        if not from_state is None:
+            from_state.remove_from_transition(to_state)
     
+        if not to_state is None:
+            to_state.remove_to_transition(from_state)
+            
     def iter_states(self):
         return iter(self.states.values())
 

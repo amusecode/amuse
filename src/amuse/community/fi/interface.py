@@ -1650,6 +1650,10 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         object.add_method('RUN', 'get_state_sph')
         object.add_method('RUN', 'get_state_star')
         
+        object.remove_transition('EVOLVED', 'RUN', 'synchronize_model')
+        object.add_transition('EVOLVED', 'UPDATED', 'update_particle_set')
+        object.add_transition('UPDATED', 'RUN', 'synchronize_model')
+        
         object.add_method('RUN', 'get_kinetic_energy')
         object.add_method('RUN', 'get_potential_energy')
         object.add_method('RUN', 'get_thermal_energy')

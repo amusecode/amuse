@@ -244,6 +244,15 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
     def add_transition(self, from_state, to_state):
         self.transitions.append((from_state, to_state))
 
+    def remove_transition(self, from_name, to_name):
+        index = -1
+        for i, transition in enumerate(self.transitions):
+            from_state, to_state= transition
+            if from_name == from_state.name and to_name == to_state.name:
+                index = i
+        if index >= 0:
+            del self.transitions[index]
+        
     def new_method(self, method = None):
         if method == None:
             if self.is_determining_method:
@@ -322,7 +331,10 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
             state_method = self._mapping_from_name_to_state_method[function_name]
             state_method.add_transition(from_state, to_state)
 
-
+    def _remove_state_method(self, from_name, to_name, function_name):
+        if function_name in self._mapping_from_name_to_state_method:
+            state_method = self._mapping_from_name_to_state_method[function_name]
+            state_method.remove_transition(from_name, to_name)
 
     def add_method(self, state_name, function_name):
         """
@@ -341,6 +353,13 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         transition.method = definition
     
         self._add_state_method(transition.from_state, transition.to_state, function_name)
+    
+    
+    def remove_transition(self, from_name, to_name, function_name):
+    
+        self._state_machine.remove_transition(from_name, to_name)
+    
+        self._remove_state_method(from_name, to_name, function_name)
 
 
     def add_transition_to_method(self, state_name, function_name, is_auto = True):
