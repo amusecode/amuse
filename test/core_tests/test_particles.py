@@ -623,6 +623,7 @@ class TestParticlesChannel(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles1.mass, [1,25,24,26] | units.kg)
         
         
+        
 class TestParticlesSuperset(amusetest.TestCase):
     
     def test1(self):
@@ -1570,6 +1571,38 @@ class TestParticlesWithBinding(amusetest.TestCase):
         selected_particles = query.apply(interface.particles)
         self.assertEquals(len(selected_particles), 2)
         self.assertAlmostRelativeEquals(selected_particles.mass, [6.0,5.0] | units.kg)
+        
+    def test15(self):
+        
+        interface = self.TestInterface()
+        
+        local_particles = datamodel.Particles(2)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0])
+        
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles)
+        
+        local_particles.mass = 10 | units.kg
+        
+        self.assertAlmostRelativeEquals(remote_particles.mass , [3.0, 4.0] | units.kg)
+        channel = remote_particles.new_channel_to(local_particles)
+        channel.copy()
+        
+        self.assertAlmostRelativeEquals(local_particles.mass , [3.0, 4.0] | units.kg)
+        
+        remote_particles._remove_indices_in_attribute_storage([1])
+        
+        local_particles.mass = 10 | units.kg
+        channel.copy()
+        
+        self.assertAlmostRelativeEquals(local_particles.mass , [3.0, 10.0] | units.kg)
+        
+        remote_particles._add_indices_in_attribute_storage([1])
+        
+        local_particles.mass = 10 | units.kg
+        channel.copy()
+        
+        self.assertAlmostRelativeEquals(local_particles.mass , [3.0, 10.0] | units.kg)
         
 class TestParticlesWithUnitsConverted(amusetest.TestCase):
     

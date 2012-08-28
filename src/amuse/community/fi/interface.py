@@ -3192,5 +3192,4 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         indices_in_update_list = range(number_of_removed_particles)
         indices_to_remove = self.get_id_of_removed_sph_particle(indices_in_update_list)
         
-        incode_storage = self.gas_particles._private.attribute_storage
-        incode_storage._remove_indices(indices_to_remove)
+        incode_storage = self.gas_particles._remove_indices_in_attribute_storage(indices_to_remove)

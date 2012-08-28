@@ -1116,6 +1116,15 @@ class Particles(AbstractParticleSet):
     def can_extend_attributes(self):
         return self._private.attribute_storage.can_extend_attributes()
     
+    
+    def _remove_indices_in_attribute_storage(self, indices):
+        self._private.attribute_storage._remove_indices(indices)
+        self._private.version += 1
+        
+    def _add_indices_in_attribute_storage(self, indices):
+        self._private.attribute_storage._add_indices(indices)
+        self._private.version += 1
+        
 class BoundSupersetParticlesFunctionAttribute(object):
     def  __init__(self, name, superset):
         self.name = name
