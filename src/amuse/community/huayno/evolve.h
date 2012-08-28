@@ -1,6 +1,6 @@
 #define FLOAT double
-#define CLFLOAT cl_double
-#define CLFLOAT4 cl_double4
+#define CLFLOAT cl_float
+#define CLFLOAT4 cl_float4
 #define DOUBLE long double
 #define INT int
 #define UINT unsigned int
@@ -115,6 +115,8 @@ void stop_code();
 void init_evolve(struct sys s, int inttype);
 void do_evolve(struct sys s, double dt, int inttype);
 
+void system_center_of_mass(struct sys s, DOUBLE *cmpos, DOUBLE *cmvel);
+void move_system(struct sys s, DOUBLE dpos[3],DOUBLE dvel[3],int dir);
 FLOAT system_potential_energy(struct sys s);
 FLOAT system_kinetic_energy(struct sys s);
 
@@ -146,3 +148,47 @@ struct sys join(struct sys s1,struct sys s2);
   fflush(stdout);\
   exit(-1);\
 }
+
+#ifdef COMPENSATED_SUMMP
+#define COMPSUMP(sum,err,delta) \
+  { \
+    DOUBLE a; \
+    a=sum; \
+    err=err+delta; \
+    sum=a+err; \
+    err=err+(a-sum); \
+  }
+#else
+#define COMPSUMP(sum,err,delta)  {sum+=delta;}
+#endif
+
+#ifdef COMPENSATED_SUMMV
+#define COMPSUMV(sum,err,delta) \
+  { \
+    DOUBLE a; \
+    a=sum; \
+    err=err+delta; \
+    sum=a+err; \
+    err=err+(a-sum); \
+  }
+#else
+#define COMPSUMV(sum,err,delta)  {sum+=delta;}
+#endif
+
+#define COMPSUM(sum,err,delta) \
+  { \
+    DOUBLE a; \
+    a=sum; \
+    err=err+delta; \
+    sum=a+err; \
+    err=err+(a-sum); \
+  }
+
+#define COMPSUM1(sum,err,delta) \
+  { \
+    DOUBLE t,y; \
+    y=(delta)-err; \
+    t=sum+y; \
+    err=(t-sum)-y; \
+    sum=t; \
+  }

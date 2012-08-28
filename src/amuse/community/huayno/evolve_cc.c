@@ -251,63 +251,6 @@ DOUBLE sys_forces_max_timestep(struct sys s,int dir) {
   return ts;
 }
 
-#ifdef COMPENSATED_SUMMP
-#define COMPSUMP(sum,err,delta) \
-  { \
-    DOUBLE a; \
-    a=sum; \
-    err=err+delta; \
-    sum=a+err; \
-    err=err+(a-sum); \
-  }
-#else
-#define COMPSUMP(sum,err,delta)  {sum+=delta;}
-#endif
-
-#ifdef COMPENSATED_SUMMV
-#define COMPSUMV(sum,err,delta) \
-  { \
-    DOUBLE a; \
-    a=sum; \
-    err=err+delta; \
-    sum=a+err; \
-    err=err+(a-sum); \
-  }
-#else
-#define COMPSUMV(sum,err,delta)  {sum+=delta;}
-#endif
-
-void move_system(struct sys s, DOUBLE dpos[3],DOUBLE dvel[3],int dir)
-{
-  for(UINT p=0;p<s.n;p++)
-  {
-    for(int i=0;i<3;i++)
-    {
-        COMPSUMP(s.part[p].pos[i],s.part[p].pos_e[i],dir*dpos[i])
-        COMPSUMV(s.part[p].vel[i],s.part[p].vel_e[i],dir*dvel[i])
-    }
-  }  
-}
-
-void system_center_of_mass(struct sys s, DOUBLE *cmpos, DOUBLE *cmvel)
-{
-  DOUBLE mass=0.,pos[3]={0.,0.,0.},vel[3]={0.,0.,0.};
-  for(UINT p=0;p<s.n;p++)
-  {
-    for(int i=0;i<3;i++)
-    {
-      pos[i]+=(DOUBLE) s.part[p].mass*s.part[p].pos[i];
-      vel[i]+=(DOUBLE) s.part[p].mass*s.part[p].vel[i];
-    }
-    mass+=(DOUBLE) s.part[p].mass;
-  }
-  for(int i=0;i<3;i++)
-  {
-    cmpos[i]=pos[i]/mass;
-    cmvel[i]=vel[i]/mass;
-  }
-}
-
 #define TASKCONDITION   (nc > 1)
 void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int inttype, int recenter) {
   DOUBLE cmpos[3],cmvel[3];

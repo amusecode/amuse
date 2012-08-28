@@ -30,6 +30,37 @@ static void report(struct sys s,DOUBLE etime, int inttype);
 #define M_SQRT2 1.41421356237309504880168872420969808L
 #endif
 
+void move_system(struct sys s, DOUBLE dpos[3],DOUBLE dvel[3],int dir)
+{
+  for(UINT p=0;p<s.n;p++)
+  {
+    for(int i=0;i<3;i++)
+    {
+        COMPSUMP(s.part[p].pos[i],s.part[p].pos_e[i],dir*dpos[i])
+        COMPSUMV(s.part[p].vel[i],s.part[p].vel_e[i],dir*dvel[i])
+    }
+  }  
+}
+
+void system_center_of_mass(struct sys s, DOUBLE *cmpos, DOUBLE *cmvel)
+{
+  DOUBLE mass=0.,pos[3]={0.,0.,0.},vel[3]={0.,0.,0.};
+  for(UINT p=0;p<s.n;p++)
+  {
+    for(int i=0;i<3;i++)
+    {
+      pos[i]+=(DOUBLE) s.part[p].mass*s.part[p].pos[i];
+      vel[i]+=(DOUBLE) s.part[p].mass*s.part[p].vel[i];
+    }
+    mass+=(DOUBLE) s.part[p].mass;
+  }
+  for(int i=0;i<3;i++)
+  {
+    cmpos[i]=pos[i]/mass;
+    cmvel[i]=vel[i]/mass;
+  }
+}
+
 FLOAT system_kinetic_energy(struct sys s)
 {
  UINT i;
@@ -72,7 +103,6 @@ void init_evolve(struct sys s,int inttype)
   {
     s.part[i].postime=0.;
     s.part[i].pot=0.;
-    s.part[i].timestep=HUGE_VAL;
 #ifdef COMPENSATED_SUMMP
     s.part[i].pos_e[0]=0.;s.part[i].pos_e[1]=0.;s.part[i].pos_e[2]=0.;
 #endif
@@ -251,41 +281,15 @@ void do_evolve(struct sys s, double dt, int inttype)
   report(s,(DOUBLE) dt, inttype);
 }
 
-#define COMPSUM(sum,err,delta) \
-  { \
-    DOUBLE a; \
-    a=sum; \
-    err=err+delta; \
-    sum=a+err; \
-    err=err+(a-sum); \
-  }
-
-#define COMPSUM1(sum,err,delta) \
-  { \
-    DOUBLE t,y; \
-    y=(delta)-err; \
-    t=sum+y; \
-    err=(t-sum)-y; \
-    sum=t; \
-  }
-
-
 void drift(int clevel,struct sys s, DOUBLE etime, DOUBLE dt)
 {
   UINT i;
   for(i=0;i<s.n;i++)
   {
-#ifndef COMPENSATED_SUMMP
-    s.part[i].pos[0]+=dt*s.part[i].vel[0];
-    s.part[i].pos[1]+=dt*s.part[i].vel[1];
-    s.part[i].pos[2]+=dt*s.part[i].vel[2];
-#else
-    COMPSUM(s.part[i].pos[0],s.part[i].pos_e[0],dt*s.part[i].vel[0])
-    COMPSUM(s.part[i].pos[1],s.part[i].pos_e[1],dt*s.part[i].vel[1])
-    COMPSUM(s.part[i].pos[2],s.part[i].pos_e[2],dt*s.part[i].vel[2])
-#endif
+    COMPSUMP(s.part[i].pos[0],s.part[i].pos_e[0],dt*s.part[i].vel[0])
+    COMPSUMP(s.part[i].pos[1],s.part[i].pos_e[1],dt*s.part[i].vel[1])
+    COMPSUMP(s.part[i].pos[2],s.part[i].pos_e[2],dt*s.part[i].vel[2])
     s.part[i].postime=etime;
-    s.part[i].timestep=HUGE_VAL;
   }
   diag->dstep[clevel]++;
   diag->dcount[clevel]+=s.n;
@@ -324,15 +328,9 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
         acc[2]-=dx[2]*acci;  
       }
     }
-#ifndef COMPENSATED_SUMMV
-    s1.part[i].vel[0]+=dt*acc[0];
-    s1.part[i].vel[1]+=dt*acc[1];
-    s1.part[i].vel[2]+=dt*acc[2];
-#else
-    COMPSUM(s1.part[i].vel[0],s1.part[i].vel_e[0],dt*acc[0]);
-    COMPSUM(s1.part[i].vel[1],s1.part[i].vel_e[1],dt*acc[1]);
-    COMPSUM(s1.part[i].vel[2],s1.part[i].vel_e[2],dt*acc[2]);
-#endif
+    COMPSUMV(s1.part[i].vel[0],s1.part[i].vel_e[0],dt*acc[0]);
+    COMPSUMV(s1.part[i].vel[1],s1.part[i].vel_e[1],dt*acc[1]);
+    COMPSUMV(s1.part[i].vel[2],s1.part[i].vel_e[2],dt*acc[2]);
   }
 }
 
@@ -457,16 +455,15 @@ static void timestep_cpu(struct sys s1, struct sys s2,int dir)
  private(i,j,tau,timestep) \
  shared(s1,s2,stdout,dir)
   for(i=0;i<s1.n;i++)
-  {
-    if(s1.part[i].timestep !=HUGE_VAL) ENDRUN("timestep??");
-  
+  {  
     timestep=HUGE_VAL;
     for(j=0;j<s2.n;j++)
     {
       tau=timestep_ij(s1.part+i,s2.part+j,dir);
       if(tau < timestep) timestep=tau;
     }
-    if(timestep<s1.part[i].timestep) s1.part[i].timestep=timestep;
+//    if(timestep<s1.part[i].timestep) 
+    s1.part[i].timestep=timestep;
   }
 }
 

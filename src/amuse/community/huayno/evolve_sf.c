@@ -168,11 +168,10 @@ static void drift_naive(int clevel,struct sys s, DOUBLE etime)
   for(i=0;i<s.n;i++)
   {
     dt=etime-s.part[i].postime;
-    s.part[i].pos[0]+=dt*s.part[i].vel[0];
-    s.part[i].pos[1]+=dt*s.part[i].vel[1];
-    s.part[i].pos[2]+=dt*s.part[i].vel[2];
+    COMPSUMP(s.part[i].pos[0],s.part[i].pos_e[0],dt*s.part[i].vel[0])
+    COMPSUMP(s.part[i].pos[1],s.part[i].pos_e[1],dt*s.part[i].vel[1])
+    COMPSUMP(s.part[i].pos[2],s.part[i].pos_e[2],dt*s.part[i].vel[2])
     s.part[i].postime=etime;
-    s.part[i].timestep=HUGE_VAL;
   }
   diag->dstep[clevel]++;
   diag->dcount[clevel]+=s.n;

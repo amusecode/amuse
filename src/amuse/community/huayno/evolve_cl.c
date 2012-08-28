@@ -155,7 +155,8 @@ void timestep_cl(struct sys s1, struct sys s2,int dir)
 
   for(i=0;i<s1.n;i++)
   {
-    if(timestep[i]<s1.part[i].timestep) s1.part[i].timestep=timestep[i];
+//    if(timestep[i]<s1.part[i].timestep) 
+    s1.part[i].timestep=timestep[i];
   }
 
   clfree( ipos);
