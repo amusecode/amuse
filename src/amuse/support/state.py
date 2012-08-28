@@ -1,6 +1,7 @@
 from amuse.support import exceptions
 from amuse.support.options import OptionalAttributes
 from amuse.support.options import option
+from amuse.support.thirdparty.texttable import Texttable
 
 import logging
 
@@ -292,6 +293,194 @@ class StateMachine(OptionalAttributes):
                 )
             )
         lines.append('@enduml')
+        return '\n'.join(lines)
+
+    def to_table_string(self, ignore_states = [], split = True):
+        lines = []
+        ignore_states = set(ignore_states)
+        initial_state = self._initial_state
+        lines.append('Initial state: {0}'.format(initial_state.name))
+        statenames = list(sorted(self.states.keys()))
+        merged_transitions = {}
+        for name in statenames:
+            state = self.states[name]
+            transitions = state.get_to_transitions()
+            for transition in transitions:
+                if transition.from_state.is_named():
+                    if not transition.method is None:
+                        functionname = transition.method.function_name 
+                    else:
+                        functionname = '*'
+                        
+                    transitionname = '{0}+{1}'.format(
+                        transition.from_state.name,
+                        transition.to_state.name
+                    )
+                    if transitionname in merged_transitions:
+                        merged_transitions[transitionname][2].add(functionname)
+                    else:
+                        merged_transitions[transitionname] = [
+                            transition.from_state.name,
+                            transition.to_state.name,
+                            set([functionname])
+                        ]
+                else:
+                     for x in self.iter_states():
+                        if x == transition.from_state:
+                            continue
+                        if not transition.from_state.matches(x):
+                            continue
+                            
+                        if not transition.method is None:
+                            functionname = transition.method.function_name 
+                        else:
+                            functionname = '*'
+                        
+                    
+                        transitionname = '{0}+{1}'.format(
+                            x.name,
+                            transition.to_state.name
+                        )
+                        if transitionname in merged_transitions:
+                            merged_transitions[transitionname][2].add(functionname)
+                        else:
+                            merged_transitions[transitionname] = [
+                                x.name,
+                                transition.to_state.name,
+                                set([functionname])
+                            ]
+        selectedstates = [x for x in statenames if not x in ignore_states]
+        tostates = [x for x in selectedstates if not x == initial_state.name]
+        
+        endstates = []
+        for fromstate in selectedstates:
+            found = False
+            for tostate in tostates:
+                transitionname = '{0}+{1}'.format(
+                    fromstate,
+                    tostate
+                )
+                if transitionname in merged_transitions:
+                    found = True
+                    break
+            if not found:
+                endstates.append(fromstate)
+                
+        if len(endstates) == 1:
+            lines.append('End state: {0}'.format(endstates[0]))
+        else:
+            lines.append('End states: {0}'.format(', '.join(endstates)))
+        state_to_distance_from_start = {}
+        state_to_distance_from_start[initial_state.name] = 0
+            
+        stack = [[initial_state.name, 0]]
+        while len(stack) > 0:
+            current, distance = stack.pop()
+            for tostate in selectedstates:
+                transitionname = '{0}+{1}'.format(
+                    current,
+                    tostate
+                )
+                if transitionname in merged_transitions:
+                    if  tostate not in state_to_distance_from_start:
+                        stack.append([tostate, distance+1])
+                        state_to_distance_from_start[tostate] = distance + 1
+                        
+        
+        state_to_distance_from_end = {}
+        stack = []
+        for x in endstates:
+            state_to_distance_from_end[x] = 0
+            stack.append([x, 0])
+            
+        while len(stack) > 0:
+            tostate, distance = stack.pop()
+            for fromstate in selectedstates:
+                transitionname = '{0}+{1}'.format(
+                    fromstate,
+                    tostate
+                )
+                if transitionname in merged_transitions:
+                    if  fromstate not in state_to_distance_from_end:
+                        stack.append([fromstate, distance+1])
+                        state_to_distance_from_end[fromstate] = distance + 1
+        
+        
+        fromstates = [x for x in selectedstates if not x in endstates]
+        fromstates = list(sorted(fromstates, key = lambda x :  -(state_to_distance_from_end[x] * len(state_to_distance_from_start)) + state_to_distance_from_start[x]))
+        tostates = list(sorted(tostates, key = lambda x :  -(state_to_distance_from_end[x] * len(state_to_distance_from_start)) + state_to_distance_from_start[x]))
+            
+        if split:
+            table = Texttable(max_width = -1)
+            header = ['          to\nfrom']
+            header.extend(tostates)
+            rows = []
+            rows.append(header)
+        
+            for fromstate in fromstates:
+                
+                row = []
+                row.append(fromstate)
+                for tostate in tostates:
+                    transitionname = '{0}+{1}'.format(
+                        fromstate,
+                        tostate
+                    )
+                    if transitionname in merged_transitions:
+                        _, _, functionnames = merged_transitions[transitionname]
+                        row.append('\n'.join(functionnames))
+                    else:
+                        row.append('-')
+                rows.append(row)
+                
+            table.add_rows(rows)
+            table._compute_cols_width()
+            widths = table._width
+            splittostates = []
+            currentostates = []
+            w0 = widths[0]
+            currentwidth = w0
+            for x,state in zip(widths[1:], tostates):
+                currentwidth += x
+                if currentwidth > 80:
+                    splittostates.append(currentostates)
+                    currentostates = [state]
+                    currentwidth = w0 + x
+                else:
+                    currentostates.append(state)
+            
+            splittostates.append(currentostates)
+        else:
+            splittostates = [tostates]
+        for tostates in splittostates:
+            header = ['          to\nfrom']
+            header.extend(tostates)
+            rows = []
+            rows.append(header)
+        
+            for fromstate in fromstates:
+                
+                row = []
+                row.append(fromstate)
+                for tostate in tostates:
+                    transitionname = '{0}+{1}'.format(
+                        fromstate,
+                        tostate
+                    )
+                    if transitionname in merged_transitions:
+                        _, _, functionnames = merged_transitions[transitionname]
+                        row.append('\n'.join(functionnames))
+                    else:
+                        row.append('-')
+                rows.append(row)
+       
+            table = Texttable(max_width = -1)
+            align = ["l",]
+            align.extend("l" * len(tostates))
+            table.set_cols_align(align)
+            table.add_rows(rows)
+            lines.append(table.draw())
+
         return '\n'.join(lines)
 
     def get_name_of_current_state(self):
