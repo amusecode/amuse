@@ -1,9 +1,12 @@
-HiGPUs readme 
+-------------------------------- HiGPUs readme ----------------------------------
 
 This is HiGPUs readme. (If there are any problems please do not 
-hesitate to contact us).
+hesitate to contact us:
+Mario Spera:  mario.spera@uniroma1.it
+Davide Punzo: Davide.Punzo@roma1.infn.it
+Roberto Capuzzo Dolcetta : roberto.capuzzodolcetta@uniroma1.it).
 
-Introduction
+-------------------------------- Introduction -----------------------------------
 
 HiGPUs is a parallel direct N-body code based on a 6th order Hermite 
 integrator. The code uses, at the same time, MPI, OpenMP and CUDA 
@@ -14,16 +17,13 @@ properties of the stiff problems such as the gravitational N-body
 problem.
 
 If you use HiGPUs for scientific work, we kindly ask you to 
-reference the following paper: ... 
+reference the following paper: "A fully parallel, high precision, N-body code running on
+hybrid computing platforms" by R. Capuzzo–Dolcetta, M. Spera, D. Punzo (2012, submitted to JCP) ,
+available in arXiv: 2012arXiv1207.2367C.
 
-HiGPUs was mainly developed by Mario Spera using tools of C and C++ 
-and the first public version was released on ... . 
+Feel free to suggest modifications, imporvements, additions, etc. to the code by contacting the authors.
 
-The code is publicly available at this link ... . Feel free to 
-copy, modify and distribute your own version of the code as long 
-as you cite our release.
-
-Installing and Compiling 
+---------------------------------- Installing and Compiling -------------------------------
 
 First of all you should check if CUDA and MPI libraries are 
 installed on your machine. The code is known to work with CUDA 
@@ -42,10 +42,10 @@ installed on your machine. The code is known to work with CUDA
 In any case the GPU must support double precision floating point 
 operations. If you try our code on other hardware please inform 
 us about the results. If you need to install CUDA go to 
-http://developer.nvidia.com/cuda-toolkit-40 and follow the 
+http://developer.nvidia.com/category/zone/cuda-zone and follow the 
 instructions in the “Getting Started Guide” in the documentation 
 section. To get OpenMPI, you can download the package at 
-http://www.open-mpi.org/software/ompi/v1.4/ and follow the 
+http://www.open-mpi.org/software/ompi/v1.5/ and follow the 
 instructions contained in the readme file.
 
 To use the code untar the downloaded archive "HiGPUs.tar" with the 
@@ -67,42 +67,34 @@ and all other files needed for running the code. The content of
 
 > src
 
-At this point, before compiling the code, you have to tell the 
-Makefile where to find CUDA and MPI libraries. First of all you 
-have to set the environment variables PATH and LD_LIBRARY_PATH in 
-order to include the correct CUDA and MPI paths. THe tipycal way 
-to do it is using the commands: 
-
-> export PATH=/usr/local/cuda/bin:/usr/openmpi/bin:$PATH 
-
-> export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/openmpi/lib:$LD_LIBRARY_PATH
-
-where we have assumed that CUDA has been installed on 
-/usr/local/cuda (that is the default CUDA installation path) 
-and OpenMPI on /usr/openmpi. 
-Subsequently, you have to modify the followig two lines of the 
+At this point, before compiling the code, you have to tell the
+Makefile where to find CUDA and MPI libraries.
+To do this, you have to modify the following two lines of the
 Makefile setting appropriately the variables:
 
-> CUDA_INSTALL_PATH := /usr/local/cuda 
+> CUDA_INSTALL_PATH := /usr/local/cuda
 
 > MPI_INSTALL_PATH := /usr/openmpi
 
-Before compiling the code you can add the following flags to the 
+where we have assumed that the installation paths are :
+/usr/local/cuda for CUDA, /opt/AMDAPP for the AMD OpenCL implementation
+and /usr/openmpi for OpenMPI.
+Before compiling the code you can add the following flags to the
 variables MYOPTS:
 
--DCHECK_ERRORS : some useful functions which may help to find 
-possible errors activated. If this option is enabled, the program 
-terminates its esecution telling at what line the error has been 
+-DCHECK_ERRORS : some useful functions which may help to find
+possible errors activated. If this option is enabled, the program
+terminates its esecution telling at what line the error has been
 detected and giving further information about its type.
 
--DCHECK_TIMES : some functions which measure the time spent in 
-executing the main sections of the code are activated. The 
+-DCHECK_TIMES : some functions which measure the time spent in
+executing the main sections of the code are activated. The
 results are showed in the output file 'times.dat'.
 
--DPLUMMER : it enables an external Plummer-like potential field 
-which adds an analytical contribution to the mutual interaction 
-between the stars. To set the related parameters (core radius and 
-total mass) see below.
+-DPLUMMER : (STILL EXPERIMENTAL) it enables an external Plummer-like
+potential field which adds an analytical contribution to the mutual
+interaction between the stars. To set the related parameters (core
+radius and total mass) see below.
 
 Once you have setup the Makefile you can proceed typing:
 
@@ -113,7 +105,7 @@ the interface is 'make exec')
 
 This creates the executable file 'HiGPUs.x' in the folder 'exec'. 
 
-Parameter and input files 
+------------------------------------- Parameter and input files -------------------------------------------------
 
 The file containing the parameters is called 'input_param.txt' 
 and it looks like:
@@ -169,12 +161,12 @@ An example of input data file is in the folder 'exec'.
 NOTE: if you change parameters or input file, it is not necessary 
 to compile again the code .
 
-Running
+--------------------------------- Running---------------------------------------
 
 Now you are ready to run the program. If you are using a machine 
 with one node you can simply type:
 
-> mpirun -np 1 ... .x
+> mpirun -np 1 ./HiGPUs.x
 
 Otherwise you have to write your own hostfile which, in case of 
 two nodes is something like:
@@ -192,7 +184,7 @@ node. Each MPI process can manage all the GPUs avaible on each
 node without problems. At this point, you can use the following 
 command to start the simulation:
 
-> mpiexec -hostfile myhostfile ... .x
+> mpiexec -hostfile myhostfile./HiGPUs.x
 
 If you run the program with '-h' option you can obtain further 
 useful information:
@@ -211,7 +203,7 @@ useful information:
 the simulation parameters. If not specified, the default is 
 'input_param.txt'.
 
-> -h : it shows this help screen (-:
+> -h : it shows this help screen 
 
 > -r [file] : it restarts the simulation from the specified file 
 (H6Blog.dat is necessary, see below). 
@@ -228,7 +220,7 @@ and M (total mass).
 
 >
 
-Output
+------------------------------ Output ----------------------------------------------
 
 The following file will be generated or updated every time a new 
 snapshot is produced:
@@ -335,17 +327,4 @@ reduce and collect forces from all the computational nodes.
 - RECON : time required to reorder data on the GPUs after the 
 corrector step. 
 
-Contacts
-
-• Mario Spera: mario.spera@live.it ---------- 
-  mario.spera@uniroma1.it
-
-• Davide Punzo: punzodavide@hotmail.it ------- 
-  Davide.Punzo@roma1.infn.it
-
-  Note
-
-We are now testing an OpenCL version of the code on an ATI 
-HD6790. From preliminary results we note that ATI gaming graphics 
-cards are very suitable for our purpose. 
 
