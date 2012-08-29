@@ -7,7 +7,7 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
     include_headers = ['worker_code.h']
 	    
     def __init__(self, **keyword_arguments):
-	CodeInterface.__init__(self, name_of_the_worker="higpus_worker", **keyword_arguments)
+	CodeInterface.__init__(self, name_of_the_worker="higpus_worker_gpu", **keyword_arguments)
     
     @legacy_function
     def echo_int():
@@ -386,7 +386,7 @@ class HiGPUs(GravitationalDynamics):
             "set_output_path_name",
             "output_path_name",
             "output path name",
-            default_value = "../../test_results/" | units.none
+            default_value = "./data/" | units.none
         )
 
         object.add_method_parameter(

@@ -5,7 +5,7 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-ALL	 = 
+ALL	 = higpus_worker_gpu
 
 MPICXX   ?= mpicxx
 
@@ -40,8 +40,6 @@ OBJS = interface.o
 
 CODELIB = src/libhigpus.a
 
-AMUSE_DIR ?= ../
-
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: $(ALL)
@@ -64,5 +62,5 @@ higpus_worker_gpu: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
-	$(RM) *~ higpus_worker worker_code.cc
+	$(RM) *~ higpus_worker higpus_worker_gpu worker_code.cc
 	make -C src clean

@@ -164,38 +164,46 @@ HostError Corrector(double *GTIME, double *ATIME, double *local_time, double *st
       double a4mod = sqrt(a4halfx*a4halfx + a4halfy*a4halfy + a4halfz*a4halfz);
       double a5mod = sqrt(a5halfx*a5halfx + a5halfy*a5halfy + a5halfz*a5halfz);
 
-      double    dt3 = (sqrt(amod*a2dotsmod) + adotmod) / (a5mod*a3dotsmod + a4mod*a4mod);
-      dt3 = ETA6 * pow(dt3,1.0/6.0);
+      double    dt9 = (sqrt(amod*a2dotsmod) + adotmod) / (a5mod*a3dotsmod + a4mod*a4mod);
+      dt9 = ETA6 * pow(dt9,1.0/6.0);
+      //double dt3 = ETA6 * (2.0*sqrt(amod)*a4mod + 2.0*sqrt(adotmod)*a3dotsmod + a2dotsmod)/(2.0*sqrt(adotmod)*a5mod + 
+      //                                                  2.0*sqrt(a2dotsmod)*a4mod + a3dotsmod*a3dotsmod);
+      //dt = dt3;
+      dt = dt9;
 
-	   dt = dt3;
+      double rest = *GTIME / (2.0 * step[who]);
+      rest = (double)((int)(rest)) - rest;
 
-     double rest = *GTIME / (2.0 * step[who]);
-     rest = (double)((int)(rest)) - rest;
+      if(dt<5.0e-5)
+         dt = max(sqrt(0.01*sqrt(amod) / sqrt(a2dotsmod)), dt9);
 
-	  if(dt<2.0e-5)
-		  dt = max(sqrt(ETA4 * sqrt(amod) / sqrt(a2dotsmod)), dt3);
+      if(dt > 2.2*step[who] && rest == 0.0 && 2.0*step[who] <= DTMAX)
+         step[who] *= 2.0;
+         else if (dt < step[who]){
+            int exponent = log(dt)/log(2.0) - 1;
+            step[who] = pow(2.0,exponent);
+         }
 
-	  if(dt > 2.0*step[who] && rest == 0.0 && 2.0*step[who] <= DTMAX)
-		  step[who] *= 2.0;
-	  else if (dt < step[who] && 0.5*step[who] >= DTMIN)
-		  step[who] *= 0.5;
+      if(step[who] < DTMIN)
+         step[who] = DTMIN;
 
-	  p_v_a3[i+2*nextsize].x = a3_H[who].x;
-	  p_v_a3[i+2*nextsize].y = a3_H[who].y;
-	  p_v_a3[i+2*nextsize].z = a3_H[who].z;
 
-     *ATIME = min (local_time[who] + step[who], *ATIME);
+	   p_v_a3[i+2*nextsize].x = a3_H[who].x;
+	   p_v_a3[i+2*nextsize].y = a3_H[who].y;
+	   p_v_a3[i+2*nextsize].z = a3_H[who].z;
 
-	  a_H1[who].x = a_H0[who].x;
-     a_H1[who].y = a_H0[who].y;
-     a_H1[who].z = a_H0[who].z;
-     a_H1[who1].x = a_H0[who1].x;
-     a_H1[who1].y = a_H0[who1].y;
-     a_H1[who1].z = a_H0[who1].z;
-     a_H1[who2].x = a_H0[who2].x;
-     a_H1[who2].y = a_H0[who2].y;
-     a_H1[who2].z = a_H0[who2].z;
-	}
+      *ATIME = min (local_time[who] + step[who], *ATIME);
+
+	   a_H1[who].x = a_H0[who].x;
+      a_H1[who].y = a_H0[who].y;
+      a_H1[who].z = a_H0[who].z;
+      a_H1[who1].x = a_H0[who1].x;
+      a_H1[who1].y = a_H0[who1].y;
+      a_H1[who1].z = a_H0[who1].z;
+      a_H1[who2].x = a_H0[who2].x;
+      a_H1[who2].y = a_H0[who2].y;
+      a_H1[who2].z = a_H0[who2].z;
+	 }
 
 	return HNoError;
 }

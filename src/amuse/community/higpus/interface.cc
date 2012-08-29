@@ -68,7 +68,8 @@ int recommit_parameters(){
 int commit_parameters(){
 
 	if(rank == 0){
-	   
+		temp ="mkdir " + path; 
+		system(to_char(temp)); 
       ofstream generic;
       temp = path + "gpu_memory.dat";
       output_name = to_char(temp);
@@ -109,7 +110,6 @@ int commit_parameters(){
 #endif
 
 #ifdef CHECK_TIMES
-		ofstream generic;
 		temp = path + "times.dat";
       output_name = to_char(temp);
       generic.open(output_name, ios::out);
@@ -178,7 +178,7 @@ int commit_particles(){
 		vel_CH[i].x = it -> second.vx;
 		vel_CH[i].y = it -> second.vy;
 		vel_CH[i].z = it -> second.vz;
-		vel_CH[i].w = it -> (second.soft*second.soft/2.);
+		vel_CH[i].w = it -> second.soft * it -> second.soft / 2.;
 		pos_CH[i].w = it -> second.mass;
       pos_CH[i].x = it -> second.x;
       pos_CH[i].y = it -> second.y;
@@ -186,7 +186,7 @@ int commit_particles(){
 		vel_PH[i].x = vel_CH[i].x;
 		vel_PH[i].y = vel_CH[i].y;
 		vel_PH[i].z = vel_CH[i].z;
-		vel_PH[i].w = it -> (second.soft*second.soft/2.);
+		vel_PH[i].w = it -> second.soft * it -> second.soft / 2.;
 		it++;	
 	}
 	
@@ -249,13 +249,13 @@ int evolve_model(double t){
 	return 0;
 }
 
-int set_time_begin(double time_begin){
+int set_begin_time(double time_begin){
    GTIME = time_begin;
 	return 0;
 }
 
 
-int get_time_begin(double *time_begin){
+int get_begin_time(double *time_begin){
    *time_begin = GTIME;
    return 0;
 }
@@ -560,7 +560,7 @@ int recommit_particles(){
       vel_CH[i].x = it -> second.vx;
       vel_CH[i].y = it -> second.vy;
       vel_CH[i].z = it -> second.vz;
-      vel_CH[i].w = it -> (second.soft*second.soft/2.);
+      vel_CH[i].w = it -> second.soft * it -> second.soft / 2.;
       pos_CH[i].w = it -> second.mass;
 		pos_CH[i].x = it -> second.x;
 		pos_CH[i].y = it -> second.y;
@@ -568,7 +568,7 @@ int recommit_particles(){
 		vel_PH[i].x = vel_CH[i].x;
       vel_PH[i].y = vel_CH[i].y;
       vel_PH[i].z = vel_CH[i].z;
-		vel_PH[i].w = it -> (second.soft*second.soft/2.);
+		vel_PH[i].w = it -> second.soft * it -> second.soft / 2.;
 		it++;
 	}
    
