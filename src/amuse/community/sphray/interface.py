@@ -865,6 +865,14 @@ class SPHRay(CommonCode):
         object.add_transition('RUN', 'UPDATE', 'remove_gas_particle', False)
         object.add_transition('RUN', 'UPDATE', 'new_src_particle', False)
         object.add_transition('RUN', 'UPDATE', 'remove_src_particle', False)
+        
+        object.add_transition('RUN', 'UPDATE', 'set_pos_gas', False)
+        object.add_transition('RUN', 'UPDATE', 'set_rho_gas', False)
+        object.add_transition('RUN', 'UPDATE', 'set_hsml_gas', False)
+        object.add_transition('RUN', 'UPDATE', 'set_u_gas', False)
+        object.add_transition('RUN', 'UPDATE', 'set_state_gas', False)
+        object.add_transition('RUN', 'UPDATE', 'set_state_src', False)
+        
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
         object.add_method('RUN', 'evolve_model')
         object.add_method('RUN', 'get_state_gas')
