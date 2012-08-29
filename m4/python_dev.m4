@@ -36,12 +36,9 @@ AC_DEFUN([AC_CHECK_PYTHON_DEV],[
             AC_LINK_IFELSE(
                 [AC_LANG_PROGRAM([[#include <Python.h>]],
                    [[
-                     int main(int argc, char *argv[]) {
                        Py_Initialize();
                        PyRun_SimpleString("print 'embedded python'");
                        Py_Finalize();
-                       return 0;
-                     }
                    ]])],
                 [AC_MSG_RESULT([yes])],
                 [PYTHON_DEV="no"

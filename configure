@@ -4476,12 +4476,9 @@ int
 main ()
 {
 
-                     int main(int argc, char *argv[]) {
                        Py_Initialize();
                        PyRun_SimpleString("print 'embedded python'");
                        Py_Finalize();
-                       return 0;
-                     }
 
   ;
   return 0;
