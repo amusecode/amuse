@@ -342,7 +342,9 @@ subroutine read_config_file(config_file)
     keyword = "PartPerCell:"
     call scanfile(config_file,keyword,GV%PartPerCell)
 
-
+    keyword = "DoMomentumKicks:"
+    call scanfile(config_file,keyword,GV%DoMomentumKicks)
+    
     GV%config_file = config_file
 
     call dummy_check_config_variables()

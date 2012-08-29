@@ -342,7 +342,20 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.result_type = 'i'
         return function;
 
-
+    @legacy_function   
+    def set_momentum_kicks():
+        """ set_momentume_kicks([0,1]): calc momentum kicks if 1, not if 0 """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('momentum_kicks', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_momentum_kicks():
+        """ set_momentume_kicks([0,1]): calc momentum kicks if 1, not if 0 """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('momentum_kicks', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
 
     @legacy_function    
     def evolve_model():
@@ -467,6 +480,14 @@ class SPHRay(CommonCode):
             False
         )
 
+        object.add_boolean_parameter(
+            "get_momentum_kicks",
+            "set_momentum_kicks", 
+            "momentum_kicks_flag", 
+            "whether to use momentum kicks (1) not (0)", 
+            False
+        )
+
         object.add_method_parameter(
             "get_raynumber",
             "set_raynumber", 
@@ -572,6 +593,18 @@ class SPHRay(CommonCode):
             )
         )
         object.add_method(
+            "set_vel_gas",
+            (
+                object.NO_UNIT,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
             "set_pos_gas",
             (
                 object.NO_UNIT,
@@ -627,6 +660,18 @@ class SPHRay(CommonCode):
                 generic_unit_system.density,
                 object.NO_UNIT,
                 generic_unit_system.speed**2,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_vel_gas",
+            (
+                object.INDEX,
+            ),
+            (
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
                 object.ERROR_CODE,
             )
         )
@@ -823,6 +868,8 @@ class SPHRay(CommonCode):
         object.add_setter('gas_particles', 'set_state_gas')
         object.add_getter('gas_particles', 'get_state_gas')
         object.add_setter('gas_particles', 'set_pos_gas')
+        object.add_setter('gas_particles', 'set_vel_gas')
+        object.add_getter('gas_particles', 'get_vel_gas')
         object.add_setter('gas_particles', 'set_hsml_gas')
         object.add_setter('gas_particles', 'set_rho_gas')
         object.add_setter('gas_particles', 'set_u_gas')
@@ -878,6 +925,7 @@ class SPHRay(CommonCode):
         object.add_method('RUN', 'get_state_gas')
         object.add_method('RUN', 'get_state_src')
 
+        object.add_method('INITIALIZED', 'set_momentum_kicks')
         object.add_method('INITIALIZED', 'set_isothermal')
         object.add_method('INITIALIZED', 'set_boxsize')
         object.add_method('INITIALIZED', 'set_globalHefraction')

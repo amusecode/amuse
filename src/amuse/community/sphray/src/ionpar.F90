@@ -435,6 +435,11 @@ subroutine ionpar2par(ipar,par)
 
  par%lasthit = ipar%lasthit
 
+#ifdef incVel
+ par%vel     = ipar%vel
+#endif
+
+
 end subroutine ionpar2par
 
 

@@ -223,6 +223,25 @@ function get_isothermal(flag) result(ret)
   ret=0
 end function
 
+function set_momentum_kicks(flag) result(ret)
+  use amuse_sphrayMod
+  integer flag,ret
+  if(flag.NE.0) call sphray_set_momentum_kicks(.TRUE.)
+  if(flag.EQ.0) call sphray_set_momentum_kicks(.FALSE.)
+  ret=0
+end function
+
+function get_momentum_kicks(flag) result(ret)
+  use amuse_sphrayMod
+  integer :: ret,flag
+  logical :: x
+  flag=0
+  call sphray_get_momentum_kicks(x)
+  if(x) flag=1
+  ret=0
+end function
+
+
 function set_H_caseA(flag) result(ret)
   use amuse_sphrayMod
   integer flag,ret

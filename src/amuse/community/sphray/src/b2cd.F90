@@ -111,7 +111,7 @@ use physical_constants_mod, only: pi
      sum = sum + 2.0d0 * pi * ab2 * fac 
   end do
 
-  write(str,'(A,ES10.4)') &
+  write(str,'(A,ES12.4)') &
        "  normalization of b2cd table (should be close to 1.0) = ", sum
   
   call mywrite(str, verb) 

@@ -145,6 +145,7 @@ type global_variables_type
 
    character(clen) :: config_file         !< name of the config file
 
+   logical         :: DoMomentumKicks         !< [Config File] if T, calc momentum kicks - update vel if present
 
    ! particle and source sizes
    !-----------------------------------------------------------

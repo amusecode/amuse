@@ -666,10 +666,10 @@ contains
     call open_formatted_file_w(logfile,loglun)
 
     write(loglun,'(A)') 'atomic rates header'
-    write(loglun,'(A,ES10.4)') "log10 of temperature floor   = ", table%logT1
-    write(loglun,'(A,ES10.4)') "log10 of temperature ceiling = ", table%logT2
+    write(loglun,'(A,ES12.4)') "log10 of temperature floor   = ", table%logT1
+    write(loglun,'(A,ES12.4)') "log10 of temperature ceiling = ", table%logT2
     write(loglun,'(A,I5)')     "rate file entries            = ", table%Tbins
-    write(loglun,'(A,ES10.4)') "log10 spacing of temperature = ", table%dlogT
+    write(loglun,'(A,ES12.4)') "log10 spacing of temperature = ", table%dlogT
     write(loglun,*)    
 
 

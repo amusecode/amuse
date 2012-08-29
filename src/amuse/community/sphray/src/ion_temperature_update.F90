@@ -164,12 +164,11 @@ subroutine update_raylist(raylist, pars, box, srcray)
 
      !  calculate momentum transfer
      !=================================================
-#ifdef incVel     
-          
-     ipar%vel = (raylist%ray%enrg / c) / ( ipar%mass * GV%cgs_mass ) * &
-                raylist%ray%dir
-
-     ipar%vel = ipar%vel / GV%cgs_mass
+#ifdef incVel
+     if(GV%DoMomentumKicks) then
+       ipar%vel =  ipar%vel + (ipar%pdeps* (ipar%penrg / c) / ( ipar%mass * GV%cgs_mass ) * &
+                  raylist%ray%dir ) / GV%cgs_vel
+     endif
 
 #endif
 

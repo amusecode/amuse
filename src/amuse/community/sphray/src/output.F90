@@ -568,7 +568,7 @@ contains
      101 format(A,T44,A,T64,A)
      105 format(T21,ES12.3,T43,ES12.3,T63,ES12.3)
      106 format(T43,ES12.3,T63,ES12.3)
-     110 format(T21,I15,T43,I15,T63,ES11.5)
+     110 format(T21,I15,T43,I15,T63,ES12.5)
 
      write(*,100) "time:", "code units", "Myrs", "seconds"
      write(*,105) GV%start_time_code + GV%itime * GV%dt_code, &

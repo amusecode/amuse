@@ -905,6 +905,16 @@ subroutine sphray_get_isothermal(flag)
   flag=GV%FixSnapTemp
 end subroutine
 
+subroutine sphray_set_momentum_kicks(flag)
+  logical :: flag
+  GV%DoMomentumKicks=flag
+end subroutine
+
+subroutine sphray_get_momentum_kicks(flag)
+  logical :: flag
+  flag=GV%DoMomentumKicks
+end subroutine
+
 subroutine sphray_set_H_caseA(flag)
   logical :: flag
   GV%HydrogenCaseA=flag
@@ -1095,6 +1105,8 @@ subroutine set_default_parameters
 
   GV%BoxUprs=6.6
   GV%BoxLwrs=-6.6
+
+  GV%DoMomentumKicks=.false.
 
 end subroutine
 
