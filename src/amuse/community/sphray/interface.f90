@@ -117,6 +117,16 @@ function set_u_gas(id,u) result(ret)
   t_u=u
   ret=sphray_set_gas_particle_u(id,t_u)
 end function
+
+function set_dudt_gas(id,u) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  real(r8b) :: u
+  real(r4b) :: t_u
+  t_u=u
+  ret=sphray_set_gas_particle_dudt(id,t_u)
+end function
+
 function set_vel_gas(id,vx,vy,vz) result(ret)
   use amuse_sphrayMod
   integer(i4b) :: ret,id
@@ -133,6 +143,15 @@ function get_vel_gas(id,vx,vy,vz) result(ret)
   real(r4b) :: t_vx,t_vy,t_vz
   ret=sphray_get_gas_particle_vel(id,t_vx,t_vy,t_vz)
   vx=t_vx;vy=t_vy;vz=t_vz
+end function
+
+function get_dudt_gas(id,u) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: ret,id
+  real(r8b) :: u
+  real(r4b) :: t_u
+  ret=sphray_get_gas_particle_dudt(id,t_u)
+  u=t_u
 end function
 
 function get_state_src(id,L,x,y,z,spctype) result(ret)

@@ -162,6 +162,15 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.result_type = 'i'
         return function
     @legacy_function    
+    def set_dudt_gas():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['du_dt']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
     def set_vel_gas():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
@@ -176,6 +185,15 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['vx','vy','vz']:
+            function.addParameter(x, dtype='float64', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def get_dudt_gas():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['du_dt']:
             function.addParameter(x, dtype='float64', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -647,6 +665,26 @@ class SPHRay(CommonCode):
             )
         )
         object.add_method(
+            "set_dudt_gas",
+            (
+                object.NO_UNIT,
+                generic_unit_system.length**2/generic_unit_system.time**3
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_dudt_gas",
+            (
+                object.INDEX,
+            ),
+            (
+                generic_unit_system.length**2/generic_unit_system.time**3,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
             "get_state_gas",
             (
                 object.INDEX,
@@ -873,6 +911,9 @@ class SPHRay(CommonCode):
         object.add_setter('gas_particles', 'set_hsml_gas')
         object.add_setter('gas_particles', 'set_rho_gas')
         object.add_setter('gas_particles', 'set_u_gas')
+        object.add_setter('gas_particles', 'set_dudt_gas')
+        object.add_getter('gas_particles', 'get_dudt_gas')
+        
                         
         object.define_set('src_particles', 'id')
         object.set_new('src_particles', 'new_src_particle')
@@ -917,6 +958,7 @@ class SPHRay(CommonCode):
         object.add_transition('RUN', 'UPDATE', 'set_rho_gas', False)
         object.add_transition('RUN', 'UPDATE', 'set_hsml_gas', False)
         object.add_transition('RUN', 'UPDATE', 'set_u_gas', False)
+        object.add_transition('RUN', 'UPDATE', 'set_dudt_gas', False)
         object.add_transition('RUN', 'UPDATE', 'set_state_gas', False)
         object.add_transition('RUN', 'UPDATE', 'set_state_src', False)
         

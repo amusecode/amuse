@@ -474,7 +474,7 @@ function sphray_set_gas_particle_vel(ids,vx,vy,vz) result(ret)
   real(r4b) :: mass, hsml, vx, vy, vz, rho, u , xe 
   integer(i4b) :: i,index,ret
 
-  ret=-99
+  ret=0
 #ifdef incVel
     index=find_gas(ids)
     if(index.LT.0) then
@@ -495,7 +495,8 @@ function sphray_get_gas_particle_vel(ids,vx,vy,vz) result(ret)
   real(r4b) :: mass, hsml,vx,vy,vz, rho, u , xe 
   integer(i4b) :: i,index,ret
 
-  ret=-99
+  ret=0
+  vx=0;vy=0;vz=0
 #ifdef incVel
     index=find_gas(ids)
     if(index.LT.0) then
@@ -505,6 +506,46 @@ function sphray_get_gas_particle_vel(ids,vx,vy,vz) result(ret)
     vx=psys%par(index)%vel(1)
     vy=psys%par(index)%vel(2)
     vz=psys%par(index)%vel(3)
+    ret=0
+#endif
+
+end function
+
+
+
+function sphray_set_gas_particle_dudt(ids,dudt) result(ret)
+  integer(i4b) ::  ids
+  real(r4b) :: dudt 
+  integer(i4b) :: i,index,ret
+
+  ret=0
+#ifdef incHeat
+    index=find_gas(ids)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    psys%par(index)%dinternalEdt=dudt
+    ret=0
+#endif
+
+end function
+
+
+function sphray_get_gas_particle_dudt(ids,dudt) result(ret)
+  integer(i4b) ::  ids
+  real(r4b) :: dudt 
+  integer(i4b) :: i,index,ret
+
+  ret=0
+  dudt=0
+#ifdef incHeat
+    index=find_gas(ids)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+    dudt=psys%par(index)%dinternalEdt
     ret=0
 #endif
 
@@ -589,7 +630,10 @@ subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u,vx,vy,vz)
   par_buffer(npar_buffer)%T=temp_from_u( real(u,r8b) , real(xe,r8b), GV%H_mf)   
   par_buffer(npar_buffer)%ye=xe   
   par_buffer(npar_buffer)%xHI=1-xe   
-  par_buffer(npar_buffer)%xHII=xe   
+  par_buffer(npar_buffer)%xHII=xe
+#ifdef incHeat  
+  par_buffer(npar_buffer)%dinternalEdt=0.
+#endif
 
 !  caseA = .false.
 !  if (GV%HydrogenCaseA) caseA(1) = .true.
@@ -628,9 +672,9 @@ subroutine sphray_add_src_particle(id,L,x,y,z,SpcType)
     src_buffer(nsrc_buffer)%pos(2)=y
     src_buffer(nsrc_buffer)%pos(3)=z
 #ifdef incVel
-    src_buffer(nsrc_buffer)%pos(1)=x
-    src_buffer(nsrc_buffer)%pos(2)=y
-    src_buffer(nsrc_buffer)%pos(3)=z
+    src_buffer(nsrc_buffer)%vel(1)=0.
+    src_buffer(nsrc_buffer)%vel(2)=0.
+    src_buffer(nsrc_buffer)%vel(3)=0.
 #endif
     if(SpcType.NE.0) then
       src_buffer(nsrc_buffer)%SpcType=SpcType

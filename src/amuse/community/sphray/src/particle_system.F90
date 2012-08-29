@@ -57,6 +57,10 @@ type particle_type
    real(r4b)    :: hsml       !< smoothing length
    integer(i8b) :: lasthit    !< indx of last ray to cross this particle
 
+#ifdef incHeat
+   real(r4b)   ::  dinternalEdt  !< !< constant external heating rate (per unit mass - units cgs_vel**2/t)
+#endif
+
 #ifdef incVel
    real(r4b)    :: vel(3)     !< x,y,z velocities
 #endif
@@ -296,6 +300,11 @@ function return_bytes_per_particle() result(bpp)
   bpp = bpp + 4  ! hsml
   bpp = bpp + 8  ! last hit index
 
+#ifdef incHeat
+  bpp = bpp + 4 ! heating  
+#endif
+
+
 #ifdef incVel
   bpp = bpp + 12 ! velocities  
 #endif
@@ -388,6 +397,8 @@ subroutine particle_system_scale_comoving_to_physical(this, a, h)
   this%par%pos(2) = this%par%pos(2) * a / h
   this%par%pos(3) = this%par%pos(3) * a / h
 
+! heating ignored atm (fip 20120829)
+
 #ifdef incVel
   this%par%vel(1) = this%par%vel(1) * sqrt(a) 
   this%par%vel(2) = this%par%vel(2) * sqrt(a) 
@@ -448,6 +459,8 @@ subroutine particle_system_scale_physical_to_comoving(this, a, h)
   this%par%pos(1) = this%par%pos(1) / a * h
   this%par%pos(2) = this%par%pos(2) / a * h
   this%par%pos(3) = this%par%pos(3) / a * h
+
+! heating ignored atm (fip 20120829)
 
 #ifdef incVel
   this%par%vel(1) = this%par%vel(1) / sqrt(a)
@@ -770,6 +783,11 @@ subroutine particle_system_print_lun(psys,str,lun)
 
   write(outlun,101) "lasthit", minval(psys%par%lasthit), &
        maxval(psys%par%lasthit)
+
+#ifdef incHeat
+  write(outlun,100) "dinternalEdt", minval(psys%par%dinternalEdt), &
+       maxval(psys%par%dinternalEdt), meanval_real(psys%par%dinternalEdt)
+#endif
 
 #ifdef incVel
   write(outlun,100) "xvel", minval(psys%par%vel(1)), &

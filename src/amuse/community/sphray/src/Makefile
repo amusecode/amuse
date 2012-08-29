@@ -20,6 +20,8 @@
 #OPT += -DincHmf     # if you want individual Hydrogen mass fractions
 #OPT += -DincHemf    # if you want individual Helium mass fractions
 
+OPT += -DincHeat     # include heating rate
+
 OPT += -DincVel      # include velocity field.  right now used for
                      # updates from photon momentum
 

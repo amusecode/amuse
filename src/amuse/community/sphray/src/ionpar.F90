@@ -63,6 +63,7 @@ type ionpart_type
 
    real(r8b) :: NeBckgnd     !< number density of metallic electrons
    real(r8b) :: Tcmb         !< background radiation field temperature
+   real(r8b) :: dinternalEdt !< constant external heating rate (per unit mass - units cgs_vel**2)
 
    real(r8b) :: gpercm3      !< density in cgs
    real(r8b) :: cm3          !< volume in cgs
@@ -399,7 +400,6 @@ subroutine par2ionpar(par,ipar,index)
   ipar%He_mf  = GV%He_mf
 #endif
 
-
 #ifdef incHe
  ipar%xHeI    = par%xHeI
  ipar%xHeII   = par%xHeII
@@ -408,6 +408,12 @@ subroutine par2ionpar(par,ipar,index)
  ipar%xHeI    = 0.0d0
  ipar%xHeII   = 0.0d0
  ipar%xHeIII  = 0.0d0
+#endif
+
+#ifdef incHeat
+ ipar%dinternalEdt = par%dinternalEdt
+#else
+ ipar%dinternalEdt =0.0d0
 #endif
 
  ipar%lasthit = par%lasthit
@@ -439,6 +445,9 @@ subroutine ionpar2par(ipar,par)
  par%vel     = ipar%vel
 #endif
 
+#ifdef incHeat
+ par%dinternalEdt = ipar%dinternalEdt
+#endif
 
 end subroutine ionpar2par
 
@@ -981,10 +990,9 @@ subroutine set_cooling_func(ip,k,photo,caseA,He)
 
   ip%COMP = Haiman_Comp_Heol(ip%T,ip%Tcmb,ip%ne)
 
-  ip%COOL  = -( ip%CIC + ip%CEC + ip%RCC + ip%BREM + ip%COMP )
-  ip%COOLp = ip%PH + ip%COOL 
+  ip%COOL  = -( ip%CIC + ip%CEC + ip%RCC + ip%BREM + ip%COMP ) + (ip%rho*GV%cgs_rho*ip%dinternalEdt*GV%cgs_vel**2/GV%cgs_time)
+  ip%COOLp = ip%PH + ip%COOL + (ip%rho*GV%cgs_rho*ip%dinternalEdt*GV%cgs_vel**2/GV%cgs_time)
  
-  
 end subroutine set_cooling_func 
 
 !> sets the Hydrogen derivative matrix from the values in GGRR
