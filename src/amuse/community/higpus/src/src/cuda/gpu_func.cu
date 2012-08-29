@@ -175,7 +175,7 @@ HostError Corrector(double *GTIME, double *ATIME, double *local_time, double *st
       rest = (double)((int)(rest)) - rest;
 
       if(dt<5.0e-5)
-         dt = max(sqrt(0.01*sqrt(amod) / sqrt(a2dotsmod)), dt9);
+         dt = max(sqrt(ETA4 * sqrt(amod) / sqrt(a2dotsmod)), dt9);
 
       if(dt > 2.2*step[who] && rest == 0.0 && 2.0*step[who] <= DTMAX)
          step[who] *= 2.0;
