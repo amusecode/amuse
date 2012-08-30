@@ -453,8 +453,7 @@ end function
 
 function sphray_set_gas_particle_u(ids,u) result(ret)
   integer(i4b) ::  ids
-  real(r4b) :: mass, hsml,x,y,z, &
-    rho, u , xe 
+  real(r4b) :: u
   integer(i4b) :: i,index,ret
 
     index=find_gas(ids)
@@ -462,7 +461,7 @@ function sphray_set_gas_particle_u(ids,u) result(ret)
       ret=index
       return
     endif  
-    psys%par(index)%T=temp_from_u( real(u,r8b) , real(xe,r8b), GV%H_mf)  
+    psys%par(index)%T=temp_from_u( real(u,r8b) , real(psys%par(index)%ye,r8b), GV%H_mf)  
 
     ret=0
 
