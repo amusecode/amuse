@@ -440,6 +440,12 @@ int recommit_particles(){
 
     bonsai->localTree.bodies_Ppos[i] = bodies_pos[i];
     bonsai->localTree.bodies_Pvel[i] = bodies_vel[i];
+   
+    //Force the time to t_now to make sure all particles
+    //will take one step after the particles have been
+    //recommitted. 
+    bonsai->localTree.bodies_time[i].x = t_now; 
+    bonsai->localTree.bodies_time[i].y = t_now; 
   }
 
   //Copy the particles to the device
