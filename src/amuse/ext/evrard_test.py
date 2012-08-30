@@ -10,6 +10,9 @@ from amuse.units import units
 
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesWithUnitsConverted
+from amuse.ext.sobol import i4_sobol_generate
+
+
 class uniform_random_unit_cube(object):
     def __init__(self,targetN):
         self.targetN=targetN
@@ -18,6 +21,13 @@ class uniform_random_unit_cube(object):
         x=numpy.random.uniform(-1.,1.,self.par)
         y=numpy.random.uniform(-1.,1.,self.par)
         z=numpy.random.uniform(-1.,1.,self.par)
+        return x,y,z
+
+class sobol_unit_cube(object):
+    def __init__(self,targetN):
+        self.targetN=targetN
+    def make_xyz(self):
+        x, y, z = i4_sobol_generate(3, 2*self.targetN, 2) * 2.0 - 1.0        
         return x,y,z
 
 class regular_grid_unit_cube(object):
@@ -40,13 +50,16 @@ class body_centered_grid_unit_cube(object):
 
     def make_xyz(self):
         nf=self.par
-        x1,y1,z1=numpy.mgrid[-1.:1.:nf*1j,-1.:1.:nf*1j,-1.:1.:nf*1j] 
+        x1,y1,z1=numpy.mgrid[-1.:1.:nf*1j,
+                             -1.:1.:nf*1j,
+                             -1.:1.:nf*1j] 
         x2,y2,z2=numpy.mgrid[-1.+1./nf:1.-1./nf:(nf-1)*1j,  
-          -1.+1./nf:1.-1./nf:(nf-1)*1j,-1.+1./nf:1.-1./nf:(nf-1)*1j]                        
+                             -1.+1./nf:1.-1./nf:(nf-1)*1j,
+                             -1.+1./nf:1.-1./nf:(nf-1)*1j]                        
         x=numpy.concatenate( (x1.flatten(),x2.flatten()) )
         y=numpy.concatenate( (y1.flatten(),y2.flatten()) )
         z=numpy.concatenate( (z1.flatten(),z2.flatten()) )
-        a=numpy.where((x>=-1) & (y>=-1) & (z>=-1) & (x<1) & (y<1) & (z<1) )
+        a=numpy.where((x>=-1) & (y>=-1) & (z>=-1) & (x<1) & (y<1) & (z<1) )[0]
         return x[a],y[a],z[a]
 
 
