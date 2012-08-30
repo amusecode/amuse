@@ -1224,7 +1224,7 @@ class SimpleXSplitSet(SimpleX):
         self.particles.add_particles(sites)
         
         self.simplex_to_gas_channel=self.particles.new_channel_to(self.gas_particles)
-        
+
         self.overridden().commit_particles()
         
         if hasattr(sites,"du_dt"):
@@ -1233,8 +1233,7 @@ class SimpleXSplitSet(SimpleX):
           channel.copy_attributes(attributes)
 
         del sites
-      
-        
+              
     def recommit_particles(self):  
 
         sites=self.gas_particles.copy()
@@ -1257,7 +1256,6 @@ class SimpleXSplitSet(SimpleX):
         self.overridden().recommit_particles()
 
     def evolve_model(self,tend):
-        print "flux",self.particles.flux[0:5]
         self.overridden().evolve_model(tend)
         self.simplex_to_gas_channel.copy_attributes(["xion","u","metallicity"])
         
