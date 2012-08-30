@@ -6010,6 +6010,7 @@ void SimpleX::return_physics(){
 	  it->set_n_HII( site_properties[ i ].get_n_HII() ); 
 	  it->set_ballistic( site_properties[ i ].get_ballistic() );
 	  it->set_internalEnergy( site_properties[ i ].get_internalEnergy() );
+	  it->set_dinternalEnergydt( site_properties[ i ].get_dinternalEnergydt() );
     it->set_metallicity( site_properties[ i ].get_metallicity() );
 	  //set temperature
     double mu = compute_mu( *it );
