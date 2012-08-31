@@ -27,7 +27,7 @@ class sobol_unit_cube(object):
     def __init__(self,targetN):
         self.targetN=targetN
     def make_xyz(self):
-        x, y, z = i4_sobol_generate(3, 2*self.targetN, 2) * 2.0 - 1.0        
+        x, y, z = i4_sobol_generate(3, self.targetN, 2) * 2.0 - 1.0        
         return x,y,z
 
 class regular_grid_unit_cube(object):
