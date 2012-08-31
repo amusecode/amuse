@@ -10,7 +10,8 @@ from amuse.units import generic_unit_system
 from amuse.units import generic_unit_converter
 from amuse.units import units
 from amuse import datamodel
-class TestMPIInterface(TestWithMPI):
+
+class TestCapreoleInterface(TestWithMPI):
     
     def test0(self):
         instance=CapreoleInterface()
@@ -297,7 +298,6 @@ class TestCapreole(TestWithMPI):
         
     def test1(self):
         instance=self.new_instance(Capreole)
-        instance.initialize_code()
         instance.parameters.mesh_size = (10,10,5)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
@@ -306,7 +306,6 @@ class TestCapreole(TestWithMPI):
         instance.parameters.y_boundary_conditions = "periodic","periodic"
         instance.parameters.z_boundary_conditions = "periodic","periodic"
         
-        instance.commit_parameters()
     
         self.assertEquals(len(list(instance.itergrids())),1)
         grid = datamodel.Grid(10,10,10)
@@ -319,7 +318,7 @@ class TestCapreole(TestWithMPI):
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
             
-        result = instance.initialize_grid()
+        instance.initialize_grid()
         
         channel = instance.grid.new_channel_to(grid)
         channel.copy()
@@ -341,7 +340,6 @@ class TestCapreole(TestWithMPI):
 
     def test2(self):
         instance=self.new_instance(Capreole)
-        instance.initialize_code()
         instance.parameters.mesh_size = (3,3,3)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
@@ -350,8 +348,6 @@ class TestCapreole(TestWithMPI):
         instance.parameters.y_boundary_conditions = "periodic","periodic"
         instance.parameters.z_boundary_conditions = "periodic","periodic"
         
-        instance.commit_parameters()
-    
         grid = datamodel.Grid(3,3,3)
         grid.rho = 0.1 | generic_unit_system.density
         grid.rhovx = 0.0 | generic_unit_system.momentum_density
@@ -362,7 +358,6 @@ class TestCapreole(TestWithMPI):
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
             
-        result = instance.initialize_grid()
         
         print instance.grid[1].rho
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | generic_unit_system.density)
@@ -381,7 +376,6 @@ class TestCapreole(TestWithMPI):
     
     def test3(self):
         instance=self.new_instance(Capreole)
-        instance.initialize_code()
         instance.parameters.mesh_size = (5,5,5)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
@@ -390,7 +384,6 @@ class TestCapreole(TestWithMPI):
         instance.parameters.y_boundary_conditions = "periodic","periodic"
         instance.parameters.z_boundary_conditions = "periodic","periodic"
         
-        instance.commit_parameters()
     
         grid = datamodel.Grid(5,5,5)
         grid.rho = 0.1 | generic_unit_system.density
@@ -412,7 +405,6 @@ class TestCapreole(TestWithMPI):
         channel = acc_grid.new_channel_to(instance.acceleration_grid)
         channel.copy()
         
-        result = instance.initialize_grid()
                    
         instance.evolve_model(0.1 | generic_unit_system.time)
         
@@ -436,7 +428,6 @@ class TestCapreole(TestWithMPI):
             1 | units.MSun
         )
         instance=self.new_instance(Capreole, unit_converter = converter)
-        instance.initialize_code()
         instance.parameters.mesh_size = (3,3,3)
         instance.parameters.length_x = 1.0 | units.parsec
         instance.parameters.length_y = 1.0 | units.parsec
@@ -457,7 +448,6 @@ class TestCapreole(TestWithMPI):
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
             
-        result = instance.initialize_grid()
         
         print instance.grid[1].rho
         self.assertAlmostRelativeEquals(instance.grid[1][1][0].rho, 0.1 | density)

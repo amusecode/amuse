@@ -2,6 +2,7 @@ from amuse.community import *
 from amuse.community.interface.hydro import HydrodynamicsInterface
 from amuse.support.options import OptionalAttributes, option
 from amuse.units import generic_unit_system
+from amuse.community.interface.common import CommonCode
 
 import os
 
@@ -2142,13 +2143,14 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface):
     
     
     
-class MpiAmrVac(InCodeComponentImplementation):
+class MpiAmrVac(CommonCode):
 
     def __init__(self, unit_converter = None, **options):
         self.unit_converter = unit_converter
+        CommonCode.__init__(self,  MpiAmrVacInterface(**options), **options)
         
-        InCodeComponentImplementation.__init__(self,  MpiAmrVacInterface(**options), **options)
-    
+        self.set_parameters_filename(self.default_parameters_filename)
+        
     def define_converter(self, object):
         if self.unit_converter is None:
             return
@@ -2594,4 +2596,49 @@ class MpiAmrVac(InCodeComponentImplementation):
         
         definition.define_extra_keywords({'index_of_grid':index_of_grid})
         
+    
+    
+    def define_state(self, object): 
+        CommonCode.define_state(self, object)   
+        #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+        
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        object.add_method('RUN', 'before_get_parameter')
+        object.add_method('EDIT', 'before_get_parameter')
+        
+        object.add_transition('EDIT', 'RUN', 'initialize_grid')
+        object.add_method('RUN', 'evolve_model')
+        
+        for state in ['EDIT', 'RUN']:
+            for methodname in [
+                    'get_grid_density',
+                    'set_grid_density',
+                    'set_grid_energy_density',
+                    'get_grid_energy_density',
+                    'get_grid_momentum_density',
+                    'set_grid_momentum_density', 
+                    'get_position_of_index',
+                    'get_index_of_position',
+                    'set_grid_scalar',
+                    'get_grid_scalar',
+                    'get_mesh_size',
+                    'get_acceleration_grid_acceleration',
+                    'set_acceleration_grid_acceleration',
+                    'get_acceleration_grid_size',
+                    'get_mesh_size',
+                    'get_number_of_grids',
+                    'get_level_of_grid',
+                    'refine_grid',
+                ]:
+                object.add_method(state, methodname)    
     

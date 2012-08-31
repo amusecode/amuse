@@ -491,8 +491,12 @@ module amuse_helpers
   function free_grid() result(ret)
     integer :: ret
     
-    deallocate(state1,state2,pressr,gforce)
-    deallocate(x,y,z)
+    if (ALLOCATED(state1)) then
+        deallocate(state1,state2,pressr,gforce)
+    end if
+    if (ALLOCATED(x)) then
+        deallocate(x,y,z)
+    end if
     
     ret=0
   end function

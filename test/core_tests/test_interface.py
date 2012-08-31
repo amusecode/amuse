@@ -609,6 +609,28 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
         instance.returns_2()
         self.assertEquals(instance.get_name_of_current_state(), 'TWO')
+    
+    def test15(self):
+        original = self.TestClass()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('STATE')
+        handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
+        handler.add_transition('ONE', 'TWO', 'move_to_state_2')
+        handler.add_transition('TWO', 'THREE', 'move_to_state_3')
+        handler.add_transition('TWO', 'FOUR', 'move_to_state_4')
+        handler.add_transition('THREE', 'ONE', 'move_to_state_1')
+        
+        handler.add_method('THREE', 'returns_1')
+        handler.add_method('TWO', 'returns_1')
+        handler.add_method('ONE', 'returns_1')
+        handler.set_initial_state('ZERO')
+        
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEquals(instance.returns_1(), 1)    
+        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
         
 class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
     class TestClass(object):

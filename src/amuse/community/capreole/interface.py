@@ -3,6 +3,7 @@ from amuse.community import *
 
 
 from amuse.community.interface.hydro import HydrodynamicsInterface
+from amuse.community.interface.common import CommonCode
 
 
 from amuse.units.generic_unit_system import *
@@ -259,6 +260,7 @@ class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferen
     set_grid_momentum_density = None
     
     
+        
 class GLCapreoleInterface(CapreoleInterface):
     def __init__(self, **options):
         CodeInterface.__init__(self,name_of_the_worker = 'capreole_worker_gl', **options)
@@ -269,12 +271,12 @@ class GLCapreoleInterface(CapreoleInterface):
         return function
 
 
-class Capreole(InCodeComponentImplementation):
+class Capreole(CommonCode):
 
     def __init__(self, unit_converter = None, **options):
         self.unit_converter = unit_converter
         
-        InCodeComponentImplementation.__init__(self,  CapreoleInterface(**options), **options)
+        CommonCode.__init__(self,  CapreoleInterface(**options), **options)
     
     def define_converter(self, object):
         if not self.unit_converter is None:
@@ -527,6 +529,7 @@ class Capreole(InCodeComponentImplementation):
         )
 
 
+    
     def get_index_range_inclusive(self):
         """
         Returns the min and max values of indices in each
@@ -538,7 +541,6 @@ class Capreole(InCodeComponentImplementation):
         nx, ny, nz = self.get_mesh_size()
         return (1, nx, 1, ny, 1, nz)
     
-    
 
     def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()
@@ -547,4 +549,46 @@ class Capreole(InCodeComponentImplementation):
     def itergrids(self):
         yield self.grid
     
+    
+    
+    def define_state(self, object): 
+        CommonCode.define_state(self, object)   
+        #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+        
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        object.add_method('RUN', 'before_get_parameter')
+        object.add_method('EDIT', 'before_get_parameter')
+        
+        object.add_transition('EDIT', 'RUN', 'initialize_grid')
+        object.add_method('RUN', 'evolve_model')
+        
+        for state in ['EDIT', 'RUN']:
+            for methodname in [
+                    'get_grid_state',
+                    'set_grid_state',
+                    'get_grid_density',
+                    'set_grid_density',
+                    'set_grid_energy_density',
+                    'get_grid_energy_density',
+                    'get_grid_momentum_density',
+                    'set_grid_momentum_density', 
+                    'get_position_of_index',
+                    'get_index_of_position',
+                    'set_grid_scalar',
+                    'get_grid_scalar',
+                    'get_mesh_size',
+                    'set_gravity_field',
+                    'get_gravity_field',
+                ]:
+                object.add_method(state, methodname)    
     

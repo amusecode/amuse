@@ -274,16 +274,24 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
                 return to_state
             else:
                 stored_transitions.append((from_state, to_state))
-                
+        
+        possible_paths = []
         for from_state, to_state  in stored_transitions:
             try:
-                self.state_machine._do_state_transition_to(from_state)
-                return to_state
+                transition_path = self.state_machine._get_state_transition_path_to(from_state)
+                possible_paths.append(transition_path)
             except Exception, ex:
                 pass
+        
+        if len(possible_paths) == 0:            
+            # do again to get an exception.
+            self.state_machine._get_state_transition_path_to(stored_transitions[0][0])
+        
+        for path in sorted(possible_paths, key = lambda x: len(x)):
+            for transition in path:
+                transition.do()
+            return to_state
 
-        # do again to get an exception.
-        self.state_machine._do_state_transition_to(stored_transitions[0][0])
 
     def postcall(self, method, to_state):
         if to_state is None:

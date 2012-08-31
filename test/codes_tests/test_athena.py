@@ -567,9 +567,9 @@ class TestAthenaInterface(TestWithMPI):
     
 class TestAthena(TestWithMPI):
     
+        
     def test0(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         instance.parameters.nx = 10
@@ -580,7 +580,6 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_z = 3 | generic_unit_system.length
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         
-        result = instance.commit_parameters()
         
         #print instance.grid[0].y
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
@@ -608,7 +607,6 @@ class TestAthena(TestWithMPI):
     
     def test1(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         instance.parameters.nx = 10
@@ -635,7 +633,6 @@ class TestAthena(TestWithMPI):
 
     def test2(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         instance.setup_mesh(10, 10, 1, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length , 0.0 | generic_unit_system.length)
@@ -645,7 +642,6 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_z = 0.0 | generic_unit_system.length
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         
-        result = instance.commit_parameters()
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
         momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
@@ -661,7 +657,6 @@ class TestAthena(TestWithMPI):
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
             
-        result = instance.initialize_grid()
         
         print instance.grid[1].rho
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
@@ -682,7 +677,6 @@ class TestAthena(TestWithMPI):
 
     def test3(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         instance.parameters.nx = 10
@@ -693,8 +687,6 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_z = 0.0 | generic_unit_system.length
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         instance.set_has_external_gravitational_potential(1)
-        
-        result = instance.commit_parameters()
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
         momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
@@ -734,7 +726,6 @@ class TestAthena(TestWithMPI):
 
     def test4(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         instance.parameters.nx = 10
@@ -745,8 +736,6 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_z = 0.0 | generic_unit_system.length
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         instance.set_has_external_gravitational_potential(1)
-        
-        result = instance.commit_parameters()
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
         momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
@@ -801,7 +790,6 @@ class TestAthena(TestWithMPI):
 
     def test5(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         self.assertAlmostRelativeEquals(instance.parameters.isothermal_sound_speed, 0.0 | generic_unit_system.speed)
         instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
         self.assertAlmostRelativeEquals(instance.parameters.isothermal_sound_speed, 0.1 | generic_unit_system.speed)
@@ -819,12 +807,11 @@ class TestAthena(TestWithMPI):
 
     def test6(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         instance.setup_mesh(10 , 20, 40, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
-        result = instance.commit_parameters()
+        
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
         momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
@@ -849,7 +836,6 @@ class TestAthena(TestWithMPI):
 
     def test7(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
         instance.parameters.gamma = 0.1
         instance.parameters.courant_number = 0.1
@@ -879,21 +865,18 @@ class TestAthena(TestWithMPI):
     
     def test8(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 10
         self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 10)
         instance.stop()
 
     def test8a(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.parameters.stopping_conditions_timeout = 10 | units.s
         self.assertEquals(instance.parameters.stopping_conditions_timeout, 10|units.s)
         instance.stop()
 
     def test9(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.parameters.x_boundary_conditions = "periodic","periodic"
         instance.parameters.y_boundary_conditions = "periodic","periodic"
         instance.parameters.z_boundary_conditions = "periodic","periodic"
@@ -902,7 +885,6 @@ class TestAthena(TestWithMPI):
 
     def xtest10(self):
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.parameters.gamma = 5/3.0
         instance.parameters.courant_number=0.3
         
@@ -966,7 +948,6 @@ class TestAthena(TestWithMPI):
     
     def test11(self):
         instance=self.new_instance(Athena, mode=AthenaInterface.MODE_SELF_GRAVITY) #, redirection = "none") #, debugger="gdb")
-        instance.initialize_code()
         instance.parameters.gamma = 5/3.0
         instance.parameters.courant_number=0.3
         
@@ -1041,7 +1022,6 @@ class TestAthena(TestWithMPI):
     def test12(self):
         print "Testing Athena grid setters"
         instance=self.new_instance(Athena)
-        instance.initialize_code()
         instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
         instance.parameters.gamma = 5/3.0
         instance.parameters.courant_number = 0.3
@@ -1050,7 +1030,6 @@ class TestAthena(TestWithMPI):
         instance.parameters.x_boundary_conditions = ("periodic", "periodic")
         instance.parameters.y_boundary_conditions = ("periodic", "periodic")
         instance.parameters.z_boundary_conditions = ("periodic", "periodic")
-        instance.commit_parameters()
         
         instance.grid.rho =    1.0 | generic_unit_system.density
         self.assertAlmostEquals(instance.grid.rho, 
@@ -1103,7 +1082,6 @@ class TestAthena(TestWithMPI):
             1 | units.MSun
         )
         instance=self.new_instance(Athena, unit_converter = converter)
-        instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         
@@ -1113,7 +1091,6 @@ class TestAthena(TestWithMPI):
         instance.parameters.y_boundary_conditions = ("periodic", "periodic")
         instance.parameters.z_boundary_conditions = ("periodic", "periodic")
         
-        instance.commit_parameters()
         
         density = units.MSun / (units.parsec ** 3)
         momentum =  units.MSun / (units.Myr * units.parsec ** 2 )
@@ -1144,13 +1121,11 @@ class TestAthena(TestWithMPI):
         
     def test14(self): 
         instance=self.new_instance(Athena, redirection="none")
-        instance.initialize_code()
         instance.parameters.mesh_size = (10 , 1, 1)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
         instance.parameters.x_boundary_conditions = ("interface", "outflow")
         instance.parameters.stopping_conditions_number_of_steps = 1
         
-        instance.commit_parameters()
         
         grid = datamodel.Grid.create((10,1,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
@@ -1183,7 +1158,6 @@ class TestAthena(TestWithMPI):
                 0,
                 1
             )
-        instance.initialize_grid()
         instance.evolve_model(1.0 | generic_unit_system.time)
         print instance.stopping_conditions.number_of_steps_detection.is_set()
         rho = instance.grid.rho[...,0,0]
@@ -1202,3 +1176,7 @@ class TestAthena(TestWithMPI):
         
         instance.stop()
         
+    def test15(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.stop()

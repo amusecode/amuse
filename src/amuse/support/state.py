@@ -235,8 +235,7 @@ class StateMachine(OptionalAttributes):
         return
     
     
-
-    def _do_state_transition_to(self, state):
+    def _get_state_transition_path_to(self, state):
         all_transitions = list(self._get_transitions_path_from_to(self._current_state, state))
         transitions = []
         for x in all_transitions:
@@ -258,6 +257,10 @@ class StateMachine(OptionalAttributes):
             exception = exceptions.AmuseException('\n'.join(lines))
             exception.transitions = transitions
             raise exception
+        return transitions
+        
+    def _do_state_transition_to(self, state):
+        transitions = self._get_state_transition_path_to(state)
     
         for transition in transitions:
             transition.do()

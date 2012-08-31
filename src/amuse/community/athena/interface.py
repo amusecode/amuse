@@ -1,12 +1,12 @@
 from amuse.community import *
 
-
-
 from amuse.community.interface.mhd import MagnetohydrodynamicsInterface
+from amuse.community.interface.common import CommonCode
 
 import numpy
 
 from amuse.units.generic_unit_system import *
+
 class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     """
     Athena is a grid-based code for astrophysical hydrodynamics. Athena can solve 
@@ -552,13 +552,13 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         return function
         
     
-class Athena(InCodeComponentImplementation):
+class Athena(CommonCode):
 
     def __init__(self, unit_converter = None, **options):
         self.unit_converter = unit_converter
         
         self.stopping_conditions = StoppingConditions(self)
-        InCodeComponentImplementation.__init__(self,  AthenaInterface(**options), **options)
+        CommonCode.__init__(self,  AthenaInterface(**options), **options)
         
     def define_converter(self, object):
         if self.unit_converter is None:
@@ -1006,3 +1006,42 @@ class Athena(InCodeComponentImplementation):
         self.parameters.send_not_set_parameters_to_code()
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
+    
+    def define_state(self, object): 
+        CommonCode.define_state(self, object)   
+        #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+        
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        object.add_method('RUN', 'before_get_parameter')
+        object.add_method('EDIT', 'before_get_parameter')
+        
+        object.add_transition('EDIT', 'RUN', 'initialize_grid')
+        object.add_method('RUN', 'evolve_model')
+        
+        for state in ['EDIT', 'RUN']:
+            for methodname in [
+                    'get_grid_state',
+                    'set_grid_state',
+                    'get_grid_density',
+                    'set_grid_density',
+                    'set_grid_energy_density',
+                    'get_grid_energy_density',
+                    'get_grid_momentum_density',
+                    'set_grid_momentum_density', 
+                    'get_position_of_index',
+                    'get_index_of_position',
+                    'set_grid_scalar',
+                    'get_grid_scalar',
+                    'get_index_range_inclusive'
+                ]:
+                object.add_method(state, methodname)
