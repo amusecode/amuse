@@ -1042,6 +1042,7 @@ class Athena(CommonCode):
                     'get_index_of_position',
                     'set_grid_scalar',
                     'get_grid_scalar',
+                    'get_number_of_grids',
                     'get_index_range_inclusive'
                 ]:
                 object.add_method(state, methodname)

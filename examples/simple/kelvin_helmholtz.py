@@ -15,7 +15,6 @@ PERTUBATION_AMPLITUDE = 0.01 | speed
 
 def new_instance_of_hydro_code(number_of_workers=4):
     result=Athena(number_of_workers = number_of_workers)
-    result.initialize_code()
     result.parameters.gamma = GAMMA
     result.parameters.courant_number=0.8
     return result
@@ -31,7 +30,6 @@ def set_parameters(instance):
     instance.parameters.y_boundary_conditions = ("periodic","periodic")
     instance.parameters.z_boundary_conditions = ("periodic","periodic")
     
-    result = instance.commit_parameters()
     
 def new_grid():
     grid = Grid.create(DIMENSIONS_OF_MESH, [1,1,1] | length)
@@ -88,7 +86,6 @@ def simulate_kelvin_helmholtz_instability(end_time):
         
         from_model_to_code = inmem.new_channel_to(x)
         from_model_to_code.copy()
-    instance.initialize_grid()
     
     print "start evolve"
     dt = end_time / 10.0
