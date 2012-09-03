@@ -119,6 +119,20 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.addParameter('status', dtype='int32', direction=function.OUT)
         return function
         
+    @legacy_function   
+    def new_pre_ms_particle():
+        """
+        Define a new pre-main-sequence star in the code. The star will start with the given mass.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
+            , description="The new index for the star. This index can be used to refer to this star in other functions")
+        function.addParameter('mass', dtype='float64', direction=function.IN
+            , description="The initial mass of the star")
+        function.result_type = 'int32'
+        return function
+        
     @legacy_function
     def set_time_step():
         function = LegacyFunctionSpecification() 
@@ -918,7 +932,11 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.set_new('native_stars', 'new_particle')
         object.set_delete('native_stars', 'delete_star')
         
-        for particle_set_name in ['native_stars', 'imported_stars']:
+        object.define_set('pre_ms_stars', 'index_of_the_star')
+        object.set_new('pre_ms_stars', 'new_pre_ms_particle')
+        object.set_delete('pre_ms_stars', 'delete_star')
+        
+        for particle_set_name in ['native_stars', 'imported_stars', 'pre_ms_stars']:
             object.add_getter(particle_set_name, 'get_radius', names = ('radius',))
             object.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
             object.add_getter(particle_set_name, 'get_mass', names = ('mass',))
@@ -952,6 +970,11 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
             object.add_method(particle_set_name, 'reset_number_of_backups_in_a_row')
             
+    def define_state(self, object):
+        StellarEvolution.define_state(self, object)
+        object.add_method('EDIT', 'new_pre_ms_particle')
+        object.add_method('UPDATE', 'new_pre_ms_particle')
+        object.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
     
     def define_errorcodes(self, object):
         InternalStellarStructure.define_errorcodes(self, object)
@@ -966,6 +989,11 @@ class MESA(StellarEvolution, InternalStellarStructure):
     def define_methods(self, object):
         InternalStellarStructure.define_methods(self, object)
         StellarEvolution.define_methods(self, object)
+        object.add_method(
+            "new_pre_ms_particle",
+            (units.MSun),
+            (object.INDEX, object.ERROR_CODE)
+        )
         object.add_method(
             "set_time_step", 
             (object.INDEX, units.yr), 

@@ -67,6 +67,7 @@ stellar_type = core.enumeration_unit(
         "Black Hole",
         "Massless Supernova",
         "Unknown stellar type",
+        "Pre-main-sequence Star"
     ]
 )
 

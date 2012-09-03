@@ -195,6 +195,63 @@
       new_particle = 0
    end function
 
+! Create a new pre-main-sequence star
+   function new_pre_ms_particle(AMUSE_id, AMUSE_mass)
+      use amuse_support
+      use star_lib, only: alloc_star, star_setup, star_create_pre_ms_model, &
+         show_terminal_header, show_log_description
+      use star_private_def, only: star_info, get_star_ptr
+      use run_star_support, only: setup_for_run_star, before_evolve, &
+         show_log_description_at_start
+      implicit none
+      integer, intent(out) :: AMUSE_id
+      integer :: new_pre_ms_particle, ierr
+      double precision, intent(in) :: AMUSE_mass
+      type (star_info), pointer :: s
+      new_pre_ms_particle = -1
+      AMUSE_id = alloc_star(ierr)
+      number_of_particles = AMUSE_id
+      if (failed('alloc_star', ierr)) return
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) return
+      call star_setup(AMUSE_id, AMUSE_inlist_path, ierr)
+      if (failed('star_setup', ierr)) return
+      ! Replace value of mass and metallicity just read, with supplied values.
+      s% initial_mass = AMUSE_mass
+      s% initial_z = AMUSE_metallicity
+      s% zams_filename = trim(AMUSE_zams_filename) // '.data'
+      s% max_age = AMUSE_max_age_stop_condition
+      s% min_timestep_limit = AMUSE_min_timestep_stop_condition
+      s% max_model_number = AMUSE_max_iter_stop_condition
+      s% mixing_length_alpha = AMUSE_mixing_length_ratio
+      s% alpha_semiconvection = AMUSE_semi_convection_efficiency
+      s% RGB_wind_scheme = AMUSE_RGB_wind_scheme
+      s% AGB_wind_scheme = AMUSE_AGB_wind_scheme
+      s% Reimers_wind_eta = AMUSE_reimers_wind_efficiency
+      s% Blocker_wind_eta = AMUSE_blocker_wind_efficiency
+      s% de_Jager_wind_eta = AMUSE_de_jager_wind_efficiency
+      s% Dutch_wind_eta = AMUSE_dutch_wind_efficiency
+      if (debugging) then
+         write (*,*) "Creating new pre-main-sequence particles with mass: ", s% initial_mass
+      endif
+      if (show_log_description_at_start) then
+         write(*,*)
+         call show_log_description(AMUSE_id, ierr)
+         if (failed('show_log_description', ierr)) return
+      end if
+      write(*,*)
+      call star_create_pre_ms_model(AMUSE_id, 0.0d0, 0.0d0, 0.0d0, ierr)
+      if (failed('create_pre_ms_model', ierr)) return
+      call setup_for_run_star(AMUSE_id, s, .false., ierr)
+      if (failed('setup_for_run_star', ierr)) return
+      call before_evolve(AMUSE_id, ierr)
+      if (failed('before_evolve', ierr)) return
+      call show_terminal_header(AMUSE_id, ierr)
+      if (failed('show_terminal_header', ierr)) return
+      call flush()
+      new_pre_ms_particle = 0
+   end function
+
 ! Remove a particle (doesn't do anything yet)
    function delete_star(AMUSE_id)
       implicit none
@@ -524,8 +581,10 @@
          if (s% log_surface_radius > -1.0) then
             ! Use the MESA phase_of_evolution marker (explained below)
             select case(s% phase_of_evolution)
-               case(0,1,2)
-                  if (s% initial_mass < 0.75) then
+               case(0)
+                  AMUSE_value = 17 ! Pre-main-sequence star
+               case(1,2)
+                  if (s% mass < 0.75) then
                      AMUSE_value = 0 ! Convective low mass star
                   else
                      AMUSE_value = 1 ! Main sequence star
