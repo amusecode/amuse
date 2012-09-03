@@ -4,7 +4,7 @@ After Iben, ApJ 141, 993, 1965
 """
 
 from matplotlib import pyplot
-from amuse.plot import loglog, xlabel, ylabel
+from amuse.plot import loglog, xlabel, ylabel, text
 
 from amuse.units import units
 from amuse.community.mesa.interface import MESA
@@ -40,14 +40,15 @@ def simulate_evolution_tracks():
         
     stellar_evolution.stop()
     
-    return temperature_at_time, luminosity_at_time, time
+    return temperature_at_time, luminosity_at_time, time, masses
     
-def plot_track(temperature_at_time, luminosity_at_time):
+def plot_track(temperature_at_time, luminosity_at_time, masses):
     pyplot.figure(figsize = (6, 8))
     pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
     
-    for temperature, luminosity in zip(temperature_at_time, luminosity_at_time):
+    for temperature, luminosity, mass in zip(temperature_at_time, luminosity_at_time, masses):
         loglog(temperature[5:], luminosity[5:], marker="s")
+        text(1.25*temperature[-1], 0.5*luminosity[-1], mass)
     xlabel('Effective Temperature')
     ylabel('Luminosity')
     pyplot.xlim(10**4.6, 10**3.5)
@@ -56,6 +57,6 @@ def plot_track(temperature_at_time, luminosity_at_time):
     
 
 if __name__ in ('__main__', '__plot__'):        
-    temperatures, luminosities, time = simulate_evolution_tracks()
-    plot_track(temperatures, luminosities)
+    temperatures, luminosities, time, masses = simulate_evolution_tracks()
+    plot_track(temperatures, luminosities, masses)
     

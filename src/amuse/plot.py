@@ -110,6 +110,11 @@ def hist(x, bins=10, range=None, normed=False, weights=None, cumulative=False, b
     native_plot.hist(args[0], bins, range, normed, weights, cumulative, bottom, histtype, align, orientation, rwidth, log, hold, **kwargs)
     UnitlessArgs.unitnames_of_args.append("")
 
+def text(x, y, s, **kwargs):
+    UnitlessArgs.strip(x,y)
+    args = UnitlessArgs.stripped_args
+    native_plot.text(args[0], args[1], s, **kwargs)
+
 def xlabel(s, *args, **kwargs):
     if not '[' in s:
         s = custom_label.format(s, UnitlessArgs.unitnames_of_args[0])

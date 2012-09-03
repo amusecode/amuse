@@ -930,5 +930,23 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(star.core_mass, h_poor_mass, 2)
         instance.stop()
     
+    def test20(self):
+        print "Testing MESA pre-main-sequence star"
+        instance = self.new_instance(MESA)
+        star = instance.pre_ms_stars.add_particle(Particle(mass=1.0|units.MSun))
+        
+        self.assertAlmostEqual(star.time_step, 1.0e-3 | units.yr)
+        star.evolve_one_step()
+        self.assertAlmostEqual(star.age, 1.0e-3 | units.yr)
+        
+        instance.evolve_model(1.0 | units.yr)
+        self.assertEqual(star.stellar_type, 17 | units.stellar_type)
+        self.assertEqual(str(star.stellar_type), "Pre-main-sequence Star")
+        self.assertTrue(star.age > 1.0 | units.yr)
+        self.assertTrue(star.temperature < 4500 | units.K)
+        self.assertTrue(star.luminosity > 10 | units.LSun)
+        self.assertTrue(star.radius > 2 | units.RSun)
+        instance.stop()
+    
 
 

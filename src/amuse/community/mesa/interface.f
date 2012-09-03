@@ -584,7 +584,7 @@
                case(0)
                   AMUSE_value = 17 ! Pre-main-sequence star
                case(1,2)
-                  if (s% mass < 0.75) then
+                  if (s% star_mass < 0.75) then
                      AMUSE_value = 0 ! Convective low mass star
                   else
                      AMUSE_value = 1 ! Main sequence star

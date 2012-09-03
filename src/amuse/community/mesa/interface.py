@@ -921,7 +921,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         
         
     def define_particle_sets(self, object):
-        object.define_super_set('particles', ['native_stars', 'imported_stars'], 
+        object.define_super_set('particles', ['native_stars', 'imported_stars', 'pre_ms_stars'], 
             index_to_default_set = 0)
         
         object.define_set('imported_stars', 'index_of_the_star')
