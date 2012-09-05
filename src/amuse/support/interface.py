@@ -279,7 +279,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
         for from_state, to_state  in stored_transitions:
             try:
                 transition_path = self.state_machine._get_state_transition_path_to(from_state)
-                possible_paths.append(transition_path)
+                possible_paths.append([transition_path, to_state])
             except Exception, ex:
                 pass
         
@@ -287,10 +287,9 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
             # do again to get an exception.
             self.state_machine._get_state_transition_path_to(stored_transitions[0][0])
         
-        for path in sorted(possible_paths, key = lambda x: len(x)):
+        for path, to_state in sorted(possible_paths, key = lambda x: len(x[0])):
             for transition in path:
                 transition.do()
-                to_state = transition.to_state
             return to_state
 
 
