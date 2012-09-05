@@ -123,6 +123,26 @@ static void boundary_left_x1_copy(GridS *pGrid)
   
 }
 
+static void boundary_right_x1_copy(GridS *pGrid)
+{
+}
+
+static void boundary_left_x2_copy(GridS *pGrid)
+{
+}
+
+static void boundary_right_x2_copy(GridS *pGrid)
+{
+}
+
+static void boundary_left_x3_copy(GridS *pGrid)
+{
+}
+
+static void boundary_right_x3_copy(GridS *pGrid)
+{
+}
+
 
 /*
  * determine i,j,k for x1, x2, x3
@@ -344,16 +364,22 @@ int commit_parameters(){
   init_grid(&mesh);
   
   
-  if( par_geti( "domain1", "bc_ix1") == 10) {
     
-    for (nl=0; nl<(mesh.NLevels); nl++){
-        for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
-            if (mesh.Domain[nl][nd].Grid != NULL){
-                fprintf(stderr, "Creating a boundary!\n");
-                mesh.Domain[nl][nd].Grid->boundary = (BoundaryCellS *) calloc(sizeof(BoundaryCellS), 1);
+for (nl=0; nl<(mesh.NLevels); nl++){
+    for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+        if (mesh.Domain[nl][nd].Grid != NULL){
+            mesh.Domain[nl][nd].Grid->boundary = (BoundaryCellS *) calloc(sizeof(BoundaryCellS), 1);
+            /* WIP, domain divided over multiple grids
+            printf("DISP: %d, %d, %d \n", mesh.Domain[nl][nd].Disp[0] , mesh.Domain[nl][nd].Disp[1] , mesh.Domain[nl][nd].Disp[2] );
+                        
+            printf("DISP: %d, %d, %d \n", mesh.Domain[nl][nd].Grid->Disp[0] , mesh.Domain[nl][nd].Grid->Disp[1] , mesh.Domain[nl][nd].Grid->Disp[2] );
+            
+            printf("I: %d, %d, %d, %d \n", mesh.Domain[nl][nd].Grid->is, mesh.Domain[nl][nd].Grid->ie,  mesh.Domain[nl][nd].Grid->ie -  mesh.Domain[nl][nd].Grid->is + 1,  mesh.Domain[nl][nd].Grid->Nx[0]);
+            printf("J: %d, %d, %d, %d \n", mesh.Domain[nl][nd].Grid->js, mesh.Domain[nl][nd].Grid->je,  mesh.Domain[nl][nd].Grid->je -  mesh.Domain[nl][nd].Grid->js + 1, mesh.Domain[nl][nd].Grid->Nx[1]);
+            printf("K: %d, %d, %d, %d \n", mesh.Domain[nl][nd].Grid->ks, mesh.Domain[nl][nd].Grid->ke,  mesh.Domain[nl][nd].Grid->ke -  mesh.Domain[nl][nd].Grid->ks + 1, mesh.Domain[nl][nd].Grid->Nx[2]);
+             */
+            if(par_geti( "domain1", "bc_ix1") == 10) {
                 if (mesh.Domain[nl][nd].Disp[0] == 0) {                
-                    
-                    fprintf(stderr, "a boundary %p\n",mesh.Domain[nl][nd].Grid->boundary);
                     mesh.Domain[nl][nd].Grid->boundary->LeftX1 = (ConsS***) calloc_3d_array(
                         mesh.Domain[nl][nd].Grid->Nx[2],
                         mesh.Domain[nl][nd].Grid->Nx[1],
@@ -361,8 +387,65 @@ int commit_parameters(){
                         sizeof(ConsS)
                     );
                     bvals_mhd_fun(&mesh.Domain[nl][nd], left_x1,  boundary_left_x1_copy);
+                }     
+            }     
+            if( par_geti( "domain1", "bc_ox1") == 10) {
+                if (mesh.Domain[nl][nd].MaxX[0] == mesh.Domain[nl][nd].RootMaxX[0])  {
+                    mesh.Domain[nl][nd].Grid->boundary->RightX1 = (ConsS***) calloc_3d_array(
+                        mesh.Domain[nl][nd].Grid->Nx[2],
+                        mesh.Domain[nl][nd].Grid->Nx[1],
+                        nghost,
+                        sizeof(ConsS)
+                    );
+                    bvals_mhd_fun(&mesh.Domain[nl][nd], right_x1,  boundary_right_x1_copy);
                 }
             }
+            if(par_geti( "domain1", "bc_ix2") == 10) {
+                if (mesh.Domain[nl][nd].Disp[1] == 0) {                
+                    mesh.Domain[nl][nd].Grid->boundary->LeftX2 = (ConsS***) calloc_3d_array(
+                        mesh.Domain[nl][nd].Grid->Nx[2],
+                        nghost,
+                        mesh.Domain[nl][nd].Grid->Nx[0] + 2 * nghost,
+                        sizeof(ConsS)
+                    );
+                    bvals_mhd_fun(&mesh.Domain[nl][nd], left_x2,  boundary_left_x2_copy);
+                }     
+            }       
+            if( par_geti( "domain1", "bc_ox2") == 10) {
+                if (mesh.Domain[nl][nd].MaxX[1] == mesh.Domain[nl][nd].RootMaxX[1])  {
+                    mesh.Domain[nl][nd].Grid->boundary->RightX2 = (ConsS***) calloc_3d_array(
+                        mesh.Domain[nl][nd].Grid->Nx[2],
+                        nghost,
+                        mesh.Domain[nl][nd].Grid->Nx[0] + 2 * nghost,
+                        sizeof(ConsS)
+                    );
+                    bvals_mhd_fun(&mesh.Domain[nl][nd], right_x2,  boundary_right_x2_copy);
+                }
+            }  
+            int jfactor = mesh.Domain[nl][nd].Grid->Nx[1] > 1 ? 2 : 0;
+            if(par_geti( "domain1", "bc_ix3") == 10) {
+                if (mesh.Domain[nl][nd].Disp[2] == 0) {
+                                  
+                    mesh.Domain[nl][nd].Grid->boundary->LeftX3 = (ConsS***) calloc_3d_array(
+                        nghost,
+                        mesh.Domain[nl][nd].Grid->Nx[1] + jfactor * nghost,
+                        mesh.Domain[nl][nd].Grid->Nx[0] + 2 * nghost,
+                        sizeof(ConsS)
+                    );
+                    bvals_mhd_fun(&mesh.Domain[nl][nd], left_x3,  boundary_left_x3_copy);
+                }     
+            }       
+            if( par_geti( "domain1", "bc_ox3") == 10) {
+                if (mesh.Domain[nl][nd].MaxX[2] == mesh.Domain[nl][nd].RootMaxX[2])  {
+                    mesh.Domain[nl][nd].Grid->boundary->RightX3 = (ConsS***) calloc_3d_array(
+                        nghost,
+                        mesh.Domain[nl][nd].Grid->Nx[1] + jfactor * nghost,
+                        mesh.Domain[nl][nd].Grid->Nx[0] + 2 * nghost,
+                        sizeof(ConsS)
+                    );
+                    bvals_mhd_fun(&mesh.Domain[nl][nd], right_x3,  boundary_right_x3_copy);
+                }
+            }  
         }
     }
   }
@@ -2115,17 +2198,17 @@ ConsS *** get_boundary_with_index(GridS * grid, int index_of_boundary)
 {
     BoundaryCellS * boundary = grid->boundary;
     switch(index_of_boundary) {
-        case 0:
-            return boundary->LeftX1;
         case 1:
-            return boundary->RightX1;
+            return boundary->LeftX1;
         case 2:
-            return boundary->LeftX2;
+            return boundary->RightX1;
         case 3:
-            return boundary->RightX2;
+            return boundary->LeftX2;
         case 4:
-            return boundary->LeftX3;
+            return boundary->RightX2;
         case 5:
+            return boundary->LeftX3;
+        case 6:
             return boundary->RightX3;
         default:
             fprintf(stderr, "Error, incorrect boundary index");
@@ -2177,12 +2260,16 @@ int set_boundary_state(
         else
         {
             GridS * grid = dom->Grid;
+            
             ConsS *** U = get_boundary_with_index(grid, index_of_boundary[l]);
+            if(U == 0) {    
+                continue;
+            }
             
             if (1 || is_on_grid(grid, i0, j0, k0)) // need to make is_on_boundary thingy
             {
                 //ijk_on_grid(grid, &i0, &j0, &k0);
-                fprintf(stderr, "i,j,k %d, %d, %d\n", i0, j0, k0);
+                //fprintf(stderr, "i,j,k %d, %d, %d - %p\n", i0, j0, k0, U);
                 U[k0][j0][i0].d = rho[l];
                 U[k0][j0][i0].M1 = rhovx[l];
                 U[k0][j0][i0].M2 = rhovy[l];
@@ -2197,6 +2284,79 @@ int set_boundary_state(
 }
 
 
+int get_boundary_state(
+    int * i,
+    int * j,
+    int * k,
+    int * index_of_boundary,
+    int * index_of_grid,
+    double * rho,
+    double * rhovx, double * rhovy, double * rhovz,
+    double * en,
+    int number_of_points)
+{
+
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    DomainS * dom = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+
+        rho[l] =  0.0;
+        rhovx[l] = 0.0;
+        rhovy[l] = 0.0;
+        rhovz[l] = 0.0;
+        en[l] = 0.0;
+        
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            
+            ConsS *** U = get_boundary_with_index(grid, index_of_boundary[l]);
+            //fprintf(stderr, "bndry %d - %p\n", index_of_boundary[l], U);
+            if(U == 0) {
+                continue;
+            }
+            
+            if (1 || is_on_grid(grid, i0, j0, k0)) // need to make is_on_boundary thingy
+            {
+                //ijk_on_grid(grid, &i0, &j0, &k0);
+                //fprintf(stderr, "i,j,k %d, %d, %d - %p\n", i0, j0, k0, U);
+                rho[l] = U[k0][j0][i0].d;
+                rhovx[l] = U[k0][j0][i0].M1;
+                rhovy[l] = U[k0][j0][i0].M2;
+                rhovz[l] = U[k0][j0][i0].M3;
+                en[l] = U[k0][j0][i0].E;
+            }
+
+        }
+    }
+
+    return 0;
+}
 
 
 int get_grid_magnetic_field(
@@ -2331,5 +2491,72 @@ int set_grid_magnetic_field(
     }
 
     return 0;
-}
+}  
 
+static char * boundary_names[] = {"bc_ix1","bc_ox1","bc_ix2","bc_ox2","bc_ix3","bc_ox3"};
+
+int get_boundary_index_range_inclusive(
+    int index_of_boundary,
+    int index_of_grid,
+    int * minx,
+    int * maxx,
+    int * miny,
+    int * maxy,
+    int * minz,
+    int * maxz
+)
+{
+    if(index_of_boundary < 1) {return -1;}
+    if(index_of_boundary > 6) {return -1;}
+    const char * boundary_name = boundary_names[index_of_boundary-1];
+    int boundary_type = par_geti( "domain1", (char *) boundary_name);
+    
+    if(index_of_grid < 1) {return -1;}
+    DomainS * dom = get_domain_structure_with_index(index_of_grid);
+    
+    if(dom == 0)
+    {
+        return -2;
+    }
+        
+    printf("boundary name: %s , type: %d\n", boundary_name, boundary_type);
+    if(boundary_type == 10) {
+        *minx = 0;
+        *miny = 0;
+        *minz = 0;
+        switch(index_of_boundary) {
+            case 1:
+            case 2:
+                *maxx = nghost - 1;
+                *maxy = dom->Nx[1] - 1;
+                *maxz = dom->Nx[2] - 1;
+                break;
+            case 3:
+            case 4:
+                *maxx = dom->Nx[0] - 1 + (2 * nghost); 
+                *maxy = nghost - 1;
+                *maxz = dom->Nx[2] - 1;
+                break;
+            case 5:
+            case 6:
+                *maxx = dom->Nx[0] - 1 + (2 * nghost);
+                *maxy = dom->Nx[1] - 1 + (dom->Nx[1]  > 1 ? 2 * nghost : 0);
+                *maxz = nghost - 1;
+                break;
+            default:
+                *maxx = 0;
+                *maxy = 0;
+                *maxz = 0;
+            
+        }
+        
+    } else {
+        *minx = 0;
+        *maxx = 0;
+        *miny = 0;
+        *maxy = 0;
+        *minz = 0;
+        *maxz = 0;
+    }
+    return 0;
+}

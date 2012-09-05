@@ -536,6 +536,19 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
     
     
     
+    @legacy_function
+    def get_boundary_index_range_inclusive():
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_boundary', dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('minx', dtype='i', direction=function.OUT)
+        function.addParameter('maxx', dtype='i', direction=function.OUT)
+        function.addParameter('miny', dtype='i', direction=function.OUT)
+        function.addParameter('maxy', dtype='i', direction=function.OUT)
+        function.addParameter('minz', dtype='i', direction=function.OUT)
+        function.addParameter('maxz', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
 
     @legacy_function
     def set_boundary_state():
@@ -545,8 +558,22 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('index_of_boundary', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('index_of_boundary', dtype='i', direction=function.IN, default = 1)
         function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def get_boundary_state():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_boundary', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function

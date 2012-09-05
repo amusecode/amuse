@@ -565,6 +565,269 @@ class TestAthenaInterface(TestWithMPI):
             
             instance.stop()
     
+    def test17(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,1,1,100.0,0,0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","periodic","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(1,1)
+        self.assertEquals(error, 0)
+        self.assertEquals(minx, 0)
+        self.assertEquals(maxx, 3)
+        self.assertEquals(miny, 0)
+        self.assertEquals(maxy, 0)
+        self.assertEquals(minz, 0)
+        self.assertEquals(maxz, 0)
+        
+        for i in range(2,7):
+            minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i,1)
+            self.assertEquals(error, 0)
+            self.assertEquals(minx, 0)
+            self.assertEquals(maxx, 0)
+            self.assertEquals(miny, 0)
+            self.assertEquals(maxy, 0)
+            self.assertEquals(minz, 0)
+            self.assertEquals(maxz, 0)
+    
+    def test18(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,5,6,100.0,0,0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","periodic","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(1,1)
+        self.assertEquals(error, 0)
+        self.assertEquals(minx, 0)
+        self.assertEquals(maxx, 3)
+        self.assertEquals(miny, 0)
+        self.assertEquals(maxy, 4)
+        self.assertEquals(minz, 0)
+        self.assertEquals(maxz, 5)
+        
+        for i in range(2,7):
+            minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i,1)
+            self.assertEquals(error, 0)
+            self.assertEquals(minx, 0)
+            self.assertEquals(maxx, 0)
+            self.assertEquals(miny, 0)
+            self.assertEquals(maxy, 0)
+            self.assertEquals(minz, 0)
+            self.assertEquals(maxz, 0)
+    
+    def test19(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,5,6,100.0,0,0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","interface","interface","interface","interface","interface")
+        instance.commit_parameters()
+        
+        
+        for i in range(1,7):
+            minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i,1)
+            self.assertEquals(error, 0)
+            self.assertEquals(minx, 0)
+            self.assertEquals(miny, 0)
+            self.assertEquals(minz, 0)
+            if i == 1 or i == 2:
+                self.assertEquals(maxx, 3)
+                self.assertEquals(maxy, 4)
+                self.assertEquals(maxz, 5)
+            elif i == 3 or i == 4:
+                self.assertEquals(maxx, 99+8)
+                self.assertEquals(maxy, 3)
+                self.assertEquals(maxz, 5)
+            elif i == 5 or i == 6:
+                self.assertEquals(maxx, 99+8)
+                self.assertEquals(maxy, 4+8)
+                self.assertEquals(maxz, 3)
+    
+    def test20(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,1,1,100.0,100.0,100.0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","periodic","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        for i in range(4):
+            error = instance.set_boundary_state(
+                i,0,0,       #  index
+                1.0 * (i+1),         #  density
+                2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                5.0 * (i+1),         #  energy
+                1.0, 1.0     #  boundary + grid
+            )
+            self.assertEquals(error, 0)
+            rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                i, 0, 0,
+                1.0, 1.0
+            )
+            print rho, rhovx, rhovy, rhovz, rhoen, error 
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+            self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+            self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+            self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+            self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+    
+    def test21(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,1,1,100.0,0,0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        for i in range(4):
+            for j in [1,2]:
+                error = instance.set_boundary_state(
+                    i,0,0,       #  index
+                    1.0 * (i+1),         #  density
+                    2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                    5.0 * (i+1),         #  energy
+                    j, 1.0     #  boundary + grid
+                )
+                self.assertEquals(error, 0)
+                rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                    i, 0, 0,
+                    j, 1.0
+                )
+                print j
+                self.assertEquals(error, 0)
+                
+                self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+                
+    
+    
+    def test22(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(5,6,7,100.0,100.0,100.0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","interface","interface","interface","interface","interface")
+        instance.commit_parameters()
+        
+        x1range = (4,6,7)
+        x2range = (5,4,7)
+        x3range = (5,6,4)
+    
+        for xrange, j in zip([x1range, x1range, x2range, x2range, x3range, x3range], [1,2,3,4,5,6]):
+            for i0 in range(xrange[0]):
+                for j0 in range(xrange[1]):
+                    for k0 in range(xrange[2]):
+                        i = (i0 * (xrange[2] * xrange[1])) + (j0 * xrange[2]) + k0
+                        
+                        error = instance.set_boundary_state(
+                            i0, j0, k0,       #  index
+                            1.0 * (i+1),         #  density
+                            2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                            5.0 * (i+1),         #  energy
+                            j, 1.0     #  boundary + grid
+                        )
+                        self.assertEquals(error, 0)
+                        rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                            i0, j0, k0,       #  index
+                            j, 1.0
+                        )
+                        self.assertEquals(error, 0)
+                        
+                        self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+                        
+    def test23(self):
+        results = []
+        instance=self.new_instance(AthenaInterface, number_of_workers = 2)
+        instance.initialize_code()
+        instance.setup_mesh(5,6,7,100.0,100.0,100.0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","interface","interface","interface","interface","interface")
+        instance.commit_parameters()
+        
+        x1range = (4,6,7)
+        x2range = (5,4,7)
+        x3range = (5,6,4)
+    
+        for xrange, j in zip([x1range, x1range, x2range, x2range, x3range, x3range], [1,2,3,4,5,6]):
+            for i0 in range(xrange[0]):
+                for j0 in range(xrange[1]):
+                    for k0 in range(xrange[2]):
+                        i = (i0 * (xrange[2] * xrange[1])) + (j0 * xrange[2]) + k0
+                        
+                        error = instance.set_boundary_state(
+                            i0, j0, k0,       #  index
+                            1.0 * (i+1),         #  density
+                            2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                            5.0 * (i+1),         #  energy
+                            j, 1.0     #  boundary + grid
+                        )
+                        self.assertEquals(error, 0)
+                        rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                            i0, j0, k0,       #  index
+                            j, 1.0
+                        )
+                        self.assertEquals(error, 0)
+                        
+                        self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+                
+    def test24(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,5,1,100.0,0,0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","interface","interface","interface","interface","interface")
+        instance.commit_parameters()
+        
+        
+        for i in range(1,7):
+            minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i,1)
+            self.assertEquals(error, 0)
+            self.assertEquals(minx, 0)
+            self.assertEquals(miny, 0)
+            self.assertEquals(minz, 0)
+            if i == 1 or i == 2:
+                self.assertEquals(maxx, 3)
+                self.assertEquals(maxy, 4)
+                self.assertEquals(maxz, 0)
+            elif i == 3 or i == 4:
+                self.assertEquals(maxx, 99+8)
+                self.assertEquals(maxy, 3)
+                self.assertEquals(maxz, 0)
+            elif i == 5 or i == 6:
+                self.assertEquals(maxx, 99+8)
+                self.assertEquals(maxy, 4 +8)
+                self.assertEquals(maxz, 3)
 class TestAthena(TestWithMPI):
     
         
@@ -1147,6 +1410,9 @@ class TestAthena(TestWithMPI):
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
         instance.stopping_conditions.number_of_steps_detection.enable()
+        
+        #instance.grid.boundaries.left.
+        
         for i in range(4):
             instance.set_boundary_state(
                 i,0,0, 
@@ -1155,7 +1421,7 @@ class TestAthena(TestWithMPI):
                 0.0 | momentum,
                 0.0 | momentum, 
                 p / (instance.parameters.gamma - 1) + (0.5 * (0.2 | momentum)**2 / (0.02 | density)),
-                0,
+                1,
                 1
             )
         instance.evolve_model(1.0 | generic_unit_system.time)
