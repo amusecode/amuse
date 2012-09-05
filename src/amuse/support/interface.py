@@ -290,6 +290,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
         for path in sorted(possible_paths, key = lambda x: len(x)):
             for transition in path:
                 transition.do()
+                to_state = transition.to_state
             return to_state
 
 
