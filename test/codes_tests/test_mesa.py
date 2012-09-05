@@ -693,8 +693,8 @@ class TestMESA(TestWithMPI):
         self.assertIsOfOrder(instance.imported_stars[0].get_pressure_profile()[0],      1.0e17 | units.barye)
         self.assertAlmostEqual(instance.imported_stars[0].get_mass_profile(), 
                                instance.native_stars[0].get_mass_profile())
-        self.assertAlmostEqual(instance.imported_stars[0].get_pressure_profile(), 
-                               instance.native_stars[0].get_pressure_profile())
+        self.assertAlmostRelativeEqual(instance.imported_stars[0].get_pressure_profile(), 
+                               instance.native_stars[0].get_pressure_profile(),7)
         self.assertAlmostEqual(instance.imported_stars[0].get_radius_profile(), 
                                instance.native_stars[0].get_radius_profile())
         self.assertAlmostEqual(instance.imported_stars[0].get_temperature_profile(), 
