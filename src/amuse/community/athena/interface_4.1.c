@@ -365,7 +365,7 @@ int commit_parameters(){
   
   
     
-for (nl=0; nl<(mesh.NLevels); nl++){
+  for (nl=0; nl<(mesh.NLevels); nl++){
     for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
         if (mesh.Domain[nl][nd].Grid != NULL){
             mesh.Domain[nl][nd].Grid->boundary = (BoundaryCellS *) calloc(sizeof(BoundaryCellS), 1);
@@ -2558,5 +2558,115 @@ int get_boundary_index_range_inclusive(
         *minz = 0;
         *maxz = 0;
     }
+    return 0;
+}
+
+
+
+int get_boundary_position_of_index(
+    int *i, int *j, int *k, 
+    int *index_of_boundary, 
+    int *index_of_grid, 
+    double * x, double * y, double * z, 
+    int number_of_points){
+
+
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    DomainS * dom = 0;
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        
+        x[l] = 0.0;
+        y[l] = 0.0;
+        z[l] = 0.0;
+        
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            //if (is_on_extended_grid(dom,grid, i0, j0, k0))
+            switch(index_of_boundary[l]) {
+                case 1:
+                    i0 = -(1+i0);
+                    break;
+                case 2:
+                    i0 = i0 + (grid->ie-grid->is) + 1 ;
+                    break;
+                case 3:
+                    i0 = i0 - nghost;
+                    j0 = -(1+j0);
+                    break;
+                case 4:
+                    i0 = i0 - nghost;
+                    j0 = j0 + (grid->je-grid->js) + 1 ;
+                    break;
+                case 5:
+                    i0 = i0 - nghost;
+                    j0 = j0 - nghost;
+                    k0 = -(1+k0);
+                    break;
+                case 6:
+                    i0 = i0 - nghost;
+                    j0 = j0 - nghost;
+                    k0 = k0 + (grid->ke-grid->ks) + 1 ;
+                    break;
+                default:
+                    i0 = 1;
+                    j0 = 1;
+                    k0 = 1;
+            }
+            ijk_on_grid(grid, &i0, &j0, &k0);
+           
+            cc_pos(
+                grid,
+                i0,
+                j0,
+                k0,
+                &x[l],
+                &y[l],
+                &z[l]
+            );
+            //}
+
+        }
+    }
+
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(x, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(y, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(z, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, x, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, y, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, z, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
     return 0;
 }

@@ -828,6 +828,164 @@ class TestAthenaInterface(TestWithMPI):
                 self.assertEquals(maxx, 99+8)
                 self.assertEquals(maxy, 4 +8)
                 self.assertEquals(maxz, 3)
+        
+    def test25(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,1,1,100.0,0,0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        dx = 1.0
+        for i in range(4):
+            x,y,z,error = instance.get_boundary_position_of_index(
+                i,0,0, 
+                1, 1 
+            )
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(x, (0.5 * dx) - ((i+1) * dx))
+            self.assertAlmostRelativeEquals(y, 0.0)
+            self.assertAlmostRelativeEquals(z, 0.0)
+                
+    
+    def test26(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,1,1,100.0,0,0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        dx = 1.0
+        for i in range(4):
+            x,y,z,error = instance.get_boundary_position_of_index(
+                i,0,0, 
+                2, 1 
+            )
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(x, 100.0 + (0.5 * dx) + (i * dx))
+            self.assertAlmostRelativeEquals(y, 0.0)
+            self.assertAlmostRelativeEquals(z, 0.0)
+    
+    def test27(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,5,1,100.0,100.0,0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","interface","interface","interface","periodic","periodic")
+        instance.commit_parameters()
+        
+        dx = 1.0
+        dy = 100.0 / 5.0
+        for i in range(4):
+            for j in range(5):
+                x,y,z,error = instance.get_boundary_position_of_index(
+                    i, j, 1, 
+                    2, 1 
+                )
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(x, 100.0 + (0.5 * dx) + (i * dx))
+                self.assertAlmostRelativeEquals(y, (0.5 * dy) + (j * dy))
+                self.assertAlmostRelativeEquals(z, 0.0)
+        
+        for i in range(100 + 8):
+            for j in range(4):
+                x,y,z,error = instance.get_boundary_position_of_index(
+                    i, j, 1, 
+                    3, 1 
+                )
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
+                self.assertAlmostRelativeEquals(y, 0.0 - ((0.5 * dy) + (j * dy)))
+                self.assertAlmostRelativeEquals(z, 0.0)
+                
+                
+                x,y,z,error = instance.get_boundary_position_of_index(
+                    i, j, 1, 
+                    4, 1 
+                )
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
+                self.assertAlmostRelativeEquals(y, 100.0 + (0.5 * dy) + (j * dy))
+                self.assertAlmostRelativeEquals(z, 0.0)
+    
+    
+    def test28(self):
+        results = []
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(3, 3, 3, 6,12,18)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("interface","interface","interface","interface","interface","interface")
+        instance.commit_parameters()
+        
+        dx = 6.0 / 3.0
+        dy = 12.0 / 3.0
+        dz = 18.0 / 3.0
+        for i in range(4):
+            for j in range(3):
+                for k in range(3):
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        2, 1 
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, 6.0 + (0.5 * dx) + (i * dx))
+                    self.assertAlmostRelativeEquals(y, (0.5 * dy) + (j * dy))
+                    self.assertAlmostRelativeEquals(z, (0.5 * dz) + (k * dz))
+        
+        for i in range(3 + 8):
+            for j in range(4):
+                for k in range(3):
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        3, 1 
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
+                    self.assertAlmostRelativeEquals(y, 0.0 - ((0.5 * dy) + (j * dy)))
+                    self.assertAlmostRelativeEquals(z, (0.5 * dz) + (k * dz))
+                    
+                    
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        4, 1 
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
+                    self.assertAlmostRelativeEquals(y, 12.0 + (0.5 * dy) + (j * dy))
+                    self.assertAlmostRelativeEquals(z, (0.5 * dz) + (k * dz))
+        
+        for i in range(3 + 8):
+            for j in range(3 + 8):
+                for k in range(4):
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        5, 1 
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
+                    self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-4) * dy))
+                    self.assertAlmostRelativeEquals(z,  0.0 - ((0.5 * dz) + (k * dz)))
+                    
+                    
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        6, 1 
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
+                    self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-4) * dy))
+                    self.assertAlmostRelativeEquals(z, 18.0 + (0.5 * dz) + (k * dz))
+                    
 class TestAthena(TestWithMPI):
     
         

@@ -577,7 +577,26 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
-        
+    
+    
+    @legacy_function    
+    def get_boundary_position_of_index():
+        """
+        Retrieves the x, y and z position of the center of
+        the cell with coordinates i, j, k in the grid specified
+        by the index_of_grid
+        """
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_boundary', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)           
+        function.result_type = 'i'
+        return function
     
 class Athena(CommonCode):
 
