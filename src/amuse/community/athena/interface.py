@@ -53,6 +53,7 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         
         CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
         self.set_auto_decomposition(1)
+        self.par_seti("domain1", "AutoWithNProc", "%d", self.channel.number_of_workers, "-")
         LiteratureReferencesMixIn.__init__(self)
         self.number_of_grids = 1
         
@@ -109,7 +110,6 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
     def setup_mesh(self, nmeshx, nmeshy, nmeshz, xlength, ylength, zlength):
         self.par_seti("job","num_domains", "%d", self.number_of_grids, "-")
         self.par_seti("domain1", "level", "%d", 0, "-")
-        self.par_seti("domain1", "AutoWithNProc", "%d", self.channel.number_of_workers, "-")
         
         self.par_seti("domain1", "Nx1", "%d", nmeshx, "-")
         self.par_seti("domain1", "Nx2", "%d", nmeshy, "-")
@@ -267,9 +267,10 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         
     
     def set_parallel(self, nx, ny, nz):
-        self.par_seti("parallel", "NGrid_x1", "%d", nx, "-")
-        self.par_seti("parallel", "NGrid_x2", "%d", ny, "-")
-        self.par_seti("parallel", "NGrid_x3", "%d", nz, "-")
+        self.par_seti("domain1", "AutoWithNProc", "%d", 0, "-")
+        self.par_seti("domain1", "NGrid_x1", "%d", nx, "-")
+        self.par_seti("domain1", "NGrid_x2", "%d", ny, "-")
+        self.par_seti("domain1", "NGrid_x3", "%d", nz, "-")
         
         return 0
         
@@ -642,14 +643,6 @@ class Athena(CommonCode):
         )
         
         object.add_method(
-            'set_boundary_state',
-            (object.INDEX, object.INDEX, object.INDEX,
-            density, momentum, momentum, momentum, energy,
-            object.INDEX, object.INDEX),
-            (object.ERROR_CODE,)
-        )
-        
-        object.add_method(
             'set_grid_magnetic_field',
             (object.INDEX, object.INDEX, object.INDEX,
              magnetic_field, magnetic_field, magnetic_field,
@@ -810,6 +803,32 @@ class Athena(CommonCode):
             (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
+        
+        object.add_method(
+            'set_boundary_state',
+            (object.INDEX, object.INDEX, object.INDEX,
+            density, momentum, momentum, momentum, energy,
+            object.INDEX, object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_boundary_state',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (density, momentum, momentum, momentum, energy,
+            object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_boundary_position_of_index',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (length, length, length, object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_boundary_index_range_inclusive',
+            (object.INDEX, object.INDEX),
+            (object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE,)
+        )
+        
         self.stopping_conditions.define_methods(object)
     
     
@@ -847,11 +866,36 @@ class Athena(CommonCode):
          
         definition.define_extra_keywords({'index_of_grid':index_of_grid})
         
-
+  
+    def specify_boundary_grid(self, definition, index_of_boundary, index_of_grid = 1):
+        definition.set_grid_range('get_boundary_index_range_inclusive')
+        
+        definition.add_getter('get_boundary_position_of_index', names=('x','y','z'))
+        
+        definition.add_getter('get_boundary_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        definition.add_setter('set_boundary_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+       
+        definition.define_extra_keywords({'index_of_boundary': index_of_boundary, 'index_of_grid':index_of_grid})
+        
     @property
     def grid(self):
         return self._create_new_grid(self.specify_grid, index_of_grid = 1)
+    
+    BOUNDARY_NAME_TO_INDEX = {
+        'xbound1': 1,
+        'xbound2': 2,
+        'ybound1': 3,
+        'ybound2': 4,
+        'zbound1': 5,
+        'zbound2': 6,
+    }
+    def get_boundary_grid(self, name):
+        if not name in self.BOUNDARY_NAME_TO_INDEX:
+            raise Exception("boundary name is not known {0}".format(name))
+        index_of_boundary = self.BOUNDARY_NAME_TO_INDEX[name]
         
+        return self._create_new_grid(self.specify_boundary_grid, index_of_boundary = index_of_boundary, index_of_grid = 1)
+    
     def itergrids(self):
         n = self.get_number_of_grids()
         
@@ -1089,6 +1133,10 @@ class Athena(CommonCode):
                     'set_grid_scalar',
                     'get_grid_scalar',
                     'get_number_of_grids',
-                    'get_index_range_inclusive'
+                    'get_index_range_inclusive',
+                    'get_boundary_state',
+                    'set_boundary_state',
+                    'get_boundary_position_if_index',
+                    'get_boundary_index_range_inclusive'
                 ]:
                 object.add_method(state, methodname)
