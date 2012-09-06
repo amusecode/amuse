@@ -92,9 +92,9 @@ $(CODELIB): $(BUILDDIR)/Makefile
 	cd $(BUILDDIR); ./configure --with-gas=hydro --enable-mpi --enable-smr 
 	cd $(BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
 	exit
-	cd $(BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
 	rm -f $(CODELIB)
-	cd $(BUILDDIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
 
 athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
