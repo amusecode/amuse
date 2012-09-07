@@ -51,6 +51,7 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
     
     def __init__(self, mode = MODE_NORMAL, **options):
         
+        self.mode = mode
         CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
         self.set_auto_decomposition(1)
         self.par_seti("domain1", "AutoWithNProc", "%d", self.channel.number_of_workers, "-")
@@ -300,6 +301,20 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         return function
         
     
+    @legacy_function
+    def get_evolve_to_exact_time():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='bool', direction=function.OUT) 
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def set_evolve_to_exact_time():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='bool', direction=function.IN) 
+        function.result_type = 'i'
+        return function
+        
     @legacy_function
     def set_has_external_gravitational_potential():
         function = LegacyFunctionSpecification() 
@@ -842,8 +857,11 @@ class Athena(CommonCode):
         
         definition.add_getter('get_grid_density', names=('rho',))
         definition.add_setter('set_grid_density', names=('rho',))
-        definition.add_getter('get_grid_scalar', names=('scalar',))
-        definition.add_setter('set_grid_scalar', names=('scalar',))
+        
+        if self.mode == self.MODE_SCALAR:
+            definition.add_getter('get_grid_scalar', names=('scalar',))
+            definition.add_setter('set_grid_scalar', names=('scalar',))
+            
         definition.add_getter('get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
         definition.add_setter('set_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
         definition.add_getter('get_grid_energy_density', names=('energy',))
@@ -955,6 +973,14 @@ class Athena(CommonCode):
             must_set_before_get = True
         )
         
+        
+        object.add_method_parameter(
+            "get_evolve_to_exact_time", 
+            "set_evolve_to_exact_time",
+            "must_evolve_to_exact_time", 
+            "End the evolve model at the exact specified time", 
+            default_value = True
+        )
         
         object.add_caching_parameter(
             "setup_mesh", 

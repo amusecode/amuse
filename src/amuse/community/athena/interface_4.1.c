@@ -28,6 +28,7 @@ static MeshS mesh;
 static VDFun_t Integrate;
 static int is_dt_set_by_script=0;
 static int is_restart = 0;
+static int evolve_to_exact_time = 1;
 static int has_external_gravitational_potential=0;
 static int mpi_comm_size_interface = 0;
 static Real last_dt_above_zero = 0.0;
@@ -374,6 +375,18 @@ int get_nghost(int * value) {
     *value = nghost;
     return 0;
 }
+
+int get_evolve_to_exact_time(int * value) {
+    *value = evolve_to_exact_time;
+    return 0;
+}
+
+int set_evolve_to_exact_time(int value) {
+    evolve_to_exact_time = value;
+    return 0;
+}
+
+
 
 int commit_parameters(){
   int nl, nd;
@@ -2221,8 +2234,12 @@ int evolve_model(double tlim) {
     time_t clock_current, clock_init;
     int error;
     
-    par_setd("time","tlim", "%.15e", tlim, "-");
-    tlim=par_getd("time","tlim"); /* this fixes accuracy problem by using the par_setd stuff */
+    if(evolve_to_exact_time) {
+        par_setd("time","tlim", "%.15e", tlim, "-");
+        tlim=par_getd("time","tlim"); /* this fixes accuracy problem by using the par_setd stuff */
+    } else {
+        par_setd("time","tlim", "%.15e", 10.0 * tlim, "-"); /* far away */
+    }
 
     //AMUSE STOPPING CONDITIONS SUPPORT
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION,
@@ -2232,8 +2249,7 @@ int evolve_model(double tlim) {
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
     get_stopping_condition_timeout_parameter(&timeout);    
     time(&clock_init);
-    
-    if(mesh.time + mesh.dt > tlim) {
+    if(evolve_to_exact_time && mesh.time + mesh.dt > tlim) {
         if(mesh.time < tlim)
         {
             mesh.dt = (tlim - mesh.time) / 2.0;
