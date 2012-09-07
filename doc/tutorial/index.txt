@@ -15,6 +15,7 @@ Tutorials
    legacy_code
    blender
    plot
+   grid_boundary
    
    
 

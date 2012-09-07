@@ -1,0 +1,36 @@
+==================================
+Setting values for grid boundaries
+==================================
+
+.. note::
+
+    At the time of writing of this tutorial (september 2012), only the
+    Athena hydrodynamics code supports the user defined boundaries.
+    
+In AMUSE, you can specify how a hydrodynamics grid code handles the 
+boundary conditions. Hydrodynamic grid codes define a number of 
+special grid cells at all ends of the grid. These cells are often 
+called boundary or ghost cells and are handled differently by the 
+code. The flow-variables in these cells are not evolved but 
+calculated from other cells or from a user defined function.
+
+Each code in amuse will need to provide at least 3 kinds of boundary 
+conditions:
+
+periodic
+    To simulate periodically repeating problems. Periodic boundary 
+    conditions simulates as if the grid is connected to a copy of 
+    itself, often implemented by copying over the data at the 
+    opposite site of the grid to the boundary cells.
+reflect
+    Mirrors all grid variables in the boundary cells, often 
+    implemented by copying the data of the cells connected to the 
+    boundary into the boundary cells.
+outflow
+    Sets the derivative of the flow variables with respect to the 
+    direction of the boundary to zero.
+
+The following picture shows all three boundary conditions for a one
+dimensional grid with 4 boundary cells:
+
+.. image:: boundaries1.png
