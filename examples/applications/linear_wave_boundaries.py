@@ -26,6 +26,78 @@ except ImportError:
 
 USE_BOUNDARIES = True
 
+class EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(object):
+    nghost = 4
+    
+    def __init__(self, code, number_of_grid_points):
+        self.code = code
+        self.number_of_grid_points = number_of_grid_points
+    
+    def set_parameters(self):
+        self.code.parameters.x_boundary_conditions = ("interface","interface")
+        self.code.parameters.y_boundary_conditions = ("interface","interface")
+        self.code.stopping_conditions.number_of_steps_detection.enable()
+        
+    def init_channels(self):
+        instance = self.code
+        self.xbound1 = instance.get_boundary_grid('xbound1')
+        self.xbound2 = instance.get_boundary_grid('xbound2')
+        self.ybound1 = instance.get_boundary_grid('ybound1')
+        self.ybound2 = instance.get_boundary_grid('ybound2')
+    
+        self.xbound1_channel = instance.grid[self.number_of_grid_points - self.nghost:,..., ...].new_channel_to(self.xbound1)
+        self.xbound2_channel = instance.grid[0: self.nghost,..., ...].new_channel_to(self.xbound2)
+        self.ybound1_channel = instance.grid[...,self.number_of_grid_points-self.nghost:, ...].new_channel_to(self.ybound1[self.nghost:-self.nghost,...,...])
+        self.ybound2_channel = instance.grid[...,0:self.nghost, ...].new_channel_to(self.ybound2[self.nghost:-self.nghost,...,...])
+        
+        self.xbound1_ybound1_channel = self.xbound1[0:self.nghost,0:self.nghost,...].new_channel_to(self.ybound1[:self.nghost,0:self.nghost,...])
+        self.xbound1_ybound2_channel = self.xbound1[0:self.nghost,self.number_of_grid_points - self.nghost:,...].new_channel_to(self.ybound2[:self.nghost,0:self.nghost,...]) 
+        self.xbound2_ybound1_channel = self.xbound2[0:self.nghost,0: self.nghost,...].new_channel_to(self.ybound1[self.number_of_grid_points+self.nghost:,0:self.nghost,...])
+        self.xbound2_ybound2_channel = self.xbound2[0:self.nghost,self.number_of_grid_points - self.nghost:,...].new_channel_to(self.ybound2[self.number_of_grid_points+self.nghost:,0:self.nghost,...]) 
+        
+        self.copy_to_boundary_cells()
+    
+    def copy_to_boundary_cells(self):
+        self.xbound1_channel.copy()
+        self.xbound2_channel.copy()
+        self.ybound1_channel.copy()
+        self.ybound2_channel.copy()
+        
+        self.xbound1_ybound1_channel.copy()
+        self.xbound1_ybound2_channel.copy()
+        self.xbound2_ybound1_channel.copy()
+        self.xbound2_ybound2_channel.copy()
+        
+    def evolve_model(self, time, endtime):
+        while self.code.model_time < time:
+                
+            if (self.code.get_timestep() + self.code.model_time) >= time and time == endtime:
+                self.code.parameters.must_evolve_to_exact_time = True
+            
+            self.code.evolve_model(time)
+            self.copy_to_boundary_cells()
+
+class EvolveHydrodynamicsCodeWithPeriodicBoundaries(object):
+    def __init__(self, code):
+        self.code = code
+    
+    def set_parameters(self):
+        self.code.parameters.x_boundary_conditions = ("periodic","periodic")
+        self.code.parameters.y_boundary_conditions = ("periodic","periodic")
+        self.code.stopping_conditions.number_of_steps_detection.enable()
+        
+    def init_channels(self):
+        pass 
+    
+    def evolve_model(self, time, endtime):
+        while self.code.model_time < time:
+                
+            if (self.code.get_timestep() + self.code.model_time) >= time and time == endtime:
+                self.code.parameters.must_evolve_to_exact_time = True
+            
+            self.code.evolve_model(time)
+
+
 class CalculateLinearWave1D(object):
     gamma = 5.0/3.0
     wave_flag = 0
@@ -85,19 +157,16 @@ class CalculateLinearWave1D(object):
         result.initialize_code()
         return result
         
-    def set_parameters(self, instance):
+    def set_parameters(self, instance, evolve):
         instance.parameters.mesh_size = self.dimensions_of_mesh
         
         instance.parameters.length_x = self.grid_length
         instance.parameters.length_y = self.grid_length
         instance.parameters.length_z = self.grid_length
         
-        instance.parameters.x_boundary_conditions = ("periodic","periodic")
-        instance.parameters.y_boundary_conditions = ("periodic","periodic")
         instance.parameters.z_boundary_conditions = ("periodic","periodic")
-        if USE_BOUNDARIES:
-            instance.parameters.x_boundary_conditions = ("interface","interface")
-            instance.parameters.y_boundary_conditions = ("interface","interface")
+        
+        evolve.set_parameters()
         
         result = instance.commit_parameters()
     
@@ -200,11 +269,19 @@ class CalculateLinearWave1D(object):
             "vtu",
             is_multiple=True
         )
+    
+    def new_evolve_object(self, instance):
+        """Returns a special object to evolve to code in time"""
+        if USE_BOUNDARIES:
+            return EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(instance, self.number_of_grid_points)
+        else:
+            return EvolveHydrodynamicsCodeWithPeriodicBoundaries(instance)
             
     def get_solution_at_time(self, time):
         instance=self.new_instance_of_code()
+        evolve = self.new_evolve_object(instance)
         
-        self.set_parameters(instance)
+        self.set_parameters(instance, evolve)
         
         self.start_grids = []
         
@@ -216,33 +293,8 @@ class CalculateLinearWave1D(object):
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
             
-            
+        evolve.init_channels()
         
-        instance.stopping_conditions.number_of_steps_detection.enable()
-        if USE_BOUNDARIES:
-            xbound1 = instance.get_boundary_grid('xbound1')
-            xbound2 = instance.get_boundary_grid('xbound2')
-            ybound1 = instance.get_boundary_grid('ybound1')
-            ybound2 = instance.get_boundary_grid('ybound2')
-        
-            xbound1_channel = instance.grid[self.number_of_grid_points - 4:,..., ...].new_channel_to(xbound1)
-            xbound2_channel = instance.grid[0:4,..., ...].new_channel_to(xbound2)
-            ybound1_channel = instance.grid[...,self.number_of_grid_points - 4:, ...].new_channel_to(ybound1[4:-4,...,...])
-            ybound2_channel = instance.grid[...,0:4, ...].new_channel_to(ybound2[4:-4,...,...])
-            xbound1_ybound1_channel = xbound1[0:4,0:4,...].new_channel_to(ybound1[:4,0:4,...])
-            xbound1_ybound2_channel = xbound1[0:4,self.number_of_grid_points - 4:,...].new_channel_to(ybound2[:4,0:4,...]) 
-            xbound2_ybound1_channel = xbound2[0:4,0:4,...].new_channel_to(ybound1[self.number_of_grid_points+8-4:,0:4,...])
-            xbound2_ybound2_channel = xbound2[0:4,self.number_of_grid_points - 4:,...].new_channel_to(ybound2[self.number_of_grid_points+8-4:,0:4,...]) 
-            
-            xbound1_channel.copy()
-            xbound2_channel.copy()
-            ybound1_channel.copy()
-            ybound2_channel.copy()
-            
-            xbound1_ybound1_channel.copy()
-            xbound1_ybound2_channel.copy()
-            xbound2_ybound1_channel.copy()
-            xbound2_ybound2_channel.copy()
             
         print "start evolve"
         dt = time / self.number_of_steps
@@ -251,22 +303,7 @@ class CalculateLinearWave1D(object):
         while t <= time:
             instance.parameters.must_evolve_to_exact_time = False
             
-            while instance.model_time < t:
-                
-                if instance.get_timestep() + instance.model_time >= t and t == time:
-                    instance.parameters.must_evolve_to_exact_time = True
-                
-                instance.evolve_model(t)
-                if USE_BOUNDARIES:
-                    xbound1_channel.copy()
-                    xbound2_channel.copy()
-                    ybound1_channel.copy()
-                    ybound2_channel.copy()
-                    
-                    xbound1_ybound1_channel.copy()
-                    xbound1_ybound2_channel.copy()
-                    xbound2_ybound1_channel.copy()
-                    xbound2_ybound2_channel.copy()
+            evolve.evolve_model(t, time)
             print "time : ", t, instance.model_time#,  instance.parameters.must_evolve_to_exact_time 
             
             t += dt

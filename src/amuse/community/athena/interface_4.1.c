@@ -185,10 +185,39 @@ static void boundary_right_x2_copy(GridS *pGrid)
 
 static void boundary_left_x3_copy(GridS *pGrid)
 {
+    int isl = pGrid->is - nghost, iel = pGrid->ie + nghost;
+    int jsl = pGrid->js - nghost, jel = pGrid->je + nghost;
+    int ks = pGrid->ks, ke = pGrid->ke;
+    int i,j,k;
+
+    if(pGrid->boundary->LeftX3 == 0) {fprintf(stderr, "LEFT X3 boundary is requested, but no data set!\n");return;}
+    
+
+    for (k=1; k<=nghost; k++) {
+        for (j=jsl; j<=jel; j++) {
+            for (i=isl; i<=iel; i++) {
+                pGrid->U[ks-k][j][i] = pGrid->boundary->LeftX3[nghost - k][j-jsl][i-isl];
+            }
+        }
+    }
 }
 
 static void boundary_right_x3_copy(GridS *pGrid)
 {
+    int isl = pGrid->is - nghost, iel = pGrid->ie + nghost;
+    int jsl = pGrid->js - nghost, jel = pGrid->je + nghost;
+    int ks = pGrid->ks, ke = pGrid->ke;
+    int i,j,k;
+
+    if(pGrid->boundary->RightX3 == 0) {fprintf(stderr, "RIGHT X3 boundary is requested, but no data set!\n");return;}
+    
+    for (k=1; k<=nghost; k++) {
+        for (j=jsl; j<=jel; j++) {
+            for (i=isl; i<=iel; i++) {
+                pGrid->U[ke+k][j][i] = pGrid->boundary->RightX3[k - 1][j-jsl][i-isl];
+            }
+        }
+    }
 }
 
 
@@ -497,7 +526,7 @@ int commit_parameters(){
                     }
                     bvals_mhd_fun(&mesh.Domain[nl][nd], left_x3,  boundary_left_x3_copy);
                 }     
-            }       
+            }   
             if( par_geti( "domain1", "bc_ox3") == 10) {
                 if (mesh.Domain[nl][nd].MaxX[2] == mesh.Domain[nl][nd].RootMaxX[2])  {
                     

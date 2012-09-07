@@ -2074,3 +2074,129 @@ class TestAthena(TestWithMPI):
         print instance.model_time
         
         instance.stop()
+    
+    
+    def test19(self): 
+        instance=self.new_instance(Athena, redirection="none", number_of_workers = 1)
+        instance.set_parallel(1,1,1)
+        instance.parameters.mesh_size = (4,5,6)
+        instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.y_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.z_boundary_conditions = ("interface", "outflow")
+        instance.parameters.stopping_conditions_number_of_steps = 1
+        
+        
+        grid = datamodel.Grid.create((4,5,6), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        
+        density = generic_unit_system.density
+        momentum =  generic_unit_system.speed * generic_unit_system.density
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+        
+        
+        grid.rho = 0.01 | density
+        grid.rhovx = 0.0 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.1 | momentum
+        
+        p = 1.0 | (generic_unit_system.mass / (generic_unit_system.length * generic_unit_system.time**2))
+        
+        grid.energy =  p / (instance.parameters.gamma - 1)
+        grid.energy += 0.5 * (grid.rhovx ** 2  + grid.rhovy ** 2 + grid.rhovz ** 2) / grid.rho
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+        instance.stopping_conditions.number_of_steps_detection.enable()
+        
+        zbound = instance.get_boundary_grid('zbound1')
+        self.assertEquals(zbound.shape, (4+8,5+8,4))
+        memzbound = zbound.copy_to_memory()
+        memzbound.rho = 0.02 | density
+        memzbound.rhovx = 0.0 | momentum
+        memzbound.rhovy = 0.0 | momentum
+        memzbound.rhovz = 0.2 | momentum
+        memzbound.energy =  p / (instance.parameters.gamma - 1)
+        memzbound.energy += 0.5 * (memzbound.rhovx ** 2  + memzbound.rhovy ** 2 + memzbound.rhovz ** 2) / memzbound.rho
+       
+        channel = memzbound.new_channel_to(zbound)
+        channel.copy()
+            
+        instance.evolve_model(1.0 | generic_unit_system.time)
+        rho = instance.grid.rho[0,0,...]
+        self.assertAlmostRelativeEquals(rho[-1], 0.01 | density)
+        self.assertTrue(rho[0] > 0.01 | density)
+        self.assertTrue(instance.grid.rhovz[0,0,0] > 0.1 | momentum)
+        self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,-1] , 0.1 | momentum)
+        print instance.model_time
+        
+        instance.stopping_conditions.number_of_steps_detection.disable()
+        instance.evolve_model(1.0 | generic_unit_system.time)
+        rho = instance.grid.rho[0,...,0]
+        self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
+        self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,...], 0.2 | momentum, 8)
+        print instance.model_time
+        
+        instance.stop()
+    
+    
+    def test20(self): 
+        instance=self.new_instance(Athena, redirection="none", number_of_workers = 4)
+        instance.set_parallel(2,2,1)
+        instance.parameters.mesh_size = (4,5,6)
+        instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.y_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.z_boundary_conditions = ("outflow", "interface")
+        instance.parameters.stopping_conditions_number_of_steps = 1
+        
+        
+        grid = datamodel.Grid.create((4,5,6), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        
+        density = generic_unit_system.density
+        momentum =  generic_unit_system.speed * generic_unit_system.density
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+        
+        
+        grid.rho = 0.01 | density
+        grid.rhovx = 0.0 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = -0.1 | momentum
+        
+        p = 1.0 | (generic_unit_system.mass / (generic_unit_system.length * generic_unit_system.time**2))
+        
+        grid.energy =  p / (instance.parameters.gamma - 1)
+        grid.energy += 0.5 * (grid.rhovx ** 2  + grid.rhovy ** 2 + grid.rhovz ** 2) / grid.rho
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+        instance.stopping_conditions.number_of_steps_detection.enable()
+        
+        zbound = instance.get_boundary_grid('zbound2')
+        self.assertEquals(zbound.shape, (4+8,5+8,4))
+        memzbound = zbound.copy_to_memory()
+        memzbound.rho = 0.02 | density
+        memzbound.rhovx = 0.0 | momentum
+        memzbound.rhovy = 0.0 | momentum
+        memzbound.rhovz = -0.2 | momentum
+        memzbound.energy =  p / (instance.parameters.gamma - 1)
+        memzbound.energy += 0.5 * (memzbound.rhovx ** 2  + memzbound.rhovy ** 2 + memzbound.rhovz ** 2) / memzbound.rho
+       
+        channel = memzbound.new_channel_to(zbound)
+        channel.copy()
+            
+        instance.evolve_model(1.0 | generic_unit_system.time)
+        rho = instance.grid.rho[0,0,...]
+        self.assertAlmostRelativeEquals(rho[0], 0.01 | density)
+        self.assertTrue(rho[-1] > 0.01 | density)
+        self.assertTrue(instance.grid.rhovz[0,0,-1] < -0.1 | momentum)
+        self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,0] , -0.1 | momentum)
+        print instance.model_time
+        
+        instance.stopping_conditions.number_of_steps_detection.disable()
+        instance.evolve_model(1.0 | generic_unit_system.time)
+        rho = instance.grid.rho[0,...,0]
+        self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
+        self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,...], -0.2 | momentum, 8)
+        print instance.model_time
+        
+        instance.stop()

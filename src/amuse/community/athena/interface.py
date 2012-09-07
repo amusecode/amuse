@@ -262,7 +262,7 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         self.par_seti("domain1", "bc_ix2", "%d", map_from_string_to_flag[ybound1], "-")
         self.par_seti("domain1", "bc_ox2", "%d", map_from_string_to_flag[ybound2], "-")
         self.par_seti("domain1", "bc_ix3", "%d", map_from_string_to_flag[zbound1], "-")
-        self.par_seti("domain1", "bc_ox3", "%d", map_from_string_to_flag[zbound1], "-")
+        self.par_seti("domain1", "bc_ox3", "%d", map_from_string_to_flag[zbound2], "-")
         
         return 0
         
