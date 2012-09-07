@@ -2267,6 +2267,22 @@ int evolve_model(double tlim) {
         fprintf(stderr, "new mesh.time %f, %f (%f), %f\n", mesh.time, mesh.dt, last_dt_above_zero, tlim);
  
     }
+    
+    for (nl=0; nl<(mesh.NLevels); nl++){
+      for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+        if (mesh.Domain[nl][nd].Grid != NULL){
+          bvals_mhd(&(mesh.Domain[nl][nd]));
+#ifdef PARTICLES
+          bvals_particle(&level0_Grid, &level0_Domain);
+#endif
+        }
+      }
+    }
+    
+#ifdef STATIC_MESH_REFINEMENT
+    Prolongate(&mesh);
+#endif
+
     while (mesh.time < tlim) {
         //fprintf(stderr, "mesh.time %g, %g, %g\n", mesh.time, mesh.dt, tlim);
         if(mesh.dt == 0.0)
@@ -2373,7 +2389,7 @@ int evolve_model(double tlim) {
         //AMUSE STOPPING CONDITIONS SUPPORT
         if (is_number_of_steps_detection_enabled) {
             number_of_steps_innerloop++;
-            if (number_of_steps_innerloop > max_number_of_steps) {
+            if (number_of_steps_innerloop >= max_number_of_steps) {
                 int stopping_index  = next_index_for_stopping_condition();
                 set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
             }
@@ -2736,7 +2752,7 @@ int get_boundary_index_range_inclusive(
         return -2;
     }
         
-    printf("boundary name: %s , type: %d\n", boundary_name, boundary_type);
+    //printf("boundary name: %s , type: %d\n", boundary_name, boundary_type);
     if(boundary_type == 10) {
         *minx = 0;
         *miny = 0;

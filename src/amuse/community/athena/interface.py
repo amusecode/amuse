@@ -777,6 +777,17 @@ class Athena(CommonCode):
             (length / time, ),
             (object.ERROR_CODE,)
         )
+        object.add_method(
+            "get_timestep",
+            (),
+            (time, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_timestep",
+            (time, ),
+            (object.ERROR_CODE,)
+        )
     
         object.add_method(
             "get_gamma",

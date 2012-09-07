@@ -1,5 +1,7 @@
 """
-In this script we simulate a 1d linear wave in a 2d field
+In this script we simulate a 1d linear wave in a 2d field, 
+the periodic boundaries are not handled in the code but by amuse
+(much slower at time of writing)
 """
 import numpy
 
@@ -21,7 +23,9 @@ try:
     IS_PLOT_AVAILABLE = True
 except ImportError:
     IS_PLOT_AVAILABLE = False
-    
+
+USE_BOUNDARIES = True
+
 class CalculateLinearWave1D(object):
     gamma = 5.0/3.0
     wave_flag = 0
@@ -54,6 +58,7 @@ class CalculateLinearWave1D(object):
         return getattr(self,attribute)()
         
     def new_instance_of_capreole_code(self):
+        raise Exception("Capreole does not yet have support for detailed boundaries in amuse")
         result=Capreole(number_of_workers=self.number_of_workers)
         result.initialize_code()
         self.dimensions_of_mesh =  (
@@ -73,6 +78,7 @@ class CalculateLinearWave1D(object):
         
 
     def new_instance_of_mpiamrvac_code(self):
+        raise Exception("MPIAMRVAC does not yet have support for detailed boundaries in amuse")
         from amuse.community.mpiamrvac.interface import MpiAmrVac
         result=MpiAmrVac(mode="2d", number_of_workers=self.number_of_workers, debugger="xterm")
         result.set_parameters_filename(result.default_parameters_filename)
@@ -89,6 +95,9 @@ class CalculateLinearWave1D(object):
         instance.parameters.x_boundary_conditions = ("periodic","periodic")
         instance.parameters.y_boundary_conditions = ("periodic","periodic")
         instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        if USE_BOUNDARIES:
+            instance.parameters.x_boundary_conditions = ("interface","interface")
+            instance.parameters.y_boundary_conditions = ("interface","interface")
         
         result = instance.commit_parameters()
     
@@ -206,18 +215,58 @@ class CalculateLinearWave1D(object):
             self.start_grids.append(inmem)
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
+            
+            
         
+        instance.stopping_conditions.number_of_steps_detection.enable()
+        if USE_BOUNDARIES:
+            xbound1 = instance.get_boundary_grid('xbound1')
+            xbound2 = instance.get_boundary_grid('xbound2')
+            ybound1 = instance.get_boundary_grid('ybound1')
+            ybound2 = instance.get_boundary_grid('ybound2')
+        
+            xbound1_channel = instance.grid[self.number_of_grid_points - 4:,..., ...].new_channel_to(xbound1)
+            xbound2_channel = instance.grid[0:4,..., ...].new_channel_to(xbound2)
+            ybound1_channel = instance.grid[...,self.number_of_grid_points - 4:, ...].new_channel_to(ybound1[4:-4,...,...])
+            ybound2_channel = instance.grid[...,0:4, ...].new_channel_to(ybound2[4:-4,...,...])
+            xbound1_ybound1_channel = xbound1[0:4,0:4,...].new_channel_to(ybound1[:4,0:4,...])
+            xbound1_ybound2_channel = xbound1[0:4,self.number_of_grid_points - 4:,...].new_channel_to(ybound2[:4,0:4,...]) 
+            xbound2_ybound1_channel = xbound2[0:4,0:4,...].new_channel_to(ybound1[self.number_of_grid_points+8-4:,0:4,...])
+            xbound2_ybound2_channel = xbound2[0:4,self.number_of_grid_points - 4:,...].new_channel_to(ybound2[self.number_of_grid_points+8-4:,0:4,...]) 
+            
+            xbound1_channel.copy()
+            xbound2_channel.copy()
+            ybound1_channel.copy()
+            ybound2_channel.copy()
+            
+            xbound1_ybound1_channel.copy()
+            xbound1_ybound2_channel.copy()
+            xbound2_ybound1_channel.copy()
+            xbound2_ybound2_channel.copy()
+            
         print "start evolve"
         dt = time / self.number_of_steps
         t = dt
         step = 1
         while t <= time:
-            if t == time:
-                 instance.parameters.must_evolve_to_exact_time = True
-            else:
-                instance.parameters.must_evolve_to_exact_time = False
-            instance.evolve_model(t)
+            instance.parameters.must_evolve_to_exact_time = False
             
+            while instance.model_time < t:
+                
+                if instance.get_timestep() + instance.model_time >= t and t == time:
+                    instance.parameters.must_evolve_to_exact_time = True
+                
+                instance.evolve_model(t)
+                if USE_BOUNDARIES:
+                    xbound1_channel.copy()
+                    xbound2_channel.copy()
+                    ybound1_channel.copy()
+                    ybound2_channel.copy()
+                    
+                    xbound1_ybound1_channel.copy()
+                    xbound1_ybound2_channel.copy()
+                    xbound2_ybound1_channel.copy()
+                    xbound2_ybound2_channel.copy()
             print "time : ", t, instance.model_time#,  instance.parameters.must_evolve_to_exact_time 
             
             t += dt
