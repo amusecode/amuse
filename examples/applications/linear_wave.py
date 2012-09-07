@@ -170,14 +170,14 @@ class CalculateLinearWave1D(object):
         
         grid.rho = rho
         grid.energy = energy
-        grid.rhovx = rho*self.vflow_factor*(1.0 | speed)
+        grid.rhovy = rho*self.vflow_factor*(1.0 | speed)
         
-        wave = self.amplitude*numpy.sin(grid.x * (2.0 | length**-1)*numpy.pi)
+        wave = self.amplitude*numpy.sin(grid.y * (2.0 | length**-1)*numpy.pi)
         
         grid.rho += wave*right_eigenmatrix[0][self.wave_flag] * (1.0 |mass * time**2 / length**5)
-        grid.rhovx += wave*right_eigenmatrix[1][self.wave_flag] * (1.0 |mass * time / length**4)
-        grid.rhovy += wave*right_eigenmatrix[2][self.wave_flag] * (1.0 |mass * time / length**4)
-        grid.rhovz += wave*right_eigenmatrix[3][self.wave_flag] * (1.0 |mass * time / length**4)
+        grid.rhovx += wave*right_eigenmatrix[3][self.wave_flag] * (1.0 |mass * time / length**4)
+        grid.rhovy += wave*right_eigenmatrix[1][self.wave_flag] * (1.0 |mass * time / length**4)
+        grid.rhovz += wave*right_eigenmatrix[2][self.wave_flag] * (1.0 |mass * time / length**4)
         grid.energy += wave*right_eigenmatrix[4][self.wave_flag] *(1.0 | mass  / length**3)
         
     def store_grids(self, grids, step):

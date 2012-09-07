@@ -47,13 +47,24 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(object):
     
         self.xbound1_channel = instance.grid[self.number_of_grid_points - self.nghost:,..., ...].new_channel_to(self.xbound1)
         self.xbound2_channel = instance.grid[0: self.nghost,..., ...].new_channel_to(self.xbound2)
-        self.ybound1_channel = instance.grid[...,self.number_of_grid_points-self.nghost:, ...].new_channel_to(self.ybound1[self.nghost:-self.nghost,...,...])
-        self.ybound2_channel = instance.grid[...,0:self.nghost, ...].new_channel_to(self.ybound2[self.nghost:-self.nghost,...,...])
+        self.ybound1_channel = instance.grid[...,self.number_of_grid_points-self.nghost:, ...].new_channel_to(self.ybound1[self.nghost:self.number_of_grid_points+self.nghost,...,...])
+        self.ybound2_channel = instance.grid[...,0:self.nghost, ...].new_channel_to(self.ybound2[self.nghost:self.number_of_grid_points+self.nghost,...,...])
         
-        self.xbound1_ybound1_channel = self.xbound1[0:self.nghost,0:self.nghost,...].new_channel_to(self.ybound1[:self.nghost,0:self.nghost,...])
-        self.xbound1_ybound2_channel = self.xbound1[0:self.nghost,self.number_of_grid_points - self.nghost:,...].new_channel_to(self.ybound2[:self.nghost,0:self.nghost,...]) 
-        self.xbound2_ybound1_channel = self.xbound2[0:self.nghost,0: self.nghost,...].new_channel_to(self.ybound1[self.number_of_grid_points+self.nghost:,0:self.nghost,...])
-        self.xbound2_ybound2_channel = self.xbound2[0:self.nghost,self.number_of_grid_points - self.nghost:,...].new_channel_to(self.ybound2[self.number_of_grid_points+self.nghost:,0:self.nghost,...]) 
+        xbound1_bottom = self.xbound1[0:self.nghost,0:self.nghost,...]
+        xbound1_top = self.xbound1[0:self.nghost,self.number_of_grid_points - self.nghost:,...]
+        ybound1_left = self.ybound1[0:self.nghost,0:self.nghost,...]
+        ybound2_left = self.ybound2[0:self.nghost,0:self.nghost,...]
+        
+        self.xbound1_ybound1_channel = xbound1_top.new_channel_to(ybound1_left)
+        self.xbound1_ybound2_channel = xbound1_bottom.new_channel_to(ybound2_left)
+         
+        xbound2_bottom = self.xbound2[0:self.nghost,0:self.nghost,...]
+        xbound2_top = self.xbound2[0:self.nghost,self.number_of_grid_points - self.nghost:,...]
+        ybound1_right = self.ybound1[self.number_of_grid_points+self.nghost:,0:self.nghost,...]
+        ybound2_right= self.ybound2[self.number_of_grid_points+self.nghost:,0:self.nghost,...]
+        
+        self.xbound2_ybound1_channel = xbound2_top.new_channel_to(ybound1_right)
+        self.xbound2_ybound2_channel = xbound2_bottom.new_channel_to(ybound2_right)
         
         self.copy_to_boundary_cells()
     
@@ -248,14 +259,14 @@ class CalculateLinearWave1D(object):
         
         grid.rho = rho
         grid.energy = energy
-        grid.rhovx = rho*self.vflow_factor*(1.0 | speed)
+        grid.rhovy = rho*self.vflow_factor*(1.0 | speed)
         
-        wave = self.amplitude*numpy.sin(grid.x * (2.0 | length**-1)*numpy.pi)
+        wave = self.amplitude*numpy.sin(grid.y * (2.0 | length**-1)*numpy.pi)
         
         grid.rho += wave*right_eigenmatrix[0][self.wave_flag] * (1.0 |mass * time**2 / length**5)
-        grid.rhovx += wave*right_eigenmatrix[1][self.wave_flag] * (1.0 |mass * time / length**4)
-        grid.rhovy += wave*right_eigenmatrix[2][self.wave_flag] * (1.0 |mass * time / length**4)
-        grid.rhovz += wave*right_eigenmatrix[3][self.wave_flag] * (1.0 |mass * time / length**4)
+        grid.rhovx += wave*right_eigenmatrix[3][self.wave_flag] * (1.0 |mass * time / length**4)
+        grid.rhovy += wave*right_eigenmatrix[1][self.wave_flag] * (1.0 |mass * time / length**4)
+        grid.rhovz += wave*right_eigenmatrix[2][self.wave_flag] * (1.0 |mass * time / length**4)
         grid.energy += wave*right_eigenmatrix[4][self.wave_flag] *(1.0 | mass  / length**3)
         
     def store_grids(self, grids, step):
