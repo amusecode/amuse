@@ -122,6 +122,7 @@ module amuse_helpers
   end function
 
   function amuse_commit_parameters() result(ret)
+    implicit none
     integer :: i,j,k,ret
     character(len=10),parameter :: str_length_unit="default"
 
@@ -142,6 +143,9 @@ module amuse_helpers
       xlength,ylength,zlength,str_length_unit
 
     call init_grid()
+    ret = init_boundary()
+    if(RET.NE.0) return
+    
     
     ret=amuse_init_hydro()  
     if(RET.NE.0) return

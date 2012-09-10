@@ -232,8 +232,305 @@ class TestCapreoleInterface(TestWithMPI):
 
 
         instance.stop()
-
-
+        
+    def test10(self):
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,5,5,100.0,0,0)
+        instance.set_boundary("interface","periodic","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(1)
+        self.assertEquals(error, 0)
+        self.assertEquals(minx, 1)
+        self.assertEquals(maxx, 2)
+        self.assertEquals(miny, 1)
+        self.assertEquals(maxy, 5)
+        self.assertEquals(minz, 1)
+        self.assertEquals(maxz, 5)
+        
+        for i in range(2,7):
+            minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i)
+            self.assertEquals(error, 0)
+            self.assertEquals(minx, 1)
+            self.assertEquals(maxx, 1)
+            self.assertEquals(miny, 1)
+            self.assertEquals(maxy, 1)
+            self.assertEquals(minz, 1)
+            self.assertEquals(maxz, 1)
+    
+    def test11(self):
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,5,6,100.0,0,0)
+        instance.set_boundary("interface","interface","interface","interface","interface","interface")
+        instance.commit_parameters()
+        
+        
+        for i in range(1,7):
+            minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i)
+            self.assertEquals(error, 0),
+            self.assertEquals(minx, 1)
+            self.assertEquals(miny, 1)
+            self.assertEquals(minz, 1)
+            if i == 1 or i == 2:
+                self.assertEquals(maxx, 2)
+                self.assertEquals(maxy, 5)
+                self.assertEquals(maxz, 6)
+            elif i == 3 or i == 4:
+                self.assertEquals(maxx, 100+4)
+                self.assertEquals(maxy, 2)
+                self.assertEquals(maxz, 6)
+            elif i == 5 or i == 6:
+                self.assertEquals(maxx, 100+4)
+                self.assertEquals(maxy, 5+4)
+                self.assertEquals(maxz, 2)
+    
+    def test12(self):
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,2,2,100.0,100.0,100.0)
+        instance.set_boundary("interface","periodic","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        for i in [1,2]:
+            error = instance.set_boundary_state(
+                i,1,1,       #  index
+                1.0 * (i+1),         #  density
+                2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                5.0 * (i+1),         #  energy
+                1                    #  boundary
+            )
+            self.assertEquals(error, 0)
+            rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                i, 1, 1,
+                1
+            )
+            print rho, rhovx, rhovy, rhovz, rhoen, error 
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+            self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+            self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+            self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+            self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+    
+    def test13(self):
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,2,2,100.0,0,0)
+        instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        for i in [1,2]:
+            for j in [1,2]:
+                error = instance.set_boundary_state(
+                    i,1,1,       #  index
+                    1.0 * (i+1),         #  density
+                    2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                    5.0 * (i+1),         #  energy
+                    j    #  boundary 
+                )
+                self.assertEquals(error, 0)
+                rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                    i, 1,1,
+                    j
+                )
+                print j
+                self.assertEquals(error, 0)
+                
+                self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+    
+    def test14(self):
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.setup_mesh(5,6,7,100.0,100.0,100.0)
+        instance.set_boundary("interface","interface","interface","interface","interface","interface")
+        instance.commit_parameters()
+        
+        x1range = (2,6,7)
+        x2range = (5+4,2,7)
+        x3range = (5+4,6+4,2)
+    
+        for xrange, j in zip([x1range, x1range, x2range, x2range, x3range, x3range], [1,2,3,4,5,6]):
+            for i0 in range(xrange[0]):
+                for j0 in range(xrange[1]):
+                    for k0 in range(xrange[2]):
+                        i = (i0 * (xrange[2] * xrange[1])) + (j0 * xrange[2]) + k0
+                        
+                        error = instance.set_boundary_state(
+                            i0+1, j0+1, k0+1,       #  index
+                            1.0 * (i+1),         #  density
+                            2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                            5.0 * (i+1),         #  energy
+                            j
+                        )
+                        self.assertEquals(error, 0)
+                        rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                            i0+1, j0+1, k0+1,       #  index
+                            j
+                        )
+                        self.assertEquals(error, 0)
+                        
+                        self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+    
+    def test15(self):
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,5,4,100.0,100.0, 100.0)
+        instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        dx = 100.0 / 100.0
+        dy = 100.0 / 5.0
+        dz = 100.0 / 4.0
+        
+        for i in [1,2]:
+            x,y,z,error = instance.get_boundary_position_of_index(
+                i, 1, 1,
+                1
+            )
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(x, (0.5 * dx) - (i * dx))
+            self.assertAlmostRelativeEquals(y, (0.5 * dy))
+            self.assertAlmostRelativeEquals(z, (0.5 * dz))
+    
+    def test16(self):
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,5,4,100.0,100.0, 100.0)
+        instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+        dx = 100.0 / 100.0
+        dy = 100.0 / 5.0
+        dz = 100.0 / 4.0
+        
+        for i in [1,2]:
+            x,y,z,error = instance.get_boundary_position_of_index(
+                i,1,1,
+                2
+            )
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(x, 100.0 + (0.5 * dx) + ((i-1) * dx))
+            self.assertAlmostRelativeEquals(y, (0.5 * dy))
+            self.assertAlmostRelativeEquals(z, (0.5 * dz))
+    
+    def test17(self):
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.setup_mesh(100,5,4,100.0,100.0, 100.0)
+        instance.set_boundary("interface","interface","interface","interface","periodic","periodic")
+        instance.commit_parameters()
+        
+        dx = 100.0 / 100.0
+        dy = 100.0 / 5.0
+        dz = 100.0 / 4.0
+        
+        for i in [1,2]:
+            for j in range(1,6):
+                x,y,z,error = instance.get_boundary_position_of_index(
+                    i, j, 1, 
+                    2
+                )
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(x, 100.0 + (0.5 * dx) + ((i-1) * dx))
+                self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-1) * dy))
+                self.assertAlmostRelativeEquals(z, (0.5 * dz))
+        
+        for i in range(1, 100 + 4 + 1):
+            for j in [1,2]:
+                x,y,z,error = instance.get_boundary_position_of_index(
+                    i, j, 1, 
+                    3
+                )
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
+                self.assertAlmostRelativeEquals(y, 0.0 - ((0.5 * dy) + ((j-1) * dy)))
+                self.assertAlmostRelativeEquals(z, (0.5 * dz))
+                
+                
+                x,y,z,error = instance.get_boundary_position_of_index(
+                    i, j, 1, 
+                    4
+                )
+                self.assertEquals(error, 0)
+                self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
+                self.assertAlmostRelativeEquals(y, 100.0 + (0.5 * dy) + ((j-1) * dy))
+                self.assertAlmostRelativeEquals(z, (0.5 * dz))
+    
+    def test18(self):
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.setup_mesh(3, 3, 3, 6,12,18)
+        instance.set_boundary("interface","interface","interface","interface","interface","interface")
+        instance.commit_parameters()
+        
+        dx = 6.0 / 3.0
+        dy = 12.0 / 3.0
+        dz = 18.0 / 3.0
+        for i in [1,2]:
+            for j in range(1,3+1):
+                for k in range(1,3+1):
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        2
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, 6.0 + (0.5 * dx) + ((i-1) * dx))
+                    self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-1) * dy))
+                    self.assertAlmostRelativeEquals(z, (0.5 * dz) + ((k-1) * dz))
+        
+        for i in range(1,3 + 4 +1):
+            for j in [1,2]:
+                for k in range(1,3+1):
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        3
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
+                    self.assertAlmostRelativeEquals(y, 0.0 - ((0.5 * dy) + ((j-1) * dy)))
+                    self.assertAlmostRelativeEquals(z, (0.5 * dz) + ((k-1) * dz))
+                    
+                    
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        4
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
+                    self.assertAlmostRelativeEquals(y, 12.0 + (0.5 * dy) + ((j-1) * dy))
+                    self.assertAlmostRelativeEquals(z, (0.5 * dz) + ((k-1) * dz))
+        
+        for i in range(1,3 + 4 +1):
+            for j in range(1,3 + 4 +1):
+                for k in [1,2]:
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        5 
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
+                    self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-2-1) * dy))
+                    self.assertAlmostRelativeEquals(z,  0.0 - ((0.5 * dz) + ((k-1) * dz)))
+                    
+                    
+                    x,y,z,error = instance.get_boundary_position_of_index(
+                        i, j, k, 
+                        6
+                    )
+                    self.assertEquals(error, 0)
+                    self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
+                    self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-2-1) * dy))
+                    self.assertAlmostRelativeEquals(z, 18.0 + (0.5 * dz) + ((k-1) * dz))
 class TestSodShocktube(TestWithMPI):
     
     def test0(self):

@@ -260,7 +260,65 @@ class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferen
     set_grid_momentum_density = None
     
     
+    
+    @legacy_function
+    def get_boundary_index_range_inclusive():
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_boundary', dtype='i', direction=function.IN)
+        function.addParameter('minx', dtype='i', direction=function.OUT)
+        function.addParameter('maxx', dtype='i', direction=function.OUT)
+        function.addParameter('miny', dtype='i', direction=function.OUT)
+        function.addParameter('maxy', dtype='i', direction=function.OUT)
+        function.addParameter('minz', dtype='i', direction=function.OUT)
+        function.addParameter('maxz', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def set_boundary_state():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('index_of_boundary', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
         
+    @legacy_function
+    def get_boundary_state():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_boundary', dtype='i', direction=function.IN, default = 1)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+        
+    
+    @legacy_function    
+    def get_boundary_position_of_index():
+        """
+        Retrieves the x, y and z position of the center of
+        the cell with coordinates i, j, k 
+        """
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_boundary', dtype='i', direction=function.IN, default = 1)
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)           
+        function.result_type = 'i'
+        return function
+    
+    
 class GLCapreoleInterface(CapreoleInterface):
     def __init__(self, **options):
         CodeInterface.__init__(self,name_of_the_worker = 'capreole_worker_gl', **options)

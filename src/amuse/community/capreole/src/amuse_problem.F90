@@ -13,10 +13,54 @@ module problem
                    innerypressure,outerypressure, &
                    innerzpressure,outerzpressure
   
+  real(kind=dp),dimension(:,:,:,:),allocatable,target,public :: boundary_left_x1
+  real(kind=dp),dimension(:,:,:,:),allocatable,target,public :: boundary_right_x1
+  real(kind=dp),dimension(:,:,:,:),allocatable,target,public :: boundary_left_x2
+  real(kind=dp),dimension(:,:,:,:),allocatable,target,public :: boundary_right_x2
+  real(kind=dp),dimension(:,:,:,:),allocatable,target,public :: boundary_left_x3
+  real(kind=dp),dimension(:,:,:,:),allocatable,target,public :: boundary_right_x3
+  
   integer, dimension(nrofDim,2) :: domainboundaryconditions
 
   contains
 
+  function get_boundary_grid_pointer(index_of_boundary) result(ret)
+    integer,intent(in) :: index_of_boundary
+    real(kind=dp),pointer,dimension(:,:,:,:) :: ret
+
+    ! Point state to appropriate array
+    select case (index_of_boundary)
+        case(1)
+            ret => boundary_left_x1
+        case(2)
+            ret => boundary_right_x1
+        case(3)
+            ret => boundary_left_x2
+        case(4)
+            ret => boundary_right_x2
+        case(5)
+            ret => boundary_left_x3
+        case(6)
+            ret => boundary_right_x3
+    end select
+  end function get_boundary_grid_pointer
+  
+  function init_boundary()
+    integer :: init_boundary
+    integer :: status
+    allocate(boundary_left_x1(1:mbc,sy:ey,sz:ez,neq), STAT=status)
+    allocate(boundary_right_x1(1:mbc,sy:ey,sz:ez,neq), STAT=status)
+    allocate(boundary_left_x2(sx-mbc:ex+mbc,1:mbc,sz:ez,neq), STAT=status)
+    allocate(boundary_right_x2(sx-mbc:ex+mbc,1:mbc,sz:ez,neq), STAT=status)
+    allocate(boundary_left_x3(sx-mbc:ex+mbc,sy-mbc:ey+mbc,1:mbc,neq), STAT=status)
+    allocate(boundary_right_x3(sx-mbc:ex+mbc,sy-mbc:ey+mbc,1:mbc,neq), STAT=status)
+    if(status.NE.0) then
+      init_boundary = -1
+    else
+      init_boundary = 0
+    end if
+  end function
+  
   subroutine problemboundary(boundary_id,newold)
     integer,intent(in) :: boundary_id
     integer,intent(in) :: newold

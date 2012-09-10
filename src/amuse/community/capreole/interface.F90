@@ -59,6 +59,59 @@ function initialize_grid() result(ret)
   
 end function  
 
+function get_boundary_index_range_inclusive(index_of_boundary, minx, maxx, miny, maxy, minz, maxz) result(ret)
+    use sizes, only: mbc
+    use mesh, only: sx,ex,sy,ey,sz,ez,meshx,meshy,meshz
+    use problem
+    implicit none
+    integer, intent(in) :: index_of_boundary
+    integer, intent(out) :: minx, maxx, miny, maxy, minz, maxz
+    integer :: ret
+    minx = 1
+    miny = 1
+    minz = 1
+    
+    maxx = 1
+    maxy = 1 
+    maxz = 1
+    
+    if (index_of_boundary < 1 .OR. index_of_boundary > 6) then
+        ret = -1
+        return
+    end if
+    
+    if (domainboundaryconditions((index_of_boundary + 1)/ 2,MODULO(index_of_boundary + 1, 2) + 1) .EQ. PROBLEM_DEF)  then
+        select case (index_of_boundary)
+            case (1)
+                maxx = mbc
+                maxy = ey - sy + 1
+                maxz = ez - sz + 1
+            case (2)
+                maxx = mbc
+                maxy = ey - sy + 1
+                maxz = ez - sz + 1
+            case (3)
+                maxx = mbc * 2 + (ex - sx + 1)
+                maxy = mbc
+                maxz = ez - sz + 1
+            case (4)
+                maxx = mbc * 2 + (ex - sx + 1)
+                maxy = mbc
+                maxz = ez - sz + 1
+            case (5)
+                maxx = mbc * 2 + (ex - sx + 1)
+                maxy = mbc * 2 + (ey - sy + 1)
+                maxz = mbc
+            case (6)
+                maxx = mbc * 2 + (ex - sx + 1)
+                maxy = mbc * 2 + (ey - sy + 1)
+                maxz = mbc
+        end select
+    end if
+    ret = 0
+end function
+
+
 function set_boundary_innerxstate(rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
   use amuse_helpers
   integer :: ret
@@ -444,3 +497,162 @@ function get_time(tnow) result(ret)
   ret=amuse_get_time(tnow)
 end function
 
+
+function get_boundary_state(i,j,k,index_of_boundary,rho_out,rhvx_out,rhvy_out,rhvz_out,en_out,n) result(ret)
+  use amuse_helpers
+  implicit none
+  
+  integer :: n
+  integer :: ret,ii, i0, j0, k0
+  integer, intent(in) :: i(n),j(n),k(n), index_of_boundary(n)
+  real*8,  intent(out) :: rho_out(n),rhvx_out(n),rhvy_out(n),rhvz_out(n),en_out(n)
+  real*8 :: lstate(neq)
+  real(kind=dp),pointer,dimension(:,:,:,:) :: boundary_grid
+  integer,allocatable :: retsum(:)
+#ifdef MPI
+  integer ierr
+#endif
+  allocate(retsum(n))
+  
+  do ii=1,n
+    i0 = i(ii)
+    j0 = j(ii)
+    k0 = k(ii)
+    retsum(ii) = 1
+    boundary_grid => get_boundary_grid_pointer(index_of_boundary(ii))
+    rho_out(ii)=boundary_grid(i0, j0, k0, RHO)
+    rhvx_out(ii)=boundary_grid(i0, j0, k0, RHVX)
+    rhvy_out(ii)=boundary_grid(i0, j0, k0, RHVY)
+    rhvz_out(ii)=boundary_grid(i0, j0, k0, RHVZ)
+    en_out(ii)=boundary_grid(i0, j0, k0, EN)
+  enddo
+
+#ifdef MPI
+  if(rank.NE.0) then
+    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rho_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rhvx_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rhvy_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(rhvz_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(en_out,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  else
+    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rho_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rhvx_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rhvy_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,rhvz_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,en_out,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  endif
+#endif  
+  ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
+end function
+
+
+function set_boundary_state(i,j,k,rho_in,rhvx_in,rhvy_in,rhvz_in,en_in,index_of_boundary,n) result(ret)
+  use amuse_helpers
+  implicit none
+  
+  integer :: n
+  integer :: ret,ii, i0, j0, k0
+  integer,intent(in) :: i(n),j(n),k(n), index_of_boundary(n)
+  real*8, intent(in) :: rho_in(n),rhvx_in(n),rhvy_in(n),rhvz_in(n),en_in(n)
+  integer,allocatable :: retsum(:)
+  real(kind=dp),pointer,dimension(:,:,:,:) :: boundary_grid
+#ifdef MPI
+  integer ierr
+#endif
+  allocate(retsum(n))
+ 
+  do ii=1,n
+    i0 = i(ii)
+    j0 = j(ii)
+    k0 = k(ii)
+    retsum(ii) = 1
+    boundary_grid => get_boundary_grid_pointer(index_of_boundary(ii))
+    boundary_grid(i0, j0, k0, RHO)=rho_in(ii)
+    boundary_grid(i0, j0, k0, RHVX)=rhvx_in(ii)
+    boundary_grid(i0, j0, k0, RHVY)=rhvy_in(ii)
+    boundary_grid(i0, j0, k0, RHVZ)=rhvz_in(ii)
+    boundary_grid(i0, j0, k0, EN)=en_in(ii)
+  enddo
+#ifdef MPI
+  if(rank.NE.0) then
+    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  else
+    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  endif
+#endif  
+  ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
+end function
+
+
+
+
+function get_boundary_position_of_index(i,j,k,index_of_boundary,xout,yout,zout,n) result(ret)
+  use amuse_helpers
+  implicit none
+  
+  integer, intent(in) :: n
+  integer :: ret,ii, i0, j0, k0
+  integer, intent(in) :: i(n),j(n),k(n), index_of_boundary(n)
+  real*8, intent(out) :: xout(n),yout(n),zout(n)
+  integer,allocatable :: retsum(:)
+#ifdef MPI
+  integer ierr
+#endif
+  allocate(retsum(n))
+  
+   do ii=1,n
+    i0 = i(ii)
+    j0 = j(ii)
+    k0 = k(ii)
+    retsum(ii) = 1
+    select case (index_of_boundary(ii))
+        case(1)
+            xout(ii) = dx*(0.5_dp-real(i0,dp))
+            yout(ii) = dy*(0.5_dp+real(j0-1,dp))
+            zout(ii) = dz*(0.5_dp+real(k0-1,dp))
+        case(2)
+            xout(ii) = dx*(0.5_dp+real(ex + i0 - 1,dp))
+            yout(ii) = dy*(0.5_dp+real(j0-1,dp))
+            zout(ii) = dz*(0.5_dp+real(k0-1,dp))
+        case(3)
+            xout(ii) = dx*(0.5_dp+real(i0-mbc-1,dp))
+            yout(ii) = dy*(0.5_dp-real(j0,dp))
+            zout(ii) = dz*(0.5_dp+real(k0-1,dp))
+        case(4)
+            xout(ii) = dx*(0.5_dp+real(i0-mbc-1,dp))
+            yout(ii) = dy*(0.5_dp+real(ey + j0 - 1,dp))
+            zout(ii) = dz*(0.5_dp+real(k0-1,dp))
+        case(5)
+            xout(ii) = dx*(0.5_dp+real(i0-mbc-1,dp))
+            yout(ii) = dy*(0.5_dp+real(j0-mbc-1,dp))
+            zout(ii) = dz*(0.5_dp-real(k0,dp))
+        case(6)
+            xout(ii) = dx*(0.5_dp+real(i0-mbc-1,dp))
+            yout(ii) = dy*(0.5_dp+real(j0-mbc-1,dp))
+            zout(ii) = dz*(0.5_dp+real(ez + k0 - 1,dp))
+    end select
+  enddo
+
+#ifdef MPI
+  if(rank.NE.0) then
+    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(xout,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(yout,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(zout,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  else
+    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,xout,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,yout,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+    call MPI_REDUCE(MPI_IN_PLACE,zout,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  endif
+#endif  
+  ret=0
+  if(any(retsum.NE.1)) ret=-1
+  deallocate(retsum)
+end function
