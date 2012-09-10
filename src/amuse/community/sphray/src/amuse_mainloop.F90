@@ -91,6 +91,7 @@ contains
     ! time steps.  
     !----------------------------------------------------------------
     else   
+
                        
        !  build oct tree.  only need to do this once per snap (for now)
        !----------------------------------------------------------------

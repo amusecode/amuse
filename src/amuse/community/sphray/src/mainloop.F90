@@ -87,10 +87,7 @@ contains
        call setparticleorder(psys, tree)             
        call prepare_raysearch(psys, globalraylist)
        
-      
-
-       
-
+             
        if(GV%JustInit) then
           write(str,"(A,F10.2)") "total memory allocated [MB] = ", GV%MB
           call mywrite(str,verb)
@@ -106,11 +103,10 @@ contains
           GV%OutputIndx = 1
        end if
        
-       
+
        ! begin ray tracing 
        !------------------------- 
        src_rays: do rayn = one, PLAN%snap(snapn)%SrcRays
-
           
           GV%rayn                = GV%rayn + 1
           GV%src_rayn            = GV%src_rayn + 1
