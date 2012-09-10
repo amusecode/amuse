@@ -360,7 +360,7 @@ class TestCapreoleInterface(TestWithMPI):
                 for j0 in range(xrange[1]):
                     for k0 in range(xrange[2]):
                         i = (i0 * (xrange[2] * xrange[1])) + (j0 * xrange[2]) + k0
-                        
+                        print "boundary:", j, i0+1, j0+1, k0+1
                         error = instance.set_boundary_state(
                             i0+1, j0+1, k0+1,       #  index
                             1.0 * (i+1),         #  density
@@ -531,6 +531,222 @@ class TestCapreoleInterface(TestWithMPI):
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
                     self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-2-1) * dy))
                     self.assertAlmostRelativeEquals(z, 18.0 + (0.5 * dz) + ((k-1) * dz))
+        
+    def test19(self):
+        results = []
+        instance=self.new_instance(CapreoleInterface)
+        instance.initialize_code()
+        instance.commit_parameters()
+        nx, ny, nz, error = instance.get_parallel_decomposition()
+        self.assertEquals(error, 0)
+        self.assertEquals(nx, 1)
+        self.assertEquals(ny, 1)
+        self.assertEquals(nz, 1)
+        error = instance.set_parallel_decomposition(2,1,1)
+        self.assertEquals(error, -1)
+        
+   
+    def test20(self):
+        results = []
+        instance=self.new_instance(CapreoleInterface, number_of_workers = 4)
+        instance.initialize_code()
+        nx, ny, nz, error = instance.get_parallel_decomposition()
+        self.assertEquals(error, 0)
+        self.assertEquals(nx, 0)
+        self.assertEquals(ny, 0)
+        self.assertEquals(nz, 0)
+        error = instance.set_parallel_decomposition(2,1,2)
+        self.assertEquals(error, 0)
+        nx, ny, nz, error = instance.get_parallel_decomposition()
+        self.assertEquals(error, 0)
+        self.assertEquals(nx, 2)
+        self.assertEquals(ny, 1)
+        self.assertEquals(nz, 2)
+        error = instance.set_parallel_decomposition(0,3,2)
+        self.assertEquals(error, -1)
+        
+    def test21(self):
+        results = []
+        instance=self.new_instance(CapreoleInterface, number_of_workers = 2)
+        instance.initialize_code()
+        error = instance.set_parallel_decomposition(1,2,1)
+        self.assertEquals(error, 0)
+        instance.setup_mesh(10,30,10,100.0, 300.0, 100.0)
+        instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+           
+        for boundary_index in [1,2]:
+            for i0 in range(1,2):
+                for j0 in range(1, 30+1):
+                    i = j0 * 30 + i0
+                    error = instance.set_boundary_state(
+                        i0, j0, 1,       #  index
+                        1.0 * (i+1),         #  density
+                        2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                        5.0 * (i+1),         #  energy
+                        boundary_index     #  boundary 
+                    )
+                    self.assertEquals(error, 0)
+                    rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                        i0, j0, 1,
+                        boundary_index
+                    )
+                    self.assertEquals(error, 0)
+                    
+                    self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+    
+    def test22(self):
+        results = []
+        instance=self.new_instance(CapreoleInterface, number_of_workers = 2)
+        instance.initialize_code()
+        error = instance.set_parallel_decomposition(2,1,1)
+        self.assertEquals(error, 0)
+        instance.setup_mesh(10,30,10,100.0, 300.0, 100.0)
+        instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        
+           
+        for boundary_index in [1,2]:
+            for i0 in range(1,2):
+                for j0 in range(1, 30+1):
+                    i = j0 * 30 + i0
+                    error = instance.set_boundary_state(
+                        i0, j0, 1,       #  index
+                        1.0 * (i+1),         #  density
+                        2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                        5.0 * (i+1),         #  energy
+                        boundary_index     #  boundary 
+                    )
+                    self.assertEquals(error, 0)
+                    rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                        i0, j0, 1,
+                        boundary_index
+                    )
+                    self.assertEquals(error, 0)
+                    
+                    self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+    
+    def test23(self):
+        results = []
+        instance=self.new_instance(CapreoleInterface, number_of_workers = 3)
+        instance.initialize_code()
+        error = instance.set_parallel_decomposition(3,1,1)
+        self.assertEquals(error, 0)
+        instance.setup_mesh(12,20,10,100.0, 300.0, 100.0)
+        
+        instance.set_boundary("interface","interface","interface","interface","periodic","periodic")
+        instance.commit_parameters()
+        
+           
+        for boundaryindex in [3,4]:
+            for i0 in range(1,12+4+1):
+                for j0 in [1,2]:
+                    i = (i0 * 15) + j0
+                    error = instance.set_boundary_state(
+                        i0,j0,1,       #  index
+                        1.0 * (i+1),         #  density
+                        2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                        5.0 * (i+1),         #  energy
+                        boundaryindex    #  boundary
+                    )
+                    print i0, j0
+                    self.assertEquals(error, 0)
+                    rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                        i0, j0, 1,
+                        boundaryindex
+                    )
+                    self.assertEquals(error, 0)
+                    
+                    self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+    
+    def test24(self):
+        results = []
+        instance=self.new_instance(CapreoleInterface, number_of_workers = 3)
+        instance.initialize_code()
+        error = instance.set_parallel_decomposition(1,3,1)
+        self.assertEquals(error, 0)
+        instance.setup_mesh(12,30,10,100.0, 300.0, 100.0)
+        
+        instance.set_boundary("interface","interface","interface","interface","periodic","periodic")
+        instance.commit_parameters()
+        
+           
+        for boundaryindex in [3,4]:
+            for i0 in range(1,12+4+1):
+                for j0 in [1,2]:
+                    i = (i0 * 15) + j0
+                    error = instance.set_boundary_state(
+                        i0,j0,1,       #  index
+                        1.0 * (i+1),         #  density
+                        2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                        5.0 * (i+1),         #  energy
+                        boundaryindex    #  boundary
+                    )
+                    print i0, j0
+                    self.assertEquals(error, 0)
+                    rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                        i0, j0, 1,
+                        boundaryindex
+                    )
+                    self.assertEquals(error, 0)
+                    
+                    self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                    self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+                    
+    def test25(self):
+        results = []
+        instance=self.new_instance(CapreoleInterface, number_of_workers = 3)
+        instance.initialize_code()
+        error = instance.set_parallel_decomposition(1,3,1)
+        self.assertEquals(error, 0)
+        instance.setup_mesh(6,5,5,6.0,5.0,5.0)
+        instance.set_boundary("interface","interface","interface","interface","interface","interface")
+        instance.commit_parameters()
+        
+           
+        for boundaryindex in [5,6]:
+            for i0 in range(1, 6+4+1):
+                for j0 in range(1, 5+4+1):
+                    for z0 in[1,2]:
+                        i = (i0 * (5*4)) + (j0 * 4) + z0
+                        error = instance.set_boundary_state(
+                            i0,j0,z0,       #  index
+                            1.0 * (i+1),         #  density
+                            2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
+                            5.0 * (i+1),         #  energy
+                            boundaryindex     #  boundary 
+                        )
+                        self.assertEquals(error, 0)
+                        rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+                            i0, j0, z0,
+                            boundaryindex
+                        
+                        )
+                        self.assertEquals(error, 0)
+                        
+                        self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
+                        self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+             
+                    
 class TestSodShocktube(TestWithMPI):
     
     def test0(self):

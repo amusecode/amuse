@@ -63,8 +63,8 @@ module my_mpi
   integer,public ::  nbrdown,nbrup     !< up and down neighbours 
   integer,public ::  nbrabove,nbrbelow !< above and below neighbours 
 
-  public :: mpi_setup,mpi_end
-  private :: mpi_basic,mpi_topology,fnd3dnbrs
+  public :: mpi_setup,mpi_end, mpi_basic
+  private :: mpi_topology,fnd3dnbrs
 
 contains
 
@@ -76,8 +76,6 @@ contains
     integer :: ierror
     integer :: hostnm
     character(len=100) :: hostname
- 
-    call mpi_basic
 
     ! Open processor dependent log file
     write(number,"(I4)") rank

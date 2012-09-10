@@ -45,6 +45,134 @@ module problem
     end select
   end function get_boundary_grid_pointer
   
+  
+  function is_on_boundary_grid(index_of_boundary, i, j, k, is_set) result(ret)
+    implicit none
+    integer,intent(in) :: i, j, k
+    integer,intent(in) :: index_of_boundary
+    logical :: ret
+    logical,intent(in) :: is_set
+    integer :: il, iu
+    integer :: jl, ju
+    
+    if(is_set .OR. sx .EQ. 1) then
+        il = sx - mbc
+    else
+        il = sx
+    endif
+        
+    if(is_set .OR. ex .EQ. meshx) then
+        iu = ex + mbc
+    else
+        iu = ex
+    endif
+    
+    if(is_set .OR. sy .EQ. 1) then
+        jl = sy - mbc
+    else
+        jl = sy
+    endif
+        
+    if(is_set .OR. ey .EQ. meshy) then
+        ju = ey + mbc
+    else
+        ju = ey
+    endif
+    
+    ! Point state to appropriate array
+    ret = .TRUE.
+    ! print *, "I:", sx, ex, i, meshx, il, iu, is_set, (i-mbc).LT.il , (i-mbc).GT.iu
+    ! print *, "J:", sy, ey, j
+    ! print *, "K:", sz, ez, k
+    ! print *, "index_of_boundary:",index_of_boundary, j.LT.1 .OR. j.GT.mbc
+    
+    select case (index_of_boundary)
+        case(1)
+            if(sx .NE. 1) then
+                ret = .FALSE.
+            else if(i.LT.1 .OR. i.GT.mbc) then
+                ret = .FALSE.
+            else if (j.LT.sy.OR.j.GT.ey) then
+                ret = .FALSE.
+            else if (k.LT.sz.OR.k.GT.ez) then
+                ret = .FALSE.
+            end if
+        case(2)
+            if(ex .NE. meshx) then
+                ret = .FALSE.
+            else if(i.LT.1 .OR. i.GT.mbc) then
+                ret = .FALSE.
+            else if (j.LT.sy.OR.j.GT.ey) then
+                ret = .FALSE.
+            else if (k.LT.sz.OR.k.GT.ez) then
+                ret = .FALSE.
+            end if
+        case(3)
+            if(sy .NE. 1) then
+                ret = .FALSE.
+            else if((i-mbc).LT.il .OR. (i-mbc).GT.iu) then
+                ret = .FALSE.
+            else if(j.LT.1 .OR. j.GT.mbc) then
+                ret = .FALSE.
+            else if (k.LT.sz.OR.k.GT.ez) then
+                ret = .FALSE.
+            end if
+        case(4)
+            if(ey .NE. meshy) then
+                ret = .FALSE.
+            else if((i-mbc).LT.il .OR. (i-mbc).GT.iu) then
+                ret = .FALSE.
+            else if(j.LT.1 .OR. j.GT.mbc) then
+                ret = .FALSE.
+            else if (k.LT.sz.OR.k.GT.ez) then
+                ret = .FALSE.
+            end if
+        case(5)
+            if(sz .NE. 1) then
+                ret = .FALSE.
+            else if((i-mbc).LT.il .OR. (i-mbc).GT.iu) then
+                ret = .FALSE.
+            else if((j-mbc).LT.jl .OR. (j-mbc).GT.ju) then
+                ret = .FALSE.
+            else if(k.LT.1 .OR. k.GT.mbc) then
+                ret = .FALSE.
+            end if
+        case(6)
+            if(ez .NE. meshz) then
+                ret = .FALSE.
+            else if((i-mbc).LT.il .OR. (i-mbc).GT.iu) then
+                ret = .FALSE.
+            else if((j-mbc).LT.jl .OR. (j-mbc).GT.ju) then
+                ret = .FALSE.
+            else if(k.LT.1 .OR. k.GT.mbc) then
+                ret = .FALSE.
+            end if
+    end select
+    ! print *, "RET:", ret
+  end function is_on_boundary_grid
+  
+  
+  function on_boundary_grid(index_of_boundary, i, j, k) result(ret)
+    implicit none
+    integer,intent(inout) :: i, j, k
+    integer,intent(in) :: index_of_boundary
+    integer :: ret
+    ret = 0
+    
+    select case (index_of_boundary)
+        case(3)
+            i = i - mbc
+        case(4)
+            i = i - mbc
+        case(5)
+            i = i - mbc
+            j = j - mbc
+        case(6)
+            i = i - mbc
+            j = j - mbc
+    end select
+  end function on_boundary_grid
+  
   function init_boundary()
     integer :: init_boundary
     integer :: status

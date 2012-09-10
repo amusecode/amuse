@@ -318,6 +318,29 @@ class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferen
         function.result_type = 'i'
         return function
     
+    @legacy_function
+    def set_parallel_decomposition():
+        """Set the number of processes per dimension, the
+        total number of available processors must be
+        nx * ny * nz
+        """
+        function = LegacyFunctionSpecification()
+        for x in ['nx','ny','nz']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def get_parallel_decomposition():
+        """Retrieves the number of processes per dimension, the
+        total number of available processors must be
+        nx * ny * nz
+        """
+        function = LegacyFunctionSpecification()
+        for x in ['nx','ny','nz']:
+            function.addParameter(x, dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
     
 class GLCapreoleInterface(CapreoleInterface):
     def __init__(self, **options):

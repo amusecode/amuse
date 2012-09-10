@@ -52,8 +52,8 @@ module my_mpi
   integer :: hostnm
 #endif
 
-  public :: mpi_setup,mpi_end
-  private :: mpi_basic,mpi_topology,fnd2dnbrs
+  public :: mpi_setup,mpi_end, mpi_basic
+  private :: mpi_topology,fnd2dnbrs
 
 contains
 
@@ -66,8 +66,6 @@ contains
     integer :: ierror
     integer :: tn
     character(len=100) :: hostname
-
-    call mpi_basic ()
 
     if (log_unit /= 6) then
        filename=trim(adjustl(trim(adjustl(results_dir))//"Capreole.log"))
@@ -109,6 +107,18 @@ contains
     call mpi_topology ()
 
   end subroutine mpi_setup
+  
+  
+  subroutine set_dims(indims)
+    integer,dimension(NPDIM) :: indims
+    
+  end subroutine
+
+  subroutine get_dims(outdims)
+    integer,dimension(NPDIM) :: outdims
+    outdims=dims
+  end subroutine
+  
 
   !----------------------------------------------------------------------------
 
@@ -118,7 +128,7 @@ contains
 
     ! Find total number of processors (npr)
     npr=1
-
+    dims = 1
   end subroutine mpi_basic
 
   !----------------------------------------------------------------------------

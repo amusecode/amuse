@@ -1,9 +1,13 @@
 function initialize_code() result(ret)
   use amuse_helpers
+  use my_mpi, only: mpi_basic
+  implicit none
+  
   integer :: ret
   character(len=10), parameter :: default="reflective"
   ret=amuse_set_boundary(default,default,default,default,default,default)
   
+  call mpi_basic()
 end function
 
 function cleanup_code() result(ret)
@@ -502,7 +506,7 @@ function get_boundary_state(i,j,k,index_of_boundary,rho_out,rhvx_out,rhvy_out,rh
   use amuse_helpers
   implicit none
   
-  integer :: n
+  integer :: n, error
   integer :: ret,ii, i0, j0, k0
   integer, intent(in) :: i(n),j(n),k(n), index_of_boundary(n)
   real*8,  intent(out) :: rho_out(n),rhvx_out(n),rhvy_out(n),rhvz_out(n),en_out(n)
@@ -518,13 +522,24 @@ function get_boundary_state(i,j,k,index_of_boundary,rho_out,rhvx_out,rhvy_out,rh
     i0 = i(ii)
     j0 = j(ii)
     k0 = k(ii)
-    retsum(ii) = 1
-    boundary_grid => get_boundary_grid_pointer(index_of_boundary(ii))
-    rho_out(ii)=boundary_grid(i0, j0, k0, RHO)
-    rhvx_out(ii)=boundary_grid(i0, j0, k0, RHVX)
-    rhvy_out(ii)=boundary_grid(i0, j0, k0, RHVY)
-    rhvz_out(ii)=boundary_grid(i0, j0, k0, RHVZ)
-    en_out(ii)=boundary_grid(i0, j0, k0, EN)
+    retsum(ii) = 0
+    if (is_on_boundary_grid(index_of_boundary(ii), i0, j0, k0, .FALSE.)) then
+        retsum(ii) = 1
+        boundary_grid => get_boundary_grid_pointer(index_of_boundary(ii))
+        error = on_boundary_grid(index_of_boundary(ii), i0, j0, k0)
+    
+        rho_out(ii)=boundary_grid(i0, j0, k0, RHO)
+        rhvx_out(ii)=boundary_grid(i0, j0, k0, RHVX)
+        rhvy_out(ii)=boundary_grid(i0, j0, k0, RHVY)
+        rhvz_out(ii)=boundary_grid(i0, j0, k0, RHVZ)
+        en_out(ii)=boundary_grid(i0, j0, k0, EN)
+    else
+        rho_out(ii)=0
+        rhvx_out(ii)=0
+        rhvy_out(ii)=0
+        rhvz_out(ii)=0
+        en_out(ii)=0
+    end if
   enddo
 
 #ifdef MPI
@@ -549,12 +564,13 @@ function get_boundary_state(i,j,k,index_of_boundary,rho_out,rhvx_out,rhvy_out,rh
   deallocate(retsum)
 end function
 
+    
 
 function set_boundary_state(i,j,k,rho_in,rhvx_in,rhvy_in,rhvz_in,en_in,index_of_boundary,n) result(ret)
   use amuse_helpers
   implicit none
   
-  integer :: n
+  integer :: n, error
   integer :: ret,ii, i0, j0, k0
   integer,intent(in) :: i(n),j(n),k(n), index_of_boundary(n)
   real*8, intent(in) :: rho_in(n),rhvx_in(n),rhvy_in(n),rhvz_in(n),en_in(n)
@@ -566,16 +582,22 @@ function set_boundary_state(i,j,k,rho_in,rhvx_in,rhvy_in,rhvz_in,en_in,index_of_
   allocate(retsum(n))
  
   do ii=1,n
+    retsum(ii) = 0
     i0 = i(ii)
     j0 = j(ii)
     k0 = k(ii)
-    retsum(ii) = 1
-    boundary_grid => get_boundary_grid_pointer(index_of_boundary(ii))
-    boundary_grid(i0, j0, k0, RHO)=rho_in(ii)
-    boundary_grid(i0, j0, k0, RHVX)=rhvx_in(ii)
-    boundary_grid(i0, j0, k0, RHVY)=rhvy_in(ii)
-    boundary_grid(i0, j0, k0, RHVZ)=rhvz_in(ii)
-    boundary_grid(i0, j0, k0, EN)=en_in(ii)
+    if (is_on_boundary_grid(index_of_boundary(ii), i0, j0, k0, .TRUE.)) then
+        if (is_on_boundary_grid(index_of_boundary(ii), i0, j0, k0, .FALSE.)) then
+            retsum(ii) = 1
+        end if
+        error = on_boundary_grid(index_of_boundary(ii), i0, j0, k0)
+        boundary_grid => get_boundary_grid_pointer(index_of_boundary(ii))
+        boundary_grid(i0, j0, k0, RHO)=rho_in(ii)
+        boundary_grid(i0, j0, k0, RHVX)=rhvx_in(ii)
+        boundary_grid(i0, j0, k0, RHVY)=rhvy_in(ii)
+        boundary_grid(i0, j0, k0, RHVZ)=rhvz_in(ii)
+        boundary_grid(i0, j0, k0, EN)=en_in(ii)
+    end if
   enddo
 #ifdef MPI
   if(rank.NE.0) then
@@ -656,3 +678,48 @@ function get_boundary_position_of_index(i,j,k,index_of_boundary,xout,yout,zout,n
   if(any(retsum.NE.1)) ret=-1
   deallocate(retsum)
 end function
+
+
+function set_parallel_decomposition(nx, ny, nz) result(ret)
+  use amuse_helpers
+  implicit none
+  integer :: ret, ntotal
+  integer, intent(in) :: nx, ny, nz
+  integer :: localdims(NPDIM)
+  localdims = 0
+  ntotal = 1
+  ret = 0
+  if (nx.GT.0) then
+    ntotal = ntotal * nx
+  end if
+  if (ny.GT.0) then
+    ntotal = ntotal * ny
+  end if
+  if (nz.GT.0) then
+    ntotal = ntotal * nz
+  end if
+  if(ntotal .GT. npr) then
+    call set_dims(dims)
+    ret = -1
+    return
+  end if
+  localdims(1) = nx
+  localdims(2) = ny
+  localdims(3) = nz
+  call set_dims(localdims)
+end function set_parallel_decomposition
+
+function get_parallel_decomposition(nx, ny, nz) result(ret)
+  use amuse_helpers
+  implicit none
+  integer :: ret, ntotal
+  integer, intent(out) :: nx, ny, nz
+  integer :: localdims(NPDIM)
+  localdims = 0
+  ret = 0
+  call get_dims(localdims)
+  
+  nx = localdims(1)
+  ny = localdims(2)
+  nz = localdims(3)
+end function get_parallel_decomposition

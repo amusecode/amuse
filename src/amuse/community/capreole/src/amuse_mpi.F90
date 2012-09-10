@@ -66,8 +66,8 @@ module my_mpi
   integer,public ::  nbrdown,nbrup     !< up and down neighbours 
   integer,public ::  nbrabove,nbrbelow !< above and below neighbours 
 
-  public :: mpi_setup,mpi_end,set_periods,get_periods
-  private :: mpi_basic,mpi_topology,fnd3dnbrs
+  public :: mpi_basic, mpi_setup,mpi_end,set_periods,get_periods
+  private :: mpi_topology,fnd3dnbrs
 
   logical,dimension(NPDIM), private :: periods=.FALSE.
 
@@ -104,7 +104,6 @@ contains
 #endif
     character(len=100) :: hostname
  
-    call mpi_basic
 
     ! Open processor dependent log file
     write(number,"(I4)") rank
@@ -137,6 +136,7 @@ contains
     ! Find total number of processors (npr)
     call MPI_COMM_SIZE(MPI_COMM_WORLD,npr,mpi_ierror)
 
+    dims = 0
   end subroutine mpi_basic
 
   !----------------------------------------------------------------------------
