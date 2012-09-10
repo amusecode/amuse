@@ -46,7 +46,7 @@ class TestHopInterface(amusetest.TestCase):
             self.assertEquals(err, 0)
         
         hop.stop()
-            
+    
     def test2(self):
         random.seed(1001)
         
@@ -75,6 +75,7 @@ class TestHopInterface(amusetest.TestCase):
             
             d, err = hop.get_density(0)
             self.assertAlmostRelativeEquals(d,ds[method], 5)
+        hop.stop()
     
     def test3(self): 
     
@@ -138,8 +139,8 @@ class TestHopInterface(amusetest.TestCase):
         
         n, err = hop.get_densest_neighbor(ids1)
         self.assertEquals(n, [7,7,12,0,7,7,7,7,12,7])
-        
-
+        hop.stop()
+    
     def test4(self):
         hop = HopInterface()
         hop.initialize_code()
@@ -166,7 +167,8 @@ class TestHopInterface(amusetest.TestCase):
         self.assertEquals(error,0)
         value, error = hop.get_nHop()
         self.assertEquals(value,7)
-        
+        hop.stop()
+    
 class TestHop(amusetest.TestCase):
     def test1(self):
         print "First test: adding particles, setting and getting."
@@ -187,7 +189,7 @@ class TestHop(amusetest.TestCase):
             self.assertEquals(z, 0 | nbody_system.length)
             
         hop.stop()
-            
+    
     def test2(self):
         random.seed(1001)
         
@@ -211,6 +213,7 @@ class TestHop(amusetest.TestCase):
             d = hop.particles[0].density
             
             self.assertAlmostRelativeEquals(d, ds[method] | nbody_system.density, 5)
+        hop.stop()
     
     def test3(self): 
     
@@ -249,4 +252,69 @@ class TestHop(amusetest.TestCase):
             self.assertEquals(len(group), 10)
             self.assertEquals(group.id_of_group(), index)
             #self.assertEquals(group.get_density_of_group(), densities[index])
+        hop.stop()
+    
+    def test4(self):
+        random.seed(1001)
+        print "Test 4: complicated density field."
+        
+        # A separate group below peak_density_threshold -> should be dropped
+        particles0 = new_plummer_model(90, convert_nbody=nbody_system.nbody_to_si(0.9 | units.MSun, 1.0 | units.RSun))
+        
+        # A nearby group below peak_density_threshold -> should be attached to proper group
+        particles1 = new_plummer_model(80, convert_nbody=nbody_system.nbody_to_si(0.8 | units.MSun, 1.0 | units.RSun))
+        particles1.x += 10 | units.RSun
+        
+        # A proper group very nearby other proper group -> groups should merge
+        particles2a = new_plummer_model(200, convert_nbody=nbody_system.nbody_to_si(2.0 | units.MSun, 1.0 | units.RSun))
+        particles2b = new_plummer_model(300, convert_nbody=nbody_system.nbody_to_si(3.0 | units.MSun, 1.0 | units.RSun))
+        particles2a.x += 11.0 | units.RSun
+        particles2b.x += 11.2 | units.RSun
+        
+        # A separate proper group other proper group -> groups should be preserved
+        particles3 = new_plummer_model(400, convert_nbody=nbody_system.nbody_to_si(4.0 | units.MSun, 1.0 | units.RSun))
+        particles3.x += 20 | units.RSun
+        
+        hop = Hop(unit_converter=nbody_system.nbody_to_si(10.7 | units.MSun, 1.0 | units.RSun))
+        hop.parameters.number_of_neighbors_for_local_density = 100
+        hop.parameters.saddle_density_threshold_factor = 0.5
+        hop.parameters.relative_saddle_density_threshold = True
+        hop.commit_parameters()
+        
+        for set in [particles0, particles1, particles2a, particles2b, particles3]:
+            hop.particles.add_particles(set)
+        
+        hop.calculate_densities()
+        hop.parameters.outer_density_threshold = 0.1 * hop.particles.density.mean()
+        hop.parameters.peak_density_threshold = hop.particles.density.amax() / 4.0
+        hop.recommit_parameters()
+        hop.do_hop()
+        groups = list(hop.groups())
+        
+        self.assertEquals(len(hop.particles), 1070)
+        self.assertEquals(len(groups), 2)
+        self.assertEquals(hop.particles.select(lambda x: x < 5|units.RSun, "x").group_id, -1)
+        self.assertEquals(hop.get_number_of_particles_outside_groups(), 299)
+        self.assertEquals(1070 - len(groups[0]) - len(groups[1]), 299)
+        
+        expected_size = [477, 294] # Less than [580, 400], because particles below outer_density_threshold are excluded
+        expected_average_x = [11.0, 20] | units.RSun
+        for index, group in enumerate(groups):
+            self.assertEquals(group.id_of_group(), index)
+            self.assertAlmostEquals(group.center_of_mass()[0], expected_average_x[index], 1)
+            self.assertEquals(len(group), expected_size[index])
+        
+        if False: # Make a plot
+            original = hop.particles.copy_to_memory()
+            from amuse.plot import scatter, native_plot
+            colors = ["r", "g", "b", "y", "k", "w"]*100
+            for group, color in zip(hop.groups(), colors):
+                scatter(group.x, group.y, c=color)
+                original -= group
+            scatter(original.x, original.y, c="m", marker="s")
+            native_plot.show()
+        
+        hop.stop()
+    
+
 

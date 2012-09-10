@@ -25,6 +25,7 @@ class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="hop_worker", **keyword_arguments)
+        LiteratureReferencesMixIn.__init__(self)
     
     @legacy_function
     def new_particle():
@@ -440,7 +441,8 @@ class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn
             requested value for nHop was too low
         '''
         return function
-
+    
+    
     @legacy_function
     def set_fDensThresh():
         '''
@@ -449,10 +451,10 @@ class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn
         '''
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype = 'float64', direction=function.IN,
-          description='value of fDensThresh, the minimum density of grouped particles (DEFAULT: no minimum)')
+            description='value of fDensThresh, the minimum density of grouped particles (DEFAULT: no minimum)',
+            unit = generic_unit_system.density)
         function.result_type = 'int32'
         return function
-        
     @legacy_function
     def get_fDensThresh():
         '''
@@ -461,10 +463,85 @@ class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn
         '''
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype = 'float64', direction=function.OUT,
-          description='value of fDensThresh, the minimum density of grouped particles (DEFAULT: no minimum)')
+            description='value of fDensThresh, the minimum density of grouped particles (DEFAULT: no minimum)',
+            unit = generic_unit_system.density)
         function.result_type = 'int32'
         return function
-
+    @legacy_function
+    def set_saddle_densthresh():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'float64', direction=function.IN,
+            description='For two groups to merge, the density at their boundary must '
+            'exceed this threshold (DEFAULT: 1.75 * outer_density_threshold)',
+            unit = generic_unit_system.density)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_saddle_densthresh():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'float64', direction=function.OUT,
+            description='For two groups to merge, the density at their boundary must '
+            'exceed this threshold (DEFAULT: 1.75 * outer_density_threshold)',
+            unit = generic_unit_system.density)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_peak_densthresh():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'float64', direction=function.IN,
+            description='Groups with density below this threshold (fringe groups) are '
+            'attached to other (proper) groups, or dropped (DEFAULT: max(d_saddle, 2.0 * d_outer))',
+            unit = generic_unit_system.density)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_peak_densthresh():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'float64', direction=function.OUT,
+            description='Groups with density below this threshold (fringe groups) are '
+            'attached to other (proper) groups, or dropped (DEFAULT: max(d_saddle, 2.0 * d_outer))',
+            unit = generic_unit_system.density)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_saddle_density_threshold_factor():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'float64', direction=function.IN,
+            description='For two groups to merge, the density at their boundary must '
+            'exceed this factor times the lowest of the two peak densities (set relative_saddle_density_threshold to True)',
+            unit = NO_UNIT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_saddle_density_threshold_factor():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'float64', direction=function.OUT,
+            description='For two groups to merge, the density at their boundary must '
+            'exceed this factor times the lowest of the two peak densities (set relative_saddle_density_threshold to True)',
+            unit = NO_UNIT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_relative_saddle_density_threshold():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'int32', direction=function.IN,
+            description="Flag to use a saddle-density-threshold relative to the lowest peak density, "
+                "instead of the absolute saddle_density_threshold",
+            unit = NO_UNIT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_relative_saddle_density_threshold():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'int32', direction=function.OUT,
+            description="Flag to use a saddle-density-threshold relative to the lowest peak density, "
+                "instead of the absolute saddle_density_threshold",
+            unit = NO_UNIT)
+        function.result_type = 'int32'
+        return function
+    
+    
     @legacy_function
     def set_fPeriod():
         '''
@@ -712,18 +789,6 @@ class Hop(InCodeComponentImplementation):
         )
         
         builder.add_method(
-            "get_fDensThresh",
-            (),
-            (generic_unit_system.density, builder.ERROR_CODE,)
-        )
-        
-        builder.add_method(
-            "set_fDensThresh",
-            (generic_unit_system.density, ),
-            (builder.ERROR_CODE,)
-        )
-        
-        builder.add_method(
             "get_nHop",
             (),
             (builder.NO_UNIT, builder.ERROR_CODE,)
@@ -763,9 +828,41 @@ class Hop(InCodeComponentImplementation):
         object.add_method_parameter(
             "get_fDensThresh", 
             "set_fDensThresh",
-            "density_threshold", 
+            "outer_density_threshold", 
             "the density below which particles are not assigned to any group", 
-            default_value = 0.0 | generic_unit_system.density
+            default_value = -1.0 | generic_unit_system.density
+        )
+        object.add_method_parameter(
+            "get_saddle_densthresh", 
+            "set_saddle_densthresh",
+            "saddle_density_threshold", 
+            "For two groups to merge, the density at their boundary must exceed this "
+            "threshold (DEFAULT: 1.75 * outer_density_threshold)",
+            default_value = -1.0 | generic_unit_system.density
+        )
+        object.add_method_parameter(
+            "get_peak_densthresh", 
+            "set_peak_densthresh",
+            "peak_density_threshold", 
+            "Groups with density below this threshold (fringe groups) are attached to "
+            "other (proper) groups, or dropped (DEFAULT: max(saddle_density_threshold, 2.0 * outer_density_threshold))",
+            default_value = -1.0 | generic_unit_system.density
+        )
+        object.add_method_parameter(
+            "get_saddle_density_threshold_factor", 
+            "set_saddle_density_threshold_factor",
+            "saddle_density_threshold_factor", 
+            "For two groups to merge, the density at their boundary must exceed this "
+            "factor times the lowest of the two peak densities (set relative_saddle_density_threshold to True)",
+            default_value = 0.80
+        )
+        object.add_boolean_parameter(
+            "get_relative_saddle_density_threshold",
+            "set_relative_saddle_density_threshold",
+            "relative_saddle_density_threshold",
+            "Flag to use a saddle-density-threshold relative to the lowest peak density, "
+            "instead of the absolute saddle_density_threshold",
+            False
         )
         
         object.add_method_parameter(
@@ -773,7 +870,7 @@ class Hop(InCodeComponentImplementation):
             "set_nHop",
             "number_of_hops", 
             "number of particles to search to determin to look for density maximum", 
-            default_value = 0.0
+            default_value = 64
         )
 
         object.add_method_parameter(
@@ -790,7 +887,7 @@ class Hop(InCodeComponentImplementation):
             "set_nDens",
             "number_of_neighbors_for_local_density", 
             "Return the number of particles to smooth over when calculating densities.", 
-            default_value = 0.0
+            default_value = 64
         )
         
         object.add_method_parameter(
@@ -798,7 +895,7 @@ class Hop(InCodeComponentImplementation):
             "set_nBucket",
             "number_of_buckets", 
             "Return the bucket parameter to tune the performance of the kd-tree search.", 
-            default_value = 0.0
+            default_value = 16
         )
   
     def define_particle_sets(self, builder):
