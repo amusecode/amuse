@@ -11,7 +11,7 @@ LIBFNAMEMPI = libstopcondfmpi.a
 OBJS = stopcond.o
 OBJSF = stopcondf.o
 OBJSMPI = stopcond.mo
-OBJSFMPI = stopcondf.mo
+OBJSFMPI = mpi/stopcondf.o
 
 all:$(LIBNAME) $(LIBNAMEMPI) $(LIBFNAME) $(LIBFNAMEMPI)
 
@@ -36,8 +36,8 @@ $(LIBFNAMEMPI): $(OBJSFMPI)
 %.mo: %.c
 	$(MPICC) $(CFLAGS) -DMPILIB  -c -o $@ $<
 
-%.mo: %.F90
-	$(MPICC) $(FCFLAGS) -DMPILIB  -c -o $@ $<
+mpi/%.o: %.F90
+	make -C mpi
 
 
 %.o: %.c
@@ -47,4 +47,5 @@ $(LIBFNAMEMPI): $(OBJSFMPI)
 	$(FC) $(FCFLAGS) -c -o $@ $<
 
 clean:
-	rm -Rf *.o *.lo *.a *.mo
+	rm -Rf *.o *.lo *.a *.mo *.mod
+	make -C mpi clean

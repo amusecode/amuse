@@ -62,6 +62,7 @@ FC = ifort # Intel compiler
 MPIFC ?= mpif90
 
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
+SCMPIINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 # F90 options (ifort)
 IFORTFLAGS = -O -g -traceback -ip -fpp1 -DIFORT
@@ -131,7 +132,7 @@ LIBS = #-lU77
 
 #LDR     = $(F90)
 
-OPTIONS = $(F90FLAGS) $(SCINC)
+OPTIONS = $(F90FLAGS)
 
 LDFLAGS = $(OPTIONS) #-L/afs/astro.su.se/pkg/intel/Compiler/11.1/056/lib/intel64/
 LIBS = -lirc
@@ -196,11 +197,11 @@ RT-3D-PP-NA = sourceprops_pp.o rad_evolve_planeparallel_noav.o $(RT-3D_BASIC)
 # amuse interface
 
 amuse_interface: F90=$(FC)
-amuse_interface: F90FLAGS = $(F90FLAGS1)
+amuse_interface: F90FLAGS = $(F90FLAGS1) $(SCINC)
 amuse_interface: libcapreole.a
 
 amuse_interface_mpi: F90=$(MPIFC)
-amuse_interface_mpi: F90FLAGS = $(F90FLAGS1) $(MPI_FLAGS)
+amuse_interface_mpi: F90FLAGS = $(F90FLAGS1) $(MPI_FLAGS) $(SCMPIINC)
 amuse_interface_mpi: libcapreole_mpi.a
 
 libcapreole.a: precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o atomic.o \
