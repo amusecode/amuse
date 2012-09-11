@@ -705,3 +705,23 @@ function get_parallel_decomposition(nx, ny, nz) result(ret)
   ny = localdims(2)
   nz = localdims(3)
 end function get_parallel_decomposition
+
+
+
+function get_timestep(outputvalue) result(ret)
+  use amuse_helpers
+  implicit none
+  integer :: ret
+  integer, intent(out) :: outputvalue
+  
+  outputvalue = dt
+end function get_timestep
+
+
+function set_timestep(inputvalue) result(ret)
+  use amuse_helpers
+  implicit none
+  integer :: ret
+  integer, intent(in) :: inputvalue
+  
+end function set_timestep

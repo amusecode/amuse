@@ -27,12 +27,12 @@ except ImportError:
 USE_BOUNDARIES = True
 
 class EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(object):
-    nghost = 4
     
-    def __init__(self, code, number_of_grid_points):
+    def __init__(self, code, number_of_grid_points, nghost):
         self.code = code
         self.number_of_grid_points = number_of_grid_points
-    
+        self.nghost = nghost
+        
     def set_parameters(self):
         self.code.parameters.x_boundary_conditions = ("interface","interface")
         self.code.parameters.y_boundary_conditions = ("interface","interface")
@@ -121,6 +121,7 @@ class CalculateLinearWave1D(object):
         vflow_factor = 1.0,
         grid_length = 1.0 | length,
         number_of_steps = 10,
+        use_boundaries = True
     ):
         
         self.number_of_grid_points = number_of_grid_points
@@ -135,28 +136,29 @@ class CalculateLinearWave1D(object):
             self.number_of_grid_points, 
             1
         )
+        self.nghost = 4
+        self.use_boundaries = use_boundaries
         
     def new_instance_of_code(self):
         attribute = "new_instance_of_{0}_code".format(self.name_of_the_code.lower())
         return getattr(self,attribute)()
         
     def new_instance_of_capreole_code(self):
-        raise Exception("Capreole does not yet have support for detailed boundaries in amuse")
         result=Capreole(number_of_workers=self.number_of_workers)
-        result.initialize_code()
         self.dimensions_of_mesh =  (
             self.number_of_grid_points, 
             self.number_of_grid_points, 
             3
         )
+        self.nghost = 2
         return result
         
     def new_instance_of_athena_code(self):
         from amuse.community.athena.interface import Athena
         result=Athena(number_of_workers=self.number_of_workers)
-        result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.8
+        self.nghost = 4
         return result
         
 
@@ -283,8 +285,8 @@ class CalculateLinearWave1D(object):
     
     def new_evolve_object(self, instance):
         """Returns a special object to evolve to code in time"""
-        if USE_BOUNDARIES:
-            return EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(instance, self.number_of_grid_points)
+        if self.use_boundaries:
+            return EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(instance, self.number_of_grid_points, self.nghost)
         else:
             return EvolveHydrodynamicsCodeWithPeriodicBoundaries(instance)
             
@@ -334,28 +336,44 @@ class CalculateLinearWave1D(object):
 def main():
     number_of_grid_points = 64
     name_of_the_code = 'athena'
-    model = CalculateLinearWave1D(
+    model1 = CalculateLinearWave1D(
         number_of_grid_points = number_of_grid_points,
         number_of_workers = 1,
         name_of_the_code = name_of_the_code,
         amplitude = 1e-1 | speed,
         vflow_factor = 1.0,
         grid_length = 1.0 | length,
-        number_of_steps = 5
+        number_of_steps = 5,
+        use_boundaries = True
+    )
+    model2 = CalculateLinearWave1D(
+        number_of_grid_points = number_of_grid_points,
+        number_of_workers = 1,
+        name_of_the_code = name_of_the_code,
+        amplitude = 1e-1 | speed,
+        vflow_factor = 1.0,
+        grid_length = 1.0 | length,
+        number_of_steps = 5,
+        use_boundaries = False
     )
     if not IS_PLOT_AVAILABLE:
         return
-        
-    grids = model.get_solution_at_time(1.0 | time)
-    rho0 = model.start_grids[0].rho[...,...,0].value_in(density)
-    rho = grids[0].rho[...,...,0].value_in(density)
-    drho = rho - rho0
-    print drho.sum(), rho[0][0], rho0[0][0], drho[0][0]
-    x = grids[0].x[...,...,0].value_in(length)
-    y = grids[0].y[...,...,0].value_in(length)
-    figure = pyplot.figure(figsize=(10,10))
-    plot = figure.add_subplot(1,1,1, projection='3d')
+    
+    print "Evolve model with amuse implementing the periodic boundaries"
+    grids1 = model1.get_solution_at_time(1.0 | time)
+    print "Evolve model with the code implementing the periodic boundaries"
+    grids2 = model2.get_solution_at_time(1.0 | time)
+    rho1 = grids1[0].rho[...,...,0].value_in(density)
+    rho2 = grids2[0].rho[...,...,0].value_in(density)
+    drho = rho2 - rho1
+    print drho.sum(), rho1[0][0], rho2[0][0], drho[0][0]
+    x = grids1[0].x[...,...,0].value_in(length)
+    y = grids1[0].y[...,...,0].value_in(length)
+    figure = pyplot.figure(figsize=(10,5))
+    plot = figure.add_subplot(1,2,1, projection='3d')
     plot.plot_surface(x, y, drho)
+    plot = figure.add_subplot(1,2,2, projection='3d')
+    plot.plot_surface(x, y, rho1, color='r')
     figure.savefig('kelvin_helmholtz_{0}_{1}.png'.format(name_of_the_code, number_of_grid_points))
     pyplot.show()
     

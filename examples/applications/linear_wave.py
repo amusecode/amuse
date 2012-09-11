@@ -55,7 +55,6 @@ class CalculateLinearWave1D(object):
         
     def new_instance_of_capreole_code(self):
         result=Capreole(number_of_workers=self.number_of_workers)
-        result.initialize_code()
         self.dimensions_of_mesh =  (
             self.number_of_grid_points, 
             self.number_of_grid_points, 
@@ -66,7 +65,6 @@ class CalculateLinearWave1D(object):
     def new_instance_of_athena_code(self):
         from amuse.community.athena.interface import Athena
         result=Athena(number_of_workers=self.number_of_workers)
-        result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.8
         return result
@@ -241,7 +239,7 @@ def main():
         number_of_grid_points = number_of_grid_points,
         number_of_workers = 1,
         name_of_the_code = name_of_the_code,
-        amplitude = 1e-1 | speed,
+        amplitude = 0.1 | speed,
         vflow_factor = 1.0,
         grid_length = 1.0 | length,
         number_of_steps = 5
@@ -259,6 +257,7 @@ def main():
     figure = pyplot.figure(figsize=(10,10))
     plot = figure.add_subplot(1,1,1, projection='3d')
     plot.plot_surface(x, y, drho)
+    plot.plot_surface(x, y, rho)
     figure.savefig('kelvin_helmholtz_{0}_{1}.png'.format(name_of_the_code, number_of_grid_points))
     pyplot.show()
     

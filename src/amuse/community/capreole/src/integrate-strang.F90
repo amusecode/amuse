@@ -166,10 +166,10 @@ contains
        ! Apply radiative processes.
        ! rad_evolve changes state in place (so no changing from stold
        ! to stnew is involved).
-       call rad_evolve3D(dt)
+       !! call rad_evolve3D(dt)
        ! exchange boundaries with neighbours
        ! This routine also calculates the new pressure
-       call boundaries(OLD,domainboundaryconditions,problemboundary)
+       !! call boundaries(OLD,domainboundaryconditions,problemboundary)
     endif
 
   end subroutine integrate

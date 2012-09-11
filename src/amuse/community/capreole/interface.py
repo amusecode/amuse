@@ -347,6 +347,20 @@ class CapreoleInterface(
         function.result_type = 'i'
         return function
     
+    @legacy_function
+    def get_timestep():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='float64', direction=function.OUT) 
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def set_timestep():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='float64', direction=function.IN) 
+        function.result_type = 'i'
+        return function
+    
 class GLCapreoleInterface(CapreoleInterface):
     def __init__(self, **options):
         CodeInterface.__init__(self,name_of_the_worker = 'capreole_worker_gl', **options)
@@ -474,7 +488,18 @@ class Capreole(CommonCode):
             (object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE,)
         )
         
-        
+        object.add_method(
+            "get_timestep",
+            (),
+            (time, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_timestep",
+            (time, ),
+            (object.ERROR_CODE,)
+        )
+    
         self.stopping_conditions.define_methods(object)
     
     def define_particle_sets(self, object):
