@@ -7,7 +7,12 @@ from amuse.community.interface.common import CommonCode
 
 
 from amuse.units.generic_unit_system import *
-class CapreoleInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferencesMixIn):
+class CapreoleInterface(
+    CodeInterface, 
+    HydrodynamicsInterface,
+    StoppingConditionInterface,
+    LiteratureReferencesMixIn
+    ):
     """
     Capreole is a grid-based astrophysical hydrodynamics code developed by Garrelt Mellema. 
     It works in one, two dimensions, and three spatial dimensions and is programmed in 
@@ -356,9 +361,11 @@ class Capreole(CommonCode):
 
     def __init__(self, unit_converter = None, **options):
         self.unit_converter = unit_converter
+        self.stopping_conditions = StoppingConditions(self)
         
         CommonCode.__init__(self,  CapreoleInterface(**options), **options)
     
+
     def define_converter(self, object):
         if not self.unit_converter is None:
             object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
@@ -426,16 +433,12 @@ class Capreole(CommonCode):
              acceleration, acceleration, acceleration,),
             (object.ERROR_CODE,)
         )
-    
-        
-    
         object.add_method(
             'get_time',
             (),
             (time, object.ERROR_CODE,)
         )
     
-        
         object.add_method(
             'setup_mesh',
             (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, length, length, length,),
@@ -447,6 +450,32 @@ class Capreole(CommonCode):
             (object.ERROR_CODE,)
         )
         
+        object.add_method(
+            'set_boundary_state',
+            (object.INDEX, object.INDEX, object.INDEX,
+            density, momentum_density, momentum_density, momentum_density, energy_density,
+            object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_boundary_state',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (density, momentum_density, momentum_density, momentum_density, energy_density,
+            object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_boundary_position_of_index',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (length, length, length, object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_boundary_index_range_inclusive',
+            (object.INDEX),
+            (object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE,)
+        )
+        
+        
+        self.stopping_conditions.define_methods(object)
     
     def define_particle_sets(self, object):
         object.define_grid('grid')
@@ -608,8 +637,8 @@ class Capreole(CommonCode):
             "boundary conditions for the Z directorion",
             ("zbound1", "zbound2")
         )
-
-
+        
+        self.stopping_conditions.define_parameters(object)
     
     def get_index_range_inclusive(self):
         """
@@ -636,6 +665,7 @@ class Capreole(CommonCode):
         CommonCode.define_state(self, object)   
         #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
+        object.add_method('INITIALIZED', 'set_parallel_decomposition')
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
         object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
         object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
@@ -670,6 +700,35 @@ class Capreole(CommonCode):
                     'get_mesh_size',
                     'set_gravity_field',
                     'get_gravity_field',
+                    'get_boundary_state',
+                    'set_boundary_state',
+                    'get_boundary_position_if_index',
+                    'get_boundary_index_range_inclusive'
                 ]:
                 object.add_method(state, methodname)    
+    
+    def specify_boundary_grid(self, definition, index_of_boundary, index_of_grid = 1):
+        definition.set_grid_range('get_boundary_index_range_inclusive')
+        
+        definition.add_getter('get_boundary_position_of_index', names=('x','y','z'))
+        
+        definition.add_getter('get_boundary_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        definition.add_setter('set_boundary_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+       
+        definition.define_extra_keywords({'index_of_boundary': index_of_boundary})
+    
+    BOUNDARY_NAME_TO_INDEX = {
+        'xbound1': 1,
+        'xbound2': 2,
+        'ybound1': 3,
+        'ybound2': 4,
+        'zbound1': 5,
+        'zbound2': 6,
+    }
+    def get_boundary_grid(self, name):
+        if not name in self.BOUNDARY_NAME_TO_INDEX:
+            raise Exception("boundary name is not known {0}".format(name))
+        index_of_boundary = self.BOUNDARY_NAME_TO_INDEX[name]
+        
+        return self._create_new_grid(self.specify_boundary_grid, index_of_boundary = index_of_boundary, index_of_grid = 1)
     

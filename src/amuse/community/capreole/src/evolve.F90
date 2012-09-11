@@ -130,4 +130,78 @@ contains
 
   end subroutine evolve
 
+
+  function evolve_step (nstep, nexttime)
+    
+    ! This routine handles the basic integration frame work
+    integer, intent(inout) :: nstep
+    integer :: evolve_step
+    integer :: inegative,istop ! various control integers
+    real(kind=dp)    :: dtlocal    ! processor local time step
+    real(kind=dp)    :: nexttime   ! timer for output
+    integer :: nframe              ! integers for output
+
+#ifdef MPI
+    integer :: mpi_ierror
+#endif
+
+
+
+    
+    istop=0            ! initialize stop flag
+    inegative=0        ! initialize negative density/energy flag
+    
+    ! Make stold and stnew equal to start with
+    ! This assumes that the initialization routines
+    ! worked with stold.
+!    stnew=stold
+    ! Integration loop
+    
+   nstep=nstep+1 ! count the integration loops
+   
+   ! To avoid costly data copying, we flip pointers
+   ! between state1 and state2.
+   ! The integrate routine als does this. If any changes
+   ! have to be made also check there.
+   if (mod(nstep,2) == 0) then
+      stold => state2
+      stnew => state1
+   else
+      stold => state1
+      stnew => state2
+   endif
+   
+   ! Determine the time step on the local grid;
+   ! the timestep function has to be supplied
+   state => stold ! make sure state points to stold
+   dtlocal=timestep(cfl,OLD)
+   dt=dtlocal
+#ifdef MPI
+   ! communicate with all other processors to find
+   ! the global minimal time step
+   call MPI_ALLREDUCE(dtlocal,dt,1,MPI_DOUBLE_PRECISION,MPI_MIN, &
+        MPI_COMM_NEW,mpi_ierror)
+#endif
+   ! Make sure that dt does not take us beyond nexttime
+   dt=min(nexttime-time,dt)
+   ! Integrate one time step
+   ! istop will be non-zero in case of severe problems
+   call integrate(nstep,istop)
+
+   time=time+dt ! update time
+   ! Report time step info
+   write(log_unit,"(A,I6,3(X,1PE10.3))") "Time info: ",&
+        nstep,time*sctime,dt*sctime,nexttime*sctime
+   call flush(log_unit)
+
+  
+
+   ! if (nframe > LastFrame .or. istop /= 0) exit ! end the integration loop
+
+   ! Update clocks (not to loose precision in clock counters)
+   call update_clocks ()
+    
+   evolve_step = istop
+    
+  end function evolve_step
 end module evolution

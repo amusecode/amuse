@@ -1,6 +1,6 @@
 MODULE MuseHelpers
  use StoppingConditions
-
+    integer, private, save :: nstep
 
 CONTAINS
 
@@ -17,6 +17,8 @@ subroutine muse_start
   endif
 
   call set_parameters_to_defaults
+  
+  nstep = 0
 
 end subroutine
 

@@ -1,3 +1,6 @@
+AMUSE_DIR?=../../../../..
+-include ${AMUSE_DIR}/config.mk
+
 # Makefile for Capreole.
 #
 # Author: Garrelt Mellema
@@ -57,6 +60,8 @@ MPI_FLAGS = -DMPI #
 FC = ifort # Intel compiler
 
 MPIFC ?= mpif90
+
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 # F90 options (ifort)
 IFORTFLAGS = -O -g -traceback -ip -fpp1 -DIFORT
@@ -126,7 +131,7 @@ LIBS = #-lU77
 
 #LDR     = $(F90)
 
-OPTIONS = $(F90FLAGS)
+OPTIONS = $(F90FLAGS) $(SCINC)
 
 LDFLAGS = $(OPTIONS) #-L/afs/astro.su.se/pkg/intel/Compiler/11.1/056/lib/intel64/
 LIBS = -lirc

@@ -2,11 +2,14 @@ function initialize_code() result(ret)
   use amuse_helpers
   use my_mpi, only: mpi_basic
   implicit none
-  
+  include "stopcond.inc"
+  integer :: set_support_for_condition
   integer :: ret
   character(len=10), parameter :: default="reflective"
   ret=amuse_set_boundary(default,default,default,default,default,default)
   
+  ret = set_support_for_condition(TIMEOUT_DETECTION)
+  ret = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
   call mpi_basic()
 end function
 
@@ -88,27 +91,27 @@ function get_boundary_index_range_inclusive(index_of_boundary, minx, maxx, miny,
         select case (index_of_boundary)
             case (1)
                 maxx = mbc
-                maxy = ey - sy + 1
-                maxz = ez - sz + 1
+                maxy = meshy
+                maxz = meshz
             case (2)
                 maxx = mbc
-                maxy = ey - sy + 1
-                maxz = ez - sz + 1
+                maxy = meshy
+                maxz = meshz
             case (3)
-                maxx = mbc * 2 + (ex - sx + 1)
+                maxx = mbc * 2 + meshx
                 maxy = mbc
-                maxz = ez - sz + 1
+                maxz = meshz
             case (4)
-                maxx = mbc * 2 + (ex - sx + 1)
+                maxx = mbc * 2 + meshx
                 maxy = mbc
-                maxz = ez - sz + 1
+                maxz = meshz
             case (5)
-                maxx = mbc * 2 + (ex - sx + 1)
-                maxy = mbc * 2 + (ey - sy + 1)
+                maxx = mbc * 2 + meshx
+                maxy = mbc * 2 + meshy
                 maxz = mbc
             case (6)
-                maxx = mbc * 2 + (ex - sx + 1)
-                maxy = mbc * 2 + (ey - sy + 1)
+                maxx = mbc * 2 + meshx
+                maxy = mbc * 2 + meshy
                 maxz = mbc
         end select
     end if
@@ -622,17 +625,11 @@ function get_boundary_position_of_index(i,j,k,index_of_boundary,xout,yout,zout,n
   integer :: ret,ii, i0, j0, k0
   integer, intent(in) :: i(n),j(n),k(n), index_of_boundary(n)
   real*8, intent(out) :: xout(n),yout(n),zout(n)
-  integer,allocatable :: retsum(:)
-#ifdef MPI
-  integer ierr
-#endif
-  allocate(retsum(n))
   
    do ii=1,n
     i0 = i(ii)
     j0 = j(ii)
     k0 = k(ii)
-    retsum(ii) = 1
     select case (index_of_boundary(ii))
         case(1)
             xout(ii) = dx*(0.5_dp-real(i0,dp))
@@ -661,22 +658,7 @@ function get_boundary_position_of_index(i,j,k,index_of_boundary,xout,yout,zout,n
     end select
   enddo
 
-#ifdef MPI
-  if(rank.NE.0) then
-    call MPI_REDUCE(retsum,0,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
-    call MPI_REDUCE(xout,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
-    call MPI_REDUCE(yout,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
-    call MPI_REDUCE(zout,0,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
-  else
-    call MPI_REDUCE(MPI_IN_PLACE,retsum,n,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
-    call MPI_REDUCE(MPI_IN_PLACE,xout,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
-    call MPI_REDUCE(MPI_IN_PLACE,yout,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
-    call MPI_REDUCE(MPI_IN_PLACE,zout,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_NEW,ierr)
-  endif
-#endif  
   ret=0
-  if(any(retsum.NE.1)) ret=-1
-  deallocate(retsum)
 end function
 
 

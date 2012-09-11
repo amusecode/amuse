@@ -189,6 +189,14 @@ module problem
     end if
   end function
   
+  function get_pressure(istate) result(ret)
+    real*8 :: ret
+    real*8 :: istate(neq)    
+    ret = gamma1*(istate(EN)- &
+      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+      
+  end function  
+  
   subroutine problemboundary(boundary_id,newold)
     integer,intent(in) :: boundary_id
     integer,intent(in) :: newold
@@ -201,80 +209,80 @@ module problem
 
     select case (boundary_id)
     case (X_IN)
-       do k=sz-mbc,ez+mbc
-          do j=sy-mbc,ey+mbc
-             do i=sx-mbc,sx-1
-                state(i,j,k,RHO)=innerxstate(RHO)
-                state(i,j,k,RHVX)=innerxstate(RHVX)
-                state(i,j,k,RHVY)=innerxstate(RHVY)
-                state(i,j,k,RHVZ)=innerxstate(RHVZ)
-                state(i,j,k,EN)=innerxstate(EN)
-                pressr(i,j,k)=innerxpressure
+       do k=sz,ez
+          do j=sy,ey
+             do i=1, mbc
+                state(sx-i,j,k,RHO)=boundary_left_x1(mbc - i + 1, j, k, RHO)
+                state(sx-i,j,k,RHVX)=boundary_left_x1(mbc - i + 1, j, k, RHVX)
+                state(sx-i,j,k,RHVY)=boundary_left_x1(mbc - i + 1, j, k, RHVY)
+                state(sx-i,j,k,RHVZ)=boundary_left_x1(mbc - i + 1, j, k, RHVZ)
+                state(sx-i,j,k,EN)=boundary_left_x1(mbc - i + 1, j, k, EN)
+                pressr(sx-i,j,k)=get_pressure(boundary_left_x1(mbc - i + 1, j, k,:))
              enddo
           enddo
        enddo
     case (X_OUT)
-       do k=sz-mbc,ez+mbc
-          do j=sy-mbc,ey+mbc
-             do i=ex+1,ex+mbc
-                state(i,j,k,RHO)=outerxstate(RHO)
-                state(i,j,k,RHVX)=outerxstate(RHVX)
-                state(i,j,k,RHVY)=outerxstate(RHVY)
-                state(i,j,k,RHVZ)=outerxstate(RHVZ)
-                state(i,j,k,EN)=outerxstate(EN)
-                pressr(i,j,k)=outerxpressure
+       do k=sz, ez
+          do j=sy, ey
+             do i=1,mbc
+                state(ex+i,j,k,RHO)=boundary_right_x1(i, j, k, RHO)
+                state(ex+i,j,k,RHVX)=boundary_right_x1(i, j, k, RHVX)
+                state(ex+i,j,k,RHVY)=boundary_right_x1(i, j, k, RHVY)
+                state(ex+i,j,k,RHVZ)=boundary_right_x1(i, j, k, RHVZ)
+                state(ex+i,j,k,EN)=boundary_right_x1(i, j, k, EN)
+                pressr(ex+i,j,k)=get_pressure(boundary_right_x1(i, j, k,:))
              enddo
           enddo
        enddo
     case (Y_IN)
-       do k=sz-mbc,ez+mbc
-          do j=sy-mbc,sy-1
+       do k=sz, ez
+          do j=1, mbc
              do i=sx-mbc,ex+mbc
-                state(i,j,k,RHO)=innerystate(RHO)
-                state(i,j,k,RHVX)=innerystate(RHVX)
-                state(i,j,k,RHVY)=innerystate(RHVY)
-                state(i,j,k,RHVZ)=innerystate(RHVZ)
-                state(i,j,k,EN)=innerystate(EN)
-                pressr(i,j,k)=innerypressure
+                state(i,sy-j,k,RHO)=boundary_left_x2(i, mbc - j + 1, k, RHO)
+                state(i,sy-j,k,RHVX)=boundary_left_x2(i, mbc - j + 1, k, RHVX)
+                state(i,sy-j,k,RHVY)=boundary_left_x2(i, mbc - j + 1, k, RHVY)
+                state(i,sy-j,k,RHVZ)=boundary_left_x2(i, mbc - j + 1, k, RHVZ)
+                state(i,sy-j,k,EN)=boundary_left_x2(i, mbc - j + 1, k, EN)
+                pressr(i,sy-j,k)=get_pressure(boundary_left_x2(i, mbc - j + 1, k,:))
              enddo
           enddo
        enddo
     case (Y_OUT)
-       do k=sz-mbc,ez+mbc
-          do j=ey+1,ey+mbc
+       do k=sz, ez
+          do j=1, mbc
              do i=sx-mbc,ex+mbc
-                state(i,j,k,RHO)=outerystate(RHO)
-                state(i,j,k,RHVX)=outerystate(RHVX)
-                state(i,j,k,RHVY)=outerystate(RHVY)
-                state(i,j,k,RHVZ)=outerystate(RHVZ)
-                state(i,j,k,EN)=outerystate(EN)
-                pressr(i,j,k)=outerypressure
+                state(i,ey+j,k,RHO)=boundary_right_x2(i, j, k, RHO)
+                state(i,ey+j,k,RHVX)=boundary_right_x2(i, j, k, RHVX)
+                state(i,ey+j,k,RHVY)=boundary_right_x2(i, j, k, RHVY)
+                state(i,ey+j,k,RHVZ)=boundary_right_x2(i, j, k, RHVZ)
+                state(i,ey+j,k,EN)=boundary_right_x2(i, j, k, EN)
+                pressr(i,ey+j,k)=get_pressure(boundary_right_x2(i, j, k,:))
              enddo
           enddo
        enddo
     case (Z_IN)
-       do k=sz-mbc,sz-1
+       do k=1, mbc
           do j=sy-mbc,ey+mbc
              do i=sx-mbc,ex+mbc
-                state(i,j,k,RHO)=innerzstate(RHO)
-                state(i,j,k,RHVX)=innerzstate(RHVX)
-                state(i,j,k,RHVY)=innerzstate(RHVY)
-                state(i,j,k,RHVZ)=innerzstate(RHVZ)
-                state(i,j,k,EN)=innerzstate(EN)
-                pressr(i,j,k)=innerzpressure
+                state(i,j,sz-k,RHO)=boundary_left_x3(i, j, mbc - k + 1, RHO)
+                state(i,j,sz-k,RHVX)=boundary_left_x3(i, j, mbc - k + 1, RHVX)
+                state(i,j,sz-k,RHVY)=boundary_left_x3(i, j, mbc - k + 1, RHVY)
+                state(i,j,sz-k,RHVZ)=boundary_left_x3(i, j, mbc - k + 1, RHVZ)
+                state(i,j,sz-k,EN)=boundary_left_x3(i, j, mbc - k + 1, EN)
+                pressr(i,j,sz-k)=get_pressure(boundary_left_x3(i, j, mbc - k + 1,:))
              enddo
           enddo
        enddo
     case (Z_OUT)
-       do k=ez+1,ez+mbc
+       do k=1, mbc
           do j=sy-mbc,ey+mbc
              do i=sx-mbc,ex+mbc
-                state(i,j,k,RHO)=outerzstate(RHO)
-                state(i,j,k,RHVX)=outerzstate(RHVX)
-                state(i,j,k,RHVY)=outerzstate(RHVY)
-                state(i,j,k,RHVZ)=outerzstate(RHVZ)
-                state(i,j,k,EN)=outerzstate(EN)
-                pressr(i,j,k)=outerzpressure
+                state(i,j,ez+k,RHO)=boundary_right_x3(i, j, k, RHO)
+                state(i,j,ez+k,RHVX)=boundary_right_x3(i, j, k, RHVX)
+                state(i,j,ez+k,RHVY)=boundary_right_x3(i, j, k, RHVY)
+                state(i,j,ez+k,RHVZ)=boundary_right_x3(i, j, k, RHVZ)
+                state(i,j,ez+k,EN)=boundary_right_x3(i, j, k, EN)
+                pressr(i,j,ez+k)=get_pressure(boundary_right_x3(i, j, k,:))
              enddo
           enddo
        enddo

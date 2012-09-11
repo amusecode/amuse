@@ -1784,7 +1784,7 @@ class TestAthena(TestWithMPI):
 
         
     def test14(self): 
-        instance=self.new_instance(Athena, redirection="none")
+        instance=self.new_instance(Athena)
         instance.parameters.mesh_size = (10 , 1, 1)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
         instance.parameters.x_boundary_conditions = ("interface", "outflow")
@@ -1849,7 +1849,7 @@ class TestAthena(TestWithMPI):
         instance.stop()
         
     def test16(self): 
-        instance=self.new_instance(Athena, redirection="none")
+        instance=self.new_instance(Athena)
         instance.parameters.mesh_size = (10 , 1, 1)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
         instance.parameters.x_boundary_conditions = ("outflow", "interface")
@@ -1910,7 +1910,7 @@ class TestAthena(TestWithMPI):
     
     
     def test17(self): 
-        instance=self.new_instance(Athena, redirection="none", number_of_workers = 2)
+        instance=self.new_instance(Athena, number_of_workers = 2)
         instance.set_parallel(1,2,1)
         instance.parameters.mesh_size = (10,4,1)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
@@ -1973,7 +1973,7 @@ class TestAthena(TestWithMPI):
 
     
     def test18(self): 
-        instance=self.new_instance(Athena, redirection="none", number_of_workers = 2)
+        instance=self.new_instance(Athena, number_of_workers = 2)
         instance.set_parallel(2,1,1)
         instance.parameters.mesh_size = (4,10,1)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
@@ -2037,7 +2037,7 @@ class TestAthena(TestWithMPI):
     
     
     def test19(self): 
-        instance=self.new_instance(Athena, redirection="none", number_of_workers = 1)
+        instance=self.new_instance(Athena, number_of_workers = 1)
         instance.set_parallel(1,1,1)
         instance.parameters.mesh_size = (4,5,6)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
@@ -2100,7 +2100,7 @@ class TestAthena(TestWithMPI):
     
     
     def test20(self): 
-        instance=self.new_instance(Athena, redirection="none", number_of_workers = 4)
+        instance=self.new_instance(Athena, number_of_workers = 4)
         instance.set_parallel(2,2,1)
         instance.parameters.mesh_size = (4,5,6)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length

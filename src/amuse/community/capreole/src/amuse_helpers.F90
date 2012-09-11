@@ -12,17 +12,20 @@ module amuse_helpers
   use problem
   use atomic, only: gamma, gamma1
   
+  integer, private, save :: nstep
+  
   contains
 
   function amuse_init() result(ret)
     integer :: ret
 !  call setup_clocks ()
     call mpi_setup()
+    nstep = 0
     ret=0    
   end function
 
   function amuse_evolve(tend) result(ret)
-    include '../../../../../lib/stopcond/stopcond.inc'
+    include 'stopcond.inc'
     integer :: ret,nf
     real*8 :: tend
     integer :: is_any_condition_set
@@ -39,14 +42,20 @@ module amuse_helpers
     integer :: next_index_for_stopping_condition
     integer :: set_stopping_condition_info
     integer :: reset_stopping_conditions, error
-
+    real(kind=dp)    :: nexttime   ! timer for output
+    integer :: nframe              ! integers for output
+    
     error = reset_stopping_conditions()
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, is_number_of_steps_detection_enabled)
     error = is_stopping_condition_enabled(TIMEOUT_DETECTION, is_timeout_detection_enabled)
     error = get_stopping_condition_number_of_steps_parameter(max_number_of_steps)
     error = get_stopping_condition_timeout_parameter(timeout)
+    if(error /= 0) then
+        ret = -2
+        return
+    end if
     call SYSTEM_CLOCK(clock_init, count_rate, count_max)
-
+    number_of_steps_innerloop = 0
     if(tend-time.GT.0) then
       lastframe=0
       nf=1
@@ -55,29 +64,52 @@ module amuse_helpers
         frametime=tend/lastframe
         nf=nint(time/frametime)
       enddo
-      if (is_number_of_steps_detection_enabled.GT.0) then
-        number_of_steps_innerloop = number_of_steps_innerloop +1
-        if (number_of_steps_innerloop.GT.max_number_of_steps) then
-          stopping_index = next_index_for_stopping_condition()
-          error = set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION)
+      
+      ! Set time for next output
+      nframe=nint(time/frametime)
+      nexttime=real(nframe+1,dp)*frametime
+      nframe=nframe+1    ! update output counter
+    
+      do
+        error = evolve_step(nstep, nexttime)
+        if (time >= nexttime) then
+          state => stold
+          nstep = 0
+          nframe=nframe+1
+          nexttime=nexttime+frametime
         endif
-      endif
-      if (is_timeout_detection_enabled.GT.0) then
-        call SYSTEM_CLOCK(clock_current, count_rate, count_max)
-        if ((clock_current-clock_init).GT.timeout) then
-          stopping_index = next_index_for_stopping_condition()
-          error = set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION)
-        endif
-      endif
 
-      call evolve()
+        if (nframe > lastframe .or. error /= 0) exit ! end the integration loop
+        
+        if (is_number_of_steps_detection_enabled.GT.0) then
+            number_of_steps_innerloop = number_of_steps_innerloop +1
+            if (number_of_steps_innerloop.GE.max_number_of_steps) then
+              stopping_index = next_index_for_stopping_condition()
+              error = set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION)
+              exit
+            endif
+        endif
+        if (is_timeout_detection_enabled.GT.0) then
+            call SYSTEM_CLOCK(clock_current, count_rate, count_max)
+            if ((clock_current-clock_init).GE.timeout) then
+              stopping_index = next_index_for_stopping_condition()
+              error = set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION)
+              exit
+            endif
+        endif
+        
+      end do
     endif
     ret=0
     if(abs(time-tend).LT.1.e-15) time=tend
-    if(time.NE.tend) then
-      print*,time.LE.tend,time-tend,time,tend,nf,lastframe,frametime
-      ret=-1
-    endif  
+    if(error /= 0) then
+        ret = -2
+        return
+    end if
+    !if(time.NE.tend) then
+    !  print*,time.LE.tend,time-tend,time,tend,nf,lastframe,frametime
+    !  ret=-1
+    !endif 
   end function
 
   function amuse_endrun() result(ret)

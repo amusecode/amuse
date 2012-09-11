@@ -11,8 +11,9 @@ LIBFNAMEMPI = libstopcondfmpi.a
 OBJS = stopcond.o
 OBJSF = stopcondf.o
 OBJSMPI = stopcond.mo
+OBJSFMPI = stopcondf.mo
 
-all:$(LIBNAME) $(LIBNAMEMPI) $(LIBFNAME)
+all:$(LIBNAME) $(LIBNAMEMPI) $(LIBFNAME) $(LIBFNAMEMPI)
 
 CFLAGS += -O2
 
@@ -28,9 +29,16 @@ $(LIBNAMEMPI): $(OBJSMPI)
 	ar -r  $(LIBNAMEMPI) $(OBJSMPI)
 	ranlib $(LIBNAMEMPI)
 
+$(LIBFNAMEMPI): $(OBJSFMPI)
+	ar -r  $(LIBFNAMEMPI) $(OBJSFMPI)
+	ranlib $(LIBFNAMEMPI)
 
 %.mo: %.c
 	$(MPICC) $(CFLAGS) -DMPILIB  -c -o $@ $<
+
+%.mo: %.F90
+	$(MPICC) $(FCFLAGS) -DMPILIB  -c -o $@ $<
+
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

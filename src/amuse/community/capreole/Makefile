@@ -27,7 +27,8 @@ X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
 THREADLIB = -L. -lpthread src/libpt.a
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
+SCMPILIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 OMPFLAGS= # -openmp -openmp_report0 
@@ -85,7 +86,7 @@ capreole_worker_sockets: $(NOMPILIBS) worker_code_sockets.F90 $(BUILDDIR)/interf
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $(FSINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS) $(FSLIB)
 
 capreole_worker_mpi: $(MPILIBS) worker_code_mpi.f90 $(MPI_BUILDDIR)/interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SCINC) $^ -o $@ $(MPILIBS) $(SCLIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SCINC) $^ -o $@ $(MPILIBS) $(SCMPILIBS)
 
 #capreole_worker_gl: $(NOMPILIBS) glworker.f90 $(BUILDDIR)/interface.o
 #	make -C src clean
