@@ -676,6 +676,29 @@ class VectorQuantity(Quantity):
         """
 
         return self.unit.new_quantity(numpy.amin(self.number, axis = axis))
+    
+    def argmax(self, axis = None):
+        """
+        Return the indices of the maximum values along an axis.
+
+        >>> from amuse.units import si
+        >>> v1 = [[1.0, 2.0, 3.0], [2.5, 2.5, 2.5]] | si.kg
+        >>> v1.argmax(axis=0)
+        array([1, 1, 0])
+        """
+        return numpy.argmax(self.number, axis = axis)
+    
+    def argmin(self, axis = None):
+        """
+        Return the indices of the minimum values along an axis.
+
+        >>> from amuse.units import si
+        >>> v1 = [[1.0, 2.0, 3.0], [2.5, 2.5, 2.5]] | si.kg
+        >>> v1.argmin(axis=0)
+        array([0, 0, 1])
+        """
+
+        return numpy.argmin(self.number, axis = axis)
 
     def sorted(self):
         """

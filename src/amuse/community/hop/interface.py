@@ -910,6 +910,9 @@ class Hop(InCodeComponentImplementation):
         #builder.add_getter('particles', 'get_densest_neighbor')
         builder.add_getter('particles', 'get_group_id', names=('group_id',))
 
+    def no_group(self):
+        return self.particles.select(lambda group_id: group_id == -1, ["group_id"])
+    
     def groups(self):
         number_of_groups = self.get_number_of_groups()
         group_id = self.particles.group_id

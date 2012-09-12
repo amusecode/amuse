@@ -26,6 +26,9 @@ class CollisionHandler(object):
         if collision_code.stellar_evolution_code_required and stellar_evolution_code is None:
             raise AmuseException("{0} requires a stellar evolution code: "
                 "CollisionHandler(..., stellar_evolution_code=x)".format(collision_code.__class__.__name__))
+        if collision_code.gravity_code_required and gravity_code is None:
+            raise AmuseException("{0} requires a gravity code: "
+                "CollisionHandler(..., gravity_code=x)".format(collision_code.__class__.__name__))
         
         self.collision_code = collision_code
         self.collision_code_arguments = collision_code_arguments
@@ -62,20 +65,19 @@ class CollisionHandler(object):
         handle_collision_args = self.options.copy()
         if collision_code.stellar_evolution_code_required:
             handle_collision_args["stellar_evolution_code"] = self.stellar_evolution_code
-#~        if collision_code.gravity_code_required:
-#~            handle_collision_args["gravity_code"] = self.gravity_code
+        if collision_code.gravity_code_required:
+            handle_collision_args["gravity_code"] = self.gravity_code
         
         merge_product = collision_code.handle_collision(primary, secondary, **handle_collision_args)
         
         if self.verbose:
             print "{0} concluded with return value:\n{1}".format(self.collision_code.__class__.__name__, merge_product)
         
-        stellar_model = None
         if not self.stellar_evolution_code is None:
-            if hasattr(self.stellar_evolution_code, "new_particle_from_model"):
-                stellar_model = merge_product.internal_structure()
+            if (hasattr(self.stellar_evolution_code, "new_particle_from_model") and 
+                (hasattr(merge_product, "internal_structure"))):
                 self.stellar_evolution_code.new_particle_from_model(
-                    stellar_model, 
+                    merge_product.internal_structure(), 
                     0.0 | units.Myr, 
                     key = merge_product.key
                 )
@@ -87,17 +89,23 @@ class CollisionHandler(object):
         
         if not self.gravity_code is None:
             new_grav_particle = Particle(key=merge_product.key)
-            if stellar_model is None:
-                new_grav_particle.mass = merge_product.mass
-                if hasattr(merge_product, "radius"):
-                    new_grav_particle.radius = merge_product.radius
-                elif hasattr(colliders, "radius"):
-                    new_grav_particle.radius = max(colliders.radius)
+            new_grav_particle.mass = merge_product.mass
+            
+            if hasattr(merge_product, "radius"):
+                new_grav_particle.radius = merge_product.radius
+            elif hasattr(colliders, "radius"):
+                new_grav_particle.radius = max(colliders.radius)
+            
+            if hasattr(merge_product, "x"):
+                new_grav_particle.position = merge_product.position
             else:
-                new_grav_particle.mass = stellar_model.mass[-1]
-                new_grav_particle.radius = stellar_model.radius[-1]
-            new_grav_particle.position = colliders.center_of_mass()
-            new_grav_particle.velocity = colliders.center_of_mass_velocity()
+                new_grav_particle.position = colliders.center_of_mass()
+            
+            if hasattr(merge_product, "vx"):
+                new_grav_particle.velocity = merge_product.velocity
+            else:
+                new_grav_particle.velocity = colliders.center_of_mass_velocity()
+            
             self.gravity_code.particles.add_particle(new_grav_particle)
             self.gravity_code.particles.remove_particles(colliders)
             if self.verbose:

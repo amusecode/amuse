@@ -19,6 +19,7 @@ class StickySpheres(object):
     """
     
     stellar_evolution_code_required = False
+    gravity_code_required = False
     
     def __init__(self, mass_loss=0):
         if 0 <= mass_loss < 1:

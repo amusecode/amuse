@@ -421,6 +421,20 @@ def total_mass(particles):
     """
     return particles.mass.sum()
 
+def total_radius(particles):
+    """
+    Returns the total radius (maximum distance from center) of the particles set.
+
+    >>> from amuse.datamodel import Particles
+    >>> particles = Particles(3)
+    >>> particles.mass = [1.0, 2.0, 3.0] | units.kg
+    >>> particles.position = [0.0, 0.0, 0.0] | units.m
+    >>> particles.x = [0.0, 3.0, 6.0] | units.m
+    >>> particles.total_radius()
+    quantity<4.0 m>
+    """
+    return (particles.position - particles.center_of_mass()).lengths_squared().amax().sqrt()
+
 # move_to_center??
 def get_binaries(particles,hardness=10,G = constants.G):
     """
@@ -757,6 +771,7 @@ AbstractParticleSet.add_global_function_attribute("potential_energy", potential_
 AbstractParticleSet.add_global_function_attribute("thermal_energy", thermal_energy)
 AbstractParticleSet.add_global_function_attribute("virial_radius", virial_radius)
 AbstractParticleSet.add_global_function_attribute("total_mass", total_mass)
+AbstractParticleSet.add_global_function_attribute("total_radius", total_radius)
 AbstractParticleSet.add_global_function_attribute("total_momentum", total_momentum)
 AbstractParticleSet.add_global_function_attribute("total_angular_momentum", total_angular_momentum)
 

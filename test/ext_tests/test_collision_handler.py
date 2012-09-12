@@ -14,6 +14,7 @@ class CollisionCodeForTesting(object):
             self.mass_unit = units.kg
     
     stellar_evolution_code_required = False
+    gravity_code_required = False
     
     def __init__(self, next_mass = 1 | units.kg):
         self.next_mass = next_mass
