@@ -36,6 +36,7 @@ class StellarEncounterInHydrodynamics(object):
             hydrodynamics, 
             initial_separation = 5, 
             verbose = False, 
+            debug = False, 
             hydrodynamics_arguments = dict(),
             hydrodynamics_parameters = dict(),
             star_to_sph_arguments = dict(),
@@ -46,6 +47,7 @@ class StellarEncounterInHydrodynamics(object):
         self.hydrodynamics = hydrodynamics
         self.initial_separation = initial_separation
         self.verbose = verbose
+        self.debug = debug
         self.hydrodynamics_arguments = hydrodynamics_arguments
         self.hydrodynamics_parameters = hydrodynamics_parameters
         self.star_to_sph_arguments = star_to_sph_arguments
@@ -66,10 +68,10 @@ class StellarEncounterInHydrodynamics(object):
         
         result = Particles(len(models))
         result.add_function_attribute("internal_structure", None, internal_structure)
-        result.mass = [model.mass[-1] for model in models]
-        result.radius = [model.radius[-1] for model in models]
-        result.position = self.original_center_of_mass + self.stars_after_encounter.position
-        result.velocity = self.original_center_of_mass_velocity + self.stars_after_encounter.velocity
+        result.mass = [model["dmass"].sum().as_quantity_in(self.mass_unit) for model in models]
+        result.radius = [model["radius"][-1].as_quantity_in(self.radius_unit) for model in models]
+        result.position = (self.original_center_of_mass + self.stars_after_encounter.position).as_quantity_in(self.position_unit)
+        result.velocity = (self.original_center_of_mass_velocity + self.stars_after_encounter.velocity).as_quantity_in(self.velocity_unit)
         return result
     
     def collect_required_attributes(self, particles, gravity_code, stellar_evolution_code):
@@ -82,6 +84,10 @@ class StellarEncounterInHydrodynamics(object):
                 code.particles.copy_values_of_attributes_to(list(attrs_in_code), particles)
                 required_attributes -= attrs_in_code
         
+        self.mass_unit = particles.mass.unit
+        self.radius_unit = particles.radius.unit
+        self.position_unit = particles.position.unit
+        self.velocity_unit = particles.velocity.unit
         self.dynamical_timescale = (particles.radius.sum()**3 / (2 * constants.G * particles.total_mass())).sqrt()
     
     def backtrack_particles(self, particles):
@@ -91,24 +97,23 @@ class StellarEncounterInHydrodynamics(object):
         relative_position = particles[1].position - particles[0].position
         relative_velocity = particles[1].velocity - particles[0].velocity
         
-        initial_separation = self.initial_separation
-        if not hasattr(initial_separation, "unit") or initial_separation.unit is units.none:
-            initial_separation *= particles.radius.sum()
+        if not hasattr(self.initial_separation, "unit") or self.initial_separation.unit is units.none:
+            self.initial_separation *= particles.radius.sum()
         
         if self.verbose:
             print "Particles at collision:"
             print particles
-            print "Backtrack particles to initial separation", initial_separation.as_string_in(units.RSun)
+            print "Backtrack particles to initial separation", self.initial_separation.as_string_in(units.RSun)
         
-        unit_converter = nbody_system.nbody_to_si(total_mass, initial_separation)
-        kepler = Kepler(unit_converter, redirection = "none" if self.verbose else "null")
+        unit_converter = nbody_system.nbody_to_si(total_mass, self.initial_separation)
+        kepler = Kepler(unit_converter, redirection = "none" if self.debug else "null")
         kepler.initialize_code()
         kepler.initialize_from_dyn(
             total_mass, 
             relative_position[0], relative_position[1], relative_position[2],
             relative_velocity[0], relative_velocity[1], relative_velocity[2]
         )
-        kepler.return_to_radius(initial_separation)
+        kepler.return_to_radius(self.initial_separation)
         self.begin_time = kepler.get_time()
         
         particles[1].position = kepler.get_separation_vector()
@@ -136,7 +141,8 @@ class StellarEncounterInHydrodynamics(object):
             sph_model.gas_particles.velocity += particle.velocity
             gas_particles.add_particles(sph_model.gas_particles)
         if self.verbose:
-            print "Converting stars to SPH particles done:"
+            print "Converting stars to SPH particles done"
+        if self.debug:
             print gas_particles
         return gas_particles
     
@@ -145,7 +151,8 @@ class StellarEncounterInHydrodynamics(object):
         return (n1, self.number_of_particles - n1)
     
     def simulate_collision(self, gas_particles):
-        hydro = self.hydrodynamics(**self.hydrodynamics_arguments)
+        unit_converter = nbody_system.nbody_to_si(gas_particles.total_mass(), self.initial_separation)
+        hydro = self.hydrodynamics(unit_converter, **self.hydrodynamics_arguments)
         hydro.initialize_code()
         for par, value in self.hydrodynamics_parameters.iteritems():
             setattr(hydro.parameters, par, value)
@@ -194,7 +201,7 @@ class StellarEncounterInHydrodynamics(object):
     def group_bound_particles(self, gas_particles):
         groups, lost = self.analyze_particle_distribution(gas_particles)
         while True:
-            if False: # For debugging only
+            if self.debug:
                 self.group_plot(groups, lost)
             previous_number_of_lost_particles = len(lost)
             groups, lost = self.select_bound_particles(groups, lost)
@@ -206,7 +213,7 @@ class StellarEncounterInHydrodynamics(object):
         if self.verbose:
             print "Analyzing particle distribution using Hop"
         converter = nbody_system.nbody_to_si(gas_particles.total_mass(), 1.0 | units.RSun)
-        hop = Hop(unit_converter=converter, redirection = "none" if self.verbose else "null")
+        hop = Hop(unit_converter=converter, redirection = "none" if self.debug else "null")
         hop.particles.add_particles(gas_particles)
         hop.parameters.density_method = 0
         hop.parameters.number_of_hops = 100
@@ -251,9 +258,8 @@ class StellarEncounterInHydrodynamics(object):
         for group, color in zip(groups, colors):
             scatter(group.x, group.y, c=color)
         
-        in_plane = no_group.select(lambda z : abs(z) < 0.05 | units.RSun, ["z"])
-        if len(in_plane):
-            scatter(in_plane.x, in_plane.y, c="m", marker="s")
+        if len(no_group):
+            scatter(no_group.x, no_group.y, c="m", marker="s")
         
         native_plot.gca().set_aspect("equal", adjustable = "datalim")
         native_plot.show()
@@ -265,7 +271,7 @@ class StellarEncounterInHydrodynamics(object):
         relative_position = a.position - b.position
         relative_velocity = a.velocity - b.velocity
         unit_converter = nbody_system.nbody_to_si(total_mass, relative_position.length())
-        kepler = Kepler(unit_converter, redirection = "none" if self.verbose else "null")
+        kepler = Kepler(unit_converter, redirection = "none" if self.debug else "null")
         kepler.initialize_code()
         kepler.initialize_from_dyn(
             total_mass, 

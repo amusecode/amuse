@@ -9,7 +9,7 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.seba.interface import SeBa
-from amuse.community.mesa.interface import MESA
+from amuse.community.evtwin.interface import EVtwin
 
 from amuse.ext.hydro_collision import StellarEncounterInHydrodynamics
 
@@ -76,7 +76,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         print "Test convert_stars"
         colliders = self.new_colliders()
         colliders.position = [[-100.0, 0.0, 0.0], [100.0, 0.0, 0.0]] | units.RSun
-        stellar = self.new_instance(MESA)
+        stellar = EVtwin()
         stellar.particles.add_particles(colliders)
         
         collision = StellarEncounterInHydrodynamics(700, None, verbose=True)
@@ -122,7 +122,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         colliders = self.new_colliders()
         colliders.position = [[0.0, 0.0, 0.0], [1.1, 0.0, 0.0]] | units.RSun
         colliders.velocity = [[0.0, 0.0, 0.0], [10000, 0.0, 0.0]] | units.km / units.s
-        stellar = self.new_instance(MESA)
+        stellar = EVtwin()
         stellar.particles.add_particles(colliders)
         
         collision = StellarEncounterInHydrodynamics(7000, None, verbose=True, 
@@ -140,27 +140,30 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         self.assertAlmostEqual(groups[1].center_of_mass()[0], 1.1 | units.RSun, 0)
         self.assertIsOfOrder(groups[1].center_of_mass_velocity()[0], 10000 | units.km / units.s)
     
-    def xtest6(self):
+    def test6(self):
         print "Test handle_collision"
+        position_offset = [100.0, 200.0, 300.0] | units.RSun
+        velocity_offset = [10000.0, 20000.0, 30000.0] | units.km / units.s
         colliders = self.new_colliders()
-        gravity = BHTree(nbody_system.nbody_to_si(1|units.MSun, 1.0|units.RSun))
-        gravity.particles.add_particles(colliders)
-        stellar = self.new_instance(MESA)
+        colliders.position += position_offset
+        colliders.velocity += velocity_offset
+        
+        class GravityCodeStub(object):
+            def __init__(self, particles):
+                self.particles = particles
+        gravity = GravityCodeStub(colliders)
+        
+        stellar = EVtwin()
         stellar.particles.add_particles(colliders)
         
-        collision = StellarEncounterInHydrodynamics(1000, Gadget2, verbose=True)
-        print collision.handle_collision(colliders, gravity_code=gravity, stellar_evolution_code=stellar)
-        gravity.stop()
+        collision = StellarEncounterInHydrodynamics(350, Gadget2, verbose=True)
+        result = collision.handle_collision(colliders, gravity_code=gravity, stellar_evolution_code=stellar)
         stellar.stop()
-        return
-#~        merged = StellarEncounterInHydrodynamics().handle_collision(colliders)
-        self.assertTrue(isinstance(merged, Particle))
-        self.assertEqual(merged.mass, 7 | units.kg)
-        self.assertAlmostEqual(merged.position, [0.2, 0.4, -0.1] | units.m)
-        self.assertAlmostEqual(merged.velocity, ([2.0, -3.0, -6.0] | units.m / units.s) / 7.0)
-        self.assertAlmostEqual(merged.velocity.length(), 1.0 | units.m / units.s)
-        copy = colliders.copy_to_memory()
-        copy.move_to_center()
-        self.assertAlmostEqual(colliders.kinetic_energy(), merged.as_set().kinetic_energy() + copy.kinetic_energy())
+        print result
+        self.assertTrue(isinstance(result, Particles))
+        self.assertEqual(len(result), 2)
+        self.assertAlmostEqual(result.mass, [4.96, 1.78] | units.MSun, 2)
+        self.assertAlmostRelativeEqual(result.center_of_mass(), position_offset, 2)
+        self.assertAlmostRelativeEqual(result.center_of_mass_velocity(), velocity_offset, 2)
     
 
