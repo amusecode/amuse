@@ -179,6 +179,52 @@ class unit(object):
         
         return result
     
+    def to_reduced_form(self):
+        """Convert unit to a reduced (simpler) form 
+        """
+        
+        if not self.base:
+            return none_unit('none', 'none') * self.factor
+        
+        total_factor = 1
+        combined_unit = None
+        for factor, power, unit in self.get_parts_with_power():
+            total_factor *= factor
+            if power == 0:
+                pass
+            else:
+                if combined_unit is None:
+                    combined_unit = unit ** power
+                else:
+                    combined_unit =  combined_unit * (unit ** power)
+        if total_factor == 1:
+            return combined_unit
+        else:
+            return factor_unit(total_factor , combined_unit)
+    
+    
+    
+    def to_factor_and_reduced_form(self):
+        """Convert unit to a reduced (simpler) form 
+        """
+        
+        if not self.base:
+            return none_unit('none', 'none') * self.factor
+        
+        total_factor = 1
+        combined_unit = None
+        for factor, power, unit in self.get_parts_with_power():
+            total_factor *= factor
+            if power == 0:
+                pass
+            else:
+                if combined_unit is None:
+                    combined_unit = unit ** power
+                else:
+                    combined_unit =  combined_unit * (unit ** power)
+                    
+        return total_factor , combined_unit
+
     def are_bases_equal(self, other):
         if len(self.base) != len(other.base):
             return False
@@ -326,6 +372,12 @@ class unit(object):
     def is_none(self):
         return False
         
+    def get_parts_with_power(self):
+        """
+        The parts of this units as a list of tuple with factor, power and unit
+        """
+        return ((1.0, 1, self),)
+        
     def convert_result_value(self, method, definition, value):
         return self.new_quantity(value)
          
@@ -378,7 +430,6 @@ class base_unit(unit):
         Each tuple consists of an power and a unit.
         """
         return ((1,self),)
-        
     
     def reference_string(self):
         return '{0}.base({1!r})'.format(self.system.reference_string(), self.quantity)
@@ -419,9 +470,9 @@ class none_unit(unit):
     @late
     def base(self):
         return ()
-        
     
-        
+    def get_parts_with_power(self):
+        return ()
 
     def is_none(self):
         return True
@@ -440,6 +491,10 @@ class zero_unit(none_unit):
     @late
     def base(self):
         return None
+        
+    def get_parts_with_power(self):
+        return None
+
                         
     def conversion_factor_from(self, x):
         if x.base is None:
@@ -666,7 +721,6 @@ class named_unit(unit):
     @late
     def base(self):
         return self.local_unit.base
-        
 
 class derived_unit(unit):
     """
@@ -720,6 +774,20 @@ class factor_unit(derived_unit):
     def base(self):
         return self.local_unit.base
         
+        
+    def get_parts_with_power(self):
+        local_unit_parts = self.local_unit.get_parts_with_power()
+        result = []
+        is_first = True
+        for factor, power, unit in local_unit_parts:
+            if is_first:
+                factor *= self.local_factor
+                is_first = False
+            result.append( (factor, power, unit) )
+        
+        return result
+        
+        
 class mul_unit(derived_unit):
     """
     A mul_unit object defines a unit multiplied by
@@ -758,11 +826,36 @@ class mul_unit(derived_unit):
         return tuple(
             filter(lambda x: x[0] != 0,
             map(lambda x: (x[0] + x[1], x[2]),self.combine_bases(self.left_hand.base, self.right_hand.base))))
+    
+    def get_parts_with_power(self):        
+        lhs_parts = list(self.left_hand.get_parts_with_power())
+        rhs_parts = list(self.right_hand.get_parts_with_power())
+        
+        result = []
+        for lhs_factor, lhs_power, lhs_unit in lhs_parts: 
+            rhs_index = 0
+            found_match = False
+            for rhs_factor, rhs_power, rhs_unit in rhs_parts:
+                if lhs_unit is rhs_unit:
+                    result.append( (lhs_factor * rhs_factor, lhs_power + rhs_power, lhs_unit,) )
+                    found_match = True
+                    del rhs_parts[rhs_index]
+                    break
+                rhs_index += 1
+            if not found_match:
+                result.append( (lhs_factor, lhs_power, lhs_unit,))
+                
+        for rhs_factor, rhs_power, rhs_unit in rhs_parts:
+            result.append( (rhs_factor, rhs_power, rhs_unit,))
+        return result
+            
+                
+        
         
 class pow_unit(derived_unit):
     """
     A pow_unit object defines a unit as
-    another unit to a specified powe. 
+    another unit to a specified power. 
     
     Do not call this method directly,
     pow_unit objects are supposed to be created by
@@ -806,6 +899,17 @@ class pow_unit(derived_unit):
     def factor(self):
         return self.local_unit.factor ** self.power
         
+    
+    
+    def get_parts_with_power(self):        
+        
+        result = []
+        for factor, power, unit in self.local_unit.get_parts_with_power():
+            result.append( (factor ** self.power, power * self.power, unit,))
+            
+        return result
+            
+        
 class div_unit(derived_unit):
     """
     A div_unit object defines a unit multiplied by
@@ -848,7 +952,31 @@ class div_unit(derived_unit):
                     filter(lambda x: x[0] != 0,
                     map(lambda x: (x[0] - x[1], x[2]),
                         self.combine_bases(self.left_hand.base, self.right_hand.base))))
+    
+    
+    def get_parts_with_power(self):        
+        lhs_parts = list(self.left_hand.get_parts_with_power())
+        rhs_parts = list(self.right_hand.get_parts_with_power())
         
+        result = []
+        for lhs_factor, lhs_power, lhs_unit in lhs_parts: 
+            rhs_index = 0
+            found_match = False
+            for rhs_factor, rhs_power, rhs_unit in rhs_parts:
+                if lhs_unit is rhs_unit:
+                    result.append( (lhs_factor / rhs_factor, lhs_power - rhs_power, lhs_unit,) )
+                    found_match = True
+                    del rhs_parts[rhs_index]
+                    break
+                rhs_index += 1
+            if not found_match:
+                result.append( (lhs_factor, lhs_power, lhs_unit,))
+                
+        for rhs_factor, rhs_power, rhs_unit in rhs_parts:
+            result.append( (1.0 / rhs_factor, -rhs_power, rhs_unit,))
+        
+        return result
+    
 def k(unit):
     """
     Create a new factor unit with factor 1000. Prepend

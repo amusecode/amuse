@@ -86,11 +86,11 @@ class SimplePrintingStrategy(PrintingStrategy):
     provided_strategy_names = ['simple']
     
     def string_number(self, quantity):
-        print_unit = quantity.unit / quantity.unit.factor
-        return self.numbers_to_string(quantity.as_quantity_in(print_unit))
+        factor, print_unit = quantity.unit.to_factor_and_reduced_form()
+        return self.numbers_to_string(quantity * factor)
     
     def string_unit(self, quantity):
-        print_unit = (quantity.unit / quantity.unit.factor).to_simple_form()
+        factor, print_unit = quantity.unit.to_factor_and_reduced_form()
         return str(print_unit)
         
 class NoUnitsPrintingStrategy(PrintingStrategy):

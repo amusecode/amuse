@@ -265,6 +265,37 @@ class TestQuantities(amusetest.TestCase):
         z += 1 | units.kg
         self.assertEquals(z.unit, units.kg)
         self.assertEquals(z, [1,1] | units.kg)
+    
+    
+    def test24(self):
+        rhs = 2 | units.MSun / units.AU
+        lhs = 3 | units.AU
+        product = rhs * lhs
+        product_unit = product.unit
+        print product
+        self.assertTrue(product_unit is units.MSun)
+        
+    
+    def test25(self):
+        rhs = 2.0 | (2 * units.MSun)**2 / units.AU
+        lhs = 3.0 | units.MSun
+        product = rhs / lhs
+        product_unit = product.unit
+        print product
+        self.assertEquals(product_unit , units.MSun / units.AU)
+        self.assertEquals(product_unit.local_factor , 4)
+        
+    
+    def test26(self):
+        rhs = 2.0 | units.AU / (2 * units.MSun)**2 
+        lhs = 3.0 | units.MSun
+        product = rhs * lhs
+        product_unit = product.unit
+        print product
+        print type(product_unit)
+        self.assertEquals(product_unit , units.AU / units.MSun)
+        self.assertEquals(product_unit.local_factor , 1/4.0)
+        
         
 class TestAdaptingVectorQuantities(amusetest.TestCase):
 

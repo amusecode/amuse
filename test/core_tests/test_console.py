@@ -77,7 +77,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         mass     = 1.0 | units.kg
         acc      = 9.8 | units.m / units.s**2
         position = [1, 2.0, 3] | nbody_system.length
-        mass_in_g = mass.as_quantity_in(units.g)
+        mass_in_g = mass.as_quantity_in(units.g) * 1.0
         pi       = 3.14 | units.none
         
         set_printing_strategy("formal")
@@ -213,5 +213,3 @@ class TestPrintingStrategy(amusetest.TestCase):
         self.assertEqual(str(temperature), "(> 5e+06 <|> mK <)")
         self.assertEqual(str(pi), "(> 3.14 <|> none <)")
         set_printing_strategy("default")
-    
-
