@@ -2871,49 +2871,49 @@ int get_boundary_position_of_index(
         else
         {
             GridS * grid = dom->Grid;
-            //if (is_on_extended_grid(dom,grid, i0, j0, k0))
-            switch(index_of_boundary[l]) {
-                case 1:
-                    i0 = -(1+i0);
-                    break;
-                case 2:
-                    i0 = i0 + (grid->ie-grid->is) + 1 ;
-                    break;
-                case 3:
-                    i0 = i0 - nghost;
-                    j0 = -(1+j0);
-                    break;
-                case 4:
-                    i0 = i0 - nghost;
-                    j0 = j0 + (grid->je-grid->js) + 1 ;
-                    break;
-                case 5:
-                    i0 = i0 - nghost;
-                    j0 = j0 - nghost;
-                    k0 = -(1+k0);
-                    break;
-                case 6:
-                    i0 = i0 - nghost;
-                    j0 = j0 - nghost;
-                    k0 = k0 + (grid->ke-grid->ks) + 1 ;
-                    break;
-                default:
-                    i0 = 1;
-                    j0 = 1;
-                    k0 = 1;
+            if (is_on_boundary_grid(dom,grid, index_of_boundary[l], i0, j0, k0, 0))
+            {
+                switch(index_of_boundary[l]) {
+                    case 1:
+                        i0 = i0 - nghost;
+                        break;
+                    case 2:
+                        i0 = i0 + (grid->ie-grid->is) + 1 ;
+                        break;
+                    case 3:
+                        i0 = i0 - nghost;
+                        j0 = j0 - nghost;
+                        break;
+                    case 4:
+                        i0 = i0 - nghost;
+                        j0 = j0 + (grid->je-grid->js) + 1 ;
+                        break;
+                    case 5:
+                        i0 = i0 - nghost;
+                        j0 = j0 - nghost;
+                        k0 = k0 - nghost;
+                        break;
+                    case 6:
+                        i0 = i0 - nghost;
+                        j0 = j0 - nghost;
+                        k0 = k0 + (grid->ke-grid->ks) + 1 ;
+                        break;
+                    default:
+                        i0 = 1;
+                        j0 = 1;
+                        k0 = 1;
+                }
+                ijk_on_grid(grid, &i0, &j0, &k0);
+                cc_pos(
+                    grid,
+                    i0,
+                    j0,
+                    k0,
+                    &x[l],
+                    &y[l],
+                    &z[l]
+                );
             }
-            ijk_on_grid(grid, &i0, &j0, &k0);
-           
-            cc_pos(
-                grid,
-                i0,
-                j0,
-                k0,
-                &x[l],
-                &y[l],
-                &z[l]
-            );
-            //}
 
         }
     }

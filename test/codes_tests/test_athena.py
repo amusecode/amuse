@@ -806,7 +806,7 @@ class TestAthenaInterface(TestWithMPI):
                 1, 1 
             )
             self.assertEquals(error, 0)
-            self.assertAlmostRelativeEquals(x, (0.5 * dx) - ((i+1) * dx))
+            self.assertAlmostRelativeEquals(x, (0.5 * dx) - ((4 -i)*dx))
             self.assertAlmostRelativeEquals(y, 0.0)
             self.assertAlmostRelativeEquals(z, 0.0)
                 
@@ -850,6 +850,7 @@ class TestAthenaInterface(TestWithMPI):
                     i, j, 1, 
                     2, 1 
                 )
+                print y, j, (0.5 * dy) - ((4 - j) * dy)
                 self.assertEquals(error, 0)
                 self.assertAlmostRelativeEquals(x, 100.0 + (0.5 * dx) + (i * dx))
                 self.assertAlmostRelativeEquals(y, (0.5 * dy) + (j * dy))
@@ -863,7 +864,7 @@ class TestAthenaInterface(TestWithMPI):
                 )
                 self.assertEquals(error, 0)
                 self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
-                self.assertAlmostRelativeEquals(y, 0.0 - ((0.5 * dy) + (j * dy)))
+                self.assertAlmostRelativeEquals(y, ((0.5 * dy) - ((4-j) * dy)))
                 self.assertAlmostRelativeEquals(z, 0.0)
                 
                 
@@ -911,7 +912,7 @@ class TestAthenaInterface(TestWithMPI):
                     )
                     self.assertEquals(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
-                    self.assertAlmostRelativeEquals(y, 0.0 - ((0.5 * dy) + (j * dy)))
+                    self.assertAlmostRelativeEquals(y, ((0.5 * dy) - ((4-j) * dy)))
                     self.assertAlmostRelativeEquals(z, (0.5 * dz) + (k * dz))
                     
                     
@@ -934,7 +935,7 @@ class TestAthenaInterface(TestWithMPI):
                     self.assertEquals(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
                     self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-4) * dy))
-                    self.assertAlmostRelativeEquals(z,  0.0 - ((0.5 * dz) + (k * dz)))
+                    self.assertAlmostRelativeEquals(z, ((0.5 * dz) - ((4-k) * dz)))
                     
                     
                     x,y,z,error = instance.get_boundary_position_of_index(
