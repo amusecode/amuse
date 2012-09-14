@@ -134,7 +134,7 @@ def smart_length_units_for_vector_quantity(quantity):
     return units.m
 
 def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1, 
-        gd_particles=None, view=None):
+        gd_particles=None, width=None, view=None):
     """
     Very simple and fast procedure to make a plot of the hydrodynamics state of 
     a set of SPH particles. The particles must have the following attributes defined: 
@@ -171,6 +171,9 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
     
     current_axes = native_plot.gca()
     current_axes.set_axis_bgcolor('#101010')
+    if width is not None:
+        view = width * [-0.5, 0.5, -0.5, 0.5]
+    
     if view:
         current_axes.set_aspect("equal", adjustable = "box")
         length_unit = smart_length_units_for_vector_quantity(view)
@@ -183,7 +186,8 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
         current_axes.set_aspect("equal", adjustable = "datalim")
         length_unit = smart_length_units_for_vector_quantity(x)
         phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((max(x)-min(x))**2 + (max(y)-min(y))**2)
-    sizes = numpy.maximum((h_smooths**2 * phys_to_pix2), min_size)
+#~    sizes = numpy.maximum((h_smooths**2 * phys_to_pix2), min_size)
+    sizes = min_size
     
     x = x.as_quantity_in(length_unit)
     y = y.as_quantity_in(length_unit)
@@ -215,8 +219,8 @@ def convert_particles_to_pynbody_data(particles, length_unit=units.kpc, pynbody_
     if hasattr(particles, "h_smooth"):
         pynbody_data['smooth'] = SimArray(particles.h_smooth.value_in(length_unit), pynbody_unit)
     if hasattr(particles, "rho"):
-        pynbody_data['rho'] = SimArray(particles.rho.value_in(units.MSun / length_unit**3), 
-            "Msol "+pynbody_unit+"^-3")
+        pynbody_data['rho'] = SimArray(particles.rho.value_in(units.g / units.cm**3), 
+            "g cm^-3")
     if hasattr(particles, "u"):
 #        pynbody_data['u'] = SimArray(particles.u.value_in(units.km**2 / units.s**2), "km^2 s^-2")
         temp = 2.0/3.0 * particles.u * mu() / constants.kB
@@ -237,7 +241,8 @@ def mu(X = None, Y = 0.25, Z = 0.02, x_ion = 0.1):
 
 def _smart_length_units_for_pynbody_data(length):
     length_units = [(units.Gpc, "Gpc"), (units.Mpc, "Mpc"), (units.kpc, "kpc"), 
-        (units.parsec, "pc"), (units.AU, "au"), (units.km, "km")]
+        (units.parsec, "pc"), (units.AU, "au"), (1.0e9*units.m, "1.0e9 m"), 
+        (1000*units.km, "1000 km"), (units.km, "km")]
     for length_unit, pynbody_unit in length_units:
         if length > (1 | length_unit):
             return length_unit, pynbody_unit

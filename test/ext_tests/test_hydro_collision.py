@@ -5,12 +5,14 @@ from amuse.units.quantities import zero
 from amuse.datamodel import Particles, Particle
 from amuse.support.exceptions import AmuseException
 from amuse.test.amusetest import TestWithMPI
+from amuse.plot import pynbody_column_density_plot, HAS_PYNBODY
 
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.seba.interface import SeBa
 from amuse.community.evtwin.interface import EVtwin
 
+from amuse.ext.plotting_hydro import new_plotting_hydrodynamics_code
 from amuse.ext.hydro_collision import StellarEncounterInHydrodynamics
 
 class TestStellarEncounterInHydrodynamics(TestWithMPI):
@@ -135,7 +137,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         self.assertEqual(len(groups), 2)
         self.assertTrue(4500 < len(groups[0]) < 5000)
         self.assertTrue(1800 < len(groups[1]) < 2000)
-        self.assertEqual(len(gas_particles - groups[0] - groups[1]), 366)
+        self.assertEqual(len(gas_particles - groups[0] - groups[1]), 346)
         self.assertAlmostEqual(groups[0].center_of_mass()[0], 0 | units.RSun, 1)
         self.assertAlmostEqual(groups[1].center_of_mass()[0], 1.1 | units.RSun, 0)
         self.assertIsOfOrder(groups[1].center_of_mass_velocity()[0], 10000 | units.km / units.s)
@@ -163,6 +165,36 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         self.assertTrue(isinstance(result, Particles))
         self.assertEqual(len(result), 2)
         self.assertAlmostEqual(result.mass, [4.96, 1.78] | units.MSun, 2)
+        self.assertAlmostRelativeEqual(result.center_of_mass(), position_offset, 2)
+        self.assertAlmostRelativeEqual(result.center_of_mass_velocity(), velocity_offset, 2)
+    
+    def slowtest7(self):
+        print "Test handle_collision"
+        position_offset = [100.0, 200.0, 300.0] | units.RSun
+        velocity_offset = [10000.0, 20000.0, 30000.0] | units.km / units.s
+        colliders = self.new_colliders()
+        colliders.position += position_offset
+        colliders.velocity += velocity_offset
+        
+        class GravityCodeStub(object):
+            def __init__(self, particles):
+                self.particles = particles
+        gravity = GravityCodeStub(colliders)
+        
+        stellar = EVtwin()
+        stellar.particles.add_particles(colliders)
+        
+        collision = StellarEncounterInHydrodynamics(3500, 
+            new_plotting_hydrodynamics_code(Gadget2, 0.2|units.hour, 
+                plot_function = pynbody_column_density_plot if HAS_PYNBODY else None,
+                plot_function_arguments = dict(width=20|units.RSun, vmin=29, vmax=35) if HAS_PYNBODY else dict(width=20|units.RSun)), 
+            verbose=True)
+        result = collision.handle_collision(colliders, gravity_code=gravity, stellar_evolution_code=stellar)
+        stellar.stop()
+        print result
+        self.assertTrue(isinstance(result, Particles))
+        self.assertEqual(len(result), 2)
+        self.assertTrue((result.mass < [5.0, 2.0] | units.MSun).all())
         self.assertAlmostRelativeEqual(result.center_of_mass(), position_offset, 2)
         self.assertAlmostRelativeEqual(result.center_of_mass_velocity(), velocity_offset, 2)
     
