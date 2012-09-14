@@ -2,6 +2,8 @@
 Setting values for grid boundaries
 ==================================
 
+.. highlight:: python
+
 .. note::
 
     At the time of writing of this tutorial (september 2012), only the
@@ -64,26 +66,33 @@ zbound2
 .. image:: boundaries2.png
 
 .. code-block:: python
+    
+    from amuse.lab import *
+    
     code = Athena()
     code.parameters.xbound1 = "periodic"
     code.parameters.ybound1 = "reflect"
 
-You can also set the boundary per axis as an ```(inflow, outflow)``` parameter
-with the x_, y_, z_boundary_condition parameters:
+You can also set the boundary per axis as an ``(inflow, outflow)`` parameter
+with the ``x_, y_, z_boundary_condition`` parameters:
+
 
 .. code-block:: python
+
+    from amuse.lab import *
+    
     code = Athena()
     
     instance.parameters.x_boundary_conditions = ("periodic","periodic")
     instance.parameters.y_boundary_conditions = ("periodic","periodic")
     instance.parameters.z_boundary_conditions = ("periodic","periodic")
-
+    
     
 Custom boundary conditions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can specify a custom boundary condition by setting the boundary 
-condition parameters to ```interface```. After these parameters have 
+condition parameters to ``interface``. After these parameters have 
 been set and commited you can change the boundary values by filling 
 in the correct boundary grid. These boundary grids do not overlap 
 but patch together to form a larger cuboid around the grid cuboid. 
@@ -109,6 +118,8 @@ You can get the boundary grid of a specific boundary by calling
     implement the required methods, september 2012)
 
 En example of filling the boundary grid:
+
+.. code-block:: python
 
     from amuse.lab import *
     
@@ -151,18 +162,20 @@ first cell of the boundary will connect to the last cell of the grid.
 For example for xbound1:
 
 xbound1
-    The left, inflow boundary on the x-axis. Will have cells ```[0, 
-    # boundary cells - 1]``` in the x direction. The last cell of 
+    The left, inflow boundary on the x-axis. Will have cells ``[0, 
+    # boundary cells - 1]`` in the x direction. The last cell of 
     the boundary will connect to the first cell of the grid.
 ybound1. 
     The right, outflow boundary on the x-axis. Will have cells 
-    ```[0, # boundary cells - 1]``` in the x direction. The first 
+    ``[0, # boundary cells - 1]`` in the x direction. The first 
     cell of the boundary will connect to the last cell of the grid.
     
 A boundary grid will have correct x, y and z positions that match the
 grid. So, if a 1D grid starts at 0.0 and the cell size is 1.0, 
 the last grid cell on the left(the inflow boundary) will have position -0.5.
  
+.. code-block:: python
+
     from amuse.lab import *
     
     instance=Athena()
