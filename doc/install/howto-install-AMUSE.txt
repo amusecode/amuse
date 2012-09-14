@@ -114,6 +114,20 @@ The tests are run using the nosetests program.
         
     
     
+.. warning::
+    
+    On OS X, when you install the prerequisites with macports, 
+    ``nosetests`` will not have a standard name. It will be named
+    ``nosetests-<python-version>``. So for python2.7 you'll need to 
+    use *nosetests-2.7*
+    
+    .. code-block:: sh
+    
+        > nosetests-2.7
+        ............................................
+        
+        OK
+        
 
 
 

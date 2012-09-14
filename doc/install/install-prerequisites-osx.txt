@@ -102,6 +102,20 @@ After installing you will need to configure the code with the following line::
     If you want to run these codes on OS X, please use the amuse install
     scripts and make sure macports is not on your path.
     
+.. warning::
+    
+    With macports,  the nose package will not install ``nosetests`` 
+    under it's standard name. It will be named 
+    ``nosetests-<python-version>``. So for python2.7 you'll need to 
+    use *nosetests-2.7*
+    
+    .. code-block:: sh
+    
+        > nosetests-2.7
+        ............................................
+        
+        OK
+        
 GCC
 ---
 By default MacPorts uses the XCode compilers, these compilers have no support
