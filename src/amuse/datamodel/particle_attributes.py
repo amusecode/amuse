@@ -120,7 +120,7 @@ def center_of_mass_velocity(particles):
     >>> particles.vz = [0.0, 0.0] | units.ms
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles.center_of_mass_velocity()
-    quantity<[0.0, 0.0, 0.0] m * s**-1>
+    quantity<[0.0, 0.0, 0.0] ms>
     """
 
 
@@ -149,7 +149,7 @@ def total_momentum(particles):
     >>> particles.vz = [0.0, 0.0] | units.ms
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles.total_momentum()
-    quantity<[0.0, 0.0, 0.0] m * kg * s**-1>
+    quantity<[0.0, 0.0, 0.0] kg * ms>
     """
     masses = particles.mass
     x_values = particles.vx
@@ -177,7 +177,7 @@ def total_angular_momentum(particles):
     >>> particles.vz = [0.0, 0.0] | units.ms
     >>> particles.mass = [1.0, .5] | units.kg
     >>> particles.total_angular_momentum()
-    quantity<[0.0, 0.0, 1.5] m**2 * kg * s**-1>
+    quantity<[0.0, 0.0, 1.5] kg * m * ms>
     """
     m = particles.mass
     x = particles.x
@@ -207,7 +207,7 @@ def kinetic_energy(particles):
     >>> particles.vz = [0.0, 0.0] | units.ms
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles.kinetic_energy()
-    quantity<1.0 m**2 * kg * s**-2>
+    quantity<1.0 kg * ms**2>
     """
 
     mass = particles.mass
@@ -272,7 +272,7 @@ def thermal_energy(particles):
     >>> particles.u = [0.5, 0.5] | units.ms**2
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles.thermal_energy()
-    quantity<1.0 m**2 * kg * s**-2>
+    quantity<1.0 kg * ms**2>
     """
     return (particles.mass * particles.u).sum()
 
@@ -288,7 +288,7 @@ def particle_specific_kinetic_energy(set, particle):
     >>> particles.vz = [0.0, 0.0] | units.ms
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles[1].specific_kinetic_energy()
-    quantity<0.5 m**2 * s**-2>
+    quantity<0.5 ms**2>
     """
 
     return 0.5*(particle.velocity**2).sum()
@@ -304,7 +304,7 @@ def specific_kinetic_energy(particles):
     >>> particles.vz = [0.0, 0.0] | units.ms
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles.specific_kinetic_energy()
-    quantity<[0.5, 0.5] m**2 * s**-2>
+    quantity<[0.5, 0.5] ms**2>
     """
 
     return 0.5*(particles.vx**2+particles.vy**2+particles.vz**2)
