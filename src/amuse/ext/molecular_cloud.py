@@ -304,6 +304,16 @@ def ism_cube(targetN=10000,L=10| units.parsec,density=(1.14 | units.amu/units.cm
                              power=power,seed=seed,base_grid=base_grid,eketh_ratio=eketh_ratio)
 
 
+def new_ism_cube(
+    number_of_particles = 1000, 
+    cube_size = 10| units.parsec,
+    density = (1.14 | units.amu/units.cm**3),
+    u = 50 | (units. kms)**2):
+    
+    result = ism_cube(number_of_particles, cube_size, density, u).result
+    result.rho = density
+    return result
+
 if __name__=="__main__":
     cloud=ism_cube()
     parts=cloud.result

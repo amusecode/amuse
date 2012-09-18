@@ -939,7 +939,7 @@ class Athena(CommonCode):
 
     
     def iter_hydro_and_mhd_grids(self):
-        n, error = self.get_number_of_grids()
+        n = self.get_number_of_grids()
         
         for x in range(1,n+1):
             yield (

@@ -78,6 +78,7 @@ from amuse.ic.brokenimf import new_miller_scalo_mass_distribution, new_kroupa_ma
 from amuse.ic.flatimf import new_flat_mass_distribution, new_flat_mass_distribution_nbody
 from amuse.ic.kingmodel import new_king_model
 from amuse.ic.gasplummer import new_plummer_gas_model
+from amuse.ext.molecular_cloud import new_ism_cube
 
 def vector(value = [], unit = None):
     if unit is None:

@@ -129,6 +129,10 @@ class Quantity(object):
 
     def __rdiv__(self, other):
         return new_quantity_nonone(other / self.number, (1.0 / self.unit).to_reduced_form())
+    
+    def __mod__(self, other):
+        other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
+        return new_quantity_nonone(numpy.mod(self.number , other.number), self.unit)
 
     def in_(self, x):
         return self.as_quantity_in(x)
