@@ -28,12 +28,12 @@ module amuse_helpers
     include 'stopcond.inc'
     integer :: ret,nf
     real*8 :: tend
-    integer :: is_any_condition_set
-    integer :: is_stopping_condition_enabled
-    integer :: is_number_of_steps_detection_enabled
-    integer :: is_timeout_detection_enabled
-    integer :: get_stopping_condition_number_of_steps_parameter 
-    integer :: get_stopping_condition_timeout_parameter 
+    integer(kind=4) :: is_any_condition_set
+    integer(kind=4) :: is_stopping_condition_enabled
+    integer(kind=4) :: is_number_of_steps_detection_enabled
+    integer(kind=4) :: is_timeout_detection_enabled
+    integer(kind=4) :: get_stopping_condition_number_of_steps_parameter 
+    integer(kind=4) :: get_stopping_condition_timeout_parameter 
     integer :: clock_init, clock_current, count_rate, count_max
     integer(kind=4) :: max_number_of_steps
     integer :: timeout
