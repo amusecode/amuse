@@ -35,7 +35,7 @@ module amuse_helpers
     integer :: get_stopping_condition_number_of_steps_parameter 
     integer :: get_stopping_condition_timeout_parameter 
     integer :: clock_init, clock_current, count_rate, count_max
-    integer :: max_number_of_steps
+    integer(kind=4) :: max_number_of_steps
     integer :: timeout
     integer :: number_of_steps_innerloop
     integer :: stopping_index
@@ -50,6 +50,7 @@ module amuse_helpers
     error = is_stopping_condition_enabled(TIMEOUT_DETECTION, is_timeout_detection_enabled)
     error = get_stopping_condition_number_of_steps_parameter(max_number_of_steps)
     error = get_stopping_condition_timeout_parameter(timeout)
+
     if(error /= 0) then
         ret = -2
         return
