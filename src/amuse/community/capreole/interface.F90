@@ -713,7 +713,7 @@ function get_timestep(outputvalue) result(ret)
   implicit none
   integer :: ret
   integer, intent(out) :: outputvalue
-  get_timestep = 0
+  ret = 0
   outputvalue = dt
 end function get_timestep
 
@@ -723,5 +723,5 @@ function set_timestep(inputvalue) result(ret)
   implicit none
   integer :: ret
   integer, intent(in) :: inputvalue
-  set_timestep = 0
+  ret = 0
 end function set_timestep
