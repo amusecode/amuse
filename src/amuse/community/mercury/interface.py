@@ -5,7 +5,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 
-from amuse.support.data import core
+from amuse.datamodel import Particles
 
 class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     """
@@ -460,7 +460,7 @@ class MercuryWayWard(GravitationalDynamics):
             "set_initial_timestep",
             "timestep",
             "current simulation time", 
-            default_value = 0.0 | units.s
+            default_value = 8.0 | units.day
         )
 
         self.stopping_conditions.define_parameters(object)
@@ -640,6 +640,27 @@ class MercuryWayWard(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
+
+        object.add_method(
+            "set_initial_timestep",
+            (
+                units.day,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_initial_timestep",
+            (
+            ),
+            (
+                units.day,
+                object.ERROR_CODE
+            )
+        )
+
+
 
         object.add_method(
             "set_mass",
@@ -921,7 +942,7 @@ class MercuryWayWard(GravitationalDynamics):
 class Mercury(MercuryWayWard):
     def __init__(self, *args, **kargs):
         MercuryWayWard.__init__(self, *args, **kargs)
-        self.particles=core.Particles(0)
+        self.particles=Particles(0)
         self.model_time=0.|units.s
         
     def commit_particles(self):
@@ -1002,3 +1023,4 @@ class Mercury(MercuryWayWard):
         self.particles.position+=com_position
         self.particles.velocity+=com_velocity        
         return ret
+
