@@ -10,53 +10,45 @@ from amuse.units import units
 from amuse.community.mesa.interface import MESA
 from amuse import datamodel
 
-def simulate_evolution_tracks():
+def simulate_evolution_tracks(masses = [0.5, 1.0, 1.25, 1.5, 2.25, 3.0, 5.0, 9.0, 15.0] | units.MSun):
     stellar_evolution = MESA()
     stellar_evolution.parameters.AGB_wind_scheme = 0
     stellar_evolution.parameters.RGB_wind_scheme = 0
 
-    masses = [0.5, 1.0, 1.25, 1.5, 2.25, 3.0, 5.0, 9.0, 15.0] | units.MSun
-    stars = datamodel.Particles(len(masses))
-    stars.mass = masses
+    stars = datamodel.Particles(len(masses),mass=masses)
     stars = stellar_evolution.pre_ms_stars.add_particles(stars)
     
-    luminosity_at_time = []
-    temperature_at_time = []
-    time = []
+    data=dict()
     
     for star in stars:
-        one_luminosity_at_time = [] | units.LSun
-        one_temperature_at_time = [] | units.K
-        one_time = [] | units.yr
+        stardata=data.setdefault(star.mass,dict())
+        stardata['luminosity'] = [] | units.LSun
+        stardata['temperature'] = [] | units.K
+        stardata['time'] = [] | units.yr
         while star.stellar_type == 17 | units.stellar_type:
-            one_luminosity_at_time.append(star.luminosity)
-            one_temperature_at_time.append(star.temperature)
-            one_time.append(star.age)
+            stardata['luminosity'].append(star.luminosity)
+            stardata['temperature'].append(star.temperature)
+            stardata['time'].append(star.age)
             star.evolve_one_step()
             print star.stellar_type, star.age, star.mass, star.luminosity, star.radius
-        luminosity_at_time.append(one_luminosity_at_time)
-        temperature_at_time.append(one_temperature_at_time)
-        time.append(one_time)
         
-    stellar_evolution.stop()
+    return data
     
-    return temperature_at_time, luminosity_at_time, time, masses
-    
-def plot_track(temperature_at_time, luminosity_at_time, masses):
+def plot_track(data):
     pyplot.figure(figsize = (6, 8))
     pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
-    
-    for temperature, luminosity, mass in zip(temperature_at_time, luminosity_at_time, masses):
-        loglog(temperature[5:], luminosity[5:], marker="s")
+    for mass,stardata in data.items():
+        temperature=stardata['temperature']
+        luminosity=stardata['luminosity']
+        loglog(temperature[4:], luminosity[4:], marker="s") # first few points show transient
         text(1.25*temperature[-1], 0.5*luminosity[-1], mass)
     xlabel('Effective Temperature')
     ylabel('Luminosity')
     pyplot.xlim(10**4.6, 10**3.5)
     pyplot.ylim(1.0e-2,1.e5)
-    pyplot.show()
+    pyplot.show()   
     
-
-if __name__ in ('__main__', '__plot__'):        
-    temperatures, luminosities, time, masses = simulate_evolution_tracks()
-    plot_track(temperatures, luminosities, masses)
+if __name__ in ('__main__', '__plot__'):
+    data = simulate_evolution_tracks()
+    plot_track(data)
     
