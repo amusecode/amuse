@@ -142,7 +142,7 @@ function getlocalscale(spos) result(scale)
       id=pshapefromp(subind,id)
     enddo
   else
-    scale=sqrt(scale) 
+    scale=sqrt(scale+rsize**2/1.e5) 
   endif 
 end function getlocalscale
 
