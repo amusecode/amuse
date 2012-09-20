@@ -1000,8 +1000,6 @@ class Mercury(MercuryWayWard):
     def recommit_particles(self):
         if not self.particles_accessed:
           return 0
-        if not self.committed:
-          return self.commit_particles()  
         if self.overridden().central_particle[0] not in self.particles:
           print "you are not allowed to remove the central particle"
           return -11
@@ -1010,10 +1008,13 @@ class Mercury(MercuryWayWard):
                 
     def evolve_model(self, tend):
         if self.particles_accessed:
-          ret=self.recommit_particles()
+          if not self.committed:
+            ret=self.commit_particles()
+          else:  
+            ret=self.recommit_particles()
           if ret != 0:
-            print "(re)commit error"
-            return -20  
+              print "(re)commit error"
+              return -20  
         if self.overridden().central_particle[0] not in self.particles:
           print "you are not allowed to remove the central particle"
           return -11
