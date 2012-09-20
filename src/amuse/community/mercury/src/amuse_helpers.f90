@@ -323,6 +323,7 @@ end function
 subroutine shift_particles(first,nshift)
   integer :: first,nshift
   m(first+nshift:nbod+nshift)=m(first:nbod)
+  iid(first+nshift:nbod+nshift)=iid(first:nbod)
   xh(1:3,first+nshift:nbod+nshift)=xh(1:3,first:nbod)
   vh(1:3,first+nshift:nbod+nshift)=vh(1:3,first:nbod)
   s(1:3,first+nshift:nbod+nshift)=s(1:3,first:nbod)
@@ -458,6 +459,7 @@ function remove_particle(id_) result(ret)
     return
   endif  
   call shift_particles(index+1,-1)
+  nbod=nbod-1
   if(index.LE.nbig) nbig=nbig-1
   ret=0
   id_searcheable=.FALSE.

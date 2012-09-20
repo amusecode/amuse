@@ -26,19 +26,20 @@ end function
 function commit_parameters() result(ret)
   use amuse_mercuryMod
   integer :: ret
-  ret=-2
+  ret=0
 end function  
 
 function recommit_parameters() result(ret)
   use amuse_mercuryMod
   integer :: ret
-  ret=-2
+  ret=0
 end function  
 
 function recommit_particles() result(ret)
   use amuse_mercuryMod
   integer :: ret
-  ret=-2
+
+  ret=finish_init()
 end function  
 
 function get_time(time_out) result(ret)

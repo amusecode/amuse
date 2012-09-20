@@ -475,14 +475,13 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_property("get_total_mass")
 
     def define_state(self, object):
-        CommonCode.define_state(self, object)
+        GravitationalDynamics.define_state(self, object)
+        object.add_method('EDIT', 'new_central_particle')
+        object.add_method('EDIT', 'new_orbiter')
+        object.add_method('UPDATE', 'new_orbiter')
+        object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
 
-#    def define_state(self, object):
-#        GravitationalDynamics.define_state(self, object)
-#        object.add_method('EDIT', 'new_central_particle')
-#        object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
-#        object.add_method('EDIT', 'new_orbiter')
-#        object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
 
     def define_particle_sets(self, object):
         object.define_super_set('particles', ['central_particle','orbiters'],
@@ -942,8 +941,16 @@ class MercuryWayWard(GravitationalDynamics):
 class Mercury(MercuryWayWard):
     def __init__(self, *args, **kargs):
         MercuryWayWard.__init__(self, *args, **kargs)
-        self.particles=Particles(0)
+        self._particles=Particles(0)
         self.model_time=0.|units.s
+        self.particles_accessed=True
+        self.committed=False
+
+    @property
+    def particles(self):
+         if not self.particles_accessed:
+             self.particles_accessed=True
+         return self._particles
         
     def commit_particles(self):
         N=len(self.particles)
@@ -987,8 +994,14 @@ class Mercury(MercuryWayWard):
         self.particles.position+=com_position
         self.particles.velocity+=com_velocity
         self.model_time=self.overridden().get_time()
+        self.committed=True
+        return 0
 
     def recommit_particles(self):
+        if not self.particles_accessed:
+          return 0
+        if not self.committed:
+          return self.commit_particles()  
         if self.overridden().central_particle[0] not in self.particles:
           print "you are not allowed to remove the central particle"
           return -11
@@ -996,6 +1009,11 @@ class Mercury(MercuryWayWard):
         return self.overridden().recommit_particles()
                 
     def evolve_model(self, tend):
+        if self.particles_accessed:
+          ret=self.recommit_particles()
+          if ret != 0:
+            print "(re)commit error"
+            return -20  
         if self.overridden().central_particle[0] not in self.particles:
           print "you are not allowed to remove the central particle"
           return -11
