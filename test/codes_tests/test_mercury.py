@@ -359,8 +359,7 @@ class TestMercury(TestWithMPI):
         mercury.evolve_model(365.14|units.day)
         self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
         mercury.stop()
-        
-    
+            
     def test4(self):
         solsys = new_solar_system()
 
@@ -575,5 +574,47 @@ class TestMercury(TestWithMPI):
         self.assertAlmostEqual(mercury.particles[5].position, start_pos, 2)
         mercury.stop()
 
+    def test12(self):
+        solsys = new_solar_system()
+
+        mercury = Mercury()
+        mercury.parameters.timestep = 1 | units.day
+        
+        mercury.particles.add_particles(solsys)
+        start_pos = mercury.particles[5].position
+        mercury.evolve_model(11.8618|units.yr)
+        self.assertAlmostEqual(mercury.particles[5].position, start_pos, 2)
+        mercury.particles.remove_particles(mercury.particles[1:5])
+        self.assertAlmostEqual(mercury.particles[1].position, start_pos, 2)
+        start_pos = mercury.particles[1].position
+        mercury.evolve_model(2*11.8618|units.yr)
+        self.assertAlmostEqual(mercury.particles[1].position, start_pos, 2)
+        mercury.stop()
+
+    def test13(self):
+        solsys = new_solar_system()
+
+        mercury = Mercury()        
+        mercury.particles.add_particles(solsys)
+        idpos1 = [ (p.position - q.position) for p in mercury.particles[1:10] for q in mercury.particles[1:10] ]
+        mercury.evolve_model(11.8618|units.yr)
+        edpos1 = [ (p.position - q.position) for p in mercury.particles[1:10] for q in mercury.particles[1:10] ]
+        mercury.stop()
+
+        centre, orbiters = new_solar_system_for_mercury()
+
+        mercury = MercuryWayWard()
+        mercury.central_particle.add_particles(centre)
+        mercury.orbiters.add_particles(orbiters)
+
+        idpos2 = [ (p.position - q.position) for p in mercury.orbiters[0:9] for q in mercury.orbiters[0:9] ]
+        mercury.evolve_model(11.8618|units.yr)
+        edpos2 = [ (p.position - q.position) for p in mercury.orbiters[0:9] for q in mercury.orbiters[0:9] ]
+        mercury.stop()
+
+        for d1,d2 in zip(idpos1,idpos2):
+          self.assertAlmostEqual(d1,d2, 7)
+        for d1,d2 in zip(edpos1,edpos2):
+          self.assertAlmostEqual(d1,d2, 7)
 
 

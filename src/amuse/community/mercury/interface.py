@@ -995,6 +995,7 @@ class Mercury(MercuryWayWard):
         self.particles.velocity+=com_velocity
         self.model_time=self.overridden().get_time()
         self.committed=True
+        self.particles_accessed=False
         return 0
 
     def recommit_particles(self):
@@ -1004,6 +1005,7 @@ class Mercury(MercuryWayWard):
           print "you are not allowed to remove the central particle"
           return -11
         (self.particles-self.overridden().central_particle).synchronize_to(self.overridden().orbiters)                
+        self.particles_accessed=False
         return self.overridden().recommit_particles()
                 
     def evolve_model(self, tend):
@@ -1041,5 +1043,7 @@ class Mercury(MercuryWayWard):
         self.particles.move_to_center()
         self.particles.position+=com_position
         self.particles.velocity+=com_velocity        
+        self.particles_accessed=False
+
         return ret
 
