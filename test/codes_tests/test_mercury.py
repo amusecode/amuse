@@ -578,17 +578,17 @@ class TestMercury(TestWithMPI):
         solsys = new_solar_system()
 
         mercury = Mercury()
-        mercury.parameters.timestep = 1 | units.day
+        mercury.parameters.timestep = 1. | units.day
         
         mercury.particles.add_particles(solsys)
         start_pos = mercury.particles[5].position
         mercury.evolve_model(11.8618|units.yr)
-        self.assertAlmostEqual(mercury.particles[5].position, start_pos, 2)
+        self.assertAlmostEqual(mercury.particles[5].position, start_pos, 1)
         mercury.particles.remove_particles(mercury.particles[1:5])
-        self.assertAlmostEqual(mercury.particles[1].position, start_pos, 2)
+        self.assertAlmostEqual(mercury.particles[1].position, start_pos, 1)
         start_pos = mercury.particles[1].position
         mercury.evolve_model(2*11.8618|units.yr)
-        self.assertAlmostEqual(mercury.particles[1].position, start_pos, 2)
+        self.assertAlmostEqual(mercury.particles[1].position, start_pos, 1)
         mercury.stop()
 
     def test13(self):

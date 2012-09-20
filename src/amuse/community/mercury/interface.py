@@ -1014,9 +1014,9 @@ class Mercury(MercuryWayWard):
             ret=self.commit_particles()
           else:  
             ret=self.recommit_particles()
-          if ret != 0:
-              print "(re)commit error"
-              return -20  
+#          if ret != 0:
+#              print "(re)commit error:",ret
+#              return -20  
         if self.overridden().central_particle[0] not in self.particles:
           print "you are not allowed to remove the central particle"
           return -11
@@ -1047,3 +1047,11 @@ class Mercury(MercuryWayWard):
 
         return ret
 
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        object.add_method('EDIT', 'new_central_particle')
+        object.add_method('EDIT', 'new_orbiter')
+        object.add_method('UPDATE', 'new_orbiter')
+        object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
+        object.add_method('RUN', 'recommit_particles')
