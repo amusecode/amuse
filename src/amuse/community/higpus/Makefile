@@ -5,7 +5,12 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-ALL	 = higpus_worker_gpu
+# Set to empty string on purpose
+# otherwhise will cause error in main makefile
+# for most users (most users have no gpu).
+# to easily create code in this directory run:
+# make code
+ALL	 = 
 
 MPICXX   ?= mpicxx
 
@@ -44,6 +49,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 
+code: higpus_worker_gpu
 
 $(CODELIB):
 	make -C src all 
