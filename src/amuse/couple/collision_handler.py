@@ -42,7 +42,7 @@ class CollisionHandler(object):
     def handle_collisions(self, primaries, secondaries):
         result = Particles()
         for primary, secondary in zip(primaries.as_set(), secondaries.as_set()):
-            result.add_particle(self.handle_collision(primary, secondary))
+            result.add_particles(self.handle_collision(primary, secondary))
         return result
     
     def handle_collision(self, primary, secondary):
@@ -68,50 +68,51 @@ class CollisionHandler(object):
         if collision_code.gravity_code_required:
             handle_collision_args["gravity_code"] = self.gravity_code
         
-        merge_product = collision_code.handle_collision(primary, secondary, **handle_collision_args)
+        merge_products = collision_code.handle_collision(primary, secondary, **handle_collision_args)
         
         if self.verbose:
-            print "{0} concluded with return value:\n{1}".format(self.collision_code.__class__.__name__, merge_product)
+            print "{0} concluded with return value:\n{1}".format(self.collision_code.__class__.__name__, merge_products)
         
         if not self.stellar_evolution_code is None:
             if (hasattr(self.stellar_evolution_code, "new_particle_from_model") and 
-                (hasattr(merge_product, "internal_structure"))):
-                self.stellar_evolution_code.new_particle_from_model(
-                    merge_product.internal_structure(), 
-                    0.0 | units.Myr, 
-                    key = merge_product.key
-                )
+                (hasattr(merge_products, "internal_structure"))):
+                for merge_product in merge_products:
+                    self.stellar_evolution_code.new_particle_from_model(
+                        merge_product.internal_structure(), 
+                        0.0 | units.Myr, 
+                        key = merge_product.key
+                    )
             else:
-                self.stellar_evolution_code.particles.add_particle(merge_product)
+                self.stellar_evolution_code.particles.add_particles(merge_products)
             self.stellar_evolution_code.particles.remove_particles(colliders)
             if self.verbose:
                 print "Colliders have been replaced by merge product in {0}.".format(self.stellar_evolution_code.__class__.__name__)
         
         if not self.gravity_code is None:
-            new_grav_particle = Particle(key=merge_product.key)
-            new_grav_particle.mass = merge_product.mass
+            new_grav_particles = Particles(keys=merge_products.key)
+            new_grav_particles.mass = merge_products.mass
             
-            if hasattr(merge_product, "radius"):
-                new_grav_particle.radius = merge_product.radius
+            if hasattr(merge_products, "radius"):
+                new_grav_particles.radius = merge_products.radius
             elif hasattr(colliders, "radius"):
-                new_grav_particle.radius = max(colliders.radius)
+                new_grav_particles.radius = max(colliders.radius)
             
-            if hasattr(merge_product, "x"):
-                new_grav_particle.position = merge_product.position
+            if hasattr(merge_products, "x"):
+                new_grav_particles.position = merge_products.position
             else:
-                new_grav_particle.position = colliders.center_of_mass()
+                new_grav_particles.position = colliders.center_of_mass()
             
-            if hasattr(merge_product, "vx"):
-                new_grav_particle.velocity = merge_product.velocity
+            if hasattr(merge_products, "vx"):
+                new_grav_particles.velocity = merge_products.velocity
             else:
-                new_grav_particle.velocity = colliders.center_of_mass_velocity()
+                new_grav_particles.velocity = colliders.center_of_mass_velocity()
             
-            self.gravity_code.particles.add_particle(new_grav_particle)
+            self.gravity_code.particles.add_particle(new_grav_particles)
             self.gravity_code.particles.remove_particles(colliders)
             if self.verbose:
                 print "Colliders have been replaced by merge product in {0}.".format(self.gravity_code.__class__.__name__)
         
-        return merge_product
+        return merge_products
     
 
 

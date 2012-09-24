@@ -21,8 +21,7 @@ class CollisionCodeForTesting(object):
         self.parameters = self.ParametersForTesting()
     
     def handle_collision(self, primary, secondary, stellar_evolution_code=None):
-        set = Particles(1)
-        result = set[0]
+        result = Particles(1)
         result.mass = self.next_mass.as_quantity_in(self.parameters.mass_unit)
         self.next_mass += 1 | units.kg
         
@@ -33,7 +32,7 @@ class CollisionCodeForTesting(object):
             def internal_structure(set, particle=None):
                 return dict(mass=result.mass, radius=result.radius)
             
-            set.add_function_attribute("internal_structure", None, internal_structure)
+            result.add_function_attribute("internal_structure", None, internal_structure)
         
         return result
     
@@ -81,7 +80,7 @@ class TestCollisionHandler(TestCase):
         handler = CollisionHandler(CollisionCodeForTesting)
         
         result = handler.handle_collision(colliders[0], colliders[1])
-        self.assertTrue(isinstance(result, Particle))
+        self.assertTrue(isinstance(result, Particles))
         self.assertEqual(result.mass, 1 | units.kg)
         
         result = handler.handle_collision(colliders[0], colliders[1])
@@ -93,7 +92,7 @@ class TestCollisionHandler(TestCase):
         handler = CollisionHandler(CollisionCodeForTesting())
         
         result = handler.handle_collision(colliders[0], colliders[1])
-        self.assertTrue(isinstance(result, Particle))
+        self.assertTrue(isinstance(result, Particles))
         self.assertEqual(result.mass, 1 | units.kg)
         
         result = handler.handle_collision(colliders[0], colliders[1])
@@ -109,7 +108,7 @@ class TestCollisionHandler(TestCase):
         )
         
         result = handler.handle_collision(colliders[0], colliders[1])
-        self.assertTrue(isinstance(result, Particle))
+        self.assertTrue(isinstance(result, Particles))
         self.assertEqual(result.mass, 5 | units.kg)
         self.assertTrue(result.mass.unit is units.g)
         

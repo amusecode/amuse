@@ -1,5 +1,5 @@
 from amuse.units import units
-from amuse.datamodel import Particles, Particle
+from amuse.datamodel import Particles
 from amuse.support.exceptions import AmuseException
 from amuse.test.amusetest import TestCase
 
@@ -15,7 +15,7 @@ class TestStickySpheres(TestCase):
         self.assertAlmostEqual(colliders.center_of_mass_velocity().length(), 1.0 | units.m / units.s)
         
         merged = StickySpheres().handle_collision(colliders[0], colliders[1])
-        self.assertTrue(isinstance(merged, Particle))
+        self.assertTrue(isinstance(merged, Particles))
         self.assertEqual(merged.mass, 7 | units.kg)
         self.assertAlmostEqual(merged.position, [0.2, 0.4, -0.1] | units.m)
         self.assertAlmostEqual(merged.velocity, ([2.0, -3.0, -6.0] | units.m / units.s) / 7.0)
@@ -31,7 +31,7 @@ class TestStickySpheres(TestCase):
         colliders.velocity = [[0.0, 0.0, 0.0], [2.0, 2.0, 2.0]] | units.m / units.s
         
         merged = StickySpheres(mass_loss=0.2).handle_collision(colliders[0], colliders[1])
-        self.assertTrue(isinstance(merged, Particle))
+        self.assertTrue(isinstance(merged, Particles))
         self.assertEqual(merged.mass, 8 | units.kg)
         self.assertAlmostEqual(merged.position, [0.5, 0.5, 0.5] | units.m)
         self.assertAlmostEqual(merged.velocity, [1.0, 1.0, 1.0] | units.m / units.s)
@@ -55,7 +55,7 @@ class TestStickySpheres(TestCase):
             for i in range(0, 6, 2):
                 colliders = particles[i:i+2]
                 merged = sticky_spheres.handle_collision(colliders[0], colliders[1])
-                self.assertTrue(isinstance(merged, Particle))
+                self.assertTrue(isinstance(merged, Particles))
                 self.assertAlmostEqual(merged.mass, 
                     (2 * i +3.0) * (1 - fraction) | units.kg)
                 self.assertAlmostEqual(merged.position, 

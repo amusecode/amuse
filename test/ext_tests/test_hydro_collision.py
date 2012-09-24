@@ -159,7 +159,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         stellar.particles.add_particles(colliders)
         
         collision = StellarEncounterInHydrodynamics(350, Gadget2, verbose=True)
-        result = collision.handle_collision(colliders, gravity_code=gravity, stellar_evolution_code=stellar)
+        result = collision.handle_collision(colliders[0], colliders[1], gravity_code=gravity, stellar_evolution_code=stellar)
         stellar.stop()
         print result
         self.assertTrue(isinstance(result, Particles))
@@ -189,7 +189,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
                 plot_function = pynbody_column_density_plot if HAS_PYNBODY else None,
                 plot_function_arguments = dict(width=20|units.RSun, vmin=29, vmax=35) if HAS_PYNBODY else dict(width=20|units.RSun)), 
             verbose=True)
-        result = collision.handle_collision(colliders, gravity_code=gravity, stellar_evolution_code=stellar)
+        result = collision.handle_collision(colliders[0], colliders[1], gravity_code=gravity, stellar_evolution_code=stellar)
         stellar.stop()
         print result
         self.assertTrue(isinstance(result, Particles))

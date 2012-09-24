@@ -4,7 +4,7 @@ from amuse.units.quantities import zero
 from amuse.plot import native_plot, sph_particles_plot
 
 
-def new_plotting_hydrodynamics_code(hydrodynamics, timestep, plot_function=None, plot_function_arguments=dict()):
+def new_plotting_hydrodynamics_code(hydrodynamics, timestep, plot_function=None, plot_function_arguments=dict(), plot_directory=None):
     """
     Returns a new subclass of the hydrodynamics code that will produce plots at
     regular intervals.
@@ -20,16 +20,31 @@ def new_plotting_hydrodynamics_code(hydrodynamics, timestep, plot_function=None,
         _timestep = timestep
         _plot_function = staticmethod(plot_function)
         _plot_function_arguments = plot_function_arguments
+        _plot_directory = plot_directory
         
         def __init__(self, *args, **kwargs):
             super(PlottingHydrodynamics, self).__init__(*args, **kwargs)
             self.time_last_plot = zero
             self.previous_plot_number = -1
-            self.plot_directory = os.path.join(os.getcwd(), "plots")
-            if not os.path.exists(self.plot_directory):
-                os.mkdir(self.plot_directory)
+            self.plot_directory = self._next_plot_directory()
             if self._plot_function is None:
                 self._plot_function = sph_particles_plot
+        
+        def _next_plot_directory(self):
+            if self._plot_directory is None:
+                plot_directory = os.path.join(os.getcwd(), "plots")
+                if not os.path.exists(plot_directory):
+                    os.mkdir(plot_directory)
+                i = 0
+                while os.path.exists(os.path.join(plot_directory, "run_{0:=03}".format(i))):
+                    i += 1
+                new_directory = os.path.join(plot_directory, "run_{0:=03}".format(i))
+                os.mkdir(new_directory)
+                return new_directory
+            else:
+                if not os.path.exists(self._plot_directory):
+                    os.mkdir(self._plot_directory)
+                return self._plot_directory
         
         def _next_filename(self):
             self.previous_plot_number += 1

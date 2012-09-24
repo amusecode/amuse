@@ -53,23 +53,24 @@ class StellarEncounterInHydrodynamics(object):
         self.star_to_sph_arguments = star_to_sph_arguments
         self.sph_to_star_arguments = sph_to_star_arguments
     
-    def handle_collision(self, particles, stellar_evolution_code=None, gravity_code=None):
+    def handle_collision(self, primary, secondary, stellar_evolution_code=None, gravity_code=None):
+        particles = primary + secondary
         self.collect_required_attributes(particles, gravity_code, stellar_evolution_code)
         self.backtrack_particles(particles)
         gas_particles = self.convert_stars(particles, stellar_evolution_code)
         self.simulate_collision(gas_particles)
         
-        models = []
+        self.models = []
         for group in self.groups_after_encounter:
-            models.append(convert_SPH_to_stellar_model(group, **self.sph_to_star_arguments))
+            self.models.append(convert_SPH_to_stellar_model(group, **self.sph_to_star_arguments))
         
         def internal_structure(set, particle=None):
-            return models[set.key == particle.key]
+            return self.models[(set.key == particle.key).nonzero()[0]]
         
-        result = Particles(len(models))
+        result = Particles(len(self.models))
         result.add_function_attribute("internal_structure", None, internal_structure)
-        result.mass = [model["dmass"].sum().as_quantity_in(self.mass_unit) for model in models]
-        result.radius = [model["radius"][-1].as_quantity_in(self.radius_unit) for model in models]
+        result.mass = [model["dmass"].sum().as_quantity_in(self.mass_unit) for model in self.models]
+        result.radius = [model["radius"][-1].as_quantity_in(self.radius_unit) for model in self.models]
         result.position = (self.original_center_of_mass + self.stars_after_encounter.position).as_quantity_in(self.position_unit)
         result.velocity = (self.original_center_of_mass_velocity + self.stars_after_encounter.velocity).as_quantity_in(self.velocity_unit)
         return result
@@ -147,7 +148,7 @@ class StellarEncounterInHydrodynamics(object):
         return gas_particles
     
     def divide_number_of_particles(self, particles):
-        n1 = int(self.number_of_particles * particles[0].mass / particles.total_mass())
+        n1 = int(0.5 + self.number_of_particles * particles[0].mass / particles.total_mass())
         return (n1, self.number_of_particles - n1)
     
     def simulate_collision(self, gas_particles):

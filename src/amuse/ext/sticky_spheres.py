@@ -2,7 +2,7 @@ import sys
 import numpy
 
 from amuse.units import units
-from amuse.datamodel import Particle
+from amuse.datamodel import Particles
 from amuse.support.exceptions import AmuseException
 
 
@@ -29,7 +29,7 @@ class StickySpheres(object):
     
     def handle_collision(self, primary, secondary):
         colliders = primary + secondary
-        result = Particle()
+        result = Particles(1)
         result.mass = colliders.total_mass() * (1 - self.mass_loss)
         result.position = colliders.center_of_mass()
         result.velocity = colliders.center_of_mass_velocity()
