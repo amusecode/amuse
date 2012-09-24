@@ -77,8 +77,8 @@ def initialize_grid(grid, magentic_field_grid):
     A_grid = Grid.create(DIMENSIONS_OF_A_MESH, temp + grid.cellsize()*[2,2,0])
     A_grid.position -= A_grid.cellsize()*[0.5,0.5,0.0]
     A_grid.Az = (
-        B0*l/(4.0*PI)*(4.0*PI/l*A_grid.x).cos() + 
-        B0*l/(2.0*PI)*(2.0*PI/l*A_grid.y).cos() ) 
+        B0*l/(4.0*PI)*numpy.cos(4.0*PI/l*A_grid.x) + 
+        B0*l/(2.0*PI)*numpy.cos(2.0*PI/l*A_grid.y)) 
 
     assert grid.cellsize().x == A_grid.cellsize().x
     assert grid.cellsize().y == A_grid.cellsize().y
@@ -116,15 +116,15 @@ def initialize_grid(grid, magentic_field_grid):
     assert magentic_field_grid.B1i.unit == magnetic_field
 
     grid.rho   =  D0 
-    grid.rhovx = -D0*V0*(2.0*PI/l*grid.y).sin()
-    grid.rhovy =  D0*V0*(2.0*PI/l*grid.x).sin()
+    grid.rhovx = -D0*V0*numpy.sin(2.0*PI/l*grid.y)
+    grid.rhovy =  D0*V0*numpy.sin(2.0*PI/l*grid.x)
     grid.rhovz =  0.0 | momentum
 
 
 
-    print grid.rhovx.sum()
-    print grid.rhovy.sum()
-    print grid.rhovz.sum()
+    print "sum rho vx:", grid.rhovx.sum()
+    print "sum rho vy:",grid.rhovy.sum()
+    print "sum rho vz:",grid.rhovz.sum()
 
     grid.energy = (
       P0 / (GAMMA - 1) + 
