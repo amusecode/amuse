@@ -44,7 +44,7 @@ module amuse_helpers
     integer :: reset_stopping_conditions, error
     real(kind=dp)    :: nexttime   ! timer for output
     integer :: nframe              ! integers for output
-    
+ 
     error = reset_stopping_conditions()
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, is_number_of_steps_detection_enabled)
     error = is_stopping_condition_enabled(TIMEOUT_DETECTION, is_timeout_detection_enabled)
@@ -52,6 +52,8 @@ module amuse_helpers
     error = get_stopping_condition_timeout_parameter(timeout)
 
     if(error /= 0) then
+        ! hack to prevent gfortran 4.2 to optimize these variables away and cause a bug
+        print *, "stopping conditions", is_number_of_steps_detection_enabled, is_timeout_detection_enabled 
         ret = -2
         return
     end if
