@@ -116,7 +116,7 @@ class Quantity(object):
 
     def __mul__(self, other):
         other = to_quantity(other)
-        return new_quantity_nonone(self.number * other.number, (self.unit * other.unit).to_reduced_form())
+        return new_quantity_nonone(self.number * other.number, (self.unit * other.unit).to_simple_form())
         
     __rmul__ = __mul__
 
@@ -125,10 +125,10 @@ class Quantity(object):
 
     def __div__(self, other):
         other = to_quantity(other)
-        return new_quantity_nonone(self.number / other.number, (self.unit / other.unit).to_reduced_form())
+        return new_quantity_nonone(self.number / other.number, (self.unit / other.unit).to_simple_form())
 
     def __rdiv__(self, other):
-        return new_quantity_nonone(other / self.number, (1.0 / self.unit).to_reduced_form())
+        return new_quantity_nonone(other / self.number, (1.0 / self.unit).to_simple_form())
     
     def __mod__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
@@ -152,7 +152,7 @@ class Quantity(object):
         >>> v1.sqrt()
         quantity<[4.0, 5.0, 6.0] kg**0.5>
         """
-        return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_reduced_form())
+        return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_simple_form())
 
 
 
@@ -777,7 +777,7 @@ class VectorQuantity(Quantity):
         other = to_quantity(other)
         return new_quantity_nonone(
             numpy.cross(self.number, other.number, axisa=axisa, axisb=axisb, axisc=axisc, axis=axis), 
-            (self.unit * other.unit).to_reduced_form()
+            (self.unit * other.unit).to_simple_form()
         )
 
 

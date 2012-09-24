@@ -84,7 +84,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         self.assertEqual(str(mass),      "<quantity 1.0 | kg>")
         self.assertEqual(str(acc),       "<quantity 9.8 | m / (s**2)>")
         self.assertEqual(str(position),  "<quantity [1.0, 2.0, 3.0] | length>")
-        self.assertEqual(str(mass_in_g), "<quantity 1000.0 | g>")
+        self.assertEqual(str(mass_in_g), "<quantity 1000.0 | 0.001 * kg>")#<quantity 1000.0 | g>")
         self.assertEqual(str(pi),        "<quantity 3.14 | none>")
         set_printing_strategy("default")
     

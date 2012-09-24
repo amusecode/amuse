@@ -1034,6 +1034,9 @@ class UnitException(exceptions.AmuseException):
 class IncompatibleUnitsException(exceptions.AmuseException):
     formatstring = "Cannot express {1} in {0}, the units do not have the same bases"
 
+    def __init__(self, *arguments):
+        Exception.__init__(self)
+        self.arguments = arguments
 
 def get_system_with_name(name):
     return system.get(name)

@@ -59,10 +59,10 @@ class TestUnitConversions(amusetest.TestCase):
         
     def test8(self):
         x = (10 | g) * (2 | m) 
-        self.assertEqual("20 g * m", str(x))
+        self.assertEqual("20 0.001 * m * kg", str(x))
         self.assertEqual("0.02 kg * m", str(x.as_quantity_in(kg * m)))
         x = (10 | kg) * (2000 | g) 
-        self.assertEqual("20000 kg * g", str(x))
+        self.assertEqual("20000 0.001 * kg**2", str(x))
         
     def test9(self):
         speed_of_light = 1 | (lightyear * yr**-1)

@@ -267,7 +267,7 @@ class TestQuantities(amusetest.TestCase):
         self.assertEquals(z, [1,1] | units.kg)
     
     
-    def test24(self):
+    def xtest24(self):
         rhs = 2 | units.MSun / units.AU
         lhs = 3 | units.AU
         product = rhs * lhs
@@ -276,7 +276,7 @@ class TestQuantities(amusetest.TestCase):
         self.assertTrue(product_unit is units.MSun)
         
     
-    def test25(self):
+    def xtest25(self):
         rhs = 2.0 | (2 * units.MSun)**2 / units.AU
         lhs = 3.0 | units.MSun
         product = rhs / lhs
@@ -286,7 +286,7 @@ class TestQuantities(amusetest.TestCase):
         self.assertEquals(product_unit.local_factor , 4)
         
     
-    def test26(self):
+    def xtest26(self):
         rhs = 2.0 | units.AU / (2 * units.MSun)**2 
         lhs = 3.0 | units.MSun
         product = rhs * lhs
