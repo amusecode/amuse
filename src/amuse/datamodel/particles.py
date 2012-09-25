@@ -1661,6 +1661,10 @@ class ParticlesSubset(AbstractParticleSet):
         return self._original_set().get_timestamp()
         
     def get_indices_of_keys(self, keys):
+        if not self._private.version == self._private.particles._get_version():
+            self._private.indices = self._private.particles.get_indices_of_keys(self._private.keys)
+            self._private.version = self._private.particles._get_version()
+            
         return self._private.particles.get_indices_of_keys(keys)
     
     def previous_state(self):
