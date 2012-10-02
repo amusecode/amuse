@@ -1,0 +1,65 @@
+Index: mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/amrvacusr.acceleration.t	2012-08-31 10:30:23.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t	2012-10-02 10:17:30.000000000 +0200
+@@ -99,7 +99,9 @@
+ {do ix^D = ixO^LIM^D\}
+     call findaccelblock(ix^D,ixI^L,x,iaccel^D)
+     acc(ix^D,1) = accel(iaccel^D,1)
++{^NOONED
+     acc(ix^D,2) = accel(iaccel^D,2)
++}
+ {^IFTHREED
+     acc(ix^D,3) = accel(iaccel^D,3)
+ }
+@@ -118,7 +120,9 @@
+ integer, intent(out) :: iaccel^D
+ 
+ iaccel1 = int((x(ix^D,1)-xaccel1(1))/dxaccel1)+1
++{^NOONED
+ iaccel2 = int((x(ix^D,2)-xaccel2(1))/dxaccel2)+1
++}
+ 
+ {^IFTHREED
+ iaccel3 = int((x(ix^D,3)-xaccel3(1))/dxaccel3)+1
+@@ -135,21 +139,26 @@
+ !----------------------------------------------------------------------------
+ 
+ xaccel1(1) = xprobmin1-dx(1,1) ! dx(1,1) obtained from AMUSE interface
++{^NOONED
+ xaccel2(1) = xprobmin2-dx(2,1) ! dx(2,1) obtained from AMUSE interface
+-
++}
+ {^IFTHREED
+ xaccel3(1) = xprobmin3-dx(3,1) ! dx(3,1) obtained from AMUSE interface
+ }
+ 
+ xaccel1(naccel1) = xprobmax1+dx(1,1)
++{^NOONED
+ xaccel2(naccel2) = xprobmax2+dx(2,1)
++}
+ 
+ {^IFTHREED
+ xaccel3(naccel3) = xprobmax3+dx(3,1)
+ }
+ 
+ dxaccel1 = (xaccel1(naccel1) - xaccel1(1))/(naccel1-1)
++{^NOONED
+ dxaccel2 = (xaccel2(naccel2) - xaccel2(1))/(naccel2-1)
++}
+ 
+ {^IFTHREED
+ dxaccel3 = (xaccel3(naccel3) - xaccel3(1))/(naccel3-1)
+@@ -157,10 +166,11 @@
+ DO i=2,naccel1-1
+   xaccel1(i) = xaccel1(i-1) + dxaccel1
+ ENDDO
++{^NOONED
+ DO i=2,naccel2-1
+   xaccel2(i) = xaccel2(i-1) + dxaccel2
+ ENDDO
+-
++}
+ {^IFTHREED
+ DO i=2,naccel3-1
+   xaccel3(i) = xaccel3(i-1) + dxaccel3

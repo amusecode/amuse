@@ -291,7 +291,9 @@ CONTAINS
         include 'amrvacdef.f'
         integer :: set_nbufferx2
         integer :: inputvalue
+{^NOONED
         nbufferx2 = inputvalue
+}
         set_nbufferx2 = 0   
     end function
 
@@ -299,7 +301,10 @@ CONTAINS
         include 'amrvacdef.f'
         integer :: get_nbufferx2
         integer :: outputvalue
+        outputvalue = 0
+{^NOONED
         outputvalue = nbufferx2
+}
         get_nbufferx2 = 0   
     end function
 
