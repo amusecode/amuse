@@ -6,14 +6,15 @@
 #include "src/lib/functions.h"
 #include "src/lib/utilis.h"
 #include <math.h>
+#include <map>
 
 using namespace std;
 
 typedef struct {
     double soft;
-	 double mass;                                        
+     double mass;                                        
     double radius;
-	 double x, y, z;                                     
+    double x, y, z;                                     
     double vx, vy, vz;                                  
 } dynamics_state;
 
@@ -53,7 +54,11 @@ int initialize_code(){
    GTW = 0.0;
    warm_start = 0; 
 	init = 0;
+    path = "tmp/";
+	GPUNAME="";
 	particle_id_counter = 0;
+        plummer_core = 0.0;
+        plummer_mass = 0.0;
 	if(rank == 0){
 		cout<<"NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file"<<endl;
       cout<<"NOTE_2: the evolve method requires an input time (in nbody units) greater than or equal of the maximum time step ( 't' > or = 'max_step') "<<endl;

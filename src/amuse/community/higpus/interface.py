@@ -40,7 +40,7 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
         function.addParameter('vz', dtype='float64', direction=function.IN,
                  description = "The initial velocity vector of the particle")
         function.addParameter('soft', dtype='float32', direction=function.IN,
-                 description = "Individual softening of the particle")
+                 description = "Individual softening of the particle", default = 0 )
         function.result_type = 'int32'
         return function
 
@@ -378,7 +378,7 @@ class HiGPUs(GravitationalDynamics):
             "set_gpu_name",                       
             "gpu_name",                           
             "gpu name",                           
-            default_value = "GeForce GTX 480" | units.none
+            default_value = ""
         )
        
         object.add_method_parameter(

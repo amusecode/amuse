@@ -792,7 +792,7 @@ HostError Calculate_potential_Energy(double4 *pos_CH, double4 *vel_CH, unsigned 
 		DeviceSafeCall(cudaSetDevice(devices[i]));
 		DeviceSafeCall(cudaMalloc(( void**)&E[i], N*sizeof(double)));
 		DeviceSafeCall(cudaMalloc((void **)&pos_CD[i],  N*sizeof(double4)));
-		DeviceSafeCall(cudaMalloc((void **)vel_CD[i],  N*sizeof(double4)));
+		DeviceSafeCall(cudaMalloc((void **)&vel_CD[i],  N*sizeof(double4)));
       
 		DeviceSafeCall(cudaMemcpy( pos_CD[i], pos_CH,  N*sizeof(double4),    cudaMemcpyHostToDevice ));
 	   DeviceSafeCall(cudaMemcpy( vel_CD[i], vel_CH,  N*sizeof(double4),    cudaMemcpyHostToDevice ));
@@ -867,11 +867,12 @@ HostError CudaInit(unsigned int *M, int NGPU, int rank, unsigned int *devices, s
         
 	int k = 0;
 	for(int i = 0; i < count; i++){
-		if(to_string(properties[i].name) != gpu_name)
+		if(gpu_name.length()>0 && to_string(properties[i].name) != gpu_name) {
 			continue;
-		else{
+		}else{
 			devices[k] = i;
 			k++;
+                        if(k >= NGPU) {break;}
 		}
 	}
 	if(k<NGPU)
