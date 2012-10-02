@@ -7,9 +7,12 @@ import time
 import urllib
 from optparse import OptionParser
 
+# mpiamrvac revisions in amuse
+# 145
+# 187
 
 class GetCodeFromSVN(object):
-    revision = '149'
+    revision = '187'
     username = 'studCMFA09'
     password = 'cpa9amrvac'
     url = 'https://svn.esat.kuleuven.be/amrvac/trunk'
@@ -26,7 +29,7 @@ class GetCodeFromSVN(object):
     def start(self):
         arguments = [
             'svn',
-            'export',
+            'co',
             '-r',
             self.revision,
             self.url,
@@ -110,7 +113,7 @@ class MyFancyUrlopener(urllib.FancyURLopener):
 class GetCodeFromHttp(object):
     url_template = "http://www.amusecode.org/codes/mpiamrvac-r{version}.tgz"
     filename_template = "mpiamrvac-r{version}.tgz"
-    version = "149"
+    version = "187"
     
     def directory(self):
         return os.path.abspath(os.path.dirname(__file__))
@@ -177,7 +180,7 @@ def new_option_parser():
     )
     result.add_option(
         "--version", 
-        default = '149',
+        default = '187',
         dest="version",
         help="svn version number to download",
         type="string"

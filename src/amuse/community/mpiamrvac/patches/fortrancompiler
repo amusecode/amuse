@@ -1,7 +1,7 @@
 Index: mpiamrvac/src/mpiamrvac/src/makefile
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/makefile	2011-11-02 10:12:12.000000000 +0100
-+++ mpiamrvac/src/mpiamrvac/src/makefile	2011-11-02 10:12:52.000000000 +0100
+--- mpiamrvac.orig/src/mpiamrvac/src/makefile	2012-10-02 11:39:05.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/makefile	2012-10-02 11:39:08.000000000 +0200
 @@ -29,7 +29,8 @@
  
  ###### ifort compiler (Intel Fortran on Linux)
@@ -11,4 +11,4 @@ Index: mpiamrvac/src/mpiamrvac/src/makefile
 +F90=$(MPIFC)
  FFLAGS = -c
  #F90FLAGS = -ffree-form -O3 
- ##F90FLAGS = -FR -implicitnone -O3 -Wl,-rpath -Wl,${LD_LIBRARY_PATH} -xP 
+ # following line has deprecated options, replace by line underneath

@@ -1,0 +1,24 @@
+Index: mpiamrvac/src/mpiamrvac/src/makefile
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/makefile	2012-10-02 11:39:08.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/makefile	2012-10-02 12:35:41.000000000 +0200
+@@ -185,7 +185,3 @@
+ libmpiamrvac.a: $(LIBOBJECTS)
+ 	ar ruv $@ $(LIBOBJECTS)
+ 	ranlib $@
+-
+-libmpiamrvac2d.a: $(LIBOBJECTS)
+-	ar ruv $@ $(LIBOBJECTS)
+-	ranlib $@
+Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2012-10-02 11:39:02.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2012-10-02 12:34:22.000000000 +0200
+@@ -3,6 +3,7 @@
+ !=============================================================================
+ !INCLUDE:amrvacnul.specialini.t
+ INCLUDE:amrvacnul.speciallog.t
++INCLUDE:amrvacnul.specialimpl.t
+ INCLUDE:amrvacnul.specialbound.t
+ !INCLUDE:amrvacnul.specialsource.t
+ 

@@ -25,8 +25,9 @@ CONTAINS
             initialize_code = -1
             return
         end if
+        inifile = parameters_filename
         
-        call readparameters(parameters_filename)
+        call readparameters()
         
         eqpar(gamma_) = 5.0d0/3.0d0
         refinement_level = 1

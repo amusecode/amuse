@@ -1,8 +1,8 @@
 Index: mpiamrvac/src/mpiamrvac/src/makefile
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/makefile	2011-10-26 16:18:54.000000000 +0200
-+++ mpiamrvac/src/mpiamrvac/src/makefile	2011-10-26 16:32:02.000000000 +0200
-@@ -54,11 +54,11 @@
+--- mpiamrvac.orig/src/mpiamrvac/src/makefile	2012-10-02 11:38:55.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/makefile	2012-10-02 11:39:05.000000000 +0200
+@@ -75,11 +75,11 @@
  ############### VACPreProcessor ################
  #For the dependency
  

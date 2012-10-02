@@ -919,6 +919,7 @@ class BuildOneCode(CodeCommand):
         if self.code_name is None:
             raise Exception("no code was specified")
         self.must_clean = self.clean == 'yes'
+        self.must_dist_clean = self.clean == 'dist'
     
     
     def subdirs_in_codes_dir(self):
@@ -962,6 +963,10 @@ class BuildOneCode(CodeCommand):
             if self.must_clean:
                 self.announce("cleaning " + x)
                 self.call(['make','-C', x, 'clean'], env=environment)
+                
+            if self.must_dist_clean:
+                self.announce("cleaning " + x)
+                self.call(['make','-C', x, 'distclean'], env=environment)
                         
             if self.is_mpi_enabled():
                 returncode, _ = self.call(['make','-C', x, 'all'], env = environment)

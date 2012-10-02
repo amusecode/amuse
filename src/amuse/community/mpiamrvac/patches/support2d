@@ -1,7 +1,7 @@
 Index: mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/amrvacusrpar.acceleration.t	2011-04-12 16:16:42.000000000 +0200
-+++ mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t	2011-04-12 16:16:42.000000000 +0200
+--- mpiamrvac.orig/src/mpiamrvac/src/amrvacusrpar.acceleration.t	2012-10-02 11:30:28.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t	2012-10-02 11:38:55.000000000 +0200
 @@ -16,7 +16,7 @@
  COMMON, DOUBLE PRECISION :: dxaccel3
  
@@ -13,8 +13,8 @@ Index: mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t
  
 Index: mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/amrvacusr.acceleration.t	2011-04-12 16:16:42.000000000 +0200
-+++ mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t	2011-04-12 16:16:42.000000000 +0200
+--- mpiamrvac.orig/src/mpiamrvac/src/amrvacusr.acceleration.t	2012-10-02 11:30:28.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t	2012-10-02 11:38:55.000000000 +0200
 @@ -100,7 +100,9 @@
      call findaccelblock(ix^D,ixI^L,x,iaccel^D)
      acc(ix^D,1) = accel(iaccel^D,1)
@@ -80,9 +80,9 @@ Index: mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t
  end subroutine setaccelgrid
 Index: mpiamrvac/src/mpiamrvac/src/makefile
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/makefile	2011-04-12 16:16:42.000000000 +0200
-+++ mpiamrvac/src/mpiamrvac/src/makefile	2011-04-12 16:16:42.000000000 +0200
-@@ -160,3 +160,7 @@
+--- mpiamrvac.orig/src/mpiamrvac/src/makefile	2012-10-02 11:27:51.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/makefile	2012-10-02 11:38:55.000000000 +0200
+@@ -184,3 +184,7 @@
  libmpiamrvac.a: $(LIBOBJECTS)
  	ar ruv $@ $(LIBOBJECTS)
  	ranlib $@
