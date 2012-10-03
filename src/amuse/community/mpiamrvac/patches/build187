@@ -1,7 +1,7 @@
 Index: mpiamrvac/src/mpiamrvac/src/makefile
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/makefile	2012-10-02 11:39:08.000000000 +0200
-+++ mpiamrvac/src/mpiamrvac/src/makefile	2012-10-02 12:35:41.000000000 +0200
+--- mpiamrvac.orig/src/mpiamrvac/src/makefile	2012-10-02 14:27:53.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/makefile	2012-10-02 14:27:53.000000000 +0200
 @@ -185,7 +185,3 @@
  libmpiamrvac.a: $(LIBOBJECTS)
  	ar ruv $@ $(LIBOBJECTS)
@@ -12,8 +12,8 @@ Index: mpiamrvac/src/mpiamrvac/src/makefile
 -	ranlib $@
 Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2012-10-02 11:39:02.000000000 +0200
-+++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2012-10-02 12:34:22.000000000 +0200
+--- mpiamrvac.orig/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2012-10-02 14:27:53.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2012-10-02 14:27:53.000000000 +0200
 @@ -3,6 +3,7 @@
  !=============================================================================
  !INCLUDE:amrvacnul.specialini.t
@@ -21,4 +21,21 @@ Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse
 +INCLUDE:amrvacnul.specialimpl.t
  INCLUDE:amrvacnul.specialbound.t
  !INCLUDE:amrvacnul.specialsource.t
+ 
+Index: mpiamrvac/src/mpiamrvac/src/amrvacdef.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/amrvacdef.t	2012-07-20 14:38:10.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/amrvacdef.t	2012-10-03 09:21:09.000000000 +0200
+@@ -123,9 +123,9 @@
+ COMMON, LOGICAL:: internalboundary
+ 
+ !File parameters
+-COMMON, CHARACTER*79 :: inifile,filenameout,filenameini,filenamelog
+-COMMON, CHARACTER*79 :: fileheadout,wnames,primnames
+-COMMON, CHARACTER*79 :: typefilelog
++COMMON, CHARACTER*2048 :: inifile,filenameout,filenameini,filenamelog
++COMMON, CHARACTER*2048 :: fileheadout,wnames,primnames
++COMMON, CHARACTER*2048 :: typefilelog
+ COMMON, INTEGER :: snapshotini
+ COMMON, LOGICAL :: sliceascii
  
