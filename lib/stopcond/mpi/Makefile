@@ -5,7 +5,7 @@ include ${AMUSE_DIR}/config.mk
 all:stopcondf.o
 	
 %.o: ../%.F90
-	$(FC) $(FCFLAGS) -c -o $@ $<
+	$(MPIFC) $(FCFLAGS) -DMPILIB -c -o $@ $<
 
 
 clean:

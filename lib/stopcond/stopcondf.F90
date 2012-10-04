@@ -1,8 +1,5 @@
 module StoppingConditions
 
-#if defined( MPILIB ) && !defined(NOMPI)
-    use mpi
-#endif
 
     implicit none
     
@@ -17,13 +14,13 @@ module StoppingConditions
     
     integer, private, save :: type_of_stopping_condition_set(0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
     integer, private, save :: index_of_particle_in_stopping_condition(&
-&      0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET,&
-&      0:MAX_NUMBER_OF_PARTICLES_PER_INDEX)
+&      0:MAX_NUMBER_OF_PARTICLES_PER_INDEX,&
+&      0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
 
     integer, private, save :: local_type_of_stopping_condition_set(0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
     integer, private, save :: local_index_of_particle_in_stopping_condition(&
-&      0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET,&
-&      0:MAX_NUMBER_OF_PARTICLES_PER_INDEX)
+&      0:MAX_NUMBER_OF_PARTICLES_PER_INDEX,&
+&      0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
 
     
     integer*4, private, save :: enabled_conditions = 0
@@ -200,11 +197,11 @@ function get_stopping_condition_info(index, type, number_of_particles)
     
     number_of_particles = 0
     do i = 0, MAX_NUMBER_OF_PARTICLES_PER_INDEX
-        id = index_of_particle_in_stopping_condition(index, i);
+        id = index_of_particle_in_stopping_condition(i, index);
         if (id >= 0) then
         
-            index_of_particle_in_stopping_condition(index, i) = -1;
-            index_of_particle_in_stopping_condition(index, number_of_particles) = id;
+            index_of_particle_in_stopping_condition(i, index) = -1;
+            index_of_particle_in_stopping_condition(number_of_particles, index) = id;
             number_of_particles = number_of_particles + 1;
             
         end if
@@ -234,7 +231,7 @@ function get_stopping_condition_particle_index(index, index_in_the_condition, in
     end if
     
     
-    index_of_particle = index_of_particle_in_stopping_condition(index, index_in_the_condition)
+    index_of_particle = index_of_particle_in_stopping_condition(index_in_the_condition, index)
     get_stopping_condition_particle_index = 0
 end function
 
@@ -257,7 +254,7 @@ function next_index_for_stopping_condition()
     end if
     
     do i = 0 , MAX_NUMBER_OF_PARTICLES_PER_INDEX
-        index_of_particle_in_stopping_condition(number_of_stopping_conditions_set, i) = -1
+        index_of_particle_in_stopping_condition(i, number_of_stopping_conditions_set) = -1
     end do
     
     next_index_for_stopping_condition = number_of_stopping_conditions_set
@@ -301,7 +298,7 @@ function set_stopping_condition_particle_index(index, index_in_the_condition, id
 	return
     end if
     
-    index_of_particle_in_stopping_condition(index, index_in_the_condition) = id_of_the_particle
+    index_of_particle_in_stopping_condition(index_in_the_condition, index) = id_of_the_particle
     set_stopping_condition_particle_index = 0
 end function
 
@@ -432,28 +429,42 @@ end function
 
 
 function mpi_setup_stopping_conditions()
+
+#if defined( MPILIB ) && !defined(NOMPI)
+    use mpi
+#endif
+    implicit none
+    
     integer :: mpi_setup_stopping_conditions
     integer :: error
     
     call MPI_Comm_rank(MPI_COMM_WORLD, sc_mpi_rank, error)
     if (error .NE. 0) then
-	mpi_setup_stopping_conditions = -1
-	return
+        mpi_setup_stopping_conditions = -1
+        return
     end if
     call MPI_Comm_size(MPI_COMM_WORLD, sc_mpi_size, error)
     if (error .NE. 0) then
-	mpi_setup_stopping_conditions = -1
-	return
+        mpi_setup_stopping_conditions = -1
+        return
     end if
     mpi_setup_stopping_conditions = 0
 end function
 
 function mpi_collect_stopping_conditions()
+#if defined( MPILIB ) && !defined(NOMPI)
+    use mpi
+#endif
+    implicit none
     integer :: mpi_collect_stopping_conditions
     mpi_collect_stopping_conditions = 0
 end function
 
 function mpi_distribute_stopping_conditions()
+#if defined( MPILIB ) && !defined(NOMPI)
+    use mpi
+#endif
+    implicit none
     integer :: mpi_distribute_stopping_conditions
     integer :: i, error, offset
     integer :: local_number_of_stopping_conditions_set
@@ -467,51 +478,54 @@ function mpi_distribute_stopping_conditions()
     
     call MPI_Allreduce(set_conditions, set, 1, MPI_INTEGER,  MPI_BOR, MPI_COMM_WORLD, error)
     
-    set_conditions = set;
+    set_conditions = set
     
     call MPI_Gather(number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INT, 0, MPI_COMM_WORLD, error)
+    
     if (sc_mpi_rank .EQ. 0) then
-	local_number_of_stopping_conditions_set = 0
-	
-	do i = 1, sc_mpi_size
+        local_number_of_stopping_conditions_set = 0
+    
+        do i = 1, sc_mpi_size
             local_number_of_stopping_conditions_set = local_number_of_stopping_conditions_set + counts(i)
         end do
     end if
+    
     if (sc_mpi_rank .EQ. 0) then
         offset = 0
-	do i = 1, sc_mpi_size
+        do i = 1, sc_mpi_size
             displs(i) = offset;
             offset = offset + counts(i)
         end do
     end if
     
     call MPI_Gatherv( &
-	type_of_stopping_condition_set, &
-	number_of_stopping_conditions_set, &
-	MPI_INTEGER, &
-	local_type_of_stopping_condition_set, &
-	counts, &
-	displs, &
-	MPI_INTEGER, &
-	0, &
-	MPI_COMM_WORLD, &
-	error&
+        type_of_stopping_condition_set, &
+        number_of_stopping_conditions_set, &
+        MPI_INTEGER, &
+        local_type_of_stopping_condition_set, &
+        counts, &
+        displs, &
+        MPI_INTEGER, &
+        0, &
+        MPI_COMM_WORLD, &
+        error&
     )
     
-    
     if (sc_mpi_rank .EQ. 0) then
+    
         offset = 0
-	do i = 1, sc_mpi_size
+        do i = 1, sc_mpi_size
             displs(i) = offset;
-            counts(i) = counts(i) * MAX_NUMBER_OF_PARTICLES_PER_INDEX;
+            counts(i) = counts(i) * (MAX_NUMBER_OF_PARTICLES_PER_INDEX+1);
             offset = offset + counts(i)
         end do
+        
     end if
 
 
     call MPI_Gatherv( &
-	index_of_particle_in_stopping_condition,&
-        number_of_stopping_conditions_set*MAX_NUMBER_OF_PARTICLES_PER_INDEX,&
+        index_of_particle_in_stopping_condition,&
+        number_of_stopping_conditions_set*(MAX_NUMBER_OF_PARTICLES_PER_INDEX+1),&
         MPI_INTEGER,&
         local_index_of_particle_in_stopping_condition,&
         counts, &
@@ -521,9 +535,10 @@ function mpi_distribute_stopping_conditions()
         MPI_COMM_WORLD&
     );
     if (sc_mpi_rank .EQ. 0) then
+    
         number_of_stopping_conditions_set = local_number_of_stopping_conditions_set;
-	index_of_particle_in_stopping_condition = local_index_of_particle_in_stopping_condition
-	type_of_stopping_condition_set = local_type_of_stopping_condition_set
+        index_of_particle_in_stopping_condition = local_index_of_particle_in_stopping_condition
+        type_of_stopping_condition_set = local_type_of_stopping_condition_set
     end if
     
 end function
@@ -546,132 +561,13 @@ end function
 function mpi_distribute_stopping_conditions()
     integer :: mpi_distribute_stopping_conditions
     mpi_distribute_stopping_conditions = 0
+    
     if(enabled_conditions .EQ. 0) then
-	return
+            return
     end if
     
 end function
 
-#endif
-
-#if 0
-//------------
-
-
-int is_condition_enabled() {
-    return 0;
-}
-
-
-
-
-
-
-#if defined( MPILIB ) && !defined(NOMPI)
-
-#include <mpi.h>
-static int sc_mpi_rank;
-
-int mpi_setup_stopping_conditions() {
-    int error;
-    error = MPI_Comm_rank(MPI_COMM_WORLD, &sc_mpi_rank);
-    if(error) {
-	return -1;
-    }
-    error = MPI_Comm_size(MPI_COMM_WORLD, &sc_mpi_size);
-    if(error) {
-	return -1;
-    }
-    return 0;
-}
-
-int mpi_distribute_stopping_conditions() {
-    if(sc_mpi_size <= 1) {
-	return 0;
-    }
-    if(!enabled_conditions) {return 0;}
-}
-
-static int local_type_of_stopping_condition_set[MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET];
-static int local_index_of_particle_in_stopping_condition[MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET*MAX_NUMBER_OF_PARTICLES_PER_INDEX];
-
-int mpi_collect_stopping_conditions() {
-    if(!enabled_conditions) {return 0;}
-    int i;
-    int local_number_of_stopping_conditions_set;
-    int counts[sc_mpi_size];
-    int displs[sc_mpi_size];
-    memset(counts, 0, sizeof(counts));
-    memset(displs, 0, sizeof(displs));
-    long set = 0;
-    
-    MPI_Allreduce(&set_conditions, &set, 1, MPI_INTEGER,  MPI_BOR, MPI_COMM_WORLD);
-    
-    set_conditions = set;
-    
-    MPI_Gather(&number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    
-    if(sc_mpi_rank == 0) {
-	    local_number_of_stopping_conditions_set = 0;
-        for(i = 0; i < sc_mpi_size; i++) {
-            local_number_of_stopping_conditions_set += counts[i];
-        }
-    }
-    if(sc_mpi_rank == 0) {
-        int x = 0;
-        for(i = 0; i < sc_mpi_size; i++) {
-            displs[i] = x;
-            x += counts[i];
-        }
-    }
-
-    MPI_Gatherv(
-	    type_of_stopping_condition_set, 
-	    number_of_stopping_conditions_set, 
-	    MPI_INTEGER,
-	    local_type_of_stopping_condition_set, 
-	    counts, 
-	    displs, 
-	    MPI_INTEGER,
-	    0,
-	    MPI_COMM_WORLD
-	);
-
-    if(sc_mpi_rank == 0) {
-        int x = 0;
-        for(i = 0; i < sc_mpi_size; i++) {
-            displs[i] = x;
-            counts[i] *= MAX_NUMBER_OF_PARTICLES_PER_INDEX;
-            x += counts[i];
-        }
-    }
-
-    MPI_Gatherv(
-	    index_of_particle_in_stopping_condition,
-        number_of_stopping_conditions_set*MAX_NUMBER_OF_PARTICLES_PER_INDEX,
-        MPI_INTEGER,
-        local_index_of_particle_in_stopping_condition,
-        counts, 
-        displs,
-        MPI_INTEGER,
-        0, 
-        MPI_COMM_WORLD
-    );
-
-    if(sc_mpi_rank == 0) {
-        number_of_stopping_conditions_set = local_number_of_stopping_conditions_set;
-	    memcpy(index_of_particle_in_stopping_condition, local_index_of_particle_in_stopping_condition, sizeof(index_of_particle_in_stopping_condition));
-	    memcpy(type_of_stopping_condition_set, local_type_of_stopping_condition_set, sizeof(type_of_stopping_condition_set));
-    }
-}
-
-#else
-
-int mpi_setup_stopping_conditions() {sc_mpi_size = 1; return 0;}
-int mpi_collect_stopping_conditions() {return 0;}
-int mpi_distribute_stopping_conditions() {return 0;}
-
-#endif
 #endif
 
 end module
