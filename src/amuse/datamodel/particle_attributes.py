@@ -750,7 +750,7 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
        stack=[p]
        currentcc=[p]
        
-       while len(stack)>0:
+       while len(stack)>0 and len(tocheck)>0:
          p=stack.pop()
          
          d=distfunc(parts[p],parts[tocheck])
