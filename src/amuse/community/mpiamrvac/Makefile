@@ -27,6 +27,12 @@ CODELIB2D = $(TWOD_BUILDDIR)/$(LIBNAME)
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondf
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
+
+SCMPILIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondfmpi
+SCMPIINC ?= -I$(AMUSE_DIR)/lib/stopcond/mpi
+
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_svn.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 all: mpiamrvac_worker 
@@ -102,33 +108,33 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MpiAmrVacInterface -o $@
 
 mpiamrvac_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(CXXFLAGS) -I$(BUILDDIR) $< $(OBJS) $(CODELIB) -o $@
+	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(BUILDDIR) $< $(OBJS) $(CODELIB) $(SCMPILIBS) -o $@
 	
 mpiamrvac_worker_2d: worker_code.f90 $(CODELIB2D) $(OBJS2D)
-	$(MPIFC) $(CXXFLAGS) -I$(TWOD_BUILDDIR) $< $(OBJS2D) $(CODELIB2D) -o $@
+	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR) $< $(OBJS2D) $(CODELIB2D) $(SCMPILIBS) -o $@
 	
 mpiamrvac_worker_1d: worker_code.f90 $(CODELIB1D) $(OBJS1D)
-	$(MPIFC) $(CXXFLAGS) -I$(ONED_BUILDDIR) $< $(OBJS1D) $(CODELIB1D) -o $@
+	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(ONED_BUILDDIR) $< $(OBJS1D) $(CODELIB1D) $(SCMPILIBS) -o $@
 	
 
 $(BUILDDIR)/interface.f90: interface.t
 	$(BUILDDIR)/vacpp.pl $< > $@
     
 $(BUILDDIR)/interface.o: $(BUILDDIR)/interface.f90
-	$(FC) $(FFLAGS) -I$(BUILDDIR) -c -o $@ $<
+	$(FC) $(FFLAGS) $(SCMPIINC) -I$(BUILDDIR) -c -o $@ $<
     
 
 $(TWOD_BUILDDIR)/interface.f90: interface.t
 	$(TWOD_BUILDDIR)/vacpp.pl $< > $@
     
 $(TWOD_BUILDDIR)/interface.o: $(TWOD_BUILDDIR)/interface.f90
-	$(FC) $(FFLAGS) -I$(TWOD_BUILDDIR) -c -o $@ $<
+	$(FC) $(FFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR) -c -o $@ $<
     
 $(ONED_BUILDDIR)/interface.f90: interface.t
 	$(ONED_BUILDDIR)/vacpp.pl $< > $@
     
 $(ONED_BUILDDIR)/interface.o: $(ONED_BUILDDIR)/interface.f90
-	$(FC) $(FFLAGS) -I$(ONED_BUILDDIR) -c -o $@ $<
+	$(FC) $(FFLAGS) $(SCMPIINC) -I$(ONED_BUILDDIR) -c -o $@ $<
     
 
 %.o: %.f90

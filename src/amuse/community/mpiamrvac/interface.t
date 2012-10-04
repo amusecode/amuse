@@ -9,16 +9,19 @@ MODULE mpiamrvac_interface
 CONTAINS
 
     FUNCTION initialize_code()
+        use StoppingConditions
+        
         include 'amrvacdef.f'
         INTEGER initialize_code
         logical :: file_exists
+        integer :: error
         
         call MPI_COMM_RANK(MPI_COMM_WORLD,mype,ierrmpi)
         call MPI_COMM_SIZE(MPI_COMM_WORLD,npe,ierrmpi)
 
         icomm=MPI_COMM_WORLD
         
-        
+        error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
         INQUIRE(FILE= TRIM(parameters_filename), EXIST=file_exists)
         
         if (.NOT.file_exists) THEN
@@ -3102,17 +3105,27 @@ CONTAINS
     end function
     
     
-    function evolve_model(tend) 
+    function evolve_model(tend)
+        use StoppingConditions
+        
         include 'amrvacdef.f'
         
         integer :: evolve_model
         double precision :: tend
 
+        integer :: is_number_of_steps_detection_enabled
+        integer :: max_number_of_steps
         integer :: level, ifile
+        integer :: error
         double precision :: time_in, timeio0, timeio_tot, timegr0, timegr_tot,&
             timeloop, timeloop0
        
         
+        error = reset_stopping_conditions()
+        error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, is_number_of_steps_detection_enabled)
+        error = get_stopping_condition_number_of_steps_parameter(max_number_of_steps)
+
+
         time_advance=.true. 
         time_accurate=.true.
         

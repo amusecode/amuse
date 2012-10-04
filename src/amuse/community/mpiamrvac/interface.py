@@ -6,9 +6,9 @@ from amuse.community.interface.common import CommonCode
 
 import os
 
-class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface):
+class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditionInterface):
     
-    use_modules = ['mpiamrvac_interface']
+    use_modules = ['mpiamrvac_interface', 'StoppingConditions']
     
     MODE_NORMAL = 'normal'
     MODE_2D   = '2d'
