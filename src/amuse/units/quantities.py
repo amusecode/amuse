@@ -284,6 +284,8 @@ class ScalarQuantity(Quantity):
     def __getstate__(self):
         return (self.unit, self.number)
 
+    def round(self, decimals = 0):
+        return new_quantity(numpy.round(self.number, decimals), self.unit)
 
     def new_zeros_array(self, length):
         array = numpy.zeros(length, dtype=self.unit.dtype)

@@ -22,6 +22,8 @@ CONTAINS
         icomm=MPI_COMM_WORLD
         
         error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
+        error = set_support_for_condition(TIMEOUT_DETECTION)
+        
         INQUIRE(FILE= TRIM(parameters_filename), EXIST=file_exists)
         
         if (.NOT.file_exists) THEN
@@ -3113,18 +3115,23 @@ CONTAINS
         integer :: evolve_model
         double precision :: tend
 
-        integer :: is_number_of_steps_detection_enabled
+        integer :: is_number_of_steps_detection_enabled, is_timeout_detection_enabled
         integer :: max_number_of_steps
         integer :: level, ifile
         integer :: error
         integer :: localsteps, stopping_index
         double precision :: time_in, timeio0, timeio_tot, timegr0, timegr_tot,&
             timeloop, timeloop0
+        double precision :: loop_timeout, time_spent
        
         
         error = reset_stopping_conditions()
-        error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, is_number_of_steps_detection_enabled)
+        error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, &
+                    is_number_of_steps_detection_enabled)
         error = get_stopping_condition_number_of_steps_parameter(max_number_of_steps)
+        error = is_stopping_condition_enabled(TIMEOUT_DETECTION, &
+                    is_timeout_detection_enabled)
+        error = get_stopping_condition_timeout_parameter(loop_timeout)
 
 
         time_advance=.true. 
@@ -3141,6 +3148,8 @@ CONTAINS
                pgeoCoarse,.false.)
 
         !  ------ start of integration loop. ------------------
+        
+        call MPI_BARRIER(icomm,ierrmpi)
         timeloop0=MPI_WTIME()
         if (mype==0) then
            write(*,'(a,f12.3,a)')'BCs before Advance took    : ',timeloop0&
@@ -3193,7 +3202,23 @@ CONTAINS
               error = set_stopping_condition_info(stopping_index,&
                 NUMBER_OF_STEPS_DETECTION)
               exit time_evol
-           end if          
+           end if    
+           if (is_timeout_detection_enabled.NE.0) then
+              
+              if(.NOT. addmpibarrier) then
+                !need to add the barrier
+                !if not already done before, to make sure all processes will
+                !stop
+                call MPI_BARRIER(icomm,ierrmpi)
+              end if
+              time_spent = MPI_WTIME()-timeloop0
+              if (time_spent .GE. loop_timeout) then
+                stopping_index = next_index_for_stopping_condition()
+                error = set_stopping_condition_info(stopping_index,&
+                    TIMEOUT_DETECTION)
+                exit time_evol
+              end if
+           end if                
            if(it>900000) it = slowsteps+10
            
         end do time_evol

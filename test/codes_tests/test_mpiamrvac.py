@@ -664,3 +664,62 @@ class TestMpiAmrVac(TestWithMPI):
         self.assertTrue(rho[0] < 0.015 | density)
         
         instance.stop()
+
+    def test11(self): 
+        instance=self.new_instance(MpiAmrVac)
+        instance.parameters.mesh_size = (10,10,10)
+        instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
+        instance.parameters.maximum_number_of_grid_levels = 1
+        instance.parameters.x_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.y_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.z_boundary_conditions = ("periodic", "periodic")
+        instance.parameters.stopping_conditions_timeout = 0.1 | units.s
+        
+        gamma = 5.0 / 3.0
+        
+        grid = datamodel.Grid.create((10,10,10), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        
+        density = generic_unit_system.density
+        momentum =  generic_unit_system.speed * generic_unit_system.density
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+        
+        
+        grid.rho = 0.01 | density
+        grid.rhovx = 0.1 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.0 | momentum
+        grid[0:5].rho = 0.015 | density
+        
+        p = 1.0 | (generic_unit_system.mass / (generic_unit_system.length * generic_unit_system.time**2))
+        
+        grid.energy =  p / (gamma - 1)
+        grid.energy += 0.5 * (grid.rhovx ** 2  + grid.rhovy ** 2 + grid.rhovz ** 2) / grid.rho
+        
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        channel = grid.new_channel_to(igrid)
+        channel.copy()
+        
+        instance.stopping_conditions.timeout_detection.enable()
+        instance.evolve_model(1.0 | generic_unit_system.time)
+        
+        self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
+        rho = instance.itergrids().next().rho[...,0,0]
+        print rho
+        print instance.model_time
+        self.assertAlmostRelativeEquals(rho.mean(), 0.0125 | density)
+        self.assertTrue( instance.model_time < 1.0 | generic_unit_system.time)
+        
+        
+        instance.stopping_conditions.timeout_detection.disable()
+        print instance.model_time.round(2)
+        tnext =  instance.model_time.round(2) + (0.2 | generic_unit_system.time)
+        instance.evolve_model(tnext)
+        rho = instance.itergrids().next().rho[...,0,0]
+        print rho
+        self.assertAlmostRelativeEquals( instance.model_time.round(2) ,tnext)
+        self.assertAlmostRelativeEquals(rho.mean(), 0.0125 | density)
+        self.assertTrue(rho[0] < 0.015 | density)
+        
+        instance.stop()
