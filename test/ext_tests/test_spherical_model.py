@@ -1,22 +1,22 @@
 import numpy
 from amuse.test.amusetest import TestCase
-
 from amuse.support.exceptions import AmuseWarning, AmuseException
-
 from amuse.ext.spherical_model import *
 from amuse.units import units
+
+
 class TestUniformSphericalDistribution(TestCase):
     
     def test1(self):
-        instance = UniformSphericalDistribution(42)
+        instance = UniformSphericalDistribution(4200)
         x, y, z = instance.result
-        self.assertEqual(len(x), 42)
+        self.assertEqual(len(x), 4200)
         r_squared = x*x + y*y + z*z
-        self.assertTrue(numpy.all( r_squared < 1.0 ))
-        self.assertFalse(numpy.all( r_squared < 0.9**2 ))
+        self.assertAlmostEqual(r_squared.max(), 1.0)
+        self.assertAlmostEqual(r_squared.min(), 0.0, 1)
     
     def test2(self):
-        for n_i in [42, 103, 321]:
+        for n_i in [1003, 3210]:
             for type_i in ["cubic", "bcc", "body_centered_cubic", "random"]:
                 for offset_i in [(0.406645, 0.879611, 0.573737), (0.939868, 0.796048, 0.236403)]:
                     numpy.random.seed(12345)
@@ -24,8 +24,8 @@ class TestUniformSphericalDistribution(TestCase):
                     x, y, z = instance.result
                     self.assertEqual(len(x), n_i)
                     r_squared = x*x + y*y + z*z
-                    self.assertTrue(numpy.all( r_squared < 1.0**2 ))
-                    self.assertFalse(numpy.all(r_squared < 0.9**2 ))
+                    self.assertAlmostEqual(r_squared.max(), 1.0, 2)
+                    self.assertAlmostEqual(r_squared.min(), 0.0, 1)
     
     def test3(self):
         instance = UniformSphericalDistribution(1234, type="cubic", offset=(0.07974498,  0.77741132,  0.2993995))
@@ -63,11 +63,11 @@ class TestUniformSphericalDistribution(TestCase):
     
     def test6(self):
         print "Test new_uniform_spherical_particle_distribution"
-        particles = new_uniform_spherical_particle_distribution(1421, 1 | units.m, 1 | units.kg, type="cubic")
-        self.assertEqual(len(particles), 1421)
+        particles = new_uniform_spherical_particle_distribution(14321, 1 | units.m, 1 | units.kg, type="cubic")
+        self.assertEqual(len(particles), 14321)
         r_squared = particles.position.lengths_squared()
-        self.assertTrue(numpy.all( r_squared < (1.0 | units.m)**2))
-        self.assertFalse(numpy.all( r_squared < (0.9 | units.m)**2 ))
+        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2)
+        self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, 2)
         self.assertAlmostEqual(particles.total_mass(), 1 | units.kg)
         select_half_radius = numpy.where(r_squared < (0.5 | units.m)**2)
         self.assertAlmostEqual(particles.mass[select_half_radius].sum(), 1.0/8.0 | units.kg, places=3)
@@ -118,29 +118,42 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
         
     def test10(self):
+        print "Test new_uniform_spherical_particle_distribution, glass"
         numpy.random.seed(12345)
-        # setting target_rms to 20% for test speed-up
-        instance = UniformSphericalDistribution(1234, type="glass", target_rms = 0.3)
-        x, y, z = instance.result
-        self.assertEqual(len(x), 1234)
-        r_squared = x*x + y*y + z*z
-        self.assertTrue(numpy.all( r_squared < 1.0**2 ))
-        self.assertFalse(numpy.all(r_squared < 0.9**2 ))
+        # setting target_rms to 30% for test speed-up
+        particles = new_uniform_spherical_particle_distribution(1421, 1|units.m, 1|units.kg, 
+            type="glass", target_rms=0.3)
+        self.assertEqual(len(particles), 1421)
+        r_squared = particles.position.lengths_squared()
+        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2)
+        self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, 1)
     
     def test11(self):
         print "Test new_uniform_spherical_particle_distribution, sobol sequence"
-        particles = new_uniform_spherical_particle_distribution(1421, 1 | units.m, 1 | units.kg, type="sobol")
-        self.assertEqual(len(particles), 1421)
+        particles = new_uniform_spherical_particle_distribution(14321, 1 | units.m, 1 | units.kg, type="sobol")
+        self.assertEqual(len(particles), 14321)
         r_squared = particles.position.lengths_squared()
-        self.assertTrue(numpy.all( r_squared < (1.0 | units.m)**2))
-        self.assertFalse(numpy.all( r_squared < (0.9 | units.m)**2 ))
+        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2)
+        self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, 2)
+        self.assertAlmostEqual(particles.total_mass(), 1 | units.kg)
+        select_half_radius = numpy.where(r_squared < (0.5 | units.m)**2)
+        self.assertAlmostEqual(particles.mass[select_half_radius].sum(), 1.0/8.0 | units.kg, places=2)
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
+    
+    def test12(self):
+        print "Test new_uniform_spherical_particle_distribution, face-centered cubic"
+        particles = new_uniform_spherical_particle_distribution(14321, 1|units.m, 1|units.kg, type="fcc")
+        self.assertEqual(len(particles), 14321)
+        r_squared = particles.position.lengths_squared()
+        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2)
+        self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, 2)
         self.assertAlmostEqual(particles.total_mass(), 1 | units.kg)
         select_half_radius = numpy.where(r_squared < (0.5 | units.m)**2)
         self.assertAlmostEqual(particles.mass[select_half_radius].sum(), 1.0/8.0 | units.kg, places=2)
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
     
 
-class TestXEnclosedMassInterpolator(TestCase):
+class TestEnclosedMassInterpolator(TestCase):
     
     def test1(self):
         instance = EnclosedMassInterpolator()

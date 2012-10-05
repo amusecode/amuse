@@ -117,6 +117,25 @@ class UniformSphericalDistribution(object):
     
     body_centered_cubic = bcc
     
+    def fcc(self):
+        n1D = numpy.ceil((self.number_of_particles / 2.0)**(1.0/3.0)) + 1
+        delta = 1.0 / (n1D - 1.5)
+        x, y, z = numpy.mgrid[-1.0-2*delta : 1-delta : n1D*1j,
+                              -1.0-2*delta : 1-delta : n1D*1j,
+                              -1.0-2*delta : 1-delta : n1D*1j]
+        x0 = x.flatten() + self.offset[0] * 2 * delta
+        y0 = y.flatten() + self.offset[1] * 2 * delta
+        z0 = z.flatten() + self.offset[2] * 2 * delta
+        x1 = x0 + delta
+        y1 = y0 + delta
+        z1 = z0 + delta
+        x = numpy.concatenate((x0, x1, x0, x1))
+        y = numpy.concatenate((y0, y1, y1, y0))
+        z = numpy.concatenate((z0, z0, z1, z1))
+        return self._cutout_sphere(x, y, z)
+    
+    face_centered_cubic = fcc
+    
     def _random_cube(self, number_of_particles):
         x = numpy.random.uniform(-1., 1., number_of_particles)
         y = numpy.random.uniform(-1., 1., number_of_particles)
@@ -211,10 +230,9 @@ class UniformSphericalDistribution(object):
     
     def _cutout_sphere(self, x, y, z):
         r_squared = x*x + y*y + z*z
-        r_squared_max = numpy.sort(r_squared)[self.number_of_particles]
-        r_max = numpy.sqrt(r_squared_max)
-        select_sphere = numpy.where( r_squared < r_squared_max )
-        return x[select_sphere]/r_max, y[select_sphere]/r_max, z[select_sphere]/r_max
+        indices = numpy.argsort(r_squared)[:self.number_of_particles]
+        r_max = numpy.sqrt(r_squared[indices[-1]])
+        return x[indices]/r_max, y[indices]/r_max, z[indices]/r_max
     
     @property
     def result(self):
