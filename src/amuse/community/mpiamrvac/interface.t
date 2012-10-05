@@ -3117,6 +3117,7 @@ CONTAINS
         integer :: max_number_of_steps
         integer :: level, ifile
         integer :: error
+        integer :: localsteps, stopping_index
         double precision :: time_in, timeio0, timeio_tot, timegr0, timegr_tot,&
             timeloop, timeloop0
        
@@ -3133,10 +3134,8 @@ CONTAINS
         time_in=MPI_WTIME()
         timeio_tot=zero
         timegr_tot=zero
-
+        localsteps=0
         itmin=it
-        
-        print *, "IT", it
         
         call getbc(t,ixG^LL,pw,pwCoarse,pgeo,&
                pgeoCoarse,.false.)
@@ -3169,7 +3168,7 @@ CONTAINS
            if(mype==0.and..false.) print *,'enters advance for it=',it
            call advance(it)
            if(mype==0.and..false.) print *,'done advance for it=',it
-
+            
            if((.not.time_accurate).or.(residmin>smalldouble)) then
               call getresidual(it)
            endif 
@@ -3187,7 +3186,14 @@ CONTAINS
            it = it + 1
            if (time_accurate) t = t + dt
            if(addmpibarrier) call MPI_BARRIER(icomm,ierrmpi)
-           
+           localsteps = localsteps + 1
+           if (is_number_of_steps_detection_enabled.NE.0 .AND. &
+              localsteps.GE.max_number_of_steps) then
+              stopping_index = next_index_for_stopping_condition()
+              error = set_stopping_condition_info(stopping_index,&
+                NUMBER_OF_STEPS_DETECTION)
+              exit time_evol
+           end if          
            if(it>900000) it = slowsteps+10
            
         end do time_evol

@@ -2147,6 +2147,8 @@ class MpiAmrVac(CommonCode):
 
     def __init__(self, unit_converter = None, **options):
         self.unit_converter = unit_converter
+        self.stopping_conditions = StoppingConditions(self)
+        
         CommonCode.__init__(self,  MpiAmrVacInterface(**options), **options)
         
         self.set_parameters_filename(self.default_parameters_filename)
@@ -2363,6 +2365,7 @@ class MpiAmrVac(CommonCode):
             (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
+        self.stopping_conditions.define_methods(object)
         
     def define_parameters(self, object):
         
@@ -2555,6 +2558,7 @@ class MpiAmrVac(CommonCode):
             "the maximum number of grid levels that can be used during the simulation, including the base grid level", 
             default_value = 3
         )
+        self.stopping_conditions.define_parameters(object)
         
         
 
