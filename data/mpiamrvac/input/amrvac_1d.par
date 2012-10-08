@@ -1,0 +1,54 @@
+ &testlist
+ /
+
+ &filelist
+        filenamelog='data/mpiamrvac/output'
+        filenameout='data/mpiamrvac/output'
+        primnames= 'rho v1 v2 p'
+/
+
+ &savelist
+        itsave(1,1)=0
+        itsave(1,2)=0
+        dtsave(2)=0.05d0
+ /
+
+ &stoplist
+        tmax=1.0d0
+        dtmin=1.D-6
+ /
+
+ &methodlist
+        wnames=       'rho m1 e'
+        fileheadout=  'amuse11'
+        fileheadout=  'rt_hd11'
+        typeadvance=  'twostep'
+        typefull1=    2*'tvdlf',10*'tvdmu'
+        typepred1=    2*'tvdlf',10*'tvdmu'
+        typelimiter1= 13*'woodward'
+        typelimited='predictor'
+        dimsplit=.false.
+        sourceunsplit=.true.
+        sourcesplit=.false.
+ /
+
+ &boundlist
+        dixB=   2
+        typeB=   3*'periodic',3*'periodic'
+/
+
+ &amrlist
+        errorestimate=3
+        mxnest=3
+        tol=13*0.5d0
+        nxlone1=24
+        xprobmin1=-0.5d0
+        xprobmax1=0.5d0
+        iprob=6
+ /
+
+ &paramlist
+        typecourant='maxsum'
+        courantpar=0.9d0
+        slowsteps=10
+ /

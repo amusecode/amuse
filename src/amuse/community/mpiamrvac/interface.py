@@ -12,6 +12,7 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
     
     MODE_NORMAL = 'normal'
     MODE_2D   = '2d'
+    MODE_1D   = '1d'
     
     def __init__(self, mode = MODE_NORMAL, **options):
         CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
@@ -22,6 +23,8 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
             return 'mpiamrvac_worker'
         elif mode == self.MODE_2D:
             return 'mpiamrvac_worker_2d'
+        elif mode == self.MODE_1D:
+            return 'mpiamrvac_worker_1d'
         else:
             return 'mpiamrvac_worker'
     
@@ -52,6 +55,8 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
         """
         if self._mode == self.MODE_2D:
             return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac_2d.par')
+        elif self._mode == self.MODE_1D:
+            return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac_1d.par')
         else:
             return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac.par')
     

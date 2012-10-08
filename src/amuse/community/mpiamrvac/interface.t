@@ -21,6 +21,7 @@ CONTAINS
 
         icomm=MPI_COMM_WORLD
         
+        print * , "NW IS:", nw
         error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
         error = set_support_for_condition(TIMEOUT_DETECTION)
         
@@ -3270,7 +3271,6 @@ CONTAINS
         integer :: idim
         character(len=25), intent(in) :: lowx,highx,lowy,highy,lowz,highz
         
-        print * ,lowx, nw
         typeB(1:nw,1) = lowx
         typeB(1:nw,2) = highx
 {^NOONED

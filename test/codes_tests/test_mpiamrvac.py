@@ -723,3 +723,42 @@ class TestMpiAmrVac(TestWithMPI):
         self.assertTrue(rho[0] < 0.015 | density)
         
         instance.stop()
+        
+    
+    def test12(self):
+        instance=self.new_instance(MpiAmrVac, mode="1d")
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        instance.parameters.mesh_length = (10.0, 1, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (10, 1, 1)
+        instance.parameters.maximum_number_of_grid_levels = 1
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        
+    
+        grid = datamodel.Grid(10,1,1)
+        grid.rho = 0.1 | generic_unit_system.density
+        grid.rhovx = 0.0 | generic_unit_system.momentum_density
+        grid.rhovy = 0.0 |  generic_unit_system.momentum_density
+        grid.rhovz = 0.0 |  generic_unit_system.momentum_density
+        grid.energy =  1.0 | generic_unit_system.energy_density
+        
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        channel = grid.new_channel_to(igrid)
+        channel.copy()
+        
+                   
+        instance.evolve_model(0.1 | generic_unit_system.time)
+        
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        self.assertAlmostRelativeEquals(igrid.rho, grid.rho)
+        
+        instance.evolve_model(0.3 | generic_unit_system.time)
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        self.assertAlmostRelativeEquals(igrid.rho, grid.rho)
+        
+        instance.stop()
