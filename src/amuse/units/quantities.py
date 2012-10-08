@@ -299,10 +299,12 @@ class ScalarQuantity(Quantity):
         return self
     def prod(self, axis=None, dtype=None):
         return self
-    def amin(self, axis = None):
+    def min(self, axis = None):
         return self
-    def amax(self, axis = None):
+    def max(self, axis = None):
         return self
+    amin=min
+    amax=max    
     def sorted(self):
         return self
         
@@ -659,7 +661,7 @@ class VectorQuantity(Quantity):
         values = numpy.where(is_larger_than, self.number, other_in_my_units.number)
         return VectorQuantity(values, self.unit)
 
-    def amax(self, axis = None):
+    def max(self, axis = None):
         """
         Return the maximum along an axis.
 
@@ -671,7 +673,7 @@ class VectorQuantity(Quantity):
 
         return self.unit.new_quantity(numpy.amax(self.number, axis = axis))
 
-    def amin(self, axis = None):
+    def min(self, axis = None):
         """
         Return the minimum value along an axis.
 
@@ -682,6 +684,8 @@ class VectorQuantity(Quantity):
         """
 
         return self.unit.new_quantity(numpy.amin(self.number, axis = axis))
+    amin=min
+    amax=max
     
     def argmax(self, axis = None):
         """
