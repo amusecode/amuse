@@ -35,6 +35,7 @@
  &boundlist
         dixB=   2
         typeB=   4*'periodic',4*'periodic',4*'periodic',4*'periodic'
+        typeghostfill= 'copy'
 /
 
  &amrlist
