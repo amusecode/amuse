@@ -1,7 +1,7 @@
 Index: mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc	2012-10-09 11:59:04.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc	2012-10-09 12:05:16.000000000 +0200
 @@ -0,0 +1,45 @@
 +!==============================================================================
 +! include file amrvacpar.t.hd
@@ -11,7 +11,7 @@ Index: mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc
 +
 +integer,parameter:: nwflux=^NC+2
 +integer,parameter:: nwaux=0
-+integer,parameter:: nwextra=3
++integer,parameter:: nwextra=^NC
 +integer,parameter:: nw=nwflux+nwaux+nwextra
 +
 +integer,parameter:: rho_=1
