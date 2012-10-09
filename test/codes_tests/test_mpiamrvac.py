@@ -762,3 +762,53 @@ class TestMpiAmrVac(TestWithMPI):
         self.assertAlmostRelativeEquals(igrid.rho, grid.rho)
         
         instance.stop()
+
+    
+    def test13(self):
+        instance=self.new_instance(MpiAmrVac, mode="2d-acc")
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        instance.parameters.mesh_length = (10.0, 10.0, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (20, 20, 1)
+        instance.parameters.maximum_number_of_grid_levels = 2
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        
+        must_refine = True      
+        middle = 5.0 | generic_unit_system.length    
+        while must_refine:
+            must_refine = instance.refine_grid()
+            
+            for x in instance.itergrids():
+                inmem = x.copy_to_memory()
+                inmem[inmem.x <  middle].rho= 0.3 | generic_unit_system.density
+                inmem[inmem.x >= middle].rho = 0.1 | generic_unit_system.density
+                inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+                inmem.rhovy = 0.0 |  generic_unit_system.momentum_density
+                inmem.rhovz = 0.0 |  generic_unit_system.momentum_density
+                inmem.ax = 0.2 | generic_unit_system.acceleration
+                inmem.ay = 0.0 |  generic_unit_system.acceleration
+                inmem.az = 0.0 |  generic_unit_system.acceleration
+                
+                inmem.energy =  1.0 | generic_unit_system.energy_density
+                from_model_to_code = inmem.new_channel_to(x)
+                from_model_to_code.copy()
+                self.assertAlmostRelativeEquals(x.ax, 0.2 | generic_unit_system.acceleration)
+                self.assertAlmostRelativeEquals(x.ay, 0.0 | generic_unit_system.acceleration)
+                self.assertAlmostRelativeEquals(x.az, 0.0 | generic_unit_system.acceleration)
+        
+        self.assertEquals(len(list(instance.itergrids())), 4)
+        for igrid in instance.itergrids():
+            self.assertAlmostRelativeEquals(igrid.ax, 0.2 | generic_unit_system.acceleration)
+            self.assertAlmostRelativeEquals(igrid.ay, 0.0 | generic_unit_system.acceleration)
+            self.assertAlmostRelativeEquals(igrid.az, 0.0 | generic_unit_system.acceleration)
+                   
+        instance.evolve_model(0.1 | generic_unit_system.time)
+        
+        self.assertEquals(len(list(instance.itergrids())), 16)
+        for igrid in instance.itergrids():
+            self.assertAlmostRelativeEquals(igrid.ax, 0.2 | generic_unit_system.acceleration)
+            self.assertAlmostRelativeEquals(igrid.ay, 0.0 | generic_unit_system.acceleration)
+            self.assertAlmostRelativeEquals(igrid.az, 0.0 | generic_unit_system.acceleration)
+                   
+      
+        instance.stop()

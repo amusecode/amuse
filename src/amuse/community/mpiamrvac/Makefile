@@ -12,9 +12,11 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 BUILDDIR = build
 TWOD_BUILDDIR = build_2d
 ONED_BUILDDIR = build_1d
+TWOD_BUILDDIR_ACC = build_2d_acc
 
 OBJS = $(BUILDDIR)/interface.o
 OBJS2D = $(TWOD_BUILDDIR)/interface.o
+OBJS2DACC = $(TWOD_BUILDDIR_ACC)/interface.o
 OBJS1D = $(ONED_BUILDDIR)/interface.o
 
 LIBNAME = libmpiamrvac.a
@@ -24,6 +26,7 @@ CODEDIR = src/mpiamrvac/src
 CODELIB = $(BUILDDIR)/$(LIBNAME)
 CODELIB1D = $(ONED_BUILDDIR)/$(LIBNAME)
 CODELIB2D = $(TWOD_BUILDDIR)/$(LIBNAME)
+CODELIB2DACC = $(TWOD_BUILDDIR_ACC)/$(LIBNAME)
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -66,10 +69,13 @@ clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod
 	$(RM) *~ mpiamrvac_worker worker_code.f90
 	$(RM) -f mpiamrvac_worker_2d mpiamrvac_worker_1d
+	$(RM) -f mpiamrvac_worker_2d_acc
+	$(RM) -Rf mpiamrvac_worker_*.dSYM
 	-make -C $(CODEDIR) clean
 	$(RM) -Rf $(BUILDDIR)
 	$(RM) -Rf $(TWOD_BUILDDIR)
 	$(RM) -Rf $(ONED_BUILDDIR)
+	$(RM) -Rf $(TWOD_BUILDDIR_ACC)
 	$(RM) -Rf *.dSYM
 	
 distclean:
@@ -82,6 +88,8 @@ distclean:
 	$(RM) -Rf $(BUILDDIR)
 	$(RM) -Rf $(TWOD_BUILDDIR)
 	$(RM) -Rf $(ONED_BUILDDIR)
+	$(RM) -Rf $(TWOD_BUILDDIR_ACC)
+	$(RM) -Rf mpiamrvac_worker_*.dSYM
 
 $(BUILDDIR)/makefile: $(CODEDIR)/makefile
 	cp -r $(CODEDIR) $(BUILDDIR)
@@ -89,6 +97,9 @@ $(BUILDDIR)/makefile: $(CODEDIR)/makefile
 $(TWOD_BUILDDIR)/makefile: $(CODEDIR)/makefile
 	cp -r $(CODEDIR) $(TWOD_BUILDDIR)
     
+$(TWOD_BUILDDIR_ACC)/makefile: $(CODEDIR)/makefile
+	cp -r $(CODEDIR) $(TWOD_BUILDDIR_ACC)
+	
 $(ONED_BUILDDIR)/makefile: $(CODEDIR)/makefile
 	cp -r $(CODEDIR) $(ONED_BUILDDIR)
     
@@ -99,6 +110,10 @@ $(CODELIB): $(BUILDDIR)/makefile
 $(CODELIB2D): $(TWOD_BUILDDIR)/makefile
 	cd $(TWOD_BUILDDIR); ./setamrvac -d=22 -g=14,14 -phi=3 -z=2 -p=hd -u=amuse -cp=openmpi
 	make -C $(TWOD_BUILDDIR) clean amrvac $(LIBNAME) F90FLAGS="$(FFLAGS)" F90="$(MPIFC)"
+	
+$(CODELIB2DACC): $(TWOD_BUILDDIR_ACC)/makefile
+	cd $(TWOD_BUILDDIR_ACC); ./setamrvac -d=22 -g=14,14 -phi=3 -z=2 -p=hdacc -u=amuse -cp=openmpi
+	make -C $(TWOD_BUILDDIR_ACC) clean amrvac $(LIBNAME) F90FLAGS="$(FFLAGS)" F90="$(MPIFC)"
 	
 $(CODELIB1D): $(ONED_BUILDDIR)/makefile
 	cd $(ONED_BUILDDIR); ./setamrvac -d=11 -g=14,14 -phi=3 -z=2 -p=hd -u=amuse -cp=openmpi
@@ -112,6 +127,9 @@ mpiamrvac_worker: worker_code.f90 $(CODELIB) $(OBJS)
 	
 mpiamrvac_worker_2d: worker_code.f90 $(CODELIB2D) $(OBJS2D)
 	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR) $< $(OBJS2D) $(CODELIB2D) $(SCMPILIBS) -o $@
+	
+mpiamrvac_worker_2dacc: worker_code.f90 $(CODELIB2DACC) $(OBJS2DACC)
+	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR_ACC) $< $(OBJS2DACC) $(CODELIB2DACC) $(SCMPILIBS) -o $@
 	
 mpiamrvac_worker_1d: worker_code.f90 $(CODELIB1D) $(OBJS1D)
 	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(ONED_BUILDDIR) $< $(OBJS1D) $(CODELIB1D) $(SCMPILIBS) -o $@
@@ -129,6 +147,12 @@ $(TWOD_BUILDDIR)/interface.f90: interface.t
     
 $(TWOD_BUILDDIR)/interface.o: $(TWOD_BUILDDIR)/interface.f90
 	$(FC) $(FFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR) -c -o $@ $<
+    
+$(TWOD_BUILDDIR_ACC)/interface.f90: interface.t
+	$(TWOD_BUILDDIR_ACC)/vacpp.pl $< > $@
+    
+$(TWOD_BUILDDIR_ACC)/interface.o: $(TWOD_BUILDDIR_ACC)/interface.f90
+	$(FC) $(FFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR_ACC) -c -o $@ $<
     
 $(ONED_BUILDDIR)/interface.f90: interface.t
 	$(ONED_BUILDDIR)/vacpp.pl $< > $@

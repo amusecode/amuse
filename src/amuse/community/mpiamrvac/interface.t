@@ -3281,7 +3281,6 @@ CONTAINS
         typeB(1:nw,5) = lowz
         typeB(1:nw,6) = highz
 }
-        
         do idim=1,ndim
             periodB(idim)=(typeB(1,2*idim-1)=="periodic")
             if ((.not.periodB(idim).and.(any(typeB(:,2*idim-1:2*idim)&
@@ -3617,6 +3616,129 @@ CONTAINS
             end if
         end if
         
+    end function
+    
+    
+    function get_grid_acceleration(i, j, k, index_of_grid, a1, a2, a3, n)
+    
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: get_grid_acceleration
+        integer :: real1, real2, real3
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+
+        double precision, intent(out), dimension(n) :: a1, a2, a3
+        
+        local_index_of_grid = 0
+        previous_index_of_grid = -1
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
+            end if 
+            
+            a1(index) = 0.0
+            a2(index) = 0.0
+            a3(index) = 0.0
+            
+            if (local_index_of_grid .EQ. 0) then
+            
+                a1(index) = 0.0
+                a2(index) = 0.0
+                a3(index) = 0.0
+                
+            else
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                end if
+                real1 = ixMlo1 + i(index)
+{^NOONED
+                real2 = ixMlo2 + j(index)
+}
+{^IFTHREED
+                real3 = ixMlo3 + k(index)
+}
+                a1(index) = pw(local_index_of_grid)%w(real^D,e_+1)
+
+{^NOONED
+                a2(index) = pw(local_index_of_grid)%w(real^D,e_+2)
+}
+{^IFTHREED
+                a3(index) = pw(local_index_of_grid)%w(real^D,e_+3)
+}
+            end if
+            
+        end do
+                
+        
+        if(mype .GT. 0) then
+            call MPI_Reduce(a1,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(a2,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(a3,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, a1, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, a2, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, a3, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        
+        
+        get_grid_acceleration = 0
+    end function
+    
+    
+    function set_grid_acceleration(i, j, k, a1, a2, a3, index_of_grid, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: set_grid_acceleration
+        integer :: real1, real2, real3
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        
+        double precision, intent(in), dimension(n) :: a1, a2, a3
+        
+        
+        local_index_of_grid = 0
+        previous_index_of_grid = -1
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
+            end if 
+            
+            if (local_index_of_grid /= 0) then
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                
+                else
+                    
+                
+                    real1 = ixMlo1 + i(index)
+{^NOONED
+                    real2 = ixMlo2 + j(index)
+}
+{^IFTHREED
+                    real3 = ixMlo3 + k(index)
+}              
+                    
+                    pw(local_index_of_grid)%w(real^D,e_+1) = a1(index)
+{^NOONED
+                    pw(local_index_of_grid)%w(real^D,e_+2) = a2(index)
+}
+{^IFTHREED
+                    pw(local_index_of_grid)%w(real^D,e_+3) = a3(index)
+}              
+                
+                end if
+            end if
+            
+        end do
+        
+        set_grid_acceleration = 0
     end function
     
 END MODULE mpiamrvac_interface

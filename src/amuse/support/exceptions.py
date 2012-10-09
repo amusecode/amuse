@@ -19,8 +19,11 @@ class AmuseException(Exception):
         self.arguments = arguments
     
     def __str__(self):
-        return self.formatstring.format(*self.arguments)
-
+        try:
+            return self.formatstring.format(*self.arguments)
+        except Exception as ex:
+            return str(ex) +", "+ self.formatstring +", "+ str(self.arguments)
+            
     @property
     def errorcode(self):
         return self.arguments[-1]

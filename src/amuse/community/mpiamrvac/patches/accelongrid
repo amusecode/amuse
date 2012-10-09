@@ -1,0 +1,600 @@
+Index: mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc	2012-10-09 11:59:04.000000000 +0200
+@@ -0,0 +1,45 @@
++!==============================================================================
++! include file amrvacpar.t.hd
++
++CHARACTER*2,PARAMETER:: typephys='hd'            ! VACPHYS module name
++CHARACTER*5,PARAMETER:: eqparname='gamma'        ! Equation parameter names
++
++integer,parameter:: nwflux=^NC+2
++integer,parameter:: nwaux=0
++integer,parameter:: nwextra=3
++integer,parameter:: nw=nwflux+nwaux+nwextra
++
++integer,parameter:: rho_=1
++integer,parameter:: m0_=rho_
++integer,parameter:: m^C_=m0_+^C
++integer,parameter:: e_=m^NC_+1
++integer,parameter:: ee_=e_
++integer,parameter:: rhos_=e_
++integer,parameter:: b0_=-1 ! No magnetic field
++integer,parameter:: b^C_=-1 ! No magnetic field
++
++INTEGER,PARAMETER:: v0_=m0_, v^C_=m^C_, p_=e_, pp_=ee_    ! Primitive variables
++
++INTEGER,PARAMETER:: mr_=m0_+r_,mphi_=m0_+phi_,mz_=m0_+z_  ! Polar var. names
++
++integer, parameter :: nvector=1                             ! No. vector vars
++integer, dimension(nvector), parameter :: iw_vector=(/ m0_ /)
++
++                                                            ! Characteristic
++INTEGER,PARAMETER:: soundRW_=1,soundLW_=2,entropW_=3,shearW0_=3      ! waves
++INTEGER,PARAMETER:: nworkroe=3      
++
++INTEGER,PARAMETER:: gamma_=1,neqpar=1                     ! equation parameters
++
++INTEGER,PARAMETER:: nflag_=nw+1
++COMMON, INTEGER:: flags(nflag_)
++COMMON, DOUBLE PRECISION:: wflags(nflag_)
++
++! xprob: problem box; iprob: problem
++COMMON, INTEGER:: iprob
++COMMON, DOUBLE PRECISION:: xprob^L
++
++COMMON, DOUBLE PRECISION::smalle,minrho,minp
++
++! end include file amrvacpar.t.hd
++!==============================================================================
+Index: mpiamrvac/src/mpiamrvac/src/amrvacphys.t.hdacc
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ mpiamrvac/src/mpiamrvac/src/amrvacphys.t.hdacc	2012-10-09 11:43:07.000000000 +0200
+@@ -0,0 +1,482 @@
++!##############################################################################
++! module amrvacphys - hd
++
++INCLUDE:amrvacnul.addsource.t
++INCLUDE:amrvacnul.getdt.t
++INCLUDE:amrvacphys.hdroe.t
++INCLUDE:amrvacphys.hdhllc.t
++INCLUDE:amrvacphys.correctauxhd.t
++!=============================================================================
++subroutine initglobaldata
++
++! set default values for entropy fixes for 'yee' type
++
++include 'amrvacdef.f'
++
++integer :: il
++!-----------------------------------------------------------------------------
++if(eqpar(gamma_)<=zero.or.eqpar(gamma_)==one) call mpistop ("gamma negative or 1 not ok")
++
++minp  = max(zero,smallp)
++minrho= max(zero,smallrho)
++smalle= minp/(eqpar(gamma_)-one)
++
++do il=1,nw
++   select case(il)
++   case(soundRW_,soundLW_)
++      entropycoef(il)= 0.2d0
++   case default
++      entropycoef(il)= -one
++   end select
++end do
++
++end subroutine initglobaldata
++!=============================================================================
++subroutine getaux(clipping,w,ixI^L,ixO^L,subname)
++
++! Calculate auxilary variables ixO^L from non-auxiliary entries in w
++! clipping can be set to .true. to e.g. correct unphysical pressures, 
++! densities, v>c,  etc.
++
++include 'amrvacdef.f'
++
++logical                :: clipping
++integer                :: ixI^L, ixO^L
++double precision       :: w(ixI^S,nw)
++character(len=*)       :: subname
++!-----------------------------------------------------------------------------
++
++end subroutine getaux
++!=============================================================================
++subroutine checkw(checkprimitive,ixI^L,ixO^L,w,flag)
++
++include 'amrvacdef.f'
++  
++logical :: checkprimitive
++integer, intent(in) :: ixI^L, ixO^L
++double precision :: w(ixI^S,nw)
++logical :: flag(ixG^T)
++
++double precision :: tmp(ixG^T)
++!-----------------------------------------------------------------------------
++flag(ixG^T)=.true.
++
++if(checkprimitive)then
++  flag(ixO^S)=(w(ixO^S,p_)>=minp .and. w(ixO^S,rho_)>=minrho)
++else
++  tmp(ixO^S)=(eqpar(gamma_)-one)*(w(ixO^S,e_)- &
++         half*( ^C&w(ixO^S,m^C_)**2+ )/w(ixO^S,rho_))
++  flag(ixO^S)=(tmp(ixO^S)>=minp .and. w(ixO^S,rho_)>=minrho)
++endif
++
++end subroutine checkw
++!=============================================================================
++subroutine conserve(ixI^L,ixO^L,w,patchw)
++
++! Transform primitive variables into conservative ones
++
++include 'amrvacdef.f'
++
++integer, intent(in)    :: ixI^L, ixO^L
++double precision       :: w(ixI^S,nw)
++logical                :: patchw(ixG^T)
++!-----------------------------------------------------------------------------
++
++where(.not.patchw(ixO^S))
++   ! Calculate total energy from pressure and kinetic energy
++   w(ixO^S,e_)=w(ixO^S,p_)/(eqpar(gamma_)-one)+ &
++           half*w(ixO^S,rho_)*(^C&w(ixO^S,v^C_)**2.0d0+)
++
++   ! Convert velocity to momentum
++   ^C&w(ixO^S,m^C_)=w(ixO^S,rho_)*w(ixO^S,v^C_);
++end where
++
++if(fixsmall) call smallvalues(w,ixI^L,ixO^L,"conserve")
++
++end subroutine conserve
++!=============================================================================
++subroutine conserven(ixI^L,ixO^L,w,patchw)
++
++! Transform primitive variables into conservative ones
++! Idem to conserve, no smallvalues call
++
++include 'amrvacdef.f'
++
++integer, intent(in)    :: ixI^L, ixO^L
++double precision       :: w(ixI^S,nw)
++logical                :: patchw(ixG^T)
++!-----------------------------------------------------------------------------
++
++where(.not.patchw(ixO^S))
++   ! Calculate total energy from pressure and kinetic energy
++   w(ixO^S,e_)=w(ixO^S,p_)/(eqpar(gamma_)-one)+ &
++           half*w(ixO^S,rho_)*(^C&w(ixO^S,v^C_)**2.0d0+)
++
++   ! Convert velocity to momentum
++   ^C&w(ixO^S,m^C_)=w(ixO^S,rho_)*w(ixO^S,v^C_);
++end where
++
++end subroutine conserven
++!=============================================================================
++subroutine primitive(ixI^L,ixO^L,w)
++
++! Transform conservative variables into primitive ones
++
++include 'amrvacdef.f'
++
++integer, intent(in)    :: ixI^L, ixO^L
++double precision       :: w(ixI^S,nw)
++
++integer, dimension(ixG^T)       :: patchierror
++!-----------------------------------------------------------------------------
++if(fixsmall) call smallvalues(w,ixI^L,ixO^L,"primitive")
++
++! compute pressure 
++w(ixO^S,p_)=(eqpar(gamma_)-one)*(w(ixO^S,e_)- &
++         half*( ^C&w(ixO^S,m^C_)**2.0d0+ )/w(ixO^S,rho_))
++
++! Convert momentum to velocity
++^C&w(ixO^S,v^C_)=w(ixO^S,m^C_)/w(ixO^S,rho_);
++
++if(strictsmall) then
++   if (any(w(ixO^S,p_)<minp)) then
++      !!print *,'minval(pressure) = ',minval(w(ixO^S,p_))
++      call mpistop("=== primitive pressure problem===")
++   end if
++else 
++  if (strictgetaux) then
++     where(w(ixO^S,p_)<minp)
++        w(ixO^S,p_)=minp
++     endwhere
++  else
++     where(w(ixO^S,p_)<minp)
++       patchierror(ixO^S) = 1
++     else where
++       patchierror(ixO^S) = 0
++     end where
++     if (any(patchierror(ixO^S)/=0)) &
++   call correctaux(ixI^L,ixO^L,w,patchierror,'primitive')
++ end if
++end if
++
++end subroutine primitive
++!=============================================================================
++subroutine primitiven(ixI^L,ixO^L,w,patchw)
++
++! Transform conservative variables into primitive ones
++! Idem to primitive, no smallvalues call
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixI^L, ixO^L
++double precision :: w(ixI^S,nw)
++logical, intent(in),dimension(ixG^T)   :: patchw
++!-----------------------------------------------------------------------------
++
++where(.not.patchw(ixO^S))
++  ! compute pressure 
++  w(ixO^S,p_)=(eqpar(gamma_)-one)*(w(ixO^S,e_)- &
++               half*( ^C&w(ixO^S,m^C_)**2.0d0+ )/w(ixO^S,rho_))
++  ! Convert momentum to velocity
++  {^C&w(ixO^S,v^C_)=w(ixO^S,m^C_)/w(ixO^S,rho_);}
++end where
++
++end subroutine primitiven
++!=============================================================================
++subroutine e_to_rhos(ixI^L,ixO^L,w)
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixI^L, ixO^L
++double precision :: w(ixI^S,nw)
++!-----------------------------------------------------------------------------
++w(ixO^S,rhos_)=(eqpar(gamma_)-one)*w(ixO^S,rho_)**(one-eqpar(gamma_)) &
++               *(w(ixO^S,e_)-half*(^C&w(ixO^S,m^C_)**2+)/w(ixO^S,rho_))
++
++end subroutine e_to_rhos
++!=============================================================================
++subroutine rhos_to_e(ixI^L,ixO^L,w)
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixI^L, ixO^L
++double precision :: w(ixI^S,nw)
++!-----------------------------------------------------------------------------
++w(ixO^S,e_)=w(ixO^S,rho_)**(eqpar(gamma_)-one)*w(ixO^S,rhos_) &
++            /(eqpar(gamma_)-one) +half*(^C&w(ixO^S,m^C_)**2.0d0+)/w(ixO^S,rho_)
++
++end subroutine rhos_to_e
++!=============================================================================
++subroutine ppmflatcd(ixI^L,ixO^L,ixL^L,ixR^L,w,d2w,drho,dp)
++
++include 'amrvacdef.f'
++
++integer, intent(in)           :: ixI^L,ixO^L,ixL^L,ixR^L
++double precision, intent(in)  :: w(ixI^S,nw),d2w(ixG^T,1:nwflux)
++
++double precision, intent(out) :: drho(ixG^T),dp(ixG^T)
++!-----------------------------------------------------------------------------
++
++if(useprimitive)then
++ drho(ixO^S) =eqpar(gamma_)*dabs(d2w(ixO^S,rho_))&
++              /min(w(ixL^S,rho_),w(ixR^S,rho_))
++ dp(ixO^S) = dabs(d2w(ixO^S,p_))/min(w(ixL^S,p_),w(ixR^S,p_))
++end if
++
++end subroutine ppmflatcd
++!=============================================================================
++subroutine ppmflatsh(ixI^L,ixO^L,ixLL^L,ixL^L,ixR^L,ixRR^L,idims,w,drho,dp,dv)
++
++include 'amrvacdef.f'
++
++integer, intent(in)           :: ixI^L,ixO^L,ixLL^L,ixL^L,ixR^L,ixRR^L
++integer, intent(in)           :: idims
++double precision, intent(in)  :: w(ixI^S,nw)
++
++double precision, intent(out) :: drho(ixG^T),dp(ixG^T),dv(ixG^T)
++double precision :: v(ixG^T)
++!-----------------------------------------------------------------------------
++
++if(useprimitive)then
++   ! eq. B15, page 218, Mignone and Bodo 2005, ApJS (beta1)
++   where (dabs(w(ixRR^S,p_)-w(ixLL^S,p_))>smalldouble)
++      drho(ixO^S) = dabs((w(ixR^S,p_)-w(ixL^S,p_))&
++                        /(w(ixRR^S,p_)-w(ixLL^S,p_)))
++   else where
++      drho(ixO^S) = zero
++   end where
++
++   !  eq. B76, page 48, Miller and Collela 2002, JCP 183, 26 
++   !  use "dp" to save squared sound speed, assuming primitives
++   dp(ixO^S)=(eqpar(gamma_)*w(ixO^S,p_)/w(ixO^S,rho_))
++
++   dp(ixO^S) = dabs(w(ixR^S,p_)-w(ixL^S,p_))&
++                /(w(ixO^S,rho_)*dp(ixO^S))
++   v(ixI^S)  = w(ixI^S,v0_+idims)
++   call gradient(v,ixO^L,idims,dv)
++end if
++
++end subroutine ppmflatsh
++!=============================================================================
++subroutine getv(w,ixI^L,ixO^L,idims,v)
++
++! Calculate v_idim=m_idim/rho within ixO^L
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixI^L, ixO^L, idims
++double precision :: w(ixI^S,nw), v(ixG^T)
++!-----------------------------------------------------------------------------
++
++v(ixO^S)=w(ixO^S,m0_+idims)/w(ixO^S,rho_)
++
++end subroutine getv
++!=============================================================================
++subroutine getcmax(new_cmax,w,ixI^L,ixO^L,idims,cmax,cmin,needcmin)
++
++! Calculate cmax_idim=csound+abs(v_idim) within ixO^L
++
++include 'amrvacdef.f'
++
++logical :: new_cmax,needcmin
++integer, intent(in) :: ixI^L, ixO^L, idims
++double precision :: w(ixI^S,nw), cmax(ixG^T), cmin(ixG^T)
++
++double precision :: csound(ixG^T)
++!-----------------------------------------------------------------------------
++
++call getpthermal(w,ixI^L,ixO^L,csound)
++csound(ixO^S)=sqrt(eqpar(gamma_)*csound(ixO^S)/w(ixO^S,rho_))
++if(needcmin)then
++  cmax(ixO^S)=max(w(ixO^S,m0_+idims)/w(ixO^S,rho_)+csound(ixO^S),zero)
++  cmin(ixO^S)=min(w(ixO^S,m0_+idims)/w(ixO^S,rho_)-csound(ixO^S),zero)
++else
++  cmax(ixO^S)=csound(ixO^S)+abs(w(ixO^S,m0_+idims)/w(ixO^S,rho_))
++endif
++
++end subroutine getcmax
++!=============================================================================
++subroutine getpthermal(w,ixI^L,ixO^L,p)
++
++! Calculate thermal pressure=(gamma-1)*(e-0.5*m**2/rho) within ixO^L
++
++include 'amrvacdef.f'
++
++integer, intent(in)             :: ixI^L, ixO^L
++double precision                :: w(ixI^S,nw), p(ixG^T)
++integer, dimension(ixG^T)       :: patchierror
++!-----------------------------------------------------------------------------
++if(fixsmall) call smallvalues(w,ixI^L,ixO^L,"getpthermal")
++
++p(ixO^S)=(eqpar(gamma_)-one)*(w(ixO^S,e_)- &
++         half*({^C&w(ixO^S,m^C_)**2.0d0+})/w(ixO^S,rho_))
++
++if(strictsmall) then
++   if (any(p(ixO^S)<minp)) then
++      !!print *,'minval(pressure) = ',minval(p(ixO^S))
++      call mpistop("=== strictsmall in getpthermal ===")
++   end if
++else 
++  if (strictgetaux) then
++     where(p(ixO^S)<minp)
++        p(ixO^S)=minp
++     endwhere
++  else
++     where(p(ixO^S)<minp)
++       patchierror(ixO^S) = 1
++     else where
++       patchierror(ixO^S) = 0
++     end where
++     if (any(patchierror(ixO^S)/=0))then
++       call correctaux(ixI^L,ixO^L,w,patchierror,'getpthermal')
++       where(patchierror(ixO^S)/=0)
++         p(ixO^S)=(eqpar(gamma_)-one)*(w(ixO^S,e_)- &
++         half*({^C&w(ixO^S,m^C_)**2.0d0+})/w(ixO^S,rho_))
++       end where
++     end if
++ end if
++end if
++
++end subroutine getpthermal
++!=============================================================================
++subroutine getfluxforhllc(w,ixI^L,ixO^L,iw,idims,f,transport)
++
++! Calculate non-transport flux f_idim[iw] within ixO^L.
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixI^L, ixO^L, iw, idims
++double precision :: w(ixI^S,nw),f(ixG^T,1:nwflux),tmp(ixG^T)
++logical :: transport
++!-----------------------------------------------------------------------------
++if(iw==m0_+idims)then
++   ! f_i[m_i]=v_i*m_i+p
++   call getpthermal(w,ixI^L,ixO^L,tmp)
++   f(ixO^S,iw)=tmp(ixO^S)
++else if(iw==e_)then
++   ! f_i[e]=v_i*e+m_i/rho*p
++   call getpthermal(w,ixI^L,ixO^L,tmp)
++   f(ixO^S,iw)=w(ixO^S,m0_+idims)/w(ixO^S,rho_)*tmp(ixO^S)
++else
++   f(ixO^S,iw)=zero
++endif
++
++transport=.true.
++
++end subroutine getfluxforhllc
++!=============================================================================
++subroutine getflux(w,ixI^L,ixO^L,iw,idims,f,transport)
++
++! Calculate non-transport flux f_idim[iw] within ixO^L.
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixI^L, ixO^L, iw, idims
++double precision :: w(ixI^S,nw), f(ixG^T)
++logical :: transport
++!-----------------------------------------------------------------------------
++if(iw==m0_+idims)then
++   ! f_i[m_i]=v_i*m_i+p
++   call getpthermal(w,ixI^L,ixO^L,f)
++else if(iw==e_)then
++   ! f_i[e]=v_i*e+m_i/rho*p
++   call getpthermal(w,ixI^L,ixO^L,f)
++   f(ixO^S)=w(ixO^S,m0_+idims)/w(ixO^S,rho_)*f(ixO^S)
++else
++   f(ixO^S)=zero
++endif
++
++transport=.true.
++
++end subroutine getflux
++!=============================================================================
++subroutine addgeometry(qdt,ixI^L,ixO^L,wCT,w,x)
++
++! Add geometrical source terms to w
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixI^L, ixO^L
++double precision, intent(in) :: qdt, x(ixI^S,1:ndim)
++double precision, intent(inout) :: wCT(ixI^S,1:nw), w(ixI^S,1:nw)
++
++integer :: iw,idir, h1x^L{^NOONED, h2x^L}
++double precision :: tmp(ixG^T)
++logical :: angmomfix=.false.
++!-----------------------------------------------------------------------------
++
++select case (typeaxial)
++case ('slab')
++   ! No source terms in slab symmetry
++case ('cylindrical')
++   do iw=1,nwflux
++      select case(iw)
++      ! s[mr]=(pthermal+mphi**2/rho)/radius
++      case (mr_)
++         call getpthermal(wCT,ixI^L,ixO^L,tmp)
++         w(ixO^S,mr_)=w(ixO^S,mr_)+qdt*tmp(ixO^S)/x(ixO^S,1)
++         tmp(ixO^S)=zero
++{^IFPHI
++         tmp(ixO^S)=tmp(ixO^S)+wCT(ixO^S,mphi_)**2.0d0/wCT(ixO^S,rho_)
++      ! s[mphi]=(-mphi*mr/rho)/radius
++      case (mphi_)
++         tmp(ixO^S)=-wCT(ixO^S,mphi_)*wCT(ixO^S,mr_)/wCT(ixO^S,rho_)
++}
++      end select
++      ! Divide by radius and add to w
++      if (iw==mr_.or.iw==mphi_) then
++         w(ixO^S,iw)=w(ixO^S,iw)+qdt*tmp(ixO^S)/x(ixO^S,1)
++      end if
++   end do
++case ('spherical')
++   h1x^L=ixO^L-kr(1,^D); {^NOONED h2x^L=ixO^L-kr(2,^D);}
++   do iw=1,nwflux
++      select case (iw)
++      ! s[m1]=((mtheta**2+mphi**2)/rho+2*p)/r
++      case (m1_)
++         call getpthermal(wCT,ixI^L,ixO^L,tmp)
++         ! For nonuniform Cartesian grid this provides hydrostatic equil.
++         tmp(ixO^S)=tmp(ixO^S)*x(ixO^S,1) &
++                 *(mygeo%surfaceC1(ixO^S)-mygeo%surfaceC1(h1x^S)) &
++                 /mygeo%dvolume(ixO^S){&^CE&
++               +wCT(ixO^S,m^CE_)**2.0d0/wCT(ixO^S,rho_) }
++{^NOONEC
++      ! s[m2]=-(mr*mtheta/rho)/r
++      !       + cot(theta)*(mphi**2/rho+p)/r
++      case (m2_)
++}
++{^NOONED
++         call getpthermal(wCT,ixI^L,ixO^L,tmp)
++         ! This will make hydrostatic p=const an exact solution
++         w(ixO^S,iw)=w(ixO^S,iw) &
++            +qdt*tmp(ixO^S)*(mygeo%surfaceC2(ixO^S)-mygeo%surfaceC2(h2x^S)) &
++            /mygeo%dvolume(ixO^S)
++}
++{^NOONEC
++         tmp(ixO^S)=-(wCT(ixO^S,m1_)*wCT(ixO^S,m2_)/wCT(ixO^S,rho_))
++}
++{^IFTHREEC
++{^NOONED
++         tmp(ixO^S)=tmp(ixO^S)+(wCT(ixO^S,m3_)**2.0d0/wCT(ixO^S,rho_)) &
++                        *dcos(x(ixO^S,2))/dsin(x(ixO^S,2))
++}
++      ! s[m3]=-(mphi*mr/rho)/r
++      !       -cot(theta)*(mtheta*mphi/rho)/r
++      case (m3_)
++         if (.not.angmomfix) &
++         tmp(ixO^S)=-(wCT(ixO^S,m3_)*wCT(ixO^S,m1_)/wCT(ixO^S,rho_)) {^NOONED &
++                   -(wCT(ixO^S,m2_)*wCT(ixO^S,m3_)/wCT(ixO^S,rho_)) &
++                   *dcos(x(ixO^S,2))/dsin(x(ixO^S,2)) }
++}
++      end select
++      ! Divide by radius and add to w
++      if (iw==m1_{^NOONEC.or.iw==m2_}{^IFTHREEC  &
++            .or.(iw==m3_.and..not.angmomfix)}) &
++         w(ixO^S,iw)=w(ixO^S,iw)+qdt*tmp(ixO^S)/x(ixO^S,1)
++   end do
++end select
++
++end subroutine addgeometry
++!=============================================================================
++! end module amrvacphys - hd
++!##############################################################################
+Index: mpiamrvac/src/mpiamrvac/src/refine.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/refine.t	2012-02-21 13:33:35.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/refine.t	2012-10-09 11:44:32.000000000 +0200
+@@ -92,7 +92,7 @@
+ integer :: ixCo^D, jxCo^D, hxCo^D, ixFi^D, ix^D, idim, iw
+ integer :: ixFi^L
+ double precision :: slopeL, slopeR, slopeC, signC, signR
+-double precision :: slope(nwflux,ndim)
++double precision :: slope(nw,ndim)
+ double precision :: xCo^D, xFi^D, eta^D
+ !-----------------------------------------------------------------------------
+ {do ixCo^DB = ixCo^LIM^DB
+@@ -105,7 +105,7 @@
+       hxCo^D=ixCo^D-kr(^D,idim)\
+       jxCo^D=ixCo^D+kr(^D,idim)\
+ 
+-      do iw=1,nwflux
++      do iw=1,nw
+          slopeL=wCo(ixCo^D,iw)-wCo(hxCo^D,iw)
+          slopeR=wCo(jxCo^D,iw)-wCo(ixCo^D,iw)
+          slopeC=half*(slopeR+slopeL)
+@@ -147,8 +147,8 @@
+                /sum(pgeo(igridFi)%dvolume(ixFi^D:ixFi^D+1^D%ix^DD))) \}
+       end if
+ 
+-      wFi(ix^D,1:nwflux) = wCo(ixCo^D,1:nwflux) &
+-                            + {(slope(1:nwflux,^D)*eta^D)+}
++      wFi(ix^D,1:nw) = wCo(ixCo^D,1:nw) &
++                            + {(slope(1:nw,^D)*eta^D)+}
+    {end do\}
+ {end do\}
+ 
+@@ -173,7 +173,7 @@
+ !-----------------------------------------------------------------------------
+ {do ixCo^DB = ixCo^LIM^DB
+    ixFi^DB=2*(ixCo^DB-ixComin^DB)+ixMlo^DB\}
+-   forall(iw=1:nwflux) wFi(ixFi^D:ixFi^D+1,iw)=wCo(ixCo^D,iw)
++   forall(iw=1:nw) wFi(ixFi^D:ixFi^D+1,iw)=wCo(ixCo^D,iw)
+ {end do\}
+ 
+ end subroutine prolong_1st
+Index: mpiamrvac/src/mpiamrvac/src/coarsen.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/coarsen.t	2009-02-06 11:43:19.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/coarsen.t	2012-10-09 11:45:31.000000000 +0200
+@@ -77,14 +77,14 @@
+ 
+ if (slab) then
+    CoFiratio=one/dble(2**ndim)
+-   do iw=1,nwflux
++   do iw=1,nw
+       {do ixCo^DB = ixCo^LIM^DB
+          ixFi^DB=2*(ixCo^DB-ixComin^DB)+ixFimin^DB\}
+          wCo(ixCo^D,iw)=sum(wFi(ixFi^D:ixFi^D+1,iw))*CoFiratio
+       {end do\}
+    end do
+ else
+-   do iw=1,nwflux
++   do iw=1,nw
+       {do ixCo^DB = ixCo^LIM^DB
+          ixFi^DB=2*(ixCo^DB-ixComin^DB)+ixFimin^DB\}
+          wCo(ixCo^D,iw)= &

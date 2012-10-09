@@ -12,6 +12,7 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
     
     MODE_NORMAL = 'normal'
     MODE_2D   = '2d'
+    MODE_2D_ACC   = '2d-acc'
     MODE_1D   = '1d'
     
     def __init__(self, mode = MODE_NORMAL, **options):
@@ -23,6 +24,8 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
             return 'mpiamrvac_worker'
         elif mode == self.MODE_2D:
             return 'mpiamrvac_worker_2d'
+        elif mode == self.MODE_2D_ACC:
+            return 'mpiamrvac_worker_2dacc'
         elif mode == self.MODE_1D:
             return 'mpiamrvac_worker_1d'
         else:
@@ -55,6 +58,8 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
         """
         if self._mode == self.MODE_2D:
             return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac_2d.par')
+        elif self._mode == self.MODE_2D_ACC:
+            return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac_2d-acc.par')
         elif self._mode == self.MODE_1D:
             return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac_1d.par')
         else:
@@ -2145,6 +2150,38 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
         function.addParameter('nmeshz', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function
+        
+    
+
+    @legacy_function
+    def get_grid_acceleration():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['ax','ay','az']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        
+        return function
+    
+
+    @legacy_function
+    def set_grid_acceleration():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['ax','ay','az']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+        
+    
     
     
     
@@ -2236,6 +2273,7 @@ class MpiAmrVac(CommonCode):
             (object.INDEX, object.INDEX, object.INDEX, momentum, momentum, momentum, object.INDEX),
             (object.ERROR_CODE,)
         )
+        
         
         object.add_method(
             'get_grid_energy_density',
@@ -2369,6 +2407,17 @@ class MpiAmrVac(CommonCode):
             'set_boundary',
             (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
             (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'set_grid_acceleration',
+            (object.INDEX, object.INDEX, object.INDEX, acceleration, acceleration, acceleration, object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_grid_acceleration',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (acceleration, acceleration, acceleration, object.ERROR_CODE,)
         )
         self.stopping_conditions.define_methods(object)
         
@@ -2602,6 +2651,10 @@ class MpiAmrVac(CommonCode):
         definition.add_getter('get_grid_density', names=('rho',))
         definition.add_getter('get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
         definition.add_getter('get_grid_energy_density', names=('energy',))
+        
+        
+        definition.add_getter('get_grid_acceleration', names=('ax','ay','az'))
+        definition.add_setter('set_grid_acceleration', names=('ax','ay','az'))
         
         definition.define_extra_keywords({'index_of_grid':index_of_grid})
         
