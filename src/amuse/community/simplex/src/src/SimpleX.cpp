@@ -6102,7 +6102,7 @@ void SimpleX::return_physics(){
       if(it->get_source()) {
         float flux = it->get_flux( 0 );
         it->set_flux( 0, 0.0 ); 
-        it->set_flux( 1, flux );
+        it->set_flux( ((rec_rad) ? 1 : 0), flux );
       }
     }
   }

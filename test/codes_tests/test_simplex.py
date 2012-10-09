@@ -283,6 +283,39 @@ class TestSimpleX(TestWithMPI):
         instance.parameters.simplex_data_directory="some/dir"
         self.assertEqual(instance.parameters.simplex_data_directory, "some/dir")
 
+    def test7(self):
+        print "Test 7: two step evolve"
+        instance = SimpleX(**default_options)
+        instance.parameters.recombination_radiation_flag=1
+        
+        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        particles = particles_from_input_file(input_file)
+        instance.particles.add_particles(particles)
+        self.assertAlmostEqual(instance.particles.xion.mean(), 0.0)
+        instance.evolve_model(0.25 | units.Myr)
+        instance.evolve_model(0.5 | units.Myr)
+        self.assertAlmostRelativeEqual(instance.particles.xion.mean(),0.00084660917243,3)
+        self.assertEqual( instance.particles.flux.max().value_in(1.e48* units.s**-1), 5)
+        instance.cleanup_code()
+        instance.stop()
+
+    def test8(self):
+        print "Test 8: two step evolve"
+        instance = SimpleX(**default_options)
+        
+        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        particles = particles_from_input_file(input_file)
+        instance.particles.add_particles(particles)
+        self.assertAlmostEqual(instance.particles.xion.mean(), 0.0)
+        instance.evolve_model(0.25 | units.Myr)
+        instance.evolve_model(0.5 | units.Myr)
+        self.assertEqual( instance.particles.flux.max().value_in(1.e48* units.s**-1), 5)
+        self.assertAlmostRelativeEqual(instance.particles.xion.mean(),0.00084660917243,3)
+        instance.cleanup_code()
+        instance.stop()
+
+
+
 class TestSimpleXSplitSet(TestWithMPI):
 
     def test1(self):
