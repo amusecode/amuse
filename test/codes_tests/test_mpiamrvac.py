@@ -812,3 +812,81 @@ class TestMpiAmrVac(TestWithMPI):
                    
       
         instance.stop()
+        
+    
+    def test14(self):
+        for ax, ay in ((0.2,0.0), (0.0, 0.2), (0.2,0.2)) | generic_unit_system.acceleration:
+            instance=self.new_instance(MpiAmrVac, mode="2d-acc")
+            instance.set_parameters_filename(instance.default_parameters_filename)
+            instance.parameters.mesh_length = (10.0, 10.0, 1) | generic_unit_system.length
+            instance.parameters.mesh_size = (10, 10, 1)
+            instance.parameters.maximum_number_of_grid_levels = 1
+            instance.parameters.x_boundary_conditions = ("periodic","periodic")
+            instance.parameters.y_boundary_conditions = ("periodic","periodic")
+            rho = 0.1 | generic_unit_system.density
+            middle = 5.0 | generic_unit_system.length    
+            for x in instance.itergrids():
+                inmem = x.copy_to_memory()
+                inmem.rho = 0.1 | generic_unit_system.density
+                inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+                inmem.rhovy = 0.0 |  generic_unit_system.momentum_density
+                inmem.ax = ax
+                inmem.ay = ay
+                
+                inmem.energy =  1.0 | generic_unit_system.energy_density
+                from_model_to_code = inmem.new_channel_to(x)
+                from_model_to_code.copy()
+    
+            self.assertEquals(len(list(instance.itergrids())), 1)
+            
+            dt = 0.1 | generic_unit_system.time
+            instance.evolve_model(dt)
+            
+            self.assertEquals(len(list(instance.itergrids())), 1)
+            igrid = list(instance.itergrids())[0]
+            
+            self.assertAlmostRelativeEquals(igrid.rho , 0.1 | generic_unit_system.density)
+            self.assertAlmostRelativeEquals(igrid.rhovx , ax * dt* rho)
+            self.assertAlmostRelativeEquals(igrid.rhovy , ay * dt* rho)
+            instance.stop()
+            
+    
+    
+    def xtest15(self):
+        for ax, ay in ((0.0,0.0),) | generic_unit_system.acceleration:
+            instance=self.new_instance(MpiAmrVac, mode="2d")
+            instance.set_parameters_filename(instance.default_parameters_filename)
+            instance.parameters.mesh_length = (10.0, 10.0, 1) | generic_unit_system.length
+            instance.parameters.mesh_size = (20, 20, 1)
+            instance.parameters.maximum_number_of_grid_levels = 1
+            instance.parameters.x_boundary_conditions = ("periodic","periodic")
+            instance.parameters.y_boundary_conditions = ("periodic","periodic")
+            rho = 0.1 | generic_unit_system.density
+            middle = 5.0 | generic_unit_system.length    
+            for x in instance.itergrids():
+                inmem = x.copy_to_memory()
+                inmem.rho = 0.1 | generic_unit_system.density
+                inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+                inmem.rhovy = 0.0 |  generic_unit_system.momentum_density
+                inmem.ax = ax
+                inmem.ay = ay
+                
+                inmem.energy =  1.0 | generic_unit_system.energy_density
+                from_model_to_code = inmem.new_channel_to(x)
+                from_model_to_code.copy()
+    
+            self.assertEquals(len(list(instance.itergrids())), 4)
+            
+            dt = 0.03 | generic_unit_system.time
+            instance.evolve_model(dt)
+            
+            for igrid in instance.itergrids():
+                print igrid.rho[2]
+            self.assertEquals(len(list(instance.itergrids())), 4)
+              
+            for igrid in instance.itergrids():
+                print igrid.rho[2]
+                self.assertAlmostRelativeEquals(igrid.rho , 0.1 | generic_unit_system.density)
+                self.assertAlmostRelativeEquals(igrid.rhovx , ax * dt* rho)
+                self.assertAlmostRelativeEquals(igrid.rhovy , ay * dt* rho)
+            instance.stop()
