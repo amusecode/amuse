@@ -35,6 +35,9 @@ CONTAINS
         
         call readparameters()
         
+        time_advance=.true. 
+        time_accurate=.true.
+        
         eqpar(gamma_) = 5.0d0/3.0d0
         refinement_level = 1
         initialize_code = 0
@@ -3135,9 +3138,7 @@ CONTAINS
         error = get_stopping_condition_timeout_parameter(loop_timeout)
 
 
-        time_advance=.true. 
-        time_accurate=.true.
-        
+        time_accurate = .TRUE.
         
         time_in=MPI_WTIME()
         timeio_tot=zero
@@ -3145,8 +3146,10 @@ CONTAINS
         localsteps=0
         itmin=it
         
+        print *,"ONE"
         call getbc(t,ixG^LL,pw,pwCoarse,pgeo,&
                pgeoCoarse,.false.)
+        print *,"TWO"
 
         !  ------ start of integration loop. ------------------
         
@@ -3163,7 +3166,6 @@ CONTAINS
            ! exit time loop criteria
            if (it>=itmax) exit time_evol
            if (time_accurate .and. t>=tmax) exit time_evol
-           print *, t,tmax, tend
            call setdt
            
            if(fixprocess) call process(it,t)
@@ -3421,7 +3423,6 @@ CONTAINS
                 y(index) = xaccel2(j(index))
                 z(index) = xaccel3(k(index))
                     
-                print *, x(index), xaccel1
                 !end if
  !           end if
             

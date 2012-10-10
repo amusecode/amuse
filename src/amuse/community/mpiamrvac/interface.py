@@ -2612,6 +2612,21 @@ class MpiAmrVac(CommonCode):
             "the maximum number of grid levels that can be used during the simulation, including the base grid level", 
             default_value = 3
         )
+        object.add_method_parameter(
+            "get_time_accurate", 
+            "set_time_accurate",
+            "time_accurate", 
+            "if false will evolve to the given time, if true will take accurate steps using courant timesteps", 
+            default_value = 3
+        )
+        object.add_method_parameter(
+            "get_dtpar", 
+            "set_dtpar",
+            "timestep", 
+            "if greater than zero will fix the timestep to the given value", 
+            default_value = 3
+        )
+        
         self.stopping_conditions.define_parameters(object)
         
         

@@ -1,7 +1,7 @@
 Index: mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc	2012-10-09 12:05:16.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc	2012-10-10 19:27:20.000000000 +0200
 @@ -0,0 +1,45 @@
 +!==============================================================================
 +! include file amrvacpar.t.hd
@@ -51,7 +51,7 @@ Index: mpiamrvac/src/mpiamrvac/src/amrvacpar.t.hdacc
 Index: mpiamrvac/src/mpiamrvac/src/amrvacphys.t.hdacc
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mpiamrvac/src/mpiamrvac/src/amrvacphys.t.hdacc	2012-10-09 11:43:07.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/amrvacphys.t.hdacc	2012-10-10 19:27:20.000000000 +0200
 @@ -0,0 +1,482 @@
 +!##############################################################################
 +! module amrvacphys - hd
@@ -538,7 +538,7 @@ Index: mpiamrvac/src/mpiamrvac/src/amrvacphys.t.hdacc
 Index: mpiamrvac/src/mpiamrvac/src/refine.t
 ===================================================================
 --- mpiamrvac.orig/src/mpiamrvac/src/refine.t	2012-02-21 13:33:35.000000000 +0100
-+++ mpiamrvac/src/mpiamrvac/src/refine.t	2012-10-09 11:44:32.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/refine.t	2012-10-10 19:27:20.000000000 +0200
 @@ -92,7 +92,7 @@
  integer :: ixCo^D, jxCo^D, hxCo^D, ixFi^D, ix^D, idim, iw
  integer :: ixFi^L
@@ -580,7 +580,7 @@ Index: mpiamrvac/src/mpiamrvac/src/refine.t
 Index: mpiamrvac/src/mpiamrvac/src/coarsen.t
 ===================================================================
 --- mpiamrvac.orig/src/mpiamrvac/src/coarsen.t	2009-02-06 11:43:19.000000000 +0100
-+++ mpiamrvac/src/mpiamrvac/src/coarsen.t	2012-10-09 11:45:31.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/coarsen.t	2012-10-10 19:27:20.000000000 +0200
 @@ -77,14 +77,14 @@
  
  if (slab) then
@@ -598,3 +598,100 @@ Index: mpiamrvac/src/mpiamrvac/src/coarsen.t
        {do ixCo^DB = ixCo^LIM^DB
           ixFi^DB=2*(ixCo^DB-ixComin^DB)+ixFimin^DB\}
           wCo(ixCo^D,iw)= &
+Index: mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/amrvacusr.acceleration.t	2012-10-10 19:27:20.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t	2012-10-10 19:27:20.000000000 +0200
+@@ -8,38 +8,37 @@
+ double precision, intent(in)    :: qdt, qtC, qt, x(ixI^S,1:ndim)
+ double precision, intent(inout) :: wCT(ixI^S,1:nw), w(ixI^S,1:nw)
+ 
+-double precision                :: acc(ixG^T,1:ndim)
+ !-----------------------------------------------------------------------------
+ 
+-
+-
+-call getacceleration(ixI^L,ixO^L,x,acc)
+-
+-w(ixO^S,e_) =  w(ixO^S,e_)    &
+-            + qdt *wCT(ixO^S,m1_)*acc(ixO^S,1)   
++if (nwextra .GT. 0) then
++    w(ixI^S,e_+1:e_+ndim) = wCT(ixI^S,e_+1:e_+ndim)
++    w(ixI^S,e_) =  w(ixI^S,e_)    &
++                + qdt *wCT(ixI^S,m1_)*w(ixI^S,e_+1)   
+ {^NOONED
+-w(ixO^S,e_) =  w(ixO^S,e_)    &
+-            + qdt *wCT(ixO^S,m2_)*acc(ixO^S,2)
++    w(ixI^S,e_) =  w(ixI^S,e_)    &
++                + qdt *wCT(ixI^S,m2_)*w(ixI^S,e_+2)
+ }
+ {^IFTHREED
+-w(ixO^S,e_) =  w(ixO^S,e_)  &
+-            + qdt *wCT(ixO^S,m3_)*acc(ixO^S,3)
++    w(ixI^S,e_) =  w(ixI^S,e_)  &
++                + qdt *wCT(ixI^S,m3_)*w(ixI^S,e_+3)
+ }
+ 
+ !
+ !  Update momentum
+ !
+ 
+-w(ixO^S,m1_) =  w(ixO^S,m1_)  &
+-             + qdt *wCT(ixO^S,rho_)*acc(ixO^S,1)
++    w(ixI^S,m1_) =  w(ixI^S,m1_)  &
++                 + qdt *wCT(ixI^S,rho_)*w(ixI^S,e_+1)
+ {^NOONED
+-w(ixO^S,m2_) =  w(ixO^S,m2_)  &
+-             + qdt *wCT(ixO^S,rho_)*acc(ixO^S,2)
++    w(ixI^S,m2_) =  w(ixI^S,m2_)  &
++                 + qdt *wCT(ixI^S,rho_)*w(ixI^S,e_+2)
+ }
+ {^IFTHREED
+-w(ixO^S,m3_) =  w(ixO^S,m3_)  &
+-             + qdt *wCT(ixO^S,rho_)*acc(ixO^S,3)
++    w(ixI^S,m3_) =  w(ixI^S,m3_)  &
++                 + qdt *wCT(ixI^S,rho_)*w(ixI^S,e_+3)
+ }
++end if
++
+ 
+ return 
+ 
+@@ -56,9 +55,10 @@
+ 
+ integer, intent(in)             :: ixG^L, ix^L
+ double precision, intent(in)    :: dx^D, x(ixG^S,1:ndim)
+-double precision, intent(inout) :: w(ixG^S,1:nw), dtnew
++double precision, intent(in)    :: w(ixG^S,1:nw)
++double precision, intent(out) :: dtnew
+ 
+-double precision                :: acc(ixG^T,1:ndim), dxinv(1:ndim)
++double precision                :: dxinv(1:ndim)
+ double precision                :: dtaccel(1:ndim)
+ 
+ integer                         :: idims
+@@ -66,17 +66,14 @@
+ 
+ 
+ dtaccel = bigdouble
+-^D&dxinv(^D)=one/dx^D;
+-
+-call getacceleration(ixG^L,ix^L,x,acc)
+-acc(ix^S,1:ndim) = max(smalldouble,dabs(acc(ix^S,1:ndim)))
+-
+-do idims=1,ndim
+-      dtaccel(idims) = minval(one/(acc(ix^S,idims)*dxinv(idims)))
+-enddo
+-
++if (nwextra .GT. 0) then
++    ^D&dxinv(^D)=one/dx^D;
++    
++    do idims=1,ndim
++          dtaccel(idims) = minval(one/(max(smalldouble,dabs(w(ix^S,e_+idims)))*dxinv(idims)))
++    enddo
++end if
+ dtnew = sqrt(minval(dtaccel(1:ndim)))
+-
+ return
+ end subroutine getdt_acceleration
+ !===========================================================================

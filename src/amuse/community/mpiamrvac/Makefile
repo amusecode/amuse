@@ -69,8 +69,9 @@ clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod
 	$(RM) *~ mpiamrvac_worker worker_code.f90
 	$(RM) -f mpiamrvac_worker_2d mpiamrvac_worker_1d
-	$(RM) -f mpiamrvac_worker_2d_acc
-	$(RM) -Rf mpiamrvac_worker_*.dSYM
+	$(RM) -f mpiamrvac_worker_2dacc
+	$(RM) -Rf mpiamrvac_worker*.dSYM
+	$(RM) -f amrvac
 	-make -C $(CODEDIR) clean
 	$(RM) -Rf $(BUILDDIR)
 	$(RM) -Rf $(TWOD_BUILDDIR)
@@ -82,6 +83,8 @@ distclean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod
 	$(RM) *~ mpiamrvac_worker worker_code.f90
 	$(RM) -f mpiamrvac_worker_2d mpiamrvac_worker_1d
+	$(RM) -f mpiamrvac_worker_2dacc
+	$(RM) -f amrvac
 	$(RM) -Rf src
 	$(RM) -Rf src.*
 	$(RM) -Rf .pc
