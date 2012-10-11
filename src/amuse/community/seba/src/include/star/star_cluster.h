@@ -67,7 +67,7 @@ class star_cluster : public single_star {
 	 real mean_stellar_mass(const real t, const real mmin);
 	 real mean_stellar_mass();
 	 real mass_loss_by_evolution(const real dt);
-	 real turn_off_mass(const real t);
+	 real turn_off_mass(const real t, const real z);
 	 real tidal_radius();
 	 real relaxation_time(real n, real m, real r);
 

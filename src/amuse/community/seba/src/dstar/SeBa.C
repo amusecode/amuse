@@ -310,7 +310,7 @@ int main(int argc, char ** argv) {
             case 'I': I_flag = true;
 		      input_filename = poptarg;
 		      break;
-        case 'O': O_flag = true;
+            case 'O': O_flag = true;
 		      output_filename = poptarg;
 		      break;
             case 'w': q_exp = atof(poptarg);
@@ -326,7 +326,7 @@ int main(int argc, char ** argv) {
 	              break;
 	    case 's': input_seed = atoi(poptarg);
 		      break;
-        case 'z': metal = atof(poptarg);
+            case 'z': metal = atof(poptarg);
                 break;
             case '?': params_to_usage(cerr, argv[0], param_string);
 		      exit(1);
@@ -402,13 +402,13 @@ int main(int argc, char ** argv) {
 			q_min, q_max, qf, q_exp,
 			a_min, a_max, af, a_exp,
 			e_min, e_max, ef, e_exp,
-    		m_prim, m_sec, sma, ecc);
+    		m_prim, m_sec, sma, ecc, z);
         	while (m_prim>100.0 || m_sec>100.0 || ecc<0 || ecc>1){   
             	mkrandom_binary(m_min, m_max, mf, m_exp,
             			q_min, q_max, qf, q_exp,
             			a_min, a_max, af, a_exp,
             			e_min, e_max, ef, e_exp,
-                		m_prim, m_sec, sma, ecc);
+                		m_prim, m_sec, sma, ecc, z);
         	}
       }		
       else {        

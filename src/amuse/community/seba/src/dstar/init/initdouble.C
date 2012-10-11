@@ -54,7 +54,7 @@
 ////                      (Equal_ecc, ecc_Power_Law, Thermal_Distribution)
 ////                   -u requires appropriate interger (see double_star.h)
 ////             -Q   maximum mass ratio [1]
-////             -q   minimum mass ratio [<-m option / selected primary mass>]
+////             -q   minimum mass ratio [0.1 / selected primary mass]
 ////             -w   exponent for a power-law distribution  
 ////             -P/p eccentricity option: 0) constant mass ratio
 ////                                       1) Flat distribution
@@ -454,7 +454,7 @@ real get_random_eccentricity(real e_lower, real e_upper,
 }
 
 local void determine_semi_major_axis_limits(real m_prim, real m_sec, real ecc,
-                                            real &a_min, real &a_max) {
+                                            real &a_min, real &a_max, real z) {
 
     // This is very wrong, but has no effect, happily (SPZ+MS 9 July 2003)
     //    real a_prim=0, a_sec=0;
@@ -467,8 +467,8 @@ local void determine_semi_major_axis_limits(real m_prim, real m_sec, real ecc,
 
     if(ecc<0) err_exit("eccentricity <0");
 
-    real r_prim = zero_age_main_sequnece_radius(m_prim);
-    real r_sec  = zero_age_main_sequnece_radius(m_sec);
+    real r_prim = zero_age_main_sequnece_radius(m_prim, z);
+    real r_sec  = zero_age_main_sequnece_radius(m_sec, z);
 
     real peri_min = Starlab::max(a_min, r_prim+r_sec);
     a_min = peri_min/(1-ecc);
@@ -488,7 +488,7 @@ void mkrandom_binary( real m_min,  real m_max,
 		      real e_min,  real e_max,
 		      ecc_distribution ef,  real e_exp,
 		     real &m_prim, real &m_sec, real &semi,
-		     real &ecc) {
+		     real &ecc, real z) {
 
     m_prim = get_random_stellar_mass(m_min, m_max, mf, m_exp);
     //    PRL(m_prim);
@@ -509,8 +509,8 @@ void mkrandom_binary( real m_min,  real m_max,
     // This is of course not correct, but for the moment
     // good enough.  mkbinary does not know much about
     // stars.
-    real r_prim = zero_age_main_sequnece_radius(m_prim);
-    real r_sec = zero_age_main_sequnece_radius(m_sec);
+    real r_prim = zero_age_main_sequnece_radius(m_prim, z);
+    real r_sec = zero_age_main_sequnece_radius(m_sec, z);
 
     if(e_max>=1 && ef!=Equal_ecc) 
 	e_max = Starlab::max(e_min, Starlab::min(1., 1 - (r_prim+r_sec)/a_max));
@@ -526,7 +526,7 @@ void mkrandom_binary( real m_min,  real m_max,
       //      PRL(ecc);
 
       // The Initial orbital separation is chosen flat in log a.
-      determine_semi_major_axis_limits(m_prim, m_sec, ecc, a_min, a_max);
+      determine_semi_major_axis_limits(m_prim, m_sec, ecc, a_min, a_max, z);
       //      PRC(a_min);PRL(a_max);
     }
     while(a_min>a_max);

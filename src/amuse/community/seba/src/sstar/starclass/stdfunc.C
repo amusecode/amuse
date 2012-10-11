@@ -576,11 +576,11 @@ real gauss() {
     return ret_val;
 } 
 
-real turn_off_mass(const real time) {
+real turn_off_mass(const real time, const real z) {
 
      real mass = 0.5*cnsts.parameters(maximum_main_sequence);
      real mdot = mass;
-     real to_time = main_sequence_time(mass);
+     real to_time = main_sequence_time(mass, z);
 
      while(abs(time-to_time)>1.e-4) {
         mdot *= 0.5;
@@ -588,7 +588,7 @@ real turn_off_mass(const real time) {
            mass += mdot;
         else
            mass -= mdot;
-        to_time = main_sequence_time(mass);
+        to_time = main_sequence_time(mass, z);
 
         if(mass>=cnsts.parameters(maximum_main_sequence)
 	        -cnsts.safety(minimum_mass_step) ||
@@ -600,44 +600,47 @@ real turn_off_mass(const real time) {
      return mass;
 }
 
-real main_sequence_time(const real mass) {
+real main_sequence_time(const real mass, const real z) {
 
-     real t_ms = (2550. + 667.*pow(mass,2.5)
-               + pow(mass,4.5) )
-               / (0.0327*pow(mass,1.5)
-               + 0.346*pow(mass,4.5));
+    // Eq.4
+    real pow_mass_7 = pow(mass, 7);
+    real teller = smc.a(1, z) +smc.a(2, z)*pow(mass, 4) 
+                      +smc.a(3, z)*pow(mass, 5.5)  
+                      +       pow_mass_7;
+    real noemer =  smc.a(4, z)*pow(mass, 2) +smc.a(5, z)*pow_mass_7; 
+    real t_bgb = teller/noemer;
 
-     return t_ms;
+
+    real zeta = log10(z/cnsts.parameters(solar_metalicity));	
+    // Eq.6 identified as 'x' by Hurley
+    real stars_without_main_sequence_hook = max(0.95, min(0.99,
+                         0.95 - 0.03*(zeta + 0.30103)));
+			 
+    // Eq.7 identified as 'mu' by Hurley
+    real stars_with_main_sequence_hook = max(0.5, 
+		1.0 - 0.01*max(smc.a(6, z)/pow(mass, smc.a(7, z)),
+			       smc.a(8, z) + smc.a(9, z)
+			       /pow(mass, smc.a(10, z))));		 
+
+    //Eq. 5
+    real t_ms = t_bgb * max(stars_with_main_sequence_hook,
+                  stars_without_main_sequence_hook); 
+ 
+    return t_ms;
 }
 
-real zero_age_main_sequnece_radius(const real mass) {
 
-    real alpha, beta, gamma, delta, kappa, lambda;
+real zero_age_main_sequnece_radius(const real mass, const real z){
 
-    real log_mass = log10(mass);
+    real mx = pow(mass, 0.5);
+    real teller = (smc.c(8,z)*pow(mass,2) + smc.c(9,z)*pow(mass,6))*mx + smc.c(10,z)*pow(mass,11) +(smc.c(11,z) +
+                                   smc.c(12,z)*mx)*pow(mass,19);
+    real noemer = smc.c(13,z) + smc.c(14,z)*pow(mass,2) + (smc.c(15,z)*pow(mass,8) + pow(mass,18) + 
+                                                smc.c(16,z)*pow(mass,19))*mx;
+    
+    return teller/noemer;
 
-    if (mass > 1.334) {
-
-	alpha = 0.1509 + 0.1709*log_mass;
-	beta  = 0.06656 - 0.4805*log_mass;
-	gamma = 0.007395 + 0.5083*log_mass;
-	delta = (0.7388*pow(mass, 1.679) - 1.968*pow(mass, 2.887))
-    	      / (1.0 - 1.821*pow(mass, 2.337));
-    } 
-    else {
-      
-	alpha = 0.08353 + 0.0565*log_mass;
-	beta  = 0.01291 + 0.2226*log_mass;
-	gamma = 0.1151 + 0.06267*log_mass;
-	delta = pow(mass, 1.25) * (0.1148 + 0.8604*mass*mass)
-              / (0.04651 + mass*mass);
-    }
-
-    real radius = delta;
-
-    return radius;
 }
-
 
 real roche_radius(const real a, const real m1, const real m2) {
 

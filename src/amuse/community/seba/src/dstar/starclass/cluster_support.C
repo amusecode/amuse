@@ -15,9 +15,10 @@ void  make_profile(initial_cluster& c_init,
       double_init b_init;
 
       if (!c_init.field) {
-         real m_to = turn_off_mass(c_init.end_time);
+      	cerr<<"assuming solar metallicity in make_profile in cluster_support.C"<<endl;
+         real m_to = turn_off_mass(c_init.end_time, 0.02);
          cout << "Turn off mass (" << type_string(get_spectral_class(m_to))  
-              << ") = " << turn_off_mass(c_init.end_time) 
+              << ") = " << turn_off_mass(c_init.end_time, 0.02) 
               << " Solar mass."<< endl;
       }
 
@@ -558,16 +559,16 @@ double_init random_initial_conditions(initial_cluster& c) {
 real next_output_time(int n_out, int n_tot, real t1, real t2) {
 //cerr<<"real next_output_time(nj="<<n_out<<", nt="<<n_tot<<", t1="<<t1
 //                                        <<", t2="<<t2<<")"<<endl;
-
-      real m1 = turn_off_mass(t1);
-      real m2 = turn_off_mass(t2);
+cerr<<"assuming solar metallicity (3x) in next_output_time in cluster_support.C"<<endl;
+      real m1 = turn_off_mass(t1, 0.02);
+      real m2 = turn_off_mass(t2, 0.02);
       real dm = (m1-m2)/n_tot;
       real dt = (t2-t1)/n_tot;
 
       real m_out = m1 - dm*(n_out+1);
 //      real t_out = t1+dt*(n_out+1);
    
-      return main_sequence_time(m_out);
+      return main_sequence_time(m_out, 0.02);
 
    }
 

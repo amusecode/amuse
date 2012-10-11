@@ -177,7 +177,7 @@ void mkrandom_binary(real m_min,  real m_max,
 		     real e_min,  real e_max,
 		     ecc_distribution ef,  real e_exp,
 		     real &m_prim, real &m_sec, real &semi,
-		     real &ecc);
+		     real &ecc, real z);
 
 void print_initial_binary_distributions(real m_min,  real m_max,
 					mass_function mf,  real m_exp,

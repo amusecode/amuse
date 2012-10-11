@@ -271,7 +271,7 @@ void mkrandom_binary(const real lm_min, const real lm_max, const real m_exp,
 		     const real la_min, const real la_max,
 		     const bool e_flag,
 		     real &m_prim, real &m_sec, real &semi,
-		                                real &ecc);
+		                                real &ecc, const real z);
 
 real random_exponential_mass(const real m_min,
 			     const real m_max,

@@ -625,6 +625,7 @@ int main(int argc, char ** argv) {
     real q_max = VERY_LARGE_NUMBER;
     real q_min = 0;
     real dt = 1.37e4;
+    real metal = cnsts.parameters(Zsun);
 
     real snap_time = -1;
     bool T_flag = false;
@@ -636,7 +637,7 @@ int main(int argc, char ** argv) {
 
     extern char *poptarg;
     int c;
-    char* param_string = "P:p:S:s:B:A:a:M:m:N:n:E:e:Q:q:fc:t:vRT:";
+    char* param_string = "P:p:S:s:B:A:a:M:m:N:n:E:e:Q:q:fc:t:vRT:z:";
 
     while ((c = pgetopt(argc, argv, param_string)) != -1)
 	switch(c)
@@ -683,6 +684,8 @@ int main(int argc, char ** argv) {
 		      break;
 	    case 'v': v_flag = true;
 		      break;
+	    case 'z': metal = atof(poptarg);
+	              break;	      
             case '?': params_to_usage(cerr, argv[0], param_string);
 		      get_help();
 		      exit(1);
@@ -736,7 +739,7 @@ start:
     real prim_mass, sec_mass;
     real m_to;
     if(T_flag) {
-      m_to = turn_off_mass(snap_time);
+      m_to = turn_off_mass(snap_time, metal);
 
       detached_population = mkarray((int)no_of_stellar_type, 
 				    (int)no_of_stellar_type);

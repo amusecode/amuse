@@ -55,15 +55,11 @@ void star_cluster::update() {
   // Just override single_star::update();
 }
 
-real star_cluster::turn_off_mass(const real t) {
-// ST 16 feb 2009 simply added solar metallicity to make
-//function compatible with new code 
-// is not based on anything yet! 
-// 
- real metalicity = cnsts.parameters(solar_metalicity);
+real star_cluster::turn_off_mass(const real t, const real z) {
+
   real m = 50;  // first guess;
   real mdot = m;
-  real to_time = main_sequence_time(m, metalicity);
+  real to_time = main_sequence_time(m, z);
 
   while(abs(t-to_time)>1.e-2) {
     mdot *= 0.5;
@@ -71,7 +67,7 @@ real star_cluster::turn_off_mass(const real t) {
       m += mdot;
     else
       m -= mdot;
-    to_time = main_sequence_time(m, metalicity);
+    to_time = main_sequence_time(m, z);
 
     if(m>=100 || m<0.1)
       to_time = t;
@@ -82,8 +78,9 @@ real star_cluster::turn_off_mass(const real t) {
 
 // From McMillan & Portegies Zwart Eq. 30
 real star_cluster::mean_stellar_mass(const real t, const real mmin) {
+cerr<<"assuming solar metallicity in mean_stellar_mass in star_cluster.C"<<endl;
 
-  real mto = turn_off_mass(t);
+  real mto = turn_off_mass(t, 0.02);
   real mm = ((1-x_imf)/(2-x_imf))
     * (pow(mto, 2-x_imf) - pow(mmin, 2-x_imf))
     / (pow(mto, 1-x_imf) - pow(mmin, 1-x_imf));

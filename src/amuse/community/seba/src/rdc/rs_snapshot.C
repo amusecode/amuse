@@ -113,7 +113,9 @@ local real extract_snapshot(SeBa_hist *hi, real snap_time,
     stellar_type prim_type, sec_type, ts;
     real prim_mass, sec_mass;
     real m_to;
-      m_to = turn_off_mass(snap_time);
+cerr<<"assuming solar metallicity in extract_snapshot in rs_snapshot.C"<<endl;
+
+      m_to = turn_off_mass(snap_time, 0.02);
 
       detached_population = mkrarray((int)no_of_stellar_type, 
 				    (int)no_of_stellar_type);

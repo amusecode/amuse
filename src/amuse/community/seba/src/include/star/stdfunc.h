@@ -64,9 +64,9 @@
        void fool(char *);
 
 //		Timescale utilities.
-       real turn_off_mass(const real);
-       real main_sequence_time(const real);
-       real zero_age_main_sequnece_radius(const real);
+       real turn_off_mass(const real, const real);
+       real main_sequence_time(const real, const real);
+       real zero_age_main_sequnece_radius(const real, const real);
        real kelvin_helmholds_timescale(const real, const real, const real);
        real nucleair_evolution_timescale(const real, const real);
        real dynamic_timescale(const real, const real);

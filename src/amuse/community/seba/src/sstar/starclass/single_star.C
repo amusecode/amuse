@@ -1811,8 +1811,10 @@ real single_star::terminal_main_sequence_radius(const real mass,
 // Tout 1996 fits
 real single_star::base_main_sequence_radius(const real mass, const real z) { 
     real mx = pow(mass, 0.5);
-    real teller = (smc.c(8,z)*pow(mass,2) + smc.c(9,z)*pow(mass,6))*mx + smc.c(10,z)*pow(mass,11) +(smc.c(11,z) +                               smc.c(12,z)*mx)*pow(mass,19);
-    real noemer = smc.c(13,z) + smc.c(14,z)*pow(mass,2) + (smc.c(15,z)*pow(mass,8) + pow(mass,18) +                                             smc.c(16,z)*pow(mass,19))*mx;
+    real teller = (smc.c(8,z)*pow(mass,2) + smc.c(9,z)*pow(mass,6))*mx + smc.c(10,z)*pow(mass,11) +(smc.c(11,z) + 
+                                  smc.c(12,z)*mx)*pow(mass,19);
+    real noemer = smc.c(13,z) + smc.c(14,z)*pow(mass,2) + (smc.c(15,z)*pow(mass,8) + pow(mass,18) + 
+                                                smc.c(16,z)*pow(mass,19))*mx;
     return teller/noemer;
 }
 

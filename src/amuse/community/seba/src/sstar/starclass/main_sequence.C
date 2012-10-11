@@ -642,7 +642,7 @@ void main_sequence::detect_spectral_features() {
 
       if (accreted_mass>=cnsts.parameters(B_emission_star_mass_limit))
 	spec_type[Emission]=Emission;
-      if (get_relative_mass() > turn_off_mass(current_time)
+      if (get_relative_mass() > turn_off_mass(current_time, metalicity)
 	                   * (1+cnsts.parameters(Blue_straggler_mass_limit)))
 	spec_type[Blue_Straggler]=Blue_Straggler;
    }
