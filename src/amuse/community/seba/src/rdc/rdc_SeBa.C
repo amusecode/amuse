@@ -521,24 +521,29 @@ local void extract_binary_on_stellar_types(SeBa_hist *ha,
 	    return;
 
 	} else if ((hi->binary_contains(sec_string, prim_string, bt) &&
-		    hi->binary_limits(mass_ratio, 1/q_max, 1/q_min) &&
+		    // (GN Aug 23 2012) to avoid problems with mergers where q can be inf
+		    //hi->binary_limits(mass_ratio, 1/q_max, 1/q_min) &&
 		    hi->binary_limits(secondary_mass, mp_min, mp_max) &&
 		    hi->binary_limits(primary_mass, ms_min, ms_max) )) {
 	  // (GN Nov 14 2001) Beware: primary is now secondary and vice versa
 	  
-	  if (R_flag) {
-	    for_all_SeBa_hist(SeBa_hist, ha, ho) cout << *ho;	   
-	  } 
-	  else {
-	    hi->get_first()->put_single_reverse(cout);
-	    // (GN Oct  3 2000) temporary fot hewd
-	    hi->get_past()->put_single_reverse(cout);
-	    hi->put_single_reverse(cout);
+	  if (hi->binary_limits(mass_ratio, 1/q_max, 1/q_min) || bt == Merged) {
+
+
+	    if (R_flag) {
+	      for_all_SeBa_hist(SeBa_hist, ha, ho) cout << *ho;	   
+	    } 
+	    else {
+	      hi->get_first()->put_single_reverse(cout);
+	      // (GN Oct  3 2000) temporary fot hewd
+	      hi->get_past()->put_single_reverse(cout);
+	      hi->put_single_reverse(cout);
+	    }
+	    
+	    if (first_occasion) 
+	      return;
+
 	  }
-
-	  if (first_occasion) 
-	    return;
-
 	}	
       }
     }
@@ -709,6 +714,12 @@ s:  stellar_type_summary sec_type= summarize_stellar_type(stype);
 start:    
 
 #endif    
+
+    //    if (bt == Merged) {
+    //  cerr <<"BLA!" <<endl;
+    //  if (primary_type_string == "any") mp_min = 0.;
+    //  if (secondary_type_string == "any") ms_min = 0.;
+    //}
 
     SeBa_hist* hi = new SeBa_hist;
     if (!hi->read_SeBa_hist(cin))
