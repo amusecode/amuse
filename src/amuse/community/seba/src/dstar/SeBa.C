@@ -61,7 +61,7 @@
 ////                      (Equal_ecc, ecc_Power_Law, Thermal_Distribution)
 ////                   -u requires appropriate interger (see double_star.h)
 ////             -Q   maximum mass ratio [1]
-////             -q   minimum mass ratio [<-m option/selected primary mass>]
+////             -q   minimum mass ratio [0.1/selected primary mass]
 ////             -w   exponent for a power-law distribution  
 ////             -P/p mass ratio option: 0) constant mass ratio
 ////                                       1) Flat_q

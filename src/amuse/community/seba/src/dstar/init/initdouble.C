@@ -496,8 +496,8 @@ void mkrandom_binary( real m_min,  real m_max,
   // Initial secondary mass (selected between m_min and m_prim
   // with equal probability per unit mass.
     if(q_min<=0){
-      	//q_min =  0.1/m_prim; //minimum mass secondary = 0.1
-      	q_min = m_min/m_prim;
+      	q_min =  0.1/m_prim; //minimum mass secondary = 0.1
+      	//q_min = m_min/m_prim;
     }
     real q = get_random_mass_ratio(q_min, q_max, qf, q_exp);
 
