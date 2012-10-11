@@ -147,7 +147,8 @@ star* proto_star::reduce_mass(const real mdot) {
 
 star* proto_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 
-      real mdot_temp = relative_mass*dt/get_binary()->get_donor_timescale();
+      //real mdot_temp = relative_mass*dt/get_binary()->get_donor_timescale();
+      real mdot_temp = get_total_mass()*dt/get_binary()->get_donor_timescale();
       mdot = mass_ratio_mdot_limit(mdot_temp);
 
       if (envelope_mass<=mdot) {

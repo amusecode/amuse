@@ -236,7 +236,8 @@ star* sub_giant::reduce_mass(const real mdot) {
 
 //used by subtrac_mass_from_donor and double_star::perform_mass_transfer
 real sub_giant::mdot_limit(const real dt){
-    real mdot = relative_mass*dt/get_binary()->get_donor_timescale();
+    //real mdot = relative_mass*dt/get_binary()->get_donor_timescale();
+    real mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
     return mass_ratio_mdot_limit(mdot);
     
 }

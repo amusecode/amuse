@@ -45,7 +45,9 @@ cerr<<"double_star not allowed to fill Roche-lobe"<<endl;
 exit(1);
 
 /*
-        real mdot = relative_mass*dt/root->get_donor_timescale();
+
+        //real mdot = relative_mass*dt/root->get_donor_timescale();
+        real mdot = get_total_mass()*dt/root->get_donor_timescale();
 //        mdot = mass_ratio_mdot_limit(mdot);
 
         real evelope_mass = primary->get_envelope_mass()
