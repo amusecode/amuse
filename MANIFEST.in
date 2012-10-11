@@ -3,6 +3,7 @@ include configure
 include README.txt
 include config.mk.in
 include build.py.in
+include amuserc.example
 include support/configpy.in
 
 recursive-include src *

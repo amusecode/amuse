@@ -1,0 +1,135 @@
+# This is an example configuration file for AMUSE
+# AMUSE will look for the `amuserc` file in the following locations
+# 1) amuse python path    (src/amuse, used for binary installs)
+# 2) amuse root directory (set by the AMUSE_DIR environment variable)
+# 3) your home directory  (under the name .amuserc, so a hidden file)
+# 4) the current working directory
+# AMUSE will combine the files it finds in these paths. 
+# The file in the path with the higher number will overwrite the values
+# in the file(s) in the path with lower number. For example
+# the values in the file in the current working directory will
+# override the values in the file in the amuse root directory.
+# Amuse will use the 'amuserc' filename, except for the home directory
+# were it will look for .amuserc (${HOME}/.amuserc)
+
+[channel]
+
+# You can redirect the output of a code to a file, /dev/null or not at all
+# by default all output is redirector to /dev/null and will not be
+# shown to the running script. 
+# valid values are:
+# none - no redirection, all output is shown on the console
+# null - redirect to /dev/null, no output is shown
+# file - redirect to a file
+
+# redirection=null
+
+# If you want to redirect to a file, you'll need to uncomment these
+# lines and specify the names of the files for standard output and
+# error output. The name for stderr can be the same as stdout.
+
+# redirect_stdout_file=code.out
+# redirect_stderr_file=code.out
+
+# You can specify the code to be run under a debbugger
+# valid values are
+# none       - no debugger, normal run
+# gdb        - start a gdb debugger in a separate xterm
+# xterm      - start the code under xterm, ideal for console logging
+# ddd        - start a ddd session (a graphical debugger)
+# valgrind   - run the code under valgrind to check for memory leaks
+# gdb-remote - run the gdb as a server that waits on a port
+
+# debugger=none
+
+# for remote debugging you can specify a port to listen on
+
+# debugger=gdb-remote
+# debugger_port=4343 
+
+# You can specify the communication channel and process start
+# library. Default value is mpi or if mpi is not available
+# sockets.
+# valid values are:
+# mpi     - use mpi library to start and run the community codes
+# sockets - use simple forks and sockets, only runs on one node
+# ibis    - use the ibis java library to run on a hetrogeneous grid
+# not all codes are compatible with sockets and ibis
+
+# channel_type=mpi
+
+
+
+###################################################################
+# Advanced channel options
+#
+# Also look for executables in the specified directory,
+# needs to be an absolute directory name
+# (for binary installs)
+
+# worker_code_directory=/tmp/codes/
+
+# Maximum number of calls to merge into one call
+# AMUSE is optimized to send large blocks of data between the
+# script and an community code, this lowers communication
+# overhead but increases memory usage. If you encounter memory
+# problems (many running codes on a single node) you can
+# lower this number
+ 
+# max_message_length=1000000
+
+# The redirection is implemented with a simple python script
+# run with the same executable as the main python script
+# for remote systems you can specify a different python executable
+
+# python_exe_for_redirection=/usr/bin/python
+
+# By default the community code executable modification date
+# is checked against the interface.py file. If the executable
+# is not up to date and error is raises. In some cases you
+# may want to turn off this check.
+
+# must_check_if_worker_is_up_to_date=True
+
+# For MPICH2 AMUSE checks if the mpd is running for every code
+# start. This prevents hangs but causes some overhead. If you
+# want to start many different codes you can turn of the
+# check with this option
+
+# check_mpi=True
+
+# On some MPI installations no new codes can be started
+# after disconnecting with a previous code (code.stop()).
+# It is possible to prevent disconnection during a run by
+# setting this option to False. 
+
+# must_disconnect_on_stop=True
+###################################################################
+
+[data]
+
+# AMUSE will look for certain configuration files
+# and data files in the amuse_root_dir. For source code installations
+# the amuse code will automatically determine the correct
+# directory, but for custom installations you might need to
+# change it
+
+# amuse_root_dir=/usr/share/amuse
+
+# Some codes in AMUSE need data or parameter files to work
+# correctly. By defailt AMUSE will look for `amuse_root_dir`/data
+# you can change the value with this parameter
+
+# input_data_root_directory=/usr/share/amuse/data
+
+# Some codes in AMUSE write data while running.
+# By defailt AMUSE will use `amuse_root_dir`/data.
+# You can specify a different directory. If you give 
+# a relative path, a directy relative to your current working directory
+# will be used. AMUSE will create the directory if it does not already
+# exist.
+
+# input_data_root_directory=.
+
+
+

@@ -2,6 +2,7 @@ import numpy
 from numpy import pi
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
+from amuse.units import constants
 
 from amuse.community.mikkola.interface import MikkolaInterface
 from amuse.community.mikkola.interface import Mikkola
@@ -280,6 +281,7 @@ class TestMikkola(TestWithMPI):
     def test3(self):
         convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
         instance = Mikkola(convert_nbody)
+        instance.parameters.lightspeed = constants.c
         stars = self.new_system_of_Hulse_Taylor_pulsar()
         instance.particles.add_particles(stars)
         Hulse = stars[0]
