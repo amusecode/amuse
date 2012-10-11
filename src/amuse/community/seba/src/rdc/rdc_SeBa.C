@@ -69,7 +69,7 @@ class SeBa_hist {
   	      past=s;
 	      past->future=this;
 	      future = NULL;
-	   }
+ 	   }
 	   else {
 	      past=NULL;
 	      future=NULL;
@@ -210,11 +210,11 @@ void SeBa_hist::put_single_reverse(ostream& s) {
      s << "\t" << semi << " " << ecc; 
      //     s << "\t" << id_sec << " " << tpe_sec << " " 
      s << "\t" << tpe_sec << " " 
-       << m_sec << " " << r_sec
+       << m_sec << " " << r_sec << " " 
        << temp_sec << " " << mcore_sec;
      //     s << "\t" << id_prim << " " <<tpe_prim << " " 
      s << "\t" <<tpe_prim << " " 
-       << m_prim << " " << r_prim
+       << m_prim << " " << r_prim << " "
        << temp_prim << " " << mcore_prim;
      s << endl;
  }
