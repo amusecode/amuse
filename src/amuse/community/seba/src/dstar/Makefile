@@ -11,7 +11,7 @@ LDLIBS	  += \
 
 CFLAGS    += -O
 
-EXE	= SeBa
+EXE	= SeBa Normalisation
 DIRS	= init io starclass stardyn util
 
 all:	lib $(EXE)
