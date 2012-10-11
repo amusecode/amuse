@@ -330,7 +330,6 @@ bool SeBa_hist::binary_contains(char *prim_string,
 				char *sec_string,
 				binary_type bt = Detached) {
 
-
   if (bin_tpe== bt && 
       (!strcmp(prim_string, type_string(tpe_prim))      ||
        !strcmp(prim_string, type_short_string(tpe_prim)) ||
@@ -620,7 +619,7 @@ int main(int argc, char ** argv) {
     real e_min = 0;
     real q_max = VERY_LARGE_NUMBER;
     real q_min = 0;
-    real dt = 1.e4;
+    real dt = 1.37e4;
 
     real snap_time = -1;
     bool T_flag = false;
