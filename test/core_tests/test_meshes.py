@@ -81,3 +81,4 @@ class TestMultilevelBlockStructuredMesh(amusetest.TestCase):
         self.assertEquals(mesh[2][3].i, 2)
         self.assertEquals(mesh[2][3].j, 3)
         self.assertEquals(mesh[2][4].j, 3)
+        self.assertEquals(mesh[2][1].j, 0)

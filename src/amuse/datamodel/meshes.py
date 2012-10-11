@@ -69,7 +69,7 @@ class MultilevelBlockStructuredMesh(object):
             newposition = list(self.position)
             newposition.append(index)
             if len(newposition) == len(self._shape):
-                grids = self.select_grids(newposition)
+                grids = self.select_grids_at_point(newposition)
                 print len(grids)
                 if len(grids) == 1:
                     grid = grids[0]
@@ -86,9 +86,14 @@ class MultilevelBlockStructuredMesh(object):
                     self.grids_with_levels,
                     self.factor_per_level
                 )
-                
+    
+    def to_grid(self):
+        result = Grid(self.shape)
+        grids_on_grid = self.select_grids_overlapping_rectangle(self.position)
+        if len(grids_on_grid) == 1:
+            return 
         
-    def select_grids(self, indices):
+    def select_grids_at_point(self, indices):
         selected_grids = []
         for grid in self.grids_with_levels:
             position = grid.position_at_level(self.level)
@@ -105,4 +110,24 @@ class MultilevelBlockStructuredMesh(object):
                 selected_grids.append(grid)
         return selected_grids
             
+    def select_grids_overlapping_rectangle(self, position, shape):
+        selected_grids = []
+        for grid in self.grids_with_levels:
+            grid_position = grid.position_at_level(self.level)
+            grid_shape = grid.shape_at_level(self.level)
+            
+            must_select = True
+            for index, size, grid_index, grid_size in zip(position, shape, grid_position, grid_shape):
+                if (
+                    (grid_index           >= index and grid_index             < index+size )
+                    or
+                    (grid_index+grid_size >= index and grid_index + grid_size < index+size )
+                   ):
+                    continue
+                else:
+                    must_select = False
+                    break
+            if must_select:
+                selected_grids.append(grid)
+        return selected_grids
             
