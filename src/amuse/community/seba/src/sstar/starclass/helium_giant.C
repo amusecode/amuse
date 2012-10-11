@@ -570,12 +570,11 @@ real helium_giant::zeta_adiabatic() {
 
 real helium_giant::zeta_thermal() {
 
-//    real z = -2;
-//    if (get_core_mass()<=0.4)  // like a white dwarf
+//	real z = -2;
+//	real z = 0; // with this helium giants transfer mass on the nuclear timescale
+      real z = -2;
+//      if (get_core_mass()<=0.4)  // like a white dwarf
 //	z = -cnsts.mathematics(one_third);
-//    return z;
-
-	real z = 0;
 	return z;
 }
 
