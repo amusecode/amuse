@@ -574,14 +574,8 @@ real helium_giant::zeta_thermal() {
 //	z = -cnsts.mathematics(one_third);
 //    return z;
 
-
-     real heg_type = helium_giant_type(luminosity, relative_helium_mass, get_total_mass(), metalicity);
-     if (heg_type ==  5){ // helium hertzsprung
-     	return -2;
-	}
-     else { // helium giant
-     	return 0; 
-	}
+	real z = 0;
+	return z;
 }
 
 #if 0
