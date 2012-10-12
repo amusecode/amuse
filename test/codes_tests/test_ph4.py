@@ -542,7 +542,7 @@ class TestPH4(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
         
-        instance = ph4(redirection='none')
+        instance = ph4()
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.parameters.epsilon_squared = 0 | nbody_system.length**2

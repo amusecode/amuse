@@ -80,7 +80,7 @@ class FractalClusterInterface(CodeInterface,  LiteratureReferencesMixIn):
 
 class MakeFractalCluster(object):
     def __init__(self,N=None,masses=None,convert_nbody = None,do_scale=False,
-                     random_seed=None,fractal_dimension=1.6,virial_ratio=0.5,verbose=True):
+                     random_seed=None,fractal_dimension=1.6,virial_ratio=0.5,verbose=False):
         if N is None and masses is not None:
           self.N=len(masses)
         if masses is not None and len(masses)!=N:
