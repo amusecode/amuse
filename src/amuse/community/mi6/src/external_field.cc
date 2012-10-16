@@ -62,7 +62,7 @@ void calc_force_from_point_mass(Particle &prti,
   */
 
     if (calculate_postnewtonian_only_first_order){
-        double dummy = 0;
+        Vector3 dummy = 0.0;
         calc_acc0_jrk_acc2_acc3_PN0_PN1_PN25(prti.mass,
             posi, veli, acci, jrki,
             SMBH_MASS, SMBH_POS, SMBH_VEL, SMBH_ACC, SMBH_JRK,

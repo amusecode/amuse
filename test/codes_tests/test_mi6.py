@@ -514,10 +514,10 @@ class TestMI6(TestWithMPI):
         instance.evolve_model(0.1 | nbody_system.time)
         kinetic_energy = instance.kinetic_energy
         potential_energy = instance.potential_energy
-        self.assertAlmostRelativeEqual(kinetic_energy, 2.1362368884e+37 | units.J, 10)
-        self.assertAlmostRelativeEqual(potential_energy, -4.34842269914e+37 | units.J, 10)
+        self.assertAlmostRelativeEqual(kinetic_energy, 2.13633848369e+37 | units.J, 5)
+        self.assertAlmostRelativeEqual(potential_energy, -4.34851806763e+37 | units.J, 5)
         
-        self.assertAlmostRelativeEqual(potential_energy + kinetic_energy, initial_total_energy, 10)
+        self.assertAlmostRelativeEqual(potential_energy + kinetic_energy, initial_total_energy, 5)
         
         instance.cleanup_code()
         instance.stop()
