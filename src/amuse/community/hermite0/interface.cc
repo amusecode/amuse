@@ -69,6 +69,7 @@ real t_evolve = t;                // Time requested by evolve.  Control returns
                                 // system is computed by extrapolation.
 real t_wanted = 0;
 static double begin_time = 0;
+static double end_time_accurancy_factor = 0.5;
 
 vector<int>  ident;
 vector<real> mass, radius, potential;
@@ -543,24 +544,47 @@ void evolve_step(real dt, real *epot, real *coll_time)
     real (* old_jerk)[NDIM] = new real[n][NDIM];
 
     for (int i = 0; i < n ; i++)
-      {
+    {
         for (int k = 0; k < NDIM ; k++)
-          {
+        {
             old_pos[i][k] = pos[i][k];
             old_vel[i][k] = vel[i][k];
             old_acc[i][k] = acc[i][k];
             old_jerk[i][k] = jerk[i][k];
-          }
-      }
+        }
+    }
 
     predict_step(dt);
     get_acc_jerk_pot_coll(epot, coll_time);
+    
+/*****
+ * put back in previous positions if a collision was detected
+ * for experiment, need to remove
+    if(set_conditions & enabled_conditions) {
+        for (int i = 0; i < n ; i++)
+        {
+            for (int k = 0; k < NDIM ; k++)
+            {
+                pos[i][k] = old_pos[i][k];
+                vel[i][k] = old_vel[i][k];
+                acc[i][k] = old_acc[i][k];
+                jerk[i][k] = old_jerk[i][k];
+            }
+        }
+        delete[] old_pos;
+        delete[] old_vel;
+        delete[] old_acc;
+        delete[] old_jerk;
+        return;
+    }
+ *
+ ****/
     correct_step(old_pos, old_vel, old_acc, old_jerk, dt);
     
     if (reeval)
-      {
+    {
         get_acc_jerk_pot_coll(epot, coll_time);
-      }
+    }
     t += dt;
     t_evolve = t;
 
@@ -699,7 +723,7 @@ int evolve_system(real t_end)
     // Don't flag a collision if no step is to be taken (presumably
     // just handled?).
 
-    if (t + dt > t_end){
+    if (t + dt > t_end + (end_time_accurancy_factor * dt)){
         
         must_run = 0;
 #ifndef NOMPI
@@ -717,96 +741,104 @@ int evolve_system(real t_end)
     int timeout_detection;
     //
     error = is_stopping_condition_enabled(TIMEOUT_DETECTION, 
-					  &timeout_detection);
+                    &timeout_detection);
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
-					  &is_number_of_steps_detection_enabled);
+                    &is_number_of_steps_detection_enabled);
     error = is_stopping_condition_enabled(OUT_OF_BOX_DETECTION,
-					  &is_out_of_box_detection_enabled);
+                    &is_out_of_box_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
     get_stopping_condition_out_of_box_parameter(&box_size);    
     // AMUSE STOPPING CONDITIONS
     
     while (true) {
-        while (t < t_dia && t+dt <= t_end) {
-	  dt = calculate_step(coll_time);
-	  
-#ifndef NOMPI
-	  MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
-#endif
+        while (t < t_dia && t + dt <= t_end + (end_time_accurancy_factor*dt)) {
+            
+            #ifndef NOMPI
+            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+            #endif
 
-	  evolve_step(dt, &epot, &coll_time);        // sets t, t_evolve
-	  
-	  if (test_mode) {
-	    real E = 0.0;
-	    nest_err = get_kinetic_energy(&E);
-	    E += epot;
-	    if (!init_flag) {
-	      einit = E;
-	      init_flag = true;
-	    }
-	    cout << t << " " << pos[0][0] << " " << pos[0][1]
-		 << " " << E - einit << endl;
-	  }
-	  nsteps++;
-	  
-	  // compute_nn();
-	  
-	  // AMUSE STOPPING CONDITIONS
-	  if(timeout_detection) {
-	    time(&currenttime);
-	    cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
-	    if((currenttime - starttime) > timeout_parameter) {
-	      int stopping_index  = next_index_for_stopping_condition();
-	      set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
-	    }
-	  }
-	  if(is_number_of_steps_detection_enabled) {
-	    number_of_steps_innerloop++;
-	    if (number_of_steps_innerloop > max_number_of_steps) {
-	      int stopping_index  = next_index_for_stopping_condition();
-	      set_stopping_condition_info(stopping_index, 
-					  NUMBER_OF_STEPS_DETECTION);
-	    }
-	  }
-	  if (is_out_of_box_detection_enabled) {
-	    for (i = 0; i < n; i++) {
-		sqr_distance_wrt_origin = 0.0;
-		for (k = 0; k < NDIM; k++) {
-		    sqr_distance_wrt_origin += pos[i][k]*pos[i][k];
-		}
-		if (sqr_distance_wrt_origin > box_size*box_size) {
-		    int stopping_index = next_index_for_stopping_condition();
-		    set_stopping_condition_info(stopping_index, 
-						OUT_OF_BOX_DETECTION);
-		    if (n_particles_out_of_box < 10) {
-			set_stopping_condition_particle_index(stopping_index,
-							      n_particles_out_of_box,
-							      ident[i]);
-			n_particles_out_of_box++;
-		    }
-		    else {
-			printf("Run out of storable out of box events\n");
-		    }
-		}
-	    }
-	  }
-	  if(set_conditions & enabled_conditions) {
-	    break;
-	  }
-	}
-	
+            evolve_step(dt, &epot, &coll_time);        // sets t, t_evolve
+
+            dt = calculate_step(coll_time);
+            
+            if(end_time_accurancy_factor == 0.0 && t < t_end && t + dt > t_end) {
+                dt = t_end - t;
+            }
+            
+            if (test_mode) {
+                real E = 0.0;
+                nest_err = get_kinetic_energy(&E);
+                E += epot;
+                if (!init_flag) {
+                    einit = E;
+                    init_flag = true;
+                }
+                cout << t << " " << pos[0][0] << " " << pos[0][1]
+                 << " " << E - einit << endl;
+            }
+            nsteps++;
+
+            // compute_nn();
+
+            // AMUSE STOPPING CONDITIONS
+            if(timeout_detection) {
+                time(&currenttime);
+                cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
+                if((currenttime - starttime) > timeout_parameter) {
+                    int stopping_index  = next_index_for_stopping_condition();
+                    set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
+                }
+            }
+            
+            if(is_number_of_steps_detection_enabled) {
+                number_of_steps_innerloop++;
+                if (number_of_steps_innerloop > max_number_of_steps) {
+                  int stopping_index  = next_index_for_stopping_condition();
+                  set_stopping_condition_info(stopping_index, 
+                              NUMBER_OF_STEPS_DETECTION);
+                }
+            }
+            
+            if (is_out_of_box_detection_enabled) {
+                for (i = 0; i < n; i++) {
+                sqr_distance_wrt_origin = 0.0;
+                for (k = 0; k < NDIM; k++) {
+                    sqr_distance_wrt_origin += pos[i][k]*pos[i][k];
+                }
+                if (sqr_distance_wrt_origin > box_size*box_size) {
+                    int stopping_index = next_index_for_stopping_condition();
+                    set_stopping_condition_info(stopping_index, 
+                                OUT_OF_BOX_DETECTION);
+                    if (n_particles_out_of_box < 10) {
+                        set_stopping_condition_particle_index(stopping_index,
+                                              n_particles_out_of_box,
+                                              ident[i]);
+                        n_particles_out_of_box++;
+                    }
+                    else {
+                        printf("Run out of storable out of box events\n");
+                    }
+                }
+                }
+            }
+            if(set_conditions & enabled_conditions) {
+                break;
+            }
+        }
+
         if (t >= t_dia) {
-	  write_diagnostics(epot, *sout);
-	  t_dia += dt_dia;
-	}
-	
-        //is_stopping_condition_set???
+          write_diagnostics(epot, *sout);
+          t_dia += dt_dia;
+        }
+
+            //is_stopping_condition_set???
         if (set_conditions & enabled_conditions) {
-	  break;
-	}
-        if (t+dt > t_end) {
-	  break;
-	}
+          break;
+        }
+        
+        if (t + dt >= (t_end + (end_time_accurancy_factor*dt))) {
+          break;
+        }
     }
     
     if (!(set_conditions & enabled_conditions))
@@ -1598,38 +1630,19 @@ int commit_parameters(){
 }
 
 int synchronize_model() {
-    real epot;                  // potential energy of the n-body system
-    real coll_time;             // collision (close encounter) time scale
-    
-    if (set_conditions & enabled_conditions) {
-        return 0;
+    return 0;
+}
+
+int set_end_time_accurancy_factor(double value)
+{
+    if(value < -1.0 || value > 1.0) {
+        return -1;
     }
-     
-    if(mpi_rank)     {
-        evolve_not_on_root();
-    } else {
-        int must_run = 0;
-        if (t_evolve < t_wanted)
-        {
-            must_run = 1;
-            
-#ifndef NOMPI
-            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);  
-#endif
-            evolve_step(t_wanted-t_evolve, &epot, &coll_time);
-            nsteps++;
-            
-#ifndef NOMPI
-            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD); 
-#endif
-            get_acc_jerk_pot_coll(&epot, &coll_time);
-            
-            t_evolve = t_wanted;
-        } 
-        must_run = 0; 
-#ifndef NOMPI
-        MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
-#endif
-    }
+    end_time_accurancy_factor = value;
+    return 0;
+}
+int get_end_time_accurancy_factor(double * value)
+{
+    *value = end_time_accurancy_factor;
     return 0;
 }

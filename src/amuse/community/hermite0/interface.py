@@ -118,7 +118,42 @@ class HermiteInterface(CodeInterface,
         """
         return function
     
-
+    @legacy_function
+    def get_end_time_accurancy_factor():
+        """
+        Get the end time accurancy factor:
+            < 0 will stop between factor * dt befor the end time and the end time
+              0 will stop at exactly the end time
+            > 0 will stop between the end time and factor * dt after the end time
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_end_time_accurancy_factor():
+        """
+        Set the end time accurancy factor
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
     
 
 class HermiteDoc(object):
@@ -162,6 +197,20 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
             "dt_param",
             "timestep scaling factor", 
             default_value = 0.03
+        )
+        object.add_method_parameter(
+            "get_end_time_accurancy_factor",
+            "set_end_time_accurancy_factor",
+            "end_time_accurancy_factor",
+            """
+            Get the end time accurancy factor:
+                < 0.0  will stop on or before the end time (larger factor, more before)
+                  0.0  will stop at exactly the end time
+                > 0.0  will stop on or after the end time
+                
+            Valid factors are between -1.0 and 1.0
+            """,
+            default_value = 1.0
         )
         object.add_method_parameter(
             "get_dt_dia",
