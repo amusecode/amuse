@@ -226,6 +226,21 @@ class MI6Interface(
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def get_calculate_postnewtonian_only_first_order():
+        function = LegacyFunctionSpecification()
+        function.addParameter('calculate_postnewtonian_only_first_order_flag', dtype='int32', direction=function.OUT,
+            description = "Flag to control whether post-newtonian corrections are calculated for the supermassive black hole at the center.")
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_calculate_postnewtonian_only_first_order():
+        function = LegacyFunctionSpecification()
+        function.addParameter('calculate_postnewtonian_only_first_order_flag', dtype='int32', direction=function.IN,
+            description = "Flag to control whether post-newtonian corrections are calculated for the supermassive black hole at the center.")
+        function.result_type = 'int32'
+        return function
+    
 
 
 
@@ -356,6 +371,14 @@ class MI6(GravitationalDynamics, GravityFieldCode):
             "Flag that specifies whether post-newtonian corrections are calculated for the "
                 "supermassive black hole at the center (has no effect when include_smbh is False)",
             True
+        )
+        object.add_boolean_parameter(
+            "get_calculate_postnewtonian_only_first_order",
+            "set_calculate_postnewtonian_only_first_order",
+            "calculate_postnewtonian_only_first_order",
+            "Flag that specifies whether (only!) first order post-newtonian corrections are calculated for the "
+                "supermassive black hole at the center (has no effect when include_smbh is False)",
+            False
         )
     
     def get_drink(self):

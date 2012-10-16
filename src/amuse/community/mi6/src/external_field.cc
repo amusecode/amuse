@@ -21,6 +21,8 @@ static double inv_c5 = inv_c2*inv_c2/speed_of_light;
 static double EPS_SQ = 0.0;
 
 static int calculate_postnewtonian = 1;
+static int calculate_postnewtonian_only_first_order = 0;
+
 /////////////////////////////
 ///// forces from SMBH //////
 /////////////////////////////
@@ -59,25 +61,32 @@ void calc_force_from_point_mass(Particle &prti,
 		    prti.acc_ex, prti.jrk_ex, prti.acc2_ex, prti.phi_ex, r2);
   */
 
-  if (!calculate_postnewtonian){
-      calc_acc_jrk_acc2_acc3(posi, veli, acci, jrki, 
-			 SMBH_MASS, SMBH_POS, SMBH_VEL, SMBH_ACC, SMBH_JRK,
-			 eps2,
-			 prti.acc_ex, prti.jrk_ex, prti.acc2_ex, prti.acc3_ex,  prti.phi_ex,
-			 r2);
-
-
-
-  } else {
-      calc_acc0_jrk_acc2_acc3_PN0_PN1_PN25(prti.mass,
-				       posi, veli, acci, jrki,
-				       SMBH_MASS, SMBH_POS, SMBH_VEL, SMBH_ACC, SMBH_JRK,
-				       prti.phi_ex,
-				       prti.acc_ex, prti.jrk_ex, prti.acc2_ex, prti.acc3_ex, 
-				       prti.acc_PN_ex, prti.jrk_PN_ex, prti.acc2_PN_ex,
-				       prti.acc_PN_ex, prti.jrk_PN_ex, prti.acc2_PN_ex,
-				       inv_c2, inv_c5, EPS_SQ);
-  }
+    if (calculate_postnewtonian_only_first_order){
+        double dummy = 0;
+        calc_acc0_jrk_acc2_acc3_PN0_PN1_PN25(prti.mass,
+            posi, veli, acci, jrki,
+            SMBH_MASS, SMBH_POS, SMBH_VEL, SMBH_ACC, SMBH_JRK,
+            prti.phi_ex,
+            prti.acc_ex, prti.jrk_ex, prti.acc2_ex, prti.acc3_ex, 
+            prti.acc_PN_ex, prti.jrk_PN_ex, prti.acc2_PN_ex,
+            dummy, dummy, dummy,
+            inv_c2, inv_c5, EPS_SQ);
+    } else if (calculate_postnewtonian){
+        calc_acc0_jrk_acc2_acc3_PN0_PN1_PN25(prti.mass,
+            posi, veli, acci, jrki,
+            SMBH_MASS, SMBH_POS, SMBH_VEL, SMBH_ACC, SMBH_JRK,
+            prti.phi_ex,
+            prti.acc_ex, prti.jrk_ex, prti.acc2_ex, prti.acc3_ex, 
+            prti.acc_PN_ex, prti.jrk_PN_ex, prti.acc2_PN_ex,
+            prti.acc_PN_ex, prti.jrk_PN_ex, prti.acc2_PN_ex,
+            inv_c2, inv_c5, EPS_SQ);
+    } else {
+        calc_acc_jrk_acc2_acc3(posi, veli, acci, jrki, 
+            SMBH_MASS, SMBH_POS, SMBH_VEL, SMBH_ACC, SMBH_JRK,
+            eps2,
+            prti.acc_ex, prti.jrk_ex, prti.acc2_ex, prti.acc3_ex,  prti.phi_ex,
+            r2);
+    }
 }
 
 void calc_force_from_point_mass_to_array(Particle prt[],
@@ -144,5 +153,13 @@ int get_calculate_postnewtonian(int *value){
 }
 int set_calculate_postnewtonian(int value){
     calculate_postnewtonian = value;
+    return 0;
+}
+int get_calculate_postnewtonian_only_first_order(int *value){
+    *value = calculate_postnewtonian_only_first_order;
+    return 0;
+}
+int set_calculate_postnewtonian_only_first_order(int value){
+    calculate_postnewtonian_only_first_order = value;
     return 0;
 }

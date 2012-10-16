@@ -56,6 +56,7 @@ map<int, int> reverse_index_map;
 int particle_id_counter = 0;
 bool particles_initialized = false;
 bool debug = false;
+bool energies_up_to_date = false;
 
 int Ntot = 0;
 int Nip_tot = 0; // Ntot - Ndead     (every node have same number)
@@ -108,6 +109,7 @@ Particle *(prt_merged[10000]);
 Particle *(prt_accreted[10000]);
 double E0, Ek0, Ep0;
 double E1, Ek1, Ep1;
+double E_current, Ek_current, Ep_current;
 double E1_old, Ek1_old, Ep1_old;
 double Tmerge_old;
 int Nip_tot_old, Njp_old;
@@ -408,6 +410,7 @@ int evolve_model(double time) {
     int is_collision_detection_enabled = 0;
     is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
     reset_stopping_conditions();
+    energies_up_to_date = false;
     
     while (Tsys < time) {
         if (Nloop % 1000 == 0) {
@@ -712,11 +715,19 @@ int get_center_of_mass_velocity(double *vx, double *vy, double *vz) {
     return 0;
 }
 int get_kinetic_energy(double *kinetic_energy) {
-    *kinetic_energy = Ek1;
+    if (!energies_up_to_date) {
+        calc_energy(prt, Ntot, E_current, Ek_current, Ep_current, 0);
+        energies_up_to_date = true;
+    }
+    *kinetic_energy = Ek_current;
     return 0;
 }
 int get_potential_energy(double *potential_energy) {
-    *potential_energy = Ep1;
+    if (!energies_up_to_date) {
+        calc_energy(prt, Ntot, E_current, Ek_current, Ep_current, 0);
+        energies_up_to_date = true;
+    }
+    *potential_energy = Ep_current;
     return 0;
 }
 int get_number_of_particles(int *number_of_particles) {
