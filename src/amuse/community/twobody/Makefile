@@ -8,10 +8,10 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 all:twobody_worker
 
 twobody_worker: twobody.py
-	$(CODE_GENERATOR) --type=py --mode=mpi -x amuse.community.twobody.twobody TwoBodyInterface TwoBodyImplementation -o $@
+	$(CODE_GENERATOR) --type=py --mode=mpi -x amuse.community.twobody.interface TwoBodyInterface TwoBodyImplementation -o $@
 	
 twobody_worker_sockets: twobody.py
-	$(CODE_GENERATOR) --type=py --mode=sockets -x amuse.community.twobody.twobody TwoBodyInterface TwoBodyImplementation -o $@
+	$(CODE_GENERATOR) --type=py --mode=sockets -x amuse.community.twobody.interface TwoBodyInterface TwoBodyImplementation -o $@
 
 clean:
 	$(RM) -f *.bck *.pyc

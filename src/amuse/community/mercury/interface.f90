@@ -26,7 +26,7 @@ end function
 function commit_parameters() result(ret)
   use amuse_mercuryMod
   integer :: ret
-  ret=0
+  ret=mercury_commit_parameters()
 end function  
 
 function recommit_parameters() result(ret)
@@ -321,6 +321,24 @@ function get_number_of_orbiters(norbiters) result(ret)
   use amuse_mercuryMod
   integer :: ret,norbiters
   ret=get_number_of_particles(norbiters)
+end function  
+
+function get_begin_time(system_time) result(ret)
+      use amuse_mercuryMod
+      implicit none
+      integer :: ret
+      real*8, intent(out) :: system_time
+
+      ret = mercury_get_begin_time(system_time)
+end function  
+
+function set_begin_time(system_time) result(ret)
+      use amuse_mercuryMod
+      implicit none
+      integer :: ret
+      real*8, intent(in) :: system_time
+
+      ret = mercury_set_begin_time(system_time)
 end function  
 
 end module

@@ -1,6 +1,6 @@
 import numpy
 
-from amuse.community.twobody import twobody
+from amuse.community.twobody import interface
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import units
@@ -12,16 +12,16 @@ from amuse import datamodel
 class TwoBodyCodeTests(TestWithMPI):
     
     def test_stumpff(self):
-        self.assertAlmostEqual(twobody.stumpff_C(0),twobody.stumpff_C(0.0001),5)
-        self.assertAlmostEqual(twobody.stumpff_C(0),twobody.stumpff_C(-0.0001),5)
-        self.assertAlmostEqual(twobody.stumpff_S(0),twobody.stumpff_S(0.0001),5)
-        self.assertAlmostEqual(twobody.stumpff_S(0),twobody.stumpff_S(-0.0001),5)
+        self.assertAlmostEqual(interface.stumpff_C(0),interface.stumpff_C(0.0001),5)
+        self.assertAlmostEqual(interface.stumpff_C(0),interface.stumpff_C(-0.0001),5)
+        self.assertAlmostEqual(interface.stumpff_S(0),interface.stumpff_S(0.0001),5)
+        self.assertAlmostEqual(interface.stumpff_S(0),interface.stumpff_S(-0.0001),5)
 
 class TwoBodyInterfaceTests(TestWithMPI):
         
     def test1(self):
         
-        instance = twobody.TwoBodyInterface()
+        instance = interface.TwoBodyInterface()
         
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
@@ -39,16 +39,18 @@ class TwoBodyInterfaceTests(TestWithMPI):
 
         instance.stop()
         
+
+        
 class TwoBodyTests(TestWithMPI):
     
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
-        instance = twobody.TwoBody(convert_nbody)
+        instance = interface.TwoBody(convert_nbody)
         instance.stop()
     
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
-        instance = twobody.TwoBody(convert_nbody)
+        instance = interface.TwoBody(convert_nbody)
         
         p = datamodel.Particle()
         p.mass = 5.9742e24 | units.kg
@@ -73,7 +75,7 @@ class TwoBodyTests(TestWithMPI):
 
     def test3(self):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
-        instance = twobody.TwoBody(convert_nbody)
+        instance = interface.TwoBody(convert_nbody)
         
         p = datamodel.Particle()
         p.mass = 5.9742e24 | units.kg
@@ -94,7 +96,7 @@ class TwoBodyTests(TestWithMPI):
 
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
-        instance = twobody.TwoBody(convert_nbody)
+        instance = interface.TwoBody(convert_nbody)
         
         p = datamodel.Particle()
         p.mass = 5.9742e24 | units.kg
@@ -118,7 +120,7 @@ class TwoBodyTests(TestWithMPI):
 
     def test5(self):
         #from: Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd edition
-        instance = twobody.TwoBody()
+        instance = interface.TwoBody()
         p = datamodel.Particle()
 
         p.mass = 1.0 | nbody_system.mass
@@ -135,7 +137,7 @@ class TwoBodyTests(TestWithMPI):
 
     def test6(self):
         #from: Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd edition
-        instance = twobody.TwoBody()
+        instance = interface.TwoBody()
         p = datamodel.Particles(2)
 
         p.mass = [1, 0.0] | nbody_system.mass
@@ -157,7 +159,7 @@ class TwoBodyTests(TestWithMPI):
     
     def test7(self):
         print "Test 7: get_gravity_at_point"
-        instance = twobody.TwoBody()
+        instance = interface.TwoBody()
         p = datamodel.Particles(2)
 
         p.mass = 0.5 | nbody_system.mass
@@ -194,7 +196,7 @@ class TwoBodyTests(TestWithMPI):
     
     def test8(self):
         print "Test 8: get_potential_at_point"
-        instance = twobody.TwoBody()
+        instance = interface.TwoBody()
         p = datamodel.Particles(2)
 
         p.mass = 0.5 | nbody_system.mass
@@ -218,7 +220,7 @@ class TwoBodyTests(TestWithMPI):
     
     def test9(self):
         print "Test 9: TwoBody parameters"
-        instance = twobody.TwoBody()
+        instance = interface.TwoBody()
         
         self.assertEqual(instance.parameters.epsilon_squared, zero)
         
@@ -226,5 +228,48 @@ class TwoBodyTests(TestWithMPI):
             expected_message = "Could not set value for parameter 'epsilon_squared' of a 'TwoBody' object, "
                 "parameter is read-only")
         
+        instance.stop()
+        
+            
+    def test10(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
+        instance = interface.TwoBody(convert_nbody)
+        
+        value = instance.get_begin_time()
+        self.assertEquals(0.0| units.yr, value)
+        self.assertAlmostEquals(0.0 | units.yr, instance.parameters.begin_time, in_units=units.yr)
+        for x in [1.0, 10.0, 100.0]:
+            instance.parameters.begin_time = x | units.yr
+            self.assertAlmostEquals(x | units.yr, instance.parameters.begin_time, in_units=units.yr)
+        instance.stop()
+        
+    def test11(self):
+        instance = interface.TwoBody()
+        p = datamodel.Particles(2)
+
+        p.mass = [1, 0.0] | nbody_system.mass
+        p.radius = 0.001 | nbody_system.length
+        p.x = [1.0,  0.0] | nbody_system.length
+        p.y = [0.1,  0.0] | nbody_system.length
+        p.z = [-0.1, 0.0] | nbody_system.length
+
+        p.vx = [-0.1, 0.0] | nbody_system.speed
+        p.vy = [2.0, 0.0] | nbody_system.speed
+        p.vz = [-0.2, 0.0] | nbody_system.speed
+
+        instance.particles.add_particles(p)
+        instance.evolve_model(0.5|nbody_system.time)
+        particles1 = instance.particles.copy_to_memory()
+        instance.stop()
+        
+        
+        instance = interface.TwoBody()
+        instance.parameters.begin_time = 0.5 |nbody_system.time
+        instance.particles.add_particles(particles1)
+        instance.evolve_model(1.0|nbody_system.time)
+        
+        self.assertAlmostEqual(instance.particles.x[0] - instance.particles.x[1], 0.611238439231|nbody_system.length, 7)
+        self.assertAlmostEqual(instance.particles.y[0] - instance.particles.y[1], 1.92873971354574|nbody_system.length, 7)
+        self.assertAlmostEqual(instance.particles.z[0] - instance.particles.z[1], -0.2562478900031234|nbody_system.length, 7)
         instance.stop()
     

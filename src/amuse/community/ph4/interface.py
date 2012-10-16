@@ -27,7 +27,6 @@ class ph4Interface(CodeInterface,
     MODE_CPU = 'cpu'
     
     def __init__(self, mode = MODE_CPU, **options):
-        print "worker code =", self.name_of_the_muse_worker(mode)
         CodeInterface.__init__(
             self,
             name_of_the_worker=self.name_of_the_muse_worker(mode),

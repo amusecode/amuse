@@ -617,4 +617,30 @@ class TestMercury(TestWithMPI):
         for d1,d2 in zip(edpos1,edpos2):
           self.assertAlmostEqual(d1,d2, 7)
 
+    def test14(self):
+        centre, orbiters = new_solar_system_for_mercury()
+        oneyear = 365.14 | units.day
+        halfyear = oneyear / 2.0
+        mercury = MercuryWayWard()
+        mercury.initialize_code()
+        mercury.commit_parameters()
 
+        mercury.central_particle.add_particles(centre)
+        mercury.orbiters.add_particles(orbiters)
+
+        start_pos = mercury.orbiters[2].position
+        mercury.evolve_model(halfyear)
+        central_particles = mercury.central_particle.copy_to_memory()
+        orbiters = mercury.orbiters.copy_to_memory()
+        mercury.stop()
+        
+        mercury = MercuryWayWard()
+        mercury.initialize_code()
+        mercury.parameters.begin_time = halfyear
+        mercury.commit_parameters()
+
+        mercury.central_particle.add_particles(centre)
+        mercury.orbiters.add_particles(orbiters)
+        mercury.evolve_model(oneyear)
+        self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
+        mercury.stop()

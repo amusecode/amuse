@@ -38,11 +38,21 @@ from amuse.community.bhtree.interface import BHTree, BHTreeInterface
 from amuse.community.hermite0.interface import Hermite, HermiteInterface
 from amuse.community.phiGRAPE.interface import PhiGRAPE, PhiGRAPEInterface
 from amuse.community.octgrav.interface import Octgrav, OctgravInterface
-from amuse.community.twobody.twobody import TwoBody, TwoBodyInterface
+from amuse.community.twobody.interface import TwoBody, TwoBodyInterface
 from amuse.community.huayno.interface import Huayno, HuaynoInterface
 from amuse.community.ph4.interface import ph4, ph4Interface
 from amuse.community.bonsai.interface import Bonsai, BonsaiInterface
 from amuse.community.pikachu.interface import Pikachu, PikachuInterface
+from amuse.community.aarsethzare.interface import AarsethZare, AarsethZareInterface
+from amuse.community.adaptb.interface import Adaptb, AdaptbInterface
+from amuse.community.hacs64.interface import Hacs64, Hacs64Interface
+from amuse.community.higpus.interface import HiGPUs, HiGPUsInterface
+from amuse.community.kepler.interface import Kepler, KeplerInterface
+from amuse.community.mercury.interface import Mercury, MercuryInterface
+from amuse.community.mi6.interface import MI6, MI6Interface
+from amuse.community.mikkola.interface import Mikkola, MikkolaInterface
+from amuse.community.smalln.interface import SmallN, SmallNInterface
+
 
 from amuse.community.fi.interface import Fi, FiInterface
 from amuse.community.gadget2.interface import Gadget2, Gadget2Interface
@@ -61,6 +71,7 @@ from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 from amuse.community.mesa.interface import MESA, MESAInterface
 from amuse.community.mmams.interface import MakeMeAMassiveStar, MakeMeAMassiveStarInterface
 
+from amuse.community.hop.interface import Hop, HopInterface
 
 from amuse.support.console import set_printing_strategy
 from amuse.support.console import get_current_printing_strategy

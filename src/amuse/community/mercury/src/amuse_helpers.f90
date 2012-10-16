@@ -18,7 +18,9 @@ module amuse_mercuryMod
     energy_angular_momentum_deviation, total_energy_angular_momentum, &
     set_initial_timestep_src, &
     get_initial_timestep_src, &
-    mercury_time,set_central_body,get_central_body
+    mercury_time,set_central_body,get_central_body, &
+    mercury_set_begin_time, mercury_get_begin_time, &
+    mercury_commit_parameters
 
   include 'amuse_mercury.inc'
 
@@ -41,6 +43,7 @@ module amuse_mercuryMod
 ! is not implemented; this may be convenient/necessary at some point
 ! calculating actual small planets with definite epochs to their data
 
+  real*8 :: begin_time=0.0
   integer :: tot_id=0.
   integer :: iid(NMAX)
   logical :: id_searcheable=.FALSE.
@@ -92,7 +95,7 @@ function mercury_init() result(ret)
   xh(1:3,1)=0.
   vh(1:3,1)=0.
   s(1:3,1)=0.d0*K2
-
+  begin_time=0.0
   id_searcheable=.FALSE.
 
   ret=0
@@ -130,6 +133,35 @@ function mercury_time(timeout) result(ret)
   timeout=time
   ret=0
 end function
+
+function mercury_get_begin_time(system_time) result(ret)
+    implicit none
+    
+    integer :: ret
+    real*8, intent(out) :: system_time
+
+    system_time = begin_time
+
+    ret = 0
+end function  
+
+function mercury_set_begin_time(system_time) result(ret)
+    implicit none
+    
+    integer :: ret
+    real*8, intent(in) :: system_time
+    
+    begin_time = system_time 
+
+    ret = 0
+end function  
+
+function mercury_commit_parameters() result(ret)
+    if(time.EQ.0.0) then
+        time = begin_time
+    end if
+end function
+
 
 function set_central_body(mass, radius, oblateness,spin) result(ret)
   integer :: ret
