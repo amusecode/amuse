@@ -160,7 +160,7 @@ class TestHermiteInterface(TestWithMPI):
         instance = HermiteInterface()
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_dt_param(0.001))
-        self.assertEquals(0, instance.set_end_time_accurancy_factor(0.0))
+        self.assertEquals(0, instance.set_end_time_accuracy_factor(0.0))
         self.assertEquals(0, instance.commit_parameters())
         
         # Set up an equal-mass binary on a circular orbit:
@@ -208,7 +208,7 @@ class TestHermite(TestWithMPI):
         hermite = Hermite(convert_nbody)
         hermite.initialize_code()
         hermite.parameters.epsilon_squared = 0.0 | units.AU**2
-        hermite.parameters.end_time_accurancy_factor = 0.0
+        hermite.parameters.end_time_accuracy_factor = 0.0
         hermite.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -425,7 +425,7 @@ class TestHermite(TestWithMPI):
         final_direction = []
         for log_eps2 in range(-9,10,2):
             instance = Hermite(convert_nbody)
-            instance.parameters.end_time_accurancy_factor = 0.0
+            instance.parameters.end_time_accuracy_factor = 0.0
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
             instance.particles.add_particles(particles)
             instance.commit_particles()
@@ -714,22 +714,41 @@ class TestHermite(TestWithMPI):
         instance.particles.add_particles(particles) 
         instance.commit_particles()
         self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
-        instance.parameters.end_time_accurancy_factor = 1.0
+        instance.parameters.end_time_accuracy_factor = 1.0
         instance.evolve_model(0.1 | nbody_system.time)
         self.assertAlmostRelativeEquals(instance.model_time, 0.10563767746 |nbody_system.time, 5)
-        instance.parameters.end_time_accurancy_factor = -1.0
+        instance.parameters.end_time_accuracy_factor = -1.0
         instance.evolve_model(0.3 | nbody_system.time)
         self.assertAlmostRelativeEquals(instance.model_time, 0.266758127609 |nbody_system.time, 5)
-        instance.parameters.end_time_accurancy_factor = 0.0
+        instance.parameters.end_time_accuracy_factor = 0.0
         instance.evolve_model(0.4 | nbody_system.time)
         self.assertAlmostRelativeEquals(instance.model_time, 0.4 |nbody_system.time, 6)
-        instance.parameters.end_time_accurancy_factor = -0.5
+        instance.parameters.end_time_accuracy_factor = -0.5
         instance.evolve_model(0.5 | nbody_system.time)
         self.assertAlmostRelativeEquals(instance.model_time, 0.48974930698 |nbody_system.time, 6)
-        instance.parameters.end_time_accurancy_factor = +0.5
+        instance.parameters.end_time_accuracy_factor = +0.5
         instance.evolve_model(0.6 | nbody_system.time)
         self.assertAlmostRelativeEquals(instance.model_time, 0.6042733579 |nbody_system.time, 6)
         
         instance.stop()
 
     
+    def test19(self):
+        particles = datamodel.Particles(2)
+        particles.x = [0.0,200.0] | nbody_system.length
+        particles.y = 0.0 | nbody_system.length
+        particles.z = 0.0 | nbody_system.length
+        particles.vx =  0.0 | nbody_system.speed
+        particles.vy =  0.0 | nbody_system.speed
+        particles.vz =  0.0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+
+        instance = Hermite()
+        instance.particles.add_particles(particles) 
+        instance.commit_particles()
+        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
+        instance.parameters.end_time_accuracy_factor = 0.0
+        instance.evolve_model(0.1 | nbody_system.time)
+        self.assertAlmostRelativeEquals(instance.model_time, 0.1 |nbody_system.time, 5)
+       
+        instance.stop()

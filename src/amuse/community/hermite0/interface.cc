@@ -69,7 +69,7 @@ real t_evolve = t;                // Time requested by evolve.  Control returns
                                 // system is computed by extrapolation.
 real t_wanted = 0;
 static double begin_time = 0;
-static double end_time_accurancy_factor = 0.5;
+static double end_time_accuracy_factor = 0.5;
 
 vector<int>  ident;
 vector<real> mass, radius, potential;
@@ -722,9 +722,13 @@ int evolve_system(real t_end)
 
     // Don't flag a collision if no step is to be taken (presumably
     // just handled?).
-
-    if (t + dt > t_end + (end_time_accurancy_factor * dt)){
-        
+    
+    if(end_time_accuracy_factor == 0.0 && t < t_end && t + dt > t_end) {
+        dt = t_end - t;
+    }
+    
+    if (t + dt > t_end + (end_time_accuracy_factor * dt))
+    {
         must_run = 0;
 #ifndef NOMPI
         MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
@@ -751,7 +755,7 @@ int evolve_system(real t_end)
     // AMUSE STOPPING CONDITIONS
     
     while (true) {
-        while (t < t_dia && t + dt <= t_end + (end_time_accurancy_factor*dt)) {
+        while (t < t_dia && t + dt <= t_end + (end_time_accuracy_factor*dt)) {
             
             #ifndef NOMPI
             MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
@@ -761,7 +765,7 @@ int evolve_system(real t_end)
 
             dt = calculate_step(coll_time);
             
-            if(end_time_accurancy_factor == 0.0 && t < t_end && t + dt > t_end) {
+            if(end_time_accuracy_factor == 0.0 && t < t_end && t + dt > t_end) {
                 dt = t_end - t;
             }
             
@@ -836,7 +840,7 @@ int evolve_system(real t_end)
           break;
         }
         
-        if (t + dt >= (t_end + (end_time_accurancy_factor*dt))) {
+        if (t + dt >= (t_end + (end_time_accuracy_factor*dt))) {
           break;
         }
     }
@@ -1633,16 +1637,16 @@ int synchronize_model() {
     return 0;
 }
 
-int set_end_time_accurancy_factor(double value)
+int set_end_time_accuracy_factor(double value)
 {
     if(value < -1.0 || value > 1.0) {
         return -1;
     }
-    end_time_accurancy_factor = value;
+    end_time_accuracy_factor = value;
     return 0;
 }
-int get_end_time_accurancy_factor(double * value)
+int get_end_time_accuracy_factor(double * value)
 {
-    *value = end_time_accurancy_factor;
+    *value = end_time_accuracy_factor;
     return 0;
 }

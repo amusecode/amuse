@@ -119,9 +119,9 @@ class HermiteInterface(CodeInterface,
         return function
     
     @legacy_function
-    def get_end_time_accurancy_factor():
+    def get_end_time_accuracy_factor():
         """
-        Get the end time accurancy factor:
+        Get the end time accuracy factor:
             < 0 will stop between factor * dt befor the end time and the end time
               0 will stop at exactly the end time
             > 0 will stop between the end time and factor * dt after the end time
@@ -139,9 +139,9 @@ class HermiteInterface(CodeInterface,
         return function
         
     @legacy_function
-    def set_end_time_accurancy_factor():
+    def set_end_time_accuracy_factor():
         """
-        Set the end time accurancy factor
+        Set the end time accuracy factor
         """
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype='float64',
@@ -199,11 +199,11 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
             default_value = 0.03
         )
         object.add_method_parameter(
-            "get_end_time_accurancy_factor",
-            "set_end_time_accurancy_factor",
-            "end_time_accurancy_factor",
+            "get_end_time_accuracy_factor",
+            "set_end_time_accuracy_factor",
+            "end_time_accuracy_factor",
             """
-            Get the end time accurancy factor:
+            Get the end time accuracy factor:
                 < 0.0  will stop on or before the end time (larger factor, more before)
                   0.0  will stop at exactly the end time
                 > 0.0  will stop on or after the end time
