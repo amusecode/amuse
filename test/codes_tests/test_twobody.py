@@ -39,6 +39,24 @@ class TwoBodyInterfaceTests(TestWithMPI):
 
         instance.stop()
         
+    def test2(self):
+        
+        instance = interface.TwoBodyInterface()
+        
+        res1 = instance.new_particle(mass = 10.0, radius = 0.0, x = -1.0, y = 0.0, z = 0.0, vx = 0.0, vy = 10.0, vz = 0.0)
+        res2 = instance.new_particle(mass = 10.0, radius = 0.0, x = 1.0, y = 0.0, z = 0.0, vx = 0.0, vy = -10.0, vz = 0.0)
+        
+        ek=0.5*(10*100+10*100)
+        ep=-(10*10/2)
+        
+        e,err=instance.get_kinetic_energy()
+        self.assertEquals(ek,e)
+        
+        e,err=instance.get_potential_energy()
+        self.assertEquals(ep,e)
+
+        instance.stop()
+
 
         
 class TwoBodyTests(TestWithMPI):

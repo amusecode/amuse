@@ -373,11 +373,8 @@ class TwoBodyImplementation(object):
             return -1
           
         if(len(self.particles)==1):
-            dvel=numpy.array( [self.particles[0]['vx'],  
-                               self.particles[0]['vy'],  
-                               self.particles[0]['vz']] )
-            mass=self.particles[0]['mass']
-          
+            return -2
+                      
         if(len(self.particles)==2):
             vel0=numpy.array( [self.particles[0]['vx'],  
                                self.particles[0]['vy'],  
@@ -385,13 +382,16 @@ class TwoBodyImplementation(object):
             vel1=numpy.array( [self.particles[1]['vx'],  
                                self.particles[1]['vy'],  
                                self.particles[1]['vz']] )
-            dvel=vel0-vel1
-            mass=self.particles[0]['mass']+self.particles[1]['mass']
+            
+            v0=reduce(lambda x,y: x+ y**2,vel0,0)
+            v1=reduce(lambda x,y: x+ y**2,vel1,0)
+
+            mass0=self.particles[0]['mass']
+            mass1=self.particles[1]['mass']
         
-        v2=reduce(lambda x,y: x+ y**2,dvel,0)
-        
-        kinetic_energy.value = 0.5*mass*v2
-        return 0 
+            kinetic_energy.value = 0.5*(mass0*v0+mass1*v1)
+            
+            return 0 
   
     def get_gravity_at_point(self, eps, x, y, z, ax, ay, az, npoints):
         if(len(self.particles)==1):
@@ -446,10 +446,7 @@ class TwoBodyImplementation(object):
             return -1
           
         if(len(self.particles)==1):
-            dpos=numpy.array( [self.particles[0]['x'],  
-                               self.particles[0]['y'],  
-                               self.particles[0]['z']] )
-            mu=self.__G*self.particles[0]['mass']
+            return -2    
         if(len(self.particles)==2):
             pos0=numpy.array( [self.particles[0]['x'],  
                                self.particles[0]['y'],  
@@ -458,11 +455,11 @@ class TwoBodyImplementation(object):
                                self.particles[1]['y'],  
                                self.particles[1]['z']] )
             dpos=pos0-pos1
-            mu=self.__G*(self.particles[0]['mass']+self.particles[1]['mass'])
-        r=math.sqrt(reduce(lambda x,y: x+ y**2,dpos,0))
-
-        potential_energy.value = -mu/r
-        return 0    
+            mass0=self.particles[0]['mass']
+            mass1=self.particles[1]['mass']
+            r=math.sqrt(reduce(lambda x,y: x+ y**2,dpos,0))
+            potential_energy.value = -self.__G*mass0*mass1/r
+            return 0    
 
     def evolve_model(self, time):
         time_end = time
