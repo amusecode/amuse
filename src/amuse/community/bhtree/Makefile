@@ -39,8 +39,8 @@ all:	compile bhtree_worker
 python_worker.o: python_worker.c
 	$(CXX) $(CXXFLAGS) $(PYTHONDEV_CFLAGS) $(SCINC) -c -o $@ $< 
 	
-bhtree_worker_python: python_worker.o
-	$(MPICXX) $(CXXFLAGS) $(PYTHONDEV_LIBS) $(SCINC) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
+#bhtree_worker_python: python_worker.o
+#	$(MPICXX) $(CXXFLAGS) $(PYTHONDEV_LIBS) $(SCINC) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
     
 
 compile: $(BHTC)
@@ -79,8 +79,8 @@ worker_code.h: interface.py
 bhtree_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
 	
-bhtree_worker_g6: worker_code.cc worker_code.h $(GPUCODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(GPUCODELIB) -o $@ $(SCLIBS) $(G6LIBS)
+#bhtree_worker_g6: worker_code.cc worker_code.h $(GPUCODELIB) $(OBJS)
+#	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(GPUCODELIB) -o $@ $(SCLIBS) $(G6LIBS)
 	
 worker_code-sockets.cc: interface.py
 	$(CODE_GENERATOR) --type=c --mode=sockets interface.py BHTreeInterface -o $@

@@ -244,7 +244,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         
         converter = nbody_system.nbody_to_si(2 * mass_binary, 100.0 | units.RSun)
         dynamics = Hermite(converter)
-        dynamics.initialize_code()
+        dynamics.parameters.end_time_accuracy_factor = 0.0
         dynamics.parameters.epsilon_squared = 0.0 | units.RSun ** 2
         dynamics.particles.add_particles(stars)
         dynamics.commit_particles()
