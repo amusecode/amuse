@@ -91,6 +91,8 @@ Testing the build
     
     After starting `mpd` we can start the tests.
     
+
+    
 The tests are run using the nosetests program.
 
 .. code-block:: sh
@@ -101,6 +103,29 @@ The tests are run using the nosetests program.
 
     OK
 
+
+.. warning::
+
+    If you have an MPICH2 installation but no mpd program your MPICH2
+    installation has been configured for the Hydra process manager. 
+    To run amuse scripts with the hydra process manager you must start
+    every command with ``mpiexec``:
+    
+    .. code-block:: sh
+        
+        > mpiexec nosetests -v
+    
+    
+    If you do not run under mpiexec you get an error with a usage statement.
+    The error starts like this:
+    
+    .. code-block:: sh
+    
+        unable to parse user arguments
+
+        Usage: ./mpiexec [global opts] [exec1 local opts] : [exec2 local opts] : ...
+    
+    
 .. warning::
     
     On some laptops the hostname will not point
