@@ -720,7 +720,7 @@ class StoreHDF(object):
             group = container_group[group_index]
             container = self.load_from_group(group, default_type)
             if self.copy_history:
-                container = container.copy_to_memory()
+                container = container.copy()
             all_containers[int(group_index) - 1] = container
             
         previous = None
@@ -729,7 +729,7 @@ class StoreHDF(object):
             previous = x
             
         last = all_containers[-1]
-        copy_of_last = last.copy_to_memory()
+        copy_of_last = last.copy()
         copy_of_last._private.previous = last
         return copy_of_last
     

@@ -312,7 +312,7 @@ class CalculateSolutionIn3D(object):
             instance.gas_particles.add_particles(sph_particles)
         else:
             for x in instance.itergrids():
-                inmem = x.copy_to_memory()
+                inmem = x.copy()
                 self.clear_grid(inmem)
                 self.initialize_grid_with_shock(inmem)
                 from_model_to_code = inmem.new_channel_to(x)
@@ -337,7 +337,7 @@ class CalculateSolutionIn3D(object):
         else:
             result = []
             for x in instance.itergrids():
-                result.append(x.copy_to_memory())
+                result.append(x.copy())
         return result
     
     def get_solution_at_time(self, time):

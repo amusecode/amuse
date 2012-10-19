@@ -630,8 +630,8 @@ class TestMercury(TestWithMPI):
 
         start_pos = mercury.orbiters[2].position
         mercury.evolve_model(halfyear)
-        central_particles = mercury.central_particle.copy_to_memory()
-        orbiters = mercury.orbiters.copy_to_memory()
+        central_particles = mercury.central_particle.copy()
+        orbiters = mercury.orbiters.copy()
         mercury.stop()
         
         mercury = MercuryWayWard()

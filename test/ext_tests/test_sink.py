@@ -82,7 +82,7 @@ class TestSinkParticles(TestCase):
         particles.position = [[i, 2*i, 3*i] for i in range(10)] | units.parsec
         particles.velocity = [[i, 0, -i] for i in range(10)] | units.km/units.s
         particles.age = range(10) | units.Myr
-        copy = particles.copy_to_memory()
+        copy = particles.copy()
         
         sinks = SinkParticles(particles[[3, 7]], sink_radius=[4,5]|units.parsec)
         self.assertEqual(sinks.sink_radius, [4.0, 5.0] | units.parsec)
@@ -116,7 +116,7 @@ class TestSinkParticles(TestCase):
         particles.position = [[i, 2*i, 3*i] for i in range(10)] | units.parsec
         particles.velocity = [[i, 0, -i] for i in range(10)] | units.km/units.s
         particles.age = range(10) | units.Myr
-        copy = particles.copy_to_memory()
+        copy = particles.copy()
         
         sinks = SinkParticles(particles[[3, 7]], sink_radius=[4,12]|units.parsec)
         self.assertEqual(sinks.sink_radius, [4.0, 12.0] | units.parsec)
@@ -159,7 +159,7 @@ class TestNewSinkParticles(TestCase):
             [[100, 100, 100], [200, 200, 200], [300, 300, 300]] | units.parsec)
         print density_limit_detection.particles()
         
-        clumps = density_limit_detection.particles().copy_to_memory()
+        clumps = density_limit_detection.particles().copy()
         sph_code.gas_particles.remove_particles(clumps)
         
         sinks = new_sink_particles(clumps, sink_radius=1|units.parsec)
@@ -204,7 +204,7 @@ class TestNewSinkParticles(TestCase):
         self.assertTrue(density_limit_detection.particles().density > 
                 10 * UnitMass / UnitLength**3)
         
-        clumps = density_limit_detection.particles().copy_to_memory()
+        clumps = density_limit_detection.particles().copy()
         sph_code.gas_particles.remove_particles(clumps)
         clumps_in_code = sph_code.dm_particles.add_particles(clumps)
         
@@ -250,7 +250,7 @@ class TestNewSinkParticles(TestCase):
         self.assertTrue((density_limit_detection.particles().density > 
                 10 * UnitMass / UnitLength**3).all())
         
-        clumps = density_limit_detection.particles().copy_to_memory()
+        clumps = density_limit_detection.particles().copy()
         sph_code.gas_particles.remove_particles(clumps)
         clumps_in_code = sph_code.dm_particles.add_particles(clumps)
 

@@ -824,7 +824,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
                 self.assertEqual(instance.number_of_particles, 3 + len(stellar_models))
                 instance.particles.remove_particles(stars[[index_1, index_2]])
                 self.assertEqual(instance.number_of_particles, 1 + len(stellar_models))
-                stellar_models.append(instance.particles[len(stellar_models)].internal_structure().copy_to_memory())
+                stellar_models.append(instance.particles[len(stellar_models)].internal_structure().copy())
             except CodeException as ex:
                 print ex
                 crashed = True

@@ -305,7 +305,7 @@ class TestHop(amusetest.TestCase):
             self.assertEquals(len(group), expected_size[index])
         
         if False: # Make a plot
-            original = hop.particles.copy_to_memory()
+            original = hop.particles.copy()
             from amuse.plot import scatter, native_plot
             colors = ["r", "g", "b", "y", "k", "w"]*100
             for group, color in zip(hop.groups(), colors):

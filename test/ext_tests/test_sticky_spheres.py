@@ -20,7 +20,7 @@ class TestStickySpheres(TestCase):
         self.assertAlmostEqual(merged.position, [0.2, 0.4, -0.1] | units.m)
         self.assertAlmostEqual(merged.velocity, ([2.0, -3.0, -6.0] | units.m / units.s) / 7.0)
         self.assertAlmostEqual(merged.velocity.length(), 1.0 | units.m / units.s)
-        copy = colliders.copy_to_memory()
+        copy = colliders.copy()
         copy.move_to_center()
         self.assertAlmostEqual(colliders.kinetic_energy(), merged.as_set().kinetic_energy() + copy.kinetic_energy())
     
@@ -35,7 +35,7 @@ class TestStickySpheres(TestCase):
         self.assertEqual(merged.mass, 8 | units.kg)
         self.assertAlmostEqual(merged.position, [0.5, 0.5, 0.5] | units.m)
         self.assertAlmostEqual(merged.velocity, [1.0, 1.0, 1.0] | units.m / units.s)
-        copy = colliders.copy_to_memory()
+        copy = colliders.copy()
         copy.move_to_center()
         self.assertAlmostEqual(colliders.kinetic_energy(), merged.as_set().kinetic_energy() / 0.8 + copy.kinetic_energy())
     

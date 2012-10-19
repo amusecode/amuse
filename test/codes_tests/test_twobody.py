@@ -277,7 +277,7 @@ class TwoBodyTests(TestWithMPI):
 
         instance.particles.add_particles(p)
         instance.evolve_model(0.5|nbody_system.time)
-        particles1 = instance.particles.copy_to_memory()
+        particles1 = instance.particles.copy()
         instance.stop()
         
         

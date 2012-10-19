@@ -281,24 +281,24 @@ class TestGrids(amusetest.TestCase):
         
     def test21(self):
         grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
-        self.assertEquals(grid[1:3,:,:].copy_to_memory().x, grid.x[1:3,:,:])
-        self.assertEquals(grid[1:3,:,:].copy_to_memory().shape, (2,4,2))
-        self.assertEquals(grid[1:3,2:3,:].copy_to_memory().x, grid.x[1:3,2:3,:])
-        self.assertEquals(grid[1:3,2:3,:].copy_to_memory().shape, (2,1,2))
-        self.assertEquals(grid[1:3,2:3,0:1].copy_to_memory().x, grid.x[1:3,2:3,0:1])
-        self.assertEquals(grid[1:3,2:3,0:1].copy_to_memory().shape, (2,1,1))
-        self.assertEquals(grid[1:3,:,0:1].copy_to_memory().x, grid.x[1:3,:,0:1])
-        self.assertEquals(grid[1:3,:,0:1].copy_to_memory().shape, (2,4,1))
-        self.assertEquals(grid[:,:,0:1].copy_to_memory().x, grid.x[:,:,0:1])
-        self.assertEquals(grid[:,:,0:1].copy_to_memory().shape, (5,4,1))
-        self.assertEquals(grid[:,2:3,0:1].copy_to_memory().x, grid.x[:,2:3,0:1])
-        self.assertEquals(grid[:,2:3,0:1].copy_to_memory().shape, (5,1,1))
+        self.assertEquals(grid[1:3,:,:].copy().x, grid.x[1:3,:,:])
+        self.assertEquals(grid[1:3,:,:].copy().shape, (2,4,2))
+        self.assertEquals(grid[1:3,2:3,:].copy().x, grid.x[1:3,2:3,:])
+        self.assertEquals(grid[1:3,2:3,:].copy().shape, (2,1,2))
+        self.assertEquals(grid[1:3,2:3,0:1].copy().x, grid.x[1:3,2:3,0:1])
+        self.assertEquals(grid[1:3,2:3,0:1].copy().shape, (2,1,1))
+        self.assertEquals(grid[1:3,:,0:1].copy().x, grid.x[1:3,:,0:1])
+        self.assertEquals(grid[1:3,:,0:1].copy().shape, (2,4,1))
+        self.assertEquals(grid[:,:,0:1].copy().x, grid.x[:,:,0:1])
+        self.assertEquals(grid[:,:,0:1].copy().shape, (5,4,1))
+        self.assertEquals(grid[:,2:3,0:1].copy().x, grid.x[:,2:3,0:1])
+        self.assertEquals(grid[:,2:3,0:1].copy().shape, (5,1,1))
         
     
     def test22(self):
         grid1 = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         grid2 = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
-        slice1 = grid1[1:3,:,:].copy_to_memory()
+        slice1 = grid1[1:3,:,:].copy()
         slice2 = grid2[1:3,:,:]
         slice1.x = -10 | units.m
         channel = slice1.new_channel_to(slice2)
@@ -310,7 +310,7 @@ class TestGrids(amusetest.TestCase):
     def test23(self):
         grid1 = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         grid2 = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
-        slice1 = grid1[1:3,...,...].copy_to_memory()
+        slice1 = grid1[1:3,...,...].copy()
         slice2 = grid2[1:3,...,...]
         slice1.x = -10 | units.m
         channel = slice1.new_channel_to(slice2)

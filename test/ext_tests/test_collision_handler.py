@@ -202,7 +202,7 @@ class TestCollisionHandler(TestCase):
         gravity = GravityCodeForTesting()
         self.assertEqual(len(gravity.particles), 6)
         
-        stellar_evolution = StellarEvolutionCodeForTesting(particles=gravity.particles.copy_to_memory())
+        stellar_evolution = StellarEvolutionCodeForTesting(particles=gravity.particles.copy())
         self.assertEqual(len(stellar_evolution.particles), 6)
         
         collision_code = CollisionCodeForTesting()

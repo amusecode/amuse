@@ -81,7 +81,7 @@ class TestParticles(amusetest.TestCase):
     def test8(self):
         particles = datamodel.Particles(keys = [10,11])
         particles.mass = [1,2] | units.kg
-        particles2 = particles.copy_to_memory()
+        particles2 = particles.copy()
         
         self.assertAlmostRelativeEquals(particles2.mass, [1,2] | units.kg)
         particles.mass = [3,4] | units.kg
@@ -1102,7 +1102,7 @@ class TestStars(amusetest.TestCase):
         self.assertEquals(stars[0].md, [1,2,3] | units.km)
         self.assertEquals(stars[1].md, [4,5,6] | units.km)
         
-        copy = stars.copy_to_memory()
+        copy = stars.copy()
         
         self.assertEquals(copy[0].md, [1,2,3] | units.km)
         self.assertEquals(copy[1].md, [4,5,6] | units.km)
@@ -1772,7 +1772,7 @@ class TestParticlesWithReferences(amusetest.TestCase):
         
         set.mass = [2,3,4] | units.kg
         
-        other = set.copy_to_memory()
+        other = set.copy()
         parent.child1 = child1
         parent.child2 = child2
         child1.sibling = child2
@@ -1797,7 +1797,7 @@ class TestParticlesWithReferences(amusetest.TestCase):
         parent.child2 = child2
         child1.sibling = child2
         
-        other = set.copy_to_memory()
+        other = set.copy()
         
         self.assertAlmostRelativeEqual(other[0].child1.mass, 3 | units.kg)
         self.assertTrue(other[0].child1.as_set()._original_set() is other)
@@ -1816,7 +1816,7 @@ class TestParticlesWithReferences(amusetest.TestCase):
         binaries[1].child1 = stars[3]
         binaries[1].child2 = stars[2]
         
-        other = binaries.copy_to_memory()
+        other = binaries.copy()
         stars.mass = 2 * ([1,3,4,2] | units.kg)
         self.assertAlmostRelativeEqual(binaries[0].child1.mass, 2 | units.kg)
         self.assertAlmostRelativeEqual(other[0].child1.mass, 1 | units.kg)
@@ -1843,7 +1843,7 @@ class TestParticlesWithReferences(amusetest.TestCase):
         stars[2].binary = binaries[1]
         stars[3].binary = binaries[1]
         
-        other = binaries.copy_to_memory()
+        other = binaries.copy()
         stars.mass *= 2
         binaries.mass  *= 2
         self.assertAlmostRelativeEqual(other[0].child1.mass, 1 | units.kg)

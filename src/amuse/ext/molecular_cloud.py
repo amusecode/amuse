@@ -231,7 +231,7 @@ class molecular_cloud(object):
 
         if not self.convert_nbody is None:
             result = datamodel.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_generic())
-            result = result.copy_to_memory()
+            result = result.copy()
 
         return result
 
@@ -290,7 +290,7 @@ class constant_density_div_free_power_law_v_ism_cube(object):
 
         if not self.convert is None:
             result = datamodel.ParticlesWithUnitsConverted(result, self.convert.as_converter_from_si_to_generic())
-            result = result.copy_to_memory()
+            result = result.copy()
 
         return result
 

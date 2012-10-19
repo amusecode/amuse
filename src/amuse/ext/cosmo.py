@@ -131,7 +131,7 @@ def convert_comoving_to_physical(original, redshift=0.0, hubble_parameter=1.0, a
     mass, and time, respectively. These factors will be divided out in the result
     """
     if isinstance(original, Particles):
-        copy = original.copy_to_memory()
+        copy = original.copy()
         if attribute_names is None:
             attribute_names = copy.get_attribute_names_defined_in_store()
         for attribute in attribute_names:

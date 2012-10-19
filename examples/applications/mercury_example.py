@@ -136,7 +136,7 @@ class CalculateKelvinHelmholtzInstability(object):
         if __name__ == '__plot__':
             return
         
-        grids_in_memory = [x.copy_to_memory() for x in grids]
+        grids_in_memory = [x.copy() for x in grids]
         io.write_set_to_file(
             grids_in_memory, 
             "kelvin_helmholtz_{2}_{0}_{1}.vtu".format(self.number_of_grid_points, step, self.name_of_the_code),
@@ -151,7 +151,7 @@ class CalculateKelvinHelmholtzInstability(object):
         
         
         for x in instance.itergrids():
-            inmem = x.copy_to_memory()
+            inmem = x.copy()
             self.clear_grid(inmem)
             self.initialize_grid(inmem)
             self.pertubate_grid(inmem)
@@ -181,7 +181,7 @@ class CalculateKelvinHelmholtzInstability(object):
         print "copying results"
         result = []
         for x in instance.itergrids():
-            result.append(x.copy_to_memory())
+            result.append(x.copy())
 
         print "terminating code"
         instance.stop()

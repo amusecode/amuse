@@ -39,6 +39,6 @@ def new_halogen_model(number_of_particles, convert_nbody = None, do_scale = Fals
     
     if not convert_nbody is None:
         result = ParticlesWithUnitsConverted(result, convert_nbody.as_converter_from_si_to_generic())
-        result = result.copy_to_memory()
+        result = result.copy()
     return result
 

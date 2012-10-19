@@ -1050,7 +1050,7 @@ class TestCapreole(TestWithMPI):
         
         xbound1 = instance.get_boundary_grid('xbound1')
         self.assertEquals(xbound1.shape, (2,4,4))
-        memxbound1 = xbound1.copy_to_memory()
+        memxbound1 = xbound1.copy()
         memxbound1.rho = 0.02 | density
         memxbound1.rhovx = 0.2 | momentum
         memxbound1.rhovy = 0.0 | momentum
@@ -1117,7 +1117,7 @@ class TestCapreole(TestWithMPI):
         #instance.grid.boundaries.left.
         xbound = instance.get_boundary_grid('xbound2')
         self.assertEquals(xbound.shape, (2,4,4))
-        memxbound = xbound.copy_to_memory()
+        memxbound = xbound.copy()
         memxbound.rho = 0.02 | density
         memxbound.rhovx = -0.2 | momentum
         memxbound.rhovy = 0.0 | momentum
@@ -1184,7 +1184,7 @@ class TestCapreole(TestWithMPI):
         
         xbound1 = instance.get_boundary_grid('xbound1')
         self.assertEquals(xbound1.shape, (2,4,4))
-        memxbound1 = xbound1.copy_to_memory()
+        memxbound1 = xbound1.copy()
         memxbound1.rho = 0.02 | density
         memxbound1.rhovx = 0.2 | momentum
         memxbound1.rhovy = 0.0 | momentum
@@ -1252,7 +1252,7 @@ class TestCapreole(TestWithMPI):
         
         ybound = instance.get_boundary_grid('ybound1')
         self.assertEquals(ybound.shape, (4+4,2,4))
-        memybound = ybound.copy_to_memory()
+        memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
         memybound.rhovy = 0.2 | momentum
@@ -1320,7 +1320,7 @@ class TestCapreole(TestWithMPI):
         
         ybound = instance.get_boundary_grid('ybound2')
         self.assertEquals(ybound.shape, (4+4,2,4))
-        memybound = ybound.copy_to_memory()
+        memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
         memybound.rhovy = -0.2 | momentum
@@ -1386,7 +1386,7 @@ class TestCapreole(TestWithMPI):
         
         ybound = instance.get_boundary_grid('zbound1')
         self.assertEquals(ybound.shape, (4+4,4+4,2))
-        memybound = ybound.copy_to_memory()
+        memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
         memybound.rhovy = 0.0 | momentum
@@ -1454,7 +1454,7 @@ class TestCapreole(TestWithMPI):
         
         ybound = instance.get_boundary_grid('zbound2')
         self.assertEquals(ybound.shape, (4+4,4+4,2))
-        memybound = ybound.copy_to_memory()
+        memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
         memybound.rhovy = 0.0 | momentum

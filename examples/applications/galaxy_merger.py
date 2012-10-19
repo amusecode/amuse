@@ -18,7 +18,7 @@ from amuse.ext.galactics_model import new_galactics_model
 def make_plots(all_particles, disk_only, i=0):
     for j, particles in enumerate([all_particles, disk_only]):
         if HAS_PYNBODY:
-            temp_particles = particles.copy_to_memory()
+            temp_particles = particles.copy()
             temp_particles.u = 1 | units.ms**2
             temp = Gadget2()
             temp.gas_particles.add_particles(temp_particles)

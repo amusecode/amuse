@@ -1816,7 +1816,7 @@ class TestAthena(TestWithMPI):
         #instance.grid.boundaries.left.
         xbound1 = instance.get_boundary_grid('xbound1')
         self.assertEquals(xbound1.shape, (4,1,1))
-        memxbound1 = xbound1.copy_to_memory()
+        memxbound1 = xbound1.copy()
         memxbound1.rho = 0.02 | density
         memxbound1.rhovx = 0.2 | momentum
         memxbound1.rhovy = 0.0 | momentum
@@ -1881,7 +1881,7 @@ class TestAthena(TestWithMPI):
         #instance.grid.boundaries.left.
         xbound = instance.get_boundary_grid('xbound2')
         self.assertEquals(xbound.shape, (4,1,1))
-        memxbound = xbound.copy_to_memory()
+        memxbound = xbound.copy()
         memxbound.rho = 0.02 | density
         memxbound.rhovx = -0.2 | momentum
         memxbound.rhovy = 0.0 | momentum
@@ -1943,7 +1943,7 @@ class TestAthena(TestWithMPI):
         
         xbound = instance.get_boundary_grid('xbound1')
         self.assertEquals(xbound.shape, (4,4,1))
-        memxbound = xbound.copy_to_memory()
+        memxbound = xbound.copy()
         memxbound.rho = 0.02 | density
         memxbound.rhovx = 0.2 | momentum
         memxbound.rhovy = 0.0 | momentum
@@ -2006,7 +2006,7 @@ class TestAthena(TestWithMPI):
         
         ybound = instance.get_boundary_grid('ybound1')
         self.assertEquals(ybound.shape, (4+8,4,1))
-        memybound = ybound.copy_to_memory()
+        memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
         memybound.rhovy = 0.2 | momentum
@@ -2071,7 +2071,7 @@ class TestAthena(TestWithMPI):
         
         zbound = instance.get_boundary_grid('zbound1')
         self.assertEquals(zbound.shape, (4+8,5+8,4))
-        memzbound = zbound.copy_to_memory()
+        memzbound = zbound.copy()
         memzbound.rho = 0.02 | density
         memzbound.rhovx = 0.0 | momentum
         memzbound.rhovy = 0.0 | momentum
@@ -2134,7 +2134,7 @@ class TestAthena(TestWithMPI):
         
         zbound = instance.get_boundary_grid('zbound2')
         self.assertEquals(zbound.shape, (4+8,5+8,4))
-        memzbound = zbound.copy_to_memory()
+        memzbound = zbound.copy()
         memzbound.rho = 0.02 | density
         memzbound.rhovx = 0.0 | momentum
         memzbound.rhovy = 0.0 | momentum

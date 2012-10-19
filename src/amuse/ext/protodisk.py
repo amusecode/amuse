@@ -142,7 +142,7 @@ class ProtoPlanetaryDisk(object):
                 
         if not self.convert_nbody is None:
             result = ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_generic())
-            result = result.copy_to_memory()
+            result = result.copy()
             
         return result
 

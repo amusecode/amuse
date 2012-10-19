@@ -121,7 +121,7 @@ class BinaryTreeOnParticle(object):
         return self.particle.particles_set._subset(keys)
     
     def copy(self):
-        copy_of_set = self.get_tree_subset().copy_to_memory()
+        copy_of_set = self.get_tree_subset().copy()
         root = copy_of_set[0]
         return BinaryTreeOnParticle(
             root,

@@ -140,8 +140,8 @@ def simulate_orszag_tang_problem(end_time):
 
     print "setup grid"
     for hydro_grid, mhd_grid in instance.iter_hydro_and_mhd_grids():
-        inmem = hydro_grid.copy_to_memory()
-        inmem_mhd = mhd_grid.copy_to_memory()
+        inmem = hydro_grid.copy()
+        inmem_mhd = mhd_grid.copy()
 
         clear_grid(inmem)
         clear_magnetic_field_grid(inmem_mhd)
@@ -167,7 +167,7 @@ def simulate_orszag_tang_problem(end_time):
     print "copying results"
     result = []
     for x in instance.itergrids():
-      result.append(x.copy_to_memory())
+      result.append(x.copy())
 
     print "terminating code"
     instance.stop()

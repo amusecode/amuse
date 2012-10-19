@@ -459,7 +459,7 @@ class TestSmallN(TestWithMPI):
         self.assertEarthAndMoonWasDetectedAsBinary(smalln.particles, stars)
         
         
-        inmemory = smalln.particles.copy_to_memory()
+        inmemory = smalln.particles.copy()
         self.assertEarthAndMoonWasDetectedAsBinary(inmemory, stars)
         
         test_results_path = self.get_path_to_results()

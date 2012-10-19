@@ -779,7 +779,7 @@ class TestMpiAmrVac(TestWithMPI):
             must_refine = instance.refine_grid()
             
             for x in instance.itergrids():
-                inmem = x.copy_to_memory()
+                inmem = x.copy()
                 inmem[inmem.x <  middle].rho= 0.3 | generic_unit_system.density
                 inmem[inmem.x >= middle].rho = 0.1 | generic_unit_system.density
                 inmem.rhovx = 0.0 | generic_unit_system.momentum_density
@@ -826,7 +826,7 @@ class TestMpiAmrVac(TestWithMPI):
             rho = 0.1 | generic_unit_system.density
             middle = 5.0 | generic_unit_system.length    
             for x in instance.itergrids():
-                inmem = x.copy_to_memory()
+                inmem = x.copy()
                 inmem.rho = 0.1 | generic_unit_system.density
                 inmem.rhovx = 0.0 | generic_unit_system.momentum_density
                 inmem.rhovy = 0.0 |  generic_unit_system.momentum_density
@@ -865,7 +865,7 @@ class TestMpiAmrVac(TestWithMPI):
             rho = 0.1 | generic_unit_system.density
             middle = 5.0 | generic_unit_system.length    
             for x in instance.itergrids():
-                inmem = x.copy_to_memory()
+                inmem = x.copy()
                 inmem.rho = 0.1 | generic_unit_system.density
                 inmem.rhovx = 0.0 | generic_unit_system.momentum_density
                 inmem.rhovy = 0.0 |  generic_unit_system.momentum_density

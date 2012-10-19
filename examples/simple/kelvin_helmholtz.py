@@ -78,7 +78,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     
     print "setup grid"
     for x in instance.itergrids():
-        inmem = x.copy_to_memory()
+        inmem = x.copy()
         
         clear_grid(inmem)
         initialize_grid(inmem)
@@ -99,7 +99,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     print "copying results"
     result = []
     for x in instance.itergrids():
-        result.append(x.copy_to_memory())
+        result.append(x.copy())
 
     print "terminating code"
     instance.stop()

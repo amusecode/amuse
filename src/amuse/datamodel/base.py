@@ -806,29 +806,21 @@ class AbstractSet(object):
         
     def __len__(self):
         return len(self.get_all_keys_in_store())
-        
-    def _factory_for_new_collection(self):
-        return type(self._original_set())
 
-    def copy(self):
+    def copy(self, memento = None):
         """
         Creates a new in particle set and copies
         all attributes and values into this set. The history
         of the set is not copied over.
         """
-        attributes = self.get_attribute_names_defined_in_store()
-        keys = self.get_all_keys_in_store()
-        indices = self.get_all_indices_in_store()
-        values = self.get_values_in_store(indices, attributes)
-        result = self._factory_for_new_collection()()
-        result.add_particles_to_store(keys, attributes, values)
-        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
-        result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
-        return result
+        return self.copy_to_memory(memento)
         
     def copy_to_memory(self):
         raise NotImplementedError()
     
+    def _factory_for_new_collection(self):
+        raise NotImplementedError()
+        
     def copy_values_of_attribute_to(self, attribute_name, particles):
         """
         Copy values of one attribute from this set to the 
@@ -1180,15 +1172,10 @@ class AbstractSet(object):
         
     def is_empty(self):
         return self.__len__()==0
-            
-
-
 
     def get_value_in_store(self, key, attribute):
         return self.get_values_in_store(numpy.asarray([key]),[attribute])[0][0]
-    
-    
-
+        
     def _convert_to_entity_or_quantity(self, x):
         if is_quantity(x):
             if x.unit.iskey():
@@ -1197,9 +1184,6 @@ class AbstractSet(object):
                 return x
         else:
             return x
-    
-    
-
 
     def __add__(self, particles):
         """
@@ -1237,34 +1221,6 @@ class AbstractSet(object):
     def attribute_for_set(cls, function):
         cls.add_global_calculated_attribute(function.__name__, function)
         return function
-    
-    
 
-    def empty_copy(self):
-        """
-        Creates a new in memory set and copies the particles to it.
-        The attributes and values are not copied.The history
-        of the set is not copied over.
-
-        >>> from amuse.datamodel import Particles
-        >>> from amuse.units import units
-        >>> original = Particles(2)
-        >>> original.mass = 0 | units.m
-        >>> print hasattr(original, "mass")
-        True
-        >>> print len(original)
-        2
-        >>> copy = original.empty_copy()
-        >>> print hasattr(copy, "mass")
-        False
-        >>> print len(copy)
-        2
-
-        """
-        keys = self.get_all_keys_in_store()
-        result = self._factory_for_new_collection()()
-        result.add_particles_to_store(keys, [],[])
-        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
-        return result
     
     

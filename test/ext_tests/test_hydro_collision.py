@@ -40,7 +40,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         self.assertTrue(hasattr(in_memory, "radius"))
         self.assertAlmostRelativeEqual(in_memory.radius.sum(), 4.2458 | units.RSun, 3)
         
-        from_stellar = stellar.particles.copy_to_memory()
+        from_stellar = stellar.particles.copy()
         for attribute in ["x", "y", "z", "vx", "vy", "vz"]:
             self.assertFalse(hasattr(from_stellar, attribute))
         collision.collect_required_attributes(from_stellar, gravity, stellar)

@@ -332,7 +332,7 @@ class AbstractParticleSet(AbstractSet):
         keys = self.get_all_keys_in_store()
         indices = self.get_all_indices_in_store()
         values = self.get_values_in_store(indices, attributes)
-        result = Particles()
+        result = self._factory_for_new_collection()()
         converted = []
         if memento is None:
             memento = {}
@@ -344,7 +344,7 @@ class AbstractParticleSet(AbstractSet):
                 elif id(x._original_set()) in memento:
                     converted.append(x._as_masked_subset_in(memento[id(x._original_set())]))
                 else:
-                    copyofset =  x._original_set().copy_to_memory(memento)
+                    copyofset =  x._original_set().copy(memento)
                     converted.append(x._as_masked_subset_in(copyofset))
             else:
                 converted.append(x)
@@ -354,6 +354,37 @@ class AbstractParticleSet(AbstractSet):
        
         return result
     
+    
+    def _factory_for_new_collection(self):
+        return Particles
+
+    def empty_copy(self):
+        """
+        Creates a new in memory set and copies the particles to it.
+        The attributes and values are not copied.The history
+        of the set is not copied over.
+
+        >>> from amuse.datamodel import Particles
+        >>> from amuse.units import units
+        >>> original = Particles(2)
+        >>> original.mass = 0 | units.m
+        >>> print hasattr(original, "mass")
+        True
+        >>> print len(original)
+        2
+        >>> copy = original.empty_copy()
+        >>> print hasattr(copy, "mass")
+        False
+        >>> print len(copy)
+        2
+
+        """
+        keys = self.get_all_keys_in_store()
+        result = Particles()
+        result.add_particles_to_store(keys, [],[])
+        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
+        return result
+        
     def copy_values_of_attribute_to(self, attribute_name, particles):
         """
         Copy values of one attribute from this set to the 
@@ -1109,9 +1140,6 @@ class Particles(AbstractParticleSet):
 
     def get_value_in_store(self, index, attribute):
         return self._private.attribute_storage.get_value_in_store(index, attribute)
-
-    def _factory_for_new_collection(self):
-        return Particles
         
     def can_extend_attributes(self):
         return self._private.attribute_storage.can_extend_attributes()
@@ -1292,9 +1320,6 @@ class ParticlesSuperset(AbstractParticleSet):
         for set in self._private.particle_sets:
             for particle in set:
                 yield particle
-                
-    def _factory_for_new_collection(self):
-        return Particles
         
     def _get_subsets_version(self):
         versions = [[x._get_version()] for x in self._private.particle_sets]
@@ -1835,7 +1860,7 @@ class ParticlesMaskedSubset(ParticlesSubset):
                 elif id(x._original_set()) in memento:
                     converted.append(x._as_masked_subset_in(memento[id(x._original_set())]))
                 else:
-                    copyofset =  x._original_set().copy_to_memory(memento)
+                    copyofset =  x._original_set().copy(memento)
                     converted.append(x._as_masked_subset_in(copyofset))
             else:
                 converted.append(x)
@@ -1885,9 +1910,6 @@ class ParticlesOverlay(AbstractParticleSet):
         
     def __len__(self):
         return len(self._private.overlay_set)
-    
-    def _factory_for_new_collection(self):
-        return Particles
         
     def _get_subsets_version(self):
         versions = [[x._get_version()] for x in self._private.particle_sets]
@@ -2111,8 +2133,8 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     def _get_version(self):
         return self._private.particles._get_version()
               
-    def copy(self):
-        copiedParticles =  self._private.particles.copy()
+    def shallow_copy(self):
+        copiedParticles =  self._private.particles.shallow_copy()
         return ParticlesWithUnitsConverted(copiedParticles, self._private.converter)
     
     def unconverted_set(self):

@@ -46,7 +46,7 @@ class CollisionHandler(object):
         return result
     
     def handle_collision(self, primary, secondary):
-        colliders = (primary + secondary).copy_to_memory()
+        colliders = (primary + secondary).copy()
         
         if self.verbose:
             print "Handling collision between stars with masses {0}.".format(colliders.mass)

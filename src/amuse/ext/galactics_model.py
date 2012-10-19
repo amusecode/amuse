@@ -8,7 +8,7 @@ def _new_galactics_model(halo_number_of_particles, unit_system_converter=None, d
         setattr(instance.parameters, key, value)
     
     instance.generate_particles()
-    result = instance.particles.copy_to_memory()
+    result = instance.particles.copy()
     instance.stop()
     
     result.move_to_center()
@@ -17,7 +17,7 @@ def _new_galactics_model(halo_number_of_particles, unit_system_converter=None, d
     
     if not unit_system_converter is None:
         result = ParticlesWithUnitsConverted(result, unit_system_converter.as_converter_from_si_to_generic())
-        result = result.copy_to_memory()
+        result = result.copy()
     return result
 
 def _create_docstring():
