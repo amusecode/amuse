@@ -134,7 +134,7 @@ En example of filling the boundary grid:
     xbound1_grid = instance.get_boundary_grid('xbound1')
     
     # copy the grid to memory, so we can manipulate it easier
-    memxbound1 = xbound1_grid.copy_to_memory()
+    memxbound1 = xbound1_grid.copy()
     
     # just set all cells in the grid to the same values
     memxbound1.rho = 0.02 | density
