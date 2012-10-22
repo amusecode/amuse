@@ -160,6 +160,7 @@ function mercury_commit_parameters() result(ret)
     if(time.EQ.0.0) then
         time = begin_time
     end if
+    ret=0
 end function
 
 
