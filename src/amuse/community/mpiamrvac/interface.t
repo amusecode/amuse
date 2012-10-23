@@ -86,6 +86,9 @@ CONTAINS
             call allocateBflux
         endif
         
+        call getbc(t,ixG^LL,pw,pwCoarse,pgeo,&
+               pgeoCoarse,.false.)
+
         initialize_grid = 0
         
     END FUNCTION
@@ -3146,10 +3149,8 @@ CONTAINS
         localsteps=0
         itmin=it
         
-        print *,"ONE"
         call getbc(t,ixG^LL,pw,pwCoarse,pgeo,&
                pgeoCoarse,.false.)
-        print *,"TWO"
 
         !  ------ start of integration loop. ------------------
         
@@ -3742,5 +3743,77 @@ CONTAINS
         set_grid_acceleration = 0
     end function
     
+    function get_hydro_state_at_point(x1, x2, x3, vx, vy, vz, rho, rhovx, rhovy, rhovz, rhoe,npoints) result(ret)
+        include 'amrvacdef.f'
+        integer :: ret, ilist
+        integer, intent(in) :: npoints
+        integer :: iigrid, igrid, i^D, idims
+        double precision :: weighing_factors(2^D&)
+        double precision :: dx^D, xleft, xright
+        double precision, intent(in) :: x1(npoints), x2(npoints), x3(npoints)
+        double precision, intent(in) :: vx(npoints), vy(npoints), vz(npoints)
+        double precision, intent(out):: rho(npoints), rhovx(npoints), rhovy(npoints)
+        double precision, intent(out):: rhovz(npoints), rhoe(npoints)
+        rho=0.0
+        rhovx=0.0
+        rhovy=0.0
+        rhovz=0.0
+        rhoe=0.0
+        weighing_factors = 1.0
+        do ilist = 1,npoints
+            weighing_factors = 1.0
+            do iigrid=1,igridstail; 
+                igrid=igrids(iigrid)
+                if({(rnode(rpxmin^D_,igrid).LE.x^D(ilist).and.&
+                    rnode(rpxmax^D_,igrid).GT.x^D(ilist))|.and.})then
+                    
+                    dx^D=rnode(rpdx^D_,igrid);
+
+                    i^D=FLOOR(((x^D(ilist)-rnode(rpxmin^D_,igrid) - (half * dx^D))/dx^D))+dixB+1;
+                    do idims=1,ndim
+                    select case(idims)
+                        {case(^D)
+                        xleft = px(igrid)%x(i^DD,^D)
+                        xright = px(igrid)%x(i^D+1^D%i^DD,^D)
+                        weighing_factors(1^D%1:2^D&) = weighing_factors(1^D%1:2^D&) * ((xright - x^D(ilist)) / dx^D)
+                        weighing_factors(2^D%1:2^D&) = weighing_factors(2^D%1:2^D&) * ((x^D(ilist)  - xleft) / dx^D)
+                        
+                       }
+                    end select
+                    end do
+                
+                    rho(ilist) = sum(pw(igrid)%w(i^D:i^D+1, rho_) * weighing_factors)
+                    rhoe(ilist) = sum(pw(igrid)%w(i^D:i^D+1, e_) * weighing_factors)
+                    rhovx(ilist) = sum(pw(igrid)%w(i^D:i^D+1, m1_) * weighing_factors)
+{^NOONED
+                    rhovy(ilist) = sum(pw(igrid)%w(i^D:i^D+1, m2_) * weighing_factors)
+}
+{^IFTHREED
+                    rhovz(ilist) = sum(pw(igrid)%w(i^D:i^D+1, m3_) * weighing_factors)
+}
+                end if
+            end do
+        end do
+        
+        
+        
+        if(mype .GT. 0) then
+            call MPI_Reduce(rho,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(rhovx,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(rhovy,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(rhovz,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(rhoe,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, rho, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, rhovx, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, rhovy, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, rhovz, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, rhoe, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        
+        
+        
+        ret=0  
+    end function
 END MODULE mpiamrvac_interface
 

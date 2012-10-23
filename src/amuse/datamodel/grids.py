@@ -12,6 +12,7 @@ from amuse.datamodel.memory_storage import *
 import numpy
 
 from amuse.datamodel import indexing
+
 class AbstractGrid(AbstractSet):
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
@@ -106,7 +107,17 @@ class AbstractGrid(AbstractSet):
     def can_extend_attributes(self):
         return self._original_set().can_extend_attributes()
         
+    def __str__(self):
+        dimensionstr = ' x '.join(([str(x) for x in self.shape]))
+        
+        return "{0} ({1})".format(
+            self.__class__.__name__, 
+            dimensionstr
+        )
+        
 class Grid(AbstractGrid):
+    DEFAULT_AXES_NAMES = ('x', 'y', 'z')
+    
     def __init__(self, *args, **kwargs):
         AbstractGrid.__init__(self)
         
@@ -114,18 +125,25 @@ class Grid(AbstractGrid):
             self._private.attribute_storage = kwargs['storage']
         else:
             self._private.attribute_storage = InMemoryGridAttributeStorage(*args)
+        
+        
+        if "axes_names" in kwargs:
+            self._private.axes_names = kwargs['axes_names']
+        else:
+            self._private.axes_names = self.DEFAULT_AXES_NAMES
             
         self._private.previous = None
         self.collection_attributes.timestamp = None
+        self.add_vector_attribute("position", self._private.axes_names[0:len(self.shape)])
         
     def can_extend_attributes(self):
         return self._private.attribute_storage.can_extend_attributes()
     
     @classmethod
-    def create(cls, shape, lengths, axes_names = ('x', 'y', 'z')):
+    def create(cls, shape, lengths, axes_names = DEFAULT_AXES_NAMES):
         """Returns a grid with cells between 0 and lengths.
         """
-        result = cls(*shape)
+        result = cls(*shape, axes_names = axes_names)
     
         all_indices = numpy.indices(shape)+0.5
         
@@ -134,7 +152,7 @@ class Grid(AbstractGrid):
     
         for indices, length, n, axis_name in zip(all_indices, lengths, shape, axes_names):
             setattr(result, axis_name, positions(indices, length, n))
-        
+       
         return result
             
     def get_values_in_store(self, indices, attributes, by_key = True):
@@ -173,6 +191,7 @@ class Grid(AbstractGrid):
     @property
     def size(self):
         return numpy.prod(self.shape)
+        
         
     def indices(self):
         return numpy.indices(self.shape)
@@ -550,7 +569,8 @@ class NonOverlappingGridsIndexer(object):
         result = self.grids[0].get_minimum_position()
         for x in self.grids[1:]:
             minimum = x.get_minimum_position()
-            result = result.min(minimum)
+            result = result.minimum(minimum)
+        print result
         return result
         
     def setup_index(self):
@@ -560,10 +580,9 @@ class NonOverlappingGridsIndexer(object):
             if smallest_boxsize is None:
                 smallest_boxsize = boxsize
             else:
-                smallest_boxsize = boxsize.min(smallest_boxsize)
+                smallest_boxsize = boxsize.minimum(smallest_boxsize)
             
         self.smallest_boxsize = smallest_boxsize
-        
         max_index = [0,0,0]
         
         for x in self.grids:
@@ -588,3 +607,9 @@ class NonOverlappingGridsIndexer(object):
         index_of_grid = self.grids_on_index[tuple(index)]
         return self.grids[index_of_grid]
         
+    def grids_for_points(self, points):
+        index = ((points - self.minimum_position) / self.smallest_boxsize)
+        index = numpy.floor(index).astype(numpy.int)
+        print indices
+        index_of_grid = self.grids_on_index[tuple(index)]
+        return self.grids[index_of_grid]

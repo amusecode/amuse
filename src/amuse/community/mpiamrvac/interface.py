@@ -2181,6 +2181,19 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
         function.result_type = 'i'
         return function
         
+    @legacy_function    
+    def get_hydro_state_at_point():
+        function = LegacyFunctionSpecification()  
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        for x in ['vx','vy','vz']:
+            function.addParameter(x, dtype='d', direction=function.IN, default = 0)
+        for x in ['rho','rhovx','rhovy','rhovz','rhoe']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
+        function.result_type = 'i' 
+        function.must_handle_array = True
+        return function
     
     
     
@@ -2418,6 +2431,13 @@ class MpiAmrVac(CommonCode):
             'get_grid_acceleration',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (acceleration, acceleration, acceleration, object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_hydro_state_at_point',
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
+                generic_unit_system.speed, generic_unit_system.speed, generic_unit_system.speed),
+            (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
+                generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
         )
         self.stopping_conditions.define_methods(object)
         
@@ -2695,7 +2715,7 @@ class MpiAmrVac(CommonCode):
         
         object.add_transition('EDIT', 'RUN', 'initialize_grid')
         object.add_method('RUN', 'evolve_model')
-        
+        object.add_method('RUN', 'get_hydro_state_at_point')
         for state in ['EDIT', 'RUN']:
             for methodname in [
                     'get_grid_density',
@@ -2715,7 +2735,7 @@ class MpiAmrVac(CommonCode):
                     'get_mesh_size',
                     'get_number_of_grids',
                     'get_level_of_grid',
-                    'refine_grid',
+                    'refine_grid'
                 ]:
                 object.add_method(state, methodname)    
     

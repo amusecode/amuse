@@ -891,3 +891,166 @@ class TestMpiAmrVac(TestWithMPI):
                 self.assertAlmostRelativeEquals(igrid.rhovx, ax * dt* rho)
                 self.assertAlmostRelativeEquals(igrid.rhovy, ay * dt* rho)
             instance.stop()
+            
+    
+    def test16(self):
+        
+        instance=self.new_instance(MpiAmrVac, mode="1d")
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.mesh_length = (20.0, 1, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (20, 1, 1)
+        instance.parameters.maximum_number_of_grid_levels = 1
+        
+        for x in instance.itergrids():
+            inmem = x.copy()
+            inmem.rho = inmem.x/(1| generic_unit_system.length) | generic_unit_system.density
+            inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+            inmem.energy =  1.0 | generic_unit_system.energy_density
+            from_model_to_code = inmem.new_channel_to(x)
+            from_model_to_code.copy()
+            print inmem.rho
+        rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.0| generic_unit_system.length,0.0| generic_unit_system.length)
+        
+        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        
+        for value in numpy.arange(0.5, 19.6, 0.1):
+            
+            rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(
+                value | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length
+            )
+        
+            self.assertAlmostRelativeEquals(rho , value | generic_unit_system.density)
+        
+        for value in numpy.arange(0.0, 0.6, 0.1):
+            rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(
+                value | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length
+            )
+            self.assertAlmostRelativeEquals(rho , ((0.5 + value) * 0.5 + (0.5-value) * 19.5) | generic_unit_system.density)
+        
+        
+        for value in numpy.arange(0.0, 0.5, 0.1):
+            rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(
+                value + 19.5| generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length
+            )
+            self.assertAlmostRelativeEquals(rho , (19.5 - (value * 19))  | generic_unit_system.density, 9)
+        
+        # out of range
+        rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(
+            20.0| generic_unit_system.length,
+            0.0 | generic_unit_system.length,
+            0.0 | generic_unit_system.length
+        )
+        self.assertAlmostRelativeEquals(rho , 0.0 | generic_unit_system.density, 9)
+        
+    def test17(self):
+        
+        instance=self.new_instance(MpiAmrVac, mode="2d", number_of_workers=2)
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.mesh_length = (20.0, 20.0, 1) | generic_unit_system.length
+        instance.parameters.mesh_length = (20.0, 20.0, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (20, 20, 1)
+        instance.parameters.maximum_number_of_grid_levels = 1
+        
+        for x in instance.itergrids():
+            inmem = x.copy()
+            inmem.rho = (inmem.x + ((inmem.y - (0.5| generic_unit_system.length))* 20.0))/(1| generic_unit_system.length) | generic_unit_system.density
+            inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+            inmem.energy =  1.0 | generic_unit_system.energy_density
+            from_model_to_code = inmem.new_channel_to(x)
+            from_model_to_code.copy()
+            print inmem.rho[0], inmem.y[0], inmem.x[0]
+        rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.5| generic_unit_system.length,0.0| generic_unit_system.length)
+        
+        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        
+        for value in numpy.arange(0.5, 19.6, 0.1):
+            
+            rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(
+                value | generic_unit_system.length,
+                0.5 | generic_unit_system.length,
+                0.0 | generic_unit_system.length
+            )
+        
+            self.assertAlmostRelativeEquals(rho , value | generic_unit_system.density)
+        
+        for x in numpy.arange(8.5, 11.5, 0.25):
+            for y in numpy.arange(0.5, 19.6, 0.25):
+                rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(
+                    x | generic_unit_system.length,
+                    y | generic_unit_system.length,
+                    0.0 | generic_unit_system.length
+                )
+            
+                self.assertAlmostRelativeEquals(rho , x + (20 * (y-0.5))  | generic_unit_system.density)
+            
+    
+    def test17(self):
+        
+        instance=self.new_instance(MpiAmrVac, number_of_workers=3)
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        instance.parameters.mesh_length = (20.0, 20.0, 20.0) | generic_unit_system.length
+        instance.parameters.mesh_length = (20.0, 20.0, 20.0) | generic_unit_system.length
+        instance.parameters.mesh_size = (20, 20, 20)
+        instance.parameters.maximum_number_of_grid_levels = 1
+        
+        for x in instance.itergrids():
+            inmem = x.copy()
+            inmem.rho = (
+                (
+                    inmem.x + 
+                    ((inmem.y - (0.5| generic_unit_system.length))* 20.0) +
+                    ((inmem.z - (0.5| generic_unit_system.length))* 400.0)
+                )
+                /(1| generic_unit_system.length) | generic_unit_system.density
+            )
+            inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+            inmem.energy =  1.0 | generic_unit_system.energy_density
+            from_model_to_code = inmem.new_channel_to(x)
+            from_model_to_code.copy()
+        rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.5| generic_unit_system.length,0.5| generic_unit_system.length)
+        
+        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        
+        for value in numpy.arange(0.5, 19.6, 0.1):
+            
+            rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(
+                value | generic_unit_system.length,
+                0.5 | generic_unit_system.length,
+                0.5 | generic_unit_system.length
+            )
+        
+            self.assertAlmostRelativeEquals(rho , value | generic_unit_system.density)
+        
+        sample = sample = datamodel.Grid.create(
+            (4, 4, 76),
+            (2, 2, 19) | generic_unit_system.length
+        )
+        sample.x += 9.5 | generic_unit_system.length
+        sample.y += 9.5 | generic_unit_system.length
+        sample.z += 0.5 | generic_unit_system.length
+        x = sample.x.flatten()
+        y = sample.y.flatten()
+        z = sample.z.flatten()
+        
+        rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(
+            x,
+            y,
+            z
+        )
+        half = 0.5 | generic_unit_system.length
+        
+        self.assertAlmostRelativeEquals(rho , (x + (20 * (y-half)) + (400 * (z-half)))/(1| generic_unit_system.length) | generic_unit_system.density )
+            
+
+
+
+

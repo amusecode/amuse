@@ -630,14 +630,14 @@ class VectorQuantity(Quantity):
         """
         self._number = numpy.concatenate(([scalar_quantity.value_in(self.unit)], self._number))
 
-    def min(self, other):
+    def minimum(self, other):
         """
         Return the minimum of self and the argument.
 
         >>> from amuse.units import si
         >>> v1 = [1.0, 2.0, 3.0] | si.kg
         >>> v2 = [0.0, 3.0, 4.0] | si.kg
-        >>> v1.min(v2)
+        >>> v1.minimum(v2)
         quantity<[0.0, 2.0, 3.0] kg>
 
         """
@@ -646,14 +646,14 @@ class VectorQuantity(Quantity):
         values = numpy.where(is_smaller_than, self.number, other_in_my_units.number)
         return VectorQuantity(values, self.unit)
 
-    def max(self, other):
+    def maximum(self, other):
         """
         Return the maximum of self and the argument.
 
         >>> from amuse.units import si
         >>> v1 = [1.0, 2.0, 3.0] | si.kg
         >>> v2 = [0.0, 3.0, 4.0] | si.kg
-        >>> v1.max(v2)
+        >>> v1.maximum(v2)
         quantity<[1.0, 3.0, 4.0] kg>
         """
         other_in_my_units = other.as_quantity_in(self.unit)
