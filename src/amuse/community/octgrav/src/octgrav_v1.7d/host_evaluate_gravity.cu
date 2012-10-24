@@ -67,19 +67,19 @@ extern "C"
       oldv = max(int(1.3*(oldv)), (int)(newv)); \
     } }
  
-  double host_evaluate_gravity(float  inv_opening_angle,
-			       float  softening_squared,
+  double host_evaluate_gravity(float  inv_opening_angle_in,
+			       float  softening_squared_in,
 			       
-			       int    n_bodies,
+			       int    n_bodies_in,
 			       float4 *bodies_pos,
 			       float4 *bodies_grav,
 
 			       int    n_children,
 			       int4   *children,
 
-			       int    n_nodes,
-			       float4 root_pos,
-			       float4 root_com,
+			       int    n_nodes_in,
+			       float4 root_pos_in,
+			       float4 root_com_in,
 			       float4 *node_pos,
 			       float4 *node_com,
 			       float4 *node_Qu,
@@ -90,7 +90,7 @@ extern "C"
 			       int    *n_in_node,
 			       int    *node_bodies_offset,
 			       
-			       int    n_cells,
+			       int    n_cells_in,
 			       float4 *cell_pos,
 			       float4 *cell_com,
 			       int    *n_in_cell,
@@ -102,7 +102,7 @@ extern "C"
     bodies_pos_tex.addressMode[1] = cudaAddressModeWrap;
     bodies_pos_tex.filterMode     = cudaFilterModePoint;
     bodies_pos_tex.normalized     = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, bodies_pos_tex, bodies_pos, n_bodies * sizeof(float4)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, bodies_pos_tex, bodies_pos, n_bodies_in * sizeof(float4)));
 
     /***************************************************/
 
@@ -118,13 +118,13 @@ extern "C"
     node_bodies_offset_tex.addressMode[1] = cudaAddressModeWrap;
     node_bodies_offset_tex.filterMode     = cudaFilterModePoint;
     node_bodies_offset_tex.normalized     = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, node_bodies_offset_tex, node_bodies_offset, n_nodes * sizeof(int)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, node_bodies_offset_tex, node_bodies_offset, n_nodes_in * sizeof(int)));
 
     cell_bodies_offset_tex.addressMode[0] = cudaAddressModeWrap;
     cell_bodies_offset_tex.addressMode[1] = cudaAddressModeWrap;
     cell_bodies_offset_tex.filterMode     = cudaFilterModePoint;
     cell_bodies_offset_tex.normalized     = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, cell_bodies_offset_tex, cell_bodies_offset, n_cells * sizeof(int)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, cell_bodies_offset_tex, cell_bodies_offset, n_cells_in * sizeof(int)));
     
     /***************************************************/    
 
@@ -182,56 +182,84 @@ extern "C"
     cell_pos_tex.addressMode[1] = cudaAddressModeWrap;
     cell_pos_tex.filterMode     = cudaFilterModePoint;
     cell_pos_tex.normalized     = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, cell_pos_tex, cell_pos, n_cells * sizeof(float4)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, cell_pos_tex, cell_pos, n_cells_in * sizeof(float4)));
 
     cell_com_tex.addressMode[0] = cudaAddressModeWrap;
     cell_com_tex.addressMode[1] = cudaAddressModeWrap;
     cell_com_tex.filterMode     = cudaFilterModePoint;
     cell_com_tex.normalized     = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, cell_com_tex, cell_com, n_cells * sizeof(float4)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, cell_com_tex, cell_com, n_cells_in * sizeof(float4)));
 
     n_in_cell_tex.addressMode[0] = cudaAddressModeWrap;
     n_in_cell_tex.addressMode[1] = cudaAddressModeWrap;
     n_in_cell_tex.filterMode     = cudaFilterModePoint;
     n_in_cell_tex.normalized     = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, n_in_cell_tex, n_in_cell, n_cells * sizeof(int)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, n_in_cell_tex, n_in_cell, n_cells_in * sizeof(int)));
 
     /***************************************************/
-    
-    CUDA_SAFE_CALL(cudaMemcpyToSymbol("inv_opening_angle", &inv_opening_angle, 
+#if CUDART_VERSION < 5000
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol("inv_opening_angle", &inv_opening_angle_in, 
 				      sizeof(float), 0, 
 				      cudaMemcpyHostToDevice));
 
-    CUDA_SAFE_CALL(cudaMemcpyToSymbol("softening_squared", &softening_squared, 
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol("softening_squared", &softening_squared_in, 
 				      sizeof(float), 0, 
 				      cudaMemcpyHostToDevice));
 
-    CUDA_SAFE_CALL(cudaMemcpyToSymbol("root_pos", &root_pos, 
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol("root_pos", &root_pos_in, 
 				      sizeof(float4), 0, 
 				      cudaMemcpyHostToDevice));
 
-    CUDA_SAFE_CALL(cudaMemcpyToSymbol("root_com", &root_com, 
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol("root_com", &root_com_in, 
 				      sizeof(float4), 0, 
 				      cudaMemcpyHostToDevice));
 
-    CUDA_SAFE_CALL(cudaMemcpyToSymbol("n_nodes", &n_nodes, 
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol("n_nodes", &n_nodes_in, 
 				      sizeof(int), 0, 
 				      cudaMemcpyHostToDevice));
 
-    CUDA_SAFE_CALL(cudaMemcpyToSymbol("n_cells", &n_cells, 
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol("n_cells", &n_cells_in, 
 				      sizeof(int), 0, 
 				      cudaMemcpyHostToDevice));
 
-    CUDA_SAFE_CALL(cudaMemcpyToSymbol("n_bodies", &n_bodies, 
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol("n_bodies", &n_bodies_in, 
 				      sizeof(int), 0, 
 				      cudaMemcpyHostToDevice));
-    
+#else
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol(inv_opening_angle, &inv_opening_angle_in, 
+				      sizeof(float), 0, 
+				      cudaMemcpyHostToDevice));
+
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol(softening_squared, &softening_squared_in, 
+				      sizeof(float), 0, 
+				      cudaMemcpyHostToDevice));
+
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol(root_pos, &root_pos_in, 
+				      sizeof(float4), 0, 
+				      cudaMemcpyHostToDevice));
+
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol(root_com, &root_com_in, 
+				      sizeof(float4), 0, 
+				      cudaMemcpyHostToDevice));
+
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol(n_nodes, &n_nodes_in, 
+				      sizeof(int), 0, 
+				      cudaMemcpyHostToDevice));
+
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol(n_cells, &n_cells_in, 
+				      sizeof(int), 0, 
+				      cudaMemcpyHostToDevice));
+
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol(n_bodies, &n_bodies_in, 
+				      sizeof(int), 0, 
+				      cudaMemcpyHostToDevice));
+#endif
     /***************************************************/
   
     /*****   building interaction list   *****/
     
     int p = 128;
-    int n_cells_dev = n_cells;
+    int n_cells_dev = n_cells_in;
     if (n_cells_dev < p) 
       p = n_cells_dev;
     else
@@ -245,10 +273,10 @@ extern "C"
     int3 *hst_interaction_list_len;
 
 //     int3 *dev_interaction_list_len = NULL
-    SAFE_ALLOC(dev_interaction_list_len, cuda_interaction_list_len, n_cells * sizeof(int3));
-//     allocateCUDAarray((void**)&dev_interaction_list_len,  n_cells * sizeof(int3));
+    SAFE_ALLOC(dev_interaction_list_len, cuda_interaction_list_len, n_cells_in * sizeof(int3));
+//     allocateCUDAarray((void**)&dev_interaction_list_len,  n_cells_in * sizeof(int3));
 
-    hst_interaction_list_len = (int3*)malloc(n_cells * sizeof(int3));
+    hst_interaction_list_len = (int3*)malloc(n_cells_in * sizeof(int3));
     
     double t1 = get_time();
     double dt_ilen = 0;
@@ -262,21 +290,21 @@ extern "C"
     /************************/
     
     copyArrayFromDevice(hst_interaction_list_len,
-			dev_interaction_list_len, n_cells * sizeof(int3));
+			dev_interaction_list_len, n_cells_in * sizeof(int3));
 
-    int* hst_n_in_cell = (int*)malloc(n_cells * sizeof(int));
-    copyArrayFromDevice(hst_n_in_cell, n_in_cell, n_cells * sizeof(int));
+    int* hst_n_in_cell = (int*)malloc(n_cells_in * sizeof(int));
+    copyArrayFromDevice(hst_n_in_cell, n_in_cell, n_cells_in * sizeof(int));
 
 
     int2 *hst_interaction_node_len; //, *dev_interaction_node_len;
     int2 *hst_interaction_leaf_len; //, *dev_interaction_leaf_len;
-    hst_interaction_node_len = (int2*)malloc((n_cells + 1) * sizeof(int2));
-    hst_interaction_leaf_len = (int2*)malloc((n_cells + 1) * sizeof(int2));
+    hst_interaction_node_len = (int2*)malloc((n_cells_in + 1) * sizeof(int2));
+    hst_interaction_leaf_len = (int2*)malloc((n_cells_in + 1) * sizeof(int2));
 
-    SAFE_ALLOC(dev_interaction_node_len, cuda_interaction_node_len, n_cells * sizeof(int2));
-    SAFE_ALLOC(dev_interaction_leaf_len, cuda_interaction_leaf_len, n_cells * sizeof(int2));
-//     allocateCUDAarray((void**)&dev_interaction_node_len,  n_cells * sizeof(int2));
-//     allocateCUDAarray((void**)&dev_interaction_leaf_len,  n_cells * sizeof(int2));
+    SAFE_ALLOC(dev_interaction_node_len, cuda_interaction_node_len, n_cells_in * sizeof(int2));
+    SAFE_ALLOC(dev_interaction_leaf_len, cuda_interaction_leaf_len, n_cells_in * sizeof(int2));
+//     allocateCUDAarray((void**)&dev_interaction_node_len,  n_cells_in * sizeof(int2));
+//     allocateCUDAarray((void**)&dev_interaction_leaf_len,  n_cells_in * sizeof(int2));
 
     long long int n_io = 0;
     int n_interacting_nodes_total = 0, n_interacting_leaves_total = 0;
@@ -285,9 +313,9 @@ extern "C"
     int n_interacting_leaves_max = 0;
 
     int n_blocks = 0;
-    for (int i = 0; i < n_cells; i += p*NBLOCKS) {
+    for (int i = 0; i < n_cells_in; i += p*NBLOCKS) {
       n_blocks += 1;
-      int n_in_block = min(n_cells - i, p*NBLOCKS);
+      int n_in_block = min(n_cells_in - i, p*NBLOCKS);
 //       fprintf(stderr, "     block %d  n_in_block= %d cell_offset= %d\n",
 // 	      n_blocks, n_in_block, i);
       
@@ -313,9 +341,9 @@ extern "C"
     }
     
     copyArrayToDevice(dev_interaction_node_len,
-		      hst_interaction_node_len, n_cells * sizeof(int2));
+		      hst_interaction_node_len, n_cells_in * sizeof(int2));
     copyArrayToDevice(dev_interaction_leaf_len,
-		      hst_interaction_leaf_len, n_cells * sizeof(int2));
+		      hst_interaction_leaf_len, n_cells_in * sizeof(int2));
     free(hst_n_in_cell);
 
     fprintf(stderr, " *****************************************************\n");
@@ -346,19 +374,19 @@ extern "C"
     
     int *hst_n_node;
     int *hst_n_leaf;
-    SAFE_ALLOC(dev_n_node, cuda_n_node, n_bodies * sizeof(int));
-    SAFE_ALLOC(dev_n_leaf, cuda_n_leaf, n_bodies * sizeof(int));
+    SAFE_ALLOC(dev_n_node, cuda_n_node, n_bodies_in * sizeof(int));
+    SAFE_ALLOC(dev_n_leaf, cuda_n_leaf, n_bodies_in * sizeof(int));
 
-//     allocateCUDAarray((void**)&dev_n_node,  n_bodies * sizeof(int));
-//     allocateCUDAarray((void**)&dev_n_leaf,  n_bodies * sizeof(int));
-    hst_n_node = (int*)malloc(n_bodies * sizeof(int));
-    hst_n_leaf = (int*)malloc(n_bodies * sizeof(int));
+//     allocateCUDAarray((void**)&dev_n_node,  n_bodies_in * sizeof(int));
+//     allocateCUDAarray((void**)&dev_n_leaf,  n_bodies_in * sizeof(int));
+    hst_n_node = (int*)malloc(n_bodies_in * sizeof(int));
+    hst_n_leaf = (int*)malloc(n_bodies_in * sizeof(int));
 
     double dt_ibuild = 0, dt_node = 0, dt_leaf = 0;
     int cur_block = 0;
-    for (int i = 0; i < n_cells; i += p*NBLOCKS) {
+    for (int i = 0; i < n_cells_in; i += p*NBLOCKS) {
       cur_block++;
-      int n_in_block = min(n_cells - i, p*NBLOCKS);
+      int n_in_block = min(n_cells_in - i, p*NBLOCKS);
       dim3 threads(p, 1, 1);
       dim3 grid(n_norm(n_in_block, p)/p, 1, 1);
       if (n_in_block < p) {
@@ -441,10 +469,10 @@ extern "C"
       
     }      
     
-    copyArrayFromDevice(hst_n_node, dev_n_node, n_bodies * sizeof(int));
-    copyArrayFromDevice(hst_n_leaf, dev_n_leaf, n_bodies * sizeof(int));
+    copyArrayFromDevice(hst_n_node, dev_n_node, n_bodies_in * sizeof(int));
+    copyArrayFromDevice(hst_n_leaf, dev_n_leaf, n_bodies_in * sizeof(int));
     long long n_leaf = 0, n_node = 0;
-    for (int i = 0; i < n_bodies; i++) {
+    for (int i = 0; i < n_bodies_in; i++) {
       n_node += hst_n_node[i];
       n_leaf += hst_n_leaf[i];
     }
