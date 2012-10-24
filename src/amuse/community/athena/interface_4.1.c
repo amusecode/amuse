@@ -3007,7 +3007,7 @@ int get_hydro_state_at_point(
                     double y0dy = 1.0 - y1dy;
                     double z1dz = zval - floor(zval);
                     double z0dz = 1.0 - z1dz;
-                    double weighingfactors[6];
+                    double weighingfactors[8];
                     
                     weighingfactors[0] = z0dz * y0dy * x0dx;
                     weighingfactors[1] = z0dz * y0dy * x1dx;
