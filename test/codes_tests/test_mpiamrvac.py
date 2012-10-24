@@ -991,7 +991,7 @@ class TestMpiAmrVac(TestWithMPI):
                 self.assertAlmostRelativeEquals(rho , x + (20 * (y-0.5))  | generic_unit_system.density)
             
     
-    def test17(self):
+    def test18(self):
         
         instance=self.new_instance(MpiAmrVac, number_of_workers=3)
         instance.parameters.x_boundary_conditions = ("periodic","periodic")

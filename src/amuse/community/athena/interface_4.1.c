@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -852,10 +853,9 @@ int get_position_of_index(int *i, int *j, int *k, int *index_of_grid, double * x
     if (mesh.NLevels == 0) {
         return -1;
     }
+    
     DomainS * dom = 0;
-    if (mesh.NLevels == 0) {
-        return -1;
-    }
+    
     for(l=0; l < number_of_points; l++) {
         i0 = i[l];
         j0 = j[l];
@@ -2927,6 +2927,125 @@ int get_boundary_position_of_index(
         MPI_Reduce(MPI_IN_PLACE, x, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, y, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, z, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+    return 0;
+}
+
+
+/* k,j,i offsets for weighing */
+static int weighing_offsets[8][3] = {
+    {0,0,0},
+    {0,0,1},
+    {0,1,0},
+    {0,1,1},
+    {1,0,0},
+    {1,0,1},
+    {1,1,0},
+    {1,1,1},
+};
+
+int get_hydro_state_at_point(
+        double * x, double * y, double *z,
+        double * vx, double * vy, double * vz,
+        double * rho,
+        double * rhovx, double * rhovy, double * rhovz,
+        double * rhoen,
+        int number_of_points)
+{
+    DomainS * dom = 0;
+    int ii = 0, level = 0, i = 0;
+    int igrid, jgrid, kgrid;
+    int nweigh = 0;
+    for(i=0; i < number_of_points; i++) {
+    for(level = mesh.NLevels - 1; level >= 0; level--)
+    {
+        rho[i]   = 0.0;
+        rhovx[i] = 0.0;
+        rhovy[i] = 0.0;
+        rhovz[i] = 0.0;
+        rhoen[i] = 0.0;
+        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+        {   
+            dom = (DomainS*)&(mesh.Domain[level][ii]);
+            if(dom->Grid == NULL)
+            {
+                continue;
+            }
+            else
+            {
+                GridS * grid = dom->Grid;
+                if(
+                    (grid->MinX[0] <= x[i] && x[i] < grid->MaxX[0]) &&
+                    ((dom->Nx[1] <= 1) || (grid->MinX[1] <= y[i] && y[i] < grid->MaxX[1])) &&
+                    ((dom->Nx[2] <= 1) || (grid->MinX[2] <= z[i] && z[i] < grid->MaxX[2])) 
+                )
+                {
+                    double yval = 0.0;
+                    double zval = 0.0;
+                    double xval = (x[i] - grid->MinX[0] - (0.5 * grid->dx1))/grid->dx1;
+                    igrid = floor(xval) + grid->is;
+                    nweigh = 2;
+                    if(dom->Nx[1] > 1) {
+                        yval = (y[i] - grid->MinX[1] - (0.5 * grid->dx2))/grid->dx2;
+                        jgrid = floor(yval) + grid->js;
+                        nweigh = 4;
+                    } else {
+                        jgrid = 0;
+                    }
+                    if(dom->Nx[2] > 1) {
+                        zval = (z[i] - grid->MinX[2] - (0.5 * grid->dx3))/grid->dx3;
+                        kgrid = floor(zval) + grid->ks;
+                        nweigh = 8;
+                    } else {
+                        kgrid = 0;
+                    }
+                    double x1dx = xval - floor(xval);
+                    double x0dx = 1.0 - x1dx;
+                    double y1dy = yval - floor(yval);
+                    double y0dy = 1.0 - y1dy;
+                    double z1dz = zval - floor(zval);
+                    double z0dz = 1.0 - z1dz;
+                    double weighingfactors[6];
+                    
+                    weighingfactors[0] = z0dz * y0dy * x0dx;
+                    weighingfactors[1] = z0dz * y0dy * x1dx;
+                    weighingfactors[2] = z0dz * y1dy * x0dx;
+                    weighingfactors[3] = z0dz * y1dy * x1dx;
+                    weighingfactors[4] = z1dz * y0dy * x0dx; 
+                    weighingfactors[5] = z1dz * y0dy * x1dx; 
+                    weighingfactors[6] = z1dz * y1dy * x0dx; 
+                    weighingfactors[7] = z1dz * y1dy * x1dx; 
+                    int k = 0;
+                    for(k = 0; k < nweigh; k ++) {
+                        int ioffset = weighing_offsets[k][2];
+                        int joffset = weighing_offsets[k][1];
+                        int koffset = weighing_offsets[k][0];
+                        rho[i]   += weighingfactors[k] * grid->U[kgrid+koffset][jgrid+joffset][igrid+ioffset].d;
+                        rhovx[i] += weighingfactors[k] * grid->U[kgrid+koffset][jgrid+joffset][igrid+ioffset].M1;
+                        rhovy[i] += weighingfactors[k] * grid->U[kgrid+koffset][jgrid+joffset][igrid+ioffset].M2;
+                        rhovz[i] += weighingfactors[k] * grid->U[kgrid+koffset][jgrid+joffset][igrid+ioffset].M3;
+                        rhoen[i] += weighingfactors[k] * grid->U[kgrid+koffset][jgrid+joffset][igrid+ioffset].E;
+                    }
+                }
+            }
+        }
+    }
+    }
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(rho  , NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhoen, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, rho  , number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhoen, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 #endif
 
