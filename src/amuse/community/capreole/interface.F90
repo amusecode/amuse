@@ -725,3 +725,53 @@ function set_timestep(inputvalue) result(ret)
   integer, intent(in) :: inputvalue
   ret = 0
 end function set_timestep
+
+function get_hydro_state_at_point(x1, x2, x3, vx, vy, vz, &
+     rho_out, rhovx_out, rhovy_out, rhovz_out, rhoen_out, npoints) result(ret)
+    use amuse_helpers
+    implicit none
+    integer :: ret, ii, retsum
+    integer, intent(in) :: npoints
+    real*8, intent(in) :: x1(npoints), x2(npoints), x3(npoints)
+    real*8, intent(in) :: vx(npoints), vy(npoints), vz(npoints)
+    real*8, intent(out):: rho_out(npoints), rhovx_out(npoints), rhovy_out(npoints)
+    real*8, intent(out):: rhovz_out(npoints), rhoen_out(npoints)
+    real*8 :: lstate(neq)
+#ifdef MPI
+    integer ierr
+#endif
+    rho_out=0.0
+    rhovx_out=0.0
+    rhovy_out=0.0
+    rhovz_out=0.0
+    rhoen_out=0.0
+    
+    do ii=1,npoints
+        retsum=get_interpolated_state(x1(ii),x2(ii),x3(ii),lstate)
+        rho_out(ii)=lstate(RHO)
+        rhovx_out(ii)=lstate(RHVX)
+        rhovy_out(ii)=lstate(RHVY)
+        rhovz_out(ii)=lstate(RHVZ)
+        rhoen_out(ii)=lstate(EN)
+    end do
+    
+    
+#ifdef MPI
+    if(rank .NE. 0) then
+        call MPI_Reduce(rho_out,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+        call MPI_Reduce(rhovx_out,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+        call MPI_Reduce(rhovy_out,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+        call MPI_Reduce(rhovz_out,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+        call MPI_Reduce(rhoen_out,  0, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+    else
+        call MPI_Reduce(MPI_IN_PLACE, rho_out, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+        call MPI_Reduce(MPI_IN_PLACE, rhovx_out, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+        call MPI_Reduce(MPI_IN_PLACE, rhovy_out, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+        call MPI_Reduce(MPI_IN_PLACE, rhovz_out, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+        call MPI_Reduce(MPI_IN_PLACE, rhoen_out, npoints, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+    end if
+#endif   
+    
+    
+    ret=0  
+end function

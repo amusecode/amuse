@@ -36,12 +36,12 @@ OMPFLAGS= # -openmp -openmp_report0
 PIC=#-fPIC
 
 ifeq ($(FORTRAN), gfortran)
-FFLAGS += -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
+FFLAGS += $(PIC) $(FCFLAGS)
 endif
 
 ifeq  ($(FORTRAN), ifort)
 # ifort flags
-FFLAGS += -O -ip -u -g -traceback -fpp1 -DIFORT  $(PIC)
+FFLAGS += -O -ip -u -g -traceback -fpp1 -DIFORT  $(PIC) $(FCFLAGS)
 endif
 
 MPI_FLAGS = -DMPI # 

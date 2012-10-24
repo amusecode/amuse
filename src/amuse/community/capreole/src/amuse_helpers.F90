@@ -586,7 +586,52 @@ module amuse_helpers
     enddo
     
   end function  
-  
+
+  function get_interpolated_state(x_in,y_in,z_in,ostate) result(ret)
+    implicit none
+    integer :: ret
+    real*8,intent(in)  :: x_in, y_in, z_in
+    real*8,intent(out) :: ostate(neq)
+    real(kind=dp) :: halfdx, halfdy, halfdz
+    real(kind=dp) :: xval, yval, zval
+    real(kind=dp) :: ddx, ddy, ddz
+    real(kind=dp) :: weighing_factors(2,2,2)
+    integer :: ii, jj, kk, i
+    ret=0
+    ostate(1:neq)=0.
+    halfdx = 0.5 * dx
+    halfdy = 0.5 * dy
+    halfdz = 0.5 * dz
+    weighing_factors = 1.0
+    if(&
+        x(sx) - halfdx .LE. x_in .AND.  x(ex) + halfdx .GT. x_in .AND.&
+        y(sy) - halfdy .LE. y_in .AND.  y(ey) + halfdy .GT. y_in .AND.&
+        z(sz) - halfdz .LE. z_in .AND.  z(ez) + halfdz .GT. z_in &
+    ) then
+        xval = (x_in - x(sx)) / dx
+        yval = (y_in - y(sy)) / dy
+        zval = (z_in - z(sz)) / dz
+        ii = floor(xval) + sx
+        jj = floor(yval) + sy
+        kk = floor(zval) + sz
+        ddx = xval - floor(xval)
+        ddy = yval - floor(yval)
+        ddz = zval - floor(zval)
+        weighing_factors(1,1:2,1:2) = weighing_factors(1,1:2,1:2) * (1.0 - ddx)
+        weighing_factors(2,1:2,1:2) = weighing_factors(2,1:2,1:2) * ddx
+        weighing_factors(1:2,1,1:2) = weighing_factors(1:2,1,1:2) * (1.0 - ddy)
+        weighing_factors(1:2,2,1:2) = weighing_factors(1:2,2,1:2) * ddy
+        weighing_factors(1:2,1:2,1) = weighing_factors(1:2,1:2,1) * (1.0 - ddz)
+        weighing_factors(1:2,1:2,2) = weighing_factors(1:2,1:2,2) * ddz
+        !print *, weighing_factors
+        !print *, ii, jj, kk, sx, sy, sz
+        !print *, ddx, ddy, ddz
+        !print *, "RHO:",  state(ii:ii+1, jj:jj+1, kk:kk+1, 1)
+        do i = 1, neq
+            ostate(i) = sum(weighing_factors * state(ii:ii+1, jj:jj+1, kk:kk+1, i))
+        end do 
+    end if
+  end function
 end module
 
 
