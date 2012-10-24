@@ -132,49 +132,49 @@ extern "C"
     node_pos_tex.addressMode[1] = cudaAddressModeWrap;
     node_pos_tex.filterMode     = cudaFilterModePoint;
     node_pos_tex.normalized     = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, node_pos_tex, node_pos, n_nodes * sizeof(float4)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, node_pos_tex, node_pos, n_nodes_in * sizeof(float4)));
     
     node_com_tex.addressMode[0] = cudaAddressModeWrap;
     node_com_tex.addressMode[1] = cudaAddressModeWrap;
     node_com_tex.filterMode     = cudaFilterModePoint;
     node_com_tex.normalized     = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, node_com_tex, node_com, n_nodes * sizeof(float4)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, node_com_tex, node_com, n_nodes_in * sizeof(float4)));
 
     node_Qu_tex.addressMode[0]  = cudaAddressModeWrap;
     node_Qu_tex.addressMode[1]  = cudaAddressModeWrap;
     node_Qu_tex.filterMode      = cudaFilterModePoint;
     node_Qu_tex.normalized      = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, node_Qu_tex,  node_Qu,  n_nodes * sizeof(float4)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, node_Qu_tex,  node_Qu,  n_nodes_in * sizeof(float4)));
 
     node_Qd_tex.addressMode[0]  = cudaAddressModeWrap;
     node_Qd_tex.addressMode[1]  = cudaAddressModeWrap;
     node_Qd_tex.filterMode      = cudaFilterModePoint;
     node_Qd_tex.normalized      = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, node_Qd_tex,  node_Qd,  n_nodes * sizeof(float4)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, node_Qd_tex,  node_Qd,  n_nodes_in * sizeof(float4)));
 
     Oct1_tex.addressMode[0]  = cudaAddressModeWrap;
     Oct1_tex.addressMode[1]  = cudaAddressModeWrap;
     Oct1_tex.filterMode      = cudaFilterModePoint;
     Oct1_tex.normalized      = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, Oct1_tex,  Oct1,  n_nodes * sizeof(float4)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, Oct1_tex,  Oct1,  n_nodes_in * sizeof(float4)));
 
     Oct2_tex.addressMode[0]  = cudaAddressModeWrap;
     Oct2_tex.addressMode[1]  = cudaAddressModeWrap;
     Oct2_tex.filterMode      = cudaFilterModePoint;
     Oct2_tex.normalized      = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, Oct2_tex,  Oct2,  n_nodes * sizeof(float4)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, Oct2_tex,  Oct2,  n_nodes_in * sizeof(float4)));
 
     Oct3_tex.addressMode[0]  = cudaAddressModeWrap;
     Oct3_tex.addressMode[1]  = cudaAddressModeWrap;
     Oct3_tex.filterMode      = cudaFilterModePoint;
     Oct3_tex.normalized      = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, Oct3_tex,  Oct3,  n_nodes * sizeof(float2)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, Oct3_tex,  Oct3,  n_nodes_in * sizeof(float2)));
 
     n_in_node_tex.addressMode[0] = cudaAddressModeWrap;
     n_in_node_tex.addressMode[1] = cudaAddressModeWrap;
     n_in_node_tex.filterMode     = cudaFilterModePoint;
     n_in_node_tex.normalized     = false;
-    CUDA_SAFE_CALL(cudaBindTexture(0, n_in_node_tex, n_in_node, n_nodes * sizeof(int)));
+    CUDA_SAFE_CALL(cudaBindTexture(0, n_in_node_tex, n_in_node, n_nodes_in * sizeof(int)));
 
     /***************************************************/
 
