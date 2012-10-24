@@ -67,7 +67,7 @@ class CalculateCloudShock(object):
         result=MpiAmrVac(number_of_workers=self.number_of_workers) #, redirection="none")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
-        result.parameters.maximum_number_of_grid_levels = 1
+        result.parameters.maximum_number_of_grid_levels = 3
         result.parameters.spatial_discretization_method = 'tvdmu'
         result.parameters.predictor_step_discretization_method = 'tvdmu'
         result.parameters.entropy_type = 'powell'
@@ -101,7 +101,7 @@ class CalculateCloudShock(object):
             grid, 
             center = center,
             radius = 1.0 | generic_unit_system.length,
-            subgridsize = 1
+            subgridsize = 4
         )
     
     def store_grids(self, grids, step):
@@ -154,30 +154,39 @@ class CalculateCloudShock(object):
         instance.initialize_grid()
         
         self.store_grids(instance.itergrids(), 0)
-                
-        print "start evolve"
-        dt = time / 20.0
-        t = dt
-        step = 1
-        while t < time:
-            instance.evolve_model(t)
-            
-            print "time : ", t
-            
-            self.store_grids(instance.itergrids(), step)
-                
-            t += dt
-            step += 1
         
-        print "copying results"
-        result = []
-        for x in instance.itergrids():
-            result.append(x.copy())
-
+        if time > 0.0 | generic_unit_system.time:
+            print "start evolve"
+            dt = time / 10.0
+            t = dt
+            step = 1
+            while t <= time:
+                instance.evolve_model(t)
+                
+                print "time : ", t
+                
+                #self.store_grids(instance.itergrids(), step)
+                    
+                t += dt
+                step += 1
+        
+        print "sampling results"   
+        sample = datamodel.Grid.create(
+            (1000,4000),
+            (10.0,40) | generic_unit_system.length
+        )
+        sample.z = 5.0 | generic_unit_system.length
+        
+        rho, rhovx, rhovy, rhovx, rhoen = instance.get_hydro_state_at_point(sample.x.flatten(), sample.y.flatten(), sample.z.flatten())
+        sample.rho = rho.reshape(sample.shape)
+        sample.rhovx = rhovx.reshape(sample.shape)
+        sample.rhovy = rhovy.reshape(sample.shape)
+        sample.rhovz = rhovx.reshape(sample.shape)
+        sample.energy = rhoen.reshape(sample.shape)
         print "terminating code"
         instance.stop()
 
-        return result
+        return sample
 
 
 
@@ -190,32 +199,16 @@ def main():
         name_of_the_code = name_of_the_code
     )
         
-    grids = model.get_solution_at_time(0.5 * model.get_tau())
+    result = model.get_solution_at_time(0.75 * model.get_tau())
     
-    sample_grid = datamodel.Grid.create(
-        (100,400,1),
-        (10.0,40,0) | generic_unit_system.length
-    )
-    sample_grid.z += 5.0 | generic_unit_system.length
+    rho = result.rho.value_in(generic_unit_system.density)
     
-    sampler =  datamodel.SamplePointsOnMultipleGrids(
-        grids,
-        sample_grid.position.reshape((numpy.prod(sample_grid.shape),3,)),
-        datamodel.SamplePointOnCellCenter,
-        datamodel.NonOverlappingGridsIndexer
-    )
-    
-    print "start sampling"
-    
-    rho = sampler.rho.value_in(generic_unit_system.density)
     print "done"
     
     if not IS_PLOT_AVAILABLE:
         return
     
-    rho = rho.reshape(sample_grid.shape[:-1])
-    x = sampler.x.reshape(sample_grid.shape[:-1])
-    y = sampler.y.reshape(sample_grid.shape[:-1])
+    
     levels = numpy.linspace(numpy.min(rho), numpy.max(rho), 255)
     figure = pyplot.figure(figsize=(10,10))
     plot = figure.add_subplot(1,1,1)
