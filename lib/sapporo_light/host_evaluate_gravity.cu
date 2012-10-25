@@ -94,7 +94,8 @@ extern "C"
 
     int shared_mem_size = p*q*(sizeof(DS4) + sizeof(float4));
     int nj_scaled = n_norm(gpu.nj, q*NBLOCKS);
-    
+   
+    #if CUDART_VERSION < 5000
     CUDA_SAFE_CALL(cudaMemcpyToSymbol(
         "EPS2", 
         &gpu.EPS2, 
@@ -102,6 +103,15 @@ extern "C"
         0, 
         cudaMemcpyHostToDevice)
     );
+    #else 
+    CUDA_SAFE_CALL(cudaMemcpyToSymbol(
+        EPS2, 
+        &gpu.EPS2, 
+        sizeof(float), 
+        0, 
+        cudaMemcpyHostToDevice)
+    );
+    #endif
     
     double t1 = get_time();
     if (gpu.ngb)
