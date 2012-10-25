@@ -196,7 +196,16 @@ class Grid(AbstractGrid):
     def indices(self):
         return numpy.indices(self.shape)
     
+    def iter_history(self):
+        current = self._private.previous
+        while not current is None:
+            yield current
+            current = current._private.previous
     
+    @property
+    def history(self):
+        return reversed(list(self.iter_history()))
+        
 class SubGrid(AbstractGrid):
     def __init__(self, grid, indices):
         AbstractGrid.__init__(self, grid)
