@@ -7079,29 +7079,29 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 	number_of_recombinations += num_rec;
 
 	//check to be sure
-	if( numIonised_step > N_HI_step || num_rec > N_HII_step || num_rec < 0.0 ){
-
-	  cerr << " (" << COMM_RANK << ") Warning: time step in subcycle step " << i << " too big! " << endl
-		 << " numIonised_step: " << numIonised_step << " N_HI_step: " << N_HI_step << endl
-		 << " num_rec: " << num_rec << " N_HII_step: " << N_HII_step << endl
-		 << " total_photo_ionisations_step: " << total_photo_ionisations_step << endl;
-
-	    cerr << " photo_ionisations_step: ";
-	    for(short int f=0; f<numFreq; f++){
-	      cerr << " " << photo_ionisations_step[f];
-	    }
-	    cerr << endl;
-	    cerr << " N_in_total: ";
-	    for(short int f=0; f<numFreq; f++){
-	      cerr << " " << N_in_total[f];
-	    }
-	    cerr << endl;
-
-	    //MPI::COMM_WORLD.Abort(-1);
-	    N_HI_step = 0.0;
-	    N_HII_step = n_H/one_over_volume;
-
-	}
+  // if( numIonised_step > N_HI_step || num_rec > N_HII_step || num_rec < 0.0 ){
+  // 
+  //   cerr << " (" << COMM_RANK << ") Warning: time step in subcycle step " << i << " too big! " << endl
+  //   << " numIonised_step: " << numIonised_step << " N_HI_step: " << N_HI_step << endl
+  //   << " num_rec: " << num_rec << " N_HII_step: " << N_HII_step << endl
+  //   << " total_photo_ionisations_step: " << total_photo_ionisations_step << endl;
+  // 
+  //     cerr << " photo_ionisations_step: ";
+  //     for(short int f=0; f<numFreq; f++){
+  //       cerr << " " << photo_ionisations_step[f];
+  //     }
+  //     cerr << endl;
+  //     cerr << " N_in_total: ";
+  //     for(short int f=0; f<numFreq; f++){
+  //       cerr << " " << N_in_total[f];
+  //     }
+  //     cerr << endl;
+  // 
+  //     //MPI::COMM_WORLD.Abort(-1);
+  //     N_HI_step = 0.0;
+  //     N_HII_step = n_H/one_over_volume;
+  // 
+  // }
 
 	N_HI_step += num_rec;
 	N_HII_step -= num_rec;

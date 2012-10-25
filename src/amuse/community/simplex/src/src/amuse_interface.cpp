@@ -159,7 +159,7 @@ int AMUSE_SimpleX::add_site(long *id, double x,double y,double z,double rho,
     tempSite.set_border( 0 );
     tempSite.set_process( COMM_RANK );
     tempSite.set_n_HI( (float) n_HI );
-    tempSite.set_n_HI( (float) n_HII );
+    tempSite.set_n_HII( (float) n_HII );
     if(flux > 0.0){
       tempSite.set_source(1);
       tempSite.create_flux(numFreq);
@@ -174,6 +174,7 @@ int AMUSE_SimpleX::add_site(long *id, double x,double y,double z,double rho,
     
     sites.push_back( tempSite );
     numSites++;
+        
     return 0;
   } else
   {
@@ -488,6 +489,7 @@ int AMUSE_SimpleX::reinitialize(){
     // if(COMM_RANK == 0){
     //   cerr << " Done" << endl;
     // }
+    
     
   syncflag=0;
   return 0;
@@ -877,6 +879,8 @@ int recommit_particles() {
 
 int new_particle(int *id, double x,double y,double z,double rho,
                                         double flux,double xion, double uInt, double metallicity ){
+                                          
+                                                                                  
     long tmp_id;
     double bs;
     
