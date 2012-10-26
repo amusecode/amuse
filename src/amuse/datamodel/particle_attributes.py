@@ -450,7 +450,7 @@ def get_binaries(particles,hardness=10,G = constants.G):
     >>> vy = [1.,-1.,0] | units.kms
     >>> vz = [0,0,0] | units.kms
     >>> particles = datamodel.create_particle_set( mass=m,x=x,y=y,z=z,vx=vx,vy=vy,vz=vz )
-    >>> binaries = particles.binaries()
+    >>> binaries = particles.get_binaries()
     >>> print len(binaries)
     1
     
@@ -791,6 +791,7 @@ AbstractParticleSet.add_global_function_attribute("scale_to_standard", scale_to_
 AbstractParticleSet.add_global_function_attribute("rotate", rotation.rotate)
 
 AbstractParticleSet.add_global_function_attribute("binaries", get_binaries)
+AbstractParticleSet.add_global_function_attribute("get_binaries", get_binaries)
 
 AbstractParticleSet.add_global_function_attribute("densitycentre_coreradius_coredens", densitycentre_coreradius_coredens)
 AbstractParticleSet.add_global_function_attribute("new_particle_from_cluster_core", new_particle_from_cluster_core)
