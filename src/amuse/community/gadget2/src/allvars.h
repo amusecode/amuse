@@ -44,7 +44,7 @@ typedef  long long  peanokey;    /*!< defines the variable type used for Peano-H
 #define  MAX_REAL_NUMBER  1e37
 #define  MIN_REAL_NUMBER  1e-37
 
-#define  MAXLEN_FILENAME  100    /*!< Maximum number of characters for filenames (including the full path) */
+#define  MAXLEN_FILENAME  4096    /*!< Maximum number of characters for filenames (including the full path) */
 
 #ifdef   ISOTHERM_EQS
 #define  GAMMA         (1.0)     /*!< index for isothermal gas */

@@ -1620,7 +1620,7 @@ class TestCapreole(TestWithMPI):
         
             self.assertAlmostRelativeEquals(rho , value | generic_unit_system.density)
         
-        sample = sample = datamodel.Grid.create(
+        sample = datamodel.Grid.create(
             (4, 4, 76),
             (2, 2, 19) | generic_unit_system.length
         )
