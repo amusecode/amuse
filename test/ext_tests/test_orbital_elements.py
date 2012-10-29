@@ -95,7 +95,7 @@ class KeplerTests(amusetest.TestCase):
         self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
         self.assertAlmostRelativeEquals(binary[1].velocity, [-1,1,0] | nbody_system.speed)
         
-    def test3(self):
+    def xtest3(self):
         mass1 = 1 | nbody_system.mass 
         mass2 = 1 | nbody_system.mass
         

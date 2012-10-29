@@ -1038,5 +1038,4 @@ class TestPH4(TestWithMPI):
         instance.particles.add_particle(particles[1])
         instance.recommit_particles()
         self.assertEquals(instance.particles.index_in_code, [3,4])
-        
-
+                
