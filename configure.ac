@@ -189,8 +189,8 @@ AS_VERSION_COMPARE([$PYTHON_zlib_VERSION], [1.0],
 )
 AC_CHECK_PYTHON_MODULE(matplotlib)
 
-AC_CHECK_PYTHON_MODULE(Cython, __version__)
-AS_VERSION_COMPARE([$PYTHON_Cython_VERSION], [0.13],
-        [AC_MSG_WARN([Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed])]
-)
+#AC_CHECK_PYTHON_MODULE(Cython, __version__)
+#AS_VERSION_COMPARE([$PYTHON_Cython_VERSION], [0.13],
+#        [AC_MSG_WARN([Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed])]
+#)
 AC_OUTPUT()

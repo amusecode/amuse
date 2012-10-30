@@ -661,8 +661,6 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-PYTHON_Cython_VERSION
-PYTHON_Cython
 PYTHON_matplotlib_VERSION
 PYTHON_matplotlib
 PYTHON_zlib_VERSION
@@ -8745,75 +8743,10 @@ $as_echo "not found" >&6; }
     fi
 
 
-
-    # AC_CHECK_PYTHON_MODULE(MODULE_NAME [,VERSION_VARIABLE])
-
-    # the python module name
-    MODULE_NAME=Cython
-    # the python variable that contains the module's version
-    # If this is not set the version will not be retrieved from the module.
-    # Example: __version__.
-    VERSION_VARIABLE=Cython.__version__
-
-    # check for the python binary defined in $PYTHON
-    # fall back to "python"
-    if test -z $PYTHON;
-    then
-        PYTHON="python"
-    fi
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for python module $MODULE_NAME" >&5
-$as_echo_n "checking for python module $MODULE_NAME... " >&6; }
-
-    if test -z "__version__"
-    then
-      $PYTHON -c "import $MODULE_NAME" 2>/dev/null
-      if test $? -eq 0
-      then
-        eval PYTHON_${MODULE_NAME}=1
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
-$as_echo "found" >&6; }
-       else
-        eval PYTHON_${MODULE_NAME}=0
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
-$as_echo "not found" >&6; }
-      fi
-
-    else
-      VERSION=`$PYTHON -c "import $MODULE_NAME; print ($VERSION_VARIABLE)" 2>/dev/null`
-      if test $? -eq 0
-      then
-        eval PYTHON_${MODULE_NAME}_VERSION=$VERSION
-        eval PYTHON_${MODULE_NAME}=1
-
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found ($VERSION)" >&5
-$as_echo "found ($VERSION)" >&6; }
-      else
-        eval PYTHON_${MODULE_NAME}=0
-        eval PYTHON_${MODULE_NAME}_VERSION=0
-
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
-$as_echo "not found" >&6; }
-      fi
-
-
-    fi
-
-as_arg_v1=$PYTHON_Cython_VERSION
-as_arg_v2=0.13
-awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
-case $? in #(
-  1) :
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed" >&5
-$as_echo "$as_me: WARNING: Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed" >&2;}
- ;; #(
-  0) :
-     ;; #(
-  2) :
-     ;; #(
-  *) :
-     ;;
-esac
+#AC_CHECK_PYTHON_MODULE(Cython, __version__)
+#AS_VERSION_COMPARE([$PYTHON_Cython_VERSION], [0.13],
+#        [AC_MSG_WARN([Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed])]
+#)
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
