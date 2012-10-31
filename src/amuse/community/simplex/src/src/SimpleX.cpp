@@ -664,10 +664,31 @@ void SimpleX::read_vertex_list(){
 }
 
 
+//compute the maximum id of the vertices
+unsigned long long int SimpleX::computeMaxId(){
+
+  unsigned long long int maxId = 0;
+
+  for( VERTEX_ITERATOR it=vertices.begin(); it!=vertices.end(); it++ ){
+    if( it->get_vertex_id() > maxId){
+      maxId = it->get_vertex_id();
+    }
+  }
+  
+  return maxId;
+  
+}
+
+
 /**** Create homogenous boundary around simulation domain ****/
 // Width of the boundary is variable borderBox
 // Number of points in the boundary is variable borderSites
 void SimpleX::create_boundary(){
+
+  //compute the maximum id that is currently there
+  //because of addition and removal of vertices this could 
+  //differ from vertex_id_max and origNumSites
+  unsigned long long int maxId = computeMaxId();
 
   //coordinates of border point
   double x1,x2,x3;
@@ -706,7 +727,8 @@ void SimpleX::create_boundary(){
     tempVert.set_x( x1 );
     tempVert.set_y( x2 );
     tempVert.set_z( x3 );
-    tempVert.set_vertex_id( (unsigned long int ) origNumSites+i );
+    //make sure the id is unique!
+    tempVert.set_vertex_id( maxId+i+1 );
     tempVert.set_border(1);
 
     vertices.push_back( tempVert );

@@ -109,6 +109,9 @@ class SimpleX{
     //! Read in hdf5 file with site information
     void read_vertex_list();
   
+    //! Compute the largest index of all the vertices
+    unsigned long long int computeMaxId();
+    
     //! Create boundary around computational domain
 
     //! Width of the boundary is variable borderBox. 

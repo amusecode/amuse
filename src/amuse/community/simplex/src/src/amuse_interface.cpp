@@ -174,6 +174,9 @@ int AMUSE_SimpleX::add_site(long *id, double x,double y,double z,double rho,
     
     sites.push_back( tempSite );
     numSites++;
+    
+    // cerr << " Add site " << tempSite.get_vertex_id() << " x: " << tempSite.get_x() << " y: " << tempSite.get_y() << " z: " << tempSite.get_z() 
+    //      << " n_HI: " << tempSite.get_n_HI() << " n_HII: " << tempSite.get_n_HII() << endl;
         
     return 0;
   } else
@@ -385,6 +388,12 @@ int AMUSE_SimpleX::reinitialize(){
   //   cerr << "AMUSE_SimpleX: recomputing triangulation...";
   // }
   
+  // for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+  //   if(it->get_process() == COMM_RANK && !it->get_border() ){
+  //     cerr << " Site: " << it->get_vertex_id() << " nHI: " << it->get_n_HI() << " nHII: " << it->get_n_HII() << endl; 
+  //   }
+  // }  
+  // 
    //make sure that the vectors that will be filled are empty 
     site_intensities.clear();
     intens_ids.clear();
@@ -490,6 +499,11 @@ int AMUSE_SimpleX::reinitialize(){
     //   cerr << " Done" << endl;
     // }
     
+    // for( SITE_ITERATOR it=sites.begin(); it!=sites.end(); it++ ){
+    //   if(it->get_process() == COMM_RANK && !it->get_border() ){
+    //     cerr << " Site: " << it->get_vertex_id() << " nHI: " << it->get_n_HI() << " nHII: " << it->get_n_HII() << endl; 
+    //   }
+    // }
     
   syncflag=0;
   return 0;
@@ -508,8 +522,8 @@ int AMUSE_SimpleX::get_site(int id, double *x,double *y,double *z,double *rho,
        *x=p->get_x();
        *y=p->get_y();
        *z=p->get_z();
-       double tmp = (double) p->get_n_HI() + (double) p->get_n_HII();
-       *rho = tmp;
+       double nH = (double) p->get_n_HI() + (double) p->get_n_HII();
+       *rho = nH;
        double totalFlux = 0.0;
        if( p->get_source() ){
          for(short int f=0; f<numFreq;f++){
@@ -517,7 +531,7 @@ int AMUSE_SimpleX::get_site(int id, double *x,double *y,double *z,double *rho,
          }
        }
        *flux = totalFlux;
-       *xion = (double) p->get_n_HII()/tmp;
+       *xion = (double) p->get_n_HII()/nH;
        *uInt = p->get_internalEnergy();
        *metallicity = p->get_metallicity();
        
