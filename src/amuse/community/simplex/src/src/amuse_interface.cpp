@@ -905,17 +905,18 @@ int new_particle(int *id, double x,double y,double z,double rho,
         y<0 || y>1 ||
         z<0 || z>1 ) 
         {
-	  cerr<<"fip:"<<bs<<" "<<x<<" "<<" "<<y<<" "<<z<<std::endl;
-	  return -3;
+            return -3;
         }
     if((*SimpleXGrid).get_syncflag() == 0)
         return -1;
     *id = lastid++;
     tmp_id = *id;
-    if((*SimpleXGrid).get_syncflag() == -1)
+    if((*SimpleXGrid).get_syncflag() == -1) {
         return (*SimpleXGrid).add_vertex(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
-    if((*SimpleXGrid).get_syncflag() == 1)
+    }
+    if((*SimpleXGrid).get_syncflag() == 1) {
         return (*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
+    }
     return -1;
 }
 
@@ -1235,6 +1236,16 @@ int set_number_frequency_bins(int ts){
 int get_number_frequency_bins(int *ts){
   return (*SimpleXGrid).get_numFreq(ts);
 }
+
+
+int set_number_of_border_sites(int ts){
+  return SimpleXGrid->set_numBorderSites(ts);
+}
+
+int get_number_of_border_sites(int *ts){
+  return SimpleXGrid->get_numBorderSites(ts);
+}
+
 
 int set_thermal_evolution(int ts){
   return (*SimpleXGrid).set_heat_cool(ts);

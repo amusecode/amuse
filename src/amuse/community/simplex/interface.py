@@ -527,6 +527,20 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return function
     
     @legacy_function
+    def set_number_of_border_sites():
+        function = LegacyFunctionSpecification()
+        function.addParameter('number_of_border_sites', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_number_of_border_sites():
+        function = LegacyFunctionSpecification()
+        function.addParameter('number_of_border_sites', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def set_thermal_evolution():
         function = LegacyFunctionSpecification()
         function.addParameter('thermal_evolution_flag', dtype='int32', direction=function.IN)
@@ -734,6 +748,13 @@ class SimpleX(CommonCode):
             "simplex_data_directory", 
             "Name of the SimpleX data directory", 
             default_value = "."
+        )
+        object.add_method_parameter(
+            "get_number_of_border_sites", 
+            "set_number_of_border_sites",
+            "number_of_border_sites", 
+            "Number of border sites to generate on the boundary, needs to be a large number. These sites will be placed randomly outside the problem domain and will culled to create a closed boundary", 
+            default_value = 25000
         )
         
     def define_methods(self, object):

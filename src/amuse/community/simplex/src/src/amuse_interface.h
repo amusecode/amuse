@@ -71,7 +71,10 @@ class AMUSE_SimpleX : public SimpleX {
   int get_coll_ion(int *ts){ *ts=heat_cool;return 0;}
   int set_blackBody(int ts){ blackBody=ts;return 0;}
   int get_blackBody(int *ts){ *ts=blackBody;return 0;}
-
+  
+  
+  int set_numBorderSites(int ts){ borderSites=ts;return 0;}
+  int get_numBorderSites(int *ts){ *ts=borderSites;return 0;}
 
 
  private:
