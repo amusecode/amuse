@@ -696,6 +696,9 @@ void SimpleX::create_boundary(){
   //add the number of border sites to be added to the number of sites
   numSites+=borderSites;
 
+  //change the vertex id max
+  vertex_id_max = maxId + borderSites;
+
   //loop over the extra sites
   bool stop;
   for( unsigned long int i=0; i<borderSites; i++) {
