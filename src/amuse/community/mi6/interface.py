@@ -241,6 +241,21 @@ class MI6Interface(
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def get_lightspeed():
+        function = LegacyFunctionSpecification()
+        function.addParameter('lightspeed', dtype='float64', direction=function.OUT,
+            description = "value for the lightspeed")
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_lightspeed():
+        function = LegacyFunctionSpecification()
+        function.addParameter('lightspeed', dtype='float64', direction=function.IN,
+            description = "value for the lightspeed")
+        function.result_type = 'int32'
+        return function
+    
 
 
 
@@ -380,6 +395,13 @@ class MI6(GravitationalDynamics, GravityFieldCode):
                 "supermassive black hole at the center (has no effect when include_smbh is False)",
             False
         )
+        object.add_method_parameter(
+            "get_lightspeed", 
+            "set_lightspeed",
+            "lightspeed", 
+            "lightspeed used in the code", 
+            default_value = 1.0 | nbody_system.speed
+        )
     
     def get_drink(self):
         return "Vodka martini. Shaken, not stirred."
@@ -413,6 +435,9 @@ class MI6(GravitationalDynamics, GravityFieldCode):
         
         object.add_method("get_smbh_mass", (), (nbody_system.mass, object.ERROR_CODE))
         object.add_method("set_smbh_mass", (nbody_system.mass,), (object.ERROR_CODE,))
+        
+        object.add_method("get_lightspeed", (), (nbody_system.speed, object.ERROR_CODE))
+        object.add_method("set_lightspeed", (nbody_system.speed,), (object.ERROR_CODE,))
         
     
     def define_particle_sets(self, object):

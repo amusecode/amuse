@@ -968,6 +968,12 @@ int get_include_smbh_flag(int *value){
     *value = EX_FLAG;
     return 0;
 }
+int set_lightspeed(double lightspeed) {
+    return set_speed_of_light(lightspeed);
+}
+int get_lightspeed(double *lightspeed) {
+    return get_speed_of_light(lightspeed);
+}
 int commit_parameters() {
     set_eps2(eps2_fs_fs, eps2_fs_smbh, eps2_bh_bh);
     set_eta(eta_s, eta_fs, eta_smbh, eta_imbh);

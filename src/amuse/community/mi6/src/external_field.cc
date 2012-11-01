@@ -13,7 +13,7 @@ static Vector3 SMBH_POS_OLD = 0.0;
 static Vector3 SMBH_VEL_OLD = 0.0; 
 
 //static double speed_of_light = 999999999999999999999999999999999.9; 
-static double speed_of_light = 2285.604;
+static double speed_of_light = 1.0;
 //static double speed_of_light = 7.94719414;
 static double inv_c2 = 1.0/(speed_of_light*speed_of_light);
 static double inv_c5 = inv_c2*inv_c2/speed_of_light;
@@ -142,9 +142,15 @@ void copy_SMBH_NEW_TO_OLD(){
   SMBH_VEL_OLD = SMBH_VEL;
 }
 
-void set_speed_of_light(const double &_c){
-  speed_of_light = _c;
-
+int set_speed_of_light(double value){
+    speed_of_light = value;
+    inv_c2 = 1.0/(speed_of_light*speed_of_light);
+    inv_c5 = inv_c2*inv_c2/speed_of_light;
+    return 0;
+}
+int get_speed_of_light(double *value){
+    *value = speed_of_light;
+    return 0;
 }
 
 int get_calculate_postnewtonian(int *value){

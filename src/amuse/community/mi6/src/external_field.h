@@ -38,6 +38,7 @@ void copy_SMBH_OLD_TO_NEW();
 
 void copy_SMBH_NEW_TO_OLD();
 
-void set_speed_of_light(const double &_c);
+int set_speed_of_light(double value);
+int get_speed_of_light(double *value);
 
 #endif //EXTERNAL_FIELD_H

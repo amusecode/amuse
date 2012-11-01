@@ -275,7 +275,8 @@ class TestMI6(TestWithMPI):
                 ('timestep_parameter_intermediate_mass_black_holes', 0.4),
                 ('max_relative_energy_error', 5.0e-5),
                 ('maximum_timestep', 1.0/1024.0 | nbody_system.time),
-                ('smbh_mass', 1.0 | nbody_system.mass)]:
+                ('smbh_mass', 1.0 | nbody_system.mass),
+                ('lightspeed', 1.0 | nbody_system.speed)]:
             self.assertEquals(instance.unit_converter.to_si(value), 
                 getattr(instance.parameters, par))
                 
@@ -343,6 +344,7 @@ class TestMI6(TestWithMPI):
         instance = MI6(self.default_converter, **default_options)
         instance.initialize_code()
         instance.parameters.include_smbh = True
+        instance.parameters.lightspeed = constants.c
         instance.commit_parameters()
         instance.particles.add_particles(particles)
         instance.commit_particles()
