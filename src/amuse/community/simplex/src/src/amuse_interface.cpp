@@ -918,7 +918,7 @@ int new_particle(int *id, double x,double y,double z,double rho,
     if((*SimpleXGrid).get_syncflag() >= 0) {
         ret=(*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
         MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
-        return totalret;
+        return totalret-1;
     }
     return -1;
 }
