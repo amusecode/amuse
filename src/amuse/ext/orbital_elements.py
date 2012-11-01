@@ -16,7 +16,7 @@ def new_binary_from_orbital_elements(
         argument_of_periapsis = 0,
         G = nbody_system.G
     ):
-    incl = numpy.radians(inclination)
+    inclination = numpy.radians(inclination)
     argument_of_periapsis = numpy.radians(argument_of_periapsis)
     longitude_of_the_ascending_node = numpy.radians(longitude_of_the_ascending_node)
     true_anomaly = numpy.radians(true_anomaly)
@@ -42,6 +42,11 @@ def new_binary_from_orbital_elements(
     result = Particles(2)
     result.position = radius.new_zeros_array(3)
     result.velocity = velocity.new_zeros_array(3)
-    result[1].position = rotation.rotated(r, inclination, argument_of_periapsis, longitude_of_the_ascending_node)
-    result[1].velocity = rotation.rotated(v, inclination, argument_of_periapsis, longitude_of_the_ascending_node)
+    result[0].mass = mass1
+    result[1].mass = mass2
+
+    
+    result[1].position = r
+    result[1].velocity = v
+    rotation.rotate(result, argument_of_periapsis, inclination, longitude_of_the_ascending_node)
     return result
