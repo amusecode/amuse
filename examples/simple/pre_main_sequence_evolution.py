@@ -15,22 +15,39 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 1.25, 1.5, 2.25, 3.0, 5.0, 9.0
     stellar_evolution.parameters.AGB_wind_scheme = 0
     stellar_evolution.parameters.RGB_wind_scheme = 0
 
-    stars = datamodel.Particles(len(masses),mass=masses)
+    stars = datamodel.Particles(len(masses), mass=masses)
     stars = stellar_evolution.pre_ms_stars.add_particles(stars)
     
-    data=dict()
+    data={}
     
     for star in stars:
-        stardata=data.setdefault(star.mass,dict())
-        stardata['luminosity'] = [] | units.LSun
-        stardata['temperature'] = [] | units.K
-        stardata['time'] = [] | units.yr
+        luminosity = [] | units.LSun
+        temperature = [] | units.K
+        time = [] | units.yr
+        
+        print 'Evolving pre main sequence star with'
+        print '    mass:', star.mass
+        print '    luminosity:', star.luminosity
+        print '    radius:', star.radius
+        
         while star.stellar_type == 17 | units.stellar_type:
-            stardata['luminosity'].append(star.luminosity)
-            stardata['temperature'].append(star.temperature)
-            stardata['time'].append(star.age)
+            luminosity.append(star.luminosity)
+            temperature.append(star.temperature)
+            time.append(star.age)
             star.evolve_one_step()
-            print star.stellar_type, star.age, star.mass, star.luminosity, star.radius
+            
+        print 'Evolved pre main sequence star to:', star.stellar_type
+        print '    age:', star.age
+        print '    mass:', star.mass
+        print '    luminosity:', star.luminosity
+        print '    radius:', star.radius
+        print
+        
+        stardata = {}
+        stardata['luminosity'] = luminosity
+        stardata['temperature'] = temperature
+        stardata['time'] = time
+        data[star.mass] = stardata
         
     return data
     

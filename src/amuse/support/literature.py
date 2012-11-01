@@ -27,6 +27,7 @@ LiteratureReference = namedtuple(
 
 class TrackLiteratureReferences(object):
     """
+        .. [#] Portegies Zwart S. et al., Multi-physics simulations using a hierarchical interchangeable software interface, *eprint arXiv:1204.5522*, (2012)
         .. [#] Portegies Zwart S. et al., A multiphysics and multiscale software environment for modeling astrophysical systems, *New Astronomy*, **Volume 14**, **Issue 4**, 369-378 (2009) 
     """
     INSTANCE = None

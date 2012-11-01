@@ -21,13 +21,14 @@ def simulate_evolution_tracks():
 
     star = datamodel.Particle()
     star.mass = stellar_mass
-
+    
     star = stellar_evolution.particles.add_particle(star)
     stellar_evolution.commit_particles()
     
     luminosity_at_time = [] | units.LSun
     temperature_at_time = [] | units.K
     
+    print "Evolving a star with mass:", stellar_mass
     is_evolving = True
     while is_evolving and star.age < end_time:
         luminosity_at_time.append(star.luminosity)

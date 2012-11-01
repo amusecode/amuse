@@ -1,13 +1,11 @@
 """
-Evolve a two stars dynamically (hermit, nbody code) each star will lose mass
-during the evolution (mesa, stellar evolution code)
+Evolve a two stars dynamically (hermit, nbody code) each star will 
+lose mass during the evolution (mesa, stellar evolution code)
 
 We start with two stars, one 10 and one 1 solar mass star. These
 stars start orbiting with a stable kepler orbit. 
 After 10 million years the stars will begin to lose mass and the binary
 will become unstable.
-
-
 """
 
 from amuse.plot import scatter, xlabel, ylabel, plot
@@ -87,9 +85,13 @@ def simulate_binary_evolution(binary, orbital_period, t_start_evolution_with_win
         gravitational_dynamics.evolve_model(current_time)
         stellar_evolution.evolve_model(current_time - t_start_evolution_with_wind)
         from_se_to_gd.copy_attributes(['mass'])
-        distance.append((gravitational_dynamics.particles[0].position - gravitational_dynamics.particles[1].position).length())
+        separation = (gravitational_dynamics.particles[0].position - gravitational_dynamics.particles[1].position).length()
+        distance.append(separation)
         mass.append(primary.mass)
         time.append(current_time)
+        print "System evolved to time: ", current_time, 
+        print ", primary mass:", primary.mass.as_quantity_in(units.MSun),
+        print ", separation:", separation.as_quantity_in(units.AU)
     
     print "Evolution done"
     return distance, mass, time
