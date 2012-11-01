@@ -178,11 +178,11 @@ int AMUSE_SimpleX::add_site(long *id, double x,double y,double z,double rho,
     // cerr << " Add site " << tempSite.get_vertex_id() << " x: " << tempSite.get_x() << " y: " << tempSite.get_y() << " z: " << tempSite.get_z() 
     //      << " n_HI: " << tempSite.get_n_HI() << " n_HII: " << tempSite.get_n_HII() << endl;
         
-    return 0;
+    return 1;
   } else
   {
     numSites++;
-    return -1;
+    return 0;
   }
 }
 
@@ -897,6 +897,7 @@ int new_particle(int *id, double x,double y,double z,double rho,
                                                                                   
     long tmp_id;
     double bs;
+    int ret, totalret;
     
     (*SimpleXGrid).get_sizeBox(&bs);
     if(bs==0) return -2;
@@ -915,7 +916,9 @@ int new_particle(int *id, double x,double y,double z,double rho,
         return (*SimpleXGrid).add_vertex(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
     }
     if((*SimpleXGrid).get_syncflag() == 1) {
-        return (*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
+        ret=(*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
+        MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+        return totalret;
     }
     return -1;
 }
