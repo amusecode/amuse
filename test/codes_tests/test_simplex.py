@@ -330,7 +330,7 @@ class TestSimpleX(TestWithMPI):
         self.assertEqual( len(instance.particles), N)
 
     def test10(self):
-        print "Test 9: add test"
+        print "Test 10: add test"
         instance = SimpleX(number_of_workers=2)
         
         input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
@@ -341,6 +341,20 @@ class TestSimpleX(TestWithMPI):
         instance.particles.add_particles(particles)
         instance.evolve_model(0.25 | units.Myr)
 #        instance.commit_particles()
+        instance.particles.add_particles(toadd)
+        self.assertEqual( len(instance.particles), N)
+
+    def test11(self):
+        print "Test 11: add test"
+        instance = SimpleX(number_of_workers=1)
+        
+        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        particles = particles_from_input_file(input_file)
+        N=len(particles)
+        toadd=particles[0:10].copy()
+        particles=particles[10:].copy()
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
         instance.particles.add_particles(toadd)
         self.assertEqual( len(instance.particles), N)
 

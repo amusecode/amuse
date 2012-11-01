@@ -908,14 +908,14 @@ int new_particle(int *id, double x,double y,double z,double rho,
         {
             return -3;
         }
-    if((*SimpleXGrid).get_syncflag() == 0)
-        return -1;
+//    if((*SimpleXGrid).get_syncflag() == 0)
+//        return -1;
     *id = lastid++;
     tmp_id = *id;
     if((*SimpleXGrid).get_syncflag() == -1) {
         return (*SimpleXGrid).add_vertex(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
     }
-    if((*SimpleXGrid).get_syncflag() == 1) {
+    if((*SimpleXGrid).get_syncflag() >= 0) {
         ret=(*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
         MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
         return totalret;
