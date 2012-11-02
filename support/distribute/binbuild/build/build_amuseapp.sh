@@ -12,7 +12,8 @@ NOW=$(date +"%Y%m%d-%H%M%S")
 NOWSHORT=$(date +"%Y%m%d")
 WORKDIR=amuse_$NOW
 #REVISION=`svn --password=svn2amuse --username=svn info -r HEAD $SVNURL | grep Revision | awk -- '{print $2}'`
-VERSION=$NOWSHORT
+
+echo "Version to build:" ${VERSION:=${NOWSHORT}}
 
 PYTHONMAJOR="2"
 PYTHONMINOR="7"
