@@ -1264,7 +1264,14 @@ class SimpleXSplitSet(SimpleX):
           nearest=sites.find_closest_particle_to(p.x,p.y,p.z)
           nearest.flux+=p.luminosity
 
-        sites.synchronize_to(self.particles)
+#        sites.synchronize_to(self.particles)
+        add_set=sites.difference(self.particles)
+        remove_set=self.particles.difference(sites)
+
+        if len(remove_set)>0: self.particles.remove_particles(remove_set)
+        if len(add_set)>0: self.particles.add_particles(add_set)
+        self.overridden().recommit_particles() 
+
         channel=sites.new_channel_to(self.particles)
         attributes=["x","y","z","rho","xion","u","flux"]
         if hasattr(sites,"metallicity"):
