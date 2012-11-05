@@ -45,6 +45,9 @@ class Parameters(object):
         return self._mapping_from_name_to_definition.keys()
 
     def set_defaults(self):
+        
+        self._instance().before_set_parameter()
+        
         for name in self.names():
             parameter = self.get_parameter(name)
             parameter.set_default_value()

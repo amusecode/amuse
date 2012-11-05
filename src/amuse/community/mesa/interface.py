@@ -809,7 +809,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
             self.default_path_to_MESA_data, 
             output_dir
         )
-        self.parameters.set_defaults()
         self.model_time = 0.0 | units.yr
         
     
