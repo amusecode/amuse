@@ -141,7 +141,7 @@ package_data = {
 
 setup(
     name = 'amuse',
-    version = '7.0',
+    version = '7.1',
     cmdclass = mapping_from_command_name_to_command_class,
     ext_modules = extensions,
     package_dir = {'': 'src', 'amuse.test.suite' :'test', 'amuse.examples' : 'examples'},
