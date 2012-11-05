@@ -163,7 +163,6 @@ class SSE(common.CommonCode):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, SSEInterface(**options), **options)
         
-        self.parameters.set_defaults()
         self.model_time = 0.0 | units.yr
         
     

@@ -284,7 +284,6 @@ class BSE(common.CommonCode):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, BSEInterface(**options), **options)
 
-        self.parameters.set_defaults()
         self.model_time = 0.0 | units.yr
         
     
