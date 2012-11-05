@@ -266,7 +266,6 @@ class MakeMeAMassiveStar(CommonCode):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MakeMeAMassiveStarInterface(**options), **options)
-        self.parameters.set_defaults()
     
     def define_properties(self, object):
         object.add_property("get_number_of_particles")
