@@ -1,9 +1,8 @@
 import weakref
 import atexit
 import os.path
-
+import sys
 import logging
-
 import pydoc
 
 
@@ -611,8 +610,8 @@ class CodeInterface(OptionalAttributes):
         self.channel.check_if_worker_is_up_to_date(self)
         
     
-    def _start(self, name_of_the_worker = 'worker_code', **options):
-        self.channel = self.channel_factory(name_of_the_worker, type(self), **options)
+    def _start(self, name_of_the_worker = 'worker_code', interpreter_executable = None, **options):
+        self.channel = self.channel_factory(name_of_the_worker, type(self), interpreter_executable = interpreter_executable, **options)
         
         self._check_if_worker_is_up_to_date()
         
@@ -730,6 +729,19 @@ class CodeInterface(OptionalAttributes):
         else:
             raise exceptions.AmuseException("Cannot create a channel with type {0!r}, type is not supported".format(self.channel_type))
     
+    def before_get_parameter(self):
+        """
+        Called everytime just before a parameter is retrieved in using::
+            instance.parameter.name
+        """
+        pass
+        
+    def before_set_parameter(self):
+        """
+        Called everytime just before a parameter is updated in using::
+            instance.parameter.name = newvalue
+        """
+        pass
         
 class PythonCodeInterface(CodeInterface):
     """
@@ -742,15 +754,17 @@ class PythonCodeInterface(CodeInterface):
         self.implementation_factory = implementation_factory
         
         CodeInterface.__init__(self, name_of_the_worker, **options)
-        
     
     def _start(self, name_of_the_worker = 'worker_code', **options):
         if name_of_the_worker is None:
             if self.implementation_factory is None:
                 raise exceptions.CodeException("Must provide the name of a worker script or the implementation_factory class")
             name_of_the_worker = self.make_executable_script_for(self.implementation_factory)
-            
-        CodeInterface._start(self, name_of_the_worker = name_of_the_worker, **options)
+        
+        if self.use_python_interpreter:
+            CodeInterface._start(self, name_of_the_worker = name_of_the_worker, interpreter_executable = self.python_interpreter, **options)
+        else:
+            CodeInterface._start(self, name_of_the_worker = name_of_the_worker, **options)
         
     def _check_if_worker_is_up_to_date(self):
         pass
@@ -770,10 +784,16 @@ class PythonCodeInterface(CodeInterface):
     def new_executable_script_string_for(cls, implementation_factory, channel_type = 'mpi'):
         raise Exception("tracing use")
             
-            
-            
+    
+    @option(type='boolean', sections=("channel",))
+    def use_python_interpreter(self):
+        return False
 
         
+    @option(type='string', sections=("channel",))
+    def python_interpreter(self):
+        return sys.executable
+
         
 
 

@@ -89,20 +89,6 @@ class CommonCodeInterface(object):
     def invoke_state_change(self):
         pass
         
-    def before_get_parameter(self):
-        """
-        Called everytime just before a parameter is retrieved in using::
-            instance.parameter.name
-        """
-        pass
-        
-    def before_set_parameter(self):
-        """
-        Called everytime just before a parameter is updated in using::
-            instance.parameter.name = newvalue
-        """
-        pass
-        
         
 
 class CommonCode(InCodeComponentImplementation):

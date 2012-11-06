@@ -150,10 +150,30 @@ class ForTestingInterface(PythonCodeInterface):
         function.must_handle_array = True
         return function
     
+
+basic_python_exe = """#!{executable}
+import sys
+from subprocess import call
+
+if __name__ == '__main__':
+    command = sys.argv[1:]
     
+    with open('pythonexe.log', 'a') as stream:
+        stream.write('start {{0}}\\n'.format(command[0]))
+        stream.flush()
     
+    command.insert(0, sys.executable)
     
+    returncode = call(command)
     
+    with open('pythonexe.log', 'a') as stream:
+        stream.write('end {{0}} {{1}}\\n'.format(command[0], returncode))
+        stream.flush()
+        
+    sys.exit(returncode)
+"""
+
+
 class ForTestingImplementation(object):
     
     def __init__(self):
@@ -619,4 +639,42 @@ class TestInterface(TestWithMPI):
         x.stop()
 
 
+    def test23(self):
+        
+        if os.path.exists("pythonexe"):
+            os.remove("pythonexe")
+            
+        if os.path.exists("pythonexe.log"):
+            os.remove("pythonexe.log")
+            
+        string = basic_python_exe.format(executable = sys.executable)
+        
+        with open("pythonexe", 'w') as f:
+            f.write(string)
+            
+        os.chmod("pythonexe", 0777)
+        
+        
+        instance = ForTestingInterface(
+            use_python_interpreter = True,
+            python_interpreter = "pythonexe"
+        )
+        
+        x,y,z,err = instance.get_position(range(100))
+        self.assertEquals(err, 0)
+        self.assertEquals(x, numpy.arange(0.0, 300.0, 3.0))
+        self.assertEquals(y, numpy.arange(1.0, 300.0, 3.0))
+        self.assertEquals(z, numpy.arange(2.0, 300.0, 3.0))
+        
+        instance.stop()
+        time.sleep(0.1)
+        
+        self.assertTrue(os.path.exists('pythonexe.log'))
 
+        with open("pythonexe.log", 'r') as f:
+            loglines = f.read().splitlines()
+            
+        self.assertEquals(len(loglines), 2)
+            
+        self.assertTrue(loglines[0].startswith('start '))
+        self.assertTrue(loglines[1].startswith('end '))

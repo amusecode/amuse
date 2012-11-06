@@ -560,54 +560,92 @@ class MessageChannel(OptionalAttributes):
         OptionalAttributes.__init__(self, **options)
     
     @classmethod
-    def GDB(cls, full_name_of_the_worker, channel):
-        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb', '--args',  full_name_of_the_worker]
+    def GDB(cls, full_name_of_the_worker, channel, interpreter_executable = None):
+        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb', '--args']
+        
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+        
+        arguments.append(full_name_of_the_worker)
+        
         command = 'xterm'
         return command, arguments
         
     @classmethod
-    def DDD(cls, full_name_of_the_worker, channel):
-        arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd', '--args',  full_name_of_the_worker]
+    def DDD(cls, full_name_of_the_worker, channel, interpreter_executable = None):
+        arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd', '--args']
+        
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+        
+        arguments.append(full_name_of_the_worker)
+        
         command = 'xterm'
         return command, arguments
         
     @classmethod
-    def VALGRIND(cls, full_name_of_the_worker, channel):
+    def VALGRIND(cls, full_name_of_the_worker, channel, interpreter_executable = None):
         #arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'valgrind',  full_name_of_the_worker]
-        arguments = [full_name_of_the_worker]
+        arguments = []
+        
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+        
+        arguments.append(full_name_of_the_worker)
         command = 'valgrind'
         return command, arguments
         
         
     @classmethod
-    def XTERM(cls, full_name_of_the_worker, channel):
-        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', full_name_of_the_worker]
+    def XTERM(cls, full_name_of_the_worker, channel, interpreter_executable = None):
+        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e']
+        
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+        
+        arguments.append(full_name_of_the_worker)
+        
         command = 'xterm'
         return command, arguments
         
 
     @classmethod
-    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname, command = None, **options):
+    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname, command = None, interpreter_executable = None, **options):
         
         fname = run_command_redirected.__file__                
-        arguments = [fname , stdoutname, stderrname, full_name_of_the_worker]
+        arguments = [fname , stdoutname, stderrname]
         
-        if not command:
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+            
+        arguments.append(full_name_of_the_worker)
+        
+        if command is None :
             command = sys.executable
+        
             
         return command, arguments
     
     @classmethod
-    def GDBR(cls, full_name_of_the_worker, channel):
+    def GDBR(cls, full_name_of_the_worker, channel, interpreter_executable = None):
         "remote gdb, can run without xterm"
         
-        arguments = ['localhost:{0}'.format(channel.debugger_port), full_name_of_the_worker]
+        arguments = ['localhost:{0}'.format(channel.debugger_port)]
+        
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+            
+        arguments.append(full_name_of_the_worker)
+        
         command = 'gdbserver'
         return command, arguments
         
     @classmethod
-    def NODEBUGGER(cls, full_name_of_the_worker, channel):
-        return full_name_of_the_worker, []
+    def NODEBUGGER(cls, full_name_of_the_worker, channel, interpreter_executable = None):
+        if not interpreter_executable is None:
+            return interpreter_executable, [full_name_of_the_worker]
+        else:
+            return full_name_of_the_worker, []
     
     @option(type='string', sections=("channel",))
     def worker_code_suffix(self):
@@ -781,12 +819,13 @@ class MpiChannel(MessageChannel):
     _is_registered = False
 
     
-    def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
+    def __init__(self, name_of_the_worker, legacy_interface_type = None, interpreter_executable = None,  **options):
         MessageChannel.__init__(self, **options)
         
         self.ensure_mpi_initialized()
         
         self.name_of_the_worker = name_of_the_worker
+        self.interpreter_executable = interpreter_executable
                 
         if not legacy_interface_type is None:
             self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
@@ -915,13 +954,13 @@ class MpiChannel(MessageChannel):
         
     def start(self):
         if not self.debugger_method is None:
-            command, arguments = self.debugger_method(self.full_name_of_the_worker, self)
+            command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable = self.interpreter_executable)
         else:
             if not self.can_redirect_output or (self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none'):
                 arguments = None
                 command = self.full_name_of_the_worker
             else:
-                command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command = self.python_exe_for_redirection)
+                command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command = self.python_exe_for_redirection, interpreter_executable = self.interpreter_executable)
                 
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
             
@@ -1096,10 +1135,11 @@ class MultiprocessingMPIChannel(MessageChannel):
     as MPI sees it) and this part can be stopped after each
     sub-test, thus removing unneeded applications. 
     """
-    def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
+    def __init__(self, name_of_the_worker, legacy_interface_type = None,  interpreter_executable = None, **options):
         MessageChannel.__init__(self, **options)
         
         self.name_of_the_worker = name_of_the_worker
+        self.interpreter_executable = interpreter_executable
         
         if not legacy_interface_type is None:
             self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
@@ -1505,7 +1545,7 @@ class SocketMessage(AbstractMessage):
         
 class SocketChannel(MessageChannel):
     
-    def __init__(self, name_of_the_worker, legacy_interface_type=None, **options):
+    def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable = None,**options):
         MessageChannel.__init__(self, **options)
         
         #logging.basicConfig(level=logging.DEBUG)
@@ -1513,6 +1553,7 @@ class SocketChannel(MessageChannel):
         logging.getLogger("channel").debug("initializing SocketChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker + "_sockets"
+        self.interpreter_executable = interpreter_executable
         
         if self.hostname != None and self.hostname != 'localhost':
             raise exceptions.CodeException("can only run codes on local machine using SocketChannel, not on %s", self.hostname)
@@ -1554,7 +1595,7 @@ class SocketChannel(MessageChannel):
         arguments = []
         
         if not self.debugger_method is None:
-            command, arguments = self.debugger_method(self.full_name_of_the_worker, self)
+            command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable = self.interpreter_executable)
         else:
             if self.redirect_stdout_file is None  or self.redirect_stdout_file == "none":
                 self.stdout = None
@@ -1565,7 +1606,12 @@ class SocketChannel(MessageChannel):
                 self.stderr = None
             else:
                 self.stderr = open(self.redirect_stderr_file, "w")
-            command = self.full_name_of_the_worker
+            
+            if not self.interpreter_executable is None:
+                command = self.interpreter_executable
+                arguments = [self.full_name_of_the_worker]
+            else:
+                command = self.full_name_of_the_worker
             
         arguments.insert(0, command)        
         arguments.append(str(server_socket.getsockname()[1]))
@@ -1763,7 +1809,7 @@ class IbisChannel(MessageChannel):
             
         return IbisChannel.stderrHandler.id
     
-    def __init__(self, name_of_the_worker, legacy_interface_type=None, **options):
+    def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable = None, **options):
         MessageChannel.__init__(self, **options)
         
         logging.basicConfig(level=logging.WARN)
@@ -1772,6 +1818,7 @@ class IbisChannel(MessageChannel):
         #logging.getLogger("channel").debug("initializing IbisChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker + "_sockets"
+        self.interpreter_executable = interpreter_executable
         
         if self.hostname == None or self.hostname == 'local':
             self.hostname = 'localhost'
