@@ -17,13 +17,11 @@ stellar_mass =  2.0 | units.MSun
 
 def simulate_evolution_tracks():
     stellar_evolution = SSE()
-    stellar_evolution.commit_parameters()
 
     star = datamodel.Particle()
     star.mass = stellar_mass
     
     star = stellar_evolution.particles.add_particle(star)
-    stellar_evolution.commit_particles()
     
     luminosity_at_time = [] | units.LSun
     temperature_at_time = [] | units.K
@@ -34,11 +32,13 @@ def simulate_evolution_tracks():
         luminosity_at_time.append(star.luminosity)
         temperature_at_time.append(star.temperature)
         previous_age = star.age
+        # if we do not specify an end_time in the evolve_model function
+        # a stellar evolution code will evolve to the next
+        # 'natural' timestep, this will ensure all interesting physics
+        # is seen in the hr diagram
         stellar_evolution.evolve_model()
         is_evolving = (star.age != previous_age)
         
-    stellar_evolution.particles.remove_particle(star)
-
     stellar_evolution.stop()
     
     return temperature_at_time, luminosity_at_time

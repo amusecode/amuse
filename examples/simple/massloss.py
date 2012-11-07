@@ -33,9 +33,7 @@ if __name__ in ('__main__', '__plot__'):
     earth.velocity = [2.0*numpy.pi, -0.0001, 0.0] | units.AU / units.yr
     
     instance = Hermite(convert_nbody)
-    instance.initialize_code()
     instance.particles.add_particles(particles)
-    instance.commit_particles()
 
     channelp = instance.particles.new_channel_to(particles)
     

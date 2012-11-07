@@ -1,6 +1,6 @@
 import numpy 
 """
-Generates a random distribution of particles and uses Hop to determine clusters
+Generates a random distribution of particles and uses Hop to determine clumps
 in the particle set.
 """
 from numpy import random
@@ -12,6 +12,7 @@ from amuse.community.hop.interface import Hop
 
 from amuse.datamodel.particles import Particles
 from amuse.ic.salpeter import new_salpeter_mass_distribution
+
 def new_cluster(number_of_stars = 1000):
     masses = new_salpeter_mass_distribution(
         number_of_stars, 

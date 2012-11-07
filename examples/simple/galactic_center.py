@@ -19,11 +19,13 @@ from amuse.community.gadget2.interface import Gadget2
 from matplotlib import pyplot
 
 from amuse.ic.kingmodel import new_king_model
-class galactic_center(object):
-    """
-      skeleton grav code for use in bridge.
 
-      must have get_gravity_at_point and get_potential_at_point
+class GalacticCenterGravityCode(object):
+    """
+    Implements a code simulating the galactic center. As the center itself does
+    not evolve we only need to define the 'get_gravity_at_point'
+    and 'get_potential_at_point'. Note that both functions get arrays
+    of points.
     """
     def __init__(self,R=1000.| units.parsec, M=1.6e10 | units.MSun, alpha=1.2):
         self.R=R
@@ -100,7 +102,7 @@ if __name__ in ('__main__', '__plot__'):
                    ("epsilon_squared", (0.01 | units.parsec)**2), 
                    ("periodic_box_size",200 | units.parsec),
                    ("timestep",timestep/4)] )
-    center=galactic_center()
+    center=GalacticCenterGravityCode()
     
 # shift the cluster to an orbit around GC
 # (note the systems share the same coordinate frame, although units may differ)    

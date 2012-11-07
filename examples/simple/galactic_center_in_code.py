@@ -37,7 +37,7 @@ def new_cluster(
     particles.radius=0.0| units.parsec
     return particles
     
-def new_code(converter, timestep = 0.0025 | units.Myr):
+def new_gravity_code(converter, timestep = 0.0025 | units.Myr):
     result=PhiGRAPE(converter)
     result.parameters.epsilon_squared = (0.01 | units.parsec)**2
     return result
@@ -52,7 +52,7 @@ def shift_particles(particles,dx,dy,dz,dvx,dvy,dvz):
     
 if __name__ in ('__main__', '__plot__'):
     # parameter setup:
-    N=256
+    N=128
     W0=3
     Rinit=50. | units.parsec
     timestep=0.01 | units.Myr
@@ -60,9 +60,9 @@ if __name__ in ('__main__', '__plot__'):
     Rcluster=0.7 | units.parsec
     central_mass = 1.6e7 | units.MSun
     
-    converter=nbody_system.nbody_to_si(Mcluster,Rcluster)
+    converter = nbody_system.nbody_to_si(Mcluster,Rcluster)
     cluster = new_cluster(number_of_particles = N, W0 = W0, converter = converter)
-    code = new_code(converter, timestep = timestep)
+    code = new_gravity_code(converter, timestep = timestep)
     galactic_center = new_galactic_center(central_mass)
     
     # shift the cluster to an orbit around GC
@@ -77,15 +77,16 @@ if __name__ in ('__main__', '__plot__'):
     code.particles.add_particles(cluster)
     
     # add galactic center to the code
-    galactic_center = code.particles.add_particle(galactic_center)
+    code.particles.add_particle(galactic_center)
 
 
+    print "Start evolution"
     # evolve and make plots
     times=units.Myr([0.,0.2,0.4,0.6])
     f=pyplot.figure(figsize=(8,8))
-
-    for i,t in enumerate(times):
-        code.evolve_model(t,timestep=timestep)
+    for i,time in enumerate(times):
+        code.evolve_model(time)
+        print "Evolved to time:", time
 
         x=code.particles.x.value_in(units.parsec)
         y=code.particles.y.value_in(units.parsec)
@@ -95,7 +96,7 @@ if __name__ in ('__main__', '__plot__'):
         subplot.plot([0.],[0.],'b +')
         subplot.set_xlim(-60,60)
         subplot.set_ylim(-60,60)
-        subplot.set_title(t)
+        subplot.set_title(time)
         if i==7:
             subplot.set_xlabel('parsec')
         

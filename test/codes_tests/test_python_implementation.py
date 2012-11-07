@@ -667,7 +667,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(z, numpy.arange(2.0, 300.0, 3.0))
         
         instance.stop()
-        time.sleep(0.1)
+        time.sleep(0.3)
         
         self.assertTrue(os.path.exists('pythonexe.log'))
 

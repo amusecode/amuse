@@ -1,41 +1,42 @@
 """
-Evolves an AGB star in SSE
+Evolves an the sun in it's AGB star phase using SSE
 """
-
+    
 import numpy
+from matplotlib import pyplot
+
 from amuse.community.sse.interface import SSE
 from amuse.units import units
 from amuse.ext import solarsystem
-from amuse.plot import *
+from amuse import plot
 
 from amuse import datamodel
-try:
-    from matplotlib import pyplot
-    HAS_MATPLOTLIB = True
-except ImportError:
-    HAS_MATPLOTLIB = False
 
 def plottillagb():
-    sse = SSE()
-    sse.commit_parameters()
-    sun, planets = solarsystem.new_solar_system_for_mercury()
-    sse.particles.add_particles(sun)
-    sse.commit_particles()
-    channel = sse.particles.new_channel_to(sun)
-    channel.copy()
+    sun = datamodel.Particle(
+        mass = 1 | units.MSun,
+        radius = 1 | units.RSun
+    )
     
-    timerange = units.Myr(numpy.arange(11500, 13500,10))
+    sse = SSE()
+    sse.particles.add_particle(sun)
+    
+    channel_from_se_to_memory = sse.particles.new_channel_to(sun.as_set())
+    channel_from_se_to_memory.copy()
+    
     masses = []|units.MSun
 
+    timerange = numpy.arange(11500, 13500,10) | units.Myr
     for time in timerange:
         sse.evolve_model(time)
-        channel.copy()
-        masses.append(sse.particles[0].mass)
-        print time.as_quantity_in(units.Myr), sse.particles[0].mass.as_quantity_in(units.MSun)
+        channel_from_se_to_memory.copy()
+        masses.append(sun.mass)
+        print time.as_quantity_in(units.Myr), sun.mass.as_quantity_in(units.MSun)
         
     sse.stop()
-    plot(timerange, masses,'.')
-    native_plot.show()
+    
+    plot.plot(timerange, masses,'.')
+    pyplot.show()
 
 if __name__ in ("__main__", "__plot__"):
     plottillagb()

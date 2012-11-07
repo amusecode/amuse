@@ -9,7 +9,6 @@ from matplotlib import pyplot
 
 def evolve_binary(mass_of_star1, mass_of_star2, orbital_period, eccentricity):
     code = SeBa()
-    code.commit_parameters()
     
     stars =  Particles(2)
     stars[0].mass = mass_of_star1
@@ -19,7 +18,6 @@ def evolve_binary(mass_of_star1, mass_of_star2, orbital_period, eccentricity):
     mu = stars.mass.sum() * constants.G
     semi_major_axis = (((orbital_period / (2.0 * numpy.pi))**2)*mu)**(1.0/3.0)
     
-    code.particles.add_particles(stars)
     
     binaries =  Particles(1)
     
@@ -29,6 +27,8 @@ def evolve_binary(mass_of_star1, mass_of_star2, orbital_period, eccentricity):
     binary.child1 = stars[0]
     binary.child2 = stars[1]
     
+    # we add the single stars first, as the binaries will refer to these
+    code.particles.add_particles(stars)
     code.binaries.add_particles(binaries)
     
     from_seba_to_model = code.particles.new_channel_to(stars)

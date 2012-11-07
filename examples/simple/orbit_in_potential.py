@@ -1,7 +1,8 @@
 """
 Integrates a stellar orbit in the galactic potential
   
-This example illustrates the use of a simple external potential and simple integrator.
+This example illustrates the use of a simple external potential and simple integrator, no
+amuse community code is used.
 """
 
 import numpy
