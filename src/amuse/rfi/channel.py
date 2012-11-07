@@ -957,8 +957,13 @@ class MpiChannel(MessageChannel):
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable = self.interpreter_executable)
         else:
             if not self.can_redirect_output or (self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none'):
-                arguments = None
-                command = self.full_name_of_the_worker
+                
+                if self.interpreter_executable is None:
+                    command = self.full_name_of_the_worker
+                    arguments = None
+                else:
+                    command = self.interpreter_executable
+                    arguments = [self.full_name_of_the_worker]
             else:
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command = self.python_exe_for_redirection, interpreter_executable = self.interpreter_executable)
                 

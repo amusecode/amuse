@@ -657,7 +657,50 @@ class TestInterface(TestWithMPI):
         
         instance = ForTestingInterface(
             use_python_interpreter = True,
-            python_interpreter = "pythonexe"
+            python_interpreter = "pythonexe",
+            redirection="null"
+        )
+        
+        x,y,z,err = instance.get_position(range(100))
+        self.assertEquals(err, 0)
+        self.assertEquals(x, numpy.arange(0.0, 300.0, 3.0))
+        self.assertEquals(y, numpy.arange(1.0, 300.0, 3.0))
+        self.assertEquals(z, numpy.arange(2.0, 300.0, 3.0))
+        
+        instance.stop()
+        time.sleep(0.3)
+        
+        self.assertTrue(os.path.exists('pythonexe.log'))
+
+        with open("pythonexe.log", 'r') as f:
+            loglines = f.read().splitlines()
+            
+        self.assertEquals(len(loglines), 2)
+            
+        self.assertTrue(loglines[0].startswith('start '))
+        self.assertTrue(loglines[1].startswith('end '))
+
+    def test24(self):
+        
+        # same as test23 but now with redirection is none
+        if os.path.exists("pythonexe"):
+            os.remove("pythonexe")
+            
+        if os.path.exists("pythonexe.log"):
+            os.remove("pythonexe.log")
+            
+        string = basic_python_exe.format(executable = sys.executable)
+        
+        with open("pythonexe", 'w') as f:
+            f.write(string)
+            
+        os.chmod("pythonexe", 0777)
+        
+        
+        instance = ForTestingInterface(
+            use_python_interpreter = True,
+            python_interpreter = "pythonexe",
+            redirection="none"
         )
         
         x,y,z,err = instance.get_position(range(100))
