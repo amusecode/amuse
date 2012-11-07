@@ -1,6 +1,6 @@
 """
-Generate a grid of binaries with different, primary mass, mass ratio
-and separation and evolve these over time.
+Generates a grid of binaries with different, primary mass, mass ratio
+and separation and evolves these over time.
 """
 
 from amuse.units import units

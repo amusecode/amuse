@@ -1,5 +1,5 @@
 """
-
+Evolves the steady state solution of a star irridiating a H2 region.
 """
 
 import numpy

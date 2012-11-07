@@ -1,10 +1,7 @@
 """
-  example of molecular cloud evolution with explictly 
-  split SPH and grav evolution
+Evolves a molecular cloud with explictly split gas and star evolution
 
-  Initial condition is a smooth spherical cloud with random velocities
-  as in Bonnell et al. (2003)  
-  
+Initial condition is a smooth spherical cloud with random velocities as in Bonnell et al. (2003)  
 """  
 
 import numpy

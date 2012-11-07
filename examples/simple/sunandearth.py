@@ -1,8 +1,7 @@
 """
-Evolve the dynamic evolution of the earth around the sun.
-
-
+Evolves the dynamic evolution of the earth around the sun.
 """
+
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units import quantities

@@ -1,3 +1,6 @@
+"""
+Evolves a simple equal mass stellar cluster.
+"""
 import numpy
 
 from matplotlib import pyplot

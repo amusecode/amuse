@@ -1,5 +1,6 @@
 """
-Evolves a stellar binary and reports the mass of each star. 
+Evolves a stellar binary and reports the mass of each star during the evolution.
+
 Shows the type of each star as they change.
 """
 from amuse.lab import *

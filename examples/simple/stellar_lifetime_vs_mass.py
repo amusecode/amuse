@@ -1,8 +1,7 @@
 """ 
-    Simple example for calculating the stellar lifetime in a range of
-    masses between Mmax and Mmin using SSE (or another stellar evolution
-    model from AMUSE and an analytic expression.
-    Leiden Jan 2012: AvE && SPZ
+Calculates the stellar lifetime in a range of masses between 
+Mmax and Mmin using SSE (or another stellar evolution code)
+and an analytic expression.
 """
 
 import numpy

@@ -1,12 +1,17 @@
+"""
+Evolves the sun and earth where the sun will lose mass every 220th step.
+"""
+
 import numpy
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.sse.interface import SSE
+from amuse import datamodel
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units.quantities import VectorQuantity
 from amuse.plot import *
 
-from amuse import datamodel
+
 def simulate_massloss(time):
     return units.MSun(0.5*(1.0+1.0/(1.0+numpy.exp((time.value_in(time.unit)-70.0)/15.))))
 

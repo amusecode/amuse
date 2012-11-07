@@ -1,5 +1,5 @@
 """
-Show how to generate Hertzsprung-Russell diagram
+Generates a Hertzsprung-Russell diagram for a single star
 """
 
 import sys

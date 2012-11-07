@@ -1,3 +1,6 @@
+"""
+Creates a number of plots using the AMUSE unit aware plot functions.
+"""
 from amuse.lab import *
 from amuse.plot import *
 import numpy as np

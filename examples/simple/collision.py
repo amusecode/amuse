@@ -1,5 +1,5 @@
 """
-Evolve a cluster until a collision is detected. 
+Evolves a cluster until a collision is detected between two stars in the cluster.
 
 The stars in the cluster are distributed using a plummer sphere, the
 masses are set according to a Salpeter initial mass function.

@@ -1,3 +1,7 @@
+"""
+Evolves an AGB star in SSE
+"""
+
 import numpy
 from amuse.community.sse.interface import SSE
 from amuse.units import units
@@ -20,14 +24,14 @@ def plottillagb():
     channel = sse.particles.new_channel_to(sun)
     channel.copy()
     
-    timerange = units.Myr(numpy.arange(11000, 15000,10))
+    timerange = units.Myr(numpy.arange(11500, 13500,10))
     masses = []|units.MSun
 
     for time in timerange:
         sse.evolve_model(time)
         channel.copy()
         masses.append(sse.particles[0].mass)
-        #print time.value_in(units.yr), sse.particles[0].mass.value_in(units.MSun)
+        print time.as_quantity_in(units.Myr), sse.particles[0].mass.as_quantity_in(units.MSun)
         
     sse.stop()
     plot(timerange, masses,'.')

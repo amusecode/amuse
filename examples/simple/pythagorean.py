@@ -1,6 +1,6 @@
 """
- example of calculating Pythagorean problem using high level interface
- 
+Calculates the Pythagorean 3-body problem using different values for
+the smoothing length in the n-body code.
 """
 
 import numpy
@@ -13,8 +13,8 @@ from amuse.community.bhtree.interface import BHTree
 from amuse.units import nbody_system
 from amuse.units.quantities import AdaptingVectorQuantity
 from matplotlib import pyplot
-
 from amuse.datamodel import Particles
+
 def new_particles():
     particles = Particles(3)
     

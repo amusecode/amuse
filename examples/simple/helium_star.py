@@ -1,3 +1,7 @@
+"""
+Creates a helium burning star from the inner shells of a main sequence star.
+"""
+
 from amuse.units import units
 from amuse.datamodel import Particle
 from amuse.community.mesa.interface import MESA

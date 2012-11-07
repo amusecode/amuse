@@ -1,5 +1,5 @@
 """
-Calculate the mean mass of a stellar popultion as a function of time.
+Calculates the mean mass of a stellar popultion as a function of time.
 This routine was used to measure the <m> of a star cluster in order to
 incorporate <m>(t) and d<m>/dt in a parametrized cluster evolution code.
 """

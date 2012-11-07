@@ -1,4 +1,8 @@
 import numpy 
+"""
+Generates a random distribution of particles and uses Hop to determine clusters
+in the particle set.
+"""
 from numpy import random
 from matplotlib import pyplot
 

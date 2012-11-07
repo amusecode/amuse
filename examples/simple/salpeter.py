@@ -1,9 +1,15 @@
+"""
+Generates a cluster using a plummer model with a salpeter Initial Mass Function.
+Compares the generated IMF against the expected line.
+"""
+
 import numpy 
 from matplotlib import pyplot
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
+
 def new_cluster(number_of_stars = 1000):
     masses = new_salpeter_mass_distribution(
         number_of_stars, 

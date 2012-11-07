@@ -1,8 +1,6 @@
 """
-  simple example of setting up a protoplanetary disk around a sun-like star
-
+Creates a protoplanetary disk around a sun-like star
 """
-
 
 import numpy
 
@@ -12,10 +10,9 @@ from amuse.community.fi.interface import Fi
 
 from amuse.units import units
 from amuse.units import nbody_system
-
 from amuse.ext.protodisk import ProtoPlanetaryDisk
-
 from amuse.datamodel import Particles
+
 def make_map(sph,N=100,L=1):
 
     x,y=numpy.indices( ( N+1,N+1 ))

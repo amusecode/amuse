@@ -1,9 +1,8 @@
 """
-  example of cluster evolution in galactic center
+Evolves a cluster in the potention of the galactic center
   
-  this example illustrates the use of the bridge integrator to couple different codes.
-  In this example a cluster is evolved  circling the galactic center, represented by a static potential.
-
+Uses the bridge integrator to couple different codes.
+In this example a cluster is evolved  circling the galactic center, represented by a static potential.
 """
 
 import numpy

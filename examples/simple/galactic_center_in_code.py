@@ -1,5 +1,5 @@
 """
-Evolve a cluster orbiting a massive central particle.
+Evolves a cluster orbiting a massive central particle.
 """
 
 import numpy

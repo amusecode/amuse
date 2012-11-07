@@ -1,10 +1,7 @@
 """
-  example of stellar orbit integration in galactic (or other) potential
+Integrates a stellar orbit in the galactic potential
   
-  this example illustrates the use of a simple external potential with
-  units and simple integrator. The potential can be used quite easily
-  with bridge.
-
+This example illustrates the use of a simple external potential and simple integrator.
 """
 
 import numpy
