@@ -486,7 +486,6 @@ int new_binary(
     double eccentricity, 
     int index_of_child1, 
     int index_of_child2){
-    
     int error_code = 0;
     node * child1 = get_seba_node_from_index(index_of_child1, &error_code);
     if(error_code < 0) {return error_code;}
@@ -499,9 +498,11 @@ int new_binary(
     if (child2 == seba_insertion_point) {
         seba_insertion_point = child2->get_younger_sister();
     }
+    if (child1 == seba_insertion_point) {
+        seba_insertion_point = child1->get_younger_sister();
+    }
     detach_node_from_general_tree(child1);
-    detach_node_from_general_tree(child2);
-    
+    detach_node_from_general_tree(child2);   
     
     node * new_node = new node();
     new_node->set_label(next_seba_id);
@@ -519,6 +520,8 @@ int new_binary(
     }
     new_node->set_oldest_daughter(child1);
     child1->set_younger_sister(child2);
+    child1->set_elder_sister(0);
+    child2->set_younger_sister(0);
     child2->set_elder_sister(child1);
     child1->set_parent(new_node);
     child2->set_parent(new_node);
