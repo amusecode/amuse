@@ -73,15 +73,16 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
         return result
         
     calculate_gravity_code=bridge.CalculateFieldForCodes(
-        new_code_to_calculate_gravity_of_gas_particles,  # the code that calculates the gravity
-        input_codes = [sph] # the codes to calculate the gravity for
+        new_code_to_calculate_gravity_of_gas_particles,  # the code that calculates the acceleration field
+        input_codes = [sph] # the codes to calculate the acceleration field of
     )
     
     bridged_system = bridge.Bridge()
     bridged_system.timestep=interaction_timestep
+
     bridged_system.add_system(
-        sph,
-        [calculate_gravity_code]
+        sph,                     # the code to move the particles of
+        [calculate_gravity_code] # the codes that provide the acceleration field
     )
 
     fig=pyplot.figure(figsize=(12,12))
