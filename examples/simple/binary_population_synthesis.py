@@ -44,8 +44,9 @@ def generate_initial_population_grid(
                 primary_star.mass = primary_mass
                 
                 # we add the particle to the stars set
-                # we get a reference to the particle in the stars set
-                # back and we want to use that in constructing the
+                # and we get a reference to the particle in the stars set
+                # back
+                # we want to use that star in constructing the
                 # binary, so that the binaries all refer to 
                 # the stars in the "stars set"
                 primary_star = stars.add_particle(primary_star)
@@ -65,49 +66,34 @@ def generate_initial_population_grid(
     return binaries, stars
 
 def evolve_population(binaries, stars, end_time, time_step):
-    """ evolve the binary population to end_time and store all
-    properties every time_step
-    """
     code = SeBa()
+    
     # add the stars first, as the binaries will
     # refer to them
     code.particles.add_particles(stars)
     code.binaries.add_particle(binaries)
     
-    time = 0.0 * end_time
-    
-    code.commit_particles()
     
     channel_from_code_to_model_for_binaries = code.binaries.new_channel_to(binaries)
     channel_from_code_to_model_for_stars = code.particles.new_channel_to(stars)
     
-    
+    #we evolve in steps of timestep, just to get some feedback
     print "start evolving..."
-    while time <= end_time:
+    time = 0.0 * end_time
+    while time < end_time:
         time += time_step
         code.evolve_model(time)
-        
         print "evolved to time: ", time.as_quantity_in(units.Myr)
-        channel_from_code_to_model_for_stars.copy()
-        channel_from_code_to_model_for_binaries.copy()
         
-        binaries.savepoint(timestamp = time)
-        stars.savepoint(timestamp = time)
+    channel_from_code_to_model_for_stars.copy()
+    channel_from_code_to_model_for_binaries.copy()
+    
 def make_hr_diagram(stars):
-    
-    all_luminosities  = [] | units.LSun
-    all_temperatures = [] | units.K
-    
-    for stars_at_time in list(stars.history)[1:]:
-        all_luminosities.extend(stars_at_time.luminosity)
-        all_temperatures.extend(stars_at_time.temperature)
-
     pyplot.figure(figsize = (8, 6))
     pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
-    
     pyplot.scatter(
-        all_temperatures.value_in(units.K), 
-        all_luminosities.value_in(units.LSun)
+        stars.temperature.value_in(units.K),
+        stars.luminosity.value_in(units.LSun)
     )
     pyplot.xscale('log')
     pyplot.yscale('log')
@@ -118,12 +104,14 @@ def make_hr_diagram(stars):
 
 if __name__ == '__main__':
     binaries, stars = generate_initial_population_grid(
-        0.1 | units.MSun, 4.0 | units.MSun, 20,
-        0.5, 1.0, 2,
-        1.0 | units.RSun, 2.0 | units.RSun, 1
+        0.1 | units.MSun, 10.0 | units.MSun, 10, #mass range
+        0.5, 1.0, 10,  #mass ratios range
+        0.2 | units.RSun, 2.0 | units.RSun, 5 #semi major axis range
     )
+    
     print "generated a population of", len(binaries), "binaries"
-    evolve_population(binaries, stars, 1 | units.Gyr, 1 | units.Myr)
+    
+    evolve_population(binaries, stars, 2 | units.Gyr, 500 | units.Myr)
     
     make_hr_diagram(stars)
     
