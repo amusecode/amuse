@@ -1,7 +1,7 @@
-Index: mocassin/src/mocassin.2.02.69/source/iteration_mod.f90
+Index: mocassin/src/mocassin.2.02.70/source/iteration_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.69/source/iteration_mod.f90	2010-11-04 13:07:37.000000000 +0100
-+++ mocassin/src/mocassin.2.02.69/source/iteration_mod.f90	2011-09-28 14:42:16.000000000 +0200
+--- mocassin.orig/src/mocassin.2.02.70/source/iteration_mod.f90	2010-11-04 13:07:37.000000000 +0100
++++ mocassin/src/mocassin.2.02.70/source/iteration_mod.f90	2011-09-28 14:42:16.000000000 +0200
 @@ -1127,7 +1127,7 @@
  
             if ( totPercent >= minConvergence ) then

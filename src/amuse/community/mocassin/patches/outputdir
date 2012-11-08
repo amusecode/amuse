@@ -1,7 +1,7 @@
-Index: mocassin/src/mocassin.2.02.69/source/common_mod.f90
+Index: mocassin/src/mocassin.2.02.70/source/common_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.69/source/common_mod.f90	2011-09-29 10:32:04.000000000 +0200
-+++ mocassin/src/mocassin.2.02.69/source/common_mod.f90	2011-09-29 10:35:23.000000000 +0200
+--- mocassin.orig/src/mocassin.2.02.70/source/common_mod.f90	2011-09-29 10:32:04.000000000 +0200
++++ mocassin/src/mocassin.2.02.70/source/common_mod.f90	2011-09-29 10:35:23.000000000 +0200
 @@ -391,7 +391,8 @@
      character(len=4096)  :: dustFile(2)      ! dust files
      character(len=4096)  :: MdMgFile         ! name of MdMg file
@@ -12,10 +12,10 @@ Index: mocassin/src/mocassin.2.02.69/source/common_mod.f90
      character(len=4096)  :: Qfile            ! name of Qfile 
      character(len=30),pointer       :: grainLabel(:)    ! name of this species
  
-Index: mocassin/src/mocassin.2.02.69/source/grid_mod.f90
+Index: mocassin/src/mocassin.2.02.70/source/grid_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.69/source/grid_mod.f90	2011-09-28 16:06:19.000000000 +0200
-+++ mocassin/src/mocassin.2.02.69/source/grid_mod.f90	2011-09-29 10:37:55.000000000 +0200
+--- mocassin.orig/src/mocassin.2.02.70/source/grid_mod.f90	2011-09-28 16:06:19.000000000 +0200
++++ mocassin/src/mocassin.2.02.70/source/grid_mod.f90	2011-09-29 10:37:55.000000000 +0200
 @@ -1753,7 +1753,7 @@
                print*, 'Total volume of the active region [e45 cm^3]: ', totalVolume
                if (lgEcho) then 
@@ -131,10 +131,10 @@ Index: mocassin/src/mocassin.2.02.69/source/grid_mod.f90
                &          status='old', iostat = err)
           if (err /= 0) then
              print*, "! resetGrid: error opening file dustGrid.out"
-Index: mocassin/src/mocassin.2.02.69/source/output_mod.f90
+Index: mocassin/src/mocassin.2.02.70/source/output_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.69/source/output_mod.f90	2011-07-29 16:26:19.000000000 +0200
-+++ mocassin/src/mocassin.2.02.69/source/output_mod.f90	2011-09-29 10:36:21.000000000 +0200
+--- mocassin.orig/src/mocassin.2.02.70/source/output_mod.f90	2011-07-29 16:26:19.000000000 +0200
++++ mocassin/src/mocassin.2.02.70/source/output_mod.f90	2011-09-29 10:36:21.000000000 +0200
 @@ -928,13 +928,13 @@
  
          ! write the lineFlux.out file          
@@ -228,10 +228,10 @@ Index: mocassin/src/mocassin.2.02.69/source/output_mod.f90
        if (ios /= 0) then
           print*, "! writeContCube: Cannot open file for writing"
           stop
-Index: mocassin/src/mocassin.2.02.69/source/iteration_mod.f90
+Index: mocassin/src/mocassin.2.02.70/source/iteration_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.69/source/iteration_mod.f90	2011-09-28 16:06:19.000000000 +0200
-+++ mocassin/src/mocassin.2.02.69/source/iteration_mod.f90	2011-09-29 10:39:36.000000000 +0200
+--- mocassin.orig/src/mocassin.2.02.70/source/iteration_mod.f90	2011-09-28 16:06:19.000000000 +0200
++++ mocassin/src/mocassin.2.02.70/source/iteration_mod.f90	2011-09-29 10:39:36.000000000 +0200
 @@ -247,7 +247,7 @@
  
             

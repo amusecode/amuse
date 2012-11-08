@@ -3211,7 +3211,7 @@ CONTAINS
            ! calculate the percentage of converged cells
            do iG = 1, nGrids
 
-              totCells    = 0.
+              totCells    = 0
               convPercent = 0.
 
               if (ig>1 .or. (.not.lg2D)) then
@@ -3226,11 +3226,11 @@ CONTAINS
                        if (grid(iG)%active(i,j,k)>0)  then
                           if (.not.lgEcho) then 
                              convPercent = convPercent + grid(iG)%lgConverged(grid(iG)%active(i,j,k))
-                             totCells    = totCells + 1.
+                             totCells    = totCells + 1
                           else ! if light echo then only count echo cells!
                              if (grid(iG)%echoVol(i,j,k).gt.0.0) then
                                 convPercent = convPercent + grid(iG)%lgConverged(grid(iG)%active(i,j,k))
-                                totCells    = totCells + 1.
+                                totCells    = totCells + 1
                              end if
                           endif
                        end if

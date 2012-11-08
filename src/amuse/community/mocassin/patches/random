@@ -1,7 +1,7 @@
-Index: mocassin/src/mocassin.2.02.69/source/common_mod.f90
+Index: mocassin/src/mocassin.2.02.70/source/common_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.69/source/common_mod.f90	2011-09-28 16:06:19.000000000 +0200
-+++ mocassin/src/mocassin.2.02.69/source/common_mod.f90	2011-09-28 16:08:12.000000000 +0200
+--- mocassin.orig/src/mocassin.2.02.70/source/common_mod.f90	2011-09-28 16:06:19.000000000 +0200
++++ mocassin/src/mocassin.2.02.70/source/common_mod.f90	2011-09-28 16:08:12.000000000 +0200
 @@ -38,6 +38,7 @@
      logical         :: lgNosource = .false.     ! exclude sources from SED?
      logical         :: lginputDustMass = .false.! user sets input dust mass?
@@ -10,10 +10,10 @@ Index: mocassin/src/mocassin.2.02.69/source/common_mod.f90
  
      real, pointer :: gSca(:)                 ! gSca(freq)
  
-Index: mocassin/src/mocassin.2.02.69/source/photon_mod.f90
+Index: mocassin/src/mocassin.2.02.70/source/photon_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.69/source/photon_mod.f90	2011-01-16 22:26:52.000000000 +0100
-+++ mocassin/src/mocassin.2.02.69/source/photon_mod.f90	2011-09-28 16:07:51.000000000 +0200
+--- mocassin.orig/src/mocassin.2.02.70/source/photon_mod.f90	2011-01-16 22:26:52.000000000 +0100
++++ mocassin/src/mocassin.2.02.70/source/photon_mod.f90	2011-09-28 16:07:51.000000000 +0200
 @@ -79,7 +79,8 @@
          if (iStar == 0) then
             deltaE(0) = grid(gpLoc)%LdiffuseLoc(grid(gpLoc)%active(cellLoc(1),cellLoc(2),cellLoc(3)))/NphotonsDiffuseLoc

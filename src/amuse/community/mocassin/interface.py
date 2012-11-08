@@ -9,7 +9,7 @@ import os
 import time
 
 class MocassinInterface(CodeInterface, CommonCodeInterface):
-    MOCASSIN_VERSION = '2.02.69'
+    MOCASSIN_VERSION = '2.02.70'
     use_modules = ['mocassin_interface',]
     
     def __init__(self, **keyword_arguments):

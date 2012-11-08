@@ -1,5 +1,5 @@
---- mocassin.orig/src/mocassin.2.02.69/makefile	2010-11-10 16:17:39.000000000 +0100
-+++ mocassin/src/mocassin.2.02.69/makefile	2012-01-13 11:31:42.186514656 +0100
+--- mocassin.orig/src/mocassin.2.02.70/makefile	2010-11-10 16:17:39.000000000 +0100
++++ mocassin/src/mocassin.2.02.70/makefile	2012-01-13 11:31:42.186514656 +0100
 @@ -1,51 +1,55 @@
 -source1  = source/infnan.f90 source/constants_mod.f90 source/vector_mod.f90 source/common_mod.f90 source/interpolation_mod.f90 \
 -	source/set_input_mod.f90 source/hydro_mod.f90 source/ph_mod.f90 source/composition_mod.f90 \

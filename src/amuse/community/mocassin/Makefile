@@ -1,18 +1,19 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
 AMUSE_DIR?=../../../..
--include ${AMUSE_DIR}/config.mk
+include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= mpif90
+FORTRAN = $(FC)
+MPIF90 ?= $(MPIFC)
 PYTHON ?= python
-FC      = $(MPIF90)
 
+export FORTRAN
 
 OBJS = interface.o
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-VERSION = 2.02.69
+VERSION = 2.02.70
 CODEDIR = src/mocassin.$(VERSION)
 CODELIB = $(CODEDIR)/libmocassin.a
 
@@ -75,6 +76,8 @@ distclean: clean
 	$(RM) -Rf src.*
 
 $(CODELIB): $(CODEDIR)/makefile
+	echo $(FC)
+	echo $(FORTRAN)
 	make -C $(CODEDIR) clean
 	make -C $(CODEDIR) all
 
@@ -82,10 +85,10 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MocassinInterface -o $@
 
 mocassin_worker:  worker_code.f90 $(CODELIB) $(OBJS) 
-	$(MPIF90) $(FFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) -o $@
+	$(MPIFC) $(FFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) -o $@
 	
 mocassin_worker_sockets:  worker_code.f90 $(CODELIB) $(OBJS)  
-	$(MPIF90) $(FFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) $(FSOPTS) -o $@
+	$(MPIFC) $(FFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) $(FSOPTS) -o $@
 
 %.mod %.o: %.f90
-	$(FC) $(FFLAGS) -c -o $@ $<
+	$(MPIFC) $(FFLAGS) -c -o $@ $<
