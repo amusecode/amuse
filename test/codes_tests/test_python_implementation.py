@@ -657,7 +657,7 @@ class TestInterface(TestWithMPI):
         
         instance = ForTestingInterface(
             use_python_interpreter = True,
-            python_interpreter = "pythonexe",
+            python_interpreter = "./pythonexe",
             redirection="null"
         )
         
@@ -699,7 +699,7 @@ class TestInterface(TestWithMPI):
         
         instance = ForTestingInterface(
             use_python_interpreter = True,
-            python_interpreter = "pythonexe",
+            python_interpreter = "./pythonexe",
             redirection="none"
         )
         
