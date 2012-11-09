@@ -42,7 +42,7 @@ class InstallPrerequisites(object):
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.6.1' ,                  #version string
+            '1.6.2' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
             'http://ignum.dl.sourceforge.net/sourceforge/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
@@ -75,30 +75,30 @@ class InstallPrerequisites(object):
           (
             'h5py', 
             ['hdf'], 
-            '2.0.0', 
+            '2.1.0', 
             'h5py-' , '.tar.gz', 
             'http://h5py.googlecode.com/files/', self.h5py_build
           ) ,
           (
             'docutils', 
             [], 
-            '0.7', 
+            '0.9.1', 
             'docutils-','.tar.gz', 
-            'http://downloads.sourceforge.net/project/docutils/docutils/0.7/', 
+            'http://downloads.sourceforge.net/project/docutils/docutils/0.9.1/', 
             self.python_build
           ) ,
           (
             'mpich2', 
             [], 
-            '1.4.1p1', 
+            '1.5', 
             'mpich2-', '.tar.gz', 
-            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.4.1p1/', 
+            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.5/', 
             self.mpich2_build
           ) ,
           (
             'mpi4py', 
             ['mpich2'], 
-            '1.2.2', 
+            '1.3', 
             'mpi4py-', '.tar.gz', 
             'http://mpi4py.googlecode.com/files/', 
             self.python_build
@@ -125,15 +125,15 @@ class InstallPrerequisites(object):
           (
             'cmake' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '2.8.3' ,                   #version string
+            '2.8.10' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
             'http://www.cmake.org/files/v2.8/', #download url, filename is appended
-            self.fftw_build             #method to use for building - same as for FFTW should work
+            self.cmake_build             #method to use for building - same as for FFTW should work
           ) ,
           (
             'freetype' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '2.4.9' ,                   #version string
+            '2.4.10' ,                   #version string
             'freetype-', '.tar.gz',        #pre- and postfix for filename
             'http://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
@@ -173,8 +173,8 @@ class InstallPrerequisites(object):
           (
             'zmq' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '3.2.0' ,                   #version string
-            'zeromq-', '-rc1.tar.gz',        #pre- and postfix for filename
+            '3.2.1' ,                   #version string
+            'zeromq-', '-rc2.tar.gz',        #pre- and postfix for filename
             'http://download.zeromq.org/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
@@ -320,6 +320,20 @@ class InstallPrerequisites(object):
           '--prefix='+self.static_prefix,
           '--disable-shared',
           '--enable-threads'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
+            
+    
+    def cmake_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.static_prefix
         ]
         commands.append(command)
         commands.append(['make'])
