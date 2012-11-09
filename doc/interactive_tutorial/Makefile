@@ -1,20 +1,29 @@
 # convert all ipynb to rst files for inclusion into the 
 # amuse documentation
 #
-# makefile depends on nbconvert script installed 
-# in $(HOME)/amuse/nbconvert
+# makefile depends on nbconvert script 
 #
 # nbconvert from github:
 # https://github.com/ipython/nbconvert
 # nbconvert depends on 
 # ipython, markdown and pygments python modules
 # plus pandoc app (pandoc needs haskell platform installed)
+#
+# 
+#
 
+AMUSE_DIR?=../..
+-include ${AMUSE_DIR}/config.mk
+
+#
+# change this variable to point to your nbconvert directory
+#
 NBCONVERTDIR=/net/biesbosch/data2/vanelteren/develop/python/nbconvert
-
 #NBCONVERTDIR=$(HOME)/amuse/nbconvert
 
-NBCONVERT=python $(NBCONVERTDIR)/nbconvert.py
+NBCONVERT=$(PYTHON) $(NBCONVERTDIR)/nbconvert.py
+
+PYTHONPATH=$(AMUSE_DIR)/src
 
 PAGES=\
 	01-Loading_AMUSE.ipynb\
@@ -42,3 +51,5 @@ clean:
 	python create_title.py "$<" > "$@"
 	cat "$<" >> "$@"
 
+notebook:
+	ipython notebook --pylab inline
