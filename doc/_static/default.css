@@ -142,17 +142,22 @@ div.sphinxsidebar
 .nav li {
     white-space: nowrap;
 }
-.highlight-sh{
+
+div.highlight {
+    margin-left: 20px;
+    padding: 5px;
+    border:1px solid blue;
 }
 
 div.admonition {
-    margin-bottom: 10px;
-    margin-top: 10px;
-    margin-left: 20px;
-    padding: 7px;
-    border: 1px dotted black;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    margin-left: 0px;
+    padding: 2px;
+    border: 1px solid gray;
 }
 
 p.admonition-title {
     display: none;
 }
+
