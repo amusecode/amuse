@@ -2,6 +2,7 @@ from amuse.support.core import late
 
 from amuse.io import base
 from amuse.units import units
+from amuse.units import core
 from amuse.units.quantities import is_quantity
 
 import re
@@ -150,6 +151,14 @@ class TableFormattedText(base.FileFormatProcessor):
         No attribute type or name can be given for the key.
         """
         return -1
+        
+    
+    @base.format_option
+    def must_store_units_in_header(self):
+        """Store line with parsable units in the header of the text file. This line can be used
+        to restore the units on reading the file. When this line is added to the file you do not
+        need to specify the attribute_types on reading the file"""
+        return True
         
     def read_header(self):
         while not self.cursor.is_at_end() and self.cursor.line().startswith(self.header_prefix_string):
@@ -355,17 +364,28 @@ class CsvFileText(TableFormattedText):
         "separator between the columns"
         return ','
     
+
+    def convert_string_to_unit(self, unit_string):
+        if unit_string == '-':
+            return None
+        else:
+            return eval(unit_string, core.__dict__)
+
+    def convert_csv_string_to_unit(self, csv_string):
+        return [self.convert_string_to_unit(sub) for sub in csv_string.split(self.column_separator)]
+        
     def read_header_line(self, line):
         if self.attribute_names:
             if self.attribute_types is None:
-                self.attribute_types = units.convert_csv_string_to_unit(line)
+                self.attribute_types = self.convert_csv_string_to_unit(line)
         else:
-            self.attribute_names = [sub.strip() for sub in line.split(',')]
+            self.attribute_names = [sub.strip() for sub in line.split(self.column_separator)]
     
     def header_lines(self):
         result = []
         result.append(self.column_separator.join(self.attribute_names))
-        result.append(self.column_separator.join([one_unit.reference_string() for one_unit in self.attribute_types]))
+        if self.must_store_units_in_header:
+            result.append(self.column_separator.join(['-' if one_unit is None else one_unit.to_simple_form().reference_string() for one_unit in self.attribute_types]))
         result.append(self.column_separator.join(map(str, self.attribute_types)))
         return result
     

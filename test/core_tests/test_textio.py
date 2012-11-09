@@ -174,11 +174,6 @@ class TableFormattedTextTests(amusetest.TestCase):
         
 class CsvFileTextTests(amusetest.TestCase):
     
-    def test0(self):
-        self.assertEquals(units.convert_string_to_unit('m'),         units.m)
-        self.assertEquals(units.convert_string_to_unit('m * s**-2'), units.m * units.s**-2)
-        self.assertEquals(units.convert_csv_string_to_unit('m, kg, s, parsec, hour'), 
-            [units.m, units.kg, units.s, units.parsec, units.hour])
     
     def test1(self):
         print "Test 1: Read comma separated values (CSV) - specified attributes"
@@ -236,7 +231,7 @@ class CsvFileTextTests(amusetest.TestCase):
         
         contents = data_stream.getvalue()
         self.assertEquals("#a,b\n"
-            "#no_system.get('none'),(100 * (0.01 * system.get('S.I.').base('length')))\n"
+            "#no_system.get('none'),system.get('S.I.').base('length')\n"
             "#none,100 * cm\n1.0,2.0\n4.0,5.0\n", contents)
     
     def test5(self):
@@ -290,6 +285,29 @@ class CsvFileTextTests(amusetest.TestCase):
         self.assertEquals(read_particles.c, [3, 6] | units.kg / units.m**3)
         os.remove("test_textio.csv")
     
+    
+    def test8(self):
+        particles = datamodel.Particles(2)
+        particles.a = [1, 4]
+        particles.b = [2, 5] | units.m
+        particles.c = [3, 6] | units.kg / units.m**3
+        io.write_set_to_file(
+            particles, 
+            "test_textio.csv",
+            "csv",
+            attribute_type=(None, units.kg / units.m**3, units.m),
+            attribute_name=('a', 'c', 'b')
+        )
+        
+        read_particles = io.read_set_from_file(
+            "test_textio.csv", 
+            format = "csv"
+        )
+        self.assertEquals(len(read_particles), 2)
+        self.assertEquals(read_particles.a, [1, 4])
+        self.assertEquals(read_particles.b, [2, 5] | units.m)
+        self.assertEquals(read_particles.c, [3, 6] | units.kg / units.m**3)
+        os.remove("test_textio.csv")
 
 class Athena3DTextTests(amusetest.TestCase):
     

@@ -39,6 +39,30 @@ Supported File Formats
     .. autoclass:: CannotLoadException
     
     
+    
+    Amuse HDF5 files
+    ----------------
+    
+    AMUSE provides it's own data format based on hdf5 files. The HDF5 file storage
+    provides support for storing particle set and grids in the same file. It also
+    retains the particle references and can store multiple versions of the
+    same set.
+    
+        >>> from amuse.support import io
+        >>> from amuse.ic.plummer import new_plummer_model
+        >>> particles = new_plummer_model(1000)
+        >>> io.write_set_to_file(
+                    particles,
+                   'plummer.hdf5',
+                   'hdf5',
+            )
+        >>> io.read_set_from_file('plummer.hdf5', 'hdf5')
+    
+    
+    .. iooptions:: hdf5
+    
+    
+    
     Text files
     ----------
     

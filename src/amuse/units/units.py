@@ -74,9 +74,3 @@ stellar_type = core.enumeration_unit(
 #special unit for keys of particles
 object_key = core.key_unit('object_key','key')
 
-def convert_string_to_unit(unit_string):
-    return eval(unit_string)
-
-def convert_csv_string_to_unit(csv_string):
-    return [convert_string_to_unit(sub) for sub in csv_string.split(',')]
-
