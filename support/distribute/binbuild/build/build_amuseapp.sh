@@ -34,6 +34,7 @@ UNICODETYPE="ucs4"
 
 INSTALLDIR="${BASEDIR}/py_install"
 SHELLDIR="${BASEDIR}/../shell"
+TUTORIALDIR="${BASEDIR}/../../../../doc/interactive_tutorial"
 
 RELEASEDIR=amuse-${VERSION}-${PLATFORM}_${ARCHITECTURE}
 DISTFILE=${RELEASEDIR}.tar.gz
@@ -279,6 +280,8 @@ rm -Rf ${RELEASEDIR}
 cp -R ${INSTALLDIR} ${RELEASEDIR}
 
 cp -R ${SHELLDIR}/* ${RELEASEDIR}
+
+cp -R ${TUTORIALDIR} ${RELEASEDIR}/tutorial
 
 tar -czf ${DISTFILE} ${RELEASEDIR}
 
