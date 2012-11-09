@@ -13,6 +13,7 @@ Contents:
    
    install/index
    tutorial/index
+   interactive_tutorial/index
    reference/index
    design/index
    
