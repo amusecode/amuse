@@ -2471,6 +2471,9 @@ class TestAddParticles(amusetest.TestCase):
         new_set = set + particle
         self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
         self.assertEqual(len(new_set),len(set)+1)
+        print new_set.x
+        print set.x
+        print particle.x
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0]|units.m))
         
         set += particle

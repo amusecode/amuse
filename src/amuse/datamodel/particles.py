@@ -441,7 +441,7 @@ class AbstractParticleSet(AbstractSet):
         if isinstance(particles, Particle):
             particles = particles.as_set()
         original_particles_set = self._original_set()
-        if set(original_particles_set.key)!=set(particles._original_set().key):
+        if not original_particles_set is particles._original_set():
             raise exceptions.AmuseException("Can't create new subset from particles belonging to "
                 "separate particle sets. Try creating a superset instead.")
         keys = list(self.key) + list(particles.key)
@@ -1789,7 +1789,6 @@ class ParticlesMaskedSubset(ParticlesSubset):
     def get_values_in_store(self, indices, attributes):
         if indices is None:
             indices = self.get_all_indices_in_store()
-       
         return self._private.particles.get_values_in_store(indices, attributes)
         
         
@@ -1880,6 +1879,10 @@ class ParticlesMaskedSubset(ParticlesSubset):
         """
         keys = numpy.where(self.get_valid_particles_mask(), self._private.keys, [None])
         return str(list(keys))
+        
+    def as_set(self):
+        return self
+
         
 class ParticlesOverlay(AbstractParticleSet):
     """An overlay of of a particles set. The overlay

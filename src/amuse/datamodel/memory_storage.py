@@ -571,6 +571,9 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
         else:
             keys = self.values[indices]
         if self.linked_set is None:
+            # link to an empty set
+            # all keys will by unmasked, so no real access
+            # of the set
             import particles
             return particles.ParticlesMaskedSubset(None, keys)
         else:
@@ -578,24 +581,13 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
     
     def set_values(self, indices, values):
         if hasattr(values, 'get_all_keys_in_store'):
-            if self.linked_set is None:
-                self.linked_set = values._original_set()
-            keys = values.get_all_keys_in_store()
-            mask = ~values.get_valid_particles_mask()
-            keys = numpy.ma.array(keys, dtype=self.values.dtype)
-            keys.mask = mask
-            self.values[indices] = keys
+            self.set_values_from_set(indices, values)
         elif values is None:
+            # unset (mask) the keys at the given insides
             self.values[indices] = ma.masked
         elif hasattr(values, 'as_set'):
             values = values.as_set()
-            if self.linked_set is None:
-                self.linked_set = values._original_set()
-            keys = values.get_all_keys_in_store()
-            mask = ~values.get_valid_particles_mask()
-            keys = numpy.ma.array(keys, dtype=self.values.dtype)
-            keys.mask = mask
-            self.values[indices] = keys
+            self.set_values_from_set(indices, values)
         else:
             for index, key in zip(indices, values):
                 if key is None:
@@ -603,6 +595,15 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
                 else:
                     self.values[index] = key
     
+    def set_values_from_set(self, indices, values):
+        if self.linked_set is None:
+            self.linked_set = values._original_set()
+        keys = values.get_all_keys_in_store()
+        mask = ~values.get_valid_particles_mask()
+        keys = numpy.ma.array(keys, dtype=self.values.dtype)
+        keys.mask = mask
+        self.values[indices] = keys
+            
     def get_length(self):
         return self.values.shape
         
