@@ -555,6 +555,59 @@ def new_particle_from_cluster_core(particles, unit_converter=None, density_weigh
     result.radius = (weights.flatten() * (particles.position - result.position).lengths()).sum() / total_weight
     return result
 
+def bound_subset(particles,tidal_radius=None,unit_converter=None, density_weighting_power=2,
+                     smoothing_length_squared = zero, G = constants.G,core=None  ):
+    """
+    find the particles bound to the cluster. Returns a subset of bound particles.
+
+    :argument tidal_radius: particles beyond this are considered not bound
+    :argument unit_converter: Required if the particles are in SI units
+    :argument density_weighting_power: Particle properties are weighted by density to this power
+    :argument smooting_length_squared: the smoothing length for gravity.
+    :argument G: gravitational constant, need to be changed for particles in different units systems
+    :argument core: (optional) core of the cluster
+
+
+    """
+    if core is None:
+      core=particles.cluster_core( unit_converter, density_weighting_power)
+    position=particles.position-core.position
+    velocity=particles.velocity-core.velocity
+    
+    v2=velocity.lengths_squared()
+    r2=position.lengths_squared()
+    pot=particles.potential(smoothing_length_squared, G)
+    
+    if tidal_radius is None:
+      boundary_radius2=r2.max()
+    else:
+      boundary_radius2=tidal_radius**2
+    
+    bs=numpy.where( (r2 <= boundary_radius2) & (pot+0.5*v2 < zero) )[0]
+    return particles[bs]
+
+def mass_segregation_Gini_coefficient(particles,unit_converter=None, density_weighting_power=2,
+                                        core=None):
+    """
+    Converse & Stahler 2008 Gini coefficient for cluster.
+    
+    
+    """                   
+    if core is None:
+      core=particles.cluster_core( unit_converter, density_weighting_power)
+
+    position=particles.position-core.position
+
+    r2=position.lengths_squared().number
+    a=numpy.argsort(r2)
+    m=particles.mass.number[a]
+    
+    nf=1.*numpy.array(range(len(m)))/(len(m)-1.)
+    mf=m.cumsum()
+    mf=mf/mf[-1]
+    
+    return 2*(mf-nf).sum()/len(mf)
+
 def LagrangianRadii(stars,
                        cm=None,
                        mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
@@ -795,6 +848,10 @@ AbstractParticleSet.add_global_function_attribute("get_binaries", get_binaries)
 
 AbstractParticleSet.add_global_function_attribute("densitycentre_coreradius_coredens", densitycentre_coreradius_coredens)
 AbstractParticleSet.add_global_function_attribute("new_particle_from_cluster_core", new_particle_from_cluster_core)
+
+AbstractParticleSet.add_global_function_attribute("cluster_core", new_particle_from_cluster_core)
+AbstractParticleSet.add_global_function_attribute("bound_subset", bound_subset)
+AbstractParticleSet.add_global_function_attribute("mass_segregation_Gini_coefficient", mass_segregation_Gini_coefficient)
 
 AbstractParticleSet.add_global_function_attribute("LagrangianRadii", LagrangianRadii)
 AbstractParticleSet.add_global_function_attribute("find_closest_particle_to", find_closest_particle_to)
