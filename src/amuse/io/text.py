@@ -212,7 +212,7 @@ class TableFormattedText(base.FileFormatProcessor):
         
     def read_footer(self):
         while not self.cursor.is_at_end() and self.cursor.line().startswith(self.footer_prefix_string):
-            self.read_footer_line(self.line()[len(self.footer_prefix_string):])
+            self.read_footer_line(self.cursor.line()[len(self.footer_prefix_string):])
             self.cursor.forward()
     
     def read_footer_line(self, line):
