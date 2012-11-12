@@ -5,8 +5,14 @@ import subprocess
 import sys
 
 from amuse.rfi.tools import create_dir
-class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.TestCase):
+
+class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.TestWithMPI):
     
+    def setUp(self):
+        
+        self.check_can_compile_modules()
+        
+        
     def test1(self):
         instance = create_dir.CreateADirectoryAndPopulateItWithFilesForACCode()
         instance.name_of_the_code_interface_class = 'TestCode'

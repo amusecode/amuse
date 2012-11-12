@@ -245,7 +245,7 @@ fi
 if [ ! -e "amuseinstalled" ]; then
     
     export PATH=${BASEDIR}/static_libs/bin:${PYTHONHOME}/bin:$PATH
-    export
+    export BUILD_BINARY=1    
     
     cd ../../../.. # cd to amuse root directory
     

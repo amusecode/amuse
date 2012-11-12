@@ -77,6 +77,10 @@ class GenerateInstallIni(Command):
         installinilines.append('output_data_root_directory=amuse-data')
         installinilines.append('amuse_root_dir={0}'.format(data_dir))
         
+        if 'BUILD_BINARY' in os.environ:
+            installinilines.append('[test]')
+            installinilines.append('can_run_tests_to_compile_modules=0')
+
         self.mkpath(os.path.join(self.build_dir, 'amuse'))
         file_util.write_file(outfilename, installinilines)
         

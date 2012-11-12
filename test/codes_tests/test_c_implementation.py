@@ -431,6 +431,7 @@ class TestInterface(TestWithMPI):
     def setUp(self):
         super(TestInterface, self).setUp()
         print "building...",
+        self.check_can_compile_modules()
         try:
             self.build_worker()
         except Exception as ex:

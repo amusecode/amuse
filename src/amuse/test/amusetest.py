@@ -232,8 +232,16 @@ class TestWithMPI(TestCase):
             return factory(*arguments, **kwarguments)
         except Exception as message:
             self.skip("Tried to instantiate a new object of the optional code with type '{0}', but this code is not available".format(factory))
-         
-         
+
+    
+    def can_compile_modules(self):
+        return TestDefaults().can_run_tests_to_compile_modules
+        
+    def check_can_compile_modules(self):
+        if not self.can_compile_modules():
+            self.skip('will not run tests that compile codes')
+            
+    
 class TestDefaults(options.OptionalAttributes):
         
     @options.option(sections=['test'])
@@ -280,6 +288,11 @@ class TestDefaults(options.OptionalAttributes):
                 return os.path.dirname(os.path.dirname(__file__))
             previous = result
         return result
+    
+    @options.option(type='boolean',sections=['test'])
+    def can_run_tests_to_compile_modules(self):
+        return True
+
 
 
 def get_path_to_results():

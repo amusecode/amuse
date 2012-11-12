@@ -414,6 +414,7 @@ class TestInterface(TestWithMPI):
     def setUp(self):
         super(TestInterface, self).setUp()
         print "building"
+        self.check_can_compile_modules()
         self.check_fortran_version()
         self.build_worker()
         self.check_not_in_mpiexec()
@@ -421,7 +422,7 @@ class TestInterface(TestWithMPI):
     def check_fortran_version(self):
         if not self.is_fortan_version_up_to_date():
             self.skip('cannot compile fortran socket modules with old fortran compilers (missing C support)')
-            
+        
     def check_not_in_mpiexec(self):
         """
         The tests will fork another process, if the test run
@@ -432,6 +433,7 @@ class TestInterface(TestWithMPI):
         """
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
             self.skip('cannot run the socket tests under hydra process manager')
+    
         
     def test1(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")

@@ -146,7 +146,7 @@ div.sphinxsidebar
 div.highlight {
     margin-left: 20px;
     padding: 5px;
-    border:1px solid blue;
+    border:1px solid rgb(70, 130, 180);
 }
 
 div.admonition {
