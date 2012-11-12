@@ -15,11 +15,11 @@ from amuse.units import units
 __all__ = ["new_salpeter_mass_distribution", "new_salpeter_mass_distribution_nbody"]
 
 class SalpeterIMF(object):
-    def __init__(self, mass_min = 0.1 | units.MSun, mass_max = 125 | units.MSun, alpha = -2.35):
+    def __init__(self, mass_min = 0.1 | units.MSun, mass_max = 125 | units.MSun, alpha = -2.35,random=numpy.random):
         self.mass_min = mass_min
         self.mass_max = mass_max
         self.alpha = alpha
-        self.random = numpy.random
+        self.random = random
     
     def mass_mean(self):
         alpha1 = self.alpha + 1
