@@ -567,7 +567,15 @@ def bound_subset(particles,tidal_radius=None,unit_converter=None, density_weight
     :argument G: gravitational constant, need to be changed for particles in different units systems
     :argument core: (optional) core of the cluster
 
-
+    >>> from amuse.ic.plummer import new_plummer_model
+    >>> from amuse.units import nbody_system
+    >>> plum=new_plummer_model(100)
+    >>> print len(plum.bound_subset(G=nbody_system.G))
+    100
+    >>> plum[0].velocity*=100  
+    >>> plum[0].position*=100  
+    >>> print len(plum.bound_subset(G=nbody_system.G))
+    99
     """
     if core is None:
       core=particles.cluster_core( unit_converter, density_weighting_power)
@@ -590,8 +598,20 @@ def mass_segregation_Gini_coefficient(particles,unit_converter=None, density_wei
                                         core=None):
     """
     Converse & Stahler 2008 Gini coefficient for cluster.
+
+    :argument unit_converter: Required if the particles are in SI units
+    :argument density_weighting_power: Particle properties are weighted by density to this power
+    :argument core: (optional) core of the cluster
     
-    
+    >>> import numpy
+    >>> from amuse.ic.plummer import new_plummer_model
+    >>> from amuse.units import nbody_system
+    >>> plum=new_plummer_model(100)
+    >>> a=numpy.argsort(plum.position.lengths_squared().number)
+    >>> plum.mass=0|nbody_system.mass
+    >>> plum[a[0]].mass=1|nbody_system.mass
+    >>> print plum.mass_segregation_Gini_coefficient()
+    1.0
     """                   
     if core is None:
       core=particles.cluster_core( unit_converter, density_weighting_power)
@@ -606,7 +626,9 @@ def mass_segregation_Gini_coefficient(particles,unit_converter=None, density_wei
     mf=m.cumsum()
     mf=mf/mf[-1]
     
-    return 2*(mf-nf).sum()/len(mf)
+    mfmnf=2*(mf-nf)
+    
+    return (mfmnf[1:]+mfmnf[:-1]).sum()/2/(len(mf)-1.)
 
 def LagrangianRadii(stars,
                        cm=None,
