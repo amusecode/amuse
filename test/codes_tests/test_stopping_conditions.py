@@ -301,6 +301,7 @@ class TestInterface(TestWithMPI):
     def setUp(self):
         super(TestInterface, self).setUp()
         print "building"
+        self.check_can_compile_modules()
         self.build_worker()
         
     def test1(self):
@@ -504,6 +505,7 @@ class _AbstractTestInterfaceFortran(TestWithMPI):
     def setUp(self):
         super(_AbstractTestInterfaceFortran, self).setUp()
         print "building"
+        self.check_can_compile_modules()
         self.build_worker()
 
 
