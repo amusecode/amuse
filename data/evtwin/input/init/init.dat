@@ -28,7 +28,7 @@ somewhat optimised for speed. In particular:
    anyway.
 
 &INIT_DAT
- KH2   =  199
+ KH2   =  399
  JCH   =    2
  KL    =    1
  JH    =    3*0
@@ -56,8 +56,8 @@ somewhat optimised for speed. In particular:
  KNUC  = 0
  KCN   = 0
 
- KR1   = 30
- KR2   = 10
+ KR1   = 100
+ KR2   = 100
 
  EPS   = 1.00E-006
  DEL   = 1.00E-002
@@ -66,12 +66,12 @@ somewhat optimised for speed. In particular:
  USE_QUADRATIC_PREDICTIONS = FALSE
 
  WANTED_EPS             = 1.0
- ALLOW_EXTENSION        = FALSE
- ALLOW_UNDERRELAXATION  = FALSE
- ALLOW_OVERRELAXATION   = FALSE
- ALLOW_EGENRELAXATION   = FALSE
- ALLOW_MDOTRELAXATION   = FALSE
- ALLOW_AVMURELAXATION   = FALSE
+ ALLOW_EXTENSION        = TRUE
+ ALLOW_UNDERRELAXATION  = TRUE
+ ALLOW_OVERRELAXATION   = TRUE
+ ALLOW_EGENRELAXATION   = TRUE
+ ALLOW_MDOTRELAXATION   = TRUE
+ ALLOW_AVMURELAXATION   = TRUE
  USE_PREVIOUS_MU        = TRUE
  OFF_CENTRE_WEIGHT      = 1.0D16
 
