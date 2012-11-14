@@ -442,8 +442,8 @@ class CodeCommand(Command):
                 # MAKEFILE
                 #
                 if shortname == 'mocassin':
-                    output_path = os.path.join(lib_builddir, 'src', 'mocassin.2.02.69')
-                    input_path = os.path.join(temp_builddir, 'src', 'mocassin.2.02.69')
+                    output_path = os.path.join(lib_builddir, 'src', 'mocassin.2.02.70')
+                    input_path = os.path.join(temp_builddir, 'src', 'mocassin.2.02.70')
                     self.mkpath(output_path)
                     self.copy_tree(
                         input_path, 
