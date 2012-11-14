@@ -80,9 +80,9 @@ class InstallPrerequisites(object):
           (
             'mpich2', 
             [], 
-            '1.4.1p1', 
+            '1.5', 
             'mpich2-', '.tar.gz', 
-            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.4.1p1/', 
+            'http://www.mpich.org/files/tarballs/1.5/', 
             self.mpich2_build
           ) ,
           (
