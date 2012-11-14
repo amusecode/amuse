@@ -734,7 +734,7 @@ class TestEVtwin(TestWithMPI):
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
         self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([422790.6330, 36382.1271, 11259.1953] | units.yr), 3)
-        self.assertAlmostRelativeEquals(instance.particles.time_step, [507348.7596, 43180.1460, 13511.0343] | units.yr, 7)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, [507348.7596, 43180.1460, 13511.0343] | units.yr, 1)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
         instance.stop()
     
@@ -775,3 +775,60 @@ class TestEVtwin(TestWithMPI):
         instance.stop()
         self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
         print "ok"
+
+    def slowtest15(self):
+        print "test evolution of 1000 star sampled over flattish IMF"
+        
+        number_of_stars=1000
+        
+        from amuse.ic.salpeter import new_salpeter_mass_distribution
+        import numpy
+
+        class notsorandom(object):
+            def random(self,N):
+                return numpy.array(range(N))/(N-1.)
+
+        masses = new_salpeter_mass_distribution(
+            number_of_stars, 
+            mass_min = 0.1 | units.MSun,
+            mass_max = 100.0 | units.MSun, 
+            alpha = -1.01,random=notsorandom()
+        )
+ 
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()
+        instance.parameters.maximum_number_of_stars=number_of_stars
+        instance.particles.add_particles(stars)
+        
+        for p in instance.particles:
+          print p.mass
+          p.evolve_for(0.1 | units.Myr)
+
+    def slowtest16(self):
+        print "test full evolution of 1000 star sampled over flattish IMF"
+        
+        number_of_stars=1000
+        
+        from amuse.ic.salpeter import new_salpeter_mass_distribution
+        import numpy
+
+        class notsorandom(object):
+            def random(self,N):
+                return numpy.array(range(N))/(N-1.)
+
+        masses = new_salpeter_mass_distribution(
+            number_of_stars, 
+            mass_min = 0.1 | units.MSun,
+            mass_max = 100.0 | units.MSun, 
+            alpha = -1.01,random=notsorandom()
+        )
+ 
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()
+        instance.parameters.maximum_number_of_stars=number_of_stars
+        instance.particles.add_particles(stars)
+        
+        for p in instance.particles:
+          p.evolve_for(13.2 | units.Gyr)
