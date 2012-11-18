@@ -19,7 +19,7 @@ black_hole::black_hole(hyper_giant & w) : single_star(w) {
       suddenly_lost_mass = 0;
       real m_tot = get_total_mass();
 
-      core_mass = black_hole_mass(core_mass);
+      core_mass = black_hole_mass(COcore_mass);
       envelope_mass = m_tot - core_mass;
       
 // (GN+SPZ May  4 1999) last update age is time of previous type change
@@ -55,7 +55,7 @@ black_hole::black_hole(super_giant & g) : single_star(g) {
     
       suddenly_lost_mass = 0;
       real m_tot = get_total_mass();
-      core_mass = black_hole_mass(core_mass);
+      core_mass = black_hole_mass(COcore_mass);
       envelope_mass = m_tot - core_mass;
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
@@ -126,7 +126,7 @@ black_hole::black_hole(helium_giant & h) : single_star(h) {
 
       suddenly_lost_mass = 0;
       real m_tot = get_total_mass();
-      core_mass = black_hole_mass(m_tot);
+      core_mass = black_hole_mass(COcore_mass);
       envelope_mass = m_tot - core_mass;
 
 // (GN+SPZ May  4 1999) last update age is time of previous type change
@@ -285,34 +285,105 @@ real black_hole::aic_binding_energy() {
       return GM2_RC2*core_mass/(4.25e-6*cnsts.parameters(solar_mass));
    }
 
-real black_hole::black_hole_mass(const real MHe) {
+// SPZ&GN 17April 2003
+// Black hole mass determination based on
+// CO core mass plus 
+// part of the Helium envelope and part of the Hydrogen envelope
+// The latter two depend on the supernova explosion energy and the
+// binding energy of both envelopes.
+// Based on: Fryer & Kalogera, 2001ApJ...554..548F
+real black_hole::black_hole_mass(const real COcore_mass) {
 
-  // Relation used if helium2black_hole=15 and
-  //                  super_giant2black_hole=40
-  // (SPZ+GN:24 Sep 1998)
-  // real m = (0.35*relative_mass - 12);
+  // (GN Apr 13 2004) test only 3 Msun collapses initially (like FK01)
+  real initial_bh_mass = 1.000*COcore_mass;
+  //real initial_bh_mass = 3.0;
+  real CO_envelope = COcore_mass - initial_bh_mass;
+  real helium_envelope = core_mass- COcore_mass;
+  real hydrogen_envelope = get_total_mass() - core_mass; 
 
-// (GN+SPZ May 12 1999) was nice try, but seemt to be a bit unrealistic
-// Try simple MBH = frac * MHe with frac = 0.5
+//  PRC(get_total_mass());PRC(COcore_mass);PRL(core_mass);
+//  PRL(core_radius);
+//  PRC(COcore_mass);PRC(initial_bh_mass);PRC(CO_envelope);PRC(helium_envelope);
+//  PRL(hydrogen_envelope);
 
-  real m = 0.5 * MHe;
 
-  return m;
+    // (GN Apr 14 2004) Changed Binding energy formalism, as it wasn't
+    //  consistent: outerlayers shoudl be lost first!
+    // Also introduced CO_envelope to denote CO material outside
+    // collapsing core
+
+  real E_supernova = 1.0E50;  // [erg]
+  real Lambda = 0.4;
+
+  real GM2_R = cnsts.physics(G)*pow(cnsts.parameters(Msun), 2)
+             / cnsts.parameters(Rsun);
+  real Ebinding_CO = GM2_R*CO_envelope*initial_bh_mass
+                       / (Lambda*0.01);
+  real Ebinding_helium = GM2_R*helium_envelope*initial_bh_mass
+                       / (Lambda*core_radius);
+  real Ebinding_hydrogen = GM2_R*hydrogen_envelope*core_mass
+                         / (Lambda*effective_radius);
+
+  real Ebinding = Ebinding_CO + Ebinding_helium + Ebinding_hydrogen;
+
+  real fallback_hydrogen = 0;
+  real fallback_helium = 0;
+  real fallback_CO = 0;
+
+  if (E_supernova < Ebinding) { // Fall back
+
+    fallback_CO = CO_envelope;
+
+    if (E_supernova < Ebinding_hydrogen) { // only part H envelope lost
+      fallback_hydrogen = hydrogen_envelope 
+                        * (1 - E_supernova/Ebinding_hydrogen);
+
+      fallback_helium = helium_envelope;
+
+    }
+    else if (E_supernova - Ebinding_hydrogen < Ebinding_helium) { // H + some He lost
+      fallback_helium = helium_envelope
+	             * (1 - (E_supernova - Ebinding_hydrogen)/Ebinding_helium);
+    
+    }
+    else { // H + He + some CO lost
+      fallback_CO *= 1- (E_supernova - Ebinding_hydrogen - Ebinding_helium)
+			/Ebinding_CO;
+    }
+  }
+
+
 #if 0
-  real m = 2;
-  if (core_mass >= cnsts.parameters(helium2black_hole))
-    m = 0.6 * (core_mass-cnsts.parameters(helium2black_hole)) + 2;
-  
-    //  if (core_mass>=cnsts.parameters(helium2black_hole))
-    //    m = 0.6 * (core_mass-cnsts.parameters(helium2black_hole)) + 2;
-    //  else if (core_mass>cnsts.parameters(super_giant2neutron_star))
-    //    m *= (cnsts.parameters(super_giant2neutron_star)/core_mass);
-    //  else if (core_mass>cnsts.parameters(helium2neutron_star))
-    //    m = (cnsts.parameters(helium2neutron_star)/core_mass);
-    //  else m = 0.043*pow(core_mass,1.67);
+    // (GN Apr 14 2004) Experiment with direct collapse
+  if (COcore_mass > 15) { // direct collapse
 
-  return min(m, core_mass);
+    fallback_hydrogen = hydrogen_envelope;
+    fallback_helium = helium_envelope;
+    fallback_CO = CO_envelope;
+
+  }
 #endif
+
+#if 0
+  if(fallback_helium > 0) {
+    fallback_hydrogen = hydrogen_envelope;
+  }
+  else {
+    
+    fallback_hydrogen = hydrogen_envelope *
+      Starlab::min(1., 
+      Starlab::max(0., 
+		  (1-(E_supernova-Ebinding_helium)/Ebinding_hydrogen)));
+  }
+#endif
+
+  real final_bh_mass = initial_bh_mass  + fallback_CO
+                     + fallback_helium + fallback_hydrogen;
+
+//  PRC(E_supernova); PRC(Ebinding_CO);PRC(Ebinding_helium); PRL(Ebinding_hydrogen);
+//  PRC(fallback_CO);PRC(fallback_helium); PRC(fallback_hydrogen); PRL(final_bh_mass);
+
+  return final_bh_mass;
 
 }
 
@@ -414,9 +485,13 @@ bool black_hole::super_nova() {
       suddenly_lost_mass = envelope_mass;
 
       bool hit_companion = FALSE;
-      real mass_correction =
-      sqrt(cnsts.parameters(kanonical_neutron_star_mass)/core_mass);
+      real mass_correction = 1.;
       
+      // Impulse kick
+      if(cnsts.parameters(impulse_kick_for_black_holes)) {
+	  mass_correction = cnsts.parameters(kanonical_neutron_star_mass)/core_mass;
+      }
+
       real v_kick  = mass_correction*cnsts.super_nova_kick();
       real theta_kick = acos(1-2*random_angle(0, 1));
       real phi_kick   = random_angle(0, cnsts.mathematics(two_pi));

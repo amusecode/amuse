@@ -124,7 +124,6 @@ neutron_star::neutron_star(helium_giant & h) : single_star(h) {
       delete &h;
 
 
-
       magnetic_field  = cnsts.parameters(pulsar_magnetic_field);
       // log Gauss
       rotation_period = cnsts.parameters(pulsar_pulse_period);
