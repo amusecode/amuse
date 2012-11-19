@@ -9,7 +9,7 @@
          double precision :: AMUSE_dmass = 0.1d0
          double precision :: AMUSE_mlo = -1.0d0
          double precision :: AMUSE_mhi = 2.0d0
-         double precision :: AMUSE_max_age_stop_condition = 1.0d12
+         double precision :: AMUSE_max_age_stop_condition = 1.0d36
          double precision :: AMUSE_min_timestep_stop_condition = 1.0d-6
          integer :: AMUSE_max_iter_stop_condition = -1111
          double precision :: AMUSE_mixing_length_ratio = 2.0d0
@@ -1324,8 +1324,8 @@
   
    end function erase_memory
 
-! Evolve the star for one step
-   function evolve_one_step(AMUSE_id)
+! Evolve the star for one step (for internal calls)
+   function do_evolve_one_step(AMUSE_id)
       use star_private_def, only: star_info, get_star_ptr
       use run_star_support
       use run_star, only: check_model
@@ -1336,35 +1336,35 @@
       use const_def, only: secyer
       implicit none
       integer, intent(in) :: AMUSE_id
-      integer :: evolve_one_step
+      integer :: do_evolve_one_step
       type (star_info), pointer :: s
       integer :: ierr, model_number, result, result_reason
       logical :: first_try
-      evolve_one_step = -1
+      do_evolve_one_step = -1
       call get_star_ptr(AMUSE_id, s, ierr)
-      if (evolve_failed('get_star_ptr', ierr, evolve_one_step, -1)) return
+      if (evolve_failed('get_star_ptr', ierr, do_evolve_one_step, -1)) return
       if (auto_extend_net) then
          call extend_net(s, ierr)
-         if (evolve_failed('extend_net', ierr, evolve_one_step, -2)) return
+         if (evolve_failed('extend_net', ierr, do_evolve_one_step, -2)) return
       end if
       first_try = .true.
       model_number = get_model_number(AMUSE_id, ierr)
-      if (evolve_failed('get_model_number', ierr, evolve_one_step, -3)) return
+      if (evolve_failed('get_model_number', ierr, do_evolve_one_step, -3)) return
       step_loop: do ! may need to repeat this loop for retry or backup
          result = star_evolve_step(AMUSE_id, first_try)
          if (result == keep_going) result = check_model(s, AMUSE_id, 0)
          if (result == keep_going) result = star_pick_next_timestep(AMUSE_id)
          if (result == keep_going) exit step_loop
          model_number = get_model_number(AMUSE_id, ierr)
-         if (evolve_failed('get_model_number', ierr, evolve_one_step, -3)) return
+         if (evolve_failed('get_model_number', ierr, do_evolve_one_step, -3)) return
          result_reason = get_result_reason(AMUSE_id, ierr)
          if (result == retry) then
-            if (evolve_failed('get_result_reason', ierr, evolve_one_step, -4)) return
+            if (evolve_failed('get_result_reason', ierr, do_evolve_one_step, -4)) return
             if (report_retries) &
                write(*,'(i6,3x,a,/)') model_number, &
                   'retry reason ' // trim(result_reason_str(result_reason))
          else if (result == backup) then
-            if (evolve_failed('get_result_reason', ierr, evolve_one_step, -4)) return
+            if (evolve_failed('get_result_reason', ierr, do_evolve_one_step, -4)) return
             if (report_backups) &
                write(*,'(i6,3x,a,/)') model_number, &
                   'backup reason ' // trim(result_reason_str(result_reason))
@@ -1372,15 +1372,15 @@
          if (result == retry) result = star_prepare_for_retry(AMUSE_id)
          if (result == backup) result = star_do1_backup(AMUSE_id)
          if (result == terminate) then
-            evolve_one_step = -11 ! Unspecified stop condition reached, or:
+            do_evolve_one_step = -11 ! Unspecified stop condition reached, or:
             if (s% dt_next < s% min_timestep_limit) &
-               evolve_one_step = -15 ! minimum timestep limit reached
+               do_evolve_one_step = -15 ! minimum timestep limit reached
             if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) &
-               evolve_one_step = -14 ! max backups reached
+               do_evolve_one_step = -14 ! max backups reached
             if (s% max_model_number > 0 .and. s% model_number >= s% max_model_number) &
-               evolve_one_step = -13 ! max iterations reached
+               do_evolve_one_step = -13 ! max iterations reached
             if (s% star_age >= s% max_age) &
-               evolve_one_step = -12 ! max_age reached
+               do_evolve_one_step = -12 ! max_age reached
             return
          end if
          first_try = .false.
@@ -1388,15 +1388,35 @@
       result = star_finish_step(AMUSE_id, 0, .false., &
                      how_many_extra_profile_columns, data_for_extra_profile_columns, &
                      how_many_extra_log_columns, data_for_extra_log_columns, ierr)
-      if (evolve_failed('star_finish_step', ierr, evolve_one_step, -5)) return
+      if (evolve_failed('star_finish_step', ierr, do_evolve_one_step, -5)) return
       if (s% model_number == save_model_number) then
          call star_write_model(AMUSE_id, save_model_filename, .true., ierr)
-         if (evolve_failed('star_write_model', ierr, evolve_one_step, -6)) return
+         if (evolve_failed('star_write_model', ierr, do_evolve_one_step, -6)) return
          write(*, *) 'saved to ' // trim(save_model_filename)
       end if
-      evolve_one_step = 0
+      do_evolve_one_step = 0
       call flush()
    end function
+
+
+! Evolve the star for one step (for calls from amuse)
+   function evolve_one_step(AMUSE_id)
+      use star_private_def, only: star_info, get_star_ptr
+!      use const_def, only: secyer
+      use amuse_support, only: evolve_failed, target_times
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      type (star_info), pointer :: s
+      integer :: ierr, evolve_one_step
+      integer :: do_evolve_one_step
+      
+      evolve_one_step = 0
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (evolve_failed('get_star_ptr', ierr, evolve_one_step, -1)) return
+      
+      evolve_one_step = do_evolve_one_step(AMUSE_id)
+      target_times(AMUSE_id) = s% time
+   end function evolve_one_step
 
 ! Evolve the star until AMUSE_end_time
    integer function evolve_for(AMUSE_id, AMUSE_delta_t)
@@ -1408,7 +1428,7 @@
       double precision, intent(in) :: AMUSE_delta_t
       type (star_info), pointer :: s
       integer :: ierr
-      integer :: evolve_one_step
+      integer :: do_evolve_one_step
       
       evolve_for = 0
       call get_star_ptr(AMUSE_id, s, ierr)
@@ -1418,7 +1438,7 @@
       
       evolve_loop: do while(evolve_for == 0 .and. &
             (s% time + s% min_timestep_limit < target_times(AMUSE_id))) ! evolve one step per loop
-         evolve_for = evolve_one_step(AMUSE_id)
+         evolve_for = do_evolve_one_step(AMUSE_id)
       end do evolve_loop
    end function evolve_for
 
@@ -1809,7 +1829,7 @@
       double precision :: original_timestep_limit, original_dxdt_nuc_f
       integer :: new_particle, ierr, tmp1_id_new_model, tmp2_id_new_model, &
          new_specified_stellar_model, finalize_stellar_model, match_mesh, &
-         evolve_one_step, erase_memory, index_low, k1, k2
+         do_evolve_one_step, erase_memory, index_low, k1, k2
       logical :: do_T = .false.
       logical :: do_restore_timestep = .false.
       type (star_info), pointer :: s, s_tmp
@@ -1862,8 +1882,8 @@
             ierr = erase_memory(id_new_model)
             if (failed('erase_memory', ierr)) return
             s% dt_next = 10.0 * s% min_timestep_limit
-            ierr = evolve_one_step(id_new_model)
-            if (failed('evolve_one_step', ierr)) return
+            ierr = do_evolve_one_step(id_new_model)
+            if (failed('do_evolve_one_step', ierr)) return
             if (debugging) write(*,*) 'f: ', f
             call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
             if (failed('check_remeshed', ierr)) then
@@ -1904,8 +1924,8 @@
                ierr = erase_memory(id_new_model)
                if (failed('erase_memory', ierr)) return
                s% dt_next = 10.0 * s% min_timestep_limit
-               ierr = evolve_one_step(id_new_model)
-               if (failed('evolve_one_step', ierr)) return
+               ierr = do_evolve_one_step(id_new_model)
+               if (failed('do_evolve_one_step', ierr)) return
                if (debugging) write(*,*) 'f: ', f
                call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
                if (failed('check_remeshed', ierr)) return
@@ -1921,7 +1941,7 @@
          s% dt_next = 10.0 * s% min_timestep_limit
          s% dt = 10.0 * s% min_timestep_limit
          if (debugging) write(*,*) 'timesteps', s% dt_old, s% dt, s% dt_next, original_timestep
-         ierr = evolve_one_step(id_new_model)
+         ierr = do_evolve_one_step(id_new_model)
          if (debugging) write(*,*) ierr, s% result_reason, trim(result_reason_str(s% result_reason))
          if (debugging) write(*,*) 'timesteps', s% dt_old, s% dt, s% dt_next, original_timestep
          if (do_restore_timestep) then
@@ -1933,7 +1953,7 @@
                ierr = erase_memory(id_new_model)
                if (failed('erase_memory', ierr)) return
                do k2 = 1, 10
-                  ierr = evolve_one_step(id_new_model)
+                  ierr = do_evolve_one_step(id_new_model)
                   if (debugging) write(*,*) ierr, s% result_reason, trim(result_reason_str(s% result_reason))
                end do
                if (s% number_of_backups_in_a_row > 0) exit

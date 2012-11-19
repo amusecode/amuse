@@ -827,7 +827,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_max_age_stop_condition",
             "max_age_stop_condition", 
             "The maximum age stop condition of this instance.",
-            default_value = 1.0e12 | units.yr
+            default_value = 1.0e36 | units.yr
         )
         
         object.add_method_parameter(
