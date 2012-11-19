@@ -25,7 +25,7 @@ turn_tests_into_slowtests = False
 
 class TestRocheLobeOverflow(TestWithMPI):
     
-    def test1(self):
+    def xtest1(self):
         print "Testing the stand-alone determine_RLOF_mass_excess and do_roche_lobe_overflow functions"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
@@ -167,7 +167,7 @@ class TestRocheLobeOverflow(TestWithMPI):
             print "Number of backup steps taken by MESA:", stellar_evolution.particles.get_number_of_backups_in_a_row()
         stellar_evolution.stop()
     
-    def test5(self):
+    def xtest5(self):
         print "Testing RocheLobeOverflow with variable roche-radii"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
@@ -212,7 +212,7 @@ class TestRocheLobeOverflow(TestWithMPI):
             print "Number of backup steps taken by MESA:", [star.get_number_of_backups_in_a_row() for star in se_stars]
         stellar_evolution.stop()
     
-    def test6(self):
+    def xtest6(self):
         print "Testing RocheLobeOverflow with companions in a dynamics code"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:

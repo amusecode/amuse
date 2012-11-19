@@ -27,7 +27,7 @@ class TestMESAInterface(TestWithMPI):
         MESA_data_path = instance.default_path_to_MESA_data
         #print "Path to MESA data directory: ", MESA_data_path
         instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_data_directory())
+            instance.default_path_to_MESA_data, instance.get_output_directory())
         status = instance.initialize_code()
         self.assertEqual(status,0)
         instance.stop()
@@ -41,7 +41,7 @@ class TestMESAInterface(TestWithMPI):
             print "MESA was not built. Skipping test."
             return
         instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_data_directory())
+            instance.default_path_to_MESA_data, instance.get_output_directory())
         status = instance.initialize_code()
         self.assertEqual(status,0)
         (metallicity, error) = instance.get_metallicity()
@@ -65,7 +65,7 @@ class TestMESAInterface(TestWithMPI):
         self.assertEquals(0, error)
         self.assertEqual(maximum_number_of_stars,1000)
         instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_data_directory())
+            instance.default_path_to_MESA_data, instance.get_output_directory())
         status = instance.initialize_code()
         self.assertEqual(status,0)
         number_of_stars = 1
@@ -85,7 +85,7 @@ class TestMESAInterface(TestWithMPI):
             print "MESA was not built. Skipping test."
             return
         instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_data_directory())
+            instance.default_path_to_MESA_data, instance.get_output_directory())
         status = instance.initialize_code()
         (index_of_the_star, error) = instance.new_particle(1.0)
         self.assertEquals(0, error)
@@ -96,10 +96,6 @@ class TestMESAInterface(TestWithMPI):
         dt_factor = 1.2
         self.assertEqual([initial_dt, 0], instance.get_time_step(index_of_the_star).values())
         self.assertEquals(0, instance.evolve_one_step(index_of_the_star))
-        self.assertEqual([initial_dt, 0], instance.get_age(index_of_the_star).values())
-        
-        self.assertEquals(0, instance.evolve_for(index_of_the_star, initial_dt))
-        # nothing happens; the target_time of the star is increased with initial_dt, but star already has this age
         self.assertEqual([initial_dt, 0], instance.get_age(index_of_the_star).values())
         
         target_end_time = 3.0e5 # (years)
@@ -128,7 +124,7 @@ class TestMESAInterface(TestWithMPI):
             print "MESA was not built. Skipping test."
             return
         instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_data_directory())
+            instance.default_path_to_MESA_data, instance.get_output_directory())
         status = instance.initialize_code()
         self.assertEqual(status,0)
         metallicities = [0.00, 0.01, 0.02, 0.04]
@@ -153,7 +149,7 @@ class TestMESAInterface(TestWithMPI):
             return
         (value, error) = instance.get_max_age_stop_condition()
         self.assertEquals(0, error) 
-        self.assertEquals(1.0e12, value)
+        self.assertEquals(1.0e36, value)
         for x in range(10,14):
             error = instance.set_max_age_stop_condition(10 ** x)
             self.assertEquals(0, error)
@@ -275,10 +271,10 @@ class TestMESA(TestWithMPI):
             print "MESA was not built. Skipping test."
             return
         instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_data_directory())
+            instance.default_path_to_MESA_data, instance.get_output_directory())
         instance.initialize_code()
         self.assertEquals(0.02 | units.no_unit, instance.parameters.metallicity)
-        self.assertEquals(1.0e12 | units.yr, instance.parameters.max_age_stop_condition)
+        self.assertEquals(1.0e36 | units.yr, instance.parameters.max_age_stop_condition)
         instance.parameters.max_age_stop_condition = 1.0e2 | units.Myr
         self.assertEquals(1.0e2 | units.Myr, instance.parameters.max_age_stop_condition)
         instance.stop()
@@ -300,8 +296,6 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(time_step, initial_dt)
         instance.evolve_one_step(index_of_the_star)
         age_of_the_star = instance.get_age(index_of_the_star)
-        self.assertAlmostEqual(age_of_the_star, initial_dt)
-        instance.evolve_for(index_of_the_star, age_of_the_star)
         self.assertAlmostEqual(age_of_the_star, initial_dt)
         
         target_end_time = 3.0e5 | units.yr
@@ -336,11 +330,11 @@ class TestMESA(TestWithMPI):
         #print stars
         #instance.evolve_model(end_time = 0.03 | units.Myr) # speeding test up:
         self.assertEquals(stars[0].mass, mass)
-        self.assertAlmostEquals(stars[0].luminosity, 5841. | units.LSun, 0)
+        self.assertAlmostRelativeEqual(stars[0].luminosity, 5841. | units.LSun, 1)
         instance.evolve_model()
         from_code_to_model.copy()
         self.assertAlmostEquals(stars[0].mass, mass, 5)
-        self.assertAlmostEquals(stars[0].luminosity, 5820.85 | units.LSun, 0)
+        self.assertAlmostRelativeEqual(stars[0].luminosity, 5820.85 | units.LSun, 1)
         instance.stop()
     
     def slowtest4(self):
@@ -416,7 +410,7 @@ class TestMESA(TestWithMPI):
         stars =  Particles(number_of_stars)
         stars.mass = masses
         instance.initialize_code()
-        self.assertEqual(instance.parameters.max_age_stop_condition, 1e6 | units.Myr)
+        self.assertEqual(instance.parameters.max_age_stop_condition, 1e30 | units.Myr)
         instance.parameters.max_age_stop_condition = max_age
         self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
         instance.particles.add_particles(stars)
@@ -449,13 +443,13 @@ class TestMESA(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
-        self.assertEquals(instance.particles.get_number_of_zones(), [479, 985])
-        self.assertEquals(len(instance.particles[0].get_mass_profile()), 479)
+        self.assertEquals(instance.particles.get_number_of_zones(), [575, 2262])
+        self.assertEquals(len(instance.particles[0].get_mass_profile()), 575)
         self.assertAlmostEquals(instance.particles[0].get_mass_profile().sum(), 1.0)
         self.assertRaises(AmuseException, instance.particles.get_mass_profile, 
             expected_message = "Querying mass profiles of more than one particle at a time is not supported.")
         print instance.particles
-        self.assertEquals(len(instance.particles[1].get_density_profile()), 985)
+        self.assertEquals(len(instance.particles[1].get_density_profile()), 2262)
         self.assertIsOfOrder(instance.particles[0].get_radius_profile()[-1],          1.0 | units.RSun)
         self.assertIsOfOrder(instance.particles[0].get_temperature_profile()[0],  1.0e7 | units.K)
         self.assertIsOfOrder(instance.particles[0].get_luminosity_profile()[-1],      1.0 | units.LSun)
@@ -466,8 +460,8 @@ class TestMESA(TestWithMPI):
         radius2.prepend(0|units.m)
         delta_radius_cubed = (radius1**3 - radius2**3)
         self.assertAlmostEquals(instance.particles[0].get_density_profile() / 
-            (delta_mass/(4./3.*numpy.pi*delta_radius_cubed)), [1]*479, places=3)
-        self.assertAlmostEquals(instance.particles[1].get_mu_profile(), [0.62]*985 | units.amu, places=1)
+            (delta_mass/(4./3.*numpy.pi*delta_radius_cubed)), [1]*575, places=3)
+        self.assertAlmostEquals(instance.particles[1].get_mu_profile(), [0.62]*2262 | units.amu, places=1)
         instance.stop()
     
     def test7(self):
@@ -489,7 +483,7 @@ class TestMESA(TestWithMPI):
         species_names     = instance.particles[0].get_names_of_species()
         species_IDs       = instance.particles[0].get_IDs_of_species()
         species_masses    = instance.particles[0].get_masses_of_species()
-        self.assertEquals(number_of_zones,    479)
+        self.assertEquals(number_of_zones,    575)
         self.assertEquals(number_of_species,    8)
         self.assertEquals(len(species_names),  number_of_species)
         self.assertEquals(len(composition),    number_of_species)
@@ -558,8 +552,8 @@ class TestMESA(TestWithMPI):
         density_profile = instance.particles[0].get_density_profile()
         
         self.assertRaises(AmuseException, instance.particles[0].set_density_profile, density_profile[2:], 
-            expected_message = "The length of the supplied vector (477) does not match the number of "
-            "mesh zones of the star (479).")
+            expected_message = "The length of the supplied vector (573) does not match the number of "
+            "mesh zones of the star (575).")
         
         mass_factor = 1.1
         instance.particles[0].set_density_profile(mass_factor*density_profile)
@@ -764,7 +758,7 @@ class TestMESA(TestWithMPI):
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
         self.assertAlmostEqual(stars[0].wind, 0.0 | units.MSun / units.yr)
-        self.assertAlmostRelativeEqual(stars[1].wind, 4.59318475897e-10 | units.MSun / units.yr, places = 7)
+        self.assertAlmostRelativeEqual(stars[1].wind, 4.59318475897e-10 | units.MSun / units.yr, places = 1)
         self.assertAlmostRelativeEqual(stars[2].wind, 2.0 * stars[1].wind, places = 7)
         instance.stop()
     
@@ -868,6 +862,8 @@ class TestMESA(TestWithMPI):
                         test_inlist.write("         max_model_number = "+str(number_of_steps+1)+"\n")
                     elif ("mesa_data_dir" in one_line):
                         test_inlist.write("      mesa_data_dir = '"+os.path.join(mesa_src_path, 'data')+"'\n")
+                    elif ("zams_filename" in one_line):
+                        test_inlist.write("      zams_filename = '"+os.path.join(instance.get_output_directory(), "star_data", "starting_models", "zams_z20m3.data")+"'\n")
                     else:
                         test_inlist.write(one_line)
         instance.stop()

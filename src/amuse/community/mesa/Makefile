@@ -30,11 +30,14 @@ STAR_WORK_OBJS = \
    $(MESA_MAKE_DIR)/create_zams.o $(MESA_MAKE_DIR)/sample_zams.o \
    $(MESA_MAKE_DIR)/run_star.o 
 
+ZAMS_DIR = $(AMUSE_DIR)/data/mesa/output/star_data/starting_models
+ZAMS_DATA = $(ZAMS_DIR)/zams_z20m3.data
+
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_svn.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 
-all:	mesa_worker
+all:	mesa_worker $(ZAMS_DATA)
 
 ifdef DOWNLOAD_CODES
 $(MESA_DIR)/install:
@@ -74,6 +77,9 @@ distclean: clean
 	$(RM) -Rf src
 	$(RM) -Rf src.*
 	$(RM) -Rf .pc
+
+$(ZAMS_DATA):
+	gunzip -c $(ZAMS_DATA).gz > $(ZAMS_DATA)
 
 mesa_worker:	worker_code.f90 interface.o $(STAR_WORK_OBJS)
 	$(MPIF90) $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)

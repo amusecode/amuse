@@ -3,8 +3,7 @@
          character (len=4096) :: AMUSE_inlist_path
          character (len=4096) :: AMUSE_mesa_data_dir
          character (len=4096) :: AMUSE_local_data_dir ! Used for output starting_models
-         character (len=4096) :: AMUSE_zams_filename = 'zams_z2m2'
-         ! (use the solar metallicity model from the MESA starting_models folder)
+         character (len=4096) :: AMUSE_zams_filename = 'zams_z20m3'
          double precision :: AMUSE_metallicity = 0.02d0
          double precision :: AMUSE_dmass = 0.1d0
          double precision :: AMUSE_mlo = -1.0d0
@@ -54,8 +53,6 @@
             integer :: metallicity_exp, metallicity_factor
             if (AMUSE_metallicity.eq.0.0d0) then
                str = trim(AMUSE_local_data_dir) // '/star_data/starting_models/zams_z0m0'
-            elseif (AMUSE_metallicity.eq.0.02d0) then
-               str = trim(AMUSE_mesa_data_dir) // '/star_data/starting_models/zams_z2m2'
             else
                metallicity_exp = floor(log10(AMUSE_metallicity))-1
                metallicity_factor = floor(0.5 + AMUSE_metallicity/(1.0d1**metallicity_exp))
@@ -85,10 +82,11 @@
 ! Initialize the stellar evolution code
       integer function initialize_code()
          use amuse_support, only: failed, AMUSE_mesa_data_dir, AMUSE_inlist_path
+         use amuse_support, only: AMUSE_metallicity
          use run_star_support
          use ctrls_io, only: set_default_controls
          implicit none
-         integer :: ierr
+         integer :: ierr, set_metallicity
          initialize_code = -1
          !call set_default_controls
          call do_read_star_job(AMUSE_inlist_path, ierr)
@@ -100,6 +98,8 @@
          if (failed('star_init', ierr)) return
          profile_columns_file = trim(mesa_data_dir) // '/star_data/profile_columns.list'
          log_columns_file = trim(mesa_data_dir) // '/star_data/log_columns.list'
+         ierr = set_metallicity(AMUSE_metallicity)
+         if (failed('set_metallicity', ierr)) return
          call flush()
          report_backups = .true.
          report_retries = .true.
