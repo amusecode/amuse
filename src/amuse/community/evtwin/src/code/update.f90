@@ -205,7 +205,7 @@ subroutine nextdt ( dty, jo, it )
             ! We expect maybe two more timesteps, constrain
             dty = 0.6*max(dty_max, dty_min )
          end if
-         if ( age+dty >= uc(2) .and. age>uc(12)) then
+         if ( age+dty >= uc(2)) then             ! .and. age>uc(12)/csy) then
             ! This is our final timestep
             dty = min(dty_max, dty )
          end if

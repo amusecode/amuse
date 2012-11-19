@@ -553,6 +553,8 @@ contains
       !sm1 = mass 
       !sm1 is not an input, so commented this line out
       im1 = (ml - mlo)/dm + 1.501d0
+!      im1 = floor( (ml-mlo)/dm )
+!      im1=max(1,im1)
         
       ! input for load star model is 
       ! 1. the file input number (16 stands for zams star)
@@ -704,9 +706,10 @@ contains
       integer :: evolve_for
       integer, intent(in) :: star_id
       real(double), intent(in) :: delta_t
-      real(double) :: timestep_old, timestep_older, target_age
+      real(double) :: olduc,target_age, olddt,dty
       type(twin_star_t), pointer :: star
       
+      evolve_for = 0
       ! Check whether the star exists, and that it hasn't been removed.
       if (star_id<1 .or. star_id>highest_star_index .or. .not. star_list(star_id)%star_exists) then
          if (verbose) print *, 'Error: no star to evolve. Star_id=', star_id, ', star_exists=', star_list(star_id)%star_exists
@@ -717,21 +720,23 @@ contains
       star => star_list(star_id)
       call swap_in_star(star_id)
       target_age = age + delta_t
+      olduc=uc(2)
+      uc(2)=min(target_age,uc(2))
+!      print*,"before:",dt/csy,(uc(2)-age),olduc-age
+      olddt=dt
+      dt=min(dt,(uc(2)-age)*csy)
+!      print*,"start",dt/csy,age,target_age
       if (verbose) write (*,*) "target_age: ", target_age, age, delta_t
-      timestep_old = dt
-      timestep_older = timestep_old
-      evolve_for = 0
-      evolve_loop: do while(evolve_for == 0 .and. (age + uc(12)/csy) < target_age) ! evolve one step per loop
-         if (verbose) write (*,*) "timestep: ", dt/csy
-         timestep_older = timestep_old
-         timestep_old = dt
-         if ((age + (dt + uc(12))/csy) >= target_age) &
-            dt = max(uc(12), (target_age - age) * csy)
-         evolve_for = twin_evolve()
-      end do evolve_loop
-      
-      if (verbose) write (*,*) "resetting to: ", timestep_older/csy
-      dt = timestep_older
+      do while(evolve_for == 0 .and. dt>0)
+         evolve_for = twin_evolve()       
+      end do
+!      print*,"evolve_for",evolve_for,age,uc(2),dt
+      if(evolve_for==5 .and. target_age <= olduc ) evolve_for=0
+      if(evolve_for==0 .and. target_age >= olduc ) evolve_for=5
+      if(dt<=0) dt=olddt
+      uc(2)=olduc
+      dty=dt/csy
+      call nextdt(dty,evolve_for,0)
       call swap_out_star(star_id)
    end function evolve_for
    

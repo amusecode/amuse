@@ -280,7 +280,7 @@ class TestInterface(TestWithMPI):
             self.assertEquals(0, instance.evolve_one_step(index))
             (age_after_evolve, error) = instance.get_age(index)
             self.assertEquals(0, error)
-            self.assertAlmostEqual(age_after_evolve, 422790.633054, 5)
+            self.assertAlmostEqual(age_after_evolve, 70465.105509, 5)
         
         self.assertEquals(0, instance.delete_star(1))
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
@@ -455,6 +455,45 @@ class TestEVtwin(TestWithMPI):
                 "is 5, error is 'PRINTB -- age greater than limit'")
 
         instance.stop()
+
+    def test4b(self):
+        print "Testing alternate max age stop condition..."
+        masses = [.5] | units.MSun
+        max_age = 12.0 | units.Myr
+
+        number_of_stars=len(masses)
+        stars =  datamodel.Stars(number_of_stars)
+        for i, star in enumerate(stars):
+            star.mass = masses[i]
+            star.radius = 0.0 | units.RSun
+
+#       Initialize stellar evolution code
+        instance = EVtwin() #debugger="xterm")
+        self.assertEqual(instance.parameters.max_age_stop_condition, 2e6 | units.Myr)
+        instance.parameters.max_age_stop_condition = max_age
+        self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
+        instance.particles.add_particles(stars)
+#       Let the code perform initialization actions after all particles have been created. 
+        
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        from_code_to_model.copy()
+        
+        instance.evolve_model(end_time = 8.0 | units.Myr)
+        from_code_to_model.copy()
+        
+        for i in range(number_of_stars):
+            print stars[i].age.as_quantity_in(units.Myr)
+            self.assertTrue(stars[i].age.value_in(units.Myr) >= 8.0)
+            self.assertTrue(stars[i].age <= max_age)
+            self.assertTrue(stars[i].mass <= masses[i])
+            self.assertTrue(stars[i].time_step <= max_age)
+                
+        self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age, 
+            expected_message = "Error when calling 'evolve_for' of a 'EVtwin', errorcode "
+                "is 5, error is 'PRINTB -- age greater than limit'")
+
+        instance.stop()
+
         
     def test5(self):
         print "Testing adding and removing particles from stellar evolution code..."
@@ -696,7 +735,7 @@ class TestEVtwin(TestWithMPI):
         
         for i in range(3):
             se_stars[0].evolve_one_step()
-        self.assertAlmostEqual(se_stars.age, [1352930.0257, 0.0] | units.yr, 3)
+        self.assertAlmostEqual(se_stars.age, [225488.337629, 0.0] | units.yr, 3)
         number_of_steps = 10
         step_size = se_stars[0].age / number_of_steps
         for i in range(1, number_of_steps + 1):
@@ -717,24 +756,24 @@ class TestEVtwin(TestWithMPI):
         instance.particles.add_particles(stars)
         
         self.assertAlmostEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
-        self.assertAlmostEqual(instance.particles.time_step, [422790.6330, 36382.1271, 11259.1953] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [70465.105509, 6063.68785133, 1876.53255132] | units.yr, 3)
         
         print "evolve_model without arguments: use shared timestep = 0.99*min(particles.time_step)"
         instance.evolve_model()
-        self.assertAlmostEqual(instance.particles.age, 0.99*([11259.1953, 11259.1953, 11259.1953] | units.yr), 3)
-        self.assertAlmostEqual(instance.particles.time_step, [422790.6330, 36382.1271, 11259.1953] | units.yr, 3)
-        self.assertAlmostEqual(instance.model_time, 0.99*11259.1953 | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.age, 0.99*([1876.53255132,1876.53255132,1876.53255132] | units.yr), 3)
+        self.assertAlmostEqual(instance.particles.time_step, [70465.105509,6063.68785133,1876.53255132] | units.yr, 3)
+        self.assertAlmostEqual(instance.model_time, 0.99*1876.53255132 | units.yr, 3)
         
         print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
         instance.evolve_model(15000 | units.yr)
         self.assertAlmostEqual(instance.particles.age, [15000.0, 15000.0, 15000.0] | units.yr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [422790.6330, 36382.1271, 11259.1953] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [ 84558.1266108,7276.4254216,2251.83906159] | units.yr, 3)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3)
         
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
-        self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([422790.6330, 36382.1271, 11259.1953] | units.yr), 3)
-        self.assertAlmostRelativeEquals(instance.particles.time_step, [507348.7596, 43180.1460, 13511.0343] | units.yr, 1)
+        self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([ 84558.1266108,7276.4254216,2251.83906159] | units.yr), 3)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, [101469.751933,8731.71050591,2702.2068739] | units.yr, 1)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
         instance.stop()
     
@@ -799,13 +838,16 @@ class TestEVtwin(TestWithMPI):
 
         instance=EVtwin()
         instance.parameters.maximum_number_of_stars=number_of_stars
+        instance.parameters.min_timestep_stop_condition=.001 | units.s
         instance.particles.add_particles(stars)
         
+        i=0
         for p in instance.particles:
-          print p.mass
+          print i,p.mass
           p.evolve_for(0.1 | units.Myr)
+          i+=1
 
-    def slowtest16(self):
+    def xslowtest16(self):
         print "test full evolution of 1000 star sampled over flattish IMF"
         
         number_of_stars=1000
@@ -832,3 +874,100 @@ class TestEVtwin(TestWithMPI):
         
         for p in instance.particles:
           p.evolve_for(13.2 | units.Gyr)
+
+    def test17a(self):
+        print "crash test"
+        
+        masses=[1.21372730283, 1.22207032494, 11.21372730283] | units.MSun
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()#redirection="none")
+        instance.particles.add_particles(stars)
+        
+        instance.particles[0].evolve_for(0.1| units.Myr)
+        instance.particles[1].evolve_for(0.1| units.Myr)
+
+    def test17b(self):
+        print "crash test"
+        
+        masses=[1.21372730283, 1.22207032494, 1.21372730283] | units.MSun
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()#redirection="none")
+        instance.particles.add_particles(stars)
+        
+        instance.particles[0].evolve_for(0.1| units.Myr)
+        instance.particles[1].evolve_for(0.1| units.Myr)
+
+    def test17c(self):
+        print "crash test"
+        
+        masses=[1.21372730283, 1.22207032494, 1.21372730283] | units.MSun
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()
+        instance.particles.add_particles(stars)
+        
+        instance.particles[1].evolve_for(0.1| units.Myr)
+        instance.particles[0].evolve_for(0.1| units.Myr)
+
+    def test17d(self):
+        print "crash test"
+        
+        masses=[1.21372730283, 1.22207032494] | units.MSun
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()
+        instance.particles.add_particles(stars)
+        
+        instance.particles[0].evolve_for(0.1| units.Myr)
+        instance.particles[1].evolve_for(0.1| units.Myr)
+
+
+    def test17e(self):
+        print "crash test"
+        
+        masses=[1.21372730283, 11.22207032494, 1.21372730283] | units.MSun
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()
+        instance.particles.add_particles(stars)
+        
+        instance.particles[0].evolve_for(0.1| units.Myr)
+        instance.particles[1].evolve_for(0.1| units.Myr)
+
+    def test17f(self):
+        print "crash test"
+        
+        masses=[1.21372730283, 1.21372730283, 1.21372730283] | units.MSun
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()
+        instance.particles.add_particles(stars)
+        
+        instance.particles[0].evolve_for(0.1| units.Myr)
+        instance.particles[1].evolve_for(0.1| units.Myr)
+
+    def test17g(self):
+        print "crash test"
+        
+        masses=[1.21372730283, 1.22207032494, 1.21372730283] | units.MSun
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()
+        instance.particles.add_particles(stars)
+        
+        instance.particles[0].evolve_for(0.1| units.Myr)
+        instance.particles[1].evolve_for(0.1| units.Myr)
+
+    def test17h(self):
+        print "crash test"
+        
+        masses=[0.101, 1.22207032494, 1.21372730283] | units.MSun
+        stars=datamodel.Particles(mass=masses)
+
+        instance=EVtwin()
+        instance.particles.add_particles(stars)
+        
+        instance.particles[0].evolve_for(0.1| units.Myr)
+        instance.particles[1].evolve_for(0.1| units.Myr)

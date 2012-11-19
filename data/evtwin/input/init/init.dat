@@ -28,7 +28,7 @@ somewhat optimised for speed. In particular:
    anyway.
 
 &INIT_DAT
- KH2   =  399
+ KH2   =  199
  JCH   =    2
  KL    =    1
  JH    =    3*0
@@ -56,8 +56,8 @@ somewhat optimised for speed. In particular:
  KNUC  = 0
  KCN   = 0
 
- KR1   = 100
- KR2   = 100
+ KR1   = 20
+ KR2   = 20
 
  EPS   = 1.00E-006
  DEL   = 1.00E-002
@@ -85,9 +85,9 @@ somewhat optimised for speed. In particular:
  CDC_RLOF  = 1.00
  CDC_RLOF_REDUCE  = 1.00
 
- CT1   =  0.8
+ CT1   =  0.4
  CT2   =  1.2
- CT3   =  0.3
+ CT3   =  0.05
 
  KE1   =  5
  KE2   =  6
