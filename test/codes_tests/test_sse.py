@@ -565,7 +565,7 @@ class TestSSE(TestWithMPI):
         
         for i in range(3):
             se_stars[0].evolve_one_step()
-        self.assertAlmostEqual(se_stars.age, [550.1565, 0.0] | units.Myr, 3)
+        self.assertAlmostEqual(se_stars.age, [1650.46953688, 0.0] | units.Myr, 3)
         number_of_steps = 10
         step_size = se_stars[0].age / number_of_steps
         for i in range(1, number_of_steps + 1):

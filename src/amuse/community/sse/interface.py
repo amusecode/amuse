@@ -148,11 +148,11 @@ class SSEParticles(Particles):
         added_particles = ParticlesSubset(self, keys)
         self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
     
-    def evolve_one_step(self,parts,sub):
-        self._private.code_interface._evolve_particles(sub.as_set(),sub.time_step.min() )
+    def evolve_one_step(self, particles, subset):
+        self._private.code_interface._evolve_particles(subset.as_set(), subset.age + subset.time_step)
 
-    def evolve_for(self,parts,sub,delta_t):
-        self._private.code_interface._evolve_particles(sub.as_set(),sub.age.min()+delta_t )
+    def evolve_for(self, particles, subset, delta_time):
+        self._private.code_interface._evolve_particles(subset.as_set(), subset.age + delta_time)
         
     
     def get_defined_attribute_names(self):
