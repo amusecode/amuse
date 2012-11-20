@@ -875,99 +875,72 @@ class TestEVtwin(TestWithMPI):
         for p in instance.particles:
           p.evolve_for(13.2 | units.Gyr)
 
-    def test17a(self):
-        print "crash test"
-        
-        masses=[1.21372730283, 1.22207032494, 11.21372730283] | units.MSun
-        stars=datamodel.Particles(mass=masses)
+    def test17(self):
+        """
+        We add multiple particles to evtwin and evolve the stars
+        individualy. Evtwin crashes on some combinaties of 
+        star masses and which star is evolved first.
+        """
+        exceptions = []
+        for i, (masses, indices) in  enumerate([
+                (
+                    [1.21372730283, 1.22207032494, 11.21372730283] | units.MSun,
+                    (0,1)
+                ),
+                (
+                    [1.21372730283, 1.22207032494, 1.21372730283] | units.MSun,
+                    (0,1)
+                ),
+                ( 
+                    [1.21372730283, 1.22207032494, 1.21372730283] | units.MSun,
+                    (1,0)
+                ),
+                (
+                    [1.21372730283, 1.22207032494] | units.MSun,
+                    (0,1)
+                ),
+                (
+                    [1.21372730283, 11.22207032494, 1.21372730283] | units.MSun,
+                    (0,1)
+                ),
+                (
+                    [1.21372730283, 1.21372730283, 1.21372730283] | units.MSun,
+                    (0,1)
+                ),
+                (
+                    [1.21372730283, 1.22207032494, 1.21372730283] | units.MSun,
+                    (0,1)
+                ),
+                (
+                    [0.101, 1.22207032494, 1.21372730283] | units.MSun,
+                    (0,1)
+                )
+            ]):
+            
+            stars=datamodel.Particles(mass=masses)
 
-        instance=EVtwin()#redirection="none")
-        instance.particles.add_particles(stars)
-        
-        instance.particles[0].evolve_for(0.1| units.Myr)
-        instance.particles[1].evolve_for(0.1| units.Myr)
-
-    def test17b(self):
-        print "crash test"
-        
-        masses=[1.21372730283, 1.22207032494, 1.21372730283] | units.MSun
-        stars=datamodel.Particles(mass=masses)
-
-        instance=EVtwin()#redirection="none")
-        instance.particles.add_particles(stars)
-        
-        instance.particles[0].evolve_for(0.1| units.Myr)
-        instance.particles[1].evolve_for(0.1| units.Myr)
-
-    def test17c(self):
-        print "crash test"
-        
-        masses=[1.21372730283, 1.22207032494, 1.21372730283] | units.MSun
-        stars=datamodel.Particles(mass=masses)
-
-        instance=EVtwin()
-        instance.particles.add_particles(stars)
-        
-        instance.particles[1].evolve_for(0.1| units.Myr)
-        instance.particles[0].evolve_for(0.1| units.Myr)
-
-    def test17d(self):
-        print "crash test"
-        
-        masses=[1.21372730283, 1.22207032494] | units.MSun
-        stars=datamodel.Particles(mass=masses)
-
-        instance=EVtwin()
-        instance.particles.add_particles(stars)
-        
-        instance.particles[0].evolve_for(0.1| units.Myr)
-        instance.particles[1].evolve_for(0.1| units.Myr)
-
-
-    def test17e(self):
-        print "crash test"
-        
-        masses=[1.21372730283, 11.22207032494, 1.21372730283] | units.MSun
-        stars=datamodel.Particles(mass=masses)
-
-        instance=EVtwin()
-        instance.particles.add_particles(stars)
-        
-        instance.particles[0].evolve_for(0.1| units.Myr)
-        instance.particles[1].evolve_for(0.1| units.Myr)
-
-    def test17f(self):
-        print "crash test"
-        
-        masses=[1.21372730283, 1.21372730283, 1.21372730283] | units.MSun
-        stars=datamodel.Particles(mass=masses)
-
-        instance=EVtwin()
-        instance.particles.add_particles(stars)
-        
-        instance.particles[0].evolve_for(0.1| units.Myr)
-        instance.particles[1].evolve_for(0.1| units.Myr)
-
-    def test17g(self):
-        print "crash test"
-        
-        masses=[1.21372730283, 1.22207032494, 1.21372730283] | units.MSun
-        stars=datamodel.Particles(mass=masses)
-
-        instance=EVtwin()
-        instance.particles.add_particles(stars)
-        
-        instance.particles[0].evolve_for(0.1| units.Myr)
-        instance.particles[1].evolve_for(0.1| units.Myr)
-
-    def test17h(self):
-        print "crash test"
-        
-        masses=[0.101, 1.22207032494, 1.21372730283] | units.MSun
-        stars=datamodel.Particles(mass=masses)
-
-        instance=EVtwin()
-        instance.particles.add_particles(stars)
-        
-        instance.particles[0].evolve_for(0.1| units.Myr)
-        instance.particles[1].evolve_for(0.1| units.Myr)
+            instance=EVtwin()
+            instance.particles.add_particles(stars)
+            
+            try:
+                index_in_indices = 0
+                instance.particles[indices[index_in_indices]].evolve_for(0.1| units.Myr)
+                index_in_indices = 1
+                instance.particles[indices[index_in_indices]].evolve_for(0.1| units.Myr)
+            except AmuseException as ex:
+                exceptions.append( [i, masses, indices, index_in_indices] )
+            
+            instance.stop()
+            
+        if len(exceptions) > 0:
+            failure_message = ''
+            for index, masses, indices, index_in_indices in exceptions:
+                failure_message += '[{0}]: error in '.format(index)
+                failure_message += 'first' if index_in_indices == 0 else 'second'
+                failure_message += ' evolve_for,'
+                failure_message += ' index: {0},'.format(indices[index_in_indices])
+                failure_message += ' masses (MSun): {0}.\n'.format(masses.value_in(units.MSun))
+            
+            self.fail(failure_message)
+                
+                
