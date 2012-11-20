@@ -15,7 +15,7 @@ CC   ?= gcc
 NVCC ?= $(CUDAPATH)/bin/nvcc
 
 
-NVCCFLAGS :=  $(NVCC_FLAGS) -D_CONSOLE -O0 -g -D_DEBUG  -maxrregcount=32 $(CUDAINCLUDE)
+NVCCFLAGS :=  $(NVCC_FLAGS) -D_CONSOLE -D_DEBUG  -maxrregcount=32 $(CUDAINCLUDE)
 CXXFLAGS  := -g -DNGB $(CUDAINCLUDE)
 LDFLAGS   := 
 
