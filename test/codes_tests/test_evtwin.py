@@ -875,7 +875,7 @@ class TestEVtwin(TestWithMPI):
         for p in instance.particles:
           p.evolve_for(13.2 | units.Gyr)
 
-    def test17(self):
+    def slowtest17(self):
         """
         We add multiple particles to evtwin and evolve the stars
         individualy. Evtwin crashes on some combinaties of 
