@@ -102,6 +102,8 @@ class SSEParticles(Particles):
         Particles.__init__(self, storage = storage)
         self._private.code_interface = code_interface 
         self.add_calculated_attribute("temperature", self.calculate_effective_temperature, ["luminosity", "radius"])
+        self.add_function_attribute("evolve_one_step",self.evolve_one_step,self.evolve_one_step)
+        self.add_function_attribute("evolve_for",self.evolve_for,self.evolve_for)
     
     def calculate_effective_temperature(self, luminosity, radius):
         return ((luminosity/(constants.four_pi_stefan_boltzmann*radius**2))**.25).in_(units.K)
@@ -145,6 +147,13 @@ class SSEParticles(Particles):
         
         added_particles = ParticlesSubset(self, keys)
         self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
+    
+    def evolve_one_step(self,parts,sub):
+        self._private.code_interface._evolve_particles(sub.as_set(),sub.time_step.min() )
+
+    def evolve_for(self,parts,sub,delta_t):
+        self._private.code_interface._evolve_particles(sub.as_set(),sub.age.min()+delta_t )
+        
     
     def get_defined_attribute_names(self):
         return ["mass", "radius"]

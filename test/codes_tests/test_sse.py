@@ -554,4 +554,87 @@ class TestSSE(TestWithMPI):
         instance.stop()
         self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
         print "ok"
+
+    def test14(self):
+        print "Testing basic operations: evolve_one_step and evolve_for"
+        stars = Particles(2)
+        stars.mass = 1.0 | units.MSun
+        instance = SSE()
+        se_stars = instance.particles.add_particles(stars)
+        self.assertAlmostEqual(se_stars.age, [0.0, 0.0] | units.yr)
+        
+        for i in range(3):
+            se_stars[0].evolve_one_step()
+        self.assertAlmostEqual(se_stars.age, [550.1565, 0.0] | units.Myr, 3)
+        number_of_steps = 10
+        step_size = se_stars[0].age / number_of_steps
+        for i in range(1, number_of_steps + 1):
+            se_stars[1].evolve_for(step_size)
+            self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
+        print se_stars
+        self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
+        self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].temperature, se_stars[1].temperature, 3)
+        instance.stop()
     
+    def test15(self):
+        print "test evolution of 1000 star sampled over flattish IMF"
+        
+        number_of_stars=1000
+        
+        from amuse.ic.salpeter import new_salpeter_mass_distribution
+        import numpy
+
+        class notsorandom(object):
+            def random(self,N):
+                return numpy.array(range(N))/(N-1.)
+
+        masses = new_salpeter_mass_distribution(
+            number_of_stars, 
+            mass_min = 0.1 | units.MSun,
+            mass_max = 100.0 | units.MSun, 
+            alpha = -1.01,random=notsorandom()
+        )
+ 
+        stars=Particles(mass=masses)
+
+        instance=SSE()
+        instance.particles.add_particles(stars)
+        
+        i=0
+        for p in instance.particles:
+          print i,p.mass
+          p.evolve_for(0.1 | units.Myr)
+          i+=1
+
+    def test16(self):
+        print "test evolution of 1000 star sampled over flattish IMF"
+        
+        number_of_stars=1000
+        
+        from amuse.ic.salpeter import new_salpeter_mass_distribution
+        import numpy
+
+        class notsorandom(object):
+            def random(self,N):
+                return numpy.array(range(N))/(N-1.)
+
+        masses = new_salpeter_mass_distribution(
+            number_of_stars, 
+            mass_min = 0.1 | units.MSun,
+            mass_max = 100.0 | units.MSun, 
+            alpha = -1.01,random=notsorandom()
+        )
+ 
+        stars=Particles(mass=masses)
+
+        instance=SSE()
+        instance.particles.add_particles(stars)
+        
+        i=0
+        for p in instance.particles:
+          print i,p.mass,
+          p.evolve_for(13.2 | units.Gyr)
+          print p.mass
+          i+=1
