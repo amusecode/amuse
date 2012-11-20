@@ -113,6 +113,6 @@ class TestParallelStellarEvolution(TestCase):
         self.assertRaises(AmuseException, parallel.evolve_model, 1.0|units.Myr, 
             expected_message = expected_message)
         self.assertTrue((parallel.particles.age >= 0.1 | units.Myr).all())
-        self.assertTrue((parallel.particles.age-parallel.particles.time_step < 0.1 | units.Myr).all())
+        self.assertTrue((parallel.particles.age-parallel.particles.time_step <= 0.1 | units.Myr).all())
         parallel.stop()
     
