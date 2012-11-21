@@ -1348,6 +1348,12 @@ class ParticlesSuperset(AbstractParticleSet):
                 offset += length
             raise Exception('index not found on superset')
     
+    def _get_particle(self, key):
+        if self.has_key_in_store(key):
+            return self._get_subset_for_key(key)._get_particle(key)
+        else:
+            return None
+            
     def _get_particle_unsave(self, key):
         return self._get_subset_for_key(key)._get_particle_unsave(key)
         
