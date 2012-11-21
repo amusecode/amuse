@@ -146,7 +146,7 @@ class SSEParticles(Particles):
         super(SSEParticles, self).add_particles_to_store(keys, all_attributes, all_values)
         
         added_particles = ParticlesSubset(self, keys)
-        self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
+        self._private.code_interface._evolve_particles(added_particles, 0 | units.yr)
     
     def evolve_one_step(self, particles, subset):
         self._private.code_interface._evolve_particles(subset.as_set(), subset.age + subset.time_step)

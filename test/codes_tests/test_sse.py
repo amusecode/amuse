@@ -1,4 +1,5 @@
 import os
+import numpy
 
 from amuse.community.sse.interface import SSEInterface, SSE
 
@@ -6,6 +7,9 @@ from amuse.test.amusetest import get_path_to_results, TestWithMPI
 from amuse import io
 from amuse.units import units
 from amuse.datamodel import Particles
+from amuse.ic.salpeter import new_salpeter_mass_distribution
+
+
 class TestMPIInterface(TestWithMPI):
     
     class state(object):
@@ -471,8 +475,9 @@ class TestSSE(TestWithMPI):
         instance.commit_parameters()
         instance.particles.add_particles(stars)
         
-        self.assertAlmostEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
+        self.assertEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
         self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
+        self.assertAlmostEqual(instance.particles.radius, [0.8882494502, 1.610210385, 1.979134445] | units.RSun)
         
         print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
         instance.evolve_model()
@@ -583,9 +588,6 @@ class TestSSE(TestWithMPI):
         
         number_of_stars=1000
         
-        from amuse.ic.salpeter import new_salpeter_mass_distribution
-        import numpy
-
         class notsorandom(object):
             def random(self,N):
                 return numpy.array(range(N))/(N-1.)
@@ -607,15 +609,13 @@ class TestSSE(TestWithMPI):
           print i,p.mass
           p.evolve_for(0.1 | units.Myr)
           i+=1
+        instance.stop()
 
     def test16(self):
         print "test evolution of 1000 star sampled over flattish IMF"
         
         number_of_stars=1000
         
-        from amuse.ic.salpeter import new_salpeter_mass_distribution
-        import numpy
-
         class notsorandom(object):
             def random(self,N):
                 return numpy.array(range(N))/(N-1.)
@@ -638,3 +638,34 @@ class TestSSE(TestWithMPI):
           p.evolve_for(13.2 | units.Gyr)
           print p.mass
           i+=1
+        instance.stop()
+    
+    def test17(self):
+        print "evolve_one_step and evolve_for after particle removal and addition"
+        particles = Particles(10)
+        particles.mass = range(1, 11) | units.MSun
+        instance = SSE()
+        instance.particles.add_particles(particles)
+        self.assertAlmostEqual(instance.particles.age, 0.0 | units.yr)
+        time_steps = numpy.linspace(0.1, 1.0, num=10) | units.Myr
+        for i in range(10):
+            instance.particles[i].evolve_for(time_steps[i])
+        self.assertAlmostEqual(instance.particles.age, time_steps)
+        
+        instance.particles.remove_particles(particles[[1, 4, 8]])
+        revived = instance.particles.add_particle(particles[4])
+        revived.evolve_for(numpy.pi | units.Myr)
+        for star in instance.particles:
+            star.evolve_for(star.age)
+        self.assertAlmostEqual(instance.particles.age[:-1], 2*time_steps[[0, 2,3, 5,6,7, 9]])
+        self.assertAlmostEqual(instance.particles.age[-1], 2*numpy.pi | units.Myr)
+        
+        instance.particles.remove_particles(particles[[2, 5, 6]])
+        instance.particles.add_particles(particles[[8, 1]])
+        self.assertEqual(len(instance.particles), 7)
+        expected_ages = instance.particles.age + instance.particles.time_step
+        for star in instance.particles:
+            star.evolve_one_step()
+        self.assertAlmostEqual(instance.particles.age, expected_ages)
+        instance.stop()
+    
