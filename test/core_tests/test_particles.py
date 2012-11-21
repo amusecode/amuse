@@ -759,6 +759,21 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(superset[-3:].mass, [4,20,21] | units.kg)
         self.assertAlmostRelativeEquals(superset[-3:-1].mass, [4,20] | units.kg)
         self.assertAlmostRelativeEquals(superset[::-1].mass, [21,20,4,3,2,1] | units.kg)
+
+    def test11(self):
+        particles1 = datamodel.Particles(keys=[9,10,11,12])
+        particles1.mass = [1,2,3,4] | units.kg
+        particles1_copy = particles1.copy()
+        particles1_copy.mass = [5,6,7,8]  | units.kg
+        particles2 = datamodel.Particles(keys=[13,14])
+        particles2.mass = [20,21] | units.kg
+        superset = particles1  | particles2
+        particle_in_copy = particles1_copy[1]
+        particle_in_superset = superset[1]
+        self.assertAlmostRelativeEquals(particle_in_copy.mass, 6 | units.kg)
+        self.assertAlmostRelativeEquals(particle_in_superset.mass, 2 | units.kg)
+        particles_in_original = particle_in_copy.as_particle_in_set(superset)
+        self.assertAlmostRelativeEquals(particles_in_original.mass, 2 | units.kg)
         
 class TestParticlesExtra(amusetest.TestCase):
     
