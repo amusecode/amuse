@@ -68,7 +68,7 @@ class FallbackStellarEvolution(object):
           if self.enforce_monotonic_mass_evolution:
             print "enforcing monotonic mass evolution"
           print "normalized rms weights are %5.3f (mass), %5.3f (radius), %5.3f (luminosity)"% \
-            (self.rms_weights[0],self.rms_weights[0],self.rms_weights[0])
+            (self.rms_weights[0],self.rms_weights[1],self.rms_weights[2])
         
     def cache_underlying_models(self, cacheDir):
         self._main_se = CachedStellarEvolution(self._main_se, cacheDir)
