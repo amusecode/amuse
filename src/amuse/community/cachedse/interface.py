@@ -248,7 +248,7 @@ class ParticlesTimeseries:
         pass
 
     def __init__(self, pParticlesBase):
-        self.particlesBase = pParticlesBase
+        self.particlesBase = pParticlesBase.as_set()
         self.particles = []
         
         for i in range(len(self.particlesBase)):
