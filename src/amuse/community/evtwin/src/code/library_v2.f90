@@ -681,6 +681,10 @@ contains
    !  TODO: ZAHB construction; maybe also for central carbon burning or white dwarfs?
    function evolve_one_step(star_id)
       use constants
+      use real_kind
+      use test_variables
+      use current_model_properties
+
       implicit none
       integer :: evolve_one_step
       integer, intent(in) :: star_id
@@ -692,7 +696,11 @@ contains
          return
       end if
       
-      call swap_in_star(star_id)
+      call swap_in_star(star_id)      
+      if(dt<uc(12).OR.age>=uc(2)) then
+        evolve_one_step=5
+        return
+      endif  
       evolve_one_step = twin_evolve()
       call swap_out_star(star_id)
    end function evolve_one_step
