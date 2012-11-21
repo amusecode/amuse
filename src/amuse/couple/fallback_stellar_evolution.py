@@ -81,8 +81,8 @@ class FallbackStellarEvolution(object):
 #        self._fallback_se.commit_parameters()
 
     def commit_particles(self):
-        new=self.particles.difference(self._main_se.particles)
-        removed=self._main_se.particles.difference(self.particles)
+        new=self.particles.difference(self._main_se.particles).copy()
+        removed=self._main_se.particles.difference(self.particles).copy()
 
         # remove all particles from underlying models
         if len(removed)>0:
@@ -237,26 +237,26 @@ class FallbackStellarEvolution(object):
     def stop(self):
         self._main_se.stop()
         self._fallback_se.stop()
-  
+    
 if __name__ == '__main__':
 
-    stellar_evolution = FallbackStellarEvolution()
+    stellar_evolution = FallbackStellarEvolution(MESA)
+    stellar_evolution._main_se.parameters.min_timestep_stop_condition=1.| units.yr
 
     stars = datamodel.Particles(4)
-    stars.mass = [0.5,1.0,40.0,100.0] | units.MSun
-
+    stars.mass = [0.5,1.0,5.,100.] | units.MSun
     stars = stellar_evolution.particles.add_particles(stars)
     stellar_evolution.commit_particles()
 
-    print stellar_evolution.model_time
+    print stellar_evolution.model_time,'|',
     for star in stars:
-      print star.stellar_type, 
-      print stellar_evolution.ActiveModel[star].__class__.__name__
+      print star.stellar_type,'|',
+      print stellar_evolution.ActiveModel[star].__class__.__name__,
     print
     while stellar_evolution.model_time < 13.2 | units.Gyr:
 
         stellar_evolution.evolve_model()
-        print stellar_evolution.model_time
+        print stellar_evolution.model_time,'|',
         for star in stars:
           print star.stellar_type,',', 
           print stellar_evolution.ActiveModel[star].__class__.__name__,'|',
