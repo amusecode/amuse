@@ -11,6 +11,7 @@ import shutil
 
 
 IS_ON_OSX = sys.platform == 'darwin'
+PYTHON=sys.executable
 
 def late(function):
     class LateProperty(object):
@@ -194,8 +195,8 @@ class InstallPrerequisites(object):
     
     def h5py_build(self, path):
         
-        self.run_application(['python','setup.py','build','--hdf5='+self.prefix], cwd=path)
-        self.run_application(['python','setup.py','install'], cwd=path)
+        self.run_application([PYTHON,'setup.py','build','--hdf5='+self.prefix], cwd=path)
+        self.run_application([PYTHON,'setup.py','install'], cwd=path)
         
     def setuptools_install(self, path):
         self.run_application(['sh',], cwd=path)
@@ -216,16 +217,16 @@ class InstallPrerequisites(object):
             self.run_application(x, path)
     
     def python_build(self, path):
-        self.run_application(['python','setup.py','build'], cwd=path)
-        self.run_application(['python','setup.py','install'], cwd=path)
+        self.run_application([PYTHON,'setup.py','build'], cwd=path)
+        self.run_application([PYTHON,'setup.py','install'], cwd=path)
     
     def numpy_build(self, path):
         env = os.environ.copy()
         env['BLAS'] = 'None'
         env['LAPACK'] = 'None'
         env['ATLAS'] = 'None'
-        self.run_application(['python','setup.py','build'], cwd=path, env=env)
-        self.run_application(['python','setup.py','install'], cwd=path, env=env)
+        self.run_application([PYTHON,'setup.py','build'], cwd=path, env=env)
+        self.run_application([PYTHON,'setup.py','install'], cwd=path, env=env)
         
     def mercurial_build(self, path):
         self.run_application(['make','install','PREFIX='+self.prefix], cwd=path)
@@ -589,8 +590,8 @@ class InstallMatplotlib(InstallPrerequisites):
         env = os.environ.copy()
         env['CFLAGS'] ="-I{0}/include -I{0}/include/freetype2".format(self.prefix)
         env['LDFLAGS'] = "-L{0}/lib".format(self.prefix)
-        self.run_application(['python','setup.py','build'], cwd=path, env = env)
-        self.run_application(['python','setup.py','install'], cwd=path, env = env)
+        self.run_application([PYTHON,'setup.py','build'], cwd=path, env = env)
+        self.run_application([PYTHON,'setup.py','install'], cwd=path, env = env)
       
      
 if IS_ON_OSX:
@@ -606,13 +607,13 @@ def install(names, skip):
     INSTALL.unpack_apps(names, skip)
     INSTALL.build_apps(names, skip)
     
-def list(names, skip):
+def listpackages(names, skip):
     INSTALL.list_apps(names, skip)
 
 _commands = {
     'download' : download,
     'install' : install,
-    'list' : list,
+    'list' : listpackages,
 }
 
 if __name__ == '__main__':
