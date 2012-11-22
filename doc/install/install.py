@@ -1,11 +1,14 @@
 #!/usr/bin/env python
-
+from __future__ import print_function
 
 
 import sys
 import os.path
 import os
-import urllib
+if sys.hexversion > 0x03000000:
+    from urllib.request import urlretrieve
+else:
+    from urllib import urlretrieve
 import subprocess
 import shutil
 
@@ -82,7 +85,7 @@ class InstallPrerequisites(object):
             [], 
             '1.5', 
             'mpich2-', '.tar.gz', 
-            'http://www.mpich.org/files/tarballs/1.5/', 
+            'http://www.mpich.org/static/tarballs/1.5/', 
             self.mpich2_build
           ) ,
           (
@@ -184,13 +187,13 @@ class InstallPrerequisites(object):
             os.makedirs(self.temp_dir)
     
     def run_application(self, args, cwd, env = None):
-        print "starting " , ' '.join(args)
+        print(("starting " , ' '.join(args)))
         process = subprocess.Popen(args, cwd=cwd, env = env)
         returncode = process.wait()
         if returncode != 0:
             commandline = ' '.join(args)
             raise Exception("Error when running <" + commandline + ">")
-        print "finished " , ' '.join(args)
+        print(("finished " , ' '.join(args)))
     
     def h5py_build(self, path):
         
@@ -344,27 +347,27 @@ class InstallPrerequisites(object):
         bin_directory = os.path.join(self.prefix, 'bin')
         mpif90_filename = os.path.join(bin_directory, 'mpif90')
         if not os.path.exists(mpif90_filename):
-            print "-----------------------------------------------------------------"
-            print "MPICH build incomplete, no fortran 90 support"
-            print "-----------------------------------------------------------------"
-            print "The 'mpif90' command was not build"
-            print "This is usually caused by an incompatible C and fortran compiler"
-            print "Please set the F90, F77 and CC environment variables"
-            print 
-            print "After changing the environment variables,"
-            print "you can restart the install with:"
-            print
-            print "  ./install.py install mpich2 mpi4py"
-            print
-            print "You can rerun the build by hand, using:"
-            print 
-            print "  cd", path
+            print ("-----------------------------------------------------------------")
+            print ("MPICH build incomplete, no fortran 90 support")
+            print ("-----------------------------------------------------------------")
+            print ("The 'mpif90' command was not build")
+            print ("This is usually caused by an incompatible C and fortran compiler")
+            print ("Please set the F90, F77 and CC environment variables")
+            print ()
+            print ("After changing the environment variables,")
+            print ("you can restart the install with:")
+            print ()
+            print ("  ./install.py install mpich2 mpi4py")
+            print ()
+            print ("You can rerun the build by hand, using:")
+            print ()
+            print(("  cd", path))
             for command in commands:
-                print
+                print ()
                 if len(command) < 3:
-                    print ' ', ' '.join(command)
+                    print((' ', ' '.join(command)))
                 else:
-                    print '   \\\n    '.join(command)
+                    print(('   \\\n    '.join(command)))
             
             sys.exit(1)
             
@@ -392,16 +395,16 @@ class InstallPrerequisites(object):
             url = url_prefix + app_file
             temp_app_file = os.path.join(self.temp_dir, app_file)
             if not os.path.exists(temp_app_file):
-                print "Downloading ", app_file
-                urllib.urlretrieve(url, os.path.join(self.temp_dir, app_file))
-                print "...Finished"
+                print(("Downloading ", app_file))
+                urlretrieve(url, os.path.join(self.temp_dir, app_file))
+                print ("...Finished")
                 
     
     def list_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if skip and name in skip:
                 continue
-            print name, " - dowloaded from", url_prefix
+            print(name, " - dowloaded from", url_prefix)
                 
     def unpack_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
@@ -417,31 +420,31 @@ class InstallPrerequisites(object):
             if os.path.exists(temp_app_dir):
                 shutil.rmtree(temp_app_dir)
             
-            print "Unpacking ", app_file
+            print("Unpacking ", app_file)
             try:
                 self.run_application(['tar','-xf',app_file], cwd=self.temp_dir)
             except:
-                print "----------------------------------------------------------"
-                print "Could not unpack source file of", name
-                print "----------------------------------------------------------"
-                print
-                print "Download location may have changed"
-                print "Please download the source file yourself, "
-                print "or contact the AMUSE development team."
-                print "http://castle.strw.leidenuniv/trac/amuse"
-                print
-                print "To download the file you can update the URL in"
-                print "one of the following lines and run the command."
-                print
-                print "curl ", url, "-o", temp_app_file
-                print
-                print "or" 
-                print
-                print "wget ", url, "-O", temp_app_file
-                print
-                print "Note: The name of the output file must not be changed (after the -o or -O parameter)"
+                print("----------------------------------------------------------")
+                print("Could not unpack source file of", name)
+                print("----------------------------------------------------------")
+                print()
+                print("Download location may have changed")
+                print("Please download the source file yourself, ")
+                print("or contact the AMUSE development team.")
+                print("http://castle.strw.leidenuniv/trac/amuse")
+                print()
+                print("To download the file you can update the URL in")
+                print("one of the following lines and run the command.")
+                print()
+                print("curl ", url, "-o", temp_app_file)
+                print()
+                print("or") 
+                print()
+                print("wget ", url, "-O", temp_app_file)
+                print()
+                print("Note: The name of the output file must not be changed (after the -o or -O parameter)")
                 sys.exit(1)
-            print "...Finished"
+            print("...Finished")
             
     def build_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
@@ -469,12 +472,12 @@ class InstallPrerequisites(object):
                         
                     temp_app_dir = os.path.join(self.temp_dir , app_dir)
                     if not os.path.exists(temp_app_dir):
-                        print "Package was not correctly unpacked: ", app_file
+                        print("Package was not correctly unpacked: ", app_file)
                         return
     
-            print "Building ", app_file
+            print("Building ", app_file)
             function(temp_app_dir)
-            print "...Finished"
+            print("...Finished")
             
 class InstallPrerequisitesOnOSX(InstallPrerequisites):
 
@@ -606,20 +609,20 @@ def install(names, skip):
     INSTALL.unpack_apps(names, skip)
     INSTALL.build_apps(names, skip)
     
-def list(names, skip):
+def listpackages(names, skip):
     INSTALL.list_apps(names, skip)
 
 _commands = {
     'download' : download,
     'install' : install,
-    'list' : list,
+    'list' : listpackages,
 }
 
 if __name__ == '__main__':
-    print ""
+    print("")
     
     if INSTALL.fortran90_compiler is None or INSTALL.fortran77_compiler is None:
-        print """No fortran 90 compiler environment variable set.
+        print("""No fortran 90 compiler environment variable set.
 A FORTRAN 90 compiler is needed for MPI and several modules, 
 please set FC and F77 first by (bash, replace gfortran with your preferred
 compiler):
@@ -632,31 +635,31 @@ or (csh):
 setenv FC gfortran 
 setenv F77 gfortran 
 
-"""
+""")
         sys.exit(1)
     else:
-        print "Fortran 90 compiler used will be: ", INSTALL.fortran90_compiler
-        print "Fortran 77 compiler used will be: ", INSTALL.fortran77_compiler
+        print("Fortran 90 compiler used will be: ", INSTALL.fortran90_compiler)
+        print("Fortran 77 compiler used will be: ", INSTALL.fortran77_compiler)
     
-    print ""
+    print("")
     do = []
     names = []
     flag = False
     skip = []
     
     for x in sys.argv:
-        if x in _commands.keys():
+        if x in list(_commands.keys()):
             do.append(x)
             flag = True
         else:
             if x == '--matplotlib':
                 INSTALL = InstallMatplotlib()
-                print "----------------------------------------------------------"
-                print "This feature is optional and experimental!"
-                print "----------------------------------------------------------"
-                print
-                print "Will download and install matplotlib"
-                print "plus it most common prerequisites (zlib, png and freetype)"
+                print("----------------------------------------------------------")
+                print("This feature is optional and experimental!")
+                print("----------------------------------------------------------")
+                print()
+                print("Will download and install matplotlib")
+                print("plus it most common prerequisites (zlib, png and freetype)")
             elif x == '--hydra':
                 INSTALL.use_hydra_process_manager = True
             elif x == '--gforker':
@@ -669,8 +672,8 @@ setenv F77 gfortran
                 else:
                     names.append(x)
 
-    print "Files are installed in: ", INSTALL.prefix
-    print "Files are downloaded to: ", INSTALL.temp_dir
+    print("Files are installed in: ", INSTALL.prefix)
+    print("Files are downloaded to: ", INSTALL.temp_dir)
 
     INSTALL.setup_temp_dir()
 
@@ -678,34 +681,34 @@ setenv F77 gfortran
         _commands[x](names, skip)
     
     if len(do) == 0:
-        print "Usage: install.py download|install|list [package names]"
-        print ""
-        print "download  download the packages to the download directory"
-        print "install   unpack and install the packages to the prefix directory"
-        print ""
-        print "you can also install download or install individual packages"
-        print "please specify a list of packages to install"
-        print ""
-        print "to install all prerequisites do:"
-        print ""
-        print "./install.py install"
-        print ""
-        print "to get a list of all packages:"
-        print ""
-        print "./install.py list"
-        print ""
-        print "hydra is a modern process manager with more options and"
-        print "faster distributed process start-up"
-        print "to install mpich2 with the hydra process manager do:"
-        print ""
-        print "./install.py --hydra install"
-        print ""
-        print "the gforker process manager is easier to run (no daemon)"
-        print "but only works on the local machine" 
-        print "to install mpich2 with the gforker process manager do:"
-        print ""
-        print "./install.py --gforker install"
-        print ""
+        print("Usage: install.py download|install|list [package names]")
+        print("")
+        print("download  download the packages to the download directory")
+        print("install   unpack and install the packages to the prefix directory")
+        print("")
+        print("you can also install download or install individual packages")
+        print("please specify a list of packages to install")
+        print("")
+        print("to install all prerequisites do:")
+        print("")
+        print("./install.py install")
+        print("")
+        print("to get a list of all packages:")
+        print("")
+        print("./install.py list")
+        print("")
+        print("hydra is a modern process manager with more options and")
+        print("faster distributed process start-up")
+        print("to install mpich2 with the hydra process manager do:")
+        print("")
+        print("./install.py --hydra install")
+        print("")
+        print("the gforker process manager is easier to run (no daemon)")
+        print("but only works on the local machine") 
+        print("to install mpich2 with the gforker process manager do:")
+        print("")
+        print("./install.py --gforker install")
+        print("")
         
         
         sys.exit(1)
