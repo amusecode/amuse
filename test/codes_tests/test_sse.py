@@ -1,12 +1,16 @@
+import sys
 import os
+import os.path
+import shutil
 import numpy
+from subprocess import call
 
 from amuse.community.sse.interface import SSEInterface, SSE
 
 from amuse.test.amusetest import get_path_to_results, TestWithMPI
 from amuse import io
 from amuse.units import units
-from amuse.datamodel import Particles
+from amuse.datamodel import Particle, Particles
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 
 
@@ -668,4 +672,34 @@ class TestSSE(TestWithMPI):
             star.evolve_one_step()
         self.assertAlmostEqual(instance.particles.age, expected_ages)
         instance.stop()
+    
+    def test18(self):
+        print "SSE validation"
+        instance = SSE()
+        instance.particles.add_particle(Particle(mass = 1.416 | units.MSun))
+        instance.particles[0].evolve_for(7000.0 | units.Myr)
+        evolved_star = instance.particles.copy()[0]
+        instance.stop()
+       
+        testpath = get_path_to_results()
+        sse_src_path = os.path.join(os.path.dirname(sys.modules[SSE.__module__].__file__), 'src')
+        shutil.copy(os.path.join(sse_src_path, "evolve.in"), os.path.join(testpath, "evolve.in"))
+        
+        call([os.path.join(sse_src_path, "sse")], cwd=testpath)
+        
+        with open(os.path.join(testpath, "evolve.dat"), "r") as sse_output:
+            lines = sse_output.readlines()
+            sse_final_result = lines[-2].split()
+        
+        self.assertAlmostEqual(evolved_star.age, float(sse_final_result[0]) | units.Myr, 3)
+        self.assertAlmostEqual(evolved_star.stellar_type, float(sse_final_result[1]) | units.stellar_type, 3)
+        self.assertAlmostEqual(evolved_star.initial_mass, float(sse_final_result[2]) | units.MSun, 3)
+        self.assertAlmostEqual(evolved_star.mass, float(sse_final_result[3]) | units.MSun, 3)
+        self.assertAlmostEqual(evolved_star.luminosity, 10**float(sse_final_result[4]) | units.LSun, 3)
+        self.assertAlmostEqual(evolved_star.radius, 10**float(sse_final_result[5]) | units.RSun, 3)
+        self.assertAlmostRelativeEqual(evolved_star.temperature, 10**float(sse_final_result[6]) | units.K, 2)
+        self.assertAlmostEqual(evolved_star.core_mass, float(sse_final_result[7]) | units.MSun, 3)
+        self.assertAlmostEqual(evolved_star.envelope_mass, float(sse_final_result[8]) | units.MSun, 3)
+        self.assertAlmostEqual(evolved_star.epoch, float(sse_final_result[9]) | units.Myr, 3)
+        self.assertAlmostEqual(evolved_star.spin, float(sse_final_result[10]) | units.none, 3)
     
