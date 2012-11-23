@@ -944,5 +944,37 @@ class TestMESA(TestWithMPI):
         self.assertTrue(star.radius > 2 | units.RSun)
         instance.stop()
     
+    def slowtest21(self):
+        print "Testing MESA calculate_core_mass"
+        instance = self.new_instance(MESA)
+        star = instance.particles.add_particle(Particle(mass=40|units.MSun))
+        instance.evolve_model(4.56|units.Myr)
+        total_core_mass = star.calculate_core_mass()
+        self.assertAlmostRelativeEqual(star.core_mass, total_core_mass, 2)
+        self.assertTrue(star.calculate_core_mass(core_H_abundance_limit=1.0e-2) > total_core_mass)
+        self.assertEqual(star.calculate_core_mass(core_H_abundance_limit=1.0e-4), total_core_mass)
+        self.assertTrue(star.calculate_core_mass(core_H_abundance_limit=1.0e-6) < total_core_mass)
+        self.assertAlmostRelativeEqual(star.calculate_core_mass(core_H_abundance_limit=0.8), star.mass, 2)
+        
+        h1_core_mass = star.calculate_core_mass(species=["h1"])
+        he3_core_mass = star.calculate_core_mass(species=["he3"])
+        he4_core_mass = star.calculate_core_mass(species=["he4"])
+        c12_core_mass = star.calculate_core_mass(species=["c12"])
+        n14_core_mass = star.calculate_core_mass(species=["n14"])
+        o16_core_mass = star.calculate_core_mass(species=["o16"])
+        ne20_core_mass = star.calculate_core_mass(species=["ne20"])
+        mg24_core_mass = star.calculate_core_mass(species=["mg24"])
+        metal_core_mass = star.calculate_core_mass(species=["c12", "n14", "o16", "ne20", "mg24"])
+        print h1_core_mass, he3_core_mass, he4_core_mass, c12_core_mass, n14_core_mass, o16_core_mass
+        print ne20_core_mass, mg24_core_mass, metal_core_mass
+        self.assertAlmostRelativeEqual(star.core_mass, total_core_mass, 2)
+        instance.stop()
+        self.assertAlmostRelativeEqual(total_core_mass, he4_core_mass, 1)
+        self.assertAlmostRelativeEqual(total_core_mass, he4_core_mass + metal_core_mass, 4)
+        self.assertAlmostRelativeEqual(total_core_mass, he4_core_mass + metal_core_mass + h1_core_mass, 7)
+        self.assertAlmostRelativeEqual(metal_core_mass, 
+            c12_core_mass + n14_core_mass + o16_core_mass + ne20_core_mass + mg24_core_mass, 7)
+        self.assertAlmostEqual(he3_core_mass, 0 | units.MSun)
+    
 
 

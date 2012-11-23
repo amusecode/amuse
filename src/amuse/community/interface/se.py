@@ -7,6 +7,7 @@ import numpy
 from amuse.units import units
 from amuse.datamodel import Particles, Particle
 from amuse.support import exceptions
+from amuse.ext.spherical_model import EnclosedMassInterpolator
 from amuse.community.interface import common
 
 from amuse.rfi.core import legacy_function
@@ -798,6 +799,7 @@ class InternalStellarStructure(object):
         object.add_method(set_name, 'get_names_of_species')
         object.add_method(set_name, 'get_chemical_abundance_profiles')
         object.add_method(set_name, 'set_chemical_abundance_profiles')
+        object.add_method(set_name, 'calculate_core_mass')
     
     def define_errorcodes(self, object):
         object.add_errorcode(-21, 'Specified particle does not exist.')
@@ -974,6 +976,25 @@ class InternalStellarStructure(object):
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
     
+    def calculate_core_mass(self, indices_of_the_stars, species=None, core_H_abundance_limit=1.0e-4):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying the core mass")
+        chemical_abundance_profiles = self.get_chemical_abundance_profiles(indices_of_the_stars)
+        index_core = numpy.searchsorted(chemical_abundance_profiles[0], core_H_abundance_limit)
+        
+        if species is None:
+            densities = self.get_density_profile(indices_of_the_stars)
+        else:
+            fraction = 0 * chemical_abundance_profiles[0]
+            for i, species_name in enumerate(self.get_names_of_species(indices_of_the_stars)):
+                if species_name in species:
+                    fraction += chemical_abundance_profiles[i]
+            densities = self.get_density_profile(indices_of_the_stars) * fraction
+        
+        return EnclosedMassInterpolator(
+            radii = self.get_radius_profile(indices_of_the_stars),
+            densities = densities
+        ).enclosed_mass[index_core].as_quantity_in(units.MSun)
+    
     def merge_colliding(self, primaries, secondaries, collision_code, 
             code_options=dict(), code_parameters=dict(), return_merge_products=["se", "gd"]):
         return merge_colliding_in_stellar_evolution_code(self, 
@@ -983,7 +1004,7 @@ class InternalStellarStructure(object):
     
 
 def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries, secondaries, collision_code, 
-        code_options=dict(), code_parameters=dict(), return_merge_products=["se", "gd"]):
+        code_options=dict(), code_parameters=dict(), return_merge_products=["se", "gd"], create_new_key=True):
     primaries = primaries.as_set()
     secondaries = secondaries.as_set()
     star_collider = collision_code(**code_options)
@@ -1010,6 +1031,8 @@ def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries,
             composition_profile[4], composition_profile[5], composition_profile[6], 
             composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
     
+    stellar_evolution_code.particles.remove_particles(star_collider.native_stars)
+    
     gd_merge_products = Particles()
     for primary, secondary in zip(primaries, secondaries):
         merge_product = Particle()
@@ -1017,10 +1040,14 @@ def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries,
         merge_product.secondary = secondary
         new_particle = star_collider.merge_products.add_particle(merge_product)
         stellar_model = new_particle.internal_structure()
-        stellar_evolution_code.new_particle_from_model(stellar_model, 0.0|units.Myr, key=merge_product.key)
+        if create_new_key:
+            new_key = merge_product.key
+        else:
+            new_key = primary.key if primary.mass > secondary.mass else secondary.key
+        stellar_evolution_code.new_particle_from_model(stellar_model, 0.0|units.Myr, key=new_key)
         
         if "gd" in return_merge_products:
-            merge_product = Particle(key=merge_product.key)
+            merge_product = Particle(key=new_key)
             merge_product.mass = stellar_model.mass[-1] 
             merge_product.radius= stellar_model.radius[-1]
             gd_colliders = (primary + secondary)
@@ -1028,7 +1055,6 @@ def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries,
             merge_product.velocity = gd_colliders.center_of_mass_velocity()
             gd_merge_products.add_particle(merge_product)
         
-    stellar_evolution_code.particles.remove_particles(star_collider.native_stars)
     star_collider.stop()
     
     result = []
