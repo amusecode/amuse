@@ -976,5 +976,39 @@ class TestMESA(TestWithMPI):
             c12_core_mass + n14_core_mass + o16_core_mass + ne20_core_mass + mg24_core_mass, 7)
         self.assertAlmostEqual(he3_core_mass, 0 | units.MSun)
     
+    def test22(self):
+        print "Testing MESA calculate_core_mass (short version of slowtest21)"
+        instance = self.new_instance(MESA)
+        star = instance.particles.add_particle(Particle(mass=1|units.MSun))
+        instance.evolve_model(0.3|units.Gyr) # VERY short, for test speed up
+        central_hydrogen_abundance = star.get_chemical_abundance_profiles()[0][0]
+        self.assertTrue(central_hydrogen_abundance < 0.68) # some hydrogen is burned
+        self.assertTrue(central_hydrogen_abundance > 0.67) # ... but not that much yet
+        self.assertEqual(star.calculate_core_mass(core_H_abundance_limit=0.67), 0 | units.MSun)
+        self.assertAlmostEqual(star.calculate_core_mass(core_H_abundance_limit=0.70), 1 | units.MSun, 3)
+        
+        # For test speed up, we use a weird core_H_abundance_limit to define the "hydrogen exhausted core"
+        limit = 0.68
+        expected_core_mass = 0.01786033709 | units.MSun
+        self.assertAlmostEqual(star.calculate_core_mass(core_H_abundance_limit=limit), expected_core_mass, 3)
+        
+        h1_core_mass = star.calculate_core_mass(species=["h1"], core_H_abundance_limit=limit)
+        he3_core_mass = star.calculate_core_mass(species=["he3"], core_H_abundance_limit=limit)
+        he4_core_mass = star.calculate_core_mass(species=["he4"], core_H_abundance_limit=limit)
+        c12_core_mass = star.calculate_core_mass(species=["c12"], core_H_abundance_limit=limit)
+        n14_core_mass = star.calculate_core_mass(species=["n14"], core_H_abundance_limit=limit)
+        o16_core_mass = star.calculate_core_mass(species=["o16"], core_H_abundance_limit=limit)
+        ne20_core_mass = star.calculate_core_mass(species=["ne20"], core_H_abundance_limit=limit)
+        mg24_core_mass = star.calculate_core_mass(species=["mg24"], core_H_abundance_limit=limit)
+        metal_core_mass = star.calculate_core_mass(species=["c12", "n14", "o16", "ne20", "mg24"], core_H_abundance_limit=limit)
+        instance.stop()
+        self.assertAlmostRelativeEqual(h1_core_mass, expected_core_mass*0.68, 2)
+        self.assertAlmostRelativeEqual(he4_core_mass, expected_core_mass*0.30, 2)
+        self.assertAlmostRelativeEqual(metal_core_mass, expected_core_mass*0.02, 1)
+        self.assertAlmostRelativeEqual(expected_core_mass, he4_core_mass + he3_core_mass + metal_core_mass + h1_core_mass, 7)
+        self.assertAlmostRelativeEqual(metal_core_mass, 
+            c12_core_mass + n14_core_mass + o16_core_mass + ne20_core_mass + mg24_core_mass, 7)
+        self.assertAlmostEqual(he3_core_mass, 0 | units.MSun, 5)
+    
 
 
