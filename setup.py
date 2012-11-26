@@ -6,16 +6,28 @@ from distutils.util import convert_path
 from distutils.cmd import Command
 from distutils.extension import Extension
 
-from support.generate_main import generate_main
-from support.build_latex import build_latex
-from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode
-from support.setup_codes import GenerateInstallIni
-from support.run_tests import run_tests
-
+import sys
 import os
 import fnmatch
 import re
 import glob
+
+if sys.hexversion > 0x03000000:
+    from support3.generate_main import generate_main
+    from support3.build_latex import build_latex
+    from support3.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode
+    from support3.setup_codes import GenerateInstallIni
+    from support3.run_tests import run_tests
+    from distutils.command.build_py import build_py_2to3
+    from os import walk
+else:
+    from support.generate_main import generate_main
+    from support.build_latex import build_latex
+    from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode
+    from support.setup_codes import GenerateInstallIni
+    from support.run_tests import run_tests
+    from os.path import walk
+    
 
 #include_dirs.append(sysconfig.get_python_inc())
 
@@ -53,6 +65,9 @@ mapping_from_command_name_to_command_class = {
     'install':install
 }
 
+if sys.hexversion > 0x03000000:
+    mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
+    
 build.sub_commands.append(('build_codes', None))
 Clean.sub_commands.append(('clean_codes',None))
 Clean.sub_commands.append(('clean_python',None))
@@ -108,7 +123,7 @@ def find_data_files(srcdir, destdir, *wildcards, **kw):
     recursive = kw.get('recursive', True)
     converter = re.compile('^({0})'.format(srcdir))
     if recursive:
-        os.path.walk(srcdir, walk_helper, (file_list, wildcards, converter, destdir))
+        walk(srcdir, walk_helper, (file_list, wildcards, converter, destdir))
     else:
         walk_helper((file_list, wildcards, converter, destdir),
                     srcdir,

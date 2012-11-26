@@ -5,8 +5,12 @@ import subprocess
 import inspect
 import os.path
 
-from support import gencode
-        
+
+if sys.hexversion > 0x03000000:
+    from support3 import gencode
+else:
+    from support import gencode
+
 if __name__ == "__main__":
     try:
         from support import config

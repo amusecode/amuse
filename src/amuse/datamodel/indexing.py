@@ -5,8 +5,11 @@ numpy indexing options.
 
 import numpy
 import collections
-from types import EllipsisType
-
+try:
+    from types import EllipsisType
+except:
+    EllipsisType = type(Ellipsis)
+    
 def unpack_slice(slice):
     start = 0 if slice.start is None else slice.start
     stop = None if slice.stop is None else slice.stop

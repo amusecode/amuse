@@ -60,7 +60,7 @@ class unit(object):
             return other*self
 #            return factor_unit(other, self)
         
-    def __div__(self, other):
+    def __truediv__(self, other):
         if isinstance(other, unit):
             return div_unit(self, other)
         else:
@@ -89,8 +89,14 @@ class unit(object):
         """
         return self.new_quantity(value)
         
-    def __rdiv__(self, other):
+    def __rtruediv__(self, other):
         return factor_unit(other, pow_unit(-1,self))
+    
+    def __div__(self, other):
+        return self.__truediv__(other)
+    
+    def __rdiv__(self, other):
+        return self.__rtruediv__(other)
         
     def __pow__(self, other):
         if other == 1:
@@ -119,6 +125,9 @@ class unit(object):
         else:
             return True
     
+    def __hash__(self):
+        return hash(id(self))
+        
     @property
     def dtype(self):
         return None
@@ -539,17 +548,23 @@ class nonnumeric_unit(unit):
     def __mul__(self, other):
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
         
-    def __div__(self, other):
+    def __truediv__(self, other):
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
 
     def __rmul__(self, other):
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
     
-    def __rdiv__(self, other):
+    def __rtruediv__(self, other):
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
         
     def __pow__(self, other):
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
+        
+    def __div__(self, other):
+        return self.__truediv__(other)
+    
+    def __rdiv__(self, other):
+        return self.__rtruediv__(other)
         
     def is_non_numeric(self):
         return True

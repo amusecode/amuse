@@ -8,16 +8,34 @@ CONFIGURE_ERROR=
 
 export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
+python_version_full := $(wordlist 2,4,$(subst ., ,$(shell $(PYTHON) --version 2>&1)))
+python_version_major := $(word 1,${python_version_full})
+python_version_minor := $(word 2,${python_version_full})
+python_version_patch := $(word 3,${python_version_full})
+
 all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
+ifneq ($(python_version_major),3)
 	$(PYTHON) setup.py build_codes --inplace
+else
+	$(error you cannot build the codes in the source directories for Python 3, please run 'make build3')
+endif
 
 build.py:
 	$(error the code is not configured, please run configure first)
 
 allinbuild:
 	$(PYTHON) setup.py build
+
+support3/setup_codes.py:support/setup_codes.py
+	2to3 -n -w -W support -o support3
+	
+build3:support3/setup_codes.py
+	$(PYTHON) setup.py build
+
+install3:support3/gen_codes.py
+	$(PYTHON) setup.py install
 
 docclean:
 	make -C doc clean

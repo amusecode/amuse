@@ -1,7 +1,10 @@
 __revision__ = "$Id:$"
 
 import sys, os, re, subprocess
+
 import ConfigParser
+import StringIO
+    
 import os.path
 import datetime
 import stat
@@ -22,7 +25,6 @@ try:
 except ImportError:
     fcompiler = None
 
-import StringIO
 # check if Python is called on the first line with this expression
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 
@@ -549,6 +551,8 @@ class CodeCommand(Command):
     def get_special_targets(self, name, directory, environment):
         process = Popen(['make','-qp', '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
+        if sys.hexversion > 0x03000000:
+            stdoutstring = str(stdoutstring, 'utf-8')
         lines = stdoutstring.splitlines()
         result = []
         for line in lines:
@@ -596,7 +600,10 @@ class CodeCommand(Command):
             if not buildlogfile is None:
                 buildlogfile.write(line)
             self.announce(line[:-1], log.DEBUG)
-            stringio.write(line)
+            if sys.hexversion > 0x03000000:
+                stringio.write(str(line, 'utf-8'))
+            else:
+                stringio.write(line)
             
         result = process.wait()
         content = stringio.getvalue()
@@ -642,7 +649,7 @@ class BuildCodes(CodeCommand):
             output.write('\n')
             output.flush()
         
-        with open(buildlog, "a") as output:
+        with open(buildlog, "ab") as output:
             result, resultcontent = self.call(
                 ['make','-C', directory, target], 
                 output,
@@ -704,7 +711,7 @@ class BuildCodes(CodeCommand):
             self.copy_codes_to_build_dir()
         
         if not self.inplace:
-            self.environment["DOWNLOAD_CODES"] = "1"
+            #self.environment["DOWNLOAD_CODES"] = "1"
             pass
                   
         for x in self.makefile_libpaths():

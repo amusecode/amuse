@@ -1335,7 +1335,7 @@ class SocketMessage(AbstractMessage):
         result = []
         
         while nbytes > 0:
-	    chunk = min(nbytes, 10240)
+            chunk = min(nbytes, 10240)
             data_bytes = thesocket.recv(chunk, socket.MSG_WAITALL)
             
             if len(data_bytes) == 0:

@@ -123,13 +123,19 @@ class Quantity(object):
     def __pow__(self, other):
         return new_quantity(self.number ** other, self.unit ** other)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         other = to_quantity(other)
         return new_quantity_nonone(self.number / other.number, (self.unit / other.unit).to_simple_form())
 
-    def __rdiv__(self, other):
+    def __rtruediv__(self, other):
         return new_quantity_nonone(other / self.number, (1.0 / self.unit).to_simple_form())
+        
+    def __div__(self, other):
+        return self.__truediv__(other)
     
+    def __rdiv__(self, other):
+        return self.__rtruediv__(other)
+        
     def __mod__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
         return new_quantity_nonone(numpy.mod(self.number , other.number), self.unit)
@@ -870,11 +876,17 @@ class ZeroQuantity(Quantity):
         return self
 
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         return self
-
-    def __rdiv__(self, other):
+        
+    def __rtruediv__(self, other):
         return other/self.number
+        
+    def __div__(self, other):
+        return self.__truediv__(other)
+    
+    def __rdiv__(self, other):
+        return self.__rtruediv__(other)
 
     def in_base(self):
         return self

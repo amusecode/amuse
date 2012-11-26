@@ -87,7 +87,7 @@ class generate_main(Command):
 
                 script_file.write('\n')
 
-		script_file.write('exec ${JAVA_HOME}/bin/java')
+                script_file.write('exec ${JAVA_HOME}/bin/java')
                 script_file.write(' -Xmx500M')
                 script_file.write(' -classpath ${IBIS_LIB_DIR}:${IBIS_LIB_DIR}/lib/*:${IBIS_LIB_DIR}/deploy/lib/*')
                 script_file.write(' -Dgat.adaptor.path=${IBIS_LIB_DIR}/deploy/lib/adaptors')

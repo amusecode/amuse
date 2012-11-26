@@ -270,15 +270,32 @@ class legacy_function(object):
     @late
     def crc32(self):
         try:
+        
             from zlib import crc32
-            if crc32('amuse')&0xffffffff == 0xc0cc9367:
-                return crc32
+            try:
+                if crc32('amuse')&0xffffffff == 0xc0cc9367:
+                    return crc32
+            except Exception:
+                #python 3, crc32 needs bytes...
+                def python3_crc32(x):
+                    x = crc32(bytes(x, 'ascii'))
+                    return x - ((x & 0x80000000) <<1)
+                if python3_crc32('amuse')&0xffffffff == 0xc0cc9367:
+                    return python3_crc32
         except Exception:
             pass
         try:
             from binascii import crc32
-            if crc32('amuse')&0xffffffff == 0xc0cc9367:
-                return crc32
+            try:
+                if crc32('amuse')&0xffffffff == 0xc0cc9367:
+                    return crc32
+            except Exception:
+                #python 3, crc32 needs bytes...
+                def python3_crc32(x):
+                    x = crc32(bytes(x, 'ascii'))
+                    return x - ((x & 0x80000000) <<1)
+                if python3_crc32('amuse')&0xffffffff == 0xc0cc9367:
+                    return python3_crc32
         except Exception:
             pass
         
