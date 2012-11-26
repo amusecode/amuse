@@ -4,12 +4,6 @@ import pickle
 
 from amuse.support.exceptions import AmuseException
 
-
-
-
-
-
-
 from amuse.units import core
 from amuse.units import si
 from amuse.units import nbody_system
@@ -17,6 +11,9 @@ from amuse.units import generic_unit_system
 from amuse.units.quantities import zero
 from amuse.units.units import *
 from amuse.units.constants import *
+
+from amuse.datamodel import Particles
+
 class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
 
     def test1(self):
@@ -88,3 +85,13 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         self.assertEqual(str(quantity), str(unpickled_quantity))
     
     
+
+
+class TestPicklingOfParticleSets(amusetest.TestCase):
+
+    def test1(self):
+        particles = Particles(4)
+        particles.mass = [1,2,3,4] | km
+        pickled_particles = pickle.dumps(particles)
+        unpickled_particles = pickle.loads(pickled_particles)
+        self.assertAlmostRelativeEquals(unpickled_particles.mass, [1,2,3,4] | km)
