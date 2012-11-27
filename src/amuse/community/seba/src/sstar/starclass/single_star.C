@@ -1000,7 +1000,7 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
 	 << "  Zeta (lobe_ad, lobe_th, ad, th) = ("
 	 << z_l_ad <<", "<< z_l_th<<", "<<z_ad<<", "<<z_th<<") : " << endl;
     cerr << type_string(type);
-    cerr<<":    dm/dt=" <<get_relative_mass()/(mtt*1.e+6)
+    cerr<<":    dm/dt=" <<get_total_mass()/(mtt*1.e+6)
 	<< " [Msun/yr]" << endl;
 	
   }
