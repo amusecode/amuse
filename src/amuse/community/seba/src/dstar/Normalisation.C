@@ -80,6 +80,7 @@
 ////                        -R the number of binaries indicated.
 ////                        oterwise one binary is simulated with
 ////                        -M, -m, -a, -e as initial conditions.
+////            -s Random seed
 ////            -z select metallicity of binaries to be simulated. [0.02] Solar
 ////
 //   Note:  libnode.a is referenced for the routines which produce the 

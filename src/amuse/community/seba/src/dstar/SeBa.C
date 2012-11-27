@@ -81,7 +81,9 @@
 ////                        oterwise one binary is simulated with
 ////                        -M, -m, -a, -e as initial conditions.
 ////            -T or -t  binary end time. [13500] Myr
+////            -s Random seed
 ////            -z select metallicity of binaries to be simulated. [0.02] Solar
+////            -c Initial stellar type [default is main_sequence]
 //   Note:  libnode.a is referenced for the routines which produce the 
 //          mass function
 //
@@ -200,6 +202,7 @@ int main(int argc, char ** argv) {
     bool stop_at_remnant_formation = false;
     bool random_initialization = false;
     stellar_type type = Main_Sequence;
+    char * star_type_string = new char[64];
     binary_type bin_type = Detached;
     real binary_fraction = 1.0;
 
@@ -210,12 +213,12 @@ int main(int argc, char ** argv) {
     real  m_sec;
     real  sma;
     real  ecc = 0;
-    real z=0;
+    real  z = 0;
 
     real m_tot = 1;
     real r_hm = 1;
     real t_hc = 1;
-    real metal= cnsts.parameters(Zsun);
+    real metal = cnsts.parameters(Zsun);
 
 
     char *mfc = new char[64];
@@ -257,7 +260,7 @@ int main(int argc, char ** argv) {
 
     extern char *poptarg;
     int c;
-    const char *param_string = "n:N:RDSM:m:x:F:f:A:a:y:G:g:E:e:v:U:u:Q:q:T:t:I:O:w:P:p:n:s:z:";
+    const char *param_string = "n:N:RDSM:m:x:F:f:A:a:y:G:g:E:e:v:U:u:Q:q:T:t:I:O:w:P:p:n:s:z:c:";
 
     while ((c = pgetopt(argc, argv, param_string)) != -1)
 	switch(c) {
@@ -273,10 +276,10 @@ int main(int argc, char ** argv) {
 		      break;
             case 'x': m_exp = atof(poptarg);
 		      break;
-	    case 'F': F_flag = true;
+	        case 'F': F_flag = true;
 		      strcpy(mfc, poptarg);
 	              break;
-	    case 'f': mf = (mass_function)atoi(poptarg);
+	        case 'f': mf = (mass_function)atoi(poptarg);
 	              break;
             case 'A': a_max = atof(poptarg);
 		      break;
@@ -284,10 +287,10 @@ int main(int argc, char ** argv) {
 		      break;
             case 'y': a_exp = atof(poptarg);
 		      break;
-	    case 'G': G_flag = true;
+	        case 'G': G_flag = true;
 		      strcpy(afc, poptarg);
 	              break;
-	    case 'g': af = (sma_distribution)atoi(poptarg);
+	       case 'g': af = (sma_distribution)atoi(poptarg);
 	              break;
             case 'E': e_max = atof(poptarg);
 		      break;
@@ -295,10 +298,10 @@ int main(int argc, char ** argv) {
 		      break;
             case 'v': e_exp = atof(poptarg);
 		      break;
-	    case 'U': U_flag = true;
+	       case 'U': U_flag = true;
 		      strcpy(efc, poptarg);
 	              break;
-	    case 'u': ef = (ecc_distribution)atoi(poptarg);
+	       case 'u': ef = (ecc_distribution)atoi(poptarg);
 	              break;
             case 'Q': q_max = atof(poptarg);
 		      break;
@@ -315,18 +318,21 @@ int main(int argc, char ** argv) {
 		      break;
             case 'w': q_exp = atof(poptarg);
 		      break;
-	    case 'P': P_flag = true;
+	       case 'P': P_flag = true;
 		      strcpy(qfc, poptarg);
 	              break;
-	    case 'p': qf = (mass_ratio_distribution)atoi(poptarg);
+	       case 'p': qf = (mass_ratio_distribution)atoi(poptarg);
 	              break;
-	    case 'n': n = atoi(poptarg);
+	       case 'n': n = atoi(poptarg);
 	              break;
-	    case 'N': n_init = atoi(poptarg);
+	       case 'N': n_init = atoi(poptarg);
 	              break;
-	    case 's': input_seed = atoi(poptarg);
+	       case 's': input_seed = atoi(poptarg);
 		      break;
-            case 'z': metal = atof(poptarg);
+           case 'z': metal = atof(poptarg);
+                break;
+           case 'c': strcpy(star_type_string, poptarg);
+	           type = extract_stellar_type_string(star_type_string);
                 break;
             case '?': params_to_usage(cerr, argv[0], param_string);
 		      exit(1);

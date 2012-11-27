@@ -502,7 +502,6 @@ void mkrandom_binary( real m_min,  real m_max,
     real q = get_random_mass_ratio(q_min, q_max, qf, q_exp);
 
     m_sec = q*m_prim;
-    //    PRL(m_sec);
 
     // Assume for now that
     //	stellar radius [Rsun] = mass [Msun].
@@ -583,7 +582,7 @@ void print_initial_binary_distributions(real m_min,  real m_max,
     else
         cout << "\n                      between "
              << a_min << " and " << a_max << endl;
-    cout << "    -eccenctriciy distribution is " << type_string(ef);
+    cout << "    -eccentricity distribution is " << type_string(ef);
     real e_lower = 0;
     if (e_min>=0) e_lower=e_min;
     if(ef==ecc_Power_Law)
