@@ -1249,28 +1249,28 @@ void double_star::recursive_binary_evolution(real dt,
 	mass_transfer_type prev_mt = current_mass_transfer_type;
 
 	set_donor_timescale(donor);
-	//PRC(prev_mt);PRL(current_mass_transfer_type);
 	if (prev_mt > 0 && prev_mt < 4 && current_mass_transfer_type != prev_mt) first_contact = false;
 
 	determine_minimal_timestep();
-	//PRL(first_contact);
-	//PRC(prev_mt);PRL(current_mass_transfer_type);
 
 	// Check for Contact
 	if (rp >= rl_p &&  rs >= rl_s){       
 
 	  if (!first_contact) {
-	    bin_type = Contact;
+	  // (SilT Nov 25 2012)
+   	  // Goes wrong when first stable mass transfer. Need to set in ::contact_binary...
+      // bin_type = Contact;
+	  // first_contact=true;
 
 	    if (REPORT_RECURSIVE_EVOLUTION) 
 	      cerr << "\tFirst contact" << endl;
-	    
-	    first_contact=true;
 
 	    cerr << "First Roche-lobe contact for: ";
 	    put_state();
 	    cerr << endl;
-	    dump("SeBa.data", true);
+	  // (SilT Nov 25 2012)
+	  // Goes wrong when first stable mass transfer. Need to set in ::contact_binary...	    
+	  //dump("SeBa.data", true);
 	  }
 
 	  if (REPORT_RECURSIVE_EVOLUTION) {
@@ -1279,9 +1279,7 @@ void double_star::recursive_binary_evolution(real dt,
 	    cerr << endl;
 	    dump(cerr, false);
 	  }
-// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
-//dump("SeBa.data", true);
-
+	  
 	  contact_binary(dt);   
 
 	  star *p = get_primary();
@@ -1290,8 +1288,6 @@ void double_star::recursive_binary_evolution(real dt,
 	  if (bin_type!=Merged && s)  s->evolve_element(binary_age);
 	  p = s = NULL;
 	  refresh_memory();
-// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
-//dump("SeBa.data", true);
 
 	  if (binary_age>=end_time)
 	    return;
@@ -1321,16 +1317,14 @@ void double_star::recursive_binary_evolution(real dt,
 	    donor->first_roche_lobe_contact_story(accretor->get_element_type());
 
 	    cerr << "First Roche-lobe contact for: ";
-
-	    put_state();
+        put_state();
+	    cerr << endl;
+	    
 	    // (GN+SilT Mar  2 2011)
 	    // do dump later, so that we know exactly what type of MT
 	    // (i.e. Spiral_In, Common_Envelope etc...
-	    //cerr << endl;
 	    //dump("SeBa.data", true);
 	  }
-// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
-//dump("SeBa.data", true);
 	    
 	  semi_detached(donor, accretor, dt);
 	  
@@ -1345,8 +1339,7 @@ void double_star::recursive_binary_evolution(real dt,
 	  if (bin_type!=Merged && s)  s->evolve_element(binary_age);
 	  p = s = NULL;	      
 	  refresh_memory();
-// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
-//dump("SeBa.data", true);
+
 	  if (binary_age>=end_time) return;
 
 	  dt = minimal_timestep;
@@ -1421,15 +1414,9 @@ void double_star::recursive_binary_evolution(real dt,
 	get_secondary()->
 	  set_effective_radius(get_secondary()->get_radius());
 	
-	//PRC(dt);PRL(minimal_timestep);
-
 	current_mass_transfer_type = Unknown;
 
-	//PRL(current_mass_transfer_type);
 	refresh_memory();
-// (SilT 14 Sept 2010) Do not erase, needed when output from every succesful timestep is desired
-//dump("SeBa.data", true);
-
 
 	real max_dt = end_time - binary_age;
 	if (max_dt < end_time - binary_age) {
@@ -2216,6 +2203,16 @@ void double_star::contact_binary(real dt) {
     if (REPORT_FUNCTION_NAMES)
       cerr << "::contact_binary(dt = "<<dt << ")" << endl;
 
+// (SilT Nov 25 2012) new dumping regime
+    if (!first_contact) {
+    
+        bin_type = Contact;
+        dump("SeBa.data", true);
+        first_contact = true;
+    }
+
+
+
 // for the moment: only [ms,ms] stable, but what about [bd,ms] and [he,ms] etc.
     if (get_primary()->get_element_type() == Main_Sequence && 
 	get_secondary()->get_element_type() == Main_Sequence) {
@@ -2239,7 +2236,7 @@ void double_star::contact_binary(real dt) {
 	//get_seba_counters()->contact++;
 
     } else {
-
+      current_mass_transfer_type = Dynamic;
       dynamic_mass_transfer();
     }
 
