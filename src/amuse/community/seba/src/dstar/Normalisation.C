@@ -378,27 +378,16 @@ int main(int argc, char ** argv) {
 	n = 1;
       }
 
-      //      PRC(m_prim);PRC(m_sec/m_prim);PRC(sma);PRL(ecc);
-
       M_p_all += m_prim;
       M_s_all += m_sec;
       M_tot_all += m_prim + m_sec;
       
       real q = m_sec/m_prim;
 
-    real q_min2=q_min;
-   if(q_min<=0){
-      	q_min2 = m_min/m_prim;
-//        PRC(m_prim);PRC(m_min);PRL(q_min2); 
-    }
- 
-
-
       if (m_prim <= m_max && m_prim >= m_min &&
-	  q      <= q_max && q      >= q_min2 &&
+	  q      <= q_max && q      >= q_min &&
 	  sma    <= a_max && sma    >= a_min &&
 	  ecc    <= e_max && ecc    >= e_min ) {
-//PRC(m_prim);PRC(m_min);	PRC(q_min2);PRC(q_min);PRL(q_max);
 	
 	n_run ++;
 	M_p += m_prim;
