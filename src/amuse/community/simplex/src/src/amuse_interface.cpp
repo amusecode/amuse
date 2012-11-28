@@ -734,6 +734,7 @@ int AMUSE_SimpleX::set_site(int id, double x, double y, double z, double rho,
           if(p->get_source()==0) p->create_flux(numFreq);
           p->set_source(1);
           p->set_flux( 0, flux );
+          for(int f=1;f<numFreq;f++) p->set_flux(f,0.);
         }else{
           if(p->get_source()==1) p->delete_flux();
           p->set_source(0);
@@ -789,6 +790,7 @@ int AMUSE_SimpleX::set_flux(int id, double flux){
           if(p->get_source()==0) p->create_flux(numFreq);
           p->set_source(1);
           p->set_flux( 0, flux );
+          for(int f=1;f<numFreq;f++) p->set_flux(f,0.);
         }else{
           if(p->get_source()==1) p->delete_flux();
           p->set_source(0);

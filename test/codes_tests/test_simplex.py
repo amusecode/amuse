@@ -293,6 +293,10 @@ class TestSimpleX(TestWithMPI):
         instance.particles.add_particles(particles)
         self.assertAlmostEqual(instance.particles.xion.mean(), 0.0)
         instance.evolve_model(0.25 | units.Myr)
+        flux_before=instance.particles.flux.sum()
+        instance.particles.flux=particles.flux
+        flux_after=instance.particles.flux.sum()
+        self.assertEqual(flux_before,flux_after)
         instance.evolve_model(0.5 | units.Myr)
         self.assertAlmostRelativeEqual(instance.particles.xion.mean(),0.00084660917243,3)
         self.assertEqual( instance.particles.flux.max().value_in(1.e48* units.s**-1), 5)
