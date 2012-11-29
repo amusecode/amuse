@@ -61,7 +61,8 @@
 ////                      (Equal_ecc, ecc_Power_Law, Thermal_Distribution)
 ////                   -u requires appropriate interger (see double_star.h)
 ////             -Q   maximum mass ratio [1]
-////             -q   minimum mass ratio [<-m option/selected primary mass>]
+////             -q   minimum mass ratio [0]
+////                    extra option: q_min<0 : q_min=0.1/selected primary mass
 ////             -w   exponent for a power-law distribution  
 ////             -P/p eccentricity option: 0) constant mass ratio
 ////                                       1) Flat_q
@@ -336,6 +337,9 @@ int main(int argc, char ** argv) {
     if(P_flag)
 	qf = extract_mass_ratio_distribution_type_string(qfc);
     delete qfc;
+    if (q_min < 0){
+        q_min_std = q_min;
+    }
 
     actual_seed = srandinter(input_seed);
     sprintf(seedlog, "         random number generator seed = %d",actual_seed);

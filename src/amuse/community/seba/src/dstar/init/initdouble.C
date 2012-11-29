@@ -54,7 +54,8 @@
 ////                      (Equal_ecc, ecc_Power_Law, Thermal_Distribution)
 ////                   -u requires appropriate interger (see double_star.h)
 ////             -Q   maximum mass ratio [1]
-////             -q   minimum mass ratio [0.1 / selected primary mass]
+////             -q   minimum mass ratio [0]
+////                    extra option: q_min<0 : q_min=0.1/selected primary mass
 ////             -w   exponent for a power-law distribution  
 ////             -P/p eccentricity option: 0) constant mass ratio
 ////                                       1) Flat distribution
@@ -495,7 +496,7 @@ void mkrandom_binary( real m_min,  real m_max,
 
   // Initial secondary mass (selected between m_min and m_prim
   // with equal probability per unit mass.
-    if(q_min<=0){
+    if(q_min<0){
       	q_min =  0.1/m_prim; //minimum mass secondary = 0.1
       	//q_min = m_min/m_prim;
     }
