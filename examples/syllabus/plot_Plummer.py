@@ -1,9 +1,9 @@
+""" 
+   Example AMUSE sciprt for generating a Plummer shere and plot the results.
+"""
 from amuse.lab import *
-from optparse import OptionParser
 from matplotlib.pyplot import show, xlim, ylim, figure
 from amuse.plot import scatter, xlabel, ylabel
-
-from amuse.community.fractalcluster.interface import new_fractal_cluster_model
 
 def main(N=10): 
     figure(figsize=(10,10))
@@ -16,6 +16,7 @@ def main(N=10):
     show()
     
 def new_option_parser():
+    from optparse import OptionParser
     result = OptionParser()
     result.add_option("-N", dest="N", type="int",default = 1000,
                       help="number of stars [1000]")

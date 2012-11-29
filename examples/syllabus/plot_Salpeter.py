@@ -1,15 +1,12 @@
 """
-Plots a Salpeter mass function
+   Example AMUSE sciprt for plotting the Salpeter mass function
 """
-
 import numpy 
 from matplotlib import pyplot
 from amuse.lab import *
-from amuse.units.optparse import OptionParser
 
 def main(N, m, M, ximf):
     masses = new_salpeter_mass_distribution(N, m, M, ximf)
-
     import math
     lm = math.log10(m.value_in(units.MSun))
     lM = math.log10(M.value_in(units.MSun))
@@ -30,6 +27,7 @@ def main(N, m, M, ximf):
     pyplot.show()
     
 def new_option_parser():
+    from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-N", dest="N", type="int",default = 1000,
                       help="number of stars [10]")

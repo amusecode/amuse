@@ -1,8 +1,9 @@
 """
    Example AMUSE sciprt for evolving Venus and Earth around the Sun.
 """
-from amuse.lab import *
 from matplotlib import pyplot
+from amuse.lab import *
+from amuse.units import quantities
 
 def sun_venus_and_earth():
     particles = Particles(3)
@@ -34,9 +35,8 @@ def integrate_solar_system(particles, end_time):
     gravity.parameters.epsilon_squared = 0.0 | units.AU**2
     gravity.particles.add_particles(particles)
     
-    t0 = 0 | units.day
+    t = 0 | units.day
     dt = 10 | units.day
-    t = t0
     earth = gravity.particles[1]
     venus = gravity.particles[2]
     
@@ -47,16 +47,12 @@ def integrate_solar_system(particles, end_time):
     
     while t < end_time:
         gravity.evolve_model(t)
-        
         x_earth.append(earth.x)
         y_earth.append(earth.y)
         x_venus.append(venus.x)
         y_venus.append(venus.y)
-        
         t += dt
-    
     gravity.stop()
-    
     return x_earth, y_earth, x_venus, y_venus
     
     
