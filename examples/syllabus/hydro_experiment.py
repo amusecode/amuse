@@ -1,20 +1,8 @@
+"""
+   Simulate the hydrodynamial evolve a disk with a single bump around a star
+"""
 from amuse.lab import *
 from amuse.io import store
-
-import os
-import sys
-from amuse.ext.protodisk import ProtoPlanetaryDisk
-local_directory = os.path.dirname(__file__)
-upper_directory = os.path.join(local_directory, "..", "src")
-absolute_upper_directory = os.path.abspath(upper_directory)
-sys.path.append(absolute_upper_directory)
-from hydro_sink_particles import *
-from amuse.units.optparse import OptionParser
-
-set_printing_strategy("custom", 
-                      preferred_units = [units.MSun, units.RSun, units.Myr], 
-                      precision = 5, prefix = "", separator = " [", suffix = "]"
-)
 
 def main(Mstar = 1|units.MSun,
          Ndisk=100, Mdisk=0.9|units.MSun, 
@@ -23,11 +11,10 @@ def main(Mstar = 1|units.MSun,
          t_end=1, n_steps=10):
 
     converter=nbody_system.nbody_to_si(Mdisk, Rmin)
+    from amuse.ext.protodisk import ProtoPlanetaryDisk
     bodies = ProtoPlanetaryDisk(Ndisk, convert_nbody=converter, 
-                                densitypower=1.5, 
-                                Rmin=1.0, 
-                                Rmax=Rmax/Rmin,
-                                q_out=1.0,
+                                densitypower=1.5, Rmin=1.0, 
+                                Rmax=Rmax/Rmin, q_out=1.0,
                                 discfraction=1.0).result
     Mdisk = bodies.mass.sum()
     bodies.move_to_center()
@@ -60,18 +47,13 @@ def main(Mstar = 1|units.MSun,
     t_end *= P_bump
 
     hydro = Gadget2(converter)
-#    hydro = Fi(converter)
     hydro.gas_particles.add_particles(bodies)
     hydro.dm_particles.add_particles(star)
     Etot_init = hydro.kinetic_energy + hydro.potential_energy + hydro.thermal_energy
 
-#    channel_to_star = hydro.dm_particles.new_channel_to(star)
-#    channel_to_hydro_star = star.new_channel_to(hydro.dm_particles)
-
     particles = ParticlesSuperset([star, bodies])
     particles.move_to_center()
     particles.new_channel_to(hydro.particles).copy()
-#    channel_to_particles = hydro.particles.new_channel_to(particles)
     bodies.h_smooth = Rmin # for the plotting routine
     channel_to_star = hydro.dm_particles.new_channel_to(star)
     channel_to_bodies = hydro.gas_particles.new_channel_to(bodies)
@@ -83,25 +65,20 @@ def main(Mstar = 1|units.MSun,
     dt = t_end/float(n_steps)
     while time < t_end:
         time += dt
-
         hydro.evolve_model(time)
 
-#        channel_to_particles.copy_attributes(["position"])
         channel_to_star.copy()
         channel_to_bodies.copy()
         write_set_to_file(star, "stars.hdf5","hdf5")
         write_set_to_file(bodies, "hydro.hdf5","hdf5")
         star.radius = Rmin
-        print "Rsink=", star.radius
 
+        from hydro_sink_particles import hydro_sink_particles
         lost = hydro_sink_particles(star, bodies)
         if len(lost)>0:
             hydro.particles.remove_particles(lost)
             hydro.particles.synchronize_to(particles)
-#            hydro.particles.synchronize_to(star)
             print "Disk=", hydro.model_time, len(bodies), len(lost), lost.mass.sum(), star.mass
-#            channel_to_hydro_star.copy()
-#        print "sstar=", star.mass, star.position
 
         Ekin = hydro.kinetic_energy 
         Epot = hydro.potential_energy
@@ -114,6 +91,7 @@ def main(Mstar = 1|units.MSun,
     hydro.stop()
     
 def new_option_parser():
+    from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-N", dest="Ndisk", type="int",default = 100,
                       help="number of stars [10]")

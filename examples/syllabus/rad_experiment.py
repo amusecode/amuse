@@ -1,9 +1,10 @@
+"""
+   Simulate the radiative and hydrodynamial evolution of a disk with 
+   a single bump around a single star
+"""
 from time import time, localtime
 from amuse.lab import *
-from optparse import OptionParser
 from amuse.ext.molecular_cloud import ism_cube
-from amuse.ext.protodisk import ProtoPlanetaryDisk
-from amuse.units.optparse import OptionParser
 from amuse.community.simplex.interface import SimpleXInterface, SimpleX,SimpleXSplitSet
 
 set_printing_strategy("custom", 
@@ -18,6 +19,7 @@ def new_disk_with_bump(Mstar = 1|units.MSun,
                        abump=10|units.AU):
 
     converter=nbody_system.nbody_to_si(Mdisk, Rmin)
+    from amuse.ext.protodisk import ProtoPlanetaryDisk
     bodies = ProtoPlanetaryDisk(Ndisk, convert_nbody=converter, 
                                 densitypower=1.5, 
                                 Rmin=1,
@@ -165,6 +167,7 @@ def main(Mstar = 10|units.MSun,
     rad.stop()
     
 def new_option_parser():
+    from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-N", dest="Ndisk", type="int",default = 1000,
                       help="number of stars [%default]")

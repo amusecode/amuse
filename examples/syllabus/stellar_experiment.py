@@ -1,29 +1,18 @@
 """
-   Evolve a population of N stars.
-   initial mass function between Mmin and Mmax and with stellar evolution with
-   metalicity z.
+   Calculate the response of a star as a result of mass loss.
 """
-import sys
 import numpy
 from amuse.lab import *
-from amuse.units.optparse import OptionParser
 
-from amuse.community.seba.interface import SeBa
-
-HeWhiteDwarf = 10 | units.stellar_type
-Hertzsprung_gap = 2 | units.stellar_type
-First_Asymptotic_Giant_Branch = 5 | units.stellar_type
 Second_Asymptotic_Giant_Branch = 6 | units.stellar_type
-
 set_printing_strategy("custom", 
                       preferred_units = [units.MSun, units.RSun, units.Myr], 
-                      precision = 5, prefix = "", separator = " [", suffix = "]"
-)
+                      precision = 6, prefix = "", 
+                      separator = " [", suffix = "]")
 
 def calculate_core_mass(star, H_abundance_limit=1.0e-9):
     number_of_zones = star.get_number_of_zones()
     composition = star.get_chemical_abundance_profiles(number_of_zones = number_of_zones)
-    # first index where H fraction > 1.0e-9
     index = (composition[0]>H_abundance_limit).nonzero()[0][0] 
     mass = (star.get_cumulative_mass_profile(number_of_zones = number_of_zones) * star.mass)[index]
     return mass[0]
@@ -51,20 +40,11 @@ def calculate_zeta(star, z, dmdt= -1*(1.|units.MJupiter)/(1|units.yr)):
     stellar.stop()
     return zeta
 
-def main(Mstar = 1.| units.MSun, 
-         dmdt=-0.01| (units.MSun/units.yr),
-         z=0.02):
-
+def main(Mstar = 1.| units.MSun, dmdt=-0.01| (units.MSun/units.yr), z=0.02):
     stellar = MESA()
     stellar.parameters.metallicity = z
-
-    bodies = Particles(mass=Mstar)
-    stellar.particles.add_particles(bodies)
-    stellar.commit_particles()
-
+    stellar.particles.add_particles(Particles(mass=Mstar))
     channel_to_framework = stellar.particles.new_channel_to(bodies)
-
-#    while stellar.particles[0].stellar_type<Hertzsprung_gap:
     while stellar.particles[0].stellar_type<Second_Asymptotic_Giant_Branch:
         stellar.particles.evolve_one_step()
         channel_to_framework.copy_attributes(["age", "mass", "radius", "stellar_type"])
@@ -76,15 +56,17 @@ def main(Mstar = 1.| units.MSun,
     stellar.stop()
     
 def new_option_parser():
+    from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-M", unit=units.MSun,
                       dest="Mstar", type="float",default = 1.|units.MSun,
-                      help="stellar mass [1] %unit")
+                      help="stellar mass [%default]")
     result.add_option("--dmdt", unit=units.MSun/units.yr,
-                      dest="dmdt", type="float",default = -0.01|(units.MSun/units.yr),
-                      help="dmdt [1] %unit")
+                      dest="dmdt", type="float",
+                      default = -0.01|(units.MSun/units.yr),
+                      help="dmdt [%default]")
     result.add_option("-z", dest="z", type="float", default = 0.02,
-                      help="metalicity [0.02]")
+                      help="metalicity [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):
