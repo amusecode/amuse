@@ -410,30 +410,31 @@ class InMemoryAttribute(object):
 
     
     @classmethod
-    def _determine_shape(cls, length, input):
+    def _determine_shape(cls, length, values_to_set):
         if isinstance(length, tuple):
             return length
-        vector_shape = input.shape
-        if len(vector_shape) > 1 and len(input) == length:
+        vector_shape = values_to_set.shape
+        if len(vector_shape) > 1 and len(values_to_set) == length:
             return vector_shape
         else:
             return length
             
     @classmethod
-    def new_attribute(cls, name, shape, input):
-        if is_quantity(input):
-            if input.is_vector() :
-                shape = cls._determine_shape(shape, input)
-            return InMemoryVectorQuantityAttribute(name, shape, input.unit)
-        elif hasattr(input, 'as_set'):
-            return InMemoryLinkedAttribute(name, shape, input.as_set()._original_set())
-        elif input is None:
-            return InMemoryLinkedAttribute(name, shape, None)
+    def new_attribute(cls, name, shape, values_to_set):
+        if is_quantity(values_to_set):
+            if values_to_set.is_vector() :
+                shape = cls._determine_shape(shape, values_to_set)
+            return InMemoryVectorQuantityAttribute(name, shape, values_to_set.unit)
+        elif values_to_set is None:
+            return InMemoryLinkedAttribute(name, shape)
         else:
-            array = numpy.asanyarray(input)
+            array = numpy.asanyarray(values_to_set)
             dtype = array.dtype
             shape = cls._determine_shape(shape, array)
-            return InMemoryUnitlessAttribute(name, shape, dtype)
+            if dtype == numpy.object:
+                return InMemoryLinkedAttribute(name, shape)
+            else:
+                return InMemoryUnitlessAttribute(name, shape, dtype)
 
     def get_value(self, index):
         pass
@@ -547,62 +548,29 @@ class InMemoryUnitlessAttribute(InMemoryAttribute):
         return False
 
 
+
+        
 class InMemoryLinkedAttribute(InMemoryAttribute):
     
-    def __init__(self, name, shape, linked_set):
+    def __init__(self, name, shape):
         InMemoryAttribute.__init__(self, name)
-        
-        self.linked_set = linked_set
-        if self.linked_set is None or len(linked_set) == 0:
-           dtype = 'uint64'
-        else:
-           dtype = linked_set.get_all_keys_in_store().dtype
            
-        self.values = numpy.ma.masked_all(
+        self.values = LinkedArray(numpy.empty(
             shape,
-            dtype = dtype
-        )
+            dtype = numpy.object
+        ))
         
         
     def get_values(self, indices):
-        
         if indices is None:
-            keys = self.values
+            objects = self.values
         else:
-            keys = self.values[indices]
-        if self.linked_set is None:
-            # link to an empty set
-            # all keys will by unmasked, so no real access
-            # of the set
-            import particles
-            return particles.ParticlesMaskedSubset(None, keys)
-        else:
-            return self.linked_set._masked_subset(keys)
-    
+            objects = self.values[indices]
+            
+        return objects
+                        
     def set_values(self, indices, values):
-        if hasattr(values, 'get_all_keys_in_store'):
-            self.set_values_from_set(indices, values)
-        elif values is None:
-            # unset (mask) the keys at the given insides
-            self.values[indices] = ma.masked
-        elif hasattr(values, 'as_set'):
-            values = values.as_set()
-            self.set_values_from_set(indices, values)
-        else:
-            for index, key in zip(indices, values):
-                if key is None:
-                    self.values[index] = ma.masked
-                else:
-                    self.values[index] = key
-    
-    def set_values_from_set(self, indices, values):
-        if self.linked_set is None:
-            self.linked_set = values._original_set()
-        keys = values.get_all_keys_in_store()
-        mask = ~values.get_valid_particles_mask()
-        keys = numpy.ma.array(keys, dtype=self.values.dtype)
-        keys.mask = mask
-        self.values[indices] = keys
+        self.values[indices] = values
             
     def get_length(self):
         return self.values.shape
@@ -613,31 +581,23 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
            return
         deltashape = list(self.values.shape)
         deltashape[0] = delta
-        zeros_for_concatenation =  numpy.ma.masked_all(deltashape, dtype = self.values.dtype)
-        self.values = numpy.ma.concatenate([self.values, zeros_for_concatenation])
+        zeros_for_concatenation =  numpy.empty(deltashape, dtype = self.values.dtype)
+        self.values = LinkedArray(numpy.concatenate([self.values, zeros_for_concatenation]))
 
     def get_shape(self):
         return self.values.shape
 
     def copy(self):
-        result = type(self)(self.name, self.get_shape(), self.linked_set)
+        result = type(self)(self.name, self.get_shape())
         result.set_values(None, self.get_values(None))
         return result
 
     def get_value(self, index):
-        key = self.values[index]
-        if key is ma.masked:
-            return None
-        else:
-            return self.linked_set._get_particle_unsave(key)
+        value = self.values[index]
+        return value
 
     def remove_indices(self, indices):
-        newmask = numpy.delete(self.values.mask, indices)
-        newvalues = numpy.delete(self.values.data, indices)
-        
-        self.values = numpy.ma.array(newvalues, mask = newmask) 
+        self.values = numpy.delete(self.values, indices)
 
     def has_units(self):
         return False
-
-

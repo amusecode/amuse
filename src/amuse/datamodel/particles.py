@@ -129,6 +129,7 @@ class AbstractParticleSet(AbstractSet):
 
     """
     
+    __array_interface__ = {'shape':()}
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
     
@@ -249,7 +250,11 @@ class AbstractParticleSet(AbstractSet):
                 
             column.append('=' * 11)
             if len(quantity) > split_at * 2:
-                if hasattr(quantity, 'dtype'):
+                if isinstance(quantity, LinkedArray):
+                    values_to_show = list(map(format_str11,quantity[:split_at].to_print_list()))
+                    values_to_show.append(format_str11('...'))
+                    values_to_show.extend(map(format_str11,quantity[-split_at:].to_print_list()))
+                elif hasattr(quantity, 'dtype'):
                     if numpy.issubdtype(quantity.dtype, float):
                         values_to_show = list(map(format_float,quantity[:split_at]))
                         values_to_show.append(format_str11('...'))
@@ -258,17 +263,14 @@ class AbstractParticleSet(AbstractSet):
                         values_to_show = list(map(format_str11,quantity[:split_at]))
                         values_to_show.append(format_str11('...'))
                         values_to_show.extend(map(format_str11,quantity[-split_at:]))
-                elif hasattr(quantity, 'as_set'):
-                    keys = quantity.as_set().key
-                    values_to_show = list(map(format_str11,keys[:split_at]))
-                    values_to_show.append(format_str11('...'))
-                    values_to_show.extend(map(format_str11,keys[-split_at:]))
                 else:
                     values_to_show = list(map(format_str11,quantity[:split_at]))
                     values_to_show.append(format_str11('...'))
                     values_to_show.extend(map(format_str11,quantity[-split_at:]))
             else:
-                if hasattr(quantity, 'dtype'):
+                if isinstance(quantity, LinkedArray):
+                    values_to_show = map(format_str11,quantity.to_print_list())
+                elif hasattr(quantity, 'dtype'):
                     if numpy.issubdtype(quantity.dtype, float):
                         try:
                             values_to_show = map(format_float,quantity)
@@ -276,8 +278,6 @@ class AbstractParticleSet(AbstractSet):
                             values_to_show = map(format_str11,quantity)
                     else:
                         values_to_show = map(format_str11,quantity)
-                elif hasattr(quantity, 'as_set'):
-                    values_to_show = map(format_str11, quantity.as_set().key)
                 else:
                     values_to_show = map(format_str11, quantity)
                     
@@ -327,7 +327,7 @@ class AbstractParticleSet(AbstractSet):
     def as_binary_tree(self, name_of_first_child = 'child1', name_of_second_child = 'child2'):
         return trees.ChildTreeOnParticleSet(self, (name_of_first_child, name_of_second_child))
     
-    def copy_to_memory(self, memento = None):
+    def copy(self, memento = None, keep_structure = False):
         attributes = self.get_attribute_names_defined_in_store()
         keys = self.get_all_keys_in_store()
         indices = self.get_all_indices_in_store()
@@ -338,20 +338,14 @@ class AbstractParticleSet(AbstractSet):
             memento = {}
         memento[id(self._original_set())] = result
         for x in values:
-            if hasattr(x,'_as_masked_subset_in'):
-                if x._original_set() is self._original_set():
-                    converted.append(x._as_masked_subset_in(result))
-                elif id(x._original_set()) in memento:
-                    converted.append(x._as_masked_subset_in(memento[id(x._original_set())]))
-                else:
-                    copyofset =  x._original_set().copy(memento)
-                    converted.append(x._as_masked_subset_in(copyofset))
+            if isinstance(x, LinkedArray):
+                converted.append(x.copy(memento, keep_structure))
             else:
                 converted.append(x)
         result.add_particles_to_store(keys, attributes, converted)
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
-       
+        
         return result
     
     
@@ -540,8 +534,8 @@ class AbstractParticleSet(AbstractSet):
         values = map(self._convert_from_entities_or_quantities, values)
         converted = []
         for x in values:
-            if hasattr(x,'_as_masked_subset_in') and x._original_set() is particles._original_set():
-                converted.append(x._as_masked_subset_in(self))
+            if isinstance(x, LinkedArray):
+                converted.append(x.copy_with_link_transfer(particles._original_set(), self))
             else:
                 converted.append(x)
         self.add_particles_to_store(keys, attributes, converted)
@@ -649,8 +643,8 @@ class AbstractParticleSet(AbstractSet):
             values = self.get_values_in_store(self.get_indices_of_keys(added_keys), attributes)
             converted = []
             for x in values:
-                if hasattr(x,'_as_masked_subset_in') and x._original_set() is self._original_set():
-                    converted.append(x._as_masked_subset_in(other_particles))
+                if isinstance(x, LinkedArray):
+                    converted.append(x.copy_with_link_transfer(self._original_set(), other_particles))
                 else:
                     converted.append(x)
             other_particles.add_particles_to_store(added_keys, attributes, converted)
@@ -659,7 +653,7 @@ class AbstractParticleSet(AbstractSet):
         if removed_keys:
             other_particles.remove_particles_from_store(other_particles.get_indices_of_keys(removed_keys))
     
-    def compress(self):
+    def compressed(self):
         return self
         
     def get_valid_particles_mask(self):
@@ -932,10 +926,11 @@ class Particles(AbstractParticleSet):
     
     
     """
-    def __init__(self, size = 0, storage = None, keys = None, keys_generator = None, particles = None, **attributes):
+    def __init__(self, size = 0, storage = None, keys = None, keys_generator = None, particles = None, is_working_copy = True, **attributes):
         AbstractParticleSet.__init__(self)
         
         self._private.version = 0
+        self._private.is_working_copy = is_working_copy
         
         if storage is None:
             self._private.attribute_storage = get_in_memory_attribute_storage_factory()()
@@ -1021,24 +1016,42 @@ class Particles(AbstractParticleSet):
         for i in range(len(keys)):
             yield Particle(keys[i], self,  indices[i],version) 
             
-    def savepoint(self, timestamp=None, **attributes):
-        instance = type(self)()
-        instance._private.attribute_storage = self._private.attribute_storage.copy()
-        instance.collection_attributes.timestamp = timestamp
-        
-        for name, value in attributes.iteritems():
-            setattr(instance.collection_attributes, name, value)
+    def savepoint(self, timestamp=None, format = 'memory', **attributes):
+        if format == 'memory':
+            print type(self)
+            instance = type(self)(is_working_copy = False)
+            instance._private.attribute_storage = self._private.attribute_storage.copy()
+            instance.collection_attributes.timestamp = timestamp
             
+            for name, value in attributes.iteritems():
+                setattr(instance.collection_attributes, name, value)
+        else:
+            raise Exception("{0} not supported, only 'memory' savepoint supported".format(format))
         instance._private.previous = self._private.previous
         instance._private.version = 0
         self._private.previous = instance
         return instance
     
+    def new_working_copy(self):
+        if self._private.is_working_copy:
+            previous = self._private.previous
+            if previous is None:
+                raise Exception("you have not savepoint for this set, you cannot create a working copy please use copy instead".format(format))
+        else:
+            previous = self
+        result = previous.copy()
+        result._private.previous = previous
+        return result
+        
     def get_timestamp(self):
         return self.collection_attributes.timestamp
         
     def iter_history(self):
-        current = self._private.previous
+        if self._private.is_working_copy:
+            current = self._private.previous
+        else:
+            current = self
+            
         while not current is None:
             yield current
             current = current._private.previous
@@ -1263,10 +1276,15 @@ class ParticlesSuperset(AbstractParticleSet):
     [10.0, 20.0, 30.0, 40.0, 70.0, 60.0] kg
     """
     
-    def __init__(self, particle_sets, index_to_default_set=None):
+    def __init__(self, particle_sets, index_to_default_set=None, names = None):
         AbstractParticleSet.__init__(self)
-                
-        self._private.particle_sets = particle_sets
+        
+        if not names is None:
+            self._private.mapping_from_name_to_set = {}
+            for name, particle_set in zip(names, particle_sets):
+                self._private.mapping_from_name_to_set[name] = particle_set
+        
+        self._private.particle_sets = list(particle_sets)
         self._private.index_to_default_set = index_to_default_set
         
         
@@ -1575,9 +1593,11 @@ class ParticlesSuperset(AbstractParticleSet):
             
         return numpy.array(result, dtype = dtype)
         
-            
+    def get_subsets(self):
+        return list(self._private.particle_sets)
     
-    
+    def get_subset(self, name):
+        return self._private.mapping_from_name_to_set[name]
     
 class ParticlesSubset(AbstractParticleSet):
     """A subset of particles. Attribute values are not
@@ -1614,7 +1634,7 @@ class ParticlesSubset(AbstractParticleSet):
     def _get_version(self):
         return self._private.particles._get_version()
     
-    def compress(self):
+    def compressed(self):
         keys = self._private.keys
         return self._subset(keys[numpy.logical_and(keys > 0 ,  keys < 18446744073709551615L)])
         
@@ -1726,6 +1746,25 @@ class ParticlesSubset(AbstractParticleSet):
     
     def as_set(self):
         return self
+    
+    def copy(self, memento = None, keep_structure = False):
+        if keep_structure:
+            result = ParticlesSubset(None, [])
+            memento[id(self)] = result
+            if id(self._private.particles) in memento:
+                result._private.particles = memento[id(self._private.particles)]
+            else:
+                result._private.particles = self._private.particles.copy(memento, keep_structure)
+            result._private.keys = numpy.array(self._private.keys, dtype='uint64')
+            result._private.set_of_keys = set(self._private.keys)
+            
+            result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
+            object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
+        
+            return result
+        else:
+            return super(ParticlesSubset, self).copy(memento, keep_structure)
+        
 
 
 class ParticlesMaskedSubset(ParticlesSubset):
@@ -1750,7 +1789,7 @@ class ParticlesMaskedSubset(ParticlesSubset):
         self._private.version = -1
         self._private.indices = None
     
-    def compress(self):
+    def compressed(self):
         return self._subset(self._private.keys.compressed())
         
     def get_valid_particles_mask(self):
@@ -1847,8 +1886,9 @@ class ParticlesMaskedSubset(ParticlesSubset):
     
     def previous_state(self):
         return ParticlesMaskedSubset(self._private.particles.previous_state(), self._private.keys)
+    
         
-    def copy_to_memory(self, memento = None):
+    def copy(self, memento = None, keep_structure = False):
         attributes = self.get_attribute_names_defined_in_store()
         keys = self.get_all_keys_in_store()
         keys = keys[~keys.mask] 
@@ -1859,14 +1899,8 @@ class ParticlesMaskedSubset(ParticlesSubset):
             memento = {}
         memento[id(self._original_set())] = result
         for x in values:
-            if hasattr(x,'_as_masked_subset_in'):
-                if x._original_set() is self._original_set():
-                    converted.append(x._as_masked_subset_in(result))
-                elif id(x._original_set()) in memento:
-                    converted.append(x._as_masked_subset_in(memento[id(x._original_set())]))
-                else:
-                    copyofset =  x._original_set().copy(memento)
-                    converted.append(x._as_masked_subset_in(copyofset))
+            if isinstance(x, LinkedArray):
+                converted.append(x.copy(memento, keep_structure))
             else:
                 converted.append(x)
         result.add_particles_to_store(keys, attributes, converted)
@@ -2122,8 +2156,8 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         self._private.particles = particles
         self._private.converter = converter
     
-    def compress(self):
-        return ParticlesWithUnitsConverted(self._private.particles.compress(), self._private.converter)
+    def compressed(self):
+        return ParticlesWithUnitsConverted(self._private.particles.compressed(), self._private.converter)
         
     def get_valid_particles_mask(self):
         return self._private.particles.get_valid_particles_mask()
@@ -2167,8 +2201,19 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         values = self._private.particles.get_values_in_store(indices, attributes)
         converted_values = []
         for quantity in values: 
-            if hasattr(quantity, 'as_set'):
-                converted_values.append(ParticlesWithUnitsConverted(quantity, self._private.converter))
+            if isinstance(quantity, LinkedArray):
+                objects = quantity
+                convert_objects = []
+                for x in objects:
+                    if x is None:
+                        convert_objects.append(x)
+                    else:
+                        if isinstance(x, Particle):
+                            convert_objects.append(ParticlesWithUnitsConverted(x.as_set(), self._private.converter)[0])
+                        else:
+                            convert_objects.append(ParticlesWithUnitsConverted(x, self._private.converter))
+                convert_objects = LinkedArray(convert_objects)
+                converted_values.append(convert_objects)
             else:
                 converted_quantity = self._private.converter.from_target_to_source(quantity)
                 converted_values.append(converted_quantity)
@@ -2205,7 +2250,7 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
             timestamp = self._private.converter.from_target_to_source(timestamp)
         return timestamp
     
-    def savepoint(self, timestamp=None):
+    def savepointsavepoint(self, timestamp=None):
         if not timestamp is None:
             timestamp = self._private.converter.from_target_to_source(timestamp)
         return ParticlesWithUnitsConverted(
@@ -2258,16 +2303,21 @@ class ParticleInformationChannel(object):
         to_keys = self.to_particles.get_all_keys_in_store()
         return numpy.intersect1d(from_keys,to_keys) #filter(lambda x : self.to_particles._has_key(x), from_keys)
         
-    def copy_attributes(self, attributes):
+    def copy_attributes(self, attributes, target_names = None):
+        if target_names is None:
+            target_names = attributes
+        
         self._reindex()
+        
         values = self.from_particles.get_values_in_store(self.from_indices, attributes)
         converted = []
         for x in values:
-            if hasattr(x,'_as_masked_subset_in') and x._original_set() is self.from_particles:
-                converted.append(x._as_masked_subset_in(self.to_particles))
+            if isinstance(x, LinkedArray):
+                converted.append(x.copy_with_link_transfer(self.from_particles, self.to_particles))
             else:
                 converted.append(x)
-        self.to_particles.set_values_in_store(self.to_indices, attributes, converted)
+                
+        self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
     
     def copy(self):
         if not self.to_particles.can_extend_attributes():
@@ -2318,9 +2368,7 @@ class ParticleInformationChannel(object):
     
     
 class Stars(Particles):
-
-    def __init__(self, size = 0):
-        Particles.__init__(self, size)
+    pass
 
 class Particle(object):
     """A physical object or a physical region simulated as a 
@@ -2526,4 +2574,7 @@ def create_particle_set(**args):
         setattr(particles,a,args[a])
 
     return particles
+
+
+
 

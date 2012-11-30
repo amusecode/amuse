@@ -62,7 +62,7 @@ class AbstractGrid(AbstractSet):
     def new_channel_to(self, other):
         return GridInformationChannel(self, other)
     
-    def copy_to_memory(self, memento = None):
+    def copy(self, memento = None, keep_structure = False):
         attributes = self.get_attribute_names_defined_in_store()
         values = self.get_values_in_store(None, attributes)
         result = self._factory_for_new_collection()(*self.shape)

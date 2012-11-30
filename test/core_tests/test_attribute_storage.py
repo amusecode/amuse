@@ -7,7 +7,6 @@ from amuse.datamodel.memory_storage import InMemoryAttributeStorageUseSortedKeys
 from amuse.datamodel.memory_storage import get_in_memory_attribute_storage_factory
 from amuse.datamodel.memory_storage import InMemoryVectorQuantityAttribute
 from amuse.datamodel.incode_storage import *
-from amuse.io.store import HDF5AttributeStorage
 
 
 class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):

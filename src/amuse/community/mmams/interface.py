@@ -408,8 +408,8 @@ class MakeMeAMassiveStar(CommonCode):
             return self.merge_products._subset([key]).index_in_code[0]
     
     def merge_stars(self, primary, secondary):
-        indices_of_primaries = [self._key_to_index_in_code(one_key) for one_key in primary.key]
-        indices_of_secondaries = [self._key_to_index_in_code(one_key) for one_key in secondary.key]
+        indices_of_primaries = [self._key_to_index_in_code(particle.key) for particle in primary]
+        indices_of_secondaries = [self._key_to_index_in_code(particle.key) for particle in secondary]
         result = self.merge_two_stars(
             indices_of_primaries, 
             indices_of_secondaries

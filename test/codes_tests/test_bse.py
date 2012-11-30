@@ -552,7 +552,7 @@ class TestBSE(TestWithMPI):
         
         from_bse_to_model.copy()
         from_bse_to_model_binaries.copy()
-        
+        print binaries
         self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 3.300, 3)
         self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.000, 3)
         self.assertEquals(str(binary.child1.stellar_type), "Main Sequence star")
@@ -597,7 +597,11 @@ class TestBSE(TestWithMPI):
             binaries[i].child1 = stars[i]
             binaries[i].child2 = stars[i+3]
         orbital_period =   200.0 | units.day
-        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  binaries.child1.mass , binaries.child2.mass)
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(
+            orbital_period,  
+            binaries.child1.as_set().mass , 
+            binaries.child2.as_set().mass
+        )
         binaries.semi_major_axis = semi_major_axis
 
                
@@ -643,7 +647,11 @@ class TestBSE(TestWithMPI):
             binaries[i].child1 = stars[i]
             binaries[i].child2 = stars[i+3]
         orbital_period =   200.0 | units.day
-        semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  binaries.child1.mass , binaries.child2.mass)
+        semi_major_axis = instance.orbital_period_to_semi_major_axis(
+            orbital_period,  
+            binaries.child1.as_set().mass , 
+            binaries.child2.as_set().mass
+        )
         binaries.semi_major_axis = semi_major_axis
 
         instance.commit_parameters()

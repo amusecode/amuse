@@ -15,6 +15,7 @@ from amuse.units.quantities import as_vector_quantity
 import numpy
 import random
 import inspect
+import warnings
 
 class KeyGenerator(object):
     
@@ -460,10 +461,10 @@ class FunctionAttribute(DerivedAttribute):
 class CollectionAttributes(object):
     """
     Objects of this class store attributes for
-    an particles collection or a grid.
+    a particles collection or a grid.
     
     These attributes are user set "meta" information such
-    as a timestamp or a 
+    as a timestamp.
     """
     
     def __init__(self, attributes = None):
@@ -807,16 +808,24 @@ class AbstractSet(object):
     def __len__(self):
         return len(self.get_all_keys_in_store())
 
-    def copy(self, memento = None):
+    def copy(self, memento = None, keep_structure = False):
+        """ Creates a new in particle set and copies all attributes and 
+        values into this set. 
+        
+        The history of the set is not copied over.
+        
+        
+        Keyword arguments:
+        memento -- internal, a dictionary to keep track of already copied sets in 
+                   case of links between particles (default: None, will be created)
+        keep_structure -- internal, if True, in case of a sub or super set make a copy of
+                   the original set and return a new subset (default: False)
         """
-        Creates a new in particle set and copies
-        all attributes and values into this set. The history
-        of the set is not copied over.
-        """
-        return self.copy_to_memory(memento)
+        raise NotImplementedError()
         
     def copy_to_memory(self):
-        raise NotImplementedError()
+        warnings.warn("deprecated, pleasy change 'copy_to_memory' to 'copy'", DeprecationWarning)
+        return self.copy()
     
     def _factory_for_new_collection(self):
         raise NotImplementedError()
@@ -1170,6 +1179,27 @@ class AbstractSet(object):
         result.extend(self._attributes_for_dir())
         return result
         
+    def stored_attributes(self):
+        """
+        Returns a list of the names of the attributes defined on
+        the objects in this set (or grid).
+        
+        This list will not contain the set specific methods, or derived
+        attributes (such as function attributes or vector attributes)
+        for a list with all these attributes please use ``dir``.
+        
+        >>> from amuse.datamodel import Particles
+        >>> particles = Particles(3)
+        >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
+        >>> particles.x = [1.0, 2.0, 3.0] | units.m
+        >>> print particles.stored_attributes()
+        ['key', 'mass', 'x']
+        """
+        result = []
+        result.append('key')
+        result.extend(self.get_attribute_names_defined_in_store())
+        return result
+    
     def is_empty(self):
         return self.__len__()==0
 
@@ -1224,3 +1254,130 @@ class AbstractSet(object):
 
     
     
+
+class LinkedArray(numpy.ndarray):
+    """Links between particles and particle sets are stored in LinkedArrays.
+    """
+    def __new__(cls, input_array):
+        result = numpy.asarray(input_array).view(cls)
+        return result
+
+    def __array_finalize__(self, array_object):
+        if array_object is None:
+            return
+        
+    def copy(self, memento = None, keep_structure = False):
+        from amuse.datamodel.particles import Particle
+        
+        if memento is None:
+            memento = {}
+            
+        result = numpy.copy(self)
+        index = 0
+        for x in self:
+            if x is None:
+                result[index] = None
+            elif isinstance(x, Particle):
+                container = x.particles_set._original_set()
+                if id(container) in memento:
+                    copy_of_container = memento[id(container)]
+                else:
+                    copy_of_container = container.copy(memento, keep_structure)
+                result[index] = copy_of_container._get_particle_unsave(x.key)
+            elif isinstance(x, AbstractSet):
+                copy_of_container = x.copy(memento, keep_structure)
+                result[index] = copy_of_container
+            else:
+                raise exceptions.AmuseException("unkown type in link {0}, copy not implemented".format(type(x)))
+            index += 1
+        
+        return result
+    
+    def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None):
+        from amuse.datamodel.particles import Particle
+        
+        if memento is None:
+            memento = dict()
+            
+        result = LinkedArray(numpy.copy(self))
+        index = 0
+        for x in self:
+            if x is None:
+                result[index] = None
+            elif isinstance(x, Particle):
+                container = x.particles_set._original_set()
+                if from_container is None or container is from_container:
+                    result[index] = to_container._get_particle_unsave(x.key)
+                else:
+                    result[index] = x
+            elif isinstance(x, AbstractSet):
+                if must_copy:
+                    copy_of_container = x.copy(memento, keep_structure = True)
+                    result[index] = copy_of_container
+                else:
+                    result[index] = x
+            else:
+                raise exceptions.AmuseException("unkown type in link {0}, transfer link not implemented".format(type(x)))
+                
+            index = index + 1
+        return result
+        
+    def as_set(self):
+        from amuse.datamodel.particles import Particle
+        from amuse.datamodel.particles import ParticlesMaskedSubset
+        
+        linked_set = None
+        mask = []
+        keys = []
+        index = 0
+        for x in self:
+            if x is None:
+                mask.append(True)
+                keys.append(0)
+            elif isinstance(x, Particle):
+                original_set = x.as_set()._original_set()
+                if linked_set is None:
+                    linked_set = original_set
+                elif not linked_set is original_set:
+                    raise exceptions.AmuseException(
+                        "could not convert the linked array to a subset as not all particles in the linked array are part of the same set"
+                    )
+                keys.append(x.key)
+                mask.append(False)
+            else:                        
+                raise exceptions.AmuseException(
+                    "could not convert the linked array to a subset as this array also contains sets of particles, grids or gridpoints"
+                )
+            index += 1
+            
+        if linked_set is None or len(linked_set) == 0:
+           dtype = 'uint64'
+        else:
+           dtype = linked_set.get_all_keys_in_store().dtype
+           
+        masked_keys = numpy.ma.masked_array(
+            numpy.asarray(
+                keys,
+                dtype = dtype
+            ), 
+            mask=mask
+        )
+        
+        if linked_set is None:
+            return ParticlesMaskedSubset(None, masked_keys)
+        else:
+            return linked_set._masked_subset(masked_keys)
+    
+    def to_print_list(self):
+        from amuse.datamodel.particles import Particle
+        
+        result = []
+        for x in self:
+            if x is None:
+                result.append('--')
+            elif isinstance(x, Particle):
+                result.append(x.key)
+            else:
+                result.append(type(x))
+                
+        return result

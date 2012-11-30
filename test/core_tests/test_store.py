@@ -6,20 +6,31 @@ import time
 
 from amuse import io
 from amuse.io import store
+from amuse.io import store_v1
+from amuse.io import store_v2
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.datamodel import Particles
 from amuse.datamodel import Grid
 
-    
-class TestStoreHDF(amusetest.TestCase):
 
+
+class _AbstractTestStoreHDF(amusetest.TestCase):
+    
+    def store_factory(self):
+        raise NotImplementedError
+    
+    def store_version(self):
+        raise NotImplementedError
+        
+    def get_version_in_store(self, container):
+        raise NotImplementedError
     def test1(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
 
         number_of_particles = 10
         p = Particles(number_of_particles)
@@ -41,22 +52,20 @@ class TestStoreHDF(amusetest.TestCase):
         if os.path.exists(output_file):
             os.remove(output_file)
 
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
         number_of_particles = 10
         p = Particles(number_of_particles)
         p.mass = [x * 2.0 for x in range(number_of_particles)] | units.kg
-        p.savepoint(1 | units.Myr)
-        instance.store(p.previous_state())
+        instance.store(p.savepoint(1 | units.Myr))
 
         p.mass = [x * 4.0 for x in range(number_of_particles)] | units.kg
-        p.savepoint(2 | units.Myr)
-        instance.store(p.previous_state())
+        instance.store(p.savepoint(2 | units.Myr))
         instance.close()
 
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
         loaded_particles = instance.load()
-        self.assertAlmostRelativeEquals(loaded_particles.previous_state().get_timestamp(), 2 | units.Myr)
-        self.assertAlmostRelativeEquals(loaded_particles.previous_state().previous_state().get_timestamp(), 1 | units.Myr)
+        self.assertAlmostRelativeEquals(self.get_version_in_store(loaded_particles).get_timestamp(), 2 | units.Myr)
+        self.assertAlmostRelativeEquals(self.get_version_in_store(loaded_particles).previous_state().get_timestamp(), 1 | units.Myr)
         masses = loaded_particles[1].get_timeline_of_attribute("mass")
         self.assertEquals(len(masses), 2)
 
@@ -67,7 +76,7 @@ class TestStoreHDF(amusetest.TestCase):
         if os.path.exists(output_file):
             os.remove(output_file)
 
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
         number_of_particles = 10
         p = Particles(number_of_particles)
         p.mass = [x * 2.0 for x in range(number_of_particles)] | nbody_system.mass
@@ -75,7 +84,7 @@ class TestStoreHDF(amusetest.TestCase):
         instance.store(p.savepoint(1 | nbody_system.time))
         instance.close()
 
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
         loaded_particles = instance.load()
         self.assertAlmostRelativeEquals(p.mass[1], 2.0 | nbody_system.mass)
 
@@ -93,14 +102,14 @@ class TestStoreHDF(amusetest.TestCase):
         particles.x = 2.0 | units.m
         x = particles.savepoint(2.0 | units.s)
 
-        io.write_set_to_file(x,output_file, format='amuse')
+        io.write_set_to_file(x,output_file, format='amuse', version = self.store_version())
 
-        particles_from_file = io.read_set_from_file(output_file, format='amuse')
+        particles_from_file = io.read_set_from_file(output_file, format='amuse', version = self.store_version())
         particles_in_memory = particles_from_file.copy()
 
         self.assertAlmostRelativeEquals(particles_in_memory.mass[1], 1.0 | units.kg)
 
-        particles_from_file.savepoint(4.0 | units.s)
+        particles_in_memory.savepoint(4.0 | units.s)
 
         self.assertAlmostRelativeEquals(particles_from_file.mass[2], 1.0 | units.kg)
     
@@ -109,7 +118,7 @@ class TestStoreHDF(amusetest.TestCase):
         output_file = os.path.join(test_results_path, "testgrid.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
         
         shape = 10, 10, 10
         p = Grid(*shape)
@@ -132,7 +141,7 @@ class TestStoreHDF(amusetest.TestCase):
         output_file = os.path.join(test_results_path, "testgrid.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
         
         shape = 10, 10, 10
         p = Grid(*shape)
@@ -141,7 +150,7 @@ class TestStoreHDF(amusetest.TestCase):
         
         instance.store_grid(p.savepoint(1| units.Myr))
 
-        loaded_grid = instance.load_grid().previous_state()
+        loaded_grid = self.get_version_in_store(instance.load_grid())
         
         self.assertAlmostRelativeEquals(loaded_grid.get_timestamp(), 1| units.Myr)
         
@@ -154,7 +163,7 @@ class TestStoreHDF(amusetest.TestCase):
         output_file = os.path.join(test_results_path, "test.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
 
         number_of_particles = 10
         p = Particles(number_of_particles)
@@ -164,14 +173,14 @@ class TestStoreHDF(amusetest.TestCase):
         instance.store(p)
         instance.close()
     
-        instance = store.StoreHDF(output_file)
-        loaded_particles = instance.load().previous_state()
+        instance = self.store_factory()(output_file)
+        loaded_particles =  self.get_version_in_store(instance.load())
 
         loaded_particles.mass = [x * 3.0 for x in range(number_of_particles)] | units.kg
         previous_mass_in_kg = [x * 3.0 for x in range(number_of_particles)]
         instance.close()
         
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
         loaded_particles = instance.load()
         loaded_mass_in_kg = loaded_particles.mass.value_in(units.kg)
         for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
@@ -179,12 +188,12 @@ class TestStoreHDF(amusetest.TestCase):
         
         instance.close()
         
-        instance = store.StoreHDF(output_file)
-        loaded_particles = instance.load().previous_state()
+        instance = self.store_factory()(output_file)
+        loaded_particles = self.get_version_in_store(instance.load())
         loaded_particles[2].mass = 44 | units.kg
         instance.close()
-        instance = store.StoreHDF(output_file)
-        loaded_particles = instance.load().previous_state()
+        instance = self.store_factory()(output_file)
+        loaded_particles = self.get_version_in_store(instance.load())
         self.assertEquals( 44 | units.kg, loaded_particles[2].mass)
         instance.close()
         
@@ -194,7 +203,7 @@ class TestStoreHDF(amusetest.TestCase):
         if os.path.exists(output_file):
             os.remove(output_file)
 
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
         number_of_particles = 10
         p = Particles(number_of_particles)
         p.mass = numpy.asarray([x * 2.0 for x in range(number_of_particles)])
@@ -202,7 +211,7 @@ class TestStoreHDF(amusetest.TestCase):
         instance.store(p.savepoint(1 | nbody_system.time))
         instance.close()
 
-        instance = store.StoreHDF(output_file)
+        instance = self.store_factory()(output_file)
         loaded_particles = instance.load()
         self.assertAlmostRelativeEquals(p.mass[1], 2.0)
         
@@ -219,9 +228,23 @@ class TestStoreHDF(amusetest.TestCase):
         p.mass = [x * 2.0 for x in range(number_of_particles)] | units.kg
         p.model_time = 2.0 | units.s
 
-        io.write_set_to_file(p, output_file, "hdf5",  timestamp = 2 | units.Myr, scale = 1 | units.kg)
+        io.write_set_to_file(
+            p,
+            output_file,
+            "hdf5", 
+            timestamp = 2 | units.Myr,
+            scale = 1 | units.kg,
+            version = self.store_version()
+        )
         
-        loaded_particles = io.read_set_from_file(output_file, "hdf5").previous_state()
+        loaded_particles = io.read_set_from_file(
+            output_file, 
+            "hdf5",
+            version = self.store_version()
+        )
+        loaded_particles = self.get_version_in_store(loaded_particles)
+        
+        
         a = loaded_particles.collection_attributes
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
@@ -239,10 +262,11 @@ class TestStoreHDF(amusetest.TestCase):
         p.mass = ([x * 2.0 for x in range(p.size)] | units.kg).reshape(shape)
         p.model_time = 2.0 | units.s
 
-        io.write_set_to_file(p, output_file, "hdf5",  timestamp = 2 | units.Myr, scale = 1 | units.kg)
+        io.write_set_to_file(p, output_file, "hdf5",  timestamp = 2 | units.Myr, scale = 1 | units.kg, version = self.store_version())
         
-        loaded = io.read_set_from_file(output_file, "hdf5").previous_state()
-        a = loaded.collection_attributes
+        loaded_particles = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
+        loaded_particles = self.get_version_in_store(loaded_particles)
+        a = loaded_particles.collection_attributes
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
 
@@ -258,9 +282,10 @@ class TestStoreHDF(amusetest.TestCase):
         p.mass = [x * 2.0 for x in range(number_of_particles)] | units.kg
         p.model_time = 2.0 | units.s
 
-        io.write_set_to_file(p.savepoint(timestamp = 2 | units.Myr, scale = 1 | units.kg), output_file, "hdf5")
+        io.write_set_to_file(p.savepoint(timestamp = 2 | units.Myr, scale = 1 | units.kg), output_file, "hdf5", version = self.store_version())
         
-        loaded_particles = io.read_set_from_file(output_file, "hdf5").previous_state()
+        loaded_particles = io.read_set_from_file(output_file, "hdf5", version = self.store_version())        
+        loaded_particles = self.get_version_in_store(loaded_particles)
         a = loaded_particles.collection_attributes
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
@@ -278,10 +303,11 @@ class TestStoreHDF(amusetest.TestCase):
         p.mass = ([x * 2.0 for x in range(p.size)] | units.kg).reshape(shape)
         p.model_time = 2.0 | units.s
 
-        io.write_set_to_file(p.savepoint(timestamp = 2 | units.Myr, scale = 1 | units.kg), output_file, "hdf5")
+        io.write_set_to_file(p.savepoint(timestamp = 2 | units.Myr, scale = 1 | units.kg), output_file, "hdf5", version = self.store_version())
         
-        loaded = io.read_set_from_file(output_file, "hdf5").previous_state()
-        a = loaded.collection_attributes
+        loaded_particles = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
+        loaded_particles = self.get_version_in_store(loaded_particles)
+        a = loaded_particles.collection_attributes
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
     
@@ -296,17 +322,17 @@ class TestStoreHDF(amusetest.TestCase):
         stars.md = [[1,2,3],[4,5,6]] | units.km
        
 
-        io.write_set_to_file(stars, output_file, "hdf5")
+        io.write_set_to_file(stars, output_file, "hdf5", version = self.store_version())
         
-        loaded = io.read_set_from_file(output_file, "hdf5")
+        loaded = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
         self.assertEquals(loaded[0].md, [1,2,3] | units.km)
         self.assertEquals(loaded[1].md, [4,5,6] | units.km)
         
         self.assertEquals(loaded.md[0], [1,2,3] | units.km)
         self.assertEquals(loaded.md[1], [4,5,6] | units.km)
          
-        self.assertEquals(loaded.previous_state()[0].md, [1,2,3] | units.km)
-        #self.assertEquals(loaded.previous_state()[0].md,  [7,8,9] | units.km)
+        self.assertEquals(self.get_version_in_store(loaded)[0].md, [1,2,3] | units.km)
+        #self.assertEquals(self.get_version_in_store(loaded)[0].md,  [7,8,9] | units.km)
     
       
     def test14(self):
@@ -320,9 +346,9 @@ class TestStoreHDF(amusetest.TestCase):
         stars.md = [[[1,3],[2,4],[3,5]],[[4,6],[5,7],[6,8]]]
        
 
-        io.write_set_to_file(stars, output_file, "hdf5")
+        io.write_set_to_file(stars, output_file, "hdf5", version = self.store_version())
         
-        loaded = io.read_set_from_file(output_file, "hdf5")
+        loaded = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
         self.assertEquals(loaded[0].md, [[1,3],[2,4],[3,5]])
         self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
         
@@ -341,14 +367,14 @@ class TestStoreHDF(amusetest.TestCase):
         stars.md = [[[1,3],[2,4],[3,5]],[[4,6],[5,7],[6,8]]]
        
 
-        io.write_set_to_file(stars, output_file, "hdf5")
-        processor = store.StoreHDF(output_file, True, open_for_writing = True)
+        io.write_set_to_file(stars, output_file, "hdf5", version = self.store_version())
+        processor = self.store_factory()(output_file, True, open_for_writing = True)
         loaded = processor.load()
-        loaded.previous_state()[0].md = [[3,1],[3,4],[5,2]] 
-        self.assertEquals(loaded.previous_state()[0].md, [[3,1],[3,4],[5,2]] )
+        self.get_version_in_store(loaded)[0].md = [[3,1],[3,4],[5,2]] 
+        self.assertEquals(self.get_version_in_store(loaded)[0].md, [[3,1],[3,4],[5,2]] )
         processor.close()
         
-        loaded = io.read_set_from_file(output_file, "hdf5")
+        loaded = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
         self.assertEquals(loaded[0].md, [[3,1],[3,4],[5,2]])
         self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
         
@@ -371,8 +397,8 @@ class TestStoreHDF(amusetest.TestCase):
         self.assertEqual(stars[0].nn,stars[1])
         self.assertEqual(stars[1].nn,stars[0])
         
-        io.write_set_to_file(stars, output_file, "hdf5")
-        processor = store.StoreHDF(output_file, True, open_for_writing = True)
+        io.write_set_to_file(stars, output_file, "hdf5", version = self.store_version())
+        processor = self.store_factory()(output_file, True, open_for_writing = True)
         loaded = processor.load()
         
         self.assertEqual(loaded[0].nn,loaded[1])
@@ -405,10 +431,9 @@ class TestStoreHDF(amusetest.TestCase):
         self.assertEqual(binaries[0].child1,stars[0])
         self.assertEqual(binaries[1].child1,stars[2])
         
-        io.write_set_to_file(binaries, output_file, "hdf5")
+        io.write_set_to_file(binaries, output_file, "hdf5", version = self.store_version())
         
-        loaded = io.read_set_from_file(output_file, "hdf5")
-        
+        loaded = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
         
         self.assertEqual(loaded[0].child1.key,stars[0].key)
         self.assertEqual(loaded[1].child1.key,stars[2].key)
@@ -437,9 +462,9 @@ class TestStoreHDF(amusetest.TestCase):
         self.assertEqual(binaries[0].child1.parent,binaries[0])
         self.assertEqual(binaries[0].child2.parent,binaries[0])
         
-        io.write_set_to_file(binaries, output_file, "hdf5")
+        io.write_set_to_file(binaries, output_file, "hdf5", version = self.store_version())
         
-        loaded = io.read_set_from_file(output_file, "hdf5")
+        loaded = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
         
         self.assertEqual(loaded[0].child1.key,stars[0].key)
         self.assertEqual(loaded[0].child2.key,stars[1].key)
@@ -462,7 +487,7 @@ class TestStoreHDF(amusetest.TestCase):
         binaries[0].y = 1.0 | units.km
         binaries[0].child1 = stars[0]
         binaries[0].child2 = stars[1]
-
+        
         stars[0].parent = binaries[0]
         stars[1].parent = binaries[0]
         
@@ -471,9 +496,9 @@ class TestStoreHDF(amusetest.TestCase):
         self.assertEqual(binaries[0].child1.parent,binaries[0])
         self.assertEqual(binaries[0].child2.parent,binaries[0])
         
-        io.write_set_to_file([binaries,stars], output_file, "hdf5", names = ['binaries', 'children'])
+        io.write_set_to_file([binaries,stars], output_file, "hdf5", names = ['binaries', 'children'], version = self.store_version())
         
-        loader_binaries, loaded_stars = io.read_set_from_file(output_file, "hdf5", names = ['binaries', 'children'])
+        loader_binaries, loaded_stars = io.read_set_from_file(output_file, "hdf5", names = ['binaries', 'children'], version = self.store_version())
         
         self.assertEqual(loader_binaries[0].child1.key,stars[0].key)
         self.assertEqual(loader_binaries[0].child2.key,stars[1].key)
@@ -494,9 +519,11 @@ class TestStoreHDF(amusetest.TestCase):
         p = Grid(*shape)
         p.mass = (numpy.asarray([x * 2.0 for x in range(p.size)])).reshape(shape)
 
-        io.write_set_to_file(p, output_file, "hdf5")
+        io.write_set_to_file(p, output_file, "hdf5", version = self.store_version())
         
-        loaded = io.read_set_from_file(output_file, "hdf5").previous_state()
+        loaded = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
+        loaded = self.get_version_in_store(loaded)
+         
         self.assertAlmostRelativeEquals(p.mass[0][1][2], 24)
         self.assertAlmostRelativeEquals(p[0][1][2].mass, 24)
         
@@ -512,12 +539,35 @@ class TestStoreHDF(amusetest.TestCase):
         stars.md = [[[1,3],[2,4],[3,5]],[[4,6],[5,7],[6,8]]]
        
 
-        io.write_set_to_file(stars, output_file, "hdf5")
+        io.write_set_to_file(stars, output_file, "hdf5", version = self.store_version())
        
+        loaded = io.read_set_from_file(output_file, "hdf5", close_file = True, version = self.store_version())
         
-        loaded = io.read_set_from_file(output_file, "hdf5", close_file = True)
         self.assertEquals(loaded[0].md, [[1,3],[2,4],[3,5]])
         self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
         
         previous = loaded.previous_state()
         self.assertEquals(previous, None)
+
+
+class TestStoreHDFV1(_AbstractTestStoreHDF):
+    
+    def store_factory(self):
+        return store_v1.StoreHDF
+    
+    def store_version(self):
+        return '1.0'
+        
+    def get_version_in_store(self, container):
+        return container.previous_state()
+    
+class TestStoreHDFV2(_AbstractTestStoreHDF):
+    
+    def store_factory(self):
+        return store_v2.StoreHDF
+    
+    def store_version(self):
+        return '2.0'
+        
+    def get_version_in_store(self, container):
+        return container

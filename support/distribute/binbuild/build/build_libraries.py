@@ -92,7 +92,7 @@ class InstallPrerequisites(object):
             [], 
             '1.5', 
             'mpich2-', '.tar.gz', 
-            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.5/', 
+            'http://www.mpich.org/static/tarballs/1.5/', 
             self.mpich2_build
           ) ,
           (

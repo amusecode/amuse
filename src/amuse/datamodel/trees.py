@@ -12,9 +12,11 @@ class BinaryTreesOnAParticleSet(object):
         
     def iter_binary_trees(self):
         binaries = self._binaries()
+        if len(binaries) == 0:
+            return
         binaries_children1 = self._get_inner_nodes(binaries, self.name_of_firstchild_attribute)
         binaries_children2 = self._get_inner_nodes(binaries, self.name_of_secondchild_attribute)
-    
+            
         roots = (binaries - (binaries_children1 + binaries_children2))
         
         for particle in roots:
@@ -24,24 +26,29 @@ class BinaryTreesOnAParticleSet(object):
         binaries = self._binaries()
         binaries_children1 = self._get_descendant_nodes(self.particles_set, self.name_of_firstchild_attribute)
         binaries_children2 = self._get_descendant_nodes(self.particles_set, self.name_of_secondchild_attribute)
-        singles = (self.particles_set - (self.roots() + binaries_children1 + binaries_children2))
-        return singles
+        if len(binaries) == 0:
+            return self.particles_set
+        else:
+            singles = (self.particles_set - (self.roots() + binaries_children1 + binaries_children2))
+            return singles
     
     def roots(self):
         binaries = self._binaries()
+        if len(binaries) == 0:
+            return binaries
         binaries_children1 = self._get_inner_nodes(binaries, self.name_of_firstchild_attribute)
         binaries_children2 = self._get_inner_nodes(binaries, self.name_of_secondchild_attribute)
         return (binaries - (binaries_children1 + binaries_children2))
         
     def _binaries(self):
-        return self.particles_set.select_array(lambda x : x.get_valid_particles_mask(), [self.name_of_firstchild_attribute,])
+        return self.particles_set.select_array(lambda x : x != [None], [self.name_of_firstchild_attribute,])
 
     def _get_inner_nodes(self, set, name_of_attribute):
         descendants = self._get_descendant_nodes(set, name_of_attribute)
-        return descendants.select_array(lambda x : x.get_valid_particles_mask(), [name_of_attribute,])
+        return descendants.select_array(lambda x : x != [None], [name_of_attribute,])
 
     def _get_descendant_nodes(self, set, name_of_attribute):
-        return getattr(set, name_of_attribute).compress()
+        return getattr(set, name_of_attribute).as_set().compressed()
         
         
 class BinaryTreeOnParticle(object):
@@ -304,7 +311,7 @@ class ChildTreeOnParticleSet(object):
         return self.particles_set - self._inner_particles()
         
     def _get_descendant_nodes(self, set, name_of_attribute):
-        return getattr(set, name_of_attribute).compress()
+        return getattr(set, name_of_attribute).as_set().compressed()
         
 
 

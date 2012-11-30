@@ -255,7 +255,10 @@ class BSEBinaries(Particles):
         for attribute, value in zip(attributes, values):
             all_attributes.append(attribute)
             if attribute == 'child1' or attribute == 'child2':
-                all_values.append(value._as_masked_subset_in(self._private.code_interface.particles))
+                print len(value), value.shape
+                value = value.copy_with_link_transfer(None, self._private.code_interface.particles)
+                print len(value), value.shape
+                all_values.append(value)
             else:
                 all_values.append(value)
         
@@ -511,6 +514,8 @@ class BSE(common.CommonCode):
         )
     
     def _get_time_step(self, child1, child2, age):
+        child1 = child1.as_set()
+        child2 = child2.as_set()
         return self.get_time_step(
             child1.stellar_type, child2.stellar_type,
             child1.initial_mass, child2.initial_mass,
@@ -550,8 +555,8 @@ class BSE(common.CommonCode):
             "age", 
         )
         
-        children1 = particles.child1
-        children2 = particles.child2
+        children1 = particles.child1.as_set()
+        children2 = particles.child2.as_set()
         children1_arguments = children1.get_values_in_store(children1.get_all_indices_in_store(), single_attributes)
         children2_arguments = children2.get_values_in_store(children2.get_all_indices_in_store(), single_attributes)
         

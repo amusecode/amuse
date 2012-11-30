@@ -17,6 +17,7 @@ import inspect
 import numpy
 
 from amuse import datamodel
+from amuse.datamodel import base
 from amuse.datamodel import parameters
 from amuse.datamodel import incode_storage
 
@@ -84,7 +85,12 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
         linked_set = self.get_linked_set(method, definition)
         storage = linked_set._private.attribute_storage
         keys = storage._get_keys_for_indices_in_the_code(value)
-        return linked_set._subset(keys)
+        result = base.LinkedArray(numpy.empty(len(keys), dtype= numpy.object))
+        for index in range(len(keys)):
+            key = keys[index]
+            if key >= 0:
+                result[index] = linked_set._get_particle(key)
+        return result
      
     def convert_argument_value(self, method, definition, value):
         linked_set = self.get_linked_set(method, definition)
@@ -93,6 +99,8 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
             indices = storage.get_indices_of([value.key])
             return indices
         else:
+            value = base.LinkedArray(numpy.asanyarray(value))
+            value = value.as_set()
             valid = value.get_valid_particles_mask()
             all_keys = value.get_all_keys_in_store()
             valid_keys = all_keys[valid]
