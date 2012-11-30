@@ -530,6 +530,14 @@ class AbstractSet(object):
     """
     GLOBAL_DERIVED_ATTRIBUTES = {}
         
+    # this construct is needed to ensure that numpy
+    # handles grids and particle sets as scalar objects
+    # and not as sequences
+    # if we put a grid in a numpy object array we want the
+    # grid in a field of that array and not the contents of
+    # the grid (i.e. the grid points)
+    __array_interface__ = {'shape':()}
+    
     def __init__(self, original = None):
         if original is None:
             derived_attributes = self.GLOBAL_DERIVED_ATTRIBUTES
@@ -1268,6 +1276,7 @@ class LinkedArray(numpy.ndarray):
         
     def copy(self, memento = None, keep_structure = False):
         from amuse.datamodel.particles import Particle
+        from amuse.datamodel.grids import GridPoint
         
         if memento is None:
             memento = {}
@@ -1278,12 +1287,21 @@ class LinkedArray(numpy.ndarray):
             if x is None:
                 result[index] = None
             elif isinstance(x, Particle):
-                container = x.particles_set._original_set()
+                container = x.get_containing_set()
                 if id(container) in memento:
                     copy_of_container = memento[id(container)]
                 else:
                     copy_of_container = container.copy(memento, keep_structure)
                 result[index] = copy_of_container._get_particle_unsave(x.key)
+            elif isinstance(x, GridPoint):
+                container = x.get_containing_set()
+    
+                if id(container) in memento:
+                    copy_of_container = memento[id(container)]
+                else:
+                    copy_of_container = container.copy(memento, keep_structure)
+                
+                result[index] = GridPoint(x.index, copy_of_container)
             elif isinstance(x, AbstractSet):
                 copy_of_container = x.copy(memento, keep_structure)
                 result[index] = copy_of_container
@@ -1295,6 +1313,7 @@ class LinkedArray(numpy.ndarray):
     
     def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None):
         from amuse.datamodel.particles import Particle
+        from amuse.datamodel.grids import GridPoint
         
         if memento is None:
             memento = dict()
@@ -1305,9 +1324,15 @@ class LinkedArray(numpy.ndarray):
             if x is None:
                 result[index] = None
             elif isinstance(x, Particle):
-                container = x.particles_set._original_set()
+                container = x.get_containing_set()
                 if from_container is None or container is from_container:
                     result[index] = to_container._get_particle_unsave(x.key)
+                else:
+                    result[index] = x
+            elif isinstance(x, GridPoint):
+                container = x.get_containing_set()
+                if from_container is None or container is from_container:
+                    result[index] = GridPoint(x.index, copy_of_container)
                 else:
                     result[index] = x
             elif isinstance(x, AbstractSet):

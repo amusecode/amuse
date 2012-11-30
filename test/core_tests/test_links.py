@@ -326,3 +326,81 @@ class TestParticleLinkToParticles(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles1_copy[0].particles2[1].mass, 30 | units.kg)
         self.assertAlmostRelativeEquals(particles1_copy[1].particles2[0].mass, 30 | units.kg)
         
+
+class TestParticleLinkToGridPoint(amusetest.TestCase):
+    """
+    Tests One-to-One relation between particles and gridpoints
+    """
+    def test1(self):
+        
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        particles[0].point11 = grid[1][1]
+        
+        self.assertAlmostRelativeEquals(grid[1][1].rho, 6 |  units.kg / units.m**3)
+        self.assertAlmostRelativeEquals(particles[0].point11.rho, 6 |  units.kg / units.m**3)
+        
+    def test2(self):
+        
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        particles[0].point11 = grid[1][1]
+        
+        particles_copy = particles.copy()
+        
+        self.assertAlmostRelativeEquals(grid[1][1].rho, 6 |  units.kg / units.m**3)
+        self.assertAlmostRelativeEquals(particles_copy[0].point11.rho, 6 |  units.kg / units.m**3)
+        
+    def test3(self):
+        
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        particles_copy = particles.copy()
+        
+        particles[0].point11 = grid[1][1]
+        
+        channel = particles.new_channel_to(particles_copy)
+        channel.copy()
+        
+        self.assertAlmostRelativeEquals(grid[1][1].rho, 6 |  units.kg / units.m**3)
+        self.assertAlmostRelativeEquals(particles_copy[0].point11.rho, 6 |  units.kg / units.m**3)
+
+
+class TestParticleLinkToGrids(amusetest.TestCase):
+    """
+    Tests One-to-Many relation between particles and grids
+    """
+    
+    def test1(self):
+        
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        particles[0].grid = grid
+        
+        self.assertAlmostRelativeEquals(grid[1][1].rho, 6 |  units.kg / units.m**3)
+        self.assertAlmostRelativeEquals(particles[0].grid[1][1].rho, 6 |  units.kg / units.m**3)
+        
+    def test2(self):
+        
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        particles[0].grid = grid
+        
+        particles_copy = particles.copy()
+        
+        self.assertAlmostRelativeEquals(grid[1][1].rho, 6 |  units.kg / units.m**3)
+        self.assertAlmostRelativeEquals(particles_copy[0].grid[1][1].rho, 6 |  units.kg / units.m**3)

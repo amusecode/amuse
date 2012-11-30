@@ -16,7 +16,7 @@ from amuse.datamodel import indexing
 class AbstractGrid(AbstractSet):
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
-    
+        
     def _get_value_of_attribute(self, particle, index, attribute):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].get_value_for_entity(self, particle, index)
@@ -117,6 +117,7 @@ class AbstractGrid(AbstractSet):
         
 class Grid(AbstractGrid):
     DEFAULT_AXES_NAMES = ('x', 'y', 'z')
+    
     
     def __init__(self, *args, **kwargs):
         AbstractGrid.__init__(self)
@@ -267,7 +268,9 @@ class GridPoint(object):
     def __getattr__(self, name_of_the_attribute):
         return self.grid._get_value_of_attribute(self, self.index, name_of_the_attribute)
         
-
+    def get_containing_set(self):
+        return self.grid
+        
 class GridInformationChannel(object):
     """
     A channel to copy attributes from one grid to another.

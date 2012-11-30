@@ -129,6 +129,12 @@ class AbstractParticleSet(AbstractSet):
 
     """
     
+    # this construct is needed to ensure that numpy see's grids
+    # as objects and not as sequences
+    # if we put a grid in a numpy object array we want the
+    # grid in a field of that array and not the contents of
+    # the grid (i.e. the grid points)
+    # grids have the same trick
     __array_interface__ = {'shape':()}
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
@@ -2547,6 +2553,9 @@ class Particle(object):
     
     def as_particle_in_set(self, other):
         return other._get_particle(self.key)
+        
+    def get_containing_set(self):
+        return self.particles_set._original_set()
 
 def create_particle_set(**args):
     """
