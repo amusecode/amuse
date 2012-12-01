@@ -1,21 +1,10 @@
-import os.path
+"""
+   example code for bridging a gravity solver with a hydrodynamics solver
+"""
 import math
 import numpy
-import time
 from amuse.lab import *
-#from amuse import io
-#from amuse.io import store
-from amuse.units.optparse import OptionParser
-from matplotlib import pyplot
-from amuse.plot import plot, scatter, xlabel, ylabel
 from amuse.couple import bridge
-
-import amuse.community.twobody.twobody as twobody
-
-set_printing_strategy("custom", 
-                      preferred_units = [units.MSun, units.AU, units.Myr], 
-                      precision = 12, prefix = "", separator = " [", suffix = "]"
-)
 
 def print_diagnostics(model_time, bh, star, converter):
     kep = Kepler(converter)
@@ -29,7 +18,7 @@ def print_diagnostics(model_time, bh, star, converter):
                             vel[0], vel[1], vel[2])
     a,e = kep.get_elements()
     r = kep.get_separation()
-    E,J = kep.get_integrals()	# per unit reduced mass, note
+    E,J = kep.get_integrals()
     kep.stop()
     print "Orbital elements for star ", model_time, a, e, bh.mass, star.mass
     return a, e
@@ -114,6 +103,7 @@ def main(a=1|units.AU, ecc=0, t_end=1.|units.yr, n_steps=100,
     hydro.stop()
 
 def new_option_parser():
+    from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-n", dest="n_steps", type="int", default = 1000,
                       help="number of diagnostics time steps [%default]")
