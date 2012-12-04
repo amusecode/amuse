@@ -178,7 +178,7 @@ class AbstractParticleSet(AbstractSet):
     #
     def __iter__(self):
         original_set = self._original_set()
-        for key in self.get_all_keys_in_store():
+        for key, index in zip(self.get_all_keys_in_store(), self.get_all_indices_in_store()):
             yield original_set._get_particle_unsave(key)
 
     
@@ -320,8 +320,13 @@ class AbstractParticleSet(AbstractSet):
         else:
             return None
             
-    def _get_particle_unsave(self, key):
-        return Particle(key, self._original_set())
+    def _get_particle_unsave(self, key, index = -1):
+        return Particle(
+            key, 
+            self._original_set(), 
+            set_index = index, 
+            set_version = self._get_version()
+        )
             
     def can_extend_attributes(self):
         return self._original_set().can_extend_attributes()
@@ -1378,8 +1383,8 @@ class ParticlesSuperset(AbstractParticleSet):
         else:
             return None
             
-    def _get_particle_unsave(self, key):
-        return self._get_subset_for_key(key)._get_particle_unsave(key)
+    def _get_particle_unsave(self, key, index = -1):
+        return self._get_subset_for_key(key)._get_particle_unsave(key, index)
         
     def _split_keys_over_sets(self, keys):
         split_sets = [ [] for x in self._private.particle_sets ]
@@ -2390,7 +2395,12 @@ class Particle(object):
     """
     __slots__ = ["key", "particles_set", "_set_index", "_set_version"]
     
-    
+    # these are defined so that numpy conversion is way faster
+    # otherwhise it would go through the __getattr__ function
+    # which will slow it down by a factor 3
+    __array_interface__ = {'shape':()}
+    # __array_struct__
+    # __array__ need to speed up access of these!
     
     def __init__(self, key = None, particles_set = None, set_index = -1, set_version = -1, **keyword_arguments):
         if particles_set is None:
@@ -2410,7 +2420,7 @@ class Particle(object):
             setattr(self, attribute_name, attribute_value)
             
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):  
-        if self._set_version != self.particles_set._get_version():
+        if self._set_index < 0 or self._set_version != self.particles_set._get_version():
             object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
             object.__setattr__(self, "_set_version", self.particles_set._get_version())
                      
@@ -2423,7 +2433,7 @@ class Particle(object):
         
     def __getattr__(self, name_of_the_attribute):
         try:
-            if self._set_version != self.particles_set._get_version():
+            if self._set_index < 0 or self._set_version != self.particles_set._get_version():
                 object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
                 object.__setattr__(self, "_set_version", self.particles_set._get_version())
             return self.particles_set._get_value_of_attribute(self, self._set_index, name_of_the_attribute)
