@@ -361,14 +361,7 @@ class VectorQuantity(Quantity):
 
     @classmethod
     def arange(cls, begin, end, step):
-        unit = begin.unit
-        #insert code here to throw exception if others have different unit
-        
-        val_begin = begin.value_in(unit)
-        val_end = end.value_in(unit)
-        val_step = step.value_in(unit)
-        array = unit(numpy.arange(val_begin, val_end, val_step))
-        return array
+        return arange(begin, end, step)
 
     @property
     def shape(self):
@@ -1123,3 +1116,30 @@ def to_quantity(input):
     else:
         from amuse.units.units import none
         return new_quantity(input, none)
+
+def arange(start, stop, step):
+    if not is_quantity(start):
+        return numpy.arange(start, stop, step)
+        
+    unit = start.unit    
+    start_value = start.value_in(unit)
+    stop_value = stop.value_in(unit)
+    step_value = step.value_in(unit)
+    array = numpy.arange(start_value, stop_value, step_value)
+    return new_quantity(array, unit)
+    
+
+def linspace(start, stop, num = 50,  endpoint=True, retstep=False):
+    if not is_quantity(start):
+        return numpy.linspace(start, stop, num,  endpoint, retstep)
+    
+    unit = start.unit
+    start_value = start.value_in(unit)
+    stop_value = stop.value_in(unit)
+    array = numpy.linspace(start_value, stop_value, num,  endpoint, retstep)
+    
+    if retstep:
+        return new_quantity(array[0], unit), new_quantity(array[1], unit)
+    else:
+        return new_quantity(array, unit)
+

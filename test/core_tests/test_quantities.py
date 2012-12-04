@@ -9,6 +9,8 @@ from amuse.units.quantities import *
 from amuse.units import si
 from amuse.units import units
 from amuse.units import nbody_system
+from amuse.units import quantities
+
 
 from amuse import datamodel
 class TestQuantities(amusetest.TestCase):
@@ -364,3 +366,25 @@ class TestAdaptingVectorQuantities(amusetest.TestCase):
         self.assertEquals(len(x), 10)
         self.assertEquals(x.number, numpy.array([1,2,3,4,5,6,7,8,9,10]))
         self.assertEquals(x, [1,2,3,4,5,6,7,8,9,10]|units.kg)
+
+class TestNumpyFunctionWithUnits(amusetest.TestCase):
+
+    def test1(self):
+        array = quantities.arange(0 | units.kg, 10 | units.kg, 1 | units.kg)
+        self.assertEquals(len(array),  10)
+        self.assertAlmostRelativeEquals(array, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] | units.kg)
+    
+        
+    def test2(self):
+        array = quantities.linspace(0 | units.kg, 10 | units.kg, 11)
+        self.assertEquals(len(array),  11)
+        self.assertAlmostRelativeEquals(array, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] | units.kg)
+        
+        
+    def test3(self):
+        array = quantities.linspace(0 , 10 , 11)
+        self.assertEquals(len(array),  11)
+        self.assertAlmostRelativeEquals(array, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        
+        
+        

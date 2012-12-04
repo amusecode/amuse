@@ -230,7 +230,8 @@ class HDF5LinkedAttribute(HDF5Attribute):
         kinds = self.kind_dataset[:][indices]
         references = self.ref_dataset[:][indices]
         keys = self.keys_dataset[:][indices]
-        result = LinkedArray(numpy.empty_like(kinds, dtype = numpy.object))
+        shape = kinds.shape
+        result = LinkedArray(numpy.empty(shape, dtype = numpy.object))
         
         for index, (kind, reference) in enumerate(zip(kinds, references)):
             if   kind == 0:
