@@ -662,25 +662,27 @@ class StoreHDF(object):
                 dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
             elif isinstance(quantity, LinkedArray):
                 subgroup = attributes_group.create_group(attribute)
-                kind_array = numpy.zeros_like(quantity, dtype = numpy.int16)
-                
+                kind_array = numpy.empty_like(quantity, dtype = numpy.int16)
                 ref_dtype = h5py.special_dtype(ref=h5py.Reference)
                 ref_array = numpy.empty_like(quantity, dtype = ref_dtype)
                 ref_dataset = subgroup.create_dataset('ref', data=ref_array)
-                key_array = numpy.zeros_like(quantity, dtype = numpy.uint64)
+                key_array = numpy.empty_like(quantity, dtype = numpy.uint64)
                 for index, object in enumerate(quantity):
                     if object is None:
                         kind_array[index] = 0
+                        key_array[index] = 0
                     elif isinstance(object, Particle):
                         kind_array[index] = 1
                         key_array[index] = object.key
                         links.append([group, index, ref_dataset, object.particles_set])
                     elif isinstance(object, GridPoint):
                         kind_array[index] = 2
+                        key_array[index] = 0
                         raise Exception("not done yet")
                         links.append([group, index, ref_dataset, object])
                     elif isinstance(object, AbstractSet):
                         kind_array[index] = 3
+                        key_array[index] = 0
                         links.append([group, index,  ref_dataset, object])
                     else:
                         raise Exception("unsupported type")
