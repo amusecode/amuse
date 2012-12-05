@@ -179,7 +179,7 @@ class AbstractParticleSet(AbstractSet):
     def __iter__(self):
         original_set = self._original_set()
         for key, index in zip(self.get_all_keys_in_store(), self.get_all_indices_in_store()):
-            yield original_set._get_particle_unsave(key)
+            yield original_set._get_particle_unsave(key, index)
 
     
     def get_all_particles_at(self, *indices):
@@ -1384,7 +1384,12 @@ class ParticlesSuperset(AbstractParticleSet):
             return None
             
     def _get_particle_unsave(self, key, index = -1):
-        return self._get_subset_for_key(key)._get_particle_unsave(key, index)
+        if index >= 0:
+            offset, subset = self._get_offset_and_subset_for_index(index)
+            index -= offset
+            return subset._get_particle_unsave(key, subset.get_all_indices_in_store()[index])
+        else:
+            return self._get_subset_for_key(key)._get_particle_unsave(key)
         
     def _split_keys_over_sets(self, keys):
         split_sets = [ [] for x in self._private.particle_sets ]
@@ -1570,6 +1575,15 @@ class ParticlesSuperset(AbstractParticleSet):
                 return set
         return None
 
+    def _get_offset_and_subset_for_index(self, index):
+        offset = 0
+        for set in self._private.particle_sets:
+            setlen = len(set)
+            if index >= offset and index < (offset+setlen):
+                return offset, set
+            offset += setlen
+        return None, None
+
     def _is_superset(self):
         return True
 
@@ -1638,7 +1652,7 @@ class ParticlesSubset(AbstractParticleSet):
         else:
             key = keys
             if key > 0 and key < 18446744073709551615L: #2**64 - 1
-                return self._original_set()._get_particle_unsave(key)
+                return self._private.particles._get_particle_unsave(key, self.get_all_indices_in_store()[index])
             else:
                 return None
     
@@ -1825,7 +1839,7 @@ class ParticlesMaskedSubset(ParticlesSubset):
         else:
             key = keys
             if not key is ma.masked:
-                return self._original_set()._get_particle_unsave(key)
+                return self._original_set()._get_particle_unsave(key, self.get_all_indices_in_store()[index])
             else:
                 return None
     
@@ -2500,7 +2514,7 @@ class Particle(object):
         >>> print p
         Particle(10, mass=5.0 kg, x=10.2 m)
         """
-        if self._set_version != self.particles_set._get_version():
+        if self._set_index < 0 or self._set_version != self.particles_set._get_version():
             object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
             object.__setattr__(self, "_set_version", self.particles_set._get_version())
             

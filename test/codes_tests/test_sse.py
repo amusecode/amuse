@@ -675,6 +675,9 @@ class TestSSE(TestWithMPI):
     
     def test18(self):
         print "SSE validation"
+        sse_src_path = os.path.join(os.path.dirname(sys.modules[SSE.__module__].__file__), 'src')
+        if not os.path.exists(os.path.join(sse_src_path, "evolve.in")):
+            self.skip("Not in a source release")
         instance = SSE()
         instance.particles.add_particle(Particle(mass = 1.416 | units.MSun))
         instance.particles[0].evolve_for(7000.0 | units.Myr)
@@ -682,7 +685,6 @@ class TestSSE(TestWithMPI):
         instance.stop()
        
         testpath = get_path_to_results()
-        sse_src_path = os.path.join(os.path.dirname(sys.modules[SSE.__module__].__file__), 'src')
         shutil.copy(os.path.join(sse_src_path, "evolve.in"), os.path.join(testpath, "evolve.in"))
         
         call([os.path.join(sse_src_path, "sse")], cwd=testpath)
