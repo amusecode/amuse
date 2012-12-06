@@ -431,3 +431,58 @@ class TestParticleLinkToGrids(amusetest.TestCase):
         channel.copy()
         
         self.assertAlmostRelativeEquals(particles_copy[0].grid[1][1].rho, 6 |  units.kg / units.m**3)
+
+class TestGridPointLinkToParticle(amusetest.TestCase):
+    """
+    Tests One-to-One relation between gridpoints and particles
+    """
+    def test1(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        
+        grid[0][0].particle = particles[1]
+        
+        self.assertAlmostRelativeEquals(grid[0][0].particle.mass, 3 | units.kg)
+        self.assertEquals(grid[0][0].particle, particles[1])
+        self.assertEquals(grid[1][1].particle, None)
+
+    def test2(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        
+        grid[0][0].particle = particles[1]
+        
+        grid_copy = grid.copy()
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].particle.mass, 3 | units.kg)
+        self.assertEquals(grid_copy[0][0].particle, particles[1])
+        self.assertEquals(grid_copy[1][1].particle, None)
+
+        grid[0][0].particle.mass = 5 | units.kg
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].particle.mass, 3 | units.kg)
+
+    def test3(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        
+    
+        grid_copy = grid.copy()
+    
+        grid[0][0].particle = particles[1]
+        
+        channel = grid.new_channel_to(grid_copy)
+        channel.copy()
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].particle.mass, 3 | units.kg)
+        self.assertEquals(grid_copy[0][0].particle, particles[1])
+        self.assertEquals(grid_copy[1][1].particle, None)

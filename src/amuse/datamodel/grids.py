@@ -27,7 +27,7 @@ class AbstractGrid(AbstractSet):
         if attribute in self._derived_attributes: 	 	 
             return self._derived_attributes[attribute].set_value_for_entity(self, key, value) 	 	 
         else:
-            return self.set_values_in_store(key, [attribute], value)
+            return self.set_values_in_store(key, [attribute], [value])
             
     def _get_values_for_entity(self, key, attributes):
         return self.get_values_in_store(key, attributes)
@@ -66,7 +66,19 @@ class AbstractGrid(AbstractSet):
         attributes = self.get_attribute_names_defined_in_store()
         values = self.get_values_in_store(None, attributes)
         result = self._factory_for_new_collection()(*self.shape)
-        result.set_values_in_store(None, attributes, values)
+        
+        if memento is None:
+            memento = {}
+        memento[id(self._original_set())] = result
+        
+        converted = []
+        for x in values:
+            if isinstance(x, LinkedArray):
+                converted.append(x.copy(memento, keep_structure))
+            else:
+                converted.append(x)
+        result.set_values_in_store(None, attributes, converted)
+        
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         return result
@@ -266,6 +278,7 @@ class GridPoint(object):
         try:
             self.grid._set_value_of_attribute(self.index, name_of_the_attribute, new_value_for_the_attribute)
         except Exception as ex:
+            raise
             raise AttributeError("Could not assign to attribute {0}.".format(name_of_the_attribute))
     
     def __getattr__(self, name_of_the_attribute):

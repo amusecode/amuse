@@ -422,6 +422,18 @@ class TestGridAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(points[cell[7]], ([0.2, 0.25, 0.5]|units.m) + ([0.2,0.25,0.5] | units.m))
         
         self.assertEquals(connectivity[0][0][0], [ 0,15,  3, 18,  1, 16, 4, 19])
+    
+    def test7(self):
+        grid = datamodel.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        
+        self.assertAlmostRelativeEquals(grid[1][2][3].position, [3,5,7] |units.m)
+        
+        grid[1][2][3].position = [7,5,3] |units.m
+        self.assertAlmostRelativeEquals(grid[1][2][3].position, [7,5,3] |units.m)
+        
+        
+        grid[1][2][3].position += [1,2,3] |units.m
+        self.assertAlmostRelativeEquals(grid[1][2][3].position, [8,7,6] |units.m)
         
 class TestGridSampling(amusetest.TestCase):
     

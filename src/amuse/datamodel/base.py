@@ -1279,10 +1279,10 @@ class LinkedArray(numpy.ndarray):
         
         if memento is None:
             memento = {}
-            
-        result = numpy.copy(self)
+        
+        result = LinkedArray(self.flatten())
         index = 0
-        for x in self:
+        for x in result:
             if x is None:
                 result[index] = None
             elif isinstance(x, Particle):
@@ -1308,7 +1308,7 @@ class LinkedArray(numpy.ndarray):
                 raise exceptions.AmuseException("unkown type in link {0}, copy not implemented".format(type(x)))
             index += 1
         
-        return result
+        return result.reshape(self.shape)
     
     def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None):
         from amuse.datamodel.particles import Particle
@@ -1317,7 +1317,7 @@ class LinkedArray(numpy.ndarray):
         if memento is None:
             memento = dict()
             
-        result = LinkedArray(numpy.copy(self))
+        result = LinkedArray(self.flatten())
         index = 0
         for x in self:
             if x is None:
@@ -1344,7 +1344,7 @@ class LinkedArray(numpy.ndarray):
                 raise exceptions.AmuseException("unkown type in link {0}, transfer link not implemented".format(type(x)))
                 
             index = index + 1
-        return result
+        return result.reshape(self.shape)
         
     def as_set(self):
         from amuse.datamodel.particles import Particle
@@ -1354,7 +1354,9 @@ class LinkedArray(numpy.ndarray):
         mask = []
         keys = []
         index = 0
-        for x in self:
+        
+        flattened = LinkedArray(self.flatten())
+        for x in flattened:
             if x is None:
                 mask.append(True)
                 keys.append(0)
