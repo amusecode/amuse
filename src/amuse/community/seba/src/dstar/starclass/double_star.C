@@ -2079,8 +2079,10 @@ real double_star::mdot_according_to_roche_radius_change(star* donor,
     real mtt = 1./abs(J_mb + J_gwr);
     real mtt_nuc = donor->nucleair_evolution_timescale();
     
-    if (mtt_nuc < mtt)
-        return m_don / mtt;        
+    if (J_mb+J_gwr == 0 | mtt_nuc < mtt){
+        return m_don / mtt_nuc / 2.; // so that donor_timescale = nuclear_timescale        
+    
+    }
     
     real md_dot = Starlab::min(donor->get_total_mass(), 
     			 cnsts.safety(minimum_mass_step));            
