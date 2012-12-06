@@ -45,8 +45,10 @@ class main_sequence : public single_star {
         stellar_type get_element_type() {return Main_Sequence;}
         bool remnant() {return false;}
         bool magnetic() {
-	  return (low_mass_star() && get_total_mass()>=
-		  cnsts.parameters(magnetic_mass_limit))?true:false;
+	  return (get_total_mass()<=
+		  cnsts.parameters(maximum_magnetic_mass_limit) && 
+	           get_total_mass()>=
+		  cnsts.parameters(minimum_magnetic_mass_limit))?true:false;
 	}
 
 	void adjust_next_update_age();

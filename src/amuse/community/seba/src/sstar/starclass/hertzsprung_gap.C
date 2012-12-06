@@ -378,8 +378,7 @@ real hertzsprung_gap::zeta_thermal() {
 
       real z;
 
-//      if (get_relative_mass()<=0.4)
-      if (get_relative_mass()<=0.3) // 0.3 coincides with the magnetic_mass_limit
+      if (get_relative_mass()<=0.4)
          z = 0;         // no better estimate present.
       else if (low_mass_star())
          z = -2; 	// -10 according to Pols & Marinus 1994

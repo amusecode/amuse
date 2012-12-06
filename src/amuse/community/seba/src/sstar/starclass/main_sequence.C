@@ -573,7 +573,7 @@ real main_sequence::zeta_adiabatic() {
       real z;
 
 //  if (get_relative_mass()<=0.4)         // convective envelope
-  if (get_relative_mass()<=0.3)           // 0.3 coincides with the magnetic_mass_limit
+  if (get_relative_mass()<=0.3)           // 0.3 coincides with the minimum_magnetic_mass_limit
 	z = -cnsts.mathematics(one_third);
   else if(low_mass_star()) {
 	z = 2; // was 0.55 but this causes cv's to transfer on a dynamicall
@@ -596,7 +596,7 @@ real main_sequence::zeta_thermal() {
   real z = -1;
 
 //  if (get_relative_mass()<=0.4)
-  if (get_relative_mass()<=0.3) // 0.3 coincides with the magnetic_mass_limit
+  if (get_relative_mass()<=0.3) // 0.3 coincides with the minimum_magnetic_mass_limit
          z = 0;                 // Unknown
   else if (low_mass_star())
 	z = 0.9;	                // Pols & Marinus 1995  // (GN+SPZ Apr 29 1999) was -0.5
