@@ -28,7 +28,7 @@ from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 def plot_particles(particles, name_of_the_figure):
-    
+    return 1
     if HAS_MATPLOTLIB:
         print "plotting the data"
         
@@ -157,20 +157,15 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr,
         time += 0.25 | units.Myr
         
         print "Gravity evolve step starting"
-        gravity_thread = AmuseEvolveThread(gravity, time)
-        gravity_thread.start()
+        gravity_evolve = gravity.evolve_model.async(time)
         
         print "Stellar evolution step starting"
-        stellar_evolution_thread = AmuseEvolveThread(stellar_evolution, time)
-        stellar_evolution_thread.start()
+        stellar_evolution_evolve = stellar_evolution.evolve_model(time)
 
-        gravity_thread.join()
-        print "Gravity evolve step done.  Thread run duration = %.3f" %\
-            gravity_thread.run_time
-
-        stellar_evolution_thread.join()
-        print "Stellar evolution step done.  Thread run duration = %.3f" %\
-            stellar_evolution_thread.run_time
+        print "Stellar evolution step done."
+        
+        gravity_evolve.result()
+        print "Gravity evolve step done."
 
         from_gravity_to_model.copy()
         from_stellar_evolution_to_model.copy_attributes(["mass", "radius"])

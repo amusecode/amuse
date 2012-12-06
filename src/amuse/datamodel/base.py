@@ -203,7 +203,6 @@ class AbstractAttributeValue(object):
         return hasattr(self._values, "is_quantity") and self._values.is_quantity()
     
     def __getattr__(self, name):
-        #print "getattr", name
         return getattr(self._values, name)
     
      
