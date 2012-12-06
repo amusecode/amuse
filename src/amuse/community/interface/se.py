@@ -800,6 +800,7 @@ class InternalStellarStructure(object):
         object.add_method(set_name, 'get_chemical_abundance_profiles')
         object.add_method(set_name, 'set_chemical_abundance_profiles')
         object.add_method(set_name, 'calculate_core_mass')
+        object.add_method(set_name, 'calculate_helium_exhausted_core_mass')
     
     def define_errorcodes(self, object):
         object.add_errorcode(-21, 'Specified particle does not exist.')
@@ -995,12 +996,36 @@ class InternalStellarStructure(object):
             densities = densities
         ).enclosed_mass[index_core].as_quantity_in(units.MSun)
     
+    def calculate_helium_exhausted_core_mass(self, indices_of_the_stars, species=None, core_He_abundance_limit=1.0e-4):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying the core mass")
+        chemical_abundance_profiles = self.get_chemical_abundance_profiles(indices_of_the_stars)
+        
+        helium_abundance_profile = 0 * chemical_abundance_profiles[0]
+        for i, species_name in enumerate(self.get_names_of_species(indices_of_the_stars)):
+            if "he" in species_name or "He" in species_name:
+                helium_abundance_profile += chemical_abundance_profiles[i]
+        index_core = numpy.searchsorted(helium_abundance_profile, core_He_abundance_limit)
+        
+        if species is None:
+            densities = self.get_density_profile(indices_of_the_stars)
+        else:
+            fraction = 0 * chemical_abundance_profiles[0]
+            for i, species_name in enumerate(self.get_names_of_species(indices_of_the_stars)):
+                if species_name in species:
+                    fraction += chemical_abundance_profiles[i]
+            densities = self.get_density_profile(indices_of_the_stars) * fraction
+        
+        return EnclosedMassInterpolator(
+            radii = self.get_radius_profile(indices_of_the_stars),
+            densities = densities
+        ).enclosed_mass[index_core].as_quantity_in(units.MSun)
+    
     def merge_colliding(self, primaries, secondaries, collision_code, 
-            code_options=dict(), code_parameters=dict(), return_merge_products=["se", "gd"]):
+            code_options=dict(), code_parameters=dict(), return_merge_products=["se", "gd"], create_new_key=True):
         return merge_colliding_in_stellar_evolution_code(self, 
             primaries, secondaries, collision_code, 
             code_options=code_options, code_parameters=code_parameters, 
-            return_merge_products=return_merge_products)
+            return_merge_products=return_merge_products, create_new_key=create_new_key)
     
 
 def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries, secondaries, collision_code, 
