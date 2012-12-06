@@ -181,7 +181,10 @@ class Grid(AbstractGrid):
             return GridPoint(index, self)
         else:
             return SubGrid(self, index)
-            
+    
+    def _get_gridpoint(self, index):
+        return GridPoint(index, self)
+        
     def number_of_dimensions(self):
         return len(self.shape)
         
