@@ -2059,122 +2059,55 @@ void double_star::gravrad(const real dt) {
      }
 }
 
-#if 0
-real double_star::mdot_according_to_roche_radius_change(star* donor,
-                                                   star* accretor) {
-//	Mass lost from donor due to loss of angular momentum by
-//	magnetic braking and gravitational wave-radiation.
-//	mass-transfer timescale becomes comparable to
-//	thermal time-scale.
-
-//cerr<<"real double_star::mdot_according_to_roche_radius_change() = ";
-        real mdot = 0;
-     if (bin_type != Merged && bin_type != Disrupted) {
-
-        real r_don = donor->get_effective_radius();
-        real m_don = donor->get_total_mass();
-        real m_acc = accretor->get_total_mass();
-
-        real zeta_lobe = zeta(donor, accretor);
-        real J_mb = 0;
-        if (donor->magnetic()) {
-           real c_mb = -3.8e-30*cnsts.parameters(solar_mass)*cnsts.physics(G)
-	             / cnsts.parameters(solar_radius);
-           J_mb = cnsts.physics(Myear)*c_mb * pow(m_don+m_acc, 2)
-	        * pow(r_don, cnsts.parameters(magnetic_braking_exponent))
-                / (m_acc*pow(semi, 5)); 
-        }
-
-        real J_gr=0;
-        if (semi/sqrt(get_total_mass())<=6.) {
-           real c_gr = -32*pow(cnsts.parameters(solar_mass)*cnsts.physics(G), 3)
-	             / (5*pow(cnsts.physics(C), 5)
-		     *    pow(cnsts.parameters(solar_radius), 4));
-           J_gr = cnsts.physics(Myear)*c_gr*m_don*m_acc*(m_don+m_acc)/pow(semi, 4);
-        }
-
-//		On the nomination for checking!
-        real drdot_dr=0;	//No stellar size variation.
-        mdot = m_don*abs((2*(J_mb+J_gr) - drdot_dr)
-             /           (zeta_lobe + 2*(5./6. - m_don/m_acc)));
-     }
-      
-//cerr<<mdot<<endl;
-     return mdot;
-}
-#endif
-
-#if 0
-//      Mass lost from donor due to loss of angular momentum by
-//      magnetic braking and gravitational wave-radiation.
-//      mass-transfer timescale becomes comparable to
-//      themal time-scale.
-// New implementations (SPZ+GN:22 Sep 1998)
-real double_star::mdot_according_to_roche_radius_change(star* donor,
-							star* accretor) {
-  real mdot = 0;
-  if (bin_type != Merged && bin_type != Disrupted) {
-
-    real m_don = donor->get_total_mass();
-    real m_acc = accretor->get_total_mass();
-
-    real zeta_th = donor->zeta_thermal();
-    real rl = roche_radius(donor);
-    
-    //    real dm = 0.01*min(m_don, m_acc);
-    // we use minimum_mass_step also in ::zeta
-// (GN+SPZ May  3 1999) in real mass transfer timestep we use 
-// delta m \sim timestep_factor * relative_mass
-// so
-//    real dm = cnsts.safety(minimum_mass_step);
-//    dm can become larger than donor mass.
-//    real dm = cnsts.safety(timestep_factor) * donor->get_relative_mass();
-    real dm = cnsts.safety(timestep_factor) * donor->get_total_mass();
-
-    real rl_2 = roche_radius(semi, m_don-dm, m_acc+dm);
-
-    real J_mb = mb_angular_momentum_loss();
-    real J_gwr = gwr_angular_momentum_loss(m_don, m_acc, semi);
-
-    // Note: dm must be negative, because we talk about the mass losing star
-    real zeta_dimensionless_lobe = (rl_2 - rl)*m_don/(-1.*dm*rl);
-    mdot = m_don*abs((2*(J_mb+J_gwr))
-	 / (2*(m_don/m_acc-1.) - zeta_th + zeta_dimensionless_lobe));
-
-   real mdot_analytic = m_don*J_gwr/(m_don/m_acc - 2./3);
-
-  }
-
-  return mdot;
-}
-
-#endif
-
 
 //      Mass lost from donor due to loss of angular momentum by
 //      magnetic braking and gravitational wave-radiation.
 // New implementations (SilT+GN: April 2012)
+// New implementations (SilT+GN: Dec 2012)
 real double_star::mdot_according_to_roche_radius_change(star* donor,
-							star* accretor, const real z_star) {
-  real mdot = 0;
+							star* accretor) {
+
+  real mtr = 0;
   if (bin_type != Merged && bin_type != Disrupted) {
 
     real m_don_rel = donor->get_relative_mass();
+    real m_acc = accretor->get_total_mass();   
     real m_don = donor->get_total_mass();
-    real m_acc = accretor->get_total_mass();
 
     real J_mb = mb_angular_momentum_loss();
     real J_gwr = gwr_angular_momentum_loss(m_don, m_acc, semi);
+    real mtt = 1./abs(J_mb + J_gwr);
+    real mtt_nuc = donor->nucleair_evolution_timescale();
+    
+    if (mtt_nuc < mtt)
+        return m_don / mtt;        
+    
+    real md_dot = Starlab::min(donor->get_total_mass(), 
+    			 cnsts.safety(minimum_mass_step));            
+    real dt = md_dot * mtt/donor->get_total_mass();
+    real ma_dot = accretor->accretion_limit(md_dot, dt);
+    real eta = ma_dot/md_dot; 
+    real z_star = donor->zeta_adiabatic();
+    real zeta_l = zeta_scaled(donor, accretor, mtt);
 
     // Note: dm must be negative, because we talk about the mass losing star
-   real mtt = m_don_rel * abs((J_mb + J_gwr));
-   real zeta_l = zeta_scaled(donor, accretor, mtt);
-   mdot = m_don*abs((2*(J_mb+J_gwr))
-	 / (2*(m_don/m_acc-1.) - z_star + zeta_l));
+    if (!accretor->remnant()) {
 
+        // General case: semi-conservative mass transfer.
+       real c_Jloss = cnsts.parameters(specific_angular_momentum_loss);
+       mtr = m_don*abs(2*(J_mb+J_gwr))
+    	 / (2 - 2*eta*m_don/m_acc - (1-eta)*(1+2*c_Jloss)*m_don/(m_don+m_acc) + z_star - zeta_l);
+    }
+    else {
+        
+        // Special case: mass transfer to compact object as accretor.
+        // Only taken into account the posibility
+        // 1) eta>0: mass lost as wind from accretor.
+       mtr = m_don*abs(2*(J_mb+J_gwr))
+    	 / (2 - 2*m_don/m_acc - (1-eta)*m_don/(m_don+m_acc) + z_star - zeta_l);
+    }
   }
-
-  return mdot;
+  return mtr;
 }
 
 

@@ -969,6 +969,7 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
     z_star = z_ad;    
   }
   else {
+
     cerr << "No clear indication for mass transfer timescale: "
 	 << "Kelvin-Helmholds time-scale assumed."<<endl;
 
@@ -977,22 +978,27 @@ real single_star::mass_transfer_timescale(mass_transfer_type &type) {
     z_star = z_ad;    
   }
 
-  if (low_mass_star()) {
 
-    real mdot = 0;
-    if (is_binary_component())
-      mdot = get_binary()
-              ->mdot_according_to_roche_radius_change(this, get_companion(), z_star);
-    if (mdot > 0) {
+  real mtr = 0;
+  if (is_binary_component()){
 
-      real mtt_rl = get_relative_mass()/mdot;
-      if(mtt>mtt_rl) {
+    mtr = get_binary()->mdot_according_to_roche_radius_change(this, get_companion());         
+    if (mtr <= 0) {
+        
+      mtt = sqrt(kelvin_helmholds_timescale()*dynamic_timescale());
+      type = Dynamic;
+    }         
+    else {
 
-	mtt = mtt_rl;
-	type = AML_driven;
-      }      
+      real mtt_rl = get_total_mass()/mtr;
+       if(mtt>mtt_rl) {
+
+         mtt = mtt_rl;
+	     type = AML_driven;
+       }      
     }
   }
+
 
   if (REPORT_MASS_TRANSFER_TIMESCALE) {
     cerr << "single_star::mass_transfer_timescale()" << endl;

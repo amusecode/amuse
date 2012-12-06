@@ -216,7 +216,7 @@ class  star : public starbase
 	
 //		binary evolution.
         virtual real mdot_according_to_roche_radius_change(
-                        star*,star*, const real) {return 0;}
+                        star*,star*) {return 0;}
         virtual real mass_transfer_timescale(mass_transfer_type&)
 	                                     {return 0;}
         virtual real accretion_limit(const real, const real) {return 0;}

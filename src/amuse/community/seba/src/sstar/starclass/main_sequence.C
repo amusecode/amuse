@@ -572,34 +572,35 @@ void main_sequence::adjust_donor_age(const real mdot) {
 real main_sequence::zeta_adiabatic() {
       real z;
 
-      if (get_relative_mass()<=0.4)         // convective envelope
+//  if (get_relative_mass()<=0.4)         // convective envelope
+  if (get_relative_mass()<=0.3)           // 0.3 coincides with the magnetic_mass_limit
 	z = -cnsts.mathematics(one_third);
-      else if(low_mass_star()) {
+  else if(low_mass_star()) {
 	z = 2; // was 0.55 but this causes cv's to transfer on a dynamicall
 	       // timescale where aml-driven is expected.
-      }
-      else if(medium_mass_star()) {
+  }
+  else if(medium_mass_star()) {
 	z = 4; // Eggleton's book 
-      } 
-      else
+  } 
+  else
 	z = 4; // somewhare between -100 and 100?
 
       return z;
-   }
+}
 
 // Thermal responce function for main_sequence star.
 // Used for determining mass_transfer_timescale.
 // (SPZ+GN: 1 Oct 1998)
 real main_sequence::zeta_thermal() {
 
-      real z = -1;
+  real z = -1;
 
-      if (get_relative_mass()<=0.4)
-         z = 0;                         // Unknown
-      else if (low_mass_star())
-	z = 0.9;	                // Pols & Marinus 1995
-                                        // (GN+SPZ Apr 29 1999) was -0.5
-      else 
+//  if (get_relative_mass()<=0.4)
+  if (get_relative_mass()<=0.3) // 0.3 coincides with the magnetic_mass_limit
+         z = 0;                 // Unknown
+  else if (low_mass_star())
+	z = 0.9;	                // Pols & Marinus 1995  // (GN+SPZ Apr 29 1999) was -0.5
+  else 
 	z = 0.55; 	                //  (GN+SPZ Apr 29 1999) was -1
 
       return z;

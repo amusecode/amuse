@@ -162,7 +162,7 @@ class double_star : public star
 	void angular_momentum_envelope_ejection(star*, star*);
         void dynamic_mass_transfer();
         void tidal_instability();
-        real mdot_according_to_roche_radius_change(star*, star*, const real);
+        real mdot_according_to_roche_radius_change(star*, star*);
         void adjust_binary_after_wind_loss(star*, 
                                            const real, const real);
 
