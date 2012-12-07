@@ -673,3 +673,28 @@ class TestGridPointLinkToGrid(amusetest.TestCase):
         grid_copy[0][1].rho = 6 | units.kg / units.m**3
         
         self.assertAlmostRelativeEquals(grid_copy[0][0].container[0][1].rho, 6  | units.kg / units.m**3)
+        
+    
+    def test4(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        grid[...,0].container = grid
+
+        self.assertEquals(id(grid[0][0].container), id(grid))
+        self.assertEquals(id(grid[1][0].container), id(grid)) 
+        self.assertEquals(grid[0][1].container, None)
+        self.assertEquals(grid[1][1].container, None)
+        
+    
+    def test5(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        grid.container = grid
+
+        for index in numpy.ndindex(*grid.shape):
+            self.assertEquals(id(grid[index].container), id(grid))
+            self.assertEquals(grid[index].rho, (index[0] * 3 + index[1] + 2) | units.kg / units.m**3) 
