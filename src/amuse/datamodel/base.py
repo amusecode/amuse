@@ -1279,7 +1279,7 @@ class LinkedArray(numpy.ndarray):
         
         if memento is None:
             memento = {}
-        
+            
         result = LinkedArray(self.flatten())
         index = 0
         for x in result:
@@ -1302,7 +1302,10 @@ class LinkedArray(numpy.ndarray):
                 
                 result[index] = GridPoint(x.index, copy_of_container)
             elif isinstance(x, AbstractSet):
-                copy_of_container = x.copy(memento, keep_structure)
+                if id(x) in memento:
+                    copy_of_container = memento[id(x)]
+                else:
+                    copy_of_container = x.copy(memento, keep_structure)
                 result[index] = copy_of_container
             else:
                 raise exceptions.AmuseException("unkown type in link {0}, copy not implemented".format(type(x)))
@@ -1340,7 +1343,10 @@ class LinkedArray(numpy.ndarray):
                     copy_of_container = x.copy(memento, keep_structure = True)
                     result[index] = copy_of_container
                 else:
-                    result[index] = x
+                    if from_container is None or x is from_container:
+                        result[index] = to_container
+                    else:
+                        result[index] = x
             else:
                 raise exceptions.AmuseException("unkown type in link {0}, transfer link not implemented".format(type(x)))
                 

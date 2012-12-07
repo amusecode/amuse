@@ -318,7 +318,6 @@ class GridInformationChannel(object):
     def copy_attributes(self, attributes):
         values = self.source.get_values_in_store(self.index, attributes)
         
-        
         converted = []
         for x in values:
             if isinstance(x, LinkedArray):

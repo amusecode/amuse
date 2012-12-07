@@ -606,3 +606,70 @@ class TestGridPointLinkToGridPoint(amusetest.TestCase):
         grid_copy[0][1].rho = 6 | units.kg / units.m**3
         
         self.assertAlmostRelativeEquals(grid_copy[0][0].neighbour.rho, 6  | units.kg / units.m**3)
+        
+
+class TestGridPointLinkToGrid(amusetest.TestCase):
+    """
+    Tests One-to-Many relation between gridpoints
+    """
+    def test1(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        grid[0][0].container = grid
+        
+        self.assertAlmostRelativeEquals(grid[0][0].container[0][1].rho, 3  | units.kg / units.m**3)
+        self.assertEquals(grid[0][0].container[0][1], grid[0][1])
+        self.assertEquals(grid[1][1].container, None)
+
+    def test2(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        grid[0][0].container = grid
+        
+        grid_copy = grid.copy()
+        
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].container[0][1].rho, 3  | units.kg / units.m**3)
+        self.assertEquals(grid_copy[0][0].container[0][1], grid_copy[0][1])
+        self.assertEquals(grid_copy[1][1].container, None)
+
+
+        grid[0][0].container[0][1].rho = 5  | units.kg / units.m**3
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].container[0][1].rho, 3  | units.kg / units.m**3)
+        
+        grid_copy[0][1].rho = 6 | units.kg / units.m**3
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].container[0][1].rho, 6  | units.kg / units.m**3)
+
+    
+
+    def test3(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        
+        grid_copy = grid.copy()
+        
+        grid[0][0].container = grid
+        
+        channel = grid.new_channel_to(grid_copy)
+        channel.copy()
+        
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].container[0][1].rho, 3  | units.kg / units.m**3)
+        self.assertEquals(grid_copy[0][0].container[0][1], grid_copy[0][1])
+        self.assertEquals(grid_copy[1][1].container, None)
+
+        grid[0][0].container[0][1].rho = 5  | units.kg / units.m**3
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].container[0][1].rho, 3  | units.kg / units.m**3)
+        
+        grid_copy[0][1].rho = 6 | units.kg / units.m**3
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].container[0][1].rho, 6  | units.kg / units.m**3)

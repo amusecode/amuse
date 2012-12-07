@@ -2454,7 +2454,6 @@ class Particle(object):
                 object.__setattr__(self, "_set_version", self.particles_set._get_version())
             return self.particles_set._get_value_of_attribute(self, self._set_index, name_of_the_attribute)
         except Exception as ex:
-            raise
             raise AttributeError("You tried to access attribute '{0}' but this attribute is not defined for this set.".format(name_of_the_attribute, ex))
     
     def children(self):
