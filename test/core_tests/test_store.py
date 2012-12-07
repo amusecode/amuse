@@ -643,3 +643,40 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         
         self.assertAlmostRelativeEquals(loaded_stars[0].gas.y,1.0 | units.km)
         self.assertAlmostRelativeEquals(loaded_stars[1].gas.y,4.0 | units.km)
+
+    def test24(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test24.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        stars = Particles(2)
+        stars[0].x = 1.0  | units.km
+        stars[1].x = 2.0  | units.km
+        
+        gas = Grid(2,3)
+        gas.y = [[1.0, 2.0, 3.0], [4.0,5.0,6.0]] | units.km
+        gas[0][0].particle = stars[0]
+        gas[1][2].particle = stars[0]
+        gas[1][0].particle = stars[1]
+        
+        #stars[0].gas = gas[0][0]
+        #stars[1].gas = gas[1][0]
+        
+        self.assertAlmostRelativeEquals(gas[0][0].particle.x,1.0 | units.km)
+        self.assertAlmostRelativeEquals(gas[1][2].particle.x,1.0 | units.km)
+        self.assertAlmostRelativeEquals(gas[1][0].particle.x,2.0 | units.km)
+        
+        io.write_set_to_file(gas, output_file, "hdf5", version = self.store_version())
+        loaded_gas = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
+        
+        self.assertAlmostRelativeEquals(loaded_gas[0][0].particle.x, 1.0 | units.km)
+        self.assertAlmostRelativeEquals(loaded_gas[1][2].particle.x, 1.0 | units.km)
+        self.assertAlmostRelativeEquals(loaded_gas[1][0].particle.x, 2.0 | units.km)
+        self.assertEquals(id(loaded_gas[0][0].particle.get_containing_set()), id(loaded_gas[1][2].particle.get_containing_set()))
+        
+        gas_copy = loaded_gas.copy()
+        gas_copy[0][0].particle.x = 3 | units.km
+        self.assertAlmostRelativeEquals(loaded_gas[0][0].particle.x, 1.0 | units.km)
+        self.assertAlmostRelativeEquals(gas_copy[0][0].particle.x, 3.0 | units.km)
+        self.assertAlmostRelativeEquals(gas_copy[1][2].particle.x, 3.0 | units.km)

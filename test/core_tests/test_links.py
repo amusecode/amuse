@@ -486,3 +486,123 @@ class TestGridPointLinkToParticle(amusetest.TestCase):
         self.assertAlmostRelativeEquals(grid_copy[0][0].particle.mass, 3 | units.kg)
         self.assertEquals(grid_copy[0][0].particle, particles[1])
         self.assertEquals(grid_copy[1][1].particle, None)
+
+class TestGridPointLinkToParticles(amusetest.TestCase):
+    """
+    Tests One-to-Many relation between gridpoints and particles
+    """
+    def test1(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        
+        grid[0][0].particles = particles
+        
+        self.assertAlmostRelativeEquals(grid[0][0].particles[1].mass, 3 | units.kg)
+        self.assertEquals(grid[0][0].particles[1], particles[1])
+        self.assertEquals(grid[1][1].particles, None)
+        
+    
+    def test2(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        
+        grid[0][0].particles = particles
+        
+        grid_copy = grid.copy()
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].particles[1].mass, 3 | units.kg)
+        
+        grid[0][0].particles[1].mass = 10 | units.kg
+        
+        
+    
+    def test3(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        particles = datamodel.Particles(3)
+        particles.mass = [2,3,4] | units.kg
+        
+        
+        grid_copy = grid.copy()
+        grid[0][0].particles = particles
+        
+        channel = grid.new_channel_to(grid_copy)
+        channel.copy()
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].particles[1].mass, 3 | units.kg)
+        
+        grid[0][0].particles[1].mass = 10 | units.kg
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].particles[1].mass, 10 | units.kg)
+        
+
+class TestGridPointLinkToGridPoint(amusetest.TestCase):
+    """
+    Tests One-to-One relation between gridpoints
+    """
+    def test1(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        grid[0][0].neighbour = grid[0][1]
+        
+        self.assertAlmostRelativeEquals(grid[0][0].neighbour.rho, 3  | units.kg / units.m**3)
+        self.assertEquals(grid[0][0].neighbour, grid[0][1])
+        self.assertEquals(grid[1][1].neighbour, None)
+
+    def test2(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        grid[0][0].neighbour = grid[0][1]
+        
+        grid_copy = grid.copy()
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].neighbour.rho, 3  | units.kg / units.m**3)
+        self.assertEquals(grid_copy[0][0].neighbour, grid_copy[0][1])
+        self.assertEquals(grid_copy[1][1].neighbour, None)
+
+        grid[0][0].neighbour.rho = 5  | units.kg / units.m**3
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].neighbour.rho, 3  | units.kg / units.m**3)
+        
+        grid_copy[0][1].rho = 6 | units.kg / units.m**3
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].neighbour.rho, 6  | units.kg / units.m**3)
+
+    
+
+    def test3(self):
+        
+        grid = datamodel.Grid(2,3)
+        grid.rho = [[2,3,4],[5,6,7]] | units.kg / units.m**3
+        
+        
+        grid_copy = grid.copy()
+        
+        grid[0][0].neighbour = grid[0][1]
+        
+        channel = grid.new_channel_to(grid_copy)
+        channel.copy()
+        
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].neighbour.rho, 3  | units.kg / units.m**3)
+        self.assertEquals(grid_copy[0][0].neighbour, grid_copy[0][1])
+        self.assertEquals(grid_copy[1][1].neighbour, None)
+
+        grid[0][0].neighbour.rho = 5  | units.kg / units.m**3
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].neighbour.rho, 3  | units.kg / units.m**3)
+        
+        grid_copy[0][1].rho = 6 | units.kg / units.m**3
+        
+        self.assertAlmostRelativeEquals(grid_copy[0][0].neighbour.rho, 6  | units.kg / units.m**3)

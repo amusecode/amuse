@@ -1317,9 +1317,10 @@ class LinkedArray(numpy.ndarray):
         if memento is None:
             memento = dict()
             
-        result = LinkedArray(self.flatten())
+        result = LinkedArray(self.copy())
         index = 0
-        for x in self:
+        for index in numpy.ndindex(*self.shape):
+            x = self[index]
             if x is None:
                 result[index] = None
             elif isinstance(x, Particle):
@@ -1331,7 +1332,7 @@ class LinkedArray(numpy.ndarray):
             elif isinstance(x, GridPoint):
                 container = x.get_containing_set()
                 if from_container is None or container is from_container:
-                    result[index] = GridPoint(x.index, copy_of_container)
+                    result[index] = GridPoint(x.index, to_container)
                 else:
                     result[index] = x
             elif isinstance(x, AbstractSet):
@@ -1343,8 +1344,7 @@ class LinkedArray(numpy.ndarray):
             else:
                 raise exceptions.AmuseException("unkown type in link {0}, transfer link not implemented".format(type(x)))
                 
-            index = index + 1
-        return result.reshape(self.shape)
+        return result
         
     def as_set(self):
         from amuse.datamodel.particles import Particle

@@ -284,6 +284,12 @@ class GridPoint(object):
     def __getattr__(self, name_of_the_attribute):
         return self.grid._get_value_of_attribute(self, self.index, name_of_the_attribute)
         
+    def __eq__(self, other):
+        return isinstance(other, type(self)) and other.index == self.index and other.grid == self.grid
+
+    def __ne__(self, other):
+        return not(isinstance(other, type(self)) and other.index == self.index and other.grid == self.grid)
+    
     def get_containing_set(self):
         return self.grid
         
@@ -310,8 +316,17 @@ class GridInformationChannel(object):
         
         
     def copy_attributes(self, attributes):
-        data = self.source.get_values_in_store(self.index, attributes)
-        self.target.set_values_in_store(self.index, attributes, data)
+        values = self.source.get_values_in_store(self.index, attributes)
+        
+        
+        converted = []
+        for x in values:
+            if isinstance(x, LinkedArray):
+                converted.append(x.copy_with_link_transfer(self.source, self.target))
+            else:
+                converted.append(x)
+                
+        self.target.set_values_in_store(self.index, attributes, converted)
     
         
     def copy(self):

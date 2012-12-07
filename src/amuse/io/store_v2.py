@@ -235,52 +235,62 @@ class HDF5LinkedAttribute(HDF5Attribute):
         kinds = self.kind_dataset[:][indices]
         references = self.ref_dataset[:][indices]
         keys = self.keys_dataset[:][indices]
+        
+        shape = kinds.shape
         if self.indices_dataset:
             grid_indices = self.indices_dataset[:][indices]
         else:
-            grid_indices = None
-        shape = kinds.shape
+            grid_indices = numpy.zeros(shape)
         result = LinkedArray(numpy.empty(shape, dtype = numpy.object))
-        
-        for index, (kind, reference) in enumerate(zip(kinds, references)):
-            if   kind == 0:
-                result[index] = None
-            elif kind == 1:
-                
-                referenced_group = self.loader.derefence(reference)
-                mapping_from_groupid_to_set = self.loader.mapping_from_groupid_to_set
+        print shape, len(shape)
+        if len(shape) == 0:
+            kind,reference = kinds,references
+            result = self.convert_to_object(kind,reference, keys, grid_indices)
+        else:
+            for index in numpy.ndindex(*shape):
+                reference = references[index]
+                kind = kinds[index]
+                result[index] = self.convert_to_object(kind,reference, keys[index], grid_indices[index])
             
-                if not referenced_group.id in mapping_from_groupid_to_set:
-                    linked_set = self.loader.load_from_group(referenced_group)
-                else:
-                    linked_set = mapping_from_groupid_to_set[referenced_group.id]
-                
-                result[index] = linked_set._get_particle(keys[index])
-            elif kind == 2:
-                referenced_group = self.loader.derefence(reference)
-                mapping_from_groupid_to_set = self.loader.mapping_from_groupid_to_set
-            
-                if not referenced_group.id in mapping_from_groupid_to_set:
-                    linked_set = self.loader.load_from_group(referenced_group)
-                else:
-                    linked_set = mapping_from_groupid_to_set[referenced_group.id]
-                    
-                result[index] = linked_set._get_gridpoint(tuple(grid_indices[index]))
-            elif kind == 3:
-                referenced_group = self.loader.derefence(reference)
-                mapping_from_groupid_to_set = self.loader.mapping_from_groupid_to_set
-            
-                if not referenced_group.id in mapping_from_groupid_to_set:
-                    linked_set = self.loader.load_from_group(referenced_group)
-                else:
-                    linked_set = mapping_from_groupid_to_set[referenced_group.id]
-                
-                result[index] = linked_set
-            else:
-                raise Exception("unknown link kind")
         return result
         
     
+    def convert_to_object(self, kind, reference, key, grid_index):
+        if   kind == 0:
+            return None
+        elif kind == 1:
+            referenced_group = self.loader.derefence(reference)
+            mapping_from_groupid_to_set = self.loader.mapping_from_groupid_to_set
+        
+            if not referenced_group.id in mapping_from_groupid_to_set:
+                linked_set = self.loader.load_from_group(referenced_group)
+            else:
+                linked_set = mapping_from_groupid_to_set[referenced_group.id]
+            
+            return linked_set._get_particle(key)
+        elif kind == 2:
+            referenced_group = self.loader.derefence(reference)
+            mapping_from_groupid_to_set = self.loader.mapping_from_groupid_to_set
+        
+            if not referenced_group.id in mapping_from_groupid_to_set:
+                linked_set = self.loader.load_from_group(referenced_group)
+            else:
+                linked_set = mapping_from_groupid_to_set[referenced_group.id]
+                
+            return linked_set._get_gridpoint(tuple(grid_index))
+        elif kind == 3:
+            referenced_group = self.loader.derefence(reference)
+            mapping_from_groupid_to_set = self.loader.mapping_from_groupid_to_set
+        
+            if not referenced_group.id in mapping_from_groupid_to_set:
+                linked_set = self.loader.load_from_group(referenced_group)
+            else:
+                linked_set = mapping_from_groupid_to_set[referenced_group.id]
+            
+            return linked_set
+        else:
+            raise Exception("unknown link kind")
+            
     def set_values(self, indices, values):
         if hasattr(values, 'get_all_keys_in_store'):
             keys = values.get_all_keys_in_store()
@@ -594,6 +604,8 @@ class StoreHDF(object):
                 container, 
                 extra_attributes,
                 None,
+                mapping_from_setid_to_group, 
+                links_to_resolve
             )
         else:      
             self.store_particles(
@@ -603,7 +615,6 @@ class StoreHDF(object):
                 mapping_from_setid_to_group, 
                 links_to_resolve
             )
-        
         while len(links_to_resolve) > 0:
             sets_to_store, links_to_resolve = self.resolve_links(
                 mapping_from_setid_to_group,
@@ -650,7 +661,7 @@ class StoreHDF(object):
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
     
         self.store_collection_attributes(grid, group, extra_attributes)
-        self.store_values(grid, group)
+        self.store_values(grid, group, links)
         
         mapping_from_setid_to_group[id(grid._original_set())] = group
         
@@ -682,60 +693,64 @@ class StoreHDF(object):
                 dataset = attributes_group.create_dataset(attribute, data=value)
                 dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
             elif isinstance(quantity, LinkedArray):
-                subgroup = attributes_group.create_group(attribute)
-                shape = quantity.shape
-                kind_array = numpy.zeros(shape, dtype = numpy.int16)
-                ref_dtype = h5py.special_dtype(ref=h5py.Reference)
-                ref_array = numpy.empty(shape, dtype = ref_dtype)
-                ref_dataset = subgroup.create_dataset('ref', data=ref_array)
-                key_array = numpy.zeros(shape, dtype = numpy.uint64)
-                
-                max_len_grid_indices = 0
-                for index, object in enumerate(quantity):
-                    if isinstance(object, GridPoint):
-                        max_len_grid_indices = max(len(object.index), max_len_grid_indices)
-                
-                if max_len_grid_indices > 0:
-                    indices_shape = list(shape)
-                    indices_shape.append(max_len_grid_indices)
-                    indices_array = numpy.zeros(indices_shape, dtype = numpy.uint64)
-                    
-                for index, object in enumerate(quantity):
-                    if object is None:
-                        kind_array[index] = 0
-                        key_array[index] = 0
-                    elif isinstance(object, Particle):
-                        kind_array[index] = 1
-                        key_array[index] = object.key
-                        links.append([group, index, ref_dataset, object.get_containing_set()])
-                    elif isinstance(object, GridPoint):
-                        kind_array[index] = 2
-                        key_array[index] = 0
-                        grid_index = object.index
-                        if len(grid_index) < max_len_grid_indices:
-                            grid_index = list(grid_index)
-                            for _ in range(max_len_grid_indices-len(grid_index)):
-                                grid_index.append(0)
-                            
-                        indices_array[index] = grid_index
-                        links.append([group, index, ref_dataset, object.get_containing_set()])
-                    elif isinstance(object, AbstractSet):
-                        kind_array[index] = 3
-                        key_array[index] = 0
-                        links.append([group, index,  ref_dataset, object._original_set()])
-                    else:
-                        raise Exception("unsupported type")
-                if max_len_grid_indices > 0:
-                    subgroup.create_dataset('indices', data=indices_array)
-                    
-                subgroup.create_dataset('keys', data=key_array)
-                subgroup.create_dataset('kind', data=kind_array)
-                subgroup.attrs["units"] = "link"
+                self.store_linked_array(attribute, attributes_group, quantity, group, links)
             else:
                 dataset = attributes_group.create_dataset(attribute, data=quantity)
                 dataset.attrs["units"] = "none"
                 
+    
+    def store_linked_array(self, attribute, attributes_group, quantity, group, links):
+        subgroup = attributes_group.create_group(attribute)
+        shape = quantity.shape
+        kind_array = numpy.zeros(shape, dtype = numpy.int16)
+        ref_dtype = h5py.special_dtype(ref=h5py.Reference)
+        ref_array = numpy.empty(shape, dtype = ref_dtype)
+        ref_dataset = subgroup.create_dataset('ref', data=ref_array)
+        key_array = numpy.zeros(shape, dtype = numpy.uint64)
+        
+        max_len_grid_indices = 0
+        for index in numpy.ndindex(*shape):
+            object = quantity[index]
+            if isinstance(object, GridPoint):
+                max_len_grid_indices = max(len(object.index), max_len_grid_indices)
+        
+        if max_len_grid_indices > 0:
+            indices_shape = list(shape)
+            indices_shape.append(max_len_grid_indices)
+            indices_array = numpy.zeros(indices_shape, dtype = numpy.uint64)
             
+        for index in numpy.ndindex(*shape):
+            object = quantity[index]
+            if object is None:
+                kind_array[index] = 0
+                key_array[index] = 0
+            elif isinstance(object, Particle):
+                kind_array[index] = 1
+                key_array[index] = object.key
+                links.append([group, index, ref_dataset, object.get_containing_set()])
+            elif isinstance(object, GridPoint):
+                kind_array[index] = 2
+                key_array[index] = 0
+                grid_index = object.index
+                if len(grid_index) < max_len_grid_indices:
+                    grid_index = list(grid_index)
+                    for _ in range(max_len_grid_indices-len(grid_index)):
+                        grid_index.append(0)
+                    
+                indices_array[index] = grid_index
+                links.append([group, index, ref_dataset, object.get_containing_set()])
+            elif isinstance(object, AbstractSet):
+                kind_array[index] = 3
+                key_array[index] = 0
+                links.append([group, index,  ref_dataset, object._original_set()])
+            else:
+                raise Exception("unsupported type {0}".format(type(object)))
+        if max_len_grid_indices > 0:
+            subgroup.create_dataset('indices', data=indices_array)
+            
+        subgroup.create_dataset('keys', data=key_array)
+        subgroup.create_dataset('kind', data=kind_array)
+        subgroup.attrs["units"] = "link"
     
     def store_timestamp(self, container, group):
         quantity = container.get_timestamp()
