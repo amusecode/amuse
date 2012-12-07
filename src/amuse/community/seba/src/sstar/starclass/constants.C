@@ -411,7 +411,7 @@ real stellar_evolution_constants::safety(safety_parameter ps) {
           break;
     case minimum_inversion_precision:        return 0.01;// 1%       
           break;                                   
-    case number_of_steps:                   return 1000;// error on mass smaller than a few percent
+    case number_of_steps:                   return 10;// error on mass smaller than a few percent
           // for M > 40 need n>=20 to get an error < ~7%
           // possibly other values for non_solar metallicities
         break;
