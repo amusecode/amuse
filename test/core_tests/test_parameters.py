@@ -1,9 +1,7 @@
-from amuse.test import amusetest
-from amuse.support.exceptions import AmuseException
-
-
 import warnings
-from amuse.support import exceptions
+
+from amuse.test import amusetest
+from amuse.support.exceptions import AmuseException, AmuseWarning
 from amuse.units import nbody_system, generic_unit_system, generic_unit_converter
 from amuse.units import units
 from amuse.datamodel import parameters
@@ -53,7 +51,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         x.set_value(10|units.m)
         self.assertEqual(o.x, 10|units.m)
         value = x.get_value()
-        self.assertTrue(value, 10|units.m)
+        self.assertEqual(value, 10|units.m)
 
 
     def test3(self):
@@ -75,7 +73,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         x.set_value(10|units.none)
         self.assertEqual(o.x, 10|units.none)
         value = x.get_value()
-        self.assertTrue(value, 10)
+        self.assertEqual(value, 10)
 
     def test4(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(
@@ -312,44 +310,9 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         self.assertEquals(instance.x, 20 | units.m)
         self.assertEquals(instance.y, 12 | units.m)
         
-        
-    def test12(self):
-        definition = parameters.ModuleMethodParameterDefinition(
-            "get_test",
-            "set_test",
-            "test_name",
-            "a test parameter",
-            0.1 | units.m
-        )
-        class TestModule(BaseTestModule):
-            def get_test(self):
-                return self.x
-            def set_test(self, value):
-                self.x = value
-                
-        o = TestModule()
-        set = parameters.Parameters([definition,], o)
-        set.test_name = 10|units.m
-        
-        self.assertEqual(o.x, 10|units.m)
-        self.assertTrue(set.test_name, 10|units.m)
-        
-        memento = set.copy()
-        self.assertTrue(memento.test_name, 10|units.m)
-        set.test_name = 20|units.m
-        
-        self.assertEqual(o.x, 20|units.m)
-        self.assertTrue(set.test_name, 20|units.m)
-        self.assertTrue(memento.test_name, 10|units.m)
-        
-        set.reset_from_memento(memento)
-        
-        self.assertEqual(o.x, 10|units.m)
-        self.assertTrue(set.test_name, 10|units.m)
-        self.assertTrue(memento.test_name, 10|units.m)
-        
-        
-    
+
+
+
 class TestParameters(amusetest.TestCase):
     def test1(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(
@@ -854,5 +817,80 @@ class TestParameters(amusetest.TestCase):
         self.assertTrue("mesh_length" in str(y))
         self.assertTrue("[246.0, 912.0, 1578.0] m" in str(y))
     
+    def test12(self):
+        definition = parameters.ModuleMethodParameterDefinition(
+            "get_test",
+            "set_test",
+            "test_name",
+            "a test parameter",
+            0.1 | units.m
+        )
+        class TestModule(BaseTestModule):
+            def get_test(self):
+                return self.x
+            def set_test(self, value):
+                self.x = value
+                
+        o = TestModule()
+        set = parameters.Parameters([definition,], o)
+        set.test_name = 10|units.m
+        
+        self.assertEqual(o.x, 10|units.m)
+        self.assertEqual(set.test_name, 10|units.m)
+        
+        memento = set.copy()
+        self.assertEqual(memento.test_name, 10|units.m)
+        set.test_name = 20|units.m
+        
+        self.assertEqual(o.x, 20|units.m)
+        self.assertEqual(set.test_name, 20|units.m)
+        self.assertEqual(memento.test_name, 10|units.m)
+        
+        set.reset_from_memento(memento)
+        
+        self.assertEqual(o.x, 10|units.m)
+        self.assertEqual(set.test_name, 10|units.m)
+        self.assertEqual(memento.test_name, 10|units.m)
+    
+    def test13(self):
+        definition = parameters.ModuleMethodParameterDefinition(
+            "get_test",
+            None,
+            "test_name",
+            "a read-only test parameter",
+            0.1 | units.m
+        )
+        class TestModule(BaseTestModule):
+            x = 0.1 | units.m
+            def get_test(self):
+                return self.x
+        
+        o = TestModule()
+        set = parameters.Parameters([definition,], o)
+        
+        self.assertRaises(AmuseException, setattr, set, "test_name", 1.0 | units.m,
+            expected_message = "Could not set value for parameter 'test_name' of a 'TestModule' object, parameter is read-only")
+        
+        self.assertEqual(o.x, 0.1|units.m)
+        self.assertEqual(set.test_name, 0.1|units.m)
+        
+        memento = set.copy()
+        self.assertEqual(memento.test_name, 0.1|units.m)
+        
+        set.reset_from_memento(memento)
+        self.assertEqual(o.x, 0.1|units.m)
+        self.assertEqual(set.test_name, 0.1|units.m)
+        
+        memento.test_name = 2.0 | units.m
+        self.assertEqual(memento.test_name, 2.0|units.m)
+        
+        with warnings.catch_warnings(record=True) as w:
+            set.reset_from_memento(memento)
+            self.assertEquals(len(w), 1)
+            self.assertEquals("tried to change read-only parameter 'test_name' for a 'TestModule' object", str(w[-1].message))
+        
+        self.assertEqual(o.x, 0.1|units.m)
+        self.assertEqual(set.test_name, 0.1|units.m)
+        self.assertEqual(memento.test_name, 2.0|units.m)
 
 

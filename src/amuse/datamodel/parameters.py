@@ -146,7 +146,15 @@ class Parameters(object):
     
     def reset_from_memento(self, memento):
         for name in memento.names():
-            setattr(self, name, getattr(memento, name))
+            if not name in self._mapping_from_name_to_definition:
+                warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
+                return
+            
+            if self.get_parameter(name).is_readonly():
+                if not getattr(memento, name) == getattr(self, name):
+                    warnings.warn("tried to change read-only parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
+            else:
+                setattr(self, name, getattr(memento, name))
             
 
 class ParametersMemento(object):
@@ -171,7 +179,7 @@ class ParametersMemento(object):
             warnings.warn("tried to set unknown parameter '{0}'".format(name), exceptions.AmuseWarning)
             return
             
-        self._mapping_from_name_to_value[name] = name
+        self._mapping_from_name_to_value[name] = value
 
     def names(self):
         return self._mapping_from_name_to_value.keys()
