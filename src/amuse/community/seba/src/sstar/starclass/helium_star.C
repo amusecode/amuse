@@ -534,6 +534,10 @@ void helium_star::stellar_wind(const real dt) {
                            + (alph-1.) * constant*dt),1./(1. - alph));
         real wind_mass = m - m_next;
         
+	// (GN Nov 2012) metallicity dependence on average with sqrt(Z/Z_sun)
+	// Vink & de Koter 2005
+	wind_mass *= pow(metallicity/cnsts.parameters(solar_metalicity),0.5);
+
             
             
 //	  PRC(m);PRC(m_next);PRL(wind_mass);

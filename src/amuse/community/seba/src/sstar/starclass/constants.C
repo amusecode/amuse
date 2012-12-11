@@ -214,7 +214,7 @@ real stellar_evolution_constants::parameters(stellar_mass_limits pm) {
              break;                                
 	case helium2neutron_star:                return 2.2;
              break;                                
-        case COcore2black_hole:                  return 5; // was 10
+        case COcore2black_hole:                  return 3; // was 10
                                                       // (SPZ+GN: 27 Jul 2000)
              break;                                
 	case super_giant2neutron_star:           return 8;
