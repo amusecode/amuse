@@ -50,10 +50,12 @@ def new_disk_with_bump(Mstar = 1|units.MSun,
     print "Mass =", Mstar, Mdisk, bodies.mass.sum().in_(units.MSun), bodies.mass.sum()/Mstar
 
     print "X-min/max:", min(bodies.x), max(bodies.x)
+    bodies = bodies.select(lambda r: r.length()<1.0*Rmax,["position"])
+    print "X-min/max:", min(bodies.x), max(bodies.x)
 
     return bodies
 
-def read_disk_with_bump(image_id=1, filename="hydro.hdf5"):#, Rmax=100.0|units.AU):
+def read_disk_with_bump(image_id=1, filename="hydro.hdf5"):
 
     star = read_set_from_file(filename, "hdf5")
     ism = read_set_from_file(filename, "hdf5")
@@ -65,7 +67,56 @@ def read_disk_with_bump(image_id=1, filename="hydro.hdf5"):#, Rmax=100.0|units.A
             com = si.center_of_mass()
             return si
 
-def main(Mstar = 10|units.MSun,
+def irradiate_disk_with_pump(Mstar = 10|units.MSun, tstar = 20|units.Myr, Ndisk=100, Mdisk=0.9|units.MSun,  Rmin=1.0|units.AU, Rmax=100.0|units.AU,  Mbump=0.1|units.MSun,Rbump=10.0|units.AU, abump=10|units.AU, t_end=10|units.yr, n_steps=10, filename = None, image_id=1):
+    dt = t_end/float(n_steps)
+
+    stellar = SeBa()
+    stellar.particles.add_particle(Particle(mass=Mstar))
+    stellar.evolve_model(tstar)
+
+    source=Particles(1)
+    source.mass = stellar.particles[0].mass
+    source.position = (0, 0, 0) |units.AU
+    source.velocity = (0, 0, 0) |units.kms
+    source.luminosity = stellar.particles[0].luminosity/(20. | units.eV)
+    source.temperature = stellar.particles[0].temperature
+    Teff = stellar.particles[0].temperature
+    source.flux = source.luminosity
+    source.rho = 1.0|(units.g/units.cm**3)
+    source.xion = 0.0 #ionization_fraction
+    source.u = (9. |units.kms)**2 #internal_energy
+    stellar.stop()
+
+    ism = new_disk_with_bump(source[0].mass, Ndisk, Mdisk, Rmin, Rmax, Mbump, Rbump, abump)
+    ism.flux = 0 | units.s**-1
+    ism.xion = 0.0 #ionization_fraction
+
+    hydro = Gadget2(nbody_system.nbody_to_si(Mdisk, Rmax))
+    hydro.gas_particles.add_particles(ism)
+    hydro.dm_particles.add_particles(source)
+    hydro.evolve_model(1|units.day)
+    hydro.gas_particles.new_channel_to(ism).copy()
+    hydro.stop()
+    
+    rad = SimpleXSplitSet(redirect="none",numer_of_workers=4)
+    rad.parameters.box_size=2.01*Rmax
+    rad.parameters.timestep=0.1*dt
+    rad.set_source_Teff(Teff)
+    rad.src_particles.add_particle(source)
+    rad.gas_particles.add_particles(ism)
+
+    rad_to_framework = rad.gas_particles.new_channel_to(ism)
+    particles = ParticlesSuperset([source, ism])
+    write_set_to_file(particles, "rad.hdf5", 'hdf5')
+
+    while rad.model_time<t_end:
+        rad.evolve_model(rad.model_time + dt)
+        rad_to_framework.copy_attributes(["x","y", "z", "xion"])
+        write_set_to_file(particles, "rad.hdf5", 'hdf5')
+        print "Time=", rad.model_time, "Ionization (min, mean, max):", ism.xion.min(), ism.xion.mean(), ism.xion.max()
+    rad.stop()
+
+def _irradiate_disk_with_pump(Mstar = 10|units.MSun,
          tstar = 20|units.Myr,
          Ndisk=100, Mdisk=0.9|units.MSun, 
          Rmin=1.0|units.AU, Rmax=100.0|units.AU, 
@@ -90,18 +141,13 @@ def main(Mstar = 10|units.MSun,
     source.luminosity = stellar.particles[0].luminosity/(20. | units.eV)
     source.temperature = stellar.particles[0].temperature
     Teff = stellar.particles[0].temperature
-#    Teff = 50000 | units.K #coronal temperature...
-    Teff = 1.e+7 | units.K #coronal temperature...
     source.flux = source.luminosity
     source.rho = 1.0|(units.g/units.cm**3)
     source.xion = ionization_fraction
     source.u = internal_energy
     stellar.stop()
 
-    print "Source:", source
-
     Mstar = source[0].mass
-#    filename = "hydro.hdf5"
     if filename ==None:
         ism = new_disk_with_bump(Mstar = Mstar,
                                  Ndisk=Ndisk, Mdisk=Mdisk,
@@ -110,10 +156,7 @@ def main(Mstar = 10|units.MSun,
                                  abump=abump)
     else:
         ism = read_disk_with_bump(image_id=image_id, filename=filename)#, Rmax=Rmax)
-    print len(ism),
     ism = ism.select(lambda r: r.length()<1.0*Rmax,["position"])
-    print len(ism)
-    print ism
     ism.flux = 0 | units.s**-1
     ism.xion = ionization_fraction 
 
@@ -126,9 +169,7 @@ def main(Mstar = 10|units.MSun,
         hydro.gas_particles.new_channel_to(ism).copy()
         hydro.stop()
     
-#    rad = SimpleX()
     rad = SimpleXSplitSet(redirect="none",numer_of_workers=4)
-#    rad = SPHRay(redirect="none")
     rad.parameters.number_of_freq_bins=5
     rad.parameters.thermal_evolution_flag=1
     rad.parameters.blackbody_spectrum_flag=1
@@ -209,5 +250,5 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
-    main(**o.__dict__)
+    irradiate_disk_with_pump(**o.__dict__)
 

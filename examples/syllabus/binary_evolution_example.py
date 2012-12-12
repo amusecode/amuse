@@ -43,7 +43,6 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
     channel_from_code_to_model_for_binaries = code.binaries.new_channel_to(double_star)
     channel_from_code_to_model_for_stars = code.particles.new_channel_to(stars)
     
-    #we evolve in steps of timestep, just to get some feedback
     print "start evolving..."
     t = []
     a = []
@@ -51,8 +50,6 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
     while time < end_time:
         time += time_step
         code.evolve_model(time)
-#        print "evolved to time: ", time.as_quantity_in(units.Myr), double_star[0].semi_major_axis.as_quantity_in(units.RSun), double_star[0].eccentricity, stars[0].mass, stars[1].mass
-
         channel_from_code_to_model_for_stars.copy()
         channel_from_code_to_model_for_binaries.copy()
         t.append(time.value_in(units.Myr))
@@ -61,11 +58,14 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
     code.stop()
 
     pyplot.figure(figsize = (8,8))
+    fta = fig.add_subplot(2,1,1)
+    fte = fig.add_subplot(2,2,1)
     pyplot.title('Binary evolution', fontsize=12)
-    pyplot.plot(t, a)
-    pyplot.xlabel('time [Myr]')
-    pyplot.ylabel('semi major axis (AU)')
-#    pyplot.ylabel('eccentricity')
+    fta.plot(t, a)
+    fta.xlabel('time [Myr]')
+    fta.ylabel('semi major axis (AU)')
+    fta.plot(t, 3)
+    fta.ylabel('eccentricity')
     pyplot.show()
 
 

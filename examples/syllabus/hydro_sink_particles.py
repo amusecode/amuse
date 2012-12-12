@@ -1,14 +1,12 @@
 from amuse.lab import *
-from optparse import OptionParser
 
 def hydro_sink_particles(sinks, bodies):
 
     all_lost_particles = Particles()
     for s in sinks:
         xs,ys,zs=s.x,s.y,s.z
-        R2 = s.radius**2
-        print "Rsink=", R2, s.position
-        insink=bodies.select_array(lambda x,y,z: (x-xs)**2+(y-ys)**2+(z-zs)**2 < R2,['x','y','z'])  
+        radius_squared = s.radius**2
+        insink=bodies.select_array(lambda x,y,z: (x-xs)**2+(y-ys)**2+(z-zs)**2 < radius_squared,['x','y','z'])  
         print "Ninsink=", len(insink)
         if len(insink)==0:
             return insink
@@ -23,11 +21,7 @@ def hydro_sink_particles(sinks, bodies):
         all_lost_particles.add_particles(insink)
     return all_lost_particles
 
-def main(N=100, Mtot=1.0, Rvir=100.0, rsink = 100):
-    Mtot = Mtot | units.MSun
-    Rvir = Rvir | units.AU
-    rsink = rsink | units.AU
-
+def main(N, Mtot, Rvir, rsink):
     converter=nbody_system.nbody_to_si(Mtot, Rvir)
     bodies = new_plummer_gas_model(N, convert_nbody=converter)
 
@@ -43,15 +37,19 @@ def main(N=100, Mtot=1.0, Rvir=100.0, rsink = 100):
     print "sink velocity=", sink.velocity.as_quantity_in(units.kms)
     
 def new_option_parser():
+    from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-N", dest="N", type="int",default = 100,
                       help="number of sph particles [100]")
-    result.add_option("-M", dest="Mtot", type="float", default = 1,
-                      help="Mass of molcular cloud [1] MSun")
-    result.add_option("-R", dest="Rvir", type="float", default = 100,
-                      help="Radius of cloud [100] AU")
-    result.add_option("-r", dest="rsink", type="float", default = 100,
-                      help="Radius of the sink [100] AU")
+    result.add_option("-M", unit=units.MSun,
+                      dest="Mtot", type="float", default = 1|units.MSun,
+                      help="Mass of molcular cloud [%default]")
+    result.add_option("-R", unit=units.AU,
+                      dest="Rvir", type="float", default = 100|units.AU,
+                      help="Radius of cloud [%default]")
+    result.add_option("-r", unit=units.AU,
+                      dest="rsink", type="float", default = 100|units.AU,
+                      help="Radius of the sink [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):

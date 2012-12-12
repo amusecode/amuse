@@ -2,7 +2,6 @@
    Simple routine for running a gravity code
 """
 from amuse.lab import *
-from amuse.io import store
 
 def main(N=10, W0=7.0, t_end=10, dt=1, filename="nbody.hdf5"):
     t_end = t_end | nbody_system.time

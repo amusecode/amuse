@@ -3,23 +3,23 @@
 """
 from amuse.lab import *
     
-def main(M=1.0|units.MSun, z=0.02, model_time=4700|units.Myr):
-
+def main(M, z, model_time):
     stellar = MESA()
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(Particle(mass=M))
     stellar.commit_particles()
 
-    L_init = stellar.particles.luminosity
+    initial_luminosity = stellar.particles.luminosity
     dt = 1 | units.Myr
     time = 0 | units.Myr
     while stellar.particles[0].age<model_time:
         time+=dt
         stellar.evolve_model(time)
 
-    L_final = stellar.particles.luminosity
-    print "L(t=0)=", L_init, ", L (t=", stellar.particles.age, ")=", \
-        L_final, stellar.particles.radius
+    final_luminosity = stellar.particles.luminosity
+    print "L(t=0)=", initial_luminosity, \
+        ", L (t=", stellar.particles.age, ")=", \
+        final_luminosity, stellar.particles.radius
     stellar.stop()
     
 def new_option_parser():
