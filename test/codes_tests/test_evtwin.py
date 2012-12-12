@@ -6,10 +6,9 @@ from numpy import pi, arange
 from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 
 from amuse.support.exceptions import AmuseException
-from amuse.units import nbody_system
-from amuse.units import units
+from amuse.units import nbody_system, units
 from amuse.units.quantities import new_quantity
-from amuse import datamodel
+from amuse.datamodel import Particle, Particles
 from amuse.rfi import channel
 
 
@@ -331,7 +330,7 @@ class TestEVtwin(TestWithMPI):
         #instance.set_init_dat_name(os.path.join(path,'init.dat'))
         #instance.set_init_run_name(os.path.join(path,'init.run'))
         
-        stars = datamodel.Stars(1)
+        stars = Particles(1)
         stars[0].mass = 10 | units.MSun
         
         instance.particles.add_particles(stars)
@@ -346,7 +345,7 @@ class TestEVtwin(TestWithMPI):
         instance = EVtwin()
         instance.initialize_code()
         instance.commit_parameters()
-        stars =  datamodel.Stars(1)
+        stars = Particles(1)
         
         star = stars[0]
         star.mass = 5.0 | units.MSun
@@ -419,7 +418,7 @@ class TestEVtwin(TestWithMPI):
         max_age = 9.0 | units.Myr
 
         number_of_stars=len(masses)
-        stars =  datamodel.Stars(number_of_stars)
+        stars = Particles(number_of_stars)
         for i, star in enumerate(stars):
             star.mass = masses[i]
             star.radius = 0.0 | units.RSun
@@ -462,7 +461,7 @@ class TestEVtwin(TestWithMPI):
         max_age = 12.0 | units.Myr
 
         number_of_stars=len(masses)
-        stars =  datamodel.Stars(number_of_stars)
+        stars = Particles(number_of_stars)
         for i, star in enumerate(stars):
             star.mass = masses[i]
             star.radius = 0.0 | units.RSun
@@ -498,7 +497,7 @@ class TestEVtwin(TestWithMPI):
     def test5(self):
         print "Testing adding and removing particles from stellar evolution code..."
         
-        particles = datamodel.Particles(3)
+        particles = Particles(3)
         particles.mass = 1.0 | units.MSun
         
         instance = EVtwin()
@@ -532,7 +531,7 @@ class TestEVtwin(TestWithMPI):
 
     def test6(self):
         print "Test for obtaining the stellar structure model"
-        stars = datamodel.Particles(2)
+        stars = Particles(2)
         stars.mass = [1.0, 10.0] | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -560,7 +559,7 @@ class TestEVtwin(TestWithMPI):
     
     def test7(self):
         print "Test for obtaining the stellar composition structure"
-        stars = datamodel.Particles(1)
+        stars = Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -588,7 +587,7 @@ class TestEVtwin(TestWithMPI):
     
     def slowtest8(self):
         print "Test for obtaining the stellar composition structure - evolved star"
-        stars = datamodel.Particles(1)
+        stars = Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -620,7 +619,7 @@ class TestEVtwin(TestWithMPI):
     
     def xtest9(self):
         print "Test for changing the stellar structure model (not yet implemented)"
-        star = datamodel.Particles(1)
+        star = Particles(1)
         star.mass = 1.0 | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -652,7 +651,7 @@ class TestEVtwin(TestWithMPI):
     
     def xtest10(self):
         print "Test for changing the stellar composition (not yet implemented)"
-        star = datamodel.Particles(1)
+        star = Particles(1)
         star.mass = 1.0 | units.MSun
         instance = EVtwin()
         instance.initialize_code()
@@ -695,7 +694,7 @@ class TestEVtwin(TestWithMPI):
         
         instance.parameters.min_timestep_stop_condition = 1.0 | units.s
         
-        stars = datamodel.Particles(3)
+        stars = Particles(3)
         stars.mass = [1.0, 2.0, 1.0] | units.MSun
         instance.particles.add_particles(stars)
         instance.commit_particles()
@@ -727,7 +726,7 @@ class TestEVtwin(TestWithMPI):
     
     def test12(self):
         print "Testing basic operations: evolve_one_step and evolve_for"
-        stars = datamodel.Particles(2)
+        stars = Particles(2)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin()
         se_stars = instance.particles.add_particles(stars)
@@ -750,7 +749,7 @@ class TestEVtwin(TestWithMPI):
     
     def test13(self):
         print "Test evolve_model optional arguments: end_time and keep_synchronous"
-        stars = datamodel.Particles(3)
+        stars = Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         instance = EVtwin()
         instance.particles.add_particles(stars)
@@ -779,7 +778,7 @@ class TestEVtwin(TestWithMPI):
     
     def test14(self):
         print "Testing EVtwin states"
-        stars = datamodel.Particles(2)
+        stars = Particles(2)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin()
         
@@ -834,7 +833,7 @@ class TestEVtwin(TestWithMPI):
             alpha = -1.01,random=notsorandom()
         )
  
-        stars=datamodel.Particles(mass=masses)
+        stars = Particles(mass=masses)
 
         instance=EVtwin()
         instance.parameters.maximum_number_of_stars=number_of_stars
@@ -866,7 +865,7 @@ class TestEVtwin(TestWithMPI):
             alpha = -1.01,random=notsorandom()
         )
  
-        stars=datamodel.Particles(mass=masses)
+        stars = Particles(mass=masses)
 
         instance=EVtwin()
         instance.parameters.maximum_number_of_stars=number_of_stars
@@ -917,7 +916,7 @@ class TestEVtwin(TestWithMPI):
                 )
             ]):
             
-            stars=datamodel.Particles(mass=masses)
+            stars = Particles(mass=masses)
 
             instance=EVtwin()
             instance.particles.add_particles(stars)
@@ -946,7 +945,7 @@ class TestEVtwin(TestWithMPI):
     def test18(self):
         print "Testing EVtwin calculate_core_mass"
         instance = EVtwin()#redirection="none")
-        star = instance.particles.add_particle(datamodel.Particle(mass=1|units.MSun))
+        star = instance.particles.add_particle(Particle(mass=1|units.MSun))
         instance.evolve_model(0.4|units.Gyr) # VERY short, for test speed up
         central_hydrogen_abundance = star.get_chemical_abundance_profiles()[0][0]
         self.assertTrue(central_hydrogen_abundance < 0.68) # some hydrogen is burned
@@ -978,5 +977,13 @@ class TestEVtwin(TestWithMPI):
         self.assertAlmostRelativeEqual(expected_core_mass, he4_core_mass + metal_core_mass + h1_core_mass, 7)
         self.assertAlmostRelativeEqual(metal_core_mass, c12_core_mass + n14_core_mass +
             o16_core_mass + ne20_core_mass + mg24_core_mass + si28_core_mass + fe56_core_mass, 7)
+    
+    def test19(self):
+        print "Testing EVtwin central_temperature and central_density"
+        instance = EVtwin()
+        stars = instance.particles.add_particles(Particles(mass=[0.1, 1, 10]|units.MSun))
+        self.assertIsOfOrder(stars.central_temperature, [4e6, 13e6, 31e6] | units.K)
+        self.assertIsOfOrder(stars.central_density, [400, 77, 9] | units.g * units.cm**-3)
+        instance.stop()
     
 

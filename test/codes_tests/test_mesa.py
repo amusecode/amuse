@@ -1010,5 +1010,13 @@ class TestMESA(TestWithMPI):
             c12_core_mass + n14_core_mass + o16_core_mass + ne20_core_mass + mg24_core_mass, 7)
         self.assertAlmostEqual(he3_core_mass, 0 | units.MSun, 5)
     
+    def test23(self):
+        print "Testing MESA central_temperature and central_density"
+        instance = self.new_instance(MESA)
+        stars = instance.particles.add_particles(Particles(mass=[0.1, 1, 10]|units.MSun))
+        self.assertIsOfOrder(stars.central_temperature, [4e6, 13e6, 31e6] | units.K)
+        self.assertIsOfOrder(stars.central_density, [400, 77, 9] | units.g * units.cm**-3)
+        instance.stop()
+    
 
 

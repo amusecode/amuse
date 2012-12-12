@@ -801,6 +801,8 @@ class InternalStellarStructure(object):
         object.add_method(set_name, 'set_chemical_abundance_profiles')
         object.add_method(set_name, 'calculate_core_mass')
         object.add_method(set_name, 'calculate_helium_exhausted_core_mass')
+        object.add_getter(set_name, 'get_central_temperature', names = ('central_temperature',))
+        object.add_getter(set_name, 'get_central_density', names = ('central_density',))
     
     def define_errorcodes(self, object):
         object.add_errorcode(-21, 'Specified particle does not exist.')
@@ -892,6 +894,9 @@ class InternalStellarStructure(object):
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
+    def get_central_density(self, indices_of_the_stars):
+        return self.get_density_at_zone(indices_of_the_stars, 0)
+    
     def set_density_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting density profiles")
         if number_of_zones is None:
@@ -921,6 +926,9 @@ class InternalStellarStructure(object):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+    
+    def get_central_temperature(self, indices_of_the_stars):
+        return self.get_temperature_at_zone(indices_of_the_stars, 0)
     
     def set_temperature_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting temperature profiles")
