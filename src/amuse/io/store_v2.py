@@ -522,7 +522,45 @@ class HDF5GridAttributeStorage(AttributeStorage):
             bools = numpy.zeros(dataset.get_shape(), dtype='bool')
             bools[indices] = True
             dataset.set_values(bools, quantity)
+    
+class UneresolvedItemInArrayLink(object):
+
+    def __init__(self, group, index, dataset_to_resolve, linked_set):
+        self.group = group
+        self.index = index
+        self.dataset_to_resolve = dataset_to_resolve
+        self.linked_set = linked_set
+        self.resolved = False
         
+    def resolve(self, mapping_from_setid_to_group):
+        if id(self.linked_set) in mapping_from_setid_to_group:
+            stored_group = mapping_from_setid_to_group[id(self.linked_set)]
+            self.dataset_to_resolve[self.index] = stored_group.ref
+            self.resolved = True
+        else:
+            self.resolved = False
+    
+    def is_resolved(self):
+        return self.resolved
+        
+class UneresolvedAttributeLink(object):
+
+    def __init__(self, group, name, linked_set):
+        self.group = group
+        self.name = name
+        self.linked_set = linked_set
+        self.resolved = False
+        
+    def resolve(self, mapping_from_setid_to_group):
+        if id(self.linked_set) in mapping_from_setid_to_group:
+            stored_group = mapping_from_setid_to_group[id(self.linked_set)]
+            self.group.attrs[self.name] = stored_group.ref
+            self.resolved = True
+        else:
+            self.resolved = False
+    
+    def is_resolved(self):
+        return self.resolved
         
 class StoreHDF(object):
     INFO_GROUP_NAME = 'AMUSE_INF'
@@ -642,7 +680,7 @@ class StoreHDF(object):
         keys = particles.get_all_keys_in_store()
         dataset = group.create_dataset("keys", data=keys)
         self.hdf5file.flush()
-        self.store_collection_attributes(particles, group, extra_attributes)
+        self.store_collection_attributes(particles, group, extra_attributes, links)
         self.store_values(particles, group, links)
             
         mapping_from_setid_to_group[id(particles._original_set())] = group
@@ -660,7 +698,7 @@ class StoreHDF(object):
         group.attrs["class_of_the_container"] = pickle.dumps(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
     
-        self.store_collection_attributes(grid, group, extra_attributes)
+        self.store_collection_attributes(grid, group, extra_attributes, links)
         self.store_values(grid, group, links)
         
         mapping_from_setid_to_group[id(grid._original_set())] = group
@@ -672,15 +710,13 @@ class StoreHDF(object):
         sets_to_store = []
         seen_sets_by_id = set([])
         links_to_resolve = []
-        for group, index, ref_dataset, linked_set in links:
-            if id(linked_set) in mapping_from_setid_to_group:
-                stored_group = mapping_from_setid_to_group[id(linked_set)]
-                ref_dataset[index] = stored_group.ref
-            else:
-                if not id(linked_set) in seen_sets_by_id:
-                    sets_to_store.append([group, linked_set])
-                    seen_sets_by_id.add(id(linked_set))
-                links_to_resolve.append([group, index, ref_dataset, linked_set])
+        for unresolved_link in links:
+            unresolved_link.resolve(mapping_from_setid_to_group)
+            if not unresolved_link.is_resolved():
+                if not id(unresolved_link.linked_set) in seen_sets_by_id:
+                    sets_to_store.append([unresolved_link.group, unresolved_link.linked_set])
+                    seen_sets_by_id.add(id(unresolved_link.linked_set))
+                links_to_resolve.append(unresolved_link)
         return sets_to_store, links_to_resolve
         
     def store_values(self, container, group, links = []):
@@ -727,7 +763,12 @@ class StoreHDF(object):
             elif isinstance(object, Particle):
                 kind_array[index] = 1
                 key_array[index] = object.key
-                links.append([group, index, ref_dataset, object.get_containing_set()])
+                links.append(UneresolvedItemInArrayLink(
+                    group, 
+                    index, 
+                    ref_dataset, 
+                    object.get_containing_set()
+                ))
             elif isinstance(object, GridPoint):
                 kind_array[index] = 2
                 key_array[index] = 0
@@ -738,11 +779,21 @@ class StoreHDF(object):
                         grid_index.append(0)
                     
                 indices_array[index] = grid_index
-                links.append([group, index, ref_dataset, object.get_containing_set()])
+                links.append(UneresolvedItemInArrayLink(
+                    group, 
+                    index, 
+                    ref_dataset, 
+                    object.get_containing_set()
+                ))
             elif isinstance(object, AbstractSet):
                 kind_array[index] = 3
                 key_array[index] = 0
-                links.append([group, index,  ref_dataset, object._original_set()])
+                links.append(UneresolvedItemInArrayLink(
+                    group, 
+                    index, 
+                    ref_dataset, 
+                    object._original_set()
+                ))
             else:
                 raise Exception("unsupported type {0}".format(type(object)))
         if max_len_grid_indices > 0:
@@ -760,19 +811,44 @@ class StoreHDF(object):
     
     
     
-    def store_collection_attributes(self, container, group, extra_attributes):
+    def store_collection_attributes(self, container, group, extra_attributes, links):
         collection_attributes = container.collection_attributes.__getstate__()
-        
         arguments_and_attributes = {}
         arguments_and_attributes.update(collection_attributes)
         arguments_and_attributes.update(extra_attributes)
-        
+        ref_dtype = h5py.special_dtype(ref=h5py.Reference)
         for name, quantity in arguments_and_attributes.iteritems():
             if quantity is None:
                 continue 
             if is_quantity(quantity):
                 group.attrs[name] = quantity.value_in(quantity.unit)
                 group.attrs[name+"_unit"] = quantity.unit.reference_string()
+            elif isinstance(quantity, Particle):
+                #group.attrs[name] = ref_dtype(None)
+                group.attrs[name+"_key"] = quantity.key
+                group.attrs[name+"_unit"] = "particle"
+                links.append(UneresolvedAttributeLink(
+                    group,
+                    name,
+                    quantity.get_containing_set()
+                ))
+            elif isinstance(quantity, GridPoint):
+                #group.attrs[name] = ref_dtype(None)
+                group.attrs[name+"_index"] = quantity.index
+                group.attrs[name+"_unit"] = "gridpoint"
+                links.append(UneresolvedAttributeLink(
+                    group, 
+                    name, 
+                    quantity.get_containing_set()
+                ))
+            elif isinstance(quantity, AbstractSet):
+                #group.attrs[name] = ref_dtype(None)
+                group.attrs[name+"_unit"] = "set"
+                links.append(UneresolvedAttributeLink(
+                    group, 
+                    name,
+                    quantity._original_set()
+                ))
             else:
                 group.attrs[name] = quantity
                 group.attrs[name+"_unit"] = "none"
@@ -784,6 +860,19 @@ class StoreHDF(object):
             unit_string = group.attrs[name+"_unit"]
             if unit_string == 'none':
                 quantity = group.attrs[name]
+            elif unit_string == 'particle':
+                reference = group.attrs[name]
+                set = self.get_set_from_reference(reference)
+                key = group.attrs[name+'_key']
+                quantity = set._get_particle_unsave(key)
+            elif unit_string == 'gridpoint':
+                reference = group.attrs[name]
+                set = self.get_set_from_reference(reference)
+                index = group.attrs[name+'_index']
+                quantity = set._get_gridpoint(tuple(index))
+            elif unit_string == 'set':
+                reference = group.attrs[name]
+                quantity = self.get_set_from_reference(reference)
             else:
                 unit = eval(group.attrs[name+"_unit"], core.__dict__) 
                 quantity = unit.new_quantity(group.attrs[name])
@@ -814,9 +903,9 @@ class StoreHDF(object):
         
         particles = class_of_the_container(is_working_copy = False)
         particles._private.attribute_storage = HDF5AttributeStorage(keys, group, self)
+        self.mapping_from_groupid_to_set[group.id] = particles
         self.load_collection_attributes(particles, group)
         
-        self.mapping_from_groupid_to_set[group.id] = particles
         
         return particles
         
@@ -831,9 +920,9 @@ class StoreHDF(object):
         
         container = class_of_the_container()
         container._private.attribute_storage = HDF5GridAttributeStorage(shape, group, self)
+        self.mapping_from_groupid_to_set[group.id] = container
         self.load_collection_attributes(container, group)
         
-        self.mapping_from_groupid_to_set[group.id] = container
         return container
     
     def load_from_group(self, group):
@@ -878,6 +967,17 @@ class StoreHDF(object):
         last = all_containers[-1]
         return last
     
+    def get_set_from_reference(self, reference):
+        referenced_group = self.derefence(reference)
+        mapping_from_groupid_to_set = self.mapping_from_groupid_to_set
+    
+        if not referenced_group.id in mapping_from_groupid_to_set:
+            linked_set = self.load_from_group(referenced_group)
+        else:
+            linked_set = mapping_from_groupid_to_set[referenced_group.id]
+            
+        return linked_set
+        
     def derefence(self, reference):
         return self.hdf5file[reference]
         

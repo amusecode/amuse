@@ -1367,17 +1367,20 @@ class ParticlesSuperset(AbstractParticleSet):
         
         offset = 0
         
-        keys = self.get_all_keys_in_store()[index]
-        if hasattr(keys, '__iter__'):
-            return self._subset(keys)
+        if isinstance(index, basestring):
+            return self.get_subset(index)
         else:
-            index = self.get_all_indices_in_store()[index]
-            for set in self._private.particle_sets:
-                length = len(set)
-                if index < (offset+length):
-                    return set[index - offset]
-                offset += length
-            raise Exception('index not found on superset')
+            keys = self.get_all_keys_in_store()[index]
+            if hasattr(keys, '__iter__'):
+                return self._subset(keys)
+            else:
+                index = self.get_all_indices_in_store()[index]
+                for set in self._private.particle_sets:
+                    length = len(set)
+                    if index < (offset+length):
+                        return set[index - offset]
+                    offset += length
+                raise Exception('index not found on superset')
     
     def _get_particle(self, key):
         if self.has_key_in_store(key):

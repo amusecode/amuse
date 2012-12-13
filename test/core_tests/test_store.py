@@ -12,6 +12,8 @@ from amuse.units import units
 from amuse.units import nbody_system
 from amuse.datamodel import Particles
 from amuse.datamodel import Grid
+from amuse.datamodel import ParticlesSuperset
+
 
 
 
@@ -680,3 +682,69 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         self.assertAlmostRelativeEquals(loaded_gas[0][0].particle.x, 1.0 | units.km)
         self.assertAlmostRelativeEquals(gas_copy[0][0].particle.x, 3.0 | units.km)
         self.assertAlmostRelativeEquals(gas_copy[1][2].particle.x, 3.0 | units.km)
+        
+    
+    def test25(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test25.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        particles1 = Particles(2)
+        particles1[0].x = 1.0  | units.km
+        particles1[1].x = 2.0  | units.km
+        particles2 = Particles(2)
+        particles2[0].x = 3.0  | units.km
+        particles2[1].x = 4.0  | units.km
+        
+        particles_superset = ParticlesSuperset([particles1, particles2])
+    
+        
+        self.assertAlmostRelativeEquals(particles_superset[0].x,1.0 | units.km)
+        self.assertAlmostRelativeEquals(particles_superset[2].x,3.0 | units.km)
+        
+        io.write_set_to_file(particles_superset, output_file, "hdf5", version = self.store_version())
+        loaded_particles_superset = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
+        
+        self.assertAlmostRelativeEquals(loaded_particles_superset[0].x,1.0 | units.km)
+        self.assertAlmostRelativeEquals(loaded_particles_superset[2].x,3.0 | units.km)
+        
+    
+
+    def test26(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test26.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        number_of_particles = 10
+        p = Particles(number_of_particles)
+        p.mass = [x * 2.0 for x in range(number_of_particles)] | units.kg
+        p.model_time = 2.0 | units.s
+
+        gas = Grid(2,3)
+        gas.y = [[1.0, 2.0, 3.0], [4.0,5.0,6.0]] | units.km
+        
+        io.write_set_to_file(
+            p,
+            output_file,
+            "hdf5", 
+            particle = p[1],
+            particles = p,
+            gridpoint = gas[0][0],
+            grid = gas,
+            version = self.store_version()
+        )
+        
+        loaded_particles = io.read_set_from_file(
+            output_file, 
+            "hdf5",
+            version = self.store_version()
+        )
+        
+        attributes = loaded_particles.collection_attributes
+        self.assertAlmostRelativeEquals(attributes.particle.mass, loaded_particles[1].mass)
+        self.assertAlmostRelativeEquals(attributes.particle.key, loaded_particles[1].key)
+        self.assertEquals(id(attributes.particles), id(loaded_particles))
+        self.assertAlmostRelativeEquals(attributes.gridpoint.y, 1.0 | units.km)
+        self.assertAlmostRelativeEquals(attributes.grid[0][0].y, 1.0 | units.km)
