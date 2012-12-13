@@ -20,6 +20,18 @@ float octree::getDt()
   return timeStep;
 }
 
+
+void octree::setEta(float _eta)
+{
+  eta = _eta;
+}
+
+float octree::getEta()
+{
+  return eta;
+}
+
+
 void octree::setTheta(float thetax)
 {
     theta = thetax; 

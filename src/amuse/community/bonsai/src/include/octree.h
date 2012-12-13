@@ -585,6 +585,8 @@ public:
   float getEps();
   void  setDt(float dt);
   float getDt();
+  void  setEta(float _eta);
+  float getEta();
   void  setTheta(float theta);
   float getTheta();
   void  setTEnd(float tEnd);
@@ -641,7 +643,8 @@ public:
     //TODO!
     inv_theta   = 1.0/_theta;
     eps2        = eps*eps;
-    eta         = 0.02;
+    //eta         = 0.02;
+    eta         = 0.1;
     theta       = _theta;
 
     nextSnapTime = 0;

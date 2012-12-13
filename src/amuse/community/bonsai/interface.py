@@ -198,6 +198,27 @@ class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
         """
         return function
 
+    @legacy_function
+    def get_eta():
+        """
+        Get eta, the block time-step parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('eta', dtype='float64', direction=function.OUT,
+            description = "Eta, time-step parameter")
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def set_eta():
+        """
+        Set eta, the block time-step parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('eta', dtype='float64', direction=function.IN,
+            description = "Eta, time-step parameter")
+        function.result_type = 'int32'
+        return function
 
 class Bonsai(GravitationalDynamics):
     
@@ -228,6 +249,14 @@ class Bonsai(GravitationalDynamics):
             "timestep", 
             "timestep for the system", 
             default_value = 1.0 / 64 | nbody_system.time
+        )
+
+        object.add_method_parameter(
+            "get_eta", 
+            "set_eta", 
+            "timestep_parameter", 
+            "timestep parameter for the block time-step", 
+            default_value = 0.1
         )
 
         object.add_method_parameter(

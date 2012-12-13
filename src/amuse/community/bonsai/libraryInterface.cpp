@@ -364,6 +364,18 @@ int set_time_step(double _timestep)
   return 0;
 }
 
+int get_eta(double *_eta)
+{
+  *_eta = bonsai->getEta();
+  return 0;
+}
+
+int set_eta(double _eta)
+{
+  bonsai->setEta(_eta);
+  return 0;
+}
+
 int get_eps2(double *epsilon_squared)
 {
   double  eps = bonsai->getEps();

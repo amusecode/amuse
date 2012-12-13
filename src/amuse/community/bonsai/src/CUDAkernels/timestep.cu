@@ -541,7 +541,7 @@ extern "C"  __global__ void compute_dt(const int n_bodies,
   float dt_est = sqrt(sqrt(min(mct, fft)));
 
   //Make it a power of 2
-  float dt_param = 0.1; //eta
+  float dt_param = eta; //eta
  // float dt_param = 1.0; //eta
   float dt = dt_est*dt_param;
 
@@ -553,12 +553,18 @@ extern "C"  __global__ void compute_dt(const int n_bodies,
   while(fmodf(tc, dt) != 0.0f) dt *= 0.5f;      // could be slow!
 
   //if(dt < 1./16384) dt = 1./16384;
-  if(dt < 1./1048576) dt = 1./1048576;
+  //if(dt < 1./1048576) dt = 1./1048576;
 
 
   time[idx].x = tc;
 
 #ifdef ADAPTIVE_TIMESTEP
+
+  //Prevent a time-step smaller than specified through the interface
+  if(dt < timeStep)
+    dt = timeStep;
+
+
   time[idx].y = tc + (double)dt;
 #else
   time[idx].y = tc + timeStep;
