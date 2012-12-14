@@ -705,3 +705,54 @@ class TestSSE(TestWithMPI):
         self.assertAlmostEqual(evolved_star.epoch, float(sse_final_result[9]) | units.Myr, 3)
         self.assertAlmostEqual(evolved_star.spin, float(sse_final_result[10]) | units.none, 3)
     
+    def test19(self):
+        print "SSE core_mass and CO_core_mass (high mass star)"
+        instance = SSE()
+        star = instance.particles.add_particle(Particle(mass = 30 | units.MSun))
+        instance.evolve_model(5.8 | units.Myr)
+        print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
+        self.assertEqual(str(star.stellar_type), "Main Sequence star")
+        self.assertIsOfOrder(star.mass, 30 | units.MSun)
+        self.assertEqual(star.core_mass, 0 | units.MSun)
+        self.assertEqual(star.CO_core_mass, 0 | units.MSun)
+        instance.evolve_model(6.0 | units.Myr)
+        print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
+        self.assertEqual(str(star.stellar_type), "Core Helium Burning")
+        self.assertIsOfOrder(star.mass, 30 | units.MSun)
+        self.assertIsOfOrder(star.core_mass, 10 | units.MSun)
+        self.assertEqual(star.CO_core_mass, 0 | units.MSun)
+        instance.evolve_model(6.5 | units.Myr)
+        print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
+        self.assertEqual(str(star.stellar_type), "Main Sequence Naked Helium star")
+        self.assertIsOfOrder(star.mass, 10 | units.MSun)
+        self.assertEqual(star.core_mass, star.mass)
+        self.assertEqual(star.CO_core_mass, 0 | units.MSun)
+        instance.evolve_model(6.65 | units.Myr)
+        print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
+        self.assertEqual(str(star.stellar_type), "Hertzsprung Gap Naked Helium star")
+        self.assertIsOfOrder(star.mass, 10 | units.MSun)
+        self.assertEqual(star.core_mass, star.mass)
+        self.assertAlmostEqual(star.CO_core_mass, 7.12 | units.MSun, 2)
+        instance.evolve_model(7.0 | units.Myr)
+        print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
+        self.assertEqual(str(star.stellar_type), "Black Hole")
+        self.assertIsOfOrder(star.mass, 10 | units.MSun)
+        self.assertEqual(star.core_mass, star.mass)
+        self.assertEqual(star.CO_core_mass, star.mass)
+        instance.stop()
+    
+    def test20(self):
+        print "SSE core_mass and CO_core_mass (low mass stars)"
+        instance = SSE()
+        stars = instance.particles.add_particles(Particles(mass = [0.6, 1.0] | units.MSun))
+        instance.evolve_model(100 | units.Gyr)
+        self.assertEqual(str(stars[0].stellar_type), "Helium White Dwarf")
+        self.assertAlmostEqual(stars[0].mass, 0.405 | units.MSun, 2)
+        self.assertEqual(stars[0].core_mass, stars[0].mass)
+        self.assertEqual(stars[0].CO_core_mass, 0 | units.MSun)
+        self.assertEqual(str(stars[1].stellar_type), "Carbon/Oxygen White Dwarf")
+        self.assertAlmostEqual(stars[1].mass, 0.520 | units.MSun, 2)
+        self.assertEqual(stars[1].core_mass, stars[1].mass)
+        self.assertEqual(stars[1].CO_core_mass, stars[1].mass)
+        instance.stop()
+    

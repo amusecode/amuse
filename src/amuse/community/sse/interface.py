@@ -1,3 +1,4 @@
+import numpy
 from operator import itemgetter
 from amuse.community import *
 from amuse.units import units
@@ -122,6 +123,7 @@ class SSEParticles(Particles):
             "radius": 0 | units.RSun,
             "luminosity":  0 | units.LSun,
             "core_mass": 0 | units.MSun,
+            "CO_core_mass": 0 | units.MSun,
             "core_radius": 0 | units.RSun,
             "envelope_mass": 0 | units.MSun,
             "envelope_radius": 0 | units.RSun,
@@ -335,8 +337,25 @@ class SSE(common.CommonCode):
             particles.age,
             end_time.as_vector_with_length(len(particles)))
         
-        particles.set_values_in_store(particles.get_all_indices_in_store(), attributes, result)
-        
+        # For helium (and helium exhausted) stars, the core mass returned is actually the CO core mass
+        type = result[0].value_in(units.stellar_type)
+        helium_star_selection = (type > 6) & (type < 16) & (type != 10)
+        helium_stars = particles[helium_star_selection]
+        other_stars = particles - helium_stars
+        if len(helium_stars):
+            helium_stars_results = [sub[helium_star_selection] for sub in result]
+            helium_stars_results.append(helium_stars_results[2])
+            helium_stars.set_values_in_store(helium_stars.get_all_indices_in_store(), (
+                "stellar_type", "initial_mass", "mass", "radius",  "luminosity", 
+                "CO_core_mass", 
+                "core_radius", "envelope_mass", "envelope_radius", "spin", "epoch",
+                "main_sequence_lifetime", "age", "end_time", 
+                "core_mass"), helium_stars_results)
+        if len(other_stars):
+            other_star_selection = numpy.logical_not(helium_star_selection)
+            other_stars.set_values_in_store(other_stars.get_all_indices_in_store(), attributes, 
+                [sub[other_star_selection] for sub in result])
+    
     def evolve_model(self, end_time = None, keep_synchronous = True):
         if not keep_synchronous:
             self._evolve_particles(self.particles, self.particles.time_step + self.particles.age)
