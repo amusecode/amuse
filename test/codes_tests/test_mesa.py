@@ -1018,5 +1018,40 @@ class TestMESA(TestWithMPI):
         self.assertIsOfOrder(stars.central_density, [400, 77, 9] | units.g * units.cm**-3)
         instance.stop()
     
+    def test24(self):
+        print "Testing MESA calculate_helium_exhausted_core_mass"
+        instance = self.new_instance(MESA)
+        star = instance.particles.add_particle(Particle(mass=2|units.MSun))
+        
+        composition = star.get_chemical_abundance_profiles()
+        # Mimic hydrogen exhausted core:
+        composition[2, :100] = composition[2, :100] + composition[0, :100]
+        composition[0, :100] = 0
+        # Mimic helium exhausted core:
+        carbon_oxygen = composition[:6, :50].sum(axis=0)
+        composition[3, :50] = carbon_oxygen * 0.6
+        composition[5, :50] = carbon_oxygen * 0.4
+        composition[1:3, :50] = 0
+        composition[4, :50] = 0
+        star.set_chemical_abundance_profiles(composition)
+        
+        self.assertAlmostRelativeEqual(star.calculate_core_mass(), 
+            star.mass * star.get_cumulative_mass_profile()[100], 1)
+        self.assertAlmostRelativeEqual(star.calculate_helium_exhausted_core_mass(), 
+            star.mass * star.get_cumulative_mass_profile()[50], 1)
+        
+        core_mass = star.calculate_helium_exhausted_core_mass(split_species=False)
+        core_mass_by_species = star.calculate_helium_exhausted_core_mass(split_species=True)
+        carbon_mass_in_core, oxygen_mass_in_core = star.calculate_helium_exhausted_core_mass(
+            split_species=True, species=["c12", "o16"])
+        
+        self.assertEqual(len(core_mass_by_species), len(star.get_names_of_species()))
+        instance.stop()
+        self.assertAlmostRelativeEqual(core_mass, core_mass_by_species.sum())
+        self.assertEqual(core_mass_by_species[0:3].sum(), 0 | units.MSun)
+        self.assertEqual(core_mass_by_species[4], 0 | units.MSun)
+        self.assertEqual(core_mass_by_species[3], carbon_mass_in_core)
+        self.assertEqual(core_mass_by_species[5], oxygen_mass_in_core)
+    
 
 

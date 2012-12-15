@@ -985,48 +985,55 @@ class InternalStellarStructure(object):
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
     
-    def calculate_core_mass(self, indices_of_the_stars, species=None, core_H_abundance_limit=1.0e-4):
+    def calculate_core_mass(self, indices_of_the_stars, species=None, core_H_abundance_limit=1.0e-4, split_species=False):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying the core mass")
         chemical_abundance_profiles = self.get_chemical_abundance_profiles(indices_of_the_stars)
         index_core = numpy.searchsorted(chemical_abundance_profiles[0], core_H_abundance_limit)
-        
-        if species is None:
-            densities = self.get_density_profile(indices_of_the_stars)
-        else:
-            fraction = 0 * chemical_abundance_profiles[0]
-            for i, species_name in enumerate(self.get_names_of_species(indices_of_the_stars)):
-                if species_name in species:
-                    fraction += chemical_abundance_profiles[i]
-            densities = self.get_density_profile(indices_of_the_stars) * fraction
-        
-        return EnclosedMassInterpolator(
-            radii = self.get_radius_profile(indices_of_the_stars),
-            densities = densities
-        ).enclosed_mass[index_core].as_quantity_in(units.MSun)
+        densities, radii_cubed = self._get_densities_radii_cubed(indices_of_the_stars, index_core, 
+            split_species, species, chemical_abundance_profiles)
+        sum_axis = 1 if split_species else None
+        return (numpy.pi * 4.0/3.0 * (densities * (radii_cubed[1:] - radii_cubed[:-1])).sum(axis=sum_axis)).as_quantity_in(units.MSun)
     
-    def calculate_helium_exhausted_core_mass(self, indices_of_the_stars, species=None, core_He_abundance_limit=1.0e-4):
-        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying the core mass")
-        chemical_abundance_profiles = self.get_chemical_abundance_profiles(indices_of_the_stars)
-        
+    def _get_index_helium_exhausted_core(self, indices_of_the_stars, chemical_abundance_profiles, core_He_abundance_limit):
         helium_abundance_profile = 0 * chemical_abundance_profiles[0]
         for i, species_name in enumerate(self.get_names_of_species(indices_of_the_stars)):
             if "he" in species_name or "He" in species_name:
                 helium_abundance_profile += chemical_abundance_profiles[i]
-        index_core = numpy.searchsorted(helium_abundance_profile, core_He_abundance_limit)
-        
-        if species is None:
-            densities = self.get_density_profile(indices_of_the_stars)
+        return numpy.searchsorted(helium_abundance_profile, core_He_abundance_limit)
+    
+    def _get_densities_radii_cubed(self, indices_of_the_stars, index_core, 
+            split_species, species, chemical_abundance_profiles):
+        densities = self.get_density_profile(indices_of_the_stars)[:index_core]
+        if split_species:
+            if species is None:
+                species_profiles = chemical_abundance_profiles[..., :index_core]
+            else:
+                species_profiles = []
+                for i, species_name in enumerate(self.get_names_of_species(indices_of_the_stars)):
+                    if species_name in species:
+                        species_profiles.append(chemical_abundance_profiles[i, :index_core])
+            densities = densities * species_profiles
         else:
-            fraction = 0 * chemical_abundance_profiles[0]
-            for i, species_name in enumerate(self.get_names_of_species(indices_of_the_stars)):
-                if species_name in species:
-                    fraction += chemical_abundance_profiles[i]
-            densities = self.get_density_profile(indices_of_the_stars) * fraction
+            if not species is None:
+                fraction = 0 * chemical_abundance_profiles[0, :index_core]
+                for i, species_name in enumerate(self.get_names_of_species(indices_of_the_stars)):
+                    if species_name in species:
+                        fraction += chemical_abundance_profiles[i, :index_core]
+                densities = densities * fraction
         
-        return EnclosedMassInterpolator(
-            radii = self.get_radius_profile(indices_of_the_stars),
-            densities = densities
-        ).enclosed_mass[index_core].as_quantity_in(units.MSun)
+        radii = self.get_radius_profile(indices_of_the_stars)[:index_core]
+        radii.prepend(0 | units.m)  
+        radii_cubed = radii**3
+        return densities, radii_cubed
+    
+    def calculate_helium_exhausted_core_mass(self, indices_of_the_stars, species=None, core_He_abundance_limit=1.0e-4, split_species=False):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying the core mass")
+        chemical_abundance_profiles = self.get_chemical_abundance_profiles(indices_of_the_stars)
+        index_core = self._get_index_helium_exhausted_core(indices_of_the_stars, chemical_abundance_profiles, core_He_abundance_limit)
+        densities, radii_cubed = self._get_densities_radii_cubed(indices_of_the_stars, index_core, 
+            split_species, species, chemical_abundance_profiles)
+        sum_axis = 1 if split_species else None
+        return (numpy.pi * 4.0/3.0 * (densities * (radii_cubed[1:] - radii_cubed[:-1])).sum(axis=sum_axis)).as_quantity_in(units.MSun)
     
     def merge_colliding(self, primaries, secondaries, collision_code, 
             code_options=dict(), code_parameters=dict(), return_merge_products=["se", "gd"], create_new_key=True):
