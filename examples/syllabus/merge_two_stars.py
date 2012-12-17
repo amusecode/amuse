@@ -15,11 +15,11 @@ def merge_two_stars(Mprim, Msec, t_coll):
     stellar.evolve_model(t_coll)
 
     print "Pre merger:\n", stellar.particles
-    stellar.merge_colliding(primary, secondary, MakeMeAMassiveStar,
-                            dict(), dict())
+    stellar.merge_colliding(primary.copy(), secondary.copy(), MakeMeAMassiveStar,
+        dict(), dict(target_n_shells_mixing = 2000), return_merge_products=["se"])
     print "Post merger:\n", stellar.particles
 
-    composition = stellar.particles[0].get_composition_profile()
+    composition = stellar.particles[0].get_chemical_abundance_profiles()
     print "composition:\n", composition
 
 
