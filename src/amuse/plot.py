@@ -64,16 +64,17 @@ def latex_support():
 def plot(*args, **kwargs):
     UnitlessArgs.strip(*args, **kwargs)
     args = UnitlessArgs.stripped_args
-    native_plot.plot(*args, **kwargs)
+    result = native_plot.plot(*args, **kwargs)
     native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
     native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    return result
 
 def plot3(*args, **kwargs):
     UnitlessArgs.strip(*args, **kwargs)
     args = UnitlessArgs.stripped_args
     fig = native_plot.figure()
     ax = fig.gca(projection='3d')
-    ax.plot(*args, **kwargs)
+    return ax.plot(*args, **kwargs)
     #ax.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
     #ax.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
     #ax.zlabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
@@ -81,49 +82,53 @@ def plot3(*args, **kwargs):
 def semilogx(*args, **kwargs):
     UnitlessArgs.strip(*args, **kwargs)
     args = UnitlessArgs.stripped_args
-    native_plot.semilogx(*args, **kwargs)
+    result = native_plot.semilogx(*args, **kwargs)
     native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
     native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    return result
 
 def semilogy(*args, **kwargs):
     UnitlessArgs.strip(*args, **kwargs)
     args = UnitlessArgs.stripped_args
-    native_plot.semilogy(*args, **kwargs)
+    result = native_plot.semilogy(*args, **kwargs)
     native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
     native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    return result
 
 def loglog(*args, **kwargs):
     UnitlessArgs.strip(*args, **kwargs)
     args = UnitlessArgs.stripped_args
-    native_plot.loglog(*args, **kwargs)
+    result = native_plot.loglog(*args, **kwargs)
     native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
     native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    return result
 
 def scatter(x, y, s=20, c='b', marker='o', cmap=None, norm=None, vmin=None, vmax=None, alpha=1.0, linewidths=None, faceted=True, verts=None, hold=None, **kwargs):
     UnitlessArgs.strip(x,y)
     args = UnitlessArgs.stripped_args
-    native_plot.scatter(args[0], args[1], s, c, marker, cmap, norm, vmin, vmax, alpha, linewidths, faceted, verts, hold, **kwargs)
+    return native_plot.scatter(args[0], args[1], s, c, marker, cmap, norm, vmin, vmax, alpha, linewidths, faceted, verts, hold, **kwargs)
 
 def hist(x, bins=10, range=None, normed=False, weights=None, cumulative=False, bottom=None, histtype='bar', align='mid', orientation='vertical', rwidth=None, log=False, hold=None, **kwargs):
     UnitlessArgs.strip(x)
     args = UnitlessArgs.stripped_args
-    native_plot.hist(args[0], bins, range, normed, weights, cumulative, bottom, histtype, align, orientation, rwidth, log, hold, **kwargs)
+    result = native_plot.hist(args[0], bins, range, normed, weights, cumulative, bottom, histtype, align, orientation, rwidth, log, hold, **kwargs)
     UnitlessArgs.unitnames_of_args.append("")
+    return result
 
 def text(x, y, s, **kwargs):
     UnitlessArgs.strip(x,y)
     args = UnitlessArgs.stripped_args
-    native_plot.text(args[0], args[1], s, **kwargs)
+    return native_plot.text(args[0], args[1], s, **kwargs)
 
 def xlabel(s, *args, **kwargs):
     if not '[' in s:
         s = custom_label.format(s, UnitlessArgs.unitnames_of_args[0])
-    native_plot.xlabel(s, *args, **kwargs)
+    return native_plot.xlabel(s, *args, **kwargs)
 
 def ylabel(s, *args, **kwargs):
     if not '[' in s:
         s = custom_label.format(s, UnitlessArgs.unitnames_of_args[1])
-    native_plot.ylabel(s, *args, **kwargs)
+    return native_plot.ylabel(s, *args, **kwargs)
 
 def smart_length_units_for_vector_quantity(quantity):
     length_units = [units.Mpc, units.kpc, units.parsec, units.AU, units.RSun, units.km]
