@@ -195,6 +195,12 @@ class JobServer(object):
         else:
           self.idle_codes.append(code)   
   
+    def exec_(self,arg):
+      while self.number_starting_codes>0:
+        sleep(0.1)
+      self.waitall()  
+      for code in self.idle_codes:
+        code.exec_(arg)
     
     def submit_job(self,f,args=(),kwargs={}):
       if len(self.pool)==0 and not self.job_list:
