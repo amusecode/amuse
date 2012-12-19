@@ -157,7 +157,7 @@ class InstallPrerequisites(object):
           (
             'tcl' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '8.5.11' ,                   #version string
+            '8.5.13' ,                   #version string
             'tcl', '-src.tar.gz',        #pre- and postfix for filename
             'http://downloads.sourceforge.net/project/tcl/Tcl/8.5.13/', #download url, filename is appended
             self.tcl_build             #method to use for building - same as for FFTW should work
@@ -165,7 +165,7 @@ class InstallPrerequisites(object):
           (
             'tk' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '8.5.11' ,                   #version string
+            '8.5.13' ,                   #version string
             'tk', '-src.tar.gz',        #pre- and postfix for filename
             'http://downloads.sourceforge.net/project/tcl/Tcl/8.5.13/', #download url, filename is appended
             self.tk_build             #method to use for building - same as for FFTW should work
