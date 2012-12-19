@@ -154,22 +154,22 @@ class InstallPrerequisites(object):
             'http://downloads.sourceforge.net/project/libpng/libpng15/older-releases/1.5.11/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
-          #(
-          #  'tcl' ,                   #name to refer by
-          #  [],                         #names of prerequisites (unused)
-          #  '8.5.11' ,                   #version string
-          #  'tcl', '-src.tar.gz',        #pre- and postfix for filename
-          #  'http://downloads.sourceforge.net/project/tcl/Tcl/8.5.11/', #download url, filename is appended
-          #  self.tcl_build             #method to use for building - same as for FFTW should work
-          #) ,
-          #(
-          #  'tk' ,                   #name to refer by
-          #  [],                         #names of prerequisites (unused)
-          #  '8.5.11' ,                   #version string
-          #  'tk', '-src.tar.gz',        #pre- and postfix for filename
-          #  'http://downloads.sourceforge.net/project/tcl/Tcl/8.5.11/', #download url, filename is appended
-          #  self.tk_build             #method to use for building - same as for FFTW should work
-          #) ,
+          (
+            'tcl' ,                   #name to refer by
+            [],                         #names of prerequisites (unused)
+            '8.5.11' ,                   #version string
+            'tcl', '-src.tar.gz',        #pre- and postfix for filename
+            'http://downloads.sourceforge.net/project/tcl/Tcl/8.5.13/', #download url, filename is appended
+            self.tcl_build             #method to use for building - same as for FFTW should work
+          ) ,
+          (
+            'tk' ,                   #name to refer by
+            [],                         #names of prerequisites (unused)
+            '8.5.11' ,                   #version string
+            'tk', '-src.tar.gz',        #pre- and postfix for filename
+            'http://downloads.sourceforge.net/project/tcl/Tcl/8.5.13/', #download url, filename is appended
+            self.tk_build             #method to use for building - same as for FFTW should work
+          ) ,
           (
             'zmq' ,                   #name to refer by
             [],                         #names of prerequisites (unused)

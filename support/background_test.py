@@ -26,11 +26,25 @@ from . import project
 
 
 def is_mpd_running():
+        
     name_of_the_vendor, version = MPI.get_vendor()
     if name_of_the_vendor == 'MPICH2':
-        process = subprocess.Popen(['mpdtrace'], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        (output_string, error_string) = process.communicate()
-        return not (process.returncode == 255)
+        must_check_mpd = True
+        if 'AMUSE_MPD_CHECK' in os.environ:
+            must_check_mpd = os.environ['AMUSE_MPD_CHECK'] == '1'
+        if 'PMI_PORT' in os.environ:
+            must_check_mpd = False
+        if 'HYDRA_CONTROL_FD' in os.environ:
+            must_check_mpd = False
+        
+        if not must_check_mpd:
+            return True
+        try:
+            process = subprocess.Popen(['mpdtrace'], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+            (output_string, error_string) = process.communicate()
+            return not (process.returncode == 255)
+        except OSError as ex:
+            return True
     else:
         return True
         
@@ -38,8 +52,10 @@ def ensure_mpd_is_running():
     if not is_mpd_running():
         name_of_the_vendor, version = MPI.get_vendor()
         if name_of_the_vendor == 'MPICH2':
-            process = subprocess.Popen(['nohup','mpd'], close_fds=True)
-    
+            try:
+                process = subprocess.Popen(['nohup','mpd'], close_fds=True)
+            except OSError as ex:
+                pass
 
 
 
