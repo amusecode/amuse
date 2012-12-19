@@ -1323,7 +1323,9 @@ class LinkedArray(numpy.ndarray):
         result = LinkedArray(self.copy())
         index = 0
         for index in numpy.ndindex(*self.shape):
-            x = self[index]
+            if len(index) == 1:
+                index = index[0]
+            x = self[index]            
             if x is None:
                 result[index] = None
             elif isinstance(x, Particle):
