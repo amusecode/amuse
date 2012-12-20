@@ -3,13 +3,12 @@
 """
 import numpy 
 from matplotlib import pyplot
-from amuse.lab import *
+from amuse.lab import new_salpeter_mass_distribution, units
 
 def main(N, m, M, ximf):
     masses = new_salpeter_mass_distribution(N, m, M, ximf)
-    import math
-    lm = math.log10(m.value_in(units.MSun))
-    lM = math.log10(M.value_in(units.MSun))
+    lm = numpy.log10(m.value_in(units.MSun))
+    lM = numpy.log10(M.value_in(units.MSun))
     bins = 10**numpy.linspace(lm, lM, 50)
     Nbin, bin_edges= numpy.histogram(masses.value_in(units.MSun), bins=bins)
     bin_sizes = bin_edges[1:] - bin_edges[:-1]

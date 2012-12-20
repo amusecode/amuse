@@ -1,9 +1,9 @@
 """ 
    Example AMUSE sciprt for generating a Plummer shere and plot the results.
 """
-from amuse.lab import *
 from matplotlib.pyplot import show, xlim, ylim, figure
 from amuse.plot import scatter, xlabel, ylabel
+from amuse.lab import new_plummer_model
 
 def main(N=10): 
     figure(figsize=(10,10))
@@ -18,8 +18,7 @@ def main(N=10):
 def new_option_parser():
     from optparse import OptionParser
     result = OptionParser()
-    result.add_option("-N", dest="N", type="int",default = 1000,
-                      help="number of stars [1000]")
+    result.add_option("-N", dest="N", type="int",default = 1000, help="number of stars [1000]")
     return result
 
 if __name__ in ('__main__', '__plot__'):

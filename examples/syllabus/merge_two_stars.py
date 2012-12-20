@@ -4,6 +4,8 @@
 import sys
 import numpy
 from amuse.lab import *
+from amuse.plot import plot, xlabel, ylabel
+from matplotlib import pyplot 
     
 def merge_two_stars(Mprim, Msec, t_coll):
     bodies = Particles(mass=[Mprim, Msec] |units.MSun)
@@ -19,11 +21,21 @@ def merge_two_stars(Mprim, Msec, t_coll):
         dict(), dict(target_n_shells_mixing = 2000), return_merge_products=["se"])
     print "Post merger:\n", stellar.particles
 
-    composition = stellar.particles[0].get_chemical_abundance_profiles()
-    print "composition:\n", composition
-
-
+#    composition = stellar.particles[0].get_chemical_abundance_profiles()
+    radius = stellar.particles[0].get_radius_profile()
+    rho    = stellar.particles[0].get_density_profile()
+    print radius
+    print rho
     stellar.stop()
+    return radius, rho
+
+def plot_density_profile(radius, rho):
+    plot(radius.in_(units.RSun), rho)
+    pyplot.xlabel("$R$ [$R_\odot$]")
+    pyplot.ylabel("density [$g/cm^3$]")
+    pyplot.semilogy()
+    pyplot.show()
+
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser
@@ -38,4 +50,5 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
-    merge_two_stars(**o.__dict__)
+    radius, rho = merge_two_stars(**o.__dict__)
+    plot_density_profile(radius, rho)
