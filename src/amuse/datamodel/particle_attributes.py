@@ -815,7 +815,7 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
     
     if distfunc is None:
       def distfunc(p,q):
-        return (((p.x-q.x)**2+(p.y-q.y)**2+(p.z-q.z)**2)**0.5).value_in(threshold.unit)
+        return (((p.x-q.x)**2+(p.y-q.y)**2+(p.z-q.z)**2)**0.5)
   
     if verbose: print "making CC"
     tocheck=range(len(parts))
@@ -828,7 +828,7 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
        while len(stack)>0 and len(tocheck)>0:
          p=stack.pop()
          
-         d=distfunc(parts[p],parts[tocheck])
+         d=distfunc(parts[p],parts[tocheck]).value_in(threshold.unit)
          toadd=[ tocheck.pop(i) for i in reversed(range(len(tocheck))) if d[i] < threshold.number ]
          stack.extend(toadd)
          currentcc.extend(toadd)
