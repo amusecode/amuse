@@ -4,15 +4,19 @@ are in AMUSE.
 
 to profile (in the amuse root directory):
 
-./amuse.sh -m cProfile -s cumulative test/reports/speed_report.py 10000 speed_copy_to_set > profile.txt
+./amuse.sh -m cProfile -s cumulative test/reports/speed_report.py --n_order==4 --test==speed_copy_to_set > profile.txt
 
 """
 
 
-
+#import numpypy
 
 
 from amuse.lab import *
+#from amuse.datamodel import *
+#from amuse.units import nbody_system
+from amuse.support.thirdparty import texttable
+
 import traceback
 
 import subprocess
@@ -22,6 +26,7 @@ import time
 import sys
 import signal
 
+from optparse import OptionParser
 
 from mpi4py import MPI
 
@@ -40,11 +45,11 @@ class RunSpeedTests(object):
                 
     @late
     def header_line(self):
-        return ('action', 'duration (seconds)')
+        return ('action', 'duration\n(seconds)')
         
     @late
     def row_formatters(self):
-        return (self.method_to_action, '{0:0.3f}'.format)
+        return (self.method_to_action, lambda x : x)
     
     @late
     def maximum_number_of_seconds_to_allow_per_test(self):
@@ -57,9 +62,22 @@ class RunSpeedTests(object):
         name = name.replace('_', ' ')
         return name
         
-    def __init__(self, total_number_of_points, name_of_the_method = None):
+    def __init__(self, 
+            total_number_of_points, 
+            subset_number_of_points = -1, 
+            name_of_the_method = None,
+            include_code_tests = False,
+            include_slow_tests = False,
+            csv_output = False):
         self.total_number_of_points = total_number_of_points
+        if subset_number_of_points < 0:
+            subset_number_of_points = self.total_number_of_points
+            
+        self.subset_number_of_points = subset_number_of_points
         self.name_of_the_method = name_of_the_method
+        self.include_code_tests = include_code_tests
+        self.include_slow_tests = include_slow_tests
+        self.csv_output = csv_output
     
     def handle_timeout(self, signum, frame):
         self.t1=-1
@@ -106,6 +124,27 @@ class RunSpeedTests(object):
             print >> sys.stderr, self.row_formatters[1](delta_time)
             self.report_lines.append((method,delta_time))
         
+        if self.csv_output:
+            self.output_csv_line()
+        else:
+            self.output_table()
+    
+    def output_csv_line(self):
+        line = []
+        line.append('N')
+        line.append('M')
+        for x in self.report_lines:
+            line.append(self.method_to_action(x[0]))
+        print '#' + ','.join(line)
+        
+        line = []
+        line.append(str(self.total_number_of_points))
+        line.append(str(self.subset_number_of_points))
+        for x in self.report_lines:
+            line.append(str(x[1]))
+        print ','.join(line)
+        
+    def output_table(self):
         lines = []
         
         lines.append(':run date:')
@@ -114,21 +153,26 @@ class RunSpeedTests(object):
         lines.append(':number of points:')
         lines.append('    {0}'.format(self.total_number_of_points))
         lines.append('')
-        lines.append(self.grid_table_row_separator_line())
-        lines.append(self.grid_table_row_line(self.header_line))
-        lines.append(self.grid_table_row_separator_line('='))
-        for x in self.report_lines_as_strings[:-1]:
-            lines.append(self.grid_table_row_line(x))
-        lines.append(self.grid_table_row_line(self.report_lines_as_strings[-1]))
-        lines.append(self.grid_table_row_separator_line('='))
-        lines.append(self.grid_table_row_line(['total time', self.row_formatters[1](self.total_time) ]))
-        lines.append(self.grid_table_row_separator_line('='))
         
         for x in lines:
             print x
             
+        table = texttable.Texttable()
+        #table.set_deco(texttable.Texttable.HEADER)
+        table.set_cols_dtype([
+            't',  # text 
+            'f',  # float (decimal)
+        ])
+        table.set_cols_align(["l", "r"])
+        rows = []
+        rows.append(self.header_line)
+        rows.extend(self.report_lines_as_strings)
+        table.add_rows(rows)
+        print table.draw()
+        
+            
     def names_of_testing_methods(self):
-        for x in dir(type(self)):
+        for x in sorted(dir(type(self))):
             if x.startswith(self.method_prefix):
                 yield x
     
@@ -164,21 +208,23 @@ class RunSpeedTests(object):
         
     def speed_scale_plummer_sphere(self):
         input = new_plummer_model(self.total_number_of_points)
-        if self.total_number_of_points > 20000:
-            raise SkipException("too many points")
+        
+        self.is_slow_test()
+        
         self.start_measurement()
         input.scale_to_standard()
         self.end_measurement()
         
-        
+    def is_slow_test(self):
+        if not self.include_slow_tests:
+            raise SkipException("slow tests disabled")
+            
     def speed_calculate_potential_energy(self):
         
-        if self.total_number_of_points > 20000:
-            raise SkipException("too many points")
-    
+        self.is_slow_test()
         input = new_plummer_model(self.total_number_of_points)
         self.start_measurement()
-        input.potential_energy()
+        input.potential_energy(G=nbody_system.G)
         self.end_measurement()
         
         
@@ -190,12 +236,15 @@ class RunSpeedTests(object):
         
     
     def speed_start_and_stop_BHTree_code(self):
+        self.is_code_test()
         self.start_measurement()
         code = BHTree()
         code.stop()
         self.end_measurement()
     
     def speed_add_particles_to_code(self):
+        self.is_code_test()
+        
         code = BHTree()
         particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
@@ -207,6 +256,8 @@ class RunSpeedTests(object):
     
     def speed_add_particles_to_code_SI(self):
         """plummer sphere"""
+        self.is_code_test()
+        
         converter = nbody.nbody_to_si(1 | units.parsec, self.total_number_of_points | units.MSun)
         code = BHTree(converter)
         particles = new_plummer_model(self.total_number_of_points, converter)
@@ -218,6 +269,7 @@ class RunSpeedTests(object):
     
     
     def speed_copy_particles_from_code(self):
+        self.is_code_test()
         code = BHTree()
         particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
@@ -231,8 +283,8 @@ class RunSpeedTests(object):
     def speed_evolve_code_0_d_001_time_in_BHTree(self):
         """plummer sphere"""
     
-        if self.total_number_of_points > 10000:
-            raise SkipException("too many points")
+        self.is_code_test()
+        self.is_slow_test()
     
         code = BHTree()
         particles = new_plummer_model(self.total_number_of_points)
@@ -246,8 +298,8 @@ class RunSpeedTests(object):
     def speed_evolve_code_0_d_001_time_in_Hermite(self):
         """plummer sphere"""
     
-        if self.total_number_of_points > 5000:
-            raise SkipException("too many points")
+        self.is_code_test()
+        self.is_slow_test()
     
         code = Hermite()
         particles = new_plummer_model(self.total_number_of_points)
@@ -257,7 +309,10 @@ class RunSpeedTests(object):
         code.evolve_model(0.001 | nbody.time)
         self.end_measurement()
         code.stop()
-        
+       
+    def is_code_test(self):
+        if not self.include_code_tests:
+            raise SkipException("code tests disabled") 
 
     @late
     def maximum_column_widths(self):
@@ -313,16 +368,16 @@ class RunSpeedTests(object):
     
     
 
-    def speed_iterate_over_particles2(self):
+    def speed_create_N_particles(self):
         particles = Particles(self.total_number_of_points)
         particles.radius = 1.0 | nbody_system.length
         self.start_measurement()
-        y = particles.radius
         for x in range(self.total_number_of_points):
             Particle(x)
         self.end_measurement()
     
     def speed_copy_attributes_from_code(self):
+        self.is_code_test()
         code = BHTree()
         particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
@@ -334,6 +389,7 @@ class RunSpeedTests(object):
         code.stop()
         
     def speed_copy_attributes_from_code_to_empty(self):
+        self.is_code_test()
         code = BHTree()
         particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
@@ -347,6 +403,7 @@ class RunSpeedTests(object):
         code.stop()
         
     def speed_copy_mass_attribute_from_code_to_empty(self):
+        self.is_code_test()
         code = BHTree()
         particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
@@ -360,6 +417,7 @@ class RunSpeedTests(object):
         code.stop()
     
     def speed_copy_position_and_velocity_attributes_from_code_to_empty(self):
+        self.is_code_test()
         code = BHTree()
         particles = new_plummer_model(self.total_number_of_points)
         particles.radius = 0| nbody.length
@@ -400,22 +458,74 @@ class RunSpeedTests(object):
         channel2.copy_attributes(["x","y","z"])
         self.end_measurement()
         
+    def speed_copy(self):
+        particles_all = new_plummer_model(self.total_number_of_points)
         
+        self.start_measurement()
+        particles_all.copy_to_memory()
+        self.end_measurement()
+        
+        
+    def speed_copy_subset(self):
+        particles_all = new_plummer_model(self.total_number_of_points)
+        subset = particles_all[:self.subset_number_of_points]
+        self.start_measurement()
+        subset.copy_to_memory()
+        self.end_measurement()
+def new_option_parser():
+    result = OptionParser()
+    result.add_option(
+        "-n", 
+        default = 2,
+        dest="total_number_of_points",
+        help="lenght of particle set",
+        type="int"
+    )
+    result.add_option(
+        "-m", 
+        default = -1,
+        dest="subset_number_of_points",
+        help="lenght of particles in subset functions",
+        type="int"
+    )
+    result.add_option(
+        "--test", 
+        default = None,
+        dest="name_of_the_method",
+        help="name of the test method to run",
+        type="string"
+    )
+    result.add_option(
+        "--code", 
+        action="store_true",
+        default=False,
+        dest="include_code_tests",
+        help="also run tests with codes"
+
+    )
+    result.add_option(
+        "--slow", 
+        action="store_true",
+        default=False,
+        dest="include_slow_tests",
+        help="also run slow tests, scale N**2 or worse, for example calculating the potential energy"
+    )
+    result.add_option(
+        "--csv", 
+        action="store_true",
+        default=False,
+        help="display run as one comma separated line",
+        dest="csv_output"
+
+    )
+    
+    return result
+    
     
     
 if __name__ == '__main__':
-    #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
-    if len(sys.argv) > 1:
-        n = int(sys.argv[1])
-    else:
-        n = 100
-    
-    if len(sys.argv) > 2:
-        name_of_the_method = sys.argv[2]
-    else:
-        name_of_the_method = None
-        
-    x = RunSpeedTests(n, name_of_the_method)
+    options, arguments = new_option_parser().parse_args()
+    x = RunSpeedTests(**options.__dict__)
     x.run()
 
 

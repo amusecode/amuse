@@ -257,7 +257,8 @@ class ScalarQuantity(Quantity):
     __slots__ = ['number']
 
     def __init__(self, number, unit):
-        Quantity.__init__(self, unit)
+        #Quantity.__init__(self, unit)
+        self.unit = unit
         self.number = number
 
     def is_scalar(self):
@@ -1051,6 +1052,7 @@ class AdaptingVectorQuantity(VectorQuantity):
         else:
             return console.current_printing_strategy.quantity_to_string(self)
 
+__array_like =  (list, tuple, numpy.ndarray)
 def new_quantity(value, unit):
     """Create a new Quantity object.
 
@@ -1059,11 +1061,7 @@ def new_quantity(value, unit):
     :argument unit: unit of the quantity
     :returns: new ScalarQuantity or VectorQuantity object
     """
-    if isinstance(value, list):
-        return VectorQuantity(value, unit)
-    if isinstance(value, tuple):
-        return VectorQuantity(value, unit)
-    if isinstance(value, numpy.ndarray):
+    if isinstance(value, __array_like):
         return VectorQuantity(value, unit)
     if unit.is_non_numeric():
         return NonNumericQuantity(value, unit)
