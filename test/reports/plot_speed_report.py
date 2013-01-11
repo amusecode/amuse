@@ -1,8 +1,15 @@
-from matplotlib import pyplot
+
+
 import sys
 import numpy
 
 from optparse import OptionParser
+
+try:
+    from matplotlib import pyplot
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 def select(row, cols_spec):
     subspecs = cols_spec.split(',')
