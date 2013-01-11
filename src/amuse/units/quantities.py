@@ -257,7 +257,8 @@ class ScalarQuantity(Quantity):
     __slots__ = ['number']
 
     def __init__(self, number, unit):
-        #Quantity.__init__(self, unit)
+        # Quantity.__init__(self, unit)
+        # commented out super call, this speeds thing up
         self.unit = unit
         self.number = number
 
@@ -484,8 +485,14 @@ class VectorQuantity(Quantity):
         >>> print vector[[0,2,]]
         [0.0, 2.0] kg
         """
-
-        return new_quantity( self._number[index], self.unit )
+        number =  self._number[index]
+        if number.shape:
+            return VectorQuantity(number, self.unit )
+        else:
+            if self.unit.is_non_numeric():
+                return NonNumericQuantity(number, self.unit )
+            else:
+                return ScalarQuantity(number, self.unit )
 
     def take(self, indices):
         return VectorQuantity(self._number.take(indices), self.unit)

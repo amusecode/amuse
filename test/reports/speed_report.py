@@ -472,6 +472,31 @@ class RunSpeedTests(object):
         self.start_measurement()
         subset.copy_to_memory()
         self.end_measurement()
+        
+    
+    def speed_select_array(self):
+        particles_all = new_plummer_model(self.total_number_of_points)
+        
+        self.start_measurement()
+        particles_selected = particles_all.select_array(lambda position: position.lengths() > 0.5 | nbody_system.length, ["position"])
+        particles_selected.x
+        self.end_measurement()
+        
+    def speed_select_with_get_item(self):
+        particles_all = new_plummer_model(self.total_number_of_points)
+        
+        self.start_measurement()
+        particles_selected = particles_all[particles_all.position.lengths() > 0.5 | nbody_system.length]
+        self.end_measurement()
+
+    def speed_iterate_over_quantity(self):
+        
+        lengths = numpy.arange(self.total_number_of_points) | nbody_system.length
+        self.start_measurement()
+        for x in range(self.total_number_of_points):
+            lengths[x]
+        self.end_measurement()
+        
 def new_option_parser():
     result = OptionParser()
     result.add_option(

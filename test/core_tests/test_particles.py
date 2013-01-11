@@ -4,6 +4,7 @@ from amuse.support.exceptions import AmuseException
 
 
 from amuse.support.interface import InCodeComponentImplementation
+from amuse.support.interface import LinkMethodArgumentOrResultType
 
 import numpy
 import time
@@ -1876,10 +1877,24 @@ class TestParticlesWithChildren(amusetest.TestCase):
         self.assertEquals(len(copy[0].descendents()), 4)
         
     def test6(self):
+        class Dummy(object):
+            @property
+            def definition(self):
+                return self
+            @property
+            def handler(self):
+                return self
+            @property
+            def interface(self):
+                return self._interface
+                
         class Code(object):
             def __init__(self):
                 self.data = []
                 self.number_of_particles = 0
+                self.link_type = LinkMethodArgumentOrResultType("particles")
+                self.definition = Dummy()
+                self.definition._interface = self
                 
             def get_number_of_particles(self):
                 return  self.number_of_particles
@@ -1889,8 +1904,11 @@ class TestParticlesWithChildren(amusetest.TestCase):
                 return units.kg(data_to_return)
             
             def get_children(self,index):
-                return [(self.data[i][1]) for i in index], [(self.data[i][2]) for i in index]
+                return self.convert_link([self.data[i][1] for i in index]), self.convert_link([self.data[i][2] for i in index])
             
+            def convert_link(self, number):
+                return self.link_type.convert_result_value(None, self.definition, number)
+                
             def new_particle(self, mass):
                 mass = mass.value_in(units.kg)
                 self.data = [[x,-1,-1] for x in mass]
@@ -1903,8 +1921,6 @@ class TestParticlesWithChildren(amusetest.TestCase):
                     code.get_children,
                     ('child1', 'child2',)
         )
-        children_getter.index_output_attributes = True,True 
-     
         storage = incode_storage.InCodeAttributeStorage(
             code,
             incode_storage.NewParticleMethod(code.new_particle,("mass",)),
@@ -1927,8 +1943,10 @@ class TestParticlesWithChildren(amusetest.TestCase):
         )
         code.data[0][1] = 1
         code.data[0][2] = 2
-        x = datamodel.Particles(storage  = storage)
-    
+        code.particles = datamodel.Particles(storage  = storage)
+        x = code.particles
+        print code.get_children([0])
+        print x[0].child1
         self.assertEquals(x[0].mass, 1.0 | units.kg)
         self.assertEquals(x[0].child1.mass, 2.0 | units.kg)
         self.assertEquals(x[0].child2.mass, 3.0 | units.kg)
@@ -1944,10 +1962,25 @@ class TestParticlesWithChildren(amusetest.TestCase):
         self.assertEquals(x[0].child1.child2.mass, 3.0 | units.kg)
 
     def test7(self):
+        
+        class Dummy(object):
+            @property
+            def definition(self):
+                return self
+            @property
+            def handler(self):
+                return self
+            @property
+            def interface(self):
+                return self._interface
+                
         class Code(object):
             def __init__(self):
                 self.data = []
                 self.number_of_particles = 0
+                self.link_type = LinkMethodArgumentOrResultType("particles")
+                self.definition = Dummy()
+                self.definition._interface = self
                 
             def get_number_of_particles(self):
                 return  self.number_of_particles
@@ -1957,7 +1990,10 @@ class TestParticlesWithChildren(amusetest.TestCase):
                 return units.kg(data_to_return)
             
             def get_children(self,index):
-                return [(self.data[i][1]) for i in index], [(self.data[i][2]) for i in index]
+                return self.convert_link([self.data[i][1] for i in index]), self.convert_link([self.data[i][2] for i in index])
+            
+            def convert_link(self, number):
+                return self.link_type.convert_result_value(None, self.definition, number)
             
             def new_particle(self, mass):
                 mass = mass.value_in(units.kg)
@@ -1971,8 +2007,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
                     code.get_children,
                     ('child1', 'child2',)
         )
-        children_getter.index_output_attributes = set(['child1','child2'])
-     
+        
         storage = incode_storage.InCodeAttributeStorage(
             code,
             incode_storage.NewParticleMethod(code.new_particle,("mass",)),
@@ -1988,6 +2023,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         
         
         code_particles = datamodel.Particles(storage  = storage)
+        code.particles = code_particles
     
         memory_particles = datamodel.Particles(keys = 100 * (1 + numpy.arange(10)) )
         memory_particles.mass = range(10) | units.kg

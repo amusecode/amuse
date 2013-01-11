@@ -594,7 +594,7 @@ class AbstractSet(object):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].get_value_for_entity(self, particle, index)
         else:
-            return self._convert_to_entity_or_quantity(self.get_value_in_store(index, attribute))
+            return self.get_value_in_store(index, attribute)
             
     def _get_values_for_entity(self, index, attributes):
         return [x[0] for x in self.get_values_in_store([index], attributes)]

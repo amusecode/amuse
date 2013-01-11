@@ -939,7 +939,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
         handler.add_method('set_mass',(handler.NO_UNIT, units.kg,), (handler.ERROR_CODE,))
-        handler.add_method('get_next',(handler.INDEX,), (handler.INDEX, handler.ERROR_CODE))
+        handler.add_method('get_next',(handler.INDEX,), (handler.LINK("particles"), handler.ERROR_CODE))
         handler.add_method('new_particle',(units.kg,), (handler.NO_UNIT, handler.ERROR_CODE))
         handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
         handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
