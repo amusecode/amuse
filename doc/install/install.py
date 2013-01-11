@@ -42,7 +42,7 @@ class InstallPrerequisites(object):
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.3.0' ,                  #version string
+            '1.6.2' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
             'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
