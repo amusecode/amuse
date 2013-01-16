@@ -360,6 +360,20 @@ class CapreoleInterface(
         function.addParameter('value', dtype='float64', direction=function.IN) 
         function.result_type = 'i'
         return function
+        
+    @legacy_function
+    def set_gamma():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_gamma():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
     
     @legacy_function    
     def get_hydro_state_at_point():
@@ -551,6 +565,14 @@ class Capreole(CommonCode):
 
     def define_parameters(self, object):
         
+        
+        object.add_method_parameter(
+            "get_gamma", 
+            "set_gamma",
+            "gamma", 
+            "ratio of specific heats used in equation of state", 
+            default_value = 1.6666666666666667
+        )
         
         object.add_caching_parameter(
             "setup_mesh", 

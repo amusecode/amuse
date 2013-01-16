@@ -204,13 +204,13 @@ amuse_interface_mpi: F90=$(MPIFC)
 amuse_interface_mpi: F90FLAGS = $(F90FLAGS1) $(MPI_FLAGS) $(SCMPIINC)
 amuse_interface_mpi: libcapreole_mpi.a
 
-libcapreole.a: precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o atomic.o \
+libcapreole.a: precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o amuse_atomic.o \
  no_mpi.o clocks.o  amuse_mesh.o amuse_cart-coords.o \
  hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o \
  amuse_problem.o integrate-strang.o ah3out.o evolve.o amuse_helpers.o
 	ar crs $@ $^
 
-libcapreole_mpi.a: precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o atomic.o \
+libcapreole_mpi.a: precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o amuse_atomic.o \
  amuse_mpi.o clocks.o  amuse_mesh.o amuse_cart-coords.o \
  hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o \
  amuse_problem.o integrate-strang.o ah3out.o evolve.o amuse_helpers.o
@@ -227,7 +227,7 @@ gl: viewer.o libpt.a fthread.o
 
 glcapreole: F90=$(FC)
 glcapreole: F90FLAGS = $(F90FLAGS1)
-glcapreole: gl precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o atomic.o no_mpi.o clocks.o mesh.o cart-coords.o hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o cart-amuse.o integrate-strang.o  ah3out.o evolve.o viewer.o fthread.o glcapreole.o
+glcapreole: gl precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o amuse_atomic.o no_mpi.o clocks.o mesh.o cart-coords.o hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o cart-amuse.o integrate-strang.o  ah3out.o evolve.o viewer.o fthread.o glcapreole.o
 	$(F90) $(OPTIONS) -o $@ file_admin.o string.o no_mpi.o clocks.o mesh.o cart-coords.o hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o cart-amuse.o integrate-strang.o ah3out.o evolve.o viewer.o fthread.o glcapreole.o  $(LIBS) $(GLLIB) $(X11LIB) $(THREADLIB)
 
 
@@ -235,12 +235,12 @@ glcapreole: gl precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS
 
 cart-amuse: F90=$(FC)
 cart-amuse: F90FLAGS = $(F90FLAGS1)
-cart-amuse : precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o atomic.o no_mpi.o clocks.o mesh.o cart-coords.o hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o cart-amuse.o integrate-strang.o  ah3out.o evolve.o capreole.o
+cart-amuse : precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o amuse_atomic.o no_mpi.o clocks.o mesh.o cart-coords.o hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o cart-amuse.o integrate-strang.o  ah3out.o evolve.o capreole.o
 	$(F90) $(OPTIONS) -o $@ file_admin.o string.o no_mpi.o clocks.o mesh.o cart-coords.o hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o cart-amuse.o integrate-strang.o ah3out.o evolve.o capreole.o $(LIBS)
 
 mpi_cart-amuse: F90=$(MPIFC)
 mpi_cart-amuse: F90FLAGS = $(F90FLAGS1) $(MPI_FLAGS)
-mpi_cart-amuse : precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o atomic.o mpi.o clocks.o mesh.o cart-coords.o hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o cart-amuse.o integrate-strang.o  ah3out.o evolve.o capreole.o
+mpi_cart-amuse : precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o amuse_atomic.o mpi.o clocks.o mesh.o cart-coords.o hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o cart-amuse.o integrate-strang.o  ah3out.o evolve.o capreole.o
 	$(F90) $(OPTIONS) -o $@ file_admin.o string.o mpi.o clocks.o mesh.o cart-coords.o hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o cart-amuse.o integrate-strang.o ah3out.o evolve.o capreole.o $(LIBS)
 
 clean:

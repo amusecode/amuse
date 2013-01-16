@@ -782,6 +782,17 @@ class TestCapreoleInterface(TestWithMPI):
                         self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
                     
+    def test27(self):
+        instance=CapreoleInterface()
+        instance.initialize_code()
+        gamma, error = instance.get_gamma()
+        self.assertAlmostRelativeEquals(gamma, 5.0 / 3.0)
+        instance.set_gamma(1.3)
+        gamma, error = instance.get_gamma()
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEquals(gamma, 1.3)
+        instance.stop()
+        
 class TestSodShocktube(TestWithMPI):
     
     def test0(self):
@@ -1641,3 +1652,12 @@ class TestCapreole(TestWithMPI):
         self.assertAlmostRelativeEquals(rho , (x + (20 * (y-half)) + (400 * (z-half)))/(1| generic_unit_system.length) | generic_unit_system.density )
             
 
+    
+    def test15(self): 
+        instance=self.new_instance(Capreole, number_of_workers = 1)
+        self.assertAlmostRelativeEquals(instance.parameters.gamma, 5.0 / 3.0)
+        instance.parameters.gamma = 1.2
+        self.assertAlmostRelativeEquals(instance.parameters.gamma, 1.2)
+        #self.assertAlmostRelativeEquals(instance.parameters.timestep, 0.1 | generic_unit_system.time)
+        #instance.parameters.timestep = 0.2 | generic_unit_system.time
+        #self.assertAlmostRelativeEquals(instance.parameters.timestep, 0.2 | generic_unit_system.time)

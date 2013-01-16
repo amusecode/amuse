@@ -10,6 +10,7 @@ function initialize_code() result(ret)
   
   ret = set_support_for_condition(TIMEOUT_DETECTION)
   ret = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
+  ret = amuse_initialize_code()
   call mpi_basic()
 end function
 
@@ -725,6 +726,24 @@ function set_timestep(inputvalue) result(ret)
   integer, intent(in) :: inputvalue
   ret = 0
 end function set_timestep
+
+
+function set_gamma(inputvalue) result(ret)
+    use amuse_helpers
+    implicit none
+    integer :: ret
+    double precision :: inputvalue
+    ret = amuse_set_gamma(inputvalue)
+end function
+
+function get_gamma(outputvalue) result(ret)
+    use amuse_helpers
+    implicit none
+    integer :: ret
+    double precision :: outputvalue
+    ret = amuse_get_gamma(outputvalue)
+end function
+
 
 function get_hydro_state_at_point(x1, x2, x3, vx, vy, vz, &
      rho_out, rhovx_out, rhovy_out, rhovz_out, rhoen_out, npoints) result(ret)

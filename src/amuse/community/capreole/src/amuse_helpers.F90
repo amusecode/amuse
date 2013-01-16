@@ -17,12 +17,25 @@ module amuse_helpers
   contains
 
   function amuse_init() result(ret)
+    implicit none
     integer :: ret
 !  call setup_clocks ()
     call mpi_setup()
     nstep = 0
     ret=0    
   end function
+  
+  function amuse_initialize_code() result(ret)
+    use atomic
+    implicit none
+    integer :: ret
+    gamma = 5.0_dp/3.0_dp
+    gamma1 = gamma - 1.0_dp
+    nstep = 0
+    ret=0    
+  end function
+
+
 
   function amuse_evolve(tend) result(ret)
     include 'stopcond.inc'
@@ -160,7 +173,9 @@ module amuse_helpers
     implicit none
     integer :: i,j,k,ret
     character(len=10),parameter :: str_length_unit="default"
-
+    
+    gamma1 = gamma - 1.0_dp
+        
     ret = 0
     write(unit=log_unit,fmt="(2/,A,/)") "----- Mesh -----"
     write(unit=log_unit,fmt="(A,3I5)") "1) Number of mesh points: ", &
@@ -632,6 +647,25 @@ module amuse_helpers
         end do 
     end if
   end function
+  
+    function amuse_set_gamma(inputvalue) result(ret)
+        use atomic
+        implicit none
+        integer :: ret
+        double precision :: inputvalue
+        gamma = inputvalue
+        gamma1 = gamma - 1.0_dp
+        ret = 0   
+    end function
+    
+    function amuse_get_gamma(outputvalue) result(ret)
+        use atomic
+        implicit none
+        integer :: ret
+        double precision :: outputvalue
+        outputvalue = gamma
+        ret = 0   
+    end function
 end module
 
 
