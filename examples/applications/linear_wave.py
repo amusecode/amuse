@@ -60,6 +60,7 @@ class CalculateLinearWave1D(object):
             self.number_of_grid_points, 
             3
         )
+        result.parameters.gamma = self.gamma
         return result
         
     def new_instance_of_athena_code(self):
@@ -211,7 +212,7 @@ class CalculateLinearWave1D(object):
         step = 1
         while t <= time:
             if t == time:
-                 instance.parameters.must_evolve_to_exact_time = True
+                instance.parameters.must_evolve_to_exact_time = True
             else:
                 instance.parameters.must_evolve_to_exact_time = False
             instance.evolve_model(t)
