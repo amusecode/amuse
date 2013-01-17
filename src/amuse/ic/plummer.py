@@ -93,11 +93,20 @@ class MakePlummerModel(object):
 
     @property
     def result(self):
-        masses, positions, velocities = self.new_model()
+        masses = numpy.ones(self.number_of_particles) / self.number_of_particles
+        radius, theta, phi = self.new_positions_spherical_coordinates()
+        x,y,z =  self.coordinates_from_spherical(radius, theta, phi)
+        radius, theta, phi = self.new_velocities_spherical_coordinates(radius)
+        vx,vy,vz = self.coordinates_from_spherical(radius, theta, phi)
+ 
         result = datamodel.Particles(self.number_of_particles)
-        result.mass = nbody_system.mass.new_quantity(numpy.hstack(masses))
-        result.position = nbody_system.length.new_quantity(positions)
-        result.velocity = nbody_system.speed.new_quantity( velocities)
+        result.mass = nbody_system.mass.new_quantity(masses)
+        result.x = nbody_system.length.new_quantity(x.reshape(self.number_of_particles)/1.695)
+        result.y = nbody_system.length.new_quantity(y.reshape(self.number_of_particles)/1.695)
+        result.z = nbody_system.length.new_quantity(z.reshape(self.number_of_particles)/1.695)
+        result.vx = nbody_system.speed.new_quantity(vx.reshape(self.number_of_particles) / sqrt(1/1.695))
+        result.vy = nbody_system.speed.new_quantity(vy.reshape(self.number_of_particles) / sqrt(1/1.695))
+        result.vz = nbody_system.speed.new_quantity(vz.reshape(self.number_of_particles) / sqrt(1/1.695))
         result.radius = 0 | nbody_system.length
 
         result.move_to_center()
