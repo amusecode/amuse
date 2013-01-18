@@ -219,6 +219,10 @@ class RunSpeedTests(object):
         if not self.include_slow_tests:
             raise SkipException("slow tests disabled")
             
+    def is_single_particle_test(self):
+        if not self.include_slow_tests:
+            raise SkipException("single particle tests disabled")
+            
     def speed_calculate_potential_energy(self):
         
         self.is_slow_test()
@@ -346,6 +350,9 @@ class RunSpeedTests(object):
     
 
     def speed_iterate_over_particles(self):
+        
+        self.is_single_particle_test()
+        
         particles = Particles(self.total_number_of_points)
         particles.radius = 1.0 | nbody_system.length
         self.start_measurement()
@@ -356,6 +363,8 @@ class RunSpeedTests(object):
     
 
     def speed_iterate_over_array(self):
+        self.is_single_particle_test()
+        
         class Test(object):
             def __init__(self):
                 self.radius = 1.0
@@ -369,6 +378,8 @@ class RunSpeedTests(object):
     
 
     def speed_create_N_particles(self):
+        self.is_single_particle_test()
+        
         particles = Particles(self.total_number_of_points)
         particles.radius = 1.0 | nbody_system.length
         self.start_measurement()
@@ -495,6 +506,24 @@ class RunSpeedTests(object):
         self.start_measurement()
         for x in range(self.total_number_of_points):
             lengths[x]
+        self.end_measurement()
+        
+    def speed_add_particles(self):
+        particles_to_add = new_plummer_model(self.total_number_of_points)
+        step = self.total_number_of_points / 10
+        particle_sets = []
+        i = 0
+        while i < self.total_number_of_points:
+            j = i + step 
+            if j > self.total_number_of_points:
+                j = self.total_number_of_points
+            particle_sets.append(particles_to_add[i:j].copy())
+            i = j
+            
+        particles = Particles()
+        self.start_measurement()
+        for x in particle_sets:
+            particles.add_particles(x)
         self.end_measurement()
         
 def new_option_parser():

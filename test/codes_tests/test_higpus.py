@@ -420,6 +420,6 @@ class TestHiGPUs(TestWithMPI):
         self.assertEquals( instance.parameters.min_step ,  pow(2.,-30.0) | nbody_system.time)
         self.assertEquals( instance.parameters.gpu_name ,  "")
         self.assertEquals( instance.parameters.output_path_name ,  "./data/")
-        self.assertEquals( instance.parameters.n_gpu ,  2)
+        self.assertEquals( instance.parameters.n_gpu ,  1)
         instance.cleanup_code()
         instance.stop()

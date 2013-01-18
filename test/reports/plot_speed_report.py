@@ -45,7 +45,9 @@ def plot_speed_report(input_filename = None, output_filename = None, cols = '0-'
                     raise Exception("data does not have same header")
             header = header_for_next_line
         else:
-            parts = line.split(',')
+            parts = map(str.strip, line.split(','))
+            if parts[0]== '':
+                continue
             x.append(int(parts[0]))
             numbers = map(lambda x : float(x), parts[2:])
             data.append(list(select(numbers, cols)))
@@ -57,6 +59,7 @@ def plot_speed_report(input_filename = None, output_filename = None, cols = '0-'
     subplot = pyplot.subplot(1,2,1)
     
     handles = subplot.plot(x,data)
+    subplot.plot(x,1e-5 * x)
 
     subplot.legend(
         handles, 
