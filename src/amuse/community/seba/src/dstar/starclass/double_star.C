@@ -1534,10 +1534,16 @@ void double_star::tidal_instability() {
 	spiral_in(get_secondary(), get_primary());
     }
     else {
-      cerr << "Merger double_star::dynamic_mass_transfer" << endl;
+      cerr << "Merger double_star::tidal_instability" << endl;
       dump(cerr, false);
 	   
-      merge_elements(get_primary(), get_secondary());
+      // (GN+PimvO Jan 18 2013)
+      // if primary is remnant, secondary should be consumer
+      if (get_primary()->remnant()) 
+	  merge_elements(get_secondary(), get_primary());
+      else 
+	  merge_elements(get_primary(), get_secondary());
+
     }
     //get_seba_counters()->common_envelope++;
   }
@@ -1590,7 +1596,13 @@ void double_star::dynamic_mass_transfer() {
       cerr << "Merger double_star::dynamic_mass_transfer" << endl;
       dump(cerr, false);
 	   
-      merge_elements(get_primary(), get_secondary());
+      // (GN+PimvO Jan 18 2013)
+      // if primary is remnant, secondary should be consumer
+      if (get_primary()->remnant()) 
+	  merge_elements(get_secondary(), get_primary());
+      else 
+	  merge_elements(get_primary(), get_secondary());
+
     }
     //get_seba_counters()->common_envelope++;
   }

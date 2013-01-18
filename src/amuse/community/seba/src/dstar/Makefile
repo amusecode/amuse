@@ -2,7 +2,7 @@ CXXFLAGS  += -I../include -I../include/star \
 	     -D_SRC_='"no_source_available"' \
 	     -DHAVE_CONFIG_H  -DTOOLBOX 
 LDLIBS	  += \
-	     -L. -ldstar  \
+	     -L. -ldstar  -lmyutil -lSFK\
 	     -L../sstar -lsstar \
 	     -L../node -lnode \
 	     -L../node/dyn -ldyn \

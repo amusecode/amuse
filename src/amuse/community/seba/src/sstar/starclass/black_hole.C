@@ -491,6 +491,8 @@ bool black_hole::super_nova() {
       if(cnsts.parameters(impulse_kick_for_black_holes)) {
 	  mass_correction = cnsts.parameters(kanonical_neutron_star_mass)/core_mass;
       }
+      // no kick
+      //mass_correction = 0.;
 
       real v_kick  = mass_correction*cnsts.super_nova_kick();
       real theta_kick = acos(1-2*random_angle(0, 1));
