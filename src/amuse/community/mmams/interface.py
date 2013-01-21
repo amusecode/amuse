@@ -3,6 +3,7 @@ from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
 from amuse.support.options import option
 from amuse.units import units
+from amuse.datamodel import Particle
 
 import os.path
 
@@ -264,8 +265,18 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
 
 class MakeMeAMassiveStar(CommonCode):
     
+    stellar_evolution_code_required = True
+    gravity_code_required = False
+    
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MakeMeAMassiveStarInterface(**options), **options)
+        self.create_new_key = True
+    
+    def get_create_new_key(self):
+        return self.create_new_key
+    
+    def set_create_new_key(self, value):
+        self.create_new_key = value
     
     def define_properties(self, object):
         object.add_property("get_number_of_particles")
@@ -300,6 +311,14 @@ class MakeMeAMassiveStar(CommonCode):
             "set_do_shock_heating_flag",
             "do_shock_heating_flag",
             "do_shock_heating flag: specifies whether to solve for shock-heating",
+            True
+        )
+        
+        object.add_method_parameter(
+            "get_create_new_key",
+            "set_create_new_key",
+            "create_new_key",
+            "Flag to specify whether the merge product gets a new key, or the key of the most massive collider.",
             True
         )
     
@@ -442,3 +461,41 @@ class MakeMeAMassiveStar(CommonCode):
                 stellar_model.X_Si[previous_index:next_index] + 
                 stellar_model.X_Fe[previous_index:next_index])*weights).sum()
         return new_composition
+    
+    def key_for_merge_product(self, primary, secondary):
+        if self.create_new_key:
+            return None
+        else:
+            return primary.key if primary.mass > secondary.mass else secondary.key
+    
+    def handle_collision(self, primary, secondary, stellar_evolution_code=None, gravity_code=None):
+        primary = self.add_particle_with_internal_structure(primary, stellar_evolution_code=stellar_evolution_code)
+        secondary = self.add_particle_with_internal_structure(secondary, stellar_evolution_code=stellar_evolution_code)
+        merge_product = Particle(
+            key = self.key_for_merge_product(primary, secondary),
+            primary = primary,
+            secondary = secondary
+        )
+        return self.merge_products.add_particles(merge_product.as_set())
+    
+    def add_particle_with_internal_structure(self, particle, stellar_evolution_code=None):
+        new = self.native_stars.add_particle(particle)
+        if not stellar_evolution_code is None:
+            particle = particle.as_set().get_intersecting_subset_in(stellar_evolution_code.particles)[0]
+        number_of_zones     = particle.get_number_of_zones()
+        mass_profile        = particle.get_mass_profile(number_of_zones = number_of_zones)* particle.mass
+        cumul_mass_profile  = particle.get_cumulative_mass_profile(number_of_zones = number_of_zones) * particle.mass
+        density_profile     = particle.get_density_profile(number_of_zones = number_of_zones)
+        radius_profile      = particle.get_radius_profile(number_of_zones = number_of_zones)
+        temperature_profile = particle.get_temperature_profile(number_of_zones = number_of_zones)
+        lum                 = particle.get_luminosity_profile(number_of_zones = number_of_zones)
+        pressure_profile    = particle.get_pressure_profile(number_of_zones = number_of_zones)
+        mu_profile          = particle.get_mu_profile(number_of_zones = number_of_zones)
+        composition_profile = particle.get_chemical_abundance_profiles(number_of_zones = number_of_zones)
+        new.add_shell(mass_profile, cumul_mass_profile, radius_profile, density_profile, 
+            pressure_profile, temperature_profile, lum, mu_profile, composition_profile[0], 
+            composition_profile[1]+composition_profile[2], composition_profile[3], 
+            composition_profile[4], composition_profile[5], composition_profile[6], 
+            composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
+        return new
+    

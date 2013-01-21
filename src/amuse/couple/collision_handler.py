@@ -23,12 +23,17 @@ class CollisionHandler(object):
             **options
         ):
         
+        if inspect.isclass(collision_code):
+            self.collision_code_name = collision_code.__name__
+        else:
+            self.collision_code_name = collision_code.__class__.__name__
+        
         if collision_code.stellar_evolution_code_required and stellar_evolution_code is None:
             raise AmuseException("{0} requires a stellar evolution code: "
-                "CollisionHandler(..., stellar_evolution_code=x)".format(collision_code.__class__.__name__))
+                "CollisionHandler(..., stellar_evolution_code=x)".format(self.collision_code_name))
         if collision_code.gravity_code_required and gravity_code is None:
             raise AmuseException("{0} requires a gravity code: "
-                "CollisionHandler(..., gravity_code=x)".format(collision_code.__class__.__name__))
+                "CollisionHandler(..., gravity_code=x)".format(self.collision_code_name))
         
         self.collision_code = collision_code
         self.collision_code_arguments = collision_code_arguments
@@ -46,7 +51,8 @@ class CollisionHandler(object):
         return result
     
     def handle_collision(self, primary, secondary):
-        colliders = (primary + secondary).copy()
+        colliders = primary.as_set().copy()
+        colliders.add_particle(secondary)
         
         if self.verbose:
             print "Handling collision between stars with masses {0}.".format(colliders.mass)
@@ -71,7 +77,7 @@ class CollisionHandler(object):
         merge_products = collision_code.handle_collision(primary, secondary, **handle_collision_args)
         
         if self.verbose:
-            print "{0} concluded with return value:\n{1}".format(self.collision_code.__class__.__name__, merge_products)
+            print "{0} concluded with return value:\n{1}".format(self.collision_code_name, merge_products)
         
         if not self.stellar_evolution_code is None:
             if (hasattr(self.stellar_evolution_code, "new_particle_from_model") and 
@@ -87,6 +93,11 @@ class CollisionHandler(object):
             self.stellar_evolution_code.particles.remove_particles(colliders)
             if self.verbose:
                 print "Colliders have been replaced by merge product in {0}.".format(self.stellar_evolution_code.__class__.__name__)
+        
+        if inspect.isclass(self.collision_code):
+            merge_products = merge_products.copy()
+            if hasattr(collision_code, "stop"):
+                collision_code.stop()
         
         if not self.gravity_code is None:
             new_grav_particles = Particles(keys=merge_products.key)

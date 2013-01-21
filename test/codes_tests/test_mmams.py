@@ -1,14 +1,16 @@
 import os.path
 import itertools
 import pickle
+import numpy
 from math import pi
 from amuse.test.amusetest import get_path_to_results, TestWithMPI
 from amuse.support.exceptions import AmuseException, CodeException
 from amuse.community.mesa.interface import MESA
 from amuse.community.evtwin.interface import EVtwin
 from amuse.community.mmams.interface import MakeMeAMassiveStarInterface, MakeMeAMassiveStar
+from amuse.couple.collision_handler import CollisionHandler
 from amuse.units import units, constants
-from amuse.datamodel import Particles, Particle
+from amuse.datamodel import Particles, Particle, ParticlesSubset
 
 # Change the default for some MakeMeAMassiveStar(-Interface) keyword arguments:
 #default_options = dict(redirection="none")
@@ -308,9 +310,12 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance = MakeMeAMassiveStar(**default_options)
         instance.initialize_code()
         
-        for par, value in [('dump_mixed_flag', True), ('do_shock_heating_flag', True)]:
+        for par, value in [('dump_mixed_flag', True), ('do_shock_heating_flag', True),
+                ('create_new_key', True)]:
+            print "1", instance.parameters
             self.assertTrue(value is getattr(instance.parameters, par))
             setattr(instance.parameters, par, not value)
+            print "2", instance.parameters
             self.assertFalse(value is getattr(instance.parameters, par))
         
         for par, value in [('target_n_shells_mixing', 200), ('target_n_shells', 10000)]:
@@ -935,5 +940,129 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(instance.particles[1].number_of_zones, 4)
         self.assertTrue(instance.particles[2].number_of_zones > 100)
         instance.stop()
+    
+
+class ParticlesForTesting(list):
+    def has_key_in_store(self, key):
+        return key in [x.key for x in self]
+    def _subset(self, selected):
+        return ParticlesForTesting([x for x in self if x.key in selected])
+    def remove_particles(self, particles):
+        particles_in_self = self._subset(particles.key)
+        for particle in particles_in_self:
+            self.remove(particle)
+
+class StarParticleWithStructure(Particle):
+
+    def __init__(self, mass, **keyword_arguments):
+        Particle.__init__(self, **keyword_arguments)
+        self.mass = mass
+    
+    def get_number_of_zones(self):
+        return 4
+    
+    def get_mass_profile(self, number_of_zones = None):
+        return numpy.asarray([0.25]*4)
+    
+    def get_cumulative_mass_profile(self, number_of_zones = None):
+        return numpy.add.accumulate(self.get_mass_profile(number_of_zones))
+    
+    def _radii(self):
+        return ([0.0]+[0.25]*4 | units.RSun).accumulate()
+    def get_radius_profile(self, number_of_zones = None):
+        return self._radii()[1:]
+    
+    def get_density_profile(self, number_of_zones = None):
+        return self.get_mass_profile() * self.mass / (4.0/3.0 * constants.pi * (self._radii()[1:]**3 - self._radii()[:-1]**3))
+    
+    def get_pressure_profile(self, number_of_zones = None):
+        return (constants.G * self.get_cumulative_mass_profile() * self.mass * self.get_density_profile() * 
+            (self._radii()[1:] - self._radii()[:-1]) / self._radii()[1:]**2)[::-1].accumulate()[::-1]
+    
+    def get_temperature_profile(self, number_of_zones = None):
+        return self.get_pressure_profile() * self.get_mu_profile() / (constants.kB * self.get_density_profile())
+    
+    def get_luminosity_profile(self, number_of_zones = None):
+        return [0]*4 | units.LSun
+    
+    def get_mu_profile(self, number_of_zones = None):
+        return (constants.proton_mass * (16.0/27.0)).as_vector_with_length(4)
+    
+    def get_chemical_abundance_profiles(self, number_of_zones = None, number_of_species = None):
+        return numpy.asarray([[0.75]*4, [0.25]*4, [0]*4, [0]*4, [0]*4, [0]*4, [0]*4, [0]*4])
+
+
+class StellarEvolutionCodeWithInternalStructureForTesting(object):
+    
+    def __init__(self):
+        self.particles = ParticlesForTesting(
+            [StarParticleWithStructure(mass=1.0|units.MSun), StarParticleWithStructure(mass=2.0|units.MSun)])
+        
+    def new_particle_from_model(self, internal_structure, current_age, key=None):
+        tmp_star = Particle(key=key)
+        tmp_star.mass = internal_structure.mass[-1]
+        tmp_star.radius = internal_structure.radius[-1]
+        self.particles.append(StarParticleWithStructure(mass=tmp_star.mass, key=tmp_star.key))
+        return tmp_star
+    
+
+class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
+    
+    def test1(self):
+        print "Test 1: MakeMeAMassiveStar in CollisionHandler"
+        self.assertRaises(AmuseException, CollisionHandler, MakeMeAMassiveStar, expected_message=
+            "MakeMeAMassiveStar requires a stellar evolution code: CollisionHandler(..., stellar_evolution_code=x)")
+        handler = CollisionHandler(
+            MakeMeAMassiveStar,
+            stellar_evolution_code = StellarEvolutionCodeWithInternalStructureForTesting(),
+            verbose = True
+        )
+    
+    def test2(self):
+        print "Test 2: merge particles with CollisionHandler and MMAMS class, as fast/crude as possible"
+        stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting()
+        self.assertEqual(len(stellar_evolution.particles), 2)
+        handler = CollisionHandler(
+            MakeMeAMassiveStar, 
+            collision_code_parameters = dict(
+                target_n_shells = 100, 
+                dump_mixed_flag = False, 
+                do_shock_heating_flag = False
+            ),
+            stellar_evolution_code = stellar_evolution,
+            verbose = True
+        )
+        
+        merged = handler.handle_collision(stellar_evolution.particles[0], stellar_evolution.particles[1])
+        self.assertTrue(isinstance(merged, Particles))
+        self.assertTrue(merged.number_of_zones > 100)
+        self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
+        self.assertEqual(len(stellar_evolution.particles), 1)
+        self.assertAlmostEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
+        self.assertEqual(handler.collision_code, MakeMeAMassiveStar)
+    
+    def test3(self):
+        print "Test 3: merge particles with CollisionHandler and MMAMS instance, as fast/crude as possible"
+        stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting()
+        self.assertEqual(len(stellar_evolution.particles), 2)
+        collision = MakeMeAMassiveStar()
+        collision.parameters.target_n_shells = 100
+        collision.parameters.dump_mixed_flag = False
+        collision.parameters.do_shock_heating_flag = False
+        collision.commit_parameters()
+        handler = CollisionHandler(
+            collision, 
+            stellar_evolution_code = stellar_evolution,
+            verbose = True
+        )
+        
+        merged = handler.handle_collision(stellar_evolution.particles[0], stellar_evolution.particles[1])
+        self.assertTrue(isinstance(merged, ParticlesSubset))
+        self.assertTrue(merged.number_of_zones > 100)
+        self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
+        self.assertEqual(len(stellar_evolution.particles), 1)
+        self.assertAlmostEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
+        self.assertEqual(handler.collision_code.__class__, MakeMeAMassiveStar)
+        self.assertEqual(handler.collision_code.get_name_of_current_state(), 'INITIALIZED')
     
 
