@@ -472,45 +472,16 @@ class ModuleMethodParameterDefinition(ParameterDefinition):
         return self.set_method is None
 
 
-
-class ModuleBooleanParameterDefinition(ParameterDefinition):
-    def __init__(self, get_method, set_method, name, description, default_value = None, must_set_before_get = False):
-        ParameterDefinition.__init__(self, name, description, default_value, must_set_before_get)
-        self.get_method = get_method
-        self.set_method = set_method
-        self.stored_value = None
-
+class ModuleBooleanParameterDefinition(ModuleMethodParameterDefinition):
+    
+    def __init__(self, *args, **kwargs):
+        ModuleMethodParameterDefinition.__init__(self, *args, **kwargs)
+    
     def get_value(self, parameter, object):
-        return True if self.get_legacy_value(parameter, object) else False
-
+        return True if ModuleMethodParameterDefinition.get_value(self, parameter, object) else False
+    
     def set_value(self, parameter, object, bool):
-        self.set_legacy_value(parameter, object, 1 if bool else 0)
-        parameter.is_set = True
-
-    def get_legacy_value(self,  parameter, object):
-        if self.get_method is None:
-            return self.stored_value
-        else:
-            try:
-                return getattr(object, self.get_method)()
-            except Exception as ex:
-                raise ParameterException(object, self.name, error, True)
-            
-
-    def set_legacy_value(self,  parameter, object, number):
-        if self.set_method is None:
-            raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
-         
-        
-        error = getattr(object, self.set_method)(number)
-        if error < 0:
-            raise ParameterException(object, self.name, error, False)
-        else:
-            if self.get_method is None:
-                self.stored_value = number
-
-    def is_readonly(self):
-        return self.set_method is None
+        return ModuleMethodParameterDefinition.set_value(self, parameter, object, 1 if bool else 0)
 
 
 class ModuleCachingParameterDefinition(ParameterDefinition):
