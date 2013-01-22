@@ -255,7 +255,7 @@ module amuse_helpers
     real*8 :: ret
     real*8 :: istate(neq)    
     ret = gamma1*(istate(EN)- &
-      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+      0.5*(istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
       
   end function  
   

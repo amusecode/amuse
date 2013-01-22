@@ -193,7 +193,7 @@ module problem
     real*8 :: ret
     real*8 :: istate(neq)    
     ret = gamma1*(istate(EN)- &
-      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+      0.5*(istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
       
   end function  
   
@@ -294,25 +294,34 @@ module problem
                   
     real(kind=dp),intent(in) :: dt
     integer,intent(in) :: newold
+    real(kind=dp) :: u
+
 
     integer :: i,j,k
 
     ! Point state to appropriate array
     state => set_state_pointer(newold)
 
+
     do k=sz-mbc,ez+mbc
        do j=sy-mbc,ey+mbc
           do i=sx-mbc,ex+mbc
+             u=state(i,j,k,EN)-(state(i,j,k,RHVX)**2+ &
+                                state(i,j,k,RHVY)**2+ &
+                                state(i,j,k,RHVZ)**2)/state(i,j,k,RHO)
+!             state(i,j,k,EN)=state(i,j,k,EN)+ &
+!                  dt*(state(i,j,k,RHVX)*gforce(i,j,k,1)+ &
+!                  state(i,j,k,RHVY)*gforce(i,j,k,2)+ &
+!                  state(i,j,k,RHVZ)*gforce(i,j,k,3))
              state(i,j,k,RHVX)=state(i,j,k,RHVX)+ &
                   dt*state(i,j,k,RHO)*gforce(i,j,k,1)
              state(i,j,k,RHVY)=state(i,j,k,RHVY)+ &
                   dt*state(i,j,k,RHO)*gforce(i,j,k,2)
              state(i,j,k,RHVZ)=state(i,j,k,RHVZ)+ &
                   dt*state(i,j,k,RHO)*gforce(i,j,k,3)
-             state(i,j,k,EN)=state(i,j,k,EN)+ &
-                  dt*(state(i,j,k,RHVX)*gforce(i,j,k,1)+ &
-                  state(i,j,k,RHVY)*gforce(i,j,k,2)+ &
-                  state(i,j,k,RHVZ)*gforce(i,j,k,3))
+             state(i,j,k,EN)=u+(state(i,j,k,RHVX)**2+ &
+                                state(i,j,k,RHVY)**2+ &
+                                state(i,j,k,RHVZ)**2)/state(i,j,k,RHO)    
           enddo
        enddo
     enddo
