@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "evolve.h"
+#include "evolve_cc.h"
 
 #define FIXEDJ     10
 #define JMAX       (FIXEDJ == 0 ? 16 : FIXEDJ)
@@ -27,11 +28,12 @@ int nsequence(int j)
   return 2*j; 
 }
 
-static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int CCSUBSTEP);
 static DOUBLE error_function(struct bsys s1, struct bsys s2);
 static void aitkenneville(int j, int k, struct bsys* s, struct bsys s_jk, struct bsys s_j1k);
 static void nkdk(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 static void ndkd(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+static void n_cc_kepler(int clevel,int n,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
 void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
@@ -43,7 +45,7 @@ void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOU
   dtsys=global_timestep(s);
   if(dtsys > fabs(dt))
   {
-    done=BulirschStoer(clevel,s, stime, etime, dt);
+    done=BulirschStoer(clevel,s, stime, etime, dt, 0);
   }
   if(done==0)
   {      
@@ -56,6 +58,26 @@ void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOU
     diag->simtime+=dt;
   }
 }
+
+void evolve_bs(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  FLOAT dtsys;
+  int done=0;
+  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
+    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%d/%d\n", etime, stime, dt, clevel,MAXLEVEL);
+  done=BulirschStoer(clevel,s, stime, etime, dt, 1);
+  if(done==0)
+  {
+    evolve_bs(clevel+1,s,stime, stime+dt/2,dt/2);
+    evolve_bs(clevel+1,s,stime+dt/2, etime,dt/2);
+  }
+  else
+  {
+    diag->deepsteps++;
+    diag->simtime+=dt;
+  }
+}
+
 
 #define FREEBSYS_ARRAY(arr)  for(i=0; arr[i].part!=NULL && i<JMAX; i++) free(arr[i].part);
 #define ZEROBSYS_ARRAY(arr)  for(i=0; i<JMAX; i++) arr[i].part=NULL;
@@ -101,7 +123,7 @@ void bsys_to_sys(struct bsys bs, struct sys s)
   }  
 }
 
-static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int CCSUBSTEP)
 {
   struct bsys bsys_array[JMAX];
   struct bsys bsys_array1[JMAX];
@@ -136,13 +158,20 @@ static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
     }
 
     SWAP(jline,j1line, struct bsys*)
-    for(i=0;i<s.n;i++) tmpsys.part[i]=s.part[i];  
-    nkdk(clevel,nsequence(j),tmpsys,zerosys,stime,etime,dt);
+    for(i=0;i<s.n;i++) tmpsys.part[i]=s.part[i];
+    if(CCSUBSTEP)
+    {
+      n_cc_kepler(clevel,nsequence(j),tmpsys,stime,etime,dt);
+    } else
+    {
+      nkdk(clevel,nsequence(j),tmpsys,zerosys,stime,etime,dt);
+    }
     ALLOCBSYS(jline[0], tmpsys.n)
     sys_to_bsys(tmpsys,jline[0]);
     for(k=1;k<j;k++) aitkenneville(j,k,jline+k,jline[k-1],j1line[k-1]) ;    
     if(j==1) continue;  
     error=error_function(jline[j-1],j1line[j-2]);
+//    printf("err: %d %g\n", j, (double) error);
     if(j==fixed_j) break;
   }
   diag->bsstep[clevel]+=1;
@@ -232,4 +261,29 @@ static void ndkd(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOU
   kick(clevel,s1,join(s1,s2),dt/n);
   if(s2.n>0) kick(clevel,s2, s1, dt/n);
   drift(clevel,s1,etime, dt/2/n);
+}
+
+static void n_cc_kepler(int clevel,int n,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  UINT id;
+  struct sys tmpsys;
+  FLOAT odt_param=dt_param;
+  dt_param=dt_param/n;
+  tmpsys.n=s.n;
+  tmpsys.part=(struct particle*) malloc(s.n*sizeof(struct particle));
+  tmpsys.last=tmpsys.part+s.n-1;
+  for(UINT i=0;i<s.n;i++)
+  {
+    tmpsys.part[i]=s.part[i];
+    tmpsys.part[i].id=i;
+  }
+  evolve_cc2(clevel,tmpsys, stime, etime, dt,CCC_KEPLER,1);
+  for(UINT i=0;i<s.n;i++)
+  {
+    id=s.part[tmpsys.part[i].id].id;
+    s.part[tmpsys.part[i].id]=tmpsys.part[i];
+    s.part[tmpsys.part[i].id].id=id;
+  }
+  dt_param=odt_param;
+  free(tmpsys.part);
 }

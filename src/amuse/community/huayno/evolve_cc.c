@@ -251,7 +251,8 @@ DOUBLE sys_forces_max_timestep(struct sys s,int dir) {
   return ts;
 }
 
-#define TASKCONDITION   (nc > 1)
+#define BS_SUBSYS_SIZE   10
+#define TASKCONDITION    (nc > 1)
 void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int inttype, int recenter) {
   DOUBLE cmpos[3],cmvel[3];
   int recentersub=0;
@@ -264,12 +265,18 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     return;
   }
 
-  if (s.n <= 10 && (inttype==CCC_BS ||inttype==CC_BS)) {
+  if (s.n <= BS_SUBSYS_SIZE && (inttype==CCC_BS ||inttype==CC_BS)) {
+    evolve_bs(clevel,s, stime, etime, dt);
+    return;
+  }
+  
+  if (s.n <= BS_SUBSYS_SIZE && (inttype==CCC_BSA ||inttype==CC_BSA)) {
     evolve_bs_adaptive(clevel,s, stime, etime, dt,1);
     return;
   }
 
-  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS))
+
+  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA))
   {
      system_center_of_mass(s,cmpos,cmvel);
      move_system(s,cmpos,cmvel,-1);
@@ -417,7 +424,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   }
 #pragma omp taskwait  
   
-  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS))
+  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA))
   {
     for(int i=0;i<3;i++) cmpos[i]+=cmvel[i]*dt;
     move_system(s,cmpos,cmvel,1);

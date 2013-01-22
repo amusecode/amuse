@@ -177,6 +177,9 @@ class Huayno(GravitationalDynamics):
         CCC_KEPLER=23
         CC_BS=24
         CCC_BS=25
+        BS_CC_KEPLER=26
+        CC_BSA=27
+        CCC_BSA=28
                 
         @classmethod
         def _list(cls):

@@ -80,10 +80,15 @@ enum intopt
   CCC_KEPLER,  // 23
   CC_BS,       // 24
   CCC_BS,       // 25
+  BS_CC_KEPLER,    // 26
+  CC_BSA,       // 27
+  CCC_BSA,       // 28
 };
 
 extern FLOAT eps2;
 extern FLOAT dt_param;
+#pragma omp threadprivate(dt_param)
+
 extern struct sys zerosys;
 
 extern int fixed_j;

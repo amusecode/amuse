@@ -215,6 +215,9 @@ void do_evolve(struct sys s, double dt, int inttype)
     case SHAREDBS:
       evolve_bs_adaptive(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
+    case BS_CC_KEPLER:
+      evolve_bs(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
     case PASS:
       evolve_split_pass(clevel,s, zerosys,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
@@ -242,11 +245,13 @@ void do_evolve(struct sys s, double dt, int inttype)
     case CC:
     case CC_KEPLER:
     case CC_BS:
+    case CC_BSA:
     case CCC:
     case CCC_KEPLER:
     case CCC_BS:
+    case CCC_BSA:
 #ifdef _OPENMP
-#pragma omp parallel shared(global_diag,s,dt,clevel) 
+#pragma omp parallel shared(global_diag,s,dt,clevel) copyin(dt_param) 
       {
         diag=(struct diagnostics *) malloc(sizeof( struct diagnostics));
         zero_diagnostics(diag);
@@ -452,7 +457,7 @@ static void timestep_cpu(struct sys s1, struct sys s2,int dir)
   UINT i,j;
   FLOAT timestep,tau;
 #pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT && !omp_in_parallel()) default(none) \
- private(i,j,tau,timestep) \
+ private(i,j,tau,timestep) copyin(dt_param) \
  shared(s1,s2,stdout,dir)
   for(i=0;i<s1.n;i++)
   {  
@@ -526,7 +531,7 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   printf("cpu step,count: %12li,%18li\n",diag->cpu_step,diag->cpu_count);
   printf("cl step,count:  %12li,%18li\n",diag->cl_step,diag->cl_count);
 #endif
-  if(inttype==SHAREDBS || inttype==CC_BS || inttype==CCC_BS)
+  if(inttype==SHAREDBS || inttype==CC_BS || inttype==CCC_BS || inttype==CC_BSA || inttype==CCC_BSA)
   {
     unsigned long totalbs=0,totalj=0;
     printf("bs counts:\n");
