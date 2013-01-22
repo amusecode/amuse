@@ -401,7 +401,7 @@ class TestPH4(TestWithMPI):
         
         self.assertEquals(binary_energy2.value_in(nbody_system.energy), binary_energy1)
         
-    def xtest6(self):
+    def test6(self):
         instance = ph4()
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
