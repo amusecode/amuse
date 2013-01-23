@@ -13,6 +13,7 @@ from amuse.units.quantities import AdaptingVectorQuantity
 from amuse.units.quantities import as_vector_quantity
 
 import numpy
+import numpy.random
 import random
 import inspect
 import warnings
@@ -55,22 +56,23 @@ class RandomNumberUniqueKeyGenerator(KeyGenerator):
             raise exceptions.AmuseException("number of bits is larger than 64, this is currently unsupported!")
         self.number_of_bits = number_of_bits
         
+        self.random = numpy.random.mtrand.RandomState()
+        
     def next(self):
         return numpy.array([random.getrandbits(self.number_of_bits)], dtype=numpy.uint64)[0]
         
     def next_set_of_keys(self, length):
         if length == 0:
             return  []
-        return numpy.array([random.getrandbits(self.number_of_bits) for i in range(length)], dtype='uint64')
-        
-        # enabling this is faster
-        # but will crash the hop tests!
-        
-        #minint = -2** ((self.number_of_bits // 2) - 1)
-        #maxint = 2** ((self.number_of_bits // 2) - 1)
-        #low = numpy.random.random_integers(minint,maxint,length)
-        #high = numpy.random.random_integers(minint,maxint,length)
-        #return numpy.array(low + (high << 32), dtype=numpy.uint64)
+        try:
+            minint = -2** ((self.number_of_bits // 2) - 1)
+            maxint = 2** ((self.number_of_bits // 2) - 1)
+            low = self.random.random_integers(minint,maxint,length)
+            high = self.random.random_integers(minint,maxint,length)
+            return numpy.array(low + (high << 32), dtype=numpy.uint64)
+        except:
+             return numpy.array([random.getrandbits(self.number_of_bits) for i in range(length)], dtype='uint64')
+       
         
 UniqueKeyGenerator = RandomNumberUniqueKeyGenerator()
 
@@ -536,6 +538,11 @@ class AbstractSet(object):
     # grid in a field of that array and not the contents of
     # the grid (i.e. the grid points)
     __array_interface__ = {'shape':()}
+    
+    def __array_struct__(self):
+        raise AttributeError()
+    def __array__(self):
+        raise AttributeError()
     
     def __init__(self, original = None):
         if original is None:

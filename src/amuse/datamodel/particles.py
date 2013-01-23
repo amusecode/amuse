@@ -1027,7 +1027,7 @@ class Particles(AbstractParticleSet):
         version = self._get_version()
         
         for i in range(len(keys)):
-            yield Particle(keys[i], self,  indices[i],version) 
+            yield Particle(keys[i], self,  indices[i], version) 
             
     def savepoint(self, timestamp=None, format = 'memory', **attributes):
         if format == 'memory':
@@ -2412,14 +2412,21 @@ class Particle(object):
     
     
     """
-    __slots__ = ["key", "particles_set", "_set_index", "_set_version"]
+    __slots__ = ("key", "particles_set", "_set_index", "_set_version")
     
     # these are defined so that numpy conversion is way faster
     # otherwhise it would go through the __getattr__ function
     # which will slow it down by a factor 3
     __array_interface__ = {'shape':()}
-    # __array_struct__
-    # __array__ need to speed up access of these!
+    
+    def __len__(self):
+        raise AttributeError()
+    def __iter__(self):
+        raise AttributeError()
+    def __array_struct__(self):
+        raise AttributeError()
+    def __array__(self):
+        raise AttributeError()
     
     def __init__(self, key = None, particles_set = None, set_index = -1, set_version = -1, **keyword_arguments):
         if particles_set is None:
