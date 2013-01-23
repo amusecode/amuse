@@ -1739,6 +1739,23 @@ class TestParticlesWithUnitsConverted(amusetest.TestCase):
             i += 1
             
     
+    
+    def test4(self):
+        convert_nbody = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
+        
+        stars = datamodel.Particles(1)
+        
+        converted_stars = datamodel.ParticlesWithUnitsConverted(
+            stars, 
+            convert_nbody.as_converter_from_si_to_generic()
+        )
+        
+        stars.stellar_type = units.stellar_type("Main Sequence star")
+        print stars.stellar_type
+        print converted_stars.stellar_type
+        
+        self.assertEquals(stars[0].stellar_type, units.stellar_type("Main Sequence star"))
+        self.assertEquals(converted_stars[0].stellar_type, units.stellar_type("Main Sequence star"))
 
         
 class TestParticlesWithChildren(amusetest.TestCase):

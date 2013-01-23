@@ -546,18 +546,29 @@ class nonnumeric_unit(unit):
         return 'no_system.get({0!r})'.format(self.name)
         
     def __mul__(self, other):
+        if other == 1:
+            return self
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
         
     def __truediv__(self, other):
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
 
     def __rmul__(self, other):
+        if other == 1:
+            return self
+            
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
     
     def __rtruediv__(self, other):
+        if other == 1:
+            return self
+            
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
         
     def __pow__(self, other):
+        if other == 1:
+            return self
+            
         raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
         
     def __div__(self, other):
