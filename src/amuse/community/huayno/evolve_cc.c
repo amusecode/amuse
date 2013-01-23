@@ -252,7 +252,7 @@ DOUBLE sys_forces_max_timestep(struct sys s,int dir) {
 }
 
 #define BS_SUBSYS_SIZE   10
-#define TASKCONDITION    (nc > 1)
+#define TASKCONDITION    (nc > 1 && s.n>BS_SUBSYS_SIZE)
 void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int inttype, int recenter) {
   DOUBLE cmpos[3],cmvel[3];
   int recentersub=0;
