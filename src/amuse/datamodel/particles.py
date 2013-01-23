@@ -2555,14 +2555,13 @@ class Particle(object):
     # which will slow it down by a factor 3
     __array_interface__ = {'shape':()}
     
-    #def __len__(self):
-    #    raise AttributeError()
-    #def __iter__(self):
-    #    raise AttributeError()
-    #def __array_struct__(self):
-    #    raise AttributeError()
-    #def __array__(self):
-    #    raise AttributeError()
+    def __len__(self):
+        raise AttributeError()
+    def __iter__(self):
+        raise AttributeError()
+        
+    __array_struct__ = UndefinedAttribute()
+    __array__ = UndefinedAttribute()
     
     def __init__(self, key = None, particles_set = None, set_index = -1, set_version = -1, **keyword_arguments):
         if particles_set is None:

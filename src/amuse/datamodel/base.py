@@ -525,6 +525,10 @@ class PrivateProperties(object):
     """
     pass
 
+class UndefinedAttribute(object):
+    def __get__(self, obj, type=None):
+        raise AttributeError()
+        
 class AbstractSet(object):
     """
     Abstract superclass of all sets of particles and grids. 
@@ -539,10 +543,8 @@ class AbstractSet(object):
     # the grid (i.e. the grid points)
     __array_interface__ = {'shape':()}
     
-    #def __array_struct__(self):
-    #    raise AttributeError()
-    #def __array__(self):
-    #    raise AttributeError()
+    __array_struct__ = UndefinedAttribute()
+    __array__ = UndefinedAttribute()
     
     def __init__(self, original = None):
         if original is None:
