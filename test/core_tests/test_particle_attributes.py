@@ -99,3 +99,87 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertAlmostEqual(result.velocity, [42.0, 13.0, 0.0] | units.km / units.s, 1)
         self.assertAlmostRelativeEqual(result.density, 3.55015420914e6 | units.MSun * units.parsec**-3, 4)
     
+
+
+class TestParticlesDomainAttributes(amusetest.TestCase):
+    
+    def test1(self):
+        particles = Particles(2)
+        particles.add_attribute_domain('a')
+        particles.add_attribute_domain('b')
+        particles.a.foo = 1 | units.m
+        particles.b.foo = 2 | units.kg
+        particles.foo = 3 | units.s
+        
+        self.assertAlmostRelativeEqual(particles.a.foo,  1 | units.m)
+        self.assertAlmostRelativeEqual(particles.b.foo,  2 | units.kg)
+        self.assertAlmostRelativeEqual(particles.foo,  3 | units.s)
+        
+    def test2(self):
+        particles = Particles(2)
+        particles.add_attribute_domain('a')
+        particles.add_attribute_domain('b')
+        particles.a.foo = 1 | units.m
+        particles.b.bar = 2 | units.kg
+        particles.foo = 3 | units.s
+        self.assertEquals(
+            sorted(particles.a.get_attribute_names_defined_in_store()), 
+            ['foo']
+        )
+        self.assertEquals(
+            sorted(particles.b.get_attribute_names_defined_in_store()), 
+            ['bar']
+        )
+        
+    def test3(self):
+        particles = Particles(2)
+        particles.add_attribute_domain('a')
+        particles.add_attribute_domain('b')
+        particles.a.foo = 1 | units.m
+        particles.b.foo = 2 | units.kg
+        particles.foo = 3 | units.s
+        particles.a.add_particle(Particle(foo = 2 | units.m))
+        
+        self.assertAlmostRelativeEqual(particles.a.foo,  [1,1,2] | units.m)
+        self.assertAlmostRelativeEqual(particles.b.foo,  [2,2,0] | units.kg)
+        self.assertAlmostRelativeEqual(particles.foo,  [3,3,0] | units.s)
+        
+        particles.add_particle(Particle(foo = 2 | units.s))
+        self.assertAlmostRelativeEqual(particles.a.foo,  [1,1,2,0] | units.m)
+        self.assertAlmostRelativeEqual(particles.b.foo,  [2,2,0,0] | units.kg)
+        self.assertAlmostRelativeEqual(particles.foo,  [3,3,0,2] | units.s)
+        
+        
+    def test4(self):
+        particles = Particles(2)
+        particles.add_attribute_domain('a')
+        particles.add_attribute_domain('b')
+        def set_a():
+            particles.a = 1 | units.kg
+        self.assertRaises(AttributeError, set_a)
+
+    def test5(self):
+        particles = Particles(2)
+        particles.add_attribute_domain('a')
+        particles.add_attribute_domain('b')
+        particles.a.foo = 1 | units.m
+        particles.b.foo = 2 | units.kg
+        particles.foo = 3 | units.s
+        
+        particles.a[0].foo = 3 | units.m
+        
+        self.assertAlmostRelativeEqual(particles.a.foo,  [3,1] | units.m)
+        
+        particles[0].a.foo = 4 | units.m
+        
+        self.assertAlmostRelativeEqual(particles.a.foo,  [4,1] | units.m)
+        self.assertAlmostRelativeEqual(particles.b.foo,  [2,2] | units.kg)
+        self.assertAlmostRelativeEqual(particles.foo,  [3,3] | units.s)
+
+    def test6(self):
+        particles = Particles(2)
+        particles.add_attribute_domain('a')
+        particles.add_attribute_domain('b')
+        def set_a():
+            particles[0].a = 1 | units.kg
+        self.assertRaises(AttributeError, set_a)

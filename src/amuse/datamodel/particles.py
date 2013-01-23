@@ -331,6 +331,8 @@ class AbstractParticleSet(AbstractSet):
     def can_extend_attributes(self):
         return self._original_set().can_extend_attributes()
         
+    def add_attribute_domain(self, namespace):
+        self._derived_attributes[namespace] = DomainAttribute(namespace)
     
     def _is_superset(self):
         return False
@@ -2397,6 +2399,140 @@ class ParticleInformationChannel(object):
         self.to_particles.set_values_in_store(self.to_indices, [target_name,], data)
     
     
+class ParticlesWithNamespacedAttributesView(AbstractParticleSet):
+    """
+    A view on prefixed attributes of a particle set.    
+    """
+    
+    def __init__(self, particles, namespace):
+        AbstractParticleSet.__init__(self, particles)
+        
+        self._private.particles = particles
+        self._private.namespace = namespace
+    
+    def compressed(self):
+        return ParticlesWithNamespacedAttributesView(
+            self._private.particles.compressed(), 
+            self._private.namespace
+        )
+        
+    def get_valid_particles_mask(self):
+        return self._private.particles.get_valid_particles_mask()
+        
+    def __getitem__(self, index):
+        
+        keys = self.get_all_keys_in_store()[index]
+        
+        if keys is ma.masked:
+            return None
+        elif hasattr(keys, '__iter__'):
+            return self._subset(keys)
+        else:
+            return Particle(keys, self)
+            
+    def _get_version(self):
+        return self._private.particles._get_version()
+              
+    def shallow_copy(self):
+        copiedParticles =  self._private.particles.shallow_copy()
+        return ParticlesWithNamespacedAttributesView(
+            copiedParticles, 
+            self._private.namespace
+        )
+    
+    def unconverted_set(self):
+        return self._private.particles
+    
+    def can_extend_attributes(self):
+        return self._private.particles.can_extend_attributes()
+        
+    def add_particles_to_store(self, keys, attributes = [], values = []):
+        namespace = self._private.namespace 
+        namespaced_attributes = [namespace + '__' + x for x in attributes]
+        self._private.particles.add_particles_to_store(keys, namespaced_attributes, values)
+        
+    def remove_particles_from_store(self, keys):
+        self._private.particles.remove_particles_from_store(keys)
+        
+    def get_values_in_store(self, indices, attributes):
+        namespace = self._private.namespace 
+        namespaced_attributes = [namespace + '__' + x for x in attributes]
+        return self._private.particles.get_values_in_store(indices, namespaced_attributes)
+        
+        
+    def set_values_in_store(self, indices, attributes, values):
+        namespace = self._private.namespace 
+        namespaced_attributes = [namespace + '__' + x for x in attributes]
+        self._private.particles.set_values_in_store(indices, namespaced_attributes, values)
+    
+    def get_attribute_names_defined_in_store(self):
+        names = self._private.particles.get_attribute_names_defined_in_store()
+        namespace_prefix = self._private.namespace  + '__'
+        len_namespace_prefix = len(namespace_prefix)
+        return [x[len_namespace_prefix:] for x in names if x.startswith(namespace_prefix)]
+
+    def get_all_keys_in_store(self):
+        return self._private.particles.get_all_keys_in_store()
+        
+    def get_all_indices_in_store(self):
+        return self._private.particles.get_all_indices_in_store()
+        
+    def get_indices_of_keys(self, keys):
+        return self._private.particles.get_indices_of_keys(keys)
+        
+    def has_key_in_store(self, key):
+        return self._private.particles.has_key_in_store(key)
+        
+    def as_set(self):
+        return ParticlesSubset(self, self.get_all_keys_in_store())
+    
+    def get_timestamp(self):
+        return self._private.particles.get_timestamp()
+    
+    def savepoint(self, timestamp=None):
+        return ParticlesWithNamespacedAttributesView(
+            self._private.particles.savepoint(timestamp),
+            self._private.namespace
+        )
+    
+    def previous_state(self):
+        return ParticlesWithNamespacedAttributesView(
+            self._private.particles.previous_state(),
+            self._private.namespace
+        )
+
+    
+
+class DomainAttribute(DerivedAttribute):
+    """
+    Combine multiple attributes into the same namespace
+    """
+    def  __init__(self, name):
+        self.name = name
+    
+    def get_values_for_entities(self, instance):
+        return ParticlesWithNamespacedAttributesView(instance, self.name)
+    
+    def set_values_for_entities(self, instance, value):
+        raise AttributeError('Cannot change a domain attribute ({0})'.format(self.name))
+        
+    def get_value_for_entity(self, instance, particle, index):
+        namespaced_set = ParticlesWithNamespacedAttributesView(particle.particles_set, self.name)
+        # or:
+        # return namespaced_set[index]
+        return Particle(
+            particle.key,
+            namespaced_set,
+            particle._set_index,
+            particle._set_version
+        )
+        
+    def set_value_for_entity(self, instance, key, vector):
+        raise AttributeError('Cannot change a domain attribute ({0})'.format(self.name))
+        
+
+
+    
 class Stars(Particles):
     pass
 
@@ -2419,14 +2555,14 @@ class Particle(object):
     # which will slow it down by a factor 3
     __array_interface__ = {'shape':()}
     
-    def __len__(self):
-        raise AttributeError()
-    def __iter__(self):
-        raise AttributeError()
-    def __array_struct__(self):
-        raise AttributeError()
-    def __array__(self):
-        raise AttributeError()
+    #def __len__(self):
+    #    raise AttributeError()
+    #def __iter__(self):
+    #    raise AttributeError()
+    #def __array_struct__(self):
+    #    raise AttributeError()
+    #def __array__(self):
+    #    raise AttributeError()
     
     def __init__(self, key = None, particles_set = None, set_index = -1, set_version = -1, **keyword_arguments):
         if particles_set is None:

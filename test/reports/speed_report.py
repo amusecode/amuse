@@ -355,11 +355,49 @@ class RunSpeedTests(object):
         
         particles = Particles(self.total_number_of_points)
         particles.radius = 1.0 | nbody_system.length
+        array = numpy.zeros(self.total_number_of_points, dtype=numpy.object)
         self.start_measurement()
+        i = 0
         for x in particles:
-            x.radius
+            array[i] = x
+            i += 1
         self.end_measurement()
     
+    
+    def speed_iterate_over_particles2(self):
+        
+        self.is_single_particle_test()
+        
+        class A(object):
+            __slots__ = ('i', 'j', 'k' , 'l')
+            __array_interface__ = {'shape':()}
+            
+            def __len__(self):
+                raise AttributeError()
+            def __iter__(self):
+                raise AttributeError()
+    
+            
+            def __init__(self, i, j = 10, k = 20, l = 24):
+                self.i = i
+                if i > 10:
+                    self.j = j + 10
+                else:
+                    self.j = j
+                
+                self.k = k
+                self.l = l
+        
+            def __getattr__(self, name_of_the_attribute):
+                raise AttributeError("You tried to access attribute '{0}' but this attribute is not defined for this set.".format(name_of_the_attribute, ex))
+    
+                
+        array = numpy.zeros(self.total_number_of_points, dtype=numpy.object)
+        
+        self.start_measurement()
+        for x in range(self.total_number_of_points):
+            array[x] = A(x,x,x,x)
+        self.end_measurement()
     
 
     def speed_iterate_over_array(self):

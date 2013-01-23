@@ -539,10 +539,10 @@ class AbstractSet(object):
     # the grid (i.e. the grid points)
     __array_interface__ = {'shape':()}
     
-    def __array_struct__(self):
-        raise AttributeError()
-    def __array__(self):
-        raise AttributeError()
+    #def __array_struct__(self):
+    #    raise AttributeError()
+    #def __array__(self):
+    #    raise AttributeError()
     
     def __init__(self, original = None):
         if original is None:
