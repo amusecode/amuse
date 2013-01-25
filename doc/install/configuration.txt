@@ -1,3 +1,5 @@
+.. _configuration-label:
+
 =================
 Configuring AMUSE
 =================
@@ -43,6 +45,8 @@ find all the packages installed. For most libraries the
 path. You can override the ```PREFIX``` environment variable::
    
     > ./configure PREFIX=/path/to/libraries/root
+
+.. _configuration-gpu-label:
 
 GPU
 ~~~

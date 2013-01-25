@@ -31,6 +31,7 @@ Step-by-step
 * :ref:`CUDA-capable`
 * :ref:`CUDA_SDK`
 * :ref:`env-vars`
+* :ref:`configure-with-cuda`
 * :ref:`test`
 
 
@@ -87,6 +88,14 @@ For shell (bash) you need to do:
 We recommend you add these lines to your '.bashrc' file so that
 the variables are set correctly for all sessions. If you have a
 C shell you need to do a *setenv* and edit the '.cshrc file.
+
+
+.. _configure-with-cuda:
+
+Configure AMUSE with CUDA enabled
+---------------------------------
+
+AMUSE needs to be configured with the option ``--enable-cuda``. See :ref:`configuration-gpu-label`.
 
 
 .. _test:
