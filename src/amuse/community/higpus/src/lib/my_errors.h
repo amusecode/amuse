@@ -62,6 +62,18 @@ inline const std::string __getErrorString(HostError err){
 			break;
 		case(HNoDefPlummer2):
 			error_string = " You did not pass the -p argument at lunch time but you compiled the code with the option -DPLUMMER. This implies you want to add a plummer potential to the stellar environment. Please add the -p option or compile without -DPLUMMER \n";
+			case(HNoDefGalaxy):
+         error_string = " You did not define GALAXY but you are passing option -gal at lunch time : Please compile with -DGALAXY if you want to add a Milky Way potential to the stellar environment, otherwise do not pass the option -gal at lunch time \n";
+         break;
+      case(HNoDefGalaxy2):
+         error_string = " You did not pass the -gal argument at lunch time but you compiled the code with the option -DGALAXY. This implies you want to add a Milky Way potential to the stellar environment. Please add the -gal option or compile without -DGALAXY \n";
+			break;
+		case(HNoSpace):
+			error_string = " There is not enough space in your Hard Disk \n";
+			break;
+		case(HNoNumber):
+			error_string = " The number of GPUs specified with the option -d must be equal to that specified in the file 'input_param.txt' \n ";
+			break;
 	}
 
 	return error_string;

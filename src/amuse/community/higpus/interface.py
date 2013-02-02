@@ -1,4 +1,4 @@
-from amuse.community import *
+ùfrom amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamics 
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 
@@ -39,8 +39,6 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
                  description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN,
                  description = "The initial velocity vector of the particle")
-        function.addParameter('soft', dtype='float32', direction=function.IN,
-                 description = "Individual softening of the particle", default = 0 )
         function.result_type = 'int32'
         return function
 
@@ -65,8 +63,6 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
                  description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN,
                  description = "The initial velocity vector of the particle")
-        function.addParameter('soft', dtype='float32', direction=function.IN,
-                 description = "Individual softening of the particle")
         function.result_type = 'int32'
         return function
 
@@ -91,8 +87,6 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
                  description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.OUT,
                  description = "The initial velocity vector of the particle")
-        function.addParameter('soft', dtype='float32', direction=function.OUT,
-                 description = "Individual softening of the particle")
         function.result_type = 'int32'
         return function
          
@@ -130,6 +124,49 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
     def get_eta4():
         function = LegacyFunctionSpecification()
         function.addParameter('eta4', dtype='float64', direction=function.OUT, description = "eta parameter of time steps.")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_eps():
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.IN, description = "softening parameter.")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_eps():
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.OUT, description = "softening parameter.")
+        function.result_type = 'int32'
+        return function
+
+
+    @legacy_function
+    def set_Galaxy_core():
+        function = LegacyFunctionSpecification()
+        function.addParameter('Galaxy_core', dtype='float64', direction=function.IN, description = "radius parameter for Galaxy potential.")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_Galaxy_core():
+        function = LegacyFunctionSpecification()
+        function.addParameter('Galaxy_core', dtype='float64', direction=function.OUT, description = "radius parameter for Galaxy potential.")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_Galaxy_mass():
+        function = LegacyFunctionSpecification()
+        function.addParameter('Galaxy_mass', dtype='float64', direction=function.IN, description = "analytical mass of the Galaxy potential.")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_Galaxy_mass():
+        function = LegacyFunctionSpecification()
+        function.addParameter('Galaxy_mass', dtype='float64', direction=function.OUT, description = "analytical mass of the Galaxy potential.")
         function.result_type = 'int32'
         return function
 
@@ -299,16 +336,26 @@ class HiGPUs(GravitationalDynamics):
             "set_eta4",			         
             "eta_4",                  
             "timestep parameter",    
-            default_value = 0.01 | units.none)
+            default_value = 0.01 | units.none
+	)
 
         object.add_method_parameter(
             "get_eta6",                          
             "set_eta6",                          
-            "eta_6",                             
+            "eta6",                             
             "timestep parameter",                
-            default_value = 0.4 | units.none)
+            default_value = 0.4 | units.none
+	)
 
+        object.add_method_parameter(
+            "get_eps",
+            "set_eps",
+            "eps",
+            "softening",
+            default_value = 0.001 | units.length
+	) 
         
+		  
         object.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
@@ -329,7 +376,23 @@ class HiGPUs(GravitationalDynamics):
             "get_Plummer_mass",                  
             "set_Plummer_mass",                  
             "mass_plummer",                      
-            "mass of Plummer potential",         
+            "mass of Galaxy potential",         
+            default_value = 0.0 | nbody_system.mass
+        )
+
+        object.add_method_parameter(
+            "get_Galaxy_core",
+            "set_Galaxy_core",
+            "r_scale_galaxy",
+            "sclae radius of the Galaxy potential",
+            default_value = 0.0 | nbody_system.length
+        )
+ 
+        object.add_method_parameter(
+            "get_Galaxy_mass",
+            "set_Galaxy_mass",
+            "mass_galaxy",
+            "mass of Plummer potential",
             default_value = 0.0 | nbody_system.mass
         )
 
@@ -361,7 +424,7 @@ class HiGPUs(GravitationalDynamics):
             "get_max_time_step",                  
             "set_max_time_step",                  
             "max_step",                           
-	    "power of 2 for maximum time step",   
+	         "power of 2 for maximum time step",   
             default_value = pow(2.,-3.0) | nbody_system.time
         )
 
@@ -509,6 +572,64 @@ class HiGPUs(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
+
+        object.add_method(
+            "set_Galaxy_core",
+            (
+                  nbody_system.length
+            ),
+            (
+               object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "get_Galaxy_core",
+            (),
+            (
+                  nbody_system.length,
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "set_Galaxy_mass",
+            (
+                  nbody_system.mass
+            ),
+            (
+               object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "get_Galaxy_mass",
+            (),
+            (
+                  nbody_system.mass,
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "set_eps",
+            (
+                nbody_system.length
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
+            "get_eps",
+            (),
+            (
+                nbody_system.length,
+                object.ERROR_CODE
+            )
+        )
+       
 
         object.add_method(
             "set_eta6",

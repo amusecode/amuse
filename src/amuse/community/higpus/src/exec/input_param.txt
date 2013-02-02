@@ -1,9 +1,10 @@
-10       // number of particles !
+10 // number of particles (it must be power of two) !
 1       // number of gpus to use !
 64     // gpus threads per block !
-3.    // integration time !
+1.0     // integration time !
 -3.0    // exponent which defines the maximum time step allowed for particles (2^exponent) !
--30.0   // exponent which defines the minimum time step allowed for particles (2^exponent) !
+-25.0   // exponent which defines the minimum time step allowed for particles (2^exponent) !
+0.005  // softening parameter !
 0.4    // eta parameter for determining particles time steps (generalized Aarseth criterion for the Hermite 6th order method) !
 0.01    // eta parameter for initializing blocks (Aarseth criterion) !
 0.125   // time step for snapshots !

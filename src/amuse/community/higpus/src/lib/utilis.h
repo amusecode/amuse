@@ -9,11 +9,11 @@
 #include <string>
 #include <cstdlib>
 #include <vector>
-#include "./types.h"
+#include "types.h"
 #include <mpi.h>
 #include "sys/time.h"
 #include <stdexcept>
-#include <cuda_runtime_api.h>
+
 
 using namespace std;
 
@@ -125,8 +125,7 @@ class Utilis
 
  public :
 
-    vector<double> CdM(double *x, double *y, double *z, double *w, int num);
-  vector<double> CdD(double *x, double *y, double *z, double *w, int num);
+    vector<double> CdM(double4 *w, int num);
 
  private :
 

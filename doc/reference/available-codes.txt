@@ -866,7 +866,7 @@ HiGPUs
 HiGPUs is a parallel direct N-body code based on a 6th order Hermite 
 integrator. The code has been developed by Capuzzo-Dolcetta, Punzo 
 and Spera (Dep. of Physics, Sapienza, Univ. di Roma; 
-see astrowww.phys.uniroma1.it/dolcetta/hpc/hpc.html) and uses, at 
+see astrowww.phys.uniroma1.it/dolcetta/HPCcodes/HiGPUs.html) and uses, at 
 the same time, MPI, OpenMP and CUDA libraries to fully exploit all 
 the capabilities offered by hybrid supercomputing platforms. 
 Moreover, it is implemented using block time steps (individual time stepping) 
@@ -892,9 +892,18 @@ Parameters
 |                                    |               |               |initializing blocks|
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
-|softening                           |0.001          |length         |smoothing parameter|
+|eps                                 |0.001          |length         |smoothing parameter|
 |                                    |               |               |for gravity        |
 |                                    |               |               |calculations       |
++------------------------------------+---------------+---------------+-------------------+
+|r_scale_galaxy                      |0.0            |length         |scale radius for   |
+|                                    |               |               |analytical galaxy  |
+|                                    |               |               |potential          |
++------------------------------------+---------------+---------------+-------------------+
+|mass_galaxy                         |0.0            |mass           |total mass for     |
+|                                    |               |               |analytical galaxy  |
+|                                    |               |               |potential          |
+
 +------------------------------------+---------------+---------------+-------------------+
 |r_core_plummer                      |0.0            |length         |core radius for    |
 |                                    |               |               |analytical plummer |
@@ -959,6 +968,7 @@ Ubuntu Lucid 10.04 x86_64, motherboard Supermicro X8DTG-QF:
     * GeForce GTX 480  :  265
     * GeForce GTX 580  :  311
 
+To use the code with AMP GPUs you can download the OpenCL version from the website
 
 .. automodule:: amuse.community.higpus.interface
     
