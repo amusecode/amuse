@@ -666,7 +666,7 @@ void jdata::advance()
     sched->update();
 }
 
-#define EPS 0.01	// see couple/multiples.py
+#define EPS 0.001	// see couple/multiples.py
 
 bool jdata::advance_and_check_encounter()
 {
@@ -700,7 +700,7 @@ bool jdata::advance_and_check_encounter()
 		vr += dx*dv;
 	    }
 
-	    if (vr < -EPS*sqrt(r*v)) {
+	    if (vr < EPS*sqrt(r*v)) {
 		int stopping_index = next_index_for_stopping_condition();
 		set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
 		set_stopping_condition_particle_index(stopping_index, 0, coll1);
