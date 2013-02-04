@@ -61,8 +61,9 @@ int initialize_from_elements(double mass, double semi, double ecc,
     k->set_periastron(periastron);
     k->set_mean_anomaly(mean_anomaly);
 
-    k->initialize_from_shape_and_phase();	// expects a, e [, peri]
-    // k->print_all();
+    set_random_orientation(*k, 0);
+    //k->initialize_from_shape_and_phase();	// expects a, e [, peri]
+    //k->print_all();
 
     return 0;
 }
