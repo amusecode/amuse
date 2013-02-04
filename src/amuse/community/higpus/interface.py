@@ -1,4 +1,4 @@
-ùfrom amuse.community import *
+from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamics 
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 
