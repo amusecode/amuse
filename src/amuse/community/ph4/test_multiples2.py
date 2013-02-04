@@ -98,7 +98,8 @@ def init_kepler(star1, star2):
 
     return kep
         
-def test_ph4(infile = None, number_of_stars = 40,
+def test_ph4(infile = None, outfile = None,
+             number_of_stars = 100, number_of_binaries = 0,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
              n_workers = 1, use_gpu = 1, gpu_worker = 1,
@@ -155,7 +156,8 @@ def test_ph4(infile = None, number_of_stars = 40,
         print "setting particle masses and radii"
         if salpeter == 0:
             print 'equal masses'
-            scaled_mass = (1.0 / number_of_stars) | nbody_system.mass
+            total_mass = 1.0 | nbody_system.mass
+            scaled_mass = total_mass / number_of_stars
         else:
             print 'salpeter mass function'
             scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
@@ -166,53 +168,6 @@ def test_ph4(infile = None, number_of_stars = 40,
         print "scaling stars to virial equilibrium"
         stars.scale_to_standard(smoothing_length_squared
                                     = gravity.parameters.epsilon_squared)
-
-
-
-        if 1:
-            nbin = 20
-            mfac = number_of_stars/(number_of_stars+float(nbin))
-            scaled_mass *= mfac
-            stars.mass = scaled_mass
-
-            kep = Kepler(redirection = "none")
-            kep.initialize_code()
-            mbin = 2*scaled_mass
-            amin = (0.1/number_of_stars) | nbody_system.length
-            amax = 4.*amin
-            ecc = 0.1
-
-            id_count = number_of_stars
-            for i in range(0, number_of_stars, number_of_stars/nbin):
-                # star i is CM, becomes component, add other star at end.
-                newstar = datamodel.Particles(1)
-                a = amin + numpy.random.uniform()*(amax-amin)
-                kep.initialize_from_elements(mbin, a, ecc)
-                dr = quantities.AdaptingVectorQuantity()
-                dr.extend(kep.get_separation_vector())
-                dv = quantities.AdaptingVectorQuantity()
-                dv.extend(kep.get_velocity_vector())
-                cm = stars[i]
-                newstar.mass = scaled_mass
-                stars[i].mass = scaled_mass
-                newstar.position = cm.position + 0.5*dr
-                newstar.velocity = cm.velocity + 0.5*dv
-                stars[i].position = cm.position - 0.5*dr
-                stars[i].velocity = cm.velocity - 0.5*dv
-                id_count += 1
-                newstar.id = id_count
-                stars.add_particles(newstar)
-
-            print 'created', nbin, 'binaries'
-            kep.stop()
-
-            number_of_stars += nbin
-
-        # Dynamical radii (assumes virial equilibrium):
-        stars.radius = (2*stars.mass.number) | nbody_system.length
-
-        time = 0.0 | nbody_system.time
-        sys.stdout.flush()
 
     else:
 
@@ -252,17 +207,86 @@ def test_ph4(infile = None, number_of_stars = 40,
         stars.velocity = vel | nbody_system.speed
         #stars.radius = 0. | nbody_system.length
 
-        # Dynamical radii (assumes virial equilibrium):
-        stars.radius = (2*stars.mass.number) | nbody_system.length
+    total_mass = stars.mass.sum()
+    ke = pa.kinetic_energy(stars)
+    kT = ke/(1.5*number_of_stars)
 
+    if number_of_binaries > 0:
+
+        # Turn selected stars into binary components.
+        # Only tested for equal-mass case.
+
+        kep = Kepler(redirection = "none")
+        kep.initialize_code()
+
+        added_mass = 0.0 | nbody_system.mass
+
+        # Work with energies rather than semimajor axes.
+
+        Emin = 10*kT
+        Emax = 20*kT
+        ecc = 0.1
+
+        id_count = number_of_stars
+        nbin = 0
+        for i in range(0, number_of_stars,
+                       number_of_stars/number_of_binaries):
+
+            # Star i is CM, becomes component, add other star at end.
+
+            nbin += 1
+
+            mass = stars[i].mass
+            new_mass = numpy.random.uniform()*mass	# uniform q?
+            mbin = mass + new_mass
+            fac = new_mass/mbin
+            E = Emin + numpy.random.uniform()*(Emax-Emin)
+            a = 0.5*nbody_system.G*mass*new_mass/E
+
+            kep.initialize_from_elements(mbin, a, ecc)
+            dr = quantities.AdaptingVectorQuantity()
+            dr.extend(kep.get_separation_vector())
+            dv = quantities.AdaptingVectorQuantity()
+            dv.extend(kep.get_velocity_vector())
+
+            newstar = datamodel.Particles(1)
+            newstar.mass = new_mass
+            newstar.position = stars[i].position + (1-fac)*dr
+            newstar.velocity = stars[i].velocity + (1-fac)*dv
+            # stars[i].mass = mass
+            stars[i].position = stars[i].position - fac*dr
+            stars[i].velocity = stars[i].velocity - fac*dv
+
+            id_count += 1
+            newstar.id = id_count
+            stars.add_particles(newstar)
+            added_mass += new_mass
+
+            if nbin >= number_of_binaries: break
+
+        kep.stop()
+
+        print 'created', nbin, 'binaries'
+        sys.stdout.flush()
+
+        stars.mass = stars.mass * total_mass/(total_mass+added_mass)
+        number_of_stars += nbin
+
+    # Set dynamical radii (assumes virial equilibrium):
+    stars.radius = 0.5*(2*stars.mass.number) | nbody_system.length
+
+    time = 0.0 | nbody_system.time
     # print "IDs:", stars.id.number
+
+    print "recentering stars"
+    stars.move_to_center()
     sys.stdout.flush()
 
     #-----------------------------------------------------------------
 
     if softening_length < 0.0 | nbody_system.length:
 
-        # Use ~interparticle spacing.
+        # Use ~interparticle spacing.  Assuming standard units here.  TODO
 
         eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
 			| nbody_system.length**2
@@ -323,10 +347,23 @@ def test_ph4(infile = None, number_of_stars = 40,
 
     #-----------------------------------------------------------------
 
-    # Write data to a file.
+    if not outfile == None:
+
+        # Write data to a file.
+
+        f = open(outfile, 'w')
+        for s in multiples_code.stars: write_star(s, f)
+        f.close()
+        print 'wrote file', outfile
 
     print ''
     gravity.stop()
+
+def write_star(s, f):
+    x,y,z = s.position.number
+    vx,vy,vz = s.velocity.number
+    f.write('%d %.15g %.15g %.15g %.15g %.15g %.15g %.15g\n' \
+		%(s.id, s.mass.number, x, y, z, vx, vy, vz))
 
 if __name__ == '__main__':
 
@@ -335,7 +372,9 @@ if __name__ == '__main__':
     print '\n'
 
     infile = None
+    outfile = None
     N = 100
+    Nbin = 0
     t_end = 5.0 | nbody_system.time
     delta_t = 1.0 | nbody_system.time
     n_workers = 2
@@ -348,7 +387,7 @@ if __name__ == '__main__':
     manage_encounters = 1
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:St:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "a:b:c:d:e:f:-F:gGn:s:St:w:")
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(1)
@@ -356,6 +395,8 @@ if __name__ == '__main__':
     for o, a in opts:
         if o == "-a":
             accuracy_parameter = float(a)
+        elif o == "-b":
+            Nbin = int(a)
         elif o == "-c":
             manage_encounters = int(a)
         elif o == "-d":
@@ -364,6 +405,8 @@ if __name__ == '__main__':
             softening_length = float(a) | nbody_system.length
         elif o == "-f":
             infile = a
+        elif o == "-F":
+            outfile = a
         elif o == "-g":
             use_gpu = 0
         elif o == "-G":
@@ -383,7 +426,8 @@ if __name__ == '__main__':
             print "unexpected argument", o
 
     assert is_mpd_running()
-    test_ph4(infile, N, t_end, delta_t, n_workers,
+    test_ph4(infile, outfile,
+             N, Nbin, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
              salpeter, accuracy_parameter, softening_length,
              manage_encounters, random_seed)
