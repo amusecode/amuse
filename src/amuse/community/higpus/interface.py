@@ -352,7 +352,7 @@ class HiGPUs(GravitationalDynamics):
             "set_eps",
             "eps",
             "softening",
-            default_value = 0.001 | units.length
+            default_value = 0.001 | nbody_system.length
 	) 
         
 		  
@@ -475,7 +475,6 @@ class HiGPUs(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
 	        nbody_system.speed,
-                nbody_system.length,
            ),
             (
                	object.INDEX,
@@ -494,7 +493,6 @@ class HiGPUs(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                nbody_system.length,
            ),
             (
                 object.ERROR_CODE
@@ -514,7 +512,6 @@ class HiGPUs(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                nbody_system.length,
                 object.ERROR_CODE
             )
         )

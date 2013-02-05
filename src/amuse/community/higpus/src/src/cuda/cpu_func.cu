@@ -12,6 +12,8 @@
 
 #include "sys/time.h"
 
+#include <stdarg.h>
+
 using namespace std;
 
 HostError CPU_memcheck(const char *file, const int line, string path){
