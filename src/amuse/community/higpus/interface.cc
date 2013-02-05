@@ -191,6 +191,7 @@ int evolve_model(double t){
    
    FMAX = 1000000 + (int) ((GTIME+GTW) / DTPRINT);
 	
+   TTIME=t;
    HostSafeCall(Hermite6th(TTIME, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTW, GPUMINTHREADS, plummer_core, plummer_mass, rscale, mscale, dev, &cleanstop, path));
 
    MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
@@ -745,13 +746,14 @@ int get_potential_energy(double * potential_energy){
    double U = 0.0;
    unsigned int ppG = (unsigned int) ceil ( (double) M / size);
    for(unsigned int i=0; i<ppG; i++){
-		for(unsigned int j=0; j<N; j++){
-			double rx = (pos_CH[i].x - pos_CH[j].x);
+		for(unsigned int j=0; j<M; j++){
+			if (i==j) continue;
+      double rx = (pos_CH[i].x - pos_CH[j].x);
          double ry = (pos_CH[i].y - pos_CH[j].y);
          double rz = (pos_CH[i].z - pos_CH[j].z);
          double distance = rx * rx + ry * ry + rz * rz + EPS * EPS;
 
-			U += pos_CH[i].w * pos_CH[j].w / sqrt(distance); 
+			U -= 0.5*pos_CH[i].w * pos_CH[j].w / sqrt(distance); 
 	   }
 	}
        
