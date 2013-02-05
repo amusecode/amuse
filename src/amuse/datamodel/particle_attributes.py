@@ -520,7 +520,7 @@ def densitycentre_coreradius_coredens(particles,unit_converter=None,number_of_ne
     
     return [x_core,y_core,z_core],rc,rho
 
-def new_particle_from_cluster_core(particles, unit_converter=None, density_weighting_power=2):
+def new_particle_from_cluster_core(particles, unit_converter=None, density_weighting_power=2,cm=None):
     """
     Uses Hop to find the density centre (core) of a particle distribution
     and stores the properties of this core on a particle:
@@ -550,7 +550,10 @@ def new_particle_from_cluster_core(particles, unit_converter=None, density_weigh
     result = Particle()
     result.density = density.amax()
     total_weight = weights.sum()
-    result.position = (weights * particles.position).sum(axis=0) / total_weight
+    if cm is None:
+      result.position = (weights * particles.position).sum(axis=0) / total_weight
+    else:
+      result.position = cm
     result.velocity = (weights * particles.velocity).sum(axis=0) / total_weight
     result.radius = (weights.flatten() * (particles.position - result.position).lengths()).sum() / total_weight
     return result
