@@ -16,8 +16,8 @@ if __name__ == '__main__':
             if re.search("%%% time= (\d+\.\d*)", line):
                 if float(re.search("%%% time= (\d+\.\d*)", line).group(1)) == time:
                     inblock = True
-            if inblock and re.search("%%% Multiple.*E/kT=(-?\d+\.\d+)", line):
-                EkTs.append(float(re.search("%%% Multiple.*E/kT=(-?\d+\.\d+)",
+            if inblock and re.search("%%% .*E/kT=(-?\d+\.\d+)", line):
+                EkTs.append(float(re.search("%%%.*E/kT=(-?\d+\.\d+)",
                                             line).group(1)))
     
             if inblock and re.search("%%% Emul/E", line):
