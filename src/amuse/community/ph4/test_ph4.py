@@ -57,7 +57,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
     sys.stdout.flush()
     return E
 
-def test_ph4(infile = None, number_of_stars = 40,
+def run_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
              n_workers = 1, use_gpu = 1, gpu_worker = 1,
@@ -299,7 +299,7 @@ if __name__ == '__main__':
     print "random seed =", random_seed
 
     assert is_mpd_running()
-    test_ph4(infile, N, t_end, delta_t, n_workers,
+    run_ph4(infile, N, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
              accuracy_parameter, softening_length,
              manage_encounters)

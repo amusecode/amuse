@@ -98,7 +98,7 @@ def init_kepler(star1, star2):
 
     return kep
         
-def test_ph4(infile = None, outfile = None,
+def run_ph4(infile = None, outfile = None,
              number_of_stars = 100, number_of_binaries = 0,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
@@ -426,7 +426,7 @@ if __name__ == '__main__':
             print "unexpected argument", o
 
     assert is_mpd_running()
-    test_ph4(infile, outfile,
+    run_ph4(infile, outfile,
              N, Nbin, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
              salpeter, accuracy_parameter, softening_length,

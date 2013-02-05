@@ -805,7 +805,7 @@ def print_energies(stars):
     print 'energy =', kinetic+potential
     sys.stdout.flush()
 
-def xtest_multiples(infile = None,
+def run_multiples(infile = None,
                    number_of_stars = 64,
                    nmax = 2048,
                    end_time = 0.1   | nbody_system.time,
@@ -1069,7 +1069,7 @@ if __name__ == '__main__':
     softening_length = 0.0/N  | nbody_system.length
 
     assert is_mpd_running()
-    test_multiples(infile,
+    run_multiples(infile,
                    N,
                    Nmax,
                    t_end, 

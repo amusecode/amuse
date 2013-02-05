@@ -45,7 +45,7 @@ def new_smalln():
     result.parameters.cm_index = 2001
     return result
         
-def test_ph4(infile = None, number_of_stars = 40,
+def run_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
              n_workers = 1, use_gpu = 1, gpu_worker = 1,
@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
 
     assert is_mpd_running()
-    test_ph4(infile, N, t_end, delta_t, n_workers,
+    run_ph4(infile, N, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
              accuracy_parameter, softening_length,
              manage_encounters, random_seed)

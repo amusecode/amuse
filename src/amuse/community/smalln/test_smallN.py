@@ -50,7 +50,7 @@ def get_binary_elements(p):
 
     return mass,a,e
 
-def test_smallN(infile = None, number_of_stars = 10,
+def run_smallN(infile = None, number_of_stars = 10,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
              accuracy_parameter = 0.1):
@@ -258,4 +258,4 @@ if __name__ == '__main__':
     print "random seed =", random_seed
 
     assert is_mpd_running()
-    test_smallN(infile, N, t_end, delta_t, accuracy_parameter)
+    run_smallN(infile, N, t_end, delta_t, accuracy_parameter)

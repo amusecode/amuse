@@ -36,7 +36,7 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     sys.stdout.flush()
     return E
 
-def test_hacs(infile = None,
+def run_hacs(infile = None,
               number_of_stars = 128,
               nmax = 2048,
               end_time = 0.1   | nbody_system.time,
@@ -292,7 +292,7 @@ if __name__ == '__main__':
     softening_length = 0.0/N  | nbody_system.length
 
     assert is_mpd_running()
-    test_hacs(infile, 
+    run_hacs(infile, 
               N,
               Nmax,
               t_end, 
