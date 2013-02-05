@@ -17,7 +17,7 @@ For openmpi do::
 	> sudo apt-get install build-essential gfortran python-dev \
 	  libopenmpi-dev openmpi-bin \
 	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
-	  libgmp3 libgmp3-dev libmpfr4 libmpfr-dev \
+	  libgmp3-dev libmpfr4 libmpfr-dev \
 	  libhdf5-serial-dev hdf5-tools \
 	  python-nose python-numpy python-setuptools python-docutils \
 	  python-h5py python-setuptools
@@ -29,7 +29,7 @@ For mpich2 do::
 	> sudo apt-get install build-essential gfortran python-dev \
 	  mpich2 libmpich2-dev \
 	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
-	  libgmp3 libgmp3-dev libmpfr4 libmpfr-dev \
+	  libgmp3-dev libmpfr4 libmpfr-dev \
 	  libhdf5-serial-dev hdf5-tools \
 	  python-nose python-numpy python-setuptools python-docutils \
 	  python-h5py python-setuptools
