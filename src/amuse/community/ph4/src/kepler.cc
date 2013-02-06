@@ -371,9 +371,7 @@ kepler::kepler()
 {
     time = total_mass = energy = angular_momentum = 0;
     rel_pos = rel_vel = 0;
-    normal_unit_vector = 0;
-    longitudinal_unit_vector = 0;
-    transverse_unit_vector = 0;
+    align_with_axes(1);
     semi_major_axis = eccentricity = 0;
     true_anomaly = mean_anomaly = 0;
     time_of_periastron_passage = 0;
@@ -1560,7 +1558,7 @@ void set_random_orientation(kepler &k,
     real cos_theta = (real) planar, sin_theta = 0;
 
     if (planar == 0) {
-	cos_theta = randinter(-1, 1);
+	cos_theta = randinter(0, 1);
 	sin_theta = sqrt(1 - cos_theta * cos_theta);
     }
 
