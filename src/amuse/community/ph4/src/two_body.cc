@@ -269,7 +269,7 @@ void jdata::two_body(int j1, int j2, vector<int> nbrlist)
     // separation, or collapse the pair into a single particle.  The
     // factor of 2 in the merger condition is TBD: TODO.
 
-    vec dr_old = dr, dv_old = dv;
+    // vec dr_old = dr, dv_old = dv;
     real energy, semi_major_axis, eccentricity;
 
     bool merge = reflect_or_merge_orbit(total_mass, dr, dv, energy,

@@ -242,6 +242,13 @@ int jdata::add_particle(real pmass, real pradius,
 
     UpdatedParticles.push_back(UpdatedParticle(pid, 2));
 
+    if (1)  {
+
+	// Consistency check:
+
+	check_inverse_id(in_function);
+    }
+
     // Return the particle id.
 
     return pid;    
@@ -315,6 +322,13 @@ void jdata::remove_particle(int j)
 	inverse_id[id[j]] = j;
 	sched->add_particle(j);
     } 
+
+    if (1)  {
+
+	// Consistency check:
+
+	check_inverse_id(in_function);
+    }
 }
 
 void jdata::initialize_arrays()
@@ -395,14 +409,14 @@ int jdata::get_inverse_id(int i)
     else return ii->second;
 }
 
-void jdata::check_inverse_id()
+void jdata::check_inverse_id(const char *s)
 {
     const char *in_function = "jdata::check_inverse_id";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     if (mpi_rank == 0) {
 
-	cout << "checking inverse IDs... " << flush;
+	if (!s) cout << "checking inverse IDs... " << flush;
 	int id_min = 10000000, id_max = -1;
 	bool ok = true;
 
@@ -412,12 +426,15 @@ void jdata::check_inverse_id()
 	    if (i > id_max) id_max = i;
 	    int jj = get_inverse_id(i);
 	    if (jj != j) {
+		if (ok && s) cout << s << ": ";
 		PRC(j); PRC(id[j]); PRL(get_inverse_id(id[j]));
 		ok = false;
 	    }
 	}
-	if (ok) cout << "OK  ";
-	PRC(id_min); PRL(id_max);
+	if (!s) {
+	    if (ok) cout << "OK  ";
+	    PRC(id_min); PRL(id_max);
+	}
     }
 }
 
@@ -672,6 +689,7 @@ bool jdata::advance_and_check_encounter()
 {
     bool status = false;
     int collision_detection_enabled;
+
     advance();
 
     // Optionally manage close encounters.  AMUSE stopping conditions
@@ -699,13 +717,21 @@ bool jdata::advance_and_check_encounter()
 		v += dv*dv;
 		vr += dx*dv;
 	    }
+	    r = sqrt(r);
+	    v = sqrt(v);
+//	    PRC(r); PRC(v); PRL(vr);
 
-	    if (vr < EPS*sqrt(r*v)) {
+	    if (vr < EPS*r*v) {
 		int stopping_index = next_index_for_stopping_condition();
-		set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+		set_stopping_condition_info(stopping_index,
+					    COLLISION_DETECTION);
 		set_stopping_condition_particle_index(stopping_index, 0, coll1);
 		set_stopping_condition_particle_index(stopping_index, 1, coll2);
 		status = true;
+// 		PRC(j1); PRL(j2);
+// 		PRC(id[j1]); PRL(id[j2]);
+// 		cout << "set stopping condition " << coll1 << " " << coll2
+// 		     << endl << flush;
 	    }
         }
         return status;

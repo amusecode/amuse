@@ -184,7 +184,7 @@ class jdata {
     void remove_particle(int j);
     void initialize_arrays();
     int get_inverse_id(int i);
-    void check_inverse_id();
+    void check_inverse_id(const char *s = NULL);
     void set_initial_timestep();
     real get_pot(bool reeval = false);
     real get_kin();

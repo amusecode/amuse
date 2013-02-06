@@ -221,8 +221,8 @@ local real get_relative_energy(hdyn2 *bi, hdyn2 *bj)
 
     hdyn2 *p = bi->get_parent();	// p should be root
 
-    vec xi = relative_pos(p, bi);
-    vec xj = relative_pos(p, bj);
+    //vec xi = relative_pos(p, bi);
+    //vec xj = relative_pos(p, bj);
     vec vi = relative_vel(p, bi);
     vec vj = relative_vel(p, bj);
     real mi = bi->get_mass();

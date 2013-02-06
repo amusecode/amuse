@@ -621,6 +621,7 @@ void idata::check_encounters()
 	int imax_close = -1, imax_coll = -1;
 
 	for (int i = 0; i < ni; i++) {
+
 	    int jnn = inn[i];			// j index, note
 	    if (jnn >= 0) {			// valid neighbor
 
@@ -634,10 +635,11 @@ void idata::check_encounters()
 		}
 
 		// Hmmm.  Still have to go into jdata for radius[jnn].
-		// Not clear if this is expensive.  Should monitor.
-		// Should suppress this check if not needed.  TODO.
+		// Not clear if this is expensive.  Should monitor,
+		// and suppress this check if not needed.  TODO.
 
 		r = (iradius[i]+jdat->radius[jnn])/idnn[i];
+
 		if (r > rmax_coll) {
 		    rmax_coll = r;
 		    imax_coll = i;
@@ -646,6 +648,7 @@ void idata::check_encounters()
 	}
 
 	if (rmax_close >= 1) {			// close criterion
+
 	    int close1 = iid[imax_close];
 	    int close2 = jdat->id[inn[imax_close]];
 
@@ -657,8 +660,8 @@ void idata::check_encounters()
 
 	    int jclose1 = jdat->inverse_id[close1];
 	    int jclose2 = jdat->inverse_id[close2];
-	    real mtot = jdat->mass[jclose1] + jdat->mass[jclose2];
-	    real r = idnn[imax_close];
+	    //real mtot = jdat->mass[jclose1] + jdat->mass[jclose2];
+	    //real r = idnn[imax_close];
 	    real v2 = 0;
 	    for (int k = 0; k < 3; k++)
 		v2 += pow(jdat->vel[jclose2][k]-jdat->vel[jclose1][k], 2);
@@ -670,8 +673,66 @@ void idata::check_encounters()
 	}
 
 	if (rmax_coll >= 1) {			// collision criterion
+
+// 	    cout << endl;
+// 	    int jnn = -1;
+// 	    real dnn = 1.e300;
+// 	    for (int j = 0; j < jdat->nj; j++)
+// 		if (jdat->id[j] != iid[imax_coll]) {
+// 		    real dij2 = 0;
+// 		    for (int k = 0; k < 3; k++)
+// 			dij2 += pow(jdat->pos[j][k]-ipos[imax_coll][k], 2);
+// 		    if (dij2 < dnn) {
+// 			dnn = dij2;
+// 			jnn = j;
+// 		    }
+// 		}
+// 	    dnn = sqrt(dnn);
+// 	    PRC(ipos[imax_coll][0]); PRC(ipos[imax_coll][1]); PRL(ipos[imax_coll][2]);
+// 	    PRC(jnn); PRL(dnn);
+
 	    jdat->coll1 = iid[imax_coll];
 	    jdat->coll2 = jdat->id[inn[imax_coll]];
+
+// 	    int jcoll1 = jdat->inverse_id[jdat->coll1];
+// 	    int jcoll2 = jdat->inverse_id[jdat->coll2];
+// 	    real jdnn = 0;
+// 	    for (int k = 0; k < 3; k++)
+// 		jdnn += pow(jdat->pos[jcoll2][k]-jdat->pos[jcoll1][k], 2);
+// 	    jdnn = sqrt(jdnn);
+// 	    PRC(imax_coll); PRL(inn[imax_coll]);
+// 	    cout << "j indices: "; PRC(jcoll1); PRL(jcoll2);
+// 	    cout << "j IDs:     "; PRC(jdat->coll1); PRL(jdat->coll2);
+// 	    cout << "j IDs:     "; PRC(jdat->id[jcoll1]); PRL(jdat->id[jcoll2]);
+// 	    cout << "j radii:   "; PRC(jdat->radius[jcoll1]); PRL(jdat->radius[jcoll2]);
+// 	    PRC(jdat->pos[jcoll1][0]); PRC(jdat->pos[jcoll1][1]); PRL(jdat->pos[jcoll1][2]);
+// 	    PRC(jdnn); PRL(idnn[imax_coll]);
+
+// 	    real dnnmax = 1.e300;
+// 	    int jnnmax = -1;
+// 	    for (int j = 0; j < jdat->nj; j++) {
+// 		dnn = 0;
+// 		for (int k = 0; k < 3; k++)
+// 		    dnn += pow(jdat->pos[j][k]-ipos[imax_coll][k], 2);
+// 		if (dnn < dnnmax) {
+// 		    dnnmax = dnn;
+// 		    jnnmax = j;
+// 		}
+// 	    }
+// 	    dnnmax = sqrt(dnnmax);
+// 	    PRC(jnnmax); PRL(dnnmax);
+// 	    PRC(jdat->pos[jnnmax][0]); PRC(jdat->pos[jnnmax][1]); PRL(jdat->pos[jnnmax][2]);
+
+// 	    for (int i = 0; i < ni; i++) PRC(iid[i]);
+// 	    PRL(jdat->id[jnnmax]);
+//	    //for (int j = 0; j < jdat->nj; j++) PRC(jdat->id[j]); cout << endl;
+
+// 	    for (int j = 0; j < jdat->nj; j++) {
+// 		int jd = jdat->id[j];
+// 		if (jdat->inverse_id[jd] != j) {
+// 		    PRC(j); PRC(jd); PRL(jdat->inverse_id[jd]);
+// 		}
+// 	    }
 	}
     }
 }
