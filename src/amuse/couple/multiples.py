@@ -132,8 +132,32 @@ class Multiples(object):
     def model_time(self):
         return self.gravity_code.model_time
         
-    # Add?: def gravity.commit_particles()
+    @property
+    def stars(self):
+        result = self._inmemory_particles.copy()
+        for root, tree in self.root_to_tree.iteritems():
+            root_particle = root.as_particle_in_set(self._inmemory_particles)
+            result.remove_particle(root)
+            leaves = tree.get_leafs_subset()
+      
+            original_star = tree.particle
 
+            dx = root_particle.x - original_star.x
+            dy = root_particle.y - original_star.y
+            dz = root_particle.z - original_star.z
+            dvx = root_particle.vx - original_star.vx
+            dvy = root_particle.vy - original_star.vy
+            dvz = root_particle.vz - original_star.vz
+            
+            leaves_in_result = result.add_particles(leaves)
+            leaves_in_result.x += dx
+            leaves_in_result.y += dy
+            leaves_in_result.z += dz
+            leaves_in_result.vx += dvx
+            leaves_in_result.vy += dvy
+            leaves_in_result.vz += dvz
+        return result
+        
     def get_gravity_at_point(self, radius, x, y, z):
         return self.gravity_code.get_gravity_at_point(radius, x, y, z)
     
@@ -175,32 +199,6 @@ class Multiples(object):
             print "number of multiples: ", len(self.root_to_tree)
             sys.stdout.flush()
 
-    @property
-    def stars(self):
-        result = self._inmemory_particles.copy()
-        for root, tree in self.root_to_tree.iteritems():
-            root_particle = root.as_particle_in_set(self._inmemory_particles)
-            result.remove_particle(root)
-            leaves = tree.get_leafs_subset()
-      
-            original_star = tree.particle
-
-            dx = root_particle.x - original_star.x
-            dy = root_particle.y - original_star.y
-            dz = root_particle.z - original_star.z
-            dvx = root_particle.vx - original_star.vx
-            dvy = root_particle.vy - original_star.vy
-            dvz = root_particle.vz - original_star.vz
-            
-            leaves_in_result = result.add_particles(leaves)
-            leaves_in_result.x += dx
-            leaves_in_result.y += dy
-            leaves_in_result.z += dz
-            leaves_in_result.vx += dvx
-            leaves_in_result.vy += dvy
-            leaves_in_result.vz += dvz
-        return result
-        
     def evolve_model(self, end_time):
 
         stopping_condition =\
