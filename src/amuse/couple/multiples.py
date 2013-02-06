@@ -6,6 +6,7 @@ import math
 from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
+from amuse.datamodel import Particles 
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
@@ -174,6 +175,7 @@ class Multiples(object):
                 # each other
                 # we assume all angles more than 80 degrees will
                 # need to check binary from
+                # TODO: Why use 0.5 here?
                 if r < (0.5 * star1.radius + star2.radius) \
                         or angle > (numpy.pi * 0.44):
 
@@ -389,9 +391,16 @@ class Multiples(object):
             gravity_stars.add_particles(stars_not_in_a_multiple)
             
         # 5e. Add the roots to the gravity code
+        multiples_particles = Particles()
+        multiples_particles.id = None
         for tree in binaries.iter_binary_trees():
             tree.particle.id = new_root_index()
             gravity_stars.add_particle(tree.particle)
+            multiples_particles.add_particle(tree.particle)
+
+        # DEBUG
+        print "multiples: interaction products: singles:", \
+                stars_not_in_a_multiple.id, "multiples: ", multiples_particles.id 
             
         # 5f. Store all trees in memory for later reference
         for tree in binaries.iter_binary_trees():            
