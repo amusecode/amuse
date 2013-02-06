@@ -21,6 +21,37 @@ def new_root_index():
     global root_index
     root_index += 1
     return root_index
+
+def name_object(tree):
+    name = "{ "
+    if hasattr(tree, "child1"):
+        children = [tree.child1, tree.child2]
+    else:
+        #children = tree.get_tree_subset()
+        children = [tree.particle.child1, tree.particle.child2]
+    for child in sorted(children, \
+                        key=lambda x: x.id if hasattr(x ,"id") else 1e10):
+        if child.child1 is not None:
+            name += name_object(child)
+        else:
+            name += str(child.id)
+        name += " "
+    name += "}"
+    return name
+
+known_roots = {}
+def assign_id_to_root(tree):
+    # Determine the object's description, then search to see
+    # if we know about it.  If we do, return that ID, otherwise
+    # create a new ID.
+    global known_roots
+    my_name = name_object(tree)
+    if my_name in known_roots.keys():
+        return known_roots[my_name]
+    else:
+        new_root_id = new_root_index()
+        known_roots[my_name] = new_root_id
+        return new_root_id
     
 def is_a_parent(child1_key, child2_key):
     return child1_key > 0 or child2_key > 0
@@ -394,7 +425,7 @@ class Multiples(object):
         multiples_particles = Particles()
         multiples_particles.id = None
         for tree in binaries.iter_binary_trees():
-            tree.particle.id = new_root_index()
+            tree.particle.id = assign_id_to_root(tree)
             gravity_stars.add_particle(tree.particle)
             multiples_particles.add_particle(tree.particle)
 
