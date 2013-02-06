@@ -41,7 +41,7 @@ int initialize_from_dyn(double mass,
 
 int initialize_from_elements(double mass, double semi, double ecc,
 			     double mean_anomaly, double time,
-			     double periastron)
+			     double periastron, int random_orientation)
 {
     // Standard orbit will be in the x-y plane, with long axis along
     // x.  However, we can set the orientation separately, before or
@@ -61,9 +61,10 @@ int initialize_from_elements(double mass, double semi, double ecc,
     k->set_periastron(periastron);
     k->set_mean_anomaly(mean_anomaly);
 
-    set_random_orientation(*k, 0);
-    //k->initialize_from_shape_and_phase();	// expects a, e [, peri]
-    //k->print_all();
+    if (random_orientation)
+	set_random_orientation(*k, 0);
+
+    k->initialize_from_shape_and_phase();
 
     return 0;
 }
@@ -208,7 +209,7 @@ int set_longitudinal_unit_vector(double x, double y, double z)
     real r = sqrt(x*x+y*y+z*z);
     if (r <= 0) return -1;
     l = vec(x,y,z)/r;
-    if (fabs(l*n) < TOL*abs(l)*abs(n)) t = n^l;
+    //if (fabs(l*n) < TOL*abs(l)*abs(n)) t = n^l;	// no side effect
     k->set_orientation(l, t, n);
     return 0;
 }
@@ -221,7 +222,7 @@ int set_transverse_unit_vector(double x, double y, double z)
     real r = sqrt(x*x+y*y+z*z);
     if (r <= 0) return -1;
     t = vec(x,y,z)/r;
-    if (fabs(t*n) < TOL*abs(t)*abs(n)) t = n^t;
+    //if (fabs(t*n) < TOL*abs(t)*abs(n)) t = n^t;	// no side effect
     k->set_orientation(l, t, n);
     return 0;
 }
@@ -234,7 +235,7 @@ int set_normal_unit_vector(double x, double y, double z)
     real r = sqrt(x*x+y*y+z*z);
     if (r <= 0) return -1;
     n = vec(x,y,z)/r;
-    if (fabs(l*n) < TOL*abs(l)*abs(n)) t = n^l;
+    //if (fabs(l*n) < TOL*abs(l)*abs(n)) t = n^l;	// no side effect
     k->set_orientation(l, t, n);
     return 0;
 }
@@ -283,7 +284,7 @@ static void set_inner_orbit(real ecc)
     real semi = 1;	// Hut & Bahcall 1983
     k->align_with_axes(1);
     real mean_an = 2*M_PI*randinter(0, 1);
-    initialize_from_elements(mass, semi, ecc, mean_an, 0.0, 0.0);
+    initialize_from_elements(mass, semi, ecc, mean_an, 0.0, 0.0, 0);
     cout << "inner "; PRC(semi); PRL(ecc);
 }
 
@@ -345,7 +346,7 @@ static void set_outer_orbit(real m, real M,
 
     cout << "outer "; PRC(semi); PRL(ecc);
     initialize_from_elements(mtotal, semi, ecc, mean_anomaly,
-			     time, periastron);
+			     time, periastron, 0);
     PRL(k->get_normal_unit_vector());
     PRL(k->get_periastron());
     // k->print_all();

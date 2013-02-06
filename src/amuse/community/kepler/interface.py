@@ -75,6 +75,9 @@ class KeplerInterface(CodeInterface,
         function.addParameter('periastron',
                               dtype='float64', direction=function.IN,
                               default = 0, unit =  nbody_system.length)
+        function.addParameter('random_orientation',
+                              dtype='int32', direction=function.IN,
+                              default = 0, unit =  NO_UNIT)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
