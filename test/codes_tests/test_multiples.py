@@ -1,5 +1,3 @@
-# Run with
-#
 # nosetests-2.7 --nocapture --nologcapture -w test/codes_tests --tests=test_multiples 
 
 from amuse.test.amusetest import TestWithMPI
