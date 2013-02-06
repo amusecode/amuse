@@ -483,12 +483,24 @@ class MakeMeAMassiveStar(CommonCode):
         if not stellar_evolution_code is None:
             particle = particle.as_set().get_intersecting_subset_in(stellar_evolution_code.particles)[0]
         number_of_zones     = particle.get_number_of_zones()
-        mass_profile        = particle.get_mass_profile(number_of_zones = number_of_zones)* particle.mass
-        cumul_mass_profile  = particle.get_cumulative_mass_profile(number_of_zones = number_of_zones) * particle.mass
         density_profile     = particle.get_density_profile(number_of_zones = number_of_zones)
         radius_profile      = particle.get_radius_profile(number_of_zones = number_of_zones)
+        if hasattr(particle, "get_mass_profile"):
+            mass_profile        = particle.get_mass_profile(number_of_zones = number_of_zones)* particle.mass
+        else:
+            print "mass profile from density and radius"
+            radii_cubed = radius_profile**3
+            radii_cubed.prepend(0|units.m**3)
+            mass_profile = (4.0/3.0 * numpy.pi) * density_profile * (radii_cubed[1:] - radii_cubed[:-1])
+        if hasattr(particle, "get_cumulative_mass_profile"):
+            cumul_mass_profile  = particle.get_cumulative_mass_profile(number_of_zones = number_of_zones) * particle.mass
+        else:
+            print "cumulative mass profile from mass profile"
+            cumul_mass_profile  = mass_profile.accumulate()
+        
         temperature_profile = particle.get_temperature_profile(number_of_zones = number_of_zones)
-        lum                 = particle.get_luminosity_profile(number_of_zones = number_of_zones)
+        #lum                 = particle.get_luminosity_profile(number_of_zones = number_of_zones)
+        lum                 = numpy.zeros_like(temperature_profile) | units.LSun
         pressure_profile    = particle.get_pressure_profile(number_of_zones = number_of_zones)
         mu_profile          = particle.get_mu_profile(number_of_zones = number_of_zones)
         composition_profile = particle.get_chemical_abundance_profiles(number_of_zones = number_of_zones)

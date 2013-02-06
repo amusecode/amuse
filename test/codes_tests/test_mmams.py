@@ -952,20 +952,20 @@ class ParticlesForTesting(list):
         for particle in particles_in_self:
             self.remove(particle)
 
-class StarParticleWithStructure(Particle):
+class StarParticleWithStructureWithoutGetMassProfile(Particle):
 
     def __init__(self, mass, **keyword_arguments):
         Particle.__init__(self, **keyword_arguments)
         self.mass = mass
-    
+
     def get_number_of_zones(self):
         return 4
     
-    def get_mass_profile(self, number_of_zones = None):
+    def _mass_profile(self, number_of_zones = None):
         return numpy.asarray([0.25]*4)
     
-    def get_cumulative_mass_profile(self, number_of_zones = None):
-        return numpy.add.accumulate(self.get_mass_profile(number_of_zones))
+    def _cumulative_mass_profile(self, number_of_zones = None):
+        return numpy.add.accumulate(self._mass_profile(number_of_zones))
     
     def _radii(self):
         return ([0.0]+[0.25]*4 | units.RSun).accumulate()
@@ -973,10 +973,12 @@ class StarParticleWithStructure(Particle):
         return self._radii()[1:]
     
     def get_density_profile(self, number_of_zones = None):
-        return self.get_mass_profile() * self.mass / (4.0/3.0 * constants.pi * (self._radii()[1:]**3 - self._radii()[:-1]**3))
+#        return self.get_mass_profile() * self.mass / (4.0/3.0 * constants.pi * (self._radii()[1:]**3 - self._radii()[:-1]**3))
+        return self._mass_profile() * self.mass / (4.0/3.0 * constants.pi * (self._radii()[1:]**3 - self._radii()[:-1]**3))
     
     def get_pressure_profile(self, number_of_zones = None):
-        return (constants.G * self.get_cumulative_mass_profile() * self.mass * self.get_density_profile() * 
+        return (constants.G * self._cumulative_mass_profile() * self.mass * self.get_density_profile() * 
+#        return (constants.G * self.get_cumulative_mass_profile() * self.mass * self.get_density_profile() * 
             (self._radii()[1:] - self._radii()[:-1]) / self._radii()[1:]**2)[::-1].accumulate()[::-1]
     
     def get_temperature_profile(self, number_of_zones = None):
@@ -991,12 +993,32 @@ class StarParticleWithStructure(Particle):
     def get_chemical_abundance_profiles(self, number_of_zones = None, number_of_species = None):
         return numpy.asarray([[0.75]*4, [0.25]*4, [0]*4, [0]*4, [0]*4, [0]*4, [0]*4, [0]*4])
 
+class StarParticleWithStructure(StarParticleWithStructureWithoutGetMassProfile):
+
+    def __init__(self, mass, **keyword_arguments):
+        Particle.__init__(self, **keyword_arguments)
+        self.mass = mass
+    
+    def get_mass_profile(self, number_of_zones = None):
+        return numpy.asarray([0.25]*4)
+    
+    def get_cumulative_mass_profile(self, number_of_zones = None):
+        return numpy.add.accumulate(self.get_mass_profile(number_of_zones))
+    
 
 class StellarEvolutionCodeWithInternalStructureForTesting(object):
     
-    def __init__(self):
-        self.particles = ParticlesForTesting(
-            [StarParticleWithStructure(mass=1.0|units.MSun), StarParticleWithStructure(mass=2.0|units.MSun)])
+    def __init__(self, has_get_mass_profile=True):
+        if has_get_mass_profile:
+            self.particles = ParticlesForTesting([
+                StarParticleWithStructure(mass=1.0|units.MSun), 
+                StarParticleWithStructure(mass=2.0|units.MSun)
+            ])
+        else:
+            self.particles = ParticlesForTesting([
+                StarParticleWithStructureWithoutGetMassProfile(mass=1.0|units.MSun), 
+                StarParticleWithStructureWithoutGetMassProfile(mass=2.0|units.MSun)
+            ])
         
     def new_particle_from_model(self, internal_structure, current_age, key=None):
         tmp_star = Particle(key=key)
@@ -1065,4 +1087,85 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         self.assertEqual(handler.collision_code.__class__, MakeMeAMassiveStar)
         self.assertEqual(handler.collision_code.get_name_of_current_state(), 'INITIALIZED')
     
+    def test4(self):
+        print "Test 4: merge particles without get_mass_profile, as fast/crude as possible"
+        stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting(
+            has_get_mass_profile=False
+        )
+        self.assertEqual(len(stellar_evolution.particles), 2)
+        handler = CollisionHandler(
+            MakeMeAMassiveStar, 
+            collision_code_parameters = dict(
+                target_n_shells = 100, 
+                dump_mixed_flag = False, 
+                do_shock_heating_flag = False
+            ),
+            stellar_evolution_code = stellar_evolution,
+            verbose = True
+        )
+        
+        merged = handler.handle_collision(stellar_evolution.particles[0], stellar_evolution.particles[1])
+        self.assertTrue(isinstance(merged, Particles))
+        self.assertTrue(merged.number_of_zones > 100)
+        self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
+        self.assertEqual(len(stellar_evolution.particles), 1)
+        self.assertAlmostEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
+        self.assertEqual(handler.collision_code, MakeMeAMassiveStar)
+    
+    def slowtest5(self):
+        print "Test 5: merge MESA particles with CollisionHandler and MMAMS class"
+        stellar_evolution = self.new_instance(MESA)
+        stellar_evolution.particles.add_particles(Particles(2, mass=[20.0, 8.0] | units.MSun))
+        stellar_evolution.evolve_model(2 | units.Myr)
+        self.assertEqual(len(stellar_evolution.particles), 2)
+        handler = CollisionHandler(
+            MakeMeAMassiveStar, 
+            stellar_evolution_code = stellar_evolution,
+            verbose = True
+        )
+        
+        merged = handler.handle_collision(stellar_evolution.particles[0], stellar_evolution.particles[1])
+        self.assertTrue(isinstance(merged, Particles))
+        self.assertTrue(merged.number_of_zones > 100)
+        self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
+        self.assertEqual(len(stellar_evolution.particles), 1)
+        self.assertAlmostEqual(stellar_evolution.particles[0].mass, 25.705 | units.MSun, 1)
+        self.assertEqual(handler.collision_code, MakeMeAMassiveStar)
+        print stellar_evolution.particles
+        for i in range(10):
+            stellar_evolution.evolve_model(keep_synchronous = False)
+            print stellar_evolution.particles
+        stellar_evolution.stop()
+    
+    def slowtest6(self):
+        print "Test 6: merge EVtwin particles with CollisionHandler and MMAMS class"
+        stellar_evolution = EVtwin(redirection="none")
+        stellar_evolution.particles.add_particles(Particles(2, mass=[20.0, 8.0] | units.MSun))
+        stellar_evolution.evolve_model(2 | units.Myr)
+        self.assertEqual(len(stellar_evolution.particles), 2)
+        
+        stellar_evolution.new_particle_from_model = stub
+        handler = CollisionHandler(
+            MakeMeAMassiveStar, 
+            stellar_evolution_code = stellar_evolution,
+            verbose = True
+        )
+        
+        merged = handler.handle_collision(stellar_evolution.particles[0], stellar_evolution.particles[1])
+        self.assertTrue(isinstance(merged, Particles))
+        self.assertTrue(merged.number_of_zones > 100)
+        self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
+        self.assertEqual(len(stellar_evolution.particles), 1)
+        self.assertAlmostEqual(stellar_evolution.particles[0].mass, 25.705 | units.MSun, 1)
+        self.assertEqual(handler.collision_code, MakeMeAMassiveStar)
+        print stellar_evolution.particles
+        for i in range(10):
+            stellar_evolution.evolve_model(keep_synchronous = False)
+            print stellar_evolution.particles
+        stellar_evolution.stop()
+    
+def stub(instance, internal_structure, current_age, key=None):
+    tmp_star = Particle(key=key)
+    tmp_star.mass = internal_structure.mass[-1]
+    return instance.native_stars.add_particle(tmp_star)
 

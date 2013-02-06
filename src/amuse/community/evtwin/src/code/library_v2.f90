@@ -1966,6 +1966,27 @@ contains
          get_density_at_zone = 0
       end function
 
+! Return the density at the specified zone/mesh-cell of the star
+      integer function get_pressure_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use structure_variables
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         if (AMUSE_id<1 .or. AMUSE_id>highest_star_index .or. .not. star_list(AMUSE_id)%star_exists) then
+            AMUSE_value = -1.0
+            get_pressure_at_zone = -21
+            return
+         end if
+         if (AMUSE_zone >= star_list(AMUSE_id)% number_of_meshpoints .or. AMUSE_zone < 0) then
+            AMUSE_value = -1.0
+            get_pressure_at_zone = -22
+            return
+         end if
+         call update_quantities_if_needed(AMUSE_id)
+         AMUSE_value = sx(2, AMUSE_zone+2)
+         get_pressure_at_zone = 0
+      end function
+
 ! Return the radius at the specified zone/mesh-cell of the star
       integer function get_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
          use structure_variables

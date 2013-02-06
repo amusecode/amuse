@@ -839,6 +839,12 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
             object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
     
+    def define_state(self, object):
+        StellarEvolution.define_state(self, object)
+        object.add_method('EDIT', 'finalize_stellar_model')
+        object.add_method('UPDATE', 'finalize_stellar_model')
+        object.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
+    
     def define_errorcodes(self, object):
         object.add_errorcode(-4, 'Not implemented.')
         InternalStellarStructure.define_errorcodes(self, object)
@@ -1066,7 +1072,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
         definition.define_extra_keywords({'index_of_the_star':index_of_the_star})
     
-    def new_particle_from_model(self, internal_structure, current_age):
+    def new_particle_from_model(self, internal_structure, current_age, key=None):
         self.new_stellar_model(
             internal_structure.mass[::-1],
             internal_structure.radius[::-1],
@@ -1082,7 +1088,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             internal_structure.X_Si[::-1],
             internal_structure.X_Fe[::-1]
         )
-        tmp_star = datamodel.Particle()
+        tmp_star = datamodel.Particle(key=key)
         tmp_star.age_tag = current_age
         return self.imported_stars.add_particle(tmp_star)
-
+    

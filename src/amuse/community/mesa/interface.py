@@ -341,30 +341,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
     
     @legacy_function
-    def get_pressure_at_zone():
-        """
-        Retrieve the total pressure at the specified zone/mesh-cell of the star.
-        """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('zone', dtype='int32', direction=function.IN
-            , description="The zone/mesh-cell of the star to get the value of")
-        function.addParameter('P_i', dtype='float64', direction=function.OUT
-            , description="The total pressure at the specified zone/mesh-cell of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        -2 - ERROR
-            A zone with the given index was not found.
-        """
-        return function
-    
-    @legacy_function
     def get_id_of_species():
         """
         Retrieve the chem_ID of the chemical abundance variable of the star.
@@ -963,7 +939,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_method(particle_set_name, 'get_cumulative_mass_profile')
             object.add_method(particle_set_name, 'get_luminosity_profile')
             object.add_method(particle_set_name, 'set_luminosity_profile')
-            object.add_method(particle_set_name, 'get_pressure_profile')
             object.add_method(particle_set_name, 'get_IDs_of_species')
             object.add_method(particle_set_name, 'get_masses_of_species')
             object.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
@@ -974,6 +949,9 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_method('EDIT', 'new_pre_ms_particle')
         object.add_method('UPDATE', 'new_pre_ms_particle')
         object.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
+        object.add_method('EDIT', 'finalize_stellar_model')
+        object.add_method('UPDATE', 'finalize_stellar_model')
+        object.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
     
     def define_errorcodes(self, object):
         InternalStellarStructure.define_errorcodes(self, object)
@@ -1047,11 +1025,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_luminosity_at_zone", 
             (object.INDEX, object.NO_UNIT, units.erg/units.s,), 
             (object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_pressure_at_zone", 
-            (object.INDEX, object.NO_UNIT,), 
-            (units.barye, object.ERROR_CODE,)
         )
         object.add_method(
             "get_id_of_species", 
@@ -1281,12 +1254,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
         self.set_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
-    
-    def get_pressure_profile(self, indices_of_the_stars, number_of_zones = None):
-        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying pressure profiles")
-        if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_pressure_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_IDs_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance IDs")
