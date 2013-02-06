@@ -15,6 +15,7 @@ from amuse.community.evtwin.interface import EVtwin
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.fi.interface import Fi
 from amuse.ext.star_to_sph import *
+from amuse.ext.sph_to_star import convert_SPH_to_stellar_model
 from amuse.units import units
 from amuse.units import generic_unit_system
 from amuse.units import nbody_system
@@ -1072,6 +1073,38 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertEqual(set(sph_particles.get_attribute_names_defined_in_store()), 
             set(["mass", "x", "y", "z", "vx", "vy", "vz", "u", "h_smooth", 
                 "h1", "he4", "c12", "n14", "o16", "ne20", "mg24", "si28", "fe56", "mu"]))
+        
+    def test21(self):
+        print "Test convert_stellar_model_to_SPH and back"
+        star = self.StarParticleWithStructure()
+        number_of_sph_particles = 50000 # only few particles for test speed-up
+        sph_particles = convert_stellar_model_to_SPH(
+            star, 
+            number_of_sph_particles, 
+            base_grid_options = dict(type = "fcc")
+        ).gas_particles
+        self.assertEqual(len(sph_particles), number_of_sph_particles)
+        self.assertAlmostEqual(sph_particles.mass.sum(), star.mass)
+        unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, 1.0 | units.s)
+        hydrodynamics = Gadget2(unit_converter)
+        in_hydro = hydrodynamics.gas_particles.add_particles(sph_particles)
+        sph_particles.pressure = in_hydro.pressure
+        sph_particles.density = in_hydro.density
+        model = convert_SPH_to_stellar_model(
+            sph_particles, particles_per_zone=100
+        #    particles_per_zone=number_of_sph_particles/4
+        )
+        self.assertAlmostEqual(model["dmass"].sum(), star.mass)
+        self.assertAlmostEqual(model["radius"][-1], star.radius, 1)
+        
+#        for a,b in model.iteritems():
+#            print a,b
+        print model["dmass"][0].as_quantity_in(units.MSun)
+        print model["rho"][0:10].as_quantity_in(units.MSun/units.RSun**3)
+        print model["rho"][-10:].as_quantity_in(units.MSun/units.RSun**3)
+        print model["radius"][0:10].as_quantity_in(units.RSun)
+        print model["X_H"][0:10]
+        print model["X_He"][0:10]
 
 def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname):
     if not HAS_MATPLOTLIB:
