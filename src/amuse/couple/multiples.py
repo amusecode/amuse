@@ -213,9 +213,9 @@ class Multiples(object):
 
         count_resolve_encounter = 0
         count_ignore_encounter = 0
-
-        rlimit = 1./len(self.gravity_code.particles) \
-			| nbody_system.length  	# .5 r_90 - TUNABLE TODO
+        
+        rlimit = 1.0 | self.gravity_code.particles[0].x.unit
+        rlimit /=  len(self.gravity_code.particles) # .5 r_90 - TUNABLE TODO
         print 'rlimit =', rlimit
         
         while time < end_time:
@@ -360,7 +360,6 @@ class Multiples(object):
         rmax = 2*((star1.position-star2.position)**2).sum().sqrt()
         initial_scale = rmax
         print 'rmax =', rmax
-
         for i in range(2,len(sorted_distances)):
             star = sorted_stars[i]
 
@@ -470,6 +469,17 @@ class Multiples(object):
         stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
         roots_of_trees = binaries.roots()
         
+        
+        # 5bbb. break up binary if it is a wide binary
+        if len(roots_of_trees) ==  1 and len(particles_in_encounter) == 3:
+            root = roots_of_trees[0]
+            comp1 = root.child1
+            comp2 = root.child2
+            print "initial_scale:", initial_scale
+            semi = rescale_binary_components(comp1, comp2, self.kepler, initial_scale)
+            print semi, initial_scale
+            if semi > initial_scale:
+                raise Exception("should break up")
         # Set radii to reflect multiple structure.  This is probably not
         # the best place to do it...
             
@@ -723,7 +733,24 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
     pos1 = comp1.position
     pos2 = comp2.position
     sep12 = ((pos2-pos1)**2).sum()
+    mass1 = comp1.mass
+    mass2 = comp2.mass
+    total_mass = mass1 + mass2
+    vel1 = comp1.velocity
+    vel2 = comp2.velocity
+    cmpos = (mass1*pos1+mass2*pos2)/total_mass
+    cmvel = (mass1*vel1+mass2*vel2)/total_mass
 
+    mass = comp1.mass + comp2.mass
+    rel_pos = pos2 - pos1
+    rel_vel = vel2 - vel1
+    kep.initialize_from_dyn(mass,
+                            rel_pos[0], rel_pos[1], rel_pos[2],
+                            rel_vel[0], rel_vel[1], rel_vel[2])
+    M,th = kep.get_angles()
+    a,e = kep.get_elements()
+    
+    
     if (compress and sep12 > scale**2) \
             or (not compress and sep12 < scale**2):
 
@@ -731,22 +758,7 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
         #      'and', int(comp2.id), 'to separation', scale.number
         #sys.stdout.flush()
 
-        mass1 = comp1.mass
-        mass2 = comp2.mass
-        total_mass = mass1 + mass2
-        vel1 = comp1.velocity
-        vel2 = comp2.velocity
-        cmpos = (mass1*pos1+mass2*pos2)/total_mass
-        cmvel = (mass1*vel1+mass2*vel2)/total_mass
-
-        mass = comp1.mass + comp2.mass
-        rel_pos = pos2 - pos1
-        rel_vel = vel2 - vel1
-        kep.initialize_from_dyn(mass,
-                                rel_pos[0], rel_pos[1], rel_pos[2],
-                                rel_vel[0], rel_vel[1], rel_vel[2])
-        M,th = kep.get_angles()
-        a,e = kep.get_elements()
+        
         #print 'a, e =', a, e
         if e < 1:
             peri = a*(1-e)
@@ -823,16 +835,7 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
         if hasattr(comp2, 'child1'):
             offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
 
-    else:
-
-        mass = (comp1.mass + comp2.mass).number
-        vel1 = comp1.velocity
-        vel2 = comp2.velocity
-        vel12 = ((vel2-vel1)**2).sum()
-        E = 0.5*vel12.number - mass/sep12.sqrt().number
-        a = -0.5*mass/E
-        #print 'E =', E, 'a =', a
-
+    
     return a
 
 def compress_nodes(node_list, scale):
@@ -1136,12 +1139,11 @@ def scale_top_level_list(singles, multiples, kep, scale,
             #print_multiple(root)
             comp1 = root.child1
             comp2 = root.child2
+            print "scale:", scale
             semi = rescale_binary_components(comp1, comp2, kep, scale)
             #print '\nscaled binary node:'
             #print_multiple(root)
 
-            if semi > scale:
-                pass
 
     elif lt == 2:
 

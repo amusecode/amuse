@@ -9,7 +9,7 @@ from math import log10
 
 # Display a time sequence from a (not yet standard) AMUSE log file.
 
-if not __name__ == '__main__':
+if __name__ == '__main__':
     
     
     try:

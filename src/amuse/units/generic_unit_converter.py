@@ -15,34 +15,7 @@ class NotAQuantityException(exceptions.AmuseException):
 
 class NotAScalarException(exceptions.AmuseException):
     formatstring = 'Converters need to be initialized with scalar quantities, argument[{0}] {1!r} is not a scalar'
-
-class ConverterDoc(object):
-    DOCSTRING = """
-    A ConvertBetweenGenericAndSiUnits object is a converter from
-    arbitrary units which user gives, to si units (and vice versa).
-
-    The ``generic_unit_converter'' **ConvertBetweenGenericAndSiUnits**
-    is the actual class through which you define
-    the unit system. Upon instantiation you choose the base units. In the
-    example below we chose the speed of light as a unit: *c* = 1 unit length/second,
-    and the second as the unit of time.
-
-    Note that the system has two base dimensions, length and time. By the second argument we have
-    assigned the unit second to time and by the requirement that unit lenght / second equals one,
-    the new unit length will be {*c*} meters in S.I. units.
-
-    Example::
-
-        >>> from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
-        >>> from amuse.units import units, constants
-        >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.m)
-
-    """
-
-    def __get__(self, instance, owner):
-        return self.DOCSTRING   
-        
-
+    
 class GenericToSiConverter(object):
     def __init__(self, generic_to_si):
         self.generic_to_si = generic_to_si
@@ -77,8 +50,27 @@ class SiToGenericConverter(object):
                 
 
 class ConvertBetweenGenericAndSiUnits(object):
+    """
+    A ConvertBetweenGenericAndSiUnits object is a converter from
+    arbitrary units which user gives, to si units (and vice versa).
 
-    __doc__ = ConverterDoc()
+    The ``generic_unit_converter'' **ConvertBetweenGenericAndSiUnits**
+    is the actual class through which you define
+    the unit system. Upon instantiation you choose the base units. In the
+    example below we chose the speed of light as a unit: *c* = 1 unit length/second,
+    and the second as the unit of time.
+
+    Note that the system has two base dimensions, length and time. By the second argument we have
+    assigned the unit second to time and by the requirement that unit lenght / second equals one,
+    the new unit length will be {*c*} meters in S.I. units.
+
+    Example::
+
+        >>> from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+        >>> from amuse.units import units, constants
+        >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.m)
+
+    """
 
     def __init__(self, *arguments_list):
         
