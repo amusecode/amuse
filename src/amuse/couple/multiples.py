@@ -536,10 +536,11 @@ class Multiples(object):
         sys.stdout.flush()
 
         # Note: break_scale is used here to limit the extent of the
-        # smallN integration: it ends when any particle is more than
-        # break_scale from the CM of the system.  TUNABLE TODO
+        # smallN integration: the integration ends when any particle
+        # is more than break_scale from the CM of the system.  TUNABLE
+        # TODO
 
-        break_scale = 10*rlimit
+        break_scale = 20*rlimit
         resolve_collision_code.set_break_scale(break_scale)
         delta_t_max = 64*delta_t
 
