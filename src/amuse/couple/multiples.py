@@ -231,7 +231,6 @@ class Multiples(object):
             time = newtime
             
             if stopping_condition.is_set():
-
                 star1 = stopping_condition.particles(0)[0]
                 star2 = stopping_condition.particles(1)[0]
 
@@ -254,13 +253,11 @@ class Multiples(object):
                 # # 80 degrees will need to check binary from.
                 # 
                 # if angle > (numpy.pi * 0.44):
-
                 r = (star2.position-star1.position).length()
                 v = (star2.velocity-star1.velocity).length()
                 vr = numpy.inner(star2.velocity-star1.velocity,
                                  star2.position-star1.position)
                 EPS = 0.001
-
                 if vr < EPS*r*v:
 
                     print '\n'+'~'*60
@@ -475,11 +472,17 @@ class Multiples(object):
             root = roots_of_trees[0]
             comp1 = root.child1
             comp2 = root.child2
-            print "initial_scale:", initial_scale
             semi = rescale_binary_components(comp1, comp2, self.kepler, initial_scale)
-            print semi, initial_scale
+            print comp1, comp2
             if semi > initial_scale:
-                raise Exception("should break up")
+                particles_in_encounter = datamodel.Particles(particles = (comp1, comp2))
+                particles_in_encounter.child1 = None
+                particles_in_encounter.child2 = None
+                binaries = trees.BinaryTreesOnAParticleSet(particles_in_encounter,
+                                                   "child1", "child2")
+                stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
+                roots_of_trees = binaries.roots()
+            
         # Set radii to reflect multiple structure.  This is probably not
         # the best place to do it...
             
