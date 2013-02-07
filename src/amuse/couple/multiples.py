@@ -724,8 +724,8 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
     pos2 = comp2.position
     sep12 = ((pos2-pos1)**2).sum()
 
-    if (compress and sep12 > scale*scale) \
-            or (not compress and sep12 < scale*scale):
+    if (compress and sep12 > scale**2) \
+            or (not compress and sep12 < scale**2):
 
         #print '\nrescaling components', int(comp1.id), \
         #      'and', int(comp2.id), 'to separation', scale.number
@@ -822,6 +822,18 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
             offset_particle_tree(comp1, newpos1-pos1, newvel1-vel1)
         if hasattr(comp2, 'child1'):
             offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
+
+    else:
+
+        mass = (comp1.mass + comp2.mass).number
+        vel1 = comp1.velocity
+        vel2 = comp2.velocity
+        vel12 = ((vel2-vel1)**2).sum()
+        E = 0.5*vel12.number - mass/sep12.sqrt().number
+        a = -0.5*mass/E
+        #print 'E =', E, 'a =', a
+
+    return a
 
 def compress_nodes(node_list, scale):
 
@@ -1124,9 +1136,12 @@ def scale_top_level_list(singles, multiples, kep, scale,
             #print_multiple(root)
             comp1 = root.child1
             comp2 = root.child2
-            rescale_binary_components(comp1, comp2, kep, scale)
+            semi = rescale_binary_components(comp1, comp2, kep, scale)
             #print '\nscaled binary node:'
             #print_multiple(root)
+
+            if semi > scale:
+                pass
 
     elif lt == 2:
 
@@ -1145,7 +1160,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
         print "scale_top_level_list: top-level unbound pair"
         #print '\nunscaled top-level pair:'
         #print_pair_of_stars('pair', comp1, comp2)
-        rescale_binary_components(comp1, comp2, kep, scale)
+        semi = rescale_binary_components(comp1, comp2, kep, scale)
         #print '\nscaled top-level pair:'
         #print_pair_of_stars('pair', comp1, comp2)
 
