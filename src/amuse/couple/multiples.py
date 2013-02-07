@@ -107,6 +107,7 @@ class Multiples(object):
         
         self.multiples = datamodel.Particles()
         self.gravity_constant = gravity_constant
+        self.debug_encounters = False
         
     @property
     def particles(self):
@@ -548,6 +549,8 @@ class Multiples(object):
         #print particles
         print "multiples: evolving to time =", end_time, 
         print "in steps of", delta_t
+        if self.debug_encounters:
+            print 'multiples: ### START ENCOUNTER ###'
         sys.stdout.flush()
 
         # Note: break_scale is used here to limit the extent of the
@@ -567,6 +570,19 @@ class Multiples(object):
 
             resolve_collision_code.evolve_model(time)
 
+            # TODO: Remove DEBUGGING
+            if self.debug_encounters:
+                print 'multiples: ### snapshot at time %f' % time.number
+                #resolve_collision_code.update_particle_tree()
+                #resolve_collision_code.update_particle_set()
+                resolve_collision_code.particles.synchronize_to(particles)
+                channel.copy()
+                for p in particles:
+                    print 'multiples: ### id=%d, x=%f, y=%f, z=%f, vx=%f, vy=%f, vz=%f' % \
+                            (p.id, p.x.number, p.y.number, p.z.number,
+                             p.vx.number, p.vy.number, p.vz.number)
+                sys.stdout.flush()
+
             # TODO: currently, only smallN has an "is_over()"
             # function.  Note that the argument here is used to limit
             # the size of the system: the interaction is over if it is
@@ -579,6 +595,8 @@ class Multiples(object):
                 print 'multiples: interaction is over at time', time
                 energy = self.get_total_energy(resolve_collision_code)
                 print 'multiples: final energy =', energy
+                if self.debug_encounters:
+                    print 'multiples: ### END ENCOUNTER ###'
                 sys.stdout.flush()
 
                 # Create a tree in the module representing the binary structure.
@@ -597,8 +615,9 @@ class Multiples(object):
 
                 return initial_energy, energy
 
-            if delta_t < delta_t_max and time > 0.999999*4*delta_t:
-                delta_t *= 2
+            if not self.debug_encounters:
+                if delta_t < delta_t_max and time > 0.999999*4*delta_t:
+                    delta_t *= 2
 
         raise Exception(
             "Did not finish the small-N simulation before end time {0}".
