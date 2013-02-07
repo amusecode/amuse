@@ -551,6 +551,11 @@ class Multiples(object):
         print "in steps of", delta_t
         if self.debug_encounters:
             print 'multiples: ### START ENCOUNTER ###'
+            print 'multiples: ### snapshot at time %f' % 0.0
+            for p in particles:
+                print 'multiples: ### id=%d, x=%f, y=%f, z=%f, vx=%f, vy=%f, vz=%f' % \
+                        (p.id, p.x.number, p.y.number, p.z.number,
+                         p.vx.number, p.vy.number, p.vz.number)
         sys.stdout.flush()
 
         # Note: break_scale is used here to limit the extent of the
@@ -564,8 +569,8 @@ class Multiples(object):
 
         while time < end_time:
 
-            if self.debug_encounters and delta_t > 0.1 | nbody_system.time:
-                delta_t = 0.1 | nbody_system.time
+            if self.debug_encounters:
+                delta_t *= 0.1
 
             time += delta_t
             print 'multiples: evolving to time', time
