@@ -564,6 +564,9 @@ class Multiples(object):
 
         while time < end_time:
 
+            if self.debug_encounters and delta_t > 0.1:
+                delta_t = 0.1
+
             time += delta_t
             print 'multiples: evolving to time', time
             sys.stdout.flush()
