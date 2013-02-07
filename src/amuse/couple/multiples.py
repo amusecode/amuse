@@ -201,7 +201,7 @@ class Multiples(object):
 
     def evolve_model(self, end_time):
 
-        stopping_condition =\
+        stopping_condition = \
             self.gravity_code.stopping_conditions.collision_detection
         stopping_condition.enable()
         
@@ -343,12 +343,13 @@ class Multiples(object):
         # to the scale of any multiples in the system.  To be checked
         # and refined...  TUNABLE TODO
 
-        # 0. Build a list of stars involved in the scattering.
+        # 0. Build a list of stars involved in the scattering.  Start
+        # with star1 and star2.
 
         scattering_stars = datamodel.Particles(particles = (star1, star2))
 
-        # Add neighbors, if necessary.  Use a simple distance
-        # criterion for now.  Refine later.  TODO.
+        # Add neighbors if necessary.  Use a simple distance criterion
+        # for now.  Refine later.  TODO.
 
         distances = (stars.position
                       - scattering_stars.center_of_mass()).lengths()
@@ -399,7 +400,7 @@ class Multiples(object):
         #     some "scattering" radius.  If neighbors exist, just
         #     start the "scattering" interaction in place.
 
-        if len(scattering_stars) > 2:
+        if len(scattering_stars) == 2:
             rescale_binary_components(star1, star2, kep,
                                       10*rlimit, compress=False)
 
