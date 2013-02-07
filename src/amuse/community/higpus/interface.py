@@ -11,7 +11,7 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
     time steps such to be able to deal with stiff problems like highly collisional gravitational N-body 
     problems.
 
-    .. [#] R. Capuzzo-Dolcetta, M. Spera, D.Punzo, 'A fully parallel, high precision, N-body code running on hybrid computing platforms', *Journal of Computational Physics*, Volume 236, 1 March 2013, Pages 580–593.
+    .. [#] R. Capuzzo-Dolcetta, M. Spera, D.Punzo, 'A fully parallel, high precision, N-body code running on hybrid computing platforms', *Journal of Computational Physics*, Volume 236, 1 March 2013, Pages 580-593.
     """
 
 
