@@ -49,7 +49,7 @@ subroutine set_parameters_to_defaults
   starform=.FALSE.
   cosmo=.FALSE.
   comove=.FALSE.
-  pboxsize=300.
+  pboxsize=10000.
   optdepth=0.
   tcollfac=1.
   masscrit=1.e5
