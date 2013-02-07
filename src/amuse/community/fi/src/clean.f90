@@ -22,6 +22,11 @@ subroutine clean
     call terror(' particles outside box?') 
   endif
 
+  if((nsph.GT.0.AND.ndel.GT.nsph/2).OR.ndel.GT.nbodies/2) then
+    print*,"** WARNING: particle erasure (box size ok?) **"
+    print*, ndel,nbodies,nsph
+  endif
+
   tm=0;cm=0;cmv=0 
   do j=1,ndel
     p=templist(j)
