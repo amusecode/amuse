@@ -299,6 +299,19 @@ class TestInterface(TestWithMPI):
             return config.mpi.mpif95
         else:
             return os.environ['MPIFC'] if 'MPIFC' in os.environ else 'mpif90'
+
+    def has_fortran_iso_c_binding(self):
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'mpi')
+        except ImportError:
+            is_configured = False
+    
+        if is_configured:
+            return config.compilers.fc_iso_c_bindings
+        else:
+            return False
+    
     
     def get_mpif90_arguments(self):
         name = self.get_mpif90_name()
@@ -352,7 +365,8 @@ class TestInterface(TestWithMPI):
         arguments.append("-L{0}/lib/forsockets".format(self.get_amuse_root_dir()))
 	arguments.append("-Wall")
         arguments.append("-lforsockets")
-        arguments.append("-lforsocketsf")
+        if self.has_fortran_iso_c_binding():
+            arguments.append("-lforsocketsf")
         
         arguments.append("-o")
         arguments.append(exename)
