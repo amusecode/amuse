@@ -117,7 +117,7 @@ contains
       
       implicit none
       integer :: set_init_dat_name
-      character(len=500), intent(in) :: new_init_dat_name;
+      character(*), intent(in) :: new_init_dat_name;
 
       if (.not. file_exists(new_init_dat_name) ) then
          if (verbose) print *, "warning: file ",trim(new_init_dat_name)," for ", trim(init_dat_name), " does not exist!"
@@ -137,7 +137,7 @@ contains
       
       implicit none
       integer :: set_init_run_name
-      character(len=500), intent(in) :: new_init_run_name;
+      character(*), intent(in) :: new_init_run_name;
 
       if (.not. file_exists(new_init_run_name) ) then
          if (verbose) print *, "warning: file ",trim(new_init_run_name)," for ", trim(init_run_name), " does not exist!"
