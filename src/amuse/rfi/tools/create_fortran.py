@@ -722,13 +722,7 @@ EMPTY_RUN_LOOP_SOCKETS_MPI_STRING = """
     end subroutine
 """
 
-
-PROGRAM_STRING = """
-program amuse_worker_program
-  use amuse_worker_module
-
-  implicit none
-
+MAIN_STRING = """
   integer :: count
   logical :: use_mpi
   character(len=32) :: use_mpi_string
@@ -758,8 +752,6 @@ program amuse_worker_program
       call run_loop_sockets()
     end if
   end if
-
-end program amuse_worker_program
 """
         
 class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
@@ -1057,11 +1049,10 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
     def start(self):
         self.use_iso_c_bindings = config.compilers.fc_iso_c_bindings
 
-        self.out + 'module amuse_worker_module'
+        self.out + 'program amuse_worker_program'
         self.out.indent()
         
         self.output_modules()
-        
         
         if self.use_iso_c_bindings:    
             self.out.n() + 'use iso_c_binding'
@@ -1079,6 +1070,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         else:
             self.out.n() + ARRAY_DEFINES_STRING
         
+        self.out.lf().lf() + MAIN_STRING
+        
         self.out.lf().lf() + 'CONTAINS'
         
         if self.must_generate_mpi:
@@ -1094,10 +1087,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.output_handle_call()
 
         self.out.dedent()
-        self.out.n() + 'end module'
+        self.out.n() + 'end program amuse_worker_program'
 
-        self.out + PROGRAM_STRING
-        
         self._result = self.out.string
 
     def output_mpi_include(self):
