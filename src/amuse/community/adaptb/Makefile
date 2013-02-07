@@ -13,9 +13,6 @@ CXX ?= g++
 
 CXXFLAGS ?= -Wall -g -O2
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 CODELIB = src/libadaptb.a
@@ -38,8 +35,8 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py AdaptbInterface -o $@
 
 adaptb_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -ladaptb $(SCLIBS) $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -ladaptb $(SC_CLIBS) $(LIBS)
 
 interface.o: interface.cc
-	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS)  $(SCINC) -I./src -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS)  $(SC_FLAGS) -I./src -c -o $@ $< 
 

@@ -12,6 +12,7 @@ from amuse.rfi import channel
 from amuse.rfi.core import *
 
 codestring = """
+
 function echo_int(int_in, int_out)
     implicit none
     integer :: int_in, int_out
@@ -159,6 +160,10 @@ class ForTestingInterface(CodeInterface):
     
     def __init__(self, exefile, **options):
         CodeInterface.__init__(self, exefile, **options)
+        
+    #use_modules=['code']
+
+    
 
     @legacy_function
     def echo_int():
@@ -316,7 +321,8 @@ class TestInterface(TestWithMPI):
             f.write(string)
         
         arguments = self.get_mpif90_arguments()
-        arguments.extend(["-g", "-c",  "-o", objectname, sourcename])
+        arguments.extend(["-g", "-I{0}/lib/forsockets".format(self.get_amuse_root_dir()), "-c",  "-o", objectname, sourcename])
+	arguments.append("-Wall")
         process = subprocess.Popen(
             arguments,
             stdin = subprocess.PIPE,
@@ -332,7 +338,9 @@ class TestInterface(TestWithMPI):
         if process.returncode != 0 or not os.path.exists(objectname):
             print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-            
+
+	print stdout
+	print stderr
     
     def fortran_build(self, exename, objectnames):
         if os.path.exists(exename):
@@ -340,6 +348,12 @@ class TestInterface(TestWithMPI):
             
         arguments = self.get_mpif90_arguments()
         arguments.extend(objectnames)
+        
+        arguments.append("-L{0}/lib/forsockets".format(self.get_amuse_root_dir()))
+	arguments.append("-Wall")
+        arguments.append("-lforsockets")
+        arguments.append("-lforsocketsf")
+        
         arguments.append("-o")
         arguments.append(exename)
         
@@ -358,10 +372,13 @@ class TestInterface(TestWithMPI):
         if process.returncode != 0 or not os.path.exists(exename):
             print "Could not build {0}, error = {1}".format(exename, stderr)
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
+
+	print stdout
+	print stderr
     
     def build_worker(self):
         
-        path = os.path.abspath(self.get_path_to_results())
+        path = os.path.abspath(self.get_path_to_results())  
         codefile = os.path.join(path,"code.o")
         interfacefile = os.path.join(path,"interface.o")
         self.exefile = os.path.join(path,"fortran_worker")
@@ -370,6 +387,7 @@ class TestInterface(TestWithMPI):
         
         uc = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
+        uc.needs_mpi = True
         string =  uc.result
         self.fortran_compile(interfacefile, string)
         self.fortran_build(self.exefile, [interfacefile, codefile] )

@@ -14,7 +14,6 @@ from amuse.rfi.channel import SocketMessage
 from amuse.rfi.channel import pack_array
 from amuse.rfi.channel import unpack_array
 from amuse.rfi.core import legacy_function
-from amuse.rfi.core import legacy_global
 from amuse.rfi.core import LegacyFunctionSpecification
 class ValueHolder(object):
     
@@ -55,19 +54,20 @@ class PythonImplementation(object):
             message = ClientSideMPIMessage()
             message.receive(parent)
                 
-            result_message = ClientSideMPIMessage(message.tag, message.length)
+            result_message = ClientSideMPIMessage(message.call_id, message.function_id, message.call_count)
             
-            if message.tag == 0:
+            if message.function_id == 0:
                 self.must_run = False
             else:
-                if message.tag in self.mapping_from_tag_to_legacy_function:
+                if message.function_id in self.mapping_from_tag_to_legacy_function:
                     try:
                         self.handle_message(message, result_message)
                     except Exception as ex:
                         print ex
-                        result_message.tag = -1
+                        result_message.set_error(ex.__str__())
+                        
                 else:
-                    result_message.tag = -1
+                    result_message.set_error("unknown function id " + message.function_id)
             
             if rank == 0:
                 result_message.send(parent)
@@ -84,26 +84,26 @@ class PythonImplementation(object):
             message = SocketMessage()
             message.receive(client_socket)
                 
-            result_message = SocketMessage(message.tag, message.length)
+            result_message = SocketMessage(message.call_id, message.function_id, message.call_count)
             
-            if message.tag == 0:
+            if message.function_id == 0:
                 self.must_run = False
             else:
-                if message.tag in self.mapping_from_tag_to_legacy_function:
+                if message.function_id in self.mapping_from_tag_to_legacy_function:
                     try:
                         self.handle_message(message, result_message)
                     except Exception as ex:
                         print ex
-                        result_message.tag = -1
+                        result_message.set_error(ex.__str__())
                 else:
-                    result_message.tag = -1
+                    result_message.set_error("unknown function id " + message.function_id)
             
             result_message.send(client_socket)
         
         client_socket.close()
         
     def handle_message(self, input_message, output_message):
-        legacy_function = self.mapping_from_tag_to_legacy_function[input_message.tag]
+        legacy_function = self.mapping_from_tag_to_legacy_function[input_message.function_id]
         specification = legacy_function.specification
         
         dtype_to_count = self.get_dtype_to_count(specification)
@@ -113,9 +113,9 @@ class PythonImplementation(object):
             count = dtype_to_count.get(type,0)
             for x in range(count):
                 if type == 'string':
-                    getattr(output_message, attribute).append([""] * output_message.length)
+                    getattr(output_message, attribute).append([""] * output_message.call_count)
                 else:
-                    getattr(output_message, attribute).append(numpy.empty(output_message.length, dtype=type))
+                    getattr(output_message, attribute).append(numpy.empty(output_message.call_count, dtype=type))
         
         if specification.name.startswith('internal__'):
             method = getattr(self, specification.name)
@@ -124,7 +124,7 @@ class PythonImplementation(object):
         
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             array = getattr(input_message, attribute)
-            unpacked = unpack_array(array, input_message.length, type)
+            unpacked = unpack_array(array, input_message.call_count, type)
             setattr(input_message,attribute, unpacked)
             
         if specification.must_handle_array:
@@ -132,7 +132,7 @@ class PythonImplementation(object):
             result = method(**keyword_arguments)
             self.fill_output_message(output_message, None, result, keyword_arguments, specification)
         else:
-            for index in range(input_message.length):
+            for index in range(input_message.call_count):
                 keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification)
                 try:
                     result = method(**keyword_arguments)
@@ -143,7 +143,7 @@ class PythonImplementation(object):
             
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             array = getattr(output_message, attribute)
-            packed = pack_array(array, input_message.length, type)
+            packed = pack_array(array, input_message.call_count, type)
             setattr(output_message, attribute, packed)
     
     def new_keyword_arguments_from_message(self, input_message, index, specification):
@@ -164,7 +164,7 @@ class PythonImplementation(object):
             elif parameter.direction == LegacyFunctionSpecification.OUT:
                 argument_value = ValueHolder(None)
             elif parameter.direction == LegacyFunctionSpecification.LENGTH:
-                argument_value = input_message.length
+                argument_value = input_message.call_count
             keyword_arguments[parameter.name] = argument_value
         return keyword_arguments
         

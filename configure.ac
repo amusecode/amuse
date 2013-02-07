@@ -14,6 +14,7 @@ AX_FC_WORKS()
 AX_FC_ISO_C_BINDING()
 AC_ARG_VAR([PYTHON], [Python interpreter])
 
+AC_SUBST(FC_ISO_C_BINDINGS)
 
 AS_IF([test "x$PYTHON" = "x"], [PYTHON=python])
 
@@ -25,10 +26,10 @@ AC_CHECK_PYTHON_DEV()
 
 AC_ARG_VAR([JAVA_HOME], [Java sdk directory])
 
-AMUSE_CHECK_JDK()
+R_JAVA()
 
-AC_SUBST(JDK)
-AC_SUBST(JNI_INCLUDES)
+AC_SUBST(JAVA)
+AC_SUBST(JAVA_LIBS)
 
 FIND_MPIEXEC()
 
@@ -68,6 +69,7 @@ AS_IF([test x"$WITH_MPI" != xno],[
     AC_SUBST(MPIFC)
 ]    
 )
+
 AC_LANG(C)
 AX_OPENMP(
      [HAVE_OPENMP="yes"]
@@ -122,6 +124,35 @@ AC_SUBST(WITH_SAPPORO)
 AC_SUBST(SAPPORO_VERSION)
 AC_SUBST(SAPPORO_LIBS)
 
+#Fortran-Sockets (FS) Libs
+
+AS_IF([test x"$FC_ISO_C_BINDINGS" != xno],[
+	FS_FLAGS="-I\$(AMUSE_DIR)/lib/forsockets"
+	FS_LIBS="-L\$(AMUSE_DIR)/lib/forsockets -lforsockets -lforsocketsf"
+], [
+	FS_FLAGS=""
+	FS_LIBS=""
+]
+)
+
+AC_SUBST(FS_FLAGS)
+AC_SUBST(FS_LIBS)
+
+#Stopcond
+
+SC_FLAGS="-I\$(AMUSE_DIR)/lib/stopcond"
+
+SC_CLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcond"
+SC_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondf"
+SC_MPI_CLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondmpi"
+SC_MPI_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondfmpi"
+
+AC_SUBST(SC_FLAGS)
+
+AC_SUBST(SC_CLIBS)
+AC_SUBST(SC_FCLIBS)
+AC_SUBST(SC_MPI_CLIBS)
+AC_SUBST(SC_MPI_FCLIBS)
 
 AX_FFTW()
 AX_GMP()

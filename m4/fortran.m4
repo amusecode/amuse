@@ -31,10 +31,10 @@ AC_LINK_IFELSE([
         end
     ])
 ],[
-    ax_cv_fc_iso_c_bindings="yes"
+    FC_ISO_C_BINDINGS="yes"
     AC_MSG_RESULT([$ax_cv_fc_iso_c_bindings])
 ],[
-    ax_cv_fc_iso_c_bindings="no"
+    FC_ISO_C_BINDINGS="no"
     AC_MSG_RESULT([no, fortran codes and sockets or embedding will not work.])
 ])
 # The intel compiler sometimes generates these work.pc and .pcl files

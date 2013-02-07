@@ -41,16 +41,10 @@ mmas2: $(BUILDDIR)/Makefile
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c $^ MakeMeAMassiveStarInterface -o $@
 
-worker_code-sockets.cc: interface.py
-	$(CODE_GENERATOR) --type=c --mode=sockets $^ MakeMeAMassiveStarInterface -o $@
-
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $^ MakeMeAMassiveStarInterface -o $@
 
 mmams_worker: worker_code.cc worker_code.h $(OBJECTS)
-	$(MPICXX) $(CXXFLAGS) $< $(OBJECTS) -o $@  $(LIBS)
-
-mmams_worker_sockets: worker_code-sockets.cc worker_code.h $(OBJECTS)
 	$(MPICXX) $(CXXFLAGS) $< $(OBJECTS) -o $@  $(LIBS)
 
 interface.o: interface.cc

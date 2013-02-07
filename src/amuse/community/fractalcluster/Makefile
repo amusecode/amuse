@@ -13,9 +13,6 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 LIBS=$(SRC)/libfractal.a
 
-FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
-
 PIC=#-fPIC
 
 ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
@@ -40,18 +37,11 @@ all: fractal_worker
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $<
 
 fractal_worker: fractal_worker.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS)
-
-fractal_worker_sockets: fractal_worker-sockets.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FSINC) $^ -o $@ $(LIBS) $(FSLIBS)
+	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $^ -o $@ $(LIBS) $(FS_LIBS)
 
 fractal_worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
-
-fractal_worker-sockets.f90: interface.py
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(CODE_GENERATOR) --type=f90 --mode=sockets $< $(CLASSNAME) -o $@
 
 clean:
 	make -C src clean
@@ -59,5 +49,6 @@ clean:
 	$(RM) -f fractal_worker fractal_worker.f90
 	$(RM) -f fractal_worker_sockets fractal_worker-sockets.f90
 	$(RM) -f forsockets.mod
+	$(RM) -f amuse_worker_module.mod
 	$(RM) -f src/lib*.a
 

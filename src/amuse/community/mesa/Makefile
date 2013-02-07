@@ -16,9 +16,6 @@ INCLUDE_DIR=./src/mesa/star/make
 MESA_DIR = ./src/mesa
 MESA_LIB=$(MESA_DIR)/lib/libstar.a
 
-FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
-
 include $(MESA_MAKE_DIR)/makefile_header
 include $(MESA_MAKE_DIR)/makefile_include
 
@@ -82,16 +79,10 @@ $(ZAMS_DATA):
 	gunzip -c $(ZAMS_DATA).gz > $(ZAMS_DATA)
 
 mesa_worker:	worker_code.f90 interface.o $(STAR_WORK_OBJS)
-	$(MPIF90) $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)
-
-mesa_worker_sockets: worker_code-sockets.f90 interface.o $(STAR_WORK_OBJS)
-	$(MPIF90) $(FFLAGS) $(FCopenmp) $(FSINC) $^ -o $@ $(LOAD_MESA_STAR) $(FSLIBS)
+	$(MPIF90) $(FFLAGS) $(FCopenmp) $(FS_FLAGS) $^ -o $@ $(LOAD_MESA_STAR) $(FS_LIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MESAInterface -o $@
-
-worker_code-sockets.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py MESAInterface -o $@
 
 $(MESA_LIB):  $(MESA_DIR)/install
 	cp -f ./install $(MESA_DIR)

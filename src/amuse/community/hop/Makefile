@@ -28,16 +28,10 @@ $(CODELIB):
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py HopInterface -o $@
 	
-worker_code-sockets.cc: interface.py
-	$(CODE_GENERATOR) --type=c --mode=sockets interface.py HopInterface -o $@
-
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py HopInterface -o $@
 
 hop_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
-	
-hop_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 	
 .cc.o: $<

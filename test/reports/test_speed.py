@@ -377,6 +377,7 @@ class RunSpeedTests(object):
         
         uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
         uc.specification_class = TestCode
+	uc.needs_mpi=False
         code =  uc.result
         
         string = '\n\n'.join([header, code])

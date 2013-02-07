@@ -6,9 +6,6 @@ AMUSE_DIR?=../../../..
 MPIFC ?= mpif90
 FORTRAN ?= gfortran
 
-FSLIB ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
-
 F77FLAGS = 
 ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
 F77FLAGS += -qfixed
@@ -34,21 +31,15 @@ clean:
 	$(RM) -f  *~ *.so *.o src/*.o 
 	$(RM) -f src/bse bse_worker worker_code worker_code.f90 
 	$(RM) -f worker_code-sockets.f90 bse_worker_sockets
+	$(RM) -f amuse_worker_module.mod
 	$(RM) -f forsockets.mod
 	
 bse_worker:	worker_code.f90  interface.o  $(BSEOBJ)
 	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS) $(F77FLAGS)"
-	$(MPIFC) $(FFLAGS) $^ -o $@ 
+	$(MPIFC) $(FFLAGS) $(FS_FLAGS) $^ -o $@ $(FS_LIBS)
 	
-bse_worker_sockets:	worker_code-sockets.f90  interface.o  $(BSEOBJ)
-	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS)"
-	$(MPIFC) $(FFLAGS) $(FSINC) $^ -o $@ $(FSLIB)
-
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py BSEInterface -o $@
 	
-worker_code-sockets.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py BSEInterface -o $@
-
 .f.o: $<
 	$(FORTRAN) -c $(F77FLAGS) $(FFLAGS) -o $@ $< 

@@ -20,9 +20,6 @@ SRC = $(SRCDIR)/library_v2.f90 $(SRCDIR)/export.f90 $(SRCDIR)/import.f90 \
 
 EVTWINLIB=$(BUILDDIR)/libtwin.a
 
-FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
-
 FLIB= -L/software/local/intel64/compiler91/lib -lifcore -lifport
 LD = ld
 AR = ar ruv
@@ -38,6 +35,7 @@ $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 clean:
 	rm -f *.pyc make.log
 	rm -f mpi_code.f90 worker_code evtwin_worker twin_library_v2.mod mesh.mod evtwin_worker_sockets worker_code-sockets.f90 forsockets.mod
+	rm -f amuse_worker_module.mod
 	rm -f worker_code.f90
 	rm -f $(BUILDDIR)/CMakeCache.txt
 	rm -rf $(BUILDDIR)/CMakeFiles
@@ -50,14 +48,7 @@ distclean:
 
 evtwin_worker: worker_code.f90 $(SRC)
 	make -s --no-print-directory -C $(BUILDDIR)
-	$(MPIFC) -I$(BUILDDIR) $< -o $@ $(EVTWINLIB)
-
-evtwin_worker_sockets: worker_code-sockets.f90 $(SRC)
-	make -s --no-print-directory -C $(BUILDDIR)
-	$(MPIFC) -I$(BUILDDIR) $(FSINC) $< -o $@ $(EVTWINLIB) $(FSLIBS)
+	$(MPIFC) -I$(BUILDDIR) $(FS_FLAGS) $< -o $@ $(EVTWINLIB) $(FS_LIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
-	
-worker_code-sockets.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py EVtwinInterface -o $@

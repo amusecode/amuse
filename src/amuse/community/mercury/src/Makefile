@@ -15,14 +15,11 @@ TARFILES = $(SRCE) $(DFLE) README.txt Makefile
 EXECUTABLES = mercury
 OBJT = $(SRCE:.for=.o)
 
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondf
-
 %.o: %.for Makefile
-	$(CMPLR) $(F77FLAGS) $(FFLAGS) $(SCINC) -c -o $@ $< 
+	$(CMPLR) $(F77FLAGS) $(FFLAGS) $(SC_FLAGS) -c -o $@ $< 
 
 %.o: %.f90 Makefile
-	$(CMPLR) $(FFLAGS) $(SCINC) -c -o $@ $< 
+	$(CMPLR) $(FFLAGS) $(SC_FLAGS) -c -o $@ $< 
 
 all: $(EXECUTABLES)
 
@@ -32,7 +29,7 @@ libmercury.a: $(OBJT) hash.o amuse_helpers.o
 	ar crs $@ $^
 
 mercury: $(OBJT) 
-	$(CMPLR) $(FFLAGS) $(OBJT) -o $@ $(SCLIBS)
+	$(CMPLR) $(FFLAGS) $(OBJT) -o $@ $(SC_FCLIBS)
 
 #mercury6_2.o:
 #	$(CMPLR) -c $(FFLAGS) $(SRCE) -c $< -DTOOLBOX

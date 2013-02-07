@@ -480,7 +480,7 @@ function mpi_distribute_stopping_conditions()
     
     set_conditions = set
     
-    call MPI_Gather(number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INT, 0, MPI_COMM_WORLD, error)
+    call MPI_Gather(number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, error)
     
     if (sc_mpi_rank .EQ. 0) then
         local_number_of_stopping_conditions_set = 0

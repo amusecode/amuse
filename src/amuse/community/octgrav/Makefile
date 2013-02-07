@@ -20,9 +20,6 @@ OBJS = integrator.o interface.o
 AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
 CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= -lcudart
 
@@ -55,17 +52,12 @@ octgrav:
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py OctgravInterface -o $@ 
 
-worker_code-sockets.cc: interface.py
-	$(CODE_GENERATOR) --type=c --mode=sockets interface.py OctgravInterface -o $@ 
-
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py OctgravInterface -o $@
 
 octgrav_worker: worker_code.cc worker_code.h $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(OBJS) $(CODELIB) -o $@ $(SCLIBS) $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(SC_MPI_CLIBS) $(LIBS)
 
-octgrav_worker_sockets: worker_code-sockets.cc worker_code.h $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(OBJS) $(CODELIB) -o $@ $(SCLIBS) $(LIBS)
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
 	rm -rf *.dSYM
@@ -76,9 +68,9 @@ clean:
 distclean: clean
 
 .cc.o: $<
-	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(SC_FLAGS) -c -o $@ $< 
 
 .C.o: $<
-	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(SC_FLAGS) -c -o $@ $<
 
 .PHONY: octgrav

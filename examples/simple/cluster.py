@@ -1,16 +1,8 @@
 """
-Evolves an equal mass stellar cluster.
+Deployment test
 """
 
-import numpy
-
-from matplotlib import pyplot
-from amuse.units import nbody_system
-from amuse.community.hermite0.interface import Hermite
-import logging
-
-from amuse.ic.plummer import new_plummer_model
-
+from amuse.lab import *
 
 #logging.basicConfig(level=logging.DEBUG)
 

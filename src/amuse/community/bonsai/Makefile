@@ -5,10 +5,6 @@ AMUSE_DIR?=../../../..
 
 MPICXX   ?= openmpicxx
 
-
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi   
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -17,8 +13,8 @@ CUDA_TK ?= /usr/local/cuda/
 CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 
 #CXXFLAGS += -I$(CUDA_TK)/include
-LIBS = -lcuda  $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia $(SCLIBS)
-INCLUDES = -I$(CUDA_TK)/include $(SCINC)
+LIBS = -lcuda  $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia $(SC_MPI_CLIBS)
+INCLUDES = -I$(CUDA_TK)/include $(SC_FLAGS)
 
 OBJS = libraryInterface.o
 
@@ -57,18 +53,12 @@ $(CODELIB):
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BonsaiInterface -o $@
 
-worker_code-sockets.cc: interface.py
-	$(CODE_GENERATOR) --type=c --mode=sockets interface.py BonsaiInterface -o $@
-
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BonsaiInterface -o $@
 
 
 bonsai_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) -o $@ $(SCLIBS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS)
-
-bonsai_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) -o $@ $(SCLIBS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS)
+	$(MPICXX) $(CXXFLAGS) -o $@ $(SC_MPI_CLIBS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS)
 
 .cpp.o: $<
 	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $< 

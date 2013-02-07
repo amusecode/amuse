@@ -23,12 +23,6 @@ CODELIB=$(BUILDDIR)/libphigrape.a
 
 GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
-FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
-
 CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
 CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
 
@@ -72,7 +66,7 @@ all: debuginfo phigrape_worker
 
 debuginfo:
 	@echo "making phigrape..; some debugging info follows:"
-	@echo $(SCLIBS)
+	@echo $(SC_MPI_CLIBS)
 
 
 $(BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
@@ -83,10 +77,7 @@ $(CODELIB): $(BUILDDIR)/Makefile
 	make -C $(BUILDDIR) all "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)" VPATH=../src
 
 phigrape_worker: worker_code.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) $(SCINC) -DNOMPI $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
-
-
-
+	$(MPIF90) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -DNOMPI $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SC_MPI_CLIBS) $(FS_LIBS)
 
 $(MPI_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
 	-mkdir $(MPI_BUILDDIR) 
@@ -96,35 +87,26 @@ $(MPI_BUILDDIR)/libphigrape.a:  $(MPI_BUILDDIR)/Makefile
 	make -C $(MPI_BUILDDIR) all "FC=$(FC)" "OPTS=-DMPI" "CC=$(CC)" VPATH=../src
 	
 phigrape_worker_mpi: worker_code.f90 interface.mpio $(MPI_BUILDDIR)/libphigrape.a
-	$(MPIF90) $(FFLAGS) $(SCINC)  -DMPI $^ $(MPI_BUILDDIR)/libphigrape.a -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
-
-phigrape_worker_sockets: worker_code-sockets.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $(FSINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS) $(FSLIBS)
+	$(MPIF90) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -DMPI $^ $(MPI_BUILDDIR)/libphigrape.a -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SC_MPI_CLIBS) $(FS_LIBS)
 
 phigrape_worker_gl: glworker_code.f90 interface.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)"
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
-	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SCLIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
+	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SC_MPI_CLIBS) $(FS_LIBS)
 
 phigrape_worker_gpu: worker_code.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SCLIBS)
-
-phigrape_worker_gpu_sockets: worker_code-sockets.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $(FSINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SCLIBS) $(FSLIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SC_MPI_CLIBS) $(FS_LIBS)
 
 phigrape_worker_gl_gpu: glworker_code.f90 interface.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)"
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
-	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(GPULIBS) $(SCLIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
+	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(GPULIBS) $(SC_MPI_CLIBS) $(FS_LIBS)
 
 phigrape_worker_grape: worker_code.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS) $(SCLIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS) $(SC_FCLIBS) $(FS_LIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterface -o $@
-
-worker_code-sockets.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py PhiGRAPEInterface -o $@
 
 glworker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterfaceGL -o $@
@@ -151,16 +133,16 @@ __init__.py:
 	$(FC)  $(FFLAGS) -c $<
 
 %.mpio: %.F
-	$(FC)  $(SCINC) -DMPI $(FFLAGS) -c $< -o $@
+	$(FC)  $(SC_FLAGS) -DMPI $(FFLAGS) -c $< -o $@
 
 %.o: %.F
-	$(FC)  $(SCINC) -DNOMPI $(FFLAGS) -c $<
+	$(FC)  $(SC_FLAGS) -DNOMPI $(FFLAGS) -c $<
 
 .f.o:
-	$(FC) $(FFLAGS) $(SCINC) -c $<
+	$(FC) $(FFLAGS) $(SC_FLAGS) -c $<
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
 .F.o:
-	$(FC) $(FFLAGS) $(SCINC) -c $<
+	$(FC) $(FFLAGS) $(SC_FLAGS) -c $<

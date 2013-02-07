@@ -11,7 +11,6 @@ from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi.tools import create_c
-from amuse.rfi.tools import create_c_sockets
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
@@ -412,16 +411,18 @@ class TestInterface(TestWithMPI):
         path = os.path.abspath(self.get_path_to_results())
         codefile = os.path.join(path,"code.o")
         interfacefile = os.path.join(path,"interface-sockets.o")
-        self.exefile = os.path.join(path,"c_worker")
+        self.exefile = os.path.join(path,"c_worker_sockets")
         
         self.c_compile(codefile, codestring)
         
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
+	uc.needs_mpi = False
         header =  uc.result
         
-        uc = create_c_sockets.GenerateACSourcecodeStringFromASpecificationClass()
+        uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
+	uc.needs_mpi = False
         code =  uc.result
         
         string = '\n\n'.join([header, code])
@@ -429,7 +430,7 @@ class TestInterface(TestWithMPI):
         #print string
         
         self.cxx_compile(interfacefile, string)
-        self.c_build(self.exefile + "_sockets", [interfacefile, codefile] )
+        self.c_build(self.exefile , [interfacefile, codefile] )
     
     def setUp(self):
         super(TestInterface, self).setUp()

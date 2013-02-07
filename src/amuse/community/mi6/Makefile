@@ -9,9 +9,6 @@ CXXFLAGS ?= -Wall -g -O2
 SAPPORO_LIBS ?= -L$(AMUSE_DIR)/lib/sapporo_light -lsapporo
 CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 
@@ -58,20 +55,11 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py MI6Interface -o $@
 
-worker_code-sockets.cc: interface.py 
-	$(CODE_GENERATOR) --type=c --mode=sockets interface.py MI6Interface -o $@ 
-
 mi6_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) -I./src  $< $(OBJS) $(CODELIB) -o $@ -L./src -lmi6 $(SCLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src  $< $(OBJS) $(CODELIB) -o $@ -L./src -lmi6 $(SC_CLIBS)
 
 mi6_worker_gpu: worker_code.cc worker_code.h $(CODELIB_GPU) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) -I./src  $< $(OBJS) $(CODELIB_GPU) -o $@ -L./src -lmi6_gpu $(SCLIBS) $(SAPPORO_LIBS) $(CUDA_LIBS)
-
-mi6_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) -I./src  $< $(OBJS) $(CODELIB) -o $@ -L./src -lmi6 $(SCLIBS)
-
-mi6_worker_gpu_sockets: worker_code-sockets.cc worker_code.h $(CODELIB_GPU) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) -I./src  $< $(OBJS) $(CODELIB_GPU) -o $@ -L./src -lmi6_gpu $(SCLIBS) $(SAPPORO_LIBS) $(CUDA_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src  $< $(OBJS) $(CODELIB_GPU) -o $@ -L./src -lmi6_gpu $(SC_CLIBS) $(SAPPORO_LIBS) $(CUDA_LIBS)
 
 .cc.o: $<
-	$(MPICXX) $(CXXFLAGS) $(SCINC) -I./src -c -o $@ $< 
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src -c -o $@ $< 

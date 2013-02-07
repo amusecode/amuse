@@ -376,6 +376,9 @@ class TestInterface(TestWithMPI):
         if process.returncode != 0 or not os.path.exists(objectname):
             print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
+
+	print stdout
+	print stderr
             
     def c_build(self, exename, objectnames):
         
@@ -403,6 +406,9 @@ class TestInterface(TestWithMPI):
             
             print "Could not compile {0}, error = {1}".format(exename, stderr)
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
+
+	print stdout
+	print stderr
     
     def build_worker(self):
         
@@ -415,10 +421,12 @@ class TestInterface(TestWithMPI):
         
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
+	uc.needs_mpi = False
         header =  uc.result
         
         uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
+	uc.needs_mpi = False
         code =  uc.result
         
         string = '\n\n'.join([header, code])

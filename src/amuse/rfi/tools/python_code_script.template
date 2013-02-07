@@ -9,27 +9,53 @@ from mpi4py import MPI
 
  
 if __name__ == '__main__':
+
+
+	if len(sys.argv) > 1:
     
-    MPI.Init()
+	    portnumber = int(sys.argv[1])
+	    
+	    syspath = ({syspath})
+    	    existing_syspath = set(sys.path)
+    	    for x in syspath:
+                if not x in existing_syspath:
+            	    sys.path.append(x)
 
-    try:
-        syspath = ({syspath})
-        existing_syspath = set(sys.path)
-        for x in syspath:
-            if not x in existing_syspath:
-                sys.path.append(x)
+    	    from amuse.rfi import core
+    
+    	    from {factory_module} import {factory}
+    	    from {interface_module} import {interface}
+    
+    	    instance = {factory}()
+    
+    	    from amuse.rfi.python_code import PythonImplementation
+    
+    	    x = PythonImplementation(instance, {interface})
+    	
+    	    x.start_socket(portnumber)
 
-        from amuse.rfi import core
+	else:
+    
+    	    MPI.Init()
+
+    	    try:
+        	syspath = ({syspath})
+        	existing_syspath = set(sys.path)
+        	for x in syspath:
+              	    if not x in existing_syspath:
+                	sys.path.append(x)
+
+        	from amuse.rfi import core
         
-        from {factory_module} import {factory}
-        from {interface_module} import {interface}
+        	from {factory_module} import {factory}
+        	from {interface_module} import {interface}
         
-        instance = {factory}()
+        	instance = {factory}()
         
-        from amuse.rfi.python_code import PythonImplementation
+        	from amuse.rfi.python_code import PythonImplementation
         
-        x = PythonImplementation(instance, {interface})
-        x.start()
-    finally:
-        MPI.Finalize()
+        	x = PythonImplementation(instance, {interface})
+        	x.start()
+    	    finally:
+        	MPI.Finalize()
     

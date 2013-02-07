@@ -1259,4 +1259,4 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
             
         original = TestClass()
         self.assertRaises(exceptions.CodeException, original.echo_inputs, 1, 2,
-            expected_message = "Exception when calling legacy code 'echo_inputs', of legacy class 'TestClass', exception was ''TestClass' object has no attribute 'channel''")
+            expected_message = "Exception when calling function 'echo_inputs', of code 'TestClass', exception was ''TestClass' object has no attribute 'channel''")

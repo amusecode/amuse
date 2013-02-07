@@ -35,10 +35,7 @@ class CreateAPythonWorker(OptionalAttributes):
     @late
     def template_string(self):
         path = self.template_dir
-        if self.channel_type in ('sockets', 'ibis'):
-            path = os.path.join(path, 'python_socket_code_script.template')
-        else:
-            path = os.path.join(path, 'python_code_script.template')
+        path = os.path.join(path, 'python_code_script.template')
             
         with open(path, "r") as f:
             template_string = f.read()
@@ -59,8 +56,6 @@ class CreateAPythonWorker(OptionalAttributes):
     @late
     def output_name(self):
         executable_path = self.worker_name
-        if self.channel_type in ('sockets', 'ibis'):
-            executable_path += '_sockets'
         return executable_path
     
     @late

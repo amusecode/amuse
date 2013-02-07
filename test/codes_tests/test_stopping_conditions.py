@@ -283,10 +283,12 @@ class TestInterface(TestWithMPI):
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
         uc.make_extern_c = True
+	uc.needs_mpi = True
         uc.ignore_functions_from_specification_classes = [stopping_conditions.StoppingConditionInterface]
         header =  uc.result
 
         uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
+	uc.needs_mpi = True
 
         uc.specification_class = ForTestingInterface
         code =  uc.result
@@ -439,7 +441,7 @@ class _AbstractTestInterfaceFortran(TestWithMPI):
         
         rootdir = self.get_amuse_root_dir()
         arguments = self.get_mpif90_arguments()
-        arguments.extend(["-I","{0}/lib/stopcond{1}".format(rootdir, mpidir), "-c",  "-o", objectname, sourcename])
+        arguments.extend(["-I","{0}/lib/stopcond{1}".format(rootdir, mpidir), "-I", rootdir + "/lib/forsockets", "-c",  "-o", objectname, sourcename])
         process = subprocess.Popen(
             arguments,
             stdin = subprocess.PIPE,
@@ -473,6 +475,7 @@ class _AbstractTestInterfaceFortran(TestWithMPI):
         arguments.append("-o")
         arguments.append(exename)
         arguments.extend(["-L{0}/lib/stopcond".format(rootdir),"-l"+self.get_libname()])
+        arguments.extend(["-L" + rootdir + "/lib/forsockets","-lforsockets"])
         print 'build command:'
         print ' '.join(arguments)
         process = subprocess.Popen(
@@ -494,6 +497,7 @@ class _AbstractTestInterfaceFortran(TestWithMPI):
         self.f90_compile(codefile, self.get_codestring())
         
         uf = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
+	uf.needs_mpi = True
         uf.specification_class = self.get_interface_class()
         string =  uf.result
         

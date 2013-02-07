@@ -59,10 +59,6 @@ endif
 pynbody_worker: interface.py
 	$(CODE_GENERATOR) --type=py --mode=mpi -x amuse.community.pynbody.interface PyNbodyInterface PyNbodyImplementation -o $@
 	
-pynbody_worker_sockets: interface.py
-	$(CODE_GENERATOR) --type=py --mode=sockets -x amuse.community.pynbody.interface PyNbodyInterface PyNbodyImplementation -o $@
-
-
 
 clean:
 	rm -f *.pyc; (cd PyNbody; python setup.py clean -a)

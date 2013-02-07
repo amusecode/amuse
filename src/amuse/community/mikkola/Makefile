@@ -39,7 +39,8 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MikkolaInterface -o $@
 
 mikkola_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
+#	$(MPIFC) $(CXXFLAGS) $(FS_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(FS_LIBS)
+	$(MPIFC) $(FFLAGS) $(FS_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(FS_LIBS)
 
 %.o: %.f90
 	$(FC) $(FFLAGS) -c -o $@ $<

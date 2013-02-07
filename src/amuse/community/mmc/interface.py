@@ -9,8 +9,8 @@ class mmcInterface(CodeInterface, PolarSupport):
 
     use_modules = ['MMC']
 
-    def __init__(self, name_of_the_worker="mmc_worker", **options):
-        CodeInterface.__init__(self, **options)
+    def __init__(self, **options):
+        CodeInterface.__init__(self, name_of_the_worker="mmc_worker", **options)
 
     @option(type="string", sections=('data',))
     def input_data_root_directory(self):

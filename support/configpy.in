@@ -24,7 +24,8 @@ class compilers(object):
     
     gfortran_version = '@GFORTRAN_VERSION@'
     ifort_version = '@IFORT_VERSION@'
-       
+
+    fc_iso_c_bindings = '@FC_ISO_C_BINDINGS@'=='yes'
 
 class mpi(object):
     is_enabled = '@WITH_MPI@'=='yes'
@@ -33,8 +34,12 @@ class mpi(object):
     mpif95 = '@MPIFC@'
 
 class java(object):
-    jni_includes = '@JNI_INCLUDES@'
-    jdk = '@JDK@'
+    is_enabled = '@have_java@'=='yes'
+    java = '@JAVA@'
+    javac = '@JAVAC@'
+    javah = '@JAVAH@'
+    jar = '@JAR@'
+    flags = '@JAVA_FLAGS@'
 
 class cuda(object):
     is_enabled   = '@WITH_CUDA@'=='yes'

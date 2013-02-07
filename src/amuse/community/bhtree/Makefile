@@ -18,11 +18,6 @@ OBJS = interface.o
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
-IBISINC ?= -I$(AMUSE_DIR)/lib/ibis/include
-
 CODELIB = $(BUILDDIR)/libbhtree.a
 GPUCODELIB = $(GPU_BUILDDIR)/libbhtree.a
 G6LIBS ?= -L$(AMUSE_DIR)/lib/g6 -lg6
@@ -37,10 +32,10 @@ GPULIBS  =  $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread
 all:	compile bhtree_worker
 
 python_worker.o: python_worker.c
-	$(CXX) $(CXXFLAGS) $(PYTHONDEV_CFLAGS) $(SCINC) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(PYTHONDEV_CFLAGS) $(SC_FLAGS) -c -o $@ $< 
 	
 #bhtree_worker_python: python_worker.o
-#	$(MPICXX) $(CXXFLAGS) $(PYTHONDEV_LIBS) $(SCINC) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
+#	$(MPICXX) $(CXXFLAGS) $(PYTHONDEV_LIBS) $(SC_FLAGS) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SC_LIBS)
     
 
 compile: $(BHTC)
@@ -71,31 +66,19 @@ clean:
 	make -C $(BHTCDIR) clean
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py BHTreeInterface -o $@
+	$(CODE_GENERATOR) --type=c --needs-mpi=false interface.py BHTreeInterface -o $@
 
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@
 
 bhtree_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS)
 	
 #bhtree_worker_g6: worker_code.cc worker_code.h $(GPUCODELIB) $(OBJS)
-#	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(GPUCODELIB) -o $@ $(SCLIBS) $(G6LIBS)
+#	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(OBJS) $(GPUCODELIB) -o $@ $(SC_LIBS) $(G6LIBS)
 	
-worker_code-sockets.cc: interface.py
-	$(CODE_GENERATOR) --type=c --mode=sockets interface.py BHTreeInterface -o $@
-
-bhtree_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $(OBJS) $(CODELIB) -o $@ $(SCLIBS) $<
-
-libbhtree_worker.jnilib: worker_code-ibis.cc  $(OBJS) $(CODELIB)
-	$(CXX) $(CXXFLAGS) -bundle -framework JavaVM $(SCINC) $(IBISINC) $(JNI_INCLUDES) $(OBJS) $(CODELIB) $(SCLIBS)  -o $@ $<
-
-libbhtree_worker.so: worker_code-ibis.cc worker_code.h interface.py $(OBJS) $(CODELIB) 
-	$(CXX) $(CXXFLAGS) -fPIC -O3 -shared $(SCINC) $(IBISINC) $(JNI_INCLUDES) $(OBJS) $(CODELIB) $(SCLIBS)  -o $@ $<
-
 .cc.o: $<
-	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(SC_FLAGS) -c -o $@ $< 
 
 .C.o: $<
-	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(SC_FLAGS) -c -o $@ $<

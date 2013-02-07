@@ -8,7 +8,6 @@ from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi.tools import create_fortran
-from amuse.rfi.tools import create_fortran_sockets
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
@@ -405,11 +404,11 @@ class TestInterface(TestWithMPI):
         
         self.fortran_compile(codefile, codestring)
         
-        uc = create_fortran_sockets.GenerateAFortranSourcecodeStringFromASpecificationClass()
+        uc = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
         string =  uc.result
         self.fortran_compile(interfacefile, string)
-        self.fortran_build(self.exefile + "_sockets", [interfacefile, codefile] )
+        self.fortran_build(self.exefile, [interfacefile, codefile] )
     
     def setUp(self):
         super(TestInterface, self).setUp()

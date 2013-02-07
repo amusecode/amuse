@@ -14,8 +14,6 @@ OBJS = interface.o
 
 CODELIB = src/libaarsethzare.a
 
-FSOPTS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets -I$(AMUSE_DIR)/lib/forsockets
-
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: aarsethzare_worker 
@@ -32,15 +30,8 @@ $(CODELIB):
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py AarsethZareInterface -o $@
 	
-worker_code-sockets.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py AarsethZareInterface -o $@
-
 aarsethzare_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) worker_code.f90 $(OBJS) $(CODELIB) -o $@
+	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) worker_code.f90 $(OBJS) $(CODELIB) $(FS_LIBS) -o $@
 	
-aarsethzare_worker_sockets: worker_code-sockets.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) $(FSOPTS) worker_code-sockets.f90 $(OBJS) $(CODELIB) $(FSOPTS) -o $@ 
-	
-
 %.o: %.f90
 	$(FORTRAN) $(FFLAGS) -c -o $@ $<

@@ -61,9 +61,6 @@ FC = ifort # Intel compiler
 
 MPIFC ?= mpif90
 
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-SCMPIINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
 # F90 options (ifort)
 IFORTFLAGS = -O -g -traceback -ip -fpp1 -DIFORT
 #IFORTFLAGS = -O3 -vec_report -u -fpe0 -ipo -DIFORT -shared-intel #-check all -traceback
@@ -197,11 +194,11 @@ RT-3D-PP-NA = sourceprops_pp.o rad_evolve_planeparallel_noav.o $(RT-3D_BASIC)
 # amuse interface
 
 amuse_interface: F90=$(FC)
-amuse_interface: F90FLAGS = $(F90FLAGS1) $(SCINC)
+amuse_interface: F90FLAGS = $(F90FLAGS1) $(SC_FLAGS)
 amuse_interface: libcapreole.a
 
 amuse_interface_mpi: F90=$(MPIFC)
-amuse_interface_mpi: F90FLAGS = $(F90FLAGS1) $(MPI_FLAGS) $(SCMPIINC)
+amuse_interface_mpi: F90FLAGS = $(F90FLAGS1) $(MPI_FLAGS) $(SC_FLAGS)
 amuse_interface_mpi: libcapreole_mpi.a
 
 libcapreole.a: precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o amuse_atomic.o \

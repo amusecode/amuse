@@ -4,6 +4,9 @@ import os.path
 import sys
 import logging
 import pydoc
+import traceback
+import random
+import sys
 
 
 from subprocess import Popen, PIPE
@@ -82,14 +85,16 @@ class CodeFunction(object):
         
         if not self.owner is None:
             logging.getLogger("code").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
-            
+        
+        call_id = random.randint(0, 1000)
         
         try:
-            self.interface.channel.send_message(self.specification.id, dtype_to_arguments = dtype_to_values)
+            self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
             
-            dtype_to_result = self.interface.channel.recv_message(self.specification.id, handle_as_array)
+            dtype_to_result = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array)
         except Exception, ex:
-            raise exceptions.CodeException("Exception when calling legacy code '{0}', of legacy class '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
+            logging.getLogger("code").info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
+            raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
         result = self.converted_results(dtype_to_result, handle_as_array)
         
@@ -102,10 +107,12 @@ class CodeFunction(object):
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
         handle_as_array = self.must_handle_as_array(dtype_to_values)
-              
-        self.interface.channel.send_message(self.specification.id, dtype_to_arguments = dtype_to_values)
         
-        request = self.interface.channel.nonblocking_recv_message(self.specification.id, handle_as_array)
+        call_id = random.randint(0, 1000)
+              
+        self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
+        
+        request = self.interface.channel.nonblocking_recv_message(call_id, self.specification.id, handle_as_array)
         
         def handle_result(function):
             try:
@@ -300,71 +307,6 @@ class legacy_function(object):
             pass
         
         raise Exception("No working crc32 implementation found!")
-        
-
-class legacy_global(object):
-    """ deprecated! """
-    
-    def __init__(self, name, id = None, dtype = 'i'):
-        """
-        Decorator for legacy globals.
-        
-        *to be removed*
-        """
-        self.name = name
-        self.id = id
-        self.datatype = _typecode_to_datatype(dtype)
-        
-        if self.id is None:
-            self.id = abs(self.crc32(self.name))
-        
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return CodeFunction(instance, owner, self.get_specification)()
-        
-    def __set__(self, instance, value):
-        return CodeFunction(instance, None, self.set_specification)(value)
-
-    def to_c_string(self):
-        from . import create_c
-        uc = create_c.MakeACStringOfALegacyGlobalSpecification()
-        uc.specification = self
-        return uc.result 
-        
-    @late
-    def set_specification(self):
-        result = LegacyFunctionSpecification()
-        result.id = self.id
-        result.name = self.name
-        result.addParameter('value', dtype=self.datatype, direction=LegacyFunctionSpecification.IN)
-        return result
-        
-    @late
-    def get_specification(self):
-        result = LegacyFunctionSpecification()
-        result.id = self.id
-        result.name = self.name
-        result.result_type = self.datatype
-        return result
-    
-    @late
-    def crc32(self):
-        try:
-            from zlib import crc32
-            if crc32('amuse')&0xffffffff == 0xc0cc9367:
-                return crc32
-        except Exception:
-            pass
-            
-        try:
-            from binascii import crc32
-            if crc32('amuse')&0xffffffff == 0xc0cc9367:
-                return crc32
-        except Exception:
-            pass
-        
-        raise exceptions.CodeException("No working crc32 implementation found!")
      
 class ParameterSpecification(object):
     def __init__(self, name, dtype, direction, description, default = None, unit = None):
@@ -664,15 +606,6 @@ class CodeInterface(OptionalAttributes):
         function.id = 0
         return function
         
-    @legacy_function
-    def _redirect_outputs():
-        function = LegacyFunctionSpecification() 
-        function.name = 'internal__redirect_outputs' 
-        function.addParameter('stdoutfile', dtype='s', direction=function.IN)
-        function.addParameter('stderrfile', dtype='s', direction=function.IN)
-        function.result_type = 'int32'
-        return function 
-        
     def stop(self):
         self._stop()
     
@@ -695,8 +628,6 @@ class CodeInterface(OptionalAttributes):
     @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
     def channel_type(self):
         return 'mpi'
-        
-        
         
     @option(choices=("none","null","file"), sections=("channel",))
     def redirection(self):

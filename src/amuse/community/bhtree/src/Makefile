@@ -1,5 +1,5 @@
 AMUSE_DIR?=../../../../..
-include ${AMUSE_DIR}/config.mk
+-include ${AMUSE_DIR}/config.mk
 
 CODELIB = libbhtree.a
 
@@ -13,8 +13,8 @@ AR = ar ruv
 RANLIB = ranlib
 RM = rm
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
+SC_LIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
+SC_FLAGS ?= -I$(AMUSE_DIR)/lib/stopcond
 
 all: BHTC $(CODELIB)
 
@@ -22,13 +22,13 @@ clean:
 	rm -f *.o BHTC *~ $(CODELIB)
 
 BHTC: $(OBJ)
-	$(CXX) $(CXXFLAGS) $(OBJ) -lm -o BHTC $(SCLIBS)
+	$(CXX) $(CXXFLAGS) $(OBJ) -lm -o BHTC $(SC_LIBS)
 
 .c.o:
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(SCINC) -c $?
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(SC_FLAGS) -c $?
 
 .C.o:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(SCINC) -c $?
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(SC_FLAGS) -c $?
 
 test: compile
 

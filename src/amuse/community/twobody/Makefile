@@ -10,9 +10,6 @@ all:twobody_worker
 twobody_worker: twobody.py
 	$(CODE_GENERATOR) --type=py --mode=mpi -x amuse.community.twobody.interface TwoBodyInterface TwoBodyImplementation -o $@
 	
-twobody_worker_sockets: twobody.py
-	$(CODE_GENERATOR) --type=py --mode=sockets -x amuse.community.twobody.interface TwoBodyInterface TwoBodyImplementation -o $@
-
 clean:
 	$(RM) -f *.bck *.pyc
 	$(RM) -f twobody_worker twobody_worker_sockets

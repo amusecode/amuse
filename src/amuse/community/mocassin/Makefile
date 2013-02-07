@@ -36,8 +36,6 @@ PATCH_FILES = $(PYTHON) ./patch_files.py
 FFLAGS   += -Wall -g -I$(CODEDIR)/source
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
-FSOPTS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets -I$(AMUSE_DIR)/lib/forsockets
-
 all: mocassin_worker 
 
 ifdef DOWNLOAD_CODES
@@ -85,10 +83,7 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MocassinInterface -o $@
 
 mocassin_worker:  worker_code.f90 $(CODELIB) $(OBJS) 
-	$(MPIFC) $(FFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) -o $@
+	$(MPIFC) $(FFLAGS) $(FS_FLAGS) worker_code.f90 $(OBJS) $(OBJECTS) $(FS_LIBS) -o $@
 	
-mocassin_worker_sockets:  worker_code.f90 $(CODELIB) $(OBJS)  
-	$(MPIFC) $(FFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) $(FSOPTS) -o $@
-
 %.mod %.o: %.f90
 	$(MPIFC) $(FFLAGS) -c -o $@ $<

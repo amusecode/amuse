@@ -1,4 +1,4 @@
-module forsockets
+module FortranSocketsInterface
     integer HEADER_FLAGS, HEADER_CALL_ID, HEADER_FUNCTION_ID, HEADER_CALL_COUNT, &
         HEADER_INTEGER_COUNT, HEADER_LONG_COUNT, HEADER_FLOAT_COUNT, &
         HEADER_DOUBLE_COUNT, HEADER_BOOLEAN_COUNT, HEADER_STRING_COUNT, &
@@ -135,4 +135,4 @@ module forsockets
         end subroutine forsockets_close
 
     end interface
-end module forsockets
+end module FortranSocketsInterface

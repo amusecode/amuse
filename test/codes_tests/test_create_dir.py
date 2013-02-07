@@ -158,8 +158,8 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         self.assertEquals(call.returncode, 0)
         
         
-        if os.path.exists(working_dir):
-            shutil.rmtree(working_dir)
+   #     if os.path.exists(working_dir):
+        #    shutil.rmtree(working_dir)
         
         
             

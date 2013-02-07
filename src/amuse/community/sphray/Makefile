@@ -13,11 +13,6 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 LIBS=$(SRC)/libsphray.a
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
-
-FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
-
 PIC=#-fPIC
 
 ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
@@ -42,18 +37,11 @@ all: sphray_worker
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
 
 sphray_worker: sphray_worker.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS) $(SCLIBS)
-
-sphray_worker_sockets: sphray_worker-sockets.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FSINC) $^ -o $@ $(LIBS) $(SCLIBS) $(FSLIBS)
+	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $^ -o $@ $(LIBS) $(SC_MPI_CLIBS) $(FS_LIBS)
 
 sphray_worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
-
-sphray_worker-sockets.f90: interface.py
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(CODE_GENERATOR) --type=f90 --mode=sockets $< $(CLASSNAME) -o $@
 
 clean:
 	make -C src clean
@@ -61,4 +49,5 @@ clean:
 	$(RM) -f sphray_worker sphray_worker.f90
 	$(RM) -f sphray_worker_sockets sphray_worker-sockets.f90
 	$(RM) -f forsockets.mod
+	$(RM) -f amuse_worker_module.mod
 	$(RM) -f src/lib*.a

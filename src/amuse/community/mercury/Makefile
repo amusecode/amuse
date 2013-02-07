@@ -12,12 +12,6 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 LIBS=$(SRC)/libmercury.a
 
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondf
-
-FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
-
 PIC=#-fPIC
 
 FFLAGSOLD = -O -ip -u -g -traceback $(PIC)
@@ -35,29 +29,24 @@ endif
 all: mercury_worker
 
 %.o: %.f90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC)  -c -o $@ $< 
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SC_FLAGS)  -c -o $@ $< 
 
 %.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) -c -o $@ $< 
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SC_FLAGS) -c -o $@ $< 
 
 mercury_worker: worker.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(LIBS) $(SCLIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SC_FLAGS) $(FS_FLAGS) $^ -o $@ $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
 	
-mercury_worker_sockets: worker-sockets.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(FSINC) $(SCINC) $^ -o $@ $(LIBS) $(SCLIBS) $(FSLIBS)
-
 worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" F77FLAGS="$(F77FLAGS)"
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 	
-worker-sockets.f90: interface.py
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" F77FLAGS="$(F77FLAGS)"
-	$(CODE_GENERATOR) --type=f90 --mode=sockets $< $(CLASSNAME) -o $@
-
 clean:
 	make -C src clean
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
 	rm -f mercury_worker mercury_worker_gl
 	rm -f mercury_worker_sockets worker-sockets.f90
+	rm -f amuse_worker_module.mod
+	rm -f amuseinterface.mod
 	rm -f forsockets.mod
 	rm -f src/lib*.a

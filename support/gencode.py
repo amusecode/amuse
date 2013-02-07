@@ -3,6 +3,7 @@ import os.path
 import os
 
 from optparse import OptionParser
+import config
 
 
 
@@ -118,7 +119,14 @@ class ParseCommandLine(object):
             default="",
             dest="underscore",
             help="Name of the classes to underscore the functions of, for XL fortran compilers")
-    
+        
+        self.parser.add_option(
+            "-n",
+            "--needs-mpi",
+            default="true",
+            dest="needs_mpi",
+            help="If this boolean flag is set, the worker will initialize mpi, even in the sockets channel is used. Defaults to true")
+        
         self.parser.add_option(
             "-x",
             "--executable",
@@ -255,8 +263,6 @@ def make_file(settings):
         ('f90','mpi'): create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass,      
         ('c','stub'): create_c.GenerateACStubStringFromASpecificationClass,    
         ('f90','stub'): create_fortran.GenerateAFortranStubStringFromASpecificationClass,
-        ('c','sockets'): create_c_sockets.GenerateACSourcecodeStringFromASpecificationClass,    
-        ('f90','sockets'): create_fortran_sockets.GenerateAFortranSourcecodeStringFromASpecificationClass,   
         ('py','sockets'): make_a_socket_python_worker,    
         ('py','mpi'): make_a_mpi_python_worker,    
     }
@@ -264,10 +270,13 @@ def make_file(settings):
     try:
         builder = usecases[(settings.type, settings.mode)]()
         builder.specification_class = specification_class
+        
         if not implementation_class is None:
             builder.implementation_factory = implementation_class
+            
         builder.ignore_functions_from_specification_classes = settings.ignore_classes
         builder.underscore_functions_from_specification_classes = settings.underscore_classes
+        builder.needs_mpi = settings.needs_mpi.lower() == 'true'
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
     
@@ -311,8 +320,6 @@ if __name__ == '__main__':
     from amuse.rfi.tools import create_c
     from amuse.rfi.tools import create_fortran
     from amuse.rfi.tools import create_dir
-    from amuse.rfi.tools import create_c_sockets
-    from amuse.rfi.tools import create_fortran_sockets
     from amuse.rfi.tools import create_python_worker
     
     uc = ParseCommandLine()

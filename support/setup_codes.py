@@ -321,9 +321,18 @@ class CodeCommand(Command):
             return
 
     def set_java_variables(self):
-        if is_configured:
-            self.environment['JNI_INCLUDES'] = config.java.jni_includes
-            self.environment['JDK'] = config.java.jdk
+        if is_configured and hasattr(config, 'java') and config.java.is_enabled:
+            self.environment['JAVA'] = config.java.java
+            self.environment['JAVAC'] = config.java.javac
+            self.environment['JAVAH'] = config.java.javah
+            self.environment['JAR'] = config.java.jar
+            self.environment['JAVA_FLAGS'] = config.java.flags
+	else:
+            self.environment['JAVA'] = ''
+            self.environment['JAVAC'] = ''
+            self.environment['JAVAH'] = ''
+            self.environment['JAR'] = ''
+            self.environment['JAVA_FLAGS'] = ''
         return
 
     def set_openmp_flags(self):
@@ -980,9 +989,13 @@ class BuildOneCode(CodeCommand):
                 self.announce("cleaning " + x)
                 self.call(['make','-C', x, 'distclean'], env=environment)
                         
-            if self.is_mpi_enabled():
-                returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
-                results.append(('default',returncode,))
+#            if self.is_mpi_enabled():
+#                returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
+#                results.append(('default',returncode,))
+                
+            returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
+            results.append(('default',returncode,))
+
             
             special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:

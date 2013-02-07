@@ -338,7 +338,7 @@ worker_code.f90: {0.name_of_the_python_module}
 \t$(CODE_GENERATOR) --type=f90 interface.py {0.name_of_the_community_interface_class} -o $@
 
 {0.name_of_the_community_code}_worker: worker_code.f90 $(CODELIB) $(OBJS)
-\t$(MPIFC) $(FCFLAGS) $< $(OBJS) $(CODELIB) -o $@
+\t$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS) $(CODELIB) $(FS_LIBS) -o $@
 
 %.o: %.f90
 \t$(FC) $(FCFLAGS) -c -o $@ $<

@@ -4,7 +4,6 @@ import os
 
 from amuse.support.core import late, print_out
 from amuse.rfi.core import legacy_function
-from amuse.rfi.core import legacy_global
 
 class DTypeSpec(object):
     def __init__(self, input_var_name, output_var_name, counter_name, 
@@ -15,7 +14,7 @@ class DTypeSpec(object):
         self.type = type
         self.mpi_type = mpi_type
 
-dtypes = ['float64', 'int32', 'float32', 'string', 'bool', 'int64']
+dtypes = ['int32', 'int64', 'float32', 'float64', 'bool', 'string']
 
 class GenerateASourcecodeString(object):
     def __init__(self):
@@ -52,21 +51,6 @@ class GenerateASourcecodeStringFromASpecificationClass(GenerateASourcecodeString
         interface_functions.sort(key= lambda x: x.specification.id)
         return interface_functions
         
-    @late
-    def interface_globals(self):
-        attribute_names = dir(self.specification_class)
-        result = []
-        for x in attribute_names:
-            if x.startswith('__'):
-                continue
-            value = getattr(self.specification_class, x)
-            if isinstance(value, legacy_global):
-                result.append(value)
-        
-        result.sort(key= lambda x: x.id)
-        return result
-        
-    
     @late
     def mapping_from_dtype_to_maximum_number_of_inputvariables(self):
         result = None
@@ -124,20 +108,6 @@ class GenerateASourcecodeStringFromASpecificationClass(GenerateASourcecodeString
             uc.out = self.out
             uc.start()
             self.out.lf()
-    
-    def output_sourcecode_for_globals(self):
-        for x in self.interface_globals:
-            self.out.lf()
-            uc = self.make_legacy_global()
-            uc.legacy_global = x
-            uc.out = self.out
-            uc.start()
-            
-    def output_extra_content(self):
-        self.out.lf()
-        if hasattr(self.specification_class, 'extra_content'):
-            self.out.n() + self.specification_class.extra_content
-    
     
 class DTypeToSpecDictionary(object):
     

@@ -27,14 +27,7 @@ FFTW_LIBS ?= -lfftw3  -lfftw3_threads
 THREADLIB = -L. -lpthread $(BUILDDIR)/libpt.a
 PTHREADLIB = -L. -lpthread $(PERIODIC_BUILDDIR)/libpt.a
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondf
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
 OPENMP_FCFLAGS=# -openmp -openmp_report0 
-
-
-FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 
 PIC=#-fPIC
 
@@ -99,16 +92,12 @@ $(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
 	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
 fi_worker: worker_code.f90 $(BUILDDIR)/libfi.a interface.o 
-	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDDIR) worker_code.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SCLIBS)
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR) worker_code.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
 
-fi_worker_sockets: worker_code_sockets.f90 $(BUILDDIR)/libfi.a interface.o 
-	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDDIR) $(FSINC) worker_code_sockets.f90 interface.o -o $@ $(BUILDDIR)/libfi.a \
-	$(LIBS) $(SCLIBS) $(FSLIBS)
-
-fi_worker_gl: worker_code_gl.f90 interface.o $(BUILDDIR)/libfi.a
+fi_worker_gl: worker_code-gl.f90 interface.o $(BUILDDIR)/libfi.a
 	make -C $(BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
-	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDDIR) worker_code_gl.f90 interface.o -o $@  $(GLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SCLIBS)
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR) worker_code-gl.f90 interface.o -o $@  $(GLOBJECTS) \
+	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
 
 $(PERIODIC_BUILDDIR)/Makefile:
 	-mkdir $(PERIODIC_BUILDDIR)
@@ -120,38 +109,35 @@ $(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile
 	$(PYTHON) ./patch_globals_dot_h.py
 	
 fi_worker_periodic: worker_code.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
-	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SCINC) worker_code.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SCLIBS) $(FFTW_LIBS)
+	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)
 
-fi_worker_periodic_gl: worker_code_gl.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
+fi_worker_periodic_gl: worker_code-gl.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
 	make -C $(PERIODIC_BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
-	$(MPIFC) $(FFLAGS) $(SCINC) worker_code_gl.f90 interface.po -o $@  $(PGLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SCLIBS)
-
-
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) worker_code-gl.f90 interface.po -o $@  $(PGLOBJECTS) \
+	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS)
 
 worker_code.f90: interface.py $(AMUSE_INTERFACE_DEPS)
-	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@
+	$(CODE_GENERATOR) --type=f90 --needs-mpi=false $< FiInterface -o $@
 
-worker_code_sockets.f90: interface.py $(AMUSE_INTERFACE_DEPS)
-	$(CODE_GENERATOR) --type=f90 --mode=sockets $< FiInterface -o $@
-
-worker_code_gl.f90: interface.py $(AMUSE_INTERFACE_DEPS)
+worker_code-gl.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< GlFiInterface -o $@
 
 interface.o:interface.f90
-	$(MPIFC) $(FFLAGS) $(SCINC) -I$(BUILDDIR) -c -o $@ $<
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) -I$(BUILDDIR) -c -o $@ $<
 	
 interface.po:interface.f90
-	$(MPIFC) $(FFLAGS) $(SCINC) -I./$(PERIODIC_BUILDDIR) -c -o $@ $<
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) -I./$(PERIODIC_BUILDDIR) -c -o $@ $<
     
 clean:
 	make -C src purge
 	$(RM) -f *.o *.po *.pyc *.bck worker worker.f90 glworker glworker.f90
-	$(RM) -f worker_code.f90 worker_code_gl.f90 worker_code_sockets.f90
+	$(RM) -f worker_code.f90 worker_code_gl.f90 worker_code_sockets.f90 worker_code-gl.f90
 	$(RM) -f fi_worker_periodic fi_worker_gl fi_worker
 	$(RM) -f fi_worker_periodic_gl
 	$(RM) -f fi_worker_sockets worker-sockets.f90
 	$(RM) -f worker_code_periodic worker_code
+	$(RM) -f amuse_worker_module.mod
+	$(RM) -f amuseinterface.mod
 	$(RM) -f forsockets.mod
 	$(RM) -Rf $(BUILDDIR)
 	$(RM) -Rf $(PERIODIC_BUILDDIR)

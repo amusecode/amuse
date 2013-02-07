@@ -30,12 +30,6 @@ CODELIB2DACC = $(TWOD_BUILDDIR_ACC)/$(LIBNAME)
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondf
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
-SCMPILIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondfmpi
-SCMPIINC ?= -I$(AMUSE_DIR)/lib/stopcond/mpi
-
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_svn.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 all: mpiamrvac_worker 
@@ -126,42 +120,42 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MpiAmrVacInterface -o $@
 
 mpiamrvac_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(BUILDDIR) $< $(OBJS) $(CODELIB) $(SCMPILIBS) -o $@
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR) $< $(OBJS) $(CODELIB) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@
 	
 mpiamrvac_worker_2d: worker_code.f90 $(CODELIB2D) $(OBJS2D)
-	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR) $< $(OBJS2D) $(CODELIB2D) $(SCMPILIBS) -o $@
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(TWOD_BUILDDIR) $< $(OBJS2D) $(CODELIB2D) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@
 	
 mpiamrvac_worker_2dacc: worker_code.f90 $(CODELIB2DACC) $(OBJS2DACC)
-	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR_ACC) $< $(OBJS2DACC) $(CODELIB2DACC) $(SCMPILIBS) -o $@
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(TWOD_BUILDDIR_ACC) $< $(OBJS2DACC) $(CODELIB2DACC) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@
 	
 mpiamrvac_worker_1d: worker_code.f90 $(CODELIB1D) $(OBJS1D)
-	$(MPIFC) $(CXXFLAGS) $(SCMPIINC) -I$(ONED_BUILDDIR) $< $(OBJS1D) $(CODELIB1D) $(SCMPILIBS) -o $@
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(ONED_BUILDDIR) $< $(OBJS1D) $(CODELIB1D) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@
 	
 
 $(BUILDDIR)/interface.f90: interface.t
 	$(BUILDDIR)/vacpp.pl $< > $@
     
 $(BUILDDIR)/interface.o: $(BUILDDIR)/interface.f90
-	$(FC) $(FFLAGS) $(SCMPIINC) -I$(BUILDDIR) -c -o $@ $<
+	$(FC) $(FFLAGS) $(SC_FLAGS) -I$(BUILDDIR) -c -o $@ $<
     
 
 $(TWOD_BUILDDIR)/interface.f90: interface.t
 	$(TWOD_BUILDDIR)/vacpp.pl $< > $@
     
 $(TWOD_BUILDDIR)/interface.o: $(TWOD_BUILDDIR)/interface.f90
-	$(FC) $(FFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR) -c -o $@ $<
+	$(FC) $(FFLAGS) $(SC_FLAGS) -I$(TWOD_BUILDDIR) -c -o $@ $<
     
 $(TWOD_BUILDDIR_ACC)/interface.f90: interface.t
 	$(TWOD_BUILDDIR_ACC)/vacpp.pl $< > $@
     
 $(TWOD_BUILDDIR_ACC)/interface.o: $(TWOD_BUILDDIR_ACC)/interface.f90
-	$(FC) $(FFLAGS) $(SCMPIINC) -I$(TWOD_BUILDDIR_ACC) -c -o $@ $<
+	$(FC) $(FFLAGS) $(SC_FLAGS) -I$(TWOD_BUILDDIR_ACC) -c -o $@ $<
     
 $(ONED_BUILDDIR)/interface.f90: interface.t
 	$(ONED_BUILDDIR)/vacpp.pl $< > $@
     
 $(ONED_BUILDDIR)/interface.o: $(ONED_BUILDDIR)/interface.f90
-	$(FC) $(FFLAGS) $(SCMPIINC) -I$(ONED_BUILDDIR) -c -o $@ $<
+	$(FC) $(FFLAGS) $(SC_FLAGS) -I$(ONED_BUILDDIR) -c -o $@ $<
     
 
 %.o: %.f90

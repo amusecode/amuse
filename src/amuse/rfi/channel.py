@@ -249,36 +249,40 @@ class AsyncRequestsPool(object):
         return len(self.requests_and_handlers)
         
         
-        
-        
-        
-        
 class AbstractMessage(object):
     
-    def __init__(self, tag = -1, length= 1, dtype_to_arguments = {}):
-        self.tag = tag
-        self.length = length
+    def __init__(self, call_id = 0, function_id = -1, call_count = 1, dtype_to_arguments = {}, error = False, big_endian = (sys.byteorder.lower() == 'big')):
+        #flags
+        self.big_endian = big_endian
+        self.error = error
+        
+        #header
+        self.call_id = call_id
+        self.function_id = function_id
+        self.call_count = call_count
+        
+        #data (numpy arrays)
         self.ints = []
-        self.doubles = []
+        self.longs = []
         self.floats = []
+        self.doubles = []
         self.strings = []
         self.booleans = []
-        self.longs = []
         
         self.pack_data(dtype_to_arguments)
         
     def pack_data(self,dtype_to_arguments):
         for dtype, attrname in self.dtype_to_message_attribute():
             if dtype in dtype_to_arguments:
-                array = pack_array( dtype_to_arguments[dtype], self.length, dtype)
+                array = pack_array( dtype_to_arguments[dtype], self.call_count, dtype)
                 setattr(self, attrname, array)
     
     def to_result(self, handle_as_array = False):
         dtype_to_result = {}
         for dtype, attrname in self.dtype_to_message_attribute():
             result = getattr(self, attrname)
-            if self.length > 1 or handle_as_array:
-                dtype_to_result[dtype] = unpack_array(result , self.length, dtype)
+            if self.call_count > 1 or handle_as_array:
+                dtype_to_result[dtype] = unpack_array(result , self.call_count, dtype)
             else:
                 dtype_to_result[dtype] = result
                     
@@ -286,12 +290,12 @@ class AbstractMessage(object):
     
     def dtype_to_message_attribute(self):
         return (
-            ('float64', 'doubles'),
-            ('float32', 'floats'),
             ('int32', 'ints'),
+            ('int64', 'longs'),
+            ('float32', 'floats'),
+            ('float64', 'doubles'),
             ('bool', 'booleans'),
             ('string', 'strings'),
-            ('int64', 'longs'),
         )
     
     def receive(self, comm):
@@ -302,95 +306,112 @@ class AbstractMessage(object):
         
     
 class MPIMessage(AbstractMessage):
-    
         
     def receive(self, comm):
         header = self.receive_header(comm)
+        #logging.getLogger("channel").debug("receiving message with header %s", header)
         self.receive_content(comm, header)
+        #logging.getLogger("channel").debug("message received, error = %r, big_endian = %r", self.error, self.big_endian)
     
     def receive_header(self, comm):
-        header = numpy.zeros(8,  dtype='i')
+        header = numpy.zeros(10,  dtype='i')
         self.mpi_receive(comm, [header, MPI.INT])
         return header
         
     def receive_content(self, comm, header):
-        self.tag = header[0]
-        self.length = header[1]
+        #4 flags as 8bit booleans in 1st 4 bytes of header
+        #endiannes(not supported by MPI channel), error, unused, unused 
+        flags = header.view(dtype='bool8')
+        self.big_endian = flags[0]
+        self.error = flags[1]
+
+        self.call_id = header[1]
+        self.function_id = header[2]
+        self.call_count = header[3]
+
+        number_of_ints = header[4]
+        number_of_longs = header[5]
+        number_of_floats = header[6]
+        number_of_doubles = header[7]
+        number_of_booleans = header[8]
+        number_of_strings = header[9]
         
-        number_of_doubles = header[2]
-        number_of_ints = header[3]
-        number_of_floats = header[4]
-        number_of_strings = header[5]
-        number_of_booleans = header[6]
-        number_of_longs = header[7]
-        
-        self.doubles = self.receive_doubles(comm, self.length, number_of_doubles)
-        self.ints = self.receive_ints(comm, self.length, number_of_ints)
-        self.floats = self.receive_floats(comm, self.length, number_of_floats)
-        self.strings = self.receive_strings(comm, self.length, number_of_strings)
-        self.booleans = self.receive_booleans(comm, self.length, number_of_booleans)
-        self.longs = self.receive_longs(comm, self.length, number_of_longs)
+        self.ints = self.receive_ints(comm, number_of_ints)
+        self.longs = self.receive_longs(comm, number_of_longs)
+        self.floats = self.receive_floats(comm, number_of_floats)
+        self.doubles = self.receive_doubles(comm, number_of_doubles)
+        self.booleans = self.receive_booleans(comm, number_of_booleans)
+        self.strings = self.receive_strings(comm, number_of_strings)
         
     def nonblocking_receive(self, comm):
-        header = numpy.zeros(8,  dtype='i')
+        header = numpy.zeros(10,  dtype='i')
         request = self.mpi_nonblocking_receive(comm, [header, MPI.INT])
         return ASyncRequest(request, self, comm,  header)
     
-    def receive_doubles(self, comm, length, total):
+    def receive_doubles(self, comm, total):
         if total > 0:
-            result = numpy.empty(total * length,  dtype='d')
+            result = numpy.empty(total, dtype='d')
             self.mpi_receive(comm,[result, MPI.DOUBLE])
             return result
         else:
             return []
             
-    def receive_ints(self, comm, length, total):
+    def receive_ints(self, comm, total):
         if total > 0:
-            result = numpy.empty(total * length,  dtype='i')
+            result = numpy.empty(total, dtype='i')
             self.mpi_receive(comm,[result, MPI.INT])
             return result
         else:
             return []
             
-    def receive_longs(self, comm, length, total):
+    def receive_longs(self, comm, total):
         if total > 0:
-            result = numpy.empty(total * length,  dtype='int64')
+            result = numpy.empty(total, dtype='int64')
             self.mpi_receive(comm,[result, MPI.INTEGER8])
             return result
         else:
             return []
             
-    def receive_floats(self, comm, length, total):
+    def receive_floats(self, comm, total):
         if total > 0:
-            result = numpy.empty(total * length,  dtype='f')
+            result = numpy.empty(total, dtype='f')
             self.mpi_receive(comm,[result, MPI.FLOAT])
             return result
         else:
             return []
             
     
-    def receive_booleans(self, comm, length, total):
+    def receive_booleans(self, comm, total):
         if total > 0:
-            result = numpy.empty(total * length,  dtype='int32')
+            result = numpy.empty(total,  dtype='int32')
             self.mpi_receive(comm,[result, MPI.LOGICAL])
             return numpy.logical_not(result == 0)
         else:
             return []
     
             
-    def receive_strings(self, comm, length, total):
+    def receive_strings(self, comm, total):
         if total > 0:
-            offsets = numpy.empty(length * total, dtype='i')
-            self.mpi_receive(comm,[offsets, MPI.INT])
+            sizes = numpy.empty(total, dtype='i')
             
-            data_bytes = numpy.empty((offsets[-1] + 1), dtype=numpy.uint8)
+            self.mpi_receive(comm,[sizes, MPI.INT])
+            
+            logging.getLogger("channel").debug("got %d strings of size %s", total, sizes)
+            
+            byte_size = 0
+            for size in sizes:
+                byte_size = byte_size + size + 1
+                
+            data_bytes = numpy.empty(byte_size, dtype=numpy.uint8)
             self.mpi_receive(comm,[data_bytes,  MPI.CHARACTER])
             
             strings = []
             begin = 0
-            for end in offsets:
-                strings.append(data_bytes[begin:end].tostring())
-                begin = end + 1
+            for size in sizes:
+                strings.append(data_bytes[begin:begin+size].tostring())
+                begin = begin + size + 1
+                
+            logging.getLogger("channel").debug("got %d strings of size %s, data = %s", total, sizes, strings)
             return strings
         else:
             return []
@@ -398,37 +419,49 @@ class MPIMessage(AbstractMessage):
     
     def send(self, comm):
         header = numpy.array([
-            self.tag, 
-            self.length, 
-            len(self.doubles) / self.length, 
-            len(self.ints) / self.length, 
-            len(self.floats) / self.length, 
-            len(self.strings) / self.length,
-            len(self.booleans) / self.length,
-            len(self.longs) / self.length,
+            0,
+            self.call_id,
+            self.function_id, 
+            self.call_count,
+            len(self.ints) , 
+            len(self.longs) ,
+            len(self.floats) , 
+            len(self.doubles) ,
+            len(self.booleans) ,
+            len(self.strings) ,
         ], dtype='i')
         
-        self.mpi_send(comm, [header, MPI.INT])
+        
+        flags = header.view(dtype='bool8')
+        flags[0] = self.big_endian
+        flags[1] = self.error
+        
+        self.mpi_send(comm,[header, MPI.INT])
+        
         self.send_content(comm)
     
     def send_content(self, comm):
-        self.send_doubles(comm, self.doubles)
         self.send_ints(comm, self.ints)
-        self.send_floats(comm, self.floats)
-        self.send_strings(comm, self.strings)
-        self.send_booleans(comm, self.booleans)
         self.send_longs(comm, self.longs)
+        self.send_floats(comm, self.floats)
+        self.send_doubles(comm, self.doubles)
+        self.send_booleans(comm, self.booleans)
+        self.send_strings(comm, self.strings)
         
-    
-    def send_doubles(self, comm, array):
-        if len(array) > 0:
-            sendbuffer = numpy.array(array,  dtype='d')
-            self.mpi_send(comm,[sendbuffer, MPI.DOUBLE])
-            
     def send_ints(self, comm, array):
         if len(array) > 0:
             sendbuffer = numpy.array(array,  dtype='int32')
             self.mpi_send(comm,[sendbuffer, MPI.INT])
+            
+    def send_longs(self, comm, array):
+        if len(array) > 0:
+            sendbuffer = numpy.array(array,  dtype='int64')
+            self.mpi_send(comm,[sendbuffer, MPI.INTEGER8])    
+        
+    def send_doubles(self, comm, array):
+        if len(array) > 0:
+            sendbuffer = numpy.array(array,  dtype='d')
+            self.mpi_send(comm,[sendbuffer, MPI.DOUBLE])
             
     def send_floats(self, comm, array):
         if len(array) > 0:
@@ -439,11 +472,12 @@ class MPIMessage(AbstractMessage):
         if len(array) == 0:
             return
             
-        offsets = self.string_offsets(array)
-        self.mpi_send(comm, [offsets, MPI.INT])
+        lengths = self.string_lengths(array)
+        self.mpi_send(comm, [lengths, MPI.INT])
         chars=""
         for string in array:
             chars=string.join((chars,chr(0)))
+            
         chars=numpy.fromstring(chars,dtype='uint8')
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
@@ -451,25 +485,20 @@ class MPIMessage(AbstractMessage):
         if len(array) > 0:
             sendbuffer = numpy.array(array,  dtype='int32')
             self.mpi_send(comm, [sendbuffer, MPI.LOGICAL])
-            
-        
-    def send_longs(self, comm, array):
-        if len(array) > 0:
-            sendbuffer = numpy.array(array,  dtype='int64')
-            self.mpi_send(comm,[sendbuffer, MPI.INTEGER8])    
     
-    def string_offsets(self, array):
-        offsets = numpy.zeros(len(array), dtype='i')
-        offset = 0
+    def string_lengths(self, array):
+        lengths = numpy.zeros(len(array), dtype='i')
         index = 0
         
         for string in array:
-            offset += len(string)
-            offsets[index] = offset
-            offset += 1
+            lengths[index] = len(string)
             index += 1
         
-        return offsets
+        return lengths
+    
+    def set_error(self, message):
+        self.strings = [message]
+        self.error = True
         
     def mpi_nonblocking_receive(self, comm, array):
         raise NotImplementedError()
@@ -541,7 +570,7 @@ def unpack_array(array, length, dtype = None):
         result.append(array[offset:offset+length])
     return result
 
-class MessageChannel(OptionalAttributes):
+class AbstractMessageChannel(OptionalAttributes):
     """
     Abstract base class of all message channel.
     
@@ -729,10 +758,13 @@ Please do a 'make clean; make' in the root directory.
             
         return full_name_of_the_worker
     
-    def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
+    def send_message(self, call_id = 0, function_id = -1, dtype_to_arguments = {}):
         pass
         
-    def recv_message(self, tag, handle_as_array = False):
+    def recv_message(self, call_id = 0, function_id = -1, handle_as_array = False):
+        pass
+    
+    def nonblocking_recv_message(self, call_id = 0, function_id = -1, handle_as_array = False):
         pass
         
     def start(self):
@@ -744,13 +776,13 @@ Please do a 'make clean; make' in the root directory.
     def is_active(self):
         return True
  
-MessageChannel.DEBUGGERS = {
+AbstractMessageChannel.DEBUGGERS = {
     "none":None,
-    "gdb":MessageChannel.GDB, 
-    "ddd":MessageChannel.DDD, 
-    "xterm":MessageChannel.XTERM,
-    "gdb-remote":MessageChannel.GDBR, 
-    "valgrind":MessageChannel.VALGRIND,
+    "gdb":AbstractMessageChannel.GDB, 
+    "ddd":AbstractMessageChannel.DDD, 
+    "xterm":AbstractMessageChannel.XTERM,
+    "gdb-remote":AbstractMessageChannel.GDBR, 
+    "valgrind":AbstractMessageChannel.VALGRIND,
 }
 
 #import time
@@ -804,7 +836,7 @@ def is_mpd_running():
         return True
 
 
-class MpiChannel(MessageChannel):
+class MpiChannel(AbstractMessageChannel):
     """
     Message channel based on MPI calls to send and recv the messages
     
@@ -820,7 +852,11 @@ class MpiChannel(MessageChannel):
 
     
     def __init__(self, name_of_the_worker, legacy_interface_type = None, interpreter_executable = None,  **options):
-        MessageChannel.__init__(self, **options)
+        AbstractMessageChannel.__init__(self, **options)
+        
+        logging.basicConfig(level=logging.WARN)
+        #logging.getLogger("channel").setLevel(logging.DEBUG)
+        #logging.getLogger("code").setLevel(logging.DEBUG)
         
         self.ensure_mpi_initialized()
         
@@ -904,7 +940,7 @@ class MpiChannel(MessageChannel):
     def python_exe_for_redirection(self):
         return None
         
-    @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -915,7 +951,7 @@ class MpiChannel(MessageChannel):
         """
         For calls to functions that can handle arrays, MPI messages may get too long for large N.
         The MPI channel will split long messages into blocks of size max_message_length.
-        """
+        """ 
         return 1000000
     
 
@@ -967,6 +1003,8 @@ class MpiChannel(MessageChannel):
             else:
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command = self.python_exe_for_redirection, interpreter_executable = self.interpreter_executable)
                 
+        #print arguments
+        #print command
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
             
         
@@ -1002,28 +1040,28 @@ class MpiChannel(MessageChannel):
         return max(1, max(lengths))
         
         
-    def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
+    def send_message(self, call_id, function_id, dtype_to_arguments = {}):
 
         if self.is_inuse():
             raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
         if self.intercomm is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
-        length = self.determine_length_from_data(dtype_to_arguments)
+        call_count = self.determine_length_from_data(dtype_to_arguments)
         
-        if length > self.max_message_length:
-            self.split_message(tag, id, dtype_to_arguments, length)
+        if call_count > self.max_message_length:
+            self.split_message(call_id, function_id, call_count, dtype_to_arguments)
             return
         
-        message = ServerSideMPIMessage(tag, length, dtype_to_arguments)
+        message = ServerSideMPIMessage(call_id, function_id, call_count, dtype_to_arguments)
         message.send(self.intercomm)
         
         self._is_inuse = True
         
-    def split_message(self, tag, id, dtype_to_arguments, length):
+    def split_message(self, call_id, function_id, call_count, dtype_to_arguments):
         
         def split_input_array(i, arr_in):
-            if length == 1:
+            if call_count == 1:
                 return [tmp[i*self.max_message_length] for tmp in arr_in]
             else:
                 result = []
@@ -1036,19 +1074,19 @@ class MpiChannel(MessageChannel):
         
         dtype_to_result = {}
         
-        for i in range(1+(length-1)/self.max_message_length):
+        for i in range(1+(call_count-1)/self.max_message_length):
             split_dtype_to_argument = {}
             for key, value in dtype_to_arguments.iteritems():
                 split_dtype_to_argument[key] = split_input_array(i, value)
                 
             self.send_message(
-                tag, 
-                id, 
-                split_dtype_to_argument, 
-                min(length,self.max_message_length)
+                call_id,
+                function_id,
+                #min(call_count,self.max_message_length),
+                split_dtype_to_argument
             )
             
-            partial_dtype_to_result = self.recv_message(id, True)
+            partial_dtype_to_result = self.recv_message(call_id, function_id, True)
             for datatype, value in partial_dtype_to_result.iteritems():
                 if not datatype in dtype_to_result:
                     dtype_to_result[datatype] = [] 
@@ -1056,7 +1094,7 @@ class MpiChannel(MessageChannel):
                         if datatype == 'string':
                             dtype_to_result[datatype].append([])
                         else:
-                            dtype_to_result[datatype].append(numpy.zeros((length,), dtype=datatype))
+                            dtype_to_result[datatype].append(numpy.zeros((call_count,), dtype=datatype))
                             
                 for j, element in enumerate(value):
                     if datatype == 'string':
@@ -1065,12 +1103,12 @@ class MpiChannel(MessageChannel):
                         dtype_to_result[datatype][j][i*self.max_message_length:(i+1)*self.max_message_length] = element
                 
             #print partial_dtype_to_result
-            length -= self.max_message_length
+            call_count -= self.max_message_length
         
         self._communicated_splitted_message = True
         self._merged_results_splitted_message = dtype_to_result
     
-    def recv_message(self, tag, handle_as_array):
+    def recv_message(self, call_id, function_id, handle_as_array):
         
         self._is_inuse = False
         
@@ -1085,17 +1123,29 @@ class MpiChannel(MessageChannel):
             message.receive(self.intercomm)
         except MPI.Exception as ex:
             self.stop()
-            raise
+            raise ex
         
-        if message.tag == -1:
-            raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
-        elif message.tag == -2:
+        if message.call_id != call_id:
             self.stop()
-            raise exceptions.CodeException("Fatal error in code, code has exited")
+            raise exceptions.CodeException('Received reply for call id {0} but expected {1}'.format(message.call_id, call_id))
+        if message.function_id != function_id:
+            self.stop()
+            raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
+        
+        if message.error:
+                logging.getLogger("channel").info("error message!")
+                self.stop()
+                logging.getLogger("channel").info("stopped!")
+                raise exceptions.CodeException("Error in code: " + message.strings[0])
+#        if message.tag == -1:
+#            raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
+#        elif message.tag == -2:
+#            self.stop()
+#            raise exceptions.CodeException("Fatal error in code, code has exited")
         
         return message.to_result(handle_as_array)
         
-    def nonblocking_recv_message(self, tag, handle_as_array):
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
         request = ServerSideMPIMessage().nonblocking_receive(self.intercomm)
         
         def handle_result(function):
@@ -1103,8 +1153,16 @@ class MpiChannel(MessageChannel):
         
             message = function()
             
-            if message.tag < 0:
-                raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
+            if message.call_id != call_id:
+                self.stop()
+                raise exceptions.CodeException('Received reply for call id {0} but expected {1}'.format(message.call_id, call_id))
+        
+            if message.function_id != function_id:
+                self.stop()
+                raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
+            
+            if message.error:
+                raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
                 
             return message.to_result(handle_as_array)
     
@@ -1120,7 +1178,7 @@ class MpiChannel(MessageChannel):
         
 
 
-class MultiprocessingMPIChannel(MessageChannel):
+class MultiprocessingMPIChannel(AbstractMessageChannel):
     """
     Message channel based on JSON messages. 
     
@@ -1141,7 +1199,7 @@ class MultiprocessingMPIChannel(MessageChannel):
     sub-test, thus removing unneeded applications. 
     """
     def __init__(self, name_of_the_worker, legacy_interface_type = None,  interpreter_executable = None, **options):
-        MessageChannel.__init__(self, **options)
+        AbstractMessageChannel.__init__(self, **options)
         
         self.name_of_the_worker = name_of_the_worker
         self.interpreter_executable = interpreter_executable
@@ -1229,14 +1287,14 @@ m.run_mpi_channel('{2}')"""
                 self._send(socket, result)
         finally:
             socket.close()
-         
-    def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
-        self._send(self.client_socket, ('send_message',(tag, id, dtype_to_arguments, length),))
+    
+    def send_message(self, call_id = 0, function_id = -1, dtype_to_arguments = {}):
+        self._send(self.client_socket, ('send_message',(call_id, function_id, dtype_to_arguments),))
         result = self._recv(self.client_socket)
         return result
-            
-    def recv_message(self, tag, handle_as_array):
-        self._send(self.client_socket, ('recv_message',(tag,handle_as_array),))
+
+    def recv_message(self, call_id = 0, function_id = -1, handle_as_array = False):
+        self._send(self.client_socket, ('recv_message',(call_id, function_id, handle_as_array),))
         result = self._recv(self.client_socket)    
         return result
     
@@ -1305,7 +1363,7 @@ m.run_mpi_channel('{2}')"""
             
 
 
-    @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -1317,16 +1375,6 @@ m.run_mpi_channel('{2}')"""
         return True
 
 class SocketMessage(AbstractMessage):
-    
-    def __init__(self, tag= -1, length=1, dtype_to_arguments={}, id=0):
-        AbstractMessage.__init__(self, tag, length, dtype_to_arguments)
-            
-        self.id = id
-        
-        if struct.pack("h", 1) == "\000\001":
-            self.big_endian = True
-        else:
-            self.big_endian = False
       
     def _receive_all(self, nbytes, thesocket):
 
@@ -1352,7 +1400,7 @@ class SocketMessage(AbstractMessage):
         #logging.getLogger("channel").debug("receiving message")
         
         header_bytes = self._receive_all(40, socket)
-        
+
         flags = numpy.frombuffer(header_bytes, dtype="b", count=4, offset=0)
         
         if flags[0] != self.big_endian:
@@ -1363,26 +1411,26 @@ class SocketMessage(AbstractMessage):
         else:
             self.error = False
         
-        header = numpy.copy(numpy.frombuffer(header_bytes, dtype="i", offset=4))
+        header = numpy.copy(numpy.frombuffer(header_bytes, dtype="i", offset=0))
         
         #logging.getLogger("channel").debug("receiving message with flags %s and header %s", flags, header)
 
         #id of this call
-        self.id = header[0]
+        self.call_id = header[1]
         
         #function ID
-        self.tag = header[1]
+        self.function_id = header[2]
         
         #number of calls in this message
-        self.length = header[2]
+        self.call_count = header[3]
         
         #number of X's in TOTAL
-        number_of_ints = header[3]
-        number_of_longs = header[4]
-        number_of_floats = header[5]
-        number_of_doubles = header[6]
-        number_of_booleans = header[7]
-        number_of_strings = header[8]
+        number_of_ints = header[4]
+        number_of_longs = header[5]
+        number_of_floats = header[6]
+        number_of_doubles = header[7]
+        number_of_booleans = header[8]
+        number_of_strings = header[9]
 
         self.ints = self.receive_ints(socket, number_of_ints)
         self.longs = self.receive_longs(socket, number_of_longs)
@@ -1480,9 +1528,9 @@ class SocketMessage(AbstractMessage):
         flags = numpy.array([self.big_endian, False, False, False], dtype="b")
         
         header = numpy.array([
-            self.id,
-            self.tag,
-            self.length,
+            self.call_id,
+            self.function_id,
+            self.call_count,
             len(self.ints),
             len(self.longs),
             len(self.floats),
@@ -1548,23 +1596,25 @@ class SocketMessage(AbstractMessage):
             data_buffer = numpy.array(array, dtype='int64')
             socket.sendall(data_buffer.tostring())
         
-class SocketChannel(MessageChannel):
+class SocketChannel(AbstractMessageChannel):
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable = None,**options):
-        MessageChannel.__init__(self, **options)
+        AbstractMessageChannel.__init__(self, **options)
         
         #logging.basicConfig(level=logging.DEBUG)
         
         logging.getLogger("channel").debug("initializing SocketChannel with options %s", options)
        
-        self.name_of_the_worker = name_of_the_worker + "_sockets"
+        #self.name_of_the_worker = name_of_the_worker + "_sockets"
+        self.name_of_the_worker = name_of_the_worker
+
         self.interpreter_executable = interpreter_executable
         
         if self.hostname != None and self.hostname != 'localhost':
             raise exceptions.CodeException("can only run codes on local machine using SocketChannel, not on %s", self.hostname)
             
-        if self.number_of_workers != 0 and self.number_of_workers != 1:
-            raise exceptions.CodeException("can only a single worker for each code using Socket Channel, not " + str(self.number_of_workers))
+#        if self.number_of_workers != 0 and self.number_of_workers != 1:
+#            raise exceptions.CodeException("can only a single worker for each code using Socket Channel, not " + str(self.number_of_workers))
             
         self.id = 0
         
@@ -1620,13 +1670,20 @@ class SocketChannel(MessageChannel):
             
         arguments.insert(0, command)        
         arguments.append(str(server_socket.getsockname()[1]))
-        self.process = Popen(
-            arguments,
-            executable = command, 
-            stdout = self.stdout, 
-            stderr = self.stderr
-        )
-        #logging.getLogger("channel").debug("waiting for connection from worker")
+        
+        if self.number_of_workers > 1:
+            logging.getLogger("channel").warn("multiple workers instances for socket worker not properly tested yet")
+            command = "mpiexec"
+            #prepend with mpiexec and arguments back to front
+            arguments.insert(0, str(self.number_of_workers))
+            arguments.insert(0, "-np")
+            arguments.insert(0, "/usr/bin/mpiexec")
+
+        logging.getLogger("channel").warn("starting process with arguments %s", arguments)
+
+        
+        self.process = Popen(arguments, executable = command, stdout = self.stdout, stderr = self.stderr)
+        logging.getLogger("channel").warn("waiting for connection from worker")
      
         self.socket, address = server_socket.accept()
         
@@ -1640,7 +1697,7 @@ class SocketChannel(MessageChannel):
         
         #logging.getLogger("channel").info("worker %s initialized", self.name_of_the_worker)
         
-    @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -1654,8 +1711,13 @@ class SocketChannel(MessageChannel):
         return 1
        
     def stop(self):
+        if (self.socket == None):
+            return
+        
         logging.getLogger("channel").info("stopping socket worker %s", self.name_of_the_worker)
         self.socket.close()
+        
+        self.socket = None
         
         # should lookinto using poll with a timeout or some other mechanism
         # when debugger method is on, no killing
@@ -1674,7 +1736,7 @@ class SocketChannel(MessageChannel):
             self.stderr.close()
 
     def is_active(self):
-        return True    
+        return self.socket is not None
     
     def is_inuse(self):
         return self._is_inuse
@@ -1696,9 +1758,9 @@ class SocketChannel(MessageChannel):
             
         return max(1, max(lengths))
     
-    def send_message(self, tag, id=0, dtype_to_arguments={}, length=1):
+    def send_message(self, call_id, function_id, dtype_to_arguments = {}):
         
-        length = self.determine_length_from_data(dtype_to_arguments)
+        call_count = self.determine_length_from_data(dtype_to_arguments)
         
         #logging.getLogger("channel").info("sending message for call id %d, function %d, length %d", id, tag, length)
         
@@ -1707,45 +1769,59 @@ class SocketChannel(MessageChannel):
         if self.socket is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
-        message = SocketMessage(tag, length, dtype_to_arguments, id)
+        message = SocketMessage(call_id, function_id, call_count, dtype_to_arguments)
         message.send(self.socket)
         
         self._is_inuse = True
         
-    def recv_message(self, tag, handle_as_array=False):
+    def recv_message(self, call_id, function_id, handle_as_array):
            
         self._is_inuse = False
         
         message = SocketMessage()
         
         message.receive(self.socket)
+
+        if message.call_id != call_id:
+            self.stop()
+            raise exceptions.CodeException('Received reply for call id {0} but expected {1}'.format(message.call_id, call_id))
+        if message.function_id != function_id:
+            self.stop()
+            raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
         
         if message.error:
-            raise exceptions.CodeException("Error in worker: " + message.strings[0])
-        
-        #logging.getLogger("channel").info("received message for function %d", tag)
+            logging.getLogger("channel").info("error message!")
+            self.stop()
+            logging.getLogger("channel").info("stopped!")
+            raise exceptions.CodeException("Error in code: " + message.strings[0])
 
         return message.to_result(handle_as_array)
         
-    
-    
-    def nonblocking_recv_message(self, tag, handle_as_array):
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
         request = SocketMessage().nonblocking_receive(self.socket)
-        
+    
         def handle_result(function):
             self._is_inuse = False
-        
+    
             message = function()
-            
-            if message.tag < 0:
-                raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
-                
-            return message.to_result(handle_as_array)
-    
-        request.add_result_handler(handle_result)
         
-        return request
+            if message.call_id != call_id:
+                self.stop()
+                raise exceptions.CodeException('Received reply for call id {0} but expected {1}'.format(message.call_id, call_id))
     
+            if message.function_id != function_id:
+                self.stop()
+                raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
+        
+            if message.error:
+                raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
+        
+            return message.to_result(handle_as_array)
+
+        request.add_result_handler(handle_result)
+    
+        return request
+
 class OutputHandler(threading.Thread):
     
     def __init__(self, stream):
@@ -1791,7 +1867,7 @@ class OutputHandler(threading.Thread):
             
             self.stream.write(data)
 
-class IbisChannel(MessageChannel):
+class IbisChannel(AbstractMessageChannel):
     
     stdoutHandler = None
     
@@ -1815,14 +1891,14 @@ class IbisChannel(MessageChannel):
         return IbisChannel.stderrHandler.id
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable = None, **options):
-        MessageChannel.__init__(self, **options)
+        AbstractMessageChannel.__init__(self, **options)
         
         logging.basicConfig(level=logging.WARN)
         #logging.getLogger("channel").setLevel(logging.DEBUG)
         
         #logging.getLogger("channel").debug("initializing IbisChannel with options %s", options)
        
-        self.name_of_the_worker = name_of_the_worker + "_sockets"
+        self.name_of_the_worker = name_of_the_worker
         self.interpreter_executable = interpreter_executable
         
         if self.hostname == None or self.hostname == 'local':
@@ -1869,7 +1945,7 @@ class IbisChannel(MessageChannel):
         
         logging.getLogger("channel").debug("hostname = %s, checking for worker", self.hostname)
         
-        MessageChannel.check_if_worker_is_up_to_date(self, object)
+        AbstractMessageChannel.check_if_worker_is_up_to_date(self, object)
    
     def start(self):
         logging.getLogger("channel").debug("connecting to daemon")
@@ -1905,7 +1981,7 @@ class IbisChannel(MessageChannel):
         
         arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers, self.number_of_nodes, self.number_of_threads], 'bool': [self.copy_worker_code]}
         
-        message = SocketMessage(10101010, 1, arguments);
+        message = SocketMessage(call_id=1, function_id=10101010, call_count=1, dtype_to_arguments=arguments);
 
         message.send(self.socket)
         
@@ -1921,7 +1997,7 @@ class IbisChannel(MessageChannel):
         
         logging.getLogger("channel").info("worker %s initialized", self.name_of_the_worker)
         
-    @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -1975,23 +2051,23 @@ class IbisChannel(MessageChannel):
             
         return max(1, max(lengths))
     
-    def send_message(self, tag, id=0, dtype_to_arguments={}, length=1):
+    def send_message(self, call_id, function_id, dtype_to_arguments = {}):
         
-        length = self.determine_length_from_data(dtype_to_arguments)
+        call_count = self.determine_length_from_data(dtype_to_arguments)
         
-        logging.getLogger("channel").info("sending message for call id %d, function %d, length %d", id, tag, length)
+        logging.getLogger("channel").info("sending message for call id %d, function %d, length %d", id, function_id, call_count)
         
         if self.is_inuse():
             raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
         if self.socket is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
-        message = SocketMessage(tag, length, dtype_to_arguments, id)
+        message = SocketMessage(call_id, function_id, call_count, dtype_to_arguments, False, False)
         message.send(self.socket)
         
         self._is_inuse = True
         
-    def recv_message(self, tag, handle_as_array=False):
+    def recv_message(self, call_id, function_id, handle_as_array):
            
         self._is_inuse = False
         

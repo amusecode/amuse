@@ -260,10 +260,10 @@ class TestInterface(TestWithMPI):
         implementation = ForTestingImplementation()
         x = python_code.PythonImplementation(implementation, ForTestingInterface)
         
-        input_message = python_code.SocketMessage(10, 1)
+        input_message = python_code.SocketMessage(0, 10, 1)
         input_message.ints = [1]
         
-        output_message = python_code.SocketMessage(10, 1)
+        output_message = python_code.SocketMessage(0, 10, 1)
         
         x.handle_message(input_message, output_message)
         
@@ -276,11 +276,11 @@ class TestInterface(TestWithMPI):
         implementation = ForTestingImplementation()
         x = python_code.PythonImplementation(implementation, ForTestingInterface)
         
-        input_message = python_code.SocketMessage(11, 1)
+        input_message = python_code.SocketMessage(0, 11, 1)
         input_message.ints = [1]
         input_message.doubles = [12.0]
         
-        output_message = python_code.SocketMessage(10, 1)
+        output_message = python_code.SocketMessage(0, 10, 1)
         
         x.handle_message(input_message, output_message)
         
@@ -294,11 +294,11 @@ class TestInterface(TestWithMPI):
         implementation = ForTestingImplementation()
         x = python_code.PythonImplementation(implementation, ForTestingInterface)
         
-        input_message = python_code.SocketMessage(11, 4)
+        input_message = python_code.SocketMessage(0, 11, 4)
         input_message.ints = [1,2,3,4]
         input_message.doubles = [12.0,13.0,14.0,15.0]
         
-        output_message = python_code.SocketMessage(10, 4)
+        output_message = python_code.SocketMessage(0, 10, 4)
         
         x.handle_message(input_message, output_message)
         
@@ -354,10 +354,10 @@ class TestInterface(TestWithMPI):
         implementation = ForTestingImplementation()
         x = python_code.PythonImplementation(implementation, ForTestingInterface)
         
-        input_message = python_code.SocketMessage(12, 1)
+        input_message = python_code.SocketMessage(0, 12, 1)
         input_message.ints = [20]
         
-        output_message = python_code.SocketMessage(10, 1)
+        output_message = python_code.SocketMessage(0, 10, 1)
         
         x.handle_message(input_message, output_message)
         

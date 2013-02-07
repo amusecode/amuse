@@ -27,22 +27,15 @@ all:    sse_worker
 clean:
 	$(RM) -f *~ *.so *.o src/*.o src/sse worker_code worker_code.f90
 	$(RM) -f sse_worker sse_worker_sockets worker_code-sockets.f90
+	$(RM) -f amuse_worker_module.mod
 	$(RM) -f forsockets.mod
 
 sse_worker:	worker_code.f90  interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
-	$(MPIF90) -v $^ -o $@ 
-
-sse_worker_sockets: worker_code-sockets.f90  interface.o  $(OBJ)
-	make -C src sse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
-	$(MPIF90) $(FSINC) $^ -o $@ $(FSLIBS) 
-
+	$(MPIF90) $(FS_FLAGS) -v $^ -o $@ $(FS_LIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py SSEInterface -o $@
 	
-worker_code-sockets.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 --mode=sockets interface.py SSEInterface -o $@
-
 .f.o: $<                                                                 
 	$(FORTRAN) -c $(F77FLAGS) $(FFLAGS) -o $@ $< 

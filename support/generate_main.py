@@ -81,13 +81,13 @@ class generate_main(Command):
                 script_file.write('/lib/ibis')
                 script_file.write('\n')
 
-                script_file.write('export JAVA_HOME=')
-                script_file.write(config.java.jdk)
+                script_file.write('export JAVA=')
+                script_file.write(config.java.java)
                 script_file.write('\n')
 
                 script_file.write('\n')
 
-                script_file.write('exec ${JAVA_HOME}/bin/java')
+		script_file.write('exec ${JAVA}')
                 script_file.write(' -Xmx500M')
                 script_file.write(' -classpath ${IBIS_LIB_DIR}:${IBIS_LIB_DIR}/lib/*:${IBIS_LIB_DIR}/deploy/lib/*')
                 script_file.write(' -Dgat.adaptor.path=${IBIS_LIB_DIR}/deploy/lib/adaptors')
