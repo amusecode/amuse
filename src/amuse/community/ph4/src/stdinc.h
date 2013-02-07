@@ -64,6 +64,8 @@ real get_elapsed_time();
 void get_cpu_time(real& user_time, real& system_time);
 void warning(const char *s);
 void err_exit(const char *s);
+
+int srandinter(int seed, int iter);
 real randinter(real a = 0, real b = 1);
 
 #endif

@@ -356,12 +356,16 @@ static unsigned long local_seed = 0;
 
 int set_random(int seed)
 {
+#if 0
     if (seed <= 0)
 	srandom(time(NULL));
     else
 	srandom((unsigned int)seed);	// seems to have no effect; seed is
 					// lost and numbers are still random,
 					// independent of the input seed
+#else
+    srandinter(seed, 0);
+#endif
     local_seed = random();
     return 0;
 }
