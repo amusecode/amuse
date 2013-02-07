@@ -4,6 +4,17 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
     
+
+    """
+    HiGPUs is a parallel direct N-body code based on a 6th order Hermite integrator. It uses, at the same time, MPI, OpenMP and CUDA 
+    libraries to fully exploit all the capabilities offered by hybrid supercomputing platforms. Moreover, it is implemented using block 
+    time steps such to be able to deal with stiff problems like highly collisional gravitational N-body 
+    problems.
+
+    .. [#] R. Capuzzo-Dolcetta, M. Spera, D.Punzo, 'A fully parallel, high precision, N-body code running on hybrid computing platforms', *Journal of Computational Physics*, Volume 236, 1 March 2013, Pages 580–593.
+    """
+
+
     include_headers = ['worker_code.h']
 	    
     def __init__(self, **keyword_arguments):
