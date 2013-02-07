@@ -473,8 +473,10 @@ class Multiples(object):
             comp1 = root.child1
             comp2 = root.child2
             semi = rescale_binary_components(comp1, comp2, self.kepler, initial_scale)
-            print comp1, comp2
+            print comp1
+            print comp2
             if semi > initial_scale:
+                print 'breaking up wide binary'
                 particles_in_encounter = datamodel.Particles(particles = (comp1, comp2))
                 particles_in_encounter.child1 = None
                 particles_in_encounter.child2 = None
