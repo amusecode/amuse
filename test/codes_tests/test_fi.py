@@ -47,7 +47,7 @@ class TestFiInterface(TestWithMPI):
             result,err=getattr(instance, 'get_'+x)()
             self.assertEquals((x,result),(x,12345))
         
-        for x,r in [ ('pboxsize',300.),('unitl_in_kpc',1.),('unitm_in_msun',1.e9),('dtime',1.),
+        for x,r in [ ('pboxsize',10000.),('unitl_in_kpc',1.),('unitm_in_msun',1.e9),('dtime',1.),
                      ('tstepcrit',1.),('tstpcr2',0.25),('freev',0.5),('freea',0.35),('freevexp',0.),
                      ('freeaexp',-1.),('bh_tol',0.5),('gdgtol',0.01),('nn_tol',0.1),
                      ('epsgas',0.005),('gamma',1.6666667),('alpha',0.5),('beta',1.0),('epssph',0.01),
@@ -475,7 +475,7 @@ class TestFi(TestWithMPI):
             'min_gas_part_mass','sph_h_const','n_smooth_tol','grain_heat_eff','zeta_cr_ion_rate',
             'heat_par1','heat_par2','cool_par','optical_depth','star_form_delay_fac','star_form_mass_crit',
             'star_form_eff','supernova_duration','supernova_eff','t_supernova_start','max_density']
-        defaults=[0.0 | nbody_system.length * nbody_system.length, 1.0 | nbody_system.time, 300.0 | nbody_system.length, 
+        defaults=[0.0 | nbody_system.length * nbody_system.length, 1.0 | nbody_system.time, 10000.0 | nbody_system.length, 
             1.0e9 | units.MSun, 1.0 | units.kpc, 1.0, 0.25, 0.5, 0.35, 
             0.0, -1.0, 0.5, 0.01, 0.1, 0.005 | nbody_system.length, 1.6666667, 0.5, 1.0, 0.01, 0.3, 
             0.25, 0.2 | nbody_system.length, 0.1, 0.05, 3.6 | 1.8e-17 * units.s**-1, 0.0, 0.0, 1.0, 
