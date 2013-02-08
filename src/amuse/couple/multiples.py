@@ -582,10 +582,10 @@ class Multiples(object):
         resolve_collision_code.set_break_scale(break_scale)
         delta_t_max = 64*delta_t
 
-        while time < end_time:
+        if self.debug_encounters:
+            delta_t *= 0.1
 
-            if self.debug_encounters:
-                delta_t *= 0.1
+        while time < end_time:
 
             time += delta_t
             print 'multiples: evolving to time', time
