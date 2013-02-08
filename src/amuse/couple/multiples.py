@@ -108,6 +108,7 @@ class Multiples(object):
         self.multiples = datamodel.Particles()
         self.gravity_constant = gravity_constant
         self.debug_encounters = False
+        self.binary_breakup_factor = 3
         
     @property
     def particles(self):
@@ -505,7 +506,7 @@ class Multiples(object):
             print comp2
             
             print 'semi =', semi, ' sep12 =', sep12
-            if 3*semi > sep12:
+            if self.binary_breakup_factor*semi > sep12:
                 particles_in_encounter.remove_particle(root)
                 
         binaries = \

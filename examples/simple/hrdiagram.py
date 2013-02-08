@@ -16,7 +16,7 @@ end_time = 2 | units.Gyr
 stellar_mass =  2.0 | units.MSun
 
 def simulate_evolution_tracks():
-    stellar_evolution = SSE()
+    stellar_evolution = SeBa()
 
     star = datamodel.Particle()
     star.mass = stellar_mass

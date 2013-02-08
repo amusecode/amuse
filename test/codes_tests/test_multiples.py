@@ -21,11 +21,16 @@ from amuse.ic import plummer
 from amuse.couple import multiples
 
 class TestSimpleMultiples(TestWithMPI):
-
+    previous = None
+    
     def new_smalln(self):
+        if not self.previous is None:
+            self.previous.stop()
+            
         result = SmallN()
         result.parameters.timestep_parameter = 0.1
         result.parameters.cm_index = 2001
+        self.previous = result
         return result
         
     def new_kepler_si(self):
@@ -44,6 +49,8 @@ class TestSimpleMultiples(TestWithMPI):
         
     def new_smalln_si(self):
     
+        if not self.previous is None:
+            self.previous.stop()
         converter = nbody_system.nbody_to_si(units.MSun, units.parsec)
         result = SmallN(converter)
         result.parameters.timestep_parameter = 0.1
@@ -89,6 +96,7 @@ class TestSimpleMultiples(TestWithMPI):
         code.particles.add_particles(stars)
         
         multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
+        multiples_code.binary_breakup_factor = 1
         print multiples_code.multiples_energy_correction
         total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
         print total_energy0
@@ -125,6 +133,7 @@ class TestSimpleMultiples(TestWithMPI):
         print converter.to_si(0.6|nbody_system.time).as_quantity_in(units.Myr)
         
         multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
+        multiples_code.binary_breakup_factor = 1
         print multiples_code.multiples_energy_correction
         total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
         print total_energy0
@@ -154,6 +163,8 @@ class TestSimpleMultiples(TestWithMPI):
         code.particles.add_particles(stars)
         
         multiples_code = multiples.Multiples(code, self.new_smalln_si, self.new_kepler_si(), gravity_constant = constants.G)
+        multiples_code.binary_breakup_factor = 1
+        
         print multiples_code.multiples_energy_correction
         total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
         print total_energy0
@@ -194,6 +205,9 @@ class TestSimpleMultiples(TestWithMPI):
         code.particles.add_particles(stars)
 
         multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
+        multiples_code.binary_breakup_factor = 1
+        
+       
         total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
         multiples_code.evolve_model(0.1|nbody_system.time)
         multiples_code.print_multiples()
@@ -239,6 +253,7 @@ class TestSimpleMultiples(TestWithMPI):
         code.particles.add_particles(stars)
 
         multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
+        multiples_code.binary_breakup_factor = 1
         total_energy0 = (
             multiples_code.kinetic_energy 
             + multiples_code.potential_energy 
@@ -295,6 +310,7 @@ class TestSimpleMultiples(TestWithMPI):
         kepler1 = self.new_kepler()
         print binary2.velocity, (binary2[0].velocity - binary2[1].velocity).length
         multiples_code1 = multiples.Multiples(code1, self.new_smalln, kepler1)
+        multiples_code1.binary_breakup_factor = 1
         multiples_code1.evolve_model(0.1|nbody_system.time)
         multiples_code1.print_multiples()
         stars = multiples_code1.stars
@@ -303,6 +319,7 @@ class TestSimpleMultiples(TestWithMPI):
         code2.particles.add_particles(stars)
         kepler2 = self.new_kepler()
         multiples_code2 = multiples.Multiples(code2, self.new_smalln, kepler2)
+        multiples_code2.binary_breakup_factor = 1
         multiples_code1.evolve_model(0.2|nbody_system.time)
         multiples_code2.evolve_model(0.1|nbody_system.time)
         multiples_code1.print_multiples()
