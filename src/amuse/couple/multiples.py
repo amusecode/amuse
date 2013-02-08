@@ -509,8 +509,8 @@ class Multiples(object):
             print comp1
             print comp2
             
-            print 'semi =', semi, ' sep12 =', sep12
-            if self.binary_breakup_factor*semi > sep12:
+            print 'semi =', semi, ' rlimit =', rlimit
+            if self.binary_breakup_factor*semi > rlimit:
                 particles_in_encounter.remove_particle(root)
                 
         binaries = \
