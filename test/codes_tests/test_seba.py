@@ -434,3 +434,10 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 2)
          
         instance.stop()
+        
+    
+    def test5(self):
+        instance = self.new_instance_of_an_optional_code(SeBa)
+        self.assertAlmostRelativeEquals(instance.parameters.metallicity , 0.02)
+        instance.parameters.metallicity = 0.04
+        self.assertAlmostRelativeEquals(instance.parameters.metallicity , 0.04)

@@ -210,6 +210,16 @@ class SeBa(se.StellarEvolution):
     
     def update_time_steps(self):
         pass
+    
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_metallicity",
+            "set_metallicity",
+            "metallicity", 
+            "Metallicity of all stats", 
+            default_value = 0.02
+        )
+        
         
     def define_particle_sets(self, object):
        
