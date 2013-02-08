@@ -335,7 +335,7 @@ class TestInterface(TestWithMPI):
         
         arguments = self.get_mpif90_arguments()
         arguments.extend(["-g", "-I{0}/lib/forsockets".format(self.get_amuse_root_dir()), "-c",  "-o", objectname, sourcename])
-	arguments.append("-Wall")
+        arguments.append("-Wall")
         process = subprocess.Popen(
             arguments,
             stdin = subprocess.PIPE,
@@ -352,8 +352,8 @@ class TestInterface(TestWithMPI):
             print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
 
-	print stdout
-	print stderr
+        print stdout
+        print stderr
     
     def fortran_build(self, exename, objectnames):
         if os.path.exists(exename):
@@ -363,7 +363,7 @@ class TestInterface(TestWithMPI):
         arguments.extend(objectnames)
         
         arguments.append("-L{0}/lib/forsockets".format(self.get_amuse_root_dir()))
-	arguments.append("-Wall")
+        arguments.append("-Wall")
         arguments.append("-lforsockets")
         if self.has_fortran_iso_c_binding():
             arguments.append("-lforsocketsf")
