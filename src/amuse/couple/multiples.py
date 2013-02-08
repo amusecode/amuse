@@ -354,7 +354,7 @@ class Multiples(object):
         indices = numpy.argsort(distances.number)
         sorted_stars = stars[indices]
         sorted_distances = distances[indices]
-
+        print "sorted_distances", sorted_distances
         sep12 = ((star1.position-star2.position)**2).sum().sqrt()
         rmax = 2*sep12
         initial_scale = rmax
@@ -468,29 +468,7 @@ class Multiples(object):
         stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
         roots_of_trees = binaries.roots()
 
-        # 5bbb. break up a single binary if it is too wide.  TUNABLE TODO
-
-        if len(roots_of_trees) ==  1 and len(particles_in_encounter) == 3:
-            root = roots_of_trees[0]
-            comp1 = root.child1
-            comp2 = root.child2
-            semi = rescale_binary_components(comp1, comp2, self.kepler,
-                                             initial_scale)
-            print comp1
-            print comp2
-            print 'semi =', semi, ' sep12 =', sep12
-            if 3*semi > sep12:
-                print 'breaking up wide binary'
-                particles_in_encounter =\
-                    datamodel.Particles(particles = (comp1, comp2))
-                particles_in_encounter.child1 = None
-                particles_in_encounter.child2 = None
-                binaries = \
-                    trees.BinaryTreesOnAParticleSet(particles_in_encounter,
-                                                    "child1", "child2")
-                stars_not_in_a_multiple = \
-                    binaries.particles_not_in_a_multiple()
-                roots_of_trees = binaries.roots()
+       
             
         # Set radii to reflect multiple structure.  This is probably not
         # the best place to do it...
@@ -505,6 +483,37 @@ class Multiples(object):
                                    stars - scattering_stars, 
                                    phi_in_field_of_stars_to_remove,
                                    self.gravity_constant)
+                                   
+        # 5bbb. break up a single binary if it is too wide.  TUNABLE TODO
+
+        for root in roots_of_trees:
+            comp1 = root.child1
+            comp2 = root.child2
+            # if it's a simple binary
+            comp1_has_children = comp1.child1 is not None or comp1.child1 is not None
+            comp2_has_children = comp2.child1 is not None or comp2.child1 is not None
+            
+            if comp1_has_children or comp2_has_children:
+                continue
+                
+            semi = get_semimajor_axis_for_binary_components(
+                    comp1, 
+                    comp2, 
+                    self.kepler
+            )
+            print comp1
+            print comp2
+            
+            print 'semi =', semi, ' sep12 =', sep12
+            if 3*semi > sep12:
+                particles_in_encounter.remove_particle(root)
+                
+        binaries = \
+            trees.BinaryTreesOnAParticleSet(particles_in_encounter,
+                                            "child1", "child2")
+        stars_not_in_a_multiple = \
+            binaries.particles_not_in_a_multiple()
+        roots_of_trees = binaries.roots()
 
         # 5d. Add stars not in a binary to the gravity code.
         if len(stars_not_in_a_multiple) > 0:
@@ -761,6 +770,29 @@ def offset_particle_tree(particle, dpos, dvel):
     particle.velocity += dvel
     # print 'offset', int(particle.id), 'by', dpos; sys.stdout.flush()
 
+
+def get_semimajor_axis_for_binary_components(comp1, comp2, kep):
+    pos1 = comp1.position
+    pos2 = comp2.position
+    sep12 = ((pos2-pos1)**2).sum()
+    mass1 = comp1.mass
+    mass2 = comp2.mass
+    total_mass = mass1 + mass2
+    vel1 = comp1.velocity
+    vel2 = comp2.velocity
+    cmpos = (mass1*pos1+mass2*pos2)/total_mass
+    cmvel = (mass1*vel1+mass2*vel2)/total_mass
+
+    mass = comp1.mass + comp2.mass
+    rel_pos = pos2 - pos1
+    rel_vel = vel2 - vel1
+    kep.initialize_from_dyn(mass,
+                            rel_pos[0], rel_pos[1], rel_pos[2],
+                            rel_vel[0], rel_vel[1], rel_vel[2])
+    a,e = kep.get_elements()
+    
+    return a
+    
 def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
 
     # Rescale the two-body system consisting of comp1 and comp2 to lie

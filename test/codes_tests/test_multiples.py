@@ -358,3 +358,30 @@ class TestSimpleMultiples(TestWithMPI):
         print multiples_code.particles
         
         self.assertEquals(len(multiples_code.particles), 2)
+
+    def test7(self):
+        code = Hermite()
+        stars = datamodel.Particles(3)
+        
+        stars.mass = 2 | nbody_system.mass
+        stars.position = [
+            [0, 0, 0],
+            [1, 1, 0],
+            [2, 2, 0],
+        ]|nbody_system.length
+        
+        stars.velocity = [
+            [1, 0,0],
+            [-1, 0, 0],
+            [-2,-2, 0],
+        ]|nbody_system.speed
+        
+        stars.radius = 0.5 | nbody_system.length
+        
+        code.particles.add_particles(stars)
+        
+        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
+        multiples_code.evolve_model(0.6|nbody_system.time)
+        print multiples_code.particles
+        
+        self.assertEquals(len(multiples_code.particles), 3)
