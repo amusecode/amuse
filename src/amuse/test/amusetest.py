@@ -55,7 +55,7 @@ class TestCase(unittest.TestCase):
                 raise self.failureException(msg or err_fmt_string.format(first, second, *args))
         elif any(failures):
             first, second = self._convert_to_vectors(first, second)
-            err_list =  [("@{index}, ".format(i)+err_fmt_string.format(first[i], second[i], *args))
+            err_list =  [("@{0}, ".format(i)+err_fmt_string.format(first[i], second[i], *args))
                             for (i,b) in enumerate(failures) if b]
             err = '\n'.join(err_list)
             raise self.failureException(msg or err)
