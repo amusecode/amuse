@@ -347,7 +347,7 @@ class Multiples(object):
         scattering_stars = datamodel.Particles(particles = (star1, star2))
 
         # Add neighbors if necessary.  Use a simple distance criterion
-        # for now.  Refine later.  TODO.
+        # for now.  Refine later.  TUNABLE TODO.
 
         distances = (stars.position
                       - scattering_stars.center_of_mass()).lengths()
@@ -355,7 +355,8 @@ class Multiples(object):
         sorted_stars = stars[indices]
         sorted_distances = distances[indices]
 
-        rmax = 2*((star1.position-star2.position)**2).sum().sqrt()
+        sep12 = ((star1.position-star2.position)**2).sum().sqrt()
+        rmax = 2*sep12
         initial_scale = rmax
         print 'rmax =', rmax
         for i in range(2,len(sorted_distances)):
@@ -466,24 +467,29 @@ class Multiples(object):
 
         stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
         roots_of_trees = binaries.roots()
-        
-        
-        # 5bbb. break up binary if it is a wide binary
+
+        # 5bbb. break up a single binary if it is too wide.  TUNABLE TODO
+
         if len(roots_of_trees) ==  1 and len(particles_in_encounter) == 3:
             root = roots_of_trees[0]
             comp1 = root.child1
             comp2 = root.child2
-            semi = rescale_binary_components(comp1, comp2, self.kepler, initial_scale)
+            semi = rescale_binary_components(comp1, comp2, self.kepler,
+                                             initial_scale)
             print comp1
             print comp2
-            if semi > initial_scale:
+            print 'semi =', semi, ' sep12 =', sep12
+            if 3*semi > sep12:
                 print 'breaking up wide binary'
-                particles_in_encounter = datamodel.Particles(particles = (comp1, comp2))
+                particles_in_encounter =\
+                    datamodel.Particles(particles = (comp1, comp2))
                 particles_in_encounter.child1 = None
                 particles_in_encounter.child2 = None
-                binaries = trees.BinaryTreesOnAParticleSet(particles_in_encounter,
-                                                   "child1", "child2")
-                stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
+                binaries = \
+                    trees.BinaryTreesOnAParticleSet(particles_in_encounter,
+                                                    "child1", "child2")
+                stars_not_in_a_multiple = \
+                    binaries.particles_not_in_a_multiple()
                 roots_of_trees = binaries.roots()
             
         # Set radii to reflect multiple structure.  This is probably not
