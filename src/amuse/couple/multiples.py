@@ -355,7 +355,7 @@ class Multiples(object):
         indices = numpy.argsort(distances.number)
         sorted_stars = stars[indices]
         sorted_distances = distances[indices]
-        print "sorted_distances", sorted_distances
+        #print "sorted_distances", sorted_distances
         sep12 = ((star1.position-star2.position)**2).sum().sqrt()
         rmax = 2*sep12
         initial_scale = rmax
@@ -430,7 +430,7 @@ class Multiples(object):
         M,a,e,r,E,tperi = get_component_binary_elements(star1, star2, 
                                                         self.kepler, 1)
         print 'semi =', a.number, ' ecc =', e, ' E/mu =', E.number, \
-              ' tperi =', tperi.number
+              ' tperi =', tperi.number, ' period =', self.kepler.get_period()
         sys.stdout.flush()
 
         if self.gravity_code.unit_converter is None:
@@ -487,15 +487,19 @@ class Multiples(object):
                                    
         # 5bbb. break up a single binary if it is too wide.  TUNABLE TODO
 
-        for root in roots_of_trees:
+        for root in list(roots_of_trees):
             comp1 = root.child1
             comp2 = root.child2
-            # if it's a simple binary
-            comp1_has_children = comp1.child1 is not None or comp1.child1 is not None
-            comp2_has_children = comp2.child1 is not None or comp2.child1 is not None
+
+            # If it's a simple binary...
+
+            comp1_has_children = \
+                comp1.child1 is not None or comp1.child2 is not None
+            comp2_has_children = \
+                comp2.child1 is not None or comp2.child2 is not None
             
-            if comp1_has_children or comp2_has_children:
-                continue
+            #if comp1_has_children or comp2_has_children:
+            #    continue
                 
             semi = get_semimajor_axis_for_binary_components(
                     comp1, 
