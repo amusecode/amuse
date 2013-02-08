@@ -512,6 +512,7 @@ class Multiples(object):
             print 'semi =', semi, ' rlimit =', rlimit
             if self.binary_breakup_factor*semi > rlimit:
                 particles_in_encounter.remove_particle(root)
+                print 'broke up a soft binary'
                 
         binaries = \
             trees.BinaryTreesOnAParticleSet(particles_in_encounter,
