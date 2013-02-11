@@ -93,6 +93,73 @@ ISO_ARRAY_DEFINES_STRING = """
   character (kind=c_char, len=100000), target :: characters_out
 """
 
+MODULE_GLOBALS_STRING = """
+  integer, save :: polling_interval = 0
+"""
+
+POLLING_FUNCTIONS_STRING = """
+    FUNCTION internal__get_message_polling_interval(outval)
+        INTEGER,intent(out) :: outval
+        INTEGER :: internal__get_message_polling_interval
+        outval = polling_interval
+        internal__get_message_polling_interval = 0
+    END FUNCTION
+    FUNCTION internal__set_message_polling_interval(inval)
+        INTEGER,intent(in) :: inval
+        INTEGER :: internal__set_message_polling_interval
+        polling_interval = inval
+        internal__set_message_polling_interval = 0
+    END FUNCTION
+"""
+
+RECV_HEADER_SLEEP_STRING = """
+    SUBROUTINE mpi_recv_header(parent, ioerror)
+        use iso_c_binding
+        implicit none
+        
+        INCLUDE 'mpif.h'
+      
+        integer,intent(in) :: parent
+        integer,intent(inout) :: ioerror
+        integer :: request_status(MPI_STATUS_SIZE),header_request
+        logical is_finished
+        
+        INTERFACE
+          INTEGER (C_INT) FUNCTION usleep(useconds) bind(C)
+          !SUBROUTINE usleep(useconds) bind(C)
+            use iso_c_binding
+            implicit none
+            INTEGER(c_int32_t), value  :: useconds
+          END
+        END INTERFACE
+        
+        call MPI_Irecv(header_in, HEADER_SIZE, MPI_INT, 0, 989, parent, header_request, ioerror)
+        if(polling_interval.GT.0) then
+            is_finished = .false.
+            call MPI_Test(header_request, is_finished, request_status, ioerror)
+            DO WHILE(.NOT. is_finished)
+                ioerror =  usleep(int(polling_interval, c_int32_t))
+                call MPI_Test(header_request, is_finished, request_status, ioerror)
+            END DO
+            call MPI_Wait(header_request, request_status, ioerror)
+        else
+            call MPI_Wait(header_request, request_status, ioerror)
+        endif
+    END SUBROUTINE
+"""
+
+RECV_HEADER_WAIT_STRING = """
+    SUBROUTINE mpi_recv_header(parent, ioerror)
+        implicit none
+        INCLUDE 'mpif.h'
+        integer,intent(in) :: parent
+        integer,intent(inout) :: ioerror
+        integer :: request_status(MPI_STATUS_SIZE),header_request
+        
+        call MPI_Irecv(header_in, HEADER_SIZE, MPI_INT, 0, 989, parent, header_request, ioerror)
+        call MPI_Wait(header_request, request_status, ioerror)
+    END SUBROUTINE
+"""
 RUN_LOOP_MPI_STRING = """
     SUBROUTINE run_loop_mpi
       implicit none
@@ -129,7 +196,7 @@ RUN_LOOP_MPI_STRING = """
       must_run_loop = 1
       
       do while (must_run_loop .eq. 1)
-        call MPI_BCast(header_in, HEADER_SIZE, MPI_INTEGER, 0, parent, ioerror)
+        call mpi_recv_header(parent, ioerror)
         
         !print*, 'fortran: got header ', header_in
         
@@ -1065,16 +1132,27 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
 
         self.output_maximum_constants()
 
+        self.out.lf().lf() + MODULE_GLOBALS_STRING
+            
         if self.use_iso_c_bindings:
             self.out.n() + ISO_ARRAY_DEFINES_STRING
         else:
             self.out.n() + ARRAY_DEFINES_STRING
+            
         
         self.out.lf().lf() + MAIN_STRING
         
         self.out.lf().lf() + 'CONTAINS'
         
+        self.out + POLLING_FUNCTIONS_STRING
+            
         if self.must_generate_mpi:
+            
+            if self.use_iso_c_bindings:    
+                self.out + RECV_HEADER_SLEEP_STRING
+            else:
+                self.out + RECV_HEADER_WAIT_STRING
+                
             self.out + RUN_LOOP_MPI_STRING
 
         if self.use_iso_c_bindings:

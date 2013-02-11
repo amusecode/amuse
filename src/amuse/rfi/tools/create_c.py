@@ -55,39 +55,84 @@ static int HEADER_STRING_COUNT = 9;
 static bool TRUE_BYTE = 1;
 static bool FALSE_BYTE = 0;
 
-bool mpiIntercom = false;
+static bool mpiIntercom = false;
 
-int socketfd = 0;
+static int socketfd = 0;
 
-int * header_in;
-int * header_out;
+static int * header_in;
+static int * header_out;
 
-int * ints_in;
-int * ints_out;
+static int * ints_in;
+static int * ints_out;
 
-long long int * longs_in;
-long long int * longs_out;
+static long long int * longs_in;
+static long long int * longs_out;
 
-float * floats_in;
-float * floats_out;
+static float * floats_in;
+static float * floats_out;
 
-double * doubles_in;
-double * doubles_out;
+static double * doubles_in;
+static double * doubles_out;
 
-int * booleans_in;
-int * booleans_out;
+static int * booleans_in;
+static int * booleans_out;
 
 /* sizes of strings */
-int * string_sizes_in;
-int * string_sizes_out;
+static int * string_sizes_in;
+static int * string_sizes_out;
 
 /* pointers to input and output strings (contents not stored here) */
-char * * strings_in;
-char * * strings_out;
+static char * * strings_in;
+static char * * strings_out;
 
 /* actual string data */
-char * characters_in = 0;
-char * characters_out = 0;
+static char * characters_in = 0;
+static char * characters_out = 0;
+"""
+
+
+POLLING_FUNCTIONS_STRING = """
+static int polling_interval = 0;
+
+int internal__get_message_polling_interval(int * outval)
+{
+    *outval = polling_interval;
+    
+    return 0;
+}
+
+int internal__set_message_polling_interval(int inval)
+{
+    polling_interval = inval;
+    
+    return 0;
+}
+"""
+
+
+RECV_HEADER_SLEEP_STRING = """
+#include <unistd.h>
+
+int mpi_recv_header(MPI_Comm & parent)
+{
+    MPI_Request header_request;
+    MPI_Status request_status;
+   
+    MPI_Irecv(header_in, HEADER_SIZE, MPI_INT, 0, 989, parent, &header_request);
+        
+    if(polling_interval > 0)
+    {
+        int is_finished = 0;
+        MPI_Test(&header_request, &is_finished, &request_status);
+        while(!is_finished) {
+            usleep(polling_interval);
+            MPI_Test(&header_request, &is_finished, &request_status);
+        }
+        MPI_Wait(&header_request, &request_status);
+    } else {
+        MPI_Wait(&header_request, &request_status);
+    }
+}
 """
 
 FOOTER_CODE_STRING = """
@@ -234,10 +279,11 @@ void run_mpi(int argc, char *argv[]) {
   header_out = new int[HEADER_SIZE];
 
   new_arrays(max_call_count);  
-  
+
   while(must_run_loop) {
     //fprintf(stderr, "receiving header\\n");
-    MPI_Bcast(header_in, HEADER_SIZE, MPI_INT, 0, parent);
+    mpi_recv_header(parent);
+    
     //fprintf(stderr, "C worker code: got header %d %d %d %d %d %d %d %d %d %d\\n", header_in[0], header_in[1], header_in[2], header_in[3], header_in[4], header_in[5], header_in[6], header_in[7], header_in[8], header_in[9]);
     
     int call_count = header_in[HEADER_CALL_COUNT];
@@ -958,7 +1004,12 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.output_code_constants()
         
         self.out.lf() + CONSTANTS_AND_GLOBAL_VARIABLES_STRING
-
+        
+        self.out.lf() + POLLING_FUNCTIONS_STRING
+        
+        if self.must_generate_mpi:
+            self.out.lf() + RECV_HEADER_SLEEP_STRING
+        
         self.output_handle_call()
         
         self.out.lf() + FOOTER_CODE_STRING

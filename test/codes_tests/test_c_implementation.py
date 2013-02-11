@@ -673,4 +673,37 @@ class TestInterface(TestWithMPI):
         self.assertEquals(content.strip(), "abc\ndef\nexex")
         
         
+
+    def test21(self):
+        instance = ForTestingInterface(self.exefile)
+        (output1, error1) = instance.internal__get_message_polling_interval()
+        error2 = instance.internal__set_message_polling_interval(1234)
+        (output2, error3) = instance.internal__get_message_polling_interval()
+        instance.internal__set_message_polling_interval(0)
+        instance.stop()
+        self.assertEquals(error1, 0)
+        self.assertEquals(output1, 0)
+        self.assertEquals(error2, 0)
+        self.assertEquals(error3, 0)
+        self.assertEquals(output2, 1234)
+    
+    def test22(self):
+        instance = ForTestingInterface(self.exefile)
+        t0 = time.time()
+        (output1, error1) = instance.internal__get_message_polling_interval()
+        t1 = time.time()
+        error2 = instance.internal__set_message_polling_interval(500 * 1000)
+        t2 = time.time()
+        (output2, error3) = instance.internal__get_message_polling_interval()
+        t3 = time.time()
+        instance.stop()
+        self.assertEquals(error1, 0)
+        self.assertEquals(output1, 0)
+        self.assertEquals(error2, 0)
+        self.assertEquals(error3, 0)
+        self.assertEquals(output2, 500 * 1000)
+        print t1 - t0, t3 - t2
+        self.assertTrue((t3 - t2) > 0.25)
+
+
     

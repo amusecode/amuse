@@ -41,12 +41,14 @@ class PythonImplementation(object):
         self.implementation = implementation
         self.interface = interface
         self.must_run = False
+        self.polling_interval = 0
         
     def start(self):
         parent = MPI.Comm.Get_parent()
         parent = MPI.Comm.Get_parent()
         
         rank = MPI.COMM_WORLD.rank
+        
         
         self.must_run = True
         while self.must_run:
@@ -224,7 +226,16 @@ class PythonImplementation(object):
             x.specification.prepare_output_parameters()
             
         return interface_functions
-        
+    
+    
+    def internal__set_message_polling_interval(self, inval):
+        self.polling_interval = inval
+        return 0
+    
+    def internal__get_message_polling_interval(self, outval):
+        outval.value = self.polling_interval 
+        return 0
+    
     def internal__redirect_outputs(self, stdoutfile, stderrfile):
         mpi_rank = MPI.COMM_WORLD.rank
         sys.stdin.close()

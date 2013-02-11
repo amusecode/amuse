@@ -1,9 +1,6 @@
 import numpy 
 from amuse.test.amusetest import TestWithMPI
 
-
-
-
 from amuse.community.fi.interface import Fi
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
@@ -12,6 +9,7 @@ from amuse.ext.bridge import bridge
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.ic.kingmodel import new_king_model
+
 def sys_from_parts(base_class,parts,converter,eps=None):
     interface=base_class(converter)
     interface.initialize_code()
@@ -20,7 +18,7 @@ def sys_from_parts(base_class,parts,converter,eps=None):
     interface.particles.add_particles(parts)
     return interface
 
-class testBridge(TestWithMPI):
+class TestBridge(TestWithMPI):
 
     def test1(self):
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)

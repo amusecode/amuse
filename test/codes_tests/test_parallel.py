@@ -50,6 +50,13 @@ class TestAmuseInterface(TestWithMPI):
         bhtree_particles = self.new_system_sun_and_earth()
         bhtree.particles.add_particles(bhtree_particles)
         
+        if bhtree.legacy_interface.channel_type == 'mpi':
+            from mpi4py import MPI
+            if not MPI.Query_thread() == MPI.THREAD_MULTIPLE:
+                bhtree.stop()
+                self.skip("can only test parallel with multiple thread support in mpi implementation")
+            
+        
         hermite = Hermite(convert_nbody)
         hermite.dt_dia = 5000
         hermite.commit_parameters()

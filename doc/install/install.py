@@ -252,14 +252,15 @@ class InstallPrerequisites(object):
           '--prefix='+self.prefix,
           '--enable-shared',
           '--enable-sharedlibs=gcc',
-          '--enable-fc', 
+          '--enable-fc',
+          #'--enable-threads=runtime', 
           '--with-python='+sys.executable,
           '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
         elif self.use_gforker_process_manager:
-            command.append('--with-pm=gforker:hydra:mpd')
+            command.append('--with-pm=gforker:hydra')
         else:
             command.append('--with-pm=mpd:hydra:gforker')
         if not self.fortran90_compiler is None:

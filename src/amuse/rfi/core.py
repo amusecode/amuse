@@ -606,6 +606,26 @@ class CodeInterface(OptionalAttributes):
         function.id = 0
         return function
         
+    
+        
+    @legacy_function
+    def internal__get_message_polling_interval():
+        """Gets the message polling interval for MPI 
+        header messages, in microseconds"""
+        
+        function = LegacyFunctionSpecification() 
+        function.addParameter('polling_interval', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def internal__set_message_polling_interval():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('polling_interval', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+        
+        
     def stop(self):
         self._stop()
     
@@ -724,7 +744,8 @@ class PythonCodeInterface(CodeInterface):
         x.channel_type = self.channel_type
         x.interface_class = type(self)
         x.implementation_factory = implementation_factory
-        x.start()
+        if self.channel_factory.is_root():
+            x.start()
         return x.worker_name
         
         

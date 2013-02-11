@@ -1204,31 +1204,45 @@ class TestAthenaInterface(TestWithMPI):
         instance.set_boundary("interface","interface","interface","interface","interface","interface")
         instance.commit_parameters()
         
-           
+        boundary_indices = []
+        all_i0 = []
+        all_j0 = []
+        all_z0 = []
+        all_i = []
+        
         for boundaryindex in [5,6]:
             for i0 in range(6+8):
                 for j0 in range(6+8):
                     for z0 in range(4):
-                        i = (i0 * (5*4)) + (j0 * 4) + z0
-                        error = instance.set_boundary_state(
-                            i0,j0,z0,       #  index
-                            1.0 * (i+1),         #  density
-                            2.0 * (i+1), 3.0 * (i+1), 4.0 * (i+1), #  momentum
-                            5.0 * (i+1),         #  energy
-                            boundaryindex, 1     #  boundary + grid
-                        )
-                        self.assertEquals(error, 0)
-                        rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
-                            i0, j0, z0,
-                            boundaryindex, 1.0
-                        )
-                        self.assertEquals(error, 0)
+                        boundary_indices.append(boundaryindex)
+                        all_i0.append(i0)
+                        all_j0.append(j0)
+                        all_z0.append(z0)
                         
-                        self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
-                        self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
-                        self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
-                        self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
-                        self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
+                        
+                        i = (i0 * (5*4)) + (j0 * 4) + z0
+                        
+                        all_i.append(i)
+        all_i = numpy.asarray(all_i)
+        error = instance.set_boundary_state(
+            all_i0,all_j0,all_z0,       #  index
+            1.0 * (all_i+1),         #  density
+            2.0 * (all_i+1), 3.0 * (all_i+1), 4.0 * (all_i+1), #  momentum
+            5.0 * (all_i+1),         #  energy
+            boundary_indices, 1     #  boundary + grid
+        )
+        self.assertEquals(error, 0)
+        rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
+            all_i0, all_j0, all_z0,
+            boundaryindex, 1.0
+        )
+        self.assertEquals(error, 0)
+        
+        self.assertAlmostRelativeEquals(rho, 1.0 * (all_i+1))
+        self.assertAlmostRelativeEquals(rhovx, 2.0 * (all_i+1))
+        self.assertAlmostRelativeEquals(rhovy, 3.0 * (all_i+1))
+        self.assertAlmostRelativeEquals(rhovz, 4.0 * (all_i+1))
+        self.assertAlmostRelativeEquals(rhoen, 5.0 * (all_i+1))
                         
 class TestAthena(TestWithMPI):
     

@@ -251,7 +251,15 @@ class AsyncRequestsPool(object):
         
 class AbstractMessage(object):
     
-    def __init__(self, call_id = 0, function_id = -1, call_count = 1, dtype_to_arguments = {}, error = False, big_endian = (sys.byteorder.lower() == 'big')):
+    def __init__(self,
+        call_id = 0, function_id = -1, call_count = 1, 
+        dtype_to_arguments = {}, 
+        error = False, 
+        big_endian = (sys.byteorder.lower() == 'big'),
+        polling_interval = 0
+    ):
+        self.polling_interval = polling_interval
+        
         #flags
         self.big_endian = big_endian
         self.error = error
@@ -309,10 +317,8 @@ class MPIMessage(AbstractMessage):
         
     def receive(self, comm):
         header = self.receive_header(comm)
-        #logging.getLogger("channel").debug("receiving message with header %s", header)
         self.receive_content(comm, header)
-        #logging.getLogger("channel").debug("message received, error = %r, big_endian = %r", self.error, self.big_endian)
-    
+        
     def receive_header(self, comm):
         header = numpy.zeros(10,  dtype='i')
         self.mpi_receive(comm, [header, MPI.INT])
@@ -435,11 +441,12 @@ class MPIMessage(AbstractMessage):
         flags = header.view(dtype='bool8')
         flags[0] = self.big_endian
         flags[1] = self.error
-        
-        self.mpi_send(comm,[header, MPI.INT])
-        
+        self.send_header(comm, header)
         self.send_content(comm)
     
+    def send_header(self, comm, header):
+        self.mpi_send(comm,[header, MPI.INT])
+        
     def send_content(self, comm):
         self.send_ints(comm, self.ints)
         self.send_longs(comm, self.longs)
@@ -516,13 +523,34 @@ class ServerSideMPIMessage(MPIMessage):
         request = comm.Irecv(array,  source=0, tag=999)
         request.Wait()
         
-        
     def mpi_send(self, comm, array):
         comm.Bcast(array, root=MPI.ROOT)
+        
+    def send_header(self, comm, array):
+        requests = []
+        for rank in range(comm.Get_remote_size()):
+            request = comm.Isend(array, dest=rank, tag=989)
+            requests.append(request)
+        MPI.Request.Waitall(requests)
     
+        
     def mpi_nonblocking_receive(self, comm, array):
         return comm.Irecv(array,  source=0, tag=999)
 
+    def receive_header(self, comm):
+        header = numpy.zeros(10,  dtype='i')
+        request = comm.Irecv([header, MPI.INT],  source=0, tag=999)
+        if self.polling_interval  > 0:
+            is_finished = request.Test()
+            while not is_finished:
+                time.sleep(self.polling_interval / 1000000.)
+                is_finished = request.Test()
+            request.Wait()
+        else:
+            request.Wait()
+            
+        return header
+        
     
 class ClientSideMPIMessage(MPIMessage):
     
@@ -535,6 +563,11 @@ class ClientSideMPIMessage(MPIMessage):
     def mpi_nonblocking_receive(self, comm, array):
         return comm.Irecv(array,  source=0, tag=999)
 
+    def receive_header(self, comm):
+        header = numpy.zeros(10,  dtype='i')
+        request = comm.Irecv([header, MPI.INT],  source=0, tag=989)
+        request.Wait()
+        return header
 
 MAPPING = {}
 
@@ -821,6 +854,8 @@ def is_mpd_running():
             must_check_mpd = os.environ['AMUSE_MPD_CHECK'] == '1'
         if 'PMI_PORT' in os.environ:
             must_check_mpd = False
+        if 'PMI_RANK' in os.environ:
+            must_check_mpd = False
         if 'HYDRA_CONTROL_FD' in os.environ:
             must_check_mpd = False
         
@@ -891,7 +926,7 @@ class MpiChannel(AbstractMessageChannel):
     def ensure_mpi_initialized(cls):
         if not MPI.Is_initialized():
             if rc.threaded:
-                MPI.Init_thread()
+                MPI.Init_thread(MPI.THREAD_MULTIPLE)
             else:
                 MPI.Init()
         cls.register_finalize_code()
@@ -935,6 +970,11 @@ class MpiChannel(AbstractMessageChannel):
     @option(type="int", sections=("channel",))
     def debugger_port(self):
         return 4343
+        
+        
+    @option(type="int", sections=("channel",))
+    def polling_interval_in_milliseconds(self):
+        return 0
         
     @option(sections=("channel",))
     def python_exe_for_redirection(self):
@@ -987,6 +1027,10 @@ class MpiChannel(AbstractMessageChannel):
             if 'MPISPAWN_ARGV_0' in os.environ:
                 return False
         return True
+    
+    @classmethod
+    def is_root(self):
+        return MPI.COMM_WORLD.rank == 0
         
     def start(self):
         if not self.debugger_method is None:
