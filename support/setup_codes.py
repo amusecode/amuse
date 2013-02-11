@@ -321,13 +321,13 @@ class CodeCommand(Command):
             return
 
     def set_java_variables(self):
-        if is_configured and hasattr(config, 'java') and config.java.is_enabled:
+        if is_configured and hasattr(config, 'java') and hasattr(config.java, 'is_enabled') and config.java.is_enabled:
             self.environment['JAVA'] = config.java.java
             self.environment['JAVAC'] = config.java.javac
             self.environment['JAVAH'] = config.java.javah
             self.environment['JAR'] = config.java.jar
             self.environment['JAVA_FLAGS'] = config.java.flags
-	else:
+        else:
             self.environment['JAVA'] = ''
             self.environment['JAVAC'] = ''
             self.environment['JAVAH'] = ''
@@ -884,6 +884,12 @@ class BuildCodes(CodeCommand):
             ),  
             level = level
         )
+        
+        if is_configured and (not hasattr(config, 'java') or not hasattr(config.java, 'is_enabled')):
+            self.announce(
+                "Your configuration is out of date, please rerun configure",
+                level = level
+            )
         
  
 class CleanCodes(CodeCommand):

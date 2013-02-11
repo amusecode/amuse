@@ -67,7 +67,7 @@ class generate_main(Command):
             script_file.write('IPython.Shell.start().mainloop()\n')
         os.chmod('iamuse.sh', stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)
 
-        if is_configured:
+        if is_configured and hasattr(config, 'java') and hasattr(config.java, 'is_enabled'):
             with open('ibis-deploy.sh','w') as script_file:
                 script_file.write('#!/bin/sh')
                 script_file.write('\n#Deploy support process. Only works if the Ibis library has been build\n\n')
