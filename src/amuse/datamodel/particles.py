@@ -340,6 +340,9 @@ class AbstractParticleSet(AbstractSet):
     def as_binary_tree(self, name_of_first_child = 'child1', name_of_second_child = 'child2'):
         return trees.ChildTreeOnParticleSet(self, (name_of_first_child, name_of_second_child))
     
+    def new_binary_tree_wrapper(self, name_of_first_child = 'child1', name_of_second_child = 'child2'):
+        return trees.ChildTreeOnParticleSet(self, (name_of_first_child, name_of_second_child))
+    
     def copy(self, memento = None, keep_structure = False):
         attributes = self.get_attribute_names_defined_in_store()
         keys = self.get_all_keys_in_store()
