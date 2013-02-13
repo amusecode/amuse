@@ -476,14 +476,15 @@ class Multiples(object):
             
         set_radii(particles_in_encounter, self.kepler)
 
-        total_energy_of_stars_to_add, phi_correction \
-            = scale_top_level_list(stars_not_in_a_multiple,
-                                   roots_of_trees,
-                                   self.kepler,
-                                   initial_scale,
-                                   stars - scattering_stars, 
-                                   phi_in_field_of_stars_to_remove,
-                                   self.gravity_constant)
+        scale_top_level_list(
+            stars_not_in_a_multiple,
+            roots_of_trees,
+            self.kepler,
+            initial_scale,
+            stars - scattering_stars, 
+            phi_in_field_of_stars_to_remove,
+            self.gravity_constant
+        )
                                    
         # 5bbb. break up a single binary if it is too wide.  TUNABLE TODO
 
@@ -520,7 +521,17 @@ class Multiples(object):
         stars_not_in_a_multiple = \
             binaries.particles_not_in_a_multiple()
         roots_of_trees = binaries.roots()
-
+        
+        total_energy_of_stars_to_add, phi_correction \
+            = calculate_energy_correction(
+                stars_not_in_a_multiple,
+                roots_of_trees,
+                stars - scattering_stars, 
+                phi_in_field_of_stars_to_remove,
+                self.gravity_constant
+            )
+                                   
+                                   
         # 5d. Add stars not in a binary to the gravity code.
         if len(stars_not_in_a_multiple) > 0:
             gravity_stars.add_particles(stars_not_in_a_multiple)
@@ -1256,13 +1267,24 @@ def scale_top_level_list(singles, multiples, kep, scale,
         #print lt, 'scaled top-level nodes'
         #print top_level_nodes
 
-    sys.stdout.flush()
+
+
+def calculate_energy_correction(singles, multiples, field, 
+        phi_in_field_of_stars_to_remove, gravity_constant):
 
     # Recompute the external field, compute the tidal error, and
     # absorb it into the top-level energy.  Optional code.
     # Alternatively, we can simply absorb the tidal error into the
     # dEmult correction returned for bookkeeping purposes.
 
+    top_level_nodes = singles + multiples
+
+    # Figure out the tree structure.
+
+    ls = len(singles)
+    lm = len(multiples)
+    lt = ls + lm
+    
     phi_correction = zero
 
     phi_in_field_of_stars_to_add \
