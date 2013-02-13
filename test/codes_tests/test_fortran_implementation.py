@@ -636,6 +636,8 @@ class TestInterface(TestWithMPI):
         error2 = instance.internal__set_message_polling_interval(500 * 1000)
         t2 = time.time()
         (output2, error3) = instance.internal__get_message_polling_interval()
+        time.sleep(0.1)
+        (output2, error3) = instance.internal__get_message_polling_interval()
         t3 = time.time()
         instance.stop()
         self.assertEquals(error1, 0)

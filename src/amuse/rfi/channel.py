@@ -812,6 +812,9 @@ Please do a 'make clean; make' in the root directory.
     @classmethod
     def is_root(self):
         return True
+    
+    def is_polling_supported(self):
+        return False
  
 AbstractMessageChannel.DEBUGGERS = {
     "none":None,
@@ -974,11 +977,6 @@ class MpiChannel(AbstractMessageChannel):
     @option(type="int", sections=("channel",))
     def debugger_port(self):
         return 4343
-        
-        
-    @option(type="int", sections=("channel",))
-    def polling_interval_in_milliseconds(self):
-        return 0
         
     @option(sections=("channel",))
     def python_exe_for_redirection(self):
@@ -1223,6 +1221,9 @@ class MpiChannel(AbstractMessageChannel):
         
     def is_inuse(self):
         return self._is_inuse
+    
+    def is_polling_supported(self):
+        return True
         
 
 

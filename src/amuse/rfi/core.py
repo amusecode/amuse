@@ -584,6 +584,14 @@ class CodeInterface(OptionalAttributes):
         # incorrectly
         self.ensure_stop_interface_at_exit()
         
+        if self.channel.is_polling_supported():
+            if self.polling_interval_in_milliseconds > 0:
+                self.internal__set_message_polling_interval(int(self.polling_interval_in_milliseconds * 1000))
+        
+    @option(type="int", sections=("channel",))
+    def polling_interval_in_milliseconds(self):
+        return 0
+        
     @classmethod
     def ensure_stop_interface_at_exit(cls):
         if not cls.is_stop_interfaces_registered:

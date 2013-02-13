@@ -735,3 +735,9 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error3, 0)
         self.assertEquals(output2, 1234)
     
+    def test25(self):
+        instance = ForTestingInterface(polling_interval_in_milliseconds = 100)
+        (output1, error1) = instance.internal__get_message_polling_interval()
+        instance.stop()
+        self.assertEquals(error1, 0)
+        self.assertEquals(output1, 100000)
