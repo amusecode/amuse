@@ -808,6 +808,10 @@ Please do a 'make clean; make' in the root directory.
 
     def is_active(self):
         return True
+        
+    @classmethod
+    def is_root(self):
+        return True
  
 AbstractMessageChannel.DEBUGGERS = {
     "none":None,
