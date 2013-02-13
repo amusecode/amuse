@@ -566,7 +566,14 @@ class ClientSideMPIMessage(MPIMessage):
     def receive_header(self, comm):
         header = numpy.zeros(10,  dtype='i')
         request = comm.Irecv([header, MPI.INT],  source=0, tag=989)
-        request.Wait()
+        if self.polling_interval  > 0:
+            is_finished = request.Test()
+            while not is_finished:
+                time.sleep(self.polling_interval / 1000000.)
+                is_finished = request.Test()
+            request.Wait()
+        else:
+            request.Wait()
         return header
 
 MAPPING = {}
@@ -1030,6 +1037,10 @@ class MpiChannel(AbstractMessageChannel):
                 return False
         return True
     
+    @option(type="int", sections=("channel",))
+    def polling_interval_in_milliseconds(self):
+        return 0
+        
     @classmethod
     def is_root(self):
         return MPI.COMM_WORLD.rank == 0
@@ -1099,7 +1110,10 @@ class MpiChannel(AbstractMessageChannel):
             self.split_message(call_id, function_id, call_count, dtype_to_arguments)
             return
         
-        message = ServerSideMPIMessage(call_id, function_id, call_count, dtype_to_arguments)
+        message = ServerSideMPIMessage(
+            call_id, function_id, 
+            call_count, dtype_to_arguments
+        )
         message.send(self.intercomm)
         
         self._is_inuse = True
@@ -1164,7 +1178,9 @@ class MpiChannel(AbstractMessageChannel):
             del self._merged_results_splitted_message
             return x
         
-        message = ServerSideMPIMessage()
+        message = ServerSideMPIMessage(
+            polling_interval = self.polling_interval_in_milliseconds * 1000
+        )
         try:
             message.receive(self.intercomm)
         except MPI.Exception as ex:

@@ -53,7 +53,7 @@ class PythonImplementation(object):
         self.must_run = True
         while self.must_run:
             
-            message = ClientSideMPIMessage()
+            message = ClientSideMPIMessage(polling_interval = self.polling_interval)
             message.receive(parent)
                 
             result_message = ClientSideMPIMessage(message.call_id, message.function_id, message.call_count)

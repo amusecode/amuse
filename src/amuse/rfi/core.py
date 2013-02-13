@@ -576,6 +576,7 @@ class CodeInterface(OptionalAttributes):
         
         self.channel.redirect_stdout_file = self.redirection_filenames[0]
         self.channel.redirect_stderr_file = self.redirection_filenames[1]
+        self.channel.polling_interval_in_milliseconds = self.polling_interval_in_milliseconds
         
         self.channel.start()
         
