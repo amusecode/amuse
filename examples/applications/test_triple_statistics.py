@@ -13,6 +13,7 @@ import sys
 import time
 from amuse.lab import *
 
+from amuse.rfi import channel
 
 from multiprocessing import Process,Queue
 
@@ -22,9 +23,9 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-
 from mpi4py import MPI
 from amuse.io import text
+
 class SimulateTripleSystemUntilDecay(object):
     gravitational_constant = nbody_system.G
     distance_relative_to_inner_binary_axis = 50
@@ -187,11 +188,12 @@ if __name__ == '__main__':
         
     result = AdaptingVectorQuantity()
     
+    channel.MpiChannel.ensure_mpi_initialized()
     rank = MPI.COMM_WORLD.Get_rank()
     
     total_number_of_systems = int(sys.argv[1])
     data = calculate_escape_time(rank, total_number_of_systems)
-   
+    
     
     
     output = text.CsvFileText(filename = "triple_data_{0:03}.csv".format(rank))
