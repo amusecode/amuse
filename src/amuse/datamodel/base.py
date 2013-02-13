@@ -326,7 +326,7 @@ class VectorAttribute(DerivedAttribute):
         #if 1:
         #    return VectorAttributeValue(instance, instance.get_all_indices_in_store(), self.attribute_names)
         
-        values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names)
+        values = [instance.__getattr__(attribute) for attribute in self.attribute_names]
         unit_of_the_values = None
         is_a_quantity = None
         for quantity in values:
