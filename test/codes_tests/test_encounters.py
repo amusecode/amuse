@@ -11,29 +11,32 @@ from amuse.datamodel import Particles
 from amuse.datamodel import Particle
 from amuse.couple import encounters
 
-class TestAbstractHandleEncounter(amusetest.TestWithMPI):
-    def new_binary(self, mass1, mass2, semi_major_axis,
-                   eccentricity = 0, keyoffset = 1):
-        total_mass = mass1 + mass2
-        mass_fraction_particle_1 = mass1 / (total_mass)
-    
-        binary = Particles(keys=range(keyoffset, keyoffset+2))
-        binary[0].mass = mass1
-        binary[1].mass = mass2
-    
-        mu = nbody_system.G * total_mass
-    
-        velocity_perihelion = numpy.sqrt( mu / semi_major_axis  * ((1.0 + eccentricity)/(1.0 - eccentricity)))
-        radius_perihelion = semi_major_axis * (1.0 - eccentricity)
-        
-        binary[0].position = ((1.0 - mass_fraction_particle_1) * radius_perihelion * [1.0,0.0,0.0])
-        binary[1].position = -(mass_fraction_particle_1 * radius_perihelion * [1.0,0.0,0.0])
-    
-        binary[0].velocity = ((1.0 - mass_fraction_particle_1) * velocity_perihelion * [0.0,1.0,0.0])
-        binary[1].velocity = -(mass_fraction_particle_1 * velocity_perihelion * [0.0,1.0,0.0])
+def new_binary(
+        mass1, mass2, semi_major_axis,
+        eccentricity = 0, keyoffset = 1
+    ):
+    total_mass = mass1 + mass2
+    mass_fraction_particle_1 = mass1 / (total_mass)
 
-        return binary
+    binary = Particles(keys=range(keyoffset, keyoffset+2))
+    binary[0].mass = mass1
+    binary[1].mass = mass2
+
+    mu = nbody_system.G * total_mass
+
+    velocity_perihelion = numpy.sqrt( mu / semi_major_axis  * ((1.0 + eccentricity)/(1.0 - eccentricity)))
+    radius_perihelion = semi_major_axis * (1.0 - eccentricity)
+    
+    binary[0].position = ((1.0 - mass_fraction_particle_1) * radius_perihelion * [1.0,0.0,0.0])
+    binary[1].position = -(mass_fraction_particle_1 * radius_perihelion * [1.0,0.0,0.0])
+
+    binary[0].velocity = ((1.0 - mass_fraction_particle_1) * velocity_perihelion * [0.0,1.0,0.0])
+    binary[1].velocity = -(mass_fraction_particle_1 * velocity_perihelion * [0.0,1.0,0.0])
+
+    return binary
         
+class TestAbstractHandleEncounter(amusetest.TestWithMPI):
+    
     def test1(self):
         particles_in_encounter = Particles(2)
         particles_in_encounter.mass = 1 | nbody_system.mass
@@ -131,7 +134,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
             G = nbody_system.G
         )
         
-        simple_binary = self.new_binary(
+        simple_binary = new_binary(
             1 | nbody_system.mass, 
             1 | nbody_system.mass, 
             0.2 | nbody_system.length
@@ -198,7 +201,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
             G = nbody_system.G
         )
         
-        simple_binary = self.new_binary(
+        simple_binary = new_binary(
             1 | nbody_system.mass, 
             1 | nbody_system.mass, 
             0.2 | nbody_system.length
@@ -232,3 +235,51 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         self.assertEquals(len(x.new_binaries), 0)
         self.assertEquals(len(x.updated_binaries), 1)
         self.assertEquals(x.updated_binaries[0], binaries[0])
+
+
+class TestKeplerOrbits(amusetest.TestWithMPI):
+    
+    def test1(self):
+        x = encounters.KeplerOrbits()
+        binary = new_binary( 
+            1 | nbody_system.mass,
+            0.5 | nbody_system.mass,
+            1.2 | nbody_system.length,
+        )
+        semimajor_axis, eccentricity = x.get_semimajor_axis_and_eccentricity_for_binary_components(
+            binary[0],
+            binary[1]
+        )
+        self.assertAlmostRelativeEquals(semimajor_axis,  1.2 | nbody_system.length)
+        self.assertAlmostRelativeEquals(eccentricity,  0)
+        
+    def test2(self):
+        x = encounters.KeplerOrbits()
+        binary = new_binary( 
+            1 | nbody_system.mass,
+            0.5 | nbody_system.mass,
+            2.0 | nbody_system.length,
+            0.5
+        )
+        binary.position += [0.1,0.2,0.3]  | nbody_system.length
+        
+        print (binary[0].position  - binary[1].position).length() 
+        dpos, dvel = x.compress_binary_components(
+            binary[0],
+            binary[1],
+            0.5 | nbody_system.length
+        )
+        
+        center_of_mass_before = binary.center_of_mass()
+        center_of_mass_velocity_before = binary.center_of_mass_velocity()
+        
+        binary.position += dpos
+        binary.velocity += dvel
+        
+        center_of_mass_after = binary.center_of_mass()
+        center_of_mass_velocity_after = binary.center_of_mass_velocity()
+        
+        self.assertAlmostRelativeEquals(center_of_mass_before, center_of_mass_after)
+        self.assertAlmostRelativeEquals(center_of_mass_velocity_before, center_of_mass_velocity_after)
+        print (binary[0].position  - binary[1].position).length()
+        #self.assertTrue((binary[0].position  - binary[1].position).length() <= 1.2 | nbody_system.length)

@@ -7,6 +7,12 @@ It is used by the multiples module.
 
 from amuse.datamodel import Particles
 from amuse.units import constants
+from amuse.units.quantities import as_vector_quantity
+
+#codes to use
+from amuse.community.kepler.interface import Kepler
+
+import numpy
 
 class AbstractHandleEncounter(object):
     """Abstract base class for all strategies to
@@ -299,3 +305,103 @@ class AbstractHandleEncounter(object):
         binary_copy.child2 = binary_found_in_encounter.child2.copy()
         binary_copy.position = binary_found_in_encounter.position
         binary_copy.velocity = binary_found_in_encounter.velocity
+        
+class KeplerOrbits(object):
+    
+    def __init__(self, nbody_converter = None):
+        self.kepler_code = Kepler(nbody_converter)
+        self.kepler_code.initialize_code()
+        
+    def get_semimajor_axis_and_eccentricity_for_binary_components(self, particle1, particle2):
+        total_mass = particle1.mass + particle2.mass
+        rel_position = particle1.position - particle2.position
+        rel_velocity = particle1.velocity - particle2.velocity
+        self.kepler_code.initialize_from_dyn(
+            total_mass,
+            rel_position[0], rel_position[1], rel_position[2],
+            rel_velocity[0], rel_velocity[1], rel_velocity[2]
+        )
+        return self.kepler_code.get_elements()
+
+    def compress_binary_components(self, particle1, particle2, scale):
+        """
+        Returns the change in positions and velocities for 
+        the two-body system consisting of 'particle1' and 'particle2'.
+        After applying the change the particles will lie
+        inside distance 'scale' of one another.  The final orbit will be
+        receding (moving away from each other).
+        """
+        total_mass = particle1.mass + particle2.mass
+        rel_position = particle1.position - particle2.position
+        rel_velocity = particle1.velocity - particle2.velocity
+        separation = rel_position.length()
+        
+        particles = Particles()
+        particles.add_particle(particle1)
+        particles.add_particle(particle2)
+        
+        center_of_mass_position = particles.center_of_mass()
+        center_of_mass_velocity = particles.center_of_mass_velocity()
+        positions_to_center_of_mass = particles.position - center_of_mass_position
+        velocities_to_center_of_mass = particles.velocity - center_of_mass_velocity
+        
+        if separation <= scale: 
+            # particles are already close together, no scaling done
+            # AVE is this correct, will the particle(s) be receding?
+            #     or should some movement always happen
+            return None, None
+        
+        
+        self.kepler_code.initialize_from_dyn(
+            total_mass,
+            rel_position[0], rel_position[1], rel_position[2],
+            rel_velocity[0], rel_velocity[1], rel_velocity[2]
+        )
+
+        true_anomaly, mean_anomaly = self.kepler_code.get_angles()
+        semimajor_axis, eccentricity = self.kepler_code.get_elements()
+        
+        # periapsis == smallest distance
+        # apoapsis == largest distance
+        if eccentricity < 1: 
+            # we hava an ellipsis
+            periapsis = semimajor_axis * (1-eccentricity)
+            apoapsis  = semimajor_axis * (1+eccentricity)
+        else: 
+            # we have a parabola or a hyperbola
+            periapsis = semimajor_axis * (eccentricity-1)
+            apoapsis  = semimajor_axis + periapsis
+            # apoapsis is infinity but this is better
+            # as we only use it for the limit
+
+
+        # closest distance plus 1% of the distance between peri and apo
+        limit = periapsis + 0.01*(apoapsis-periapsis)
+        
+        # we cannot scale to smaller than the periapsis distance
+        if scale < limit:
+            scale = limit
+            
+        if true_anomaly < 0:
+            self.kepler_code.advance_to_periastron()
+            self.kepler_code.advance_to_radius(scale)
+        else:
+            if self.kepler_code.get_separation() < scale:
+                self.kepler_code.advance_to_radius(scale)
+            else:
+                self.kepler_code.return_to_radius(scale)
+        
+        # Note: Always end up on an outgoing orbit.  If
+        # periastron > scale, we are now just past periapsis.
+
+        rel_position = as_vector_quantity(self.kepler_code.get_separation_vector())
+        rel_velocity = as_vector_quantity(self.kepler_code.get_velocity_vector())
+        
+        f = particle2.mass / total_mass 
+        fractions = numpy.asarray([-f, (1-f)]).reshape(2,1)
+        
+        delta_positions  = (rel_position * fractions) - positions_to_center_of_mass
+        delta_velocities = (rel_velocity * fractions) - velocities_to_center_of_mass
+        
+        return delta_positions, delta_velocities
+    
