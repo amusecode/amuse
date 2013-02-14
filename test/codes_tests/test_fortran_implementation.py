@@ -313,6 +313,19 @@ class TestInterface(TestWithMPI):
             return False
     
     
+    def skip_if_fotran_does_not_support_mpi(self):
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'compilers') and hasattr(config.compilers, 'fc_iso_c_bindings')
+        except ImportError:
+            is_configured = False
+    
+        if is_configured and config.compilers.fc_iso_c_bindings:
+            return
+        else:
+            self.skip("cannot run test as fortran does not support iso c bindings")
+
+    
     def get_mpif90_arguments(self):
         name = self.get_mpif90_name()
         return list(shlex.split(name))
@@ -629,6 +642,8 @@ class TestInterface(TestWithMPI):
     
 
     def test18(self):
+        self.skip_if_fotran_does_not_support_mpi()
+        
         instance = ForTestingInterface(self.exefile)
         t0 = time.time()
         (output1, error1) = instance.internal__get_message_polling_interval()
