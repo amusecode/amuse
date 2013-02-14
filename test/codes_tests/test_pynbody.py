@@ -6,8 +6,10 @@ from amuse.units import nbody_system, units, constants
 from amuse.datamodel import Particles
 from amuse.ic.plummer import new_plummer_model
 
-from amuse.community.pynbody.interface import PyNbodyInterface, PyNbody, MODULES_MISSING
-
+try:
+    from amuse.community.pynbody.interface import PyNbodyInterface, PyNbody, MODULES_MISSING
+except ImportError:
+    MODULES_MISSING = True
 
 
 class TestPyNbodyInterface(TestWithMPI):
