@@ -330,7 +330,7 @@ class ChildTreeOnParticle(object):
             for name in self.names_of_child_attributes:
                 child  = getattr(current, name)
                 if not child is None:
-                    yield ChildTreeOnParticle(child1, self.names_of_child_attributes)
+                    yield ChildTreeOnParticle(child, self.names_of_child_attributes)
                     children.append(child)
             
             stack.extend(reversed(children))

@@ -77,8 +77,8 @@ class AbstractHandleEncounter(object):
         self.particles_in_field = particles_in_field
         self.particles_close_to_encounter = Particles()
         
-        self.all_component_particles_in_encounter = Particles()
-        self.resolved_component_particles_in_encounter = Particles()
+        self.all_singles_in_encounter = Particles()
+        self.singles_and_multiples_after_evolve = Particles()
     
     
     def start(self):
@@ -87,32 +87,34 @@ class AbstractHandleEncounter(object):
         
         self.select_neighbours_from_field()
         
-        self.fill_set_with_all_component_particles_in_encounter()
+        self.determine_singles_from_particles_in_encounter()
         
-        self.determine_initial_sphere_of_component_particles_in_encounter()
+        self.determine_initial_sphere_of_singles_in_encounter()
         
-        self.move_all_component_particles_to_initial_sphere_frame_of_reference()
+        self.move_all_singles_to_initial_sphere_frame_of_reference()
         
-        self.evolve_particles_in_encounter_until_end_state()
+        self.evolve_singles_in_encounter_until_end_state()
         
         self.determine_structure_of_the_evolved_state()
         
-        self.remove_soft_binaries_from_resolve_component_particles()
+        self.remove_soft_binaries_from_evolved_state()
         
-        self.scale_resolved_component_particles_to_initial_sphere()
+        self.scale_evolved_state_to_initial_sphere()
         
-        self.move_resolved_component_particles_from_initial_sphere_frame_of_reference_to_original()
+        self.move_evolved_state_to_original_frame_of_reference()
         
-    def fill_set_with_all_component_particles_in_encounter(self):
+        self.determine_multiples_in_the_evolved_state()
+        
+    def determine_singles_from_particles_in_encounter(self):
         for x in self.particles_in_encounter:
-            components = self.get_component_particles_of_a_particle(x)
-            self.all_component_particles_in_encounter.add_particles(components)
+            components = self.get_singles_of_a_particle(x)
+            self.all_singles_in_encounter.add_particles(components)
             
         for x in self.particles_close_to_encounter:
-            components = self.get_component_particles_of_a_particle(x)
-            self.all_component_particles_in_encounter.add_particles(components)
+            components = self.get_singles_of_a_particle(x)
+            self.all_singles_in_encounter.add_particles(components)
 
-    def get_component_particles_of_a_particle(self, particle):
+    def get_singles_of_a_particle(self, particle):
         if particle in self.existing_multiples:
             multiple = particle.as_particle_in_set(self.existing_multiples)
             components = multiple.components
@@ -122,6 +124,9 @@ class AbstractHandleEncounter(object):
                 result.add_particle(node.particle)
             result.position += particle.position
             result.velocity += particle.velocity
+            
+            self.dissolved_multiples.add_particle(multiple)
+            self.existing_multiples.remove_particle(multiple)
             return result
         else:
             return particle.as_set()
@@ -142,20 +147,20 @@ class AbstractHandleEncounter(object):
         min_distance = distances_between_different_particles.min()
         self.small_scale_of_particles_in_the_encounter = min_distance    
            
-    def determine_initial_sphere_of_component_particles_in_encounter(self):
-        self.initial_sphere_position = self.all_component_particles_in_encounter.center_of_mass()
-        self.initial_sphere_velocity = self.all_component_particles_in_encounter.center_of_mass_velocity()
+    def determine_initial_sphere_of_singles_in_encounter(self):
+        self.initial_sphere_position = self.all_singles_in_encounter.center_of_mass()
+        self.initial_sphere_velocity = self.all_singles_in_encounter.center_of_mass_velocity()
         
-        distances = (self.all_component_particles_in_encounter.position-self.initial_sphere_position).lengths()
+        distances = (self.all_singles_in_encounter.position-self.initial_sphere_position).lengths()
         self.initial_sphere_radius = distances.max()
     
-    def move_all_component_particles_to_initial_sphere_frame_of_reference(self):
-        self.all_component_particles_in_encounter.position -= self.initial_sphere_position
-        self.all_component_particles_in_encounter.velocity -= self.initial_sphere_velocity
+    def move_all_singles_to_initial_sphere_frame_of_reference(self):
+        self.all_singles_in_encounter.position -= self.initial_sphere_position
+        self.all_singles_in_encounter.velocity -= self.initial_sphere_velocity
         
-    def move_resolved_component_particles_from_initial_sphere_frame_of_reference_to_original(self):
-        self.resolved_component_particles_in_encounter.position += self.initial_sphere_position
-        self.resolved_component_particles_in_encounter.velocity += self.initial_sphere_velocity
+    def move_evolved_state_to_original_frame_of_reference(self):
+        self.singles_and_multiples_after_evolve.position += self.initial_sphere_position
+        self.singles_and_multiples_after_evolve.velocity += self.initial_sphere_velocity
         
     def select_neighbours_from_field(self): 
         if len(self.particles_in_field) == 0:
@@ -182,7 +187,7 @@ class AbstractHandleEncounter(object):
         return particles.potential_energy_in_field(field)
         
 
-    def evolve_particles_in_encounter_until_end_state(self):
+    def evolve_singles_in_encounter_until_end_state(self):
         """
         Resolves the system of the component particles in the encounter
         (the components of the particles in the encounter and
@@ -190,7 +195,7 @@ class AbstractHandleEncounter(object):
         set with the resolved particles. Implementation on the abstract
         class is a no-op, need to re-implement this on a subclass
         """
-        self.resolved_component_particles_in_encounter.add_particles(self.all_component_particles_in_encounter)
+        self.singles_and_multiples_after_evolve.add_particles(self.all_singles_in_encounter)
         
     
     def determine_structure_of_the_evolved_state(self):
@@ -199,11 +204,11 @@ class AbstractHandleEncounter(object):
         of the particles (i.e. binary, triples etc). 
         Implementation on the abstract class is a no-op, need to re-implement this on a subclass
         """
-        self.resolved_component_particles_in_encounter.child1 = None
-        self.resolved_component_particles_in_encounter.child2 = None
+        self.singles_and_multiples_after_evolve.child1 = None
+        self.singles_and_multiples_after_evolve.child2 = None
 
     
-    def remove_soft_binaries_from_resolve_component_particles(self):
+    def remove_soft_binaries_from_evolved_state(self):
         """
         Remove binaries with a aphelion (largest separation between the
         parts) larger that the small scale of the encounter from the
@@ -211,7 +216,7 @@ class AbstractHandleEncounter(object):
         """
         pass
         
-    def scale_resolved_component_particles_to_initial_sphere(self):
+    def scale_evolved_state_to_initial_sphere(self):
         """
         Scale the system so that all particles are just inside the initial sphere.
         Particles should be moving apart.
@@ -222,7 +227,37 @@ class AbstractHandleEncounter(object):
         """
         pass
     
-    def determine_multiples_in_the_resolved_component_particles(self):
+    def determine_multiples_in_the_evolved_state(self):
         """
+        Called after culling and scaling the evolved state. What is left
+        are multiples (binaries, triples etc) that need to be handled
+        as a single particle or singles
+        """
+        tree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
         
-        """
+        # TODO it would be nice to update a multiple
+        # instead of dissolving and creating it
+        # as we do now, we will assume that a multiple with the same
+        # singles in it is the same multiple
+        #    for multiple in self.dissolved_multiples:
+        #       look_up_table[keys of all singles] = multiple
+        
+        # a branch in the tree is node with two children
+        for root_node in tree.iter_branches():
+            root_particle = root_node.particle
+            multiple_components = Particles()
+            # descendants is all children and grandchildren etc. etc.
+            for child in root_node.iter_descendants():
+                component_particle = multiple_components.add_particle(child.particle)
+                
+            multiple_components.position -= root_particle.position
+            multiple_components.velocity -= root_particle.velocity
+            
+            multiple_particle = root_particle.copy()
+            multiple_particle.components = multiple_components
+            self.new_multiples.add_particle(multiple_particle)
+        
+        
+            
+                
+        

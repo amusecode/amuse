@@ -97,19 +97,19 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         x.start()
         
-        self.assertEquals(len(x.all_component_particles_in_encounter), 3)
+        self.assertEquals(len(x.all_singles_in_encounter), 3)
         
-        self.assertAlmostRelativeEqual(x.all_component_particles_in_encounter.mass, [0.5, 0.5, 1.0]| nbody_system.mass)
+        self.assertAlmostRelativeEqual(x.all_singles_in_encounter.mass, [0.5, 0.5, 1.0]| nbody_system.mass)
         
-        child1 = x.resolved_component_particles_in_encounter[0]
-        child2 = x.resolved_component_particles_in_encounter[1]
+        child1 = x.singles_and_multiples_after_evolve[0]
+        child2 = x.singles_and_multiples_after_evolve[1]
         self.assertAlmostRelativeEqual(child1.position, [1,0.1,0]| nbody_system.length)
         self.assertAlmostRelativeEqual(child1.velocity, [0,0.5,0.2]| nbody_system.speed)
         self.assertAlmostRelativeEqual(child2.position, [1,-0.1,0]| nbody_system.length)
         self.assertAlmostRelativeEqual(child2.velocity, [0,0.6,-0.2]| nbody_system.speed)
         
         
-    def XWIPtest3(self):
+    def test3(self):
         
         particles_in_encounter = Particles(keys=(1,2))
         particles_in_encounter.mass = 1 | nbody_system.mass
@@ -131,34 +131,40 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
             G = nbody_system.G
         )
         
-        def evolve_particles_in_encounter_until_end_state():
-            resolved_particles = x.resolved_component_particles_in_encounter
-            resolved_particles.add_particles(x.all_component_particles_in_encounter)
-            resolved_particles.child1 = None
-            resolved_particles.child2 = None
-            root_particle = resolved_particles.add_particle(Particle(
+        simple_binary = self.new_binary(
+            1 | nbody_system.mass, 
+            1 | nbody_system.mass, 
+            0.2 | nbody_system.length
+        )
+                
+        def evolve_singles_in_encounter_until_end_state():
+            particles = x.singles_and_multiples_after_evolve
+            particles.add_particles(x.all_singles_in_encounter)
+            particles.child1 = None
+            particles.child2 = None
+            
+            root_particle = particles.add_particle(Particle(
                 key = 10,
                 mass = 2.0 | nbody_system.mass, 
-                position = [0.5, 0.0,0.0]  | nbody_system.length,
-                velocity = [0,0.0,0] | nbody_system.speed,
+                position = particles[0:1].center_of_mass(),
+                velocity = particles[0:1].center_of_mass_velocity(),
             ))
-            root_particle.child1 = resolved_particles[0]
-            root_particle.child2 = resolved_particles[1]
+            root_particle.child1 = particles[0]
+            root_particle.child2 = particles[1]
+            particles[0].position = simple_binary[0].position + root_particle.position
+            particles[1].position = simple_binary[1].position + root_particle.position
             
-            simple_binary = self.new_binary(
-                1 | nbody_system.mass, 
-                1 | nbody_system.mass, 
-                0.2 | nbody_system.length)
-            
-            resolved_particles[0].position = ([0.5,0,0] | nbody_system.length) + simple_binary[0].position
-            resolved_particles[1].position = ([0.5,0,0] | nbody_system.length) + simple_binary[1].position
-            resolved_particles[0].velocity = simple_binary[0].velocity
-            resolved_particles[1].velocity = simple_binary[1].velocity
-            print resolved_particles
-            
-        x.evolve_particles_in_encounter_until_end_state = evolve_particles_in_encounter_until_end_state
+            particles[0].velocity = simple_binary[0].velocity + root_particle.velocity
+            particles[1].velocity = simple_binary[1].velocity + root_particle.velocity
+        
+        x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
+        x.determine_structure_of_the_evolved_state = lambda : 1
         
         x.start()
         self.assertEquals(len(x.new_multiples), 1)
+        multiple = x.new_multiples[0]
+        self.assertEquals(len(multiple.components), 2)
         
+        self.assertAlmostRelativeEqual(multiple.components[0].position, simple_binary[0].position)
+        self.assertAlmostRelativeEqual(multiple.components[1].position, simple_binary[1].position) 
         

@@ -2622,7 +2622,10 @@ class Particle(object):
             raise exceptions.AmuseException("The parent and child particles should be in the same set")
         
         child.parent = self
-                
+    
+    def copy(self):
+        return self.as_set().copy()[0]
+        
     def __add__(self, particles):
         """
         Returns a particle subset, composed of the given
