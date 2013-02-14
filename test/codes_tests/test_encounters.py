@@ -13,7 +13,8 @@ from amuse.couple import encounters
 
 def new_binary(
         mass1, mass2, semi_major_axis,
-        eccentricity = 0, keyoffset = 1
+        eccentricity = 0, keyoffset = 1,
+        is_at_periapsis = True
     ):
     total_mass = mass1 + mass2
     mass_fraction_particle_1 = mass1 / (total_mass)
@@ -24,14 +25,18 @@ def new_binary(
 
     mu = nbody_system.G * total_mass
 
-    velocity_perihelion = numpy.sqrt( mu / semi_major_axis  * ((1.0 + eccentricity)/(1.0 - eccentricity)))
-    radius_perihelion = semi_major_axis * (1.0 - eccentricity)
-    
-    binary[0].position = ((1.0 - mass_fraction_particle_1) * radius_perihelion * [1.0,0.0,0.0])
-    binary[1].position = -(mass_fraction_particle_1 * radius_perihelion * [1.0,0.0,0.0])
+    if is_at_periapsis:
+        velocity = numpy.sqrt( mu / semi_major_axis  * ((1.0 + eccentricity)/(1.0 - eccentricity)))
+        radius   = semi_major_axis * (1.0 - eccentricity)
+    else:
+        velocity = numpy.sqrt( mu / semi_major_axis  * ((1.0 - eccentricity)/(1.0 + eccentricity)))
+        radius   = semi_major_axis * (1.0 + eccentricity)
+        
+    binary[0].position = ((1.0 - mass_fraction_particle_1) * radius * [1.0,0.0,0.0])
+    binary[1].position = -(mass_fraction_particle_1 * radius * [1.0,0.0,0.0])
 
-    binary[0].velocity = ((1.0 - mass_fraction_particle_1) * velocity_perihelion * [0.0,1.0,0.0])
-    binary[1].velocity = -(mass_fraction_particle_1 * velocity_perihelion * [0.0,1.0,0.0])
+    binary[0].velocity = ((1.0 - mass_fraction_particle_1) * velocity * [0.0,1.0,0.0])
+    binary[1].velocity = -(mass_fraction_particle_1 * velocity * [0.0,1.0,0.0])   
 
     return binary
         
@@ -259,15 +264,17 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
             2.0 | nbody_system.length,
-            0.5
+            0.5,
+            is_at_periapsis = False
+            
         )
         binary.position += [0.1,0.2,0.3]  | nbody_system.length
+        binary.velocity += [0.4,0.5,0.6]  | nbody_system.speed
         
-        print (binary[0].position  - binary[1].position).length() 
         dpos, dvel = x.compress_binary_components(
             binary[0],
             binary[1],
-            0.5 | nbody_system.length
+            1.2 | nbody_system.length
         )
         
         center_of_mass_before = binary.center_of_mass()
@@ -281,5 +288,5 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
         
         self.assertAlmostRelativeEquals(center_of_mass_before, center_of_mass_after)
         self.assertAlmostRelativeEquals(center_of_mass_velocity_before, center_of_mass_velocity_after)
-        print (binary[0].position  - binary[1].position).length()
-        #self.assertTrue((binary[0].position  - binary[1].position).length() <= 1.2 | nbody_system.length)
+        separation = (binary[0].position  - binary[1].position).length()
+        self.assertAlmostRelativeEquals( separation, 1.2 | nbody_system.length)
