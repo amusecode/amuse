@@ -7,9 +7,6 @@ from amuse.community.interface.gd import SinglePointGravityFieldInterface
 from amuse.community.interface.gd import GravityFieldCode
 from amuse.rfi.core import PythonCodeInterface
 
-from pynbody.integrator import Integrator
-from pynbody.particles import Particles
-from pynbody.particles.body import Body
 try:
     from pynbody.integrator import Integrator
     from pynbody.particles import Particles
