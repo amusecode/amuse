@@ -271,7 +271,51 @@ class CsvFileTextTests(amusetest.TestCase):
             "#mass,length,length**2 * time**-2 * mass,thermodynamic temperature\n1.0,2.0,3.0,4.0\n4.0,5.0,6.0,7.0\n", contents)
     
     def test7(self):
-        print "Test 7: User interface (write_set_to_file and read_set_from_file)"
+        print "Test 7: Write CSV - quantities instead of set, names and types unspecified"
+        a = [1.0, 4] | units.none
+        b = [2.0, 5] | units.m
+        
+        data_stream = StringIO.StringIO()
+        instance = text.CsvFileText(None, data_stream)
+        instance.quantities = [a, b]
+        instance.store()
+        self.assertEquals("#col(0),col(1)\n"
+            "#no_system.get('none'),system.get('S.I.').base('length')\n"
+            "#none,m\n1.0,2.0\n4.0,5.0\n", data_stream.getvalue())
+    
+    def test8(self):
+        print "Test 8: Write CSV - quantities instead of set, types unspecified"
+        a = [1.0, 4] | units.none
+        b = [2.0, 5] | units.m
+        
+        data_stream = StringIO.StringIO()
+        instance = text.CsvFileText(None, data_stream)
+        instance.quantities = [a, b]
+        instance.attribute_names = ['a', 'b']
+        instance.store()
+        
+        self.assertEquals("#a,b\n"
+            "#no_system.get('none'),system.get('S.I.').base('length')\n"
+            "#none,m\n1.0,2.0\n4.0,5.0\n", data_stream.getvalue())
+    
+    def test9(self):
+        print "Test 9: Write CSV - quantities instead of set, names and types specified"
+        a = [1.0, 4] | units.none
+        b = [2.0, 5] | units.m
+        
+        data_stream = StringIO.StringIO()
+        instance = text.CsvFileText(None, data_stream)
+        instance.quantities = [a, b]
+        instance.attribute_names = ['a', 'b']
+        instance.attribute_types = [units.none, 100*units.cm]
+        instance.store()
+        
+        self.assertEquals("#a,b\n"
+            "#no_system.get('none'),system.get('S.I.').base('length')\n"
+            "#none,100 * cm\n1.0,2.0\n4.0,5.0\n", data_stream.getvalue())
+    
+    def test10(self):
+        print "Test 10: User interface (write_set_to_file and read_set_from_file)"
         particles = datamodel.Particles(2)
         particles.a = [1, 4] | units.none
         particles.b = [2, 5] | units.m
@@ -286,7 +330,7 @@ class CsvFileTextTests(amusetest.TestCase):
         os.remove("test_textio.csv")
     
     
-    def test8(self):
+    def test11(self):
         particles = datamodel.Particles(2)
         particles.a = [1, 4]
         particles.b = [2, 5] | units.m

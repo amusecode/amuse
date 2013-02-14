@@ -103,6 +103,9 @@ class TableFormattedText(base.FileFormatProcessor):
         """
         List of the names of the attributes to load or store
         """
+        return self._get_attribute_names()
+    
+    def _get_attribute_names(self):
         if self.set is None:
             return map(lambda x : "col({0})".format(x), range(len(self.quantities)))
         else:
@@ -116,6 +119,9 @@ class TableFormattedText(base.FileFormatProcessor):
         When derived from the set, the units will always be converted to
         the base units.
         """
+        return self._get_attribute_types()
+    
+    def _get_attribute_types(self):
         quantities = self.quantities
         if self.quantities:
             return map(lambda x : x.unit.to_simple_form() if is_quantity(x) else None, quantities)
@@ -382,6 +388,10 @@ class CsvFileText(TableFormattedText):
             self.attribute_names = [sub.strip() for sub in line.split(self.column_separator)]
     
     def header_lines(self):
+        if self.attribute_names is None:
+            self.attribute_names = self._get_attribute_names()
+        if self.attribute_types is None:
+            self.attribute_types = self._get_attribute_types()
         result = []
         result.append(self.column_separator.join(self.attribute_names))
         if self.must_store_units_in_header:
