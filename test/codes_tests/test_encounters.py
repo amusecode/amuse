@@ -162,9 +162,73 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         x.start()
         self.assertEquals(len(x.new_multiples), 1)
+        self.assertEquals(len(x.new_binaries), 1)
         multiple = x.new_multiples[0]
         self.assertEquals(len(multiple.components), 2)
         
         self.assertAlmostRelativeEqual(multiple.components[0].position, simple_binary[0].position)
         self.assertAlmostRelativeEqual(multiple.components[1].position, simple_binary[1].position) 
+    
+    
         
+    def test4(self):
+        
+        particles_in_encounter = Particles(keys=(1,2))
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        
+        particles_in_field = Particles(keys=(2,4,5,6,7,))
+        particles_in_field.mass = [1,2,3,4,5] | nbody_system.mass
+        particles_in_field[0].position = [2,0,0] | nbody_system.length
+        particles_in_field[1].position = [1.5,0,0] | nbody_system.length
+        particles_in_field[2].position = [0.5,1,0] | nbody_system.length
+        particles_in_field[3].position = [0.5,-0.5,0] | nbody_system.length
+        particles_in_field[4].position = [0,0,2] | nbody_system.length
+        
+        binaries = Particles(keys=(20,))
+        binaries[0].child1 = particles_in_encounter[0]
+        binaries[0].child2 = particles_in_encounter[1]
+        
+        x = encounters.AbstractHandleEncounter(
+            particles_in_encounter,
+            particles_in_field,
+            existing_binaries = binaries,
+            G = nbody_system.G
+        )
+        
+        simple_binary = self.new_binary(
+            1 | nbody_system.mass, 
+            1 | nbody_system.mass, 
+            0.2 | nbody_system.length
+        )
+                
+        def evolve_singles_in_encounter_until_end_state():
+            particles = x.singles_and_multiples_after_evolve
+            particles.add_particles(x.all_singles_in_encounter)
+            particles.child1 = None
+            particles.child2 = None
+            
+            root_particle = particles.add_particle(Particle(
+                key = 10,
+                mass = 2.0 | nbody_system.mass, 
+                position = particles[0:1].center_of_mass(),
+                velocity = particles[0:1].center_of_mass_velocity(),
+            ))
+            root_particle.child1 = particles[0]
+            root_particle.child2 = particles[1]
+            particles[0].position = simple_binary[0].position + root_particle.position
+            particles[1].position = simple_binary[1].position + root_particle.position
+            
+            particles[0].velocity = simple_binary[0].velocity + root_particle.velocity
+            particles[1].velocity = simple_binary[1].velocity + root_particle.velocity
+        
+        x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
+        x.determine_structure_of_the_evolved_state = lambda : 1
+        
+        x.start()
+        self.assertEquals(len(x.new_multiples), 1)
+        self.assertEquals(len(x.new_binaries), 0)
+        self.assertEquals(len(x.updated_binaries), 1)
+        self.assertEquals(x.updated_binaries[0], binaries[0])

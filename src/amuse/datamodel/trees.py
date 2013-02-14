@@ -341,6 +341,15 @@ class ChildTreeOnParticle(object):
             if not child is None:
                 return False
         return True
+        
+    def is_binary(self):
+        if not len(self.names_of_child_attributes) == 2:
+            return False
+            
+        for child in self.iter_children():
+            if not child.is_leaf():
+                return False
+        return True
             
     def iter_leafs(self):
         for node in self.iter_children():

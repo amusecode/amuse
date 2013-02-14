@@ -69,6 +69,8 @@ class AbstractHandleEncounter(object):
         self.new_binaries = Particles()
         self.new_multiples = Particles()
         
+        self.updated_binaries = Particles()
+        
         self.dissolved_binaries = Particles()
         self.dissolved_multiples = Particles()
         
@@ -242,22 +244,58 @@ class AbstractHandleEncounter(object):
         #    for multiple in self.dissolved_multiples:
         #       look_up_table[keys of all singles] = multiple
         
+        binary_lookup_table = {}
+        for binary in self.existing_binaries:
+            key = (binary.child1.key,binary.child2.key)
+            binary_lookup_table[key] = binary
+        
         # a branch in the tree is node with two children
         for root_node in tree.iter_branches():
             root_particle = root_node.particle
+            
             multiple_components = Particles()
-            # descendants is all children and grandchildren etc. etc.
+            # descendants are all children and grandchildren etc. etc.
             for child in root_node.iter_descendants():
                 component_particle = multiple_components.add_particle(child.particle)
-                
+            
+            self.update_binaries(root_node, binary_lookup_table)
+            
+            # put all components in frame of reference of the root particle
             multiple_components.position -= root_particle.position
             multiple_components.velocity -= root_particle.velocity
             
+            # create multiple partice and store it
             multiple_particle = root_particle.copy()
             multiple_particle.components = multiple_components
             self.new_multiples.add_particle(multiple_particle)
-        
-        
             
-                
         
+    def update_binaries(self, root_node, binary_lookup_table):
+        # a binary tree node is a node with two children
+        # the children are leafs (have no children of their own)
+        if root_node.is_binary():
+            binary_found_in_encounter = root_node.particle
+                
+            key = tuple([x.particle.key for x in root_node.iter_children()])
+            if key in binary_lookup_table:
+                binary_known_in_system = binary_lookup_table[key]
+                self.update_binary(binary_found_in_encounter, binary_known_in_system)
+            else:
+                 self.new_binaries.add_particle(binary_found_in_encounter)
+        else:
+            for branch in root_node.iter_descendant_branches():
+                if branch.is_binary():
+                    binary_found_in_encounter = branch.particle
+                    key = tuple([x.particle.key for x in branch.iter_children()])
+                    if key in binary_lookup_table:
+                        binary_known_in_system = binary_lookup_table[key]
+                        self.update_binary(binary_found_in_encounter, binary_known_in_system)
+                    else:
+                        self.new_binaries.add_particle(binary_found_in_encounter)
+                
+    def update_binary(self, binary_found_in_encounter, binary_known_in_system):
+        binary_copy = self.updated_binaries.add_particle(binary_known_in_system)
+        binary_copy.child1 = binary_found_in_encounter.child1.copy()
+        binary_copy.child2 = binary_found_in_encounter.child2.copy()
+        binary_copy.position = binary_found_in_encounter.position
+        binary_copy.velocity = binary_found_in_encounter.velocity

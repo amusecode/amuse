@@ -132,6 +132,7 @@ int mpi_recv_header(MPI_Comm & parent)
     } else {
         MPI_Wait(&header_request, &request_status);
     }
+    return 0;
 }
 """
 
