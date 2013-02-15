@@ -647,3 +647,21 @@ class Kepler(CommonCode):
     
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
+
+    def initialize_from_particles(self, particles):
+        if not len(particles) == 2:
+            raise Exception('The kepler code can only be initialized from a particle set with 2 particles')
+        
+        total_mass = particles[0].mass + particles[1].mass
+        rel_position = particles[0].position - particles[1].position
+        rel_velocity = particles[0].velocity - particles[1].velocity
+        self.center_of_mass_position = particles.center_of_mass()
+        self.center_of_mass_velocity = particles.center_of_mass_velocity()
+        self.initialize_from_dyn(
+            total_mass,
+            rel_position[0],rel_position[1],rel_position[2],
+            rel_velocity[0],rel_velocity[1],rel_velocity[2]
+        )
+        self.particles = particles.copy()
+        
+    

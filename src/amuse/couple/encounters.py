@@ -313,14 +313,12 @@ class KeplerOrbits(object):
         self.kepler_code.initialize_code()
         
     def get_semimajor_axis_and_eccentricity_for_binary_components(self, particle1, particle2):
-        total_mass = particle1.mass + particle2.mass
-        rel_position = particle1.position - particle2.position
-        rel_velocity = particle1.velocity - particle2.velocity
-        self.kepler_code.initialize_from_dyn(
-            total_mass,
-            rel_position[0], rel_position[1], rel_position[2],
-            rel_velocity[0], rel_velocity[1], rel_velocity[2]
-        )
+        
+        particles = Particles()
+        particles.add_particle(particle1)
+        particles.add_particle(particle2)
+        
+        self.kepler_code.initialize_from_particles(particles)
         return self.kepler_code.get_elements()
 
     def compress_binary_components(self, particle1, particle2, scale):
@@ -349,7 +347,7 @@ class KeplerOrbits(object):
             # particles are already close together, no scaling done
             # AVE is this correct, will the particle(s) be receding?
             #     or should some movement always happen
-            return None, None
+            return particles.position * 0, particles.velocity * 0
         
         
         self.kepler_code.initialize_from_dyn(
