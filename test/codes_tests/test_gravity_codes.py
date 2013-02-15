@@ -5,6 +5,8 @@ from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.fi.interface import Fi
+from amuse.community.ph4.interface import ph4
+from amuse.community.mi6.interface import mi6
 
 import numpy
 import time
@@ -152,6 +154,17 @@ class TestHermiteGravityCode(_TestGravityCodes):
     
     def gravity_code_factory(self):
         return Hermite
+        
+    
+class TestPH4GravityCode(_TestGravityCodes):
+    
+    def gravity_code_factory(self):
+        return ph4
+        
+class TestMI6GravityCode(_TestGravityCodes):
+    
+    def gravity_code_factory(self):
+        return mi6
         
 class TestPhiGRAPEGravityCode(_TestGravityCodes):
     
