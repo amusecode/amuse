@@ -208,7 +208,7 @@ class TestHiGPUs(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(HiGPUs, convert_nbody)
         instance.initialize_code()
     
-        instance.parameters.eta_6 = 0.01
+        instance.parameters.eta6 = 0.01
         instance.parameters.eps = 0.0
         instance.commit_parameters()
         stars = self.new_system_of_sun_and_earth()
@@ -339,7 +339,7 @@ class TestHiGPUs(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(HiGPUs)
         instance.initialize_code()
     
-        instance.parameters.eta_6 = 0.01
+        instance.parameters.eta6 = 0.01
         instance.commit_parameters()
 
         stars = new_plummer_model(100)
@@ -406,11 +406,11 @@ class TestHiGPUs(TestWithMPI):
     def test7(self):
        
         instance = self.new_instance_of_an_optional_code(HiGPUs)
-        instance.parameters.eta_6 = 0.5
+        instance.parameters.eta6 = 0.5
         
         instance.commit_parameters()        
         
-        self.assertEquals( instance.parameters.eta_6 ,  0.5 )
+        self.assertEquals( instance.parameters.eta6 ,  0.5 )
         self.assertEquals( instance.parameters.eta_4 ,  0.01)
         self.assertEquals( instance.parameters.begin_time ,  0.0 | nbody_system.time) 
         self.assertEquals( instance.parameters.r_core_plummer ,  0.0 | nbody_system.length)

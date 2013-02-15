@@ -16,26 +16,26 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
 
 
     include_headers = ['worker_code.h']
-	    
+            
     def __init__(self, **keyword_arguments):
-	CodeInterface.__init__(self, name_of_the_worker="higpus_worker_gpu", **keyword_arguments)
+        CodeInterface.__init__(self, name_of_the_worker="higpus_worker_gpu", **keyword_arguments)
     
     @legacy_function
     def echo_int():
-	function = LegacyFunctionSpecification()  
-      	function.addParameter('int_in', dtype='int32', direction=function.IN)
-      	function.addParameter('int_out', dtype='int32', direction=function.OUT)
-      	function.result_type = 'int32'
-      	function.can_handle_array = True
-      	return function
+        function = LegacyFunctionSpecification()  
+              function.addParameter('int_in', dtype='int32', direction=function.IN)
+              function.addParameter('int_out', dtype='int32', direction=function.OUT)
+              function.result_type = 'int32'
+              function.can_handle_array = True
+              return function
 
     @legacy_function
     def new_particle():
-      	function = LegacyFunctionSpecification()
-      	function.can_handle_array = True
-      	function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT)
-      	function.addParameter('mass', dtype='float64', direction=function.IN,
-		 description = "The mass of the particle")
+              function = LegacyFunctionSpecification()
+              function.can_handle_array = True
+              function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT)
+              function.addParameter('mass', dtype='float64', direction=function.IN,
+                 description = "The mass of the particle")
         function.addParameter('radius', dtype='float64', direction=function.IN,
                  description = "The radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.IN,
@@ -267,7 +267,7 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
 
     @legacy_function
     def get_DTPrint():
-	function = LegacyFunctionSpecification()
+        function = LegacyFunctionSpecification()
         function.addParameter('DTPrint', dtype='float64', direction=function.OUT, description = "unit time of snapshot.")
         function.result_type = 'int32'
         return function
@@ -343,12 +343,12 @@ class HiGPUs(GravitationalDynamics):
 
     def define_parameters(self, object):
         object.add_method_parameter(
-            "get_eta4",			          
-            "set_eta4",			         
+            "get_eta4",                                  
+            "set_eta4",                                 
             "eta_4",                  
             "timestep parameter",    
             default_value = 0.01 | units.none
-	)
+        )
 
         object.add_method_parameter(
             "get_eta6",                          
@@ -356,7 +356,7 @@ class HiGPUs(GravitationalDynamics):
             "eta6",                             
             "timestep parameter",                
             default_value = 0.4 | units.none
-	)
+        )
 
         object.add_method_parameter(
             "get_eps",
@@ -364,9 +364,9 @@ class HiGPUs(GravitationalDynamics):
             "eps",
             "softening",
             default_value = 0.001 | nbody_system.length
-	) 
+        ) 
         
-		  
+                  
         object.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
@@ -427,7 +427,7 @@ class HiGPUs(GravitationalDynamics):
             "get_DTPrint",                        
             "set_DTPrint",                        
             "dt_Print",                           
-	    "time for snapshot",                  
+            "time for snapshot",                  
             default_value = 1000000.0 | nbody_system.time
         )
 
@@ -435,11 +435,11 @@ class HiGPUs(GravitationalDynamics):
             "get_max_time_step",                  
             "set_max_time_step",                  
             "max_step",                           
-	         "power of 2 for maximum time step",   
+                 "power of 2 for maximum time step",   
             default_value = pow(2.,-3.0) | nbody_system.time
         )
 
-	object.add_method_parameter(
+        object.add_method_parameter(
             "get_min_time_step",                  
             "set_min_time_step",                  
             "min_step",                           
@@ -447,7 +447,7 @@ class HiGPUs(GravitationalDynamics):
             default_value = pow(2.,-30.0) | nbody_system.time
         )
 
-	object.add_method_parameter(
+        object.add_method_parameter(
             "get_gpu_name",                       
             "set_gpu_name",                       
             "gpu_name",                           
@@ -479,19 +479,19 @@ class HiGPUs(GravitationalDynamics):
             "new_particle",
             (
                 nbody_system.mass,
-               	nbody_system.length,
+                       nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.speed,
                 nbody_system.speed,
-	        nbody_system.speed,
+            nbody_system.speed,
            ),
             (
-               	object.INDEX,
+                object.INDEX,
                 object.ERROR_CODE
             )
-	)
+        )
         object.add_method(
             "set_state",
             (
@@ -529,27 +529,27 @@ class HiGPUs(GravitationalDynamics):
         object.add_method(
             "set_time_begin",
             (
-             	nbody_system.time
+                     nbody_system.time
             ),
             (
-             	object.ERROR_CODE
+                     object.ERROR_CODE
             )
-	)
+        )
         object.add_method(
             "get_time_begin",
             (),
             (
-             	nbody_system.time,
+                     nbody_system.time,
                 object.ERROR_CODE
             )
-	)
+        )
         object.add_method(
             "set_Plummer_core",
             (
-               	nbody_system.length
+                       nbody_system.length
             ),
             (
-             	object.ERROR_CODE
+                     object.ERROR_CODE
             )
         )
 
@@ -557,7 +557,7 @@ class HiGPUs(GravitationalDynamics):
             "get_Plummer_core",
             (),
             (
-               	nbody_system.length,
+                       nbody_system.length,
                 object.ERROR_CODE
             )
         )
@@ -565,10 +565,10 @@ class HiGPUs(GravitationalDynamics):
         object.add_method(
             "set_Plummer_mass",
             (
-               	nbody_system.mass
+                       nbody_system.mass
             ),
             (
-             	object.ERROR_CODE
+                     object.ERROR_CODE
             )
         )
 
@@ -576,7 +576,7 @@ class HiGPUs(GravitationalDynamics):
             "get_Plummer_mass",
             (),
             (
-               	nbody_system.mass,
+                       nbody_system.mass,
                 object.ERROR_CODE
             )
         )
@@ -664,7 +664,7 @@ class HiGPUs(GravitationalDynamics):
                 units.none
             ),
             (
-             	object.ERROR_CODE
+                     object.ERROR_CODE
             )
         )
 
@@ -675,27 +675,27 @@ class HiGPUs(GravitationalDynamics):
                 units.none,
                 object.ERROR_CODE
             )
-	)
+        )
 
 
-	object.add_method(
+        object.add_method(
             "set_number_of_GPU",
             (
-             	units.none
+                     units.none
             ),
             (
-             	object.ERROR_CODE
+                     object.ERROR_CODE
             )
-	)
+        )
 
-	object.add_method(
+        object.add_method(
             "get_number_of_GPU",
             (),
             (
-             	units.none,
+                     units.none,
                 object.ERROR_CODE
             )
-	)
+        )
 
         object.add_method(
             "get_number_of_particles",
@@ -713,7 +713,7 @@ class HiGPUs(GravitationalDynamics):
                 units.none
             ),
             (
-             	object.ERROR_CODE
+                     object.ERROR_CODE
             )
         )
 
@@ -721,29 +721,29 @@ class HiGPUs(GravitationalDynamics):
             "get_number_of_Threads",
             (),
             (
-             	units.none,
+                     units.none,
                 object.ERROR_CODE
             )
-	)
+        )
 
-	object.add_method(
+        object.add_method(
             "set_number_of_Print",
             (
-             	units.none
+                     units.none
             ),
             (
-             	object.ERROR_CODE
+                     object.ERROR_CODE
             )
-	)
+        )
 
-	object.add_method(
+        object.add_method(
             "get_number_of_Print",
             (),
             (
-             	units.none,
+                     units.none,
                 object.ERROR_CODE
             )
-	)
+        )
 
         object.add_method(
             "set_DTPrint",
@@ -751,24 +751,24 @@ class HiGPUs(GravitationalDynamics):
                 nbody_system.time
             ),
             (
-             	object.ERROR_CODE
+                     object.ERROR_CODE
             )
-	)
+        )
 
-	object.add_method(
+        object.add_method(
             "get_DTPrint",
             (),
             (
-             	nbody_system.time,
+                     nbody_system.time,
                 object.ERROR_CODE
             )
-	)
+        )
 
         object.add_method(
             "set_max_time_step",
             (
-             	nbody_system.time
-	    ),
+                     nbody_system.time
+            ),
             (
                 object.ERROR_CODE
             )
@@ -779,47 +779,47 @@ class HiGPUs(GravitationalDynamics):
             (),
             (
                 nbody_system.time,
-	        object.ERROR_CODE
+                object.ERROR_CODE
             )
-	)
+        )
 
-	object.add_method(
+        object.add_method(
             "set_min_time_step",
             (
-             	nbody_system.time
+                nbody_system.time
             ),
             (
-             	object.ERROR_CODE
+                object.ERROR_CODE
             )
-	)
+        )
 
         object.add_method(
             "get_min_time_step",
             (),
             (
-             	nbody_system.time,
+                nbody_system.time,
                 object.ERROR_CODE
             )
-	)
+        )
 
-	object.add_method(
+        object.add_method(
             "set_gpu_name",
             (
                 units.none
             ),
             (
-             	object.ERROR_CODE
+                object.ERROR_CODE
             )
-	)
+        )
 
-	object.add_method(
+        object.add_method(
             "get_gpu_name",
             (),
             (
-             	units.none,
+                     units.none,
                 object.ERROR_CODE
             )
-	)
+        )
  
         object.add_method(
             "set_output_path_name",
