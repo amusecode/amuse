@@ -23,33 +23,33 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
     @legacy_function
     def echo_int():
         function = LegacyFunctionSpecification()  
-              function.addParameter('int_in', dtype='int32', direction=function.IN)
-              function.addParameter('int_out', dtype='int32', direction=function.OUT)
-              function.result_type = 'int32'
-              function.can_handle_array = True
-              return function
+        function.addParameter('int_in', dtype='int32', direction=function.IN)
+        function.addParameter('int_out', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
 
     @legacy_function
     def new_particle():
-              function = LegacyFunctionSpecification()
-              function.can_handle_array = True
-              function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT)
-              function.addParameter('mass', dtype='float64', direction=function.IN,
-                 description = "The mass of the particle")
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT)
+        function.addParameter('mass', dtype='float64', direction=function.IN,
+            description = "The mass of the particle")
         function.addParameter('radius', dtype='float64', direction=function.IN,
-                 description = "The radius of the particle")
+            description = "The radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.IN,
-                 description = "The initial position vector of the particle")
+            description = "The initial position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.IN,
-                 description = "The initial position vector of the particle")
+            description = "The initial position vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.IN,
-                 description = "The initial position vector of the particle")
+            description = "The initial position vector of the particle")
         function.addParameter('vx', dtype='float64', direction=function.IN,
-                 description = "The initial velocity vector of the particle")
+            description = "The initial velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.IN,
-                 description = "The initial velocity vector of the particle")
+            description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN,
-                 description = "The initial velocity vector of the particle")
+            description = "The initial velocity vector of the particle")
         function.result_type = 'int32'
         return function
 
