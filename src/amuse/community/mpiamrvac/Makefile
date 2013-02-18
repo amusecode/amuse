@@ -23,7 +23,10 @@ F77FLAGS += -qfixed
 endif
 
 # ifort flags
+IFORT_MAJOR_MINOR=
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
+IFORT_VERSION?=$(shell $(FC) -v 2>&1 | cut -d\  -f2)
+IFORT_MAJOR_MINOR=$(shell echo $(IFORT_VERSION) | cut -s -d'.' -f1,2)\
 FFLAGS += -FR
 endif
 
@@ -51,6 +54,8 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_svn.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
+PATCH_FILES_IFORT91 = $(PYTHON) ./patch_files_ifort91.py
+
 all: mpiamrvac_worker 
 
 ifdef DOWNLOAD_CODES
@@ -77,6 +82,10 @@ download:
 	mkdir src
 	$(DOWNLOAD_FROM_WEB)
 	$(PATCH_FILES)
+ifeq (IFORT_MAJOR_MINOR, 9.1)
+	$(PATCH_FILES_IFORT91)
+endif
+
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod

@@ -1,0 +1,28 @@
+Index: mpiamrvac/src/mpiamrvac/src/convert.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/convert.t
++++ mpiamrvac/src/mpiamrvac/src/convert.t
+@@ -1608,9 +1608,9 @@ close(qunit)
+ ! next to make gfortran compiler happy, as it does not know
+ ! form='binary' and produces error on compilation
+ !bufform='binary'
+-!open(qunit,file=filename,form=bufform,position='append')
++open(qunit,file=filename,form='binary',position='append')
+ !! following may work for gfortran as well
+-open(qunit,file=filename,access='stream',form='unformatted',position='append')
++! ifort91: open(qunit,file=filename,access='stream',form='unformatted',position='append')
+ buffer='_'
+ ! write(qunit) achar(95)
+ write(qunit) TRIM(buffer)
+@@ -3105,9 +3105,9 @@ close(qunit)
+ ! next to make gfortran compiler happy, as it does not know
+ ! form='binary' and produces error on compilation
+ !!bufform='binary'
+-!!open(qunit,file=pfilename,form=bufform,position='append')
++open(qunit,file=pfilename,form='binary',position='append')
+ ! the following should work with most modern compilers (gfortran/intel)
+-open(qunit,file=pfilename,access='stream',form='unformatted',position='append')
++! ifort91: open(qunit,file=pfilename,access='stream',form='unformatted',position='append')
+ buffer='_'
+ ! write(qunit) achar(95)
+ write(qunit) TRIM(buffer)
