@@ -5,8 +5,26 @@ MPIFC ?= mpif90
 PYTHON ?= python
 FC      = $(MPIFC)
 
-FFLAGS   +=  -g -ffree-form
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+
+FFLAGS += $(FCFLAGS)
+
+# gfortran flags
+ifneq (,$(findstring gfortran, $(notdir $(FORTRAN))))
+FFLAGS +=  -ffree-form
+endif
+
+
+# xlf flags, untested, need to add flags for free form maybe
+ifeq ($(findstring xlf, $(notdir $(FORTRAN))), xlf)
+FFLAGS += -ffree-form
+F77FLAGS += -qfixed
+endif
+
+# ifort flags
+ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
+FFLAGS += -FR
+endif
 
 
 BUILDDIR = build
