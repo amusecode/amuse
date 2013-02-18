@@ -1,0 +1,22 @@
+Index: mocassin/src/mocassin.2.02.70/makefile
+===================================================================
+--- mocassin.orig/src/mocassin.2.02.70/makefile
++++ mocassin/src/mocassin.2.02.70/makefile
+@@ -16,15 +16,13 @@ LDFLAGS += -lm -g
+ #FFLAGS  += -fno-range-check
+ 
+ # gfortran flags
+-$(info  $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- ))
+-$(info  $(findstring gfortran, $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- )))
+ ifneq (,$(findstring gfortran, $(notdir $(FORTRAN))))
+ FFLAGS += -fno-range-check -Jsource
+ endif
+ 
+-ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
+ # ifort flags
+-FFLAGS+= -module source
++ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
++FFLAGS+= -module source -check pointers
+ #GLLIB = $(GLLIB) -lguide 
+ endif
+ 
