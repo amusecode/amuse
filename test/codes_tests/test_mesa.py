@@ -18,7 +18,7 @@ class TestMESAInterface(TestWithMPI):
     
     def test1(self):
         print "Testing initialization of the interface..."
-        instance = self.new_instance(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -36,7 +36,7 @@ class TestMESAInterface(TestWithMPI):
         print "Testing get/set of metallicity (tests new ZAMS model implicitly)..."
         print "The first time this test will take quite some time" \
             " to generate new starting models."
-        instance = self.new_instance(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -57,7 +57,7 @@ class TestMESAInterface(TestWithMPI):
     
     def test3(self):
         print "Testing basic operations: new_particle..."
-        instance = self.new_instance(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -80,7 +80,7 @@ class TestMESAInterface(TestWithMPI):
         
     def test4(self):
         print "Testing basic operations: evolve..."
-        instance = self.new_instance(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -119,7 +119,7 @@ class TestMESAInterface(TestWithMPI):
         print "Testing evolve with varying Z (tests new ZAMS model implicitly)..."
         print "If the required starting models do not exist, this test will " \
             "take quite some time to generate them."
-        instance = self.new_instance(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -143,7 +143,7 @@ class TestMESAInterface(TestWithMPI):
     
     def test6(self):
         print "Testing MESA stop conditions..."
-        instance = self.new_instance(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -169,7 +169,7 @@ class TestMESAInterface(TestWithMPI):
     
     def test7(self):
         print "Testing MESA parameters..."
-        instance = self.new_instance(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -195,7 +195,7 @@ class TestMESAInterface(TestWithMPI):
     
     def test8(self):
         print "Testing MESA wind parameters..."
-        instance = self.new_instance(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -266,7 +266,7 @@ class TestMESA(TestWithMPI):
     
     def test1(self):
         print "Testing initialization and default MESA parameters..."
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -281,7 +281,7 @@ class TestMESA(TestWithMPI):
     
     def test2(self):
         print "Testing basic operations: evolve and get_..."
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -314,7 +314,7 @@ class TestMESA(TestWithMPI):
     
     def test3(self):
         print "Testing basic operations: evolve_model and channels..."
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -339,7 +339,7 @@ class TestMESA(TestWithMPI):
     
     def slowtest4(self):
         print "Testing stellar type..."
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -403,7 +403,7 @@ class TestMESA(TestWithMPI):
     
     def test5(self):
         print "Testing evolve_model for particle set..."
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         masses = [0.5, 1.0] | units.MSun
         max_age = 0.6 | units.Myr
         number_of_stars=len(masses)
@@ -434,7 +434,7 @@ class TestMESA(TestWithMPI):
         print "Test for obtaining the stellar structure model"
         stars = Particles(2)
         stars.mass = [1.0, 10.0] | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -468,7 +468,7 @@ class TestMESA(TestWithMPI):
         print "Test for obtaining the stellar composition structure"
         stars = Particles(1)
         stars.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -502,7 +502,7 @@ class TestMESA(TestWithMPI):
         print "Test for obtaining the stellar composition structure - evolved star with zero metalicity"
         stars = Particles(1)
         stars.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -539,7 +539,7 @@ class TestMESA(TestWithMPI):
         print "Test for changing the stellar structure model"
         star = Particles(1)
         star.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -573,7 +573,7 @@ class TestMESA(TestWithMPI):
         print "Test for changing the stellar composition"
         star = Particles(1)
         star.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA)#, redirection = 'none')
+        instance = self.new_instance_of_an_optional_code(MESA)#, redirection = 'none')
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -615,7 +615,7 @@ class TestMESA(TestWithMPI):
         print "Test evolve_model optional arguments: end_time and keep_synchronous"
         stars = Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -651,7 +651,7 @@ class TestMESA(TestWithMPI):
         print "Test for importing new stellar models"
         star = Particles(1)
         star.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -703,7 +703,7 @@ class TestMESA(TestWithMPI):
         print "Testing MESA wind parameters..."
         stars = Particles(9)
         stars.mass = 10.0 | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -740,7 +740,7 @@ class TestMESA(TestWithMPI):
         print "Testing MESA wind parameters... (short version of slowtest13)"
         stars = Particles(3)
         stars.mass = 10.0 | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -766,7 +766,7 @@ class TestMESA(TestWithMPI):
         print "Testing MESA states"
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -808,7 +808,7 @@ class TestMESA(TestWithMPI):
         print "Testing basic operations: evolve_one_step and evolve_for"
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
-        instance = self.new_instance(MESA)#, redirection = 'none')
+        instance = self.new_instance_of_an_optional_code(MESA)#, redirection = 'none')
         if instance is None:
             print "MESA was not built. Skipping test."
             return
@@ -842,7 +842,7 @@ class TestMESA(TestWithMPI):
         testpath = get_path_to_results()
         outputfile_name = os.path.join(testpath, "mesa_output")
        
-        instance = self.new_instance(MESA, redirection = 'file', redirect_file = outputfile_name)
+        instance = self.new_instance_of_an_optional_code(MESA, redirection = 'file', redirect_file = outputfile_name)
         se_star = instance.particles.add_particle(star)
         for i in range(number_of_steps):
             se_star.evolve_one_step()
@@ -854,7 +854,7 @@ class TestMESA(TestWithMPI):
         
         
         #generate the inlist for the (stand-alone) MESA star run:
-        instance = self.new_instance(MESA, redirection = 'null')
+        instance = self.new_instance_of_an_optional_code(MESA, redirection = 'null')
         with open(instance.default_path_to_inlist, 'r') as default_inlist:
             with open(os.path.join(testpath, 'inlist'), 'w') as test_inlist:
                 for one_line in default_inlist.readlines():
@@ -880,7 +880,7 @@ class TestMESA(TestWithMPI):
     
     def test18(self):
         print "Testing MESA mass_change (User-specified wind/accretion)"
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         instance.parameters.RGB_wind_scheme = 0 # must be turned off for user-specified rates
         instance.parameters.AGB_wind_scheme = 0 # must be turned off for user-specified rates
         
@@ -905,7 +905,7 @@ class TestMESA(TestWithMPI):
     
     def slowtest19a(self):
         print "Testing MESA core mass"
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=3|units.MSun))
         star.evolve_for(330 | units.Myr)
         for i in range(10):
@@ -918,7 +918,7 @@ class TestMESA(TestWithMPI):
     
     def test19b(self):
         print "Testing MESA core mass (short version of slowtest19a)"
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=3|units.MSun))
         star.evolve_one_step()
         index = numpy.searchsorted(star.get_chemical_abundance_profiles(number_of_species=1)[0], 1.0e-4)
@@ -928,7 +928,7 @@ class TestMESA(TestWithMPI):
     
     def test20(self):
         print "Testing MESA pre-main-sequence star"
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.pre_ms_stars.add_particle(Particle(mass=1.0|units.MSun))
         
         self.assertAlmostEqual(star.time_step, 1.0e-3 | units.yr)
@@ -946,7 +946,7 @@ class TestMESA(TestWithMPI):
     
     def slowtest21(self):
         print "Testing MESA calculate_core_mass"
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=40|units.MSun))
         instance.evolve_model(4.56|units.Myr)
         total_core_mass = star.calculate_core_mass()
@@ -978,7 +978,7 @@ class TestMESA(TestWithMPI):
     
     def test22(self):
         print "Testing MESA calculate_core_mass (short version of slowtest21)"
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=1|units.MSun))
         instance.evolve_model(0.3|units.Gyr) # VERY short, for test speed up
         central_hydrogen_abundance = star.get_chemical_abundance_profiles()[0][0]
@@ -1012,7 +1012,7 @@ class TestMESA(TestWithMPI):
     
     def test23(self):
         print "Testing MESA central_temperature and central_density"
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         stars = instance.particles.add_particles(Particles(mass=[0.1, 1, 10]|units.MSun))
         self.assertIsOfOrder(stars.central_temperature, [4e6, 13e6, 31e6] | units.K)
         self.assertIsOfOrder(stars.central_density, [400, 77, 9] | units.g * units.cm**-3)
@@ -1020,7 +1020,7 @@ class TestMESA(TestWithMPI):
     
     def test24(self):
         print "Testing MESA calculate_helium_exhausted_core_mass"
-        instance = self.new_instance(MESA)
+        instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=2|units.MSun))
         
         composition = star.get_chemical_abundance_profiles()

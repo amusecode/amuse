@@ -12,12 +12,12 @@ import numpy
 class TestMpiAmrVacInterface(TestWithMPI):
     
     def test1(self):
-        instance = self.new_instance(MpiAmrVacInterface)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
         instance.initialize_code()
         instance.stop()
     
     def test2(self):
-        instance = self.new_instance(MpiAmrVacInterface)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
         filename, error =  instance.get_parameters_filename()
         self.assertEquals(error, 0)
         self.assertEquals(filename, "amrvac.par")
@@ -45,14 +45,14 @@ class TestMpiAmrVacInterface(TestWithMPI):
         
 
     def test3(self):
-        instance = self.new_instance(MpiAmrVacInterface)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
         self.assertEquals(error, 0)
         instance.stop()
         
     def test4(self):
-        instance = self.new_instance(MpiAmrVacInterface)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
         print instance.default_parameters_filename
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
@@ -78,7 +78,7 @@ class TestMpiAmrVacInterface(TestWithMPI):
     
     
     def test5(self):
-        instance = self.new_instance(MpiAmrVacInterface)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
         print instance.default_parameters_filename
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
@@ -108,7 +108,7 @@ class TestMpiAmrVacInterface(TestWithMPI):
     
     
     def test6(self):
-        instance = self.new_instance(MpiAmrVacInterface)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
         print instance.default_parameters_filename
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
@@ -138,7 +138,7 @@ class TestMpiAmrVacInterface(TestWithMPI):
         instance.stop()
 
     def test7(self):
-        instance = self.new_instance(MpiAmrVacInterface)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
         print instance.default_parameters_filename
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
@@ -175,7 +175,7 @@ class TestMpiAmrVacInterface(TestWithMPI):
         instance.stop()
         
     def test8(self):
-        instance = self.new_instance(MpiAmrVacInterface)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
         print instance.default_parameters_filename
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
@@ -199,7 +199,7 @@ class TestMpiAmrVacInterface(TestWithMPI):
         
     def test9(self): 
 
-        instance = self.new_instance(MpiAmrVacInterface)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
         print instance.default_parameters_filename
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
@@ -241,7 +241,7 @@ class TestMpiAmrVacInterface(TestWithMPI):
 class TestMpiAmrVac(TestWithMPI):
     
     def test1(self):
-        instance = self.new_instance(MpiAmrVac)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVac)
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.setup_mesh(20,20,20, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length, 20.0 | generic_unit_system.length)
         error = instance.set_boundary("periodic", "periodic", "periodic", "periodic", "periodic", "periodic")
@@ -256,7 +256,7 @@ class TestMpiAmrVac(TestWithMPI):
         
     def test2(self):
     
-        instance = self.new_instance(MpiAmrVac)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVac)
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.parameters.mesh_length = (20.0, 20.0, 20.0) | generic_unit_system.length
         instance.parameters.mesh_size = (20, 20, 20) 
@@ -300,7 +300,7 @@ class TestMpiAmrVac(TestWithMPI):
     def test3(self):
     
         for number_of_workers in range(2,6):
-            instance = self.new_instance(MpiAmrVac, number_of_workers = number_of_workers)
+            instance = self.new_instance_of_an_optional_code(MpiAmrVac, number_of_workers = number_of_workers)
             instance.set_parameters_filename(instance.default_parameters_filename)
             instance.parameters.mesh_length = (20.0, 20.0, 20.0) | generic_unit_system.length
             instance.parameters.mesh_size = (20, 20, 20) 
@@ -343,7 +343,7 @@ class TestMpiAmrVac(TestWithMPI):
         
     def test4(self):
     
-        instance = self.new_instance(MpiAmrVac, number_of_workers = 1)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVac, number_of_workers = 1)
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
         instance.parameters.mesh_size = (10, 10, 10)
@@ -380,7 +380,7 @@ class TestMpiAmrVac(TestWithMPI):
                 if(numpy.any(firsthalf)):
                     grid[firsthalf].rho = 1.0  | generic_unit_system.density
         
-        instance = self.new_instance(MpiAmrVac, number_of_workers = 1)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVac, number_of_workers = 1)
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
         instance.parameters.mesh_size = (10, 10, 10)
@@ -413,7 +413,7 @@ class TestMpiAmrVac(TestWithMPI):
         
     
     def test6(self):
-        instance = self.new_instance(MpiAmrVac, number_of_workers = 1)
+        instance = self.new_instance_of_an_optional_code(MpiAmrVac, number_of_workers = 1)
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
         instance.parameters.mesh_size = (10, 10, 10)
@@ -452,7 +452,7 @@ class TestMpiAmrVac(TestWithMPI):
         self.assertEquals(instance.parameters.predictor_step_discretization_method , 'hancock')
         
     def test7(self):
-        instance=self.new_instance(MpiAmrVac)
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac)
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
         instance.parameters.mesh_size = (10,10,10)
@@ -492,7 +492,7 @@ class TestMpiAmrVac(TestWithMPI):
         instance.stop()
         
     def test8(self):
-        instance=self.new_instance(MpiAmrVac)
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac)
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.parameters.mesh_size = (10,10,10)
         instance.parameters.maximum_number_of_grid_levels = 1
@@ -567,7 +567,7 @@ class TestMpiAmrVac(TestWithMPI):
         
     
     def test9(self):
-        instance=self.new_instance(MpiAmrVac, mode="2d")
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac, mode="2d")
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.parameters.mesh_length = (10.0,10.0, 1) | generic_unit_system.length
         instance.parameters.mesh_size = (10,10,1)
@@ -608,7 +608,7 @@ class TestMpiAmrVac(TestWithMPI):
         
     
     def test10(self): 
-        instance=self.new_instance(MpiAmrVac)
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac)
         instance.parameters.mesh_size = (10,10,10)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
         instance.parameters.maximum_number_of_grid_levels = 1
@@ -666,7 +666,7 @@ class TestMpiAmrVac(TestWithMPI):
         instance.stop()
 
     def test11(self): 
-        instance=self.new_instance(MpiAmrVac)
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac)
         instance.parameters.mesh_size = (10,10,10)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
         instance.parameters.maximum_number_of_grid_levels = 1
@@ -726,7 +726,7 @@ class TestMpiAmrVac(TestWithMPI):
         
     
     def test12(self):
-        instance=self.new_instance(MpiAmrVac, mode="1d")
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac, mode="1d")
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.parameters.mesh_length = (10.0, 1, 1) | generic_unit_system.length
         instance.parameters.mesh_size = (10, 1, 1)
@@ -765,7 +765,7 @@ class TestMpiAmrVac(TestWithMPI):
 
     
     def test13(self):
-        instance=self.new_instance(MpiAmrVac, mode="2d-acc")
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac, mode="2d-acc")
         instance.set_parameters_filename(instance.default_parameters_filename)
         instance.parameters.mesh_length = (10.0, 10.0, 1) | generic_unit_system.length
         instance.parameters.mesh_size = (20, 20, 1)
@@ -816,7 +816,7 @@ class TestMpiAmrVac(TestWithMPI):
     
     def test14(self):
         for ax, ay in ((0.2,0.0), (0.0, 0.2), (0.2,0.2)) | generic_unit_system.acceleration:
-            instance=self.new_instance(MpiAmrVac, mode="2d-acc")
+            instance=self.new_instance_of_an_optional_code(MpiAmrVac, mode="2d-acc")
             instance.set_parameters_filename(instance.default_parameters_filename)
             instance.parameters.mesh_length = (10.0, 10.0, 1) | generic_unit_system.length
             instance.parameters.mesh_size = (10, 10, 1)
@@ -854,7 +854,7 @@ class TestMpiAmrVac(TestWithMPI):
     
     def test15(self):
         for ax, ay in ((0.2,0.0), (0.0, 0.2), (0.2,0.2)) | generic_unit_system.acceleration: #(0.0,0.0), 
-            instance=self.new_instance(MpiAmrVac, mode="2d-acc")
+            instance=self.new_instance_of_an_optional_code(MpiAmrVac, mode="2d-acc")
             instance.set_parameters_filename(instance.default_parameters_filename)
             instance.parameters.mesh_length = (10.0, 10.0, 1) | generic_unit_system.length
             instance.parameters.mesh_size = (20, 20, 1)
@@ -895,7 +895,7 @@ class TestMpiAmrVac(TestWithMPI):
     
     def test16(self):
         
-        instance=self.new_instance(MpiAmrVac, mode="1d")
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac, mode="1d")
         instance.parameters.x_boundary_conditions = ("periodic","periodic")
         instance.parameters.mesh_length = (20.0, 1, 1) | generic_unit_system.length
         instance.parameters.mesh_size = (20, 1, 1)
@@ -950,7 +950,7 @@ class TestMpiAmrVac(TestWithMPI):
         
     def test17(self):
         
-        instance=self.new_instance(MpiAmrVac, mode="2d", number_of_workers=2)
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac, mode="2d", number_of_workers=2)
         instance.parameters.x_boundary_conditions = ("periodic","periodic")
         instance.parameters.y_boundary_conditions = ("periodic","periodic")
         instance.parameters.mesh_length = (20.0, 20.0, 1) | generic_unit_system.length
@@ -993,7 +993,7 @@ class TestMpiAmrVac(TestWithMPI):
     
     def test18(self):
         
-        instance=self.new_instance(MpiAmrVac, number_of_workers=3)
+        instance=self.new_instance_of_an_optional_code(MpiAmrVac, number_of_workers=3)
         instance.parameters.x_boundary_conditions = ("periodic","periodic")
         instance.parameters.y_boundary_conditions = ("periodic","periodic")
         instance.parameters.z_boundary_conditions = ("periodic","periodic")
