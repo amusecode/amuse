@@ -150,7 +150,7 @@ CONTAINS
     function get_current_error(outputvalue)
         IMPLICIT NONE
         integer :: get_current_error
-        character(len=1024) :: outputvalue
+        character(len=*) :: outputvalue
         outputvalue = error_string
         get_current_error = 0   
     end function
@@ -2316,7 +2316,7 @@ CONTAINS
     function set_parameters_filename(path)
         IMPLICIT NONE
         integer :: set_parameters_filename
-        character(len=1024), intent(in) :: path
+        character(len=*), intent(in) :: path
         logical :: file_exists
         INQUIRE(FILE= TRIM(path), EXIST=file_exists) 
         if (file_exists) THEN
@@ -2330,7 +2330,7 @@ CONTAINS
     function get_parameters_filename(path)
         IMPLICIT NONE
         integer :: get_parameters_filename
-        character(len=1024), intent(out) :: path
+        character(len=*), intent(out) :: path
         path = parameters_filename 
         get_parameters_filename = 0   
     end function

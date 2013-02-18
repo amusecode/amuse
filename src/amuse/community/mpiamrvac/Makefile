@@ -26,7 +26,7 @@ endif
 IFORT_MAJOR_MINOR=
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
 IFORT_VERSION?=$(shell $(FC) -v 2>&1 | cut -d\  -f2)
-IFORT_MAJOR_MINOR=$(shell echo $(IFORT_VERSION) | cut -s -d'.' -f1,2)\
+IFORT_MAJOR_MINOR=$(shell echo $(IFORT_VERSION) | cut -s -d'.' -f1,2)
 FFLAGS += -FR
 endif
 
@@ -82,7 +82,8 @@ download:
 	mkdir src
 	$(DOWNLOAD_FROM_WEB)
 	$(PATCH_FILES)
-ifeq (IFORT_MAJOR_MINOR, 9.1)
+ifeq ($(IFORT_MAJOR_MINOR), 9.1)
+	$(info $(FFLAGS))
 	$(PATCH_FILES_IFORT91)
 endif
 
