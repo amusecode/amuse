@@ -1,4 +1,5 @@
 MODULE mpiamrvac_interface
+    include 'amrvacdef.f'
 
     CHARACTER(LEN=1024) :: parameters_filename = 'amrvac.par'
     
@@ -11,7 +12,7 @@ CONTAINS
     FUNCTION initialize_code()
         use StoppingConditions
         
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         INTEGER initialize_code
         logical :: file_exists
         integer :: error
@@ -49,7 +50,7 @@ CONTAINS
     END FUNCTION
     
     FUNCTION commit_parameters()
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         INTEGER commit_parameters
         commit_parameters = 0
         
@@ -77,7 +78,7 @@ CONTAINS
     END FUNCTION
 
     FUNCTION initialize_grid()
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         INTEGER :: initialize_grid
         
         ! set up and initialize finer level grids, if needed
@@ -94,7 +95,7 @@ CONTAINS
     END FUNCTION
     
     function refine_grid(has_advanced)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
 
         ! create and initialize grids on all levels > 1. On entry, all
         ! level=1 grids have been formed and initialized. This subroutine
@@ -147,7 +148,7 @@ CONTAINS
     
     
     function get_current_error(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_current_error
         character(len=1024) :: outputvalue
         outputvalue = error_string
@@ -155,7 +156,7 @@ CONTAINS
     end function
     
     function set_gamma(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_gamma
         double precision :: inputvalue
         eqpar(gamma_) = inputvalue
@@ -163,7 +164,7 @@ CONTAINS
     end function
 
     function get_gamma(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_gamma
         double precision :: outputvalue
         outputvalue = eqpar(gamma_)
@@ -171,7 +172,7 @@ CONTAINS
     end function
 
     function set_typeentropy(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typeentropy, iw
         character(len=*),intent(in) :: inputvalue
         
@@ -184,7 +185,7 @@ CONTAINS
     end function
 
     function get_typeentropy(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typeentropy, iw
         character(len=256), intent(out) :: outputvalue
         character(len=256) :: checkvalue
@@ -204,7 +205,7 @@ CONTAINS
     end function
 
     function set_typefull1(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typefull1, i
         character(len=*),intent(in) :: inputvalue
         
@@ -216,7 +217,7 @@ CONTAINS
     end function
 
     function get_typefull1(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typefull1, i
         character(len=256), intent(out) :: outputvalue
         character(len=256) :: checkvalue
@@ -237,7 +238,7 @@ CONTAINS
     
     
     function set_typepred1(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typepred1, i
         character(len=*),intent(in) :: inputvalue
         
@@ -249,7 +250,7 @@ CONTAINS
     end function
 
     function get_typepred1(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typepred1, i
         character(len=256), intent(out) :: outputvalue
         character(len=256) :: checkvalue
@@ -269,7 +270,7 @@ CONTAINS
     end function
     
     function set_dt(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_dt
         double precision :: inputvalue
         dt = inputvalue
@@ -277,7 +278,7 @@ CONTAINS
     end function
 
     function get_dt(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_dt
         double precision :: outputvalue
         outputvalue = dt
@@ -285,7 +286,7 @@ CONTAINS
     end function
 
     function set_nbufferx1(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_nbufferx1
         integer :: inputvalue
         nbufferx1 = inputvalue
@@ -293,7 +294,7 @@ CONTAINS
     end function
 
     function get_nbufferx1(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_nbufferx1
         integer :: outputvalue
         outputvalue = nbufferx1
@@ -301,7 +302,7 @@ CONTAINS
     end function
 
     function set_nbufferx2(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_nbufferx2
         integer :: inputvalue
 {^NOONED
@@ -311,7 +312,7 @@ CONTAINS
     end function
 
     function get_nbufferx2(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_nbufferx2
         integer :: outputvalue
         outputvalue = 0
@@ -322,7 +323,7 @@ CONTAINS
     end function
 
     function set_nbufferx3(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_nbufferx3
         integer :: inputvalue
 {^IFTHREED
@@ -332,7 +333,7 @@ CONTAINS
     end function
 
     function get_nbufferx3(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_nbufferx3
         integer :: outputvalue
         outputvalue = 0
@@ -344,7 +345,7 @@ CONTAINS
     end function
 
     function set_mxnest(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_mxnest
         integer :: inputvalue
         mxnest = inputvalue
@@ -352,7 +353,7 @@ CONTAINS
     end function
 
     function get_mxnest(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_mxnest
         integer :: outputvalue
         outputvalue = mxnest
@@ -360,7 +361,7 @@ CONTAINS
     end function
 
     function set_dixb(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_dixb
         integer :: inputvalue
         dixb = inputvalue
@@ -368,7 +369,7 @@ CONTAINS
     end function
 
     function get_dixb(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_dixb
         integer :: outputvalue
         outputvalue = dixb
@@ -376,7 +377,7 @@ CONTAINS
     end function
 
     function set_levmin(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_levmin
         integer :: inputvalue
         levmin = inputvalue
@@ -384,7 +385,7 @@ CONTAINS
     end function
 
     function get_levmin(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_levmin
         integer :: outputvalue
         outputvalue = levmin
@@ -392,7 +393,7 @@ CONTAINS
     end function
 
     function set_levmax(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_levmax
         integer :: inputvalue
         levmax = inputvalue
@@ -400,7 +401,7 @@ CONTAINS
     end function
 
     function get_levmax(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_levmax
         integer :: outputvalue
         outputvalue = levmax
@@ -408,7 +409,7 @@ CONTAINS
     end function
 
     function set_skipfinestep(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_skipfinestep
         logical :: inputvalue
         skipfinestep = inputvalue
@@ -416,7 +417,7 @@ CONTAINS
     end function
 
     function get_skipfinestep(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_skipfinestep
         logical :: outputvalue
         outputvalue = skipfinestep
@@ -424,7 +425,7 @@ CONTAINS
     end function
 
     function set_time_advance(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_time_advance
         logical :: inputvalue
         time_advance = inputvalue
@@ -432,7 +433,7 @@ CONTAINS
     end function
 
     function get_time_advance(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_time_advance
         logical :: outputvalue
         outputvalue = time_advance
@@ -440,7 +441,7 @@ CONTAINS
     end function
 
     function set_courantpar(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_courantpar
         double precision :: inputvalue
         courantpar = inputvalue
@@ -448,7 +449,7 @@ CONTAINS
     end function
 
     function get_courantpar(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_courantpar
         double precision :: outputvalue
         outputvalue = courantpar
@@ -456,7 +457,7 @@ CONTAINS
     end function
 
     function set_dtpar(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_dtpar
         double precision :: inputvalue
         dtpar = inputvalue
@@ -464,7 +465,7 @@ CONTAINS
     end function
 
     function get_dtpar(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_dtpar
         double precision :: outputvalue
         outputvalue = dtpar
@@ -472,7 +473,7 @@ CONTAINS
     end function
 
     function set_dtdiffpar(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_dtdiffpar
         double precision :: inputvalue
         dtdiffpar = inputvalue
@@ -480,7 +481,7 @@ CONTAINS
     end function
 
     function get_dtdiffpar(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_dtdiffpar
         double precision :: outputvalue
         outputvalue = dtdiffpar
@@ -488,7 +489,7 @@ CONTAINS
     end function
 
     function set_t(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_t
         double precision :: inputvalue
         t = inputvalue
@@ -496,7 +497,7 @@ CONTAINS
     end function
 
     function get_t(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_t
         double precision :: outputvalue
         outputvalue = t
@@ -504,7 +505,7 @@ CONTAINS
     end function
 
     function set_tmax(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_tmax
         double precision :: inputvalue
         tmax = inputvalue
@@ -512,7 +513,7 @@ CONTAINS
     end function
 
     function get_tmax(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_tmax
         double precision :: outputvalue
         outputvalue = tmax
@@ -520,7 +521,7 @@ CONTAINS
     end function
 
     function set_dtmin(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_dtmin
         double precision :: inputvalue
         dtmin = inputvalue
@@ -528,7 +529,7 @@ CONTAINS
     end function
 
     function get_dtmin(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_dtmin
         double precision :: outputvalue
         outputvalue = dtmin
@@ -536,7 +537,7 @@ CONTAINS
     end function
 
     function set_residmin(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_residmin
         double precision :: inputvalue
         residmin = inputvalue
@@ -544,7 +545,7 @@ CONTAINS
     end function
 
     function get_residmin(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_residmin
         double precision :: outputvalue
         outputvalue = residmin
@@ -552,7 +553,7 @@ CONTAINS
     end function
 
     function set_residmax(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_residmax
         double precision :: inputvalue
         residmax = inputvalue
@@ -560,7 +561,7 @@ CONTAINS
     end function
 
     function get_residmax(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_residmax
         double precision :: outputvalue
         outputvalue = residmax
@@ -568,7 +569,7 @@ CONTAINS
     end function
 
     function set_residual(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_residual
         double precision :: inputvalue
         residual = inputvalue
@@ -576,7 +577,7 @@ CONTAINS
     end function
 
     function get_residual(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_residual
         double precision :: outputvalue
         outputvalue = residual
@@ -584,7 +585,7 @@ CONTAINS
     end function
 
     function set_tfixgrid(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_tfixgrid
         double precision :: inputvalue
         tfixgrid = inputvalue
@@ -592,7 +593,7 @@ CONTAINS
     end function
 
     function get_tfixgrid(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_tfixgrid
         double precision :: outputvalue
         outputvalue = tfixgrid
@@ -600,7 +601,7 @@ CONTAINS
     end function
 
     function set_tvdlfeps(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_tvdlfeps
         double precision :: inputvalue
         tvdlfeps = inputvalue
@@ -608,7 +609,7 @@ CONTAINS
     end function
 
     function get_tvdlfeps(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_tvdlfeps
         double precision :: outputvalue
         outputvalue = tvdlfeps
@@ -616,7 +617,7 @@ CONTAINS
     end function
 
     function set_mcbeta(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_mcbeta
         double precision :: inputvalue
         mcbeta = inputvalue
@@ -624,7 +625,7 @@ CONTAINS
     end function
 
     function get_mcbeta(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_mcbeta
         double precision :: outputvalue
         outputvalue = mcbeta
@@ -632,7 +633,7 @@ CONTAINS
     end function
 
     function set_divbdiff(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_divbdiff
         double precision :: inputvalue
         divbdiff = inputvalue
@@ -640,7 +641,7 @@ CONTAINS
     end function
 
     function get_divbdiff(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_divbdiff
         double precision :: outputvalue
         outputvalue = divbdiff
@@ -648,7 +649,7 @@ CONTAINS
     end function
 
     function set_smallp(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_smallp
         double precision :: inputvalue
         smallp = inputvalue
@@ -656,7 +657,7 @@ CONTAINS
     end function
 
     function get_smallp(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_smallp
         double precision :: outputvalue
         outputvalue = smallp
@@ -664,7 +665,7 @@ CONTAINS
     end function
 
     function set_smallrho(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_smallrho
         double precision :: inputvalue
         smallrho = inputvalue
@@ -672,7 +673,7 @@ CONTAINS
     end function
 
     function get_smallrho(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_smallrho
         double precision :: outputvalue
         outputvalue = smallrho
@@ -680,7 +681,7 @@ CONTAINS
     end function
 
     function set_dmaxvel(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_dmaxvel
         double precision :: inputvalue
         dmaxvel = inputvalue
@@ -688,7 +689,7 @@ CONTAINS
     end function
 
     function get_dmaxvel(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_dmaxvel
         double precision :: outputvalue
         outputvalue = dmaxvel
@@ -696,7 +697,7 @@ CONTAINS
     end function
 
     function set_tolernr(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_tolernr
         double precision :: inputvalue
         tolernr = inputvalue
@@ -704,7 +705,7 @@ CONTAINS
     end function
 
     function get_tolernr(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_tolernr
         double precision :: outputvalue
         outputvalue = tolernr
@@ -712,7 +713,7 @@ CONTAINS
     end function
 
     function set_absaccnr(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_absaccnr
         double precision :: inputvalue
         absaccnr = inputvalue
@@ -720,7 +721,7 @@ CONTAINS
     end function
 
     function get_absaccnr(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_absaccnr
         double precision :: outputvalue
         outputvalue = absaccnr
@@ -728,7 +729,7 @@ CONTAINS
     end function
 
     function set_cfrac(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_cfrac
         double precision :: inputvalue
         cfrac = inputvalue
@@ -736,7 +737,7 @@ CONTAINS
     end function
 
     function get_cfrac(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_cfrac
         double precision :: outputvalue
         outputvalue = cfrac
@@ -744,7 +745,7 @@ CONTAINS
     end function
 
     function set_x1ptms(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_x1ptms
         double precision :: inputvalue
         x1ptms = inputvalue
@@ -752,7 +753,7 @@ CONTAINS
     end function
 
     function get_x1ptms(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_x1ptms
         double precision :: outputvalue
         outputvalue = x1ptms
@@ -760,7 +761,7 @@ CONTAINS
     end function
 
     function set_x2ptms(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_x2ptms
         double precision :: inputvalue
         x2ptms = inputvalue
@@ -768,7 +769,7 @@ CONTAINS
     end function
 
     function get_x2ptms(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_x2ptms
         double precision :: outputvalue
         outputvalue = x2ptms
@@ -776,7 +777,7 @@ CONTAINS
     end function
 
     function set_x3ptms(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_x3ptms
         double precision :: inputvalue
         x3ptms = inputvalue
@@ -784,7 +785,7 @@ CONTAINS
     end function
 
     function get_x3ptms(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_x3ptms
         double precision :: outputvalue
         outputvalue = x3ptms
@@ -792,7 +793,7 @@ CONTAINS
     end function
 
     function set_ptmass(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_ptmass
         double precision :: inputvalue
         ptmass = inputvalue
@@ -800,7 +801,7 @@ CONTAINS
     end function
 
     function get_ptmass(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_ptmass
         double precision :: outputvalue
         outputvalue = ptmass
@@ -808,7 +809,7 @@ CONTAINS
     end function
 
     function set_ratebdflux(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_ratebdflux
         double precision :: inputvalue
         ratebdflux = inputvalue
@@ -816,7 +817,7 @@ CONTAINS
     end function
 
     function get_ratebdflux(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_ratebdflux
         double precision :: outputvalue
         outputvalue = ratebdflux
@@ -824,7 +825,7 @@ CONTAINS
     end function
 
     function set_normt(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_normt
         double precision :: inputvalue
         normt = inputvalue
@@ -832,7 +833,7 @@ CONTAINS
     end function
 
     function get_normt(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_normt
         double precision :: outputvalue
         outputvalue = normt
@@ -840,7 +841,7 @@ CONTAINS
     end function
 
     function set_time_bc(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_time_bc
         double precision :: inputvalue
         time_bc = inputvalue
@@ -848,7 +849,7 @@ CONTAINS
     end function
 
     function get_time_bc(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_time_bc
         double precision :: outputvalue
         outputvalue = time_bc
@@ -856,7 +857,7 @@ CONTAINS
     end function
 
     function set_it(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_it
         integer :: inputvalue
         it = inputvalue
@@ -864,7 +865,7 @@ CONTAINS
     end function
 
     function get_it(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_it
         integer :: outputvalue
         outputvalue = it
@@ -872,7 +873,7 @@ CONTAINS
     end function
 
     function set_itmax(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_itmax
         integer :: inputvalue
         itmax = inputvalue
@@ -880,7 +881,7 @@ CONTAINS
     end function
 
     function get_itmax(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_itmax
         integer :: outputvalue
         outputvalue = itmax
@@ -888,7 +889,7 @@ CONTAINS
     end function
 
     function set_itmin(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_itmin
         integer :: inputvalue
         itmin = inputvalue
@@ -896,7 +897,7 @@ CONTAINS
     end function
 
     function get_itmin(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_itmin
         integer :: outputvalue
         outputvalue = itmin
@@ -904,7 +905,7 @@ CONTAINS
     end function
 
     function set_slowsteps(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_slowsteps
         integer :: inputvalue
         slowsteps = inputvalue
@@ -912,7 +913,7 @@ CONTAINS
     end function
 
     function get_slowsteps(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_slowsteps
         integer :: outputvalue
         outputvalue = slowsteps
@@ -920,7 +921,7 @@ CONTAINS
     end function
 
     function set_typepario(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typepario
         integer :: inputvalue
         typepario = inputvalue
@@ -928,7 +929,7 @@ CONTAINS
     end function
 
     function get_typepario(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typepario
         integer :: outputvalue
         outputvalue = typepario
@@ -936,7 +937,7 @@ CONTAINS
     end function
 
     function set_itfixgrid(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_itfixgrid
         integer :: inputvalue
         itfixgrid = inputvalue
@@ -944,7 +945,7 @@ CONTAINS
     end function
 
     function get_itfixgrid(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_itfixgrid
         integer :: outputvalue
         outputvalue = itfixgrid
@@ -952,7 +953,7 @@ CONTAINS
     end function
 
     function set_nwauxio(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_nwauxio
         integer :: inputvalue
         nwauxio = inputvalue
@@ -960,7 +961,7 @@ CONTAINS
     end function
 
     function get_nwauxio(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_nwauxio
         integer :: outputvalue
         outputvalue = nwauxio
@@ -968,7 +969,7 @@ CONTAINS
     end function
 
     function set_istep(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_istep
         integer :: inputvalue
         istep = inputvalue
@@ -976,7 +977,7 @@ CONTAINS
     end function
 
     function get_istep(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_istep
         integer :: outputvalue
         outputvalue = istep
@@ -984,7 +985,7 @@ CONTAINS
     end function
 
     function set_nstep(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_nstep
         integer :: inputvalue
         nstep = inputvalue
@@ -992,7 +993,7 @@ CONTAINS
     end function
 
     function get_nstep(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_nstep
         integer :: outputvalue
         outputvalue = nstep
@@ -1000,7 +1001,7 @@ CONTAINS
     end function
 
     function set_errorestimate(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_errorestimate
         integer :: inputvalue
         errorestimate = inputvalue
@@ -1008,7 +1009,7 @@ CONTAINS
     end function
 
     function get_errorestimate(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_errorestimate
         integer :: outputvalue
         outputvalue = errorestimate
@@ -1016,7 +1017,7 @@ CONTAINS
     end function
 
     function set_nxdiffusehllc(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_nxdiffusehllc
         integer :: inputvalue
         nxdiffusehllc = inputvalue
@@ -1024,7 +1025,7 @@ CONTAINS
     end function
 
     function get_nxdiffusehllc(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_nxdiffusehllc
         integer :: outputvalue
         outputvalue = nxdiffusehllc
@@ -1032,7 +1033,7 @@ CONTAINS
     end function
 
     function set_typespherical(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typespherical
         integer :: inputvalue
         typespherical = inputvalue
@@ -1040,7 +1041,7 @@ CONTAINS
     end function
 
     function get_typespherical(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typespherical
         integer :: outputvalue
         outputvalue = typespherical
@@ -1048,7 +1049,7 @@ CONTAINS
     end function
 
     function set_maxitnr(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_maxitnr
         integer :: inputvalue
         maxitnr = inputvalue
@@ -1056,7 +1057,7 @@ CONTAINS
     end function
 
     function get_maxitnr(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_maxitnr
         integer :: outputvalue
         outputvalue = maxitnr
@@ -1064,7 +1065,7 @@ CONTAINS
     end function
 
     function set_nflatgetaux(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_nflatgetaux
         integer :: inputvalue
         nflatgetaux = inputvalue
@@ -1072,7 +1073,7 @@ CONTAINS
     end function
 
     function get_nflatgetaux(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_nflatgetaux
         integer :: outputvalue
         outputvalue = nflatgetaux
@@ -1080,7 +1081,7 @@ CONTAINS
     end function
 
     function set_level_io(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_level_io
         integer :: inputvalue
         level_io = inputvalue
@@ -1088,7 +1089,7 @@ CONTAINS
     end function
 
     function get_level_io(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_level_io
         integer :: outputvalue
         outputvalue = level_io
@@ -1096,7 +1097,7 @@ CONTAINS
     end function
 
     function set_ncool(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_ncool
         integer :: inputvalue
         ncool = inputvalue
@@ -1104,7 +1105,7 @@ CONTAINS
     end function
 
     function get_ncool(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_ncool
         integer :: outputvalue
         outputvalue = ncool
@@ -1112,7 +1113,7 @@ CONTAINS
     end function
 
     function set_cmulti(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_cmulti
         integer :: inputvalue
         cmulti = inputvalue
@@ -1120,7 +1121,7 @@ CONTAINS
     end function
 
     function get_cmulti(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_cmulti
         integer :: outputvalue
         outputvalue = cmulti
@@ -1128,7 +1129,7 @@ CONTAINS
     end function
 
     function set_snapshotini(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_snapshotini
         integer :: inputvalue
         snapshotini = inputvalue
@@ -1136,7 +1137,7 @@ CONTAINS
     end function
 
     function get_snapshotini(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_snapshotini
         integer :: outputvalue
         outputvalue = snapshotini
@@ -1144,7 +1145,7 @@ CONTAINS
     end function
 
     function set_ixtest1(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_ixtest1
         integer :: inputvalue
         ixtest1 = inputvalue
@@ -1152,7 +1153,7 @@ CONTAINS
     end function
 
     function get_ixtest1(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_ixtest1
         integer :: outputvalue
         outputvalue = ixtest1
@@ -1160,7 +1161,7 @@ CONTAINS
     end function
 
     function set_ixtest2(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_ixtest2
         integer :: inputvalue
         ixtest2 = inputvalue
@@ -1168,7 +1169,7 @@ CONTAINS
     end function
 
     function get_ixtest2(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_ixtest2
         integer :: outputvalue
         outputvalue = ixtest2
@@ -1176,7 +1177,7 @@ CONTAINS
     end function
 
     function set_ixtest3(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_ixtest3
         integer :: inputvalue
         ixtest3 = inputvalue
@@ -1184,7 +1185,7 @@ CONTAINS
     end function
 
     function get_ixtest3(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_ixtest3
         integer :: outputvalue
         outputvalue = ixtest3
@@ -1192,7 +1193,7 @@ CONTAINS
     end function
 
     function set_iwtest(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_iwtest
         integer :: inputvalue
         iwtest = inputvalue
@@ -1200,7 +1201,7 @@ CONTAINS
     end function
 
     function get_iwtest(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_iwtest
         integer :: outputvalue
         outputvalue = iwtest
@@ -1208,7 +1209,7 @@ CONTAINS
     end function
 
     function set_idimtest(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_idimtest
         integer :: inputvalue
         idimtest = inputvalue
@@ -1216,7 +1217,7 @@ CONTAINS
     end function
 
     function get_idimtest(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_idimtest
         integer :: outputvalue
         outputvalue = idimtest
@@ -1224,7 +1225,7 @@ CONTAINS
     end function
 
     function set_saveigrid(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_saveigrid
         integer :: inputvalue
         saveigrid = inputvalue
@@ -1232,7 +1233,7 @@ CONTAINS
     end function
 
     function get_saveigrid(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_saveigrid
         integer :: outputvalue
         outputvalue = saveigrid
@@ -1240,7 +1241,7 @@ CONTAINS
     end function
 
     function set_typecourant(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typecourant
         character*79 :: inputvalue
         typecourant = inputvalue
@@ -1248,7 +1249,7 @@ CONTAINS
     end function
 
     function get_typecourant(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typecourant
         character*79 :: outputvalue
         outputvalue = typecourant
@@ -1256,7 +1257,7 @@ CONTAINS
     end function
 
     function set_typeresid(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typeresid
         character*79 :: inputvalue
         typeresid = inputvalue
@@ -1264,7 +1265,7 @@ CONTAINS
     end function
 
     function get_typeresid(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typeresid
         character*79 :: outputvalue
         outputvalue = typeresid
@@ -1272,7 +1273,7 @@ CONTAINS
     end function
 
     function set_typeadvance(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typeadvance
         character*79 :: inputvalue
         typeadvance = inputvalue
@@ -1280,7 +1281,7 @@ CONTAINS
     end function
 
     function get_typeadvance(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typeadvance
         character*79 :: outputvalue
         outputvalue = typeadvance
@@ -1288,7 +1289,7 @@ CONTAINS
     end function
 
     function set_typelimited(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typelimited
         character*79 :: inputvalue
         typelimited = inputvalue
@@ -1296,7 +1297,7 @@ CONTAINS
     end function
 
     function get_typelimited(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typelimited
         character*79 :: outputvalue
         outputvalue = typelimited
@@ -1304,7 +1305,7 @@ CONTAINS
     end function
 
     function set_typesourcesplit(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typesourcesplit
         character*79 :: inputvalue
         typesourcesplit = inputvalue
@@ -1312,7 +1313,7 @@ CONTAINS
     end function
 
     function get_typesourcesplit(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typesourcesplit
         character*79 :: outputvalue
         outputvalue = typesourcesplit
@@ -1320,7 +1321,7 @@ CONTAINS
     end function
 
     function set_typelimiter(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typelimiter
         character*79 :: inputvalue
         typelimiter = inputvalue
@@ -1328,7 +1329,7 @@ CONTAINS
     end function
 
     function get_typelimiter(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typelimiter
         character*79 :: outputvalue
         outputvalue = typelimiter
@@ -1336,7 +1337,7 @@ CONTAINS
     end function
 
     function set_typegradlimiter(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typegradlimiter
         character*79 :: inputvalue
         typegradlimiter = inputvalue
@@ -1344,7 +1345,7 @@ CONTAINS
     end function
 
     function get_typegradlimiter(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typegradlimiter
         character*79 :: outputvalue
         outputvalue = typegradlimiter
@@ -1352,7 +1353,7 @@ CONTAINS
     end function
 
     function set_typeprolonglimit(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typeprolonglimit
         character*79 :: inputvalue
         typeprolonglimit = inputvalue
@@ -1360,7 +1361,7 @@ CONTAINS
     end function
 
     function get_typeprolonglimit(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typeprolonglimit
         character*79 :: outputvalue
         outputvalue = typeprolonglimit
@@ -1368,7 +1369,7 @@ CONTAINS
     end function
 
     function set_typetvd(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typetvd
         character*79 :: inputvalue
         typetvd = inputvalue
@@ -1376,7 +1377,7 @@ CONTAINS
     end function
 
     function get_typetvd(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typetvd
         character*79 :: outputvalue
         outputvalue = typetvd
@@ -1384,7 +1385,7 @@ CONTAINS
     end function
 
     function set_typetvdlf(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typetvdlf
         character*79 :: inputvalue
         typetvdlf = inputvalue
@@ -1392,7 +1393,7 @@ CONTAINS
     end function
 
     function get_typetvdlf(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typetvdlf
         character*79 :: outputvalue
         outputvalue = typetvdlf
@@ -1400,7 +1401,7 @@ CONTAINS
     end function
 
     function set_typeaverage(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typeaverage
         character*79 :: inputvalue
         typeaverage = inputvalue
@@ -1408,7 +1409,7 @@ CONTAINS
     end function
 
     function get_typeaverage(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typeaverage
         character*79 :: outputvalue
         outputvalue = typeaverage
@@ -1416,7 +1417,7 @@ CONTAINS
     end function
 
     function set_typedimsplit(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typedimsplit
         character*79 :: inputvalue
         typedimsplit = inputvalue
@@ -1424,7 +1425,7 @@ CONTAINS
     end function
 
     function get_typedimsplit(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typedimsplit
         character*79 :: outputvalue
         outputvalue = typedimsplit
@@ -1432,7 +1433,7 @@ CONTAINS
     end function
 
     function set_typeaxial(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typeaxial
         character*79 :: inputvalue
         typeaxial = inputvalue
@@ -1440,7 +1441,7 @@ CONTAINS
     end function
 
     function get_typeaxial(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typeaxial
         character*79 :: outputvalue
         outputvalue = typeaxial
@@ -1448,7 +1449,7 @@ CONTAINS
     end function
 
     function set_typepoly(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typepoly
         character*79 :: inputvalue
         typepoly = inputvalue
@@ -1456,7 +1457,7 @@ CONTAINS
     end function
 
     function get_typepoly(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typepoly
         character*79 :: outputvalue
         outputvalue = typepoly
@@ -1464,7 +1465,7 @@ CONTAINS
     end function
 
     function set_typedivbdiff(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typedivbdiff
         character*79 :: inputvalue
         typedivbdiff = inputvalue
@@ -1472,7 +1473,7 @@ CONTAINS
     end function
 
     function get_typedivbdiff(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typedivbdiff
         character*79 :: outputvalue
         outputvalue = typedivbdiff
@@ -1480,7 +1481,7 @@ CONTAINS
     end function
 
     function set_typedivbfix(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typedivbfix
         character*79 :: inputvalue
         typedivbfix = inputvalue
@@ -1488,7 +1489,7 @@ CONTAINS
     end function
 
     function get_typedivbfix(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typedivbfix
         character*79 :: outputvalue
         outputvalue = typedivbfix
@@ -1496,7 +1497,7 @@ CONTAINS
     end function
 
     function set_typediv(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typediv
         character*79 :: inputvalue
         typediv = inputvalue
@@ -1504,7 +1505,7 @@ CONTAINS
     end function
 
     function get_typediv(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typediv
         character*79 :: outputvalue
         outputvalue = typediv
@@ -1512,7 +1513,7 @@ CONTAINS
     end function
 
     function set_typegrad(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typegrad
         character*79 :: inputvalue
         typegrad = inputvalue
@@ -1520,7 +1521,7 @@ CONTAINS
     end function
 
     function get_typegrad(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typegrad
         character*79 :: outputvalue
         outputvalue = typegrad
@@ -1528,7 +1529,7 @@ CONTAINS
     end function
 
     function set_typeglm(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typeglm
         character*79 :: inputvalue
         typeglm = inputvalue
@@ -1536,7 +1537,7 @@ CONTAINS
     end function
 
     function get_typeglm(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typeglm
         character*79 :: outputvalue
         outputvalue = typeglm
@@ -1544,7 +1545,7 @@ CONTAINS
     end function
 
     function set_coolcurve(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_coolcurve
         character*79 :: inputvalue
         coolcurve = inputvalue
@@ -1552,7 +1553,7 @@ CONTAINS
     end function
 
     function get_coolcurve(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_coolcurve
         character*79 :: outputvalue
         outputvalue = coolcurve
@@ -1560,7 +1561,7 @@ CONTAINS
     end function
 
     function set_coolmethod(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_coolmethod
         character*79 :: inputvalue
         coolmethod = inputvalue
@@ -1568,7 +1569,7 @@ CONTAINS
     end function
 
     function get_coolmethod(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_coolmethod
         character*79 :: outputvalue
         outputvalue = coolmethod
@@ -1576,7 +1577,7 @@ CONTAINS
     end function
 
     function set_typeghostfill(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typeghostfill
         character*79 :: inputvalue
         typeghostfill = inputvalue
@@ -1584,7 +1585,7 @@ CONTAINS
     end function
 
     function get_typeghostfill(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typeghostfill
         character*79 :: outputvalue
         outputvalue = typeghostfill
@@ -1592,7 +1593,7 @@ CONTAINS
     end function
 
     function set_typegridfill(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typegridfill
         character*79 :: inputvalue
         typegridfill = inputvalue
@@ -1600,7 +1601,7 @@ CONTAINS
     end function
 
     function get_typegridfill(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typegridfill
         character*79 :: outputvalue
         outputvalue = typegridfill
@@ -1608,7 +1609,7 @@ CONTAINS
     end function
 
     function set_filenameout(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_filenameout
         character*79 :: inputvalue
         filenameout = inputvalue
@@ -1616,7 +1617,7 @@ CONTAINS
     end function
 
     function get_filenameout(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_filenameout
         character*79 :: outputvalue
         outputvalue = filenameout
@@ -1624,7 +1625,7 @@ CONTAINS
     end function
 
     function set_filenameini(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_filenameini
         character*79 :: inputvalue
         filenameini = inputvalue
@@ -1632,7 +1633,7 @@ CONTAINS
     end function
 
     function get_filenameini(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_filenameini
         character*79 :: outputvalue
         outputvalue = filenameini
@@ -1640,7 +1641,7 @@ CONTAINS
     end function
 
     function set_filenamelog(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_filenamelog
         character*79 :: inputvalue
         filenamelog = inputvalue
@@ -1648,7 +1649,7 @@ CONTAINS
     end function
 
     function get_filenamelog(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_filenamelog
         character*79 :: outputvalue
         outputvalue = filenamelog
@@ -1656,7 +1657,7 @@ CONTAINS
     end function
 
     function set_fileheadout(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_fileheadout
         character*79 :: inputvalue
         fileheadout = inputvalue
@@ -1664,7 +1665,7 @@ CONTAINS
     end function
 
     function get_fileheadout(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_fileheadout
         character*79 :: outputvalue
         outputvalue = fileheadout
@@ -1672,7 +1673,7 @@ CONTAINS
     end function
 
     function set_wnames(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_wnames
         character*79 :: inputvalue
         wnames = inputvalue
@@ -1680,7 +1681,7 @@ CONTAINS
     end function
 
     function get_wnames(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_wnames
         character*79 :: outputvalue
         outputvalue = wnames
@@ -1688,7 +1689,7 @@ CONTAINS
     end function
 
     function set_primnames(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_primnames
         character*79 :: inputvalue
         primnames = inputvalue
@@ -1696,7 +1697,7 @@ CONTAINS
     end function
 
     function get_primnames(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_primnames
         character*79 :: outputvalue
         outputvalue = primnames
@@ -1704,7 +1705,7 @@ CONTAINS
     end function
 
     function set_typefilelog(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_typefilelog
         character*79 :: inputvalue
         typefilelog = inputvalue
@@ -1712,7 +1713,7 @@ CONTAINS
     end function
 
     function get_typefilelog(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_typefilelog
         character*79 :: outputvalue
         outputvalue = typefilelog
@@ -1720,7 +1721,7 @@ CONTAINS
     end function
 
     function set_convert_type(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_convert_type
         character*79 :: inputvalue
         convert_type = inputvalue
@@ -1728,7 +1729,7 @@ CONTAINS
     end function
 
     function get_convert_type(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_convert_type
         character*79 :: outputvalue
         outputvalue = convert_type
@@ -1736,7 +1737,7 @@ CONTAINS
     end function
 
     function set_dxfiletype(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_dxfiletype
         character*79 :: inputvalue
         dxfiletype = inputvalue
@@ -1744,7 +1745,7 @@ CONTAINS
     end function
 
     function get_dxfiletype(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_dxfiletype
         character*79 :: outputvalue
         outputvalue = dxfiletype
@@ -1752,7 +1753,7 @@ CONTAINS
     end function
 
     function set_teststr(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_teststr
         character*79 :: inputvalue
         teststr = inputvalue
@@ -1760,7 +1761,7 @@ CONTAINS
     end function
 
     function get_teststr(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_teststr
         character*79 :: outputvalue
         outputvalue = teststr
@@ -1768,7 +1769,7 @@ CONTAINS
     end function
 
     function set_time_accurate(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_time_accurate
         logical :: inputvalue
         time_accurate = inputvalue
@@ -1776,7 +1777,7 @@ CONTAINS
     end function
 
     function get_time_accurate(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_time_accurate
         logical :: outputvalue
         outputvalue = time_accurate
@@ -1784,7 +1785,7 @@ CONTAINS
     end function
 
     function set_addmpibarrier(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_addmpibarrier
         logical :: inputvalue
         addmpibarrier = inputvalue
@@ -1792,7 +1793,7 @@ CONTAINS
     end function
 
     function get_addmpibarrier(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_addmpibarrier
         logical :: outputvalue
         outputvalue = addmpibarrier
@@ -1800,7 +1801,7 @@ CONTAINS
     end function
 
     function set_tmaxexact(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_tmaxexact
         logical :: inputvalue
         tmaxexact = inputvalue
@@ -1808,7 +1809,7 @@ CONTAINS
     end function
 
     function get_tmaxexact(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_tmaxexact
         logical :: outputvalue
         outputvalue = tmaxexact
@@ -1816,7 +1817,7 @@ CONTAINS
     end function
 
     function set_treset(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_treset
         logical :: inputvalue
         treset = inputvalue
@@ -1824,7 +1825,7 @@ CONTAINS
     end function
 
     function get_treset(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_treset
         logical :: outputvalue
         outputvalue = treset
@@ -1832,7 +1833,7 @@ CONTAINS
     end function
 
     function set_itreset(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_itreset
         logical :: inputvalue
         itreset = inputvalue
@@ -1840,7 +1841,7 @@ CONTAINS
     end function
 
     function get_itreset(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_itreset
         logical :: outputvalue
         outputvalue = itreset
@@ -1848,7 +1849,7 @@ CONTAINS
     end function
 
     function set_firstprocess(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_firstprocess
         logical :: inputvalue
         firstprocess = inputvalue
@@ -1856,7 +1857,7 @@ CONTAINS
     end function
 
     function get_firstprocess(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_firstprocess
         logical :: outputvalue
         outputvalue = firstprocess
@@ -1864,7 +1865,7 @@ CONTAINS
     end function
 
     function set_fixprocess(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_fixprocess
         logical :: inputvalue
         fixprocess = inputvalue
@@ -1872,7 +1873,7 @@ CONTAINS
     end function
 
     function get_fixprocess(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_fixprocess
         logical :: outputvalue
         outputvalue = fixprocess
@@ -1880,7 +1881,7 @@ CONTAINS
     end function
 
     function set_flathllc(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_flathllc
         logical :: inputvalue
         flathllc = inputvalue
@@ -1888,7 +1889,7 @@ CONTAINS
     end function
 
     function get_flathllc(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_flathllc
         logical :: outputvalue
         outputvalue = flathllc
@@ -1896,7 +1897,7 @@ CONTAINS
     end function
 
     function set_flatcd(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_flatcd
         logical :: inputvalue
         flatcd = inputvalue
@@ -1904,7 +1905,7 @@ CONTAINS
     end function
 
     function get_flatcd(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_flatcd
         logical :: outputvalue
         outputvalue = flatcd
@@ -1912,7 +1913,7 @@ CONTAINS
     end function
 
     function set_flatsh(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_flatsh
         logical :: inputvalue
         flatsh = inputvalue
@@ -1920,7 +1921,7 @@ CONTAINS
     end function
 
     function get_flatsh(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_flatsh
         logical :: outputvalue
         outputvalue = flatsh
@@ -1928,7 +1929,7 @@ CONTAINS
     end function
 
     function set_flatppm(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_flatppm
         logical :: inputvalue
         flatppm = inputvalue
@@ -1936,7 +1937,7 @@ CONTAINS
     end function
 
     function get_flatppm(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_flatppm
         logical :: outputvalue
         outputvalue = flatppm
@@ -1944,7 +1945,7 @@ CONTAINS
     end function
 
     function set_sourcesplit(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_sourcesplit
         logical :: inputvalue
         sourcesplit = inputvalue
@@ -1952,7 +1953,7 @@ CONTAINS
     end function
 
     function get_sourcesplit(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_sourcesplit
         logical :: outputvalue
         outputvalue = sourcesplit
@@ -1960,7 +1961,7 @@ CONTAINS
     end function
 
     function set_sourceunsplit(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_sourceunsplit
         logical :: inputvalue
         sourceunsplit = inputvalue
@@ -1968,7 +1969,7 @@ CONTAINS
     end function
 
     function get_sourceunsplit(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_sourceunsplit
         logical :: outputvalue
         outputvalue = sourceunsplit
@@ -1976,7 +1977,7 @@ CONTAINS
     end function
 
     function set_useprimitive(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_useprimitive
         logical :: inputvalue
         useprimitive = inputvalue
@@ -1984,7 +1985,7 @@ CONTAINS
     end function
 
     function get_useprimitive(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_useprimitive
         logical :: outputvalue
         outputvalue = useprimitive
@@ -1992,7 +1993,7 @@ CONTAINS
     end function
 
     function set_dimsplit(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_dimsplit
         logical :: inputvalue
         dimsplit = inputvalue
@@ -2000,7 +2001,7 @@ CONTAINS
     end function
 
     function get_dimsplit(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_dimsplit
         logical :: outputvalue
         outputvalue = dimsplit
@@ -2008,7 +2009,7 @@ CONTAINS
     end function
 
     function set_restrictprimitive(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_restrictprimitive
         logical :: inputvalue
         restrictprimitive = inputvalue
@@ -2016,7 +2017,7 @@ CONTAINS
     end function
 
     function get_restrictprimitive(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_restrictprimitive
         logical :: outputvalue
         outputvalue = restrictprimitive
@@ -2024,7 +2025,7 @@ CONTAINS
     end function
 
     function set_prolongprimitive(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_prolongprimitive
         logical :: inputvalue
         prolongprimitive = inputvalue
@@ -2032,7 +2033,7 @@ CONTAINS
     end function
 
     function get_prolongprimitive(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_prolongprimitive
         logical :: outputvalue
         outputvalue = prolongprimitive
@@ -2040,7 +2041,7 @@ CONTAINS
     end function
 
     function set_coarsenprimitive(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_coarsenprimitive
         logical :: inputvalue
         coarsenprimitive = inputvalue
@@ -2048,7 +2049,7 @@ CONTAINS
     end function
 
     function get_coarsenprimitive(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_coarsenprimitive
         logical :: outputvalue
         outputvalue = coarsenprimitive
@@ -2056,7 +2057,7 @@ CONTAINS
     end function
 
     function set_useprimitiverel(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_useprimitiverel
         logical :: inputvalue
         useprimitiverel = inputvalue
@@ -2064,7 +2065,7 @@ CONTAINS
     end function
 
     function get_useprimitiverel(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_useprimitiverel
         logical :: outputvalue
         outputvalue = useprimitiverel
@@ -2072,7 +2073,7 @@ CONTAINS
     end function
 
     function set_amrentropy(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_amrentropy
         logical :: inputvalue
         amrentropy = inputvalue
@@ -2080,7 +2081,7 @@ CONTAINS
     end function
 
     function get_amrentropy(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_amrentropy
         logical :: outputvalue
         outputvalue = amrentropy
@@ -2088,7 +2089,7 @@ CONTAINS
     end function
 
     function set_divbfix(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_divbfix
         logical :: inputvalue
         divbfix = inputvalue
@@ -2096,7 +2097,7 @@ CONTAINS
     end function
 
     function get_divbfix(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_divbfix
         logical :: outputvalue
         outputvalue = divbfix
@@ -2104,7 +2105,7 @@ CONTAINS
     end function
 
     function set_divbwave(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_divbwave
         logical :: inputvalue
         divbwave = inputvalue
@@ -2112,7 +2113,7 @@ CONTAINS
     end function
 
     function get_divbwave(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_divbwave
         logical :: outputvalue
         outputvalue = divbwave
@@ -2120,7 +2121,7 @@ CONTAINS
     end function
 
     function set_compactres(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_compactres
         logical :: inputvalue
         compactres = inputvalue
@@ -2128,7 +2129,7 @@ CONTAINS
     end function
 
     function get_compactres(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_compactres
         logical :: outputvalue
         outputvalue = compactres
@@ -2136,7 +2137,7 @@ CONTAINS
     end function
 
     function set_bnormlf(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_bnormlf
         logical :: inputvalue
         bnormlf = inputvalue
@@ -2144,7 +2145,7 @@ CONTAINS
     end function
 
     function get_bnormlf(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_bnormlf
         logical :: outputvalue
         outputvalue = bnormlf
@@ -2152,7 +2153,7 @@ CONTAINS
     end function
 
     function set_strictnr(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_strictnr
         logical :: inputvalue
         strictnr = inputvalue
@@ -2160,7 +2161,7 @@ CONTAINS
     end function
 
     function get_strictnr(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_strictnr
         logical :: outputvalue
         outputvalue = strictnr
@@ -2168,7 +2169,7 @@ CONTAINS
     end function
 
     function set_strictsmall(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_strictsmall
         logical :: inputvalue
         strictsmall = inputvalue
@@ -2176,7 +2177,7 @@ CONTAINS
     end function
 
     function get_strictsmall(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_strictsmall
         logical :: outputvalue
         outputvalue = strictsmall
@@ -2184,7 +2185,7 @@ CONTAINS
     end function
 
     function set_strictzero(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_strictzero
         logical :: inputvalue
         strictzero = inputvalue
@@ -2192,7 +2193,7 @@ CONTAINS
     end function
 
     function get_strictzero(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_strictzero
         logical :: outputvalue
         outputvalue = strictzero
@@ -2200,7 +2201,7 @@ CONTAINS
     end function
 
     function set_strictgetaux(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_strictgetaux
         logical :: inputvalue
         strictgetaux = inputvalue
@@ -2208,7 +2209,7 @@ CONTAINS
     end function
 
     function get_strictgetaux(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_strictgetaux
         logical :: outputvalue
         outputvalue = strictgetaux
@@ -2216,7 +2217,7 @@ CONTAINS
     end function
 
     function set_usecovariant(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_usecovariant
         logical :: inputvalue
         usecovariant = inputvalue
@@ -2224,7 +2225,7 @@ CONTAINS
     end function
 
     function get_usecovariant(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_usecovariant
         logical :: outputvalue
         outputvalue = usecovariant
@@ -2232,7 +2233,7 @@ CONTAINS
     end function
 
     function set_nocartesian(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_nocartesian
         logical :: inputvalue
         nocartesian = inputvalue
@@ -2240,7 +2241,7 @@ CONTAINS
     end function
 
     function get_nocartesian(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_nocartesian
         logical :: outputvalue
         outputvalue = nocartesian
@@ -2248,7 +2249,7 @@ CONTAINS
     end function
 
     function set_tfix(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_tfix
         logical :: inputvalue
         tfix = inputvalue
@@ -2256,7 +2257,7 @@ CONTAINS
     end function
 
     function get_tfix(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_tfix
         logical :: outputvalue
         outputvalue = tfix
@@ -2264,7 +2265,7 @@ CONTAINS
     end function
 
     function set_convert(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_convert
         logical :: inputvalue
         convert = inputvalue
@@ -2272,7 +2273,7 @@ CONTAINS
     end function
 
     function get_convert(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_convert
         logical :: outputvalue
         outputvalue = convert
@@ -2280,7 +2281,7 @@ CONTAINS
     end function
 
     function set_saveprim(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_saveprim
         logical :: inputvalue
         saveprim = inputvalue
@@ -2288,7 +2289,7 @@ CONTAINS
     end function
 
     function get_saveprim(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_saveprim
         logical :: outputvalue
         outputvalue = saveprim
@@ -2296,7 +2297,7 @@ CONTAINS
     end function
 
     function set_uselimiter(inputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_uselimiter
         logical :: inputvalue
         uselimiter = inputvalue
@@ -2304,7 +2305,7 @@ CONTAINS
     end function
 
     function get_uselimiter(outputvalue)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_uselimiter
         logical :: outputvalue
         outputvalue = uselimiter
@@ -2313,7 +2314,7 @@ CONTAINS
     
     
     function set_parameters_filename(path)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: set_parameters_filename
         character(len=1024), intent(in) :: path
         logical :: file_exists
@@ -2327,7 +2328,7 @@ CONTAINS
     end function
     
     function get_parameters_filename(path)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: get_parameters_filename
         character(len=1024), intent(out) :: path
         path = parameters_filename 
@@ -2337,7 +2338,7 @@ CONTAINS
     function get_local_index_of_grid(global_index_of_grid)
         use mod_forest
         
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: get_local_index_of_grid
         integer :: iigrid, number_of_grids_before, ipe
@@ -2379,7 +2380,7 @@ CONTAINS
     end function
     
     function is_index_valid(i, j, k)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         logical :: is_index_valid
         integer, intent(in) :: i,j,k
         
@@ -2400,7 +2401,7 @@ CONTAINS
     
     
     function get_position_of_index(i, j, k, index_of_grid, x, y, z, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: get_position_of_index
@@ -2463,7 +2464,7 @@ CONTAINS
     end function
     
     function get_index_of_position( x, y, z, index_of_grid, i, j, k, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: get_index_of_position
@@ -2511,7 +2512,7 @@ CONTAINS
     end function
     
     function get_mesh_size(nx, ny, nz, index_of_grid)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
 
         integer :: get_mesh_size
         integer, intent(out) :: nx, ny, nz
@@ -2533,7 +2534,7 @@ CONTAINS
     function get_number_of_grids(number_of_grids)
         use mod_forest
         
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: ip, igrid
         integer, intent(out) :: number_of_grids
         integer :: get_number_of_grids
@@ -2551,7 +2552,7 @@ CONTAINS
     function get_level_of_grid(level, index_of_grid)
         use mod_forest
         
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer, intent(out) :: level
         integer, intent(in) :: index_of_grid
         integer :: get_level_of_grid
@@ -2582,7 +2583,7 @@ CONTAINS
     function get_cell_size_of_grid(dx1, dx2, dx3, index_of_grid)
         use mod_forest
         
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         double precision, intent(out) :: dx1, dx2, dx3
         integer, intent(in) :: index_of_grid
         integer :: level
@@ -2632,7 +2633,7 @@ CONTAINS
 
     
     function setup_mesh(nmeshx, nmeshy, nmeshz, xlength, ylength, zlength)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer, intent(in) :: nmeshx, nmeshy, nmeshz
         double precision, intent(in) :: xlength, ylength, zlength
         integer :: setup_mesh
@@ -2681,7 +2682,7 @@ CONTAINS
     
     function get_grid_state(i, j, k, index_of_grid, rho,  m1, m2, m3, en, n)
     
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: get_grid_state
@@ -2756,7 +2757,7 @@ CONTAINS
     
     
     function get_grid_density(i, j, k, index_of_grid, rho, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: get_grid_density
@@ -2805,7 +2806,7 @@ CONTAINS
     end function
     
     function get_grid_momentum_density(i, j, k, index_of_grid, m1, m2, m3, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: get_grid_momentum_density
@@ -2869,7 +2870,7 @@ CONTAINS
     end function
     
     function get_grid_energy_density(i, j, k, index_of_grid, en, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: get_grid_energy_density
@@ -2920,7 +2921,7 @@ CONTAINS
     
     
     function set_grid_state(i, j, k, rho, m1, m2, m3, en, index_of_grid, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: set_grid_state
@@ -2976,7 +2977,7 @@ CONTAINS
     end function
     
     function set_grid_density(i, j, k, rho, index_of_grid, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: set_grid_density
@@ -3020,7 +3021,7 @@ CONTAINS
     end function
 
     function set_grid_energy_density(i, j, k, en, index_of_grid, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: set_grid_energy_density
@@ -3064,7 +3065,7 @@ CONTAINS
     end function
     
     function set_grid_momentum_density(i, j, k, m1, m2, m3, index_of_grid, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: set_grid_momentum_density
@@ -3117,7 +3118,7 @@ CONTAINS
     function evolve_model(tend)
         use StoppingConditions
         
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: evolve_model
         double precision :: tend
@@ -3257,7 +3258,7 @@ CONTAINS
     end function
 
     function get_time(tnow)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: get_time
         double precision :: tnow
@@ -3268,7 +3269,7 @@ CONTAINS
     end function
     
     function set_boundary(lowx,highx,lowy,highy,lowz,highz)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: set_boundary
         integer :: idim
@@ -3301,7 +3302,7 @@ CONTAINS
 
 
     function get_acceleration_grid_size(nx, ny, nz)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
 
         integer :: get_acceleration_grid_size
         integer, intent(out) :: nx, ny, nz
@@ -3315,7 +3316,7 @@ CONTAINS
     
     
     function set_acceleration_grid_acceleration(i, j, k, a1, a2, a3, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
               
         integer :: index
         integer :: set_acceleration_grid_acceleration
@@ -3358,7 +3359,7 @@ CONTAINS
     end function
     
     function get_acceleration_grid_acceleration(i, j, k, a1, a2, a3, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
        
         integer :: index
         integer :: get_acceleration_grid_acceleration
@@ -3403,7 +3404,7 @@ CONTAINS
     end function
     
     function get_acceleration_grid_position_of_index(i, j, k, x, y, z, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: index
         integer :: get_acceleration_grid_position_of_index
@@ -3441,7 +3442,7 @@ CONTAINS
     end function
     
     function check_method_parameters()
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: check_method_parameters
         integer :: level
         
@@ -3608,7 +3609,7 @@ CONTAINS
     end function
     
     function check_stop_parameters()
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: check_stop_parameters
         
         if(residmin>=zero) then
@@ -3623,7 +3624,7 @@ CONTAINS
     
     function get_grid_acceleration(i, j, k, index_of_grid, a1, a2, a3, n)
     
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: get_grid_acceleration
@@ -3692,7 +3693,7 @@ CONTAINS
     
     
     function set_grid_acceleration(i, j, k, a1, a2, a3, index_of_grid, n)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         
         integer :: local_index_of_grid, index, previous_index_of_grid = -1
         integer :: set_grid_acceleration
@@ -3744,7 +3745,7 @@ CONTAINS
     end function
     
     function get_hydro_state_at_point(x1, x2, x3, vx, vy, vz, rho, rhovx, rhovy, rhovz, rhoe,npoints) result(ret)
-        include 'amrvacdef.f'
+        IMPLICIT NONE
         integer :: ret, ilist
         integer, intent(in) :: npoints
         integer :: iigrid, igrid, i^D, idims
