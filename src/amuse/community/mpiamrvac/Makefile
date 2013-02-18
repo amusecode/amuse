@@ -1,10 +1,11 @@
 AMUSE_DIR?=../../../..
 -include $(AMUSE_DIR)/config.mk
 
+# need := to expand the variable here and not when it is used
+FORTRAN:=$(FC) 
 MPIFC ?= mpif90
 PYTHON ?= python
 FC      = $(MPIFC)
-
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 FFLAGS += $(FCFLAGS)
