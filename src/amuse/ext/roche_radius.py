@@ -2,7 +2,7 @@
 import numpy
 import math
 from amuse.units.optparse import OptionParser
-from amuse.units import units
+from amuse.units import units, constants
 
 """ Equation 47-52 of Sepinsky """
 
@@ -142,8 +142,20 @@ class Roche_Orbit(object):
         self.mass_1 = value * self.mass_2
 
     @property
+    def total_mass(self):
+        return self.mass_1 + self.mass_2
+
+    @property
     def A(self):
         return sepinsky_A_parameter(self.eccentricity, self.angular_velocity_ratio, self.true_anomaly)
+
+    @property
+    def period(self):
+        return (4.0 * numpy.pi**2 * self.semimajor_axis**3 / (constants.G * self.total_mass)).sqrt().as_quantity_in(units.day)
+
+    @period.setter
+    def period(self, period):
+        self.semimajor_axis = ((period/(2.0 * numpy.pi) * (self.total_mass * constants.G).sqrt())**(2.0/3.0)).as_quantity_in(units.AU)
 
     def sepinsky_over_eggleton(self):
         return sepinsky_formula(self.mass_ratio, self.A)
@@ -167,6 +179,7 @@ class Roche_Orbit(object):
 def new_option_parser():
     parser = OptionParser(description="Calculate the Roche radius for a given orbit.")
     parser.add_option("-a", dest="semimajor_axis", type="float", default = 1.0, unit=units.AU, help="The orbit semimajor axis [%default %unit]")
+    parser.add_option("-p", dest="period", type="float", default = 0.0, unit=units.day, help="The orbital period, which sets the semimajor axis [%unit]")
     parser.add_option("-e", dest="eccentricity", type="float", default = 0.0, help="The orbit eccentricity [%default]")
     parser.add_option("-M", dest="mass_1", type="float", default = 1.0, unit=units.MSun, help="The mass of the primary (the object that has the Roche lobe) [%default %unit]")
     parser.add_option("-m", dest="mass_2", type="float", default = 1.0, unit=units.MSun, help="The mass of the secondary (the object which causes the Roche lobe) [%default %unit]")
@@ -175,10 +188,14 @@ def new_option_parser():
     return parser
 
 def create_orbit_from_options():
-    options  = new_option_parser().parse_args()
+    options, args  = new_option_parser().parse_args()
 
     orbit = Roche_Orbit()
-    orbit.__dict__.update(options[0].__dict__)
+    orbit.__dict__.update(options.__dict__)
+
+    if options.period > (0 | units.day):
+        orbit.period = options.period
+        print "Using period, resulting semimajor axis is", orbit.semimajor_axis
 
     return orbit
 
