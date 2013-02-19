@@ -128,7 +128,7 @@ class bridge(object):
             self.time_offsets[interface]=quantities.zero     
         self.systems.add(interface)
         for p in partners:
-            if not hasattr(interface,"get_gravity_at_point"):
+            if not hasattr(p,"get_gravity_at_point"):
                 return -1
         self.partners[interface]=partners
         self.do_sync[interface]=do_sync  
