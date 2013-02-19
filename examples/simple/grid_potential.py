@@ -5,16 +5,21 @@ from matplotlib import pyplot
 def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 100 | units.AU):
     converter = nbody_system.nbody_to_si(mass, length)
     
+    # calculate density in field based on solar wind
+    # gives a very low number
     molar_mass_hydrogen_proton = 1 | units.g / units.mol
     density_hydrogen_in_stellar_wind = 10 | 1 / units.cm**3
     particles_per_mol =  6.022e23 | 1 / units.mol
     density_hydrogen_in_stellar_wind_in_moles = density_hydrogen_in_stellar_wind / particles_per_mol
-    density_gas = (density_hydrogen_in_stellar_wind_in_moles * molar_mass_hydrogen_proton).as_quantity_in(units.MSun / units.AU**3)
+    density_gas = 100 * (density_hydrogen_in_stellar_wind_in_moles * molar_mass_hydrogen_proton).as_quantity_in(units.MSun / units.AU**3)
+    
+    # override with higher number for plotting
+    density_gas = 1e-3 | units.MSun / units.AU**3
     
     instance=Athena(converter)
     instance.initialize_code()
-    instance.parameters.nx = 20
-    instance.parameters.ny = 20
+    instance.parameters.nx = 50
+    instance.parameters.ny = 50
     instance.parameters.nz = 1
     instance.parameters.length_x = length 
     instance.parameters.length_y = length
@@ -23,7 +28,7 @@ def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 100 | units.AU)
     instance.parameters.y_boundary_conditions = ("outflow","outflow")
     instance.parameters.z_boundary_conditions = ("outflow","outflow")
     
-    instance.stopping_conditions.number_of_steps_detection.enable()
+    #instance.stopping_conditions.number_of_steps_detection.enable()
     
     instance.set_has_external_gravitational_potential(1)
     
@@ -45,9 +50,7 @@ def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 100 | units.AU)
     )
     
     gravity = Hermite(converter)
-    print grid_in_memory.shape
     dx = (grid_in_memory.x[1][0][0] - grid_in_memory.x[0][0][0]).as_quantity_in(units.AU)
-    print  dx**2 
     gravity.parameters.epsilon_squared = dx**2 
     gravity.particles.add_particle(particle)
     
@@ -60,20 +63,19 @@ def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 100 | units.AU)
     )
     
     potential =  potential.reshape(instance.potential_grid.x.shape)
-    print potential.max()
-    print potential.min()
     instance.potential_grid.potential =  potential
     
-    instance.evolve_model(1 | units.s)
-    
-    rho = instance.grid.rho[...,...,0].value_in(units.MSun / units.AU**3)
-    #rho = potential[...,...,0].value_in(potential.unit)
-    plot_grid(rho)
+    instance.evolve_model(100 | units.yr)
+    print instance.get_timestep().value_in(units.yr)
+    value_to_plot = instance.grid.rho[...,...,0].value_in(units.MSun / units.AU**3)
+    #value_to_plot = potential[...,...,0].value_in(potential.unit)
+    plot_grid(value_to_plot)
     
 def plot_grid(x):
     figure = pyplot.figure(figsize=(6,6))
     plot = figure.add_subplot(1,1,1)
-    plot.imshow(x, origin = 'lower')
+    mappable = plot.imshow(x, origin = 'lower')
+    pyplot.colorbar(mappable)
     #figure.savefig('orszag_tang.png')
     pyplot.show()
     
