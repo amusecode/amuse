@@ -1188,6 +1188,8 @@ class Athena(CommonCode):
             for methodname in [
                     'get_grid_state',
                     'set_grid_state',
+                    'get_potential',
+                    'set_potential',
                     'get_grid_density',
                     'set_grid_density',
                     'set_grid_energy_density',

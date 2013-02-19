@@ -275,7 +275,6 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
     kk = k;
     
     Real potential000 = Potentials[kk][jj][ii];
-    
     Real potential001 = potential000;
     Real potential100 = potential000;
     Real potential101 = potential000;
@@ -303,8 +302,6 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
         (potential110 * dz * dy * (1 - dx)) +
         (potential111 * dz * dy * dx );
     
-    
-    //printf("dx,dy,dx %f,%f,%f\n",dx,dy,dz);
     
     return potential;
 }

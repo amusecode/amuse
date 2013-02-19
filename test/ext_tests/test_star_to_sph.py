@@ -128,7 +128,7 @@ class TestStellarModel2SPH(TestWithMPI):
     
     def test5(self):
         print "Test evolving created SPH particles in Gadget"
-        stellar_evolution = self.new_instance(MESA)
+        stellar_evolution = self.new_instance_of_an_optional_code(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return

@@ -2,15 +2,21 @@ from amuse.lab import *
 
 from matplotlib import pyplot
 
-def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 1 | units.AU):
+def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 100 | units.AU):
     converter = nbody_system.nbody_to_si(mass, length)
+    
+    molar_mass_hydrogen_proton = 1 | units.g / units.mol
+    density_hydrogen_in_stellar_wind = 10 | 1 / units.cm**3
+    particles_per_mol =  6.022e23 | 1 / units.mol
+    density_hydrogen_in_stellar_wind_in_moles = density_hydrogen_in_stellar_wind / particles_per_mol
+    density_gas = (density_hydrogen_in_stellar_wind_in_moles * molar_mass_hydrogen_proton).as_quantity_in(units.MSun / units.AU**3)
     
     instance=Athena(converter)
     instance.initialize_code()
     instance.parameters.nx = 20
     instance.parameters.ny = 20
     instance.parameters.nz = 1
-    instance.parameters.length_x = length
+    instance.parameters.length_x = length 
     instance.parameters.length_y = length
     instance.parameters.length_z = length
     instance.parameters.x_boundary_conditions = ("outflow","outflow")
@@ -18,18 +24,19 @@ def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 1 | units.AU):
     instance.parameters.z_boundary_conditions = ("outflow","outflow")
     
     instance.stopping_conditions.number_of_steps_detection.enable()
+    
     instance.set_has_external_gravitational_potential(1)
-    #instance.set_courant_friedrichs_lewy_number(0.3)
+    
     instance.commit_parameters()
     
     grid_in_memory = instance.grid.copy()
-    grid_in_memory.rho  = 1e-6 | units.MSun / units.AU**3
+    grid_in_memory.rho  = density_gas
+    pressure =  1 | units.Pa
     
+    grid_in_memory.energy =  pressure / (instance.parameters.gamma- 1)
     channel = grid_in_memory.new_channel_to(instance.grid)
     channel.copy()
-    #print instance.grid.energy[0]
-    #instance.energy = 0.001 | units.m**-1 * units.s**-2 * units.kg
-
+    
     instance.initialize_grid()
     particle = Particle(
         mass = mass,
@@ -41,7 +48,7 @@ def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 1 | units.AU):
     print grid_in_memory.shape
     dx = (grid_in_memory.x[1][0][0] - grid_in_memory.x[0][0][0]).as_quantity_in(units.AU)
     print  dx**2 
-    gravity.parameters.epsilon_squared = (10*dx)**2 
+    gravity.parameters.epsilon_squared = dx**2 
     gravity.particles.add_particle(particle)
     
     

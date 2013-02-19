@@ -133,7 +133,7 @@ RECV_HEADER_SLEEP_STRING = """
           END
         END INTERFACE
         
-        call MPI_Irecv(header_in, HEADER_SIZE, MPI_INT, 0, 989, parent, header_request, ioerror)
+        call MPI_Irecv(header_in, HEADER_SIZE, MPI_INTEGER, 0, 989, parent, header_request, ioerror)
         if(polling_interval.GT.0) then
             is_finished = .false.
             call MPI_Test(header_request, is_finished, request_status, ioerror)
@@ -156,7 +156,7 @@ RECV_HEADER_WAIT_STRING = """
         integer,intent(inout) :: ioerror
         integer :: request_status(MPI_STATUS_SIZE),header_request
         
-        call MPI_Irecv(header_in, HEADER_SIZE, MPI_INT, 0, 989, parent, header_request, ioerror)
+        call MPI_Irecv(header_in, HEADER_SIZE, MPI_INTEGER, 0, 989, parent, header_request, ioerror)
         call MPI_Wait(header_request, request_status, ioerror)
     END SUBROUTINE
 """
