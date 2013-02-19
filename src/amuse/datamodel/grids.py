@@ -62,8 +62,10 @@ class AbstractGrid(AbstractSet):
     def new_channel_to(self, other):
         return GridInformationChannel(self, other)
     
-    def copy(self, memento = None, keep_structure = False):
+    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
         attributes = self.get_attribute_names_defined_in_store()
+        attributes = [x for x in attributes if filter_attributes(self, x)]
+        
         values = self.get_values_in_store(None, attributes)
         result = self._factory_for_new_collection()(*self.shape)
         

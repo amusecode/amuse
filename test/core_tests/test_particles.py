@@ -158,6 +158,16 @@ class TestParticles(amusetest.TestCase):
         self.assertAlmostRelativeEquals(sorted.x, [1,1,2,2] | units.kg)
         self.assertAlmostRelativeEquals(sorted.y, [4,3,2,1] | units.kg)
         
+        
+    def test14(self):
+        particles = datamodel.Particles(keys = [10,11])
+        particles.mass = [1,2] | units.kg
+        particles.r = [1,2] | units.m
+        particles2 = particles.copy(filter_attributes = lambda p, x : x != 'r')
+        
+        self.assertTrue(hasattr(particles2, 'mass'))
+        self.assertFalse(hasattr(particles2, 'r'))
+        
 class TestParticle(amusetest.TestCase):
     
     def test1(self):

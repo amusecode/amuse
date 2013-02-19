@@ -824,7 +824,7 @@ class AbstractSet(object):
     def __len__(self):
         return len(self.get_all_keys_in_store())
 
-    def copy(self, memento = None, keep_structure = False):
+    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particles, x : True):
         """ Creates a new in particle set and copies all attributes and 
         values into this set. 
         
@@ -1282,7 +1282,7 @@ class LinkedArray(numpy.ndarray):
         if array_object is None:
             return
         
-    def copy(self, memento = None, keep_structure = False):
+    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
         from amuse.datamodel.particles import Particle
         from amuse.datamodel.grids import GridPoint
         
@@ -1299,7 +1299,7 @@ class LinkedArray(numpy.ndarray):
                 if id(container) in memento:
                     copy_of_container = memento[id(container)]
                 else:
-                    copy_of_container = container.copy(memento, keep_structure)
+                    copy_of_container = container.copy(memento, keep_structure, filter_attributes)
                 result[index] = copy_of_container._get_particle_unsave(x.key)
             elif isinstance(x, GridPoint):
                 container = x.get_containing_set()
@@ -1307,14 +1307,14 @@ class LinkedArray(numpy.ndarray):
                 if id(container) in memento:
                     copy_of_container = memento[id(container)]
                 else:
-                    copy_of_container = container.copy(memento, keep_structure)
+                    copy_of_container = container.copy(memento, keep_structure, filter_attributes)
                 
                 result[index] = GridPoint(x.index, copy_of_container)
             elif isinstance(x, AbstractSet):
                 if id(x) in memento:
                     copy_of_container = memento[id(x)]
                 else:
-                    copy_of_container = x.copy(memento, keep_structure)
+                    copy_of_container = x.copy(memento, keep_structure, filter_attributes)
                 result[index] = copy_of_container
             else:
                 raise exceptions.AmuseException("unkown type in link {0}, copy not implemented".format(type(x)))
@@ -1322,7 +1322,7 @@ class LinkedArray(numpy.ndarray):
         
         return result.reshape(self.shape)
     
-    def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None):
+    def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None, filer_attributes = lambda particle_set, x : True):
         from amuse.datamodel.particles import Particle
         from amuse.datamodel.grids import GridPoint
         
@@ -1351,7 +1351,7 @@ class LinkedArray(numpy.ndarray):
                     result[index] = x
             elif isinstance(x, AbstractSet):
                 if must_copy:
-                    copy_of_container = x.copy(memento, keep_structure = True)
+                    copy_of_container = x.copy(memento, keep_structure = True, filer_attributes = filer_attributes)
                     result[index] = copy_of_container
                 else:
                     if from_container is None or x is from_container:

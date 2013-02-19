@@ -343,8 +343,9 @@ class AbstractParticleSet(AbstractSet):
     def new_binary_tree_wrapper(self, name_of_first_child = 'child1', name_of_second_child = 'child2'):
         return trees.ChildTreeOnParticleSet(self, (name_of_first_child, name_of_second_child))
     
-    def copy(self, memento = None, keep_structure = False):
+    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
         attributes = self.get_attribute_names_defined_in_store()
+        attributes = [x for x in attributes if filter_attributes(self, x)]
         keys = self.get_all_keys_in_store()
         indices = self.get_all_indices_in_store()
         values = self.get_values_in_store(indices, attributes)
@@ -356,7 +357,7 @@ class AbstractParticleSet(AbstractSet):
         converted = []
         for x in values:
             if isinstance(x, LinkedArray):
-                converted.append(x.copy(memento, keep_structure))
+                converted.append(x.copy(memento, keep_structure, filter_attributes))
             else:
                 converted.append(x)
         result.add_particles_to_store(keys, attributes, converted)
@@ -1782,14 +1783,14 @@ class ParticlesSubset(AbstractParticleSet):
     def as_set(self):
         return self
     
-    def copy(self, memento = None, keep_structure = False):
+    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
         if keep_structure:
             result = ParticlesSubset(None, [])
             memento[id(self)] = result
             if id(self._private.particles) in memento:
                 result._private.particles = memento[id(self._private.particles)]
             else:
-                result._private.particles = self._private.particles.copy(memento, keep_structure)
+                result._private.particles = self._private.particles.copy(memento, keep_structure, filter_attributes)
             result._private.keys = numpy.array(self._private.keys, dtype='uint64')
             result._private.set_of_keys = set(self._private.keys)
             
@@ -1798,7 +1799,7 @@ class ParticlesSubset(AbstractParticleSet):
         
             return result
         else:
-            return super(ParticlesSubset, self).copy(memento, keep_structure)
+            return super(ParticlesSubset, self).copy(memento, keep_structure, filter_attributes)
         
 
 
@@ -1923,8 +1924,10 @@ class ParticlesMaskedSubset(ParticlesSubset):
         return ParticlesMaskedSubset(self._private.particles.previous_state(), self._private.keys)
     
         
-    def copy(self, memento = None, keep_structure = False):
+    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
         attributes = self.get_attribute_names_defined_in_store()
+        attributes = [x for x in attributes if filter_attributes(self, x)]
+        
         keys = self.get_all_keys_in_store()
         keys = keys[~keys.mask] 
         values = self.get_values_in_store(keys, attributes) 
