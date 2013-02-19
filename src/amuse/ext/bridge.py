@@ -106,7 +106,7 @@ def kick_system(system, get_gravity, dt):
 #    parts.copy_values_of_all_attributes_to(system.particles)
   
 class bridge(object):
-    def __init__(self,verbose=False):
+    def __init__(self,verbose=False,method=None):
         """
         verbose indicates whether to output some run info
         """  
@@ -117,6 +117,7 @@ class bridge(object):
         self.do_sync=dict()
         self.verbose=verbose
         self.timestep=None
+        self.method=method
     
     def add_system(self, interface,  partners=set(),do_sync=True):
         """
@@ -143,18 +144,22 @@ class bridge(object):
                 timestep=tend-self.time
             else:
                 timestep = self.timestep
-            
-#        while self.time < tend:    
-#            dt=min(timestep,tend-self.time)
-#            self.kick_systems(dt/2)   
-#            self.drift_systems(self.time+dt)
-#            self.kick_systems(dt/2)
-#            self.time=self.time+dt
-#        return 0    
- 
- 
+                
+        if self.method==None:
+          return self.evolve_joined_leapfrog(tend,timestep)
+        else:
+          return self.evolve_simple_steps(tend,timestep)          
+
+    def evolve_simple_steps(self,tend,timestep):
+        while self.time < (tend-timestep/2):
+            self._drift_time=self.time
+            self.method(self.kick_systems,self.drift_systems_dt, timestep)
+            self.time=self.time+timestep
+        return 0    
+
+    def evolve_joined_leapfrog(self,tend,timestep):
         first=True
-        while self.time < (tend-timestep/2):    
+        while self.time < (tend-timestep/2):
              if first:      
                  self.kick_systems(timestep/2)
                  first=False
@@ -164,9 +169,7 @@ class bridge(object):
              self.time=self.time+timestep
         if not first:
              self.kick_systems(timestep/2)         
-        return 0    
- 
- 
+        return 0
     
     def synchronize_model(self):
         """ 
@@ -240,6 +243,9 @@ class bridge(object):
         return datamodel.ParticlesSuperset(arr)                
 
 # 'private' functions
+    def drift_systems_dt(self,dt):
+        self._drift_time+=dt
+        self.drift_systems(self._drift_time)
 
     def drift_systems(self,tend):
         threads=[]
