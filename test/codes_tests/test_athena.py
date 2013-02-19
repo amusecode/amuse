@@ -2331,6 +2331,44 @@ class TestAthena(TestWithMPI):
         self.assertAlmostRelativeEquals(rho , (x + (20 * (y-half)) + (400 * (z-half)))/(1| generic_unit_system.length) | generic_unit_system.density )
             
 
-
-
-
+    def test24(self):
+        
+        instance=self.new_instance(Athena, number_of_workers=1)
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        instance.parameters.mesh_length = (10.0, 1, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (20, 1, 1)
+        instance.set_has_external_gravitational_potential(1)
+        instance.commit_parameters()
+        potential_grid = instance.potential_grid
+        factor =  (2 | generic_unit_system.length / generic_unit_system.time**2)
+        potential_grid.potential = potential_grid.x * factor
+        
+        x = numpy.arange(0,10.25, 0.1) | generic_unit_system.length
+        y = 0.5 |generic_unit_system.length
+        z = 0.5 |generic_unit_system.length
+        interpolated = instance.get_interpolated_gravitational_potential(x,y,z)
+        self.assertAlmostRelativeEquals(interpolated, x * factor)
+        
+    
+    def test25(self):
+        
+        instance=self.new_instance(Athena, number_of_workers=1)
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        instance.parameters.mesh_length = (5.0, 10.0, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (20, 20, 1)
+        instance.set_has_external_gravitational_potential(1)
+        instance.commit_parameters()
+        potential_grid = instance.potential_grid
+        factor =  (2 | generic_unit_system.length / generic_unit_system.time**2)
+        potential_grid.potential = potential_grid.y * factor
+        print  potential_grid.y * factor
+        y = numpy.arange(0,10.25, 0.1) | generic_unit_system.length
+        x = (y * 0) + (2 |generic_unit_system.length)
+        z = 0.5 |generic_unit_system.length
+        interpolated = instance.get_interpolated_gravitational_potential(x,y,z)
+        print y*factor
+        self.assertAlmostRelativeEquals(interpolated, y * factor)

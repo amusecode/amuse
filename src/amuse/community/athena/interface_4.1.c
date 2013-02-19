@@ -229,6 +229,7 @@ static void boundary_right_x3_copy(GridS *pGrid)
  * x3 will be between k and k+1
  */
 
+
 static inline void ijk_pos_dom(
     const Real x1, const Real x2, const Real x3,
     Real * i, Real * j, Real * k,
@@ -244,21 +245,19 @@ static inline void ijk_pos_dom(
     *i = ((x1 - domain->MinX[0])/domain->dx[0]) - 0.5 + nghost;
     *dx = modf(*i, i);
   }
-  if(domain->dx[1] == 0) {
+  if(domain->Nx[1] == 1) {
      *j = 0;
      *dy = 0.0;
-     
   } else {
     *j = ((x2 - domain->MinX[1])/domain->dx[1]) - 0.5 + nghost;
     *dy = modf(*j, j);
   }
-
-  if(domain->dx[2] == 0) {
+  
+  if(domain->Nx[2] == 1) {
     *k = 0.0;
     *dz = 0;
   } else {
     *k = ((x3 - domain->MinX[2])/domain->dx[2]) - 0.5 + nghost;
-    
     *dz = modf(*k, k);
   }
 }
@@ -275,7 +274,6 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
     jj = j;
     kk = k;
     
-    
     Real potential000 = Potentials[kk][jj][ii];
     
     Real potential001 = potential000;
@@ -285,7 +283,6 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
     Real potential011 = potential000;
     Real potential110 = potential000;
     Real potential111 = potential000;
-    
     if(dx > 0) potential001 = Potentials[kk][jj][ii+1];
     if(dz > 0) potential100 = Potentials[kk+1][jj][ii];
     if(dz > 0 && dx > 0) potential101 = Potentials[kk+1][jj][ii+1];
@@ -299,13 +296,15 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
     Real potential = 
         (potential000 * (1 - dz) * (1 - dy) * (1 - dx)) +
         (potential100 * dz * (1 - dy) * (1 - dx)) +
-        (potential010 * (1 - dz) * dy * (1 - dz)) +
+        (potential010 * (1 - dz) * dy * (1 - dx)) +
         (potential001 * (1 - dz) * (1 - dy) * dx) +
         (potential101 * dz * (1 - dy) * dx) +
         (potential011 * (1 - dz) * dy * dx) +
         (potential110 * dz * dy * (1 - dx)) +
         (potential111 * dz * dy * dx );
     
+    
+    //printf("dx,dy,dx %f,%f,%f\n",dx,dy,dz);
     
     return potential;
 }
@@ -1946,7 +1945,6 @@ int set_potential(
 
         if(mesh.Nx[1] > 1) {j0 += nghost;}
         if(mesh.Nx[2] > 1) {k0 += nghost;}
-
         if (
             (i0 >= imin && i0 <= imax) &&
             (j0 >= jmin && j0 <= jmax) &&

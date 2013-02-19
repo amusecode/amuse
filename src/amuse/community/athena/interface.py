@@ -760,6 +760,13 @@ class Athena(CommonCode):
             (potential_energy,
             object.ERROR_CODE,)
         )
+         
+        object.add_method(
+            'get_interpolated_gravitational_potential',
+            (length, length, length),
+            (potential_energy,
+            object.ERROR_CODE,)
+        )
         
         object.add_method(
             'get_grid_gravitational_acceleration',
