@@ -66,11 +66,18 @@
 
 #include "hdyn.h"
 
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
+
 #ifndef TOOLBOX
 
 // Global pointers to the closest pair (shortest mutual time step).
 
 static hdyn *bi_min = NULL, *bj_min = NULL;
+
+// Global pointers to the closest colliding pair (smallest dr/radius).
+
+static hdyn *bi_coll = NULL, *bj_coll = NULL;
 
 
 
@@ -300,6 +307,11 @@ real calculate_top_level_acc_and_jerk(hdyn *b)
 
     real min_timestep2 = _INFINITY_;
     bi_min = bj_min = NULL;
+    bi_coll = bj_coll = NULL;
+
+    int coll = 0;
+    is_stopping_condition_enabled(COLLISION_DETECTION, &coll);	// TODO
+    //real rfac_max = 0;
 
     for_all_daughters(hdyn, b, bi)
 	for (hdyn *bj = bi->get_younger_sister();
@@ -320,6 +332,10 @@ real calculate_top_level_acc_and_jerk(hdyn *b)
 		min_timestep2 = timestep2;
 		bi_min = bi;
 		bj_min = bj;
+	    }
+
+	    if (coll) {
+		//real rfac = 
 	    }
 	}
 
@@ -912,7 +928,7 @@ int smallN_evolve(hdyn *b,
 	// Structure analysis:
 
 	if (dt_check > 0 && b->get_system_time() >= t_check) {
-	    bool over = check_structure(b, break_r2, verbose);
+	    int over = check_structure(b, break_r2, verbose);
 	    if (over) return 0;
 	    while (b->get_system_time() >= t_check) t_check += dt_check;
 	}

@@ -3,8 +3,8 @@
 // version, with a custom class to make it self-contained.  The only
 // externally visible functions are
 //
-//	bool  check_structure(hdyn *bin, bool verbose = true)
-//	hdyn* get_tree(hdyn *bin)
+//	int  check_structure(hdyn *bin, bool verbose = true)
+//	hdyn *get_tree(hdyn *bin)
 //
 // NOTES: The original code code used Starlab stories to track
 // critical information.  Stories are handy, but maybe too much to
@@ -965,9 +965,9 @@ local inline bool is_over(hdyn2 *b, bool verbose)
 //----------------------------------------------------------------------
 // Externally visible functions:
 
-bool check_structure(hdyn *bin,			// input root node
-		     real rlimit2,		// default = _INFINITY_
-                     int verbose)		// default = 1
+int check_structure(hdyn *bin,			// input root node
+		    real rlimit2,		// default = _INFINITY_
+		    int verbose)		// default = 1
 {
     if (verbose)
 	cout << endl << "checking structure at time "
@@ -979,10 +979,6 @@ bool check_structure(hdyn *bin,			// input root node
 
     string summary, curr_state;
     create_summary_strings(b, summary, curr_state);
-
-
-    cout << "summary: " << summary << endl << flush;
-
 
     if (verbose) {
 
@@ -996,7 +992,8 @@ bool check_structure(hdyn *bin,			// input root node
 
 	cout << "summary: " << summary << endl;
 	cout << "state:   " << curr_state << endl;
-    }
+    } else
+	cout << "summary: " << summary << endl << flush;
 
     // Count the latest run of unchanged state strings.
 
@@ -1010,7 +1007,7 @@ bool check_structure(hdyn *bin,			// input root node
 
     // See if the interaction is over.
 
-    bool over = is_over(b, verbose);
+    int over = is_over(b, verbose);
     if (over && verbose) cout << endl << "interaction is over" << endl;
 
 #if 0
@@ -1024,7 +1021,7 @@ bool check_structure(hdyn *bin,			// input root node
 	for_all_daughters(hdyn, bin, bi) {
 	    real r2 = square(bi->get_pos());
 	    if (r2 > rlimit2) {
-		over = true;
+		over = 2;
 		cout << "is_over: termination at rlimit" << endl << flush;
 	    }
 	}
