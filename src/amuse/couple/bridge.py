@@ -465,7 +465,7 @@ class GravityCodeInField(object):
         particles.vz += dt * az 
   
 class Bridge(object):
-    def __init__(self, timestep = None, verbose=False, use_threading=True):
+    def __init__(self, timestep = None, verbose=False, use_threading=True,method=None):
         """
         verbose indicates whether to output some run info
         """  
@@ -476,6 +476,7 @@ class Bridge(object):
         self.kick_energy = quantities.zero
         self.use_threading = use_threading
         self.time_offsets = dict()
+        self.method=method
     
     def add_system(self, interface, partners=set(),do_sync=True, 
             radius_is_eps=False, h_smooth_is_eps=False):
@@ -504,10 +505,25 @@ class Bridge(object):
         """
         evolve combined system to tend, timestep fixes timestep
         """
-        first=True
         if timestep is None:
-            timestep = self.timestep
-            
+            if self.timestep is None:
+                timestep=tend-self.time
+            else:
+                timestep = self.timestep
+
+        if self.method is None:
+          return self.evolve_joined_leapfrog(tend,timestep)
+        else:
+          return self.evolve_simple_steps(tend,timestep)          
+
+    def evolve_simple_steps(self,tend,timestep):
+        while self.time < (tend-timestep/2):
+            self._drift_time=self.time
+            self.method(self.kick_codes,self.drift_codes_dt, timestep)
+            self.time=self.time+timestep
+
+    def evolve_joined_leapfrog(self,tend,timestep):
+        first=True            
         while self.time < (tend-timestep/2.):    
              if first:      
                  self.kick_codes(timestep/2.)
@@ -521,7 +537,8 @@ class Bridge(object):
              
         if not first:
             self.kick_codes(timestep/2.)
-
+            
+            
     def synchronize_model(self):
         """ 
         explicitly synchronize all components
@@ -624,6 +641,9 @@ class Bridge(object):
         return datamodel.ParticlesSuperset(array)                
 
 # 'private' functions
+    def drift_codes_dt(self,dt):
+        self._drift_time+=dt
+        self.drift_codes(self._drift_time)
 
     def drift_codes(self,tend):
         threads=[]
