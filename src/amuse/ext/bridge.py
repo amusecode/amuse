@@ -106,7 +106,7 @@ def kick_system(system, get_gravity, dt):
 #    parts.copy_values_of_all_attributes_to(system.particles)
   
 class bridge(object):
-    def __init__(self,verbose=False,method=None):
+    def __init__(self,verbose=False,method=None, use_threading=True):
         """
         verbose indicates whether to output some run info
         """  
@@ -118,6 +118,7 @@ class bridge(object):
         self.verbose=verbose
         self.timestep=None
         self.method=method
+        self.use_threading=use_threading
     
     def add_system(self, interface,  partners=set(),do_sync=True):
         """
@@ -255,10 +256,14 @@ class bridge(object):
                 if(self.verbose):
                     print "evolving", x.__class__.__name__,
                 threads.append(threading.Thread(target=x.evolve_model, args=(tend-offset,)) )
-        for x in threads:
-            x.start()
-        for x in threads:
-            x.join()
+        if self.use_threading:
+            for x in threads:
+                x.start()            
+            for x in threads:
+                x.join()
+        else:
+            for x in threads:
+                x.run()
         if(self.verbose): 
             print ".. done"
         return 0
