@@ -31,7 +31,7 @@ class UpdatedParticle {
 #include <vector>
 vector<UpdatedParticle> UpdatedParticles;
 
-// AMUSE STOPPING CONDITIONS SUPPORT (not currently used)
+// AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
 
 // Setup and parameters.
@@ -195,7 +195,7 @@ int new_particle(int * index_of_the_particle,
 		 double mass, 
 		 double x, double y, double z,
 		 double vx, double vy, double vz,
-         double radius, int index_to_set)
+		 double radius, int index_to_set)
 {
     // Add a particle to the system.  Let the module set the id, or
     // force the index to index_to_set if >= 0 and allowed.
@@ -234,7 +234,7 @@ int set_state(int index_of_the_particle,
 	      double mass, 
 	      double x, double y, double z,
 	      double vx, double vy, double vz,
-          double radius)
+	      double radius)
 {
     hdyn *bb = particle_with_index(b, index_of_the_particle);
     if (!bb) return -1;
@@ -249,7 +249,7 @@ int get_state(int index_of_the_particle,
 	      double * mass, 
 	      double * x, double * y, double * z,
 	      double * vx, double * vy, double * vz,
-          double * radius)
+	      double * radius)
 {
     hdyn *bb = particle_with_index(b, index_of_the_particle);
     if (!bb) return -1;
@@ -409,6 +409,7 @@ int evolve_model(double to_time)
     // specified time.  All particles j will have time[j] <=
     // system_time < time[j] + timestep[j].
 
+    reset_stopping_conditions();    
     UpdatedParticles.clear();
 
     // Default calling sequence to smallN_evolve forces it to
@@ -428,7 +429,7 @@ int is_over(int * over, real rlimit, int verbose)
 {
     real rlimit2 = rlimit*rlimit;
     if (rlimit2 <= 0) rlimit2 = _INFINITY_;
-    *over = (int)check_structure(b, rlimit2, verbose);
+    *over = check_structure(b, rlimit2, verbose);
     return 0;
 }
 

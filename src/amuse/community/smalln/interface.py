@@ -210,7 +210,9 @@ class SmallNInterface(CodeInterface,
     @legacy_function
     def is_over():
         """
-        Return 1 iff the run is over, according to analyze().
+        Return 1 if the run is over, according to analyze().
+        Return 2 if the size of the system exceeds rlimit.
+        Return 0 otherwise.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('over', dtype='int32',
