@@ -136,9 +136,11 @@ def run_ph4(infile = None, outfile = None,
             gravity = grav(number_of_workers = n_workers,
                            redirection = "none", mode = "gpu")
         except Exception as ex:
-            gravity = grav(number_of_workers = n_workers, redirection = "none")
+            gravity = grav(number_of_workers = n_workers,
+                           redirection = "none")
     else:
-        gravity = grav(number_of_workers = n_workers, redirection = "none")
+        gravity = grav(number_of_workers = n_workers,
+                       redirection = "none")
 
     gravity.initialize_code()
     gravity.parameters.set_defaults()
@@ -272,8 +274,24 @@ def run_ph4(infile = None, outfile = None,
         stars.mass = stars.mass * total_mass/(total_mass+added_mass)
         number_of_stars += nbin
 
-    # Set dynamical radii (assumes virial equilibrium):
-    stars.radius = 0.5*(2*stars.mass.number) | nbody_system.length
+    # Set dynamical radii (assuming virial equilibrium and standard
+    # units).  Note that this choice should be refined, and updated
+    # as the system evolves.  Probably the choice of radius should be
+    # made entirely in the multiples module.  TODO.  In these units,
+    # M = 1 and <v^2> = 0.5, so the mean 90-degree turnaround impact
+    # parameter is
+    #
+    #		b_90 = G (m_1+m_2) / vrel^2
+    #		     = 2 <m> / 2<v^2>
+    #		     = 2 / N			for equal masses
+    #
+    # Taking r_i = m_i / 2<v^2> = m_i in virial equilibrium means
+    # that, approximately, "contact" means a 90-degree deflection (r_1
+    # + r_2 = b_90).  A more conservative choice with r_i less than
+    # this value will isolates encounters better, but also place more
+    # load on the large-N dynamical module.
+
+    stars.radius = stars.mass.number | nbody_system.length
 
     time = 0.0 | nbody_system.time
     # print "IDs:", stars.id.number
@@ -328,6 +346,7 @@ def run_ph4(infile = None, outfile = None,
     E0 = print_log(pre, time, multiples_code)
 
     while time < end_time:
+
         time += delta_t
         multiples_code.evolve_model(time)
 
@@ -367,8 +386,8 @@ def write_star(s, f):
 
 if __name__ == '__main__':
 
-    print 'command line:',
-    for i in range(len(sys.argv)): print sys.argv[i],
+    print '\ncommand line:',
+    for a in sys.argv: print a,
     print '\n'
 
     infile = None
