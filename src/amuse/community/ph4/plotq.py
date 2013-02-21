@@ -8,7 +8,7 @@ import numpy
 from math import log10
 
 # Display a time sequence from a set of (not yet standard) AMUSE log
-# files.  Files, colots, and styles should be separated by ',' with no
+# files.  Files, colors, and styles should be separated by ',' with no
 # spaces.
 
 if __name__ == '__main__':
@@ -23,8 +23,8 @@ if __name__ == '__main__':
     log = 0
     outfile = ''
 
-    # Separate the point colors and the line styles.  Replicate last
-    # color/style in case of multiple files.
+    # Separate the point colors and the line styles.  Replicate the
+    # last color/style in case of multiple files.
     
     colors = ['b','g','r','c','m','k']
     ls = ['-']
@@ -113,6 +113,9 @@ if __name__ == '__main__':
     # Save a file if specified; otherwise, display to the screen.
 
     if not outfile == '':
+        if outfile == '.': outfile = quantity+'.pdf'
+        outfile = outfile.replace('/','_')
+        print 'saving to', outfile
         savefig(outfile)
     else:
         show()
