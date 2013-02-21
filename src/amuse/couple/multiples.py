@@ -17,7 +17,7 @@ from amuse.units import constants
 from amuse.units.quantities import zero
 
 # Simple CM indexing scheme is OK for N < 1000000.  An improved scheme
-# may be desirable, but it must be compatible with the integer IDs
+# might be desirable, but it must be compatible with the integer IDs
 # used in most gravity modules.
 
 root_index = 1000000
@@ -398,7 +398,7 @@ class Multiples(object):
 
         # Add neighbors if desired.  Use a simple distance criterion
         # for now -- possibly refine later.  Also consider a simple
-        # neighbor veto.  TODO Start by sorting all stars by dustance
+        # neighbor veto.  TODO Start by sorting all stars by distance
         # from the CM.  Later, use neighbors, if supported.  TODO
 
         distances = (stars.position
