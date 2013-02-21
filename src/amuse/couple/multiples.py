@@ -16,9 +16,43 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units.quantities import zero
 
-# Simple CM indexing scheme is OK for N < 1000000.  An improved scheme
-# might be desirable, but it must be compatible with the integer IDs
-# used in most gravity modules.
+#---------------------------------------------------------------------
+#
+# Steve's ToDo list of features to be added/improved in the multiples
+# module (last modified 21 Feb 2013):
+#
+# 1. Should use only perturbers (within ~100 x interaction scale) in
+# computing the tidal energy change, not the entire system.
+#
+# 2. If the gravity module supports it, only perturbers need be
+# synchronized before and reinitialized after the interaction.
+#
+# 3. As an alternative to including near neighbors in the interaction,
+# which may lead to problematic final configurations, we should
+# explore letting neighbors simply veto the encounter, moving the work
+# back into the gravity module.
+#
+# 4. If a scattering consists of several long excursions, it should be
+# broken up into pieces, and returned to the gravity code during each
+# excursion.  In that case, the "smallN" code will terminate with a
+# configuration that isn't "over," in the sense used in the current
+# code.  It is unclear if the structure returned from
+# update_particle_tree() is correct in that case.  Function is_over()
+# returns a stopping condition -- an integer representing the reason
+# for its return -- but there is no code to accommodate a return in an
+# intermediate state.
+#
+# 5. We should seek a better prescription for compressing 3-body and
+# higher-order configurations.  Currently we conserve energy, but not
+# angular momentum.
+#
+# 6. Energy bookkeeping needs to be reexamined and overhauled.
+#
+#---------------------------------------------------------------------
+
+# The following simple CM indexing scheme is OK for N < 1000000.  An
+# improved scheme might be desirable, but it must be compatible with
+# the integer IDs used in most gravity modules.
 
 root_index = 1000000
 
