@@ -5,6 +5,7 @@ import os
 import random
 import sys
 import unittest 
+from time import clock
 
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.units import nbody_system
@@ -16,7 +17,8 @@ from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 
-def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
+def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
+    cpu = clock()
     N = len(gravity.particles)
     M = gravity.total_mass
     U = gravity.potential_energy
@@ -34,6 +36,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
 
     print ''
     print pre+"time=", time.number
+    print pre+"cpu=", cpu-cpu0
     print pre+"Ntot=", N
     print pre+"mass=", M.number
     print pre+"Etot=", E.number
@@ -55,7 +58,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
     print ''
 
     sys.stdout.flush()
-    return E
+    return E,cpu
 
 def run_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
@@ -182,7 +185,7 @@ def run_ph4(infile = None, number_of_stars = 40,
           "in steps of", delta_t.number
     sys.stdout.flush()
 
-    E0 = print_log('', time, gravity)
+    E0,cpu0 = print_log('', time, gravity)
     
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
@@ -239,7 +242,7 @@ def run_ph4(infile = None, number_of_stars = 40,
                 print "number of stars =", len(stars)
             sys.stdout.flush()
 
-        print_log('', time, gravity, E0)
+        print_log('', time, gravity, E0, cpu0)
         sys.stdout.flush()
 
     print ''

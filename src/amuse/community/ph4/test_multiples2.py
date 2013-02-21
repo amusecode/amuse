@@ -5,6 +5,7 @@ import os
 import random
 import sys
 import unittest
+from time import clock
 
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.smalln.interface import SmallN
@@ -21,7 +22,8 @@ from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 
-def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
+def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
+    cpu = clock()
     N = len(gravity.particles)
     M = gravity.total_mass
     U = gravity.potential_energy
@@ -40,6 +42,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
 
     print ''
     print pre+"time=", time.number
+    print pre+"cpu=", cpu - cpu0
     print pre+"Ntot=", N
     print pre+"mass=", M.number
     print pre+"Etot=", E.number
@@ -72,7 +75,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
 
     sys.stdout.flush()
 
-    return E
+    return E,cpu
 
 SMALLN = None
 def new_smalln():
@@ -344,7 +347,7 @@ def run_ph4(infile = None, outfile = None,
     pre = "%%% "
     kep = init_kepler(stars[0], stars[1])
     multiples_code = multiples.Multiples(gravity, new_smalln, kep)
-    E0 = print_log(pre, time, multiples_code)
+    E0,cpu0 = print_log(pre, time, multiples_code)
 
     while time < end_time:
 
@@ -362,7 +365,7 @@ def run_ph4(infile = None, outfile = None,
 
         channel.copy_attribute("index_in_code", "id")
 
-        E = print_log(pre, time, multiples_code, E0)
+        print_log(pre, time, multiples_code, E0, cpu0)
         sys.stdout.flush()
 
     #-----------------------------------------------------------------
