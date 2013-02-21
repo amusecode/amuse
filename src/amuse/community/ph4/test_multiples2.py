@@ -54,6 +54,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy):
     cmx,cmy,cmz = dcen
     print pre+"dcpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
     print pre+"Rcore=", rcore.number
+    print pre+"Mcore=", rhocore*rcore.number**3		# fake...
     print pre+"Mlagr[9]=",
     for m in mf: print "%.4f" % (m),
     print ''
