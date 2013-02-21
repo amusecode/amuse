@@ -563,7 +563,7 @@ class Multiples(object):
                                    stars - scattering_stars, 
                                    phi_in_field_of_stars_to_remove,
                                    self.gravity_constant)
-                                   
+
         # 5bbb. Break up wide binaries.
 
         for root in list(roots_of_trees):
@@ -588,7 +588,6 @@ class Multiples(object):
                     star2.id, '('+str(comp2.radius)+')'
                 print 'splitting wide binary', name_pair(comp1,comp2)
                 particles_in_encounter.remove_particle(root)
-                print 'broke up a soft binary'
                 
         binaries = \
             trees.BinaryTreesOnAParticleSet(particles_in_encounter,
@@ -596,16 +595,19 @@ class Multiples(object):
         stars_not_in_a_multiple = \
             binaries.particles_not_in_a_multiple()
         roots_of_trees = binaries.roots()
-        
-        total_energy_of_stars_to_add, phi_correction \
-            = calculate_energy_correction(
-                stars_not_in_a_multiple,
-                roots_of_trees,
-                stars - scattering_stars, 
-                phi_in_field_of_stars_to_remove,
-                self.gravity_constant
-            )
-                                   
+
+
+        ### AvE ############################
+        ### AvE total_energy_of_stars_to_add, phi_correction \
+        ### AvE     = calculate_energy_correction(
+        ### AvE         stars_not_in_a_multiple,
+        ### AvE         roots_of_trees,
+        ### AvE         stars - scattering_stars, 
+        ### AvE         phi_in_field_of_stars_to_remove,
+        ### AvE         self.gravity_constant
+        ### AvE     )
+        ############################
+
                                    
         # 5bbbb. Print diagnostics on particles returning to the
         #	 gravity code.
@@ -950,14 +952,12 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
     M,th = kep.get_angles()
     a,e = kep.get_elements()
     
-    
     if (compress and sep12 > scale**2) \
             or (not compress and sep12 < scale**2):
 
         #print '\nrescaling components', int(comp1.id), \
         #      'and', int(comp2.id), 'to separation', scale.number
         #sys.stdout.flush()
-
         
         #print 'a, e =', a, e
         if e < 1:
@@ -1035,7 +1035,6 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
         if hasattr(comp2, 'child1'):
             offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
 
-    
     return a
 
 def compress_nodes(node_list, scale):
@@ -1374,23 +1373,23 @@ def scale_top_level_list(singles, multiples, kep, scale,
         #print lt, 'scaled top-level nodes'
         #print top_level_nodes
 
+    sys.stdout.flush()
 
-
-def calculate_energy_correction(singles, multiples, field, 
-        phi_in_field_of_stars_to_remove, gravity_constant):
+    ### AvE def calculate_energy_correction(singles, multiples, field, 
+    ### AvE         phi_in_field_of_stars_to_remove, gravity_constant):
 
     # Recompute the external field, compute the tidal error, and
     # absorb it into the top-level energy.  Optional code.
     # Alternatively, we can simply absorb the tidal error into the
     # dEmult correction returned for bookkeeping purposes.
 
-    top_level_nodes = singles + multiples
-
-    # Figure out the tree structure.
-
-    ls = len(singles)
-    lm = len(multiples)
-    lt = ls + lm
+    ### AvE     top_level_nodes = singles + multiples
+    ### AvE 
+    ### AvE     # Figure out the tree structure.
+    ### AvE 
+    ### AvE     ls = len(singles)
+    ### AvE     lm = len(multiples)
+    ### AvE     lt = ls + lm
     
     phi_correction = zero
 
