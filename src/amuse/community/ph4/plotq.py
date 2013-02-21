@@ -13,7 +13,7 @@ from math import log10
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "c:f:lq:t:")
+        opts, args = getopt.getopt(sys.argv[1:], "c:f:lq:o:t:")
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(1)
@@ -21,6 +21,7 @@ if __name__ == '__main__':
     infiles = ['']
     quantity = ''
     log = 0
+    outfile = ''
 
     # Separate the point colors and the line styles.  Replicate last
     # color/style in case of multiple files.
@@ -35,6 +36,8 @@ if __name__ == '__main__':
             infiles = a.split(',')
         elif o == "-l":
             log = 1
+        elif o == "-o":
+            outfile = a
         elif o == "-q":
             quantity = a
         elif o == "-t":
@@ -107,4 +110,9 @@ if __name__ == '__main__':
 
         i += 1
 
-    show()
+    # Save a file if specified; otherwise, display to the screen.
+
+    if not outfile == '':
+        savefig(outfile)
+    else:
+        show()
