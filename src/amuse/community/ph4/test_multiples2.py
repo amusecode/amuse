@@ -28,10 +28,12 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    Ebin = gravity.multiples_energy_correction
     Etop = T + U
-    E = Etop - Ebin
-    if E0 == 0 | nbody_system.energy: E0 = E
+    Nmul, Nbin, Emul = gravity.get_total_multiple_energy()
+    Etot = Etop + Emul
+    Etid = gravity.multiples_energy_correction
+    Ecor = Etot - Etid
+    if E0 == 0 | nbody_system.energy: E0 = Ecor
     Rvir = -0.5*M*M/U
     Q = -T/U
     com = pa.center_of_mass(gravity.particles)
@@ -42,12 +44,14 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
 
     print ''
     print pre+"time=", time.number
-    print pre+"cpu=", cpu - cpu0
+    print pre+"CPU=", cpu - cpu0
     print pre+"Ntot=", N
     print pre+"mass=", M.number
-    print pre+"Etot=", E.number
-    print pre+"Ebin=", Ebin.number
-    print pre+"dE/E=", E/E0 - 1
+    print pre+"Etot=", Etot.number
+    print pre+"Etop=", Etop.number
+    print pre+"Etid=", Etid.number
+    print pre+"Ecor=", Ecor.number
+    print pre+"dE/E=", Ecor/E0 - 1
     print pre+"Rvir=", Rvir.number
     print pre+"Qvir=", Q
     cmx,cmy,cmz = com
@@ -70,12 +74,12 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     print pre+"Nbin=", Nbin
     print pre+"Emul= %.5f" % (Emul.number)
     print pre+"Emul/kT= %.5f" % (Emul/kT)
-    print pre+"Emul/E= %.5f" % (Emul/E)
+    print pre+"Emul/E= %.5f" % (Emul/Etot)
     print ''
 
     sys.stdout.flush()
 
-    return E,cpu
+    return Ecor,cpu
 
 SMALLN = None
 def new_smalln():
