@@ -48,6 +48,10 @@ from amuse.units.quantities import zero
 #
 # 6. Energy bookkeeping needs to be reexamined and overhauled.
 #
+# 7. There is no provision for physical collisions in the smallN code,
+# and no logic in the Multiples module to manage stars with both
+# dynamical and physical radii.
+#
 #---------------------------------------------------------------------
 
 # The following simple CM indexing scheme is OK for N < 1000000.  An
@@ -259,18 +263,31 @@ class Multiples(object):
         return self.gravity_code.get_time()
     
     def get_total_energy(self, code):
+        # ??? from Steve: what is get_binary_energy()?
         try:
-            binaries_energy = code.get_binary_energy()
-        except:
-            binaries_energy = zero 
+            binaries_energy = code.get_binary_energy()	# include binaries
+        except:						# if code understands
+            binaries_energy = zero
         total_energy = code.potential_energy + code.kinetic_energy \
 				             + binaries_energy
+
         return total_energy
-        
+
+    def get_total_multiple_energy(self):
+        Nbin = 0
+        Nmul = 0
+        Emul = 0.0 | nbody_system.energy
+        for x in self.root_to_tree.values():
+            Nmul += 1
+            nb,E = get_multiple_energy(x, self.kepler)
+            Nbin += nb
+            Emul += E
+        return Nmul, Nbin, Emul
+
     def print_multiples(self):
         for x in self.root_to_tree.values():
             print_simple_multiple(x, self.kepler)
-            
+
     def pretty_print_multiples(self, pre, kT, dcen):
         Nbin = 0
         Nmul = 0
@@ -292,8 +309,6 @@ class Multiples(object):
         stopping_condition = \
             self.gravity_code.stopping_conditions.collision_detection
         stopping_condition.enable()
-        
-        initial_energy = self.get_total_energy(self.gravity_code)
         
         time = self.gravity_code.model_time
         print "Evolve model to:", end_time, " starting at time:", time
@@ -360,7 +375,7 @@ class Multiples(object):
 
                     self.channel_from_code_to_memory.copy()
                     
-                    energy = self.get_total_energy(self.gravity_code)
+                    initial_energy = self.get_total_energy(self.gravity_code)
 
                     star1 = star1.as_particle_in_set(self._inmemory_particles)
                     star2 = star2.as_particle_in_set(self._inmemory_particles)
@@ -368,15 +383,19 @@ class Multiples(object):
                     print 'initial top-level:', \
                         star1.id, '('+str(star1.radius)+')', \
                         star2.id, '('+str(star2.radius)+')'
-                    print '                   r =', r
-                    print '                   v =', v
-                    print '                   v.r =', vr
+                    if 1:
+                        print '                   r =', r
+                        print '                   v =', v
+                        print '                   v.r =', vr
                     sys.stdout.flush()
 
-                    self.manage_encounter(star1, star2, 
-                                          self._inmemory_particles,
-                                          self.gravity_code.particles,
-                                          self.kepler)
+                    # Do the scattering.
+
+		    dE_top_level_scatter,dphi_tidal,scatter_energy_error \
+                        = self.manage_encounter(star1, star2, 
+                                                self._inmemory_particles,
+                                                self.gravity_code.particles,
+                                                self.kepler)
                     
                     # Recommit is done automatically and reinitializes
                     # all particles.  Later we will just reinitialize
@@ -388,11 +407,75 @@ class Multiples(object):
                     self.channel_from_code_to_memory.copy_attribute \
                         ("index_in_code", "id")
                     
-                    energy = self.get_total_energy(self.gravity_code)
-                    print "multiples energy correction =", \
-                        self.multiples_energy_correction
-                    print 'dE =', energy - initial_energy \
-                                 - self.multiples_energy_correction
+                    final_energy = self.get_total_energy(self.gravity_code)
+                    dE_top_level = final_energy - initial_energy
+
+                    # Local bookkeeping:
+                    #
+                    #	dE_top_level is the actual energy change in
+                    #	the top-level gravity system due to this
+                    #	encounter
+                    #
+                    #	dE_top_level_scatter is the change in internal
+                    #	energy of the scattering system
+                    #
+                    #	dphi_tidal is the tidal error (currently
+                    #	unabsorbed) due to the change in configuration
+                    #	of the scattering system in the top-level
+                    #	tidal field
+                    #
+                    #	scatter_energy_error is the integration error
+                    #	in the scattering calculation
+                    #
+                    # We *always* expect
+                    #
+                    #	dE_top_level - dE_top_level_scatter - dphi_tidal = 0.
+                    #
+                    # If this is not the case, there is an error in
+                    # the internal bookkeeping of manage_encounter().
+
+                    if 0:
+                        print 'top-level initial energy =', initial_energy
+                        print 'top-level final energy =', final_energy
+                        print 'top-level energy change =', dE_top_level
+                        print 'scatter dE_top_level =', dE_top_level_scatter
+                        print 'scatter dphi_tidal =', dphi_tidal
+
+                    print 'scatter integration error =', scatter_energy_error
+                    print 'dE_top_level - dE_top_level_scatter - dphi_tidal ='
+                    print 20*' ', dE_top_level - dE_top_level_scatter \
+					       - dphi_tidal
+
+                    self.multiples_energy_correction += dphi_tidal
+                    Nmul, Nbin, Emul = self.get_total_multiple_energy()
+
+                    # Global bookkeeping:
+                    #
+                    #	-(dE_top_level_scatter) should be almost equal
+                    #	to the energy added to the multiples subsystem
+                    #	by the encounter; it differs by the internal
+                    #	tidal corrections in stable multiples  TODO
+                    #
+                    #	we don't absorb individual tidal errors, but
+                    #	instead store their total in
+                    #	self.multiples_energy_correction
+                    #
+                    # Neglecting the small internal multiples
+                    # correction for now,
+                    #
+                    #	E(top-level) + Emul
+                    #		     - self.multiples_energy_correction
+                    #
+                    # should be conserved.  Any non-conservation is a
+                    # measure of the total integration error in the
+                    # top-level and small-N systems (plus any other
+                    # errors we have made in bookkeeping or
+                    # algorithms!).
+
+                    print 'total energy =', \
+                        final_energy + Emul - self.multiples_energy_correction
+
+                    # Print all multiples currently in the system.
 
                     self.print_multiples()
 
@@ -422,8 +505,9 @@ class Multiples(object):
 
         # Manage an encounter between star1 and star2.  Stars is the
         # python memory data set.  Gravity_stars points to the gravity
-        # module data.  Return value is the energy correction due to
-        # multiples.
+        # module data.  Return values are the change in top-level
+        # energy, the tidal error, and the integration error in the
+        # scattering calculation.
 
         # 0. Build a list of stars involved in the scattering.  Start
         # with star1 and star2.
@@ -492,7 +576,7 @@ class Multiples(object):
         phi_in_field_of_stars_to_remove \
             = potential_energy_in_field(scattering_stars, 
                                         stars - scattering_stars,
-                                        G = self.gravity_constant)
+                                        G=self.gravity_constant)
 
         # 2a. If there are no neighbors, separate star1 and star2 to
         #     some large "scattering" radius.  If neighbors exist,
@@ -543,9 +627,9 @@ class Multiples(object):
 
         final_scatter_scale = self.final_scatter_factor * initial_scatter_scale
 
-        self.resolve_collision(particles_in_encounter,
-                               final_scatter_scale,
-                               end_time, delta_t)
+        scatter_energy_error = self.resolve_collision(particles_in_encounter,
+                                                      final_scatter_scale,
+                                                      end_time, delta_t)
 
         # Note: final_scatter_scale is used to limit the extent of the
         # smallN integration: the integration ends when any particle
@@ -553,10 +637,10 @@ class Multiples(object):
         # TODO: what if the encounter reaches final_scatter_scale and
         # isn't over?  Currently avoided by ignoring this parameter --
         # see resolve_collision() below.
-       
+
         particles_in_encounter.position += cmpos
         particles_in_encounter.velocity += cmvel
-            
+
         # 5. Carry out bookkeeping after the encounter and update the
         #    gravity module with the new data.
         
@@ -589,7 +673,7 @@ class Multiples(object):
 
         final_scale = self.final_scale_factor * initial_scale
 
-        total_energy_of_stars_to_add, phi_correction \
+        total_energy_of_stars_to_add, tidal_phi_correction \
             = scale_top_level_list(stars_not_in_a_multiple,
                                    roots_of_trees,
                                    self.kepler,
@@ -598,31 +682,53 @@ class Multiples(object):
                                    phi_in_field_of_stars_to_remove,
                                    self.gravity_constant)
 
-        # 5bbb. Break up wide binaries.
+        # 5bbb. Break up wide top-level binaries.
 
         for root in list(roots_of_trees):
             comp1 = root.child1
             comp2 = root.child2
 
-            semi,ecc = \
-                get_elements_for_binary_components(comp1, 
-                                                   comp2, 
-                                                   self.kepler)
+            mass,semi,ecc,r,E,t = \
+                get_component_binary_elements(comp1, 
+                                              comp2, 
+                                              self.kepler)
             apo = semi*(1+ecc)
             if self.retain_binary_apocenter:
                 binary_scale = apo
             else:
                 binary_scale = 2*semi	# more conservative choice
 
-            print 'semi =', semi, 'apo =', apo, \
-                  'initial_scale =', initial_scale
             if binary_scale > initial_scale:
+
                 print 'initial top-level:', \
-                    star1.id, '('+str(comp1.radius)+')', \
-                    star2.id, '('+str(comp2.radius)+')'
+                    comp1.id, '('+str(comp1.radius)+')', \
+                    comp2.id, '('+str(comp2.radius)+')'
                 print 'splitting wide binary', name_pair(comp1,comp2)
+                print 'semi =', semi, 'apo =', apo
+                print 'initial_scale =', initial_scale
+                sys.stdout.flush()
+
+                # We are now adding the particles, not the CM, so we
+                # must correct the tidal potential...
+
+                tidal_phi_correction \
+                    -= potential_energy_in_field([root],
+                                                 stars - scattering_stars,
+                                                 G=self.gravity_constant)
+
                 particles_in_encounter.remove_particle(root)
-                
+
+                tidal_phi_correction \
+                    += potential_energy_in_field([comp1,comp2], 
+                                                 stars - scattering_stars,
+                                                 G=self.gravity_constant)
+
+                # ...and add their internal energy into
+                # total_energy_of_stars_to_add.
+
+                mu = comp1.mass*comp2.mass/mass
+                total_energy_of_stars_to_add += mu*E
+
         binaries = \
             trees.BinaryTreesOnAParticleSet(particles_in_encounter,
                                             "child1", "child2")
@@ -630,19 +736,6 @@ class Multiples(object):
             binaries.particles_not_in_a_multiple()
         roots_of_trees = binaries.roots()
 
-
-        ### AvE ############################
-        ### AvE total_energy_of_stars_to_add, phi_correction \
-        ### AvE     = calculate_energy_correction(
-        ### AvE         stars_not_in_a_multiple,
-        ### AvE         roots_of_trees,
-        ### AvE         stars - scattering_stars, 
-        ### AvE         phi_in_field_of_stars_to_remove,
-        ### AvE         self.gravity_constant
-        ### AvE     )
-        ############################
-
-                                   
         # 5bbbb. Print diagnostics on particles returning to the
         #	 gravity code.
 
@@ -662,9 +755,11 @@ class Multiples(object):
                         vr = numpy.inner(j.velocity-i.velocity,
                                          j.position-i.position)
         print ''
-        print '                 r =', r
-        print '                 v =', v
-        print '                 v.r =', vr
+        if 1:
+            print '                 r =', r
+            print '                 v =', v
+            print '                 v.r =', vr
+        sys.stdout.flush()
 
         # 5d. Add stars not in a binary to the gravity code.
         if len(stars_not_in_a_multiple) > 0:
@@ -687,9 +782,13 @@ class Multiples(object):
         for tree in binaries.iter_binary_trees():            
             self.root_to_tree[tree.particle] = tree.copy()
 
-        self.multiples_energy_correction \
-            += (total_energy_of_stars_to_add
-                 - total_energy_of_stars_to_remove) + phi_correction
+        print 'total_energy_of_stars_to_remove ', \
+            		total_energy_of_stars_to_remove
+        print 'total_energy_of_stars_to_add ', \
+            		total_energy_of_stars_to_add
+        return total_energy_of_stars_to_add \
+            	  - total_energy_of_stars_to_remove, \
+               tidal_phi_correction, scatter_energy_error
 
     def resolve_collision(self,
                           particles,
@@ -697,8 +796,12 @@ class Multiples(object):
                           end_time = 1000 | nbody_system.time,
                           delta_t = 10 | nbody_system.time):
 
-        # Temporarily avoid "is_over" problems.  TODO
+        # Take the system described by particles and evolve it forward
+        # in time until it is over.  Don't update global quantities,
+        # don't interpret the outcome.  Return the energy error due to
+        # the smallN integration.
 
+        # Temporarily avoid "is_over" problems.  TODO
         final_scatter_scale = 1.e30 | nbody_system.length
 
         resolve_collision_code = self.resolve_collision_code_creation_function()
@@ -712,10 +815,10 @@ class Multiples(object):
         # Channel to copy values from the code to the set in memory.
         channel = resolve_collision_code.particles.new_channel_to(particles)
 
-        initial_energy = self.get_total_energy(resolve_collision_code)
+        initial_scatter_energy = self.get_total_energy(resolve_collision_code)
 
         print "multiples: number_of_stars =", len(particles), ' ', particles.id
-        print 'multiples: initial energy =', initial_energy
+        print 'multiples: initial energy =', initial_scatter_energy
         #print particles
         print "multiples: evolving to time =", end_time, 
         print "in steps of", delta_t
@@ -780,10 +883,13 @@ class Multiples(object):
             # the encounter isn't over?
 
             if over:
-                energy = self.get_total_energy(resolve_collision_code)
-                print 'multiples: over =', over
-                print 'multiples: interaction is over at time', time
-                print 'multiples: final energy =', energy
+                final_scatter_energy \
+                    = self.get_total_energy(resolve_collision_code)
+                scatter_energy_error \
+                    = final_scatter_energy - initial_scatter_energy
+                print 'multiples: over =', over, 'at time', time
+                print 'multiples: final energy =', final_scatter_energy
+                print 'multiples: energy error =', scatter_energy_error
                 if self.debug_encounters:
                     print 'multiples: ### END ENCOUNTER ###'
                 sys.stdout.flush()
@@ -802,7 +908,7 @@ class Multiples(object):
                 channel.copy()
                 #resolve_collision_code.stop()
 
-                return initial_energy, energy
+                return scatter_energy_error
 
             if not self.debug_encounters:
                 if delta_t < delta_t_max and time > 0.999999*4*delta_t:
@@ -907,6 +1013,7 @@ def potential_energy_in_field(particles, field_particles,
     >>> particles.potential_energy()
     quantity<-6.67428e-11 m**2 * kg * s**-2>
     """
+
     if len(field_particles) == 0:
         return zero * G		# ERROR: this is dimensionally incorrect - Steve
 
@@ -937,28 +1044,6 @@ def offset_particle_tree(particle, dpos, dvel):
     # print 'offset', int(particle.id), 'by', dpos; sys.stdout.flush()
 
 
-def get_elements_for_binary_components(comp1, comp2, kep):
-    pos1 = comp1.position
-    pos2 = comp2.position
-    sep12 = ((pos2-pos1)**2).sum()
-    mass1 = comp1.mass
-    mass2 = comp2.mass
-    total_mass = mass1 + mass2
-    vel1 = comp1.velocity
-    vel2 = comp2.velocity
-    cmpos = (mass1*pos1+mass2*pos2)/total_mass
-    cmvel = (mass1*vel1+mass2*vel2)/total_mass
-
-    mass = comp1.mass + comp2.mass
-    rel_pos = pos2 - pos1
-    rel_vel = vel2 - vel1
-    kep.initialize_from_dyn(mass,
-                            rel_pos[0], rel_pos[1], rel_pos[2],
-                            rel_vel[0], rel_vel[1], rel_vel[2])
-    a,e = kep.get_elements()
-    
-    return a,e
-    
 def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
 
     # Rescale the two-body system consisting of comp1 and comp2 to lie
@@ -1230,6 +1315,27 @@ def another_print_multiple(node, kep, pre, kT, dcen):
 
     return is_bin, Etot
 
+def get_multiple_energy(node, kep):
+
+    # Like another_print_multiple, but don't print anything -- just
+    # return is_bin and Etot.
+
+    is_bin = 1
+    Etot = 0.0 | nbody_system.energy
+    for level, x in node.iter_levels():
+        particle = x
+        id = particle.id
+        M = particle.mass.number
+        if not particle.child1 is None:
+            if level > 0: is_bin = 0
+            child1 = particle.child1
+            child2 = particle.child2
+            M,a,e,r,Emu,t = get_component_binary_elements(child1, child2, kep)
+            mu = child1.mass*child2.mass/M
+            E = Emu*mu
+            Etot += E
+    return is_bin, Etot
+
 def print_energies(stars):
 
     # Brute force N^2 over top level, pure python...
@@ -1409,32 +1515,19 @@ def scale_top_level_list(singles, multiples, kep, scale,
 
     sys.stdout.flush()
 
-    ### AvE def calculate_energy_correction(singles, multiples, field, 
-    ### AvE         phi_in_field_of_stars_to_remove, gravity_constant):
-
     # Recompute the external field, compute the tidal error, and
     # absorb it into the top-level energy.  Optional code.
     # Alternatively, we can simply absorb the tidal error into the
     # dEmult correction returned for bookkeeping purposes.
 
-    ### AvE     top_level_nodes = singles + multiples
-    ### AvE 
-    ### AvE     # Figure out the tree structure.
-    ### AvE 
-    ### AvE     ls = len(singles)
-    ### AvE     lm = len(multiples)
-    ### AvE     lt = ls + lm
-    
     phi_correction = zero
 
     phi_in_field_of_stars_to_add \
         = potential_energy_in_field(top_level_nodes, 
                                     field, G = gravity_constant)
     
-    print 'phi_external_final_before =', phi_in_field_of_stars_to_remove
-    print 'phi_external_final_after =', phi_in_field_of_stars_to_add
     dphi = phi_in_field_of_stars_to_add - phi_in_field_of_stars_to_remove
-    print 'dphi =', dphi
+    print 'delta phi =', dphi
 
     # Correction code parallels that above, but we must repeat it
     # here, since we have to complete the rescaling before the
@@ -1471,6 +1564,4 @@ def scale_top_level_list(singles, multiples, kep, scale,
     total_energy_of_stars_to_add \
         += top_level_nodes.potential_energy(G=gravity_constant)
     
-    #print 'final etot =', total_energy_of_stars_to_add
-
     return total_energy_of_stars_to_add, phi_correction
