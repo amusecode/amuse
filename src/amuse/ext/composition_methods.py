@@ -1,8 +1,12 @@
 """
-  selection of symplectic compositions
-  
+  selection of composition integration methods
+    
   always of the form:
     name(EVOLVEA,EVOLVEB,dt)
+
+  in case EVOLVEA and EVOLVEB are symplectic, the compositions
+  are symplectic
+
     
   included:
     LEAPFROG
